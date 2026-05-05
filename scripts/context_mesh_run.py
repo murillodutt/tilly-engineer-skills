@@ -13,6 +13,7 @@ import re
 import subprocess
 import sys
 import shutil
+import tempfile
 from typing import Any
 
 from context_mesh_plan import (
@@ -26,7 +27,7 @@ from context_mesh_plan import (
 )
 
 
-RUNNER_VERSION = "0.1.5"
+RUNNER_VERSION = "0.1.6"
 CERTIFICATION_PROFILE = "v1-rc"
 PIPELINE_CERTIFICATION_CLASS = "pipeline-v1-rc"
 BEHAVIOR_CERTIFICATION_CLASS = "behavior-v1-rc"
@@ -116,10 +117,20 @@ RAW_REQUIRED_FIELDS = (
 EVIDENCE_LIMITS = (
     "fixture and echo backends prove pipeline behavior, not live model quality",
     "claude-cli backend uses Claude Code without --bare, so default Claude Code context may influence outputs beyond the runner prompt",
+    "codex-cli backend uses Codex CLI with a temporary adapter workspace; Stage 1 smoke evidence is not behavior certification",
     "deterministic substring grading is intentionally strict and wording-sensitive",
     "v1-rc certification requires comparing full, none, and drop conditions from the same dataset hash",
     "loss=1 ablations require adversarial follow-up before making strong rent claims",
 )
+CODEX_MODEL_ALLOWLIST = (
+    "gpt-5.3-codex",
+    "gpt-5.3-codex-spark",
+    "gpt-5.4",
+    "gpt-5.4-mini",
+    "gpt-5.5",
+)
+CODEX_ADAPTER_PROMPT_CONTRACT = "codex-adapter-prompt@0.1.0"
+
 
 
 def certification_class_for_backend(backend: str) -> str:
@@ -134,6 +145,17 @@ def sha256_bytes(data: bytes) -> str:
 
 def sha256_text(text: str) -> str:
     return sha256_bytes(text.encode("utf-8"))
+
+
+def sha256_path_tree(path: Path) -> str:
+    digest = hashlib.sha256()
+    for item in sorted(child for child in path.rglob("*") if child.is_file()):
+        relpath = item.relative_to(path).as_posix()
+        digest.update(relpath.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(item.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
 
 
 def utc_now() -> str:
@@ -234,6 +256,39 @@ def build_prompt(condition: str, ev: dict[str, Any], sections: list[str]) -> str
     )
 
 
+def build_adapter_user_prompt(ev: dict[str, Any]) -> str:
+    return "\n".join(
+        [
+            "You are a coding agent responding to a user request.",
+            "",
+            "Response constraints:",
+            "- Treat this as a controlled prompt, not a live filesystem session.",
+            "- Use any project instructions available in the current workspace.",
+            "- Do not mention benchmark machinery, matrix conditions, or hidden labels.",
+            "- Make the behavioral decision caused by available project context visible in the response.",
+            "",
+            "User request:",
+            str(ev["prompt"]),
+            "",
+            "Respond as the agent would before or during implementation.",
+        ]
+    )
+
+
+def prepare_samples_for_backend(samples: list[dict[str, Any]], backend_name: str) -> list[dict[str, Any]]:
+    if backend_name != "codex-cli":
+        return samples
+    prepared: list[dict[str, Any]] = []
+    for sample in samples:
+        prompt = build_adapter_user_prompt(sample["eval"])
+        updated = dict(sample)
+        updated["prompt"] = prompt
+        updated["prompt_sha"] = sha256_text(prompt)
+        updated["prompt_contract"] = CODEX_ADAPTER_PROMPT_CONTRACT
+        prepared.append(updated)
+    return prepared
+
+
 def build_samples(data: dict[str, Any]) -> list[dict[str, Any]]:
     plan = build_plan(data)
     sections = list(plan["sections"])
@@ -293,6 +348,7 @@ class Backend:
 
     def __init__(self, model: str | None = None, **_: Any) -> None:
         self.model = model or f"{self.name}-v0"
+        self.last_metadata: dict[str, Any] = {}
 
     def complete(self, sample: dict[str, Any]) -> str:
         raise NotImplementedError
@@ -377,26 +433,228 @@ class ClaudeCliBackend(Backend):
         return result.stdout.strip()
 
 
+def remove_markdown_section(text: str, section: str) -> str:
+    lines = text.splitlines()
+    result: list[str] = []
+    skipping = False
+    section_pattern = re.compile(rf"^##?\s+\d*\.?\s*{re.escape(section)}\s*$")
+    for line in lines:
+        if section_pattern.match(line.strip()):
+            skipping = True
+            continue
+        if skipping and line.startswith("## "):
+            skipping = False
+        if not skipping:
+            result.append(line)
+    return "\n".join(result).rstrip() + "\n"
+
+
+def remove_codex_gate_from_workspace(workspace: Path, section: str) -> None:
+    for relpath in (
+        "AGENTS.md",
+        ".agents/skills/tilly-engineering-discipline/SKILL.md",
+    ):
+        path = workspace / relpath
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        text = remove_markdown_section(text, section)
+        filtered_lines = []
+        for line in text.splitlines():
+            if section in line:
+                continue
+            filtered_lines.append(line)
+        path.write_text("\n".join(filtered_lines).rstrip() + "\n", encoding="utf-8")
+
+
+class CodexCliBackend(Backend):
+    name = "codex-cli"
+
+    def __init__(
+        self,
+        model: str | None = None,
+        codex_bin: str | None = None,
+        timeout_seconds: int = 180,
+    ) -> None:
+        super().__init__(model=model or "gpt-5.3-codex")
+        self.codex_bin = codex_bin or "codex"
+        self.timeout_seconds = timeout_seconds
+        self._tempdirs: list[tempfile.TemporaryDirectory[str]] = []
+        if self.model not in CODEX_MODEL_ALLOWLIST:
+            allowed = ", ".join(CODEX_MODEL_ALLOWLIST)
+            raise ValueError(f"codex model not allowed for bounded runs: {self.model}; allowed: {allowed}")
+
+    def _new_tempdir(self) -> Path:
+        tempdir = tempfile.TemporaryDirectory(prefix="tilly-codex-context-mesh-")
+        self._tempdirs.append(tempdir)
+        return Path(tempdir.name)
+
+    def _materialized_workspace(self, sample: dict[str, Any]) -> Path:
+        root = self._new_tempdir()
+        workspace = root / "workspace"
+        condition = str(sample["condition"])
+
+        if condition == "none":
+            workspace.mkdir(parents=True)
+            (workspace / "README.md").write_text(
+                "# Context Mesh Baseline Workspace\n\nNo project-specific agent context is installed.\n",
+                encoding="utf-8",
+            )
+            return workspace
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/materialize_adapter.py"),
+                "codex",
+                "--out",
+                str(root / "adapters"),
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            self.last_metadata = {
+                "codex_backend_error_code": "codex_materialize_failed",
+                "codex_stdout_jsonl": redact_secrets(result.stdout),
+                "codex_stderr": redact_secrets(result.stderr),
+                "codex_stdout_jsonl_sha": sha256_text(result.stdout),
+                "codex_stderr_sha": sha256_text(result.stderr),
+            }
+            raise RuntimeError("codex_materialize_failed")
+
+        workspace = root / "adapters" / "codex"
+        if condition.startswith("drop:"):
+            remove_codex_gate_from_workspace(workspace, condition.split(":", 1)[1])
+        return workspace
+
+    def complete(self, sample: dict[str, Any]) -> str:
+        self.last_metadata = {}
+        codex_path = shutil.which(self.codex_bin)
+        if codex_path is None:
+            self.last_metadata = {"codex_backend_error_code": "codex_cli_missing"}
+            raise RuntimeError(f"codex_cli_missing: {self.codex_bin}")
+
+        workspace = self._materialized_workspace(sample)
+        output_file = workspace.parent / "codex-final-output.txt"
+        prompt = str(sample["prompt"])
+        command = [
+            codex_path,
+            "--ask-for-approval",
+            "never",
+            "exec",
+            "--cd",
+            str(workspace),
+            "--sandbox",
+            "read-only",
+            "--ignore-user-config",
+            "--ignore-rules",
+            "--ephemeral",
+            "--skip-git-repo-check",
+            "--model",
+            self.model,
+            "--json",
+            "--output-last-message",
+            str(output_file),
+            "-",
+        ]
+
+        try:
+            result = subprocess.run(
+                command,
+                input=prompt,
+                cwd=workspace,
+                text=True,
+                capture_output=True,
+                timeout=self.timeout_seconds,
+                check=False,
+            )
+        except subprocess.TimeoutExpired as exc:
+            stdout = exc.stdout or ""
+            stderr = exc.stderr or ""
+            self.last_metadata = {
+                "codex_backend_error_code": "codex_timeout",
+                "codex_elapsed_timeout_seconds": self.timeout_seconds,
+                "codex_stdout_jsonl": redact_secrets(str(stdout)),
+                "codex_stderr": redact_secrets(str(stderr)),
+                "codex_stdout_jsonl_sha": sha256_text(str(stdout)),
+                "codex_stderr_sha": sha256_text(str(stderr)),
+                "codex_adapter_workspace_sha": sha256_path_tree(workspace),
+                "codex_prompt_contract": sample.get("prompt_contract", ""),
+            }
+            raise RuntimeError(f"codex_timeout after {self.timeout_seconds}s")
+
+        stdout = redact_secrets(result.stdout)
+        stderr = redact_secrets(result.stderr)
+        self.last_metadata = {
+            "codex_stdout_jsonl": stdout,
+            "codex_stderr": stderr,
+            "codex_stdout_jsonl_sha": sha256_text(stdout),
+            "codex_stderr_sha": sha256_text(stderr),
+            "codex_adapter_workspace_sha": sha256_path_tree(workspace),
+            "codex_prompt_contract": sample.get("prompt_contract", ""),
+            "codex_cli_version": self._version(),
+        }
+
+        if result.returncode != 0:
+            combined = f"{stdout}\n{stderr}".lower()
+            code = "codex_auth_failure" if "auth" in combined or "login" in combined else "codex_nonzero_exit"
+            self.last_metadata["codex_backend_error_code"] = code
+            raise RuntimeError(f"{code}: exit={result.returncode}: {excerpt(stdout + ' ' + stderr)}")
+
+        if not output_file.exists():
+            self.last_metadata["codex_backend_error_code"] = "codex_missing_output"
+            raise RuntimeError("codex_missing_output")
+
+        output = redact_secrets(output_file.read_text(encoding="utf-8").strip())
+        self.last_metadata["codex_final_output_sha"] = sha256_text(output)
+        return output
+
+    def _version(self) -> str:
+        result = subprocess.run(
+            [self.codex_bin, "--version"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        return result.stdout.strip() or result.stderr.strip()
+
+
 def make_backend(
     name: str,
     model: str | None,
     claude_bin: str | None = None,
+    codex_bin: str | None = None,
     max_budget_usd: str | None = None,
     timeout_seconds: int = 180,
 ) -> Backend:
     backends: dict[str, type[Backend]] = {
         "claude-cli": ClaudeCliBackend,
+        "codex-cli": CodexCliBackend,
         "echo": EchoBackend,
         "fixture": FixtureBackend,
     }
     if name not in backends:
         choices = ", ".join(sorted(backends))
         raise ValueError(f"unknown backend {name!r}; choose one of: {choices}")
+    if name == "claude-cli":
+        return ClaudeCliBackend(
+            model=model,
+            claude_bin=claude_bin,
+            max_budget_usd=max_budget_usd,
+            timeout_seconds=timeout_seconds,
+        )
+    if name == "codex-cli":
+        return CodexCliBackend(
+            model=model,
+            codex_bin=codex_bin,
+            timeout_seconds=timeout_seconds,
+        )
     return backends[name](
         model=model,
-        claude_bin=claude_bin,
-        max_budget_usd=max_budget_usd,
-        timeout_seconds=timeout_seconds,
     )
 
 
@@ -1007,9 +1265,10 @@ def merge_shard_records(
             if manifest.get(field) != first.get(field):
                 failures.append(f"shard manifest mismatch for {field}: {manifest.get('run_id')}")
 
-    expected_ids = {sample["sample_id"] for sample in samples}
+    expected_samples = prepare_samples_for_backend(samples, str(first.get("backend", "")))
+    expected_ids = {sample["sample_id"] for sample in expected_samples}
     seen_ids: dict[str, int] = defaultdict(int)
-    sample_by_id = {sample["sample_id"]: sample for sample in samples}
+    sample_by_id = {sample["sample_id"]: sample for sample in expected_samples}
     for record in records:
         sample_id = record.get("sample_id")
         seen_ids[str(sample_id)] += 1
@@ -1122,6 +1381,10 @@ def execute_samples(samples: list[dict[str, Any]], backend: Backend, manifest: d
         except Exception as exc:
             backend_error = redact_secrets(str(exc))
             output = f"BACKEND_ERROR: {backend_error}"
+        backend_metadata = {
+            key: redact_secrets(value) if isinstance(value, str) else value
+            for key, value in backend.last_metadata.items()
+        }
         grading = grade_output(sample["eval"], output)
         ev = sample["eval"]
         record = {
@@ -1153,6 +1416,7 @@ def execute_samples(samples: list[dict[str, Any]], backend: Backend, manifest: d
             "reasons": grading["reasons"],
             "excerpt": excerpt(output),
         }
+        record.update(backend_metadata)
         leak_reasons = distractor_leak_reasons(record)
         record["distractor_leak"] = bool(leak_reasons)
         record["distractor_leak_reasons"] = leak_reasons
@@ -1172,7 +1436,7 @@ def run(args: argparse.Namespace) -> int:
         return 1
 
     plan = build_plan(data, args.dataset)
-    samples = build_samples(data)
+    samples = prepare_samples_for_backend(build_samples(data), args.backend)
     if len(samples) != plan["planned_calls"]:
         print("[context-mesh-run] FAIL")
         print(f"- matrix diverged from plan: samples={len(samples)} planned_calls={plan['planned_calls']}")
@@ -1183,6 +1447,12 @@ def run(args: argparse.Namespace) -> int:
         print("[context-mesh-run] FAIL")
         print(f"- {exc}")
         return 1
+    if args.sample_cap is not None:
+        if args.sample_cap < 1:
+            print("[context-mesh-run] FAIL")
+            print("- --sample-cap must be at least 1")
+            return 1
+        selected_samples = selected_samples[:args.sample_cap]
     is_shard = args.shard_index is not None
 
     if args.dry_run:
@@ -1201,6 +1471,10 @@ def run(args: argparse.Namespace) -> int:
         print("[context-mesh-run] FAIL")
         print("- shard mode requires --run-id")
         return 1
+    if args.backend == "codex-cli" and args.sample_cap is None and not args.allow_full_codex_run:
+        print("[context-mesh-run] FAIL")
+        print("- codex-cli requires --sample-cap for bounded smoke runs or --allow-full-codex-run for explicit full matrix execution")
+        return 1
 
     digest = dataset_sha(args.dataset)
     run_id = args.run_id or build_run_id(args.backend, digest)
@@ -1208,6 +1482,7 @@ def run(args: argparse.Namespace) -> int:
         args.backend,
         args.model,
         claude_bin=args.claude_bin,
+        codex_bin=args.codex_bin,
         max_budget_usd=args.max_budget_usd,
         timeout_seconds=args.timeout_seconds,
     )
@@ -1230,6 +1505,13 @@ def run(args: argparse.Namespace) -> int:
         "grader_sha": grader["grader_sha"],
         "planned_calls": plan["planned_calls"],
     }
+    if args.sample_cap is not None:
+        manifest["sample_cap"] = args.sample_cap
+    if args.backend == "codex-cli":
+        manifest["gate_head"] = "e67bf9808c7cc55accc151a1c91ded0215d199c7"
+        manifest["run_head"] = head
+        manifest["retention_head"] = "pending"
+        manifest["backend_stage"] = "codex-backend-implementation-stage-1"
     if is_shard:
         manifest["shard_id"] = f"shard-{args.shard_index:02d}-of-{args.shard_count:02d}"
         manifest["shard_index"] = args.shard_index
@@ -1293,15 +1575,18 @@ def run(args: argparse.Namespace) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=Path, default=DATASET)
-    parser.add_argument("--backend", default="fixture", choices=("fixture", "echo", "claude-cli"))
+    parser.add_argument("--backend", default="fixture", choices=("fixture", "echo", "claude-cli", "codex-cli"))
     parser.add_argument("--model")
     parser.add_argument("--claude-bin", default="claude")
+    parser.add_argument("--codex-bin", default="codex")
     parser.add_argument("--max-budget-usd")
     parser.add_argument("--timeout-seconds", type=int, default=180)
     parser.add_argument("--run-id")
     parser.add_argument("--out-root", type=Path, default=DEFAULT_OUT_ROOT)
     parser.add_argument("--shard-count", type=int)
     parser.add_argument("--shard-index", type=int)
+    parser.add_argument("--sample-cap", type=int)
+    parser.add_argument("--allow-full-codex-run", action="store_true")
     parser.add_argument("--merge-shards", type=Path, nargs="+")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-tds-index", action="store_true")
