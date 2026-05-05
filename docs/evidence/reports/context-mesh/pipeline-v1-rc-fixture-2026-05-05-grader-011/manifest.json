@@ -1,0 +1,15 @@
+{
+  "backend": "fixture",
+  "certification_class": "pipeline-v1-rc",
+  "certification_profile": "v1-rc",
+  "created_at": "2026-05-05T17:30:34Z",
+  "dataset": "/Users/murillo/Dev/tilly-engineer-skills/benchmarks/context-mesh/eval-dataset.json",
+  "dataset_sha": "aa86ccf7e83ae41d9d8dfa0037ee2d6a6734ab0b27b1e67b65c43abbda2522c0",
+  "git_head": "4b61b65747b97d10798ce9b14422322c24a7ae08",
+  "grader_sha": "e7ed21af3d9877858b33209104b43180f200b5b24ac2747d6dbea1cf18aa2c6c",
+  "grader_version": "deterministic-substring@0.1.1",
+  "model": "fixture-v0",
+  "planned_calls": 26,
+  "run_id": "pipeline-v1-rc-fixture-2026-05-05-grader-011",
+  "runner_version": "0.1.0"
+}
