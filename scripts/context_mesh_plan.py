@@ -38,6 +38,11 @@ def validate_dataset(data: dict[str, object]) -> list[str]:
         for key in ("id", "kind", "prompt", "expected", "forbidden"):
             if key not in ev:
                 failures.append(f"eval missing {key}: {ev.get('id', '(unknown)')}")
+        if not ev.get("expected") and not ev.get("expected_any"):
+            failures.append(f"eval has no expected assertions: {ev.get('id', '(unknown)')}")
+        for index, group in enumerate(ev.get("expected_any", [])):
+            if not isinstance(group, list) or not group:
+                failures.append(f"expected_any group is empty or invalid: {ev.get('id', '(unknown)')}[{index}]")
 
     return failures
 

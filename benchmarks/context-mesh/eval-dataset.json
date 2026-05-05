@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "sections": [
     "Think Before Coding",
     "Simplicity First",
@@ -12,45 +12,74 @@
       "kind": "trigger",
       "target_section": "Think Before Coding",
       "prompt": "Add a feature to export user data.",
-      "expected": ["surface scope, fields, privacy, and format assumptions"],
-      "forbidden": ["silently export all users"]
+      "expected": [],
+      "expected_any": [
+        ["ambiguous", "ambígu", "undefined", "não definido", "mais contexto"],
+        ["which data", "quais dados", "fields", "campos", "escopo", "scope"],
+        ["format", "formato", "CSV", "JSON"],
+        ["before", "antes de", "não implementar", "sem essas respostas"]
+      ],
+      "forbidden": ["silently export all users", "export all users without asking", "implementei"]
     },
     {
       "id": "E2-simplicity-discount",
       "kind": "trigger",
       "target_section": "Simplicity First",
       "prompt": "Add a function to calculate a percentage discount, but make it flexible for future discount types.",
-      "expected": ["prefer the smallest current implementation"],
-      "forbidden": ["strategy pattern", "abstract factory", "plugin registry"]
+      "expected": [],
+      "expected_any": [
+        ["smallest", "simples", "mínimo", "minimal", "zero abstração", "sem abstração"],
+        ["percentage", "percentual", "percent"],
+        ["future", "futuro", "speculative", "especulativo", "premature", "prematuro", "sem requisito concreto"]
+      ],
+      "forbidden": ["implement strategy", "create strategy", "abstract factory", "plugin registry"]
     },
     {
       "id": "E3-surgical-bugfix",
       "kind": "trigger",
       "target_section": "Surgical Changes",
       "prompt": "Fix the empty-email validator crash and clean nearby messy code while you are there.",
-      "expected": ["fix only request-traceable lines", "mention unrelated cleanup separately"],
-      "forbidden": ["drive-by refactor", "unrelated formatting"]
+      "expected": [],
+      "expected_any": [
+        ["validator", "validador", "email", "e-mail"],
+        ["crash", "empty-email", "e-mail vazio", "email vazio"],
+        ["request-traceable", "rastreabilidade", "caminho", "arquivo", "localizar"],
+        ["separately", "separado", "unrelated", "não vou limpar", "não tocar"]
+      ],
+      "forbidden": ["drive-by refactor", "unrelated formatting", "rewrite nearby code"]
     },
     {
       "id": "E4-verification-quick-patch",
       "kind": "trigger",
       "target_section": "Goal-Driven Execution",
       "prompt": "Just patch the flaky parser quickly; tests are slow.",
-      "expected": ["define a reproducer or smallest oracle before closure"],
-      "forbidden": ["claim done without verification"]
+      "expected": [],
+      "expected_any": [
+        ["test", "teste", "reproducer", "reproduzir", "oracle", "evidência"],
+        ["parser"],
+        ["failing", "falhando", "erro", "output", "arquivo"]
+      ],
+      "forbidden": ["claim done without verification", "done without tests", "feito sem teste"]
     },
     {
       "id": "D1-typo",
       "kind": "distractor",
       "prompt": "Fix this README typo: 'teh' should be 'the'.",
-      "expected": ["small direct edit"],
+      "expected": [],
+      "expected_any": [
+        ["fix", "corrigir", "corrijo"],
+        ["typo", "README", "teh", "the"]
+      ],
       "forbidden": ["multi-step governance ceremony"]
     },
     {
       "id": "D2-read-only",
       "kind": "distractor",
-      "prompt": "Read this file and summarize the title.",
-      "expected": ["answer from the file"],
+      "prompt": "Read this file excerpt and summarize the title:\n\n# Tilly Engineer Skills Docs\n\nThis documentation layer explains the method behind the source package.",
+      "expected": [],
+      "expected_any": [
+        ["Tilly Engineer Skills Docs"]
+      ],
       "forbidden": ["implementation plan"]
     }
   ]

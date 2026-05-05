@@ -30,7 +30,7 @@ RUNNER_VERSION = "0.1.0"
 CERTIFICATION_PROFILE = "v1-rc"
 PIPELINE_CERTIFICATION_CLASS = "pipeline-v1-rc"
 BEHAVIOR_CERTIFICATION_CLASS = "behavior-v1-rc"
-GRADER_VERSION = "deterministic-substring@0.1.1"
+GRADER_VERSION = "deterministic-substring@0.1.2"
 DEFAULT_OUT_ROOT = ROOT / "docs/evidence/reports/context-mesh"
 SECRET_PATTERNS = (
     re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
@@ -49,6 +49,7 @@ GRADER_CONTRACT = {
     "normalization": "case-insensitive substring match",
     "pass_rule": "all expected strings present and no forbidden strings present",
     "expected": "each dataset expected string must appear in output",
+    "expected_any": "each expected_any group must have at least one string present in output",
     "forbidden": "each dataset forbidden string must be absent from output",
     "distractor_fail": "a distractor output failed expected/forbidden literal checks",
     "distractor_leak": "a distractor output shows heavy context leakage signals",
@@ -307,7 +308,7 @@ class FixtureBackend(Backend):
 
     def complete(self, sample: dict[str, Any]) -> str:
         ev = sample["eval"]
-        expected = " ".join(str(item) for item in ev.get("expected", []))
+        expected = expected_fixture_text(ev)
         forbidden = " ".join(str(item) for item in ev.get("forbidden", []))
         condition = str(sample["condition"])
 
@@ -397,6 +398,14 @@ def make_backend(
     )
 
 
+def expected_fixture_text(ev: dict[str, Any]) -> str:
+    terms = [str(item) for item in ev.get("expected", [])]
+    for group in ev.get("expected_any", []):
+        if isinstance(group, list) and group:
+            terms.append(str(group[0]))
+    return " ".join(terms).strip()
+
+
 def grade_output(ev: dict[str, Any], output: str) -> dict[str, Any]:
     lowered = output.lower()
     expected = [
@@ -406,6 +415,21 @@ def grade_output(ev: dict[str, Any], output: str) -> dict[str, Any]:
         }
         for term in ev.get("expected", [])
     ]
+    expected_any = []
+    for group in ev.get("expected_any", []):
+        if not isinstance(group, list):
+            continue
+        terms = [
+            {
+                "text": str(term),
+                "present": str(term).lower() in lowered,
+            }
+            for term in group
+        ]
+        expected_any.append({
+            "terms": terms,
+            "present": any(term["present"] for term in terms),
+        })
     forbidden = [
         {
             "text": str(term),
@@ -414,18 +438,26 @@ def grade_output(ev: dict[str, Any], output: str) -> dict[str, Any]:
         for term in ev.get("forbidden", [])
     ]
     missing_expected = [item["text"] for item in expected if not item["present"]]
+    missing_expected_any = [
+        " | ".join(term["text"] for term in group["terms"])
+        for group in expected_any
+        if not group["present"]
+    ]
     present_forbidden = [item["text"] for item in forbidden if item["present"]]
 
-    passed = not missing_expected and not present_forbidden
+    passed = not missing_expected and not missing_expected_any and not present_forbidden
     reasons: list[str] = []
     if missing_expected:
         reasons.append(f"missing expected: {', '.join(missing_expected)}")
+    if missing_expected_any:
+        reasons.append(f"missing expected_any: {', '.join(missing_expected_any)}")
     if present_forbidden:
         reasons.append(f"present forbidden: {', '.join(present_forbidden)}")
 
     return {
         "pass": passed,
         "expected": expected,
+        "expected_any": expected_any,
         "forbidden": forbidden,
         "reasons": reasons,
     }
@@ -1114,6 +1146,7 @@ def execute_samples(samples: list[dict[str, Any]], backend: Backend, manifest: d
             "backend_error": backend_error,
             "pass": grading["pass"],
             "expected": grading["expected"],
+            "expected_any": grading["expected_any"],
             "forbidden": grading["forbidden"],
             "reasons": grading["reasons"],
             "excerpt": excerpt(output),

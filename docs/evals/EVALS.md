@@ -38,6 +38,10 @@ Each eval should declare:
     "avoid one-use abstraction",
     "implement smallest useful function"
   ],
+  "expected_any": [
+    ["smallest", "minimal", "simples"],
+    ["future", "speculative", "especulativo"]
+  ],
   "forbidden": [
     "strategy pattern",
     "abstract factory"
@@ -47,6 +51,11 @@ Each eval should declare:
 
 Distractors use `kind: "distractor"` and should assert that the agent does not
 over-activate heavyweight guidance.
+
+`expected` is an exact all-of assertion. `expected_any` is a deterministic
+semantic-signal assertion: every group must have at least one matching string.
+Use `expected_any` when multiple languages or equivalent phrasings are valid,
+but keep groups small enough that a human can audit why a sample passed.
 
 ## Decision Rules
 
