@@ -12,6 +12,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import shutil
 from typing import Any
 
 from context_mesh_plan import (
@@ -225,7 +226,7 @@ def build_samples(data: dict[str, Any]) -> list[dict[str, Any]]:
 class Backend:
     name = "backend"
 
-    def __init__(self, model: str | None = None) -> None:
+    def __init__(self, model: str | None = None, **_: Any) -> None:
         self.model = model or f"{self.name}-v0"
 
     def complete(self, sample: dict[str, Any]) -> str:
@@ -263,15 +264,75 @@ class FixtureBackend(Backend):
         return f"Fixture unaffected response: {expected}."
 
 
-def make_backend(name: str, model: str | None) -> Backend:
+class ClaudeCliBackend(Backend):
+    name = "claude-cli"
+
+    def __init__(
+        self,
+        model: str | None = None,
+        claude_bin: str | None = None,
+        max_budget_usd: str | None = None,
+        timeout_seconds: int = 180,
+    ) -> None:
+        super().__init__(model=model or "sonnet")
+        self.claude_bin = claude_bin or "claude"
+        self.max_budget_usd = max_budget_usd
+        self.timeout_seconds = timeout_seconds
+
+    def complete(self, sample: dict[str, Any]) -> str:
+        if shutil.which(self.claude_bin) is None:
+            raise RuntimeError(f"claude CLI not found: {self.claude_bin}")
+
+        command = [
+            self.claude_bin,
+            "--print",
+            "--output-format",
+            "text",
+            "--no-session-persistence",
+            "--model",
+            self.model,
+            "--tools",
+            "",
+        ]
+        if self.max_budget_usd:
+            command.extend(["--max-budget-usd", self.max_budget_usd])
+        command.append(str(sample["prompt"]))
+
+        result = subprocess.run(
+            command,
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            timeout=self.timeout_seconds,
+            check=False,
+        )
+        if result.returncode != 0:
+            details = " ".join(part.strip() for part in (result.stdout, result.stderr) if part.strip())
+            raise RuntimeError(f"claude CLI failed for {sample['sample_id']}: {details}")
+        return result.stdout.strip()
+
+
+def make_backend(
+    name: str,
+    model: str | None,
+    claude_bin: str | None = None,
+    max_budget_usd: str | None = None,
+    timeout_seconds: int = 180,
+) -> Backend:
     backends: dict[str, type[Backend]] = {
+        "claude-cli": ClaudeCliBackend,
         "echo": EchoBackend,
         "fixture": FixtureBackend,
     }
     if name not in backends:
         choices = ", ".join(sorted(backends))
         raise ValueError(f"unknown backend {name!r}; choose one of: {choices}")
-    return backends[name](model=model)
+    return backends[name](
+        model=model,
+        claude_bin=claude_bin,
+        max_budget_usd=max_budget_usd,
+        timeout_seconds=timeout_seconds,
+    )
 
 
 def grade_output(ev: dict[str, Any], output: str) -> dict[str, Any]:
@@ -367,6 +428,7 @@ def certification_metrics(records: list[dict[str, Any]], manifest: dict[str, Any
     failures = [record for record in records if not record["pass"]]
     distractors = [record for record in records if record["kind"] == "distractor"]
     distractor_leaks = [record for record in distractors if not record["pass"]]
+    backend_errors = [record for record in records if record.get("backend_error")]
     full_rate = condition_pass_rate(records, "full")
     none_rate = condition_pass_rate(records, "none")
 
@@ -382,6 +444,7 @@ def certification_metrics(records: list[dict[str, Any]], manifest: dict[str, Any
         "dataset_sha_present": bool(manifest.get("dataset_sha")),
         "git_head_present": bool(manifest.get("git_head")) and manifest.get("git_head") != "unknown",
         "backend_declared": bool(manifest.get("backend")),
+        "backend_error_count": len(backend_errors),
         "grader_version_declared": bool(manifest.get("grader_version")),
         "grader_sha_present": bool(manifest.get("grader_sha")),
         "evidence_limits_declared": bool(EVIDENCE_LIMITS),
@@ -414,6 +477,8 @@ def certification_decision(metrics: dict[str, Any]) -> dict[str, Any]:
         no_go.append("distractor leak confirmed")
     if not metrics["all_failures_have_excerpt"]:
         no_go.append("at least one failure lacks an audit excerpt")
+    if metrics["backend_error_count"]:
+        no_go.append("backend errors occurred during execution")
     for key in (
         "dataset_sha_present",
         "git_head_present",
@@ -730,7 +795,13 @@ def run(args: argparse.Namespace) -> int:
 
     digest = dataset_sha(args.dataset)
     run_id = args.run_id or build_run_id(args.backend, digest)
-    backend = make_backend(args.backend, args.model)
+    backend = make_backend(
+        args.backend,
+        args.model,
+        claude_bin=args.claude_bin,
+        max_budget_usd=args.max_budget_usd,
+        timeout_seconds=args.timeout_seconds,
+    )
     created_at = utc_now()
     head = git_head()
     grader = grader_manifest()
@@ -753,7 +824,12 @@ def run(args: argparse.Namespace) -> int:
 
     records: list[dict[str, Any]] = []
     for sample in samples:
-        output = redact_secrets(backend.complete(sample))
+        backend_error = ""
+        try:
+            output = redact_secrets(backend.complete(sample))
+        except Exception as exc:
+            backend_error = redact_secrets(str(exc))
+            output = f"BACKEND_ERROR: {backend_error}"
         grading = grade_output(sample["eval"], output)
         ev = sample["eval"]
         records.append({
@@ -777,6 +853,7 @@ def run(args: argparse.Namespace) -> int:
             "output_sha": sha256_text(output),
             "prompt": sample["prompt"],
             "output": output,
+            "backend_error": backend_error,
             "pass": grading["pass"],
             "expected": grading["expected"],
             "forbidden": grading["forbidden"],
@@ -817,8 +894,11 @@ def run(args: argparse.Namespace) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=Path, default=DATASET)
-    parser.add_argument("--backend", default="fixture", choices=("fixture", "echo"))
+    parser.add_argument("--backend", default="fixture", choices=("fixture", "echo", "claude-cli"))
     parser.add_argument("--model")
+    parser.add_argument("--claude-bin", default="claude")
+    parser.add_argument("--max-budget-usd")
+    parser.add_argument("--timeout-seconds", type=int, default=180)
     parser.add_argument("--run-id")
     parser.add_argument("--out-root", type=Path, default=DEFAULT_OUT_ROOT)
     parser.add_argument("--dry-run", action="store_true")

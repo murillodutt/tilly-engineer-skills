@@ -172,9 +172,9 @@ summary, or TDS report as the canonical package record.
 
 `scripts/context_mesh_run.py` is the first evidence runner. It is intentionally
 small: it reuses the same dataset planning logic as
-`scripts/context_mesh_plan.py`, supports only non-paid `fixture` and `echo`
-backends, applies deterministic substring grading, and writes one auditable
-run directory.
+`scripts/context_mesh_plan.py`, supports non-paid `fixture` and `echo`
+backends plus an isolated `claude-cli` backend, applies deterministic substring
+grading, and writes one auditable run directory.
 
 Default evidence shape:
 
@@ -202,6 +202,16 @@ Use the runner for traceability first:
 python3 scripts/context_mesh_run.py --dry-run
 python3 scripts/context_mesh_run.py --backend fixture
 ```
+
+Use the live Claude backend only after `pipeline-v1-rc` evidence is retained:
+
+```bash
+python3 scripts/context_mesh_run.py --backend claude-cli --model sonnet --max-budget-usd 0.25
+```
+
+The `claude-cli` backend runs through the same backend adapter boundary as
+fixture and echo. It must not write reports, grade outputs, mutate TDS, or
+decide certification outside the shared runner path.
 
 Do not add paid or external backends to `commit:check`. The commit gate should
 continue to run `benchmark:plan`, while measured runs remain explicit evidence
