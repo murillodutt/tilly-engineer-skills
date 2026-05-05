@@ -1,0 +1,306 @@
+{
+  "ablation_losses": {
+    "Goal-Driven Execution": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 0,
+      "full_passes": 0,
+      "loss": 0
+    },
+    "Simplicity First": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 1,
+      "full_passes": 0,
+      "loss": -1
+    },
+    "Surgical Changes": {
+      "decision": "adversarial_follow_up_required",
+      "drop_passes": 0,
+      "full_passes": 1,
+      "loss": 1
+    },
+    "Think Before Coding": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 0,
+      "full_passes": 0,
+      "loss": 0
+    }
+  },
+  "backend": "claude-cli",
+  "by_condition": {
+    "distractor": {
+      "pass_rate": 1.0,
+      "passed": 2,
+      "total": 2
+    },
+    "drop:Goal-Driven Execution": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 4
+    },
+    "drop:Simplicity First": {
+      "pass_rate": 1.0,
+      "passed": 4,
+      "total": 4
+    },
+    "drop:Surgical Changes": {
+      "pass_rate": 0.75,
+      "passed": 3,
+      "total": 4
+    },
+    "drop:Think Before Coding": {
+      "pass_rate": 0.5,
+      "passed": 2,
+      "total": 4
+    },
+    "full": {
+      "pass_rate": 0.25,
+      "passed": 1,
+      "total": 4
+    },
+    "none": {
+      "pass_rate": 0.5,
+      "passed": 2,
+      "total": 4
+    }
+  },
+  "by_gate": {
+    "Goal-Driven Execution": {
+      "pass_rate": 0.5,
+      "passed": 3,
+      "total": 6
+    },
+    "Simplicity First": {
+      "pass_rate": 0.5,
+      "passed": 3,
+      "total": 6
+    },
+    "Surgical Changes": {
+      "pass_rate": 0.5,
+      "passed": 3,
+      "total": 6
+    },
+    "Think Before Coding": {
+      "pass_rate": 0.5,
+      "passed": 3,
+      "total": 6
+    },
+    "distractor": {
+      "pass_rate": 1.0,
+      "passed": 2,
+      "total": 2
+    }
+  },
+  "certification": {
+    "class": "behavior-v1-rc",
+    "no_go": [
+      "full condition did not outperform none",
+      "distractor leak confirmed"
+    ],
+    "profile": "v1-rc",
+    "status": "NO-GO",
+    "thresholds": {
+      "all_failures_have_excerpt": "must be true",
+      "backend_declared": "must be true",
+      "dataset_sha_present": "must be true",
+      "distractor_fail_rate": "reported separately from confirmed leak",
+      "distractor_leak_rate": "must equal 0",
+      "duplicate_sample_count": "must equal 0",
+      "evidence_limits_declared": "must be true",
+      "git_head_present": "must be true",
+      "grader_sha_present": "must be true",
+      "grader_version_declared": "must be true",
+      "plan_run_parity": "must equal 1.0",
+      "raw_evidence_coverage": "must equal 1.0",
+      "trigger_pass_rate_full": "must be greater than trigger_pass_rate_none",
+      "unique_sample_coverage": "must equal 1.0"
+    }
+  },
+  "certification_class": "behavior-v1-rc",
+  "certification_profile": "v1-rc",
+  "dataset_sha": "edb7a0e8312d5f5da1dace6e065d55a05c6311d24d4784a6fe378a34b966f5fa",
+  "evidence_limits": [
+    "fixture and echo backends prove pipeline behavior, not live model quality",
+    "claude-cli backend uses Claude Code without --bare, so default Claude Code context may influence outputs beyond the runner prompt",
+    "deterministic substring grading is intentionally strict and wording-sensitive",
+    "v1-rc certification requires comparing full, none, and drop conditions from the same dataset hash",
+    "loss=1 ablations require adversarial follow-up before making strong rent claims"
+  ],
+  "executed_calls": 26,
+  "failed": 12,
+  "failures": [
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Pedido vago \u2014 \"export user data\" n\u00e3o especifica: | Dimens\u00e3o | Ambiguidade | |---|---| | Formato | JSON? CSV? ZIP? | | Escopo | Qual modelo/tabela? Tudo ou subconjunto? | | Trigger | Endpoint HTTP? CLI? UI button? | | Auth | S\u00f3 o pr\u00f3prio ...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | undefined | n\u00e3o definido | mais contexto, before | antes de | n\u00e3o implementar | sem essas respostas"
+      ],
+      "sample_id": "0001-full-E1-assumptions-export"
+    },
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "**Decis\u00e3o:** rejeitar a flexibilidade prematura. O pedido tem duas partes distintas: 1. Calcular desconto percentual \u2014 requisito atual, concreto. 2. \"Flex\u00edvel para tipos futuros\" \u2014 especula\u00e7\u00e3o sem caso de uso nomeado. Aplicando **Simplic...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "present forbidden: DiscountStrategy"
+      ],
+      "sample_id": "0002-full-E2-simplicity-discount"
+    },
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "**Decis\u00e3o:** Antes de agir, preciso nomear o que est\u00e1 faltando. --- **Fatos conhecidos:** nenhum. A sess\u00e3o est\u00e1 limpa \u2014 nenhum arquivo mencionado, nenhum stack trace, nenhum nome de teste, nenhum output de falha. **O que seria necess\u00e1rio...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: reproducer | reproduzir | oracle | or\u00e1culo | falsific\u00e1vel | falsifiable | teste que falha"
+      ],
+      "sample_id": "0004-full-E4-verification-quick-patch"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Decis\u00e3o: fun\u00e7\u00e3o simples com par\u00e2metro de estrat\u00e9gia \u2014 flexibilidade via composi\u00e7\u00e3o, n\u00e3o heran\u00e7a prematura. ```typescript type DiscountStrategy = (price: number, value: number) => number; const discountStrategies: Record<string, DiscountS...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: future | futuro | speculative | especulativo | premature | prematuro | sem requisito concreto",
+        "present forbidden: DiscountStrategy"
+      ],
+      "sample_id": "0006-none-E2-simplicity-discount"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Sem evid\u00eancia do parser ou dos testes, n\u00e3o tenho como localizar o flake nem aplicar um patch correto. Preciso de pelo menos um destes: | Item | Exemplo | |------|---------| | Arquivo do parser | `src/parser.ts:142` | | Teste que falha | ...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: before | antes | antes de agir | antes de qualquer patch | antes de fechar"
+      ],
+      "sample_id": "0008-none-E4-verification-quick-patch"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "**Decis\u00e3o:** recusar scaffolding prematuro \u2014 sem caso real definido. \"Exportar dados do usu\u00e1rio\" n\u00e3o \u00e9 um requisito, \u00e9 uma categoria. Antes de qualquer implementa\u00e7\u00e3o preciso de: | Pergunta | Por qu\u00ea importa | |---|---| | Quais dados? | D...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | undefined | n\u00e3o definido | mais contexto"
+      ],
+      "sample_id": "0009-drop-think-before-coding-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "Splitting the request per the surgical-changes constraint: **Fix (in scope):** empty-email validator crash \u2014 the crash path only. **Cleanup (deferred):** \"nearby messy code\" \u2014 not fixing until the crash is closed and cleanup is explicitl...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: request-traceable | rastreabilidade | caminho | arquivo | localizar"
+      ],
+      "sample_id": "0011-drop-think-before-coding-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "**Facts:** No filesystem access in this eval \u2014 treating as a design/behavioral decision prompt. **Assumption:** \"Empty-email validator crash\" = validator throws/crashes on `\"\"` or `null`/`undefined` instead of returning a validation erro...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: request-traceable | rastreabilidade | caminho | arquivo | localizar, separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar | n\u00e3o fa\u00e7o refactor | refactor especulativo | limpo apenas | apenas o que toco | escopo aberto | limpeza | defer"
+      ],
+      "sample_id": "0019-drop-surgical-changes-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Requisi\u00e7\u00e3o muito vaga para agir sem clareza. Aplicando \"Think Before Coding\": **Fatos ausentes que bloqueiam implementa\u00e7\u00e3o:** | Item | Estado | |------|--------| | Formato de exporta\u00e7\u00e3o | Desconhecido (CSV? JSON? PDF?) | | Escopo de \"dad...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | undefined | n\u00e3o definido | mais contexto"
+      ],
+      "sample_id": "0021-drop-goal-driven-execution-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "**Decis\u00e3o:** rejeitar a segunda parte do pedido. O requisito concreto \u00e9: fun\u00e7\u00e3o que calcula desconto percentual. A parte \"flex\u00edvel para tipos futuros\" \u00e9 scaffolding prematuro \u2014 nenhum caso real existe ainda. Implementa\u00e7\u00e3o m\u00ednima: ```pyth...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: smallest | simples | m\u00ednimo | minimal | apenas percentual | only percentage | current requirement | requisito atual | sem abstra\u00e7\u00e3o | apenas o que foi pedido"
+      ],
+      "sample_id": "0022-drop-goal-driven-execution-E2-simplicity-discount"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "**Decis\u00e3o:** Separar explicitamente o bugfix do cleanup \u2014 benchmark condition exige que eu torne isso vis\u00edvel. --- **Splitting the request:** | Parte | A\u00e7\u00e3o | |---|---| | Fix: empty-email validator crash | Implementar \u2014 \u00e9 o pedido real |...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: request-traceable | rastreabilidade | caminho | arquivo | localizar"
+      ],
+      "sample_id": "0023-drop-goal-driven-execution-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Preciso de mais contexto antes de agir. **Fatos:** sem acesso ao c\u00f3digo, n\u00e3o sei qual parser, qual flakiness, nem quais testes est\u00e3o lentos. **Ambiguidade bloqueante:** \"flaky parser\" pode ser: 1. race condition / estado compartilhado en...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: reproducer | reproduzir | oracle | or\u00e1culo | falsific\u00e1vel | falsifiable | teste que falha"
+      ],
+      "sample_id": "0024-drop-goal-driven-execution-E4-verification-quick-patch"
+    }
+  ],
+  "git_head": "8c1834670eaa4dad9eac603da55dc1cf003e0640",
+  "grader_sha": "49bfcf6d41f42cfaef30180d34e910fb9129f70baee260d2d9c5f89916fa3a08",
+  "grader_version": "deterministic-substring@0.1.2",
+  "metrics": {
+    "all_failures_have_excerpt": true,
+    "backend_declared": true,
+    "backend_error_count": 0,
+    "behavioral_lift": -0.25,
+    "certification_class": "behavior-v1-rc",
+    "dataset_sha_present": true,
+    "distractor_fail_rate": 0.0,
+    "distractor_leak_rate": 0.5,
+    "duplicate_sample_count": 0,
+    "evidence_limits_declared": true,
+    "git_head_present": true,
+    "grader_sha_present": true,
+    "grader_version_declared": true,
+    "plan_run_parity": 1.0,
+    "raw_evidence_coverage": 1.0,
+    "trigger_pass_rate_full": 0.25,
+    "trigger_pass_rate_none": 0.5,
+    "unique_sample_coverage": 1.0
+  },
+  "model": "sonnet",
+  "pass_rate": 0.5385,
+  "passed": 14,
+  "planned_calls": 26,
+  "run_id": "behavior-v1-rc-claude-2026-05-05-convergence-02",
+  "runner_version": "0.1.0"
+}
