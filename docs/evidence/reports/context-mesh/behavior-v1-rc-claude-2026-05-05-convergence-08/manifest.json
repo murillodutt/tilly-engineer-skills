@@ -1,0 +1,46 @@
+{
+  "backend": "claude-cli",
+  "certification_class": "behavior-v1-rc",
+  "certification_profile": "v1-rc",
+  "created_at": "2026-05-05T18:41:07Z",
+  "dataset": "/Users/murillo/Dev/tilly-engineer-skills/benchmarks/context-mesh/eval-dataset.json",
+  "dataset_sha": "c47a7b4be0604350c688f48d8088e944dc4b929804f2d6fe094626f5c902e5c6",
+  "git_head": "bc1f1d26bc395f518a476cac1dc0ac41ef3204de",
+  "grader_sha": "8bd4929d30f4b332699f9c29a7414d8877633156ec484ae4a668a1fb28d35318",
+  "grader_version": "deterministic-substring@0.1.6",
+  "merge_contract_version": "context-mesh-merge@0.1.0",
+  "merge_sources": [
+    {
+      "raw_sha": "ec4df93ef525c85bf75824c7fd9fcb61182448359e1434891a529cffed113106",
+      "run_id": "behavior-claude-convergence-08-shard-00",
+      "shard_count": 4,
+      "shard_id": "shard-00-of-04",
+      "shard_index": 0
+    },
+    {
+      "raw_sha": "29700b887fcb7e7d9ab77924494dd4e7443c4c4c71db2352bd43e1f900902aa1",
+      "run_id": "behavior-claude-convergence-08-shard-01",
+      "shard_count": 4,
+      "shard_id": "shard-01-of-04",
+      "shard_index": 1
+    },
+    {
+      "raw_sha": "c56a5ac23755baac56583c80e750c38a6508de9f1540c980709c5552b364d1fa",
+      "run_id": "behavior-claude-convergence-08-shard-02",
+      "shard_count": 4,
+      "shard_id": "shard-02-of-04",
+      "shard_index": 2
+    },
+    {
+      "raw_sha": "a69448c87de168dc60691c8dd12053e5fe928e559807cf01d13f40ad47d1666d",
+      "run_id": "behavior-claude-convergence-08-shard-03",
+      "shard_count": 4,
+      "shard_id": "shard-03-of-04",
+      "shard_index": 3
+    }
+  ],
+  "model": "sonnet",
+  "planned_calls": 44,
+  "run_id": "behavior-v1-rc-claude-2026-05-05-convergence-08",
+  "runner_version": "0.1.5"
+}

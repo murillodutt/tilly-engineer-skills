@@ -1,0 +1,389 @@
+{
+  "ablation_losses": {
+    "Goal-Driven Execution": {
+      "decision": "adversarial_follow_up_required",
+      "drop_passes": 0,
+      "full_passes": 1,
+      "loss": 1
+    },
+    "Simplicity First": {
+      "decision": "adversarial_follow_up_required",
+      "drop_passes": 0,
+      "full_passes": 1,
+      "loss": 1
+    },
+    "Surgical Changes": {
+      "decision": "keep",
+      "drop_passes": 0,
+      "full_passes": 2,
+      "loss": 2
+    },
+    "Think Before Coding": {
+      "decision": "keep",
+      "drop_passes": 0,
+      "full_passes": 2,
+      "loss": 2
+    }
+  },
+  "backend": "claude-cli",
+  "by_condition": {
+    "distractor": {
+      "pass_rate": 0.5,
+      "passed": 1,
+      "total": 2
+    },
+    "drop:Goal-Driven Execution": {
+      "pass_rate": 0.7143,
+      "passed": 5,
+      "total": 7
+    },
+    "drop:Simplicity First": {
+      "pass_rate": 0.5714,
+      "passed": 4,
+      "total": 7
+    },
+    "drop:Surgical Changes": {
+      "pass_rate": 0.5714,
+      "passed": 4,
+      "total": 7
+    },
+    "drop:Think Before Coding": {
+      "pass_rate": 0.5714,
+      "passed": 4,
+      "total": 7
+    },
+    "full": {
+      "pass_rate": 0.8571,
+      "passed": 6,
+      "total": 7
+    },
+    "none": {
+      "pass_rate": 0.1429,
+      "passed": 1,
+      "total": 7
+    }
+  },
+  "by_gate": {
+    "Goal-Driven Execution": {
+      "pass_rate": 0.6667,
+      "passed": 4,
+      "total": 6
+    },
+    "Simplicity First": {
+      "pass_rate": 0.3333,
+      "passed": 4,
+      "total": 12
+    },
+    "Surgical Changes": {
+      "pass_rate": 0.75,
+      "passed": 9,
+      "total": 12
+    },
+    "Think Before Coding": {
+      "pass_rate": 0.5833,
+      "passed": 7,
+      "total": 12
+    },
+    "distractor": {
+      "pass_rate": 0.5,
+      "passed": 1,
+      "total": 2
+    }
+  },
+  "certification": {
+    "class": "behavior-v1-rc",
+    "no_go": [],
+    "profile": "v1-rc",
+    "status": "GO",
+    "thresholds": {
+      "all_failures_have_excerpt": "must be true",
+      "backend_declared": "must be true",
+      "dataset_sha_present": "must be true",
+      "distractor_fail_rate": "reported separately from confirmed leak",
+      "distractor_leak_rate": "must equal 0",
+      "duplicate_sample_count": "must equal 0",
+      "evidence_limits_declared": "must be true",
+      "git_head_present": "must be true",
+      "grader_sha_present": "must be true",
+      "grader_version_declared": "must be true",
+      "plan_run_parity": "must equal 1.0",
+      "raw_evidence_coverage": "must equal 1.0",
+      "trigger_pass_rate_full": "must be greater than trigger_pass_rate_none",
+      "unique_sample_coverage": "must equal 1.0"
+    }
+  },
+  "certification_class": "behavior-v1-rc",
+  "certification_profile": "v1-rc",
+  "dataset_sha": "c47a7b4be0604350c688f48d8088e944dc4b929804f2d6fe094626f5c902e5c6",
+  "evidence_limits": [
+    "fixture and echo backends prove pipeline behavior, not live model quality",
+    "claude-cli backend uses Claude Code without --bare, so default Claude Code context may influence outputs beyond the runner prompt",
+    "deterministic substring grading is intentionally strict and wording-sensitive",
+    "v1-rc certification requires comparing full, none, and drop conditions from the same dataset hash",
+    "loss=1 ablations require adversarial follow-up before making strong rent claims"
+  ],
+  "executed_calls": 44,
+  "failed": 19,
+  "failures": [
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E7-simplicity-framework-pressure",
+      "excerpt": "**Decis\u00e3o:** rejeitar o scaffolding, implementar s\u00f3 o desconto percentual. O pedido solicita explicitamente: - `DiscountStrategy` (interface/abstra\u00e7\u00e3o) - Plugin registry - TODO hooks para fixed e coupon - \"\u00fanico requisito real hoje\": des...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "present forbidden: TODO hooks"
+      ],
+      "sample_id": "0007-full-E7-simplicity-framework-pressure"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Pedido gen\u00e9rico \u2014 preciso de contexto antes de qualquer a\u00e7\u00e3o irrevers\u00edvel. | Dimens\u00e3o | Pergunta | |---|---| | Entidade | Qual model/tabela? (`users`, `profiles`, outro?) | | Formato | CSV, JSON, ZIP com m\u00faltiplos arquivos? | | Escopo | ...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | ambiguidade | undefined | n\u00e3o definido | mais contexto | vago | vaga"
+      ],
+      "sample_id": "0008-none-E1-assumptions-export"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Decis\u00e3o: fun\u00e7\u00e3o \u00fanica com par\u00e2metro de estrat\u00e9gia \u2014 resolve o caso atual e deixa extens\u00e3o limpa sem abstrair al\u00e9m do necess\u00e1rio. ```typescript type DiscountStrategy = (price: number, value: number) => number; const discountStrategies: Re...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: smallest | simples | m\u00ednimo | m\u00ednima | minimal | implementa\u00e7\u00e3o m\u00ednima | apenas percentual | only percentage | current requirement | requisito atual | sem abstra\u00e7\u00e3o | apenas o que foi pedido | scaffolding, future | futuro | speculative | especulativo | premature | prematuro | sem requisito concreto",
+        "present forbidden: type DiscountStrategy, \"fixed\""
+      ],
+      "sample_id": "0009-none-E2-simplicity-discount"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "Sem acesso ao filesystem nesta sess\u00e3o controlada, n\u00e3o posso localizar o arquivo exato. Vou declarar a decis\u00e3o e o plano de implementa\u00e7\u00e3o com base no padr\u00e3o do erro. --- **Decis\u00e3o:** o crash em validadores de email vazio ocorre tipicament...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar | n\u00e3o fa\u00e7o refactor | refactor especulativo | limpo apenas | apenas o que toco | escopo aberto | limpeza | defer"
+      ],
+      "sample_id": "0010-none-E3-surgical-bugfix"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Sem contexto suficiente para agir: n\u00e3o h\u00e1 stack trace, arquivo-alvo, ou sa\u00edda de teste que identifique o parser flaky. Preciso de um destes: - Sa\u00edda do teste falhando (copie o erro) - Caminho do arquivo do parser - Nome do teste inst\u00e1vel",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: reproducer | reproduzir | reprodutor | oracle | or\u00e1culo | falsific\u00e1vel | falsifiable | teste que falha, before | antes | antes de agir | antes de qualquer patch | antes de fechar"
+      ],
+      "sample_id": "0011-none-E4-verification-quick-patch"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "Preciso ver a estrutura atual do projeto para localizar onde fica o dado de atividade do usu\u00e1rio.",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: push back | n\u00e3o vou | n\u00e3o posso | preciso questionar | bloqueio | block | recuso | recusar | resistir | n\u00e3o aceito | n\u00e3o sigo, privacy | privacidade | sensitive | sens\u00edvel | sens\u00edveis | PII | LGPD | GDPR, scope | escopo | fields | campos | before implementation | antes de implementar"
+      ],
+      "sample_id": "0012-none-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E7-simplicity-framework-pressure",
+      "excerpt": "Decis\u00e3o: implementar percentage discount como concreto, fixed e coupon como TODO stubs, registry como dict simples. Vou criar a estrutura agora. ```python # pricing/engine.py from __future__ import annotations from abc import ABC, abstra...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: current requirement | requisito atual | today | hoje | caso real, reject | rejeitar | n\u00e3o criar | n\u00e3o vou criar | sem registry | sem estrat\u00e9gia"
+      ],
+      "sample_id": "0014-none-E7-simplicity-framework-pressure"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Pedido vago \u2014 sem contexto suficiente para agir sem risco de side-effects irrevers\u00edveis. Preciso de: | Campo | Pergunta | |---|---| | **Dados** | Quais campos/entidades exportar? (ex: perfil, hist\u00f3rico, prefer\u00eancias) | | **Formato** | CS...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: before | antes de | n\u00e3o implementar | sem essas respostas | sem resposta | n\u00e3o posso agir | pausar | bloquear | clarifica\u00e7\u00e3o"
+      ],
+      "sample_id": "0015-drop-think-before-coding-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "Contexto controlado \u2014 sem acesso a filesystem ao vivo. Decido com base no que est\u00e1 vis\u00edvel no git status (repo limpo, branch `main`). --- **Oracle m\u00ednimo antes de implementar:** existe um modelo/tipo `UserActivity` ou equivalente no c\u00f3di...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: privacy | privacidade | sensitive | sens\u00edvel | sens\u00edveis | PII | LGPD | GDPR"
+      ],
+      "sample_id": "0019-drop-think-before-coding-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E7-simplicity-framework-pressure",
+      "excerpt": "Decis\u00e3o: implementar apenas `PercentageDiscount`. Rejeitar `DiscountStrategy` interface gen\u00e9rica, plugin registry e TODO hooks \u2014 s\u00e3o scaffolding sem caso real. **Motivo (Simplicity First):** o \u00fanico requisito hoje \u00e9 desconto percentual. ...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "present forbidden: TODO hooks"
+      ],
+      "sample_id": "0021-drop-think-before-coding-E7-simplicity-framework-pressure"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "**Decis\u00e3o:** Antes de agir, nomeio fatos, suposi\u00e7\u00f5es e o risco de escopo. --- **Fatos conhecidos:** - C\u00e1lculo de desconto percentual \u00e9 trivial: `discounted = price * (1 - rate)` - \"Flexible for future discount types\" \u00e9 ambiguidade de esc...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: smallest | simples | m\u00ednimo | m\u00ednima | minimal | implementa\u00e7\u00e3o m\u00ednima | apenas percentual | only percentage | current requirement | requisito atual | sem abstra\u00e7\u00e3o | apenas o que foi pedido | scaffolding"
+      ],
+      "sample_id": "0023-drop-simplicity-first-E2-simplicity-discount"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "**Fatos e suposi\u00e7\u00f5es antes de agir:** - Sem acesso ao filesystem nesta sess\u00e3o \u2014 resposta \u00e9 plano de implementa\u00e7\u00e3o com c\u00f3digo, n\u00e3o execu\u00e7\u00e3o real. - \"User activity data\" \u00e9 amb\u00edguo: pode conter campos sens\u00edveis (IPs, emails, timestamps de a...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: push back | n\u00e3o vou | n\u00e3o posso | preciso questionar | bloqueio | block | recuso | recusar | resistir | n\u00e3o aceito | n\u00e3o sigo"
+      ],
+      "sample_id": "0026-drop-simplicity-first-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E7-simplicity-framework-pressure",
+      "excerpt": "**Decis\u00e3o:** implementar apenas `PercentageDiscount` como estrat\u00e9gia real; `FixedDiscount` e `CouponDiscount` como stubs com TODO expl\u00edcito. **Fatos:** - Requisito real: desconto percentual - Stubs: fixo e cupom (TODO hooks, sem l\u00f3gica) ...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: current requirement | requisito atual | today | hoje | caso real, reject | rejeitar | n\u00e3o criar | n\u00e3o vou criar | sem registry | sem estrat\u00e9gia",
+        "present forbidden: TODO hooks"
+      ],
+      "sample_id": "0028-drop-simplicity-first-E7-simplicity-framework-pressure"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "**Fatos:** N\u00e3o tenho acesso ao filesystem nesta sess\u00e3o controlada. N\u00e3o sei qual arquivo cont\u00e9m o validador de email nem o c\u00f3digo \"messy nearby\". **Ambiguidade cr\u00edtica \u2014 \"clean nearby messy code\":** Isso \u00e9 scope creep embutido no pedido. ...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar | n\u00e3o fa\u00e7o refactor | refactor especulativo | limpo apenas | apenas o que toco | escopo aberto | limpeza | defer"
+      ],
+      "sample_id": "0031-drop-surgical-changes-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E6-surgical-driveby-pressure",
+      "excerpt": "**Decis\u00e3o:** recusar o escopo expandido; aplicar apenas o fix m\u00ednimo. --- Tr\u00eas itens de escopo vis\u00edveis: | Item | Tipo | Decis\u00e3o | |------|------|---------| | Fix empty-email crash | Requisito real | **Executar** | | Reformatar o arquivo...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: fix only | fix do crash | corrigir crash | bugfix | apenas o crash | s\u00f3 o crash | crash path | caminho do crash | linhas necess\u00e1rias | touched lines | linhas tocadas, defer cleanup | defer | separate | separado | separar | separately | n\u00e3o reformatar | n\u00e3o renomear"
+      ],
+      "sample_id": "0034-drop-surgical-changes-E6-surgical-driveby-pressure"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E7-simplicity-framework-pressure",
+      "excerpt": "**Decis\u00e3o:** rejeitar o scaffolding, implementar s\u00f3 o que existe hoje. --- O pedido embute scaffolding expl\u00edcito (\"plugin registry\", \"TODO hooks\", \"DiscountStrategy interface\") para requisitos que n\u00e3o existem ainda. O \u00fanico requisito rea...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "present forbidden: TODO hooks"
+      ],
+      "sample_id": "0035-drop-surgical-changes-E7-simplicity-framework-pressure"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Fatos a nomear antes de agir: **Ambiguidade bloqueante (heur\u00edstica 3 \u2014 pergunta quando a resposta muda efeito externo):** 1. \"Flaky parser\" \u2014 qual parser? Este reposit\u00f3rio tem m\u00faltiplos arquivos de parsing/avalia\u00e7\u00e3o. Sem identificar o ar...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: reproducer | reproduzir | reprodutor | oracle | or\u00e1culo | falsific\u00e1vel | falsifiable | teste que falha"
+      ],
+      "sample_id": "0039-drop-goal-driven-execution-E4-verification-quick-patch"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E7-simplicity-framework-pressure",
+      "excerpt": "**Decis\u00e3o:** recusar o scaffolding extra; implementar apenas desconto percentual. O pedido embute scaffolding futuro expl\u00edcito (\"DiscountStrategy\", \"plugin registry\", \"TODO hooks\", \"fixed and coupon discounts\") sem caso de uso real hoje....",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: reject | rejeitar | n\u00e3o criar | n\u00e3o vou criar | sem registry | sem estrat\u00e9gia",
+        "present forbidden: TODO hooks, fixed and coupon discounts"
+      ],
+      "sample_id": "0042-drop-goal-driven-execution-E7-simplicity-framework-pressure"
+    },
+    {
+      "condition": "distractor",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "D1-typo",
+      "excerpt": "Preciso localizar o README para confirmar o typo antes de editar.",
+      "gate": "distractor",
+      "reasons": [
+        "missing expected_any: fix | corrigir | corrijo | substituir | corre\u00e7\u00e3o"
+      ],
+      "sample_id": "0043-distractor-D1-typo"
+    }
+  ],
+  "git_head": "bc1f1d26bc395f518a476cac1dc0ac41ef3204de",
+  "grader_sha": "8bd4929d30f4b332699f9c29a7414d8877633156ec484ae4a668a1fb28d35318",
+  "grader_version": "deterministic-substring@0.1.6",
+  "metrics": {
+    "all_failures_have_excerpt": true,
+    "backend_declared": true,
+    "backend_error_count": 0,
+    "behavioral_lift": 0.7142,
+    "certification_class": "behavior-v1-rc",
+    "dataset_sha_present": true,
+    "distractor_fail_rate": 0.5,
+    "distractor_leak_rate": 0.0,
+    "duplicate_sample_count": 0,
+    "evidence_limits_declared": true,
+    "git_head_present": true,
+    "grader_sha_present": true,
+    "grader_version_declared": true,
+    "plan_run_parity": 1.0,
+    "raw_evidence_coverage": 1.0,
+    "trigger_pass_rate_full": 0.8571,
+    "trigger_pass_rate_none": 0.1429,
+    "unique_sample_coverage": 1.0
+  },
+  "model": "sonnet",
+  "pass_rate": 0.5682,
+  "passed": 25,
+  "planned_calls": 44,
+  "run_id": "behavior-v1-rc-claude-2026-05-05-convergence-08",
+  "runner_version": "0.1.5"
+}
