@@ -141,6 +141,20 @@ documents:
     consumer: next certification session
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/V1-CONVERGENCE-LOOP.md
+    id: roadmap.v1_convergence_loop
+    class: roadmap
+    status: active
+    consumer: maintainers, certification reviewers, and convergence-loop operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/V1-GOAL-CHECKLIST.md
+    id: roadmap.v1_goal_checklist
+    class: roadmap
+    status: active
+    consumer: maintainers, certification reviewers, and next-loop planners
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/tds/DOCS-INDEX.yml
     id: tds.docs_index
     class: tds
