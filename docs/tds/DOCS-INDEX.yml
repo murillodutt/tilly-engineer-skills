@@ -351,3 +351,10 @@ documents:
     consumer: certification reviewers and Codex backend implementers
     source_of_truth: false
     evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/codex-smoke-2026-05-05-6806b58/REPORT.md
+    id: evidence.context_mesh.codex_smoke_2026_05_05_6806b58
+    class: evidence
+    status: active
+    consumer: benchmark reviewers
+    source_of_truth: false
+    evidence_level: L4

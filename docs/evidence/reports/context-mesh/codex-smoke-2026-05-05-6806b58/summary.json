@@ -1,0 +1,108 @@
+{
+  "ablation_losses": {
+    "Think Before Coding": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 0,
+      "full_passes": 0,
+      "loss": 0
+    }
+  },
+  "backend": "codex-cli",
+  "by_condition": {
+    "full": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 1
+    }
+  },
+  "by_gate": {
+    "Think Before Coding": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 1
+    }
+  },
+  "certification": {
+    "class": "behavior-v1-rc",
+    "no_go": [
+      "run diverged from plan",
+      "unique sample coverage is incomplete",
+      "raw evidence coverage is incomplete",
+      "full condition did not outperform none"
+    ],
+    "profile": "v1-rc",
+    "status": "NO-GO",
+    "thresholds": {
+      "all_failures_have_excerpt": "must be true",
+      "backend_declared": "must be true",
+      "dataset_sha_present": "must be true",
+      "distractor_fail_rate": "reported separately from confirmed leak",
+      "distractor_leak_rate": "must equal 0",
+      "duplicate_sample_count": "must equal 0",
+      "evidence_limits_declared": "must be true",
+      "git_head_present": "must be true",
+      "grader_sha_present": "must be true",
+      "grader_version_declared": "must be true",
+      "plan_run_parity": "must equal 1.0",
+      "raw_evidence_coverage": "must equal 1.0",
+      "trigger_pass_rate_full": "must be greater than trigger_pass_rate_none",
+      "unique_sample_coverage": "must equal 1.0"
+    }
+  },
+  "certification_class": "behavior-v1-rc",
+  "certification_profile": "v1-rc",
+  "dataset_sha": "c47a7b4be0604350c688f48d8088e944dc4b929804f2d6fe094626f5c902e5c6",
+  "evidence_limits": [
+    "fixture and echo backends prove pipeline behavior, not live model quality",
+    "claude-cli backend uses Claude Code without --bare, so default Claude Code context may influence outputs beyond the runner prompt",
+    "codex-cli backend uses Codex CLI with a temporary adapter workspace; Stage 1 smoke evidence is not behavior certification",
+    "deterministic substring grading is intentionally strict and wording-sensitive",
+    "v1-rc certification requires comparing full, none, and drop conditions from the same dataset hash",
+    "loss=1 ablations require adversarial follow-up before making strong rent claims"
+  ],
+  "executed_calls": 1,
+  "failed": 1,
+  "failures": [
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Before implementing, I\u2019d apply the repo\u2019s engineering overlay and make the decision explicit: this is non-trivial work, so I will not code yet until scope and oracle are concrete. Assumptions and required clarifications: 1. Export format...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | ambiguidade | undefined | n\u00e3o definido | mais contexto | vago | vaga"
+      ],
+      "sample_id": "0001-full-E1-assumptions-export"
+    }
+  ],
+  "git_head": "6806b580ff94bbbd39a2750945dc49b015979829",
+  "grader_sha": "8bd4929d30f4b332699f9c29a7414d8877633156ec484ae4a668a1fb28d35318",
+  "grader_version": "deterministic-substring@0.1.6",
+  "metrics": {
+    "all_failures_have_excerpt": true,
+    "backend_declared": true,
+    "backend_error_count": 0,
+    "behavioral_lift": 0.0,
+    "certification_class": "behavior-v1-rc",
+    "dataset_sha_present": true,
+    "distractor_fail_rate": 0.0,
+    "distractor_leak_rate": 0.0,
+    "duplicate_sample_count": 0,
+    "evidence_limits_declared": true,
+    "git_head_present": true,
+    "grader_sha_present": true,
+    "grader_version_declared": true,
+    "plan_run_parity": 0.0227,
+    "raw_evidence_coverage": 0.0227,
+    "trigger_pass_rate_full": 0.0,
+    "trigger_pass_rate_none": 0.0,
+    "unique_sample_coverage": 0.0227
+  },
+  "model": "gpt-5.3-codex",
+  "pass_rate": 0.0,
+  "passed": 0,
+  "planned_calls": 44,
+  "run_id": "codex-smoke-2026-05-05-6806b58",
+  "runner_version": "0.1.6"
+}
