@@ -281,3 +281,10 @@ documents:
     consumer: benchmark reviewers
     source_of_truth: false
     evidence_level: L4
+  - path: docs/evidence/reports/context-mesh/behavior-v1-rc-claude-2026-05-05-convergence-07/REPORT.md
+    id: evidence.context_mesh.behavior_v1_rc_claude_2026_05_05_convergence_07
+    class: evidence
+    status: active
+    consumer: benchmark reviewers
+    source_of_truth: false
+    evidence_level: L4
