@@ -1,0 +1,18 @@
+{
+  "certification_classes": [
+    "pipeline-v1-rc",
+    "behavior-v1-rc"
+  ],
+  "certification_profile": "v1-rc",
+  "contract": {
+    "expected": "each dataset expected string must appear in output",
+    "forbidden": "each dataset forbidden string must be absent from output",
+    "normalization": "case-insensitive substring match",
+    "pass_rule": "all expected strings present and no forbidden strings present",
+    "version": "deterministic-substring@0.1.0"
+  },
+  "grader_sha": "bb5da67a7ec5b1d2f646705464bfc60bdd7b7e32e068ec213bfb8a28130bcf6e",
+  "grader_version": "deterministic-substring@0.1.0",
+  "runner_source_sha": "1abe8a47680b0c1679b095d3a10b5f396fd036e71e0db6c1edb315c28b1cf5f1",
+  "runner_version": "0.1.0"
+}
