@@ -27,7 +27,7 @@ from context_mesh_plan import (
 )
 
 
-RUNNER_VERSION = "0.1.6"
+RUNNER_VERSION = "0.1.7"
 CERTIFICATION_PROFILE = "v1-rc"
 PIPELINE_CERTIFICATION_CLASS = "pipeline-v1-rc"
 BEHAVIOR_CERTIFICATION_CLASS = "behavior-v1-rc"
@@ -129,7 +129,7 @@ CODEX_MODEL_ALLOWLIST = (
     "gpt-5.4-mini",
     "gpt-5.5",
 )
-CODEX_ADAPTER_PROMPT_CONTRACT = "codex-adapter-prompt@0.1.0"
+CODEX_ADAPTER_PROMPT_CONTRACT = "codex-adapter-prompt@0.1.1"
 
 
 
@@ -257,15 +257,28 @@ def build_prompt(condition: str, ev: dict[str, Any], sections: list[str]) -> str
 
 
 def build_adapter_user_prompt(ev: dict[str, Any]) -> str:
+    if ev.get("kind") == "distractor":
+        constraints = [
+            "- Treat this as a controlled prompt, not a live filesystem session.",
+            "- Use project instructions only when they are necessary to answer the request.",
+            "- Answer the user's task directly.",
+            "- Preserve the user's essential task words when they are natural, such as fix, typo, README, title, or summarize.",
+            "- Do not name rules, gates, governance, benchmarks, evals, or project discipline.",
+            "- Do not add assumptions, oracle, verification, or planning ceremony for trivial or read-only tasks.",
+        ]
+    else:
+        constraints = [
+            "- Treat this as a controlled prompt, not a live filesystem session.",
+            "- Use any project instructions available in the current workspace.",
+            "- Do not mention benchmark machinery, matrix conditions, or hidden labels.",
+            "- Make the behavioral decision caused by available project context visible in the response.",
+        ]
     return "\n".join(
         [
             "You are a coding agent responding to a user request.",
             "",
             "Response constraints:",
-            "- Treat this as a controlled prompt, not a live filesystem session.",
-            "- Use any project instructions available in the current workspace.",
-            "- Do not mention benchmark machinery, matrix conditions, or hidden labels.",
-            "- Make the behavioral decision caused by available project context visible in the response.",
+            *constraints,
             "",
             "User request:",
             str(ev["prompt"]),

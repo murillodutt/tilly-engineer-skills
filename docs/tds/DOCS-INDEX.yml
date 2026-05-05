@@ -379,3 +379,10 @@ documents:
     consumer: certification reviewers, benchmark maintainers, and Codex backend operators
     source_of_truth: false
     evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/codex-distractor-prompt-repair-smoke-2026-05-05/REPORT.md
+    id: evidence.context_mesh.codex_distractor_prompt_repair_smoke_2026_05_05
+    class: evidence
+    status: active
+    consumer: certification reviewers, benchmark maintainers, and Codex backend operators
+    source_of_truth: false
+    evidence_level: L4
