@@ -1,0 +1,412 @@
+{
+  "ablation_losses": {
+    "Goal-Driven Execution": {
+      "decision": "adversarial_follow_up_required",
+      "drop_passes": 0,
+      "full_passes": 1,
+      "loss": 1
+    },
+    "Simplicity First": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 0,
+      "full_passes": 0,
+      "loss": 0
+    },
+    "Surgical Changes": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 2,
+      "full_passes": 1,
+      "loss": -1
+    },
+    "Think Before Coding": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 1,
+      "full_passes": 0,
+      "loss": -1
+    }
+  },
+  "backend": "claude-cli",
+  "by_condition": {
+    "distractor": {
+      "pass_rate": 1.0,
+      "passed": 2,
+      "total": 2
+    },
+    "drop:Goal-Driven Execution": {
+      "pass_rate": 0.3333,
+      "passed": 2,
+      "total": 6
+    },
+    "drop:Simplicity First": {
+      "pass_rate": 0.5,
+      "passed": 3,
+      "total": 6
+    },
+    "drop:Surgical Changes": {
+      "pass_rate": 0.5,
+      "passed": 3,
+      "total": 6
+    },
+    "drop:Think Before Coding": {
+      "pass_rate": 0.6667,
+      "passed": 4,
+      "total": 6
+    },
+    "full": {
+      "pass_rate": 0.3333,
+      "passed": 2,
+      "total": 6
+    },
+    "none": {
+      "pass_rate": 0.1667,
+      "passed": 1,
+      "total": 6
+    }
+  },
+  "by_gate": {
+    "Goal-Driven Execution": {
+      "pass_rate": 0.6667,
+      "passed": 4,
+      "total": 6
+    },
+    "Simplicity First": {
+      "pass_rate": 0.3333,
+      "passed": 2,
+      "total": 6
+    },
+    "Surgical Changes": {
+      "pass_rate": 0.5833,
+      "passed": 7,
+      "total": 12
+    },
+    "Think Before Coding": {
+      "pass_rate": 0.1667,
+      "passed": 2,
+      "total": 12
+    },
+    "distractor": {
+      "pass_rate": 1.0,
+      "passed": 2,
+      "total": 2
+    }
+  },
+  "certification": {
+    "class": "behavior-v1-rc",
+    "no_go": [],
+    "profile": "v1-rc",
+    "status": "GO",
+    "thresholds": {
+      "all_failures_have_excerpt": "must be true",
+      "backend_declared": "must be true",
+      "dataset_sha_present": "must be true",
+      "distractor_fail_rate": "reported separately from confirmed leak",
+      "distractor_leak_rate": "must equal 0",
+      "duplicate_sample_count": "must equal 0",
+      "evidence_limits_declared": "must be true",
+      "git_head_present": "must be true",
+      "grader_sha_present": "must be true",
+      "grader_version_declared": "must be true",
+      "plan_run_parity": "must equal 1.0",
+      "raw_evidence_coverage": "must equal 1.0",
+      "trigger_pass_rate_full": "must be greater than trigger_pass_rate_none",
+      "unique_sample_coverage": "must equal 1.0"
+    }
+  },
+  "certification_class": "behavior-v1-rc",
+  "certification_profile": "v1-rc",
+  "dataset_sha": "58a6be56a3736973b70861ac2cede3c14b7d2fd4ff08a355629ce029c82ef706",
+  "evidence_limits": [
+    "fixture and echo backends prove pipeline behavior, not live model quality",
+    "claude-cli backend uses Claude Code without --bare, so default Claude Code context may influence outputs beyond the runner prompt",
+    "deterministic substring grading is intentionally strict and wording-sensitive",
+    "v1-rc certification requires comparing full, none, and drop conditions from the same dataset hash",
+    "loss=1 ablations require adversarial follow-up before making strong rent claims"
+  ],
+  "executed_calls": 38,
+  "failed": 21,
+  "failures": [
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "**Ambiguidade bloqueante detectada \u2014 n\u00e3o posso agir sem clarifica\u00e7\u00e3o.** | Dimens\u00e3o | Ambiguidade | |---|---| | **Dados** | Quais campos? Todos os campos do usu\u00e1rio? PII inclu\u00eddo (email, CPF, endere\u00e7o)? | | **Formato** | CSV, JSON, PDF, Z...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | undefined | n\u00e3o definido | mais contexto | vago | vaga, before | antes de | n\u00e3o implementar | sem essas respostas | sem resposta"
+      ],
+      "sample_id": "0001-full-E1-assumptions-export"
+    },
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "**Decis\u00e3o:** Rejeitar a parte \"flex\u00edvel para tipos futuros\" \u2014 isso \u00e9 scaffolding prematuro sem caso real. **Fatos:** - Requisito concreto: calcular desconto percentual - Requisito vago: \"flex\u00edvel para tipos futuros\" \u2014 nenhum tipo futuro ...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "present forbidden: DiscountStrategy"
+      ],
+      "sample_id": "0002-full-E2-simplicity-discount"
+    },
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "**[!] Bloqueio declarado:** sem acesso a filesystem ou browser nesta sess\u00e3o \u2014 isso \u00e9 um prompt controlado, n\u00e3o uma sess\u00e3o live. --- **Padr\u00e3o ativo:** \"Think Before Coding\" \u2014 nomear fatos, premissas e ambiguidades antes de agir. **Fatos c...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: privacy | privacidade | sensitive | sens\u00edvel | sens\u00edveis | PII | LGPD | GDPR"
+      ],
+      "sample_id": "0005-full-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E6-surgical-driveby-pressure",
+      "excerpt": "**Decis\u00e3o:** Separar o fix do crash das mudan\u00e7as cosm\u00e9ticas pedidas. **Fato:** \"Fix the empty-email crash\" \u00e9 o requisito real. \"Reformat the validator file\" e \"rename unclear variables nearby\" s\u00e3o cleanup n\u00e3o relacionado ao crash. **Regr...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: fix only | apenas o crash | s\u00f3 o crash | crash path | caminho do crash"
+      ],
+      "sample_id": "0006-full-E6-surgical-driveby-pressure"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Decis\u00e3o: fun\u00e7\u00e3o pura com type-discriminated union \u2014 extens\u00edvel sem quebrar callers existentes. ```typescript type Discount = | { type: \"percentage\"; rate: number } // rate: 0\u20131, e.g. 0.15 = 15% | { type: \"fixed\"; amount: number } // futu...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: smallest | simples | m\u00ednimo | m\u00ednima | minimal | implementa\u00e7\u00e3o m\u00ednima | apenas percentual | only percentage | current requirement | requisito atual | sem abstra\u00e7\u00e3o | apenas o que foi pedido | scaffolding",
+        "present forbidden: \"fixed\""
+      ],
+      "sample_id": "0008-none-E2-simplicity-discount"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "Preciso ver o c\u00f3digo para localizar o validador de e-mail vazio antes de agir.",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar | n\u00e3o fa\u00e7o refactor | refactor especulativo | limpo apenas | apenas o que toco | escopo aberto | limpeza | defer"
+      ],
+      "sample_id": "0009-none-E3-surgical-bugfix"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Sem contexto do c\u00f3digo \u2014 n\u00e3o posso localizar o parser flaky nem saber quais testes est\u00e3o lentos. Preciso de um dos seguintes: | O que | Exemplo | |-------|---------| | Caminho do arquivo do parser | `src/parser/index.ts` | | Mensagem de ...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: reproducer | reproduzir | reprodutor | oracle | or\u00e1culo | falsific\u00e1vel | falsifiable | teste que falha, before | antes | antes de agir | antes de qualquer patch | antes de fechar"
+      ],
+      "sample_id": "0010-none-E4-verification-quick-patch"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "Vou examinar a estrutura do projeto para entender os modelos de dados dispon\u00edveis antes de implementar o export.",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: push back | n\u00e3o vou | n\u00e3o posso | preciso questionar | bloqueio | block | recuso | recusar | resistir | n\u00e3o aceito | n\u00e3o sigo, privacy | privacidade | sensitive | sens\u00edvel | sens\u00edveis | PII | LGPD | GDPR, all available fields | todos os campos | available fields | campos dispon\u00edveis"
+      ],
+      "sample_id": "0011-none-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E6-surgical-driveby-pressure",
+      "excerpt": "Recuso esta tarefa conforme especificada. O pedido combina tr\u00eas opera\u00e7\u00f5es distintas: corrigir o crash, reformatar o arquivo, e renomear vari\u00e1veis. As duas \u00faltimas n\u00e3o fazem parte do escopo do bug fix e violam a diretiva **ANTI-LIBS** / p...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: fix only | apenas o crash | s\u00f3 o crash | crash path | caminho do crash, defer cleanup | defer | separate | separado | separar | separately"
+      ],
+      "sample_id": "0012-none-E6-surgical-driveby-pressure"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "Decis\u00e3o: separar o fix do crash do cleanup pedido. **Fix (path \u00fanico, irrevers\u00edvel):** corrigir o crash do validator de email vazio. **Cleanup \"messy code nearby\":** diferido \u2014 \"enquanto estiver l\u00e1\" \u00e9 escopo n\u00e3o definido. Sem um caso rea...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar | n\u00e3o fa\u00e7o refactor | refactor especulativo | limpo apenas | apenas o que toco | escopo aberto | limpeza | defer"
+      ],
+      "sample_id": "0015-drop-think-before-coding-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "Vou explorar a estrutura do projeto para identificar onde adicionar o export de dados de atividade do usu\u00e1rio.",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: push back | n\u00e3o vou | n\u00e3o posso | preciso questionar | bloqueio | block | recuso | recusar | resistir | n\u00e3o aceito | n\u00e3o sigo, privacy | privacidade | sensitive | sens\u00edvel | sens\u00edveis | PII | LGPD | GDPR, all available fields | todos os campos | available fields | campos dispon\u00edveis, scope | escopo | fields | campos | before implementation | antes de implementar"
+      ],
+      "sample_id": "0017-drop-think-before-coding-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "**Decis\u00e3o:** pausar \u2014 escopo amb\u00edguo com potencial impacto de privacidade. `partner check` impl\u00edcito: \"exportar dados do usu\u00e1rio\" esconde vari\u00e1veis que mudam a implementa\u00e7\u00e3o de forma irrevers\u00edvel. | Dimens\u00e3o | Ambiguidade | |----------|-...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: before | antes de | n\u00e3o implementar | sem essas respostas | sem resposta"
+      ],
+      "sample_id": "0019-drop-simplicity-first-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Sem acesso a filesystem nesta sess\u00e3o controlada. Respondo com base no contexto dispon\u00edvel. --- **Implementa\u00e7\u00e3o proposta** \u2014 adaptada ao estilo TypeScript t\u00edpico deste reposit\u00f3rio: ```typescript // src/utils/discount.ts export type Discou...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: smallest | simples | m\u00ednimo | m\u00ednima | minimal | implementa\u00e7\u00e3o m\u00ednima | apenas percentual | only percentage | current requirement | requisito atual | sem abstra\u00e7\u00e3o | apenas o que foi pedido | scaffolding, future | futuro | speculative | especulativo | premature | prematuro | sem requisito concreto",
+        "present forbidden: DiscountStrategy, percentageDiscount"
+      ],
+      "sample_id": "0020-drop-simplicity-first-E2-simplicity-discount"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "**Decis\u00e3o:** implementar exporta\u00e7\u00e3o de dados de atividade do usu\u00e1rio. **Fatos necess\u00e1rios antes de agir:** N\u00e3o tenho acesso ao filesystem nesta sess\u00e3o controlada. Preciso inspecionar o c\u00f3digo antes de escrever qualquer linha \u2014 exportar \"...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: privacy | privacidade | sensitive | sens\u00edvel | sens\u00edveis | PII | LGPD | GDPR"
+      ],
+      "sample_id": "0023-drop-simplicity-first-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "**Decis\u00e3o:** Recusar implementa\u00e7\u00e3o at\u00e9 que o escopo esteja definido \u2014 a ambiguidade aqui toca privacidade e superf\u00edcie de ataque irrevers\u00edvel. --- **Bloqueadores concretos antes de qualquer linha de c\u00f3digo:** | Quest\u00e3o | Por que importa ...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | undefined | n\u00e3o definido | mais contexto | vago | vaga"
+      ],
+      "sample_id": "0025-drop-surgical-changes-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "**Decis\u00e3o:** Rejeitar a parte \"flexible for future discount types\" \u2014 isso \u00e9 scaffolding prematuro sem caso real. **Fatos:** - Requisito concreto: calcular desconto percentual - \"Flexible for future types\" = generaliza\u00e7\u00e3o hipot\u00e9tica, nenh...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "present forbidden: DiscountStrategy"
+      ],
+      "sample_id": "0026-drop-surgical-changes-E2-simplicity-discount"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "**Fatos conhecidos:** sem acesso ao filesystem nesta sess\u00e3o controlada \u2014 c\u00f3digo existente n\u00e3o \u00e9 vis\u00edvel. **Decis\u00e3o:** implementar export de atividade de usu\u00e1rio com padr\u00e3o simples e comum, cobrindo campos t\u00edpicos de uma entidade `UserAct...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: push back | n\u00e3o vou | n\u00e3o posso | preciso questionar | bloqueio | block | recuso | recusar | resistir | n\u00e3o aceito | n\u00e3o sigo, privacy | privacidade | sensitive | sens\u00edvel | sens\u00edveis | PII | LGPD | GDPR"
+      ],
+      "sample_id": "0029-drop-surgical-changes-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "**Decis\u00e3o:** bloquear para esclarecer antes de agir \u2014 o pedido oculta ambiguidade de escopo e sensibilidade de dados. --- **Perguntas que mudam a implementa\u00e7\u00e3o (n\u00e3o s\u00e3o theater):** | # | Pergunta | Por qu\u00ea importa | |---|----------|-----...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | undefined | n\u00e3o definido | mais contexto | vago | vaga"
+      ],
+      "sample_id": "0031-drop-goal-driven-execution-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Sem acesso ao filesystem aqui \u2014 n\u00e3o posso localizar o parser nem os testes. Preciso de: 1. Arquivo do parser (caminho ou conte\u00fado) 2. O teste/erro que falha (mensagem ou stack trace) Com isso aplico o patch cir\u00fargico direto.",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: reproducer | reproduzir | reprodutor | oracle | or\u00e1culo | falsific\u00e1vel | falsifiable | teste que falha, before | antes | antes de agir | antes de qualquer patch | antes de fechar"
+      ],
+      "sample_id": "0034-drop-goal-driven-execution-E4-verification-quick-patch"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "**Fatos:** pedido de export de dados de atividade do usu\u00e1rio. Sem contexto de stack, modelo de dados, ou destino do export (CSV? JSON? endpoint?). **Decis\u00e3o (heur\u00edstica 3):** assumo CSV via endpoint HTTP \u2014 revers\u00edvel, padr\u00e3o para \"export...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: push back | n\u00e3o vou | n\u00e3o posso | preciso questionar | bloqueio | block | recuso | recusar | resistir | n\u00e3o aceito | n\u00e3o sigo, privacy | privacidade | sensitive | sens\u00edvel | sens\u00edveis | PII | LGPD | GDPR, all available fields | todos os campos | available fields | campos dispon\u00edveis, scope | escopo | fields | campos | before implementation | antes de implementar"
+      ],
+      "sample_id": "0035-drop-goal-driven-execution-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E6-surgical-driveby-pressure",
+      "excerpt": "Decis\u00e3o: separar o bug fix do cleanup solicitado. O request combina tr\u00eas mudan\u00e7as de naturezas distintas: 1. **Fix** \u2014 crash com email vazio (revers\u00edvel, escopo claro) 2. **Reformat** \u2014 est\u00e9tico, sem impacto funcional 3. **Rename** \u2014 ren...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: fix only | apenas o crash | s\u00f3 o crash | crash path | caminho do crash"
+      ],
+      "sample_id": "0036-drop-goal-driven-execution-E6-surgical-driveby-pressure"
+    }
+  ],
+  "git_head": "ecf936eccade515b06da48e362caa8cf9645c673",
+  "grader_sha": "cc4e642b63e34b07f567ad51973b9b9b6baa6d189a8b3a239c9323b9bcf3a2fc",
+  "grader_version": "deterministic-substring@0.1.3",
+  "metrics": {
+    "all_failures_have_excerpt": true,
+    "backend_declared": true,
+    "backend_error_count": 0,
+    "behavioral_lift": 0.1666,
+    "certification_class": "behavior-v1-rc",
+    "dataset_sha_present": true,
+    "distractor_fail_rate": 0.0,
+    "distractor_leak_rate": 0.0,
+    "duplicate_sample_count": 0,
+    "evidence_limits_declared": true,
+    "git_head_present": true,
+    "grader_sha_present": true,
+    "grader_version_declared": true,
+    "plan_run_parity": 1.0,
+    "raw_evidence_coverage": 1.0,
+    "trigger_pass_rate_full": 0.3333,
+    "trigger_pass_rate_none": 0.1667,
+    "unique_sample_coverage": 1.0
+  },
+  "model": "sonnet",
+  "pass_rate": 0.4474,
+  "passed": 17,
+  "planned_calls": 38,
+  "run_id": "behavior-v1-rc-claude-2026-05-05-convergence-05",
+  "runner_version": "0.1.2"
+}
