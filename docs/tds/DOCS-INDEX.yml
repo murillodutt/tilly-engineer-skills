@@ -204,3 +204,10 @@ documents:
     consumer: benchmark reviewers
     source_of_truth: false
     evidence_level: L4
+  - path: docs/evidence/reports/context-mesh/pipeline-v1-rc-fixture-2026-05-05-convergence-02/REPORT.md
+    id: evidence.context_mesh.pipeline_v1_rc_fixture_2026_05_05_convergence_02
+    class: evidence
+    status: active
+    consumer: benchmark reviewers
+    source_of_truth: false
+    evidence_level: L4
