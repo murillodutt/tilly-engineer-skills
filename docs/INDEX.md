@@ -17,6 +17,7 @@ turning the repository root into an inventory.
 | Need | Document |
 |------|----------|
 | Repository shape and ownership | `architecture/PROJECT-STRUCTURE.md` |
+| Adapter installation | `install/INSTALL.md` |
 | Tool-neutral engineering principles | `mesh/PRINCIPLES.md` |
 | Neutral behavioral contract manifest | `mesh/CONTRACT-MANIFEST.yml` |
 | Context mesh method | `mesh/CONTEXT-MESH-METHOD.md` |

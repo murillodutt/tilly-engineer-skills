@@ -71,7 +71,35 @@ material belongs in `docs/**`.
 
 Start with [docs/INDEX.md](docs/INDEX.md) for the complete documentation map.
 
-## Install By Tool
+## Install
+
+Use the guarded installer for target projects:
+
+```bash
+python3 scripts/install_adapter.py --target /path/to/project --dry-run
+python3 scripts/install_adapter.py --target /path/to/project --yes
+```
+
+macOS/Linux:
+
+```bash
+./install.sh --adapter codex --target /path/to/project --dry-run
+```
+
+Windows PowerShell:
+
+```powershell
+.\install.ps1 --adapter codex --target C:\path\to\project --dry-run
+```
+
+The installer is fail-closed: it does not overwrite existing instructions
+unless `--overwrite` is explicit, and `--retrofit-plan` writes an LLM merge plan
+for projects that already have agent guidance.
+
+See [docs/install/INSTALL.md](docs/install/INSTALL.md) for the full install
+contract.
+
+## Manual Install By Tool
 
 ### Codex
 

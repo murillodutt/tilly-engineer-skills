@@ -15,6 +15,13 @@ documents:
     consumer: maintainers and adapter authors
     source_of_truth: true
     evidence_level: L2
+  - path: docs/install/INSTALL.md
+    id: install.adapter_installer
+    class: adapter
+    status: active
+    consumer: adopters and release operators
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/adapters/CODEX.md
     id: adapters.codex
     class: adapter

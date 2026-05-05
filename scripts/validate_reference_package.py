@@ -18,6 +18,8 @@ REQUIRED_PATHS = (
     "package.json",
     "LICENSE",
     "NOTICE.md",
+    "install.sh",
+    "install.ps1",
     "docs/INDEX.md",
     "docs/architecture/PROJECT-STRUCTURE.md",
     "docs/governance/AGENTIC-ALIGNMENT-GOVERNANCE.md",
@@ -47,6 +49,7 @@ REQUIRED_PATHS = (
     "benchmarks/context-mesh/eval-dataset.json",
     "scripts/context_mesh_plan.py",
     "scripts/context_mesh_run.py",
+    "scripts/install_adapter.py",
     "scripts/adapter_parity_readiness.py",
     "scripts/materialize_adapter.py",
     "scripts/validate_tds.py",
@@ -89,6 +92,8 @@ FORBIDDEN_ROOT_PATHS = (
 
 REQUIRED_PACKAGE_SCRIPTS = (
     "validate",
+    "install:adapter",
+    "install:dry-run",
     "materialize:all",
     "materialize:codex",
     "materialize:cursor",

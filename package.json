@@ -7,6 +7,8 @@
   "type": "module",
   "scripts": {
     "validate": "python3 scripts/validate_reference_package.py",
+    "install:adapter": "python3 scripts/install_adapter.py",
+    "install:dry-run": "python3 scripts/install_adapter.py --dry-run",
     "materialize:all": "python3 scripts/materialize_adapter.py all",
     "materialize:codex": "python3 scripts/materialize_adapter.py codex",
     "materialize:cursor": "python3 scripts/materialize_adapter.py cursor",
