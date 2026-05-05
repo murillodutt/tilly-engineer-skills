@@ -323,3 +323,10 @@ documents:
     consumer: certification reviewers and adapter authors
     source_of_truth: false
     evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/adapter-behavior-readiness-2026-05-05/REPORT.md
+    id: evidence.context_mesh.adapter_behavior_readiness_2026_05_05
+    class: evidence
+    status: active
+    consumer: certification reviewers, adapter authors, and backend implementers
+    source_of_truth: false
+    evidence_level: L3
