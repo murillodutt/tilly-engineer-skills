@@ -251,6 +251,27 @@ Do not add paid or external backends to `commit:check`. The commit gate should
 continue to run `benchmark:plan`, while measured runs remain explicit evidence
 operations.
 
+### Convergence Gate
+
+After retained behavior evidence exists, run the local convergence gate:
+
+```bash
+npm run benchmark:converge -- --summary docs/evidence/reports/context-mesh/<run-id>/summary.json
+```
+
+The loop is:
+
+```text
+analysis -> fix -> test -> repeat until convergence gate passes
+```
+
+Convergence requires behavior `GO`, complete raw evidence, zero backend
+errors, zero distractor leak, positive `full` over `none` lift, and ablation
+loss at or above the configured floor for every gate. The default floor is
+`loss >= 1`, meaning each gate has at least one retained sample where `full`
+passes and `drop:<gate>` fails. Use `--min-loss 2` only after the dataset has
+multiple trigger samples per gate.
+
 ## Promptfoo
 
 Promptfoo can be a useful adapter for visualization, repeat runs, and custom

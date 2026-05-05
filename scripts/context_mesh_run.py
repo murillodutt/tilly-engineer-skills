@@ -40,9 +40,9 @@ SECRET_PATTERNS = (
 )
 SECTION_RULES = {
     "Think Before Coding": "Name facts, assumptions, ambiguity, tradeoffs, and blockers before acting.",
-    "Simplicity First": "Delete speculative scope before adding abstractions or configuration.",
-    "Surgical Changes": "Touch only request-traceable lines and self-created orphans.",
-    "Goal-Driven Execution": "Define and run a falsifiable oracle before closure.",
+    "Simplicity First": "Implement only the current requirement; reject future-type scaffolding, abstractions, and configuration until a real case exists.",
+    "Surgical Changes": "Touch only request-traceable lines and self-created orphans; defer unrelated cleanup as a separate follow-up.",
+    "Goal-Driven Execution": "Name the smallest reproducer, test, or falsifiable oracle before patching or claiming closure.",
 }
 GRADER_CONTRACT = {
     "version": GRADER_VERSION,
