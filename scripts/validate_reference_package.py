@@ -47,6 +47,7 @@ REQUIRED_PATHS = (
     "benchmarks/context-mesh/eval-dataset.json",
     "scripts/context_mesh_plan.py",
     "scripts/context_mesh_run.py",
+    "scripts/adapter_parity_readiness.py",
     "scripts/materialize_adapter.py",
     "scripts/validate_tds.py",
     ".githooks/pre-commit",
@@ -98,6 +99,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "benchmark:plan",
     "benchmark:run",
     "commit:check",
+    "adapter:parity:check",
 )
 
 
@@ -245,6 +247,20 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("materialize_adapter.py all --check failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    adapter_parity = ROOT / "scripts/adapter_parity_readiness.py"
+    if adapter_parity.exists():
+        result = subprocess.run(
+            [sys.executable, str(adapter_parity)],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("adapter_parity_readiness.py failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 

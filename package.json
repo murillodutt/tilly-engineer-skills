@@ -17,7 +17,8 @@
     "benchmark:plan": "python3 scripts/context_mesh_plan.py",
     "benchmark:run": "python3 scripts/context_mesh_run.py",
     "benchmark:converge": "python3 scripts/context_mesh_convergence.py",
+    "adapter:parity:check": "python3 scripts/adapter_parity_readiness.py",
     "git:diff-check": "git diff --check && git diff --cached --check",
-    "commit:check": "python3 scripts/validate_reference_package.py --staged-ready && python3 scripts/validate_tds.py && python3 scripts/context_mesh_plan.py && python3 scripts/materialize_adapter.py all --check && git diff --check && git diff --cached --check"
+    "commit:check": "python3 scripts/validate_reference_package.py --staged-ready && python3 scripts/validate_tds.py && python3 scripts/context_mesh_plan.py && python3 scripts/materialize_adapter.py all --check && python3 scripts/adapter_parity_readiness.py && git diff --check && git diff --cached --check"
   }
 }
