@@ -12,6 +12,16 @@ evidence_level: L1
 This package includes a portable eval method, not a model-specific benchmark
 runner. Projects should adapt it to their own agent, CLI, model, and gates.
 
+Evals are not passive measurement only. In this project, evals are the
+discovery engine for context repair: they expose where a rule pays rent, where
+it is redundant, where the grader is brittle, and where the dataset fails to
+isolate behavior.
+
+The governing principle is evidence-converged context: a rule becomes project
+truth only after it produces retained lift, survives distractors, shows
+ablation loss, and converges through Build-Test-Fail-Fix. The operational loop
+is defined in `docs/mesh/CONTEXT-MESH-CONVERGENCE.md`.
+
 ## Conditions
 
 Run at least these conditions:

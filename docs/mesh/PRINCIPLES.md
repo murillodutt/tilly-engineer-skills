@@ -12,6 +12,18 @@ evidence_level: L1
 This is the tool-neutral source of truth. Tool-specific files should reduce this
 contract into their native format without changing the behavior.
 
+## Evidence-Converged Context
+
+A context rule is not project truth until it proves behavioral lift, survives
+distractors, exposes ablation loss, keeps raw evidence, and converges through
+Build-Test-Fail-Fix.
+
+In operational terms: well-written agent instructions are not accepted as true
+because they sound right. They become project truth only when retained evidence
+shows measurable lift against baseline, no confirmed distractor leak, auditably
+different behavior when the rule is ablated, and convergence through targeted
+repair loops.
+
 ## 1. Think Before Coding
 
 Do not assume silently. Before acting on non-trivial work:

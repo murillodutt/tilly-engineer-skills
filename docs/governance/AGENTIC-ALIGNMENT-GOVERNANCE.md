@@ -15,6 +15,11 @@ same native contract.
 
 The common truth is behavioral. The package format is adapter-specific.
 
+Adapter alignment requires converged behavior, not matching prose. Codex,
+Claude Code, and Cursor may materialize different files and affordances; they
+are aligned only when retained evidence shows equivalent decisions under the
+shared contract.
+
 ## Official Source Map
 
 | Surface | Codex | Claude Code | Cursor |
@@ -34,6 +39,7 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 | Layer | Source | Rule |
 |-------|--------|------|
 | Behavioral truth | `docs/mesh/PRINCIPLES.md` | Defines the four gates and success formula |
+| Evidence convergence | `docs/mesh/CONTEXT-MESH-CONVERGENCE.md` | Defines when context becomes contract |
 | Documentation contract | `docs/tds/TDS-SPEC.md` | Defines classes, index rules, and evidence levels |
 | Cross-tool governance | This document | Defines alignment, boundaries, and no-go rules |
 | Adapter guidance | `docs/adapters/**` | Explains tool-specific installation and risks |
@@ -56,13 +62,15 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 ## Authority Rules
 
 1. `docs/mesh/PRINCIPLES.md` is the tool-neutral behavioral source of truth.
-2. `src/adapters/**` is the only installable source tree.
-3. Tool-specific files in `dist/**`, target repos, or user caches are
+2. Context becomes project truth only through retained convergence evidence,
+   not by matching wording across adapters.
+3. `src/adapters/**` is the only installable source tree.
+4. Tool-specific files in `dist/**`, target repos, or user caches are
    materialized outputs, not canonical package sources.
-4. `AGENTS.md`, `CLAUDE.md`, and Cursor rules are guidance layers. Enforcement
+5. `AGENTS.md`, `CLAUDE.md`, and Cursor rules are guidance layers. Enforcement
    belongs to deterministic validators, repository hooks, settings, or
    tool-native hook systems when explicitly adopted.
-5. Do not create false symmetry. If a tool does not have Codex-style skills,
+6. Do not create false symmetry. If a tool does not have Codex-style skills,
    Claude-style plugins, or Cursor-style rules, do not invent those names for
    the package.
 

@@ -106,6 +106,13 @@ documents:
     consumer: maintainers and adopters
     source_of_truth: true
     evidence_level: L1
+  - path: docs/mesh/CONTEXT-MESH-CONVERGENCE.md
+    id: mesh.context_mesh_convergence
+    class: mesh
+    status: active
+    consumer: benchmark authors, adapter authors, and certification reviewers
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/mesh/PRINCIPLES.md
     id: mesh.principles
     class: mesh
