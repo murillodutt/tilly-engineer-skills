@@ -330,3 +330,10 @@ documents:
     consumer: certification reviewers, adapter authors, and backend implementers
     source_of_truth: false
     evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/codex-behavior-backend-readiness-2026-05-05/REPORT.md
+    id: evidence.context_mesh.codex_behavior_backend_readiness_2026_05_05
+    class: evidence
+    status: active
+    consumer: certification reviewers and Codex backend implementers
+    source_of_truth: false
+    evidence_level: L3
