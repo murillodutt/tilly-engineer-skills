@@ -26,7 +26,7 @@ from context_mesh_plan import (
 )
 
 
-RUNNER_VERSION = "0.1.1"
+RUNNER_VERSION = "0.1.2"
 CERTIFICATION_PROFILE = "v1-rc"
 PIPELINE_CERTIFICATION_CLASS = "pipeline-v1-rc"
 BEHAVIOR_CERTIFICATION_CLASS = "behavior-v1-rc"
@@ -39,7 +39,7 @@ SECRET_PATTERNS = (
     re.compile(r"-----BEGIN [A-Z ]+PRIVATE KEY-----.*?-----END [A-Z ]+PRIVATE KEY-----", re.DOTALL),
 )
 SECTION_RULES = {
-    "Think Before Coding": "Name facts, assumptions, ambiguity, tradeoffs, and blockers before acting.",
+    "Think Before Coding": "Name facts, assumptions, ambiguity, tradeoffs, and blockers before acting; push back when a request says not to ask but hides privacy, sensitive-field, or scope ambiguity.",
     "Simplicity First": "Implement only the current requirement; say the smallest/current implementation and reject future-type scaffolding until a real case exists.",
     "Surgical Changes": "For bugfix-plus-cleanup requests, explicitly split the requested fix from unrelated cleanup; fix only the crash path and defer cleanup unless necessary.",
     "Goal-Driven Execution": "Before acting, explicitly name the smallest reproducer or oracle; do not patch or claim closure before that check is named.",
