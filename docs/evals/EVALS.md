@@ -217,6 +217,24 @@ The first `claude-cli` backend intentionally does not use `--bare`. Reports
 must declare that default Claude Code context may influence outputs beyond the
 runner prompt.
 
+### Sharded Execution
+
+Long live-backend runs may be split with `--shard-count` and `--shard-index`.
+Shard runs are raw execution evidence only:
+
+```bash
+python3 scripts/context_mesh_run.py --backend claude-cli --run-id behavior-shard-00 --shard-count 4 --shard-index 0 --out-root /tmp/context-mesh-shards
+python3 scripts/context_mesh_run.py --merge-shards /tmp/context-mesh-shards --run-id behavior-v1-rc-merged
+```
+
+Shard runs write `manifest.json`, `raw.ndjson`, and `graders-sha.json`, but no
+`REPORT.md`, no `summary.json`, and no TDS index update. Only the merged run may
+write the governed evidence package and declare `GO` or `NO-GO`.
+
+The merge must reject missing samples, duplicate sample ids, prompt hash drift,
+output hash drift, dataset hash drift, grader drift, backend/model drift, and
+mixed certification classes.
+
 Do not add paid or external backends to `commit:check`. The commit gate should
 continue to run `benchmark:plan`, while measured runs remain explicit evidence
 operations.

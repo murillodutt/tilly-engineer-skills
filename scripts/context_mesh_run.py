@@ -224,6 +224,21 @@ def build_samples(data: dict[str, Any]) -> list[dict[str, Any]]:
     return samples
 
 
+def select_shard(samples: list[dict[str, Any]], shard_index: int | None, shard_count: int | None) -> list[dict[str, Any]]:
+    if shard_index is None and shard_count is None:
+        return samples
+    if shard_index is None or shard_count is None:
+        raise ValueError("--shard-index and --shard-count must be used together")
+    if shard_count < 1:
+        raise ValueError("--shard-count must be at least 1")
+    if shard_index < 0 or shard_index >= shard_count:
+        raise ValueError("--shard-index must be between 0 and shard-count - 1")
+    return [
+        sample for position, sample in enumerate(samples)
+        if position % shard_count == shard_index
+    ]
+
+
 class Backend:
     name = "backend"
 
@@ -389,6 +404,13 @@ def raw_record_complete(record: dict[str, Any]) -> bool:
     return all(record.get(field) not in (None, "") for field in RAW_REQUIRED_FIELDS)
 
 
+def duplicate_sample_count(records: list[dict[str, Any]]) -> int:
+    counts: dict[str, int] = defaultdict(int)
+    for record in records:
+        counts[str(record.get("sample_id"))] += 1
+    return sum(1 for count in counts.values() if count > 1)
+
+
 def ablation_losses(records: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     gates = sorted({
         record["gate"]
@@ -430,12 +452,15 @@ def certification_metrics(records: list[dict[str, Any]], manifest: dict[str, Any
     distractors = [record for record in records if record["kind"] == "distractor"]
     distractor_leaks = [record for record in distractors if not record["pass"]]
     backend_errors = [record for record in records if record.get("backend_error")]
+    unique_sample_ids = {record.get("sample_id") for record in records}
     full_rate = condition_pass_rate(records, "full")
     none_rate = condition_pass_rate(records, "none")
 
     return {
         "certification_class": manifest["certification_class"],
         "plan_run_parity": rate(len(records), planned_calls),
+        "unique_sample_coverage": rate(len(unique_sample_ids), planned_calls),
+        "duplicate_sample_count": duplicate_sample_count(records),
         "raw_evidence_coverage": rate(raw_complete, planned_calls),
         "trigger_pass_rate_full": full_rate,
         "trigger_pass_rate_none": none_rate,
@@ -456,6 +481,8 @@ def certification_decision(metrics: dict[str, Any]) -> dict[str, Any]:
     no_go: list[str] = []
     thresholds = {
         "plan_run_parity": "must equal 1.0",
+        "unique_sample_coverage": "must equal 1.0",
+        "duplicate_sample_count": "must equal 0",
         "raw_evidence_coverage": "must equal 1.0",
         "trigger_pass_rate_full": "must be greater than trigger_pass_rate_none",
         "distractor_leak_rate": "must equal 0",
@@ -470,6 +497,10 @@ def certification_decision(metrics: dict[str, Any]) -> dict[str, Any]:
 
     if metrics["plan_run_parity"] != 1.0:
         no_go.append("run diverged from plan")
+    if metrics["unique_sample_coverage"] != 1.0:
+        no_go.append("unique sample coverage is incomplete")
+    if metrics["duplicate_sample_count"]:
+        no_go.append("duplicate sample ids occurred")
     if metrics["raw_evidence_coverage"] != 1.0:
         no_go.append("raw evidence coverage is incomplete")
     if metrics["trigger_pass_rate_full"] <= metrics["trigger_pass_rate_none"]:
@@ -764,9 +795,255 @@ def write_evidence(
     }
 
 
+def write_shard_evidence(
+    run_dir: Path,
+    manifest: dict[str, Any],
+    records: list[dict[str, Any]],
+) -> dict[str, Path]:
+    if run_dir.exists():
+        raise FileExistsError(f"run directory already exists: {run_dir}")
+    run_dir.mkdir(parents=True)
+    manifest_path = run_dir / "manifest.json"
+    raw_path = run_dir / "raw.ndjson"
+    graders_path = run_dir / "graders-sha.json"
+
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    graders_path.write_text(json.dumps(grader_manifest(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    with raw_path.open("x", encoding="utf-8") as raw:
+        for record in records:
+            raw.write(json.dumps(record, sort_keys=True) + "\n")
+
+    return {
+        "manifest": manifest_path,
+        "raw": raw_path,
+        "graders": graders_path,
+    }
+
+
+def load_json(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_raw_records(raw_path: Path) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for line in raw_path.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            records.append(json.loads(line))
+    return records
+
+
+def collect_shard_dirs(paths: list[Path]) -> list[Path]:
+    shard_dirs: list[Path] = []
+    for path in paths:
+        if (path / "manifest.json").exists() and (path / "raw.ndjson").exists():
+            shard_dirs.append(path)
+            continue
+        shard_dirs.extend(
+            child for child in sorted(path.iterdir())
+            if child.is_dir() and (child / "manifest.json").exists() and (child / "raw.ndjson").exists()
+        )
+    return sorted(shard_dirs)
+
+
+def merge_shard_records(
+    shard_paths: list[Path],
+    samples: list[dict[str, Any]],
+    digest: str,
+    run_id: str,
+    dataset_path: Path,
+) -> tuple[dict[str, Any] | None, list[dict[str, Any]], list[str]]:
+    failures: list[str] = []
+    shard_dirs = collect_shard_dirs(shard_paths)
+    manifests: list[dict[str, Any]] = []
+    records: list[dict[str, Any]] = []
+
+    if not shard_dirs:
+        return None, [], [f"no shard directories found: {', '.join(str(path) for path in shard_paths)}"]
+
+    for shard_dir in shard_dirs:
+        manifest_path = shard_dir / "manifest.json"
+        raw_path = shard_dir / "raw.ndjson"
+        if not manifest_path.exists() or not raw_path.exists():
+            failures.append(f"shard missing manifest or raw: {shard_dir}")
+            continue
+        manifest = load_json(manifest_path)
+        manifests.append(manifest)
+        for record in load_raw_records(raw_path):
+            record = dict(record)
+            record["source_run_id"] = record["run_id"]
+            record["source_shard_id"] = manifest.get("shard_id", manifest.get("run_id"))
+            record["run_id"] = run_id
+            records.append(record)
+
+    if not manifests:
+        return None, records, failures or ["no valid shard manifests found"]
+
+    first = manifests[0]
+    consistent_fields = (
+        "dataset_sha",
+        "git_head",
+        "backend",
+        "model",
+        "grader_version",
+        "grader_sha",
+        "runner_version",
+        "certification_profile",
+        "certification_class",
+    )
+    for manifest in manifests:
+        for field in consistent_fields:
+            if manifest.get(field) != first.get(field):
+                failures.append(f"shard manifest mismatch for {field}: {manifest.get('run_id')}")
+
+    expected_ids = {sample["sample_id"] for sample in samples}
+    seen_ids: dict[str, int] = defaultdict(int)
+    sample_by_id = {sample["sample_id"]: sample for sample in samples}
+    for record in records:
+        sample_id = record.get("sample_id")
+        seen_ids[str(sample_id)] += 1
+        if sample_id not in expected_ids:
+            failures.append(f"unexpected sample id in shard raw: {sample_id}")
+            continue
+        sample = sample_by_id[sample_id]
+        if record.get("prompt_sha") != sample["prompt_sha"]:
+            failures.append(f"prompt hash mismatch for {sample_id}")
+        if record.get("dataset_sha") != digest:
+            failures.append(f"dataset hash mismatch for {sample_id}")
+        if record.get("output_sha") != sha256_text(str(record.get("output", ""))):
+            failures.append(f"output hash mismatch for {sample_id}")
+        if not raw_record_complete(record):
+            failures.append(f"raw record missing required fields for {sample_id}")
+
+    duplicates = sorted(sample_id for sample_id, count in seen_ids.items() if count > 1)
+    missing = sorted(expected_ids - set(seen_ids))
+    if duplicates:
+        failures.append(f"duplicate sample ids: {', '.join(duplicates)}")
+    if missing:
+        failures.append(f"missing sample ids: {', '.join(missing)}")
+
+    manifest = {
+        "run_id": run_id,
+        "runner_version": RUNNER_VERSION,
+        "certification_profile": CERTIFICATION_PROFILE,
+        "certification_class": first["certification_class"],
+        "created_at": utc_now(),
+        "dataset": str(dataset_path),
+        "dataset_sha": digest,
+        "git_head": first["git_head"],
+        "backend": first["backend"],
+        "model": first["model"],
+        "grader_version": first["grader_version"],
+        "grader_sha": first["grader_sha"],
+        "planned_calls": len(samples),
+        "merge_contract_version": "context-mesh-merge@0.1.0",
+        "merge_sources": [
+            {
+                "run_id": manifest["run_id"],
+                "shard_id": manifest.get("shard_id"),
+                "shard_index": manifest.get("shard_index"),
+                "shard_count": manifest.get("shard_count"),
+                "raw_sha": sha256_bytes((shard_dir / "raw.ndjson").read_bytes()),
+            }
+            for manifest, shard_dir in zip(manifests, shard_dirs)
+        ],
+    }
+    return manifest, sorted(records, key=lambda record: record["sample_id"]), failures
+
+
+def merge_shards(args: argparse.Namespace) -> int:
+    data = load_dataset(args.dataset)
+    failures = validate_dataset(data)
+    if failures:
+        print("[context-mesh-merge] FAIL")
+        for failure in failures:
+            print(f"- {failure}")
+        return 1
+
+    samples = build_samples(data)
+    digest = dataset_sha(args.dataset)
+    run_id = args.run_id or build_run_id("merged", digest)
+    manifest, records, merge_failures = merge_shard_records(args.merge_shards, samples, digest, run_id, args.dataset)
+    if merge_failures or manifest is None:
+        print("[context-mesh-merge] FAIL")
+        for failure in merge_failures:
+            print(f"- {failure}")
+        return 1
+
+    run_dir = args.out_root / run_id
+    try:
+        paths = write_evidence(run_dir, manifest, records, update_index=not args.no_tds_index)
+    except FileExistsError as exc:
+        print("[context-mesh-merge] FAIL")
+        print(f"- {exc}")
+        return 1
+    summary = summarize(records, manifest)
+    print("[context-mesh-merge] PASS")
+    print(json.dumps({
+        "run_id": run_id,
+        "planned_calls": manifest["planned_calls"],
+        "executed_calls": summary["executed_calls"],
+        "passed": summary["passed"],
+        "failed": summary["failed"],
+        "pass_rate": summary["pass_rate"],
+        "manifest": str(paths["manifest"]),
+        "raw": str(paths["raw"]),
+        "summary": str(paths["summary"]),
+        "report": str(paths["report"]),
+        "graders": str(paths["graders"]),
+        "certification_class": summary["certification_class"],
+        "certification_status": summary["certification"]["status"],
+    }, indent=2))
+    return 0
+
+
 def build_run_id(backend: str, dataset_digest: str) -> str:
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     return f"{timestamp}-{backend}-{dataset_digest[:8]}"
+
+
+def execute_samples(samples: list[dict[str, Any]], backend: Backend, manifest: dict[str, Any]) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for sample in samples:
+        backend_error = ""
+        try:
+            output = redact_secrets(backend.complete(sample))
+        except Exception as exc:
+            backend_error = redact_secrets(str(exc))
+            output = f"BACKEND_ERROR: {backend_error}"
+        grading = grade_output(sample["eval"], output)
+        ev = sample["eval"]
+        record = {
+            "run_id": manifest["run_id"],
+            "runner_version": RUNNER_VERSION,
+            "created_at": manifest["created_at"],
+            "dataset_sha": manifest["dataset_sha"],
+            "git_head": manifest["git_head"],
+            "backend": manifest["backend"],
+            "model": manifest["model"],
+            "certification_profile": CERTIFICATION_PROFILE,
+            "certification_class": manifest["certification_class"],
+            "grader_version": manifest["grader_version"],
+            "grader_sha": manifest["grader_sha"],
+            "condition": sample["condition"],
+            "kind": sample["kind"],
+            "gate": sample["gate"],
+            "eval_id": ev["id"],
+            "sample_id": sample["sample_id"],
+            "prompt_sha": sample["prompt_sha"],
+            "output_sha": sha256_text(output),
+            "prompt": sample["prompt"],
+            "output": output,
+            "backend_error": backend_error,
+            "pass": grading["pass"],
+            "expected": grading["expected"],
+            "forbidden": grading["forbidden"],
+            "reasons": grading["reasons"],
+            "excerpt": excerpt(output),
+        }
+        if "shard_id" in manifest:
+            record["source_shard_id"] = manifest["shard_id"]
+        records.append(record)
+    return records
 
 
 def run(args: argparse.Namespace) -> int:
@@ -784,15 +1061,30 @@ def run(args: argparse.Namespace) -> int:
         print("[context-mesh-run] FAIL")
         print(f"- matrix diverged from plan: samples={len(samples)} planned_calls={plan['planned_calls']}")
         return 1
+    try:
+        selected_samples = select_shard(samples, args.shard_index, args.shard_count)
+    except ValueError as exc:
+        print("[context-mesh-run] FAIL")
+        print(f"- {exc}")
+        return 1
+    is_shard = args.shard_index is not None
 
     if args.dry_run:
         print("[context-mesh-run] DRY-RUN")
         print(json.dumps({
             **plan,
             "matrix_calls": len(samples),
+            "selected_calls": len(selected_samples),
+            "shard_index": args.shard_index,
+            "shard_count": args.shard_count,
             "plan_parity": True,
         }, indent=2))
         return 0
+
+    if is_shard and not args.run_id:
+        print("[context-mesh-run] FAIL")
+        print("- shard mode requires --run-id")
+        return 1
 
     digest = dataset_sha(args.dataset)
     run_id = args.run_id or build_run_id(args.backend, digest)
@@ -822,48 +1114,38 @@ def run(args: argparse.Namespace) -> int:
         "grader_sha": grader["grader_sha"],
         "planned_calls": plan["planned_calls"],
     }
+    if is_shard:
+        manifest["shard_id"] = f"shard-{args.shard_index:02d}-of-{args.shard_count:02d}"
+        manifest["shard_index"] = args.shard_index
+        manifest["shard_count"] = args.shard_count
+        manifest["shard_calls"] = len(selected_samples)
 
-    records: list[dict[str, Any]] = []
-    for sample in samples:
-        backend_error = ""
-        try:
-            output = redact_secrets(backend.complete(sample))
-        except Exception as exc:
-            backend_error = redact_secrets(str(exc))
-            output = f"BACKEND_ERROR: {backend_error}"
-        grading = grade_output(sample["eval"], output)
-        ev = sample["eval"]
-        records.append({
-            "run_id": run_id,
-            "runner_version": RUNNER_VERSION,
-            "created_at": created_at,
-            "dataset_sha": digest,
-            "git_head": head,
-            "backend": backend.name,
-            "model": backend.model,
-            "certification_profile": CERTIFICATION_PROFILE,
-            "certification_class": certification_class,
-            "grader_version": grader["grader_version"],
-            "grader_sha": grader["grader_sha"],
-            "condition": sample["condition"],
-            "kind": sample["kind"],
-            "gate": sample["gate"],
-            "eval_id": ev["id"],
-            "sample_id": sample["sample_id"],
-            "prompt_sha": sample["prompt_sha"],
-            "output_sha": sha256_text(output),
-            "prompt": sample["prompt"],
-            "output": output,
-            "backend_error": backend_error,
-            "pass": grading["pass"],
-            "expected": grading["expected"],
-            "forbidden": grading["forbidden"],
-            "reasons": grading["reasons"],
-            "excerpt": excerpt(output),
-        })
+    records = execute_samples(selected_samples, backend, manifest)
 
     out_root = args.out_root
     run_dir = out_root / run_id
+    if is_shard:
+        try:
+            paths = write_shard_evidence(run_dir, manifest, records)
+        except FileExistsError as exc:
+            print("[context-mesh-shard] FAIL")
+            print(f"- {exc}")
+            return 1
+        print("[context-mesh-shard] PASS")
+        print(json.dumps({
+            "run_id": run_id,
+            "planned_calls": plan["planned_calls"],
+            "shard_calls": len(records),
+            "shard_index": args.shard_index,
+            "shard_count": args.shard_count,
+            "manifest": str(paths["manifest"]),
+            "raw": str(paths["raw"]),
+            "graders": str(paths["graders"]),
+            "certification_class": certification_class,
+            "certification_status": "SHARD-NOT-CERTIFIED",
+        }, indent=2))
+        return 0
+
     update_index = not args.no_tds_index
     try:
         paths = write_evidence(run_dir, manifest, records, update_index=update_index)
@@ -902,9 +1184,15 @@ def main() -> int:
     parser.add_argument("--timeout-seconds", type=int, default=180)
     parser.add_argument("--run-id")
     parser.add_argument("--out-root", type=Path, default=DEFAULT_OUT_ROOT)
+    parser.add_argument("--shard-count", type=int)
+    parser.add_argument("--shard-index", type=int)
+    parser.add_argument("--merge-shards", type=Path, nargs="+")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-tds-index", action="store_true")
-    return run(parser.parse_args())
+    args = parser.parse_args()
+    if args.merge_shards:
+        return merge_shards(args)
+    return run(args)
 
 
 if __name__ == "__main__":
