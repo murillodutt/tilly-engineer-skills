@@ -400,3 +400,10 @@ documents:
     consumer: certification reviewers, adapter authors, and v1 release decision makers
     source_of_truth: false
     evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md
+    id: evidence.context_mesh.v1_final_certification_2026_05_05
+    class: evidence
+    status: active
+    consumer: certification reviewers, adapter authors, and v1 release decision makers
+    source_of_truth: false
+    evidence_level: L4
