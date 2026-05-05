@@ -358,3 +358,10 @@ documents:
     consumer: benchmark reviewers
     source_of_truth: false
     evidence_level: L4
+  - path: docs/evidence/reports/context-mesh/codex-behavior-matrix-readiness-2026-05-05/REPORT.md
+    id: evidence.context_mesh.codex_behavior_matrix_readiness_2026_05_05
+    class: evidence
+    status: active
+    consumer: certification reviewers and Codex backend operators
+    source_of_truth: false
+    evidence_level: L3
