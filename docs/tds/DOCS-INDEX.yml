@@ -43,6 +43,34 @@ documents:
     consumer: maintainers and release operators
     source_of_truth: true
     evidence_level: L2
+  - path: docs/adapters/ADAPTER-CAPABILITY-MATRIX.md
+    id: adapters.capability_matrix
+    class: adapter
+    status: active
+    consumer: maintainers and adapter authors
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/adapters/pipelines/CODEX-PIPELINE.md
+    id: adapters.pipelines.codex
+    class: adapter
+    status: active
+    consumer: codex adopters and certification reviewers
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/adapters/pipelines/CLAUDE-PIPELINE.md
+    id: adapters.pipelines.claude
+    class: adapter
+    status: active
+    consumer: claude code adopters and certification reviewers
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/adapters/pipelines/CURSOR-PIPELINE.md
+    id: adapters.pipelines.cursor
+    class: adapter
+    status: active
+    consumer: cursor adopters and certification reviewers
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/governance/AGENTIC-ALIGNMENT-GOVERNANCE.md
     id: governance.agentic_alignment
     class: governance
@@ -64,6 +92,13 @@ documents:
     consumer: adapter authors and reviewers
     source_of_truth: false
     evidence_level: L1
+  - path: docs/evals/PARITY-GATE.md
+    id: evals.parity_gate
+    class: eval
+    status: active
+    consumer: certification reviewers
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/mesh/CONTEXT-MESH-METHOD.md
     id: mesh.context_method
     class: mesh

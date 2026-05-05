@@ -1,0 +1,52 @@
+version: 0.1.0
+name: Tilly Engineering Discipline Behavioral Contract
+purpose: >
+  Provide one tool-neutral behavioral contract for adapter materialization,
+  execution, evidence, and parity certification.
+gates:
+  - id: think-before-coding
+    name: Think Before Coding
+    invariant: Assumptions and ambiguity are visible before action.
+    blocks:
+      - silent assumptions
+      - hidden confusion
+      - action before local evidence is checked
+  - id: simplicity-first
+    name: Simplicity First
+    invariant: Complexity is added only when needed now.
+    blocks:
+      - speculative framework surface
+      - duplicate source copies
+      - premature configurability
+  - id: surgical-changes
+    name: Surgical Changes
+    invariant: Every touched line traces to the request or self-created orphan.
+    blocks:
+      - unrelated refactors
+      - broad rewrites without evidence
+      - adapter text copying as a proxy for alignment
+  - id: goal-driven-execution
+    name: Goal-Driven Execution
+    invariant: Completion is tied to falsifiable verification.
+    blocks:
+      - closure without an oracle
+      - GO without evidence limits
+      - behavior claims without raw run artifacts
+parity_rule:
+  text_equality_required: false
+  decision_equivalence_required: true
+evidence_floor:
+  structural:
+    - materialization command passes
+    - generated adapter files exist
+    - contract gates are traceable
+  behavioral:
+    - manifest.json
+    - raw.ndjson
+    - summary.json
+    - REPORT.md
+    - graders-sha.json
+no_go:
+  - declaring drift from capability differences alone
+  - declaring behavioral parity without an execution backend
+  - declaring certification without retained evidence
