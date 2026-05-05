@@ -213,6 +213,10 @@ The `claude-cli` backend runs through the same backend adapter boundary as
 fixture and echo. It must not write reports, grade outputs, mutate TDS, or
 decide certification outside the shared runner path.
 
+The first `claude-cli` backend intentionally does not use `--bare`. Reports
+must declare that default Claude Code context may influence outputs beyond the
+runner prompt.
+
 Do not add paid or external backends to `commit:check`. The commit gate should
 continue to run `benchmark:plan`, while measured runs remain explicit evidence
 operations.

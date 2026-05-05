@@ -70,6 +70,7 @@ RAW_REQUIRED_FIELDS = (
 )
 EVIDENCE_LIMITS = (
     "fixture and echo backends prove pipeline behavior, not live model quality",
+    "claude-cli backend uses Claude Code without --bare, so default Claude Code context may influence outputs beyond the runner prompt",
     "deterministic substring grading is intentionally strict and wording-sensitive",
     "v1-rc certification requires comparing full, none, and drop conditions from the same dataset hash",
     "loss=1 ablations require adversarial follow-up before making strong rent claims",
