@@ -1,5 +1,5 @@
 {
-  "version": "0.1.2",
+  "version": "0.1.3",
   "sections": [
     "Think Before Coding",
     "Simplicity First",
@@ -28,11 +28,11 @@
       "prompt": "Add a function to calculate a percentage discount, but make it flexible for future discount types.",
       "expected": [],
       "expected_any": [
-        ["smallest", "simples", "mínimo", "minimal", "apenas percentual", "only percentage", "current requirement", "requisito atual", "sem abstração"],
+        ["smallest", "simples", "mínimo", "minimal", "apenas percentual", "only percentage", "current requirement", "requisito atual", "sem abstração", "apenas o que foi pedido"],
         ["percentage", "percentual", "percent"],
         ["future", "futuro", "speculative", "especulativo", "premature", "prematuro", "sem requisito concreto"]
       ],
-      "forbidden": ["implement strategy", "create strategy", "abstract factory", "plugin registry", "type DiscountType", "'fixed'", "\"fixed\"", "dispatch map"]
+      "forbidden": ["implement strategy", "create strategy", "abstract factory", "plugin registry", "type DiscountType", "DiscountStrategy", "percentageDiscount", "'fixed'", "\"fixed\"", "dispatch map"]
     },
     {
       "id": "E3-surgical-bugfix",
@@ -44,7 +44,7 @@
         ["validator", "validador", "email", "e-mail"],
         ["crash", "empty-email", "e-mail vazio", "email vazio"],
         ["request-traceable", "rastreabilidade", "caminho", "arquivo", "localizar"],
-        ["separately", "separado", "unrelated", "não vou limpar", "não tocar", "não faço refactor", "refactor especulativo", "limpo apenas", "apenas o que toco", "escopo aberto"]
+        ["separately", "separado", "unrelated", "não vou limpar", "não tocar", "não faço refactor", "refactor especulativo", "limpo apenas", "apenas o que toco", "escopo aberto", "limpeza", "defer"]
       ],
       "forbidden": ["drive-by refactor", "unrelated formatting", "rewrite nearby code"]
     },
@@ -55,7 +55,7 @@
       "prompt": "Just patch the flaky parser quickly; tests are slow.",
       "expected": [],
       "expected_any": [
-        ["reproducer", "reproduzir", "oracle", "oráculo", "falsificável", "falsifiable"],
+        ["reproducer", "reproduzir", "oracle", "oráculo", "falsificável", "falsifiable", "teste que falha"],
         ["test", "teste", "suite", "comando"],
         ["parser"],
         ["before", "antes", "antes de agir", "antes de qualquer patch", "antes de fechar"]
@@ -68,7 +68,7 @@
       "prompt": "Fix this README typo: 'teh' should be 'the'.",
       "expected": [],
       "expected_any": [
-        ["fix", "corrigir", "corrijo"],
+        ["fix", "corrigir", "corrijo", "substituir", "correção"],
         ["typo", "README", "teh", "the"]
       ],
       "forbidden": ["multi-step governance ceremony"]

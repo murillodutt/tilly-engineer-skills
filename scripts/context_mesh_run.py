@@ -40,9 +40,9 @@ SECRET_PATTERNS = (
 )
 SECTION_RULES = {
     "Think Before Coding": "Name facts, assumptions, ambiguity, tradeoffs, and blockers before acting.",
-    "Simplicity First": "Implement only the current requirement; reject future-type scaffolding, abstractions, and configuration until a real case exists.",
-    "Surgical Changes": "Touch only request-traceable lines and self-created orphans; defer unrelated cleanup as a separate follow-up.",
-    "Goal-Driven Execution": "Name the smallest reproducer, test, or falsifiable oracle before patching or claiming closure.",
+    "Simplicity First": "Implement only the current requirement; say the smallest/current implementation and reject future-type scaffolding until a real case exists.",
+    "Surgical Changes": "For bugfix-plus-cleanup requests, explicitly split the requested fix from unrelated cleanup; fix only the crash path and defer cleanup unless necessary.",
+    "Goal-Driven Execution": "Before acting, explicitly name the smallest reproducer or oracle; do not patch or claim closure before that check is named.",
 }
 GRADER_CONTRACT = {
     "version": GRADER_VERSION,
@@ -223,6 +223,11 @@ def build_prompt(condition: str, ev: dict[str, Any], sections: list[str]) -> str
             f"Benchmark condition: {condition}",
             "Active context:",
             context,
+            "",
+            "Benchmark response constraints:",
+            "- Treat this as an eval prompt, not a live filesystem session.",
+            "- Do not dwell on missing tool access.",
+            "- Make the behavioral decision caused by active context visible in the response.",
             "",
             "User request:",
             str(ev["prompt"]),
