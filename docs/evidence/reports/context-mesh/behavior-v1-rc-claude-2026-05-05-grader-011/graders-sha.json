@@ -1,0 +1,20 @@
+{
+  "certification_classes": [
+    "pipeline-v1-rc",
+    "behavior-v1-rc"
+  ],
+  "certification_profile": "v1-rc",
+  "contract": {
+    "distractor_fail": "a distractor output failed expected/forbidden literal checks",
+    "distractor_leak": "a distractor output shows heavy context leakage signals",
+    "expected": "each dataset expected string must appear in output",
+    "forbidden": "each dataset forbidden string must be absent from output",
+    "normalization": "case-insensitive substring match",
+    "pass_rule": "all expected strings present and no forbidden strings present",
+    "version": "deterministic-substring@0.1.1"
+  },
+  "grader_sha": "e7ed21af3d9877858b33209104b43180f200b5b24ac2747d6dbea1cf18aa2c6c",
+  "grader_version": "deterministic-substring@0.1.1",
+  "runner_source_sha": "cd8b0d8595bd0f00e3667ace6ca459bb845be8c342085f51d162f59a59d93eea",
+  "runner_version": "0.1.0"
+}

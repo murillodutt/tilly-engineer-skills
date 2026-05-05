@@ -1,0 +1,474 @@
+{
+  "ablation_losses": {
+    "Goal-Driven Execution": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 0,
+      "full_passes": 0,
+      "loss": 0
+    },
+    "Simplicity First": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 0,
+      "full_passes": 0,
+      "loss": 0
+    },
+    "Surgical Changes": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 0,
+      "full_passes": 0,
+      "loss": 0
+    },
+    "Think Before Coding": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 0,
+      "full_passes": 0,
+      "loss": 0
+    }
+  },
+  "backend": "claude-cli",
+  "by_condition": {
+    "distractor": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 2
+    },
+    "drop:Goal-Driven Execution": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 4
+    },
+    "drop:Simplicity First": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 4
+    },
+    "drop:Surgical Changes": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 4
+    },
+    "drop:Think Before Coding": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 4
+    },
+    "full": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 4
+    },
+    "none": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 4
+    }
+  },
+  "by_gate": {
+    "Goal-Driven Execution": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 6
+    },
+    "Simplicity First": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 6
+    },
+    "Surgical Changes": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 6
+    },
+    "Think Before Coding": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 6
+    },
+    "distractor": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 2
+    }
+  },
+  "certification": {
+    "class": "behavior-v1-rc",
+    "no_go": [
+      "full condition did not outperform none"
+    ],
+    "profile": "v1-rc",
+    "status": "NO-GO",
+    "thresholds": {
+      "all_failures_have_excerpt": "must be true",
+      "backend_declared": "must be true",
+      "dataset_sha_present": "must be true",
+      "distractor_fail_rate": "reported separately from confirmed leak",
+      "distractor_leak_rate": "must equal 0",
+      "duplicate_sample_count": "must equal 0",
+      "evidence_limits_declared": "must be true",
+      "git_head_present": "must be true",
+      "grader_sha_present": "must be true",
+      "grader_version_declared": "must be true",
+      "plan_run_parity": "must equal 1.0",
+      "raw_evidence_coverage": "must equal 1.0",
+      "trigger_pass_rate_full": "must be greater than trigger_pass_rate_none",
+      "unique_sample_coverage": "must equal 1.0"
+    }
+  },
+  "certification_class": "behavior-v1-rc",
+  "certification_profile": "v1-rc",
+  "dataset_sha": "aa86ccf7e83ae41d9d8dfa0037ee2d6a6734ab0b27b1e67b65c43abbda2522c0",
+  "evidence_limits": [
+    "fixture and echo backends prove pipeline behavior, not live model quality",
+    "claude-cli backend uses Claude Code without --bare, so default Claude Code context may influence outputs beyond the runner prompt",
+    "deterministic substring grading is intentionally strict and wording-sensitive",
+    "v1-rc certification requires comparing full, none, and drop conditions from the same dataset hash",
+    "loss=1 ablations require adversarial follow-up before making strong rent claims"
+  ],
+  "executed_calls": 26,
+  "failed": 26,
+  "failures": [
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Sem acesso a ferramentas de filesystem/browser neste contexto. Com base no que \u00e9 vis\u00edvel (nome do repo: `tilly-engineer-skills`, commits recentes focados em graders, fixtures e spec pipelines), este parece ser um projeto de **avalia\u00e7\u00e3o/b...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected: surface scope, fields, privacy, and format assumptions"
+      ],
+      "sample_id": "0001-full-E1-assumptions-export"
+    },
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Lendo a estrutura diretamente. Vou ler os arquivos do projeto para encontrar o lugar certo. ``` /Users/murillo/Dev/tilly-engineer-skills ``` Estrutura n\u00e3o lida ainda \u2014 respondendo com a implementa\u00e7\u00e3o correta para o contexto de benchmark:...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected: prefer the smallest current implementation"
+      ],
+      "sample_id": "0002-full-E2-simplicity-discount"
+    },
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "Sem acesso a ferramentas de shell ou MCP de timeline. Preciso de permiss\u00e3o para localizar o arquivo ou o usu\u00e1rio precisa indicar o caminho. **Situa\u00e7\u00e3o:** sem `bash`/shell dispon\u00edvel e sem acesso ao MCP de busca de arquivos, n\u00e3o consigo l...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected: fix only request-traceable lines, mention unrelated cleanup separately"
+      ],
+      "sample_id": "0003-full-E3-surgical-bugfix"
+    },
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Sem um arquivo ou teste espec\u00edfico identificado, preciso de evid\u00eancias antes de agir. Qual \u00e9 o arquivo do parser com problema e qual teste est\u00e1 falhando? Compartilhe o caminho ou o output do erro.",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected: define a reproducer or smallest oracle before closure"
+      ],
+      "sample_id": "0004-full-E4-verification-quick-patch"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Preciso de mais contexto antes de implementar. | Pergunta | Por qu\u00ea importa | |----------|-----------------| | O que \u00e9 \"user data\"? (quais entidades/campos) | Define o escopo do export | | Formato de sa\u00edda: CSV, JSON, Excel, ZIP? | Muda ...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected: surface scope, fields, privacy, and format assumptions"
+      ],
+      "sample_id": "0005-none-E1-assumptions-export"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Qual \u00e9 a stack/linguagem do projeto?",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected: prefer the smallest current implementation"
+      ],
+      "sample_id": "0006-none-E2-simplicity-discount"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "Vou localizar o validador de e-mail vazio antes de qualquer mudan\u00e7a.",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected: fix only request-traceable lines, mention unrelated cleanup separately"
+      ],
+      "sample_id": "0007-none-E3-surgical-bugfix"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Preciso ver o c\u00f3digo do parser e os testes antes de agir.",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected: define a reproducer or smallest oracle before closure"
+      ],
+      "sample_id": "0008-none-E4-verification-quick-patch"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Preciso de mais contexto antes de agir \u2014 \"exportar dados do usu\u00e1rio\" \u00e9 amplo demais para uma mudan\u00e7a cir\u00fargica. | Dimens\u00e3o | O que preciso saber | |---|---| | **Formato** | CSV, JSON, PDF, ou outro? | | **Escopo** | Quais dados? Todo o p...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected: surface scope, fields, privacy, and format assumptions"
+      ],
+      "sample_id": "0009-drop-think-before-coding-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Pausa obrigat\u00f3ria \u2014 \"flexible for future discount types\" \u00e9 escopo especulativo. A regra de Simplicity First \u00e9 direta: delete speculative scope before adding abstractions. O pedido concreto \u00e9: calcular desconto percentual. Isso \u00e9 uma fun\u00e7...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected: prefer the smallest current implementation",
+        "present forbidden: strategy pattern"
+      ],
+      "sample_id": "0010-drop-think-before-coding-E2-simplicity-discount"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "Vou localizar o validador de e-mail vazio e o c\u00f3digo ao redor antes de agir.",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected: fix only request-traceable lines, mention unrelated cleanup separately"
+      ],
+      "sample_id": "0011-drop-think-before-coding-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Qual parser, qual teste falhando? Preciso de um arquivo ou mensagem de erro para localizar o problema.",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected: define a reproducer or smallest oracle before closure"
+      ],
+      "sample_id": "0012-drop-think-before-coding-E4-verification-quick-patch"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "**Bloqueador antes de qualquer a\u00e7\u00e3o.** O pedido \"export user data\" \u00e9 amb\u00edguo nos eixos que determinam a implementa\u00e7\u00e3o: | Eixo | Op\u00e7\u00f5es abertas | |------|---------------| | Escopo dos dados | Qual entidade \"user\"? Quais campos? PII inclus...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected: surface scope, fields, privacy, and format assumptions"
+      ],
+      "sample_id": "0013-drop-simplicity-first-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Sem acesso a ferramentas MCP. Respondendo com base no que est\u00e1 dispon\u00edvel: o reposit\u00f3rio \u00e9 `tilly-engineer-skills` (skill de engenharia), stack desconhecida. Vou implementar de forma agn\u00f3stica \u2014 TypeScript puro, sem depend\u00eancias. **Imple...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected: prefer the smallest current implementation"
+      ],
+      "sample_id": "0014-drop-simplicity-first-E2-simplicity-discount"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "Sem acesso a ferramentas de shell ou playwright. Vou usar as ferramentas de sistema de arquivos dispon\u00edveis \u2014 preciso mapear a estrutura do reposit\u00f3rio primeiro. **Situa\u00e7\u00e3o:** sem `Bash`/`Read`/`Write`/`Glob`/`Grep` dispon\u00edveis e sem per...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected: fix only request-traceable lines, mention unrelated cleanup separately"
+      ],
+      "sample_id": "0015-drop-simplicity-first-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Sem arquivo, sem teste, sem rastreabilidade \u2014 n\u00e3o consigo aplicar um patch cir\u00fargico. Preciso de: 1. Caminho do arquivo do parser 2. Comportamento flaky observado (input, output esperado vs. real) 3. Como reproduzir (comando de teste) Qu...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected: define a reproducer or smallest oracle before closure"
+      ],
+      "sample_id": "0016-drop-simplicity-first-E4-verification-quick-patch"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Pedido amb\u00edguo. Tr\u00eas blocos de ambiguidade bloqueiam implementa\u00e7\u00e3o: | # | Quest\u00e3o | Impacto | |---|---------|---------| | 1 | Quais dados do usu\u00e1rio? (perfil, hist\u00f3rico, tudo?) | Escopo de queries/serializa\u00e7\u00e3o | | 2 | Formato de exporta\u00e7...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected: surface scope, fields, privacy, and format assumptions"
+      ],
+      "sample_id": "0017-drop-surgical-changes-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Estrutura desconhecida \u2014 vou responder diretamente com a implementa\u00e7\u00e3o e a justificativa de design, sem criar arquivo sem saber onde colocar. --- **Implementa\u00e7\u00e3o:** ```typescript // src/utils/discount.ts type DiscountType = \"percentage\" ...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected: prefer the smallest current implementation",
+        "present forbidden: strategy pattern"
+      ],
+      "sample_id": "0018-drop-surgical-changes-E2-simplicity-discount"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "N\u00e3o tenho acesso ao browser/shell via MCP nesta sess\u00e3o. Vou usar as ferramentas de busca de arquivo dispon\u00edveis. **Decis\u00e3o:** buscar \"email\" + \"validator\" no repo com as ferramentas de leitura de contexto do Figma/Oracle n\u00e3o \u00e9 o caminho....",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected: fix only request-traceable lines, mention unrelated cleanup separately"
+      ],
+      "sample_id": "0019-drop-surgical-changes-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Preciso de contexto concreto antes de agir. **Fatos conhecidos:** reposit\u00f3rio `tilly-engineer-skills`, branch `main`, working tree limpa. **Bloqueadores:** - N\u00e3o sei qual parser est\u00e1 falhando - N\u00e3o sei qual(is) teste(s) est\u00e3o lentos ou f...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected: define a reproducer or smallest oracle before closure"
+      ],
+      "sample_id": "0020-drop-surgical-changes-E4-verification-quick-patch"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Solicita\u00e7\u00e3o amb\u00edgua \u2014 preciso de mais contexto antes de agir. | Dimens\u00e3o | Ambiguidade | |---|---| | **O que \u00e9 \"user data\"?** | Qual modelo/tabela? Todos os campos ou subconjunto? | | **Formato de exporta\u00e7\u00e3o** | CSV, JSON, XLSX, outro? |...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected: surface scope, fields, privacy, and format assumptions"
+      ],
+      "sample_id": "0021-drop-goal-driven-execution-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Simplicidade primeiro: \"flex\u00edvel para tipos futuros de desconto\" \u00e9 escopo especulativo. **Decis\u00e3o:** implementar apenas `calculate_percentage_discount(price, percentage)` \u2014 sem abstra\u00e7\u00f5es, sem f\u00e1bricas, sem polimorfismo prematuro. Se sur...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected: prefer the smallest current implementation"
+      ],
+      "sample_id": "0022-drop-goal-driven-execution-E2-simplicity-discount"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "Sem acesso a ferramentas de filesystem ou busca no reposit\u00f3rio neste ambiente de benchmark. Respondo como agente baseado no contexto dispon\u00edvel. --- ## An\u00e1lise antes de implementar **Fatos:** - Crash em validador de e-mail vazio \u2014 padr\u00e3o...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected: fix only request-traceable lines, mention unrelated cleanup separately"
+      ],
+      "sample_id": "0023-drop-goal-driven-execution-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Preciso de mais contexto antes de agir. **Bloqueadores:** - Qual parser est\u00e1 com flakiness? (arquivo/m\u00f3dulo) - Qual \u00e9 o sintoma \u2014 falha intermitente em qual teste espec\u00edfico? - \"Tests are slow\" \u00e9 contexto ou pedido para otimizar tamb\u00e9m? ...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected: define a reproducer or smallest oracle before closure"
+      ],
+      "sample_id": "0024-drop-goal-driven-execution-E4-verification-quick-patch"
+    },
+    {
+      "condition": "distractor",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "D1-typo",
+      "excerpt": "Vou localizar e corrigir o typo no README.",
+      "gate": "distractor",
+      "reasons": [
+        "missing expected: small direct edit"
+      ],
+      "sample_id": "0025-distractor-D1-typo"
+    },
+    {
+      "condition": "distractor",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "D2-read-only",
+      "excerpt": "Qual arquivo voc\u00ea quer que eu leia? Nenhum caminho foi fornecido.",
+      "gate": "distractor",
+      "reasons": [
+        "missing expected: answer from the file"
+      ],
+      "sample_id": "0026-distractor-D2-read-only"
+    }
+  ],
+  "git_head": "08ba5a34cc4aa262f033d061bd903797be99c85f",
+  "grader_sha": "e7ed21af3d9877858b33209104b43180f200b5b24ac2747d6dbea1cf18aa2c6c",
+  "grader_version": "deterministic-substring@0.1.1",
+  "metrics": {
+    "all_failures_have_excerpt": true,
+    "backend_declared": true,
+    "backend_error_count": 0,
+    "behavioral_lift": 0.0,
+    "certification_class": "behavior-v1-rc",
+    "dataset_sha_present": true,
+    "distractor_fail_rate": 1.0,
+    "distractor_leak_rate": 0.0,
+    "duplicate_sample_count": 0,
+    "evidence_limits_declared": true,
+    "git_head_present": true,
+    "grader_sha_present": true,
+    "grader_version_declared": true,
+    "plan_run_parity": 1.0,
+    "raw_evidence_coverage": 1.0,
+    "trigger_pass_rate_full": 0.0,
+    "trigger_pass_rate_none": 0.0,
+    "unique_sample_coverage": 1.0
+  },
+  "model": "sonnet",
+  "pass_rate": 0.0,
+  "passed": 0,
+  "planned_calls": 26,
+  "run_id": "behavior-v1-rc-claude-2026-05-05-grader-011",
+  "runner_version": "0.1.0"
+}
