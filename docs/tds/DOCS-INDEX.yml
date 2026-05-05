@@ -309,3 +309,10 @@ documents:
     consumer: benchmark reviewers
     source_of_truth: false
     evidence_level: L4
+  - path: docs/evidence/reports/context-mesh/context-mesh-v1-rc-closure-2026-05-05/REPORT.md
+    id: evidence.context_mesh.v1_rc_closure_2026_05_05
+    class: evidence
+    status: active
+    consumer: certification reviewers and next-loop planners
+    source_of_truth: false
+    evidence_level: L4
