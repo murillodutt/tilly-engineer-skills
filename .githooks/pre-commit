@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+python3 scripts/validate_reference_package.py
+python3 scripts/context_mesh_plan.py
+python3 .agents/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test
+git diff --check
+git diff --cached --check

@@ -1,0 +1,19 @@
+{
+  "name": "tilly-engineer-skills",
+  "description": "Portable engineering discipline to reduce ambiguity, overcomplication, drive-by edits, and false completion in coding agents",
+  "version": "0.1.0",
+  "author": {
+    "name": "forrestchang"
+  },
+  "license": "MIT",
+  "keywords": [
+    "guidelines",
+    "best-practices",
+    "coding",
+    "tilly",
+    "engineering-discipline"
+  ],
+  "skills": [
+    "./skills/tilly-guidelines"
+  ]
+}
