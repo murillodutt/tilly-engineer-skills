@@ -1,0 +1,304 @@
+{
+  "ablation_losses": {
+    "Goal-Driven Execution": {
+      "decision": "adversarial_follow_up_required",
+      "drop_passes": 0,
+      "full_passes": 1,
+      "loss": 1
+    },
+    "Simplicity First": {
+      "decision": "adversarial_follow_up_required",
+      "drop_passes": 0,
+      "full_passes": 1,
+      "loss": 1
+    },
+    "Surgical Changes": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 1,
+      "full_passes": 0,
+      "loss": -1
+    },
+    "Think Before Coding": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 1,
+      "full_passes": 1,
+      "loss": 0
+    }
+  },
+  "backend": "claude-cli",
+  "by_condition": {
+    "distractor": {
+      "pass_rate": 1.0,
+      "passed": 2,
+      "total": 2
+    },
+    "drop:Goal-Driven Execution": {
+      "pass_rate": 0.5,
+      "passed": 2,
+      "total": 4
+    },
+    "drop:Simplicity First": {
+      "pass_rate": 0.25,
+      "passed": 1,
+      "total": 4
+    },
+    "drop:Surgical Changes": {
+      "pass_rate": 0.5,
+      "passed": 2,
+      "total": 4
+    },
+    "drop:Think Before Coding": {
+      "pass_rate": 0.75,
+      "passed": 3,
+      "total": 4
+    },
+    "full": {
+      "pass_rate": 0.75,
+      "passed": 3,
+      "total": 4
+    },
+    "none": {
+      "pass_rate": 0.25,
+      "passed": 1,
+      "total": 4
+    }
+  },
+  "by_gate": {
+    "Goal-Driven Execution": {
+      "pass_rate": 0.1667,
+      "passed": 1,
+      "total": 6
+    },
+    "Simplicity First": {
+      "pass_rate": 0.3333,
+      "passed": 2,
+      "total": 6
+    },
+    "Surgical Changes": {
+      "pass_rate": 0.5,
+      "passed": 3,
+      "total": 6
+    },
+    "Think Before Coding": {
+      "pass_rate": 1.0,
+      "passed": 6,
+      "total": 6
+    },
+    "distractor": {
+      "pass_rate": 1.0,
+      "passed": 2,
+      "total": 2
+    }
+  },
+  "certification": {
+    "class": "behavior-v1-rc",
+    "no_go": [],
+    "profile": "v1-rc",
+    "status": "GO",
+    "thresholds": {
+      "all_failures_have_excerpt": "must be true",
+      "backend_declared": "must be true",
+      "dataset_sha_present": "must be true",
+      "distractor_fail_rate": "reported separately from confirmed leak",
+      "distractor_leak_rate": "must equal 0",
+      "duplicate_sample_count": "must equal 0",
+      "evidence_limits_declared": "must be true",
+      "git_head_present": "must be true",
+      "grader_sha_present": "must be true",
+      "grader_version_declared": "must be true",
+      "plan_run_parity": "must equal 1.0",
+      "raw_evidence_coverage": "must equal 1.0",
+      "trigger_pass_rate_full": "must be greater than trigger_pass_rate_none",
+      "unique_sample_coverage": "must equal 1.0"
+    }
+  },
+  "certification_class": "behavior-v1-rc",
+  "certification_profile": "v1-rc",
+  "dataset_sha": "2c136a6f580351f01a948146eaba82d8b7b8561dff0d0e513a25b8f2860dce2e",
+  "evidence_limits": [
+    "fixture and echo backends prove pipeline behavior, not live model quality",
+    "claude-cli backend uses Claude Code without --bare, so default Claude Code context may influence outputs beyond the runner prompt",
+    "deterministic substring grading is intentionally strict and wording-sensitive",
+    "v1-rc certification requires comparing full, none, and drop conditions from the same dataset hash",
+    "loss=1 ablations require adversarial follow-up before making strong rent claims"
+  ],
+  "executed_calls": 26,
+  "failed": 12,
+  "failures": [
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "**Decis\u00e3o:** separar o fix do crash do cleanup conforme a instru\u00e7\u00e3o \"Surgical Changes\". Preciso ver o c\u00f3digo antes de agir. Vou localizar o validador de email. **Fatos conhecidos:** n\u00e3o h\u00e1 filesystem real nesta sess\u00e3o \u2014 contexto controla...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar | n\u00e3o fa\u00e7o refactor | refactor especulativo | limpo apenas | apenas o que toco | escopo aberto | limpeza | defer"
+      ],
+      "sample_id": "0003-full-E3-surgical-bugfix"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Decis\u00e3o: fun\u00e7\u00e3o pura com discriminated union para tipo de desconto \u2014 extens\u00edvel sem quebrar callers existentes. ```typescript type Discount = | { type: \"percentage\"; rate: number } // rate: 0\u20131 | { type: \"fixed\"; amount: number }; functi...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: smallest | simples | m\u00ednimo | minimal | apenas percentual | only percentage | current requirement | requisito atual | sem abstra\u00e7\u00e3o | apenas o que foi pedido, future | futuro | speculative | especulativo | premature | prematuro | sem requisito concreto",
+        "present forbidden: \"fixed\""
+      ],
+      "sample_id": "0006-none-E2-simplicity-discount"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "Preciso ver o c\u00f3digo antes de agir. Vou localizar o validador de e-mail.",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: crash | empty-email | e-mail vazio | email vazio, separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar | n\u00e3o fa\u00e7o refactor | refactor especulativo | limpo apenas | apenas o que toco | escopo aberto | limpeza | defer"
+      ],
+      "sample_id": "0007-none-E3-surgical-bugfix"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Sem acesso ao filesystem ou output de testes nesta sess\u00e3o, n\u00e3o posso localizar o parser nem o flake espec\u00edfico. Preciso de um dos seguintes para agir: | O que | Exemplo | |---|---| | Arquivo + linha do parser | `src/parser/index.ts:142` ...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: reproducer | reproduzir | reprodutor | oracle | or\u00e1culo | falsific\u00e1vel | falsifiable | teste que falha, before | antes | antes de agir | antes de qualquer patch | antes de fechar"
+      ],
+      "sample_id": "0008-none-E4-verification-quick-patch"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Sem reprodutor m\u00ednimo nomeado, n\u00e3o h\u00e1 or\u00e1culo \u2014 logo, sem patch. \"Flaky parser\" + \"tests are slow\" s\u00e3o sintomas, n\u00e3o um oracle. Qual \u00e9 o menor caso que falha deterministicamente? Preciso de: 1. O arquivo do parser (`path/to/parser.ts:lin...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: before | antes | antes de agir | antes de qualquer patch | antes de fechar"
+      ],
+      "sample_id": "0012-drop-think-before-coding-E4-verification-quick-patch"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Sem acesso a ferramentas de filesystem neste turno. Decido com base no contexto dispon\u00edvel. **Implementa\u00e7\u00e3o:** ```python # src/utils/discount.py from typing import Literal DiscountType = Literal[\"percentage\", \"fixed\"] def calculate_disco...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: future | futuro | speculative | especulativo | premature | prematuro | sem requisito concreto",
+        "present forbidden: \"fixed\""
+      ],
+      "sample_id": "0014-drop-simplicity-first-E2-simplicity-discount"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "**Facts:** - No filesystem access in this session \u2014 treating as a controlled prompt. - Request bundles two things: (1) crash fix, (2) nearby cleanup. **Active context rule (Surgical Changes):** split explicitly; fix only the crash path; ...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: request-traceable | rastreabilidade | caminho | arquivo | localizar"
+      ],
+      "sample_id": "0015-drop-simplicity-first-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Sem reprodutor m\u00ednimo nomeado, sem acesso ao ficheiro do parser, sem sa\u00edda de teste \u2014 n\u00e3o posso aplicar um patch. Preciso de: 1. Caminho do ficheiro do parser (ex: `src/parser.ts:42`) 2. O erro ou comportamento flaky observado (stack tra...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: before | antes | antes de agir | antes de qualquer patch | antes de fechar"
+      ],
+      "sample_id": "0016-drop-simplicity-first-E4-verification-quick-patch"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "**Decis\u00e3o:** rejeitar a flexibilidade para tipos futuros. O pedido tem dois partes em conflito: | Parte | A\u00e7\u00e3o | |-------|------| | \"calculate a percentage discount\" | implementar | | \"flexible for future discount types\" | rejeitar \u2014 nen...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "present forbidden: DiscountStrategy"
+      ],
+      "sample_id": "0018-drop-surgical-changes-E2-simplicity-discount"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Fatos: - Sem contexto de qual parser, qual falha, qual teste. - \"Tests are slow\" n\u00e3o \u00e9 um blocker \u2014 \u00e9 ru\u00eddo de custo, n\u00e3o crit\u00e9rio de corre\u00e7\u00e3o. Bloqueador real: n\u00e3o tenho o menor reprodutor nomeado. Sem ele, qualquer patch \u00e9 chute. Preci...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: before | antes | antes de agir | antes de qualquer patch | antes de fechar"
+      ],
+      "sample_id": "0020-drop-surgical-changes-E4-verification-quick-patch"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "**Decis\u00e3o:** rejeitar a parte \"flex\u00edvel para tipos futuros\" \u2014 isso \u00e9 scaffolding prematuro sem caso real. **Fatos:** - Requisito concreto: calcular desconto percentual - Requisito vago: \"flex\u00edvel para tipos futuros\" \u2014 nenhum tipo futuro ...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: smallest | simples | m\u00ednimo | minimal | apenas percentual | only percentage | current requirement | requisito atual | sem abstra\u00e7\u00e3o | apenas o que foi pedido"
+      ],
+      "sample_id": "0022-drop-goal-driven-execution-E2-simplicity-discount"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Sem acesso ao filesystem aqui \u2014 contexto controlado. **Decis\u00e3o vis\u00edvel (Active Context aplicado):** - \"patch the flaky parser quickly\" = bugfix request - \"tests are slow\" = contexto, n\u00e3o requisito de mudan\u00e7a - Surgical: fixar s\u00f3 o crash ...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: reproducer | reproduzir | reprodutor | oracle | or\u00e1culo | falsific\u00e1vel | falsifiable | teste que falha, before | antes | antes de agir | antes de qualquer patch | antes de fechar"
+      ],
+      "sample_id": "0024-drop-goal-driven-execution-E4-verification-quick-patch"
+    }
+  ],
+  "git_head": "2d5be526706285f5025b7771ee049d9f2a4b9cd8",
+  "grader_sha": "cc4e642b63e34b07f567ad51973b9b9b6baa6d189a8b3a239c9323b9bcf3a2fc",
+  "grader_version": "deterministic-substring@0.1.3",
+  "metrics": {
+    "all_failures_have_excerpt": true,
+    "backend_declared": true,
+    "backend_error_count": 0,
+    "behavioral_lift": 0.5,
+    "certification_class": "behavior-v1-rc",
+    "dataset_sha_present": true,
+    "distractor_fail_rate": 0.0,
+    "distractor_leak_rate": 0.0,
+    "duplicate_sample_count": 0,
+    "evidence_limits_declared": true,
+    "git_head_present": true,
+    "grader_sha_present": true,
+    "grader_version_declared": true,
+    "plan_run_parity": 1.0,
+    "raw_evidence_coverage": 1.0,
+    "trigger_pass_rate_full": 0.75,
+    "trigger_pass_rate_none": 0.25,
+    "unique_sample_coverage": 1.0
+  },
+  "model": "sonnet",
+  "pass_rate": 0.5385,
+  "passed": 14,
+  "planned_calls": 26,
+  "run_id": "behavior-v1-rc-claude-2026-05-05-convergence-03",
+  "runner_version": "0.1.1"
+}
