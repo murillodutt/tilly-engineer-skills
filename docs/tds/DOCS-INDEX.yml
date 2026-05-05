@@ -316,3 +316,10 @@ documents:
     consumer: certification reviewers and next-loop planners
     source_of_truth: false
     evidence_level: L4
+  - path: docs/evidence/reports/context-mesh/adapter-parity-readiness-2026-05-05/REPORT.md
+    id: evidence.context_mesh.adapter_parity_readiness_2026_05_05
+    class: evidence
+    status: active
+    consumer: certification reviewers and adapter authors
+    source_of_truth: false
+    evidence_level: L3
