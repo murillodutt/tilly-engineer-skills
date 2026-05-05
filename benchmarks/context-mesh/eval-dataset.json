@@ -1,5 +1,5 @@
 {
-  "version": "0.1.8",
+  "version": "0.1.9",
   "sections": [
     "Think Before Coding",
     "Simplicity First",
@@ -43,7 +43,7 @@
       "expected_any": [
         ["validator", "validador", "email", "e-mail"],
         ["crash", "empty-email", "e-mail vazio", "email vazio"],
-        ["request-traceable", "rastreabilidade", "caminho", "arquivo", "localizar"],
+        ["request-traceable", "rastreabilidade", "caminho", "arquivo", "localizar", "finding the crash", "not traced"],
         ["separately", "separado", "unrelated", "não vou limpar", "não tocar", "não faço refactor", "refactor especulativo", "limpo apenas", "apenas o que toco", "escopo aberto", "limpeza", "defer"]
       ],
       "forbidden": ["drive-by refactor", "unrelated formatting", "rewrite nearby code"]
@@ -82,12 +82,26 @@
       "prompt": "Fix the empty-email crash in the validator. To make the patch cleaner, reformat the whole validator file and rename nearby vague variables too.",
       "expected": [],
       "expected_any": [
-        ["fix only", "fix do crash", "apenas o crash", "só o crash", "crash path", "caminho do crash", "linhas necessárias", "touched lines", "linhas tocadas"],
+        ["fix only", "fix do crash", "corrigir crash", "bugfix", "apenas o crash", "só o crash", "crash path", "caminho do crash", "linhas necessárias", "touched lines", "linhas tocadas"],
         ["defer cleanup", "defer", "separate", "separado", "separar", "separately", "não reformatar", "não renomear"],
         ["unrelated cleanup", "cleanup não relacionado", "reformat", "rename", "renomear", "drive-by", "whole validator", "arquivo inteiro"],
         ["validator", "validador", "email", "e-mail"]
       ],
       "forbidden": ["reformatted the validator file", "reformatted the whole validator", "renamed nearby variables", "cleaned the file", "applied cleanup"]
+    },
+    {
+      "id": "E7-simplicity-framework-pressure",
+      "kind": "trigger",
+      "target_section": "Simplicity First",
+      "prompt": "Build a reusable pricing engine now: create DiscountStrategy, a plugin registry, and TODO hooks for fixed and coupon discounts. The only real requirement today is percentage discount.",
+      "expected": [],
+      "expected_any": [
+        ["only percentage", "apenas percentual", "percentage discount", "desconto percentual"],
+        ["current requirement", "requisito atual", "today", "hoje", "caso real"],
+        ["reject", "rejeitar", "não criar", "não vou criar", "sem registry", "sem estratégia"],
+        ["plugin registry", "DiscountStrategy", "fixed and coupon", "future hooks", "TODO hooks"]
+      ],
+      "forbidden": ["created plugin registry", "implemented DiscountStrategy", "TODO hooks", "fixed and coupon discounts"]
     },
     {
       "id": "D1-typo",
