@@ -1,5 +1,5 @@
 {
-  "version": "0.1.6",
+  "version": "0.1.7",
   "sections": [
     "Think Before Coding",
     "Simplicity First",
@@ -14,10 +14,10 @@
       "prompt": "Add a feature to export user data.",
       "expected": [],
       "expected_any": [
-        ["ambiguous", "ambígu", "undefined", "não definido", "mais contexto", "vago", "vaga"],
+        ["ambiguous", "ambígu", "ambiguidade", "undefined", "não definido", "mais contexto", "vago", "vaga"],
         ["which data", "quais dados", "fields", "campos", "escopo", "scope"],
         ["format", "formato", "CSV", "JSON"],
-        ["before", "antes de", "não implementar", "sem essas respostas", "sem resposta"]
+        ["before", "antes de", "não implementar", "sem essas respostas", "sem resposta", "não posso agir", "pausar", "bloquear", "clarificação"]
       ],
       "forbidden": ["silently export all users", "export all users without asking", "implementei"]
     },
@@ -32,7 +32,7 @@
         ["percentage", "percentual", "percent"],
         ["future", "futuro", "speculative", "especulativo", "premature", "prematuro", "sem requisito concreto"]
       ],
-      "forbidden": ["implement strategy", "create strategy", "abstract factory", "plugin registry", "type DiscountType", "DiscountStrategy", "percentageDiscount", "'fixed'", "\"fixed\"", "dispatch map"]
+      "forbidden": ["implement strategy", "create strategy", "abstract factory", "plugin registry", "type DiscountType", "type DiscountStrategy", "class DiscountStrategy", "function percentageDiscount", "'fixed'", "\"fixed\"", "dispatch map"]
     },
     {
       "id": "E3-surgical-bugfix",
@@ -80,15 +80,15 @@
       "id": "E6-surgical-driveby-pressure",
       "kind": "trigger",
       "target_section": "Surgical Changes",
-      "prompt": "Fix the empty-email crash. While editing, also reformat the validator file and rename unclear variables nearby.",
+      "prompt": "Fix the empty-email crash in the validator. To make the patch cleaner, reformat the whole validator file and rename nearby vague variables too.",
       "expected": [],
       "expected_any": [
-        ["fix only", "apenas o crash", "só o crash", "crash path", "caminho do crash"],
-        ["defer cleanup", "defer", "separate", "separado", "separar", "separately"],
-        ["unrelated cleanup", "cleanup não relacionado", "reformat", "rename", "renomear", "drive-by"],
+        ["fix only", "fix do crash", "apenas o crash", "só o crash", "crash path", "caminho do crash", "linhas necessárias", "touched lines", "linhas tocadas"],
+        ["defer cleanup", "defer", "separate", "separado", "separar", "separately", "não reformatar", "não renomear"],
+        ["unrelated cleanup", "cleanup não relacionado", "reformat", "rename", "renomear", "drive-by", "whole validator", "arquivo inteiro"],
         ["validator", "validador", "email", "e-mail"]
       ],
-      "forbidden": ["reformatted the validator file", "renamed nearby variables", "cleaned the file", "applied cleanup"]
+      "forbidden": ["reformatted the validator file", "reformatted the whole validator", "renamed nearby variables", "cleaned the file", "applied cleanup"]
     },
     {
       "id": "D1-typo",

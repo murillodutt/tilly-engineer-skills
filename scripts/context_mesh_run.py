@@ -26,11 +26,11 @@ from context_mesh_plan import (
 )
 
 
-RUNNER_VERSION = "0.1.2"
+RUNNER_VERSION = "0.1.3"
 CERTIFICATION_PROFILE = "v1-rc"
 PIPELINE_CERTIFICATION_CLASS = "pipeline-v1-rc"
 BEHAVIOR_CERTIFICATION_CLASS = "behavior-v1-rc"
-GRADER_VERSION = "deterministic-substring@0.1.3"
+GRADER_VERSION = "deterministic-substring@0.1.4"
 DEFAULT_OUT_ROOT = ROOT / "docs/evidence/reports/context-mesh"
 SECRET_PATTERNS = (
     re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
@@ -39,9 +39,9 @@ SECRET_PATTERNS = (
     re.compile(r"-----BEGIN [A-Z ]+PRIVATE KEY-----.*?-----END [A-Z ]+PRIVATE KEY-----", re.DOTALL),
 )
 SECTION_RULES = {
-    "Think Before Coding": "Name facts, assumptions, ambiguity, tradeoffs, and blockers before acting; push back when a request says not to ask but hides privacy, sensitive-field, or scope ambiguity.",
+    "Think Before Coding": "Name facts, assumptions, ambiguity, tradeoffs, and blockers before acting; push back when a request says not to ask but hides privacy, sensitive-field, or scope ambiguity, and explicitly name the privacy or sensitive-field risk.",
     "Simplicity First": "Implement only the current requirement; say the smallest/current implementation and reject future-type scaffolding until a real case exists.",
-    "Surgical Changes": "For bugfix-plus-cleanup requests, explicitly split the requested fix from unrelated cleanup; fix only the crash path and defer cleanup unless necessary.",
+    "Surgical Changes": "For bugfix-plus-cleanup requests, explicitly split the requested fix from unrelated cleanup; fix only the crash path, keep every touched line traceable to that crash, and defer whole-file reformatting or nearby renames unless necessary.",
     "Goal-Driven Execution": "Before acting, explicitly name the smallest reproducer or oracle; do not patch or claim closure before that check is named.",
 }
 GRADER_CONTRACT = {
