@@ -26,11 +26,11 @@ from context_mesh_plan import (
 )
 
 
-RUNNER_VERSION = "0.1.3"
+RUNNER_VERSION = "0.1.4"
 CERTIFICATION_PROFILE = "v1-rc"
 PIPELINE_CERTIFICATION_CLASS = "pipeline-v1-rc"
 BEHAVIOR_CERTIFICATION_CLASS = "behavior-v1-rc"
-GRADER_VERSION = "deterministic-substring@0.1.4"
+GRADER_VERSION = "deterministic-substring@0.1.5"
 DEFAULT_OUT_ROOT = ROOT / "docs/evidence/reports/context-mesh"
 SECRET_PATTERNS = (
     re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
