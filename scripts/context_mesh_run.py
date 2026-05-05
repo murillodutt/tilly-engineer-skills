@@ -30,7 +30,7 @@ RUNNER_VERSION = "0.1.0"
 CERTIFICATION_PROFILE = "v1-rc"
 PIPELINE_CERTIFICATION_CLASS = "pipeline-v1-rc"
 BEHAVIOR_CERTIFICATION_CLASS = "behavior-v1-rc"
-GRADER_VERSION = "deterministic-substring@0.1.0"
+GRADER_VERSION = "deterministic-substring@0.1.1"
 DEFAULT_OUT_ROOT = ROOT / "docs/evidence/reports/context-mesh"
 SECRET_PATTERNS = (
     re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
@@ -50,7 +50,53 @@ GRADER_CONTRACT = {
     "pass_rule": "all expected strings present and no forbidden strings present",
     "expected": "each dataset expected string must appear in output",
     "forbidden": "each dataset forbidden string must be absent from output",
+    "distractor_fail": "a distractor output failed expected/forbidden literal checks",
+    "distractor_leak": "a distractor output shows heavy context leakage signals",
 }
+DISTRACTOR_LEAK_SIGNALS = {
+    "mentions_contract_gate": (
+        "think before coding",
+        "simplicity first",
+        "surgical changes",
+        "goal-driven execution",
+    ),
+    "mentions_context_mesh": (
+        "context mesh",
+        "context-mesh",
+    ),
+    "mentions_benchmark_eval": (
+        "benchmark",
+        "eval",
+        "grader",
+        "certification",
+    ),
+    "mentions_governance_ceremony": (
+        "governance ceremony",
+        "multi-step governance",
+        "tds",
+        "no-go",
+        "manifest.json",
+        "raw.ndjson",
+        "summary.json",
+        "graders-sha.json",
+    ),
+    "pulls_unrelated_agent_rules": (
+        "agent rules",
+        "engineering discipline",
+        "assumptions visible",
+        "scope smaller",
+        "success falsifiable",
+    ),
+}
+TRIVIAL_TASK_OVERPLAN_SIGNALS = (
+    "implementation plan",
+    "multi-step",
+    "oracle",
+    "commit:check",
+    "benchmark",
+    "governance",
+    "architecture",
+)
 RAW_REQUIRED_FIELDS = (
     "run_id",
     "dataset_sha",
@@ -385,6 +431,28 @@ def grade_output(ev: dict[str, Any], output: str) -> dict[str, Any]:
     }
 
 
+def distractor_leak_reasons(record: dict[str, Any]) -> list[str]:
+    if record.get("kind") != "distractor":
+        return []
+
+    output = str(record.get("output", "")).lower()
+    prompt = str(record.get("prompt", "")).lower()
+    reasons: list[str] = []
+    for reason, signals in DISTRACTOR_LEAK_SIGNALS.items():
+        if any(signal in output for signal in signals):
+            reasons.append(reason)
+
+    is_trivial_typo = "typo" in prompt or "'teh' should be 'the'" in prompt
+    if is_trivial_typo and any(signal in output for signal in TRIVIAL_TASK_OVERPLAN_SIGNALS):
+        reasons.append("overplans_trivial_typo")
+
+    is_read_only = "read this file" in prompt or "summarize the title" in prompt
+    if is_read_only and "implementation plan" in output:
+        reasons.append("overplans_read_only_task")
+
+    return sorted(set(reasons))
+
+
 def rate(passed: int, total: int) -> float:
     if total == 0:
         return 0.0
@@ -450,7 +518,11 @@ def certification_metrics(records: list[dict[str, Any]], manifest: dict[str, Any
     raw_complete = sum(1 for record in records if raw_record_complete(record))
     failures = [record for record in records if not record["pass"]]
     distractors = [record for record in records if record["kind"] == "distractor"]
-    distractor_leaks = [record for record in distractors if not record["pass"]]
+    distractor_fails = [record for record in distractors if not record["pass"]]
+    distractor_leaks = [
+        record for record in distractors
+        if record.get("distractor_leak") or distractor_leak_reasons(record)
+    ]
     backend_errors = [record for record in records if record.get("backend_error")]
     unique_sample_ids = {record.get("sample_id") for record in records}
     full_rate = condition_pass_rate(records, "full")
@@ -465,6 +537,7 @@ def certification_metrics(records: list[dict[str, Any]], manifest: dict[str, Any
         "trigger_pass_rate_full": full_rate,
         "trigger_pass_rate_none": none_rate,
         "behavioral_lift": round(full_rate - none_rate, 4),
+        "distractor_fail_rate": rate(len(distractor_fails), len(distractors)),
         "distractor_leak_rate": rate(len(distractor_leaks), len(distractors)),
         "all_failures_have_excerpt": all(bool(record.get("excerpt")) for record in failures),
         "dataset_sha_present": bool(manifest.get("dataset_sha")),
@@ -485,6 +558,7 @@ def certification_decision(metrics: dict[str, Any]) -> dict[str, Any]:
         "duplicate_sample_count": "must equal 0",
         "raw_evidence_coverage": "must equal 1.0",
         "trigger_pass_rate_full": "must be greater than trigger_pass_rate_none",
+        "distractor_fail_rate": "reported separately from confirmed leak",
         "distractor_leak_rate": "must equal 0",
         "all_failures_have_excerpt": "must be true",
         "dataset_sha_present": "must be true",
@@ -583,6 +657,8 @@ def summarize(records: list[dict[str, Any]], manifest: dict[str, Any]) -> dict[s
                 "eval_id": record["eval_id"],
                 "reasons": record["reasons"],
                 "excerpt": record["excerpt"],
+                "distractor_leak": bool(record.get("distractor_leak")),
+                "distractor_leak_reasons": record.get("distractor_leak_reasons", []),
             }
             for record in records
             if not record["pass"]
@@ -624,13 +700,15 @@ def write_report(path: Path, manifest: dict[str, Any], summary: dict[str, Any]) 
             f"{value['pass_rate']:.2%}",
         ])
 
-    failure_rows = [["Sample", "Condition", "Gate", "Reason", "Excerpt"]]
+    failure_rows = [["Sample", "Condition", "Gate", "Reason", "Distractor Leak", "Leak Reasons", "Excerpt"]]
     for failure in summary["failures"][:20]:
         failure_rows.append([
             failure["sample_id"],
             failure["condition"],
             failure["gate"],
             "; ".join(failure["reasons"]),
+            str(failure["distractor_leak"]),
+            ", ".join(failure["distractor_leak_reasons"]),
             failure["excerpt"],
         ])
 
@@ -1040,6 +1118,9 @@ def execute_samples(samples: list[dict[str, Any]], backend: Backend, manifest: d
             "reasons": grading["reasons"],
             "excerpt": excerpt(output),
         }
+        leak_reasons = distractor_leak_reasons(record)
+        record["distractor_leak"] = bool(leak_reasons)
+        record["distractor_leak_reasons"] = leak_reasons
         if "shard_id" in manifest:
             record["source_shard_id"] = manifest["shard_id"]
         records.append(record)

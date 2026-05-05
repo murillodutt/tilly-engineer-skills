@@ -56,11 +56,14 @@ over-activate heavyweight guidance.
 | `full` and `drop` pass | Section is redundant or eval is weak |
 | `full` fails | Section is unclear or insufficient |
 | `none` passes | Model default or prompt leak may be enough |
-| Distractor fails | Context is too heavy or judge is too sensitive |
+| Distractor fails | The literal distractor assertion failed |
+| Distractor leaks | Heavy context changed a task that should have stayed light |
 
-Do not use `distractor_fail_rate` as the metric name. Use
-`distractor_leak_rate`: a distractor fails because heavy context leaked into a
-task that should have stayed light.
+Keep `distractor_fail_rate` separate from `distractor_leak_rate`.
+`distractor_fail_rate` measures expected/forbidden literal assertion failures.
+`distractor_leak_rate` measures confirmed heavy-context leakage signals, such
+as mentioning gates, context mesh, benchmark/eval machinery, governance
+ceremony, unrelated agent rules, or over-planning a trivial typo/read-only task.
 
 ## Certification v1-rc
 
