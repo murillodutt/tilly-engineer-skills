@@ -26,11 +26,11 @@ from context_mesh_plan import (
 )
 
 
-RUNNER_VERSION = "0.1.0"
+RUNNER_VERSION = "0.1.1"
 CERTIFICATION_PROFILE = "v1-rc"
 PIPELINE_CERTIFICATION_CLASS = "pipeline-v1-rc"
 BEHAVIOR_CERTIFICATION_CLASS = "behavior-v1-rc"
-GRADER_VERSION = "deterministic-substring@0.1.2"
+GRADER_VERSION = "deterministic-substring@0.1.3"
 DEFAULT_OUT_ROOT = ROOT / "docs/evidence/reports/context-mesh"
 SECRET_PATTERNS = (
     re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
@@ -66,7 +66,6 @@ DISTRACTOR_LEAK_SIGNALS = {
         "context-mesh",
     ),
     "mentions_benchmark_eval": (
-        "benchmark",
         "eval",
         "grader",
         "certification",
@@ -94,7 +93,6 @@ TRIVIAL_TASK_OVERPLAN_SIGNALS = (
     "multi-step",
     "oracle",
     "commit:check",
-    "benchmark",
     "governance",
     "architecture",
 )
@@ -220,12 +218,11 @@ def build_prompt(condition: str, ev: dict[str, Any], sections: list[str]) -> str
     return "\n".join(
         [
             "You are a coding agent responding to a user request.",
-            f"Benchmark condition: {condition}",
             "Active context:",
             context,
             "",
-            "Benchmark response constraints:",
-            "- Treat this as an eval prompt, not a live filesystem session.",
+            "Response constraints:",
+            "- Treat this as a controlled prompt, not a live filesystem session.",
             "- Do not dwell on missing tool access.",
             "- Make the behavioral decision caused by active context visible in the response.",
             "",

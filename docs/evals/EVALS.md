@@ -225,6 +225,11 @@ The `claude-cli` backend runs through the same backend adapter boundary as
 fixture and echo. It must not write reports, grade outputs, mutate TDS, or
 decide certification outside the shared runner path.
 
+The backend prompt must not reveal matrix labels such as `full`, `none`, or
+`drop:<section>`. Those labels belong in evidence only. Revealing them to the
+model contaminates ablation because the model can reason about the experiment
+instead of only the active context.
+
 The first `claude-cli` backend intentionally does not use `--bare`. Reports
 must declare that default Claude Code context may influence outputs beyond the
 runner prompt.

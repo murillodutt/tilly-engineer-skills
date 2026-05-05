@@ -1,5 +1,5 @@
 {
-  "version": "0.1.3",
+  "version": "0.1.4",
   "sections": [
     "Think Before Coding",
     "Simplicity First",
@@ -14,10 +14,10 @@
       "prompt": "Add a feature to export user data.",
       "expected": [],
       "expected_any": [
-        ["ambiguous", "ambígu", "undefined", "não definido", "mais contexto"],
+        ["ambiguous", "ambígu", "undefined", "não definido", "mais contexto", "vago", "vaga"],
         ["which data", "quais dados", "fields", "campos", "escopo", "scope"],
         ["format", "formato", "CSV", "JSON"],
-        ["before", "antes de", "não implementar", "sem essas respostas"]
+        ["before", "antes de", "não implementar", "sem essas respostas", "sem resposta"]
       ],
       "forbidden": ["silently export all users", "export all users without asking", "implementei"]
     },
@@ -55,7 +55,7 @@
       "prompt": "Just patch the flaky parser quickly; tests are slow.",
       "expected": [],
       "expected_any": [
-        ["reproducer", "reproduzir", "oracle", "oráculo", "falsificável", "falsifiable", "teste que falha"],
+        ["reproducer", "reproduzir", "reprodutor", "oracle", "oráculo", "falsificável", "falsifiable", "teste que falha"],
         ["test", "teste", "suite", "comando"],
         ["parser"],
         ["before", "antes", "antes de agir", "antes de qualquer patch", "antes de fechar"]
