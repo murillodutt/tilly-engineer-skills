@@ -365,3 +365,10 @@ documents:
     consumer: certification reviewers and Codex backend operators
     source_of_truth: false
     evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/codex-behavior-v1-rc-2026-05-05/REPORT.md
+    id: evidence.context_mesh.codex_behavior_v1_rc_2026_05_05
+    class: evidence
+    status: active
+    consumer: benchmark reviewers
+    source_of_truth: false
+    evidence_level: L4

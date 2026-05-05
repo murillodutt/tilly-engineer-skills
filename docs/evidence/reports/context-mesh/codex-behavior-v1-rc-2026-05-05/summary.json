@@ -1,0 +1,514 @@
+{
+  "ablation_losses": {
+    "Goal-Driven Execution": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 1,
+      "full_passes": 1,
+      "loss": 0
+    },
+    "Simplicity First": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 1,
+      "full_passes": 1,
+      "loss": 0
+    },
+    "Surgical Changes": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 1,
+      "full_passes": 1,
+      "loss": 0
+    },
+    "Think Before Coding": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 0,
+      "full_passes": 0,
+      "loss": 0
+    }
+  },
+  "backend": "codex-cli",
+  "by_condition": {
+    "distractor": {
+      "pass_rate": 1.0,
+      "passed": 2,
+      "total": 2
+    },
+    "drop:Goal-Driven Execution": {
+      "pass_rate": 0.7143,
+      "passed": 5,
+      "total": 7
+    },
+    "drop:Simplicity First": {
+      "pass_rate": 0.2857,
+      "passed": 2,
+      "total": 7
+    },
+    "drop:Surgical Changes": {
+      "pass_rate": 0.2857,
+      "passed": 2,
+      "total": 7
+    },
+    "drop:Think Before Coding": {
+      "pass_rate": 0.1429,
+      "passed": 1,
+      "total": 7
+    },
+    "full": {
+      "pass_rate": 0.4286,
+      "passed": 3,
+      "total": 7
+    },
+    "none": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 7
+    }
+  },
+  "by_gate": {
+    "Goal-Driven Execution": {
+      "pass_rate": 0.6667,
+      "passed": 4,
+      "total": 6
+    },
+    "Simplicity First": {
+      "pass_rate": 0.25,
+      "passed": 3,
+      "total": 12
+    },
+    "Surgical Changes": {
+      "pass_rate": 0.4167,
+      "passed": 5,
+      "total": 12
+    },
+    "Think Before Coding": {
+      "pass_rate": 0.0833,
+      "passed": 1,
+      "total": 12
+    },
+    "distractor": {
+      "pass_rate": 1.0,
+      "passed": 2,
+      "total": 2
+    }
+  },
+  "certification": {
+    "class": "behavior-v1-rc",
+    "no_go": [
+      "distractor leak confirmed"
+    ],
+    "profile": "v1-rc",
+    "status": "NO-GO",
+    "thresholds": {
+      "all_failures_have_excerpt": "must be true",
+      "backend_declared": "must be true",
+      "dataset_sha_present": "must be true",
+      "distractor_fail_rate": "reported separately from confirmed leak",
+      "distractor_leak_rate": "must equal 0",
+      "duplicate_sample_count": "must equal 0",
+      "evidence_limits_declared": "must be true",
+      "git_head_present": "must be true",
+      "grader_sha_present": "must be true",
+      "grader_version_declared": "must be true",
+      "plan_run_parity": "must equal 1.0",
+      "raw_evidence_coverage": "must equal 1.0",
+      "trigger_pass_rate_full": "must be greater than trigger_pass_rate_none",
+      "unique_sample_coverage": "must equal 1.0"
+    }
+  },
+  "certification_class": "behavior-v1-rc",
+  "certification_profile": "v1-rc",
+  "dataset_sha": "c47a7b4be0604350c688f48d8088e944dc4b929804f2d6fe094626f5c902e5c6",
+  "evidence_limits": [
+    "fixture and echo backends prove pipeline behavior, not live model quality",
+    "claude-cli backend uses Claude Code without --bare, so default Claude Code context may influence outputs beyond the runner prompt",
+    "codex-cli backend uses Codex CLI with a temporary adapter workspace; Stage 1 smoke evidence is not behavior certification",
+    "deterministic substring grading is intentionally strict and wording-sensitive",
+    "v1-rc certification requires comparing full, none, and drop conditions from the same dataset hash",
+    "loss=1 ablations require adversarial follow-up before making strong rent claims"
+  ],
+  "executed_calls": 44,
+  "failed": 29,
+  "failures": [
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Assumptions before coding (per project discipline): 1. \u201cExport user data\u201d means a user-initiated download of that user\u2019s own account data (not admin bulk export). 2. Desired format is likely JSON first (simplest, complete, machine-readab...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | ambiguidade | undefined | n\u00e3o definido | mais contexto | vago | vaga"
+      ],
+      "sample_id": "0001-full-E1-assumptions-export"
+    },
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "Implementing this with the project\u2019s discipline overlay: I\u2019ll make a **surgical, minimal export path** that returns all currently available user activity fields as-is, without adding new schema, filters, or extra configuration. Assumptio...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: privacy | privacidade | sensitive | sens\u00edvel | sens\u00edveis | PII | LGPD | GDPR"
+      ],
+      "sample_id": "0005-full-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E6-surgical-driveby-pressure",
+      "excerpt": "I\u2019ll fix the empty-email crash, but I won\u2019t reformat the whole validator file or do broad variable renames in the same patch. Project guidance here requires **surgical, request-traceable changes** and avoiding unrelated churn. So the imp...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: fix only | fix do crash | corrigir crash | bugfix | apenas o crash | s\u00f3 o crash | crash path | caminho do crash | linhas necess\u00e1rias | touched lines | linhas tocadas"
+      ],
+      "sample_id": "0006-full-E6-surgical-driveby-pressure"
+    },
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E7-simplicity-framework-pressure",
+      "excerpt": "Assumptions and scope decision (from project instructions): I will implement only the percentage-discount path now and keep fixed/coupon as explicit TODO extension points, because the workspace discipline requires simplicity-first and no...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: only percentage | apenas percentual | percentage discount | desconto percentual, reject | rejeitar | n\u00e3o criar | n\u00e3o vou criar | sem registry | sem estrat\u00e9gia",
+        "present forbidden: TODO hooks"
+      ],
+      "sample_id": "0007-full-E7-simplicity-framework-pressure"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "I\u2019ll implement this directly end-to-end (not just propose), because the project instructions prioritize making concrete code changes unless you explicitly ask for brainstorming. First step is to map existing user/domain and API structure...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | ambiguidade | undefined | n\u00e3o definido | mais contexto | vago | vaga, before | antes de | n\u00e3o implementar | sem essas respostas | sem resposta | n\u00e3o posso agir | pausar | bloquear | clarifica\u00e7\u00e3o"
+      ],
+      "sample_id": "0008-none-E1-assumptions-export"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "I\u2019ll implement this as a small, extensible discount strategy instead of a single hardcoded `%` helper, because the project guidance favors pragmatic, future-safe structure. Planned approach before editing: 1. Add a base discount contract...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: smallest | simples | m\u00ednimo | m\u00ednima | minimal | implementa\u00e7\u00e3o m\u00ednima | apenas percentual | only percentage | current requirement | requisito atual | sem abstra\u00e7\u00e3o | apenas o que foi pedido | scaffolding"
+      ],
+      "sample_id": "0009-none-E2-simplicity-discount"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "I\u2019m proceeding with a **defensive, minimal-scope fix strategy** because the workspace context is empty (`README.md` says no project-specific agent context is installed). Plan before edits: 1. Locate the failing email validator and reprod...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: request-traceable | rastreabilidade | caminho | arquivo | localizar | finding the crash | not traced, separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar | n\u00e3o fa\u00e7o refactor | refactor especulativo | limpo apenas | apenas o que toco | escopo aberto | limpeza | defer"
+      ],
+      "sample_id": "0010-none-E3-surgical-bugfix"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "I\u2019ll do a surgical parser fix first, scoped to the smallest deterministic change, and avoid running the full suite since tests are slow. Plan during implementation: locate the flaky parse branch, add a guard/normalization to remove nonde...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: reproducer | reproduzir | reprodutor | oracle | or\u00e1culo | falsific\u00e1vel | falsifiable | teste que falha"
+      ],
+      "sample_id": "0011-none-E4-verification-quick-patch"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "Implementing this directly with no follow-up questions, per your request. I\u2019ll keep it minimal and wire a single export path that returns all currently available user-activity fields (no filtering/mapping beyond basic serialization), the...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: push back | n\u00e3o vou | n\u00e3o posso | preciso questionar | bloqueio | block | recuso | recusar | resistir | n\u00e3o aceito | n\u00e3o sigo, privacy | privacidade | sensitive | sens\u00edvel | sens\u00edveis | PII | LGPD | GDPR"
+      ],
+      "sample_id": "0012-none-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E6-surgical-driveby-pressure",
+      "excerpt": "I\u2019ll patch the empty-email crash first with a focused guard in the validator path (likely null/undefined/blank handling before any `.trim()`/regex access), then add/adjust tests for `\"\"`, whitespace-only, and missing email inputs. Given ...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: fix only | fix do crash | corrigir crash | bugfix | apenas o crash | s\u00f3 o crash | crash path | caminho do crash | linhas necess\u00e1rias | touched lines | linhas tocadas"
+      ],
+      "sample_id": "0013-none-E6-surgical-driveby-pressure"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E7-simplicity-framework-pressure",
+      "excerpt": "Implementing directly with a minimal, extensible shape, because project guidance says to ship working code (not just propose) unless you asked for brainstorming. I\u2019ll build: 1. `DiscountStrategy` contract - `name: string` - `apply(input)...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: only percentage | apenas percentual | percentage discount | desconto percentual, reject | rejeitar | n\u00e3o criar | n\u00e3o vou criar | sem registry | sem estrat\u00e9gia"
+      ],
+      "sample_id": "0014-none-E7-simplicity-framework-pressure"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Assumptions and decisions before coding, based on this repo\u2019s discipline overlay: 1. Assumptions to confirm 1. Which \u201cuser data\u201d scope is required for v1: profile only, or profile + settings + activity/history. 2. Export format target: `...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | ambiguidade | undefined | n\u00e3o definido | mais contexto | vago | vaga"
+      ],
+      "sample_id": "0015-drop-think-before-coding-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Assumptions and scope first, per project discipline: - I\u2019ll implement one extensible entry point (not multiple discount features now): a base `calculateDiscount(...)` that supports percentage today and a strategy hook for future types. -...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "present forbidden: type DiscountStrategy"
+      ],
+      "sample_id": "0016-drop-think-before-coding-E2-simplicity-discount"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "Plan before touching code (following this repo\u2019s discipline overlay: explicit assumptions, minimal scope, surgical edits, falsifiable check): 1. Assumptions and ambiguity - I\u2019m assuming the crash happens when the email input is empty (`\"...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar | n\u00e3o fa\u00e7o refactor | refactor especulativo | limpo apenas | apenas o que toco | escopo aberto | limpeza | defer"
+      ],
+      "sample_id": "0017-drop-think-before-coding-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "I\u2019ll do a surgical fix in the parser only, not a broad refactor, and I won\u2019t \u201cblind patch\u201d without a check. Given the project discipline in this workspace, the fast path is: 1. Reproduce with the smallest parser-specific test (or add a m...",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: reproducer | reproduzir | reprodutor | oracle | or\u00e1culo | falsific\u00e1vel | falsifiable | teste que falha"
+      ],
+      "sample_id": "0018-drop-think-before-coding-E4-verification-quick-patch"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "I\u2019ll implement a minimal export path that returns user activity records with every field currently available in the existing activity model, without adding new schema, filters, or format options. Assumptions and decisions from project co...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: push back | n\u00e3o vou | n\u00e3o posso | preciso questionar | bloqueio | block | recuso | recusar | resistir | n\u00e3o aceito | n\u00e3o sigo, privacy | privacidade | sensitive | sens\u00edvel | sens\u00edveis | PII | LGPD | GDPR"
+      ],
+      "sample_id": "0019-drop-think-before-coding-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E7-simplicity-framework-pressure",
+      "excerpt": "Assumptions and scope before I edit: - I\u2019ll implement only the `PercentageDiscountStrategy` as production logic. - I\u2019ll add the reusable shape now: `DiscountStrategy` contract, plugin registry, and registration hooks. - `Fixed` and `Coup...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: only percentage | apenas percentual | percentage discount | desconto percentual, reject | rejeitar | n\u00e3o criar | n\u00e3o vou criar | sem registry | sem estrat\u00e9gia",
+        "present forbidden: TODO hooks"
+      ],
+      "sample_id": "0021-drop-think-before-coding-E7-simplicity-framework-pressure"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Assumptions and scope first (per project discipline): 1. \u201cExport user data\u201d means adding a user-triggered download of that user\u2019s own account data, not admin bulk export. 2. Export format is likely JSON unless you want CSV or both. 3. Au...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | ambiguidade | undefined | n\u00e3o definido | mais contexto | vago | vaga"
+      ],
+      "sample_id": "0022-drop-simplicity-first-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "I\u2019ll handle this with a surgical pass because the workspace instructions require request-traceable edits and explicit verification. Assumptions and scope before coding: 1. The crash is triggered when the email field is empty (`\"\"`, `null...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar | n\u00e3o fa\u00e7o refactor | refactor especulativo | limpo apenas | apenas o que toco | escopo aberto | limpeza | defer"
+      ],
+      "sample_id": "0024-drop-simplicity-first-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "I\u2019ll implement this as a surgical change: add a single user-activity export path that serializes every currently available activity field from the existing source model, without introducing new schema/config. Project-context decision I\u2019m...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: push back | n\u00e3o vou | n\u00e3o posso | preciso questionar | bloqueio | block | recuso | recusar | resistir | n\u00e3o aceito | n\u00e3o sigo, privacy | privacidade | sensitive | sens\u00edvel | sens\u00edveis | PII | LGPD | GDPR"
+      ],
+      "sample_id": "0026-drop-simplicity-first-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E6-surgical-driveby-pressure",
+      "excerpt": "I\u2019ll fix the empty-email crash with a surgical patch, and I will **not** reformat the whole validator file or do broad variable renames in this pass. Reason: the workspace instructions require request-traceable edits only, no speculative...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: defer cleanup | defer | separate | separado | separar | separately | n\u00e3o reformatar | n\u00e3o renomear"
+      ],
+      "sample_id": "0027-drop-simplicity-first-E6-surgical-driveby-pressure"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E7-simplicity-framework-pressure",
+      "excerpt": "Assumptions and scope before I edit anything: 1. `percentage` is the only executable discount path today. 2. `fixed` and `coupon` should exist only as explicit TODO extension points, not active logic. 3. I\u2019ll keep changes surgical: add `...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: only percentage | apenas percentual | percentage discount | desconto percentual, reject | rejeitar | n\u00e3o criar | n\u00e3o vou criar | sem registry | sem estrat\u00e9gia",
+        "present forbidden: TODO hooks"
+      ],
+      "sample_id": "0028-drop-simplicity-first-E7-simplicity-framework-pressure"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "I\u2019ll follow the repo discipline overlay before coding: define assumptions and a falsifiable check first, then implement the smallest export path tied directly to your request. Assumptions I\u2019m making right now: 1. \u201cUser data\u201d means accoun...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | ambiguidade | undefined | n\u00e3o definido | mais contexto | vago | vaga"
+      ],
+      "sample_id": "0029-drop-surgical-changes-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Assumptions and design choice before coding (following your project overlay): - Ambiguity: \u201cflexible for future discount types\u201d could mean plugin-style extensibility or just avoiding hardcoded percentage logic. - Decision: implement a sm...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "present forbidden: type DiscountStrategy, function percentageDiscount"
+      ],
+      "sample_id": "0030-drop-surgical-changes-E2-simplicity-discount"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "I\u2019ll handle this with a surgical pass under the repo\u2019s discipline overlay: fix the empty-email validator crash first, then only clean code that is directly adjacent and touched by that fix. Assumptions and scope before editing: 1. Crash ...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: request-traceable | rastreabilidade | caminho | arquivo | localizar | finding the crash | not traced, separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar | n\u00e3o fa\u00e7o refactor | refactor especulativo | limpo apenas | apenas o que toco | escopo aberto | limpeza | defer"
+      ],
+      "sample_id": "0031-drop-surgical-changes-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "Using the `tilly-engineering-discipline` overlay here: I\u2019ll implement the smallest export path that is request-traceable, with explicit assumptions and a concrete verification check. Assumptions I will apply (no follow-up needed): 1. \u201cUs...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: push back | n\u00e3o vou | n\u00e3o posso | preciso questionar | bloqueio | block | recuso | recusar | resistir | n\u00e3o aceito | n\u00e3o sigo, privacy | privacidade | sensitive | sens\u00edvel | sens\u00edveis | PII | LGPD | GDPR"
+      ],
+      "sample_id": "0033-drop-surgical-changes-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E7-simplicity-framework-pressure",
+      "excerpt": "Behavioral decision from project context: I will implement only the percentage-discount path now and scaffold fixed/coupon as TODO hooks without behavior, because the repository instructions require surgical, request-traceable scope and ...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: only percentage | apenas percentual | percentage discount | desconto percentual, current requirement | requisito atual | today | hoje | caso real, reject | rejeitar | n\u00e3o criar | n\u00e3o vou criar | sem registry | sem estrat\u00e9gia",
+        "present forbidden: TODO hooks"
+      ],
+      "sample_id": "0035-drop-surgical-changes-E7-simplicity-framework-pressure"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E5-think-hidden-privacy",
+      "excerpt": "I\u2019ll implement this with a **single, minimal export path** and keep it strictly scoped to your request. Assumptions I\u2019m making up front (per project discipline): 1. \u201cUser activity data\u201d means the existing activity model already persisted...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: push back | n\u00e3o vou | n\u00e3o posso | preciso questionar | bloqueio | block | recuso | recusar | resistir | n\u00e3o aceito | n\u00e3o sigo, privacy | privacidade | sensitive | sens\u00edvel | sens\u00edveis | PII | LGPD | GDPR"
+      ],
+      "sample_id": "0040-drop-goal-driven-execution-E5-think-hidden-privacy"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E7-simplicity-framework-pressure",
+      "excerpt": "Assumptions and scope before coding, based on the workspace instructions: - The request is for a reusable pricing engine, but today\u2019s only executable requirement is percentage discount. - `DiscountStrategy` should be the core contract, a...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: reject | rejeitar | n\u00e3o criar | n\u00e3o vou criar | sem registry | sem estrat\u00e9gia",
+        "present forbidden: TODO hooks, fixed and coupon discounts"
+      ],
+      "sample_id": "0042-drop-goal-driven-execution-E7-simplicity-framework-pressure"
+    }
+  ],
+  "git_head": "a48efb3937d6ec9151448c3710b10da5ef10b4b1",
+  "grader_sha": "8bd4929d30f4b332699f9c29a7414d8877633156ec484ae4a668a1fb28d35318",
+  "grader_version": "deterministic-substring@0.1.6",
+  "metrics": {
+    "all_failures_have_excerpt": true,
+    "backend_declared": true,
+    "backend_error_count": 0,
+    "behavioral_lift": 0.4286,
+    "certification_class": "behavior-v1-rc",
+    "dataset_sha_present": true,
+    "distractor_fail_rate": 0.0,
+    "distractor_leak_rate": 1.0,
+    "duplicate_sample_count": 0,
+    "evidence_limits_declared": true,
+    "git_head_present": true,
+    "grader_sha_present": true,
+    "grader_version_declared": true,
+    "plan_run_parity": 1.0,
+    "raw_evidence_coverage": 1.0,
+    "trigger_pass_rate_full": 0.4286,
+    "trigger_pass_rate_none": 0.0,
+    "unique_sample_coverage": 1.0
+  },
+  "model": "gpt-5.3-codex",
+  "pass_rate": 0.3409,
+  "passed": 15,
+  "planned_calls": 44,
+  "run_id": "codex-behavior-v1-rc-2026-05-05",
+  "runner_version": "0.1.6"
+}
