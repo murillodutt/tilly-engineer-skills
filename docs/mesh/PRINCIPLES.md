@@ -1,3 +1,12 @@
+---
+tds_id: mesh.principles
+tds_class: mesh
+status: active
+consumer: adapter authors and agents
+source_of_truth: true
+evidence_level: L1
+---
+
 # Tilly Engineering Discipline Principles
 
 This is the tool-neutral source of truth. Tool-specific files should reduce this

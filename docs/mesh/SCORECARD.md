@@ -1,3 +1,12 @@
+---
+tds_id: mesh.scorecard
+tds_class: mesh
+status: active
+consumer: adopters and reviewers
+source_of_truth: true
+evidence_level: L1
+---
+
 # Adoption Scorecard
 
 Use this scorecard to evaluate whether a project adopted Tilly Engineering

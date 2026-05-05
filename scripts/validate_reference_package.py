@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 import json
 import subprocess
@@ -13,26 +14,41 @@ ROOT = Path(__file__).resolve().parents[1]
 
 REQUIRED_PATHS = (
     "README.md",
+    "AGENTS.md",
     "package.json",
     "LICENSE",
     "NOTICE.md",
-    "PRINCIPLES.md",
-    "METHOD.md",
-    "EVALS.md",
-    "AGENTS.md",
-    "CODEX.md",
-    "SCORECARD.md",
-    "CLAUDE.md",
-    "CURSOR.md",
-    ".cursor/rules/tilly-guidelines.mdc",
-    "skills/tilly-guidelines/SKILL.md",
-    ".agents/skills/tilly-engineering-discipline/SKILL.md",
-    ".agents/skills/tilly-engineering-discipline/agents/openai.yaml",
-    ".agents/skills/tilly-engineering-discipline/references/failure-patterns.md",
-    ".agents/skills/tilly-engineering-discipline/references/source-portability.md",
-    ".agents/skills/tilly-engineering-discipline/scripts/discipline_oracle.py",
+    "docs/INDEX.md",
+    "docs/architecture/PROJECT-STRUCTURE.md",
+    "docs/governance/AGENTIC-ALIGNMENT-GOVERNANCE.md",
+    "docs/mesh/PRINCIPLES.md",
+    "docs/mesh/CONTEXT-MESH-METHOD.md",
+    "docs/mesh/SCORECARD.md",
+    "docs/evals/EVALS.md",
+    "docs/evals/EXAMPLES.md",
+    "docs/adapters/CODEX.md",
+    "docs/adapters/CLAUDE.md",
+    "docs/adapters/CURSOR.md",
+    "docs/adapters/MATERIALIZATION.md",
+    "docs/tds/DOCS-INDEX.yml",
+    "docs/tds/TDS-SPEC.md",
+    "src/adapters/codex/AGENTS.md",
+    "src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md",
+    "src/adapters/codex/skills/tilly-engineering-discipline/agents/openai.yaml",
+    "src/adapters/codex/skills/tilly-engineering-discipline/references/failure-patterns.md",
+    "src/adapters/codex/skills/tilly-engineering-discipline/references/source-portability.md",
+    "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py",
+    "src/adapters/claude/CLAUDE.md",
+    "src/adapters/claude/plugin/plugin.json",
+    "src/adapters/claude/plugin/marketplace.json",
+    "src/adapters/claude/skills/tilly-guidelines/SKILL.md",
+    "src/adapters/cursor/CURSOR.md",
+    "src/adapters/cursor/rules/tilly-guidelines.mdc",
     "benchmarks/context-mesh/eval-dataset.json",
     "scripts/context_mesh_plan.py",
+    "scripts/context_mesh_run.py",
+    "scripts/materialize_adapter.py",
+    "scripts/validate_tds.py",
     ".githooks/pre-commit",
 )
 
@@ -45,26 +61,126 @@ REQUIRED_TERMS = (
 )
 
 SYNCED_FILES = (
-    "PRINCIPLES.md",
     "AGENTS.md",
+    "docs/mesh/PRINCIPLES.md",
+    "src/adapters/codex/AGENTS.md",
+    "src/adapters/claude/CLAUDE.md",
+    "src/adapters/cursor/rules/tilly-guidelines.mdc",
+    "src/adapters/claude/skills/tilly-guidelines/SKILL.md",
+    "src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md",
+)
+
+FORBIDDEN_ROOT_PATHS = (
+    ".agents",
+    ".claude-plugin",
+    ".cursor",
+    "skills",
     "CLAUDE.md",
-    ".cursor/rules/tilly-guidelines.mdc",
-    "skills/tilly-guidelines/SKILL.md",
-    ".agents/skills/tilly-engineering-discipline/SKILL.md",
+    "CODEX.md",
+    "CURSOR.md",
+    "PRINCIPLES.md",
+    "METHOD.md",
+    "EVALS.md",
+    "EXAMPLES.md",
+    "SCORECARD.md",
+    "CHANGELOG.md",
+)
+
+REQUIRED_PACKAGE_SCRIPTS = (
+    "validate",
+    "materialize:all",
+    "materialize:codex",
+    "materialize:cursor",
+    "materialize:claude",
+    "materialize:check",
+    "tds:validate",
+    "oracle:self-test",
+    "benchmark:plan",
+    "benchmark:run",
+    "commit:check",
 )
 
 
+def package_paths() -> list[Path]:
+    result = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+        cwd=ROOT,
+        text=False,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return [
+            path.relative_to(ROOT)
+            for path in ROOT.rglob("*")
+            if path.is_file() and ".git" not in path.relative_to(ROOT).parts
+        ]
+
+    return [
+        Path(raw.decode("utf-8"))
+        for raw in result.stdout.split(b"\0")
+        if raw
+    ]
+
+
+def git_path_list(*args: str) -> set[Path]:
+    result = subprocess.run(
+        ["git", *args, "-z"],
+        cwd=ROOT,
+        text=False,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return set()
+    return {
+        Path(raw.decode("utf-8"))
+        for raw in result.stdout.split(b"\0")
+        if raw
+    }
+
+
+def staged_ready_failures() -> list[str]:
+    failures: list[str] = []
+    indexed = git_path_list("ls-files", "--cached")
+    untracked = git_path_list("ls-files", "--others", "--exclude-standard")
+
+    for path in sorted(untracked):
+        failures.append(f"untracked package path before commit: {path}")
+
+    for relpath in REQUIRED_PATHS:
+        path = Path(relpath)
+        if path not in indexed:
+            failures.append(f"required path is not staged/tracked: {relpath}")
+
+    return failures
+
+
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--staged-ready", action="store_true")
+    args = parser.parse_args()
+
     failures: list[str] = []
 
     for relpath in REQUIRED_PATHS:
         if not (ROOT / relpath).exists():
             failures.append(f"missing required path: {relpath}")
 
-    for path in ROOT.rglob(".DS_Store"):
-        if ".git" in path.relative_to(ROOT).parts:
-            continue
-        failures.append(f"local artifact present: {path.relative_to(ROOT)}")
+    for relpath in FORBIDDEN_ROOT_PATHS:
+        if (ROOT / relpath).exists():
+            failures.append(f"source leaked back into root: {relpath}")
+
+    for path in package_paths():
+        if path.name == ".DS_Store":
+            failures.append(f"package artifact present: {path}")
+        if path.name == "CHANGELOG.md":
+            failures.append(f"changelog must remain in Git history, not a file: {path}")
+        if path.name == ".cursorrules":
+            failures.append(f"legacy Cursor rules file is forbidden: {path}")
+
+    if args.staged_ready:
+        failures.extend(staged_ready_failures())
 
     for relpath in SYNCED_FILES:
         path = ROOT / relpath
@@ -80,13 +196,17 @@ def main() -> int:
         package = json.loads(package_json.read_text(encoding="utf-8"))
         if package.get("version") != "0.1.0":
             failures.append("package.json version must be 0.1.0")
+        scripts = package.get("scripts", {})
+        for script in REQUIRED_PACKAGE_SCRIPTS:
+            if script not in scripts:
+                failures.append(f"package.json missing script: {script}")
 
-    for relpath in (".claude-plugin/plugin.json", ".claude-plugin/marketplace.json"):
+    for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
         path = ROOT / relpath
         if path.exists() and "0.1.0" not in path.read_text(encoding="utf-8"):
             failures.append(f"{relpath} must declare 0.1.0")
 
-    oracle = ROOT / ".agents/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
+    oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():
         result = subprocess.run(
             [sys.executable, str(oracle), "--self-test"],
@@ -111,6 +231,34 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("context_mesh_plan.py failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    materializer = ROOT / "scripts/materialize_adapter.py"
+    if materializer.exists():
+        result = subprocess.run(
+            [sys.executable, str(materializer), "all", "--check"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("materialize_adapter.py all --check failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    tds_validator = ROOT / "scripts/validate_tds.py"
+    if tds_validator.exists():
+        result = subprocess.run(
+            [sys.executable, str(tds_validator)],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("validate_tds.py failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 

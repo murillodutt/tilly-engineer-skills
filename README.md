@@ -1,22 +1,18 @@
-# Tilly Engineering Discipline
+# Tilly Engineer Skills
 
 Portable agent-engineering discipline for reducing ambiguity, overbuilding,
 drive-by edits, and false completion in coding agents.
 
 Version: `0.1.0`.
 
-This is the independent DUTT reference project for Tilly Engineering Discipline.
-It started from a small Claude/Cursor guideline package, then regressed into a
-clean standalone baseline so other projects can adopt the method without
-inheriting local repo history.
+This is the independent DUTT reference project for Tilly Engineering
+Discipline. It started from a small Codex/Claude/Cursor guideline package, then
+was regressed into a clean standalone source package so other projects can
+adopt the method without inheriting local repo history.
 
 The field result was much larger than the file size: when the four gates were
 connected to a context mesh, ambiguity dropped sharply and code became smaller,
 more precise, and easier to converge.
-
-The hardened version keeps that simple behavioral core and adds a Codex-native
-derivation with progressive disclosure, validation, and explicit context
-boundaries.
 
 ## Core Contract
 
@@ -52,36 +48,38 @@ E = A * S * C * V
 If any factor is zero, the agent should stop, ask, or repair before claiming
 success.
 
-For Codex context systems, see [CODEX.md](CODEX.md) and the Codex skill in
-`.agents/skills/tilly-engineering-discipline/`.
+## Repository Shape
 
-## Repository Layout
+Root is intentionally thin. Source belongs in `src/**`; method and evaluation
+material belongs in `docs/**`.
 
 | Path | Purpose |
 |------|---------|
-| `PRINCIPLES.md` | Tool-neutral source of truth |
-| `METHOD.md` | Context-mesh method: rent, ablation, adversarial evals, distractors |
-| `EVALS.md` | Portable eval and ablation design |
-| `AGENTS.md` | Codex repository bootloader template |
-| `CODEX.md` | Codex-specific installation and usage |
-| `SCORECARD.md` | Adoption scorecard for real convergence |
-| `CLAUDE.md` | Claude Code root instruction variant |
-| `.cursor/rules/tilly-guidelines.mdc` | Cursor always-on project rule |
-| `skills/tilly-guidelines/SKILL.md` | Legacy Claude-style skill |
-| `.agents/skills/tilly-engineering-discipline/**` | Codex-native skill derivation |
+| `AGENTS.md` | Thin bootloader for agents working in this repository |
+| `src/adapters/codex/**` | Codex bootloader and skill source |
+| `src/adapters/claude/**` | Claude instruction, plugin, and legacy skill source |
+| `src/adapters/cursor/**` | Cursor guide and always-on rule source |
+| `docs/mesh/**` | Principles, context mesh method, and scorecard |
+| `docs/evals/**` | Eval design and examples |
+| `docs/governance/**` | Cross-tool alignment, authority, and no-go rules |
+| `docs/adapters/**` | Human adapter guidance |
+| `docs/architecture/**` | Repository structure and ownership |
+| `docs/tds/**` | Documentation contract and governed index |
 | `benchmarks/context-mesh/eval-dataset.json` | Starter eval dataset |
-| `EXAMPLES.md` | Optional detailed examples; do not load by default |
-| `scripts/validate_reference_package.py` | Local package integrity check |
-| `scripts/context_mesh_plan.py` | Deterministic ablation matrix planner |
+| `scripts/**` | Deterministic package checks |
+| `dist/adapters/**` | Generated install trees, ignored by Git |
+
+Start with [docs/INDEX.md](docs/INDEX.md) for the complete documentation map.
 
 ## Install By Tool
 
 ### Codex
 
-1. Copy or merge `AGENTS.md` into the target repository root.
-2. Copy `.agents/skills/tilly-engineering-discipline/` into the target
-   repository's `.agents/skills/`.
-3. Run:
+1. Copy or merge `src/adapters/codex/AGENTS.md` into the target repository
+   root `AGENTS.md`.
+2. Copy `src/adapters/codex/skills/tilly-engineering-discipline/` into the
+   target repository's `.agents/skills/tilly-engineering-discipline/`.
+3. Run this package's validation locally before distributing changes:
 
 ```bash
 npm run validate
@@ -93,22 +91,14 @@ them.
 
 ### Cursor
 
-Copy `.cursor/rules/tilly-guidelines.mdc` into the target repo. It uses
-`alwaysApply: true` because the four gates are a behavioral overlay.
+Copy `src/adapters/cursor/rules/tilly-guidelines.mdc` into the target repo's
+`.cursor/rules/` directory. It uses `alwaysApply: true` because the four gates
+are a behavioral overlay.
 
 ### Claude Code
 
-Use `CLAUDE.md` as the root instruction file or install the Claude plugin
-metadata included in `.claude-plugin/`.
-
-## Operating Rule
-
-Use the full discipline for material work. Use judgment for trivial changes
-such as typo fixes or obvious one-liners.
-
-This package is working if diffs are smaller, clarifying questions happen
-before mistakes, implementation avoids speculative machinery, and closure is
-proved by a concrete oracle.
+Use `src/adapters/claude/CLAUDE.md` as the target root instruction file, or use
+the plugin metadata in `src/adapters/claude/plugin/` when packaging for Claude.
 
 ## Local Development
 
@@ -116,9 +106,30 @@ This repository is optimized for local-only commits:
 
 ```bash
 npm run validate
+npm run tds:validate
+npm run materialize:check
 npm run benchmark:plan
 npm run commit:check
 ```
+
+To create an explicit local context-mesh evidence run without paid backends:
+
+```bash
+npm run benchmark:run -- --backend fixture
+```
+
+`commit:check` is stricter than `validate`: required package files must be
+staged or already tracked, which prevents local hooks from passing with critical
+new files left outside the commit.
+
+To generate installable adapter trees:
+
+```bash
+npm run materialize:all
+```
+
+The generated output lands in `dist/adapters/**`. Do not edit it directly; edit
+`src/adapters/**` and materialize again.
 
 The local Git hook in `.githooks/pre-commit` runs the same package checks before
 commit. No remote or publishing flow is configured by default.

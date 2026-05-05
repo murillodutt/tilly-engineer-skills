@@ -14,6 +14,6 @@
     "engineering-discipline"
   ],
   "skills": [
-    "./skills/tilly-guidelines"
+    "skills/tilly-guidelines"
   ]
 }

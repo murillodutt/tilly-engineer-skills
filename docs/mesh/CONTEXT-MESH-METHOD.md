@@ -1,3 +1,12 @@
+---
+tds_id: mesh.context_method
+tds_class: mesh
+status: active
+consumer: maintainers and adopters
+source_of_truth: true
+evidence_level: L1
+---
+
 # Context Mesh Method
 
 Tilly Engineering Discipline is not only four coding guidelines. The stronger
@@ -22,7 +31,7 @@ Otherwise it remains taste, folklore, or prompt decoration.
 | Layer | Question | Artifact |
 |-------|----------|----------|
 | Narrative | Why does this matter? | README, handoff, method note |
-| Instruction | What behavior must change? | AGENTS.md, CLAUDE.md, Cursor rule, skill |
+| Instruction | What behavior must change? | `src/adapters/**` bootloaders, rules, skills |
 | Execution | How does the agent act? | Skills, scripts, hooks |
 | Verification | How do we know it worked? | Evals, tests, gates, benchmark outputs |
 | Return | What becomes reusable? | Docs, scorecards, skill updates, memory atoms |

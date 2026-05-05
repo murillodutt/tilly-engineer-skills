@@ -2,10 +2,10 @@
 
 Use this reference when adapting the discipline to another agent tool.
 
-## Canonical Source
+## Canonical Behavior
 
-`PRINCIPLES.md` is the tool-neutral source. Tool-specific files are reductions,
-not independent truth.
+Tool-specific files are reductions, not independent truth. Copy the behavior:
+visible assumptions, smaller scope, surgical edits, and falsifiable closure.
 
 ## Codex
 
@@ -17,27 +17,27 @@ Use:
 - `references/**` for progressive disclosure.
 - `scripts/**` for deterministic validation.
 
-Do not treat `.cursor/**` or `.claude-plugin/**` as Codex runtime truth.
+Do not treat Cursor or Claude packaging as Codex runtime truth.
 
 ## Cursor
 
 Use `.cursor/rules/tilly-guidelines.mdc` with `alwaysApply: true` when the four
 gates should be available for every non-trivial coding task.
 
-Keep the Cursor rule short. Put long examples in `EXAMPLES.md`.
+Keep the Cursor rule short. Put long examples outside the always-loaded rule.
 
 ## Claude Code
 
-Use `CLAUDE.md` as root project guidance or distribute the legacy skill through
-`.claude-plugin/**`.
+Use `CLAUDE.md` as root project guidance or distribute a tool-native skill
+package when the target Claude environment supports it.
 
-Keep `CLAUDE.md`, Cursor rules, and Codex skill behavior synchronized with
-`PRINCIPLES.md`.
+Keep Claude instructions, Cursor rules, and Codex skill behavior synchronized at
+the behavioral level, even when the packaging differs.
 
 ## Generic LLM Agents
 
 If the target tool supports only one instruction file, copy the Core Contract,
-Four Gates, Success Formula, and Minimum Prompt Packet from `PRINCIPLES.md`.
+Four Gates, Success Formula, and Minimum Prompt Packet.
 
 If the target tool supports reusable skills, keep the root instruction small and
 move detailed workflow into the skill.

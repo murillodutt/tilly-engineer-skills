@@ -13,12 +13,11 @@ ROOT = Path(__file__).resolve().parents[1]
 DATASET = ROOT / "benchmarks/context-mesh/eval-dataset.json"
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=Path, default=DATASET)
-    args = parser.parse_args()
+def load_dataset(path: Path = DATASET) -> dict[str, object]:
+    return json.loads(path.read_text(encoding="utf-8"))
 
-    data = json.loads(args.dataset.read_text(encoding="utf-8"))
+
+def validate_dataset(data: dict[str, object]) -> list[str]:
     failures: list[str] = []
 
     sections = data.get("sections", [])
@@ -40,10 +39,51 @@ def main() -> int:
             if key not in ev:
                 failures.append(f"eval missing {key}: {ev.get('id', '(unknown)')}")
 
-    conditions = ["full", "none", *[f"drop:{section}" for section in sections]]
-    trigger_count = sum(1 for ev in evals if ev.get("kind") == "trigger")
-    distractor_count = sum(1 for ev in evals if ev.get("kind") == "distractor")
-    planned_calls = len(conditions) * trigger_count + distractor_count
+    return failures
+
+
+def build_conditions(sections: list[str]) -> list[str]:
+    return ["full", "none", *[f"drop:{section}" for section in sections]]
+
+
+def trigger_evals(data: dict[str, object]) -> list[dict[str, object]]:
+    return [ev for ev in data.get("evals", []) if ev.get("kind") == "trigger"]
+
+
+def distractor_evals(data: dict[str, object]) -> list[dict[str, object]]:
+    return [ev for ev in data.get("evals", []) if ev.get("kind") == "distractor"]
+
+
+def build_plan(data: dict[str, object], dataset_path: Path = DATASET) -> dict[str, object]:
+    sections = data.get("sections", [])
+    if not isinstance(sections, list):
+        sections = []
+    conditions = build_conditions(sections)
+    triggers = trigger_evals(data)
+    distractors = distractor_evals(data)
+
+    try:
+        dataset = str(dataset_path.relative_to(ROOT))
+    except ValueError:
+        dataset = str(dataset_path)
+
+    return {
+        "dataset": dataset,
+        "sections": sections,
+        "conditions": conditions,
+        "trigger_evals": len(triggers),
+        "distractors": len(distractors),
+        "planned_calls": len(conditions) * len(triggers) + len(distractors),
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", type=Path, default=DATASET)
+    args = parser.parse_args()
+
+    data = load_dataset(args.dataset)
+    failures = validate_dataset(data)
 
     if failures:
         print("[context-mesh-plan] FAIL")
@@ -52,14 +92,7 @@ def main() -> int:
         return 1
 
     print("[context-mesh-plan] PASS")
-    print(json.dumps({
-        "dataset": str(args.dataset.relative_to(ROOT)),
-        "sections": sections,
-        "conditions": conditions,
-        "trigger_evals": trigger_count,
-        "distractors": distractor_count,
-        "planned_calls": planned_calls
-    }, indent=2))
+    print(json.dumps(build_plan(data, args.dataset), indent=2))
     return 0
 
 

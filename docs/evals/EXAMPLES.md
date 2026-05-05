@@ -1,3 +1,12 @@
+---
+tds_id: evals.examples
+tds_class: eval
+status: active
+consumer: adapter authors and reviewers
+source_of_truth: false
+evidence_level: L1
+---
+
 # Examples
 
 This file is optional reference material. Do not load it by default in root

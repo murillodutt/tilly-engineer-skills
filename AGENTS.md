@@ -1,29 +1,23 @@
 # AGENTS.md
 
-Portable Codex bootloader for repositories adopting Tilly Engineering
-Discipline.
+Repository bootloader for the independent Tilly Engineer Skills reference
+package.
 
-Keep this file small. Put detailed workflows in
-`.agents/skills/tilly-engineering-discipline/**`.
+Keep this root file small. The distributable agent source lives in `src/**`.
+Human method, eval, and architecture material lives in `docs/**`.
 
 <instructions>
 
-Apply this overlay to non-trivial coding, review, refactor, or
-instruction-migration work:
+Apply Tilly Engineering Discipline to material changes in this repository:
 
 1. Think Before Coding
    - State assumptions, ambiguity, tradeoffs, and blockers before acting.
-   - Do not pick a risky interpretation silently.
 2. Simplicity First
-   - Solve the requested problem only.
-   - Delete speculative scope before adding abstractions or configuration.
+   - Keep root thin and avoid duplicate source copies.
 3. Surgical Changes
-   - Touch only request-traceable lines.
-   - Clean only orphans created by the current change.
-   - Leave unrelated code, comments, formatting, and dead code alone.
+   - Treat `src/**` as source, `docs/**` as explanation, and scripts as gates.
 4. Goal-Driven Execution
-   - Define a falsifiable oracle before closure.
-   - Run the smallest relevant check first, then broader gates when needed.
+   - Run the smallest relevant oracle before closure.
 
 </instructions>
 
@@ -42,22 +36,34 @@ surgical, or verification is missing.
 
 | Need | Source |
 |------|--------|
-| Full principles | `PRINCIPLES.md` |
-| Codex usage | `CODEX.md` |
-| Reusable workflow | `.agents/skills/tilly-engineering-discipline/SKILL.md` |
-| Failure examples | `.agents/skills/tilly-engineering-discipline/references/failure-patterns.md` |
-| Tool migration | `.agents/skills/tilly-engineering-discipline/references/source-portability.md` |
+| Project map | `docs/INDEX.md` |
+| Repository structure | `docs/architecture/PROJECT-STRUCTURE.md` |
+| TDS contract | `docs/tds/TDS-SPEC.md` |
+| TDS governed index | `docs/tds/DOCS-INDEX.yml` |
+| Cross-tool governance | `docs/governance/AGENTIC-ALIGNMENT-GOVERNANCE.md` |
+| Tool-neutral principles | `docs/mesh/PRINCIPLES.md` |
+| Context mesh method | `docs/mesh/CONTEXT-MESH-METHOD.md` |
+| Adoption scorecard | `docs/mesh/SCORECARD.md` |
+| Eval design | `docs/evals/EVALS.md` |
+| Detailed examples | `docs/evals/EXAMPLES.md` |
+| Codex adapter guide | `docs/adapters/CODEX.md` |
+| Claude adapter guide | `docs/adapters/CLAUDE.md` |
+| Cursor adapter guide | `docs/adapters/CURSOR.md` |
+| Codex bootloader source | `src/adapters/codex/AGENTS.md` |
+| Codex skill source | `src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md` |
+| Claude instruction source | `src/adapters/claude/CLAUDE.md` |
+| Cursor rule source | `src/adapters/cursor/rules/tilly-guidelines.mdc` |
 | Package validation | `python3 scripts/validate_reference_package.py` |
+| TDS validation | `python3 scripts/validate_tds.py` |
 
 </routing>
 
 <locks>
 
-- Do not import Cursor or Claude packaging as Codex runtime truth.
-- Do not expand this bootloader into a full inventory.
-- Do not claim success with prose when a test, lint, typecheck, build, or
-  domain oracle is available.
-- Do not add features, public surface, remote actions, secrets, or destructive
-  operations unless the target project explicitly authorizes them.
+- Do not put full source packages back in the repository root.
+- Do not duplicate adapter source between `src/**` and hidden root tool folders.
+- Do not claim the package is sealed without `npm run commit:check`.
+- Do not add remote, push, publish, cloud, or marketplace actions without an
+  explicit private decision.
 
 </locks>

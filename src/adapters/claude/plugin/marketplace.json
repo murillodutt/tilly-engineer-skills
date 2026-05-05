@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "tilly-engineer-skills",
-      "source": "./",
+      "source": "../",
       "description": "Engineering discipline for coding agents: Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution",
       "version": "0.1.0",
       "author": {
