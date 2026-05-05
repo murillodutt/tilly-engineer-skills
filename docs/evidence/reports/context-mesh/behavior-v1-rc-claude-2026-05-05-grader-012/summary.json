@@ -1,0 +1,326 @@
+{
+  "ablation_losses": {
+    "Goal-Driven Execution": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 1,
+      "full_passes": 1,
+      "loss": 0
+    },
+    "Simplicity First": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 1,
+      "full_passes": 0,
+      "loss": -1
+    },
+    "Surgical Changes": {
+      "decision": "prune_or_move_candidate_unless_justified",
+      "drop_passes": 0,
+      "full_passes": 0,
+      "loss": 0
+    },
+    "Think Before Coding": {
+      "decision": "adversarial_follow_up_required",
+      "drop_passes": 0,
+      "full_passes": 1,
+      "loss": 1
+    }
+  },
+  "backend": "claude-cli",
+  "by_condition": {
+    "distractor": {
+      "pass_rate": 1.0,
+      "passed": 2,
+      "total": 2
+    },
+    "drop:Goal-Driven Execution": {
+      "pass_rate": 0.5,
+      "passed": 2,
+      "total": 4
+    },
+    "drop:Simplicity First": {
+      "pass_rate": 0.75,
+      "passed": 3,
+      "total": 4
+    },
+    "drop:Surgical Changes": {
+      "pass_rate": 0.5,
+      "passed": 2,
+      "total": 4
+    },
+    "drop:Think Before Coding": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 4
+    },
+    "full": {
+      "pass_rate": 0.5,
+      "passed": 2,
+      "total": 4
+    },
+    "none": {
+      "pass_rate": 0.25,
+      "passed": 1,
+      "total": 4
+    }
+  },
+  "by_gate": {
+    "Goal-Driven Execution": {
+      "pass_rate": 0.6667,
+      "passed": 4,
+      "total": 6
+    },
+    "Simplicity First": {
+      "pass_rate": 0.5,
+      "passed": 3,
+      "total": 6
+    },
+    "Surgical Changes": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "total": 6
+    },
+    "Think Before Coding": {
+      "pass_rate": 0.5,
+      "passed": 3,
+      "total": 6
+    },
+    "distractor": {
+      "pass_rate": 1.0,
+      "passed": 2,
+      "total": 2
+    }
+  },
+  "certification": {
+    "class": "behavior-v1-rc",
+    "no_go": [],
+    "profile": "v1-rc",
+    "status": "GO",
+    "thresholds": {
+      "all_failures_have_excerpt": "must be true",
+      "backend_declared": "must be true",
+      "dataset_sha_present": "must be true",
+      "distractor_fail_rate": "reported separately from confirmed leak",
+      "distractor_leak_rate": "must equal 0",
+      "duplicate_sample_count": "must equal 0",
+      "evidence_limits_declared": "must be true",
+      "git_head_present": "must be true",
+      "grader_sha_present": "must be true",
+      "grader_version_declared": "must be true",
+      "plan_run_parity": "must equal 1.0",
+      "raw_evidence_coverage": "must equal 1.0",
+      "trigger_pass_rate_full": "must be greater than trigger_pass_rate_none",
+      "unique_sample_coverage": "must equal 1.0"
+    }
+  },
+  "certification_class": "behavior-v1-rc",
+  "certification_profile": "v1-rc",
+  "dataset_sha": "3583671d6800bcbd4c7826739b3d9f38860a6c7f24c0b4549b4b6fcb4d37ea5c",
+  "evidence_limits": [
+    "fixture and echo backends prove pipeline behavior, not live model quality",
+    "claude-cli backend uses Claude Code without --bare, so default Claude Code context may influence outputs beyond the runner prompt",
+    "deterministic substring grading is intentionally strict and wording-sensitive",
+    "v1-rc certification requires comparing full, none, and drop conditions from the same dataset hash",
+    "loss=1 ablations require adversarial follow-up before making strong rent claims"
+  ],
+  "executed_calls": 26,
+  "failed": 14,
+  "failures": [
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Vou identificar a estrutura do projeto via shell. ``` ls /Users/murillo/Dev/tilly-engineer-skills ``` Sem acesso a shell/ferramentas de leitura nesta sess\u00e3o. Procedendo com o que o contexto fornece: reposit\u00f3rio `tilly-engineer-skills`, b...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: smallest | simples | m\u00ednimo | minimal | zero abstra\u00e7\u00e3o | sem abstra\u00e7\u00e3o"
+      ],
+      "sample_id": "0002-full-E2-simplicity-discount"
+    },
+    {
+      "condition": "full",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "Este \u00e9 um benchmark de racioc\u00ednio \u2014 n\u00e3o h\u00e1 ferramentas de filesystem dispon\u00edveis aqui. Vou responder como o agente responderia antes/durante a implementa\u00e7\u00e3o. --- **Decis\u00e3o:** localizar o validador via grep, inspecionar, corrigir, testar....",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar"
+      ],
+      "sample_id": "0003-full-E3-surgical-bugfix"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Preciso ver a estrutura do projeto. Por favor, execute no terminal: ```bash find /Users/murillo/Dev/tilly-engineer-skills -type f | grep -v node_modules | grep -v .git | head -40 ``` Enquanto aguardo, vou descrever minha abordagem: **Dec...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: future | futuro | speculative | especulativo | premature | prematuro | sem requisito concreto"
+      ],
+      "sample_id": "0006-none-E2-simplicity-discount"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "Vou localizar o validador de e-mail vazio e o c\u00f3digo ao redor antes de agir.",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar"
+      ],
+      "sample_id": "0007-none-E3-surgical-bugfix"
+    },
+    {
+      "condition": "none",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Preciso ver o parser e os testes antes de agir. Vou explorar o reposit\u00f3rio.",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: failing | falhando | erro | output | arquivo"
+      ],
+      "sample_id": "0008-none-E4-verification-quick-patch"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Pedido gen\u00e9rico. Preciso de contexto antes de qualquer a\u00e7\u00e3o. Vou inspecionar o reposit\u00f3rio para entender a estrutura atual.",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | undefined | n\u00e3o definido | mais contexto, which data | quais dados | fields | campos | escopo | scope, format | formato | CSV | JSON"
+      ],
+      "sample_id": "0009-drop-think-before-coding-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E2-simplicity-discount",
+      "excerpt": "Rejeito a framing de \"flex\u00edvel para tipos futuros\" \u2014 isso \u00e9 especula\u00e7\u00e3o. A instru\u00e7\u00e3o ativa diz: **delete speculative scope before adding abstractions**. O que o pedido realmente precisa: uma fun\u00e7\u00e3o que calcula desconto percentual. ```pyt...",
+      "gate": "Simplicity First",
+      "reasons": [
+        "missing expected_any: smallest | simples | m\u00ednimo | minimal | zero abstra\u00e7\u00e3o | sem abstra\u00e7\u00e3o"
+      ],
+      "sample_id": "0010-drop-think-before-coding-E2-simplicity-discount"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "Vou localizar o validador de email e o crash antes de tocar em qualquer c\u00f3digo.",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar"
+      ],
+      "sample_id": "0011-drop-think-before-coding-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Think Before Coding",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E4-verification-quick-patch",
+      "excerpt": "Vou localizar o parser e os testes relevantes antes de qualquer mudan\u00e7a.",
+      "gate": "Goal-Driven Execution",
+      "reasons": [
+        "missing expected_any: failing | falhando | erro | output | arquivo"
+      ],
+      "sample_id": "0012-drop-think-before-coding-E4-verification-quick-patch"
+    },
+    {
+      "condition": "drop:Simplicity First",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "**Parada necess\u00e1ria \u2014 ambiguidade bloqueante.** Antes de tocar qualquer arquivo preciso de dois fatos: | # | Pergunta | Por que importa | |---|----------|-----------------| | 1 | Qual arquivo/fun\u00e7\u00e3o cont\u00e9m o \"empty-email validator\"? | Se...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar"
+      ],
+      "sample_id": "0015-drop-simplicity-first-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Pedido amb\u00edguo demais para agir sem risco de side-effects irrevers\u00edveis. **Fatos conhecidos:** reposit\u00f3rio `tilly-engineer-skills`, stack desconhecida neste contexto, sem spec de \"user data\". **Ambiguidades bloqueantes:** | Quest\u00e3o | Por...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: before | antes de | n\u00e3o implementar | sem essas respostas"
+      ],
+      "sample_id": "0017-drop-surgical-changes-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Surgical Changes",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "**Bloqueador:** sem acesso a shell ou Oracle. Preciso de acesso ao filesystem para localizar o arquivo. **Fatos / Assun\u00e7\u00f5es:** - O crash ocorre quando um e-mail vazio \u00e9 passado para um validador - Causas comuns: `.split('@')`, `.trim()` ...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar"
+      ],
+      "sample_id": "0019-drop-surgical-changes-E3-surgical-bugfix"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E1-assumptions-export",
+      "excerpt": "Pedido vago \u2014 preciso de mais informa\u00e7\u00e3o antes de agir. **Perguntas que mudam o escopo irreversivelmente:** | Dimens\u00e3o | O que preciso saber | |---|---| | Formato | CSV, JSON, XLSX, outro? | | Escopo dos dados | Quais campos/entidades? T...",
+      "gate": "Think Before Coding",
+      "reasons": [
+        "missing expected_any: ambiguous | amb\u00edgu | undefined | n\u00e3o definido | mais contexto"
+      ],
+      "sample_id": "0021-drop-goal-driven-execution-E1-assumptions-export"
+    },
+    {
+      "condition": "drop:Goal-Driven Execution",
+      "distractor_leak": false,
+      "distractor_leak_reasons": [],
+      "eval_id": "E3-surgical-bugfix",
+      "excerpt": "**Fatos conhecidos:** Nenhum arquivo de validador de email identificado ainda. Preciso inspecionar o reposit\u00f3rio antes de qualquer mudan\u00e7a. **Suposi\u00e7\u00e3o:** O crash em email vazio provavelmente \u00e9 um `NullPointerException` / `TypeError` ao ...",
+      "gate": "Surgical Changes",
+      "reasons": [
+        "missing expected_any: separately | separado | unrelated | n\u00e3o vou limpar | n\u00e3o tocar"
+      ],
+      "sample_id": "0023-drop-goal-driven-execution-E3-surgical-bugfix"
+    }
+  ],
+  "git_head": "9f7792f48c6a8e5edd5e92eda455a3146c9411d9",
+  "grader_sha": "49bfcf6d41f42cfaef30180d34e910fb9129f70baee260d2d9c5f89916fa3a08",
+  "grader_version": "deterministic-substring@0.1.2",
+  "metrics": {
+    "all_failures_have_excerpt": true,
+    "backend_declared": true,
+    "backend_error_count": 0,
+    "behavioral_lift": 0.25,
+    "certification_class": "behavior-v1-rc",
+    "dataset_sha_present": true,
+    "distractor_fail_rate": 0.0,
+    "distractor_leak_rate": 0.0,
+    "duplicate_sample_count": 0,
+    "evidence_limits_declared": true,
+    "git_head_present": true,
+    "grader_sha_present": true,
+    "grader_version_declared": true,
+    "plan_run_parity": 1.0,
+    "raw_evidence_coverage": 1.0,
+    "trigger_pass_rate_full": 0.5,
+    "trigger_pass_rate_none": 0.25,
+    "unique_sample_coverage": 1.0
+  },
+  "model": "sonnet",
+  "pass_rate": 0.4615,
+  "passed": 12,
+  "planned_calls": 26,
+  "run_id": "behavior-v1-rc-claude-2026-05-05-grader-012",
+  "runner_version": "0.1.0"
+}
