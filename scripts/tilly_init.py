@@ -19,7 +19,7 @@ import cortex
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.8"
+VERSION = "0.3.9"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
 
@@ -56,6 +56,10 @@ def utc_stamp() -> str:
 
 def date_stamp() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+
+def file_stamp() -> str:
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
 def rel(path: Path, target: Path) -> str:
@@ -334,10 +338,11 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
     if not target.exists() or not target.is_dir():
         return {"status": "FAIL", "failures": [f"target must be a directory: {target}"], "writes": []}
 
+    stamp = file_stamp()
     planned_writes = [
         REGISTER.as_posix(),
-        f"{EVIDENCE_DIR.as_posix()}/{date_stamp()}-tilly-initialization.md",
-        f"{EVIDENCE_DIR.as_posix()}/{date_stamp()}-tilly-project-manifest.json",
+        f"{EVIDENCE_DIR.as_posix()}/{stamp}-tilly-initialization.md",
+        f"{EVIDENCE_DIR.as_posix()}/{stamp}-tilly-project-manifest.json",
     ]
     if not yes:
         return {
@@ -360,8 +365,8 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
     evidence_dir.mkdir(parents=True, exist_ok=True)
     (target / REGISTER).parent.mkdir(parents=True, exist_ok=True)
 
-    manifest_path = evidence_dir / f"{date_stamp()}-tilly-project-manifest.json"
-    evidence_path = evidence_dir / f"{date_stamp()}-tilly-initialization.md"
+    manifest_path = evidence_dir / f"{stamp}-tilly-project-manifest.json"
+    evidence_path = evidence_dir / f"{stamp}-tilly-initialization.md"
     manifest_rel = rel(manifest_path, target)
     register_text = write_register(target, scan, gates, manifest_rel)
     evidence_text = write_evidence(target, scan, gates, planned_writes, manifest_rel)

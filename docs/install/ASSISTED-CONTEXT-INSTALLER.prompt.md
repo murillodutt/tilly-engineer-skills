@@ -782,8 +782,8 @@ target project:
 python3 scripts/tilly_init.py --target <target-root> --yes
 ```
 
-This writes `docs/agents/PROJECT-REGISTER.md` and
-`docs/agents/evidence/YYYY-MM-DD-tilly-project-manifest.json`. It must not
+This writes `docs/agents/PROJECT-REGISTER.md` and timestamped evidence such as
+`docs/agents/evidence/YYYYMMDDTHHMMSSZ-tilly-project-manifest.json`. It must not
 bulk-absorb project files into Cortex or write to `sources/**`.
 
 If Codex skill is present:

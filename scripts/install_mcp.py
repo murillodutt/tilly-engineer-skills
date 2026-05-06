@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.8"
+VERSION = "0.3.9"
 SERVER_NAME = "tilly-cortex"
 BIN_DIR = Path(".tilly/bin")
 SERVER_FILES = ("cortex.py", "cortex_mcp.py")
