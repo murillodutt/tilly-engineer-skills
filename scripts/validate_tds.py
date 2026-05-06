@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 import sys
 
 
@@ -34,6 +35,22 @@ ALLOWED_CLASSES = {
 
 ALLOWED_STATUS = {"active", "proposed", "archived"}
 ALLOWED_EVIDENCE = {"L0", "L1", "L2", "L3", "L4"}
+SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
+DATE_MARKER = re.compile(r"\d{4}-\d{2}-\d{2}")
+EVIDENCE_MARKERS = (
+    "Run ID",
+    "Git HEAD",
+    "Dataset SHA",
+    "Grader SHA",
+    "Runner",
+    "`gate_head`",
+    "`run_head`",
+    "`retention_head",
+    "git_head",
+    "retained run/hash",
+    "commit",
+    "SHA",
+)
 
 
 def parse_frontmatter(path: Path) -> tuple[dict[str, str], list[str]]:
@@ -95,6 +112,14 @@ def parse_index() -> tuple[list[dict[str, str]], list[str]]:
 
 def normalize_bool(value: str) -> str:
     return value.strip().lower()
+
+
+def has_evidence_marker(path: Path) -> bool:
+    text = path.read_text(encoding="utf-8")
+    relpath = str(path.relative_to(ROOT))
+    return DATE_MARKER.search(relpath) is not None or DATE_MARKER.search(text) is not None or any(
+        marker in text for marker in EVIDENCE_MARKERS
+    )
 
 
 def validate_entry(entry: dict[str, str]) -> list[str]:
@@ -180,6 +205,23 @@ def main() -> int:
 
         if frontmatter.get("consumer") != entry.get("consumer"):
             failures.append(f"{relpath} frontmatter consumer differs from index")
+
+        tver = frontmatter.get("tver")
+        if tver and not SEMVER.match(tver):
+            failures.append(f"{relpath} frontmatter tver must be semver x.y.z")
+        if (
+            frontmatter.get("status") == "active"
+            and normalize_bool(frontmatter.get("source_of_truth", "")) == "true"
+            and not tver
+        ):
+            failures.append(f"{relpath} active source-of-truth document missing tver")
+        if (
+            frontmatter.get("tds_class") == "evidence"
+            and frontmatter.get("status") == "active"
+            and frontmatter.get("evidence_level") in {"L3", "L4"}
+            and not has_evidence_marker(path)
+        ):
+            failures.append(f"{relpath} evidence report missing version, hash, run id, or Git marker")
 
     docs_index = ROOT / "docs/INDEX.md"
     if docs_index.exists():

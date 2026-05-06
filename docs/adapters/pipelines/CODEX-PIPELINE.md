@@ -5,6 +5,7 @@ status: active
 consumer: codex adopters and certification reviewers
 source_of_truth: true
 evidence_level: L2
+tver: 0.1.0
 ---
 
 # Codex Pipeline

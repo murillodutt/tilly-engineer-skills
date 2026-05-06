@@ -5,6 +5,7 @@ status: active
 consumer: installing LLMs in Claude Code
 source_of_truth: true
 evidence_level: L2
+tver: 0.1.0
 ---
 
 # Claude Code Navigation Renderer

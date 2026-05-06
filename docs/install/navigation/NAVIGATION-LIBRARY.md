@@ -5,6 +5,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
+tver: 0.1.0
 ---
 
 # Assisted Installer Navigation Library
