@@ -66,8 +66,12 @@ REQUIRED_PATHS = (
     "scripts/context_mesh_run.py",
     "scripts/cortex.py",
     "scripts/cortex_mcp.py",
+    "scripts/install_smoke.py",
     "scripts/install_mcp.py",
     "scripts/install_adapter.py",
+    "scripts/claude_plugin_oracle.py",
+    "scripts/retention_metadata.py",
+    "scripts/validate_reference_graph.py",
     "scripts/adapter_parity_readiness.py",
     "scripts/materialize_adapter.py",
     "scripts/validate_tds.py",
@@ -112,9 +116,11 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "validate",
     "install:adapter",
     "install:dry-run",
+    "install:smoke",
     "mcp:install",
     "mcp:dry-run",
     "mcp:self-test",
+    "claude:plugin:oracle",
     "materialize:all",
     "materialize:codex",
     "materialize:cursor",
@@ -134,6 +140,8 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "benchmark:run",
     "commit:check",
     "adapter:parity:check",
+    "retention:check",
+    "reference:graph",
 )
 
 
@@ -230,8 +238,8 @@ def main() -> int:
     package_json = ROOT / "package.json"
     if package_json.exists():
         package = json.loads(package_json.read_text(encoding="utf-8"))
-        if package.get("version") != "0.3.3":
-            failures.append("package.json version must be 0.3.3")
+        if package.get("version") != "0.3.4":
+            failures.append("package.json version must be 0.3.4")
         scripts = package.get("scripts", {})
         for script in REQUIRED_PACKAGE_SCRIPTS:
             if script not in scripts:
@@ -239,8 +247,8 @@ def main() -> int:
 
     for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
         path = ROOT / relpath
-        if path.exists() and "0.3.3" not in path.read_text(encoding="utf-8"):
-            failures.append(f"{relpath} must declare 0.3.3")
+        if path.exists() and "0.3.4" not in path.read_text(encoding="utf-8"):
+            failures.append(f"{relpath} must declare 0.3.4")
 
     oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():
@@ -309,6 +317,62 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("install_mcp.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    install_smoke = ROOT / "scripts/install_smoke.py"
+    if install_smoke.exists():
+        result = subprocess.run(
+            [sys.executable, str(install_smoke), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("install_smoke.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    claude_oracle = ROOT / "scripts/claude_plugin_oracle.py"
+    if claude_oracle.exists():
+        result = subprocess.run(
+            [sys.executable, str(claude_oracle), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("claude_plugin_oracle.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    retention = ROOT / "scripts/retention_metadata.py"
+    if retention.exists():
+        result = subprocess.run(
+            [sys.executable, str(retention), "--check"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("retention_metadata.py --check failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    reference_graph = ROOT / "scripts/validate_reference_graph.py"
+    if reference_graph.exists():
+        result = subprocess.run(
+            [sys.executable, str(reference_graph)],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("validate_reference_graph.py failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 

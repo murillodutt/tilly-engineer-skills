@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and adapter authors
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Adapter Capability Matrix
@@ -38,7 +38,7 @@ The neutral contract is `docs/mesh/CONTRACT-MANIFEST.yml`.
 | Skill | `.agents/skills/**` | `skills/**` | no direct equivalent |
 | Plugin | possible later | `.claude-plugin/**` | n/a |
 | Hooks | possible, excluded | possible, excluded | possible, excluded |
-| Behavioral execution backend | pending | `claude-cli` | pending |
+| Behavioral execution backend | `codex-cli` retained v1 scope | `claude-cli` retained v1 scope | deferred; no clean non-interactive route certified |
 
 Capability difference is not drift. Decision divergence under the same
 behavioral gate is drift.
@@ -47,15 +47,17 @@ behavioral gate is drift.
 
 | Adapter | Current certifiable level | Reason |
 |---------|---------------------------|--------|
-| Codex | structural | Materialization can be checked; no behavior backend is declared yet. |
-| Claude | structural plus behavioral candidate | Materialization can be checked and `claude-cli` can execute context mesh runs. |
-| Cursor | structural | Materialization can be checked; no behavior backend is declared yet. |
+| Codex | structural plus retained behavior evidence | Materialization and `codex-cli` v1 evidence exist for the retained run/hash/backend/prompt contract. |
+| Claude | structural plus retained behavior evidence | Materialization and `claude-cli` v1 evidence exist for the retained run/hash/backend/model. |
+| Cursor | structural | Materialization and installer smoke can be checked; behavior remains explicitly deferred until a non-interactive backend exists. |
 
 ## NO-GO
 
 - Do not create separate contracts per adapter.
 - Do not copy text between adapters to manufacture parity.
 - Do not declare Cursor behavioral parity without an executor.
-- Do not declare Codex behavioral parity without a backend.
+- Do not declare Codex or Claude universal behavior from one retained backend
+  run; evidence is scoped to the retained run/hash/backend/model or prompt
+  contract.
 - Do not block Claude behavior certification waiting for symmetric adapter
   capability.

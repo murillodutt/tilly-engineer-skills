@@ -12,6 +12,11 @@ evidence_level: L2
 This document defines the large convergence loop from the current certified
 readiness state to a final v1 GO/NO-GO decision.
 
+Status note, 2026-05-06: this loop is retained as planning lineage. The final
+v1 GO report now exists, and v1.1 closure artifacts cover retention metadata,
+installer smoke, Claude plugin oracle, reference graph validation, and Cursor
+behavior readiness.
+
 It is a loop, not a wish list:
 
 ```text

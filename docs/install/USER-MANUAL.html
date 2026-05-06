@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.3</span>
+          <span class="brand-meta">User manual · v0.3.4</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1116,10 +1116,14 @@ python3 scripts/cortex.py --self-test</code></pre>
             <div class="pre-wrap" data-label="package">
 <pre><code>npm run validate
 npm run install:dry-run
+npm run install:smoke
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
 npm run mcp:self-test
+npm run claude:plugin:oracle
+npm run retention:check
+npm run reference:graph
 npm run tds:validate
 npm run cortex:self-test
 npm run cortex:mcp:self-test
@@ -1138,6 +1142,8 @@ npm run commit:check</code></pre>
             <div class="pre-wrap" data-label="adapter">
 <pre><code>python3 scripts/install_adapter.py --dry-run --target /path/to/project --adapter all
 python3 scripts/install_adapter.py --target /path/to/project --adapter codex --yes
+python3 scripts/install_smoke.py --self-test
+python3 scripts/claude_plugin_oracle.py --self-test
 python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
 python3 scripts/materialize_adapter.py all --check
@@ -1154,6 +1160,7 @@ python3 scripts/materialize_adapter.py all</code></pre>
 <pre><code>python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
 python3 scripts/install_mcp.py --self-test
+python3 scripts/install_smoke.py --route mcp
 python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
 python3 scripts/cortex_mcp.py --self-test
 npm run mcp:self-test
@@ -1345,10 +1352,14 @@ python3 scripts/cortex.py --self-test</code></pre>
             <div class="pre-wrap" data-label="package">
 <pre><code>npm run validate
 npm run install:dry-run
+npm run install:smoke
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
 npm run mcp:self-test
+npm run claude:plugin:oracle
+npm run retention:check
+npm run reference:graph
 npm run tds:validate
 npm run cortex:self-test
 npm run cortex:mcp:self-test
@@ -1367,6 +1378,8 @@ npm run commit:check</code></pre>
             <div class="pre-wrap" data-label="adapter">
 <pre><code>python3 scripts/install_adapter.py --dry-run --target /path/to/project --adapter all
 python3 scripts/install_adapter.py --target /path/to/project --adapter codex --yes
+python3 scripts/install_smoke.py --self-test
+python3 scripts/claude_plugin_oracle.py --self-test
 python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
 python3 scripts/materialize_adapter.py all --check
@@ -1383,6 +1396,7 @@ python3 scripts/materialize_adapter.py all</code></pre>
 <pre><code>python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
 python3 scripts/install_mcp.py --self-test
+python3 scripts/install_smoke.py --route mcp
 python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
 python3 scripts/cortex_mcp.py --self-test
 npm run mcp:self-test
@@ -1574,10 +1588,14 @@ python3 scripts/cortex.py --self-test</code></pre>
             <div class="pre-wrap" data-label="package">
 <pre><code>npm run validate
 npm run install:dry-run
+npm run install:smoke
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
 npm run mcp:self-test
+npm run claude:plugin:oracle
+npm run retention:check
+npm run reference:graph
 npm run tds:validate
 npm run cortex:self-test
 npm run cortex:mcp:self-test
@@ -1596,6 +1614,8 @@ npm run commit:check</code></pre>
             <div class="pre-wrap" data-label="adapter">
 <pre><code>python3 scripts/install_adapter.py --dry-run --target /path/to/project --adapter all
 python3 scripts/install_adapter.py --target /path/to/project --adapter codex --yes
+python3 scripts/install_smoke.py --self-test
+python3 scripts/claude_plugin_oracle.py --self-test
 python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
 python3 scripts/materialize_adapter.py all --check
@@ -1612,6 +1632,7 @@ python3 scripts/materialize_adapter.py all</code></pre>
 <pre><code>python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
 python3 scripts/install_mcp.py --self-test
+python3 scripts/install_smoke.py --route mcp
 python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
 python3 scripts/cortex_mcp.py --self-test
 npm run mcp:self-test
@@ -1696,7 +1717,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.3</span>
+        <span>Tilly Engineer Skills · v0.3.4</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>

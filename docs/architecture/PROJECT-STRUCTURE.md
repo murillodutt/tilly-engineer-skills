@@ -60,6 +60,11 @@ Use `npm run materialize:check` to verify this without writing to `dist/**`.
 the read-only Cortex MCP server in a target project by copying local helpers to
 `.tilly/bin/**` and writing project-scoped runtime config.
 
+`scripts/install_smoke.py`, `scripts/claude_plugin_oracle.py`,
+`scripts/retention_metadata.py`, and `scripts/validate_reference_graph.py`
+provide deterministic closure gates for assisted installation, local Claude
+plugin shape, evidence retention policy, and governed link drift.
+
 ## Docs
 
 `docs/**` explains the mesh and keeps large context out of the root.

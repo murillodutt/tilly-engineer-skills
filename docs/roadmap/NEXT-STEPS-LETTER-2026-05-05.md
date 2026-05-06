@@ -17,6 +17,13 @@ evidence:
 
 # Next Window Reentry Letter
 
+Status note, 2026-05-06: this letter is retained as historical planning
+context. Several items below are now closed by later commits, including
+behavior runner execution, retained Codex evidence, local Claude plugin oracle,
+reference graph validation, Cortex MCP activation, and installer smoke gates.
+Use `docs/tds/DOCS-INDEX.yml` and the latest evidence reports for current
+authority.
+
 Future Codex,
 
 you are entering a project that has just crossed an important threshold. Treat

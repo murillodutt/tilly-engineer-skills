@@ -10,7 +10,9 @@ evidence_level: L2
 # V1 Goal Checklist
 
 This checklist preserves the project objective so future loops do not confuse
-progress with the finish line.
+progress with the finish line. It is historical planning material; the current
+certification authority is
+`docs/evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md`.
 
 ## Objective
 
@@ -62,11 +64,11 @@ The behavioral gates are:
 | Adapter parity readiness | Done | `adapter-parity-readiness-2026-05-05` |
 | Adapter behavior readiness | Done as design | `adapter-behavior-readiness-2026-05-05` |
 | Codex backend readiness | Done as design | `codex-behavior-backend-readiness-2026-05-05` |
-| Codex behavior run | Not done | Requires backend implementation and retained evidence |
-| Cursor backend readiness | Not done or deferred | Requires explicit design/defer report |
-| Cursor behavior run | Not done | Requires route, or explicit non-goal for v1 |
+| Codex behavior run | Done for retained run only | `codex-behavior-v1-rc-prompt-011-2026-05-05` |
+| Cursor backend readiness | Explicitly deferred | `cursor-behavior-readiness-2026-05-06` |
+| Cursor behavior run | Deferred | Requires clean non-interactive backend before behavior claim |
 | Statistical stability | Not done | Current Claude behavior evidence is scoped, not N>1 |
-| Final v1 decision | Not done | Requires explicit GO/NO-GO report |
+| Final v1 decision | Done with scoped claims | `context-mesh-v1-final-certification-2026-05-05` |
 
 ## V1-RC Checklist
 
@@ -83,19 +85,19 @@ The behavioral gates are:
 - [x] Certify adapter structural and contract parity readiness.
 - [x] Retain adapter behavior readiness design.
 - [x] Retain Codex behavior backend readiness design.
-- [ ] Implement the smallest Codex behavior backend.
-- [ ] Run Codex fixture or single-sample smoke evidence before full matrix.
-- [ ] Run retained Codex behavior matrix only after smoke GO.
-- [ ] Decide Cursor path: backend readiness, explicit defer, or non-goal for v1.
-- [ ] Produce final v1 GO/NO-GO report.
+- [x] Implement the smallest Codex behavior backend.
+- [x] Run Codex fixture or single-sample smoke evidence before full matrix.
+- [x] Run retained Codex behavior matrix only after smoke GO.
+- [x] Decide Cursor path: backend readiness, explicit defer, or non-goal for v1.
+- [x] Produce final v1 GO/NO-GO report.
 
 ## Full V1 Checklist
 
 - [ ] Claude behavior evidence is either repeated with stronger stability or
       explicitly scoped as single-run evidence.
-- [ ] Codex behavior evidence is retained, or Codex behavior is explicitly
+- [x] Codex behavior evidence is retained, or Codex behavior is explicitly
       excluded from v1 with rationale.
-- [ ] Cursor behavior evidence is retained, or Cursor behavior is explicitly
+- [x] Cursor behavior evidence is retained, or Cursor behavior is explicitly
       excluded from v1 with rationale.
 - [ ] Adapter behavior reports use `gate_head`, `run_head`, and
       `retention_head`.
@@ -104,19 +106,20 @@ The behavioral gates are:
 - [ ] No report claims universal model behavior.
 - [ ] No report claims behavior parity from structural parity.
 - [ ] No report claims section ROI beyond the evidence floor.
-- [ ] Final v1 report states exact claims, limits, and next research debt.
+- [x] Final v1 report states exact claims, limits, and next research debt.
 
 ## Do Not Forget
 
 The project is close to v1-rc because the architecture is already right. It is
-not yet full v1 because behavior has not been certified across adapters.
+not full universal parity because behavior has not been certified across all
+adapters.
 
 Do not solve that gap by adding more philosophy, more gates, or more UI.
 
 The next valuable work is evidence:
 
 ```text
-Codex backend implementation -> smoke evidence -> Codex behavior run
+Retention policy -> installer smoke -> local packaging oracle -> Cursor backend discovery
 ```
 
 Only after that should the team decide whether Cursor is measured, deferred, or
@@ -129,10 +132,10 @@ excluded from the first v1 certification.
 | The context mesh has a certified fixture pipeline | Yes | Retained fixture evidence exists |
 | Claude behavior improved on the retained run | Yes | Retained behavior evidence exists |
 | Codex and Cursor preserve the contract structurally | Yes | Adapter parity readiness is GO |
-| Codex behavior is certified | No | No retained Codex behavior run yet |
+| Codex behavior is certified | Scoped | Retained Codex behavior run exists for backend/hash/prompt contract |
 | Cursor behavior is certified | No | No retained Cursor behavior run yet |
 | The package proves universal behavior improvement | No | Evidence is scoped by backend, model, dataset, and run |
-| The package is ready for v1-rc decision | Nearly | Needs Codex/Cursor scope decision or Codex behavior evidence |
+| The package is ready for v1-rc decision | Yes | Final certification report exists with scoped claims |
 | The package is ready for full v1 | Not yet | Needs final claim boundary and behavior evidence/defer decisions |
 
 ## Next Loop

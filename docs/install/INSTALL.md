@@ -318,6 +318,10 @@ From this package:
 ```bash
 npm run install:dry-run
 npm run mcp:self-test
+npm run install:smoke
+npm run claude:plugin:oracle
+npm run retention:check
+npm run reference:graph
 npm run materialize:check
 npm run commit:check
 ```
