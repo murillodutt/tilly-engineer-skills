@@ -3,5 +3,7 @@
 __pycache__/
 node_modules/
 dist/
+.tilly/cortex/recall.sqlite
+.tilly/cortex/recall.sqlite-*
 .env
 .env.*
