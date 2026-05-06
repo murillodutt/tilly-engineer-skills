@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Tilly Engineer Skills Docs
@@ -18,6 +18,7 @@ turning the repository root into an inventory.
 | Need | Document |
 |------|----------|
 | Repository shape and ownership | `architecture/PROJECT-STRUCTURE.md` |
+| User manual | `install/USER-MANUAL.html` |
 | Adapter installation | `install/INSTALL.md` |
 | Assisted context installer mini prompt | `install/MINI-PROMPT.md` |
 | Assisted context installer raw spec | `install/ASSISTED-CONTEXT-INSTALLER.prompt.md` |

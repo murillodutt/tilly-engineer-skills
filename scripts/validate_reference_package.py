@@ -22,6 +22,7 @@ REQUIRED_PATHS = (
     "install.ps1",
     "docs/INDEX.md",
     "docs/architecture/PROJECT-STRUCTURE.md",
+    "docs/install/USER-MANUAL.html",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/navigation/NAVIGATION-LIBRARY.md",
@@ -220,8 +221,8 @@ def main() -> int:
     package_json = ROOT / "package.json"
     if package_json.exists():
         package = json.loads(package_json.read_text(encoding="utf-8"))
-        if package.get("version") != "0.2.1":
-            failures.append("package.json version must be 0.2.1")
+        if package.get("version") != "0.2.2":
+            failures.append("package.json version must be 0.2.2")
         scripts = package.get("scripts", {})
         for script in REQUIRED_PACKAGE_SCRIPTS:
             if script not in scripts:
@@ -229,8 +230,8 @@ def main() -> int:
 
     for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
         path = ROOT / relpath
-        if path.exists() and "0.2.1" not in path.read_text(encoding="utf-8"):
-            failures.append(f"{relpath} must declare 0.2.1")
+        if path.exists() and "0.2.2" not in path.read_text(encoding="utf-8"):
+            failures.append(f"{relpath} must declare 0.2.2")
 
     oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():
