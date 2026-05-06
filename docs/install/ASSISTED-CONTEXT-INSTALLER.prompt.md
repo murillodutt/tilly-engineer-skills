@@ -5,7 +5,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.0
+tver: 0.5.0
 ---
 
 # Tilly Assisted Context Installer
@@ -486,6 +486,7 @@ python3 scripts/cortex.py init --target <target-root>
 python3 scripts/cortex.py verify --target <target-root>
 python3 scripts/cortex.py audit --target <target-root>
 python3 scripts/cortex.py rebuild --target <target-root>
+python3 scripts/cortex.py learn --target <target-root> --source docs/agents/cortex/sources/source.md
 ```
 
 If the scripts are not available, create the same files directly from this
@@ -518,6 +519,9 @@ Use these local rules:
   plain editor;
 - source citations should stay as explicit repository paths, even when Cortex
   cells use Obsidian wikilinks for navigation;
+- `learn` may generate a promotion proposal but must not write;
+- `apply` may write only with explicit authorization, explicit evidence, and a
+  passing audit/rebuild cycle; it must not write in `sources/**`.
 - every durable claim should cite a source path, evidence entry, or explicit
   assumption;
 - do not file secrets, credentials, `.env` contents, private keys, or regulated

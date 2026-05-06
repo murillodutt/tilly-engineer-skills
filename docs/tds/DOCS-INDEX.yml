@@ -1,4 +1,4 @@
-version: 0.2.9
+version: 0.3.0
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -210,7 +210,7 @@ documents:
     status: active
     consumer: installer authors, adopters, and agents
     source_of_truth: true
-    evidence_level: L1
+    evidence_level: L2
   - path: docs/mesh/CORTEX-MCP.md
     id: mesh.cortex_mcp
     class: mesh
@@ -517,5 +517,12 @@ documents:
     class: evidence
     status: active
     consumer: MCP adapter authors, Cortex maintainers, and certification reviewers
+    source_of_truth: false
+    evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/cortex-cli-v2-controlled-apply-2026-05-06/REPORT.md
+    id: evidence.context_mesh.cortex_cli_v2_controlled_apply_2026_05_06
+    class: evidence
+    status: active
+    consumer: Cortex maintainers, installer authors, and certification reviewers
     source_of_truth: false
     evidence_level: L3
