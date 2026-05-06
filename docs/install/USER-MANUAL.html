@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.0</span>
+          <span class="brand-meta">User manual · v0.3.1</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -994,9 +994,11 @@
             <li><a href="#routes" data-nav="routes"><span class="toc-num">02</span><span class="toc-text">Routes</span></a></li>
             <li><a href="#states" data-nav="states"><span class="toc-num">03</span><span class="toc-text">Project states</span></a></li>
             <li><a href="#cortex" data-nav="cortex"><span class="toc-num">04</span><span class="toc-text">Cortex</span></a></li>
-            <li><a href="#obsidian" data-nav="obsidian"><span class="toc-num">05</span><span class="toc-text">Obsidian</span></a></li>
-            <li><a href="#report" data-nav="report"><span class="toc-num">06</span><span class="toc-text">Final report</span></a></li>
-            <li><a href="#rollback" data-nav="rollback"><span class="toc-num">07</span><span class="toc-text">Rollback</span></a></li>
+            <li><a href="#cli" data-nav="cli"><span class="toc-num">05</span><span class="toc-text">CLI</span></a></li>
+            <li><a href="#mcp" data-nav="mcp"><span class="toc-num">06</span><span class="toc-text">MCP</span></a></li>
+            <li><a href="#obsidian" data-nav="obsidian"><span class="toc-num">07</span><span class="toc-text">Obsidian</span></a></li>
+            <li><a href="#report" data-nav="report"><span class="toc-num">08</span><span class="toc-text">Final report</span></a></li>
+            <li><a href="#rollback" data-nav="rollback"><span class="toc-num">09</span><span class="toc-text">Rollback</span></a></li>
           </ol>
         </nav>
       </div>
@@ -1093,15 +1095,85 @@
           </div>
         </section>
 
+        <section class="chapter" id="cli">
+          <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
+          <div class="chapter-body">
+            <p>Run these commands from the Tilly package root when maintaining this package, or pass <code>--target</code> when operating on another project or vault.</p>
+            <div class="pre-wrap" data-label="cortex">
+<pre><code>python3 scripts/cortex.py init --target /path/to/project-or-vault
+python3 scripts/cortex.py verify --target /path/to/project-or-vault
+python3 scripts/cortex.py audit --target /path/to/project-or-vault
+python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
+python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
+python3 scripts/cortex.py read-cell --target /path/to/project-or-vault --cell cell-name
+python3 scripts/cortex.py absorb-plan --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
+python3 scripts/cortex.py learn --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
+python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
+python3 scripts/cortex.py --self-test</code></pre>
+            </div>
+            <p><code>learn</code> never writes. <code>apply</code> writes only with <code>--yes</code>, explicit evidence, audit and rebuild. It never writes to <code>sources/**</code>.</p>
+            <div class="pre-wrap" data-label="package">
+<pre><code>npm run validate
+npm run install:dry-run
+npm run install:adapter -- --target /path/to/project --adapter all --yes
+npm run tds:validate
+npm run cortex:self-test
+npm run cortex:mcp:self-test
+npm run materialize:all
+npm run materialize:codex
+npm run materialize:cursor
+npm run materialize:claude
+npm run materialize:check
+npm run benchmark:plan
+npm run benchmark:run -- --backend fixture
+npm run benchmark:converge
+npm run adapter:parity:check
+npm run git:diff-check
+npm run commit:check</code></pre>
+            </div>
+            <div class="pre-wrap" data-label="adapter">
+<pre><code>python3 scripts/install_adapter.py --dry-run --target /path/to/project --adapter all
+python3 scripts/install_adapter.py --target /path/to/project --adapter codex --yes
+python3 scripts/materialize_adapter.py all --check
+python3 scripts/materialize_adapter.py all</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <section class="chapter" id="mcp">
+          <div class="chapter-head"><span class="chapter-num">06</span><h2>MCP</h2></div>
+          <div class="chapter-body">
+            <p>The MCP server is read-only. It exposes Cortex to MCP-capable runtimes without turning MCP, SQLite or the LLM into memory.</p>
+            <div class="pre-wrap" data-label="stdio">
+<pre><code>python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
+python3 scripts/cortex_mcp.py --self-test
+npm run cortex:mcp:self-test</code></pre>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Tool</th><th>Behavior</th></tr></thead>
+                <tbody>
+                  <tr><td><code>cortex_verify</code></td><td>Validates the Cortex structure and contract.</td></tr>
+                  <tr><td><code>cortex_audit</code></td><td>Finds broken links, missing evidence, or loose cells.</td></tr>
+                  <tr><td><code>cortex_recall</code></td><td>Searches through SQLite FTS5 and falls back to <code>rg</code>.</td></tr>
+                  <tr><td><code>cortex_read_cell</code></td><td>Reads one cell directly from <code>cells/**</code>.</td></tr>
+                  <tr><td><code>cortex_absorb_plan</code></td><td>Produces a no-write absorb plan.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Write-capable MCP tools are intentionally outside this version. Configure MCP per target project only after the local CLI and MCP self-tests pass.</p>
+          </div>
+        </section>
+
         <section class="chapter" id="obsidian">
-          <div class="chapter-head"><span class="chapter-num">05</span><h2>Obsidian</h2></div>
+          <div class="chapter-head"><span class="chapter-num">07</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
             <p>Cortex is Obsidian-compatible because it uses plain Markdown. The installer does not create or edit <code>.obsidian/**</code>. Obsidian is a visual surface, not the source of truth.</p>
           </div>
         </section>
 
         <section class="chapter" id="report">
-          <div class="chapter-head"><span class="chapter-num">06</span><h2>Final report</h2></div>
+          <div class="chapter-head"><span class="chapter-num">08</span><h2>Final report</h2></div>
           <div class="chapter-body">
             <p>Every run ends with a <strong>Tilly Context Mesh Convergence Report</strong>. The report must always expose this manual through a web link or local path.</p>
             <div class="pre-wrap" data-label="report excerpt">
@@ -1113,7 +1185,7 @@
         </section>
 
         <section class="chapter" id="rollback">
-          <div class="chapter-head"><span class="chapter-num">07</span><h2>Rollback</h2></div>
+          <div class="chapter-head"><span class="chapter-num">09</span><h2>Rollback</h2></div>
           <div class="chapter-body">
             <p>Use the baseline recorded during Step Zero.</p>
             <div class="pre-wrap" data-label="shell">
@@ -1211,15 +1283,85 @@ git revert &lt;install-commit&gt;</code></pre>
           </div>
         </section>
 
+        <section class="chapter" id="cli-es">
+          <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
+          <div class="chapter-body">
+            <p>Ejecuta estos comandos desde la raíz del paquete Tilly al mantener este paquete, o usa <code>--target</code> para operar sobre otro proyecto o vault.</p>
+            <div class="pre-wrap" data-label="cortex">
+<pre><code>python3 scripts/cortex.py init --target /path/to/project-or-vault
+python3 scripts/cortex.py verify --target /path/to/project-or-vault
+python3 scripts/cortex.py audit --target /path/to/project-or-vault
+python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
+python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
+python3 scripts/cortex.py read-cell --target /path/to/project-or-vault --cell cell-name
+python3 scripts/cortex.py absorb-plan --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
+python3 scripts/cortex.py learn --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
+python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
+python3 scripts/cortex.py --self-test</code></pre>
+            </div>
+            <p><code>learn</code> nunca escribe. <code>apply</code> solo escribe con <code>--yes</code>, evidencia explícita, audit y rebuild. Nunca escribe en <code>sources/**</code>.</p>
+            <div class="pre-wrap" data-label="package">
+<pre><code>npm run validate
+npm run install:dry-run
+npm run install:adapter -- --target /path/to/project --adapter all --yes
+npm run tds:validate
+npm run cortex:self-test
+npm run cortex:mcp:self-test
+npm run materialize:all
+npm run materialize:codex
+npm run materialize:cursor
+npm run materialize:claude
+npm run materialize:check
+npm run benchmark:plan
+npm run benchmark:run -- --backend fixture
+npm run benchmark:converge
+npm run adapter:parity:check
+npm run git:diff-check
+npm run commit:check</code></pre>
+            </div>
+            <div class="pre-wrap" data-label="adapter">
+<pre><code>python3 scripts/install_adapter.py --dry-run --target /path/to/project --adapter all
+python3 scripts/install_adapter.py --target /path/to/project --adapter codex --yes
+python3 scripts/materialize_adapter.py all --check
+python3 scripts/materialize_adapter.py all</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <section class="chapter" id="mcp-es">
+          <div class="chapter-head"><span class="chapter-num">06</span><h2>MCP</h2></div>
+          <div class="chapter-body">
+            <p>El servidor MCP es de solo lectura. Expone Cortex a runtimes compatibles con MCP sin convertir MCP, SQLite o el LLM en memoria.</p>
+            <div class="pre-wrap" data-label="stdio">
+<pre><code>python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
+python3 scripts/cortex_mcp.py --self-test
+npm run cortex:mcp:self-test</code></pre>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Tool</th><th>Comportamiento</th></tr></thead>
+                <tbody>
+                  <tr><td><code>cortex_verify</code></td><td>Valida la estructura y el contrato Cortex.</td></tr>
+                  <tr><td><code>cortex_audit</code></td><td>Encuentra links rotos, evidencia faltante o cells flojas.</td></tr>
+                  <tr><td><code>cortex_recall</code></td><td>Busca con SQLite FTS5 y cae a <code>rg</code>.</td></tr>
+                  <tr><td><code>cortex_read_cell</code></td><td>Lee una cell directamente desde <code>cells/**</code>.</td></tr>
+                  <tr><td><code>cortex_absorb_plan</code></td><td>Produce un plan de absorción sin escritura.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Las herramientas MCP con escritura quedan fuera de esta versión. Configura MCP por proyecto solo después de pasar los self-tests locales de CLI y MCP.</p>
+          </div>
+        </section>
+
         <section class="chapter" id="obsidian-es">
-          <div class="chapter-head"><span class="chapter-num">05</span><h2>Obsidian</h2></div>
+          <div class="chapter-head"><span class="chapter-num">07</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
             <p>Cortex es compatible con Obsidian porque usa Markdown común. El instalador no crea ni edita <code>.obsidian/**</code>. Obsidian es una superficie visual, no la fuente de verdad.</p>
           </div>
         </section>
 
         <section class="chapter" id="report-es">
-          <div class="chapter-head"><span class="chapter-num">06</span><h2>Informe final</h2></div>
+          <div class="chapter-head"><span class="chapter-num">08</span><h2>Informe final</h2></div>
           <div class="chapter-body">
             <p>Cada ejecución termina con un <strong>Tilly Context Mesh Convergence Report</strong>. El informe siempre debe exponer este manual mediante link web o path local.</p>
             <div class="pre-wrap" data-label="extracto">
@@ -1231,7 +1373,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="rollback-es">
-          <div class="chapter-head"><span class="chapter-num">07</span><h2>Rollback</h2></div>
+          <div class="chapter-head"><span class="chapter-num">09</span><h2>Rollback</h2></div>
           <div class="chapter-body">
             <p>Usa el baseline registrado en Step Zero.</p>
             <div class="pre-wrap" data-label="shell">
@@ -1329,15 +1471,85 @@ git revert &lt;install-commit&gt;</code></pre>
           </div>
         </section>
 
+        <section class="chapter" id="cli-pt">
+          <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
+          <div class="chapter-body">
+            <p>Rode estes comandos a partir da raiz do pacote Tilly ao manter este pacote, ou use <code>--target</code> para operar em outro projeto ou vault.</p>
+            <div class="pre-wrap" data-label="cortex">
+<pre><code>python3 scripts/cortex.py init --target /path/to/project-or-vault
+python3 scripts/cortex.py verify --target /path/to/project-or-vault
+python3 scripts/cortex.py audit --target /path/to/project-or-vault
+python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
+python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
+python3 scripts/cortex.py read-cell --target /path/to/project-or-vault --cell cell-name
+python3 scripts/cortex.py absorb-plan --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
+python3 scripts/cortex.py learn --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
+python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
+python3 scripts/cortex.py --self-test</code></pre>
+            </div>
+            <p><code>learn</code> nunca escreve. <code>apply</code> só escreve com <code>--yes</code>, evidência explícita, audit e rebuild. Ele nunca escreve em <code>sources/**</code>.</p>
+            <div class="pre-wrap" data-label="package">
+<pre><code>npm run validate
+npm run install:dry-run
+npm run install:adapter -- --target /path/to/project --adapter all --yes
+npm run tds:validate
+npm run cortex:self-test
+npm run cortex:mcp:self-test
+npm run materialize:all
+npm run materialize:codex
+npm run materialize:cursor
+npm run materialize:claude
+npm run materialize:check
+npm run benchmark:plan
+npm run benchmark:run -- --backend fixture
+npm run benchmark:converge
+npm run adapter:parity:check
+npm run git:diff-check
+npm run commit:check</code></pre>
+            </div>
+            <div class="pre-wrap" data-label="adapter">
+<pre><code>python3 scripts/install_adapter.py --dry-run --target /path/to/project --adapter all
+python3 scripts/install_adapter.py --target /path/to/project --adapter codex --yes
+python3 scripts/materialize_adapter.py all --check
+python3 scripts/materialize_adapter.py all</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <section class="chapter" id="mcp-pt">
+          <div class="chapter-head"><span class="chapter-num">06</span><h2>MCP</h2></div>
+          <div class="chapter-body">
+            <p>O servidor MCP é somente leitura. Ele expõe o Cortex para runtimes compatíveis com MCP sem transformar MCP, SQLite ou LLM em memória.</p>
+            <div class="pre-wrap" data-label="stdio">
+<pre><code>python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
+python3 scripts/cortex_mcp.py --self-test
+npm run cortex:mcp:self-test</code></pre>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Tool</th><th>Comportamento</th></tr></thead>
+                <tbody>
+                  <tr><td><code>cortex_verify</code></td><td>Valida a estrutura e o contrato Cortex.</td></tr>
+                  <tr><td><code>cortex_audit</code></td><td>Encontra links quebrados, evidência ausente ou cells frouxas.</td></tr>
+                  <tr><td><code>cortex_recall</code></td><td>Busca com SQLite FTS5 e cai para <code>rg</code>.</td></tr>
+                  <tr><td><code>cortex_read_cell</code></td><td>Lê uma cell diretamente de <code>cells/**</code>.</td></tr>
+                  <tr><td><code>cortex_absorb_plan</code></td><td>Produz um plano de absorção sem escrita.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Ferramentas MCP com escrita ficam fora desta versão. Configure MCP por projeto somente depois dos self-tests locais de CLI e MCP passarem.</p>
+          </div>
+        </section>
+
         <section class="chapter" id="obsidian-pt">
-          <div class="chapter-head"><span class="chapter-num">05</span><h2>Obsidian</h2></div>
+          <div class="chapter-head"><span class="chapter-num">07</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
             <p>O Cortex é compatível com Obsidian porque usa Markdown comum. O instalador não cria nem edita <code>.obsidian/**</code>. Obsidian é superfície visual, não fonte de verdade.</p>
           </div>
         </section>
 
         <section class="chapter" id="report-pt">
-          <div class="chapter-head"><span class="chapter-num">06</span><h2>Relatório final</h2></div>
+          <div class="chapter-head"><span class="chapter-num">08</span><h2>Relatório final</h2></div>
           <div class="chapter-body">
             <p>Todo fluxo termina com <strong>Tilly Context Mesh Convergence Report</strong>. O relatório sempre deve expor este manual por link web ou path local.</p>
             <div class="pre-wrap" data-label="trecho">
@@ -1349,7 +1561,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="rollback-pt">
-          <div class="chapter-head"><span class="chapter-num">07</span><h2>Rollback</h2></div>
+          <div class="chapter-head"><span class="chapter-num">09</span><h2>Rollback</h2></div>
           <div class="chapter-body">
             <p>Use o baseline registrado no Step Zero.</p>
             <div class="pre-wrap" data-label="shell">
@@ -1361,7 +1573,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.0</span>
+        <span>Tilly Engineer Skills · v0.3.1</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>
@@ -1384,9 +1596,9 @@ git revert &lt;install-commit&gt;</code></pre>
       const html = document.documentElement;
 
       const i18n = {
-        en: { contents: "Contents", overview: "Overview", install: "Quick install", routes: "Routes", states: "Project states", cortex: "Cortex", obsidian: "Obsidian", report: "Final report", rollback: "Rollback" },
-        es: { contents: "Índice", overview: "Vista general", install: "Instalación rápida", routes: "Rutas", states: "Estados", cortex: "Cortex", obsidian: "Obsidian", report: "Informe final", rollback: "Rollback" },
-        pt: { contents: "Sumário", overview: "Visão geral", install: "Instalação rápida", routes: "Rotas", states: "Estados", cortex: "Cortex", obsidian: "Obsidian", report: "Relatório final", rollback: "Rollback" },
+        en: { contents: "Contents", overview: "Overview", install: "Quick install", routes: "Routes", states: "Project states", cortex: "Cortex", cli: "CLI", mcp: "MCP", obsidian: "Obsidian", report: "Final report", rollback: "Rollback" },
+        es: { contents: "Índice", overview: "Vista general", install: "Instalación rápida", routes: "Rutas", states: "Estados", cortex: "Cortex", cli: "CLI", mcp: "MCP", obsidian: "Obsidian", report: "Informe final", rollback: "Rollback" },
+        pt: { contents: "Sumário", overview: "Visão geral", install: "Instalação rápida", routes: "Rotas", states: "Estados", cortex: "Cortex", cli: "CLI", mcp: "MCP", obsidian: "Obsidian", report: "Relatório final", rollback: "Rollback" },
       };
 
       const sectionIdMap = (lang) => (key) =>

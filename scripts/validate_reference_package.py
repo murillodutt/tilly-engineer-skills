@@ -226,8 +226,8 @@ def main() -> int:
     package_json = ROOT / "package.json"
     if package_json.exists():
         package = json.loads(package_json.read_text(encoding="utf-8"))
-        if package.get("version") != "0.3.0":
-            failures.append("package.json version must be 0.3.0")
+        if package.get("version") != "0.3.1":
+            failures.append("package.json version must be 0.3.1")
         scripts = package.get("scripts", {})
         for script in REQUIRED_PACKAGE_SCRIPTS:
             if script not in scripts:
@@ -235,8 +235,8 @@ def main() -> int:
 
     for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
         path = ROOT / relpath
-        if path.exists() and "0.3.0" not in path.read_text(encoding="utf-8"):
-            failures.append(f"{relpath} must declare 0.3.0")
+        if path.exists() and "0.3.1" not in path.read_text(encoding="utf-8"):
+            failures.append(f"{relpath} must declare 0.3.1")
 
     oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():
