@@ -58,8 +58,11 @@ contents or permission to continue from already available context.
 - Never edit secrets, `.env`, credentials, production remotes, hooks, MCP
   servers, CI secrets, cloud settings, or package-manager lockfiles unless the
   user explicitly asks and a project oracle requires it.
-- Never commit, push, amend, tag, publish, install dependencies, overwrite
-  files, or change remotes unless the user explicitly asks after reviewing the
+- Never push, amend, tag, publish, install dependencies, overwrite files, or
+  change remotes unless the user explicitly asks after reviewing the
+  certification report.
+- A local baseline commit before installation is allowed only through Step Zero
+  below. Post-install commits still require explicit approval after the
   certification report.
 - Do not claim certification until you run the smallest relevant local oracles
   available in the target project.
@@ -121,12 +124,89 @@ For longer operations, update with a single line:
 Do not expose file-by-file commentary unless it is a blocker, a requested
 diff review, or part of the final report.
 
+## Step Zero - Local Git Baseline
+
+Before any installation edit, protect the target project with a local Git
+baseline.
+
+Render this short check:
+
+```text
+Tilly Step Zero
+
+[01/03] Inspect Git status .......... RUNNING
+[02/03] Create local baseline ....... PENDING
+[03/03] Start installation .......... PENDING
+```
+
+Run:
+
+```bash
+git status --short --branch --untracked-files=all
+```
+
+If the working tree is clean, record the current `HEAD` as the rollback point
+and continue.
+
+If the working tree is dirty, stop before editing and ask for one route:
+
+```text
+Tilly Step Zero Navigation
+
+Routes:
+
+  commit-baseline  (recommended)
+    Create a local commit with the current project state before installing.
+
+  continue-dirty
+    Continue without a baseline commit. Not recommended.
+
+  abort
+    Stop installation without changes.
+
+Type one route command: commit-baseline, continue-dirty, or abort.
+```
+
+If the user selects `commit-baseline`:
+
+- stage only the current pre-install changes;
+- do not stage generated install files because installation has not started;
+- commit with:
+
+```bash
+git commit -m "chore: baseline before Tilly context install"
+```
+
+If there are no changes to commit, record current `HEAD` and continue.
+
+If the user selects `continue-dirty`, record that rollback may require manual
+review because pre-existing work is mixed with installation changes.
+
+If the user selects `abort`, stop with `NEEDS_REVIEW`.
+
+At final report time, always include rollback guidance:
+
+```bash
+git reset --hard <baseline-head>
+```
+
+Use this command only when the user wants to discard all changes after the
+baseline commit. If the install was committed separately, also offer:
+
+```bash
+git revert <install-commit>
+```
+
+Do not run rollback commands automatically.
+
 ## Phase 0 - Internal Preflight
 
 Before editing, capture this internally:
 
 ```yaml
 tilly_context_install:
+  baseline_head:
+  baseline_status:
   detected_runtime:
   project_type:
   default_adapter:
@@ -378,6 +458,9 @@ The default endpoint is an installed working tree plus certification report.
 Do not continue into Git mutation unless the user explicitly asks after reading
 the report.
 
+Step Zero is the only exception: a local pre-install baseline commit can be
+created before installation so the user can safely undo the install.
+
 Distinguish these claims:
 
 | Claim | Meaning |
@@ -433,6 +516,11 @@ Certification
 Evidence
 - <docs/agents/evidence/...>
 - <optional journal>
+
+Rollback
+- Baseline: <baseline-head>
+- Undo uncommitted install: `git reset --hard <baseline-head>`
+- Undo committed install: `git revert <install-commit>`
 
 Limits
 - <honest non-claims>

@@ -95,11 +95,16 @@ command only where the spec requires one. Preserve local project governance,
 move durable agent context into docs/agents/**, keep AGENTS.md, CLAUDE.md and
 Cursor rules as thin runtime bootloaders, and finish with the certification
 report required by the spec.
+
+Before installation edits, run Step Zero from the spec: inspect Git status and
+offer a local baseline commit if the working tree is dirty. At the end, tell me
+how to undo the installation with Git.
 ```
 
-The assisted installer must not commit, push, amend, tag, publish, install
+The assisted installer must not push, amend, tag, publish, install
 dependencies, overwrite files, or change remotes unless the user explicitly
-asks after reviewing the certification report.
+asks after reviewing the certification report. Step Zero may create a local
+baseline commit before installation so rollback is simple.
 
 ## Legacy / Maintainer Install
 
