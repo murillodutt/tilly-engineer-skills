@@ -6,7 +6,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, and clearer proof before they claim a task
 is done.
 
-Version: `0.3.2`
+Version: `0.3.3`
 
 License: MIT
 
@@ -32,7 +32,7 @@ Run in quiet installer mode: show compact progress, blockers and the final
 certification report only. When navigation is required, load the runtime
 navigation library from the spec, use native structured cards only when the
 current runtime safely supports them, otherwise render command navigation.
-Ask for a route command such as current, codex, claude, cursor, all, or audit.
+Ask for a route command such as current, codex, claude, cursor, all, mcp, or audit.
 Do not display internal reasoning, scratch YAML or long inventories.
 
 Start by detecting the current IDE/runtime and classifying this project as new,
@@ -41,9 +41,10 @@ update/convergence run, not a reinstall. Use the detected IDE as the default
 adapter. Ask me for a route command only where the spec requires one. Preserve
 local project governance, move durable agent context into docs/agents/** when
 needed, create or update the compiled docs/agents/cortex/** Cortex layer, keep
-AGENTS.md, CLAUDE.md and Cursor rules as thin runtime bootloaders, and finish
-with the certification report required by the spec. The final report must
-expose the user manual link/path.
+AGENTS.md, CLAUDE.md and Cursor rules as thin runtime bootloaders, activate the
+read-only project-scoped Cortex MCP server for the selected runtime route, and
+finish with the certification report required by the spec. The final report
+must expose the user manual link/path.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, tell me
@@ -82,6 +83,8 @@ Cortex memory lives in versioned Markdown artifacts: `sources/**`, `cells/**`,
 derived recall index at `.tilly/cortex/recall.sqlite`, and `rg` is the fallback.
 Obsidian is a compatible visual surface; the installer does not create or edit
 `.obsidian/**`, require plugins, or depend on editor state for certification.
+The read-only Cortex MCP server is activated through project-scoped runtime
+config, never global config.
 
 When this package is available locally, Cortex can be initialized and checked
 with:
@@ -95,6 +98,8 @@ python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
 python3 scripts/cortex.py learn --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
 python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
 python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
+python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
+python3 scripts/install_mcp.py --self-test
 ```
 
 ## Business Value
@@ -267,6 +272,7 @@ npm run validate
 npm run tds:validate
 npm run cortex:self-test
 npm run cortex:mcp:self-test
+npm run mcp:self-test
 npm run materialize:check
 npm run benchmark:plan
 npm run commit:check

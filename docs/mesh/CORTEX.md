@@ -5,7 +5,7 @@ status: active
 consumer: installer authors, adopters, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.3.0
+tver: 0.4.0
 ---
 
 # Tilly Cortex
@@ -240,6 +240,8 @@ Initial certification proves that:
 - `.tilly/cortex/recall.sqlite` is documented as derived and rebuildable;
 - the Obsidian boundary is declared without requiring `.obsidian/**`;
 - runtime bootloaders route to Cortex when durable project memory is relevant;
+- read-only Cortex MCP is activated for selected runtime routes or explicitly
+  blocked with a reason;
 - installation evidence states whether Cortex was created, skipped, or blocked.
 
 ## MCP Boundary
@@ -250,5 +252,5 @@ Write tools require a later controlled cut.
 
 The first read-only stdio surface is governed by
 `docs/mesh/CORTEX-MCP.md` and implemented by `scripts/cortex_mcp.py`. It
-delegates to the deterministic Cortex CLI functions and does not promote,
-rewrite, or persist knowledge.
+is activated by `scripts/install_mcp.py`, delegates to the deterministic Cortex
+CLI functions, and does not promote, rewrite, or persist knowledge.

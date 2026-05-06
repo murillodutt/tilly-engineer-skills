@@ -1,4 +1,4 @@
-version: 0.3.2
+version: 0.3.3
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -524,5 +524,12 @@ documents:
     class: evidence
     status: active
     consumer: Cortex maintainers, installer authors, and certification reviewers
+    source_of_truth: false
+    evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/cortex-mcp-activation-2026-05-06/REPORT.md
+    id: evidence.context_mesh.cortex_mcp_activation_2026_05_06
+    class: evidence
+    status: active
+    consumer: installer authors, MCP adapter authors, and certification reviewers
     source_of_truth: false
     evidence_level: L3

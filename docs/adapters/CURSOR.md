@@ -5,7 +5,7 @@ status: active
 consumer: cursor adopters and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Cursor Adapter
@@ -22,7 +22,7 @@ rule under `.cursor/rules/**`; `CURSOR.md` is a human handoff note only.
 | `.cursor/rules/*.mdc` | Project rules with frontmatter | Included |
 | `AGENTS.md` | Simple root-only alternative context | Not materialized by default |
 | `.cursorrules` | Legacy rule file | Forbidden |
-| MCP | External tool integration | Blocked by default |
+| MCP | Project-scoped Cortex access | Installer route only |
 | Hooks | Agent-loop controls | Blocked by default |
 | Background agents | Remote async execution | Blocked by default |
 | CLI commands | Runtime controls | Not package source |
@@ -52,14 +52,15 @@ manual rules instead of expanding the always-on rule.
 - Keep `.mdc` frontmatter with `description` and `alwaysApply: true`.
 - Do not materialize `AGENTS.md` for Cursor without an explicit decision,
   because it can duplicate `.cursor/rules/**`.
-- Do not add `.cursor/mcp.json`, hook config, or environment files to the
-  default package.
+- Do not add hook config or environment files to the default package.
+- Read-only Cortex MCP may be activated by the assisted installer through
+  project-scoped `.cursor/mcp.json`.
 
 ## Sensitive Surface Register
 
 | Surface | Risk | Default |
 |---------|------|---------|
-| `.cursor/mcp.json` | Adds external tools and approvals | Out of package |
+| `.cursor/mcp.json` | Adds external tools and approvals | Read-only Cortex only via installer |
 | Hooks | Can alter agent loop behavior | Out of package |
 | Environment setup | Can install packages or prepare cloud agents | Out of package |
 | Background agents | Remote branch execution | Out of package |

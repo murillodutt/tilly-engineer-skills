@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.5.0
+tver: 0.6.0
 ---
 
 # Adapter Installation
@@ -44,11 +44,12 @@ compact progress, blockers and the final certification report only. When
 navigation is required, load the runtime navigation library from the spec, use
 native structured cards only when the current runtime safely supports them,
 otherwise render command navigation. Ask for a route command such as current,
-codex, claude, cursor, all, or audit. Use the detected IDE as the default
+codex, claude, cursor, all, mcp, or audit. Use the detected IDE as the default
 adapter. Ask me for a route command only where the spec requires one.
 Preserve local project governance, move durable agent context into
 docs/agents/**, keep AGENTS.md, CLAUDE.md and Cursor rules as thin runtime
-bootloaders, and finish with the certification report required by the spec.
+bootloaders, activate the read-only project-scoped Cortex MCP server for the
+selected runtime route, and finish with the certification report required by the spec.
 The final report must expose the user manual link/path.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
@@ -82,6 +83,7 @@ environment detection
   -> docs/agents/** canonical mesh
   -> docs/agents/cortex/** memory layer
   -> thin runtime assets
+  -> project-scoped Cortex MCP activation
   -> evidence journal
   -> certification report
 ```
@@ -109,6 +111,12 @@ Cortex is Obsidian-compatible plain Markdown. The installer does not create
 `.obsidian/**`, require community plugins, or depend on Obsidian state for
 certification.
 
+Cortex MCP is activated by default for selected runtime routes. It remains
+read-only and project-scoped. The installer may write `.tilly/bin/cortex.py`,
+`.tilly/bin/cortex_mcp.py`, `.codex/config.toml`, `.mcp.json`, and
+`.cursor/mcp.json`; it must not edit global MCP configuration, secrets, hooks,
+or write-capable MCP tools.
+
 When this package is available locally, Cortex can be initialized and checked
 with:
 
@@ -117,6 +125,14 @@ python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
+```
+
+Project-scoped MCP can be installed and checked with:
+
+```bash
+python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
+python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
+python3 scripts/install_mcp.py --self-test
 ```
 
 Navigation is runtime-aware. The installer declares menus as intent, loads
@@ -167,8 +183,9 @@ Next Step: ...
 ```
 
 GO requires canonical `docs/agents/**`, a created or explicitly deferred
-Cortex layer, thin runtime assets, preserved local context, no blind overwrite,
-no secret mutation, and at least one relevant local oracle.
+Cortex layer, selected-runtime Cortex MCP activation or a named blocker, thin
+runtime assets, preserved local context, no blind overwrite, no secret
+mutation, and at least one relevant local oracle.
 
 GO does not imply the integration was committed or pushed. The certification
 report must distinguish:
@@ -286,7 +303,10 @@ ownership, security constraints, and existing agent rules.
 
 - No remote script execution.
 - No package manager install.
-- No hooks, MCP, background agent, cloud, or secret changes.
+- No hooks, background agent, cloud, secret changes, global MCP config, or
+  write-capable MCP tools.
+- Project-scoped read-only Cortex MCP config is allowed only through the
+  selected route and explicit installer report.
 - No overwrite without explicit `--overwrite`.
 - No non-interactive writes without `--yes`.
 - Backups are created before overwrites unless `--no-backup` is set.
@@ -297,6 +317,7 @@ From this package:
 
 ```bash
 npm run install:dry-run
+npm run mcp:self-test
 npm run materialize:check
 npm run commit:check
 ```

@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Adapter Materialization
@@ -61,7 +61,7 @@ If a target tool changes packaging rules, update `src/adapters/<tool>/**`,
 | Cursor | Legacy `.cursorrules` leaks back into the package | Validator blocks `.cursorrules` |
 | All | Generated output becomes perceived source | `dist/**` remains ignored and reproducible |
 
-Hooks, MCP servers, agent definitions, cloud/background execution, and
-marketplace publishing are excluded from the default materialized output. They
-are sensitive operational surfaces and require separate authorization, tests,
-and documentation.
+Hooks, write-capable MCP servers, agent definitions, cloud/background
+execution, and marketplace publishing are excluded from the default materialized
+output. Read-only Cortex MCP is activated by `scripts/install_mcp.py` as a
+project-scoped installer layer, not by adapter materialization.

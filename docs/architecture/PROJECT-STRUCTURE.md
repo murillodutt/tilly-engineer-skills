@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and adapter authors
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Project Structure
@@ -55,6 +55,10 @@ trees under `dist/adapters/**`:
 | Cursor | `CURSOR.md` plus `.cursor/rules/**` |
 
 Use `npm run materialize:check` to verify this without writing to `dist/**`.
+
+`scripts/install_mcp.py` is separate from adapter materialization. It activates
+the read-only Cortex MCP server in a target project by copying local helpers to
+`.tilly/bin/**` and writing project-scoped runtime config.
 
 ## Docs
 

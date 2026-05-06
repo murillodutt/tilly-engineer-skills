@@ -5,7 +5,7 @@ status: active
 consumer: MCP adapter authors, installer authors, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Tilly Cortex MCP
@@ -34,8 +34,9 @@ explicit local rebuild command exposed by the CLI, not by the v1 MCP tools.
 
 ## Tools
 
-The read-only v1 server is `scripts/cortex_mcp.py`. It uses stdio JSON-RPC and
-does not require third-party Python packages.
+The read-only server is `scripts/cortex_mcp.py`. It uses stdio JSON-RPC and
+does not require third-party Python packages. Target projects activate it
+through project-scoped runtime config, never through global config mutation.
 
 | Tool | Behavior |
 |------|----------|
@@ -63,13 +64,51 @@ Package script:
 npm run cortex:mcp:self-test
 ```
 
+Project-scoped activation:
+
+```bash
+python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
+python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
+python3 scripts/install_mcp.py --self-test
+```
+
+The assisted-installer `current` route is resolved to the detected runtime
+before calling the script. The script accepts `codex`, `claude`, `cursor`, or
+`all`.
+
+## Runtime Config
+
+The activation path installs local MCP helpers into the target project:
+
+```text
+.tilly/bin/cortex.py
+.tilly/bin/cortex_mcp.py
+```
+
+It then writes only project-scoped config for the selected runtime:
+
+| Runtime | Project config |
+|---------|----------------|
+| Codex | `.codex/config.toml` |
+| Claude Code | `.mcp.json` |
+| Cursor | `.cursor/mcp.json` |
+
+Existing config is merged when the `tilly-cortex` server name is absent. If a
+different `tilly-cortex` entry already exists, activation stops unless the user
+explicitly passes `--overwrite`; backups are created by default.
+
 ## MCP Cut
 
 ```yaml
 cortex_cut:
   consumer: MCP-capable agents
   camada: mcp
-  escreve_em: []
+  escreve_em:
+    - .tilly/bin/cortex.py
+    - .tilly/bin/cortex_mcp.py
+    - .codex/config.toml
+    - .mcp.json
+    - .cursor/mcp.json
   nao_toca:
     - docs/agents/cortex/sources/**
     - docs/agents/cortex/cells/**
@@ -77,12 +116,15 @@ cortex_cut:
     - docs/agents/cortex/TRAIL.md
     - docs/agents/cortex/LINKS.md
     - .obsidian/**
-  oracle: python3 scripts/cortex_mcp.py --self-test
+  oracle: python3 scripts/install_mcp.py --self-test
   rollback: git revert <commit>
 ```
 
 ## Boundary
 
-This cut does not add MCP configuration files for Codex, Claude, or Cursor. Each
-target project should opt in explicitly after the local CLI and MCP smoke pass.
-Write-capable MCP tools remain outside v1.
+MCP activation is local, read-only, and project-scoped. It must not edit global
+Codex, Claude, or Cursor configuration, secrets, hooks, remotes, package
+lockfiles, `.obsidian/**`, or Cortex source material.
+
+Write-capable MCP tools remain outside v1. `learn` and `apply` stay CLI-governed
+because promotion into Cortex requires explicit evidence and authorization.

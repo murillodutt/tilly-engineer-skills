@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, adapter authors, and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Agentic Alignment Governance
@@ -56,7 +56,7 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 | Reusable discipline workflow | Skill in `.agents/skills/**` | Skill in `skills/**` | Always-on project rule | Preserve behavioral parity, not packaging parity |
 | Distribution | Future `.codex-plugin/**` if needed | `.claude-plugin/**` plus plugin root skills | Repository files | Distribution is adapter-specific |
 | Hooks | Sensitive, feature-gated | Sensitive enforcement surface | Sensitive agent-loop surface | Excluded from default package until separately authorized |
-| MCP | External capability layer | External capability layer | External capability layer | Excluded by default; requires decision and tests |
+| MCP | External capability layer | External capability layer | External capability layer | Read-only Cortex MCP is installer-gated; other MCP requires decision and tests |
 | Agents and subagents | Powerful specialist layer | Powerful specialist layer | Agent/background execution layer | Excluded by default; requires permission, tools, and oracle contract |
 | Commands | Not a package source here | Skills preferred over custom commands | CLI commands are runtime controls | Do not encode runtime commands as behavioral truth |
 
@@ -91,7 +91,7 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 | Adapter | Must Preserve | Must Not Do |
 |---------|---------------|-------------|
 | Codex | Thin `AGENTS.md`, repo skill in `.agents/skills/**`, progressive disclosure | Treat plugin cache or user runtime as source |
-| Claude | Short `CLAUDE.md`, root-contained plugin skills, no default hooks/MCP/agents | Use `../` skill paths inside plugin metadata |
+| Claude | Short `CLAUDE.md`, root-contained plugin skills, read-only Cortex MCP only through project config | Use `../` skill paths inside plugin metadata |
 | Cursor | `.cursor/rules/*.mdc`, `alwaysApply: true` for the base discipline, no `.cursorrules` | Treat `CURSOR.md` as the primary operative context |
 
 ## Current Certification State
@@ -104,6 +104,7 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 | Codex skill oracle | Certified locally | `discipline_oracle.py --self-test` |
 | Cursor rule shape | Certified locally | Materializer frontmatter checks |
 | Claude plugin install | Structurally aligned, installer oracle pending | Materializer path checks |
+| Cortex MCP activation | Certified locally | `scripts/install_mcp.py --self-test` |
 
 ## No-Go Rules
 
@@ -111,7 +112,9 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 - Do not add `CHANGELOG.md`; Git history is the changelog.
 - Do not publish or install plugins from this package without an explicit
   private decision.
-- Do not add hooks, MCP, or agents to the default package because they are
-  operational surfaces, not passive documentation.
+- Do not add hooks, write-capable MCP, or agents to the default package because
+  they are operational surfaces, not passive documentation.
+- Read-only Cortex MCP is allowed only as project-scoped installer activation
+  with lifecycle tests and no global config mutation.
 - Do not duplicate the same behavioral prose in every layer. Keep the common
   contract small and route detail to the proper adapter.
