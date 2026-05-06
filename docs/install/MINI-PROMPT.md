@@ -33,7 +33,9 @@ move durable agent context into docs/agents/**, keep AGENTS.md, CLAUDE.md and
 Cursor rules as thin runtime bootloaders, and finish with the certification
 report required by the spec.
 
-Do not commit, push, amend, tag, publish, install dependencies, overwrite
-files, or change remotes unless I explicitly ask after reviewing the
-certification report.
+Before installation edits, run Step Zero from the spec: inspect Git status and
+offer a local baseline commit if the working tree is dirty. At the end, tell me
+how to undo the installation with Git. Do not push, amend, tag, publish, install
+dependencies, overwrite files, or change remotes unless I explicitly ask after
+reviewing the certification report.
 ```

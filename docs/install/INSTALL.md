@@ -39,9 +39,11 @@ Preserve local project governance, move durable agent context into
 docs/agents/**, keep AGENTS.md, CLAUDE.md and Cursor rules as thin runtime
 bootloaders, and finish with the certification report required by the spec.
 
-Do not commit, push, amend, tag, publish, install dependencies, overwrite
-files, or change remotes unless I explicitly ask after reviewing the
-certification report.
+Before installation edits, run Step Zero from the spec: inspect Git status and
+offer a local baseline commit if the working tree is dirty. At the end, tell me
+how to undo the installation with Git. Do not push, amend, tag, publish, install
+dependencies, overwrite files, or change remotes unless I explicitly ask after
+reviewing the certification report.
 ```
 
 Short source:
@@ -127,6 +129,19 @@ report must distinguish:
 | `GO installed` | Files were created or retrofitted and local oracles passed. |
 | `GO committed` | The user explicitly approved commit after reviewing the report. |
 | `GO published` | The user explicitly approved push or publication after commit. |
+
+Every report must include rollback guidance. If the install is uncommitted, the
+standard undo command is:
+
+```bash
+git reset --hard <baseline-head>
+```
+
+If the install was committed separately, prefer:
+
+```bash
+git revert <install-commit>
+```
 
 ## Script Support
 
