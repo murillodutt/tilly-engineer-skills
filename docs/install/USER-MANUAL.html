@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Manual em PT, EN e ES para instalar, atualizar e auditar Tilly Engineer Skills.">
+  <meta name="description" content="Manual in EN, ES and PT for installing, updating and auditing Tilly Engineer Skills.">
   <title>Tilly Engineer Skills - User Manual</title>
   <style>
     :root {
@@ -55,6 +55,29 @@
       padding: 24px 20px;
       position: sticky;
       top: 0;
+    }
+
+    .sidebar-head {
+      align-items: flex-start;
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+    }
+
+    .menu-toggle {
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink);
+      cursor: pointer;
+      display: none;
+      font: inherit;
+      font-weight: 700;
+      height: 38px;
+      justify-content: center;
+      line-height: 1;
+      width: 42px;
     }
 
     main {
@@ -190,18 +213,20 @@
       max-width: 820px;
     }
 
+    .sidebar-panel {
+      display: block;
+    }
+
     .language-picker {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 22px 0 0;
+      display: grid;
+      gap: 8px;
+      margin: 0 0 24px;
     }
 
     .language-picker label {
       color: var(--muted);
       font-size: 14px;
       font-weight: 700;
-      padding: 7px 0;
     }
 
     .language-picker select,
@@ -214,7 +239,7 @@
       font: inherit;
       font-size: 13px;
       font-weight: 700;
-      min-width: 180px;
+      min-width: 100%;
       padding: 7px 12px;
     }
 
@@ -255,8 +280,36 @@
       }
 
       aside {
+        border-bottom: 1px solid var(--line);
+        border-right: 0;
         height: auto;
         position: static;
+        padding: 16px 18px;
+      }
+
+      .brand {
+        margin-bottom: 0;
+      }
+
+      .menu-toggle {
+        display: inline-flex;
+      }
+
+      .sidebar-panel {
+        display: none;
+        margin-top: 16px;
+      }
+
+      .sidebar-panel.open {
+        display: block;
+      }
+
+      .language-picker {
+        margin-bottom: 12px;
+      }
+
+      .language-picker select {
+        min-width: 220px;
       }
 
       nav {
@@ -279,6 +332,10 @@
         grid-template-columns: 1fr;
       }
 
+      .language-picker select {
+        min-width: 100%;
+      }
+
       h1 {
         font-size: 30px;
       }
@@ -288,34 +345,41 @@
 <body>
   <div class="layout">
     <aside aria-label="Manual navigation">
-      <div class="brand">
-        <strong>Tilly Engineer Skills</strong>
-        <span>User manual v0.2.4</span>
+      <div class="sidebar-head">
+        <div class="brand">
+          <strong>Tilly Engineer Skills</strong>
+          <span>User manual v0.2.5</span>
+        </div>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="sidebar-panel" aria-label="Open manual menu">
+          ☰
+        </button>
       </div>
-      <nav>
-        <a href="#en" data-nav="home">Overview</a>
-        <a href="#en-install" data-nav="install">Quick install</a>
-        <a href="#en-cortex" data-nav="cortex">Cortex</a>
-        <a href="#en-report" data-nav="report">Final report</a>
-      </nav>
-    </aside>
-
-    <main>
-      <header>
-        <p class="eyebrow">PT / EN / ES</p>
-        <h1>Tilly Engineer Skills User Manual</h1>
-        <p class="lead">
-          One practical guide in Portuguese, English and Spanish for installing,
-          updating and auditing Tilly as an assisted context mesh.
-        </p>
+      <div id="sidebar-panel" class="sidebar-panel">
         <form class="language-picker" aria-label="Manual language">
           <label for="language-select">Language</label>
           <select id="language-select" name="language">
             <option value="en" selected>English</option>
-            <option value="pt">Português</option>
             <option value="es">Español</option>
+            <option value="pt">Português</option>
           </select>
         </form>
+        <nav>
+          <a href="#en" data-nav="home">Overview</a>
+          <a href="#en-install" data-nav="install">Quick install</a>
+          <a href="#en-cortex" data-nav="cortex">Cortex</a>
+          <a href="#en-report" data-nav="report">Final report</a>
+        </nav>
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <p class="eyebrow">EN / ES / PT</p>
+        <h1>Tilly Engineer Skills User Manual</h1>
+        <p class="lead">
+          One practical guide in English, Spanish and Portuguese for installing,
+          updating and auditing Tilly as an assisted context mesh.
+        </p>
       </header>
 
       <section id="pt" class="language" lang="pt-BR">
@@ -619,12 +683,14 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <p class="footer">
-        Tilly Engineer Skills v0.2.4. Practical user manual in PT, EN and ES.
+        Tilly Engineer Skills v0.2.5. Practical user manual in EN, ES and PT.
       </p>
     </main>
   </div>
   <script>
     const select = document.getElementById("language-select");
+    const menuToggle = document.querySelector(".menu-toggle");
+    const sidebarPanel = document.getElementById("sidebar-panel");
     const sections = Array.from(document.querySelectorAll(".language"));
     const navLabels = {
       en: {
@@ -682,6 +748,12 @@ git revert &lt;install-commit&gt;</code></pre>
     if (["pt", "en", "es"].includes(initial)) {
       activateLanguage(initial);
     }
+
+    menuToggle.addEventListener("click", () => {
+      const open = sidebarPanel.classList.toggle("open");
+      menuToggle.setAttribute("aria-expanded", String(open));
+      menuToggle.setAttribute("aria-label", open ? "Close manual menu" : "Open manual menu");
+    });
   </script>
 </body>
 </html>

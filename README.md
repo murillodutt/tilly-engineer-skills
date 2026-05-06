@@ -6,13 +6,13 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, and clearer proof before they claim a task
 is done.
 
-Version: `0.2.4`
+Version: `0.2.5`
 
 License: MIT
 
 ## Install First
 
-For the structured user guide in Portuguese, English, and Spanish, open:
+For the structured user guide in English, Spanish, and Portuguese, open:
 
 ```text
 docs/install/USER-MANUAL.html
