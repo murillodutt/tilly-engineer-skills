@@ -5,7 +5,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.0
+tver: 0.3.0
 ---
 
 # Tilly Assisted Context Installer
@@ -47,6 +47,7 @@ docs/install/navigation/cursor.prompt.md
 docs/install/navigation/cursor-acp.prompt.md
 docs/install/navigation/anthropic-api.prompt.md
 docs/install/navigation/generic.prompt.md
+docs/install/USER-MANUAL.html
 docs/mesh/CORTEX.md
 src/adapters/codex/AGENTS.md
 src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md
@@ -96,6 +97,7 @@ During installation, show only:
 - required navigation menus rendered through the runtime navigation library;
 - blockers that need user input;
 - final certification report.
+- user manual access in the final certification report.
 
 Do not print this kind of internal packet to the user:
 
@@ -674,6 +676,20 @@ The default endpoint is a meshed working tree plus certification report.
 Do not continue into Git mutation unless the user explicitly asks after reading
 the report.
 
+The final report must always expose the user manual. Prefer a clickable link or
+plain path, depending on runtime support:
+
+```text
+User Manual
+- Web: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/install/USER-MANUAL.html
+- Local package path: docs/install/USER-MANUAL.html  # when this package is available locally
+```
+
+Do not make automatic browser opening part of certification. If the current
+runtime can safely open local files or URLs and the user asks for it, opening
+the manual is allowed as a convenience after the report. Otherwise, exposing
+the link/path is the required behavior.
+
 Step Zero is the only exception: a local pre-install baseline commit can be
 created before installation so the user can safely undo the install.
 
@@ -738,6 +754,10 @@ Certification
 Evidence
 - <docs/agents/evidence/...>
 - <journal when created>
+
+User Manual
+- Web: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/install/USER-MANUAL.html
+- Local package path: docs/install/USER-MANUAL.html  # when available
 
 Rollback
 - Baseline: <baseline-head>
