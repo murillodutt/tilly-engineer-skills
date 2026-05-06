@@ -204,6 +204,13 @@ documents:
     consumer: benchmark authors, adapter authors, and certification reviewers
     source_of_truth: true
     evidence_level: L2
+  - path: docs/mesh/CORTEX.md
+    id: mesh.cortex
+    class: mesh
+    status: active
+    consumer: installer authors, adopters, and agents
+    source_of_truth: true
+    evidence_level: L1
   - path: docs/mesh/PRINCIPLES.md
     id: mesh.principles
     class: mesh

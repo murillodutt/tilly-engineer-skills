@@ -34,7 +34,7 @@ Otherwise it remains taste, folklore, or prompt decoration.
 | Instruction | What behavior must change? | `src/adapters/**` bootloaders, rules, skills |
 | Execution | How does the agent act? | Skills, scripts, hooks |
 | Verification | How do we know it worked? | Evals, tests, gates, benchmark outputs |
-| Return | What becomes reusable? | Docs, scorecards, skill updates, memory atoms |
+| Return | What becomes reusable? | Docs, scorecards, Cortex pages, skill updates |
 
 If one layer changes alone, drift appears. If all layers connect, the rule
 stops being opinion and becomes governed behavior.
@@ -135,4 +135,4 @@ For a new project, reduce the discipline into:
 5. Concrete validation command.
 
 Learning becomes real only when it returns as a test, gate, skill, prompt, doc,
-or memory artifact.
+or Cortex artifact.

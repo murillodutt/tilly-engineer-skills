@@ -32,9 +32,10 @@ Do not display internal reasoning, scratch YAML or long inventories.
 Start by detecting the current IDE/runtime and classifying this project as new
 or existing. Use the detected IDE as the default adapter. Ask me for a route
 command only where the spec requires one. Preserve local project governance,
-move durable agent context into docs/agents/**, keep AGENTS.md, CLAUDE.md and
-Cursor rules as thin runtime bootloaders, and finish with the certification
-report required by the spec.
+move durable agent context into docs/agents/**, create the compiled
+docs/agents/cortex/** Cortex layer, keep AGENTS.md, CLAUDE.md and Cursor rules
+as thin runtime bootloaders, and finish with the certification report required
+by the spec.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, tell me
@@ -63,9 +64,27 @@ hard to audit. Tilly installs a local context mesh instead:
 docs/agents/** is source. Runtime assets route and execute.
 ```
 
-That means project governance lives in one durable place while `AGENTS.md`,
-`CLAUDE.md`, `.cursor/rules/**`, `.agents/**`, and future runtime assets stay
-thin.
+That means project governance lives in one durable place, Cortex gives the
+project a compiled memory layer at `docs/agents/cortex/**`, and
+`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/**`, `.agents/**`, and future runtime
+assets stay thin.
+
+Cortex memory lives in versioned Markdown artifacts: `sources/**`, `cells/**`,
+`MAP.md`, `TRAIL.md`, `LINKS.md`, and `CONTRACT.md`. SQLite FTS5 is only the
+derived recall index at `.tilly/cortex/recall.sqlite`, and `rg` is the fallback.
+Obsidian is a compatible visual surface; the installer does not create or edit
+`.obsidian/**`, require plugins, or depend on editor state for certification.
+
+When this package is available locally, Cortex can be initialized and checked
+with:
+
+```bash
+python3 scripts/cortex.py init --target /path/to/project-or-vault
+python3 scripts/cortex.py verify --target /path/to/project-or-vault
+python3 scripts/cortex.py audit --target /path/to/project-or-vault
+python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
+python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
+```
 
 ## Business Value
 
@@ -75,6 +94,7 @@ thin.
 | Safer retrofits | Existing instructions are migrated instead of blindly overwritten. |
 | Less context drift | Codex, Claude, and Cursor point to the same project truth. |
 | Better execution | Agents are pushed to expose assumptions, reduce scope, edit surgically, and verify. |
+| Compounding memory | Cortex keeps immutable sources separate from compiled, versioned cells. |
 | Easier rollback | Step Zero creates or records a Git baseline before installation changes. |
 | Audit-ready reports | Every install ends with a certification report and explicit non-claims. |
 
@@ -105,9 +125,10 @@ Tilly is not a file copier and not a prompt dump. The assisted installer:
 3. Protects the working tree with Step Zero.
 4. Preserves local product governance.
 5. Moves durable context into `docs/agents/**`.
-6. Leaves runtime files as thin bootloaders.
-7. Runs the smallest safe local oracles.
-8. Produces a professional certification report.
+6. Creates `docs/agents/cortex/**` as the compiled Cortex memory layer.
+7. Leaves runtime files as thin bootloaders.
+8. Runs the smallest safe local oracles.
+9. Produces a professional certification report.
 
 Navigation is also runtime-aware. Claude Code can use `AskUserQuestion` when
 available, Codex can use `request_user_input` when the active schema supports
@@ -122,6 +143,7 @@ has a command-navigation fallback.
 | Claude Code | `CLAUDE.md`, Claude-scoped rules, plugin or skill assets when appropriate |
 | Cursor | `.cursor/rules/*.mdc` |
 | Shared mesh | `docs/agents/**` |
+| Cortex memory | `docs/agents/cortex/**` |
 
 Different tools do not need identical text. They need equivalent routing to the
 same project contract.
@@ -138,6 +160,7 @@ Scope: new project | existing project retrofit
 Detected Runtime: Codex | Claude Code | Cursor | uncertain
 Selected Adapters: ...
 Canonical Source: docs/agents/**
+Cortex: docs/agents/cortex/**
 Navigation Library: ...
 Navigation Renderer: ...
 Navigation Mode: ...
@@ -230,6 +253,7 @@ This repository is optimized for local-only commits:
 ```bash
 npm run validate
 npm run tds:validate
+npm run cortex:self-test
 npm run materialize:check
 npm run benchmark:plan
 npm run commit:check

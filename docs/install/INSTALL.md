@@ -70,6 +70,7 @@ environment detection
   -> runtime navigation library
   -> adapter menu
   -> docs/agents/** canonical mesh
+  -> docs/agents/cortex/** memory layer
   -> thin runtime assets
   -> evidence journal
   -> certification report
@@ -87,6 +88,26 @@ The installer follows current adapter surfaces:
 
 The common pattern is file-based installation into the target repository, but
 project-specific governance belongs in `docs/agents/**`.
+
+Cortex is the default compiled memory layer under `docs/agents/cortex/**`.
+Memory lives in versioned artifacts: immutable `sources/**`, compiled
+`cells/**`, `MAP.md`, `TRAIL.md`, `LINKS.md`, and `CONTRACT.md`. SQLite FTS5 at
+`.tilly/cortex/recall.sqlite` is a derived recall index, never memory, and `rg`
+is the fallback.
+
+Cortex is Obsidian-compatible plain Markdown. The installer does not create
+`.obsidian/**`, require community plugins, or depend on Obsidian state for
+certification.
+
+When this package is available locally, Cortex can be initialized and checked
+with:
+
+```bash
+python3 scripts/cortex.py init --target /path/to/project-or-vault
+python3 scripts/cortex.py verify --target /path/to/project-or-vault
+python3 scripts/cortex.py audit --target /path/to/project-or-vault
+python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
+```
 
 Navigation is runtime-aware. The installer declares menus as intent, loads
 `docs/install/navigation/common.prompt.md`, then loads the renderer for Codex,
@@ -118,6 +139,7 @@ Scope: new project | existing project retrofit
 Detected Runtime: Codex | Claude Code | Cursor | uncertain
 Selected Adapters: ...
 Canonical Source: docs/agents/**
+Cortex: docs/agents/cortex/**
 Navigation Library: ...
 Navigation Renderer: ...
 Navigation Mode: ...
@@ -128,9 +150,9 @@ Limits: ...
 Next Step: ...
 ```
 
-GO requires canonical `docs/agents/**`, thin runtime assets, preserved local
-context, no blind overwrite, no secret mutation, and at least one relevant
-local oracle.
+GO requires canonical `docs/agents/**`, a created or explicitly deferred
+Cortex layer, thin runtime assets, preserved local context, no blind overwrite,
+no secret mutation, and at least one relevant local oracle.
 
 GO does not imply the integration was committed or pushed. The certification
 report must distinguish:
