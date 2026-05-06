@@ -6,7 +6,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, and clearer proof before they claim a task
 is done.
 
-Version: `0.2.2`
+Version: `0.2.3`
 
 License: MIT
 
@@ -42,7 +42,8 @@ adapter. Ask me for a route command only where the spec requires one. Preserve
 local project governance, move durable agent context into docs/agents/** when
 needed, create or update the compiled docs/agents/cortex/** Cortex layer, keep
 AGENTS.md, CLAUDE.md and Cursor rules as thin runtime bootloaders, and finish
-with the certification report required by the spec.
+with the certification report required by the spec. The final report must
+expose the user manual link/path.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, tell me
@@ -174,6 +175,7 @@ Navigation Mode: ...
 Integration Matrix: ...
 Certification: ...
 Evidence: ...
+User Manual: ...
 Rollback: ...
 Limits: ...
 Next Step: ...

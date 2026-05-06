@@ -5,7 +5,7 @@ status: active
 consumer: adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.0
+tver: 0.3.0
 ---
 
 # Tilly Context Installer Mini Prompt
@@ -36,6 +36,7 @@ local project governance, move durable agent context into docs/agents/** when
 needed, create or update the compiled docs/agents/cortex/** Cortex layer, keep
 AGENTS.md, CLAUDE.md and Cursor rules as thin runtime bootloaders, and finish
 with the certification report required by the spec.
+The final report must expose the user manual link/path.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, tell me

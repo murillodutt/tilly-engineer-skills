@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.3.0
+tver: 0.4.0
 ---
 
 # Adapter Installation
@@ -48,6 +48,7 @@ adapter. Ask me for a route command only where the spec requires one.
 Preserve local project governance, move durable agent context into
 docs/agents/**, keep AGENTS.md, CLAUDE.md and Cursor rules as thin runtime
 bootloaders, and finish with the certification report required by the spec.
+The final report must expose the user manual link/path.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, tell me
@@ -159,6 +160,7 @@ Navigation Mode: ...
 Integration Matrix: ...
 Certification: ...
 Evidence: ...
+User Manual: ...
 Limits: ...
 Next Step: ...
 ```
@@ -175,6 +177,18 @@ report must distinguish:
 | `GO meshed` | Mesh files were created, retrofitted, or updated and local oracles passed. |
 | `GO committed` | The user explicitly approved commit after reviewing the report. |
 | `GO published` | The user explicitly approved push or publication after commit. |
+
+Every report must expose the user manual:
+
+```text
+User Manual
+- Web: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/install/USER-MANUAL.html
+- Local package path: docs/install/USER-MANUAL.html
+```
+
+Automatic browser opening is optional convenience only. It is not required for
+certification because not every runtime can safely open local files or browser
+tabs.
 
 Every report must include rollback guidance. If the install is uncommitted, the
 standard undo command is:
