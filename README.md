@@ -96,7 +96,15 @@ Cursor rules as thin runtime bootloaders, and finish with the certification
 report required by the spec.
 ```
 
-## Manual Install By Tool
+The assisted installer must not commit, push, amend, tag, publish, install
+dependencies, overwrite files, or change remotes unless the user explicitly
+asks after reviewing the certification report.
+
+## Legacy / Maintainer Install
+
+Manual install is for package maintainers, controlled packaging, and adapter
+debugging. Real target projects should use the assisted context installer so
+existing governance is preserved and migrated into `docs/agents/**`.
 
 ### Codex
 

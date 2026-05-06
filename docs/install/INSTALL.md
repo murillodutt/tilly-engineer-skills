@@ -38,6 +38,10 @@ spec requires one. Preserve local project governance, move durable agent
 context into docs/agents/**, keep AGENTS.md, CLAUDE.md and Cursor rules as thin
 runtime bootloaders, and finish with the certification report required by the
 spec.
+
+Do not commit, push, amend, tag, publish, install dependencies, overwrite
+files, or change remotes unless I explicitly ask after reviewing the
+certification report.
 ```
 
 Short source:
@@ -114,6 +118,15 @@ Next Step: ...
 GO requires canonical `docs/agents/**`, thin runtime assets, preserved local
 context, no blind overwrite, no secret mutation, and at least one relevant
 local oracle.
+
+GO does not imply the integration was committed or pushed. The certification
+report must distinguish:
+
+| Claim | Meaning |
+|-------|---------|
+| `GO installed` | Files were created or retrofitted and local oracles passed. |
+| `GO committed` | The user explicitly approved commit after reviewing the report. |
+| `GO published` | The user explicitly approved push or publication after commit. |
 
 ## Script Support
 
