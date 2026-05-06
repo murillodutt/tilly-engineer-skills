@@ -320,6 +320,7 @@ npm run install:dry-run
 npm run mcp:self-test
 npm run install:smoke
 npm run claude:plugin:oracle
+npm run platform:surface:check
 npm run retention:check
 npm run reference:graph
 npm run docs:size
