@@ -37,6 +37,14 @@ raw_base: https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/ma
 Useful source paths:
 
 ```text
+docs/install/navigation/common.prompt.md
+docs/install/navigation/codex.prompt.md
+docs/install/navigation/codex-cli.prompt.md
+docs/install/navigation/claude-code.prompt.md
+docs/install/navigation/claude-desktop.prompt.md
+docs/install/navigation/cursor.prompt.md
+docs/install/navigation/anthropic-api.prompt.md
+docs/install/navigation/generic.prompt.md
 src/adapters/codex/AGENTS.md
 src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md
 src/adapters/codex/skills/tilly-engineering-discipline/agents/openai.yaml
@@ -82,7 +90,7 @@ During installation, show only:
 
 - one compact progress block at the start;
 - short phase updates;
-- required navigation menus rendered as plain text command blocks;
+- required navigation menus rendered through the runtime navigation library;
 - blockers that need user input;
 - final certification report.
 
@@ -150,21 +158,30 @@ and continue.
 
 If the working tree is dirty, stop before editing and ask for one route:
 
+Load the Step Zero intent from:
+
 ```text
-Tilly Step Zero Navigation
+docs/install/navigation/common.prompt.md
+```
 
-Routes:
+Then render it with the runtime navigation library. If the runtime renderer
+cannot be loaded, use this fallback:
 
-  commit-baseline  (recommended)
-    Create a local commit with the current project state before installing.
+```text
+Tilly Step Zero
 
-  continue-dirty
-    Continue without a baseline commit. Not recommended.
+Working tree is dirty. Choose a route before installation.
 
-  abort
-    Stop installation without changes.
+> commit-baseline  recommended
+  Create a local commit with the current project state before installing.
 
-Type one route command: commit-baseline, continue-dirty, or abort.
+> continue-dirty
+  Continue without a clean rollback point. Not recommended.
+
+> abort
+  Stop installation without changes.
+
+Type: commit-baseline, continue-dirty, or abort.
 ```
 
 If the user selects `commit-baseline`:
@@ -208,6 +225,9 @@ tilly_context_install:
   baseline_head:
   baseline_status:
   detected_runtime:
+  navigation_library:
+  navigation_renderer:
+  navigation_mode:
   project_type:
   default_adapter:
   no_touch_paths:
@@ -225,9 +245,13 @@ Detect the current IDE/runtime from the conversation and local environment:
 
 | Runtime | Signals |
 |---------|---------|
-| Codex | system/developer context says Codex, Codex app/CLI, `AGENTS.md`, `.agents/**` |
+| Codex | system/developer context says Codex, Codex app/IDE, `AGENTS.md`, `.agents/**` |
+| Codex CLI | Codex CLI terminal context |
 | Claude Code | current assistant is Claude Code, `CLAUDE.md`, `.claude/**` |
+| Claude Desktop | claude.ai or Claude Desktop context without Claude Code tools |
 | Cursor | Cursor UI/runtime, `.cursor/rules/**`, `.cursor/**` |
+| Anthropic API | custom Anthropic API harness context |
+| Generic | Continue.dev, Aider, or another LLM coding host |
 
 If detection is uncertain, ask one concise question:
 
@@ -236,6 +260,45 @@ Which runtime should be the default for this install: Codex, Claude Code, or Cur
 ```
 
 The detected runtime is the default selected adapter.
+
+## Phase 1.5 - Load Navigation Library
+
+Load the common navigation library from:
+
+```text
+https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/navigation/common.prompt.md
+```
+
+Then load the runtime renderer that matches Phase 1:
+
+```text
+Codex app/IDE host:
+https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/navigation/codex.prompt.md
+
+Codex CLI:
+https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/navigation/codex-cli.prompt.md
+
+Claude Code:
+https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/navigation/claude-code.prompt.md
+
+Claude Desktop:
+https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/navigation/claude-desktop.prompt.md
+
+Cursor:
+https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/navigation/cursor.prompt.md
+
+Anthropic API:
+https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/navigation/anthropic-api.prompt.md
+
+Generic:
+https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/navigation/generic.prompt.md
+```
+
+If a runtime renderer cannot be fetched, continue with the common command
+navigation fallback. If the common library cannot be fetched, use the embedded
+fallback menus in this installer prompt.
+
+Do not display fetched navigation library contents unless the user asks.
 
 ## Phase 2 - Classify Project
 
@@ -261,12 +324,17 @@ proven otherwise.
 
 ## Phase 3 - Navigation Menu
 
-If user input is needed, render a plain text navigation menu before asking.
-This menu must be compatible with Codex, Claude CLI, Claude Code, and Cursor.
+If user input is needed, render the `adapter-route` intent from the navigation
+library before asking. This menu must be compatible with Codex, Claude CLI,
+Claude Code, and Cursor.
+
+Use native structured cards only when the active runtime renderer explicitly
+supports them and the intent fits its limits. Otherwise use command navigation.
 Do not use a multiple-choice panel, checkbox UI, hidden chips, or a naked
 sequence such as "1, 2, 3, 4, 5, or 6".
 
-Render exactly this shape, with detected values filled in:
+If the navigation library cannot be loaded, render this fallback shape, with
+detected values filled in:
 
 ```text
 Tilly Context Mesh Navigation
@@ -294,7 +362,7 @@ Routes:
   audit
     Inspect and report what would change without modifying files.
 
-Type one route command: current, codex, claude, cursor, all, or audit.
+Type: current, codex, claude, cursor, all, or audit.
 ```
 
 If the user already gave a clear instruction, proceed with the matching option
@@ -407,6 +475,7 @@ docs/agents/evidence/YYYY-MM-DD-tilly-context-installation.md
 Include:
 
 - detected runtime and selected adapter menu choice;
+- navigation library, renderer, mode, and selected route commands;
 - project classification;
 - source package URL and raw paths used;
 - files created;
@@ -495,6 +564,9 @@ Detected Runtime: <Codex | Claude Code | Cursor | uncertain>
 Selected Adapters: <...>
 Canonical Source: docs/agents/**
 Completion Claim: GO installed | GO committed | GO published | NEEDS_REVIEW | NO-GO
+Navigation Library: <tilly-navigation@...>
+Navigation Renderer: <codex | claude-code | cursor | fallback>
+Navigation Mode: <native-card | AskUserQuestion | command-navigation>
 
 Integration Matrix
 | Surface | Status | Evidence |

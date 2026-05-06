@@ -31,10 +31,12 @@ https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/in
 
 Start by detecting the current IDE/runtime and classifying this project as new
 or existing. Run in quiet installer mode: show compact progress, blockers and
-the final certification report only. When navigation is required, render the
-plain text navigation menu from the spec and ask for a route command such as
-current, codex, claude, cursor, all, or audit. Use the detected IDE as the
-default adapter. Ask me for a route command only where the spec requires one.
+the final certification report only. When navigation is required, load the
+runtime navigation library from the spec, use native structured cards only when
+the current runtime safely supports them, otherwise render command navigation.
+Ask for a route command such as current, codex, claude, cursor, all, or audit.
+Use the detected IDE as the default adapter. Ask me for a route command only
+where the spec requires one.
 Preserve local project governance, move durable agent context into
 docs/agents/**, keep AGENTS.md, CLAUDE.md and Cursor rules as thin runtime
 bootloaders, and finish with the certification report required by the spec.
@@ -65,6 +67,7 @@ The context installer is not a file copier. It performs:
 ```text
 environment detection
   -> new/existing project classification
+  -> runtime navigation library
   -> adapter menu
   -> docs/agents/** canonical mesh
   -> thin runtime assets
@@ -84,6 +87,11 @@ The installer follows current adapter surfaces:
 
 The common pattern is file-based installation into the target repository, but
 project-specific governance belongs in `docs/agents/**`.
+
+Navigation is runtime-aware. The installer declares menus as intent, loads
+`docs/install/navigation/common.prompt.md`, then loads the renderer for Codex,
+Claude Code, or Cursor. Native cards are used only when the active runtime
+supports them safely; command navigation remains the certified fallback.
 
 ## New vs Existing Projects
 
@@ -110,6 +118,9 @@ Scope: new project | existing project retrofit
 Detected Runtime: Codex | Claude Code | Cursor | uncertain
 Selected Adapters: ...
 Canonical Source: docs/agents/**
+Navigation Library: ...
+Navigation Renderer: ...
+Navigation Mode: ...
 Integration Matrix: ...
 Certification: ...
 Evidence: ...
