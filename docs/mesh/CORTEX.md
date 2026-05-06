@@ -5,7 +5,7 @@ status: active
 consumer: installer authors, adopters, and agents
 source_of_truth: true
 evidence_level: L1
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Tilly Cortex
@@ -237,3 +237,8 @@ Initial certification proves that:
 MCP enters only after CLI, rebuild, and fallback recall are certified. The v1
 MCP shape is read-only first: verify, audit, recall, read cell, and absorb-plan.
 Write tools require a later controlled cut.
+
+The first read-only stdio surface is governed by
+`docs/mesh/CORTEX-MCP.md` and implemented by `scripts/cortex_mcp.py`. It
+delegates to the deterministic Cortex CLI functions and does not promote,
+rewrite, or persist knowledge.

@@ -6,7 +6,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, and clearer proof before they claim a task
 is done.
 
-Version: `0.2.8`
+Version: `0.2.9`
 
 License: MIT
 
@@ -92,6 +92,7 @@ python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
 python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
+python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
 ```
 
 ## Business Value
@@ -263,6 +264,7 @@ This repository is optimized for local-only commits:
 npm run validate
 npm run tds:validate
 npm run cortex:self-test
+npm run cortex:mcp:self-test
 npm run materialize:check
 npm run benchmark:plan
 npm run commit:check

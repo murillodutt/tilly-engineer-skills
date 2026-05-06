@@ -1,4 +1,4 @@
-version: 0.2.8
+version: 0.2.9
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -211,6 +211,13 @@ documents:
     consumer: installer authors, adopters, and agents
     source_of_truth: true
     evidence_level: L1
+  - path: docs/mesh/CORTEX-MCP.md
+    id: mesh.cortex_mcp
+    class: mesh
+    status: active
+    consumer: MCP adapter authors, installer authors, and agents
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/mesh/PRINCIPLES.md
     id: mesh.principles
     class: mesh
@@ -505,3 +512,10 @@ documents:
     consumer: certification reviewers, adapter authors, and v1 release decision makers
     source_of_truth: false
     evidence_level: L4
+  - path: docs/evidence/reports/context-mesh/cortex-mcp-readonly-2026-05-06/REPORT.md
+    id: evidence.context_mesh.cortex_mcp_readonly_2026_05_06
+    class: evidence
+    status: active
+    consumer: MCP adapter authors, Cortex maintainers, and certification reviewers
+    source_of_truth: false
+    evidence_level: L3
