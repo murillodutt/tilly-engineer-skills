@@ -4,8 +4,8 @@ tds_class: mesh
 status: active
 consumer: installer authors, adopters, and agents
 source_of_truth: true
-evidence_level: L1
-tver: 0.2.0
+evidence_level: L2
+tver: 0.3.0
 ---
 
 # Tilly Cortex
@@ -146,6 +146,7 @@ cells remain warnings; broken wikilinks and ungrounded cells are failures.
 | `rebuild` | Recreate `.tilly/cortex/recall.sqlite` from versioned Cortex artifacts |
 | `learn` | Generate a promotion proposal with evidence; do not write automatically |
 | `apply` | Write only with authorization and audit evidence |
+| `read-cell` | Read a single cell under `cells/**` without using the derived index |
 
 ## Automation
 
@@ -157,15 +158,24 @@ python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
 python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
+python3 scripts/cortex.py read-cell --target /path/to/project-or-vault --cell path-or-stem
+python3 scripts/cortex.py learn --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
 python3 scripts/cortex.py absorb-plan --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
+python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell path-or-stem --claim "durable claim" --evidence sources/source.md --yes
 python3 scripts/cortex.py --self-test
 ```
 
 The helper scaffolds starter Markdown, migrates legacy Cortex names into the v1
 names when safe, validates the required files, checks the parseable trail
 heading, reports whether `.obsidian/**` is present, audits basic Cortex health,
-rebuilds SQLite FTS5 recall, and falls back to `rg` for recall when FTS5 is not
-available.
+rebuilds SQLite FTS5 recall, falls back to `rg` for recall when FTS5 is not
+available, proposes promotions through `learn`, and applies cells only through
+explicitly authorized `apply --yes` runs that pass audit and rebuild.
+
+`apply` writes only `cells/**`, `MAP.md`, `LINKS.md`, `TRAIL.md`, and the
+derived recall index rebuilt from those artifacts. It refuses to write without
+`--yes`, refuses ungrounded evidence, refuses to overwrite an existing cell
+unless `--update` is passed, and never writes in `sources/**`.
 
 Compatibility aliases `scaffold`, `check`, and `lint` may remain in the helper
 only to prevent transition friction. Documentation and package scripts use
