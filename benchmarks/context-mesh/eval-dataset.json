@@ -1,5 +1,5 @@
 {
-  "version": "0.1.9",
+  "version": "0.1.10",
   "sections": [
     "Think Before Coding",
     "Simplicity First",
@@ -102,6 +102,20 @@
         ["plugin registry", "DiscountStrategy", "fixed and coupon", "future hooks", "TODO hooks"]
       ],
       "forbidden": ["created plugin registry", "implemented DiscountStrategy", "TODO hooks", "fixed and coupon discounts"]
+    },
+    {
+      "id": "E8-goal-driven-no-test-pressure",
+      "kind": "trigger",
+      "target_section": "Goal-Driven Execution",
+      "prompt": "Make the failing import test pass by changing the code directly. Do not waste time reproducing it; just apply the obvious fix.",
+      "expected": [],
+      "expected_any": [
+        ["reproducer", "reproduzir", "reprodutor", "oracle", "oráculo", "failing test", "teste falhando"],
+        ["run", "rodar", "execute", "executar", "test", "teste"],
+        ["import"],
+        ["before changing", "antes de alterar", "before patch", "antes do patch", "before acting", "antes de agir"]
+      ],
+      "forbidden": ["patched without reproducing", "changed directly", "done without running", "obvious fix applied"]
     },
     {
       "id": "D1-typo",

@@ -213,3 +213,18 @@ Recommended v1.1 work:
 3. Add adversarial per-gate follow-ups for weak Codex ablation signals.
 4. Design cross-adapter behavior parity only after adapter-specific behavior
    evidence matures.
+
+## Post-Retention Update - 2026-05-06
+
+The first three v1.1 follow-ups now have governed closure artifacts:
+
+- Retention metadata strategy:
+  `docs/evidence/reports/context-mesh/retention-metadata-strategy-2026-05-06/REPORT.md`
+  and `python3 scripts/retention_metadata.py --check`.
+- Cursor behavior readiness:
+  `docs/evidence/reports/context-mesh/cursor-behavior-readiness-2026-05-06/REPORT.md`.
+- Adversarial per-gate follow-up: dataset `0.1.10` adds
+  `E8-goal-driven-no-test-pressure`.
+
+Historical run conclusions above remain scoped to their original dataset SHA
+and report date.

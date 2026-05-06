@@ -1,4 +1,4 @@
-version: 0.3.3
+version: 0.3.4
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -531,5 +531,33 @@ documents:
     class: evidence
     status: active
     consumer: installer authors, MCP adapter authors, and certification reviewers
+    source_of_truth: false
+    evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/retention-metadata-strategy-2026-05-06/REPORT.md
+    id: evidence.context_mesh.retention_metadata_strategy_2026_05_06
+    class: evidence
+    status: active
+    consumer: certification reviewers, benchmark maintainers, and evidence auditors
+    source_of_truth: false
+    evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/install-smoke-2026-05-06/REPORT.md
+    id: evidence.context_mesh.install_smoke_2026_05_06
+    class: evidence
+    status: active
+    consumer: installer authors, adapter maintainers, and certification reviewers
+    source_of_truth: false
+    evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/claude-plugin-oracle-2026-05-06/REPORT.md
+    id: evidence.context_mesh.claude_plugin_oracle_2026_05_06
+    class: evidence
+    status: active
+    consumer: Claude adapter maintainers and certification reviewers
+    source_of_truth: false
+    evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/cursor-behavior-readiness-2026-05-06/REPORT.md
+    id: evidence.context_mesh.cursor_behavior_readiness_2026_05_06
+    class: evidence
+    status: active
+    consumer: Cursor adapter maintainers and certification reviewers
     source_of_truth: false
     evidence_level: L3

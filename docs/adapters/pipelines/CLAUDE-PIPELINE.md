@@ -5,14 +5,14 @@ status: active
 consumer: claude code adopters and certification reviewers
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Claude Pipeline
 
 The Claude pipeline materializes the neutral behavioral contract into Claude
-Code instructions, plugin structure, and skills. It is the first adapter with a
-declared behavior execution backend.
+Code instructions, plugin structure, and skills. It has retained v1 behavior
+evidence for the declared `claude-cli` backend.
 
 ## Contract
 
@@ -28,7 +28,7 @@ declared behavior execution backend.
 | Materialized files | `dist/adapters/claude/CLAUDE.md`, `dist/adapters/claude/.claude-plugin/**`, `dist/adapters/claude/skills/**` |
 | Validation command | `npm run materialize:check` |
 | Execution backend | `python3 scripts/context_mesh_run.py --backend claude-cli` |
-| Evidence class | behavior candidate when raw run evidence is retained |
+| Evidence class | structural plus retained v1 behavior evidence |
 
 ## Known Limits
 
@@ -37,6 +37,9 @@ declared behavior execution backend.
   by the runner.
 - Behavior certification applies only to the dataset hash, git head, backend,
   model, grader version, and run id declared in evidence.
+- Local plugin package shape is checked by
+  `python3 scripts/claude_plugin_oracle.py --self-test`; marketplace
+  distribution remains outside the certified scope.
 
 ## NO-GO
 

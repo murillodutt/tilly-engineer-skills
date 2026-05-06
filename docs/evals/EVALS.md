@@ -5,7 +5,7 @@ status: active
 consumer: benchmark authors
 source_of_truth: true
 evidence_level: L1
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Eval And Ablation Method
@@ -196,8 +196,11 @@ summary, or TDS report as the canonical package record.
 `scripts/context_mesh_run.py` is the first evidence runner. It is intentionally
 small: it reuses the same dataset planning logic as
 `scripts/context_mesh_plan.py`, supports non-paid `fixture` and `echo`
-backends plus an isolated `claude-cli` backend, applies deterministic substring
-grading, and writes one auditable run directory.
+backends plus isolated `claude-cli` and `codex-cli` backends, applies
+deterministic substring grading, and writes one auditable run directory.
+
+Dataset `0.1.10` adds an adversarial Goal-Driven prompt so weak per-gate
+behavior can be followed up without changing historical retained reports.
 
 Default evidence shape:
 

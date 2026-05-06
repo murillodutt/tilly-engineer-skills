@@ -6,7 +6,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, and clearer proof before they claim a task
 is done.
 
-Version: `0.3.3`
+Version: `0.3.4`
 
 License: MIT
 
@@ -273,6 +273,10 @@ npm run tds:validate
 npm run cortex:self-test
 npm run cortex:mcp:self-test
 npm run mcp:self-test
+npm run install:smoke
+npm run claude:plugin:oracle
+npm run retention:check
+npm run reference:graph
 npm run materialize:check
 npm run benchmark:plan
 npm run commit:check

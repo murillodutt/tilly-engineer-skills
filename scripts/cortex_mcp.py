@@ -13,7 +13,7 @@ from typing import Any
 import cortex
 
 
-VERSION = "0.3.3"
+VERSION = "0.3.4"
 PROTOCOL_VERSION = "2025-06-18"
 
 

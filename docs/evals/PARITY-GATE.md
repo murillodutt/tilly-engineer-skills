@@ -5,7 +5,7 @@ status: active
 consumer: certification reviewers
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Parity Gate
@@ -40,9 +40,9 @@ mechanics.
 | Area | Status |
 |------|--------|
 | Core contract | certified for structural use after TDS and materialization gates pass |
-| Claude | behavior run executable through `claude-cli`; behavior status depends on retained report |
-| Codex | structural only until backend exists |
-| Cursor | structural only until backend exists |
+| Claude | behavior-certified for retained run/hash/backend/model |
+| Codex | behavior-certified for retained run/hash/backend/prompt contract |
+| Cursor | structural only; behavior deferred until a non-interactive backend exists |
 | Parity | partial by design |
 
 ## NO-GO

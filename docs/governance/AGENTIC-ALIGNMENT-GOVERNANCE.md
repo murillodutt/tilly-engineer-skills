@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, adapter authors, and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.0
+tver: 0.3.0
 ---
 
 # Agentic Alignment Governance
@@ -103,8 +103,11 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 | Materialization | Certified locally | `scripts/materialize_adapter.py all --check` |
 | Codex skill oracle | Certified locally | `discipline_oracle.py --self-test` |
 | Cursor rule shape | Certified locally | Materializer frontmatter checks |
-| Claude plugin install | Structurally aligned, installer oracle pending | Materializer path checks |
+| Claude plugin install | Certified locally | `scripts/claude_plugin_oracle.py --self-test` |
 | Cortex MCP activation | Certified locally | `scripts/install_mcp.py --self-test` |
+| Assisted install routes | Certified locally | `scripts/install_smoke.py --self-test` |
+| Retention metadata policy | Certified locally | `scripts/retention_metadata.py --check` |
+| Reference graph | Certified locally | `scripts/validate_reference_graph.py` |
 
 ## No-Go Rules
 

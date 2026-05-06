@@ -61,8 +61,10 @@ dedicated decision.
   plugin.
 - Read-only Cortex MCP is activated by the assisted installer through
   project-scoped `.mcp.json`, not plugin metadata.
-- A publishable Claude package requires an installer oracle before
-  certification.
+- Local target plugin shape is certified by
+  `python3 scripts/claude_plugin_oracle.py --self-test`.
+- A publishable Claude marketplace package still requires a separate
+  distribution oracle before certification.
 
 ## Sensitive Surface Register
 
@@ -81,8 +83,10 @@ Run:
 ```bash
 npm run materialize:claude
 npm run materialize:check
+python3 scripts/claude_plugin_oracle.py --self-test
 npm run commit:check
 ```
 
-Claude alignment is complete only when the generated tree is root-contained and
-the next packaging wave proves installer behavior in the target Claude runtime.
+Claude local adapter alignment is complete when the generated tree is
+root-contained and the local plugin oracle passes. Marketplace publication and
+global desktop registration remain explicit non-claims.

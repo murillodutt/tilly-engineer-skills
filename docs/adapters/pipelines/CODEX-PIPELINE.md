@@ -5,14 +5,14 @@ status: active
 consumer: codex adopters and certification reviewers
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Codex Pipeline
 
 The Codex pipeline materializes the neutral behavioral contract into Codex
-runtime instructions and skills. It is not behavior-certified until an
-execution backend exists.
+runtime instructions and skills. It has retained v1 behavior evidence for the
+declared `codex-cli` backend and prompt contract.
 
 ## Contract
 
@@ -27,19 +27,20 @@ execution backend exists.
 | Source files | `src/adapters/codex/**` |
 | Materialized files | `dist/adapters/codex/AGENTS.md`, `dist/adapters/codex/.agents/skills/**` |
 | Validation command | `npm run materialize:check` |
-| Execution backend | pending |
-| Evidence class | structural until a backend exists |
+| Execution backend | `python3 scripts/context_mesh_run.py --backend codex-cli` |
+| Evidence class | structural plus retained v1 behavior evidence |
 
 ## Known Limits
 
 - Codex skill behavior is instruction-mediated and depends on the active Codex
   runtime.
-- No behavior backend is currently declared for context mesh execution.
-- Structural parity proves materialization, not model behavior.
+- Behavior evidence is scoped to the retained run/hash/backend/prompt contract.
+- Cross-adapter behavioral parity is not claimed while Cursor remains
+  structural-only.
 
 ## NO-GO
 
-- Do not declare Codex behavioral parity without a backend run.
+- Do not declare Codex universal behavioral parity from a single backend run.
 - Do not use copied Claude or Cursor text as the parity criterion.
 - Do not add hooks, cloud actions, or marketplace assumptions as part of this
   pipeline.
