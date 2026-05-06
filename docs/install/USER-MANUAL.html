@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.1</span>
+          <span class="brand-meta">User manual · v0.3.2</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1168,7 +1168,28 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="obsidian">
           <div class="chapter-head"><span class="chapter-num">07</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
-            <p>Cortex is Obsidian-compatible because it uses plain Markdown. The installer does not create or edit <code>.obsidian/**</code>. Obsidian is a visual surface, not the source of truth.</p>
+            <p>Use Obsidian as the visual workbench for Cortex, not as the authority layer. The installer never creates or edits <code>.obsidian/**</code>; the user configures Obsidian locally and Cortex remains plain Markdown.</p>
+            <ol>
+              <li>Open the project root as the vault when you want to see agent docs, evidence and Cortex together.</li>
+              <li>Open <code>docs/agents/cortex/</code> as the vault when you want a focused memory workspace.</li>
+              <li>Set the attachment folder to <code>sources/assets/</code> when saving local images or clipped article assets.</li>
+              <li>Keep source citations as repository paths such as <code>sources/article.md</code>; use wikilinks mainly between cells.</li>
+              <li>Use Graph View to inspect hubs, isolated cells and relationship density after each meaningful absorb/apply cycle.</li>
+              <li>Run <code>python3 scripts/cortex.py audit --target /path/to/project-or-vault</code> before trusting the graph.</li>
+            </ol>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Obsidian setting</th><th>Recommended use</th></tr></thead>
+                <tbody>
+                  <tr><td>Vault root</td><td>Project root for full context, or <code>docs/agents/cortex/</code> for focused memory.</td></tr>
+                  <tr><td>Files and links</td><td>Keep Markdown links readable outside Obsidian; avoid Obsidian-only proof.</td></tr>
+                  <tr><td>Attachments</td><td>Use <code>sources/assets/</code> for local images and clipped media.</td></tr>
+                  <tr><td>Graph filters</td><td>Focus on <code>cells/</code>, <code>MAP.md</code> and <code>LINKS.md</code>; hide transient or generated files.</td></tr>
+                  <tr><td>Community plugins</td><td>Optional only. Dataview, Canvas and Marp must not be required for certification.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>A healthy Cortex graph should show cells connected by claims and evidence. A pretty graph is not proof: <code>audit</code>, Git diff and explicit evidence are the certification layer.</p>
           </div>
         </section>
 
@@ -1356,7 +1377,28 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="obsidian-es">
           <div class="chapter-head"><span class="chapter-num">07</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
-            <p>Cortex es compatible con Obsidian porque usa Markdown común. El instalador no crea ni edita <code>.obsidian/**</code>. Obsidian es una superficie visual, no la fuente de verdad.</p>
+            <p>Usa Obsidian como mesa visual de trabajo para Cortex, no como capa de autoridad. El instalador nunca crea ni edita <code>.obsidian/**</code>; el usuario configura Obsidian localmente y Cortex sigue siendo Markdown común.</p>
+            <ol>
+              <li>Abre la raíz del proyecto como vault cuando quieras ver docs de agente, evidencia y Cortex juntos.</li>
+              <li>Abre <code>docs/agents/cortex/</code> como vault cuando quieras un espacio de memoria enfocado.</li>
+              <li>Configura la carpeta de adjuntos como <code>sources/assets/</code> para imágenes locales o assets de artículos recortados.</li>
+              <li>Mantén las citas de fuentes como paths del repositorio, por ejemplo <code>sources/article.md</code>; usa wikilinks principalmente entre cells.</li>
+              <li>Usa Graph View para revisar hubs, cells aisladas y densidad de relaciones después de cada ciclo importante de absorb/apply.</li>
+              <li>Ejecuta <code>python3 scripts/cortex.py audit --target /path/to/project-or-vault</code> antes de confiar en el grafo.</li>
+            </ol>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Ajuste de Obsidian</th><th>Uso recomendado</th></tr></thead>
+                <tbody>
+                  <tr><td>Vault root</td><td>Raíz del proyecto para contexto completo, o <code>docs/agents/cortex/</code> para memoria enfocada.</td></tr>
+                  <tr><td>Files and links</td><td>Mantén los links Markdown legibles fuera de Obsidian; evita pruebas solo de Obsidian.</td></tr>
+                  <tr><td>Attachments</td><td>Usa <code>sources/assets/</code> para imágenes locales y medios recortados.</td></tr>
+                  <tr><td>Graph filters</td><td>Enfoca <code>cells/</code>, <code>MAP.md</code> y <code>LINKS.md</code>; oculta archivos transitorios o generados.</td></tr>
+                  <tr><td>Community plugins</td><td>Solo opcionales. Dataview, Canvas y Marp no deben ser requeridos para certificar.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Un grafo Cortex sano muestra cells conectadas por claims y evidencia. Un grafo bonito no es prueba: <code>audit</code>, Git diff y evidencia explícita son la capa de certificación.</p>
           </div>
         </section>
 
@@ -1544,7 +1586,28 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="obsidian-pt">
           <div class="chapter-head"><span class="chapter-num">07</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
-            <p>O Cortex é compatível com Obsidian porque usa Markdown comum. O instalador não cria nem edita <code>.obsidian/**</code>. Obsidian é superfície visual, não fonte de verdade.</p>
+            <p>Use o Obsidian como bancada visual do Cortex, não como camada de autoridade. O instalador nunca cria nem edita <code>.obsidian/**</code>; o usuário configura o Obsidian localmente e o Cortex continua sendo Markdown comum.</p>
+            <ol>
+              <li>Abra a raiz do projeto como vault quando quiser ver docs de agente, evidências e Cortex juntos.</li>
+              <li>Abra <code>docs/agents/cortex/</code> como vault quando quiser um espaço focado de memória.</li>
+              <li>Configure a pasta de anexos como <code>sources/assets/</code> para imagens locais ou assets de artigos recortados.</li>
+              <li>Mantenha citações de fontes como paths do repositório, por exemplo <code>sources/article.md</code>; use wikilinks principalmente entre cells.</li>
+              <li>Use o Graph View para revisar hubs, cells isoladas e densidade de relações depois de cada ciclo relevante de absorb/apply.</li>
+              <li>Rode <code>python3 scripts/cortex.py audit --target /path/to/project-or-vault</code> antes de confiar no grafo.</li>
+            </ol>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Ajuste do Obsidian</th><th>Uso recomendado</th></tr></thead>
+                <tbody>
+                  <tr><td>Vault root</td><td>Raiz do projeto para contexto completo, ou <code>docs/agents/cortex/</code> para memória focada.</td></tr>
+                  <tr><td>Files and links</td><td>Mantenha links Markdown legíveis fora do Obsidian; evite prova que só existe no Obsidian.</td></tr>
+                  <tr><td>Attachments</td><td>Use <code>sources/assets/</code> para imagens locais e mídia recortada.</td></tr>
+                  <tr><td>Graph filters</td><td>Foque em <code>cells/</code>, <code>MAP.md</code> e <code>LINKS.md</code>; esconda arquivos transitórios ou gerados.</td></tr>
+                  <tr><td>Community plugins</td><td>Apenas opcionais. Dataview, Canvas e Marp não devem ser exigidos para certificação.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Um grafo Cortex saudável mostra cells conectadas por claims e evidências. Um grafo bonito não é prova: <code>audit</code>, Git diff e evidência explícita são a camada de certificação.</p>
           </div>
         </section>
 
@@ -1573,7 +1636,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.1</span>
+        <span>Tilly Engineer Skills · v0.3.2</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>
