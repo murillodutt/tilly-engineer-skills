@@ -5,7 +5,7 @@ status: active
 consumer: claude code adopters and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Claude Adapter
@@ -25,7 +25,7 @@ use Claude-native surfaces instead of copying Codex packaging.
 | `.claude-plugin/**` | Distribution metadata | Included as source, not published |
 | Settings | Enforcement and permission policy | Documented only |
 | Hooks | Operational enforcement scripts | Blocked by default |
-| MCP | External tool integration | Blocked by default |
+| MCP | Project-scoped Cortex access | Installer route only |
 | Subagents | Independent specialist contexts | Blocked by default |
 | Commands | Runtime command shortcuts | Not materialized; skills are preferred |
 
@@ -57,7 +57,10 @@ dedicated decision.
   root.
 - Skill paths in plugin metadata must be root-relative, such as
   `skills/tilly-guidelines`, not `../skills/tilly-guidelines`.
-- Hooks, MCP, and subagents must not be added to the default plugin.
+- Hooks, write-capable MCP, and subagents must not be added to the default
+  plugin.
+- Read-only Cortex MCP is activated by the assisted installer through
+  project-scoped `.mcp.json`, not plugin metadata.
 - A publishable Claude package requires an installer oracle before
   certification.
 
@@ -67,7 +70,7 @@ dedicated decision.
 |---------|------|---------|
 | Settings | Can enforce or deny runtime behavior | Out of package |
 | Hooks | Run commands with user permissions | Out of package |
-| MCP | Adds external tools, auth, and lifecycle | Out of package |
+| MCP | Adds external tools, auth, and lifecycle | Read-only Cortex only via installer |
 | Subagents | Can inherit tools and act automatically | Out of package |
 | Marketplace | Can distribute stale or unsafe packages | Local metadata only |
 

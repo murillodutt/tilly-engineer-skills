@@ -1,6 +1,6 @@
 {
   "name": "tilly-engineer-skills",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "private": true,
   "description": "Portable engineering discipline and context-mesh method for coding agents.",
   "license": "MIT",
@@ -9,6 +9,9 @@
     "validate": "python3 scripts/validate_reference_package.py",
     "install:adapter": "python3 scripts/install_adapter.py",
     "install:dry-run": "python3 scripts/install_adapter.py --dry-run",
+    "mcp:install": "python3 scripts/install_mcp.py",
+    "mcp:dry-run": "python3 scripts/install_mcp.py --dry-run",
+    "mcp:self-test": "python3 scripts/install_mcp.py --self-test",
     "materialize:all": "python3 scripts/materialize_adapter.py all",
     "materialize:codex": "python3 scripts/materialize_adapter.py codex",
     "materialize:cursor": "python3 scripts/materialize_adapter.py cursor",
@@ -29,6 +32,6 @@
     "benchmark:converge": "python3 scripts/context_mesh_convergence.py",
     "adapter:parity:check": "python3 scripts/adapter_parity_readiness.py",
     "git:diff-check": "git diff --check && git diff --cached --check",
-    "commit:check": "python3 scripts/validate_reference_package.py --staged-ready && python3 scripts/validate_tds.py && python3 scripts/context_mesh_plan.py && python3 scripts/cortex.py --self-test && python3 scripts/cortex_mcp.py --self-test && python3 scripts/materialize_adapter.py all --check && python3 scripts/adapter_parity_readiness.py && git diff --check && git diff --cached --check"
+    "commit:check": "python3 scripts/validate_reference_package.py --staged-ready && python3 scripts/validate_tds.py && python3 scripts/context_mesh_plan.py && python3 scripts/cortex.py --self-test && python3 scripts/cortex_mcp.py --self-test && python3 scripts/install_mcp.py --self-test && python3 scripts/materialize_adapter.py all --check && python3 scripts/adapter_parity_readiness.py && git diff --check && git diff --cached --check"
   }
 }

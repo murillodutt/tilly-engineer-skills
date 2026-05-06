@@ -5,7 +5,7 @@ status: active
 consumer: installing LLMs in Codex
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Codex Navigation Renderer
@@ -47,7 +47,7 @@ When a structured input tool exists:
 If the tool has a limit below the number of options, fall back to command
 navigation instead of splitting the intent silently.
 
-For the current installer, the six-option adapter route should remain command
+For the current installer, the seven-option adapter route should remain command
 navigation because common Codex structured-input shapes support fewer options.
 
 ## Evidence

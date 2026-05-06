@@ -5,7 +5,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.5.0
+tver: 0.6.0
 ---
 
 # Tilly Assisted Context Installer
@@ -49,6 +49,10 @@ docs/install/navigation/anthropic-api.prompt.md
 docs/install/navigation/generic.prompt.md
 docs/install/USER-MANUAL.html
 docs/mesh/CORTEX.md
+docs/mesh/CORTEX-MCP.md
+scripts/cortex.py
+scripts/cortex_mcp.py
+scripts/install_mcp.py
 src/adapters/codex/AGENTS.md
 src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md
 src/adapters/codex/skills/tilly-engineering-discipline/agents/openai.yaml
@@ -67,9 +71,12 @@ contents or permission to continue from already available context.
 - Never overwrite existing agent instructions blindly.
 - Never replace local product governance with generic Tilly prose.
 - Never move target-project-specific rules into the external Tilly skill.
-- Never edit secrets, `.env`, credentials, production remotes, hooks, MCP
-  servers, CI secrets, cloud settings, or package-manager lockfiles unless the
-  user explicitly asks and a project oracle requires it.
+- Never edit secrets, `.env`, credentials, production remotes, hooks, CI
+  secrets, cloud settings, or package-manager lockfiles unless the user
+  explicitly asks and a project oracle requires it.
+- Never edit global MCP configuration. Project-scoped Tilly Cortex MCP config
+  may be created only by the selected install route and only for the read-only
+  local `tilly-cortex` server.
 - Never push, amend, tag, publish, install dependencies, overwrite files, or
   change remotes unless the user explicitly asks after reviewing the
   certification report.
@@ -110,6 +117,7 @@ tilly_context_install:
   no_touch_paths:
   planned_outputs:
   cortex:
+  mcp:
   oracle_candidates:
   stop_if:
 ```
@@ -121,20 +129,21 @@ Preferred progress style:
 ```text
 Tilly Context Mesh Install
 
-[01/08] Fetch installer spec ........ PASS
-[02/08] Inspect project ............. RUNNING
-[03/08] Build docs/agents mesh ...... PENDING
-[04/08] Build Cortex ................ PENDING
-[05/08] Retrofit runtime assets ..... PENDING
-[06/08] Write evidence .............. PENDING
-[07/08] Run certification ........... PENDING
-[08/08] Report result ............... PENDING
+[01/09] Fetch installer spec ........ PASS
+[02/09] Inspect project ............. RUNNING
+[03/09] Build docs/agents mesh ...... PENDING
+[04/09] Build Cortex ................ PENDING
+[05/09] Retrofit runtime assets ..... PENDING
+[06/09] Activate Cortex MCP ......... PENDING
+[07/09] Write evidence .............. PENDING
+[08/09] Run certification ........... PENDING
+[09/09] Report result ............... PENDING
 ```
 
 For longer operations, update with a single line:
 
 ```text
-[05/08] Retrofit runtime assets ..... RUNNING
+[05/09] Retrofit runtime assets ..... RUNNING
 ```
 
 Do not expose file-by-file commentary unless it is a blocker, a requested
@@ -387,16 +396,32 @@ Routes:
     Create or retrofit .cursor/rules/*.mdc.
 
   all
-    Create the shared docs/agents/** mesh and all three runtime bootloaders.
+    Create the shared docs/agents/** mesh, all three runtime bootloaders, and
+    project-scoped Cortex MCP config for all three runtimes.
+
+  mcp
+    Activate only the read-only Cortex MCP server for the detected runtime.
 
   audit
     Inspect and report what would change without modifying files.
 
-Type: current, codex, claude, cursor, all, or audit.
+Type: current, codex, claude, cursor, all, mcp, or audit.
 ```
 
 If the user already gave a clear instruction, proceed with the matching option
 and record it. Otherwise ask for one route command.
+
+Route semantics:
+
+| Route | Adapter assets | MCP activation |
+|-------|----------------|----------------|
+| `current` | detected runtime | detected runtime |
+| `codex` | Codex | Codex |
+| `claude` | Claude Code | Claude Code |
+| `cursor` | Cursor | Cursor |
+| `all` | Codex, Claude Code, Cursor | Codex, Claude Code, Cursor |
+| `mcp` | none unless missing thin bootloader blocks use | detected runtime |
+| `audit` | none | none |
 
 ## Phase 4 - Create Canonical Mesh
 
@@ -595,6 +620,94 @@ alwaysApply: true
 It must route to `docs/agents/**` and mention `docs/agents/cortex/**` as the
 durable memory layer when relevant.
 
+## Phase 5.5 - Activate Cortex MCP
+
+Activate the read-only Cortex MCP server for every runtime selected by the
+route. This resolves Cortex being present but unreachable from MCP-capable
+agents.
+
+Use the package contract from:
+
+```text
+docs/mesh/CORTEX-MCP.md
+```
+
+The activation writes only project-scoped local assets:
+
+```text
+.tilly/bin/cortex.py
+.tilly/bin/cortex_mcp.py
+.codex/config.toml        # Codex route only
+.mcp.json                 # Claude Code route only
+.cursor/mcp.json          # Cursor route only
+```
+
+Do not write global configuration under the user's home directory. Do not add
+tokens, env files, hooks, background daemons, cloud config, or write-capable MCP
+tools.
+
+If this package's local scripts are available, prefer:
+
+```bash
+python3 scripts/install_mcp.py --target <target-root> --adapter <codex|claude|cursor|all> --yes
+python3 scripts/install_mcp.py --self-test
+```
+
+If the scripts are not available, create the equivalent project-scoped files
+directly from this prompt and `docs/mesh/CORTEX-MCP.md`.
+
+Minimum config shapes:
+
+Codex project config at `.codex/config.toml`:
+
+```toml
+[mcp_servers.tilly-cortex]
+command = "python3"
+args = [".tilly/bin/cortex_mcp.py", "--target", "."]
+cwd = "."
+startup_timeout_sec = 10
+tool_timeout_sec = 60
+enabled = true
+```
+
+Claude Code project config at `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "tilly-cortex": {
+      "type": "stdio",
+      "command": "python3",
+      "args": [".tilly/bin/cortex_mcp.py", "--target", "."],
+      "env": {}
+    }
+  }
+}
+```
+
+Cursor project config at `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "tilly-cortex": {
+      "type": "stdio",
+      "command": "python3",
+      "args": [
+        "${workspaceFolder}/.tilly/bin/cortex_mcp.py",
+        "--target",
+        "${workspaceFolder}"
+      ],
+      "env": {}
+    }
+  }
+}
+```
+
+If a config file already exists, merge only the `tilly-cortex` server entry. If
+that server name exists with different content, stop with `NEEDS_REVIEW` unless
+the user explicitly authorizes overwrite. Backups are required for overwrites.
+
 ## Phase 6 - Evidence Journal
 
 Create a concise installation evidence file:
@@ -614,6 +727,7 @@ Include:
 - conflicts discovered and how they were resolved;
 - local rules preserved;
 - Cortex files created, retrofitted, skipped, or deferred;
+- MCP files created, merged, skipped, or blocked;
 - oracles run and results;
 - final GO/NO-GO.
 
@@ -648,6 +762,14 @@ test -f docs/agents/cortex/MAP.md
 test -f docs/agents/cortex/TRAIL.md
 test -f docs/agents/cortex/LINKS.md
 rg "^## \\[" docs/agents/cortex/TRAIL.md || true
+```
+
+If Tilly Cortex MCP is activated:
+
+```bash
+test -f .tilly/bin/cortex_mcp.py
+python3 .tilly/bin/cortex_mcp.py --self-test
+test -f .codex/config.toml || test -f .mcp.json || test -f .cursor/mcp.json
 ```
 
 If the target is already an Obsidian vault, `.obsidian/**` may exist. Record
@@ -740,6 +862,7 @@ Integration Matrix
 |---------|--------|----------|
 | docs/agents/** | PASS/FAIL | <paths> |
 | Cortex | PASS/SKIP/FAIL | <paths> |
+| Cortex MCP | PASS/SKIP/FAIL | <paths> |
 | Codex | PASS/SKIP/FAIL | <paths> |
 | Claude Code | PASS/SKIP/FAIL | <paths> |
 | Cursor | PASS/SKIP/FAIL | <paths> |
@@ -750,6 +873,7 @@ Certification
 | Existing context preserved | PASS/FAIL | ... |
 | Runtime assets are thin | PASS/FAIL | ... |
 | Cortex boundary | PASS/FAIL/SKIP | sources immutable, compiled cells, derived recall, append-only trail |
+| MCP activation | PASS/FAIL/SKIP | read-only server, project-scoped config, no global config |
 | Obsidian compatibility | PASS/FAIL/SKIP | plain Markdown, no required plugins, no `.obsidian/**` |
 | No blind overwrite | PASS/FAIL | ... |
 | Secrets untouched | PASS/FAIL | ... |
@@ -780,6 +904,8 @@ GO requires:
 - `docs/agents/**` exists and is the canonical source;
 - selected runtime assets route to that source;
 - Cortex exists or is explicitly skipped/deferred with a reason;
+- read-only Cortex MCP is activated for selected runtime routes or explicitly
+  blocked with a reason;
 - existing context was preserved or explicitly migrated;
 - no secrets or unrelated project files were changed;
 - at least one relevant oracle passed, or skipped oracles have named blockers.

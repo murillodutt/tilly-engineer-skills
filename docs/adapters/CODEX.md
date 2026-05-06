@@ -5,7 +5,7 @@ status: active
 consumer: codex adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Codex Derivation
@@ -13,14 +13,15 @@ tver: 0.1.0
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.2`.
+Project version: `0.3.3`.
 
 It follows the Codex customization order:
 
 1. `AGENTS.md` for durable repository guidance in the target project.
 2. Skills for reusable workflows and domain expertise.
 3. Scripts and references for progressive disclosure.
-4. MCP or plugins only when a workflow needs external systems or distribution.
+4. Read-only Cortex MCP through project-scoped `.codex/config.toml`.
+5. Plugins only when distribution needs them.
 
 Official reference: <https://developers.openai.com/codex/concepts/customization>
 
@@ -30,6 +31,7 @@ Official reference: <https://developers.openai.com/codex/concepts/customization>
 |--------|--------|
 | `src/adapters/codex/AGENTS.md` | Target repo root `AGENTS.md` or merge into existing one |
 | `src/adapters/codex/skills/tilly-engineering-discipline/` | Target repo `.agents/skills/tilly-engineering-discipline/` |
+| `scripts/install_mcp.py` | Optional project-scoped Cortex MCP activation |
 | `scripts/validate_reference_package.py` | Optional package validation script |
 
 For a global personal skill, copy the skill directory to

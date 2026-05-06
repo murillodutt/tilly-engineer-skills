@@ -5,7 +5,7 @@ status: active
 consumer: installing LLMs
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Common Navigation Renderer
@@ -109,29 +109,33 @@ options:
   - command: current
     label: Current runtime
     recommended: true
-    description: Install only the runtime currently executing this conversation.
+    description: Install the current runtime bootloader and read-only Cortex MCP.
   - command: codex
     label: Codex
     recommended: false
-    description: Create or retrofit AGENTS.md and .agents/skills/**.
+    description: Create or retrofit AGENTS.md, .agents/skills/** and Codex MCP.
   - command: claude
     label: Claude
     recommended: false
-    description: Create or retrofit CLAUDE.md and Claude-scoped rules when needed.
+    description: Create or retrofit CLAUDE.md and Claude Cortex MCP.
   - command: cursor
     label: Cursor
     recommended: false
-    description: Create or retrofit .cursor/rules/*.mdc.
+    description: Create or retrofit .cursor/rules/*.mdc and Cursor MCP.
   - command: all
     label: All runtimes
     recommended: false
-    description: Create the shared docs/agents/** mesh and all runtime bootloaders.
+    description: Create the shared mesh, all bootloaders and all MCP configs.
+  - command: mcp
+    label: Cortex MCP
+    recommended: false
+    description: Activate only the read-only Cortex MCP server for this runtime.
   - command: audit
     label: Audit only
     recommended: false
     description: Inspect and report what would change without modifying files.
 ```
 
-For this six-route intent, use command navigation even on platforms whose
+For this seven-route intent, use command navigation even on platforms whose
 native card limits are 2-4 options. Do not split it into multiple cards unless
 the user asks for guided narrowing.
