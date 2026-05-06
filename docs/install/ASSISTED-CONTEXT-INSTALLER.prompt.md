@@ -5,7 +5,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.6.0
+tver: 0.6.1
 ---
 
 # Tilly Assisted Context Installer
@@ -22,9 +22,10 @@ maintainable agent context:
 docs/agents/** is source. Runtime assets route and execute.
 ```
 
-Runtime assets include `AGENTS.md`, `CLAUDE.md`, `.agents/**`,
-`.cursor/**`, `.claude/**`, and future agent plugin/hook/MCP files. They must
-stay thin. Durable project governance belongs in `docs/agents/**`.
+Runtime assets include `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, `.agents/**`,
+`skills/**`, `.cursor/**`, `.claude-plugin/**`, `.codex/config.toml`,
+`.mcp.json`, `.tilly/bin/**`, and future agent plugin/hook/MCP files. They
+must stay thin. Durable project governance belongs in `docs/agents/**`.
 
 ## Source Package
 
@@ -52,7 +53,11 @@ docs/mesh/CORTEX.md
 docs/mesh/CORTEX-MCP.md
 scripts/cortex.py
 scripts/cortex_mcp.py
+scripts/install_adapter.py
 scripts/install_mcp.py
+scripts/install_smoke.py
+scripts/materialize_adapter.py
+scripts/platform_surface_oracle.py
 src/adapters/codex/AGENTS.md
 src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md
 src/adapters/codex/skills/tilly-engineering-discipline/agents/openai.yaml
@@ -60,6 +65,9 @@ src/adapters/codex/skills/tilly-engineering-discipline/references/failure-patter
 src/adapters/codex/skills/tilly-engineering-discipline/references/source-portability.md
 src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py
 src/adapters/claude/CLAUDE.md
+src/adapters/claude/plugin/plugin.json
+src/adapters/claude/plugin/marketplace.json
+src/adapters/claude/skills/tilly-guidelines/SKILL.md
 src/adapters/cursor/rules/tilly-guidelines.mdc
 ```
 
@@ -598,12 +606,18 @@ Create or retrofit:
 
 ```text
 CLAUDE.md
-.claude/rules/**  # only if the target already uses scoped Claude rules or needs them
+skills/tilly-guidelines/**
+.claude-plugin/plugin.json
+.claude-plugin/marketplace.json
 ```
 
 `CLAUDE.md` must stay short. It should route to `docs/agents/**`, mention
 `docs/agents/cortex/**` as the durable memory layer when relevant, preserve any
 project-specific sentinels required by local validation, and list local oracles.
+Claude skill and plugin files are package/runtime assets; do not put
+target-project governance inside them. If the target already uses additional
+Claude-scoped rule files, preserve them and route them back to `docs/agents/**`
+instead of deleting or replacing them.
 
 ### Cursor
 
@@ -751,6 +765,13 @@ Always try:
 git diff --check
 ```
 
+If this package is available locally, also run the package surface gates:
+
+```bash
+python3 scripts/install_smoke.py --self-test
+python3 scripts/platform_surface_oracle.py --self-test
+```
+
 If Codex skill is present:
 
 ```bash
@@ -880,6 +901,7 @@ Certification
 | Runtime assets are thin | PASS/FAIL | ... |
 | Cortex boundary | PASS/FAIL/SKIP | sources immutable, compiled cells, derived recall, append-only trail |
 | MCP activation | PASS/FAIL/SKIP | read-only server, project-scoped config, no global config |
+| Platform surfaces | PASS/FAIL/SKIP | agents, skills, plugins, hooks, rules, MCP claims checked |
 | Obsidian compatibility | PASS/FAIL/SKIP | plain Markdown, no required plugins, no `.obsidian/**` |
 | No blind overwrite | PASS/FAIL | ... |
 | Secrets untouched | PASS/FAIL | ... |
