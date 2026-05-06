@@ -10,20 +10,22 @@ evidence_level: L2
 # Cursor Navigation Renderer
 
 navigation_renderer: cursor
-navigation_mode_preference: command-navigation
+navigation_mode_preference: ask-question-when-available
 
 ## Platform Reading
 
-Cursor has project rules in `.cursor/rules/**` and agent-oriented UI surfaces,
-but this package does not currently certify a stable native question-card API
-for assisted installer menus.
+Cursor has project rules in `.cursor/rules/**`, native agent tools that vary by
+mode, and ACP extension methods when another program drives Cursor. Do not
+conflate those surfaces.
 
 ## Renderer Order
 
-1. Use command navigation from `common.prompt.md`.
-2. If a future Cursor host exposes a stable labeled-options question tool, it
-   may be used only when it preserves command labels and evidence fields.
-3. Never use numbered-only choices.
+1. If the current Cursor tool schema includes `AskQuestion` or `ask_question`,
+   use it for discrete trade-off decisions.
+2. If the active integration is ACP, use `cursor-acp.prompt.md`.
+3. If the tool is absent, mode-gated, or not clearly interactive, use command
+   navigation from `common.prompt.md`.
+4. Never use numbered-only choices.
 
 ## Evidence
 
@@ -31,6 +33,6 @@ Record:
 
 ```text
 navigation_renderer: cursor
-navigation_mode: command-navigation
-navigation_library: tilly-navigation@0.1.0
+navigation_mode: ask-question | command-navigation
+navigation_library: tilly-navigation@0.1.1
 ```

@@ -22,7 +22,7 @@ Desktop, Cursor, or a certified API harness.
 1. Use command navigation from `common.prompt.md`.
 2. Keep the menu compact and command-labeled.
 3. Do not use A/B/C or numeric labels unless each line also includes the stable
-   command and the parser accepts only the command.
+   command and the parser can map the response without ambiguity.
 
 ## Evidence
 
@@ -31,5 +31,5 @@ Record:
 ```text
 navigation_renderer: generic
 navigation_mode: command-navigation
-navigation_library: tilly-navigation@0.1.0
+navigation_library: tilly-navigation@0.1.1
 ```

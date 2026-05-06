@@ -9,7 +9,7 @@ evidence_level: L2
 
 # Common Navigation Renderer
 
-navigation_library: tilly-navigation@0.1.0
+navigation_library: tilly-navigation@0.1.1
 
 Use this renderer for every runtime unless a runtime-specific renderer safely
 upgrades the user interface.
@@ -19,12 +19,15 @@ upgrades the user interface.
 - Declare menus as intent first.
 - Ask only when the installer is genuinely blocked.
 - Prefer one question per menu.
-- Use 2-4 mutually exclusive routes.
+- Prefer 2-4 mutually exclusive routes. Use command navigation for larger
+  finite route sets.
 - Use stable command labels, not numbers.
 - Put the recommended command first.
 - Never add a manual `Other` option.
 - Never show raw intent objects, JSON, YAML, or internal analysis.
 - Never use a multiple-choice panel that renders as naked numbers.
+- For typed host tools, inspect the active schema before calling it.
+- For unknown hosts, command navigation is safer than pretending support.
 
 ## Command Navigation Fallback
 
@@ -44,8 +47,10 @@ Render this shape:
 Type: <command-a>, <command-b>, or <command-c>.
 ```
 
-Accept only the listed command strings. Treat free text as untrusted input and
-map it only when the user's intent is exact and unambiguous.
+Accept only the listed command strings. If a host returns numeric or
+letter-based selections, map them only when the menu displayed an explicit
+command mapping and the answer is unambiguous. Treat free text as untrusted
+input.
 
 ## Standard Intents
 

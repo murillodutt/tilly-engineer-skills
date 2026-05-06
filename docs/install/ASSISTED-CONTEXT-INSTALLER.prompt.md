@@ -43,6 +43,7 @@ docs/install/navigation/codex-cli.prompt.md
 docs/install/navigation/claude-code.prompt.md
 docs/install/navigation/claude-desktop.prompt.md
 docs/install/navigation/cursor.prompt.md
+docs/install/navigation/cursor-acp.prompt.md
 docs/install/navigation/anthropic-api.prompt.md
 docs/install/navigation/generic.prompt.md
 src/adapters/codex/AGENTS.md
@@ -286,6 +287,9 @@ https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/in
 
 Cursor:
 https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/navigation/cursor.prompt.md
+
+Cursor ACP:
+https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/navigation/cursor-acp.prompt.md
 
 Anthropic API:
 https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/navigation/anthropic-api.prompt.md
@@ -566,7 +570,7 @@ Canonical Source: docs/agents/**
 Completion Claim: GO installed | GO committed | GO published | NEEDS_REVIEW | NO-GO
 Navigation Library: <tilly-navigation@...>
 Navigation Renderer: <codex | claude-code | cursor | fallback>
-Navigation Mode: <native-card | AskUserQuestion | command-navigation>
+Navigation Mode: <request-user-input | AskUserQuestion | ask-question | command-navigation>
 
 Integration Matrix
 | Surface | Status | Evidence |

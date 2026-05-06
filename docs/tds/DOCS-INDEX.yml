@@ -85,6 +85,13 @@ documents:
     consumer: installing LLMs in Cursor
     source_of_truth: true
     evidence_level: L2
+  - path: docs/install/navigation/cursor-acp.prompt.md
+    id: install.navigation.cursor_acp
+    class: adapter
+    status: active
+    consumer: Cursor Agent Client Protocol harnesses
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/install/navigation/anthropic-api.prompt.md
     id: install.navigation.anthropic_api
     class: adapter

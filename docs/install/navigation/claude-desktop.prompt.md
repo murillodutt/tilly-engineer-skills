@@ -34,5 +34,5 @@ Record:
 ```text
 navigation_renderer: claude-desktop
 navigation_mode: artifact-preview | command-navigation
-navigation_library: tilly-navigation@0.1.0
+navigation_library: tilly-navigation@0.1.1
 ```

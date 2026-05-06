@@ -49,5 +49,5 @@ Record:
 ```text
 navigation_renderer: claude-code
 navigation_mode: AskUserQuestion | command-navigation
-navigation_library: tilly-navigation@0.1.0
+navigation_library: tilly-navigation@0.1.1
 ```

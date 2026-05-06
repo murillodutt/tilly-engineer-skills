@@ -25,9 +25,10 @@ option fragments, or platform-specific internals to the user.
 |----------|----------------|----------------|----------|
 | Claude Code CLI | Yes | `claude-code.prompt.md` | command navigation |
 | Claude Agent SDK | Yes, same tool | `claude-code.prompt.md` | command navigation |
-| Cursor | No certified native card | `cursor.prompt.md` | command navigation |
-| Codex CLI | No certified native card | `codex-cli.prompt.md` | custom host function or command navigation |
-| Codex app/IDE host | Host-dependent | `codex.prompt.md` | command navigation |
+| Cursor native | Mode/version-sensitive | `cursor.prompt.md` | command navigation |
+| Cursor ACP | Client-dependent extension | `cursor-acp.prompt.md` | command navigation |
+| Codex CLI | Experimental, schema varies | `codex-cli.prompt.md` | command navigation |
+| Codex app/IDE host | Experimental, schema varies | `codex.prompt.md` | command navigation |
 | Claude Desktop | No certified coding menu tool | `claude-desktop.prompt.md` | artifact or command navigation |
 | Anthropic API direct | No UI without harness | `anthropic-api.prompt.md` | custom tool-use plus client-rendered UI |
 | Continue.dev, Aider, other | No certified native card | `generic.prompt.md` | command navigation |
@@ -41,15 +42,18 @@ stable command string.
 
 ## Basis
 
-- Codex CLI documentation describes local interactive operation and repository
-  access, but this package does not assume a native question-card tool exists
-  in every Codex host:
-  `https://developers.openai.com/codex/cli`
+- Codex app-server documents experimental `tool/requestUserInput` for 1-3
+  short questions, and Codex protocol v1 documents `RequestUserInput` /
+  `UserInputAnswer` with options plus `isOther`. This package still treats
+  Codex structured input as host and mode sensitive:
+  `https://developers.openai.com/codex/app-server`
+  `https://github.com/openai/codex/blob/main/codex-rs/docs/protocol_v1.md`
 - Claude Code documents `AskUserQuestion` for clarifying questions and gives
   the 1-4 question / 2-4 option limits:
   `https://code.claude.com/docs/en/agent-sdk/user-input`
-- Cursor documents project rules under `.cursor/rules/**`; this package does
-  not currently certify a native installer menu API for Cursor:
+- Cursor documents project rules under `.cursor/rules/**` and tool availability
+  is mode-dependent. This package uses native Cursor question tools only when
+  the active host exposes them:
   `https://docs.cursor.com/en/context/rules`
 
 ## Dynamic Loading
@@ -69,6 +73,7 @@ codex.prompt.md
 codex-cli.prompt.md
 claude-code.prompt.md
 claude-desktop.prompt.md
+cursor-acp.prompt.md
 cursor.prompt.md
 generic.prompt.md
 ```
@@ -103,8 +108,8 @@ The final certification report records:
 
 ```text
 navigation_library: <common version>
-navigation_renderer: <codex | claude-code | cursor | fallback>
-navigation_mode: <native-card | command-navigation>
+navigation_renderer: <codex | claude-code | cursor | cursor-acp | fallback>
+navigation_mode: <request-user-input | AskUserQuestion | ask-question | command-navigation>
 navigation_decisions:
   - id: <intent-id>
     selected: <command>
@@ -113,3 +118,10 @@ navigation_decisions:
 For installer certification, raw UI appearance is not the evidence. The
 evidence is the selected command, the renderer used, and the resulting file
 changes.
+
+## Changelog
+
+| Version | Change |
+|---------|--------|
+| 0.1.1 | Added Codex `request_user_input` nuance, Cursor native/ACP separation, and schema-inspection rule. |
+| 0.1.0 | Introduced command navigation and per-runtime renderers. |
