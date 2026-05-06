@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.3.0
+tver: 0.4.0
 ---
 
 # Tilly Engineer Skills Docs
@@ -27,6 +27,7 @@ turning the repository root into an inventory.
 | Neutral behavioral contract manifest | `mesh/CONTRACT-MANIFEST.yml` |
 | Context mesh method | `mesh/CONTEXT-MESH-METHOD.md` |
 | Tilly Cortex | `mesh/CORTEX.md` |
+| Tilly Cortex MCP | `mesh/CORTEX-MCP.md` |
 | Adoption and convergence scorecard | `mesh/SCORECARD.md` |
 | Eval and ablation design | `evals/EVALS.md` |
 | Detailed examples | `evals/EXAMPLES.md` |

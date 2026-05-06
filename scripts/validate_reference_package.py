@@ -39,6 +39,7 @@ REQUIRED_PATHS = (
     "docs/mesh/PRINCIPLES.md",
     "docs/mesh/CONTEXT-MESH-METHOD.md",
     "docs/mesh/CORTEX.md",
+    "docs/mesh/CORTEX-MCP.md",
     "docs/mesh/SCORECARD.md",
     "docs/evals/EVALS.md",
     "docs/evals/EXAMPLES.md",
@@ -64,6 +65,7 @@ REQUIRED_PATHS = (
     "scripts/context_mesh_plan.py",
     "scripts/context_mesh_run.py",
     "scripts/cortex.py",
+    "scripts/cortex_mcp.py",
     "scripts/install_adapter.py",
     "scripts/adapter_parity_readiness.py",
     "scripts/materialize_adapter.py",
@@ -120,6 +122,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "cortex:audit",
     "cortex:rebuild",
     "cortex:self-test",
+    "cortex:mcp:self-test",
     "oracle:self-test",
     "benchmark:plan",
     "benchmark:run",
@@ -221,8 +224,8 @@ def main() -> int:
     package_json = ROOT / "package.json"
     if package_json.exists():
         package = json.loads(package_json.read_text(encoding="utf-8"))
-        if package.get("version") != "0.2.8":
-            failures.append("package.json version must be 0.2.8")
+        if package.get("version") != "0.2.9":
+            failures.append("package.json version must be 0.2.9")
         scripts = package.get("scripts", {})
         for script in REQUIRED_PACKAGE_SCRIPTS:
             if script not in scripts:
@@ -230,8 +233,8 @@ def main() -> int:
 
     for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
         path = ROOT / relpath
-        if path.exists() and "0.2.8" not in path.read_text(encoding="utf-8"):
-            failures.append(f"{relpath} must declare 0.2.8")
+        if path.exists() and "0.2.9" not in path.read_text(encoding="utf-8"):
+            failures.append(f"{relpath} must declare 0.2.9")
 
     oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():
@@ -272,6 +275,20 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("cortex.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    cortex_mcp = ROOT / "scripts/cortex_mcp.py"
+    if cortex_mcp.exists():
+        result = subprocess.run(
+            [sys.executable, str(cortex_mcp), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("cortex_mcp.py --self-test failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 
