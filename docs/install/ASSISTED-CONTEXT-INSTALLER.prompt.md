@@ -79,7 +79,7 @@ During installation, show only:
 
 - one compact progress block at the start;
 - short phase updates;
-- required menus rendered as complete labeled blocks;
+- required navigation menus rendered as plain text command blocks;
 - blockers that need user input;
 - final certification report.
 
@@ -179,40 +179,46 @@ architecture docs, decision docs, or validation scripts already exist.
 For an existing project, treat all current instructions as project-owned until
 proven otherwise.
 
-## Phase 3 - Menu
+## Phase 3 - Navigation Menu
 
-If user input is needed, you must render the complete menu before asking.
-Do not collapse the menu into "1, 2, 3, 4, 5, or 6". Do not rely only on UI
-chips or hidden options. The user must see each option label and consequence.
+If user input is needed, render a plain text navigation menu before asking.
+This menu must be compatible with Codex, Claude CLI, Claude Code, and Cursor.
+Do not use a multiple-choice panel, checkbox UI, hidden chips, or a naked
+sequence such as "1, 2, 3, 4, 5, or 6".
 
-Render exactly this shape, with the detected runtime filled in:
+Render exactly this shape, with detected values filled in:
 
 ```text
-Tilly Context Install Menu
+Tilly Context Mesh Navigation
 
-[1] Current IDE only (Recommended: <detected-runtime>)
-    Installs only the runtime currently executing this conversation.
+Detected runtime: <detected-runtime>
+Project mode: <new | existing | uncertain>
 
-[2] Codex only
-    Creates or retrofits AGENTS.md and .agents/skills/**.
+Routes:
 
-[3] Claude Code only
-    Creates or retrofits CLAUDE.md and Claude-scoped rules when needed.
+  current  (recommended)
+    Install only the runtime currently executing this conversation.
 
-[4] Cursor only
-    Creates or retrofits .cursor/rules/*.mdc.
+  codex
+    Create or retrofit AGENTS.md and .agents/skills/**.
 
-[5] Codex + Claude Code + Cursor
-    Creates the shared docs/agents/** mesh and all three runtime bootloaders.
+  claude
+    Create or retrofit CLAUDE.md and Claude-scoped rules when needed.
 
-[6] Audit only, no edits
-    Inspects and reports what would change without modifying files.
+  cursor
+    Create or retrofit .cursor/rules/*.mdc.
 
-Reply with 1, 2, 3, 4, 5, or 6.
+  all
+    Create the shared docs/agents/** mesh and all three runtime bootloaders.
+
+  audit
+    Inspect and report what would change without modifying files.
+
+Type one route command: current, codex, claude, cursor, all, or audit.
 ```
 
 If the user already gave a clear instruction, proceed with the matching option
-and record it. Otherwise ask for one choice.
+and record it. Otherwise ask for one route command.
 
 ## Phase 4 - Create Canonical Mesh
 

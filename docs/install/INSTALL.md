@@ -31,13 +31,13 @@ https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/in
 
 Start by detecting the current IDE/runtime and classifying this project as new
 or existing. Run in quiet installer mode: show compact progress, blockers and
-the final certification report only. When a menu is required, render the
-complete labeled menu from the spec before asking for a number. Use the
-detected IDE as the default adapter. Ask me for a menu choice only where the
-spec requires one. Preserve local project governance, move durable agent
-context into docs/agents/**, keep AGENTS.md, CLAUDE.md and Cursor rules as thin
-runtime bootloaders, and finish with the certification report required by the
-spec.
+the final certification report only. When navigation is required, render the
+plain text navigation menu from the spec and ask for a route command such as
+current, codex, claude, cursor, all, or audit. Use the detected IDE as the
+default adapter. Ask me for a route command only where the spec requires one.
+Preserve local project governance, move durable agent context into
+docs/agents/**, keep AGENTS.md, CLAUDE.md and Cursor rules as thin runtime
+bootloaders, and finish with the certification report required by the spec.
 
 Do not commit, push, amend, tag, publish, install dependencies, overwrite
 files, or change remotes unless I explicitly ask after reviewing the
