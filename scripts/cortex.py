@@ -43,6 +43,13 @@ TRAIL_HEADING = re.compile(
     re.MULTILINE,
 )
 WIKILINK = re.compile(r"\[\[([^]|#]+)(?:[|#][^]]*)?\]\]")
+H1_HEADING = re.compile(r"^# .+", re.MULTILINE)
+CLAIM_SECTION = re.compile(r"^## Claims?$", re.MULTILINE)
+EVIDENCE_SECTION = re.compile(r"^## Evidence$", re.MULTILINE)
+EVIDENCE_REF = re.compile(
+    r"(`?((?:\.\.?/)?(?:docs/agents/cortex/)?sources/[^`\s)]+|docs/agents/evidence/[^`\s)]+)`?|^[-*] Assumption:|^Assumption:)",
+    re.MULTILINE,
+)
 
 
 def cortex_path(target: Path) -> Path:
@@ -93,8 +100,9 @@ contract.
 
 ## Cell Convention
 
-Each cell should include one H1, explicit source paths, links to related Cortex
-cells, and unresolved contradictions when present.
+Each cell must include one H1, a `## Claim` section, a `## Evidence` section,
+explicit evidence refs, links to related Cortex cells when known, and
+unresolved contradictions when present.
 
 Use Obsidian wikilinks when useful, but keep source citations as explicit paths.
 
@@ -373,6 +381,23 @@ def cell_ref(path: Path, cells_root: Path) -> str:
     return str(path.relative_to(cells_root).with_suffix(""))
 
 
+def cell_quality_failures(cell: Path, target: Path) -> list[str]:
+    text = read_text(cell)
+    failures: list[str] = []
+    h1_count = len(H1_HEADING.findall(text))
+
+    if h1_count != 1:
+        failures.append(f"cell must contain exactly one H1: {rel(cell, target)}")
+    if not CLAIM_SECTION.search(text):
+        failures.append(f"cell missing ## Claim section: {rel(cell, target)}")
+    if not EVIDENCE_SECTION.search(text):
+        failures.append(f"cell missing ## Evidence section: {rel(cell, target)}")
+    if not EVIDENCE_REF.search(text):
+        failures.append(f"cell missing explicit evidence ref: {rel(cell, target)}")
+
+    return failures
+
+
 def markdown_files(root: Path) -> list[Path]:
     candidates: list[Path] = []
     for rel_path in ("CONTRACT.md", "MAP.md", "TRAIL.md", "LINKS.md"):
@@ -404,6 +429,7 @@ def audit(target: Path) -> dict[str, object]:
     links_text = read_text(root / "LINKS.md") if (root / "LINKS.md").exists() else ""
 
     for cell in cells:
+        failures.extend(cell_quality_failures(cell, target))
         name = cell_stem(cell)
         path_ref = cell_ref(cell, cells_root)
         if (
@@ -617,7 +643,7 @@ def absorb_plan(target: Path, source: Path) -> dict[str, object]:
         "writes": [],
         "plan": [] if failures else [
             f"Read source `{rel(source, target)}` without modifying it.",
-            f"Create or update `docs/agents/cortex/cells/{cell_name}.md` with H1 `{title}`.",
+            f"Create or update `docs/agents/cortex/cells/{cell_name}.md` with H1 `{title}`, `## Claim`, and `## Evidence`.",
             "Update `docs/agents/cortex/MAP.md` with a one-line summary and source status.",
             "Update `docs/agents/cortex/LINKS.md` with durable relationships.",
             "Append one `absorb` entry to `docs/agents/cortex/TRAIL.md`.",
@@ -634,13 +660,21 @@ def self_test() -> int:
         source.write_text("# Karpathy Pattern\n\nCortex keeps durable memory in files.\n", encoding="utf-8")
         cell = cortex_path(target) / "cells" / "cortex-memory.md"
         cell.write_text(
-            "# Cortex Memory\n\nCortex memory lives in [[cortex-memory]] and cites `sources/karpathy-pattern.md`.\n",
+            "# Cortex Memory\n\n"
+            "## Claim\n\n"
+            "Cortex memory lives in versioned files and links to [[nested/deep-memory]].\n\n"
+            "## Evidence\n\n"
+            "- `sources/karpathy-pattern.md` records the source claim.\n",
             encoding="utf-8",
         )
         nested_cell = cortex_path(target) / "cells" / "nested" / "deep-memory.md"
         nested_cell.parent.mkdir(parents=True, exist_ok=True)
         nested_cell.write_text(
-            "# Deep Memory\n\nNested cells can link back to [[cortex-memory]].\n",
+            "# Deep Memory\n\n"
+            "## Claim\n\n"
+            "Nested cells are part of the audited Cortex surface and link back to [[cortex-memory]].\n\n"
+            "## Evidence\n\n"
+            "- `sources/karpathy-pattern.md` is the fixture evidence for nested audit.\n",
             encoding="utf-8",
         )
         map_path = cortex_path(target) / "MAP.md"
@@ -671,9 +705,20 @@ def self_test() -> int:
         fallback_result = recall(target, "Cortex", 5, force_rg=True)
         absorb_result = absorb_plan(target, source)
         broken_cell = cortex_path(target) / "cells" / "nested" / "broken-link.md"
-        broken_cell.write_text("# Broken Link\n\nThis cell points to [[missing-cell]].\n", encoding="utf-8")
+        broken_cell.write_text(
+            "# Broken Link\n\n"
+            "## Claim\n\n"
+            "This cell points to [[missing-cell]].\n\n"
+            "## Evidence\n\n"
+            "- `sources/karpathy-pattern.md` keeps the failure focused on the broken link.\n",
+            encoding="utf-8",
+        )
         broken_audit_result = audit(target)
         broken_cell.unlink()
+        loose_cell = cortex_path(target) / "cells" / "loose-summary.md"
+        loose_cell.write_text("# Loose Summary\n\nThis is only a summary with no explicit evidence.\n", encoding="utf-8")
+        loose_audit_result = audit(target)
+        loose_cell.unlink()
 
         result = {
             "init": init_result,
@@ -686,6 +731,7 @@ def self_test() -> int:
             "fallback_recall": fallback_result,
             "absorb_plan": absorb_result,
             "broken_link_audit": broken_audit_result,
+            "loose_cell_audit": loose_audit_result,
         }
         print(json.dumps(result, indent=2))
 
@@ -700,6 +746,8 @@ def self_test() -> int:
             absorb_result["status"] == "PASS" and absorb_result["writes"] == [],
             broken_audit_result["status"] == "FAIL",
             any("missing-cell" in failure for failure in broken_audit_result["failures"]),
+            loose_audit_result["status"] == "FAIL",
+            any("explicit evidence ref" in failure for failure in loose_audit_result["failures"]),
         )
         if not all(checks):
             print("[cortex] FAIL")

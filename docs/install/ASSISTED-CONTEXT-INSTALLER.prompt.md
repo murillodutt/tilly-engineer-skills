@@ -483,6 +483,9 @@ Use these local rules:
 
 - `sources/**` is immutable user-curated source material;
 - `cells/**` is compiled Cortex material;
+- every cell under `cells/**` must have exactly one H1, a `## Claim` section, a
+  `## Evidence` section, and at least one explicit evidence ref to `sources/**`,
+  `docs/agents/evidence/**`, or an `Assumption:` line;
 - `MAP.md` is a content catalog with links and one-line summaries;
 - `LINKS.md` is a human-readable adjacency list of important relationships;
 - `TRAIL.md` is append-only and uses headings like
