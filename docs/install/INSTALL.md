@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.0
+tver: 0.5.0
 ---
 
 # Adapter Installation
@@ -14,7 +14,8 @@ The primary installer is an assisted context prompt. It uses the target
 project's active LLM window to inspect local governance, create or retrofit
 `docs/agents/**`, keep runtime files thin, and certify the integration.
 
-For a practical user-facing walkthrough, open:
+For a practical user-facing walkthrough in Portuguese, English, and Spanish,
+open:
 
 ```text
 docs/install/USER-MANUAL.html

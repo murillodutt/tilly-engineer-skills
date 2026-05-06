@@ -5,7 +5,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.3.0
+tver: 0.4.0
 ---
 
 # Tilly Assisted Context Installer
@@ -676,8 +676,8 @@ The default endpoint is a meshed working tree plus certification report.
 Do not continue into Git mutation unless the user explicitly asks after reading
 the report.
 
-The final report must always expose the user manual. Prefer a clickable link or
-plain path, depending on runtime support:
+The final report must always expose the PT/EN/ES user manual. Prefer a
+clickable link or plain path, depending on runtime support:
 
 ```text
 User Manual
