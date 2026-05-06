@@ -30,11 +30,12 @@ Read and follow this raw installer spec:
 https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
 
 Start by detecting the current IDE/runtime and classifying this project as new
-or existing. Use the detected IDE as the default adapter. Ask me for a menu
-choice only where the spec requires one. Preserve local project governance,
-move durable agent context into docs/agents/**, keep AGENTS.md, CLAUDE.md and
-Cursor rules as thin runtime bootloaders, and finish with the certification
-report required by the spec.
+or existing. Run in quiet installer mode: show compact progress, required
+menus, blockers and the final certification report only. Use the detected IDE
+as the default adapter. Ask me for a menu choice only where the spec requires
+one. Preserve local project governance, move durable agent context into
+docs/agents/**, keep AGENTS.md, CLAUDE.md and Cursor rules as thin runtime
+bootloaders, and finish with the certification report required by the spec.
 ```
 
 Short source:

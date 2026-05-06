@@ -63,9 +63,64 @@ contents or permission to continue from already available context.
 - If a file already exists, merge intent or turn it into a thin bootloader.
 - Prefer small files with clear routing over long runtime instructions.
 
-## Phase 0 - Announce Assumptions
+## Operator UX Contract
 
-Before editing, state a short packet:
+Run in quiet installer mode.
+
+The user should not see your internal reasoning, long decision packets,
+scratch YAML, raw inventories, or step-by-step deliberation. Keep internal
+analysis internal and write durable decisions to the evidence file and final
+report.
+
+During installation, show only:
+
+- one compact progress block at the start;
+- short phase updates;
+- required menu questions;
+- blockers that need user input;
+- final certification report.
+
+Do not print this kind of internal packet to the user:
+
+```yaml
+tilly_context_install:
+  detected_runtime:
+  project_type:
+  default_adapter:
+  no_touch_paths:
+  planned_outputs:
+  oracle_candidates:
+  stop_if:
+```
+
+Use it internally instead.
+
+Preferred progress style:
+
+```text
+Tilly Context Mesh Install
+
+[01/07] Fetch installer spec ........ PASS
+[02/07] Inspect project ............. RUNNING
+[03/07] Build docs/agents mesh ...... PENDING
+[04/07] Retrofit runtime assets ..... PENDING
+[05/07] Write evidence .............. PENDING
+[06/07] Run certification ........... PENDING
+[07/07] Report result ............... PENDING
+```
+
+For longer operations, update with a single line:
+
+```text
+[04/07] Retrofit runtime assets ..... RUNNING
+```
+
+Do not expose file-by-file commentary unless it is a blocker, a requested
+diff review, or part of the final report.
+
+## Phase 0 - Internal Preflight
+
+Before editing, capture this internally:
 
 ```yaml
 tilly_context_install:
