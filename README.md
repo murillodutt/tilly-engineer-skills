@@ -1,79 +1,18 @@
 # Tilly Engineer Skills
 
-Portable agent-engineering discipline for reducing ambiguity, overbuilding,
-drive-by edits, and false completion in coding agents.
+Install a durable agent-governance mesh for Codex, Claude Code, and Cursor.
 
-Version: `0.1.0`.
+Tilly Engineer Skills helps coding agents work with less ambiguity, less
+overbuilding, fewer drive-by edits, and clearer proof before they claim a task
+is done.
 
-This is the independent DUTT reference project for Tilly Engineering
-Discipline. It started from a small Codex/Claude/Cursor guideline package, then
-was regressed into a clean standalone source package so other projects can
-adopt the method without inheriting local repo history.
+Version: `0.1.0`
 
-The field result was much larger than the file size: when the four gates were
-connected to a context mesh, ambiguity dropped sharply and code became smaller,
-more precise, and easier to converge.
+License: MIT
 
-## Core Contract
+## Install First
 
-```text
-Assumptions visible. Scope smaller. Edits surgical. Success falsifiable.
-```
-
-For non-trivial coding, review, refactor, or instruction-migration work, every
-agent must pass four gates:
-
-| Gate | Blocks |
-|------|--------|
-| Think Before Coding | Silent assumptions, hidden confusion, wrong interpretation |
-| Simplicity First | Overbuilt APIs, speculative features, one-use abstractions |
-| Surgical Changes | Drive-by edits, style churn, unrelated cleanup |
-| Goal-Driven Execution | Vague closure, missing tests, "make it work" loops |
-
-## Success Formula
-
-For portable use, success is multiplicative:
-
-```text
-E = A * S * C * V
-```
-
-| Factor | Meaning |
-|--------|---------|
-| `A` | Assumptions and ambiguity are visible before action |
-| `S` | Scope is simplified before implementation |
-| `C` | Changes are constrained to the requested cut |
-| `V` | Verification is explicit before closure |
-
-If any factor is zero, the agent should stop, ask, or repair before claiming
-success.
-
-## Repository Shape
-
-Root is intentionally thin. Source belongs in `src/**`; method and evaluation
-material belongs in `docs/**`.
-
-| Path | Purpose |
-|------|---------|
-| `AGENTS.md` | Thin bootloader for agents working in this repository |
-| `src/adapters/codex/**` | Codex bootloader and skill source |
-| `src/adapters/claude/**` | Claude instruction, plugin, and legacy skill source |
-| `src/adapters/cursor/**` | Cursor guide and always-on rule source |
-| `docs/mesh/**` | Principles, context mesh method, and scorecard |
-| `docs/evals/**` | Eval design and examples |
-| `docs/governance/**` | Cross-tool alignment, authority, and no-go rules |
-| `docs/adapters/**` | Human adapter guidance |
-| `docs/architecture/**` | Repository structure and ownership |
-| `docs/tds/**` | Documentation contract and governed index |
-| `benchmarks/context-mesh/eval-dataset.json` | Starter eval dataset |
-| `scripts/**` | Deterministic package checks |
-| `dist/adapters/**` | Generated install trees, ignored by Git |
-
-Start with [docs/INDEX.md](docs/INDEX.md) for the complete documentation map.
-
-## Install
-
-Open the target project in Codex, Claude Code, or Cursor. Paste this prompt:
+Open your target project in Codex, Claude Code, or Cursor and paste:
 
 ```text
 Install Tilly Engineer Skills as an assisted context mesh, not as blind file
@@ -102,10 +41,154 @@ offer a local baseline commit if the working tree is dirty. At the end, tell me
 how to undo the installation with Git.
 ```
 
-The assisted installer must not push, amend, tag, publish, install
-dependencies, overwrite files, or change remotes unless the user explicitly
-asks after reviewing the certification report. Step Zero may create a local
-baseline commit before installation so rollback is simple.
+The assisted installer protects the project before editing. If the working tree
+is dirty, it offers a local baseline commit first, then reports rollback
+commands such as:
+
+```bash
+git reset --hard <baseline-head>
+git revert <install-commit>
+```
+
+The installer must not push, amend, tag, publish, install dependencies,
+overwrite files, or change remotes unless the user explicitly asks after
+reviewing the certification report.
+
+## What This Solves
+
+Agent instructions tend to rot in root files, diverge between tools, and become
+hard to audit. Tilly installs a local context mesh instead:
+
+```text
+docs/agents/** is source. Runtime assets route and execute.
+```
+
+That means project governance lives in one durable place while `AGENTS.md`,
+`CLAUDE.md`, `.cursor/rules/**`, `.agents/**`, and future runtime assets stay
+thin.
+
+## Business Value
+
+| Outcome | Practical gain |
+|---------|----------------|
+| Faster onboarding | New projects get an agent-ready governance mesh in one assisted flow. |
+| Safer retrofits | Existing instructions are migrated instead of blindly overwritten. |
+| Less context drift | Codex, Claude, and Cursor point to the same project truth. |
+| Better execution | Agents are pushed to expose assumptions, reduce scope, edit surgically, and verify. |
+| Easier rollback | Step Zero creates or records a Git baseline before installation changes. |
+| Audit-ready reports | Every install ends with a certification report and explicit non-claims. |
+
+## Core Method
+
+Every non-trivial coding, review, refactor, or instruction-migration task must
+pass four gates:
+
+| Gate | Blocks |
+|------|--------|
+| Think Before Coding | Silent assumptions, hidden confusion, wrong interpretation |
+| Simplicity First | Overbuilt APIs, speculative features, one-use abstractions |
+| Surgical Changes | Drive-by edits, style churn, unrelated cleanup |
+| Goal-Driven Execution | Vague closure, missing tests, "make it work" loops |
+
+The operating contract is short:
+
+```text
+Assumptions visible. Scope smaller. Edits surgical. Success falsifiable.
+```
+
+## Why It Is Different
+
+Tilly is not a file copier and not a prompt dump. The assisted installer:
+
+1. Detects the active runtime.
+2. Classifies the project as new or existing.
+3. Protects the working tree with Step Zero.
+4. Preserves local product governance.
+5. Moves durable context into `docs/agents/**`.
+6. Leaves runtime files as thin bootloaders.
+7. Runs the smallest safe local oracles.
+8. Produces a professional certification report.
+
+Navigation is also runtime-aware. Claude Code can use `AskUserQuestion` when
+available, Codex can use `request_user_input` when the active schema supports
+it, Cursor can use native/ACP question tools when exposed, and every platform
+has a command-navigation fallback.
+
+## Compatibility
+
+| Runtime | Installed surface |
+|---------|-------------------|
+| Codex | `AGENTS.md` and `.agents/skills/**` |
+| Claude Code | `CLAUDE.md`, Claude-scoped rules, plugin or skill assets when appropriate |
+| Cursor | `.cursor/rules/*.mdc` |
+| Shared mesh | `docs/agents/**` |
+
+Different tools do not need identical text. They need equivalent routing to the
+same project contract.
+
+## Certification Output
+
+Every assisted install finishes with:
+
+```text
+Tilly Context Mesh Installation Report
+
+Status: GO | NEEDS_REVIEW | NO-GO
+Scope: new project | existing project retrofit
+Detected Runtime: Codex | Claude Code | Cursor | uncertain
+Selected Adapters: ...
+Canonical Source: docs/agents/**
+Navigation Library: ...
+Navigation Renderer: ...
+Navigation Mode: ...
+Integration Matrix: ...
+Certification: ...
+Evidence: ...
+Rollback: ...
+Limits: ...
+Next Step: ...
+```
+
+GO means the selected integration was installed, routed, and locally checked.
+It does not mean the integration was committed, pushed, published, or proven
+universal across every model and project.
+
+## Evidence-Converged Context
+
+The package follows one principle:
+
+```text
+Context only becomes contract when it converges by evidence.
+```
+
+Instructions are not accepted as project truth because they are well written.
+They earn authority when they produce measurable lift, survive distractors,
+show ablation loss, keep raw evidence, and converge through build-test-fix
+loops.
+
+## Repository Shape
+
+Root is intentionally thin. Source belongs in `src/**`; method, install, and
+evaluation material belongs in `docs/**`.
+
+| Path | Purpose |
+|------|---------|
+| `AGENTS.md` | Thin bootloader for agents working in this repository |
+| `src/adapters/codex/**` | Codex bootloader and skill source |
+| `src/adapters/claude/**` | Claude instruction, plugin, and legacy skill source |
+| `src/adapters/cursor/**` | Cursor guide and always-on rule source |
+| `docs/install/**` | Assisted installer prompt, navigation library, and install docs |
+| `docs/mesh/**` | Principles, context mesh method, and scorecard |
+| `docs/evals/**` | Eval design and examples |
+| `docs/governance/**` | Cross-tool alignment, authority, and no-go rules |
+| `docs/adapters/**` | Human adapter guidance |
+| `docs/architecture/**` | Repository structure and ownership |
+| `docs/tds/**` | Documentation contract and governed index |
+| `benchmarks/context-mesh/eval-dataset.json` | Starter eval dataset |
+| `scripts/**` | Deterministic package checks |
+| `dist/adapters/**` | Generated install trees, ignored by Git |
+
+Start with [docs/INDEX.md](docs/INDEX.md) for the complete documentation map.
 
 ## Legacy / Maintainer Install
 
@@ -129,16 +212,16 @@ Codex should load `AGENTS.md` as persistent repo guidance and discover the skill
 through metadata. The skill body and references load only when the task needs
 them.
 
+### Claude Code
+
+Use `src/adapters/claude/CLAUDE.md` as the target root instruction file, or use
+the plugin metadata in `src/adapters/claude/plugin/` when packaging for Claude.
+
 ### Cursor
 
 Copy `src/adapters/cursor/rules/tilly-guidelines.mdc` into the target repo's
 `.cursor/rules/` directory. It uses `alwaysApply: true` because the four gates
 are a behavioral overlay.
-
-### Claude Code
-
-Use `src/adapters/claude/CLAUDE.md` as the target root instruction file, or use
-the plugin metadata in `src/adapters/claude/plugin/` when packaging for Claude.
 
 ## Local Development
 
@@ -159,8 +242,8 @@ npm run benchmark:run -- --backend fixture
 ```
 
 `commit:check` is stricter than `validate`: required package files must be
-staged or already tracked, which prevents local hooks from passing with critical
-new files left outside the commit.
+staged or already tracked, which prevents local hooks from passing with
+critical new files left outside the commit.
 
 To generate installable adapter trees:
 
