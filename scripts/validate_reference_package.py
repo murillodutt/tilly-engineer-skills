@@ -31,6 +31,7 @@ REQUIRED_PATHS = (
     "docs/install/navigation/claude-code.prompt.md",
     "docs/install/navigation/claude-desktop.prompt.md",
     "docs/install/navigation/cursor.prompt.md",
+    "docs/install/navigation/cursor-acp.prompt.md",
     "docs/install/navigation/anthropic-api.prompt.md",
     "docs/install/navigation/generic.prompt.md",
     "docs/governance/AGENTIC-ALIGNMENT-GOVERNANCE.md",
