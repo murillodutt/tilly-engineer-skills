@@ -71,3 +71,5 @@ Subtract confidence when any of these appear:
 - The agent says "done" without a check.
 - The diff includes unrelated cleanup.
 - The workflow depends on memory instead of a versioned source.
+- Cortex is treated as hidden memory instead of versioned markdown under
+  `docs/agents/cortex/**`.

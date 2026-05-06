@@ -37,6 +37,7 @@ REQUIRED_PATHS = (
     "docs/governance/AGENTIC-ALIGNMENT-GOVERNANCE.md",
     "docs/mesh/PRINCIPLES.md",
     "docs/mesh/CONTEXT-MESH-METHOD.md",
+    "docs/mesh/CORTEX.md",
     "docs/mesh/SCORECARD.md",
     "docs/evals/EVALS.md",
     "docs/evals/EXAMPLES.md",
@@ -61,6 +62,7 @@ REQUIRED_PATHS = (
     "benchmarks/context-mesh/eval-dataset.json",
     "scripts/context_mesh_plan.py",
     "scripts/context_mesh_run.py",
+    "scripts/cortex.py",
     "scripts/install_adapter.py",
     "scripts/adapter_parity_readiness.py",
     "scripts/materialize_adapter.py",
@@ -112,6 +114,11 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "materialize:claude",
     "materialize:check",
     "tds:validate",
+    "cortex:init",
+    "cortex:verify",
+    "cortex:audit",
+    "cortex:rebuild",
+    "cortex:self-test",
     "oracle:self-test",
     "benchmark:plan",
     "benchmark:run",
@@ -250,6 +257,20 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("context_mesh_plan.py failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    cortex = ROOT / "scripts/cortex.py"
+    if cortex.exists():
+        result = subprocess.run(
+            [sys.executable, str(cortex), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("cortex.py --self-test failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 

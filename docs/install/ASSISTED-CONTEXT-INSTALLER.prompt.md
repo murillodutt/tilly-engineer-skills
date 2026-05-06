@@ -46,6 +46,7 @@ docs/install/navigation/cursor.prompt.md
 docs/install/navigation/cursor-acp.prompt.md
 docs/install/navigation/anthropic-api.prompt.md
 docs/install/navigation/generic.prompt.md
+docs/mesh/CORTEX.md
 src/adapters/codex/AGENTS.md
 src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md
 src/adapters/codex/skills/tilly-engineering-discipline/agents/openai.yaml
@@ -104,6 +105,7 @@ tilly_context_install:
   default_adapter:
   no_touch_paths:
   planned_outputs:
+  cortex:
   oracle_candidates:
   stop_if:
 ```
@@ -115,19 +117,20 @@ Preferred progress style:
 ```text
 Tilly Context Mesh Install
 
-[01/07] Fetch installer spec ........ PASS
-[02/07] Inspect project ............. RUNNING
-[03/07] Build docs/agents mesh ...... PENDING
-[04/07] Retrofit runtime assets ..... PENDING
-[05/07] Write evidence .............. PENDING
-[06/07] Run certification ........... PENDING
-[07/07] Report result ............... PENDING
+[01/08] Fetch installer spec ........ PASS
+[02/08] Inspect project ............. RUNNING
+[03/08] Build docs/agents mesh ...... PENDING
+[04/08] Build Cortex ................ PENDING
+[05/08] Retrofit runtime assets ..... PENDING
+[06/08] Write evidence .............. PENDING
+[07/08] Run certification ........... PENDING
+[08/08] Report result ............... PENDING
 ```
 
 For longer operations, update with a single line:
 
 ```text
-[04/07] Retrofit runtime assets ..... RUNNING
+[05/08] Retrofit runtime assets ..... RUNNING
 ```
 
 Do not expose file-by-file commentary unless it is a blocker, a requested
@@ -233,6 +236,7 @@ tilly_context_install:
   default_adapter:
   no_touch_paths:
   planned_outputs:
+  cortex:
   oracle_candidates:
   stop_if:
 ```
@@ -390,6 +394,15 @@ docs/agents/
     cursor.md
   maps/
     assets.md
+  cortex/
+    CONTRACT.md
+    MAP.md
+    TRAIL.md
+    LINKS.md
+    sources/
+      README.md
+      assets/
+    cells/
   evidence/
     YYYY-MM-DD-tilly-context-installation.md
 ```
@@ -409,6 +422,87 @@ For an existing project:
   language rules, ownership, release rules, and no-go conditions;
 - runtime assets should route to `docs/agents/**` instead of carrying long
   canonical prose.
+
+## Phase 4.5 - Create Cortex
+
+Create or retrofit the compiled Tilly Cortex layer under:
+
+```text
+docs/agents/cortex/**
+```
+
+Use the package contract from:
+
+```text
+docs/mesh/CORTEX.md
+```
+
+Cortex is the installed project's compiled memory and evolution layer. Memory
+lives in versioned Markdown artifacts; SQLite FTS5 is only the derived recall
+index at `.tilly/cortex/recall.sqlite`, and `rg` is the fallback. It is not a
+vector database, MCP server, background daemon, bulk import job, or hidden LLM
+memory.
+
+It is Obsidian-compatible by default, but Obsidian is not required for install
+or certification. Do not create `.obsidian/**`, install plugins, configure
+Dataview, or depend on Obsidian state unless the user explicitly asks.
+
+Create these files when they do not exist:
+
+```text
+docs/agents/cortex/CONTRACT.md
+docs/agents/cortex/MAP.md
+docs/agents/cortex/TRAIL.md
+docs/agents/cortex/LINKS.md
+docs/agents/cortex/sources/README.md
+```
+
+If this package's local scripts are available, prefer:
+
+```bash
+python3 scripts/cortex.py init --target <target-root>
+python3 scripts/cortex.py verify --target <target-root>
+python3 scripts/cortex.py audit --target <target-root>
+python3 scripts/cortex.py rebuild --target <target-root>
+```
+
+If the scripts are not available, create the same files directly from this
+prompt and the `docs/mesh/CORTEX.md` contract.
+
+Minimum starter content:
+
+| File | Minimum Content |
+|------|-----------------|
+| `CONTRACT.md` | Cortex purpose, artifact truth, SQLite-derived boundary, cell convention, citation rule, privacy lock, Obsidian boundary |
+| `MAP.md` | H1, empty sections for sources/cells/syntheses, and a note that agents read it first |
+| `TRAIL.md` | H1 and one install/init entry using the parseable heading contract |
+| `LINKS.md` | H1 and an empty adjacency-list section |
+| `sources/README.md` | Warning that sources are user-owned and must not be edited by agents; local assets belong in `sources/assets/**` |
+
+Use these local rules:
+
+- `sources/**` is immutable user-curated source material;
+- `cells/**` is compiled Cortex material;
+- `MAP.md` is a content catalog with links and one-line summaries;
+- `LINKS.md` is a human-readable adjacency list of important relationships;
+- `TRAIL.md` is append-only and uses headings like
+  `## [YYYY-MM-DD] absorb | <topic>`;
+- `.tilly/cortex/recall.sqlite` is a derived, rebuildable recall index, never
+  memory;
+- Cortex links should render in Obsidian and remain readable in GitHub or a
+  plain editor;
+- source citations should stay as explicit repository paths, even when Cortex
+  cells use Obsidian wikilinks for navigation;
+- every durable claim should cite a source path, evidence entry, or explicit
+  assumption;
+- do not file secrets, credentials, `.env` contents, private keys, or regulated
+  personal data into Cortex unless the target project has an explicit privacy
+  contract.
+
+For a new project, create starter files with clear placeholders. For an
+existing project, do not bulk-import history during installation. Only seed
+Cortex with stable facts discovered while building the mesh, and record deeper
+absorb work as a post-install next step.
 
 ## Phase 5 - Install Runtime Assets
 
@@ -431,6 +525,8 @@ a separate target-owned document under `docs/agents/**`.
 
 - project name and source of truth;
 - routing table to `docs/agents/**`;
+- pointer to `docs/agents/cortex/**` for durable memory, absorb, recall, audit,
+  and evolution workflows;
 - four Tilly gates;
 - target-specific locks;
 - local oracle commands;
@@ -445,7 +541,8 @@ CLAUDE.md
 .claude/rules/**  # only if the target already uses scoped Claude rules or needs them
 ```
 
-`CLAUDE.md` must stay short. It should route to `docs/agents/**`, preserve any
+`CLAUDE.md` must stay short. It should route to `docs/agents/**`, mention
+`docs/agents/cortex/**` as the durable memory layer when relevant, preserve any
 project-specific sentinels required by local validation, and list local oracles.
 
 ### Cursor
@@ -466,7 +563,8 @@ alwaysApply: true
 ---
 ```
 
-It must route to `docs/agents/**`.
+It must route to `docs/agents/**` and mention `docs/agents/cortex/**` as the
+durable memory layer when relevant.
 
 ## Phase 6 - Evidence Journal
 
@@ -486,6 +584,7 @@ Include:
 - files retrofitted;
 - conflicts discovered and how they were resolved;
 - local rules preserved;
+- Cortex files created, retrofitted, skipped, or deferred;
 - oracles run and results;
 - final GO/NO-GO.
 
@@ -507,6 +606,27 @@ If Codex skill is installed:
 
 ```bash
 python3 .agents/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test
+```
+
+If Cortex is installed:
+
+```bash
+python3 scripts/cortex.py verify --target .  # when package scripts are available
+python3 scripts/cortex.py audit --target .   # when package scripts are available
+python3 scripts/cortex.py rebuild --target . # when package scripts are available
+test -f docs/agents/cortex/CONTRACT.md
+test -f docs/agents/cortex/MAP.md
+test -f docs/agents/cortex/TRAIL.md
+test -f docs/agents/cortex/LINKS.md
+rg "^## \\[" docs/agents/cortex/TRAIL.md || true
+```
+
+If the target is already an Obsidian vault, `.obsidian/**` may exist. Record
+that it was pre-existing and do not edit it. If the vault is also a Git repo,
+verify no Obsidian config drift with:
+
+```bash
+git diff -- .obsidian
 ```
 
 Inspect package scripts and run only relevant, safe local commands, such as:
@@ -576,6 +696,7 @@ Integration Matrix
 | Surface | Status | Evidence |
 |---------|--------|----------|
 | docs/agents/** | PASS/FAIL | <paths> |
+| Cortex | PASS/SKIP/FAIL | <paths> |
 | Codex | PASS/SKIP/FAIL | <paths> |
 | Claude Code | PASS/SKIP/FAIL | <paths> |
 | Cursor | PASS/SKIP/FAIL | <paths> |
@@ -585,13 +706,15 @@ Certification
 |-------|--------|-------|
 | Existing context preserved | PASS/FAIL | ... |
 | Runtime assets are thin | PASS/FAIL | ... |
+| Cortex boundary | PASS/FAIL/SKIP | sources immutable, compiled cells, derived recall, append-only trail |
+| Obsidian compatibility | PASS/FAIL/SKIP | plain Markdown, no required plugins, no `.obsidian/**` |
 | No blind overwrite | PASS/FAIL | ... |
 | Secrets untouched | PASS/FAIL | ... |
 | Oracles | PASS/FAIL/SKIP | ... |
 
 Evidence
 - <docs/agents/evidence/...>
-- <optional journal>
+- <journal when created>
 
 Rollback
 - Baseline: <baseline-head>
@@ -609,6 +732,7 @@ GO requires:
 
 - `docs/agents/**` exists and is the canonical source;
 - selected runtime assets route to that source;
+- Cortex exists or is explicitly skipped/deferred with a reason;
 - existing context was preserved or explicitly migrated;
 - no secrets or unrelated project files were changed;
 - at least one relevant oracle passed, or skipped oracles have named blockers.

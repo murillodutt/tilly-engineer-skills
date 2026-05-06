@@ -24,6 +24,7 @@ turning the repository root into an inventory.
 | Tool-neutral engineering principles | `mesh/PRINCIPLES.md` |
 | Neutral behavioral contract manifest | `mesh/CONTRACT-MANIFEST.yml` |
 | Context mesh method | `mesh/CONTEXT-MESH-METHOD.md` |
+| Tilly Cortex | `mesh/CORTEX.md` |
 | Adoption and convergence scorecard | `mesh/SCORECARD.md` |
 | Eval and ablation design | `evals/EVALS.md` |
 | Detailed examples | `evals/EXAMPLES.md` |
