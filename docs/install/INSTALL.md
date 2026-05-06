@@ -9,8 +9,59 @@ evidence_level: L2
 
 # Adapter Installation
 
-The installer copies materialized adapter files into a target project. It is
-local-first, multi-platform, and fail-closed on conflicts.
+The primary installer is an assisted context prompt. It uses the target
+project's active LLM window to inspect local governance, create or retrofit
+`docs/agents/**`, keep runtime files thin, and certify the integration.
+
+The script installer remains as a maintainer tool for materialization smoke
+tests and mechanical copying. It is not the recommended path for projects that
+already have agent instructions.
+
+## Primary Flow
+
+Open the target project in Codex, Claude Code, or Cursor and paste:
+
+```text
+Install Tilly Engineer Skills as an assisted context mesh, not as blind file
+copying.
+
+Read and follow this raw installer spec:
+
+https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
+
+Start by detecting the current IDE/runtime and classifying this project as new
+or existing. Use the detected IDE as the default adapter. Ask me for a menu
+choice only where the spec requires one. Preserve local project governance,
+move durable agent context into docs/agents/**, keep AGENTS.md, CLAUDE.md and
+Cursor rules as thin runtime bootloaders, and finish with the certification
+report required by the spec.
+```
+
+Short source:
+
+```text
+docs/install/MINI-PROMPT.md
+```
+
+Full raw spec:
+
+```text
+docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
+```
+
+## Install Semantics
+
+The context installer is not a file copier. It performs:
+
+```text
+environment detection
+  -> new/existing project classification
+  -> adapter menu
+  -> docs/agents/** canonical mesh
+  -> thin runtime assets
+  -> evidence journal
+  -> certification report
+```
 
 ## Compatibility Basis
 
@@ -22,12 +73,49 @@ The installer follows current adapter surfaces:
 | Claude Code | `CLAUDE.md`, `.claude-plugin/**`, and `skills/**` |
 | Cursor | `.cursor/rules/*.mdc` project rules |
 
-The common pattern is file-based installation into the target repository. The
-script does not install hooks, MCP servers, cloud/background agents, secrets, or
-marketplace publishing metadata beyond the local Claude plugin files already
-materialized by this package.
+The common pattern is file-based installation into the target repository, but
+project-specific governance belongs in `docs/agents/**`.
 
-## Commands
+## New vs Existing Projects
+
+For a new project, the installer creates a minimal `docs/agents/**` mesh and
+thin runtime files for the selected IDE.
+
+For an existing project, the installer migrates durable rules from existing
+agent files and docs into `docs/agents/**`, then turns `AGENTS.md`, `CLAUDE.md`,
+`.cursor/rules/**`, `.claude/**`, and `.agents/**` into runtime assets that
+route to the mesh.
+
+Existing context is project-owned by default. Conflicts mean retrofit, not
+overwrite.
+
+## Certification Output
+
+Every assisted install ends with:
+
+```text
+Tilly Context Mesh Installation Report
+
+Status: GO | NEEDS_REVIEW | NO-GO
+Scope: new project | existing project retrofit
+Detected Runtime: Codex | Claude Code | Cursor | uncertain
+Selected Adapters: ...
+Canonical Source: docs/agents/**
+Integration Matrix: ...
+Certification: ...
+Evidence: ...
+Limits: ...
+Next Step: ...
+```
+
+GO requires canonical `docs/agents/**`, thin runtime assets, preserved local
+context, no blind overwrite, no secret mutation, and at least one relevant
+local oracle.
+
+## Script Support
+
+The script remains available for maintainers, package checks, and low-risk
+mechanical smoke tests.
 
 Dry-run all adapters into a target project:
 

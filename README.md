@@ -73,28 +73,25 @@ Start with [docs/INDEX.md](docs/INDEX.md) for the complete documentation map.
 
 ## Install
 
-Use the guarded installer for target projects:
+Primary install is now assisted by context, not blind copying. Open the target
+project in Codex, Claude Code, or Cursor and paste the mini prompt:
+
+- [docs/install/MINI-PROMPT.md](docs/install/MINI-PROMPT.md)
+
+The mini prompt loads the raw installer spec:
+
+- [docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md](docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md)
+
+That spec detects the active IDE, classifies the target project as new or
+existing, creates or retrofits `docs/agents/**`, keeps runtime files thin, and
+finishes with a certification report.
+
+The script installer remains available for maintainers and mechanical smoke
+tests:
 
 ```bash
 python3 scripts/install_adapter.py --target /path/to/project --dry-run
-python3 scripts/install_adapter.py --target /path/to/project --yes
 ```
-
-macOS/Linux:
-
-```bash
-./install.sh --adapter codex --target /path/to/project --dry-run
-```
-
-Windows PowerShell:
-
-```powershell
-.\install.ps1 --adapter codex --target C:\path\to\project --dry-run
-```
-
-The installer is fail-closed: it does not overwrite existing instructions
-unless `--overwrite` is explicit, and `--retrofit-plan` writes an LLM merge plan
-for projects that already have agent guidance.
 
 See [docs/install/INSTALL.md](docs/install/INSTALL.md) for the full install
 contract.

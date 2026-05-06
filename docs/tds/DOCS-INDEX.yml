@@ -22,6 +22,20 @@ documents:
     consumer: adopters and release operators
     source_of_truth: true
     evidence_level: L2
+  - path: docs/install/MINI-PROMPT.md
+    id: install.mini_prompt
+    class: adapter
+    status: active
+    consumer: adopters
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
+    id: install.assisted_context_installer
+    class: adapter
+    status: active
+    consumer: installing LLMs and adopters
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/adapters/CODEX.md
     id: adapters.codex
     class: adapter

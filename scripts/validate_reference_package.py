@@ -22,6 +22,8 @@ REQUIRED_PATHS = (
     "install.ps1",
     "docs/INDEX.md",
     "docs/architecture/PROJECT-STRUCTURE.md",
+    "docs/install/MINI-PROMPT.md",
+    "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/governance/AGENTIC-ALIGNMENT-GOVERNANCE.md",
     "docs/mesh/PRINCIPLES.md",
     "docs/mesh/CONTEXT-MESH-METHOD.md",
