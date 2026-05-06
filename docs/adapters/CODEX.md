@@ -12,7 +12,7 @@ evidence_level: L2
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.1.0`.
+Project version: `0.2.0`.
 
 It follows the Codex customization order:
 
