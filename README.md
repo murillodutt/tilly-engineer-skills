@@ -84,10 +84,11 @@ Read and follow this raw installer spec:
 https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
 
 Run in quiet installer mode: show compact progress, blockers and the final
-certification report only. When navigation is required, render the plain text
-navigation menu from the spec and ask for a route command such as current,
-codex, claude, cursor, all, or audit. Do not display internal reasoning,
-scratch YAML or long inventories.
+certification report only. When navigation is required, load the runtime
+navigation library from the spec, use native structured cards only when the
+current runtime safely supports them, otherwise render command navigation.
+Ask for a route command such as current, codex, claude, cursor, all, or audit.
+Do not display internal reasoning, scratch YAML or long inventories.
 
 Start by detecting the current IDE/runtime and classifying this project as new
 or existing. Use the detected IDE as the default adapter. Ask me for a route

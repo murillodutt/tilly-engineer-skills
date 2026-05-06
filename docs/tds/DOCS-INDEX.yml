@@ -36,6 +36,69 @@ documents:
     consumer: installing LLMs and adopters
     source_of_truth: true
     evidence_level: L2
+  - path: docs/install/navigation/NAVIGATION-LIBRARY.md
+    id: install.navigation_library
+    class: adapter
+    status: active
+    consumer: installing LLMs and adopters
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/install/navigation/common.prompt.md
+    id: install.navigation.common
+    class: adapter
+    status: active
+    consumer: installing LLMs
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/install/navigation/codex.prompt.md
+    id: install.navigation.codex
+    class: adapter
+    status: active
+    consumer: installing LLMs in Codex
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/install/navigation/codex-cli.prompt.md
+    id: install.navigation.codex_cli
+    class: adapter
+    status: active
+    consumer: installing LLMs in Codex CLI
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/install/navigation/claude-code.prompt.md
+    id: install.navigation.claude_code
+    class: adapter
+    status: active
+    consumer: installing LLMs in Claude Code
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/install/navigation/claude-desktop.prompt.md
+    id: install.navigation.claude_desktop
+    class: adapter
+    status: active
+    consumer: installing LLMs in Claude Desktop
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/install/navigation/cursor.prompt.md
+    id: install.navigation.cursor
+    class: adapter
+    status: active
+    consumer: installing LLMs in Cursor
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/install/navigation/anthropic-api.prompt.md
+    id: install.navigation.anthropic_api
+    class: adapter
+    status: active
+    consumer: Anthropic API harnesses
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/install/navigation/generic.prompt.md
+    id: install.navigation.generic
+    class: adapter
+    status: active
+    consumer: Continue.dev, Aider, and other installing LLMs
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/adapters/CODEX.md
     id: adapters.codex
     class: adapter

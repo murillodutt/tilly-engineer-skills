@@ -20,6 +20,7 @@ turning the repository root into an inventory.
 | Adapter installation | `install/INSTALL.md` |
 | Assisted context installer mini prompt | `install/MINI-PROMPT.md` |
 | Assisted context installer raw spec | `install/ASSISTED-CONTEXT-INSTALLER.prompt.md` |
+| Assisted installer navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
 | Tool-neutral engineering principles | `mesh/PRINCIPLES.md` |
 | Neutral behavioral contract manifest | `mesh/CONTRACT-MANIFEST.yml` |
 | Context mesh method | `mesh/CONTEXT-MESH-METHOD.md` |
