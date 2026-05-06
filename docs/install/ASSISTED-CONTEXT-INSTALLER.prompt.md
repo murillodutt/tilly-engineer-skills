@@ -76,7 +76,7 @@ During installation, show only:
 
 - one compact progress block at the start;
 - short phase updates;
-- required menu questions;
+- required menus rendered as complete labeled blocks;
 - blockers that need user input;
 - final certification report.
 
@@ -178,17 +178,34 @@ proven otherwise.
 
 ## Phase 3 - Menu
 
-Show a compact menu. Mark the detected runtime as recommended.
+If user input is needed, you must render the complete menu before asking.
+Do not collapse the menu into "1, 2, 3, 4, 5, or 6". Do not rely only on UI
+chips or hidden options. The user must see each option label and consequence.
+
+Render exactly this shape, with the detected runtime filled in:
 
 ```text
 Tilly Context Install Menu
 
-1. Current IDE only (Recommended: <detected-runtime>)
-2. Codex only
-3. Claude Code only
-4. Cursor only
-5. Codex + Claude Code + Cursor
-6. Audit only, no edits
+[1] Current IDE only (Recommended: <detected-runtime>)
+    Installs only the runtime currently executing this conversation.
+
+[2] Codex only
+    Creates or retrofits AGENTS.md and .agents/skills/**.
+
+[3] Claude Code only
+    Creates or retrofits CLAUDE.md and Claude-scoped rules when needed.
+
+[4] Cursor only
+    Creates or retrofits .cursor/rules/*.mdc.
+
+[5] Codex + Claude Code + Cursor
+    Creates the shared docs/agents/** mesh and all three runtime bootloaders.
+
+[6] Audit only, no edits
+    Inspects and reports what would change without modifying files.
+
+Reply with 1, 2, 3, 4, 5, or 6.
 ```
 
 If the user already gave a clear instruction, proceed with the matching option
