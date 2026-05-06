@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -190,23 +190,32 @@
       max-width: 820px;
     }
 
-    .language-links {
+    .language-picker {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin: 22px 0 0;
     }
 
-    .language-links a,
+    .language-picker label {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 7px 0;
+    }
+
+    .language-picker select,
     .tag {
       background: var(--soft);
       border: 1px solid #bfddd8;
       border-radius: 999px;
       color: #115e59;
       display: inline-block;
+      font: inherit;
       font-size: 13px;
       font-weight: 700;
-      padding: 6px 10px;
+      min-width: 180px;
+      padding: 7px 12px;
     }
 
     .notice,
@@ -225,7 +234,12 @@
     }
 
     .language {
+      display: none;
       margin-bottom: 64px;
+    }
+
+    .language.active {
+      display: block;
     }
 
     .footer {
@@ -279,15 +293,10 @@
         <span>User manual v0.2.4</span>
       </div>
       <nav>
-        <a href="#pt">Português</a>
-        <a href="#en">English</a>
-        <a href="#es">Español</a>
-        <a href="#pt-install">PT: Instalação</a>
-        <a href="#en-install">EN: Install</a>
-        <a href="#es-install">ES: Instalación</a>
-        <a href="#pt-cortex">PT: Cortex</a>
-        <a href="#en-cortex">EN: Cortex</a>
-        <a href="#es-cortex">ES: Cortex</a>
+        <a href="#en" data-nav="home">Overview</a>
+        <a href="#en-install" data-nav="install">Quick install</a>
+        <a href="#en-cortex" data-nav="cortex">Cortex</a>
+        <a href="#en-report" data-nav="report">Final report</a>
       </nav>
     </aside>
 
@@ -299,11 +308,14 @@
           One practical guide in Portuguese, English and Spanish for installing,
           updating and auditing Tilly as an assisted context mesh.
         </p>
-        <div class="language-links">
-          <a href="#pt">Português</a>
-          <a href="#en">English</a>
-          <a href="#es">Español</a>
-        </div>
+        <form class="language-picker" aria-label="Manual language">
+          <label for="language-select">Language</label>
+          <select id="language-select" name="language">
+            <option value="en" selected>English</option>
+            <option value="pt">Português</option>
+            <option value="es">Español</option>
+          </select>
+        </form>
       </header>
 
       <section id="pt" class="language" lang="pt-BR">
@@ -390,7 +402,7 @@
           superfície visual, não fonte de verdade.
         </p>
 
-        <h2>Relatório final</h2>
+        <h2 id="pt-report">Relatório final</h2>
         <p>
           Todo fluxo termina com <strong>Tilly Context Mesh Convergence
           Report</strong>. O relatório sempre deve expor este manual por link
@@ -406,7 +418,7 @@
 git revert &lt;install-commit&gt;</code></pre>
       </section>
 
-      <section id="en" class="language" lang="en">
+      <section id="en" class="language active" lang="en">
         <p class="eyebrow">English</p>
         <h1>User manual</h1>
         <p class="lead">
@@ -490,7 +502,7 @@ git revert &lt;install-commit&gt;</code></pre>
           is a visual surface, not the source of truth.
         </p>
 
-        <h2>Final report</h2>
+        <h2 id="en-report">Final report</h2>
         <p>
           Every run ends with a <strong>Tilly Context Mesh Convergence
           Report</strong>. The report must always expose this manual through a
@@ -590,7 +602,7 @@ git revert &lt;install-commit&gt;</code></pre>
           superficie visual, no la fuente de verdad.
         </p>
 
-        <h2>Informe final</h2>
+        <h2 id="es-report">Informe final</h2>
         <p>
           Cada ejecución termina con un <strong>Tilly Context Mesh Convergence
           Report</strong>. El informe siempre debe exponer este manual mediante
@@ -611,5 +623,65 @@ git revert &lt;install-commit&gt;</code></pre>
       </p>
     </main>
   </div>
+  <script>
+    const select = document.getElementById("language-select");
+    const sections = Array.from(document.querySelectorAll(".language"));
+    const navLabels = {
+      en: {
+        home: "Overview",
+        install: "Quick install",
+        cortex: "Cortex",
+        report: "Final report",
+      },
+      pt: {
+        home: "Visão geral",
+        install: "Instalação",
+        cortex: "Cortex",
+        report: "Relatório final",
+      },
+      es: {
+        home: "Vista general",
+        install: "Instalación",
+        cortex: "Cortex",
+        report: "Informe final",
+      },
+    };
+
+    function updateNavigation(language) {
+      document.querySelectorAll("[data-nav]").forEach((link) => {
+        const key = link.dataset.nav;
+        link.textContent = navLabels[language][key];
+        link.href = key === "home" ? `#${language}` : `#${language}-${key}`;
+      });
+    }
+
+    function activateLanguage(language) {
+      sections.forEach((section) => {
+        section.classList.toggle("active", section.id === language);
+      });
+      document.documentElement.lang = language === "pt" ? "pt-BR" : language;
+      updateNavigation(language);
+      if (select.value !== language) {
+        select.value = language;
+      }
+    }
+
+    select.addEventListener("change", (event) => {
+      const language = event.target.value;
+      activateLanguage(language);
+      history.replaceState(null, "", `#${language}`);
+    });
+
+    document.querySelectorAll('a[href="#en"], a[href="#pt"], a[href="#es"]').forEach((link) => {
+      link.addEventListener("click", () => {
+        activateLanguage(link.getAttribute("href").slice(1));
+      });
+    });
+
+    const initial = window.location.hash.replace("#", "");
+    if (["pt", "en", "es"].includes(initial)) {
+      activateLanguage(initial);
+    }
+  </script>
 </body>
 </html>
