@@ -31,4 +31,8 @@ choice only where the spec requires one. Preserve local project governance,
 move durable agent context into docs/agents/**, keep AGENTS.md, CLAUDE.md and
 Cursor rules as thin runtime bootloaders, and finish with the certification
 report required by the spec.
+
+Do not commit, push, amend, tag, publish, install dependencies, overwrite
+files, or change remotes unless I explicitly ask after reviewing the
+certification report.
 ```

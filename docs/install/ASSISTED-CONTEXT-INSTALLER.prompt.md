@@ -58,6 +58,9 @@ contents or permission to continue from already available context.
 - Never edit secrets, `.env`, credentials, production remotes, hooks, MCP
   servers, CI secrets, cloud settings, or package-manager lockfiles unless the
   user explicitly asks and a project oracle requires it.
+- Never commit, push, amend, tag, publish, install dependencies, overwrite
+  files, or change remotes unless the user explicitly asks after reviewing the
+  certification report.
 - Do not claim certification until you run the smallest relevant local oracles
   available in the target project.
 - If a file already exists, merge intent or turn it into a thin bootloader.
@@ -363,6 +366,33 @@ precondition and ask before running unless the user already authorized it.
 
 Do not run multiple build commands in parallel when they share caches.
 
+## Phase 8 - Commit And Publication Boundary
+
+The default endpoint is an installed working tree plus certification report.
+Do not continue into Git mutation unless the user explicitly asks after reading
+the report.
+
+Distinguish these claims:
+
+| Claim | Meaning |
+|-------|---------|
+| `GO installed` | Files were created or retrofitted and local oracles passed. |
+| `GO committed` | The user explicitly approved commit after reviewing the report. |
+| `GO published` | The user explicitly approved push or publication after commit. |
+
+If the user asks to commit:
+
+- show `git status --short`;
+- stage only the integration scope;
+- run the relevant staged or closure gate when available;
+- commit with a semantic message.
+
+If the user asks to push or publish:
+
+- show remotes;
+- ask for the target remote/branch when there is any ambiguity;
+- do not push tags or publish packages unless explicitly requested.
+
 ## Final Report Layout
 
 Finish with a professional certification report. Use this structure:
@@ -375,6 +405,7 @@ Scope: <new project | existing project retrofit>
 Detected Runtime: <Codex | Claude Code | Cursor | uncertain>
 Selected Adapters: <...>
 Canonical Source: docs/agents/**
+Completion Claim: GO installed | GO committed | GO published | NEEDS_REVIEW | NO-GO
 
 Integration Matrix
 | Surface | Status | Evidence |
@@ -401,7 +432,7 @@ Limits
 - <honest non-claims>
 
 Next Step
-- <commit, review, or run skipped oracle>
+- <review, commit on explicit approval, or run skipped oracle>
 ```
 
 GO requires:
