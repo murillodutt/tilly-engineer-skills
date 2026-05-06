@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.7"
+VERSION = "0.3.8"
 
 DOCS = {
     "codex_agents": "https://developers.openai.com/codex/guides/agents-md",
@@ -157,7 +157,7 @@ def analyze() -> dict[str, Any]:
         failures.append("missing Codex skill agent metadata")
     surface("codex", "agent", "certified", codex_agent)
     surface("codex", "skill", "certified", "src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md")
-    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.7 ships a local skill first.")
+    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.8 ships a local skill first.")
     surface("codex", "hook", "git-governed", ".githooks/pre-commit")
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")

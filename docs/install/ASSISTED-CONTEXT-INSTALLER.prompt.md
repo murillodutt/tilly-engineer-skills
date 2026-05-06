@@ -53,6 +53,7 @@ docs/mesh/CORTEX.md
 docs/mesh/CORTEX-MCP.md
 scripts/cortex.py
 scripts/cortex_mcp.py
+scripts/tilly_init.py
 scripts/install_adapter.py
 scripts/install_mcp.py
 scripts/install_smoke.py
@@ -768,9 +769,22 @@ git diff --check
 If this package is available locally, also run the package surface gates:
 
 ```bash
+python3 scripts/tilly_init.py --self-test
 python3 scripts/install_smoke.py --self-test
 python3 scripts/platform_surface_oracle.py --self-test
 ```
+
+After adapter/Cortex/MCP writes are complete and the user authorized local
+initialization, run the project initializer to recertify and register the
+target project:
+
+```bash
+python3 scripts/tilly_init.py --target <target-root> --yes
+```
+
+This writes `docs/agents/PROJECT-REGISTER.md` and
+`docs/agents/evidence/YYYY-MM-DD-tilly-project-manifest.json`. It must not
+bulk-absorb project files into Cortex or write to `sources/**`.
 
 If Codex skill is present:
 
@@ -902,6 +916,7 @@ Certification
 | Cortex boundary | PASS/FAIL/SKIP | sources immutable, compiled cells, derived recall, append-only trail |
 | MCP activation | PASS/FAIL/SKIP | read-only server, project-scoped config, no global config |
 | Platform surfaces | PASS/FAIL/SKIP | agents, skills, plugins, hooks, rules, MCP claims checked |
+| Project register | PASS/FAIL/SKIP | full project manifest and initialization evidence |
 | Obsidian compatibility | PASS/FAIL/SKIP | plain Markdown, no required plugins, no `.obsidian/**` |
 | No blind overwrite | PASS/FAIL | ... |
 | Secrets untouched | PASS/FAIL | ... |

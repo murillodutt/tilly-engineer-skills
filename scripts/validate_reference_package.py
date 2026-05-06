@@ -69,6 +69,7 @@ REQUIRED_PATHS = (
     "scripts/install_smoke.py",
     "scripts/install_mcp.py",
     "scripts/install_adapter.py",
+    "scripts/tilly_init.py",
     "scripts/claude_plugin_oracle.py",
     "scripts/platform_surface_oracle.py",
     "scripts/retention_metadata.py",
@@ -119,6 +120,8 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "install:adapter",
     "install:dry-run",
     "install:smoke",
+    "tilly:init",
+    "tilly:init:self-test",
     "mcp:install",
     "mcp:dry-run",
     "mcp:self-test",
@@ -243,8 +246,8 @@ def main() -> int:
     package_json = ROOT / "package.json"
     if package_json.exists():
         package = json.loads(package_json.read_text(encoding="utf-8"))
-        if package.get("version") != "0.3.7":
-            failures.append("package.json version must be 0.3.7")
+        if package.get("version") != "0.3.8":
+            failures.append("package.json version must be 0.3.8")
         scripts = package.get("scripts", {})
         for script in REQUIRED_PACKAGE_SCRIPTS:
             if script not in scripts:
@@ -252,8 +255,8 @@ def main() -> int:
 
     for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
         path = ROOT / relpath
-        if path.exists() and "0.3.7" not in path.read_text(encoding="utf-8"):
-            failures.append(f"{relpath} must declare 0.3.7")
+        if path.exists() and "0.3.8" not in path.read_text(encoding="utf-8"):
+            failures.append(f"{relpath} must declare 0.3.8")
 
     oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():

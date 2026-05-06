@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.7</span>
+          <span class="brand-meta">User manual · v0.3.8</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1099,9 +1099,11 @@
         <section class="chapter" id="cli">
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
-            <p>Run these commands from the Tilly package root when maintaining this package, or pass <code>--target</code> when operating on another project or vault.</p>
+            <p>Run these commands from the Tilly package root when maintaining this package, or pass <code>--target</code> when operating on another project or vault. <code>tilly_init.py</code> recertifies package health, scans the target project, writes <code>docs/agents/PROJECT-REGISTER.md</code> and stores a full manifest under <code>docs/agents/evidence/**</code>.</p>
             <div class="pre-wrap" data-label="cortex">
-<pre><code>python3 scripts/cortex.py init --target /path/to/project-or-vault
+<pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
+python3 scripts/tilly_init.py --self-test
+python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
@@ -1118,6 +1120,8 @@ python3 scripts/cortex.py --self-test</code></pre>
 <pre><code>npm run validate
 npm run install:dry-run
 npm run install:smoke
+npm run tilly:init -- --target /path/to/project --yes
+npm run tilly:init:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
@@ -1349,7 +1353,9 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-body">
             <p>Ejecuta estos comandos desde la raíz del paquete Tilly al mantener este paquete, o usa <code>--target</code> para operar sobre otro proyecto o vault.</p>
             <div class="pre-wrap" data-label="cortex">
-<pre><code>python3 scripts/cortex.py init --target /path/to/project-or-vault
+<pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
+python3 scripts/tilly_init.py --self-test
+python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
@@ -1366,6 +1372,8 @@ python3 scripts/cortex.py --self-test</code></pre>
 <pre><code>npm run validate
 npm run install:dry-run
 npm run install:smoke
+npm run tilly:init -- --target /path/to/project --yes
+npm run tilly:init:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
@@ -1597,7 +1605,9 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-body">
             <p>Rode estes comandos a partir da raiz do pacote Tilly ao manter este pacote, ou use <code>--target</code> para operar em outro projeto ou vault.</p>
             <div class="pre-wrap" data-label="cortex">
-<pre><code>python3 scripts/cortex.py init --target /path/to/project-or-vault
+<pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
+python3 scripts/tilly_init.py --self-test
+python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
@@ -1614,6 +1624,8 @@ python3 scripts/cortex.py --self-test</code></pre>
 <pre><code>npm run validate
 npm run install:dry-run
 npm run install:smoke
+npm run tilly:init -- --target /path/to/project --yes
+npm run tilly:init:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
@@ -1753,7 +1765,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.7</span>
+        <span>Tilly Engineer Skills · v0.3.8</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>
