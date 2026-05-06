@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.0
+tver: 0.3.0
 ---
 
 # Adapter Installation
@@ -13,6 +13,12 @@ tver: 0.2.0
 The primary installer is an assisted context prompt. It uses the target
 project's active LLM window to inspect local governance, create or retrofit
 `docs/agents/**`, keep runtime files thin, and certify the integration.
+
+For a practical user-facing walkthrough, open:
+
+```text
+docs/install/USER-MANUAL.html
+```
 
 The script installer remains as a maintainer tool for materialization smoke
 tests and mechanical copying. It is not the recommended path for projects that
