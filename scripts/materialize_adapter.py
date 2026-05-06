@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "dist" / "adapters"
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 FORBIDDEN_OUTPUT_REFS = (
     "src/adapters/",
     "docs/adapters/",

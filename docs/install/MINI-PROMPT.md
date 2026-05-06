@@ -5,7 +5,7 @@ status: active
 consumer: adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Tilly Context Installer Mini Prompt
@@ -28,13 +28,14 @@ current runtime safely supports them, otherwise render command navigation.
 Ask for a route command such as current, codex, claude, cursor, all, or audit.
 Do not display internal reasoning, scratch YAML or long inventories.
 
-Start by detecting the current IDE/runtime and classifying this project as new
-or existing. Use the detected IDE as the default adapter. Ask me for a route
-command only where the spec requires one. Preserve local project governance,
-move durable agent context into docs/agents/**, create the compiled
-docs/agents/cortex/** Cortex layer, keep AGENTS.md, CLAUDE.md and Cursor rules
-as thin runtime bootloaders, and finish with the certification report required
-by the spec.
+Start by detecting the current IDE/runtime and classifying this project as new,
+existing, or meshed. If Tilly is already meshed, treat this as an assisted
+update/convergence run, not a reinstall. Use the detected IDE as the default
+adapter. Ask me for a route command only where the spec requires one. Preserve
+local project governance, move durable agent context into docs/agents/** when
+needed, create or update the compiled docs/agents/cortex/** Cortex layer, keep
+AGENTS.md, CLAUDE.md and Cursor rules as thin runtime bootloaders, and finish
+with the certification report required by the spec.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, tell me

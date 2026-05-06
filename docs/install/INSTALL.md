@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Adapter Installation
@@ -30,14 +30,15 @@ Read and follow this raw installer spec:
 
 https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
 
-Start by detecting the current IDE/runtime and classifying this project as new
-or existing. Run in quiet installer mode: show compact progress, blockers and
-the final certification report only. When navigation is required, load the
-runtime navigation library from the spec, use native structured cards only when
-the current runtime safely supports them, otherwise render command navigation.
-Ask for a route command such as current, codex, claude, cursor, all, or audit.
-Use the detected IDE as the default adapter. Ask me for a route command only
-where the spec requires one.
+Start by detecting the current IDE/runtime and classifying this project as new,
+existing, or meshed. If Tilly is already meshed, treat this as an assisted
+update/convergence run, not a reinstall. Run in quiet installer mode: show
+compact progress, blockers and the final certification report only. When
+navigation is required, load the runtime navigation library from the spec, use
+native structured cards only when the current runtime safely supports them,
+otherwise render command navigation. Ask for a route command such as current,
+codex, claude, cursor, all, or audit. Use the detected IDE as the default
+adapter. Ask me for a route command only where the spec requires one.
 Preserve local project governance, move durable agent context into
 docs/agents/**, keep AGENTS.md, CLAUDE.md and Cursor rules as thin runtime
 bootloaders, and finish with the certification report required by the spec.
@@ -67,7 +68,7 @@ The context installer is not a file copier. It performs:
 
 ```text
 environment detection
-  -> new/existing project classification
+  -> new, existing, or meshed project classification
   -> runtime navigation library
   -> adapter menu
   -> docs/agents/** canonical mesh
@@ -128,15 +129,20 @@ route to the mesh.
 Existing context is project-owned by default. Conflicts mean retrofit, not
 overwrite.
 
+For a meshed project, the installer treats the run as update/convergence. It
+inspects the existing `docs/agents/**` mesh, detects contract and TVer/version
+drift, applies only surgical updates needed by the selected route, preserves
+local governance, and certifies the resulting state.
+
 ## Certification Output
 
-Every assisted install ends with:
+Every assisted install, retrofit, update, or audit run ends with:
 
 ```text
-Tilly Context Mesh Installation Report
+Tilly Context Mesh Convergence Report
 
 Status: GO | NEEDS_REVIEW | NO-GO
-Scope: new project | existing project retrofit
+Scope: new project install | existing project retrofit | meshed project update | audit
 Detected Runtime: Codex | Claude Code | Cursor | uncertain
 Selected Adapters: ...
 Canonical Source: docs/agents/**
@@ -160,7 +166,7 @@ report must distinguish:
 
 | Claim | Meaning |
 |-------|---------|
-| `GO installed` | Files were created or retrofitted and local oracles passed. |
+| `GO meshed` | Mesh files were created, retrofitted, or updated and local oracles passed. |
 | `GO committed` | The user explicitly approved commit after reviewing the report. |
 | `GO published` | The user explicitly approved push or publication after commit. |
 

@@ -5,7 +5,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Tilly Assisted Context Installer
@@ -15,8 +15,8 @@ assisted context mesh. You are not running a blind package installer.
 
 ## Mission
 
-Install or retrofit Tilly so that the target project gets durable, maintainable
-agent context:
+Install, retrofit, or update Tilly so that the target project gets durable,
+maintainable agent context:
 
 ```text
 docs/agents/** is source. Runtime assets route and execute.
@@ -102,7 +102,8 @@ Do not print this kind of internal packet to the user:
 ```yaml
 tilly_context_install:
   detected_runtime:
-  project_type:
+  project_state:
+  operation_mode:
   default_adapter:
   no_touch_paths:
   planned_outputs:
@@ -233,7 +234,8 @@ tilly_context_install:
   navigation_library:
   navigation_renderer:
   navigation_mode:
-  project_type:
+  project_state:
+  operation_mode:
   default_adapter:
   no_touch_paths:
   planned_outputs:
@@ -325,11 +327,28 @@ CLAUDE.md
 docs/agents/**
 ```
 
+Classify as `meshed` when Tilly's canonical mesh already exists and is routed
+or partially routed from runtime assets:
+
+```text
+docs/agents/**
+docs/agents/cortex/**
+AGENTS.md routing to docs/agents/**
+CLAUDE.md routing to docs/agents/**
+.cursor/rules/** routing to docs/agents/**
+```
+
 Classify as `existing` when any local agent guidance, project rules,
-architecture docs, decision docs, or validation scripts already exist.
+architecture docs, decision docs, or validation scripts already exist, but the
+Tilly mesh is not yet present enough to treat as `meshed`.
 
 For an existing project, treat all current instructions as project-owned until
 proven otherwise.
+
+For a meshed project, treat the run as assisted update/convergence, not
+reinstall. Preserve local governance, inspect the current mesh, detect contract
+and TVer/version drift, apply only surgical updates needed by the selected
+route, and certify the resulting state.
 
 ## Phase 3 - Navigation Menu
 
@@ -349,7 +368,7 @@ detected values filled in:
 Tilly Context Mesh Navigation
 
 Detected runtime: <detected-runtime>
-Project mode: <new | existing | uncertain>
+Project state: <new | existing | meshed | uncertain>
 
 Routes:
 
@@ -438,7 +457,7 @@ Use the package contract from:
 docs/mesh/CORTEX.md
 ```
 
-Cortex is the installed project's compiled memory and evolution layer. Memory
+Cortex is the target project's compiled memory and evolution layer. Memory
 lives in versioned Markdown artifacts; SQLite FTS5 is only the derived recall
 index at `.tilly/cortex/recall.sqlite`, and `rg` is the fallback. It is not a
 vector database, MCP server, background daemon, bulk import job, or hidden LLM
@@ -534,7 +553,7 @@ a separate target-owned document under `docs/agents/**`.
 - four Tilly gates;
 - target-specific locks;
 - local oracle commands;
-- pointer to the installed skill if present.
+- pointer to the present skill if available.
 
 ### Claude Code
 
@@ -606,13 +625,13 @@ Always try:
 git diff --check
 ```
 
-If Codex skill is installed:
+If Codex skill is present:
 
 ```bash
 python3 .agents/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test
 ```
 
-If Cortex is installed:
+If Cortex is present:
 
 ```bash
 python3 scripts/cortex.py verify --target .  # when package scripts are available
@@ -651,7 +670,7 @@ Do not run multiple build commands in parallel when they share caches.
 
 ## Phase 8 - Commit And Publication Boundary
 
-The default endpoint is an installed working tree plus certification report.
+The default endpoint is a meshed working tree plus certification report.
 Do not continue into Git mutation unless the user explicitly asks after reading
 the report.
 
@@ -662,7 +681,7 @@ Distinguish these claims:
 
 | Claim | Meaning |
 |-------|---------|
-| `GO installed` | Files were created or retrofitted and local oracles passed. |
+| `GO meshed` | Mesh files were created, retrofitted, or updated and local oracles passed. |
 | `GO committed` | The user explicitly approved commit after reviewing the report. |
 | `GO published` | The user explicitly approved push or publication after commit. |
 
@@ -684,14 +703,14 @@ If the user asks to push or publish:
 Finish with a professional certification report. Use this structure:
 
 ```text
-Tilly Context Mesh Installation Report
+Tilly Context Mesh Convergence Report
 
 Status: GO | NEEDS_REVIEW | NO-GO
-Scope: <new project | existing project retrofit>
+Scope: <new project install | existing project retrofit | meshed project update | audit>
 Detected Runtime: <Codex | Claude Code | Cursor | uncertain>
 Selected Adapters: <...>
 Canonical Source: docs/agents/**
-Completion Claim: GO installed | GO committed | GO published | NEEDS_REVIEW | NO-GO
+Completion Claim: GO meshed | GO committed | GO published | NEEDS_REVIEW | NO-GO
 Navigation Library: <tilly-navigation@...>
 Navigation Renderer: <codex | claude-code | cursor | fallback>
 Navigation Mode: <request-user-input | AskUserQuestion | ask-question | command-navigation>

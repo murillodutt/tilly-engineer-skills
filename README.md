@@ -6,7 +6,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, and clearer proof before they claim a task
 is done.
 
-Version: `0.2.0`
+Version: `0.2.1`
 
 License: MIT
 
@@ -29,13 +29,14 @@ current runtime safely supports them, otherwise render command navigation.
 Ask for a route command such as current, codex, claude, cursor, all, or audit.
 Do not display internal reasoning, scratch YAML or long inventories.
 
-Start by detecting the current IDE/runtime and classifying this project as new
-or existing. Use the detected IDE as the default adapter. Ask me for a route
-command only where the spec requires one. Preserve local project governance,
-move durable agent context into docs/agents/**, create the compiled
-docs/agents/cortex/** Cortex layer, keep AGENTS.md, CLAUDE.md and Cursor rules
-as thin runtime bootloaders, and finish with the certification report required
-by the spec.
+Start by detecting the current IDE/runtime and classifying this project as new,
+existing, or meshed. If Tilly is already meshed, treat this as an assisted
+update/convergence run, not a reinstall. Use the detected IDE as the default
+adapter. Ask me for a route command only where the spec requires one. Preserve
+local project governance, move durable agent context into docs/agents/** when
+needed, create or update the compiled docs/agents/cortex/** Cortex layer, keep
+AGENTS.md, CLAUDE.md and Cursor rules as thin runtime bootloaders, and finish
+with the certification report required by the spec.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, tell me
@@ -96,7 +97,7 @@ python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
 | Better execution | Agents are pushed to expose assumptions, reduce scope, edit surgically, and verify. |
 | Compounding memory | Cortex keeps immutable sources separate from compiled, versioned cells. |
 | Easier rollback | Step Zero creates or records a Git baseline before installation changes. |
-| Audit-ready reports | Every install ends with a certification report and explicit non-claims. |
+| Audit-ready reports | Every install, retrofit, update, or audit run ends with a certification report and explicit non-claims. |
 
 ## Core Method
 
@@ -121,7 +122,7 @@ Assumptions visible. Scope smaller. Edits surgical. Success falsifiable.
 Tilly is not a file copier and not a prompt dump. The assisted installer:
 
 1. Detects the active runtime.
-2. Classifies the project as new or existing.
+2. Classifies the project as new, existing, or meshed.
 3. Protects the working tree with Step Zero.
 4. Preserves local product governance.
 5. Moves durable context into `docs/agents/**`.
@@ -150,13 +151,13 @@ same project contract.
 
 ## Certification Output
 
-Every assisted install finishes with:
+Every assisted install, retrofit, update, or audit run finishes with:
 
 ```text
-Tilly Context Mesh Installation Report
+Tilly Context Mesh Convergence Report
 
 Status: GO | NEEDS_REVIEW | NO-GO
-Scope: new project | existing project retrofit
+Scope: new project install | existing project retrofit | meshed project update | audit
 Detected Runtime: Codex | Claude Code | Cursor | uncertain
 Selected Adapters: ...
 Canonical Source: docs/agents/**
@@ -172,7 +173,7 @@ Limits: ...
 Next Step: ...
 ```
 
-GO means the selected integration was installed, routed, and locally checked.
+GO means the selected integration was meshed, routed, and locally checked.
 It does not mean the integration was committed, pushed, published, or proven
 universal across every model and project.
 
