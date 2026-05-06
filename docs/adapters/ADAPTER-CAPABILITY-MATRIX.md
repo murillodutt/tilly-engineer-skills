@@ -5,6 +5,7 @@ status: active
 consumer: maintainers and adapter authors
 source_of_truth: true
 evidence_level: L2
+tver: 0.1.0
 ---
 
 # Adapter Capability Matrix

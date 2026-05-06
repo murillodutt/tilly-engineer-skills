@@ -5,6 +5,7 @@ status: active
 consumer: maintainers, adapter authors, and release operators
 source_of_truth: true
 evidence_level: L2
+tver: 0.1.0
 ---
 
 # Agentic Alignment Governance

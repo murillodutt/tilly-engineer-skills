@@ -5,6 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
+tver: 0.1.0
 ---
 
 # TDS Specification
@@ -46,6 +47,14 @@ evidence_level: L0|L1|L2|L3|L4
 ```
 
 Use one specific H1 after the frontmatter. Do not create decorative documents.
+Active source-of-truth documents must also include:
+
+```yaml
+tver: 0.1.0
+```
+
+`tver` is optional for roadmaps, retained evidence, and other documents that do
+not define active package behavior or authority.
 
 ## Evidence Levels
 
@@ -65,7 +74,7 @@ Use one specific H1 after the frontmatter. Do not create decorative documents.
 - A document with `status: archived` must remain indexed.
 - A new documentation class requires a TDS spec update in the same patch.
 
-## Versioning And Changelog
+## Versioning And TVer
 
 Git is the versioning and changelog system for this project.
 
@@ -77,6 +86,21 @@ historical drawer.
 Do not add `CHANGELOG.md`. If a release summary is needed later, create a
 retained evidence report with a clear consumer and point back to the exact Git
 commit range.
+
+TVer is the lightweight contract version for governed documents. It does not
+replace Git. It declares which version of a living contract is active.
+
+Rules:
+
+- Active documents with `source_of_truth: true` must carry `tver: x.y.z`.
+- Existing active contracts start at `tver: 0.1.0`.
+- A material contract change bumps that document's `tver`.
+- Roadmaps and retained evidence do not need `tver` unless they become active
+  source-of-truth contracts.
+- Evidence documents that support a certification must retain a date, version,
+  hash, run id, Git head, or equivalent reproducibility marker.
+- No package, adapter, Cortex, or benchmark certification claim closes without
+  an oracle and a semantic Git commit.
 
 ## Index Contract
 

@@ -5,6 +5,7 @@ status: active
 consumer: Cursor Agent Client Protocol harnesses
 source_of_truth: true
 evidence_level: L2
+tver: 0.1.0
 ---
 
 # Cursor ACP Navigation Renderer

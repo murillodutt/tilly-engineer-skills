@@ -5,6 +5,7 @@ status: active
 consumer: adopters and reviewers
 source_of_truth: true
 evidence_level: L1
+tver: 0.1.0
 ---
 
 # Adoption Scorecard
