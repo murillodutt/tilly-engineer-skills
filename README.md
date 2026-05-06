@@ -6,7 +6,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, and clearer proof before they claim a task
 is done.
 
-Version: `0.3.4`
+Version: `0.3.5`
 
 License: MIT
 
@@ -96,6 +96,7 @@ python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
 python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
 python3 scripts/cortex.py learn --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
+python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision or lesson"
 python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
 python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
@@ -277,6 +278,7 @@ npm run install:smoke
 npm run claude:plugin:oracle
 npm run retention:check
 npm run reference:graph
+npm run docs:size
 npm run materialize:check
 npm run benchmark:plan
 npm run commit:check

@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, adapter authors, and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.3.0
+tver: 0.4.0
 ---
 
 # Agentic Alignment Governance
@@ -108,6 +108,8 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 | Assisted install routes | Certified locally | `scripts/install_smoke.py --self-test` |
 | Retention metadata policy | Certified locally | `scripts/retention_metadata.py --check` |
 | Reference graph | Certified locally | `scripts/validate_reference_graph.py` |
+| Document size budgets | Certified locally | `scripts/validate_doc_size.py` |
+| Cortex reflection | Certified locally | `scripts/cortex.py reflect` and read-only `cortex_reflect` |
 
 ## No-Go Rules
 
@@ -115,8 +117,11 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 - Do not add `CHANGELOG.md`; Git history is the changelog.
 - Do not publish or install plugins from this package without an explicit
   private decision.
-- Do not add hooks, write-capable MCP, or agents to the default package because
-  they are operational surfaces, not passive documentation.
+- Do not add target-project hooks, write-capable MCP, or agents to the default
+  installer package because they are operational surfaces, not passive
+  documentation.
+- Do not use commit-time reflection or curation to write or delete Cortex
+  content automatically.
 - Read-only Cortex MCP is allowed only as project-scoped installer activation
   with lifecycle tests and no global config mutation.
 - Do not duplicate the same behavioral prose in every layer. Keep the common

@@ -62,6 +62,13 @@ retained artifact.
    - For bugs, reproduce the failure first when practical.
    - Run the smallest relevant oracle first.
    - Run broader project gates before claiming convergence.
+6. Reflect for Cortex when present.
+   - If `docs/agents/cortex/CONTRACT.md` exists and the work changed durable
+     decisions, contracts, commands, architecture, evidence, or recurring
+     lessons, call `cortex_reflect` through MCP or run
+     `python3 .tilly/bin/cortex.py reflect --target . "<decision or lesson>"`.
+   - Treat the result as a proposal. Do not write Cortex cells without
+     explicit user authorization.
 
 ## Module Map
 
@@ -102,5 +109,6 @@ typecheck, lint, build, contract test, or governance gate.
 ## Done
 
 The skill is applied when assumptions are visible, implementation is smaller
-than the first impulse, every changed line traces to the request, and closure is
-backed by evidence.
+than the first impulse, every changed line traces to the request, closure is
+backed by evidence, and durable learning has been considered for Cortex without
+automatic writing.

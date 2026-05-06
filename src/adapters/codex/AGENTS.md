@@ -49,6 +49,21 @@ surgical, or verification is missing.
 
 </routing>
 
+<cortex_reflex>
+
+If `docs/agents/cortex/CONTRACT.md` exists, treat Cortex as the durable memory
+surface. Before the final response for material work, run the read-only MCP
+tool `cortex_reflect` when available, or:
+
+```bash
+python3 .tilly/bin/cortex.py reflect --target . "<decision or lesson>"
+```
+
+Report the proposal only when it is useful. Do not write Cortex cells unless
+the user explicitly authorizes promotion.
+
+</cortex_reflex>
+
 <locks>
 
 - Do not import Cursor or Claude packaging as Codex runtime truth.

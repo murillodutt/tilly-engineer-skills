@@ -145,6 +145,7 @@ cells remain warnings; broken wikilinks and ungrounded cells are failures.
 | `audit` | Find drift, stale claims, contradictions, broken links, ungrounded cells, orphan cells, and unlisted cells |
 | `rebuild` | Recreate `.tilly/cortex/recall.sqlite` from versioned Cortex artifacts |
 | `learn` | Generate a promotion proposal with evidence; do not write automatically |
+| `reflect` | No-write closure reflex that decides whether a memory proposal or curation review is due |
 | `apply` | Write only with authorization and audit evidence |
 | `read-cell` | Read a single cell under `cells/**` without using the derived index |
 
@@ -160,6 +161,7 @@ python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
 python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
 python3 scripts/cortex.py read-cell --target /path/to/project-or-vault --cell path-or-stem
 python3 scripts/cortex.py learn --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
+python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision or lesson"
 python3 scripts/cortex.py absorb-plan --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
 python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell path-or-stem --claim "durable claim" --evidence sources/source.md --yes
 python3 scripts/cortex.py --self-test
@@ -171,6 +173,14 @@ heading, reports whether `.obsidian/**` is present, audits basic Cortex health,
 rebuilds SQLite FTS5 recall, falls back to `rg` for recall when FTS5 is not
 available, proposes promotions through `learn`, and applies cells only through
 explicitly authorized `apply --yes` runs that pass audit and rebuild.
+
+`reflect` is the low-friction capture layer. Bootloaders and skills should call
+it before final responses for material work and before commits when Cortex
+exists. It inspects the local Git diff, emits a no-write promotion proposal when
+durable learning is likely, and marks curation as due when the current diff
+crosses the default 500 changed-line budget. Curation means proposing
+compaction, split, or redundancy removal with a visible diff; it never means
+automatic deletion.
 
 `apply` writes only `cells/**`, `MAP.md`, `LINKS.md`, `TRAIL.md`, and the
 derived recall index rebuilt from those artifacts. It refuses to write without
@@ -225,6 +235,7 @@ No-go:
 - Do not promote automatically from LLM output.
 - Do not maintain old and new Cortex names in parallel.
 - Do not call the derived index memory.
+- Do not let reflection or curation delete content automatically.
 - Do not market Cortex as a RAG killer.
 
 ## Installer Boundary

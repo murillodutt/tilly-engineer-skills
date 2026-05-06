@@ -74,3 +74,16 @@ surgical, or verification is missing.
 
 These guidelines are working when diffs are smaller, clarifying questions come
 before implementation mistakes, and closure is backed by a concrete check.
+
+## Cortex Reflection
+
+If `docs/agents/cortex/CONTRACT.md` exists, Cortex is the durable memory
+surface. Before the final response for material work, use read-only
+`cortex_reflect` when available, or run:
+
+```bash
+python3 .tilly/bin/cortex.py reflect --target . "<decision or lesson>"
+```
+
+Mention useful proposals. Do not write Cortex cells without explicit user
+authorization.

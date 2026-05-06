@@ -72,6 +72,7 @@ REQUIRED_PATHS = (
     "scripts/claude_plugin_oracle.py",
     "scripts/retention_metadata.py",
     "scripts/validate_reference_graph.py",
+    "scripts/validate_doc_size.py",
     "scripts/adapter_parity_readiness.py",
     "scripts/materialize_adapter.py",
     "scripts/validate_tds.py",
@@ -133,6 +134,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "cortex:rebuild",
     "cortex:read-cell",
     "cortex:learn",
+    "cortex:reflect",
     "cortex:self-test",
     "cortex:mcp:self-test",
     "oracle:self-test",
@@ -142,6 +144,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "adapter:parity:check",
     "retention:check",
     "reference:graph",
+    "docs:size",
 )
 
 
@@ -238,8 +241,8 @@ def main() -> int:
     package_json = ROOT / "package.json"
     if package_json.exists():
         package = json.loads(package_json.read_text(encoding="utf-8"))
-        if package.get("version") != "0.3.4":
-            failures.append("package.json version must be 0.3.4")
+        if package.get("version") != "0.3.5":
+            failures.append("package.json version must be 0.3.5")
         scripts = package.get("scripts", {})
         for script in REQUIRED_PACKAGE_SCRIPTS:
             if script not in scripts:
@@ -247,8 +250,8 @@ def main() -> int:
 
     for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
         path = ROOT / relpath
-        if path.exists() and "0.3.4" not in path.read_text(encoding="utf-8"):
-            failures.append(f"{relpath} must declare 0.3.4")
+        if path.exists() and "0.3.5" not in path.read_text(encoding="utf-8"):
+            failures.append(f"{relpath} must declare 0.3.5")
 
     oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():
@@ -373,6 +376,20 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("validate_reference_graph.py failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    doc_size = ROOT / "scripts/validate_doc_size.py"
+    if doc_size.exists():
+        result = subprocess.run(
+            [sys.executable, str(doc_size)],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("validate_doc_size.py failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 

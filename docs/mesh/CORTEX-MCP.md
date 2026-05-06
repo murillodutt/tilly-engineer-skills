@@ -45,6 +45,7 @@ through project-scoped runtime config, never through global config mutation.
 | `cortex_recall` | Search through SQLite FTS5 and fall back to `rg` |
 | `cortex_read_cell` | Read one file under `docs/agents/cortex/cells/**` |
 | `cortex_absorb_plan` | Generate a no-write plan for a source under `sources/**` |
+| `cortex_reflect` | Generate a no-write closure and curation proposal |
 
 ## Local Command
 

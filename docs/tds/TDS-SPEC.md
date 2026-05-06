@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # TDS Specification
@@ -111,14 +111,36 @@ The index stores document path, id, class, status, consumer, source-of-truth
 flag, and evidence level. The validator checks that the index and frontmatter
 agree.
 
+## Size And Modularity
+
+Documentation must stay modular enough for humans and agents to use without
+context bloat.
+
+Default rule:
+
+- Markdown and rule documents have a 500-line review limit.
+- Crossing the limit requires modularization, not silent growth.
+- Runtime prompt specs and generated user manuals may carry explicit local
+  limits when a single-file distribution contract requires it.
+- Curation removes or compacts only with visible diff, retained rationale, and
+  authorization. It must not erase evidence lineage.
+
+The local gate is:
+
+```bash
+python3 scripts/validate_doc_size.py
+```
+
 ## Validation
 
 Run:
 
 ```bash
 npm run tds:validate
+npm run docs:size
 ```
 
-`npm run commit:check` also runs the TDS validator. A documentation change is
-not ready if a document is missing frontmatter, missing from the index, indexed
-twice, or has a mismatched class/status/source-of-truth flag.
+`npm run commit:check` also runs the TDS validator and document-size gate. A
+documentation change is not ready if a document is missing frontmatter, missing
+from the index, indexed twice, has a mismatched class/status/source-of-truth
+flag, or exceeds its size budget without modularization.
