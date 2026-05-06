@@ -73,28 +73,27 @@ Start with [docs/INDEX.md](docs/INDEX.md) for the complete documentation map.
 
 ## Install
 
-Primary install is now assisted by context, not blind copying. Open the target
-project in Codex, Claude Code, or Cursor and paste the mini prompt:
+Open the target project in Codex, Claude Code, or Cursor. Paste this prompt:
 
-- [docs/install/MINI-PROMPT.md](docs/install/MINI-PROMPT.md)
+```text
+Install Tilly Engineer Skills as an assisted context mesh, not as blind file
+copying.
 
-The mini prompt loads the raw installer spec:
+Read and follow this raw installer spec:
 
-- [docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md](docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md)
+https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
 
-That spec detects the active IDE, classifies the target project as new or
-existing, creates or retrofits `docs/agents/**`, keeps runtime files thin, and
-finishes with a certification report.
+Run in quiet installer mode: show compact progress, required menus, blockers
+and the final certification report only. Do not display internal reasoning,
+scratch YAML or long inventories.
 
-The script installer remains available for maintainers and mechanical smoke
-tests:
-
-```bash
-python3 scripts/install_adapter.py --target /path/to/project --dry-run
+Start by detecting the current IDE/runtime and classifying this project as new
+or existing. Use the detected IDE as the default adapter. Ask me for a menu
+choice only where the spec requires one. Preserve local project governance,
+move durable agent context into docs/agents/**, keep AGENTS.md, CLAUDE.md and
+Cursor rules as thin runtime bootloaders, and finish with the certification
+report required by the spec.
 ```
-
-See [docs/install/INSTALL.md](docs/install/INSTALL.md) for the full install
-contract.
 
 ## Manual Install By Tool
 
