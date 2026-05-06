@@ -6,7 +6,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, and clearer proof before they claim a task
 is done.
 
-Version: `0.3.7`
+Version: `0.3.8`
 
 License: MIT
 
@@ -86,10 +86,15 @@ Obsidian is a compatible visual surface; the installer does not create or edit
 The read-only Cortex MCP server is activated through project-scoped runtime
 config, never global config.
 
-When this package is available locally, Cortex can be initialized and checked
-with:
+When this package is available locally, `tilly_init.py` is the project
+initialization and recertification command. It verifies package health, scans
+the target project, writes `docs/agents/PROJECT-REGISTER.md`, and stores a full
+manifest under `docs/agents/evidence/**`. Cortex can also be initialized and
+checked directly:
 
 ```bash
+python3 scripts/tilly_init.py --target /path/to/project --yes
+python3 scripts/tilly_init.py --self-test
 python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
@@ -275,6 +280,8 @@ npm run cortex:self-test
 npm run cortex:mcp:self-test
 npm run mcp:self-test
 npm run install:smoke
+npm run tilly:init -- --target /path/to/project --yes
+npm run tilly:init:self-test
 npm run claude:plugin:oracle
 npm run platform:surface:check
 npm run retention:check

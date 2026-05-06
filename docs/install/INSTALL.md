@@ -117,10 +117,15 @@ read-only and project-scoped. The installer may write `.tilly/bin/cortex.py`,
 `.cursor/mcp.json`; it must not edit global MCP configuration, secrets, hooks,
 or write-capable MCP tools.
 
-When this package is available locally, Cortex can be initialized and checked
-with:
+When this package is available locally, `tilly_init.py` is the project
+initialization and recertification command. It verifies package health, scans
+the target project, writes `docs/agents/PROJECT-REGISTER.md`, and stores a full
+manifest under `docs/agents/evidence/**`. Cortex can also be initialized and
+checked directly:
 
 ```bash
+python3 scripts/tilly_init.py --target /path/to/project --yes
+python3 scripts/tilly_init.py --self-test
 python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
@@ -319,6 +324,8 @@ From this package:
 npm run install:dry-run
 npm run mcp:self-test
 npm run install:smoke
+npm run tilly:init -- --target /path/to/project --yes
+npm run tilly:init:self-test
 npm run claude:plugin:oracle
 npm run platform:surface:check
 npm run retention:check
