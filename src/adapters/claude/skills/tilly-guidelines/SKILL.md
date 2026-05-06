@@ -41,6 +41,13 @@ one-liners.
 5. Verify.
    - Run the smallest relevant check first.
    - Run broader gates when the blast radius requires them.
+6. Reflect for Cortex when present.
+   - If `docs/agents/cortex/CONTRACT.md` exists and the work produced a durable
+     decision, contract change, command, evidence, or lesson, call read-only
+     `cortex_reflect` through MCP or run
+     `python3 .tilly/bin/cortex.py reflect --target . "<decision or lesson>"`.
+   - Treat the output as a proposal. Do not write Cortex cells without
+     explicit user authorization.
 
 ## Success Formula
 
@@ -60,4 +67,5 @@ If any factor is zero, stop or repair before claiming success.
 ## Done
 
 The skill worked when the diff is smaller than the first impulse, every changed
-line traces to the request, and success is backed by a concrete oracle.
+line traces to the request, success is backed by a concrete oracle, and durable
+learning has been considered for Cortex without automatic writing.

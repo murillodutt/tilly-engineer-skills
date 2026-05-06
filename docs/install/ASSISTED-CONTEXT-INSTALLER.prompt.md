@@ -512,6 +512,7 @@ python3 scripts/cortex.py verify --target <target-root>
 python3 scripts/cortex.py audit --target <target-root>
 python3 scripts/cortex.py rebuild --target <target-root>
 python3 scripts/cortex.py learn --target <target-root> --source docs/agents/cortex/sources/source.md
+python3 scripts/cortex.py reflect --target <target-root> "decision or lesson"
 ```
 
 If the scripts are not available, create the same files directly from this
@@ -545,8 +546,13 @@ Use these local rules:
 - source citations should stay as explicit repository paths, even when Cortex
   cells use Obsidian wikilinks for navigation;
 - `learn` may generate a promotion proposal but must not write;
+- `reflect` is the low-friction closure reflex; bootloaders and skills may run
+  it before final responses or commits, but it must only propose memory capture
+  or curation;
 - `apply` may write only with explicit authorization, explicit evidence, and a
   passing audit/rebuild cycle; it must not write in `sources/**`.
+- crossing roughly 500 changed lines should trigger curation review and
+  modularization proposals; it must not trigger automatic deletion;
 - every durable claim should cite a source path, evidence entry, or explicit
   assumption;
 - do not file secrets, credentials, `.env` contents, private keys, or regulated

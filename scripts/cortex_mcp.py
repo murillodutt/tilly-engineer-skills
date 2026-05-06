@@ -13,7 +13,7 @@ from typing import Any
 import cortex
 
 
-VERSION = "0.3.4"
+VERSION = "0.3.5"
 PROTOCOL_VERSION = "2025-06-18"
 
 
@@ -94,6 +94,20 @@ def tool_definitions() -> list[dict[str, object]]:
                 "required": ["source"],
             },
         },
+        {
+            "name": "cortex_reflect",
+            "title": "Reflect Cortex Capture",
+            "description": "Generate a no-write closure reflection for possible Cortex promotion.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "target": target,
+                    "query": schema_string("Optional closure note, decision, or lesson to consider."),
+                    "limit": schema_integer("Maximum changed files to inspect.", 20),
+                    "line_budget": schema_integer("Changed-line budget that triggers curation review.", 500),
+                },
+            },
+        },
     ]
 
 
@@ -168,6 +182,11 @@ def call_tool(default_target: Path, name: str, args: dict[str, Any]) -> dict[str
         if not source:
             return tool_result({"status": "FAIL", "failures": ["source is required"]}, True)
         return tool_result(cortex.absorb_plan(resolve_target(default_target, args), Path(str(source))))
+    if name == "cortex_reflect":
+        query = str(args.get("query", "")).strip() or None
+        limit = int(args.get("limit", 20))
+        line_budget = int(args.get("line_budget", 500))
+        return tool_result(cortex.reflect(resolve_target(default_target, args), query, limit, line_budget))
     raise ValueError(f"unknown tool: {name}")
 
 
@@ -266,6 +285,7 @@ def self_test() -> int:
             {"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "cortex_recall", "arguments": {"query": "MCP"}}},
             {"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": "cortex_read_cell", "arguments": {"cell": "mcp-read-only"}}},
             {"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"name": "cortex_absorb_plan", "arguments": {"source": "docs/agents/cortex/sources/mcp-source.md"}}},
+            {"jsonrpc": "2.0", "id": 7, "method": "tools/call", "params": {"name": "cortex_reflect", "arguments": {"query": "MCP closure should consider memory capture"}}},
         ]
         replies = [handle_message(target.resolve(), message) for message in messages]
         failures: list[str] = []
@@ -280,6 +300,7 @@ def self_test() -> int:
             "cortex_recall",
             "cortex_read_cell",
             "cortex_absorb_plan",
+            "cortex_reflect",
         }
         if tool_names != expected_tools:
             failures.append(f"tool list mismatch: {sorted(tool_names)}")

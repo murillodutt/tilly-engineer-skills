@@ -3,8 +3,16 @@ set -eu
 
 python3 scripts/validate_reference_package.py --staged-ready
 python3 scripts/validate_tds.py
+python3 scripts/validate_doc_size.py
 python3 scripts/context_mesh_plan.py
 python3 scripts/materialize_adapter.py all --check
 python3 src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test
+if [ -f docs/agents/cortex/CONTRACT.md ]; then
+  if [ -f .tilly/bin/cortex.py ]; then
+    python3 .tilly/bin/cortex.py reflect --target . "pre-commit Cortex reflection"
+  elif [ -f scripts/cortex.py ]; then
+    python3 scripts/cortex.py reflect --target . "pre-commit Cortex reflection"
+  fi
+fi
 git diff --check
 git diff --cached --check

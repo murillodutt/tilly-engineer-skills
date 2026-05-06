@@ -53,3 +53,16 @@ E = A * S * C * V
 
 If assumptions, simplicity, change constraint, or verification are missing,
 success is zero.
+
+## Cortex Reflection
+
+If `docs/agents/cortex/CONTRACT.md` exists, use Cortex as durable memory. Before
+the final response for material work, call read-only `cortex_reflect` when
+available, or run:
+
+```bash
+python3 .tilly/bin/cortex.py reflect --target . "<decision or lesson>"
+```
+
+Surface useful proposals only. Do not write Cortex cells without explicit user
+authorization.

@@ -322,6 +322,7 @@ npm run install:smoke
 npm run claude:plugin:oracle
 npm run retention:check
 npm run reference:graph
+npm run docs:size
 npm run materialize:check
 npm run commit:check
 ```

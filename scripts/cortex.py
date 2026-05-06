@@ -754,6 +754,135 @@ def learn(target: Path, query: str | None, source: Path | None = None) -> dict[s
     }
 
 
+def git_changed_files(target: Path, limit: int) -> list[str]:
+    result = subprocess.run(
+        ["git", "status", "--short"],
+        cwd=target,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return []
+    files: list[str] = []
+    for line in result.stdout.splitlines():
+        if not line.strip():
+            continue
+        path = line[3:].strip()
+        if " -> " in path:
+            path = path.rsplit(" -> ", 1)[1]
+        files.append(path)
+    return files[:limit]
+
+
+def git_diff_line_count(target: Path) -> int:
+    result = subprocess.run(
+        ["git", "diff", "--numstat", "HEAD"],
+        cwd=target,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return 0
+    total = 0
+    for line in result.stdout.splitlines():
+        added, _, deleted = line.partition("\t")
+        deleted, _, _path = deleted.partition("\t")
+        if added.isdigit():
+            total += int(added)
+        if deleted.isdigit():
+            total += int(deleted)
+    return total
+
+
+def durable_signal(path: str) -> bool:
+    return path == "package.json" or path == "README.md" or path.startswith((
+        "docs/",
+        "src/",
+        "scripts/",
+        ".agents/",
+        ".cursor/",
+        ".codex/",
+    )) or path in {"AGENTS.md", "CLAUDE.md", "CURSOR.md"}
+
+
+def preferred_cortex_command(target: Path) -> str:
+    local_helper = target / ".tilly/bin/cortex.py"
+    if local_helper.exists():
+        return "python3 .tilly/bin/cortex.py"
+    package_helper = target / "scripts/cortex.py"
+    if package_helper.exists():
+        return "python3 scripts/cortex.py"
+    return "python3 <tilly-package>/scripts/cortex.py"
+
+
+def reflect(target: Path, query: str | None, limit: int = 20, line_budget: int = 500) -> dict[str, object]:
+    target = target.resolve()
+    root = cortex_path(target)
+    if not root.exists():
+        return {
+            "target": str(target),
+            "status": "SKIP",
+            "reason": "Cortex is not initialized in this target.",
+            "writes": [],
+            "capture_needed": False,
+        }
+
+    verify_result = verify(target)
+    if verify_result["status"] != "PASS":
+        return {
+            "target": str(target),
+            "status": "FAIL",
+            "failures": verify_result["failures"],
+            "writes": [],
+        }
+
+    changed_files = git_changed_files(target, limit)
+    durable_files = [path for path in changed_files if durable_signal(path)]
+    changed_lines = git_diff_line_count(target)
+    curation_due = changed_lines >= line_budget > 0
+    prompt = (query or "").strip()
+    capture_needed = bool(prompt or durable_files or curation_due)
+    cell_seed = prompt or (durable_files[0] if durable_files else "closure-reflection")
+    cell_name = slugify(cell_seed)
+    evidence = (
+        f"Assumption: user-approved closure note - {prompt}"
+        if prompt else
+        "Assumption: agent-observed local git diff after material work"
+    )
+    command = preferred_cortex_command(target)
+
+    return {
+        "target": str(target),
+        "status": "PASS",
+        "writes": [],
+        "capture_needed": capture_needed,
+        "changed_files": changed_files,
+        "durable_files": durable_files,
+        "changed_lines": changed_lines,
+        "line_budget": line_budget,
+        "curation_due": curation_due,
+        "curation_policy": (
+            "When curation is due, propose compaction or redundancy removal. "
+            "Do not delete Cortex content automatically."
+        ),
+        "proposal": None if not capture_needed else {
+            "cell": f"docs/agents/cortex/cells/{cell_name}.md",
+            "claim_needed": "Promote only a durable decision, lesson, contract change, or reusable project fact.",
+            "evidence": evidence,
+            "apply_command": (
+                f"{command} apply "
+                f"--target {target} "
+                f"--cell {cell_name} "
+                "--claim '<durable claim>' "
+                f"--evidence {evidence!r} "
+                "--yes"
+            ),
+        },
+    }
+
+
 def format_evidence_line(value: str) -> str:
     stripped = value.strip()
     if stripped.startswith("- "):
@@ -949,6 +1078,7 @@ def self_test() -> int:
         fallback_result = recall(target, "Cortex", 5, force_rg=True)
         absorb_result = absorb_plan(target, source)
         learn_result = learn(target, "authorized applied memory", source)
+        reflect_result = reflect(target, "authorized applied memory should be considered for Cortex")
         unauth_apply_result = apply_cell(
             target,
             "applied-memory",
@@ -997,6 +1127,7 @@ def self_test() -> int:
             "fallback_recall": fallback_result,
             "absorb_plan": absorb_result,
             "learn": learn_result,
+            "reflect": reflect_result,
             "unauthorized_apply": unauth_apply_result,
             "apply": apply_result,
             "read_cell": read_cell_result,
@@ -1015,6 +1146,7 @@ def self_test() -> int:
             fallback_result["status"] == "PASS" and fallback_result["backend"] == "rg",
             absorb_result["status"] == "PASS" and absorb_result["writes"] == [],
             learn_result["status"] == "PASS" and learn_result["writes"] == [],
+            reflect_result["status"] == "PASS" and reflect_result["writes"] == [] and reflect_result["capture_needed"],
             unauth_apply_result["status"] == "NEEDS_AUTH" and unauth_apply_result["writes"] == [],
             apply_result["status"] == "PASS",
             any(path.endswith("cells/applied-memory.md") for path in apply_result["writes"]),
@@ -1045,6 +1177,7 @@ def main() -> int:
             "absorb-plan",
             "read-cell",
             "learn",
+            "reflect",
             "apply",
             "scaffold",
             "check",
@@ -1060,6 +1193,7 @@ def main() -> int:
     parser.add_argument("--evidence", action="append", default=[])
     parser.add_argument("--link", action="append", default=[])
     parser.add_argument("--limit", type=int, default=10)
+    parser.add_argument("--line-budget", type=int, default=500)
     parser.add_argument("--force-rg", action="store_true")
     parser.add_argument("--yes", action="store_true")
     parser.add_argument("--update", action="store_true")
@@ -1092,6 +1226,8 @@ def main() -> int:
         result = read_cell(args.target, args.cell)
     elif command == "learn":
         result = learn(args.target, args.query, args.source)
+    elif command == "reflect":
+        result = reflect(args.target, args.query, args.limit, args.line_budget)
     elif command == "apply":
         if not args.cell:
             parser.error("apply requires --cell")
