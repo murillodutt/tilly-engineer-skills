@@ -103,6 +103,20 @@ Required boundary:
 | `LINKS.md` | H1 and an empty adjacency-list section |
 | `sources/README.md` | Warning that sources are user-owned and must not be edited by agents |
 
+## Cell Integrity
+
+Cells are compiled memory, not loose summaries. A cell under `cells/**` must
+have:
+
+- exactly one H1;
+- a `## Claim` section with the durable claim or synthesis;
+- a `## Evidence` section;
+- at least one explicit evidence ref to `sources/**`, `docs/agents/evidence/**`,
+  or an `Assumption:` line.
+
+`audit` fails when a cell misses this minimum. Missing map entries and orphan
+cells remain warnings; broken wikilinks and ungrounded cells are failures.
+
 ## Rules
 
 - Never modify `sources/**` after import/init.
@@ -110,7 +124,7 @@ Required boundary:
   personal data into Cortex unless the target project has an explicit local
   privacy contract.
 - Every compiled claim points to a source path, conversation evidence entry, or
-  explicit assumption.
+  explicit assumption inside the cell's `## Evidence` section.
 - Every `absorb` updates `MAP.md`, `LINKS.md`, and appends to `TRAIL.md`.
 - Important relationships appear as normal Markdown links and in `LINKS.md`.
 - Prefer links that render in Obsidian and remain readable in GitHub or a plain
@@ -127,7 +141,7 @@ Required boundary:
 |-----------|-------------------------|
 | `absorb` | Compile one source or a small batch into cells, map, links, and trail |
 | `recall` | Search Cortex artifacts through SQLite FTS5 or `rg` fallback |
-| `audit` | Find drift, stale claims, contradictions, missing links, orphan cells, and unlisted cells |
+| `audit` | Find drift, stale claims, contradictions, broken links, ungrounded cells, orphan cells, and unlisted cells |
 | `rebuild` | Recreate `.tilly/cortex/recall.sqlite` from versioned Cortex artifacts |
 | `learn` | Generate a promotion proposal with evidence; do not write automatically |
 | `apply` | Write only with authorization and audit evidence |
