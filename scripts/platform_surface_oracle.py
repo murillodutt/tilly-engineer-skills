@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.16"
+VERSION = "0.3.17"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -33,6 +33,8 @@ DOCS = {
     "cursor_rules": "https://docs.cursor.com/context/rules",
     "cursor_mcp": "https://docs.cursor.com/context/model-context-protocol",
     "mcp_spec": "https://modelcontextprotocol.io/specification/latest",
+    "github_issue_forms": "https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms",
+    "github_actions": "https://docs.github.com/actions/reference/workflows-and-actions/workflow-syntax",
 }
 
 
@@ -160,7 +162,7 @@ def analyze() -> dict[str, Any]:
         failures.append("missing Codex skill agent metadata")
     surface("codex", "agent", "certified", codex_agent)
     surface("codex", "skill", "certified", "; ".join(f"src/adapters/codex/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS))
-    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.16 ships local skills first.")
+    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.17 ships local skills first.")
     surface("codex", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
@@ -239,6 +241,36 @@ def analyze() -> dict[str, Any]:
     for term in ("DESTINATION_REPO", "murillodutt/tilly-engineer-skills", "DISABLED", "gh issue create"):
         if term not in field_reports_text:
             failures.append(f"scripts/field_reports.py missing {term}")
+
+    github_oracle = "scripts/field_reports_github_oracle.py"
+    if not exists(github_oracle):
+        failures.append(f"missing GitHub receiver oracle: {github_oracle}")
+    else:
+        text = read(github_oracle)
+        for term in ("tilly-field-report@1", "field-report-quarantine", "validate_body"):
+            if term not in text:
+                failures.append(f"{github_oracle} missing {term}")
+
+    issue_form = ".github/ISSUE_TEMPLATE/tilly-field-report.yml"
+    if not exists(issue_form):
+        failures.append(f"missing Field Reports issue form: {issue_form}")
+    else:
+        text = read(issue_form)
+        for term in ("Tilly Field Report", "tilly-field-report@1", "privacy-sanitized", "Never include code"):
+            if term not in text:
+                failures.append(f"{issue_form} missing {term}")
+
+    governance_workflow = ".github/workflows/field-report-governance.yml"
+    if not exists(governance_workflow):
+        failures.append(f"missing Field Reports governance workflow: {governance_workflow}")
+    else:
+        text = read(governance_workflow)
+        for term in ("issues:", "issues: write", "field_reports_github_oracle.py validate-body", "field-report-quarantine"):
+            if term not in text:
+                failures.append(f"{governance_workflow} missing {term}")
+    surface("github", "issue-template", "certified", issue_form)
+    surface("github", "receiver-workflow", "certified", governance_workflow)
+    surface("github", "receiver-oracle", "certified", github_oracle)
 
     materialized, materialize_failures = materialized_results()
     failures.extend(materialize_failures)

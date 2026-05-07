@@ -19,7 +19,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.16"
+VERSION = "0.3.17"
 RETROFIT_DIR = ".tilly/retrofit"
 
 

@@ -82,6 +82,12 @@ behavior, adversarial fixture, observed failure, smallest repair, and green
 gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 `not available`, `certified`, or `fail`.
 
+## Feedback Voice
+
+Default to short, frank prose. Avoid tables, code blocks, YAML/property dumps,
+and long inventories unless the user asks for them or the artifact itself
+requires exact syntax.
+
 ## Tilly Shortcuts
 
 Treat `/tilly:init`, `/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`,

@@ -19,8 +19,9 @@ import uuid
 from typing import Any
 
 
-VERSION = "0.3.16"
+VERSION = "0.3.17"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
+SCHEMA = "tilly-field-report@1"
 FIELD_ROOT = Path(".tilly/field-reports")
 OUTBOX = FIELD_ROOT / "outbox.jsonl"
 RECEIPTS = FIELD_ROOT / "receipts"
@@ -176,7 +177,7 @@ def build_event(
     if duration_bucket:
         safe_details["duration_bucket"] = sanitize_value(duration_bucket)
     return {
-        "schema": "tilly-field-report@1",
+        "schema": SCHEMA,
         "tilly_version": VERSION,
         "created_at": utc_stamp(),
         "install_id": ensure_install_id(target),
@@ -279,9 +280,10 @@ def build_issue_body(events: list[dict[str, object]], chunk_index: int, chunk_co
         statuses[str(event.get("status", "UNKNOWN"))] = statuses.get(str(event.get("status", "UNKNOWN")), 0) + 1
         surfaces[str(event.get("surface", "unknown"))] = surfaces.get(str(event.get("surface", "unknown")), 0) + 1
     lines = [
+        f"<!-- {SCHEMA} -->",
         "Tilly Field Report",
         "",
-        "- Schema: tilly-field-report@1",
+        f"- Schema: {SCHEMA}",
         f"- Tilly version: {VERSION}",
         f"- Destination: {DESTINATION_REPO}",
         f"- Sent at: {utc_stamp()}",
@@ -620,6 +622,10 @@ echo "https://github.com/murillodutt/tilly-engineer-skills/issues/999"
             if not str(receipt.get("issue_url", "")).endswith("/issues/999"):
                 failures.append("receipt must preserve the confirmed issue URL")
         body = body_capture.read_text(encoding="utf-8") if body_capture.exists() else ""
+        if f"<!-- {SCHEMA} -->" not in body:
+            failures.append("issue body must carry the field report schema marker")
+        if f"- Schema: {SCHEMA}" not in body:
+            failures.append("issue body must carry the visible field report schema")
         for forbidden in ("```", "|", "/Users", "person@example.com", "abc123", "https://private", "Traceback"):
             if forbidden in body:
                 failures.append(f"issue body leaked prohibited token: {forbidden}")

@@ -5,7 +5,7 @@ status: active
 consumer: installer authors, adopters, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Tilly Field Reports
@@ -27,6 +27,18 @@ tables or code blocks.
 
 The local identity is a random `install_id` stored under
 `.tilly/field-reports/`. It is not the project name and not a user identity.
+
+## GitHub Receiver
+
+The GitHub side is governed by `.github/ISSUE_TEMPLATE/tilly-field-report.yml`,
+`.github/workflows/field-report-governance.yml`, and
+`scripts/field_reports_github_oracle.py`.
+
+The receiver requires the `tilly-field-report@1` schema marker, rejects reports
+with code blocks, tables, absolute paths, private URLs, raw remotes, raw branch
+names, secrets, personal data, or raw stack traces, and labels accepted reports
+as sanitized. A rejected report is quarantined and closed. This workflow is a
+second gate, not a privacy substitute for local sanitization.
 
 ## Local State
 
@@ -83,6 +95,7 @@ The official deterministic gate is:
 
 ```text
 python3 scripts/field_reports.py --self-test
+python3 scripts/field_reports_github_oracle.py --self-test
 ```
 
 Package closure must include this gate through `npm run commit:check`.

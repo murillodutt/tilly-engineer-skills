@@ -57,6 +57,8 @@ Aliases:
 - Do not call `.tilly/cortex/semantic.sqlite` memory; it is only derived
   curation cache.
 - Do not treat Field Reports, GitHub issues, outbox, or hooks as project truth.
+- Field Reports also has a GitHub receiver gate: issue template, schema oracle,
+  labels, and quarantine workflow.
 - Do not run write operations such as adapter install, MCP activation, Cortex
   apply, materialization, or benchmark artifact updates without a clear target
   and authorization.

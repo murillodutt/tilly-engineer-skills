@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.16</span>
+          <span class="brand-meta">User manual · v0.3.17</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1262,6 +1262,7 @@ npm run cortex:mcp:self-test</code></pre>
           <div class="chapter-body">
             <p>Tilly Field Reports is active by default. It sends only sanitized operational facts to the TES GitHub issue tracker during <code>git push</code>. It never sends code, diffs, prompts, file contents, secrets, personal data, absolute paths, raw stack traces, raw branch names or raw remotes.</p>
             <p>The active agent installs a local <code>pre-push</code> hook and local state under <code>.tilly/field-reports/**</code>. If <code>gh</code>, network or authentication is unavailable, the outbox stays pending and the push continues.</p>
+            <p>The GitHub receiver has its own issue template, schema check and quarantine workflow. Local sanitization remains the first privacy gate; GitHub governance is the second audit gate.</p>
             <p>To stop collaborating with TES field learning, type this prompt in the agent window, not in a shell:</p>
             <div class="pre-wrap" data-label="prompt">
 <pre><code>/tilly:field-reports:disable</code></pre>
@@ -1580,6 +1581,7 @@ npm run cortex:mcp:self-test</code></pre>
           <div class="chapter-body">
             <p>Tilly Field Reports está activo por defecto. Envía solo hechos operativos sanitizados al issue tracker GitHub de TES durante <code>git push</code>. Nunca envía código, diffs, prompts, contenido de archivos, secretos, datos personales, paths absolutos, stack traces crudos, nombres de branch crudos o remotes crudos.</p>
             <p>El agente activo instala un hook local <code>pre-push</code> y estado local en <code>.tilly/field-reports/**</code>. Si <code>gh</code>, red o autenticación no están disponibles, el outbox queda pendiente y el push continúa.</p>
+            <p>El receptor GitHub tiene template, verificación de schema y workflow de cuarentena. La sanitización local es la primera barrera de privacidad; GitHub es la segunda barrera de auditoría.</p>
             <p>Para dejar de colaborar con el aprendizaje de campo de TES, escribe este prompt en la ventana del agente, no en una shell:</p>
             <div class="pre-wrap" data-label="prompt">
 <pre><code>/tilly:field-reports:disable</code></pre>
@@ -1898,6 +1900,7 @@ npm run cortex:mcp:self-test</code></pre>
           <div class="chapter-body">
             <p>O Tilly Field Reports fica ativo por padrão. Ele envia apenas fatos operacionais sanitizados para issues do GitHub da TES durante <code>git push</code>. Ele nunca envia código, diff, prompt, conteúdo de arquivo, segredo, dado pessoal, path absoluto, stack trace cru, nome bruto de branch ou remote bruto.</p>
             <p>O agente ativo instala um hook local <code>pre-push</code> e estado local em <code>.tilly/field-reports/**</code>. Se <code>gh</code>, rede ou autenticação estiverem indisponíveis, o outbox fica pendente e o push continua.</p>
+            <p>O receptor GitHub tem template, verificação de schema e workflow de quarentena. A sanitização local é a primeira barreira de privacidade; o GitHub é a segunda barreira de auditoria.</p>
             <p>O usuário que não desejar colaborar com a evolução da TES deve digitar este prompt na janela do agente, não no shell:</p>
             <div class="pre-wrap" data-label="prompt">
 <pre><code>/tilly:field-reports:disable</code></pre>
@@ -1964,7 +1967,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.16</span>
+        <span>Tilly Engineer Skills · v0.3.17</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>

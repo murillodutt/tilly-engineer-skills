@@ -1,0 +1,60 @@
+name: Field Report Governance
+
+on:
+  issues:
+    types:
+      - opened
+      - edited
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  govern:
+    if: contains(github.event.issue.body || '', 'tilly-field-report@1') || startsWith(github.event.issue.title || '', 'Tilly Field Report')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout receiver contract
+        uses: actions/checkout@v4
+
+      - name: Write issue body
+        env:
+          BODY_FILE: ${{ runner.temp }}/field-report-body.md
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          Path(os.environ["BODY_FILE"]).write_text(os.environ.get("ISSUE_BODY", ""), encoding="utf-8")
+          PY
+
+      - name: Validate field report body
+        id: validate
+        run: python3 scripts/field_reports_github_oracle.py validate-body --body-file "${{ runner.temp }}/field-report-body.md" --github-output "$GITHUB_OUTPUT" --require-field-report
+
+      - name: Ensure governance labels
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create field-report --repo "$GITHUB_REPOSITORY" --color 0E8A16 --description "Automated Tilly Field Report" --force
+          gh label create privacy-sanitized --repo "$GITHUB_REPOSITORY" --color 1D76DB --description "Report passed receiver privacy checks" --force
+          gh label create field-report-quarantine --repo "$GITHUB_REPOSITORY" --color D93F0B --description "Report failed receiver governance checks" --force
+
+      - name: Certify accepted report
+        if: steps.validate.outputs.status == 'PASS'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: gh issue edit "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label "field-report,privacy-sanitized"
+
+      - name: Quarantine rejected report
+        if: steps.validate.outputs.status == 'FAIL'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REASON: ${{ steps.validate.outputs.reason }}
+        run: |
+          gh issue edit "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label "field-report,field-report-quarantine"
+          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "This Tilly Field Report failed receiver governance and was closed for safety. Reason: ${REASON}"
+          gh issue close "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --reason not_planned
