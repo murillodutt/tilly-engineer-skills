@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.9</span>
+          <span class="brand-meta">User manual · v0.3.10</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1025,6 +1025,10 @@
             <div class="panel">
               <span class="panel-tag">Note</span>
               <p>Files such as <code>AGENTS.md</code>, <code>CLAUDE.md</code> and Cursor rules should stay thin bootloaders. Real governance lives in <code>docs/agents/**</code>.</p>
+            </div>
+            <div class="panel">
+              <span class="panel-tag">Execution model</span>
+              <p>The executor is the active coding agent inside the current IDE or runtime window. Skills, rules and bootloaders route behavior; Python scripts and <code>npm run ...</code> entries are deterministic oracles the agent invokes when local tool access exists; hooks are Git-event gates; MCP is a read-only Cortex access surface. If a runtime cannot execute an oracle, the agent must report it as blocked or skipped instead of claiming certification.</p>
             </div>
           </div>
         </section>
@@ -1099,7 +1103,7 @@
         <section class="chapter" id="cli">
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
-            <p>Run these commands from the Tilly package root when maintaining this package, or pass <code>--target</code> when operating on another project or vault. <code>tilly_init.py</code> recertifies package health, scans the target project, writes <code>docs/agents/PROJECT-REGISTER.md</code> and stores a full manifest under <code>docs/agents/evidence/**</code>.</p>
+            <p>These commands are agent-callable oracles, not the normal user interface. In normal use, the active IDE agent invokes them from the current context window; humans run them directly only for package maintenance, debugging or certification review. Use the Tilly package root for package checks, or pass <code>--target</code> when operating on another project or vault. <code>tilly_init.py</code> recertifies package health, scans the target project, writes <code>docs/agents/PROJECT-REGISTER.md</code> and stores a full manifest under <code>docs/agents/evidence/**</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
@@ -1278,6 +1282,10 @@ git revert &lt;install-commit&gt;</code></pre>
               <span class="panel-tag">Nota</span>
               <p>Archivos como <code>AGENTS.md</code>, <code>CLAUDE.md</code> y las reglas de Cursor deben ser bootloaders finos. La gobernanza real vive en <code>docs/agents/**</code>.</p>
             </div>
+            <div class="panel">
+              <span class="panel-tag">Modelo de ejecución</span>
+              <p>El ejecutor es el agente de código activo dentro de la ventana actual del IDE o runtime. Skills, reglas y bootloaders enrutan el comportamiento; los scripts Python y las entradas <code>npm run ...</code> son oráculos deterministas que el agente invoca cuando existe acceso local a herramientas; los hooks son gates de eventos Git; MCP es una superficie Cortex de solo lectura. Si un runtime no puede ejecutar un oráculo, el agente debe reportarlo como bloqueado o omitido en vez de certificarlo.</p>
+            </div>
           </div>
         </section>
 
@@ -1351,7 +1359,7 @@ git revert &lt;install-commit&gt;</code></pre>
         <section class="chapter" id="cli-es">
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
-            <p>Ejecuta estos comandos desde la raíz del paquete Tilly al mantener este paquete, o usa <code>--target</code> para operar sobre otro proyecto o vault. <code>tilly_init.py</code> recertifica la salud del paquete, escanea el proyecto objetivo, escribe <code>docs/agents/PROJECT-REGISTER.md</code> y guarda manifiestos con timestamp en <code>docs/agents/evidence/**</code>.</p>
+            <p>Estos comandos son oráculos invocables por el agente, no la interfaz normal del usuario. En el uso normal, el agente activo del IDE los ejecuta desde la ventana de contexto; humanos los ejecutan directamente solo para mantenimiento del paquete, debugging o revisión de certificación. Usa la raíz del paquete Tilly para checks del paquete, o <code>--target</code> para operar sobre otro proyecto o vault. <code>tilly_init.py</code> recertifica la salud del paquete, escanea el proyecto objetivo, escribe <code>docs/agents/PROJECT-REGISTER.md</code> y guarda manifiestos con timestamp en <code>docs/agents/evidence/**</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
@@ -1530,6 +1538,10 @@ git revert &lt;install-commit&gt;</code></pre>
               <span class="panel-tag">Nota</span>
               <p>Arquivos como <code>AGENTS.md</code>, <code>CLAUDE.md</code> e regras do Cursor devem ser bootloaders finos. A governança real vive em <code>docs/agents/**</code>.</p>
             </div>
+            <div class="panel">
+              <span class="panel-tag">Modelo de execução</span>
+              <p>O executor é o agente de código ativo dentro da janela atual do IDE ou runtime. Skills, rules e bootloaders roteiam comportamento; scripts Python e entradas <code>npm run ...</code> são oráculos determinísticos que o agente invoca quando existe acesso local a ferramentas; hooks são gates de eventos Git; MCP é uma superfície Cortex somente leitura. Se um runtime não consegue executar um oráculo, o agente deve reportar como bloqueado ou ignorado em vez de certificar.</p>
+            </div>
           </div>
         </section>
 
@@ -1603,7 +1615,7 @@ git revert &lt;install-commit&gt;</code></pre>
         <section class="chapter" id="cli-pt">
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
-            <p>Rode estes comandos a partir da raiz do pacote Tilly ao manter este pacote, ou use <code>--target</code> para operar em outro projeto ou vault. <code>tilly_init.py</code> recertifica a saúde do pacote, varre o projeto alvo, escreve <code>docs/agents/PROJECT-REGISTER.md</code> e guarda manifestos com timestamp em <code>docs/agents/evidence/**</code>.</p>
+            <p>Estes comandos são oráculos chamáveis pelo agente, não a interface normal do usuário. No uso normal, o agente ativo do IDE os invoca a partir da janela de contexto; humanos os rodam diretamente só para manutenção do pacote, debug ou revisão de certificação. Use a raiz do pacote Tilly para checks do pacote, ou <code>--target</code> para operar em outro projeto ou vault. <code>tilly_init.py</code> recertifica a saúde do pacote, varre o projeto alvo, escreve <code>docs/agents/PROJECT-REGISTER.md</code> e guarda manifestos com timestamp em <code>docs/agents/evidence/**</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
@@ -1765,7 +1777,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.9</span>
+        <span>Tilly Engineer Skills · v0.3.10</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>

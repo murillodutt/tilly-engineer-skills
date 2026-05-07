@@ -27,6 +27,26 @@ Runtime assets include `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, `.agents/**`,
 `.mcp.json`, `.tilly/bin/**`, and future agent plugin/hook/MCP files. They
 must stay thin. Durable project governance belongs in `docs/agents/**`.
 
+## Executor Model
+
+The executor is the active LLM coding agent inside the current IDE/runtime
+context window. This installer is not a background daemon, shell-only script,
+or blind package manager. The current agent reads this spec, classifies the
+project, edits files, invokes local tools when the runtime exposes them, and
+reports certification.
+
+Treat Python scripts and `npm run ...` entries as deterministic oracles and
+portable helper tools. Treat skills, rules, bootloaders, and adapter files as
+routing/governance surfaces that tell the agent when and how to act. Treat
+hooks as local Git gates that run only during Git events. Treat MCP as a
+read-only Cortex access surface for agents, not as memory and not as the
+installer.
+
+If the current runtime cannot execute a command, do not claim it passed. Finish
+safe file work where possible, mark the oracle `BLOCKED` or `SKIP` with the
+reason in evidence and the final report, and ask for the smallest native
+equivalent or user-run command only when certification depends on it.
+
 ## Source Package
 
 Use this package as the external adapter/runtime source:

@@ -6,7 +6,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, and clearer proof before they claim a task
 is done.
 
-Version: `0.3.9`
+Version: `0.3.10`
 
 License: MIT
 
@@ -85,6 +85,24 @@ Obsidian is a compatible visual surface; the installer does not create or edit
 `.obsidian/**`, require plugins, or depend on editor state for certification.
 The read-only Cortex MCP server is activated through project-scoped runtime
 config, never global config.
+
+## Execution Model
+
+The executor is the active coding agent inside the current IDE or runtime
+context window. Codex, Claude Code, Cursor, or another supported agent reads
+the mesh, chooses the route, edits files, invokes available local tools, and
+reports certification.
+
+The Python scripts and `npm run ...` entries are deterministic oracles and
+portable helper tools for that agent. Skills, rules, bootloaders, and adapter
+files route behavior and explain when those oracles should be used. Hooks are
+local Git gates that run only on Git events. MCP is a read-only Cortex access
+surface for agents; it is not the memory and not the installer.
+
+When a runtime has no shell/tool access, the agent must not pretend a command
+ran. It should complete the file work it can safely perform, mark unavailable
+oracles as `BLOCKED` or `SKIP` with a reason, and ask for the smallest native
+equivalent or user-run command only when certification depends on it.
 
 When this package is available locally, `tilly_init.py` is the project
 initialization and recertification command. It verifies package health, scans
