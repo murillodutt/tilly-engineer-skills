@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and repository agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # Maintainer Correlation Rule
@@ -32,9 +32,38 @@ It includes adapter source, installer prompts, user-facing command triggers,
 manuals, MCP activation, Cortex runtime contracts, Field Reports behavior, and
 generated or installed target surfaces.
 
-A maintainer-only rule belongs in `AGENTS.md` and `docs/governance/**`. A
-user-facing behavior belongs in `docs/install/**`, `src/adapters/**`, scripts,
-or the relevant runtime contract. Mixing those layers is a contract failure.
+A maintainer-only rule belongs in `AGENTS.md`, `docs/governance/**`, TDS/index
+entries, and validators that protect this repository.
+
+A delivered behavior belongs in `docs/install/**`, `src/adapters/**`,
+user-visible runtime contracts, package scripts that implement adopter-visible
+behavior, MCP activation, Field Reports behavior, Cortex behavior, or the
+relevant installer surface.
+
+`scripts/**` is not a layer by itself. A script change is classified by the
+consumer and behavior it changes. A validator-only change is maintainer layer. A
+change to `tilly_init.py`, `cortex.py`, `install_mcp.py`, `install_adapter.py`,
+`install_smoke.py`, `field_reports.py`, or an adapter materializer can be
+delivered behavior when it changes what adopters receive, invoke, or certify.
+
+## Layer Decision Test
+
+Run this test before applying the correlation map:
+
+1. If a change only alters how agents maintain this repository, it may update
+   `AGENTS.md`, `docs/governance/**`, `docs/tds/**`, `docs/INDEX.md`,
+   architecture notes, and validators. It must not update `src/adapters/**`,
+   `docs/install/**`, user manuals, adapter bootloaders, or target-project
+   surfaces.
+2. If a change alters behavior observed by adopters or installing agents, it is
+   delivered behavior. Check user docs, installer prompts, command triggers,
+   adapter sources, runtime contracts, package scripts, and oracles.
+3. If a change touches both layers, state both impacts separately and update
+   each correlated surface for its own reason.
+4. If the layer cannot be classified in one sentence, stop with `NEEDS_REVIEW`
+   before editing user-facing files.
+5. If a maintainer-only patch requires a user-facing edit to pass a gate, the
+   gate or classification is wrong until proven otherwise.
 
 ## Correlation Rule
 

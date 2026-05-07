@@ -181,6 +181,22 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "docs:size",
 )
 
+MAINTAINER_CORRELATION_REQUIRED_TERMS = (
+    "This rule governs agents developing the Tilly Engineer Skills package.",
+    "installed project rule",
+    "`scripts/**` is not a layer by itself.",
+    "A validator-only change is maintainer layer.",
+    "If a change alters behavior observed by adopters or installing agents",
+    "If a change touches both layers, state both impacts separately",
+    "If the layer cannot be classified in one sentence, stop with `NEEDS_REVIEW`",
+    "Do not update `src/**` merely to teach agents how to maintain this repository.",
+    "Do not update the user manual with maintainer-only coordination rules.",
+)
+
+MAINTAINER_CORRELATION_FORBIDDEN_TERMS = (
+    "user-facing behavior belongs in `docs/install/**`, `src/adapters/**`, scripts,",
+)
+
 
 def package_paths() -> list[Path]:
     result = subprocess.run(
@@ -237,6 +253,22 @@ def staged_ready_failures() -> list[str]:
     return failures
 
 
+def maintainer_correlation_failures() -> list[str]:
+    path = ROOT / "docs/governance/MAINTAINER-CORRELATION-RULE.md"
+    if not path.exists():
+        return ["missing maintainer correlation rule"]
+
+    text = path.read_text(encoding="utf-8")
+    failures: list[str] = []
+    for term in MAINTAINER_CORRELATION_REQUIRED_TERMS:
+        if term not in text:
+            failures.append(f"maintainer correlation rule missing term: {term}")
+    for term in MAINTAINER_CORRELATION_FORBIDDEN_TERMS:
+        if term in text:
+            failures.append(f"maintainer correlation rule contains ambiguous term: {term}")
+    return failures
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--staged-ready", action="store_true")
@@ -263,6 +295,8 @@ def main() -> int:
     if args.staged_ready:
         failures.extend(staged_ready_failures())
 
+    failures.extend(maintainer_correlation_failures())
+
     for relpath in SYNCED_FILES:
         path = ROOT / relpath
         if not path.exists():
@@ -275,8 +309,8 @@ def main() -> int:
     package_json = ROOT / "package.json"
     if package_json.exists():
         package = json.loads(package_json.read_text(encoding="utf-8"))
-        if package.get("version") != "0.3.20":
-            failures.append("package.json version must be 0.3.20")
+        if package.get("version") != "0.3.21":
+            failures.append("package.json version must be 0.3.21")
         scripts = package.get("scripts", {})
         for script in REQUIRED_PACKAGE_SCRIPTS:
             if script not in scripts:
@@ -284,8 +318,8 @@ def main() -> int:
 
     for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
         path = ROOT / relpath
-        if path.exists() and "0.3.20" not in path.read_text(encoding="utf-8"):
-            failures.append(f"{relpath} must declare 0.3.20")
+        if path.exists() and "0.3.21" not in path.read_text(encoding="utf-8"):
+            failures.append(f"{relpath} must declare 0.3.21")
 
     oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():
