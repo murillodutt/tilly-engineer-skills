@@ -90,11 +90,12 @@ requires exact syntax.
 
 ## Tilly Shortcuts
 
-Treat `/tilly:init`, `/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`,
+Treat `/tilly:init`, `tilly init`, and natural command/prompts such as
+`Tilly, initialize this project` or `Tilly, inicialize este projeto` as the
+same init intent. Also treat `/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`,
 `/tilly:field-reports`, `/tilly:doctor`, `/tilly:adapter`, and `/tilly:bench`
-as intent shortcuts. Use the matching
-skill and let the agent choose the smallest safe oracle. These are not shell
-commands.
+as intent shortcuts. Use the matching skill and let the agent choose the
+smallest safe oracle. These are not shell commands.
 
 ## Cortex Reflection
 
