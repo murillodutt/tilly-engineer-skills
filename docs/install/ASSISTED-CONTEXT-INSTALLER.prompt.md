@@ -5,7 +5,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.8.0
+tver: 0.9.0
 ---
 
 # Tilly Assisted Context Installer
@@ -105,6 +105,24 @@ src/adapters/cursor/rules/tilly-guidelines.mdc
 If you cannot fetch raw URLs, stop and ask the user to provide local package
 contents or permission to continue from already available context.
 
+Before using copied or cloned package files, record the exact package snapshot:
+
+- `source_package_commit`: commit of the local package copy when Git metadata is
+  available, otherwise `unknown`;
+- `source_remote_head`: current `origin/main` from
+  `https://github.com/murillodutt/tilly-engineer-skills` when Git/network is
+  available, otherwise `unknown`;
+- `source_freshness`: `PASS` when both commits are known and equal,
+  `STALE_SOURCE` when both are known and differ, or `BLOCKED` when freshness
+  cannot be checked.
+
+If `source_freshness` is `STALE_SOURCE`, continue only as a snapshot
+certification. The final report must say that the target was certified against
+the recorded snapshot, not against the latest Tilly Engineer Skills `main`.
+If `source_freshness` is `BLOCKED`, do not claim latest-source certification.
+This is not a target-project failure; it is certification metadata that protects
+the user from stale installer conclusions.
+
 ## Non-Negotiable Rules
 
 - Never overwrite existing agent instructions blindly.
@@ -145,39 +163,10 @@ During installation, show only:
 - final certification report.
 - user manual access in the final certification report.
 
-Do not print this kind of internal packet to the user:
-
-```yaml
-tilly_context_install:
-  detected_runtime:
-  project_state:
-  operation_mode:
-  default_adapter:
-  no_touch_paths:
-  planned_outputs:
-  cortex:
-  mcp:
-  oracle_candidates:
-  stop_if:
-```
-
-Use it internally instead.
-
-Preferred progress style:
-
-```text
-Tilly Context Mesh Install
-
-[01/09] Fetch installer spec ........ PASS
-[02/09] Inspect project ............. RUNNING
-[03/09] Build docs/agents mesh ...... PENDING
-[04/09] Build Cortex ................ PENDING
-[05/09] Retrofit runtime assets ..... PENDING
-[06/09] Activate Cortex MCP ......... PENDING
-[07/09] Write evidence .............. PENDING
-[08/09] Run certification ........... PENDING
-[09/09] Report result ............... PENDING
-```
+Do not print internal installer packets, scratch YAML, or file-by-file
+inventories. Keep the progress block to the nine phases: fetch spec, inspect
+project, build mesh, build Cortex, retrofit assets, activate MCP, write
+evidence, run certification, and report result.
 
 For longer operations, update with a single line:
 
@@ -779,9 +768,13 @@ Include:
 - detected runtime and selected adapter menu choice;
 - navigation library, renderer, mode, and selected route commands;
 - project classification;
-- source package URL and raw paths used;
+- source package URL, raw paths used, source package commit, remote `main`
+  commit when available, and `source_freshness`;
 - files created;
-- files retrofitted;
+- files retrofitted or updated;
+- full changed-file inventory from `git status --short --untracked-files=all`,
+  grouped as new Tilly surfaces, updated existing mesh files, generated
+  evidence, local runtime config, and ignored local state;
 - conflicts discovered and how they were resolved;
 - local rules preserved;
 - Cortex files created, retrofitted, skipped, or deferred;
@@ -877,6 +870,13 @@ precondition and ask before running unless the user already authorized it.
 
 Do not run multiple build commands in parallel when they share caches.
 
+Before writing the final user-facing report, compare the report's changed-file
+summary with `git status --short --untracked-files=all`. If files changed by
+the installer are absent from both the final report and the evidence journal,
+mark completion `NEEDS_REVIEW` until the inventory is corrected. The report may
+stay compact, but it must not hide existing bootloaders, adapter docs, or
+governance files that were retrofitted.
+
 ## Phase 8 - Commit And Publication Boundary
 
 The default endpoint is a meshed working tree plus certification report.
@@ -923,45 +923,37 @@ If the user asks to push or publish:
 
 ## Final Report Layout
 
-Finish with a professional certification report. Use this structure:
+Finish with a professional certification report. The user's report must be
+short factual prose with compact bullets. Do not use Markdown tables unless the
+user explicitly asks for the full evidence view. Put long inventories, detailed
+oracles, conflicts, and reconstruction notes in the evidence file. In the chat,
+show only status, scope, snapshot freshness, main changed surfaces, gates,
+manual, rollback, and honest limits.
+
+Use this structure. This is snapshot certification when freshness is
+`STALE_SOURCE`; do not claim the latest source was certified.
 
 ```text
 Tilly Context Mesh Convergence Report
 
 Status: GO | NEEDS_REVIEW | NO-GO
-Scope: <new project install | existing project retrofit | meshed project update | audit>
-Detected Runtime: <Codex | Claude Code | Cursor | uncertain>
-Selected Adapters: <...>
-Canonical Source: docs/agents/**
+Scope: <install | retrofit | update | audit>
+Runtime and adapters: <...>
 Completion Claim: GO meshed | GO committed | GO published | NEEDS_REVIEW | NO-GO
-Navigation Library: <tilly-navigation@...>
-Navigation Renderer: <codex | claude-code | cursor | fallback>
-Navigation Mode: <request-user-input | AskUserQuestion | ask-question | command-navigation>
+Navigation: <library, renderer, mode>
 
-Integration Matrix
-| Surface | Status | Evidence |
-|---------|--------|----------|
-| docs/agents/** | PASS/FAIL | <paths> |
-| Cortex | PASS/SKIP/FAIL | <paths> |
-| Cortex MCP | PASS/SKIP/FAIL | <paths> |
-| Field Reports | PASS/SKIP/BLOCKED | hook, outbox, opt-out state |
-| Codex | PASS/SKIP/FAIL | <paths> |
-| Claude Code | PASS/SKIP/FAIL | <paths> |
-| Cursor | PASS/SKIP/FAIL | <paths> |
+Source Snapshot
+- Package commit: <source_package_commit>; remote main: <source_remote_head | unknown>
+- Freshness: PASS | STALE_SOURCE | BLOCKED; meaning: <latest | snapshot-only | unknown>
+
+Changed Surfaces
+- New Tilly surfaces: <short list or none>
+- Updated existing mesh files: <short list or none>
+- Runtime/MCP config, evidence, ignored local state: <short list>
 
 Certification
-| Check | Result | Notes |
-|-------|--------|-------|
-| Existing context preserved | PASS/FAIL | ... |
-| Runtime assets are thin | PASS/FAIL | ... |
-| Cortex boundary | PASS/FAIL/SKIP | sources immutable, compiled cells, derived recall, append-only trail |
-| MCP activation | PASS/FAIL/SKIP | read-only server, project-scoped config, no global config |
-| Platform surfaces | PASS/FAIL/SKIP | agents, skills, plugins, hooks, rules, MCP claims checked |
-| Project register | PASS/FAIL/SKIP | full project manifest and initialization evidence |
-| Obsidian compatibility | PASS/FAIL/SKIP | plain Markdown, no required plugins, no `.obsidian/**` |
-| No blind overwrite | PASS/FAIL | ... |
-| Secrets untouched | PASS/FAIL | ... |
-| Oracles | PASS/FAIL/SKIP | ... |
+- Context, thin runtime assets, Cortex, MCP, Field Reports, platform surfaces,
+  project register, Obsidian boundary, secrets, and oracles: PASS/FAIL/SKIP
 
 Evidence
 - <docs/agents/evidence/...>
@@ -978,9 +970,6 @@ Rollback
 
 Limits
 - <honest non-claims>
-
-Next Step
-- <review, commit on explicit approval, or run skipped oracle>
 ```
 
 GO requires:

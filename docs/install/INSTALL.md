@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.7.0
+tver: 0.8.0
 ---
 
 # Adapter Installation
@@ -190,18 +190,31 @@ Cortex: docs/agents/cortex/**
 Navigation Library: ...
 Navigation Renderer: ...
 Navigation Mode: ...
-Integration Matrix: ...
-Certification: ...
+Source Snapshot: package commit, remote main, freshness
+Changed Surfaces: new surfaces, updated existing mesh files, runtime config
+Certification: compact PASS/FAIL/SKIP bullets
 Evidence: ...
 User Manual: ...
 Limits: ...
 Next Step: ...
 ```
 
+The chat report is deliberately short. Detailed inventories, conflicts,
+oracles, and reconstruction notes belong in the evidence file. A report must
+not use tables by default, and it must not hide files changed by the installer.
+Before closing, compare the changed-file summary against
+`git status --short --untracked-files=all`.
+
 GO requires canonical `docs/agents/**`, a created or explicitly deferred
 Cortex layer, selected-runtime Cortex MCP activation or a named blocker, thin
 runtime assets, preserved local context, no blind overwrite, no secret
 mutation, and at least one relevant local oracle.
+
+Source freshness is part of certification metadata. If the package snapshot
+commit differs from the current `main` commit for
+`murillodutt/tilly-engineer-skills`, the install may still be `GO meshed` for
+that snapshot, but it must be labeled `STALE_SOURCE` and must not claim latest
+Tilly Engineer Skills certification.
 
 GO does not imply the integration was committed or pushed. The certification
 report must distinguish:

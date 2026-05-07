@@ -7,7 +7,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, stronger memory, and clearer proof before
 they claim a task is done.
 
-Version: `0.3.23`
+Version: `0.3.24`
 
 License: MIT
 
@@ -116,6 +116,10 @@ Every assisted mesh, retrofit, update, or audit run ends with a certification
 report. A `GO meshed` result means the selected route was created or updated,
 routed, and locally checked. It does not mean the result was committed, pushed,
 published, or proven universal across every model and project.
+
+The report must also state the Tilly source snapshot used. If that snapshot is
+behind the current `main`, the run is certified only for the recorded snapshot
+and must say `STALE_SOURCE`.
 
 Step Zero protects the working tree before edits. If the target is dirty, the
 agent offers a local baseline commit first. Rollback is always reported with

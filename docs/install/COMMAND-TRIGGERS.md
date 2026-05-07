@@ -5,7 +5,7 @@ status: active
 consumer: adopters, installing agents, and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.3.0
+tver: 0.3.1
 ---
 
 # Tilly Command Triggers
@@ -56,6 +56,8 @@ inicializar Tilly / instalar Tilly / atualizar Tilly / recertificar Tilly -> /ti
 
 - Do not create one slash command per script.
 - Do not certify a command that was skipped or blocked.
+- Do not claim latest-source certification when the installer reports
+  `STALE_SOURCE` or `BLOCKED` source freshness.
 - Do not call SQLite, MCP, or generated output memory.
 - Do not call `.tilly/cortex/semantic.sqlite` memory; it is only derived
   curation cache.
