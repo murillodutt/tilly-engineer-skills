@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and adapter authors
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.0
+tver: 0.2.1
 ---
 
 # Project Structure
@@ -83,6 +83,7 @@ plugin shape, evidence retention policy, and governed link drift.
 | `docs/mesh/**` | Method, principles, scorecard |
 | `docs/evals/**` | Eval design and examples |
 | `docs/governance/**` | Cross-tool authority and alignment rules |
+| `docs/governance/MAINTAINER-CORRELATION-RULE.md` | Local maintainer map for package edits, not installed project context |
 | `docs/adapters/**` | Human adapter guidance |
 | `docs/architecture/**` | Repository topology and boundaries |
 | `docs/tds/**` | Documentation contract and governed index |
