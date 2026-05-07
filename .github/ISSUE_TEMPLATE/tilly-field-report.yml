@@ -32,7 +32,7 @@ body:
     id: tilly-version
     attributes:
       label: Tilly version
-      placeholder: "0.3.18"
+      placeholder: "0.3.19"
     validations:
       required: true
   - type: textarea
