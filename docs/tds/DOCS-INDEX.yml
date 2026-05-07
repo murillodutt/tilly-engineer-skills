@@ -1,4 +1,4 @@
-version: 0.3.29
+version: 0.3.30
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -13,6 +13,13 @@ documents:
     class: architecture
     status: active
     consumer: maintainers and adapter authors
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/architecture/TES-NAMING-MIGRATION-CATALOG.md
+    id: architecture.tes_naming_migration_catalog
+    class: architecture
+    status: active
+    consumer: maintainers, installer authors, adapter authors, and installing agents
     source_of_truth: true
     evidence_level: L2
   - path: docs/install/INSTALL.md
