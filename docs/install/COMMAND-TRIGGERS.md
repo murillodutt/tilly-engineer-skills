@@ -5,7 +5,7 @@ status: active
 consumer: adopters, installing agents, and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.0
+tver: 0.3.0
 ---
 
 # Tilly Command Triggers
@@ -18,7 +18,7 @@ agent invokes when the runtime exposes local tools.
 
 | Trigger | User intent | Primary oracles | Writes |
 |---------|-------------|-----------------|--------|
-| `/tilly:init` | install, update, audit, or recertify Tilly in a project | `tilly_init.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, Cortex, runtime bootloaders, project MCP config |
+| `/tilly:init` or init command/prompt | install, update, audit, or recertify Tilly in a project | `tilly_init.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, Cortex, runtime bootloaders, project MCP config |
 | `/tilly:cortex` | inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `cortex.py`, read-only Cortex MCP | Cortex files only when authorized |
 | `/tilly:curate` | classify Cortex memory quality risks without writing memory | `cortex.py curate-plan`, read-only `cortex_curate_plan` | no memory writes; CLI may refresh `.tilly/cortex/semantic.sqlite` |
 | `/tilly:mcp` | activate or verify read-only Cortex MCP | `install_mcp.py`, `cortex_mcp.py`, MCP smoke | `.tilly/bin/**` and project-scoped MCP config |
@@ -30,6 +30,9 @@ agent invokes when the runtime exposes local tools.
 Aliases:
 
 ```text
+tilly init  -> /tilly:init
+initialize Tilly / install Tilly / update Tilly / recertify Tilly -> /tilly:init
+inicializar Tilly / instalar Tilly / atualizar Tilly / recertificar Tilly -> /tilly:init
 /tilly:recall  -> /tilly:cortex recall
 /tilly:learn   -> /tilly:cortex learn
 /tilly:reflect -> /tilly:cortex reflect

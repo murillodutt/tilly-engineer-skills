@@ -1,12 +1,14 @@
 ---
 name: tilly-init
-description: Use when the user says /tilly:init or asks to initialize, install, retrofit, update, audit, or recertify Tilly Engineer Skills in the current project. Runs the assisted context installer contract through the active agent.
+description: Use when the user says /tilly:init, tilly init, a natural init command/prompt, or asks to initialize, install, retrofit, update, audit, or recertify Tilly Engineer Skills in the current project. Runs the assisted context installer contract through the active agent.
 ---
 
 # Tilly Init
 
-`/tilly:init` is a user-facing intent shortcut. It is not a blind shell command
-and not a background daemon. The active agent remains the executor.
+`/tilly:init`, `tilly init`, and direct command/prompts such as `Tilly,
+initialize this project` or `Tilly, inicialize este projeto` are user-facing
+init intents. They are not blind shell commands and not background daemons. The
+active agent remains the executor.
 
 ## Mission
 

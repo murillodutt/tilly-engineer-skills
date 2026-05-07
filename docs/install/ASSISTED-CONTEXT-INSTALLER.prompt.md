@@ -5,7 +5,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.7.0
+tver: 0.8.0
 ---
 
 # Tilly Assisted Context Installer
@@ -42,8 +42,9 @@ hooks as local Git gates for validation, Field Reports drain, and no-write
 Cortex reflection/curation. Treat MCP as a read-only Cortex access surface for agents,
 not as memory and not as the installer.
 
-`/tilly:init` is the preferred user-facing shortcut for this workflow. Treat it
-as an intent that loads this installer contract, not as a raw shell command.
+`/tilly:init`, `tilly init`, and direct command/prompts such as `Tilly,
+initialize this project` are preferred entries for this workflow. Treat them as
+intents that load this installer contract, not as raw shell commands.
 Other shortcuts are routed by `docs/install/COMMAND-TRIGGERS.md`:
 `/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`, `/tilly:doctor`, `/tilly:adapter`, and
 `/tilly:bench`.

@@ -6,7 +6,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, and clearer proof before they claim a task
 is done.
 
-Version: `0.3.17`
+Version: `0.3.18`
 
 License: MIT
 
@@ -19,14 +19,12 @@ docs/install/USER-MANUAL.html
 ```
 
 Open your target project in Codex, Claude Code, or Cursor. When the Tilly init
-skill or rule is available, type:
+skill or rule is available, type `/tilly:init` or a direct command/prompt such
+as `Tilly, initialize this project`.
 
-```text
-/tilly:init
-```
-
-That shortcut is the preferred entrypoint. It expands to the assisted installer
-workflow below. If the shortcut is not available yet, paste the full prompt:
+That intent is the preferred entrypoint. It expands to the assisted installer
+workflow below. If the command/prompt router is not available yet, paste the
+full prompt:
 
 ```text
 Install Tilly Engineer Skills as an assisted context mesh, not as blind file
@@ -111,10 +109,11 @@ Reports drain. MCP is
 a read-only Cortex access surface for agents; it is not the memory and not the
 installer.
 
-`/tilly:init` is the standard user-facing shortcut for initialization, update,
-audit, and recertification. Where a runtime supports skills, it maps to the
+`/tilly:init` and direct command/prompts such as `Tilly, initialize this
+project` are the standard user-facing entrypoints for initialization, update,
+audit, and recertification. Where a runtime supports skills, they map to the
 `tilly-init` skill. Where it does not, rules and bootloaders should treat the
-same phrase as an intent that loads the assisted installer contract.
+same intent as a request to load the assisted installer contract.
 
 The broader shortcut surface is intentionally small:
 

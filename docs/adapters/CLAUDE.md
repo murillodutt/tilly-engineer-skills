@@ -5,7 +5,7 @@ status: active
 consumer: claude code adopters and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.0
+tver: 0.3.0
 ---
 
 # Claude Adapter
@@ -58,9 +58,10 @@ dedicated decision.
   root.
 - Skill paths in plugin metadata must be root-relative, such as
   `skills/tilly-guidelines`, not `../skills/tilly-guidelines`.
-- `/tilly:*` shortcuts map to Claude skills and then to deterministic oracles:
-  `tilly-init`, `tilly-cortex`, `tilly-mcp`, `tilly-doctor`, `tilly-adapter`,
-  and `tilly-bench`.
+- `/tilly:*` shortcuts map to Claude skills and then to deterministic oracles.
+  `/tilly:init`, `tilly init`, and natural init command/prompts all route to
+  `tilly-init`; the other shortcuts route to `tilly-cortex`, `tilly-mcp`,
+  `tilly-doctor`, `tilly-adapter`, and `tilly-bench`.
 - Hooks, write-capable MCP, and subagents must not be added to the default
   plugin.
 - Read-only Cortex MCP is activated by the assisted installer through
