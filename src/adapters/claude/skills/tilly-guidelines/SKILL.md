@@ -24,6 +24,16 @@ one-liners.
 | Surgical Changes | Touch only request-traceable lines and self-created orphans | Drive-by refactors and hidden churn |
 | Goal-Driven Execution | Define a falsifiable oracle and verify before closure | False completion |
 
+## Diamond Build-Test-Fail-Fix
+
+For critical capabilities, build from the finished contract down: state the
+final behavior, create or identify the adversarial fixture that should fail
+first, observe the failure, implement the smallest repair, and rerun the gate
+until it passes.
+
+Do not call certified behavior experimental. Use `blocked`, `degraded`,
+`not available`, `certified`, or `fail`.
+
 ## Workflow
 
 1. Classify the task.
@@ -48,6 +58,10 @@ one-liners.
      `python3 .tilly/bin/cortex.py reflect --target . "<decision or lesson>"`.
    - Treat the output as a proposal. Do not write Cortex cells without
      explicit user authorization.
+   - If the result has `curation_due=true`, call read-only `cortex_curate_plan`
+     through MCP or run
+     `python3 .tilly/bin/cortex.py curate-plan --target . --backend lexical`
+     before proposing any merge, split, compaction, or rejection.
 
 ## Success Formula
 

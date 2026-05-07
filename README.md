@@ -6,7 +6,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, and clearer proof before they claim a task
 is done.
 
-Version: `0.3.14`
+Version: `0.3.15`
 
 License: MIT
 
@@ -88,7 +88,9 @@ assets stay thin.
 
 Cortex memory lives in versioned Markdown artifacts: `sources/**`, `cells/**`,
 `MAP.md`, `TRAIL.md`, `LINKS.md`, and `CONTRACT.md`. SQLite FTS5 is only the
-derived recall index at `.tilly/cortex/recall.sqlite`, and `rg` is the fallback.
+derived recall index at `.tilly/cortex/recall.sqlite`; semantic curation uses a
+derived `.tilly/cortex/semantic.sqlite` index rebuilt from `cells/**`; `rg` is
+the fallback.
 Obsidian is a compatible visual surface; the installer does not create or edit
 `.obsidian/**`, require plugins, or depend on editor state for certification.
 The read-only Cortex MCP server is activated through project-scoped runtime
@@ -104,8 +106,9 @@ reports certification.
 The Python scripts and `npm run ...` entries are deterministic oracles and
 portable helper tools for that agent. Skills, rules, bootloaders, and adapter
 files route behavior and explain when those oracles should be used. Hooks are
-local Git gates that run only on Git events. MCP is a read-only Cortex access
-surface for agents; it is not the memory and not the installer.
+local Git gates for validation and no-write Cortex reflection/curation. MCP is
+a read-only Cortex access surface for agents; it is not the memory and not the
+installer.
 
 `/tilly:init` is the standard user-facing shortcut for initialization, update,
 audit, and recertification. Where a runtime supports skills, it maps to the
@@ -117,7 +120,8 @@ The broader shortcut surface is intentionally small:
 | Shortcut | Intent |
 |----------|--------|
 | `/tilly:init` | install, update, audit, or recertify Tilly in a project |
-| `/tilly:cortex` | query, inspect, audit, rebuild, learn, reflect, or apply Cortex memory |
+| `/tilly:cortex` | query, inspect, audit, rebuild, curate, learn, reflect, or apply Cortex memory |
+| `/tilly:curate` | run no-write semantic curation over Cortex memory |
 | `/tilly:mcp` | activate or verify read-only Cortex MCP |
 | `/tilly:doctor` | run health, certification, and commit-readiness gates |
 | `/tilly:adapter` | materialize, dry-run, retrofit, or install adapter surfaces |
@@ -143,6 +147,7 @@ python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
+python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical
 python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
 python3 scripts/cortex.py read-cell --target /path/to/project-or-vault --cell cell-name
 python3 scripts/cortex.py absorb-plan --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md

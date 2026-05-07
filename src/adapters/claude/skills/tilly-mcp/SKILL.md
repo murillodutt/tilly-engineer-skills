@@ -21,9 +21,15 @@ health checks.
    `install_smoke.py --route mcp` as the local oracle.
 6. Report created or merged project-scoped config paths.
 
+The read-only surface includes `cortex_verify`, `cortex_audit`,
+`cortex_recall`, `cortex_read_cell`, `cortex_absorb_plan`,
+`cortex_curate_plan`, and `cortex_reflect`.
+
 ## Locks
 
 - Do not edit global MCP config.
 - Do not create write-capable MCP tools.
 - Do not touch secrets, env files, hooks, remotes, or cloud settings.
 - Do not call MCP, SQLite, or LLM output "memory"; MCP is access only.
+- Treat `.tilly/bin/cortex_embed.mjs` as a local helper for optional neural
+  curation, not as a memory source.

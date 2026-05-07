@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import argparse
 from datetime import date
+import hashlib
 import json
+import math
 from pathlib import Path
 import re
 import shutil
@@ -13,10 +15,15 @@ import sqlite3
 import subprocess
 import sys
 import tempfile
+import unicodedata
 
 
 CORTEX_ROOT = Path("docs/agents/cortex")
 RECALL_DB = Path(".tilly/cortex/recall.sqlite")
+SEMANTIC_DB = Path(".tilly/cortex/semantic.sqlite")
+DEFAULT_SEMANTIC_MODEL = "Xenova/multilingual-e5-small"
+LEXICAL_MODEL = "tilly-lexical-curation-v1"
+LEXICAL_DIMENSIONS = 64
 REQUIRED_FILES = (
     "CONTRACT.md",
     "MAP.md",
@@ -44,12 +51,69 @@ TRAIL_HEADING = re.compile(
 )
 WIKILINK = re.compile(r"\[\[([^]|#]+)(?:[|#][^]]*)?\]\]")
 H1_HEADING = re.compile(r"^# .+", re.MULTILINE)
+H2_HEADING = re.compile(r"^## .+", re.MULTILINE)
 CLAIM_SECTION = re.compile(r"^## Claims?$", re.MULTILINE)
 EVIDENCE_SECTION = re.compile(r"^## Evidence$", re.MULTILINE)
 EVIDENCE_REF = re.compile(
     r"(`?((?:\.\.?/)?(?:docs/agents/cortex/)?sources/[^`\s)]+|docs/agents/evidence/[^`\s)]+)`?|^[-*] Assumption:|^Assumption:)",
     re.MULTILINE,
 )
+STOPWORDS = {
+    "a", "an", "and", "are", "as", "be", "by", "com", "como", "con", "da", "das", "de", "del",
+    "do", "dos", "e", "el", "em", "en", "for", "from", "is", "it", "la", "las", "los", "na",
+    "no", "not", "o", "of", "or", "os", "para", "por", "que", "the", "to", "um", "uma", "un",
+    "una", "with", "under", "into", "from", "this", "that", "these", "those", "should", "must",
+}
+SYNONYMS = {
+    "approval": "authorization",
+    "authorized": "authorization",
+    "authorize": "authorization",
+    "autorizacao": "authorization",
+    "autorizado": "authorization",
+    "evidence": "source",
+    "evidencia": "source",
+    "fonte": "source",
+    "fontes": "source",
+    "proof": "source",
+    "reference": "source",
+    "memory": "memory",
+    "memoria": "memory",
+    "knowledge": "memory",
+    "conhecimento": "memory",
+    "artifact": "file",
+    "artifacts": "file",
+    "artefato": "file",
+    "artefatos": "file",
+    "file": "file",
+    "files": "file",
+    "filesystem": "file",
+    "markdown": "file",
+    "durable": "durable",
+    "persistent": "durable",
+    "versioned": "durable",
+    "versionado": "durable",
+    "versionados": "durable",
+    "curadoria": "curation",
+    "curate": "curation",
+    "curation": "curation",
+    "compact": "compact",
+    "compaction": "compact",
+    "dedupe": "merge",
+    "duplicate": "merge",
+    "merge": "merge",
+    "redundant": "merge",
+    "split": "split",
+    "separate": "split",
+    "separar": "split",
+    "separation": "split",
+}
+RETAIN_TERMS = {"audit", "auditable", "durable", "keep", "preserve", "retain", "source", "versioned"}
+DISCARD_TERMS = {
+    "automatic", "delete", "discard", "erase", "overwrit", "overwrite", "purge", "remov", "remove",
+    "rewrite",
+}
+TRANSIENT_TERMS = {"draft", "maybe", "scratch", "temporary", "todo", "transient", "wip"}
+GENERIC_TERMS = {"context", "important", "information", "note", "project", "thing", "useful", "value"}
 
 
 def cortex_path(target: Path) -> Path:
@@ -58,6 +122,10 @@ def cortex_path(target: Path) -> Path:
 
 def recall_db_path(target: Path) -> Path:
     return target / RECALL_DB
+
+
+def semantic_db_path(target: Path) -> Path:
+    return target / SEMANTIC_DB
 
 
 def rel(path: Path, target: Path) -> str:
@@ -93,10 +161,11 @@ Memory lives in versioned Cortex artifacts. SQLite is only derived recall.
 | Trail | `TRAIL.md` | Append-only evolution timeline |
 | Links | `LINKS.md` | Durable relationship map |
 | Recall index | `.tilly/cortex/recall.sqlite` | Derived cache, rebuilt from files |
+| Semantic index | `.tilly/cortex/semantic.sqlite` | Derived curation cache, rebuilt from cells |
 
-SQLite is never memory and never source of truth. It may be deleted and rebuilt
-from `sources/**`, `cells/**`, `MAP.md`, `TRAIL.md`, `LINKS.md`, and this
-contract.
+SQLite is never memory and never source of truth. Both recall and semantic
+indexes may be deleted and rebuilt from `sources/**`, `cells/**`, `MAP.md`,
+`TRAIL.md`, `LINKS.md`, and this contract.
 
 ## Cell Convention
 
@@ -113,6 +182,7 @@ Use Obsidian wikilinks when useful, but keep source citations as explicit paths.
 | `absorb` | Compile source evidence into cells, MAP, LINKS, and TRAIL |
 | `recall` | Search Cortex artifacts through FTS5 or `rg` fallback |
 | `audit` | Detect drift, orphans, broken links, and missing catalog entries |
+| `curate-plan` | Classify semantic curation needs without writing memory |
 | `learn` | Propose durable promotion; do not write automatically |
 | `apply` | Write only with authorization and audit evidence |
 
@@ -263,6 +333,15 @@ Memory lives in versioned Cortex artifacts: `sources/**`, `cells/**`,
 SQLite is never memory and never source of truth. The recall index at
 `.tilly/cortex/recall.sqlite` is derived and rebuildable from the versioned
 artifacts. `rg` is the required fallback when FTS5 recall is unavailable.
+"""
+    if path.name == "CONTRACT.md" and ".tilly/cortex/semantic.sqlite" not in updated:
+        updated += """
+
+## Semantic Curation Boundary
+
+The semantic index at `.tilly/cortex/semantic.sqlite` is a derived curation
+cache rebuilt from `cells/**`. `curate-plan` may refresh that cache, but it
+never writes `sources/**`, `cells/**`, `MAP.md`, `LINKS.md`, or `TRAIL.md`.
 """
 
     if path.name == "README.md" and path.parent.name == "sources" and "must not rewrite" not in updated:
@@ -442,6 +521,506 @@ def markdown_files(root: Path) -> list[Path]:
         if path.exists():
             candidates.extend(sorted(path.rglob("*.md")))
     return candidates
+
+
+def strip_accents(value: str) -> str:
+    normalized = unicodedata.normalize("NFKD", value)
+    return "".join(char for char in normalized if not unicodedata.combining(char))
+
+
+def canonical_token(token: str) -> str:
+    token = strip_accents(token.lower())
+    token = SYNONYMS.get(token, token)
+    if token.endswith("ies") and len(token) > 4:
+        token = token[:-3] + "y"
+    elif token.endswith("s") and len(token) > 4:
+        token = token[:-1]
+    elif token.endswith("ing") and len(token) > 6:
+        token = token[:-3]
+    elif token.endswith("ed") and len(token) > 5:
+        token = token[:-2]
+    return SYNONYMS.get(token, token)
+
+
+def tokenize(value: str) -> list[str]:
+    tokens: list[str] = []
+    for raw in re.findall(r"[A-Za-zÀ-ÿ0-9_'-]+", value):
+        token = canonical_token(raw.strip("_'-"))
+        if len(token) < 3 or token in STOPWORDS:
+            continue
+        tokens.append(token)
+    return tokens
+
+
+def lexical_vector(tokens: list[str], dimensions: int = LEXICAL_DIMENSIONS) -> list[float]:
+    vector = [0.0] * dimensions
+    for token in tokens:
+        digest = hashlib.sha256(token.encode("utf-8")).digest()
+        slot = int.from_bytes(digest[:4], "big") % dimensions
+        vector[slot] += 1.0
+    magnitude = math.sqrt(sum(value * value for value in vector))
+    if magnitude == 0:
+        return vector
+    return [round(value / magnitude, 8) for value in vector]
+
+
+def cosine(left: list[float], right: list[float]) -> float:
+    if not left or not right or len(left) != len(right):
+        return 0.0
+    return sum(a * b for a, b in zip(left, right))
+
+
+def section_text(text: str, names: set[str]) -> str:
+    lines = text.splitlines()
+    capture = False
+    captured: list[str] = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("## "):
+            heading = stripped[3:].strip().lower()
+            if heading in names:
+                capture = True
+                continue
+            if capture:
+                break
+        if capture:
+            captured.append(line)
+    return "\n".join(captured).strip()
+
+
+def cell_title(text: str, path: Path) -> str:
+    for line in text.splitlines():
+        if line.startswith("# "):
+            return line[2:].strip()
+    return title_from_slug(path.name)
+
+
+def cell_record(path: Path, target: Path, cells_root_path: Path) -> dict[str, object]:
+    text = read_text(path)
+    claim = section_text(text, {"claim", "claims"})
+    evidence = section_text(text, {"evidence"})
+    links = section_text(text, {"links"})
+    title = cell_title(text, path)
+    structured_text = f"passage: {title}\nClaim: {claim}\nEvidence: {evidence}\nLinks: {links}"
+    tokens = tokenize(f"{title}\n{claim}")
+    return {
+        "path": rel(path, target),
+        "cell_ref": cell_ref(path, cells_root_path),
+        "stem": cell_stem(path),
+        "title": title,
+        "text": text,
+        "claim": claim,
+        "evidence": evidence,
+        "links": links,
+        "structured_text": structured_text,
+        "tokens": tokens,
+        "token_set": set(tokens),
+        "vector": lexical_vector(tokens),
+        "line_count": len(text.splitlines()),
+        "h2_count": len(H2_HEADING.findall(text)),
+        "bullet_count": sum(1 for line in text.splitlines() if line.strip().startswith(("-", "*"))),
+        "content_hash": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        "wikilinks": set(match.strip() for match in WIKILINK.findall(text)),
+        "assumption_count": len(re.findall(r"^\s*(?:[-*]\s*)?Assumption:", text, re.IGNORECASE | re.MULTILINE)),
+    }
+
+
+def cortex_cells(target: Path) -> list[dict[str, object]]:
+    root = cortex_path(target)
+    root_cells = root / "cells"
+    if not root_cells.exists():
+        return []
+    return [cell_record(path, target, root_cells) for path in sorted(root_cells.rglob("*.md"))]
+
+
+def relation_exists(
+    left: dict[str, object],
+    right: dict[str, object],
+    links_text: str,
+) -> bool:
+    left_refs = {str(left["cell_ref"]), str(left["stem"])}
+    right_refs = {str(right["cell_ref"]), str(right["stem"])}
+    left_links = {str(item) for item in left["wikilinks"]}  # type: ignore[index]
+    right_links = {str(item) for item in right["wikilinks"]}  # type: ignore[index]
+    if left_links & right_refs or right_links & left_refs:
+        return True
+    for line in links_text.splitlines():
+        has_left = any(f"[[{value}]]" in line for value in left_refs)
+        has_right = any(f"[[{value}]]" in line for value in right_refs)
+        if has_left and has_right:
+            return True
+    return False
+
+
+def token_similarity(left: dict[str, object], right: dict[str, object]) -> dict[str, float]:
+    left_set = left["token_set"]  # type: ignore[assignment]
+    right_set = right["token_set"]  # type: ignore[assignment]
+    if not left_set or not right_set:
+        return {"cosine": 0.0, "jaccard": 0.0, "overlap": 0.0, "score": 0.0}
+    intersection = len(left_set & right_set)
+    union = len(left_set | right_set)
+    jaccard = intersection / union if union else 0.0
+    overlap = intersection / min(len(left_set), len(right_set))
+    cos = cosine(left["vector"], right["vector"])  # type: ignore[arg-type]
+    return {
+        "cosine": round(cos, 4),
+        "jaccard": round(jaccard, 4),
+        "overlap": round(overlap, 4),
+        "score": round(max(cos, jaccard, overlap * 0.9), 4),
+    }
+
+
+def direction(cell: dict[str, object]) -> str:
+    tokens = {str(token) for token in cell["token_set"]}  # type: ignore[index]
+    hard_retain_terms = RETAIN_TERMS - {"source"}
+    retain = bool(tokens & hard_retain_terms)
+    discard = bool(tokens & DISCARD_TERMS)
+    if discard and not bool(tokens & {"keep", "preserve", "retain"}):
+        return "discard"
+    if retain and not discard:
+        return "retain"
+    if discard and not retain:
+        return "discard"
+    text = strip_accents(str(cell["claim"]).lower())
+    conflict_terms = ("contradict", "conflict", "supersede", "deprecated", "no longer")
+    if any(term in text for term in conflict_terms):
+        return "conflict"
+    return "neutral"
+
+
+def real_evidence_refs(evidence: str) -> list[str]:
+    refs = re.findall(
+        r"(?:\.\.?/)?(?:docs/agents/cortex/)?sources/[^\s`)]+|docs/agents/evidence/[^\s`)]+",
+        evidence,
+    )
+    return sorted(set(ref.strip("`") for ref in refs))
+
+
+def redundancy_reason(cell: dict[str, object]) -> str | None:
+    claim = str(cell["claim"]).strip()
+    tokens = [str(token) for token in cell["tokens"]]  # type: ignore[index]
+    if not claim:
+        return "missing claim text"
+    if len(tokens) < 6:
+        return "claim is too short to be durable"
+    generic = sum(1 for token in tokens if token in GENERIC_TERMS)
+    if generic / max(len(tokens), 1) >= 0.45:
+        return "claim is mostly generic terms"
+    sentences = [part.strip().lower() for part in re.split(r"[.!?]\s+", claim) if part.strip()]
+    if len(sentences) != len(set(sentences)):
+        return "claim repeats identical sentences"
+    return None
+
+
+def split_reason(cell: dict[str, object]) -> str | None:
+    claim = str(cell["claim"])
+    claim_tokens = tokenize(claim)
+    h2_count = int(cell["h2_count"])
+    line_count = int(cell["line_count"])
+    bullet_count = int(cell["bullet_count"])
+    topic_markers = len(re.findall(r"\b(also|besides|separately|tambem|também|alem disso|além disso)\b", claim, re.I))
+    if line_count > 120:
+        return f"cell has {line_count} lines"
+    if len(claim_tokens) > 140:
+        return f"claim has {len(claim_tokens)} semantic tokens"
+    if h2_count > 6:
+        return f"cell has {h2_count} H2 sections"
+    if bullet_count > 22:
+        return f"cell has {bullet_count} bullet lines"
+    if topic_markers >= 3:
+        return "claim mixes multiple topic markers"
+    return None
+
+
+def reject_reason(cell: dict[str, object]) -> str | None:
+    tokens = {str(token) for token in cell["token_set"]}  # type: ignore[index]
+    transient = sorted(tokens & TRANSIENT_TERMS)
+    if transient:
+        return f"transient terms are not durable memory: {', '.join(transient)}"
+    return None
+
+
+def build_lexical_embeddings(cells: list[dict[str, object]]) -> dict[str, object]:
+    return {
+        "status": "PASS",
+        "backend": "lexical",
+        "backend_status": "CERTIFIED",
+        "model": LEXICAL_MODEL,
+        "dimensions": LEXICAL_DIMENSIONS,
+        "vectors": [
+            {
+                "path": cell["path"],
+                "title": cell["title"],
+                "content_hash": cell["content_hash"],
+                "vector": cell["vector"],
+            }
+            for cell in cells
+        ],
+        "failures": [],
+    }
+
+
+def run_xenova_embeddings(cells: list[dict[str, object]]) -> dict[str, object]:
+    helper = Path(__file__).with_name("cortex_embed.mjs")
+    node = shutil.which("node")
+    if node is None:
+        return {"status": "BLOCKED", "failures": ["node runtime unavailable for Xenova backend"]}
+    if not helper.exists():
+        return {"status": "BLOCKED", "failures": [f"missing Xenova helper: {helper}"]}
+    payload = {
+        "model": DEFAULT_SEMANTIC_MODEL,
+        "items": [
+            {
+                "path": cell["path"],
+                "title": cell["title"],
+                "content_hash": cell["content_hash"],
+                "text": cell["structured_text"],
+            }
+            for cell in cells
+        ],
+    }
+    result = subprocess.run(
+        [node, str(helper)],
+        text=True,
+        input=json.dumps(payload),
+        capture_output=True,
+        check=False,
+    )
+    try:
+        parsed = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        parsed = {
+            "status": "BLOCKED",
+            "failures": [result.stderr.strip() or "Xenova helper did not return JSON"],
+        }
+    if result.returncode != 0 and parsed.get("status") != "BLOCKED":
+        parsed["status"] = "BLOCKED"
+        parsed.setdefault("failures", []).append(result.stderr.strip() or "Xenova helper failed")
+    return parsed
+
+
+def semantic_embeddings(
+    target: Path,
+    cells: list[dict[str, object]],
+    backend: str,
+    write_index: bool,
+) -> dict[str, object]:
+    if backend == "lexical":
+        embeddings = build_lexical_embeddings(cells)
+    else:
+        embeddings = run_xenova_embeddings(cells)
+        if embeddings.get("status") == "BLOCKED":
+            if backend == "xenova":
+                embeddings.setdefault("backend", "xenova")
+                embeddings.setdefault("backend_status", "BLOCKED")
+                return embeddings
+            fallback = build_lexical_embeddings(cells)
+            fallback["backend_status"] = "DEGRADED"
+            fallback["fallback_reason"] = "; ".join(str(item) for item in embeddings.get("failures", []))
+            embeddings = fallback
+        else:
+            embeddings.setdefault("backend", "xenova")
+            embeddings.setdefault("backend_status", "CERTIFIED")
+
+    if write_index and embeddings.get("status") == "PASS":
+        persist_semantic_index(target, embeddings)
+        embeddings["semantic_index"] = rel(semantic_db_path(target), target)
+    return embeddings
+
+
+def persist_semantic_index(target: Path, embeddings: dict[str, object]) -> None:
+    db_path = semantic_db_path(target)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    vectors = embeddings.get("vectors", [])
+    with sqlite3.connect(db_path) as conn:
+        conn.execute("DROP TABLE IF EXISTS cortex_semantic")
+        conn.execute(
+            "CREATE TABLE cortex_semantic ("
+            "path TEXT PRIMARY KEY, "
+            "title TEXT NOT NULL, "
+            "content_hash TEXT NOT NULL, "
+            "backend TEXT NOT NULL, "
+            "model TEXT NOT NULL, "
+            "dimensions INTEGER NOT NULL, "
+            "vector TEXT NOT NULL"
+            ")"
+        )
+        for item in vectors:  # type: ignore[assignment]
+            vector = item["vector"]
+            conn.execute(
+                "INSERT INTO cortex_semantic(path, title, content_hash, backend, model, dimensions, vector) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (
+                    item["path"],
+                    item.get("title", ""),
+                    item.get("content_hash", ""),
+                    embeddings.get("backend", "unknown"),
+                    embeddings.get("model", ""),
+                    int(embeddings.get("dimensions", 0)),
+                    json.dumps(vector, separators=(",", ":")),
+                ),
+            )
+        conn.commit()
+
+
+def linked_pair(left: dict[str, object], right: dict[str, object]) -> dict[str, str]:
+    return {
+        "left": str(left["path"]),
+        "right": str(right["path"]),
+    }
+
+
+def curate_plan(target: Path, backend: str = "auto", write_index: bool = True) -> dict[str, object]:
+    target = target.resolve()
+    verify_result = verify(target)
+    failures = list(verify_result["failures"])
+    root = cortex_path(target)
+    records = cortex_cells(target)
+    audit_result = audit(target) if verify_result["status"] == "PASS" else {"status": "FAIL", "failures": failures}
+    if audit_result.get("status") == "FAIL":
+        failures.extend(str(item) for item in audit_result.get("failures", []))
+
+    if failures:
+        return {
+            "target": str(target),
+            "status": "FAIL",
+            "requested_backend": backend,
+            "backend": "none",
+            "writes": [],
+            "derived_writes": [],
+            "failures": sorted(set(failures)),
+            "audit": audit_result,
+        }
+
+    embeddings = semantic_embeddings(target, records, backend, write_index)
+    if embeddings.get("status") == "BLOCKED":
+        return {
+            "target": str(target),
+            "status": "BLOCKED",
+            "requested_backend": backend,
+            "backend": embeddings.get("backend", "xenova"),
+            "backend_status": "BLOCKED",
+            "writes": [],
+            "derived_writes": [],
+            "failures": embeddings.get("failures", []),
+        }
+
+    vector_by_path = {
+        str(item["path"]): item["vector"]
+        for item in embeddings.get("vectors", [])  # type: ignore[assignment]
+    }
+    for record in records:
+        if str(record["path"]) in vector_by_path:
+            record["vector"] = vector_by_path[str(record["path"])]
+
+    links_text = read_text(root / "LINKS.md") if (root / "LINKS.md").exists() else ""
+    merge_candidates: list[dict[str, object]] = []
+    split_candidates: list[dict[str, object]] = []
+    link_candidates: list[dict[str, object]] = []
+    tension_candidates: list[dict[str, object]] = []
+    evidence_gaps: list[dict[str, object]] = []
+    redundancy_warnings: list[dict[str, object]] = []
+    reject_candidates: list[dict[str, object]] = []
+
+    for record in records:
+        split = split_reason(record)
+        if split:
+            split_candidates.append({"path": record["path"], "reason": split})
+        reject = reject_reason(record)
+        if reject:
+            reject_candidates.append({"path": record["path"], "reason": reject})
+        evidence = str(record["evidence"])
+        evidence_refs = real_evidence_refs(evidence)
+        if not evidence_refs or int(record["assumption_count"]) > 1:
+            reason = "missing real source evidence" if not evidence_refs else "too many Assumption lines"
+            evidence_gaps.append(
+                {
+                    "path": record["path"],
+                    "reason": reason,
+                    "assumption_count": record["assumption_count"],
+                    "real_evidence_refs": evidence_refs,
+                }
+            )
+        redundant = redundancy_reason(record)
+        if redundant:
+            redundancy_warnings.append({"path": record["path"], "reason": redundant})
+
+    for index, left in enumerate(records):
+        for right in records[index + 1:]:
+            scores = token_similarity(left, right)
+            left_direction = direction(left)
+            right_direction = direction(right)
+            conflict = (
+                {left_direction, right_direction} == {"retain", "discard"}
+                or "conflict" in {left_direction, right_direction}
+            )
+            pair = linked_pair(left, right)
+            if conflict and scores["score"] >= 0.18:
+                tension_candidates.append(
+                    {
+                        **pair,
+                        "score": scores["score"],
+                        "left_direction": left_direction,
+                        "right_direction": right_direction,
+                    }
+                )
+                continue
+            if scores["score"] >= 0.54:
+                merge_candidates.append({**pair, "score": scores["score"]})
+            elif scores["score"] >= 0.32 and not relation_exists(left, right, links_text):
+                link_candidates.append({**pair, "score": scores["score"]})
+
+    merge_candidates.sort(key=lambda item: (-float(item["score"]), str(item["left"]), str(item["right"])))
+    link_candidates.sort(key=lambda item: (-float(item["score"]), str(item["left"]), str(item["right"])))
+    tension_candidates.sort(key=lambda item: (-float(item["score"]), str(item["left"]), str(item["right"])))
+    split_candidates.sort(key=lambda item: str(item["path"]))
+    evidence_gaps.sort(key=lambda item: str(item["path"]))
+    redundancy_warnings.sort(key=lambda item: str(item["path"]))
+    reject_candidates.sort(key=lambda item: str(item["path"]))
+
+    blocking = bool(
+        merge_candidates
+        or split_candidates
+        or tension_candidates
+        or evidence_gaps
+        or reject_candidates
+    )
+    backend_status = str(embeddings.get("backend_status", "CERTIFIED"))
+    status = "FAIL" if blocking else ("DEGRADED" if backend_status == "DEGRADED" else "PASS")
+    derived_writes = []
+    if write_index and embeddings.get("semantic_index"):
+        derived_writes.append(str(embeddings["semantic_index"]))
+
+    return {
+        "target": str(target),
+        "status": status,
+        "requested_backend": backend,
+        "backend": embeddings.get("backend", "lexical"),
+        "backend_status": backend_status,
+        "model": embeddings.get("model", LEXICAL_MODEL),
+        "dimensions": embeddings.get("dimensions", LEXICAL_DIMENSIONS),
+        "semantic_index": embeddings.get("semantic_index"),
+        "writes": [],
+        "derived_writes": derived_writes,
+        "failures": [] if status != "FAIL" else ["semantic curation gate requires attention"],
+        "cell_count": len(records),
+        "thresholds": {
+            "merge_score": 0.54,
+            "link_score": 0.32,
+            "tension_score": 0.18,
+            "max_cell_lines": 120,
+            "max_claim_tokens": 140,
+            "max_assumptions_without_review": 1,
+        },
+        "merge_candidates": merge_candidates,
+        "split_candidates": split_candidates,
+        "link_candidates": link_candidates,
+        "tension_candidates": tension_candidates,
+        "evidence_gaps": evidence_gaps,
+        "redundancy_warnings": redundancy_warnings,
+        "reject_candidates": reject_candidates,
+        "audit": audit_result,
+    }
 
 
 def audit(target: Path) -> dict[str, object]:
@@ -864,8 +1443,8 @@ def reflect(target: Path, query: str | None, limit: int = 20, line_budget: int =
         "line_budget": line_budget,
         "curation_due": curation_due,
         "curation_policy": (
-            "When curation is due, propose compaction or redundancy removal. "
-            "Do not delete Cortex content automatically."
+            "When curation is due, run curate-plan before proposing compaction, split, "
+            "merge, rejection, or redundancy removal. Do not delete Cortex content automatically."
         ),
         "proposal": None if not capture_needed else {
             "cell": f"docs/agents/cortex/cells/{cell_name}.md",
@@ -1116,6 +1695,121 @@ def self_test() -> int:
         loose_audit_result = audit(target)
         loose_cell.unlink()
 
+        dirty_target = Path(tempdir) / "dirty-curation"
+        init(dirty_target)
+        dirty_source = cortex_path(dirty_target) / "sources" / "curation-source.md"
+        dirty_source.write_text(
+            "# Curation Source\n\n"
+            "The fixture contains duplicate, conflicting, swollen, and transient memory candidates.\n",
+            encoding="utf-8",
+        )
+        dirty_cells = cortex_path(dirty_target) / "cells"
+        dirty_fixtures = {
+            "markdown-memory.md": (
+                "# Markdown Memory\n\n"
+                "## Claim\n\n"
+                "Cortex memory lives in durable Markdown files with explicit source evidence.\n\n"
+                "## Evidence\n\n"
+                "- `sources/curation-source.md` records the memory fixture.\n"
+            ),
+            "compiled-knowledge.md": (
+                "# Compiled Knowledge\n\n"
+                "## Claim\n\n"
+                "Cortex keeps durable knowledge inside versioned filesystem artifacts with proof.\n\n"
+                "## Evidence\n\n"
+                "- `sources/curation-source.md` records the duplicate fixture.\n"
+            ),
+            "retain-sources.md": (
+                "# Retain Sources\n\n"
+                "## Claim\n\n"
+                "Cortex must preserve source evidence for audit and keep versioned memory.\n\n"
+                "## Evidence\n\n"
+                "- `sources/curation-source.md` records the retention fixture.\n"
+            ),
+            "delete-sources.md": (
+                "# Delete Sources\n\n"
+                "## Claim\n\n"
+                "Cortex should automatically delete source evidence and overwrite memory after each run.\n\n"
+                "## Evidence\n\n"
+                "- `sources/curation-source.md` records the tension fixture.\n"
+            ),
+            "assumption-only.md": (
+                "# Assumption Only\n\n"
+                "## Claim\n\n"
+                "Cortex can promote a durable operating rule from chat context alone.\n\n"
+                "## Evidence\n\n"
+                "- Assumption: first ungrounded assertion.\n"
+                "- Assumption: second ungrounded assertion.\n"
+            ),
+            "scratch-todo.md": (
+                "# Scratch Todo\n\n"
+                "## Claim\n\n"
+                "Temporary scratch todo notes should be filed as Cortex memory.\n\n"
+                "## Evidence\n\n"
+                "- `sources/curation-source.md` records the reject fixture.\n"
+            ),
+        }
+        for name, text in dirty_fixtures.items():
+            (dirty_cells / name).write_text(text, encoding="utf-8")
+        swollen_claim = "\n".join(
+            f"- Cortex curation topic {number} should be treated as a separate concern."
+            for number in range(30)
+        )
+        (dirty_cells / "swollen-cell.md").write_text(
+            "# Swollen Cell\n\n"
+            "## Claim\n\n"
+            f"{swollen_claim}\n\n"
+            "## Evidence\n\n"
+            "- `sources/curation-source.md` records the split fixture.\n",
+            encoding="utf-8",
+        )
+        dirty_map = cortex_path(dirty_target) / "MAP.md"
+        dirty_links = cortex_path(dirty_target) / "LINKS.md"
+        for path in sorted(dirty_cells.rglob("*.md")):
+            ref = cell_ref(path, dirty_cells)
+            append_unique_line(dirty_map, f"| [[{ref}]] | Dirty curation fixture | |")
+            append_unique_line(dirty_links, f"- [[{ref}]] -> `sources/curation-source.md`")
+        dirty_curate_result = curate_plan(dirty_target, "lexical")
+
+        healthy_target = Path(tempdir) / "healthy-curation"
+        init(healthy_target)
+        healthy_source = cortex_path(healthy_target) / "sources" / "healthy-source.md"
+        healthy_source.write_text(
+            "# Healthy Source\n\n"
+            "Healthy Cortex memory contains distinct grounded cells with explicit relationships.\n",
+            encoding="utf-8",
+        )
+        healthy_cells = cortex_path(healthy_target) / "cells"
+        healthy_fixtures = {
+            "adapter-routing.md": (
+                "# Adapter Routing\n\n"
+                "## Claim\n\n"
+                "Adapter bootloaders stay thin and route agents toward governed project context.\n\n"
+                "## Evidence\n\n"
+                "- `sources/healthy-source.md` records the adapter routing fixture.\n\n"
+                "## Links\n\n"
+                "- [[gate-closure]]\n"
+            ),
+            "gate-closure.md": (
+                "# Gate Closure\n\n"
+                "## Claim\n\n"
+                "Project cuts close only after the smallest relevant oracle reports a passing result.\n\n"
+                "## Evidence\n\n"
+                "- `sources/healthy-source.md` records the gate closure fixture.\n\n"
+                "## Links\n\n"
+                "- [[adapter-routing]]\n"
+            ),
+        }
+        for name, text in healthy_fixtures.items():
+            (healthy_cells / name).write_text(text, encoding="utf-8")
+        healthy_map = cortex_path(healthy_target) / "MAP.md"
+        healthy_links = cortex_path(healthy_target) / "LINKS.md"
+        append_unique_line(healthy_map, "| [[adapter-routing]] | Adapter bootloaders stay thin | [[gate-closure]] |")
+        append_unique_line(healthy_map, "| [[gate-closure]] | Gates close cuts | [[adapter-routing]] |")
+        append_unique_line(healthy_links, "- [[adapter-routing]] -> [[gate-closure]]")
+        append_unique_line(healthy_links, "- [[gate-closure]] -> [[adapter-routing]]")
+        healthy_curate_result = curate_plan(healthy_target, "lexical")
+
         result = {
             "init": init_result,
             "verify": verify_result,
@@ -1133,6 +1827,8 @@ def self_test() -> int:
             "read_cell": read_cell_result,
             "broken_link_audit": broken_audit_result,
             "loose_cell_audit": loose_audit_result,
+            "dirty_curate_plan": dirty_curate_result,
+            "healthy_curate_plan": healthy_curate_result,
         }
         print(json.dumps(result, indent=2))
 
@@ -1155,6 +1851,14 @@ def self_test() -> int:
             any("missing-cell" in failure for failure in broken_audit_result["failures"]),
             loose_audit_result["status"] == "FAIL",
             any("explicit evidence ref" in failure for failure in loose_audit_result["failures"]),
+            dirty_curate_result["status"] == "FAIL" and dirty_curate_result["writes"] == [],
+            bool(dirty_curate_result["merge_candidates"]),
+            bool(dirty_curate_result["split_candidates"]),
+            bool(dirty_curate_result["tension_candidates"]),
+            bool(dirty_curate_result["evidence_gaps"]),
+            bool(dirty_curate_result["reject_candidates"]),
+            semantic_db_path(dirty_target).exists(),
+            healthy_curate_result["status"] == "PASS" and healthy_curate_result["writes"] == [],
         )
         if not all(checks):
             print("[cortex] FAIL")
@@ -1174,6 +1878,7 @@ def main() -> int:
             "audit",
             "recall",
             "rebuild",
+            "curate-plan",
             "absorb-plan",
             "read-cell",
             "learn",
@@ -1194,6 +1899,7 @@ def main() -> int:
     parser.add_argument("--link", action="append", default=[])
     parser.add_argument("--limit", type=int, default=10)
     parser.add_argument("--line-budget", type=int, default=500)
+    parser.add_argument("--backend", choices=("auto", "xenova", "lexical"), default="auto")
     parser.add_argument("--force-rg", action="store_true")
     parser.add_argument("--yes", action="store_true")
     parser.add_argument("--update", action="store_true")
@@ -1212,6 +1918,8 @@ def main() -> int:
         result = audit(args.target)
     elif command == "rebuild":
         result = rebuild(args.target)
+    elif command == "curate-plan":
+        result = curate_plan(args.target, args.backend)
     elif command == "recall":
         if not args.query:
             parser.error("recall requires a query")
@@ -1252,6 +1960,12 @@ def main() -> int:
     if status == "NEEDS_AUTH":
         print("[cortex] NEEDS_AUTH")
         return 2
+    if status == "BLOCKED":
+        print("[cortex] BLOCKED")
+        return 3
+    if status == "DEGRADED":
+        print("[cortex] DEGRADED")
+        return 0
     print("[cortex] PASS")
     return 0
 

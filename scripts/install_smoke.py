@@ -13,7 +13,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.14"
+VERSION = "0.3.15"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 
 
@@ -83,9 +83,10 @@ def install_mcp(target: Path, adapter: str, dry_run: bool = False) -> list[str]:
 
 def cortex_gate(target: Path) -> list[str]:
     failures: list[str] = []
-    for command in ("verify", "audit", "rebuild"):
+    for command in ("verify", "audit", "rebuild", "curate-plan"):
+        extra_args = ["--backend", "lexical"] if command == "curate-plan" else []
         code, stdout, stderr = run(
-            [sys.executable, str(ROOT / "scripts/cortex.py"), command, "--target", str(target)]
+            [sys.executable, str(ROOT / "scripts/cortex.py"), command, "--target", str(target), *extra_args]
         )
         if code != 0:
             failures.extend([f"cortex {command} failed", *stdout.splitlines(), *stderr.splitlines()])
@@ -113,7 +114,7 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
 
 
 def expected_mcp_paths(adapter: str) -> tuple[str, ...]:
-    base = (".tilly/bin/cortex.py", ".tilly/bin/cortex_mcp.py")
+    base = (".tilly/bin/cortex.py", ".tilly/bin/cortex_mcp.py", ".tilly/bin/cortex_embed.mjs")
     if adapter == "codex":
         return (*base, ".codex/config.toml")
     if adapter == "claude":

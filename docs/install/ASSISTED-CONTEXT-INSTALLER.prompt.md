@@ -5,7 +5,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.6.1
+tver: 0.7.0
 ---
 
 # Tilly Assisted Context Installer
@@ -38,14 +38,14 @@ reports certification.
 Treat Python scripts and `npm run ...` entries as deterministic oracles and
 portable helper tools. Treat skills, rules, bootloaders, and adapter files as
 routing/governance surfaces that tell the agent when and how to act. Treat
-hooks as local Git gates that run only during Git events. Treat MCP as a
-read-only Cortex access surface for agents, not as memory and not as the
-installer.
+hooks as local Git gates for validation and no-write Cortex
+reflection/curation. Treat MCP as a read-only Cortex access surface for agents,
+not as memory and not as the installer.
 
 `/tilly:init` is the preferred user-facing shortcut for this workflow. Treat it
 as an intent that loads this installer contract, not as a raw shell command.
 Other shortcuts are routed by `docs/install/COMMAND-TRIGGERS.md`:
-`/tilly:cortex`, `/tilly:mcp`, `/tilly:doctor`, `/tilly:adapter`, and
+`/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`, `/tilly:doctor`, `/tilly:adapter`, and
 `/tilly:bench`.
 
 If the current runtime cannot execute a command, do not claim it passed. Finish
@@ -79,6 +79,7 @@ docs/install/COMMAND-TRIGGERS.md
 docs/mesh/CORTEX.md
 docs/mesh/CORTEX-MCP.md
 scripts/cortex.py
+scripts/cortex_embed.mjs
 scripts/cortex_mcp.py
 scripts/tilly_init.py
 scripts/install_adapter.py
@@ -547,6 +548,7 @@ python3 scripts/cortex.py init --target <target-root>
 python3 scripts/cortex.py verify --target <target-root>
 python3 scripts/cortex.py audit --target <target-root>
 python3 scripts/cortex.py rebuild --target <target-root>
+python3 scripts/cortex.py curate-plan --target <target-root> --backend lexical
 python3 scripts/cortex.py learn --target <target-root> --source docs/agents/cortex/sources/source.md
 python3 scripts/cortex.py reflect --target <target-root> "decision or lesson"
 ```
@@ -577,6 +579,8 @@ Use these local rules:
   `## [YYYY-MM-DD] absorb | <topic>`;
 - `.tilly/cortex/recall.sqlite` is a derived, rebuildable recall index, never
   memory;
+- `.tilly/cortex/semantic.sqlite` is a derived, rebuildable curation index,
+  never memory;
 - Cortex links should render in Obsidian and remain readable in GitHub or a
   plain editor;
 - source citations should stay as explicit repository paths, even when Cortex
@@ -585,6 +589,9 @@ Use these local rules:
 - `reflect` is the low-friction closure reflex; bootloaders and skills may run
   it before final responses or commits, but it must only propose memory capture
   or curation;
+- `curate-plan` is the no-write semantic curation gate; it classifies merge,
+  split, link, tension, evidence-gap, redundancy, and reject candidates before
+  any memory cleanup proposal;
 - `apply` may write only with explicit authorization, explicit evidence, and a
   passing audit/rebuild cycle; it must not write in `sources/**`.
 - crossing roughly 500 changed lines should trigger curation review and
@@ -685,6 +692,7 @@ The activation writes only project-scoped local assets:
 ```text
 .tilly/bin/cortex.py
 .tilly/bin/cortex_mcp.py
+.tilly/bin/cortex_embed.mjs
 .codex/config.toml        # Codex route only
 .mcp.json                 # Claude Code route only
 .cursor/mcp.json          # Cursor route only
@@ -825,6 +833,7 @@ If Cortex is present:
 python3 scripts/cortex.py verify --target .  # when package scripts are available
 python3 scripts/cortex.py audit --target .   # when package scripts are available
 python3 scripts/cortex.py rebuild --target . # when package scripts are available
+python3 scripts/cortex.py curate-plan --target . --backend lexical # when available
 test -f docs/agents/cortex/CONTRACT.md
 test -f docs/agents/cortex/MAP.md
 test -f docs/agents/cortex/TRAIL.md

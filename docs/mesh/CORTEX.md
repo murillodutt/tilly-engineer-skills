@@ -5,7 +5,7 @@ status: active
 consumer: installer authors, adopters, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.0
+tver: 0.5.0
 ---
 
 # Tilly Cortex
@@ -41,11 +41,13 @@ The local recall index lives at:
 
 ```text
 .tilly/cortex/recall.sqlite
+.tilly/cortex/semantic.sqlite
 ```
 
-That database is never memory and never source of truth. It is a derived cache
-for faster recall and must be rebuildable at any time from `sources/**`,
-`cells/**`, `MAP.md`, `TRAIL.md`, `LINKS.md`, and `CONTRACT.md`.
+These databases are never memory and never source of truth. They are derived
+caches for faster recall and semantic curation. They must be rebuildable at any
+time from `sources/**`, `cells/**`, `MAP.md`, `TRAIL.md`, `LINKS.md`, and
+`CONTRACT.md`.
 
 ## Relationship To Mokh And TDS
 
@@ -72,10 +74,12 @@ docs/agents/cortex/
   cells/
 .tilly/cortex/
   recall.sqlite
+  semantic.sqlite
 ```
 
-The `.tilly/cortex/recall.sqlite` file is derived and may be deleted. Running
-`rebuild` recreates it from the versioned Cortex artifacts.
+The `.tilly/cortex/recall.sqlite` and `.tilly/cortex/semantic.sqlite` files are
+derived and may be deleted. Running `rebuild` recreates recall. Running
+`curate-plan` recreates the semantic curation index from `cells/**`.
 
 ## Obsidian Compatibility
 
@@ -118,6 +122,49 @@ have:
 `audit` fails when a cell misses this minimum. Missing map entries and orphan
 cells remain warnings; broken wikilinks and ungrounded cells are failures.
 
+`curate-plan` adds the semantic gate above structural integrity. It classifies
+merge candidates, split candidates, link candidates, semantic tensions,
+evidence gaps, redundancy warnings, and reject candidates. It never writes
+memory artifacts.
+
+## Curation Conveyor
+
+Cortex does not store everything that passes through the agent window. Cortex
+receives, classifies, separates, rejects, consolidates, and publishes only
+knowledge with evidence, route, and authorization.
+
+The conveyor has three gates:
+
+| Gate | Contract |
+|------|----------|
+| `reflection_gate` | `reflect` decides whether durable capture or curation review is due. It writes nothing. |
+| `semantic_curation_gate` | `curate-plan` classifies duplicates, swollen cells, nearby unlinked cells, tensions, evidence gaps, redundancy, and transient material. It writes no memory. |
+| `promotion_gate` | `apply --yes` is the only built-in path that writes compiled memory, and only with explicit evidence and authorization. |
+
+`curate-plan` statuses:
+
+| Status | Meaning |
+|--------|---------|
+| `PASS` | Cells are semantically healthy within the current thresholds |
+| `FAIL` | Merge, split, tension, evidence-gap, or reject candidates require curation |
+| `DEGRADED` | `--backend auto` could not use Xenova and fell back to lexical curation |
+| `BLOCKED` | Explicit `--backend xenova` could not run because runtime, package, or model access is unavailable |
+
+The semantic index is:
+
+```text
+.tilly/cortex/semantic.sqlite
+```
+
+It stores path, content hash, model, dimensions, and serialized vectors derived
+from `cells/**`. It is an acceleration and certification artifact, not memory.
+The deterministic package gate uses `--backend lexical`. Real environments may
+run `--backend xenova` or `--backend auto` with the optional
+`@huggingface/transformers` dependency and the default
+`Xenova/multilingual-e5-small` model. If explicit Xenova cannot run, the status
+is `BLOCKED`; if `auto` falls back to lexical, the status is `DEGRADED` unless
+memory-quality failures are also present.
+
 ## Rules
 
 - Never modify `sources/**` after import/init.
@@ -134,6 +181,7 @@ cells remain warnings; broken wikilinks and ungrounded cells are failures.
   decision resolves them.
 - Durable answers may be promoted into `cells/**`; transient chat is not filed.
 - Do not call `.tilly/cortex/recall.sqlite` memory.
+- Do not call `.tilly/cortex/semantic.sqlite` memory.
 - Do not allow an answer to depend only on the recall index.
 
 ## Operations
@@ -144,6 +192,7 @@ cells remain warnings; broken wikilinks and ungrounded cells are failures.
 | `recall` | Search Cortex artifacts through SQLite FTS5 or `rg` fallback |
 | `audit` | Find drift, stale claims, contradictions, broken links, ungrounded cells, orphan cells, and unlisted cells |
 | `rebuild` | Recreate `.tilly/cortex/recall.sqlite` from versioned Cortex artifacts |
+| `curate-plan` | Rebuild the semantic curation index and classify memory-quality risks without writing memory |
 | `learn` | Generate a promotion proposal with evidence; do not write automatically |
 | `reflect` | No-write closure reflex that decides whether a memory proposal or curation review is due |
 | `apply` | Write only with authorization and audit evidence |
@@ -158,6 +207,7 @@ python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
+python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical
 python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
 python3 scripts/cortex.py read-cell --target /path/to/project-or-vault --cell path-or-stem
 python3 scripts/cortex.py learn --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
@@ -178,9 +228,10 @@ explicitly authorized `apply --yes` runs that pass audit and rebuild.
 it before final responses for material work and before commits when Cortex
 exists. It inspects the local Git diff, emits a no-write promotion proposal when
 durable learning is likely, and marks curation as due when the current diff
-crosses the default 500 changed-line budget. Curation means proposing
-compaction, split, or redundancy removal with a visible diff; it never means
-automatic deletion.
+crosses the default 500 changed-line budget. When curation is due, agents should
+run `curate-plan` and use the returned classifications before proposing
+compaction, split, or redundancy removal with a visible diff. Curation never
+means automatic deletion.
 
 `apply` writes only `cells/**`, `MAP.md`, `LINKS.md`, `TRAIL.md`, and the
 derived recall index rebuilt from those artifacts. It refuses to write without
@@ -236,6 +287,8 @@ No-go:
 - Do not maintain old and new Cortex names in parallel.
 - Do not call the derived index memory.
 - Do not let reflection or curation delete content automatically.
+- Do not describe certified Cortex capability as experimental. Use `blocked`,
+  `degraded`, `not available`, `certified`, or `fail`.
 - Do not market Cortex as a RAG killer.
 
 ## Installer Boundary
@@ -253,13 +306,15 @@ Initial certification proves that:
 - runtime bootloaders route to Cortex when durable project memory is relevant;
 - read-only Cortex MCP is activated for selected runtime routes or explicitly
   blocked with a reason;
+- `curate-plan` is available as a no-write curation gate;
 - installation evidence states whether Cortex was created, skipped, or blocked.
 
 ## MCP Boundary
 
-MCP enters only after CLI, rebuild, and fallback recall are certified. The v1
-MCP shape is read-only first: verify, audit, recall, read cell, and absorb-plan.
-Write tools require a later controlled cut.
+MCP enters only after CLI, rebuild, fallback recall, and no-write curation are
+certified. The v1 MCP shape is read-only first: verify, audit, recall, read
+cell, absorb-plan, curate-plan, and reflect. Write tools require a later
+controlled cut.
 
 The first read-only stdio surface is governed by
 `docs/mesh/CORTEX-MCP.md` and implemented by `scripts/cortex_mcp.py`. It

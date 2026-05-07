@@ -32,6 +32,15 @@ surgical, or verification is missing.
 
 </success_formula>
 
+<diamond_build_test_fail_fix>
+
+For critical capabilities, build from the finished contract down: final
+behavior, adversarial fixture, observed failure, smallest repair, and green
+gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
+`not available`, `certified`, or `fail`.
+
+</diamond_build_test_fail_fix>
+
 <routing>
 
 | Need | Source |

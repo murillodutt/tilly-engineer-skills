@@ -19,7 +19,7 @@ import cortex
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.14"
+VERSION = "0.3.15"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
 
@@ -173,6 +173,7 @@ def surface_inventory(target: Path) -> dict[str, Any]:
         "claude_mcp": ".mcp.json",
         "cursor_mcp": ".cursor/mcp.json",
         "tilly_mcp_server": ".tilly/bin/cortex_mcp.py",
+        "tilly_mcp_embed_helper": ".tilly/bin/cortex_embed.mjs",
     }
     return {name: (target / relpath).exists() for name, relpath in paths.items()}
 
@@ -208,9 +209,13 @@ def target_gates(target: Path) -> list[dict[str, Any]]:
     gates: list[dict[str, Any]] = [run(["git", "diff", "--check"], target)]
     cortex_root = cortex.cortex_path(target)
     if (cortex_root / "CONTRACT.md").exists():
-        for command in ("verify", "audit", "rebuild"):
+        for command in ("verify", "audit", "rebuild", "curate-plan"):
+            extra_args = ["--backend", "lexical"] if command == "curate-plan" else []
             gates.append(
-                run([sys.executable, str(ROOT / "scripts/cortex.py"), command, "--target", str(target)], ROOT)
+                run(
+                    [sys.executable, str(ROOT / "scripts/cortex.py"), command, "--target", str(target), *extra_args],
+                    ROOT,
+                )
             )
     mcp = target / ".tilly/bin/cortex_mcp.py"
     if mcp.exists():
