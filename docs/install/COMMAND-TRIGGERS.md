@@ -5,7 +5,7 @@ status: active
 consumer: adopters, installing agents, and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.0
+tver: 0.4.1
 ---
 
 # Tilly Command Triggers
@@ -18,8 +18,8 @@ agent invokes when the runtime exposes local tools.
 
 | Trigger | User intent | Primary oracles | Writes |
 |---------|-------------|-----------------|--------|
-| `/tilly:init` or init command/prompt | install, update, audit, or recertify Tilly in a project | `tilly_init.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, Cortex, runtime bootloaders, project MCP config |
-| `/tilly:update` or update command/prompt | update an already meshed project with the lowest-friction route | `tilly_update.py`, assisted installer, install smoke, MCP install | only selected Tilly surfaces after Step Zero |
+| `/tilly:init` or init command/prompt | install, update, audit, or recertify Tilly in a project | `root_context.py`, `tilly_init.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, Cortex, runtime bootloaders, project MCP config |
+| `/tilly:update` or update command/prompt | update an already meshed project with the lowest-friction route | `tilly_update.py`, `root_context.py`, assisted installer, install smoke, MCP install | only selected Tilly surfaces after Step Zero |
 | `/tilly:cortex` | inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `cortex.py`, read-only Cortex MCP | Cortex files only when authorized |
 | `/tilly:curate` | classify Cortex memory quality risks without writing memory | `cortex.py curate-plan`, read-only `cortex_curate_plan` | no memory writes; CLI may refresh `.tilly/cortex/semantic.sqlite` |
 | `/tilly:mcp` | activate or verify read-only Cortex MCP | `install_mcp.py`, `cortex_mcp.py`, MCP smoke | `.tilly/bin/**` and project-scoped MCP config |
@@ -63,6 +63,8 @@ inicializar Tilly / instalar Tilly / recertificar Tilly -> /tilly:init
 - Do not call SQLite, MCP, or generated output memory.
 - Do not call `.tilly/cortex/semantic.sqlite` memory; it is only derived
   curation cache.
+- Do not overwrite root runtime files before `root_context.py` has preserved or
+  rejected project-owned instructions.
 - Do not treat Field Reports, GitHub issues, outbox, or hooks as project truth.
 - Field Reports also has a GitHub receiver gate: issue template, schema oracle,
   labels, and quarantine workflow.

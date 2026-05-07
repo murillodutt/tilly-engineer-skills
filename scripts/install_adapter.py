@@ -16,10 +16,11 @@ from typing import Any
 
 import field_reports
 import materialize_adapter
+import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.26"
+VERSION = "0.3.27"
 RETROFIT_DIR = ".tilly/retrofit"
 
 
@@ -246,6 +247,7 @@ def install(args: argparse.Namespace) -> int:
             )
             all_conflicts.extend(conflicts)
 
+        root_context_result = root_context.analyze(target_root)
         retrofit_plan = None
         if all_conflicts and not args.overwrite:
             if args.retrofit_plan:
@@ -262,6 +264,7 @@ def install(args: argparse.Namespace) -> int:
                     "target": str(target_root),
                     "adapter": args.adapter,
                     "planned": planned,
+                    "root_context": root_context_result,
                     "conflicts": all_conflicts,
                     "retrofit_plan": str(retrofit_plan) if retrofit_plan else None,
                 },
@@ -274,6 +277,22 @@ def install(args: argparse.Namespace) -> int:
             capture_install_result(target_root, args.adapter, "CONFLICT", args.dry_run, len(all_conflicts))
             print("[install-adapter] FAIL")
             print("- target has conflicting files; rerun with --overwrite or use --retrofit-plan")
+            return 2
+
+        if args.overwrite and root_context_result["status"] == "NEEDS_REVIEW" and not args.root_context_reviewed:
+            print(json.dumps(
+                {
+                    "version": VERSION,
+                    "status": "ROOT-CONTEXT-NEEDS-REVIEW",
+                    "target": str(target_root),
+                    "adapter": args.adapter,
+                    "root_context": root_context_result,
+                },
+                indent=2,
+            ))
+            capture_install_result(target_root, args.adapter, "ROOT-CONTEXT-NEEDS-REVIEW", args.dry_run, len(root_context_result.get("roots", [])))
+            print("[install-adapter] FAIL")
+            print("- root bootloader context must be structured before overwrite; rerun root_context.py --write-plan")
             return 2
 
         if not require_confirmation(args):
@@ -300,6 +319,7 @@ def install(args: argparse.Namespace) -> int:
             "target": str(target_root),
             "adapter": args.adapter,
             "planned": planned,
+            "root_context": root_context_result,
             "actions": actions,
         }
         print(json.dumps(result, indent=2))
@@ -315,6 +335,7 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--yes", action="store_true", help="confirm writes without an interactive prompt")
     parser.add_argument("--overwrite", action="store_true", help="replace conflicting target files")
+    parser.add_argument("--root-context-reviewed", action="store_true", help="confirm root context was migrated or rejected before overwrite")
     parser.add_argument("--no-backup", action="store_true", help="do not create .bak-* files before overwrite")
     parser.add_argument("--retrofit-plan", action="store_true", help="write an LLM merge plan for conflicts")
     args = parser.parse_args()

@@ -17,10 +17,11 @@ from typing import Any
 
 import cortex
 import field_reports
+import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.26"
+VERSION = "0.3.27"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
 
@@ -179,6 +180,7 @@ def surface_inventory(target: Path) -> dict[str, Any]:
         "tilly_mcp_embed_helper": ".tilly/bin/cortex_embed.mjs",
         "tilly_field_reports_helper": ".tilly/bin/field_reports.py",
         "tilly_update_helper": ".tilly/bin/tilly_update.py",
+        "tilly_root_context_helper": ".tilly/bin/root_context.py",
         "tilly_field_reports_outbox": ".tilly/field-reports/outbox.jsonl",
         "tilly_field_reports_disabled": ".tilly/field-reports/DISABLED",
         "tilly_field_reports_pre_push": ".git/hooks/pre-push",
@@ -215,6 +217,7 @@ def package_gates() -> list[dict[str, Any]]:
 
 def target_gates(target: Path) -> list[dict[str, Any]]:
     gates: list[dict[str, Any]] = [run(["git", "diff", "--check"], target)]
+    gates.append(run([sys.executable, str(ROOT / "scripts/root_context.py"), "analyze", "--target", str(target)], ROOT))
     gates.append(run([sys.executable, str(ROOT / "scripts/field_reports.py"), "status", "--target", str(target)], ROOT))
     cortex_root = cortex.cortex_path(target)
     if (cortex_root / "CONTRACT.md").exists():
@@ -377,6 +380,7 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
     if ensure_cortex:
         cortex_result = cortex.init(target)
     field_report_result = field_reports.install_hook(target)
+    root_context_result = root_context.analyze(target)
 
     scan = scan_project(target)
     gates = [*package_gates(), *target_gates(target)]
@@ -424,6 +428,7 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
         "writes": actual_writes,
         "cortex": cortex_result,
         "field_reports": field_report_result,
+        "root_context": root_context_result,
         "gates": gates,
     }
 

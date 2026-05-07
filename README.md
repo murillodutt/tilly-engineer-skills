@@ -7,7 +7,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, stronger memory, and clearer proof before
 they claim a task is done.
 
-Version: `0.3.26`
+Version: `0.3.27`
 
 License: MIT
 
@@ -44,6 +44,8 @@ available local oracles, and returns a compact certification report.
 For already meshed projects, `/tilly:update` checks the installed version
 against the cloud package version, detects applied IDE surfaces, and recommends
 the smallest safe route.
+Before root bootloaders are overwritten, Tilly scans `AGENTS.md`, `CLAUDE.md`
+and Cursor rules for project-owned context and requires migration first.
 
 If the command/prompt router is not available yet, paste this fallback prompt
 into the agent window:

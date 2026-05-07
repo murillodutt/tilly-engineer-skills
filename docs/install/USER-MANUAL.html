@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.26</span>
+          <span class="brand-meta">User manual · v0.3.27</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1117,6 +1117,8 @@
 python3 scripts/tilly_init.py --self-test
 python3 scripts/tilly_update.py plan --target /path/to/project
 python3 scripts/tilly_update.py --self-test
+python3 scripts/root_context.py analyze --target /path/to/project
+python3 scripts/root_context.py --self-test
 python3 scripts/field_reports.py status --target /path/to/project
 python3 scripts/field_reports.py drain --target /path/to/project
 python3 scripts/field_reports.py disable --target /path/to/project
@@ -1257,7 +1259,7 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tilly/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>. The installed helper set includes <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code> and <code>tilly_update.py</code>.</p>
+            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tilly/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>. The installed helper set includes <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tilly_update.py</code> and <code>root_context.py</code>.</p>
           </div>
         </section>
 
@@ -1311,7 +1313,7 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="report">
           <div class="chapter-head"><span class="chapter-num">09</span><h2>Final report</h2></div>
           <div class="chapter-body">
-            <p>Every run ends with a short <strong>Tilly Context Mesh Convergence Report</strong>. The chat report should state status, source snapshot freshness, changed surfaces, installed helper set, Field Reports state, gates, limits and rollback summary. Long inventories belong in the evidence file.</p>
+            <p>Every run ends with a short <strong>Tilly Context Mesh Convergence Report</strong>. The chat report should state status, source snapshot freshness, changed surfaces, root context gate, installed helper set, Field Reports state, gates, limits and rollback summary. Long inventories belong in the evidence file.</p>
             <p>If the source package commit is behind the current Tilly <code>main</code>, the report must say <code>STALE_SOURCE</code>. That means the target was certified against the recorded snapshot, not the latest package.</p>
             <div class="pre-wrap" data-label="report excerpt">
 <pre><code><span class="tok-key">User Manual</span>
@@ -1441,6 +1443,8 @@ git revert &lt;install-commit&gt;</code></pre>
 python3 scripts/tilly_init.py --self-test
 python3 scripts/tilly_update.py plan --target /path/to/project
 python3 scripts/tilly_update.py --self-test
+python3 scripts/root_context.py analyze --target /path/to/project
+python3 scripts/root_context.py --self-test
 python3 scripts/field_reports.py status --target /path/to/project
 python3 scripts/field_reports.py drain --target /path/to/project
 python3 scripts/field_reports.py disable --target /path/to/project
@@ -1581,7 +1585,7 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Las herramientas MCP con escritura quedan fuera de esta versión. La activación escribe solo <code>.tilly/bin/**</code> y configuración de runtime por proyecto; no debe tocar configuración MCP global, secretos, hooks o <code>sources/**</code>. El conjunto instalado incluye <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code> y <code>tilly_update.py</code>.</p>
+            <p>Las herramientas MCP con escritura quedan fuera de esta versión. La activación escribe solo <code>.tilly/bin/**</code> y configuración de runtime por proyecto; no debe tocar configuración MCP global, secretos, hooks o <code>sources/**</code>. El conjunto instalado incluye <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tilly_update.py</code> y <code>root_context.py</code>.</p>
           </div>
         </section>
 
@@ -1635,7 +1639,7 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="report-es">
           <div class="chapter-head"><span class="chapter-num">09</span><h2>Informe final</h2></div>
           <div class="chapter-body">
-            <p>Cada ejecución termina con un <strong>Tilly Context Mesh Convergence Report</strong> corto. El informe en el chat debe decir estado, frescura del snapshot fuente, superficies cambiadas, helper set instalado, estado de Field Reports, gates, límites y resumen de rollback. Los inventarios largos van al archivo de evidencia.</p>
+            <p>Cada ejecución termina con un <strong>Tilly Context Mesh Convergence Report</strong> corto. El informe en el chat debe decir estado, frescura del snapshot fuente, superficies cambiadas, gate de contexto raíz, helper set instalado, estado de Field Reports, gates, límites y resumen de rollback. Los inventarios largos van al archivo de evidencia.</p>
             <p>Si el commit del paquete fuente está detrás del <code>main</code> actual de Tilly, el informe debe decir <code>STALE_SOURCE</code>. Eso significa que el target fue certificado contra el snapshot registrado, no contra el paquete más reciente.</p>
             <div class="pre-wrap" data-label="extracto">
 <pre><code><span class="tok-key">User Manual</span>
@@ -1765,6 +1769,8 @@ git revert &lt;install-commit&gt;</code></pre>
 python3 scripts/tilly_init.py --self-test
 python3 scripts/tilly_update.py plan --target /path/to/project
 python3 scripts/tilly_update.py --self-test
+python3 scripts/root_context.py analyze --target /path/to/project
+python3 scripts/root_context.py --self-test
 python3 scripts/field_reports.py status --target /path/to/project
 python3 scripts/field_reports.py drain --target /path/to/project
 python3 scripts/field_reports.py disable --target /path/to/project
@@ -1905,7 +1911,7 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Ferramentas MCP com escrita ficam fora desta versão. A ativação escreve apenas <code>.tilly/bin/**</code> e configuração de runtime por projeto; não deve tocar configuração MCP global, segredos, hooks ou <code>sources/**</code>. O conjunto instalado inclui <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code> e <code>tilly_update.py</code>.</p>
+            <p>Ferramentas MCP com escrita ficam fora desta versão. A ativação escreve apenas <code>.tilly/bin/**</code> e configuração de runtime por projeto; não deve tocar configuração MCP global, segredos, hooks ou <code>sources/**</code>. O conjunto instalado inclui <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tilly_update.py</code> e <code>root_context.py</code>.</p>
           </div>
         </section>
 
@@ -1959,7 +1965,7 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="report-pt">
           <div class="chapter-head"><span class="chapter-num">09</span><h2>Relatório final</h2></div>
           <div class="chapter-body">
-            <p>Todo fluxo termina com um <strong>Tilly Context Mesh Convergence Report</strong> curto. O relatório na conversa deve dizer status, frescor do snapshot fonte, superfícies alteradas, helper set instalado, estado do Field Reports, gates, limites e resumo de rollback. Inventários longos ficam no arquivo de evidência.</p>
+            <p>Todo fluxo termina com um <strong>Tilly Context Mesh Convergence Report</strong> curto. O relatório na conversa deve dizer status, frescor do snapshot fonte, superfícies alteradas, gate de contexto raiz, helper set instalado, estado do Field Reports, gates, limites e resumo de rollback. Inventários longos ficam no arquivo de evidência.</p>
             <p>Se o commit do pacote fonte estiver atrás do <code>main</code> atual da Tilly, o relatório deve dizer <code>STALE_SOURCE</code>. Isso significa que o alvo foi certificado contra o snapshot registrado, não contra o pacote mais recente.</p>
             <div class="pre-wrap" data-label="trecho">
 <pre><code><span class="tok-key">User Manual</span>
@@ -1982,7 +1988,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.26</span>
+        <span>Tilly Engineer Skills · v0.3.27</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>
