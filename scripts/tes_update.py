@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.31"
+VERSION = "0.3.32"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -71,7 +71,8 @@ def version_records(target: Path) -> list[dict[str, str]]:
         "docs/agents/PROJECT-REGISTER.md",
         "README.md",
     ]
-    evidence = sorted((target / "docs/agents/evidence").glob("*tilly*.md"))
+    evidence_dir = target / "docs/agents/evidence"
+    evidence = sorted({*evidence_dir.glob("*tes*.md"), *evidence_dir.glob("*tilly*.md")})
     records: list[dict[str, str]] = []
     for relpath in [*candidates, *[rel(path, target) for path in evidence[-5:]]]:
         path = target / relpath
@@ -108,6 +109,18 @@ def surfaces(target: Path) -> dict[str, bool]:
         "field_reports": (target / ".tes/bin/field_reports.py").exists()
         or (target / ".git/hooks/pre-push").exists(),
     }
+
+
+def legacy_retirement(target: Path) -> dict[str, Any]:
+    try:
+        import tes_legacy_retirement  # type: ignore
+    except Exception as exc:  # noqa: BLE001 - update planning must stay non-mutating
+        return {
+            "status": "BLOCKED",
+            "legacy_retirement_required": False,
+            "reason": str(exc),
+        }
+    return tes_legacy_retirement.build_plan(target)
 
 
 def project_state(surface_map: dict[str, bool]) -> str:
@@ -197,6 +210,7 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
 
     records = version_records(target)
     surface_map = surfaces(target)
+    legacy = legacy_retirement(target)
     state = project_state(surface_map)
     runtimes = runtime_surfaces(surface_map)
     route, route_reason = recommended_route(state, runtimes, args.runtime)
@@ -232,6 +246,9 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "remote_commit_status": remote["commit"].get("status"),
         "update_status": update_status,
         "update_available": update_available,
+        "legacy_retirement_required": bool(legacy.get("legacy_retirement_required")),
+        "legacy_retirement_status": legacy.get("status"),
+        "legacy_retirement_counts": legacy.get("counts", {}),
         "surfaces": surface_map,
         "applied_runtimes": runtimes,
         "recommended_route": route,
@@ -261,6 +278,7 @@ def record_field_report(target: Path, result: dict[str, Any]) -> None:
             "update_available": result.get("update_available"),
             "route": result.get("recommended_route"),
             "surface_count": len(result.get("applied_runtimes") or []),
+            "legacy_retirement_required": result.get("legacy_retirement_required"),
         },
     )
 
@@ -279,9 +297,10 @@ def self_test() -> dict[str, Any]:
         write(target / "CLAUDE.md", "Route to docs/agents/**\n")
         write(target / ".cursor/rules/tes-guidelines.mdc", "Route to docs/agents/**\n")
         write(target / ".tes/bin/cortex_mcp.py", 'VERSION = "0.3.24"\n')
+        write(target / ".agents/skills/tilly-init/SKILL.md", "name: tilly-init\n")
         args = argparse.Namespace(
             target=target,
-            remote_version="0.3.31",
+            remote_version="0.3.32",
             remote_commit="a" * 40,
             runtime="codex",
             offline=False,
@@ -296,6 +315,8 @@ def self_test() -> dict[str, Any]:
             failures.append("multi-runtime fixture must recommend all")
         if result["recommended_intent"] != "/tes:update all":
             failures.append("multi-runtime update intent must be /tes:update all")
+        if result["legacy_retirement_required"] is not True:
+            failures.append("legacy runtime fixture must require legacy retirement")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-single-") as tempdir:
         target = Path(tempdir)

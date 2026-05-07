@@ -5,7 +5,7 @@ status: active
 consumer: adopters, installing agents, and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # Tilly Git Safety
@@ -41,11 +41,12 @@ The local exclude must cover:
 - `.tes/bin/__pycache__/`
 - `*.pyc`
 - `.tes/field-reports/`
+- `.tes/legacy-retirement/`
 - `.tes/cortex/*.sqlite`
 - `.tes/cortex/*.sqlite-*`
 
-These paths are rollback, transport, bytecode, or derived cache artifacts. They
-are not project memory and not durable TES surfaces.
+These paths are rollback, transport, bytecode, legacy-retirement, or derived
+cache artifacts. They are not project memory and not durable TES surfaces.
 
 The installer must not ignore `.tes/bin/*.py`. Those helper scripts are the
 project-scoped Tilly runtime surface and may be committed when the user chooses

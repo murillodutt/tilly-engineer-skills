@@ -5,7 +5,7 @@ status: active
 consumer: MCP adapter authors, installer authors, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.3.2
+tver: 0.3.3
 ---
 
 # TES Cortex MCP
@@ -89,6 +89,7 @@ The activation path installs local MCP helpers into the target project:
 .tes/bin/cortex_embed.mjs
 .tes/bin/field_reports.py
 .tes/bin/tes_update.py
+.tes/bin/tes_legacy_retirement.py
 .tes/bin/root_context.py
 ```
 
@@ -116,6 +117,7 @@ cortex_cut:
     - .tes/bin/cortex_embed.mjs
     - .tes/bin/field_reports.py
     - .tes/bin/tes_update.py
+    - .tes/bin/tes_legacy_retirement.py
     - .tes/bin/root_context.py
     - .codex/config.toml
     - .mcp.json

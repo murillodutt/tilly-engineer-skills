@@ -5,7 +5,7 @@ status: active
 consumer: adopters, installing agents, and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.2
+tver: 0.4.3
 ---
 
 # TES Command Triggers
@@ -19,7 +19,7 @@ agent invokes when the runtime exposes local tools.
 | Trigger | User intent | Primary oracles | Writes |
 |---------|-------------|-----------------|--------|
 | `/tes:init` or init command/prompt | install, update, audit, or recertify TES in a project | `root_context.py`, `tes_init.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, Cortex, runtime bootloaders, project MCP config |
-| `/tes:update` or update command/prompt | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, assisted installer, install smoke, MCP install | only selected TES surfaces after Step Zero |
+| `/tes:update` or update command/prompt | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, `tes_legacy_retirement.py`, assisted installer, install smoke, MCP install | only selected TES surfaces after Step Zero and legacy retirement |
 | `/tes:cortex` | inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `cortex.py`, read-only Cortex MCP | Cortex files only when authorized |
 | `/tes:curate` | classify Cortex memory quality risks without writing memory | `cortex.py curate-plan`, read-only `cortex_curate_plan` | no memory writes; CLI may refresh `.tes/cortex/semantic.sqlite` |
 | `/tes:mcp` | activate or verify read-only Cortex MCP | `install_mcp.py`, `cortex_mcp.py`, MCP smoke | `.tes/bin/**` and project-scoped MCP config |
@@ -65,6 +65,8 @@ inicializar TES / instalar TES / recertificar TES -> /tes:init
   curation cache.
 - Do not overwrite root runtime files before `root_context.py` has preserved or
   rejected project-owned instructions.
+- Do not copy new TES assets over old runtime surfaces while
+  `tes_legacy_retirement.py audit` still reports active legacy.
 - Do not treat Field Reports, GitHub issues, outbox, or hooks as project truth.
 - Field Reports also has a GitHub receiver gate: issue template, schema oracle,
   labels, and quarantine workflow.

@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.9.2
+tver: 0.9.3
 ---
 
 # Adapter Installation
@@ -118,6 +118,7 @@ Cortex MCP is activated by default for selected runtime routes. It remains
 read-only and project-scoped. The installer may write `.tes/bin/cortex.py`,
 `.tes/bin/cortex_mcp.py`, `.tes/bin/cortex_embed.mjs`,
 `.tes/bin/field_reports.py`, `.tes/bin/tes_update.py`,
+`.tes/bin/tes_legacy_retirement.py`,
 `.tes/bin/root_context.py`,
 `.codex/config.toml`, `.mcp.json`, and
 `.cursor/mcp.json`; MCP activation must not edit global MCP configuration,
@@ -203,7 +204,7 @@ Source Snapshot: package commit, remote main, freshness
 Changed Surfaces: new surfaces, updated existing mesh files, runtime config
 Rollback Backups: short list or none; .bak-* files are rollback artifacts, not new surfaces
 Root Context Gate: PASS | PRESERVED | NEEDS_REVIEW | SKIP
-Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, root_context.py
+Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py
 Field Reports: PASS | BLOCKED | DISABLED | SKIP, with pending outbox count
 Certification: compact PASS/FAIL/SKIP bullets
 Evidence: ...
@@ -293,6 +294,14 @@ Install one adapter:
 python3 scripts/install_adapter.py --adapter codex --target /path/to/project --yes
 python3 scripts/install_adapter.py --adapter claude --target /path/to/project --yes
 python3 scripts/install_adapter.py --adapter cursor --target /path/to/project --yes
+```
+
+Retire known legacy runtime before an update:
+
+```bash
+python3 scripts/tes_legacy_retirement.py plan --target /path/to/project
+python3 scripts/tes_legacy_retirement.py apply --target /path/to/project --yes
+python3 scripts/tes_legacy_retirement.py audit --target /path/to/project
 ```
 
 macOS/Linux wrapper:

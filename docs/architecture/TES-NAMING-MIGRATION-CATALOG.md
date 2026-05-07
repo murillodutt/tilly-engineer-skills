@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, installer authors, adapter authors, and installing agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.0
+tver: 0.3.0
 ---
 
 # TES Naming Migration Catalog
@@ -29,7 +29,10 @@ The migration target is simple:
 
 ## Current Status
 
-The TES operational namespace is implemented in v0.3.31.
+The TES operational namespace is implemented in v0.3.32.
+Update convergence now includes `tes_legacy_retirement.py`, a closed-catalog
+gate that removes known old runtime assets, migrates Field Reports state, and
+preserves project-owned context before new TES assets are copied.
 
 Active scripts, npm command prompts, skills, rules, MCP server IDs, issue
 templates, installed helper paths, navigation IDs, and generated evidence names
@@ -288,8 +291,8 @@ Keep these names unless a later decision says otherwise:
    `grep` before any apply-style migration is considered.
 3. Rename source skills, scripts, rules, MCP IDs, and package commands.
 4. Update materializers and installers to emit TES surfaces.
-5. Add migration logic for existing `.tilly/**`, `tilly-*`, and `tilly-cortex`
-   installations.
+5. Add `tes_legacy_retirement.py` for existing `.tilly/**`, `tilly-*`, and
+   `tilly-cortex` installations.
 6. Update docs and manual so TES is the only active user command surface.
 7. Run install/update probes in clean and already-meshed projects.
 8. Remove stale compatibility bridges once real installations converge.
@@ -311,18 +314,21 @@ The migration is not certified until these checks pass:
 - `python3 scripts/validate_tds.py`.
 - `python3 scripts/install_smoke.py --self-test`.
 - `python3 scripts/install_mcp.py --self-test`.
+- `python3 scripts/tes_legacy_retirement.py --self-test`.
 - `python3 scripts/platform_surface_oracle.py --self-test`.
 - `npm run commit:check`.
 
 ## Closed Decisions
 
-These decisions were closed during the v0.3.31 migration:
+These decisions were closed during the v0.3.32 migration:
 
 - The Claude plugin package name remains `tilly-engineer-skills` because it is
   repository identity, not an active command namespace.
 - Active docs, skills, and rules do not teach `/tilly:*` as current commands.
 - Local `.tilly/field-reports/**` state is migrated to `.tes/field-reports/**`
   when present.
+- Known legacy runtime assets are retired by `tes_legacy_retirement.py` before
+  update materialization; unknown legacy closes as `NEEDS_REVIEW`.
 - GitHub issue template and schema moved to `tes-field-report`; generic labels
   such as `field-report` remain because they are not runtime command IDs.
 

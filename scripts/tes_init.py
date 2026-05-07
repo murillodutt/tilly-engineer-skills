@@ -21,7 +21,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.31"
+VERSION = "0.3.32"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
 PASSING_GATE_STATUSES = {"PASS", "PRESERVED"}
@@ -208,6 +208,7 @@ def surface_inventory(target: Path) -> dict[str, Any]:
         "tes_mcp_embed_helper": ".tes/bin/cortex_embed.mjs",
         "tes_field_reports_helper": ".tes/bin/field_reports.py",
         "tes_update_helper": ".tes/bin/tes_update.py",
+        "tes_legacy_retirement_helper": ".tes/bin/tes_legacy_retirement.py",
         "tes_root_context_helper": ".tes/bin/root_context.py",
         "tes_field_reports_outbox": ".tes/field-reports/outbox.jsonl",
         "tes_field_reports_disabled": ".tes/field-reports/DISABLED",
