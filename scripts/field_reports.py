@@ -21,7 +21,8 @@ from typing import Any
 
 VERSION = "0.3.34"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
-SCHEMA = "tes-field-report@1"
+SCHEMA = "tes-field-report@2"
+LEGACY_SCHEMAS = ("tes-field-report@1", "tilly-field-report@1")
 FIELD_ROOT = Path(".tes/field-reports")
 OUTBOX = FIELD_ROOT / "outbox.jsonl"
 RECEIPTS = FIELD_ROOT / "receipts"
@@ -31,6 +32,24 @@ LEGACY_FIELD_ROOT = Path(".tilly/field-reports")
 BIN_HELPER = Path(".tes/bin/field_reports.py")
 HOOK_MARKER = "TES_FIELD_REPORTS_PRE_PUSH"
 MAX_ISSUE_BODY_CHARS = 48000
+SIGNAL_STATUSES = {"FAIL", "BLOCKED", "DEGRADED", "NEEDS_REVIEW", "STALE_SOURCE"}
+SUCCESS_INSTALL_EVENTS = {
+    "install_adapter",
+    "install_mcp",
+    "tes_init",
+}
+CAPABILITY_SURFACES = {"adapter", "cortex", "field-reports", "installer", "mcp"}
+SUMMARY_FACT_KEYS = (
+    "adapter",
+    "cloud_version",
+    "duration_bucket",
+    "failures",
+    "legacy_retirement_required",
+    "returncode",
+    "route",
+    "surface_count",
+    "update_available",
+)
 GIT_EXCLUDE_LINES = (
     ".tes/bin/*.bak-*",
     ".tes/bin/__pycache__/",
@@ -343,12 +362,205 @@ def sanitize_issue_url(value: str) -> str:
     return sanitize_value(cleaned)
 
 
-def build_issue_body(events: list[dict[str, object]], chunk_index: int, chunk_count: int) -> str:
-    statuses: dict[str, int] = {}
-    surfaces: dict[str, int] = {}
+def facts_for(event: dict[str, object]) -> dict[str, object]:
+    facts = event.get("facts")
+    return facts if isinstance(facts, dict) else {}
+
+
+def event_name(event: dict[str, object]) -> str:
+    return sanitize_value(event.get("event", "unknown"))
+
+
+def event_status(event: dict[str, object]) -> str:
+    return status_slug(str(event.get("status", "UNKNOWN")))
+
+
+def event_surface(event: dict[str, object]) -> str:
+    return safe_slug(str(event.get("surface", "unknown")), "unknown")
+
+
+def non_drain_events(events: list[dict[str, object]]) -> list[dict[str, object]]:
+    return [event for event in events if event_name(event) != "field_reports.drain"]
+
+
+def install_fingerprint(value: object) -> str:
+    return f"install:{sha256_text(str(value))[:12]}"
+
+
+def sorted_values(values: set[str], fallback: str = "none") -> str:
+    return ", ".join(sorted(values)) if values else fallback
+
+
+def count_by(events: list[dict[str, object]], getter: Any) -> dict[str, int]:
+    counts: dict[str, int] = {}
     for event in events:
-        statuses[str(event.get("status", "UNKNOWN"))] = statuses.get(str(event.get("status", "UNKNOWN")), 0) + 1
-        surfaces[str(event.get("surface", "unknown"))] = surfaces.get(str(event.get("surface", "unknown")), 0) + 1
+        key = str(getter(event))
+        counts[key] = counts.get(key, 0) + 1
+    return counts
+
+
+def rendered_counts(counts: dict[str, int]) -> str:
+    return ", ".join(f"{key}={value}" for key, value in sorted(counts.items())) or "none"
+
+
+def truthy_text(value: object) -> bool:
+    return str(value).strip().lower() in {"1", "true", "yes", "y"}
+
+
+def compact_event_signature(event: dict[str, object]) -> dict[str, object]:
+    facts = facts_for(event)
+    return {
+        "event": event_name(event),
+        "status": event_status(event),
+        "surface": event_surface(event),
+        "schema": sanitize_value(event.get("schema", "unknown")),
+        "tes_version": sanitize_value(event.get("tes_version", event.get("tilly_version", "unknown"))),
+        "facts": {
+            key: sanitize_value(facts.get(key, ""))
+            for key in SUMMARY_FACT_KEYS
+            if key in facts
+        },
+    }
+
+
+def classify_report(events: list[dict[str, object]]) -> dict[str, object]:
+    material = non_drain_events(events)
+    statuses = count_by(events, event_status)
+    surfaces = count_by(events, event_surface)
+    names = count_by(material, event_name)
+
+    failure_events = [
+        f"{event_name(event)}:{event_status(event)}"
+        for event in material
+        if event_status(event) in SIGNAL_STATUSES
+    ]
+    routes = {
+        sanitize_value(facts_for(event).get("route", ""))
+        for event in material
+        if facts_for(event).get("route")
+    }
+    adapters = {
+        sanitize_value(facts_for(event).get("adapter", ""))
+        for event in material
+        if facts_for(event).get("adapter")
+    }
+    installed_versions = {
+        sanitize_value(facts_for(event).get("installed_version", ""))
+        for event in material
+        if facts_for(event).get("installed_version")
+    }
+    cloud_versions = {
+        sanitize_value(facts_for(event).get("cloud_version", ""))
+        for event in material
+        if facts_for(event).get("cloud_version")
+    }
+    schemas = {
+        sanitize_value(event.get("schema", "unknown"))
+        for event in material
+        if event.get("schema")
+    }
+    version_drift = any(
+        truthy_text(facts_for(event).get("update_available", "false"))
+        or (
+            bool(facts_for(event).get("cloud_version"))
+            and str(facts_for(event).get("cloud_version")) != "unknown"
+            and bool(facts_for(event).get("installed_version"))
+            and str(facts_for(event).get("cloud_version")) != str(facts_for(event).get("installed_version"))
+        )
+        for event in material
+    )
+    legacy_signal = any(
+        str(event.get("schema", "")) in LEGACY_SCHEMAS
+        or "tilly_version" in event
+        or truthy_text(facts_for(event).get("legacy_retirement_required", "false"))
+        for event in material
+    )
+    install_signal = any(
+        event_name(event) in SUCCESS_INSTALL_EVENTS
+        and (event_status(event) == "INSTALLED" or event_surface(event) in {"adapter", "installer", "mcp"})
+        for event in material
+    )
+    capability_signal = any(event_surface(event) in CAPABILITY_SURFACES for event in material)
+    multi_surface_signal = len([surface for surface in surfaces if surface != "field-reports"]) >= 2
+    cortex_batch_signal = sum(1 for event in material if event_surface(event) == "cortex") >= 2
+
+    score = 0
+    findings: list[str] = []
+    report_class = "low-signal-heartbeat"
+
+    if failure_events:
+        score += 5
+        report_class = "failure-or-blocker"
+        findings.append("Failure or blocked events require review: " + ", ".join(failure_events[:6]))
+    if version_drift:
+        score += 4
+        report_class = "version-drift"
+        findings.append(
+            "Version drift observed: installed="
+            + sorted_values(installed_versions)
+            + ", cloud="
+            + sorted_values(cloud_versions)
+        )
+    if legacy_signal:
+        score += 3
+        if report_class == "low-signal-heartbeat":
+            report_class = "legacy-migration"
+        findings.append("Legacy namespace or retirement signal observed.")
+    if install_signal:
+        score += 2
+        if report_class == "low-signal-heartbeat":
+            report_class = "installation-signal"
+        findings.append("Install or update surface changed: " + rendered_counts(names))
+    if cortex_batch_signal:
+        score += 2
+        if report_class == "low-signal-heartbeat":
+            report_class = "cortex-certification"
+        findings.append("Cortex certification batch observed.")
+    if multi_surface_signal and capability_signal:
+        score += 2
+        if report_class == "low-signal-heartbeat":
+            report_class = "multi-surface-operation"
+        findings.append("Multiple TES surfaces reported in one drain.")
+
+    if not findings:
+        findings.append("Suppressed because the drain contained only successful low-signal heartbeat events.")
+
+    actionability = "high" if score >= 5 else "medium" if score >= 2 else "low"
+    fingerprint_payload = {
+        "events": [compact_event_signature(event) for event in material],
+        "report_class": report_class,
+    }
+    return {
+        "actionability": actionability,
+        "adapters": sorted(adapters),
+        "cloud_versions": sorted(cloud_versions),
+        "event_count": len(events),
+        "findings": findings,
+        "install_fingerprints": sorted({install_fingerprint(event.get("install_id", "unknown")) for event in material}),
+        "installed_versions": sorted(installed_versions),
+        "material_event_count": len(material),
+        "report_class": report_class,
+        "report_fingerprint": sha256_text(json.dumps(fingerprint_payload, sort_keys=True))[:16],
+        "routes": sorted(routes),
+        "schemas": sorted(schemas),
+        "score": score,
+        "status_counts": statuses,
+        "surface_counts": surfaces,
+        "suppressed": actionability == "low",
+    }
+
+
+def summary_values(summary: dict[str, object], key: str) -> str:
+    value = summary.get(key)
+    if isinstance(value, list):
+        return ", ".join(str(item) for item in value) if value else "none"
+    return sanitize_value(value if value is not None else "none")
+
+
+def build_issue_body(events: list[dict[str, object]], chunk_index: int, chunk_count: int) -> str:
+    summary = classify_report(events)
+    statuses = summary.get("status_counts") if isinstance(summary.get("status_counts"), dict) else {}
+    surfaces = summary.get("surface_counts") if isinstance(summary.get("surface_counts"), dict) else {}
     lines = [
         f"<!-- {SCHEMA} -->",
         "TES Field Report",
@@ -358,14 +570,30 @@ def build_issue_body(events: list[dict[str, object]], chunk_index: int, chunk_co
         f"- Destination: {DESTINATION_REPO}",
         f"- Sent at: {utc_stamp()}",
         f"- Chunk: {chunk_index} of {chunk_count}",
-        f"- Event count: {len(events)}",
-        "- Status counts: " + ", ".join(f"{key}={value}" for key, value in sorted(statuses.items())),
-        "- Surface counts: " + ", ".join(f"{key}={value}" for key, value in sorted(surfaces.items())),
+        f"- Event count: {summary['event_count']}",
+        f"- Material event count: {summary['material_event_count']}",
+        f"- Report class: {summary['report_class']}",
+        f"- Actionability: {summary['actionability']}",
+        f"- Signal score: {summary['score']}",
+        f"- Report fingerprint: {summary['report_fingerprint']}",
+        "- Status counts: " + rendered_counts({str(key): int(value) for key, value in statuses.items()}),
+        "- Surface counts: " + rendered_counts({str(key): int(value) for key, value in surfaces.items()}),
+        "- Routes: " + summary_values(summary, "routes"),
+        "- Adapters: " + summary_values(summary, "adapters"),
+        "- Installed versions: " + summary_values(summary, "installed_versions"),
+        "- Cloud versions: " + summary_values(summary, "cloud_versions"),
+        "- Schemas seen: " + summary_values(summary, "schemas"),
+        "- Install fingerprints: " + summary_values(summary, "install_fingerprints"),
+        "",
+        "Actionable findings",
+    ]
+    lines.extend(f"- {sanitize_value(finding)}" for finding in summary.get("findings", []))
+    lines.extend([
         "",
         "Events",
-    ]
+    ])
     for event in events:
-        facts = event.get("facts") if isinstance(event.get("facts"), dict) else {}
+        facts = facts_for(event)
         fact_bits = ", ".join(
             f"{sanitize_key(str(key))}={sanitize_value(value)}"
             for key, value in sorted(facts.items())
@@ -373,7 +601,7 @@ def build_issue_body(events: list[dict[str, object]], chunk_index: int, chunk_co
         lines.append(
             "- "
             + f"time={sanitize_value(event.get('created_at', 'unknown'))}, "
-            + f"install={sanitize_value(event.get('install_id', 'unknown'))}, "
+            + f"install_fp={install_fingerprint(event.get('install_id', 'unknown'))}, "
             + f"event={sanitize_value(event.get('event', 'unknown'))}, "
             + f"status={sanitize_value(event.get('status', 'UNKNOWN'))}, "
             + f"surface={sanitize_value(event.get('surface', 'unknown'))}, "
@@ -424,13 +652,33 @@ def gh_issue_create(title: str, body: str, env: dict[str, str] | None = None) ->
 
 def write_receipt(target: Path, issue_url: str, events: list[dict[str, object]], body: str, chunk: int) -> str:
     receipts_path(target).mkdir(parents=True, exist_ok=True)
+    summary = classify_report(events)
     payload = {
+        "actionability": summary.get("actionability"),
         "issue_url": sanitize_issue_url(issue_url),
         "event_count": len(events),
         "payload_sha256": sha256_text(body),
+        "report_class": summary.get("report_class"),
+        "report_fingerprint": summary.get("report_fingerprint"),
         "sent_at": utc_stamp(),
     }
     path = receipts_path(target) / f"{file_stamp()}-{chunk:02d}.json"
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return rel(path, target)
+
+
+def write_suppression_receipt(target: Path, events: list[dict[str, object]], summary: dict[str, object]) -> str:
+    receipts_path(target).mkdir(parents=True, exist_ok=True)
+    payload = {
+        "actionability": summary.get("actionability"),
+        "event_count": len(events),
+        "reason": "low-signal-heartbeat",
+        "report_class": summary.get("report_class"),
+        "report_fingerprint": summary.get("report_fingerprint"),
+        "sent_at": utc_stamp(),
+        "suppressed": True,
+    }
+    path = receipts_path(target) / f"{file_stamp()}-suppressed.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return rel(path, target)
 
@@ -460,6 +708,20 @@ def drain(target: Path, trigger: str = "manual", env: dict[str, str] | None = No
         return {"version": VERSION, "status": "BLOCKED", "reason": "outbox contains invalid records", "failures": failures, "writes": []}
     if not events:
         return {"version": VERSION, "status": "PASS", "pending": 0, "writes": []}
+
+    summary = classify_report(events)
+    if summary.get("suppressed"):
+        receipt_path = write_suppression_receipt(target, events, summary)
+        outbox_path(target).write_text("", encoding="utf-8")
+        return {
+            "version": VERSION,
+            "status": "PASS",
+            "pending": 0,
+            "suppressed": True,
+            "reason": "low-signal-heartbeat",
+            "receipt": receipt_path,
+            "writes": [rel(outbox_path(target), target), receipt_path],
+        }
 
     chunks = chunk_events(events)
     issue_urls: list[str] = []
@@ -743,9 +1005,39 @@ echo "https://github.com/murillodutt/tilly-engineer-skills/issues/999"
             failures.append("issue body must carry the field report schema marker")
         if f"- Schema: {SCHEMA}" not in body:
             failures.append("issue body must carry the visible field report schema")
+        for required in ("Actionable findings", "Report class:", "Actionability:", "Report fingerprint:", "install_fp="):
+            if required not in body:
+                failures.append(f"issue body must carry signal quality field: {required}")
         for forbidden in ("```", "|", "/Users", "person@example.com", "abc123", "https://private", "Traceback"):
             if forbidden in body:
                 failures.append(f"issue body leaked prohibited token: {forbidden}")
+
+        quiet_target = target / "quiet-heartbeat"
+        quiet_target.mkdir()
+        subprocess.run(["git", "init"], cwd=quiet_target, text=True, capture_output=True, check=False)
+        install_hook(quiet_target)
+        record_event(
+            quiet_target,
+            "tes_update",
+            "PASS",
+            "installer",
+            "self-test",
+            details={
+                "cloud_version": "unknown",
+                "installed_version": VERSION,
+                "route": "codex",
+                "surface_count": 1,
+                "update_available": False,
+            },
+        )
+        quiet_drain = drain(quiet_target, "self-test", env={**os.environ, "PATH": str(quiet_target / "missing-gh")})
+        if quiet_drain.get("status") != "PASS" or quiet_drain.get("suppressed") is not True:
+            failures.append("low-signal update heartbeat must be suppressed instead of opening an issue")
+        if outbox_path(quiet_target).read_text(encoding="utf-8").strip():
+            failures.append("suppressed low-signal heartbeat must clear outbox")
+        quiet_receipts = sorted(receipts_path(quiet_target).glob("*suppressed.json"))
+        if not quiet_receipts:
+            failures.append("suppressed low-signal heartbeat must write a suppression receipt")
 
         record_event(target, "cortex.audit", "FAIL", "cortex", "self-test", details={"returncode": 2})
         python_only = target / "python-only-bin"

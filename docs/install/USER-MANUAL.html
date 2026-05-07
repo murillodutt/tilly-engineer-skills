@@ -1278,7 +1278,7 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="field-reports">
           <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
           <div class="chapter-body">
-            <p>TES Field Reports is active by default. It sends only sanitized operational facts to the TES GitHub issue tracker during <code>git push</code>. It never sends code, diffs, prompts, file contents, secrets, personal data, absolute paths, raw stack traces, raw branch names or raw remotes.</p>
+            <p>TES Field Reports is active by default. It sends only sanitized operational facts to the TES GitHub issue tracker during <code>git push</code>. Low-signal heartbeats are suppressed locally with a receipt instead of opening noisy issues. It never sends code, diffs, prompts, file contents, secrets, personal data, absolute paths, raw stack traces, raw branch names or raw remotes.</p>
             <p>The active agent installs a local <code>pre-push</code> hook and local state under <code>.tes/field-reports/**</code>. If <code>gh</code>, network or authentication is unavailable, the outbox stays pending and the push continues.</p>
             <p>The GitHub receiver has its own issue template, schema check and quarantine workflow. Local sanitization remains the first privacy gate; GitHub governance is the second audit gate.</p>
             <p>To stop collaborating with TES field learning, type this prompt in the agent window, not in a shell:</p>
@@ -1616,7 +1616,7 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="field-reports-es">
           <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
           <div class="chapter-body">
-            <p>TES Field Reports está activo por defecto. Envía solo hechos operativos sanitizados al issue tracker GitHub de TES durante <code>git push</code>. Nunca envía código, diffs, prompts, contenido de archivos, secretos, datos personales, paths absolutos, stack traces crudos, nombres de branch crudos o remotes crudos.</p>
+            <p>TES Field Reports está activo por defecto. Envía solo hechos operativos sanitizados al issue tracker GitHub de TES durante <code>git push</code>. Los heartbeats de baja señal se suprimen localmente con un recibo en vez de abrir issues ruidosas. Nunca envía código, diffs, prompts, contenido de archivos, secretos, datos personales, paths absolutos, stack traces crudos, nombres de branch crudos o remotes crudos.</p>
             <p>El agente activo instala un hook local <code>pre-push</code> y estado local en <code>.tes/field-reports/**</code>. Si <code>gh</code>, red o autenticación no están disponibles, el outbox queda pendiente y el push continúa.</p>
             <p>El receptor GitHub tiene template, verificación de schema y workflow de cuarentena. La sanitización local es la primera barrera de privacidad; GitHub es la segunda barrera de auditoría.</p>
             <p>Para dejar de colaborar con el aprendizaje de campo de TES, escribe este prompt en la ventana del agente, no en una shell:</p>
@@ -1954,7 +1954,7 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="field-reports-pt">
           <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
           <div class="chapter-body">
-            <p>O TES Field Reports fica ativo por padrão. Ele envia apenas fatos operacionais sanitizados para issues do GitHub da TES durante <code>git push</code>. Ele nunca envia código, diff, prompt, conteúdo de arquivo, segredo, dado pessoal, path absoluto, stack trace cru, nome bruto de branch ou remote bruto.</p>
+            <p>O TES Field Reports fica ativo por padrão. Ele envia apenas fatos operacionais sanitizados para issues do GitHub da TES durante <code>git push</code>. Heartbeats de baixo sinal são suprimidos localmente com recibo em vez de abrir issues ruidosas. Ele nunca envia código, diff, prompt, conteúdo de arquivo, segredo, dado pessoal, path absoluto, stack trace cru, nome bruto de branch ou remote bruto.</p>
             <p>O agente ativo instala um hook local <code>pre-push</code> e estado local em <code>.tes/field-reports/**</code>. Se <code>gh</code>, rede ou autenticação estiverem indisponíveis, o outbox fica pendente e o push continua.</p>
             <p>O receptor GitHub tem template, verificação de schema e workflow de quarentena. A sanitização local é a primeira barreira de privacidade; o GitHub é a segunda barreira de auditoria.</p>
             <p>O usuário que não desejar colaborar com a evolução da TES deve digitar este prompt na janela do agente, não no shell:</p>
