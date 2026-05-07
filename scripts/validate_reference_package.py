@@ -11,7 +11,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.27"
+VERSION = "0.3.28"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -243,8 +243,10 @@ INSTALLER_REPORT_REQUIRED_TERMS = (
     "short factual prose",
     "Do not use Markdown tables unless",
     "Updated existing mesh files",
+    "Rollback backups",
     "Installed helper set",
     "Field Reports: PASS | BLOCKED | DISABLED | SKIP",
+    "outbox pending count",
     "`/tilly:update` routine",
     "Rollback",
     "Summary: reset baseline plus clean installer-created files",
@@ -264,6 +266,9 @@ USER_MANUAL_REPORT_REQUIRED_TERMS = (
     "resumo de rollback",
     "root context gate",
     "gate de contexto raiz",
+    "PRESERVED",
+    "Backup files are rollback artifacts",
+    "Backups são artefatos de rollback",
 )
 
 UPDATE_ROUTINE_REQUIRED_TERMS = (
@@ -281,6 +286,7 @@ ROOT_CONTEXT_REQUIRED_TERMS = (
     "CLAUDE.md",
     ".cursor/rules/**",
     "docs/agents/**",
+    "PRESERVED",
 )
 
 

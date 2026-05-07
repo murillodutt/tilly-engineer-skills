@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.9.0
+tver: 0.9.1
 ---
 
 # Adapter Installation
@@ -196,9 +196,10 @@ Navigation Renderer: ...
 Navigation Mode: ...
 Source Snapshot: package commit, remote main, freshness
 Changed Surfaces: new surfaces, updated existing mesh files, runtime config
-Root Context Gate: PASS | NEEDS_REVIEW | SKIP
+Rollback Backups: short list or none; .bak-* files are rollback artifacts, not new surfaces
+Root Context Gate: PASS | PRESERVED | NEEDS_REVIEW | SKIP
 Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tilly_update.py, root_context.py
-Field Reports: PASS | BLOCKED | DISABLED | SKIP
+Field Reports: PASS | BLOCKED | DISABLED | SKIP, with pending outbox count
 Certification: compact PASS/FAIL/SKIP bullets
 Evidence: ...
 User Manual: ...
@@ -219,6 +220,10 @@ GO requires canonical `docs/agents/**`, a created or explicitly deferred
 Cortex layer, selected-runtime Cortex MCP activation or a named blocker, thin
 runtime assets, root context migrated or preserved before overwrite, no blind
 overwrite, no secret mutation, and at least one relevant local oracle.
+`PRESERVED` is a passing root-context state only when project-owned bootloaders
+were intentionally left untouched; it remains a blocker for overwrites.
+If the raw root context analyzer says `NEEDS_REVIEW` and the installer did not
+overwrite roots, the final report should say `PRESERVED`, not `FAIL`.
 
 Source freshness is part of certification metadata. If the package snapshot
 commit differs from the current `main` commit for
