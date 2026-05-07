@@ -5,7 +5,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.9.0
+tver: 0.10.0
 ---
 
 # Tilly Assisted Context Installer
@@ -85,6 +85,7 @@ scripts/cortex_embed.mjs
 scripts/cortex_mcp.py
 scripts/tilly_init.py
 scripts/tilly_update.py
+scripts/root_context.py
 scripts/install_adapter.py
 scripts/install_mcp.py
 scripts/field_reports.py
@@ -386,6 +387,13 @@ Tilly mesh is not yet present enough to treat as `meshed`.
 For an existing project, treat all current instructions as project-owned until
 proven otherwise.
 
+Before rewriting root runtime files, run
+`python3 scripts/root_context.py analyze --target <target-root>` when available.
+If it reports `NEEDS_REVIEW`, migrate durable instructions from `AGENTS.md`,
+`CLAUDE.md`, `CURSOR.md`, `.cursor/rules/**`, or `.cursorrules` into
+`docs/agents/**` or evidence before overwrite; `--write-plan` may create the
+local structure plan.
+
 For a meshed project, treat the run as assisted update/convergence, not
 reinstall. Run the update probe when available:
 `python3 scripts/tilly_update.py plan --target <target-root>`. It compares the
@@ -443,18 +451,6 @@ Type: current, codex, claude, cursor, all, mcp, or audit.
 
 If the user already gave a clear instruction, proceed with the matching option
 and record it. Otherwise ask for one route command.
-
-Route semantics:
-
-| Route | Adapter assets | MCP activation |
-|-------|----------------|----------------|
-| `current` | detected runtime | detected runtime |
-| `codex` | Codex | Codex |
-| `claude` | Claude Code | Claude Code |
-| `cursor` | Cursor | Cursor |
-| `all` | Codex, Claude Code, Cursor | Codex, Claude Code, Cursor |
-| `mcp` | none unless missing thin bootloader blocks use | detected runtime |
-| `audit` | none | none |
 
 ## Phase 4 - Create Canonical Mesh
 
@@ -691,6 +687,7 @@ The activation writes only project-scoped local assets:
 .tilly/bin/cortex_embed.mjs
 .tilly/bin/field_reports.py
 .tilly/bin/tilly_update.py
+.tilly/bin/root_context.py
 .codex/config.toml        # Codex route only
 .mcp.json                 # Claude Code route only
 .cursor/mcp.json          # Cursor route only
@@ -779,6 +776,7 @@ Include:
   commit when available, and `source_freshness`;
 - files created;
 - files retrofitted or updated;
+- root context gate result and any structure plan;
 - full changed-file inventory from `git status --short --untracked-files=all`,
   grouped as new Tilly surfaces, updated existing mesh files, generated
   evidence, local runtime config, and ignored local state;
@@ -807,6 +805,7 @@ If this package is available locally, also run the package surface gates:
 
 ```bash
 python3 scripts/tilly_init.py --self-test
+python3 scripts/root_context.py --self-test
 python3 scripts/install_smoke.py --self-test
 python3 scripts/platform_surface_oracle.py --self-test
 ```
@@ -956,8 +955,9 @@ Source Snapshot
 Changed Surfaces
 - New Tilly surfaces: <short list or none>
 - Updated existing mesh files: <short list or none>
+- Root context gate: PASS | NEEDS_REVIEW | SKIP; plan: <path | none>
 - Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs,
-  field_reports.py, tilly_update.py: PASS/BLOCKED/MISSING
+  field_reports.py, tilly_update.py, root_context.py: PASS/BLOCKED/MISSING
 - Runtime/MCP config, evidence, ignored local state: <short list>
 
 Certification
@@ -989,6 +989,7 @@ GO requires:
 - `docs/agents/**` exists and is the canonical source;
 - selected runtime assets route to that source;
 - Cortex exists or is explicitly skipped/deferred with a reason;
+- root runtime context was migrated, preserved, or explicitly cleared;
 - read-only Cortex MCP is activated for selected routes or explicitly blocked;
 - Field Reports state and installed helper set are explicit in the report;
 - if helper files were copied but hook/drain status is unknown, use `NEEDS_REVIEW`;

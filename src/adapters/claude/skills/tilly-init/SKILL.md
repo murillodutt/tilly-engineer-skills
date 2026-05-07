@@ -34,18 +34,19 @@ the user for package contents.
    commit when the tree is dirty.
 4. For `/tilly:update`, run `tilly_update.py plan` when available to compare
    installed/cloud versions, detect applied IDE surfaces, and recommend route.
-5. Use the detected runtime as the default route. Ask for route only when the
+5. Before rewriting root bootloaders, run `root_context.py analyze` when
+   available and migrate durable root context into `docs/agents/**` first.
+6. Use the detected runtime as the default route. Ask for route only when the
    installer contract requires it.
-6. Preserve local governance, build or update `docs/agents/**`, initialize
+7. Preserve local governance, build or update `docs/agents/**`, initialize
    `docs/agents/cortex/**`, keep runtime bootloaders thin, and activate the
    read-only Cortex MCP route when selected.
-7. Invoke available package oracles such as `tilly_init.py`, `tilly_update.py`,
-   `install_smoke.py`, `install_mcp.py`, and Cortex checks. If local tool
-   execution is unavailable, mark the oracle as `BLOCKED` or `SKIP`; do not
-   claim it passed.
-8. Install or report the Field Reports `pre-push` drain. It is active by
+8. Invoke package oracles such as `tilly_init.py`, `tilly_update.py`,
+   `root_context.py`, `install_smoke.py`, `install_mcp.py`, and Cortex checks.
+   If local execution is unavailable, mark it `BLOCKED` or `SKIP`.
+9. Install or report the Field Reports `pre-push` drain. It is active by
    default and controlled by the user manual prompts.
-9. Finish with a short certification report, source snapshot freshness, changed
+10. Finish with a short certification report, source snapshot freshness, changed
    surfaces, installed helper set, Field Reports state, evidence path, limits,
    rollback summary, and Git rollback instructions.
 

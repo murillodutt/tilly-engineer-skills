@@ -18,10 +18,10 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.26"
+VERSION = "0.3.27"
 SERVER_NAME = "tilly-cortex"
 BIN_DIR = Path(".tilly/bin")
-SERVER_FILES = ("cortex.py", "cortex_mcp.py", "cortex_embed.mjs", "field_reports.py", "tilly_update.py")
+SERVER_FILES = ("cortex.py", "cortex_mcp.py", "cortex_embed.mjs", "field_reports.py", "tilly_update.py", "root_context.py")
 ADAPTERS = ("codex", "claude", "cursor")
 
 
@@ -348,6 +348,7 @@ def self_test() -> int:
             ".tilly/bin/cortex_embed.mjs",
             ".tilly/bin/field_reports.py",
             ".tilly/bin/tilly_update.py",
+            ".tilly/bin/root_context.py",
             ".codex/config.toml",
             ".mcp.json",
             ".cursor/mcp.json",

@@ -5,7 +5,7 @@ status: active
 consumer: adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.5.1
+tver: 0.5.2
 ---
 
 # Tilly Context Installer Mini Prompt
@@ -41,7 +41,7 @@ as thin runtime bootloaders, activate the read-only project-scoped Cortex MCP
 server for the selected runtime route, and finish with the certification report
 required by the spec.
 The final report must expose the PT/EN/ES user manual link/path, installed
-helper set, Field Reports state, and rollback summary.
+helper set, root context gate, Field Reports state, and rollback summary.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, tell me

@@ -11,7 +11,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.26"
+VERSION = "0.3.27"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -92,6 +92,7 @@ REQUIRED_PATHS = (
     "scripts/install_adapter.py",
     "scripts/tilly_init.py",
     "scripts/tilly_update.py",
+    "scripts/root_context.py",
     "scripts/claude_plugin_oracle.py",
     "scripts/platform_surface_oracle.py",
     "scripts/retention_metadata.py",
@@ -147,6 +148,8 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "tilly:init:self-test",
     "tilly:update",
     "tilly:update:self-test",
+    "root-context:check",
+    "root-context:self-test",
     "mcp:install",
     "mcp:dry-run",
     "mcp:self-test",
@@ -259,6 +262,8 @@ USER_MANUAL_REPORT_REQUIRED_TERMS = (
     "estado do Field Reports",
     "rollback summary",
     "resumo de rollback",
+    "root context gate",
+    "gate de contexto raiz",
 )
 
 UPDATE_ROUTINE_REQUIRED_TERMS = (
@@ -267,6 +272,15 @@ UPDATE_ROUTINE_REQUIRED_TERMS = (
     "installed and cloud versions",
     "versão instalada e versão na nuvem",
     "recommended_route",
+)
+
+ROOT_CONTEXT_REQUIRED_TERMS = (
+    "root_context.py",
+    "Root context gate",
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".cursor/rules/**",
+    "docs/agents/**",
 )
 
 
@@ -403,6 +417,19 @@ def installer_report_contract_failures() -> list[str]:
     for term in UPDATE_ROUTINE_REQUIRED_TERMS:
         if term not in update_sources:
             failures.append(f"update routine missing term: {term}")
+    root_context_sources = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (
+            ROOT / "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
+            ROOT / "docs/install/COMMAND-TRIGGERS.md",
+            ROOT / "docs/install/USER-MANUAL.html",
+            ROOT / "scripts/root_context.py",
+        )
+        if path.exists()
+    )
+    for term in ROOT_CONTEXT_REQUIRED_TERMS:
+        if term not in root_context_sources:
+            failures.append(f"root context gate missing term: {term}")
     return failures
 
 
@@ -542,6 +569,20 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("field_reports_github_oracle.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    root_context = ROOT / "scripts/root_context.py"
+    if root_context.exists():
+        result = subprocess.run(
+            [sys.executable, str(root_context), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("root_context.py --self-test failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 

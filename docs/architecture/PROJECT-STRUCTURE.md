@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and adapter authors
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.2
+tver: 0.2.3
 ---
 
 # Project Structure
@@ -67,6 +67,10 @@ the read-only Cortex MCP server in a target project by copying local helpers to
 `scripts/tilly_update.py` plans low-friction updates by comparing installed and
 cloud package versions, detecting applied IDE surfaces, and recommending the
 route behind `/tilly:update`.
+
+`scripts/root_context.py` scans root runtime files such as `AGENTS.md`,
+`CLAUDE.md`, and Cursor rules before overwrite. Project-owned instructions must
+be migrated into `docs/agents/**` or evidence first.
 
 `scripts/field_reports.py` installs the local Field Reports `pre-push` drain
 and records sanitized operational facts under `.tilly/field-reports/**`. That

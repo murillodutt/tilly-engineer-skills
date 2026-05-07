@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.8.0
+tver: 0.9.0
 ---
 
 # Adapter Installation
@@ -118,6 +118,7 @@ Cortex MCP is activated by default for selected runtime routes. It remains
 read-only and project-scoped. The installer may write `.tilly/bin/cortex.py`,
 `.tilly/bin/cortex_mcp.py`, `.tilly/bin/cortex_embed.mjs`,
 `.tilly/bin/field_reports.py`, `.tilly/bin/tilly_update.py`,
+`.tilly/bin/root_context.py`,
 `.codex/config.toml`, `.mcp.json`, and
 `.cursor/mcp.json`; MCP activation must not edit global MCP configuration,
 secrets, hooks, or write-capable MCP tools.
@@ -195,7 +196,8 @@ Navigation Renderer: ...
 Navigation Mode: ...
 Source Snapshot: package commit, remote main, freshness
 Changed Surfaces: new surfaces, updated existing mesh files, runtime config
-Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tilly_update.py
+Root Context Gate: PASS | NEEDS_REVIEW | SKIP
+Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tilly_update.py, root_context.py
 Field Reports: PASS | BLOCKED | DISABLED | SKIP
 Certification: compact PASS/FAIL/SKIP bullets
 Evidence: ...
@@ -215,8 +217,8 @@ generic gate: the report must say whether the hook/drain is `PASS`, `BLOCKED`,
 
 GO requires canonical `docs/agents/**`, a created or explicitly deferred
 Cortex layer, selected-runtime Cortex MCP activation or a named blocker, thin
-runtime assets, preserved local context, no blind overwrite, no secret
-mutation, and at least one relevant local oracle.
+runtime assets, root context migrated or preserved before overwrite, no blind
+overwrite, no secret mutation, and at least one relevant local oracle.
 
 Source freshness is part of certification metadata. If the package snapshot
 commit differs from the current `main` commit for
