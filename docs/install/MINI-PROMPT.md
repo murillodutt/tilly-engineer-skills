@@ -40,7 +40,8 @@ docs/agents/cortex/** Cortex layer, keep AGENTS.md, CLAUDE.md and Cursor rules
 as thin runtime bootloaders, activate the read-only project-scoped Cortex MCP
 server for the selected runtime route, and finish with the certification report
 required by the spec.
-The final report must expose the PT/EN/ES user manual link/path.
+The final report must expose the PT/EN/ES user manual link/path, installed
+helper set, Field Reports state, and rollback summary.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, tell me

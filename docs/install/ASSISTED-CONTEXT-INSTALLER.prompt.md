@@ -934,8 +934,8 @@ Finish with a professional certification report. The user's report must be
 short factual prose with compact bullets. Do not use Markdown tables unless the
 user explicitly asks for the full evidence view. Put long inventories, detailed
 oracles, conflicts, and reconstruction notes in the evidence file. In the chat,
-show only status, scope, snapshot freshness, main changed surfaces, gates,
-manual, rollback, and honest limits.
+show only status, scope, snapshot freshness, main changed surfaces, Field
+Reports state, helper set, gates, manual, rollback, and honest limits.
 
 Use this structure. This is snapshot certification when freshness is
 `STALE_SOURCE`; do not claim the latest source was certified.
@@ -956,11 +956,15 @@ Source Snapshot
 Changed Surfaces
 - New Tilly surfaces: <short list or none>
 - Updated existing mesh files: <short list or none>
+- Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs,
+  field_reports.py, tilly_update.py: PASS/BLOCKED/MISSING
 - Runtime/MCP config, evidence, ignored local state: <short list>
 
 Certification
-- Context, thin runtime assets, Cortex, MCP, Field Reports, platform surfaces,
-  project register, Obsidian boundary, secrets, and oracles: PASS/FAIL/SKIP
+- Context, thin runtime assets, Cortex, MCP, platform surfaces, project
+  register, Obsidian boundary, secrets, and oracles: PASS/FAIL/SKIP
+- Field Reports: PASS | BLOCKED | DISABLED | SKIP; hook/drain/sentinel: <...>
+- `/tilly:update` routine: PASS | BLOCKED | SKIP; route probe: <...>
 
 Evidence
 - <docs/agents/evidence/...>
@@ -972,6 +976,7 @@ User Manual
 
 Rollback
 - Baseline: <baseline-head>
+- Summary: reset baseline plus clean installer-created files; detail follows
 - Undo uncommitted install: `git reset --hard <baseline-head>`
 - Undo committed install: `git revert <install-commit>`
 
@@ -984,11 +989,10 @@ GO requires:
 - `docs/agents/**` exists and is the canonical source;
 - selected runtime assets route to that source;
 - Cortex exists or is explicitly skipped/deferred with a reason;
-- read-only Cortex MCP is activated for selected runtime routes or explicitly
-  blocked with a reason;
-- existing context was preserved or explicitly migrated;
-- no secrets or unrelated project files were changed;
-- at least one relevant oracle passed, or skipped oracles have named blockers.
+- read-only Cortex MCP is activated for selected routes or explicitly blocked;
+- Field Reports state and installed helper set are explicit in the report;
+- if helper files were copied but hook/drain status is unknown, use `NEEDS_REVIEW`;
+- context was preserved, no secrets changed, and at least one oracle passed.
 
 Use `NEEDS_REVIEW` when the integration is structurally sound but user review
 is required before overwrite/merge/commit. Use `NO-GO` when context would be
