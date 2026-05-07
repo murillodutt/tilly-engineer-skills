@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and adapter authors
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.1
+tver: 0.2.2
 ---
 
 # Project Structure
@@ -22,12 +22,16 @@ Root files are only entrypoints and local project controls:
 | `AGENTS.md` | Thin repository bootloader for agents working here |
 | `package.json` | Local validation commands |
 | `.githooks/**` | Local commit gates |
-| `scripts/**` | Deterministic package checks |
+| `scripts/**` | Deterministic oracles and package helpers |
 | `benchmarks/**` | Portable eval data |
 | `docs/**` | Method, architecture, and eval explanation |
 | `src/**` | Canonical copyable adapter source |
 | `dist/**` | Generated adapter output, ignored by Git |
 | Git history | Versioning and changelog trail |
+
+`scripts/**` is classified by consumer, not by directory. Validator-only
+scripts are maintainer gates. Installer, Cortex, MCP, Field Reports, and adapter
+scripts are delivered behavior when adopters receive, invoke, or certify them.
 
 ## Source
 
