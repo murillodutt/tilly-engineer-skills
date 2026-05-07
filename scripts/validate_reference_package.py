@@ -6,12 +6,13 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 import json
+import re
 import subprocess
 import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.31"
+VERSION = "0.3.32"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -94,6 +95,7 @@ REQUIRED_PATHS = (
     "scripts/install_adapter.py",
     "scripts/tes_init.py",
     "scripts/tes_update.py",
+    "scripts/tes_legacy_retirement.py",
     "scripts/tes_namespace.py",
     "scripts/root_context.py",
     "scripts/claude_plugin_oracle.py",
@@ -151,6 +153,10 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "tes:init:self-test",
     "tes:update",
     "tes:update:self-test",
+    "tes:legacy:plan",
+    "tes:legacy:apply",
+    "tes:legacy:audit",
+    "tes:legacy:self-test",
     "tes:namespace:report",
     "tes:namespace:audit",
     "tes:namespace:inventory",
@@ -284,6 +290,7 @@ UPDATE_ROUTINE_REQUIRED_TERMS = (
     "installed and cloud versions",
     "versão instalada e versão na nuvem",
     "recommended_route",
+    "legacy_retirement_required",
 )
 
 ROOT_CONTEXT_REQUIRED_TERMS = (
@@ -301,9 +308,20 @@ GIT_SAFETY_REQUIRED_TERMS = (
     ".tes/bin/__pycache__/",
     "*.pyc",
     ".tes/field-reports/",
+    ".tes/legacy-retirement/",
     ".tes/cortex/*.sqlite",
     "must not ignore `.tes/bin/*.py`",
 )
+
+VERSION_LOCKED_SURFACES = (
+    "README.md",
+    "docs/adapters/CODEX.md",
+    "docs/install/USER-MANUAL.html",
+    "docs/tds/DOCS-INDEX.yml",
+    "src/adapters/claude/plugin/plugin.json",
+    "src/adapters/claude/plugin/marketplace.json",
+)
+SEMVER_RE = re.compile(r"\b0\.3\.\d+\b")
 
 
 def package_paths() -> list[Path]:
@@ -468,6 +486,19 @@ def installer_report_contract_failures() -> list[str]:
     return failures
 
 
+def version_drift_failures() -> list[str]:
+    failures: list[str] = []
+    for relpath in VERSION_LOCKED_SURFACES:
+        path = ROOT / relpath
+        if not path.exists():
+            continue
+        versions = sorted(set(SEMVER_RE.findall(path.read_text(encoding="utf-8"))))
+        stale = [version for version in versions if version != VERSION]
+        for version in stale:
+            failures.append(f"{relpath} contains stale package version {version}; expected {VERSION}")
+    return failures
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--staged-ready", action="store_true")
@@ -498,6 +529,7 @@ def main() -> int:
     failures.extend(agents_bootloader_failures())
     failures.extend(project_structure_failures())
     failures.extend(installer_report_contract_failures())
+    failures.extend(version_drift_failures())
 
     for relpath in SYNCED_FILES:
         path = ROOT / relpath
@@ -632,6 +664,20 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("install_mcp.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    legacy_retirement = ROOT / "scripts/tes_legacy_retirement.py"
+    if legacy_retirement.exists():
+        result = subprocess.run(
+            [sys.executable, str(legacy_retirement), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("tes_legacy_retirement.py --self-test failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 

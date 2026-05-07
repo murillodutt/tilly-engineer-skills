@@ -6,7 +6,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.10.4
+tver: 0.10.5
 ---
 
 # Tilly Assisted Context Installer
@@ -50,7 +50,7 @@ Useful source paths, relative to `raw_base`:
 docs/install/navigation/{common,codex,codex-cli,claude-code,claude-desktop,cursor,cursor-acp,anthropic-api,generic}.prompt.md
 docs/install/{USER-MANUAL.html,COMMAND-TRIGGERS.md}
 docs/mesh/{CORTEX.md,CORTEX-MCP.md}
-scripts/{cortex.py,cortex_embed.mjs,cortex_mcp.py,tes_init.py,tes_update.py,root_context.py,install_adapter.py,install_mcp.py,field_reports.py,install_smoke.py,materialize_adapter.py,platform_surface_oracle.py}
+scripts/{cortex.py,cortex_embed.mjs,cortex_mcp.py,tes_init.py,tes_update.py,tes_legacy_retirement.py,root_context.py,install_adapter.py,install_mcp.py,field_reports.py,install_smoke.py,materialize_adapter.py,platform_surface_oracle.py}
 src/adapters/codex/AGENTS.md
 src/adapters/codex/skills/tes-engineering-discipline/{SKILL.md,agents/openai.yaml,references/failure-patterns.md,references/source-portability.md,scripts/discipline_oracle.py}
 src/adapters/claude/{CLAUDE.md,plugin/plugin.json,plugin/marketplace.json,skills/tes-guidelines/SKILL.md}
@@ -301,7 +301,11 @@ Before rewriting root runtime files, run `python3 scripts/root_context.py analyz
 
 When no root overwrite is attempted and project-owned bootloaders are intentionally left untouched, close the root-context gate as `PRESERVED`, not `FAIL`.
 
-For a meshed project, treat the run as assisted update/convergence, not reinstall. Run the update probe when available: `python3 scripts/tes_update.py plan --target <target-root>`. It compares the installed version with the cloud package version, detects applied IDE surfaces, and recommends `current`, `codex`, `claude`, `cursor`, or `all`. Preserve local governance, apply only surgical updates needed by the selected route, and certify the resulting state.
+For a meshed project, treat the run as assisted update/convergence, not reinstall. Run the update probe when available: `python3 scripts/tes_update.py plan --target <target-root>`. It compares the installed version with the cloud package version, detects applied IDE surfaces, recommends `current`, `codex`, `claude`, `cursor`, or `all`, and reports `legacy_retirement_required`.
+
+If legacy retirement is required, run `python3 scripts/tes_legacy_retirement.py plan --target <target-root>` after the root context gate and before materializing new assets. The gate may remove only known old runtime assets, migrate `.tilly/field-reports/**` to `.tes/field-reports/**`, and preserve project context. If it reports `NEEDS_REVIEW`, stop; do not copy new TES assets over old surfaces. When it is clean and the run is authorized, apply with `python3 scripts/tes_legacy_retirement.py apply --target <target-root> --yes`, then certify with `python3 scripts/tes_legacy_retirement.py audit --target <target-root>`.
+
+Preserve local governance, apply only surgical updates needed by the selected route, and certify the resulting state.
 
 ## Phase 3 - Navigation Menu
 
@@ -537,6 +541,7 @@ The activation writes only project-scoped local assets:
 .tes/bin/cortex_embed.mjs
 .tes/bin/field_reports.py
 .tes/bin/tes_update.py
+.tes/bin/tes_legacy_retirement.py
 .tes/bin/root_context.py
 .codex/config.toml        # Codex route only
 .mcp.json                 # Claude Code route only
@@ -647,6 +652,7 @@ If this package is available locally, also run the package surface gates:
 ```bash
 python3 scripts/tes_init.py --self-test
 python3 scripts/root_context.py --self-test
+python3 scripts/tes_legacy_retirement.py --self-test
 python3 scripts/install_smoke.py --self-test
 python3 scripts/platform_surface_oracle.py --self-test
 ```
@@ -771,7 +777,7 @@ Changed Surfaces
 - Updated existing mesh files: <short list or none>
 - Rollback backups: <short list or none; do not count .bak-* files as new surfaces>
 - Root context gate: PASS | PRESERVED | NEEDS_REVIEW | SKIP; plan/resolution: <path | preserve | none>
-- Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, root_context.py: PASS/BLOCKED/MISSING
+- Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py: PASS/BLOCKED/MISSING
 - Runtime/MCP config, evidence, ignored local state: <short list>
 
 Certification

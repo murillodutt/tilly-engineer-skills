@@ -6,6 +6,7 @@ dist/
 .tes/bin/*.bak-*
 .tes/bin/__pycache__/
 .tes/field-reports/
+.tes/legacy-retirement/
 .tes/cortex/*.sqlite
 .tes/cortex/*.sqlite-*
 .env

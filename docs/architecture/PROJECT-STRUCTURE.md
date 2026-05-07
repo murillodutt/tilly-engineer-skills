@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and adapter authors
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.3
+tver: 0.2.4
 ---
 
 # Project Structure
@@ -67,6 +67,10 @@ the read-only Cortex MCP server in a target project by copying local helpers to
 `scripts/tes_update.py` plans low-friction updates by comparing installed and
 cloud package versions, detecting applied IDE surfaces, and recommending the
 route behind `/tes:update`.
+
+`scripts/tes_legacy_retirement.py` is the closed-catalog cleanup gate for
+updates. It removes known old runtime assets, migrates Field Reports state, and
+preserves project context.
 
 `scripts/root_context.py` scans root runtime files such as `AGENTS.md`,
 `CLAUDE.md`, and Cursor rules before overwrite. Project-owned instructions must

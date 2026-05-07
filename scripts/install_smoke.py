@@ -15,7 +15,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.31"
+VERSION = "0.3.32"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 
 
@@ -151,6 +151,7 @@ def expected_mcp_paths(adapter: str) -> tuple[str, ...]:
         ".tes/bin/cortex_embed.mjs",
         ".tes/bin/field_reports.py",
         ".tes/bin/tes_update.py",
+        ".tes/bin/tes_legacy_retirement.py",
         ".tes/bin/root_context.py",
     )
     if adapter == "codex":
@@ -223,6 +224,43 @@ def probe_route(route: str) -> dict[str, Any]:
         return finish()
 
 
+def legacy_retirement_probe() -> dict[str, Any]:
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-legacy-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        (target / ".agents/skills/tilly-init").mkdir(parents=True)
+        (target / ".agents/skills/tilly-init/SKILL.md").write_text("name: tilly-init\n", encoding="utf-8")
+        (target / ".tilly/bin").mkdir(parents=True)
+        (target / ".tilly/bin/tilly_update.py").write_text("VERSION = '0.3.1'\n", encoding="utf-8")
+        (target / ".tilly/field-reports").mkdir(parents=True)
+        (target / ".tilly/field-reports/outbox.jsonl").write_text('{"event":"legacy","status":"PASS"}\n', encoding="utf-8")
+        (target / ".codex").mkdir()
+        (target / ".codex/config.toml").write_text("[mcp_servers.tilly-cortex]\ncommand = \"python3\"\n", encoding="utf-8")
+
+        code, stdout, stderr = run(
+            [sys.executable, str(ROOT / "scripts/tes_legacy_retirement.py"), "audit", "--target", str(target)]
+        )
+        if code == 0:
+            failures.append("legacy retirement audit must fail before apply")
+        code, stdout, stderr = run(
+            [sys.executable, str(ROOT / "scripts/tes_legacy_retirement.py"), "apply", "--target", str(target), "--yes"]
+        )
+        if code != 0:
+            failures.extend(["legacy retirement apply failed", *stdout.splitlines(), *stderr.splitlines()])
+        code, stdout, stderr = run(
+            [sys.executable, str(ROOT / "scripts/tes_legacy_retirement.py"), "audit", "--target", str(target)]
+        )
+        if code != 0:
+            failures.extend(["legacy retirement audit failed after apply", *stdout.splitlines(), *stderr.splitlines()])
+        for relpath in (".agents/skills/tilly-init", ".tilly/bin", ".tilly/field-reports"):
+            if (target / relpath).exists():
+                failures.append(f"legacy path still active after retirement: {relpath}")
+        if not (target / ".tes/field-reports/outbox.jsonl").exists():
+            failures.append("legacy Field Reports outbox was not migrated")
+        return {"route": "legacy-retirement", "status": "FAIL" if failures else "PASS", "failures": failures}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--route", choices=ROUTES, default="all")
@@ -231,6 +269,8 @@ def main() -> int:
 
     routes = ROUTES if args.self_test else (args.route,)
     results = [probe_route(route) for route in routes]
+    if args.self_test:
+        results.append(legacy_retirement_probe())
     failures = [
         failure
         for result in results

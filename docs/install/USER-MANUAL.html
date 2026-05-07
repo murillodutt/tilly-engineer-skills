@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.31</span>
+          <span class="brand-meta">User manual · v0.3.32</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1115,12 +1115,16 @@
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>These commands are agent-callable oracles, not the normal user interface. In normal use, the active IDE agent invokes them from the current context window; humans run them directly only for package maintenance, debugging or certification review. Use the TES package root for package checks, or pass <code>--target</code> when operating on another project or vault. <code>tes_init.py</code> recertifies package health, scans the target project, writes <code>docs/agents/PROJECT-REGISTER.md</code> and stores a full manifest under <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefer intent command/prompts: <code>/tes:init</code> for setup and <code>/tes:update</code> for updating. The update probe compares installed and cloud versions, detects applied IDE surfaces and recommends the route. The complete command inventory is below because this manual is the user entrypoint; the routing matrix lives in <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
+            <p>Prefer intent command/prompts: <code>/tes:init</code> for setup and <code>/tes:update</code> for updating. The update probe compares installed and cloud versions, detects applied IDE surfaces, recommends the route and reports <code>legacy_retirement_required</code>. When true, the agent runs the legacy retirement gate before copying new TES assets. The complete command inventory is below because this manual is the user entrypoint; the routing matrix lives in <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tes_init.py --target /path/to/project --yes
 python3 scripts/tes_init.py --self-test
 python3 scripts/tes_update.py plan --target /path/to/project
 python3 scripts/tes_update.py --self-test
+python3 scripts/tes_legacy_retirement.py plan --target /path/to/project
+python3 scripts/tes_legacy_retirement.py apply --target /path/to/project --yes
+python3 scripts/tes_legacy_retirement.py audit --target /path/to/project
+python3 scripts/tes_legacy_retirement.py --self-test
 python3 scripts/root_context.py analyze --target /path/to/project
 python3 scripts/root_context.py --self-test
 python3 scripts/field_reports.py status --target /path/to/project
@@ -1150,6 +1154,10 @@ npm run tes:init -- --target /path/to/project --yes
 npm run tes:init:self-test
 npm run tes:update -- --target /path/to/project
 npm run tes:update:self-test
+npm run tes:legacy:plan -- --target /path/to/project
+npm run tes:legacy:apply -- --target /path/to/project --yes
+npm run tes:legacy:audit -- --target /path/to/project
+npm run tes:legacy:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
@@ -1263,7 +1271,7 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tes/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>. The installed helper set includes <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tes_update.py</code> and <code>root_context.py</code>.</p>
+            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tes/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>. The installed helper set includes <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tes_update.py</code>, <code>tes_legacy_retirement.py</code> and <code>root_context.py</code>.</p>
           </div>
         </section>
 
@@ -1445,12 +1453,16 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>Estos comandos son oráculos invocables por el agente, no la interfaz normal del usuario. En el uso normal, el agente activo del IDE los ejecuta desde la ventana de contexto; humanos los ejecutan directamente solo para mantenimiento del paquete, debugging o revisión de certificación. Usa la raíz del paquete Tilly para checks del paquete, o <code>--target</code> para operar sobre otro proyecto o vault. <code>tes_init.py</code> recertifica la salud del paquete, escanea el proyecto objetivo, escribe <code>docs/agents/PROJECT-REGISTER.md</code> y guarda manifiestos con timestamp en <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefiere comandos/prompts de intención: <code>/tes:init</code> para instalar y <code>/tes:update</code> para actualizar. El update probe compara versión instalada y versión cloud, detecta superficies IDE aplicadas y recomienda la ruta.</p>
+            <p>Prefiere comandos/prompts de intención: <code>/tes:init</code> para instalar y <code>/tes:update</code> para actualizar. El update probe compara versión instalada y versión cloud, detecta superficies IDE aplicadas, recomienda la ruta y reporta <code>legacy_retirement_required</code>. Si es true, el agente ejecuta el gate de retiro legado antes de copiar nuevos activos TES.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tes_init.py --target /path/to/project --yes
 python3 scripts/tes_init.py --self-test
 python3 scripts/tes_update.py plan --target /path/to/project
 python3 scripts/tes_update.py --self-test
+python3 scripts/tes_legacy_retirement.py plan --target /path/to/project
+python3 scripts/tes_legacy_retirement.py apply --target /path/to/project --yes
+python3 scripts/tes_legacy_retirement.py audit --target /path/to/project
+python3 scripts/tes_legacy_retirement.py --self-test
 python3 scripts/root_context.py analyze --target /path/to/project
 python3 scripts/root_context.py --self-test
 python3 scripts/field_reports.py status --target /path/to/project
@@ -1480,6 +1492,10 @@ npm run tes:init -- --target /path/to/project --yes
 npm run tes:init:self-test
 npm run tes:update -- --target /path/to/project
 npm run tes:update:self-test
+npm run tes:legacy:plan -- --target /path/to/project
+npm run tes:legacy:apply -- --target /path/to/project --yes
+npm run tes:legacy:audit -- --target /path/to/project
+npm run tes:legacy:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
@@ -1593,7 +1609,7 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Las herramientas MCP con escritura quedan fuera de esta versión. La activación escribe solo <code>.tes/bin/**</code> y configuración de runtime por proyecto; no debe tocar configuración MCP global, secretos, hooks o <code>sources/**</code>. El conjunto instalado incluye <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tes_update.py</code> y <code>root_context.py</code>.</p>
+            <p>Las herramientas MCP con escritura quedan fuera de esta versión. La activación escribe solo <code>.tes/bin/**</code> y configuración de runtime por proyecto; no debe tocar configuración MCP global, secretos, hooks o <code>sources/**</code>. El conjunto instalado incluye <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tes_update.py</code>, <code>tes_legacy_retirement.py</code> y <code>root_context.py</code>.</p>
           </div>
         </section>
 
@@ -1775,12 +1791,16 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>Estes comandos são oráculos chamáveis pelo agente, não a interface normal do usuário. No uso normal, o agente ativo do IDE os invoca a partir da janela de contexto; humanos os rodam diretamente só para manutenção do pacote, debug ou revisão de certificação. Use a raiz do pacote Tilly para checks do pacote, ou <code>--target</code> para operar em outro projeto ou vault. <code>tes_init.py</code> recertifica a saúde do pacote, varre o projeto alvo, escreve <code>docs/agents/PROJECT-REGISTER.md</code> e guarda manifestos com timestamp em <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefira comandos/prompts de intenção: <code>/tes:init</code> para instalar e <code>/tes:update</code> para atualizar. O update probe compara versão instalada e versão na nuvem, detecta superfícies IDE aplicadas e recomenda a rota.</p>
+            <p>Prefira comandos/prompts de intenção: <code>/tes:init</code> para instalar e <code>/tes:update</code> para atualizar. O update probe compara versão instalada e versão na nuvem, detecta superfícies IDE aplicadas, recomenda a rota e reporta <code>legacy_retirement_required</code>. Quando true, o agente roda o gate de retiro legado antes de copiar novos ativos TES.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tes_init.py --target /path/to/project --yes
 python3 scripts/tes_init.py --self-test
 python3 scripts/tes_update.py plan --target /path/to/project
 python3 scripts/tes_update.py --self-test
+python3 scripts/tes_legacy_retirement.py plan --target /path/to/project
+python3 scripts/tes_legacy_retirement.py apply --target /path/to/project --yes
+python3 scripts/tes_legacy_retirement.py audit --target /path/to/project
+python3 scripts/tes_legacy_retirement.py --self-test
 python3 scripts/root_context.py analyze --target /path/to/project
 python3 scripts/root_context.py --self-test
 python3 scripts/field_reports.py status --target /path/to/project
@@ -1810,6 +1830,10 @@ npm run tes:init -- --target /path/to/project --yes
 npm run tes:init:self-test
 npm run tes:update -- --target /path/to/project
 npm run tes:update:self-test
+npm run tes:legacy:plan -- --target /path/to/project
+npm run tes:legacy:apply -- --target /path/to/project --yes
+npm run tes:legacy:audit -- --target /path/to/project
+npm run tes:legacy:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
@@ -1923,7 +1947,7 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Ferramentas MCP com escrita ficam fora desta versão. A ativação escreve apenas <code>.tes/bin/**</code> e configuração de runtime por projeto; não deve tocar configuração MCP global, segredos, hooks ou <code>sources/**</code>. O conjunto instalado inclui <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tes_update.py</code> e <code>root_context.py</code>.</p>
+            <p>Ferramentas MCP com escrita ficam fora desta versão. A ativação escreve apenas <code>.tes/bin/**</code> e configuração de runtime por projeto; não deve tocar configuração MCP global, segredos, hooks ou <code>sources/**</code>. O conjunto instalado inclui <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tes_update.py</code>, <code>tes_legacy_retirement.py</code> e <code>root_context.py</code>.</p>
           </div>
         </section>
 
@@ -2000,7 +2024,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.31</span>
+        <span>Tilly Engineer Skills · v0.3.32</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>

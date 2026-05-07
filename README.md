@@ -7,7 +7,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, stronger memory, and clearer proof before
 they claim a task is done.
 
-Version: `0.3.31`
+Version: `0.3.32`
 
 License: MIT
 
@@ -44,6 +44,8 @@ available local oracles, and returns a compact certification report.
 For already meshed projects, `/tes:update` checks the installed version
 against the cloud package version, detects applied IDE surfaces, and recommends
 the smallest safe route.
+Before new assets are copied, `tes_legacy_retirement.py` removes known old
+runtime surfaces, migrates Field Reports state, and blocks unknown legacy.
 Before root bootloaders are overwritten, Tilly scans `AGENTS.md`, `CLAUDE.md`
 and Cursor rules for project-owned context and requires migration first.
 

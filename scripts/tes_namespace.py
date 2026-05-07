@@ -17,7 +17,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.31"
+VERSION = "0.3.32"
 
 ACTIVE_PREFIXES = (
     ".github/",
@@ -39,6 +39,8 @@ ACTIVE_FILES = {
 CATALOG_PATH = "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md"
 DEFAULT_SKIPPED_PREFIXES = (
     ".git/",
+    ".tes/field-reports/",
+    ".tes/legacy-retirement/",
     "dist/",
     "node_modules/",
     "docs/evidence/reports/",
@@ -273,8 +275,18 @@ def classify_scope(rel: str) -> str:
 
 
 def classify_content_scope(rel: str, line: str) -> str:
-    if rel == "scripts/field_reports.py" and (
+    if rel in {"scripts/field_reports.py", "scripts/tes_legacy_retirement.py"} and (
         ".tilly/field-reports" in line or "legacy .tilly field reports" in line
+    ):
+        return "migration_bridge"
+    if rel in {
+        "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
+        "scripts/install_smoke.py",
+        "scripts/tes_update.py",
+        "scripts/tes_legacy_retirement.py",
+        ".tes/bin/tes_legacy_retirement.py",
+    } and (
+        "tilly-" in line or "tilly_" in line or "tilly-cortex" in line or ".tilly" in line
     ):
         return "migration_bridge"
     return classify_scope(rel)

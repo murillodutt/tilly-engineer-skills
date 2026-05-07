@@ -19,7 +19,7 @@ import uuid
 from typing import Any
 
 
-VERSION = "0.3.31"
+VERSION = "0.3.32"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@1"
 FIELD_ROOT = Path(".tes/field-reports")
@@ -36,6 +36,7 @@ GIT_EXCLUDE_LINES = (
     ".tes/bin/__pycache__/",
     "*.pyc",
     ".tes/field-reports/",
+    ".tes/legacy-retirement/",
     ".tes/cortex/*.sqlite",
     ".tes/cortex/*.sqlite-*",
 )
@@ -643,6 +644,7 @@ def self_test() -> dict[str, object]:
             ".tes/bin/cortex.py.bak-20260507T000000Z",
             ".tes/bin/__pycache__/field_reports.cpython-314.pyc",
             ".tes/field-reports/probe.jsonl",
+            ".tes/legacy-retirement/backup.json",
             ".tes/cortex/recall.sqlite",
             ".tes/cortex/semantic.sqlite-wal",
             "root.pyc",
