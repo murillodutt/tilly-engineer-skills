@@ -54,7 +54,7 @@ E = A * S * C * V
 If assumptions, simplicity, change constraint, or verification are missing,
 success is zero.
 
-## Tilly Init
+## Tilly Shortcuts
 
 When the user says `/tilly:init`, "initialize Tilly", "install Tilly", "update
 Tilly", or "recertify Tilly", treat it as an intent shortcut for the assisted
@@ -62,6 +62,10 @@ context installer. Detect the project state, run Step Zero before edits,
 preserve local governance, initialize or update `docs/agents/**` and Cortex,
 activate read-only MCP when selected, run available oracles, and finish with a
 certification report. It is not a blind shell command.
+
+Also treat `/tilly:cortex`, `/tilly:mcp`, `/tilly:doctor`, `/tilly:adapter`,
+and `/tilly:bench` as intent shortcuts. Choose the smallest safe oracle behind
+the scenes and report skipped or blocked commands honestly.
 
 ## Cortex Reflection
 

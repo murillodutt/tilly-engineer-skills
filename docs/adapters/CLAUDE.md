@@ -43,7 +43,7 @@ Official references: [Memory](https://code.claude.com/docs/en/memory),
 |--------|---------|
 | `src/adapters/claude/CLAUDE.md` | Short target root instruction file |
 | `src/adapters/claude/skills/tilly-guidelines/SKILL.md` | Claude skill source |
-| `src/adapters/claude/skills/tilly-init/SKILL.md` | Assisted installer shortcut skill |
+| `src/adapters/claude/skills/tilly-*/SKILL.md` | Command-shortcut skills |
 | `src/adapters/claude/plugin/plugin.json` | Plugin metadata source |
 | `src/adapters/claude/plugin/marketplace.json` | Local marketplace metadata source |
 
@@ -58,8 +58,9 @@ dedicated decision.
   root.
 - Skill paths in plugin metadata must be root-relative, such as
   `skills/tilly-guidelines`, not `../skills/tilly-guidelines`.
-- `/tilly:init` maps to the `tilly-init` skill and then to the assisted
-  installer contract.
+- `/tilly:*` shortcuts map to Claude skills and then to deterministic oracles:
+  `tilly-init`, `tilly-cortex`, `tilly-mcp`, `tilly-doctor`, `tilly-adapter`,
+  and `tilly-bench`.
 - Hooks, write-capable MCP, and subagents must not be added to the default
   plugin.
 - Read-only Cortex MCP is activated by the assisted installer through

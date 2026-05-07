@@ -25,6 +25,7 @@ REQUIRED_PATHS = (
     "docs/install/USER-MANUAL.html",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
+    "docs/install/COMMAND-TRIGGERS.md",
     "docs/install/navigation/NAVIGATION-LIBRARY.md",
     "docs/install/navigation/common.prompt.md",
     "docs/install/navigation/codex.prompt.md",
@@ -55,10 +56,22 @@ REQUIRED_PATHS = (
     "src/adapters/codex/skills/tilly-engineering-discipline/references/failure-patterns.md",
     "src/adapters/codex/skills/tilly-engineering-discipline/references/source-portability.md",
     "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py",
+    "src/adapters/codex/skills/tilly-init/SKILL.md",
+    "src/adapters/codex/skills/tilly-cortex/SKILL.md",
+    "src/adapters/codex/skills/tilly-mcp/SKILL.md",
+    "src/adapters/codex/skills/tilly-doctor/SKILL.md",
+    "src/adapters/codex/skills/tilly-adapter/SKILL.md",
+    "src/adapters/codex/skills/tilly-bench/SKILL.md",
     "src/adapters/claude/CLAUDE.md",
     "src/adapters/claude/plugin/plugin.json",
     "src/adapters/claude/plugin/marketplace.json",
     "src/adapters/claude/skills/tilly-guidelines/SKILL.md",
+    "src/adapters/claude/skills/tilly-init/SKILL.md",
+    "src/adapters/claude/skills/tilly-cortex/SKILL.md",
+    "src/adapters/claude/skills/tilly-mcp/SKILL.md",
+    "src/adapters/claude/skills/tilly-doctor/SKILL.md",
+    "src/adapters/claude/skills/tilly-adapter/SKILL.md",
+    "src/adapters/claude/skills/tilly-bench/SKILL.md",
     "src/adapters/cursor/CURSOR.md",
     "src/adapters/cursor/rules/tilly-guidelines.mdc",
     "benchmarks/context-mesh/eval-dataset.json",
@@ -136,9 +149,12 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "cortex:verify",
     "cortex:audit",
     "cortex:rebuild",
+    "cortex:recall",
     "cortex:read-cell",
+    "cortex:absorb-plan",
     "cortex:learn",
     "cortex:reflect",
+    "cortex:apply",
     "cortex:self-test",
     "cortex:mcp:self-test",
     "oracle:self-test",
@@ -246,8 +262,8 @@ def main() -> int:
     package_json = ROOT / "package.json"
     if package_json.exists():
         package = json.loads(package_json.read_text(encoding="utf-8"))
-        if package.get("version") != "0.3.11":
-            failures.append("package.json version must be 0.3.11")
+        if package.get("version") != "0.3.12":
+            failures.append("package.json version must be 0.3.12")
         scripts = package.get("scripts", {})
         for script in REQUIRED_PACKAGE_SCRIPTS:
             if script not in scripts:
@@ -255,8 +271,8 @@ def main() -> int:
 
     for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
         path = ROOT / relpath
-        if path.exists() and "0.3.11" not in path.read_text(encoding="utf-8"):
-            failures.append(f"{relpath} must declare 0.3.11")
+        if path.exists() and "0.3.12" not in path.read_text(encoding="utf-8"):
+            failures.append(f"{relpath} must declare 0.3.12")
 
     oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():

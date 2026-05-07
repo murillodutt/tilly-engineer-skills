@@ -6,7 +6,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, and clearer proof before they claim a task
 is done.
 
-Version: `0.3.11`
+Version: `0.3.12`
 
 License: MIT
 
@@ -112,6 +112,19 @@ audit, and recertification. Where a runtime supports skills, it maps to the
 `tilly-init` skill. Where it does not, rules and bootloaders should treat the
 same phrase as an intent that loads the assisted installer contract.
 
+The broader shortcut surface is intentionally small:
+
+| Shortcut | Intent |
+|----------|--------|
+| `/tilly:init` | install, update, audit, or recertify Tilly in a project |
+| `/tilly:cortex` | query, inspect, audit, rebuild, learn, reflect, or apply Cortex memory |
+| `/tilly:mcp` | activate or verify read-only Cortex MCP |
+| `/tilly:doctor` | run health, certification, and commit-readiness gates |
+| `/tilly:adapter` | materialize, dry-run, retrofit, or install adapter surfaces |
+| `/tilly:bench` | plan, run, or converge context-mesh benchmarks |
+
+See `docs/install/COMMAND-TRIGGERS.md` for the full command-to-trigger matrix.
+
 When a runtime has no shell/tool access, the agent must not pretend a command
 ran. It should complete the file work it can safely perform, mark unavailable
 oracles as `BLOCKED` or `SKIP` with a reason, and ask for the smallest native
@@ -131,6 +144,8 @@ python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
 python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
+python3 scripts/cortex.py read-cell --target /path/to/project-or-vault --cell cell-name
+python3 scripts/cortex.py absorb-plan --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
 python3 scripts/cortex.py learn --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
 python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision or lesson"
 python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes

@@ -1,7 +1,7 @@
 {
   "name": "tilly-engineer-skills",
   "description": "Portable engineering discipline to reduce ambiguity, overcomplication, drive-by edits, and false completion in coding agents",
-  "version": "0.3.11",
+  "version": "0.3.12",
   "author": {
     "name": "forrestchang"
   },
@@ -15,6 +15,11 @@
   ],
   "skills": [
     "skills/tilly-guidelines",
-    "skills/tilly-init"
+    "skills/tilly-init",
+    "skills/tilly-cortex",
+    "skills/tilly-mcp",
+    "skills/tilly-doctor",
+    "skills/tilly-adapter",
+    "skills/tilly-bench"
   ]
 }

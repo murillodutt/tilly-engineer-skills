@@ -44,7 +44,9 @@ general behavioral overlay for non-trivial coding, review, refactor, and
 instruction migration work.
 
 Cursor does not receive a separate skill package. The always-on rule treats
-`/tilly:init` as an intent shortcut for the assisted installer workflow.
+`/tilly:init`, `/tilly:cortex`, `/tilly:mcp`, `/tilly:doctor`,
+`/tilly:adapter`, and `/tilly:bench` as intent shortcuts for the same
+deterministic oracles used by Codex and Claude.
 
 Future workflow-specific rules should be separate `Agent Requested` or
 manual rules instead of expanding the always-on rule.

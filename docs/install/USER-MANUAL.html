@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.11</span>
+          <span class="brand-meta">User manual · v0.3.12</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1104,6 +1104,7 @@
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>These commands are agent-callable oracles, not the normal user interface. In normal use, the active IDE agent invokes them from the current context window; humans run them directly only for package maintenance, debugging or certification review. Use the Tilly package root for package checks, or pass <code>--target</code> when operating on another project or vault. <code>tilly_init.py</code> recertifies package health, scans the target project, writes <code>docs/agents/PROJECT-REGISTER.md</code> and stores a full manifest under <code>docs/agents/evidence/**</code>.</p>
+            <p>Prefer intent shortcuts: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> and <code>/tilly:bench</code>. The agent translates them into the smallest safe oracle. The full matrix lives in <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
@@ -1139,9 +1140,12 @@ npm run cortex:init -- --target /path/to/project-or-vault
 npm run cortex:verify -- --target /path/to/project-or-vault
 npm run cortex:audit -- --target /path/to/project-or-vault
 npm run cortex:rebuild -- --target /path/to/project-or-vault
+npm run cortex:recall -- --target /path/to/project-or-vault "query"
 npm run cortex:read-cell -- --target /path/to/project-or-vault --cell cell-name
+npm run cortex:absorb-plan -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
 npm run cortex:learn -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
 npm run cortex:reflect -- --target /path/to/project-or-vault "decision or lesson"
+npm run cortex:apply -- --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
 npm run cortex:self-test
 npm run cortex:mcp:self-test
 npm run materialize:all
@@ -1360,6 +1364,7 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>Estos comandos son oráculos invocables por el agente, no la interfaz normal del usuario. En el uso normal, el agente activo del IDE los ejecuta desde la ventana de contexto; humanos los ejecutan directamente solo para mantenimiento del paquete, debugging o revisión de certificación. Usa la raíz del paquete Tilly para checks del paquete, o <code>--target</code> para operar sobre otro proyecto o vault. <code>tilly_init.py</code> recertifica la salud del paquete, escanea el proyecto objetivo, escribe <code>docs/agents/PROJECT-REGISTER.md</code> y guarda manifiestos con timestamp en <code>docs/agents/evidence/**</code>.</p>
+            <p>Prefiere atajos de intención: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> y <code>/tilly:bench</code>. El agente los traduce al oráculo seguro más pequeño. La matriz completa vive en <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
@@ -1395,9 +1400,12 @@ npm run cortex:init -- --target /path/to/project-or-vault
 npm run cortex:verify -- --target /path/to/project-or-vault
 npm run cortex:audit -- --target /path/to/project-or-vault
 npm run cortex:rebuild -- --target /path/to/project-or-vault
+npm run cortex:recall -- --target /path/to/project-or-vault "query"
 npm run cortex:read-cell -- --target /path/to/project-or-vault --cell cell-name
+npm run cortex:absorb-plan -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
 npm run cortex:learn -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
 npm run cortex:reflect -- --target /path/to/project-or-vault "decision or lesson"
+npm run cortex:apply -- --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
 npm run cortex:self-test
 npm run cortex:mcp:self-test
 npm run materialize:all
@@ -1616,6 +1624,7 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>Estes comandos são oráculos chamáveis pelo agente, não a interface normal do usuário. No uso normal, o agente ativo do IDE os invoca a partir da janela de contexto; humanos os rodam diretamente só para manutenção do pacote, debug ou revisão de certificação. Use a raiz do pacote Tilly para checks do pacote, ou <code>--target</code> para operar em outro projeto ou vault. <code>tilly_init.py</code> recertifica a saúde do pacote, varre o projeto alvo, escreve <code>docs/agents/PROJECT-REGISTER.md</code> e guarda manifestos com timestamp em <code>docs/agents/evidence/**</code>.</p>
+            <p>Prefira atalhos de intenção: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> e <code>/tilly:bench</code>. O agente traduz isso para o menor oráculo seguro. A matriz completa vive em <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
@@ -1651,9 +1660,12 @@ npm run cortex:init -- --target /path/to/project-or-vault
 npm run cortex:verify -- --target /path/to/project-or-vault
 npm run cortex:audit -- --target /path/to/project-or-vault
 npm run cortex:rebuild -- --target /path/to/project-or-vault
+npm run cortex:recall -- --target /path/to/project-or-vault "query"
 npm run cortex:read-cell -- --target /path/to/project-or-vault --cell cell-name
+npm run cortex:absorb-plan -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
 npm run cortex:learn -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
 npm run cortex:reflect -- --target /path/to/project-or-vault "decision or lesson"
+npm run cortex:apply -- --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
 npm run cortex:self-test
 npm run cortex:mcp:self-test
 npm run materialize:all
@@ -1777,7 +1789,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.11</span>
+        <span>Tilly Engineer Skills · v0.3.12</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>

@@ -44,6 +44,9 @@ installer.
 
 `/tilly:init` is the preferred user-facing shortcut for this workflow. Treat it
 as an intent that loads this installer contract, not as a raw shell command.
+Other shortcuts are routed by `docs/install/COMMAND-TRIGGERS.md`:
+`/tilly:cortex`, `/tilly:mcp`, `/tilly:doctor`, `/tilly:adapter`, and
+`/tilly:bench`.
 
 If the current runtime cannot execute a command, do not claim it passed. Finish
 safe file work where possible, mark the oracle `BLOCKED` or `SKIP` with the
@@ -72,6 +75,7 @@ docs/install/navigation/cursor-acp.prompt.md
 docs/install/navigation/anthropic-api.prompt.md
 docs/install/navigation/generic.prompt.md
 docs/install/USER-MANUAL.html
+docs/install/COMMAND-TRIGGERS.md
 docs/mesh/CORTEX.md
 docs/mesh/CORTEX-MCP.md
 scripts/cortex.py
