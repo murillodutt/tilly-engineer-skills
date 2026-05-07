@@ -11,7 +11,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.24"
+VERSION = "0.3.25"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -91,6 +91,7 @@ REQUIRED_PATHS = (
     "scripts/install_mcp.py",
     "scripts/install_adapter.py",
     "scripts/tilly_init.py",
+    "scripts/tilly_update.py",
     "scripts/claude_plugin_oracle.py",
     "scripts/platform_surface_oracle.py",
     "scripts/retention_metadata.py",
@@ -144,6 +145,8 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "install:smoke",
     "tilly:init",
     "tilly:init:self-test",
+    "tilly:update",
+    "tilly:update:self-test",
     "mcp:install",
     "mcp:dry-run",
     "mcp:self-test",
@@ -245,6 +248,14 @@ USER_MANUAL_REPORT_REQUIRED_TERMS = (
     "certified against the recorded snapshot",
     "frescor do snapshot fonte",
     "certificado contra o snapshot registrado",
+)
+
+UPDATE_ROUTINE_REQUIRED_TERMS = (
+    "/tilly:update",
+    "tilly_update.py",
+    "installed and cloud versions",
+    "versão instalada e versão na nuvem",
+    "recommended_route",
 )
 
 
@@ -368,6 +379,19 @@ def installer_report_contract_failures() -> list[str]:
     for term in USER_MANUAL_REPORT_REQUIRED_TERMS:
         if term not in manual_text:
             failures.append(f"user manual missing report-hardening term: {term}")
+    update_sources = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (
+            ROOT / "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
+            ROOT / "docs/install/COMMAND-TRIGGERS.md",
+            ROOT / "docs/install/USER-MANUAL.html",
+            ROOT / "scripts/tilly_update.py",
+        )
+        if path.exists()
+    )
+    for term in UPDATE_ROUTINE_REQUIRED_TERMS:
+        if term not in update_sources:
+            failures.append(f"update routine missing term: {term}")
     return failures
 
 

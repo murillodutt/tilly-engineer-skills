@@ -5,7 +5,7 @@ status: active
 consumer: MCP adapter authors, installer authors, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.3.0
+tver: 0.3.1
 ---
 
 # Tilly Cortex MCP
@@ -88,6 +88,7 @@ The activation path installs local MCP helpers into the target project:
 .tilly/bin/cortex_mcp.py
 .tilly/bin/cortex_embed.mjs
 .tilly/bin/field_reports.py
+.tilly/bin/tilly_update.py
 ```
 
 It then writes only project-scoped config for the selected runtime:
@@ -113,6 +114,7 @@ cortex_cut:
     - .tilly/bin/cortex_mcp.py
     - .tilly/bin/cortex_embed.mjs
     - .tilly/bin/field_reports.py
+    - .tilly/bin/tilly_update.py
     - .codex/config.toml
     - .mcp.json
     - .cursor/mcp.json

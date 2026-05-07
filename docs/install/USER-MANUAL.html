@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.24</span>
+          <span class="brand-meta">User manual · v0.3.25</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1033,7 +1033,7 @@
             </div>
             <div class="panel">
               <span class="panel-tag">Gatillos de comando</span>
-              <p>The normal user interface is a Tilly intent typed in the agent window, not a shell command. Use <code>/tilly:init</code> or a direct command/prompt such as <code>Tilly, initialize this project</code>; the active agent then selects and runs the smallest safe oracle. The shell commands in this manual are exposed so users can audit what the agent may invoke.</p>
+              <p>The normal user interface is a Tilly intent typed in the agent window, not a shell command. Use <code>/tilly:init</code> for first setup and <code>/tilly:update</code> for an already meshed project; the active agent then selects and runs the smallest safe oracle. The shell commands in this manual are exposed so users can audit what the agent may invoke.</p>
             </div>
           </div>
         </section>
@@ -1043,7 +1043,7 @@
           <div class="chapter-body">
             <ol>
               <li>Open the target project in Codex, Claude Code or Cursor.</li>
-              <li>Type <code>/tilly:init</code> or an equivalent init prompt when the Tilly init skill/rule is available. Otherwise paste the installer prompt from the README or <code>docs/install/MINI-PROMPT.md</code>.</li>
+              <li>Type <code>/tilly:init</code> for first setup or <code>/tilly:update</code> for an existing Tilly mesh. Otherwise paste the installer prompt from the README or <code>docs/install/MINI-PROMPT.md</code>.</li>
               <li>Let the installer run Step Zero before any edit.</li>
               <li>Choose a route: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code> or <code>audit</code>.</li>
               <li>Read the final report before asking for commit or push.</li>
@@ -1111,10 +1111,12 @@
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>These commands are agent-callable oracles, not the normal user interface. In normal use, the active IDE agent invokes them from the current context window; humans run them directly only for package maintenance, debugging or certification review. Use the Tilly package root for package checks, or pass <code>--target</code> when operating on another project or vault. <code>tilly_init.py</code> recertifies package health, scans the target project, writes <code>docs/agents/PROJECT-REGISTER.md</code> and stores a full manifest under <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefer intent command/prompts: <code>/tilly:init</code> or <code>Tilly, initialize this project</code> for initialization, plus the other <code>/tilly:*</code> shortcuts for Cortex, MCP, doctor, adapter and bench work. The agent translates them into the smallest safe oracle. The complete command inventory is below because this manual is the user entrypoint; the routing matrix lives in <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
+            <p>Prefer intent command/prompts: <code>/tilly:init</code> for setup and <code>/tilly:update</code> for updating. The update probe compares installed and cloud versions, detects applied IDE surfaces and recommends the route. The complete command inventory is below because this manual is the user entrypoint; the routing matrix lives in <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
+python3 scripts/tilly_update.py plan --target /path/to/project
+python3 scripts/tilly_update.py --self-test
 python3 scripts/field_reports.py status --target /path/to/project
 python3 scripts/field_reports.py drain --target /path/to/project
 python3 scripts/field_reports.py disable --target /path/to/project
@@ -1140,6 +1142,8 @@ npm run install:dry-run
 npm run install:smoke
 npm run tilly:init -- --target /path/to/project --yes
 npm run tilly:init:self-test
+npm run tilly:update -- --target /path/to/project
+npm run tilly:update:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
@@ -1253,7 +1257,7 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tilly/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>. The installed helper set includes <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code> and <code>field_reports.py</code>.</p>
+            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tilly/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>. The installed helper set includes <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code> and <code>tilly_update.py</code>.</p>
           </div>
         </section>
 
@@ -1353,7 +1357,7 @@ git revert &lt;install-commit&gt;</code></pre>
             </div>
             <div class="panel">
               <span class="panel-tag">Gatilhos de comando</span>
-              <p>La interfaz normal del usuario es una intención Tilly escrita en la ventana del agente, no un comando de shell. Usa <code>/tilly:init</code> o un comando/prompt directo como <code>Tilly, inicializa este proyecto</code>; el agente activo elige y ejecuta el oráculo seguro más pequeño. Los comandos shell de este manual están expuestos para que el usuario pueda auditar lo que el agente puede invocar.</p>
+              <p>La interfaz normal del usuario es una intención Tilly escrita en la ventana del agente, no un comando de shell. Usa <code>/tilly:init</code> para la primera instalación y <code>/tilly:update</code> para un proyecto ya meshed; el agente activo elige y ejecuta el oráculo seguro más pequeño.</p>
             </div>
           </div>
         </section>
@@ -1363,7 +1367,7 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-body">
             <ol>
               <li>Abre el proyecto objetivo en Codex, Claude Code o Cursor.</li>
-              <li>Escribe <code>/tilly:init</code> o un prompt equivalente de inicialización cuando la skill/regla Tilly init esté disponible. Si no, pega el prompt de instalación del README o de <code>docs/install/MINI-PROMPT.md</code>.</li>
+              <li>Escribe <code>/tilly:init</code> para la primera instalación o <code>/tilly:update</code> para un mesh Tilly existente. Si no, pega el prompt de instalación del README o de <code>docs/install/MINI-PROMPT.md</code>.</li>
               <li>Deja que el instalador ejecute Step Zero antes de editar.</li>
               <li>Elige una ruta: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code> o <code>audit</code>.</li>
               <li>Lee el informe final antes de pedir commit o push.</li>
@@ -1431,10 +1435,12 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>Estos comandos son oráculos invocables por el agente, no la interfaz normal del usuario. En el uso normal, el agente activo del IDE los ejecuta desde la ventana de contexto; humanos los ejecutan directamente solo para mantenimiento del paquete, debugging o revisión de certificación. Usa la raíz del paquete Tilly para checks del paquete, o <code>--target</code> para operar sobre otro proyecto o vault. <code>tilly_init.py</code> recertifica la salud del paquete, escanea el proyecto objetivo, escribe <code>docs/agents/PROJECT-REGISTER.md</code> y guarda manifiestos con timestamp en <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefiere comandos/prompts de intención: <code>/tilly:init</code> o <code>Tilly, inicializa este proyecto</code> para inicialización, y los demás atajos <code>/tilly:*</code> para Cortex, MCP, doctor, adapter y bench. El agente los traduce al oráculo seguro más pequeño. El inventario completo de comandos está abajo porque este manual es la entrada del usuario; la matriz de ruteo vive en <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
+            <p>Prefiere comandos/prompts de intención: <code>/tilly:init</code> para instalar y <code>/tilly:update</code> para actualizar. El update probe compara versión instalada y versión cloud, detecta superficies IDE aplicadas y recomienda la ruta.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
+python3 scripts/tilly_update.py plan --target /path/to/project
+python3 scripts/tilly_update.py --self-test
 python3 scripts/field_reports.py status --target /path/to/project
 python3 scripts/field_reports.py drain --target /path/to/project
 python3 scripts/field_reports.py disable --target /path/to/project
@@ -1460,6 +1466,8 @@ npm run install:dry-run
 npm run install:smoke
 npm run tilly:init -- --target /path/to/project --yes
 npm run tilly:init:self-test
+npm run tilly:update -- --target /path/to/project
+npm run tilly:update:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
@@ -1573,7 +1581,7 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Las herramientas MCP con escritura quedan fuera de esta versión. La activación escribe solo <code>.tilly/bin/**</code> y configuración de runtime por proyecto; no debe tocar configuración MCP global, secretos, hooks o <code>sources/**</code>. El conjunto instalado incluye <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code> y <code>field_reports.py</code>.</p>
+            <p>Las herramientas MCP con escritura quedan fuera de esta versión. La activación escribe solo <code>.tilly/bin/**</code> y configuración de runtime por proyecto; no debe tocar configuración MCP global, secretos, hooks o <code>sources/**</code>. El conjunto instalado incluye <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code> y <code>tilly_update.py</code>.</p>
           </div>
         </section>
 
@@ -1673,7 +1681,7 @@ git revert &lt;install-commit&gt;</code></pre>
             </div>
             <div class="panel">
               <span class="panel-tag">Command triggers</span>
-              <p>A interface normal do usuário é uma intenção Tilly digitada na janela do agente, não um comando de shell. Use <code>/tilly:init</code> ou um comando/prompt direto como <code>Tilly, inicialize este projeto</code>; o agente ativo escolhe e executa o menor oráculo seguro. Os comandos shell deste manual ficam expostos para que o usuário possa auditar o que o agente pode invocar.</p>
+              <p>A interface normal do usuário é uma intenção Tilly digitada na janela do agente, não um comando de shell. Use <code>/tilly:init</code> para primeira instalação e <code>/tilly:update</code> ou <code>Atualizar a Tilly</code> para um projeto já meshed; o agente ativo escolhe e executa o menor oráculo seguro.</p>
             </div>
           </div>
         </section>
@@ -1683,7 +1691,7 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-body">
             <ol>
               <li>Abra o projeto alvo no Codex, Claude Code ou Cursor.</li>
-              <li>Digite <code>/tilly:init</code> ou um prompt equivalente de inicialização quando a skill/rule Tilly init estiver disponível. Caso contrário, cole o prompt de instalação do README ou de <code>docs/install/MINI-PROMPT.md</code>.</li>
+              <li>Digite <code>/tilly:init</code> para primeira instalação ou <code>/tilly:update</code> para um mesh Tilly existente. Caso contrário, cole o prompt de instalação do README ou de <code>docs/install/MINI-PROMPT.md</code>.</li>
               <li>Deixe o instalador rodar o Step Zero antes de qualquer edição.</li>
               <li>Escolha uma rota: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code> ou <code>audit</code>.</li>
               <li>Leia o relatório final antes de pedir commit ou push.</li>
@@ -1751,10 +1759,12 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>Estes comandos são oráculos chamáveis pelo agente, não a interface normal do usuário. No uso normal, o agente ativo do IDE os invoca a partir da janela de contexto; humanos os rodam diretamente só para manutenção do pacote, debug ou revisão de certificação. Use a raiz do pacote Tilly para checks do pacote, ou <code>--target</code> para operar em outro projeto ou vault. <code>tilly_init.py</code> recertifica a saúde do pacote, varre o projeto alvo, escreve <code>docs/agents/PROJECT-REGISTER.md</code> e guarda manifestos com timestamp em <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefira comandos/prompts de intenção: <code>/tilly:init</code> ou <code>Tilly, inicialize este projeto</code> para inicialização, e os demais atalhos <code>/tilly:*</code> para Cortex, MCP, doctor, adapter e bench. O agente traduz isso para o menor oráculo seguro. O inventário completo de comandos está abaixo porque este manual é a porta de entrada do usuário; a matriz de roteamento vive em <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
+            <p>Prefira comandos/prompts de intenção: <code>/tilly:init</code> para instalar e <code>/tilly:update</code> para atualizar. O update probe compara versão instalada e versão na nuvem, detecta superfícies IDE aplicadas e recomenda a rota.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
+python3 scripts/tilly_update.py plan --target /path/to/project
+python3 scripts/tilly_update.py --self-test
 python3 scripts/field_reports.py status --target /path/to/project
 python3 scripts/field_reports.py drain --target /path/to/project
 python3 scripts/field_reports.py disable --target /path/to/project
@@ -1780,6 +1790,8 @@ npm run install:dry-run
 npm run install:smoke
 npm run tilly:init -- --target /path/to/project --yes
 npm run tilly:init:self-test
+npm run tilly:update -- --target /path/to/project
+npm run tilly:update:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
@@ -1893,7 +1905,7 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Ferramentas MCP com escrita ficam fora desta versão. A ativação escreve apenas <code>.tilly/bin/**</code> e configuração de runtime por projeto; não deve tocar configuração MCP global, segredos, hooks ou <code>sources/**</code>. O conjunto instalado inclui <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code> e <code>field_reports.py</code>.</p>
+            <p>Ferramentas MCP com escrita ficam fora desta versão. A ativação escreve apenas <code>.tilly/bin/**</code> e configuração de runtime por projeto; não deve tocar configuração MCP global, segredos, hooks ou <code>sources/**</code>. O conjunto instalado inclui <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code> e <code>tilly_update.py</code>.</p>
           </div>
         </section>
 
@@ -1970,7 +1982,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.24</span>
+        <span>Tilly Engineer Skills · v0.3.25</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>

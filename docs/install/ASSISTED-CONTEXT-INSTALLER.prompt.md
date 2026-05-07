@@ -42,9 +42,10 @@ hooks as local Git gates for validation, Field Reports drain, and no-write
 Cortex reflection/curation. Treat MCP as a read-only Cortex access surface for agents,
 not as memory and not as the installer.
 
-`/tilly:init`, `tilly init`, and direct command/prompts such as `Tilly,
-initialize this project` are preferred entries for this workflow. Treat them as
-intents that load this installer contract, not as raw shell commands.
+`/tilly:init`, `/tilly:update`, `tilly init`, and direct command/prompts such as
+`Tilly, initialize this project` or `Atualizar a Tilly` are preferred entries.
+Treat them as intents that load this installer contract, not as raw shell
+commands.
 Other shortcuts are routed by `docs/install/COMMAND-TRIGGERS.md`:
 `/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`, `/tilly:doctor`, `/tilly:adapter`, and
 `/tilly:bench`.
@@ -83,6 +84,7 @@ scripts/cortex.py
 scripts/cortex_embed.mjs
 scripts/cortex_mcp.py
 scripts/tilly_init.py
+scripts/tilly_update.py
 scripts/install_adapter.py
 scripts/install_mcp.py
 scripts/field_reports.py
@@ -385,9 +387,12 @@ For an existing project, treat all current instructions as project-owned until
 proven otherwise.
 
 For a meshed project, treat the run as assisted update/convergence, not
-reinstall. Preserve local governance, inspect the current mesh, detect contract
-and TVer/version drift, apply only surgical updates needed by the selected
-route, and certify the resulting state.
+reinstall. Run the update probe when available:
+`python3 scripts/tilly_update.py plan --target <target-root>`. It compares the
+installed version with the cloud package version, detects applied IDE surfaces,
+and recommends `current`, `codex`, `claude`, `cursor`, or `all`. Preserve local
+governance, apply only surgical updates needed by the selected route, and
+certify the resulting state.
 
 ## Phase 3 - Navigation Menu
 
@@ -684,6 +689,8 @@ The activation writes only project-scoped local assets:
 .tilly/bin/cortex.py
 .tilly/bin/cortex_mcp.py
 .tilly/bin/cortex_embed.mjs
+.tilly/bin/field_reports.py
+.tilly/bin/tilly_update.py
 .codex/config.toml        # Codex route only
 .mcp.json                 # Claude Code route only
 .cursor/mcp.json          # Cursor route only

@@ -64,6 +64,10 @@ Use `npm run materialize:check` to verify this without writing to `dist/**`.
 the read-only Cortex MCP server in a target project by copying local helpers to
 `.tilly/bin/**` and writing project-scoped runtime config.
 
+`scripts/tilly_update.py` plans low-friction updates by comparing installed and
+cloud package versions, detecting applied IDE surfaces, and recommending the
+route behind `/tilly:update`.
+
 `scripts/field_reports.py` installs the local Field Reports `pre-push` drain
 and records sanitized operational facts under `.tilly/field-reports/**`. That
 directory is local transport state, not repository truth.

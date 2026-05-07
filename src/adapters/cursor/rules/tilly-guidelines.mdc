@@ -69,13 +69,15 @@ requires exact syntax.
 
 ## Tilly Shortcuts
 
-When the user says `/tilly:init`, `tilly init`, "initialize Tilly", "install
-Tilly", "update Tilly", "recertify Tilly", or a natural command/prompt such as
-"Tilly, inicialize este projeto", treat it as an intent shortcut for the
-assisted context installer. Detect the project state, run Step Zero before edits,
-preserve local governance, initialize or update `docs/agents/**` and Cortex,
-activate read-only MCP when selected, run available oracles, and finish with a
-certification report. It is not a blind shell command.
+When the user says `/tilly:init`, `/tilly:update`, `tilly init`, "initialize
+Tilly", "install Tilly", "update Tilly", "recertify Tilly", "Atualizar a
+Tilly", or a natural command/prompt such as "Tilly, inicialize este projeto",
+treat it as an intent shortcut for the assisted context installer. For
+`/tilly:update`, first check installed version, cloud version, applied IDE
+surfaces, and recommended route. Detect the project state, run Step Zero before
+edits, preserve local governance, initialize or update `docs/agents/**` and
+Cortex, activate read-only MCP when selected, run available oracles, and finish
+with a certification report. It is not a blind shell command.
 
 Also treat `/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`,
 `/tilly:field-reports`, `/tilly:doctor`, `/tilly:adapter`, and `/tilly:bench`

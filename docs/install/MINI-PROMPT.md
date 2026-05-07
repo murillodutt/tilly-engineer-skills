@@ -5,7 +5,7 @@ status: active
 consumer: adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.5.0
+tver: 0.5.1
 ---
 
 # Tilly Context Installer Mini Prompt
@@ -30,13 +30,16 @@ Do not display internal reasoning, scratch YAML or long inventories.
 
 Start by detecting the current IDE/runtime and classifying this project as new,
 existing, or meshed. If Tilly is already meshed, treat this as an assisted
-update/convergence run, not a reinstall. Use the detected IDE as the default
-adapter. Ask me for a route command only where the spec requires one. Preserve
-local project governance, move durable agent context into docs/agents/** when
-needed, create or update the compiled docs/agents/cortex/** Cortex layer, keep
-AGENTS.md, CLAUDE.md and Cursor rules as thin runtime bootloaders, activate the
-read-only project-scoped Cortex MCP server for the selected runtime route, and
-finish with the certification report required by the spec.
+update/convergence run, not a reinstall. When I ask `/tilly:update` or
+`Atualizar a Tilly`, compare the installed Tilly version with the cloud package
+version, detect applied IDE surfaces, and recommend the route before editing.
+Use the detected IDE as the default adapter. Ask me for a route command only
+where the spec requires one. Preserve local project governance, move durable
+agent context into docs/agents/** when needed, create or update the compiled
+docs/agents/cortex/** Cortex layer, keep AGENTS.md, CLAUDE.md and Cursor rules
+as thin runtime bootloaders, activate the read-only project-scoped Cortex MCP
+server for the selected runtime route, and finish with the certification report
+required by the spec.
 The final report must expose the PT/EN/ES user manual link/path.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
