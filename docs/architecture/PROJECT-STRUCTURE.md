@@ -69,8 +69,8 @@ cloud package versions, detecting applied IDE surfaces, and recommending the
 route behind `/tes:update`.
 
 `scripts/tes_legacy_retirement.py` is the closed-catalog cleanup gate for
-updates. It removes known old runtime assets, migrates Field Reports state, and
-preserves project context.
+updates. It removes known old runtime assets, migrates Field Reports state,
+archives legacy retrofit records, and preserves project context.
 
 `scripts/root_context.py` scans root runtime files such as `AGENTS.md`,
 `CLAUDE.md`, and Cursor rules before overwrite. Project-owned instructions must

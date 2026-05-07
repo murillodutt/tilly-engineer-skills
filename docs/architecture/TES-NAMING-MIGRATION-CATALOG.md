@@ -29,7 +29,7 @@ The migration target is simple:
 
 ## Current Status
 
-The TES operational namespace is implemented in v0.3.32.
+The TES operational namespace is implemented in v0.3.33.
 Update convergence now includes `tes_legacy_retirement.py`, a closed-catalog
 gate that removes known old runtime assets, migrates Field Reports state, and
 preserves project-owned context before new TES assets are copied.
@@ -320,7 +320,7 @@ The migration is not certified until these checks pass:
 
 ## Closed Decisions
 
-These decisions were closed during the v0.3.32 migration:
+These decisions were closed during the v0.3.33 migration:
 
 - The Claude plugin package name remains `tilly-engineer-skills` because it is
   repository identity, not an active command namespace.
