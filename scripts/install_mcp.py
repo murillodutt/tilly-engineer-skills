@@ -18,7 +18,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.28"
+VERSION = "0.3.29"
 SERVER_NAME = "tilly-cortex"
 BIN_DIR = Path(".tilly/bin")
 SERVER_FILES = ("cortex.py", "cortex_mcp.py", "cortex_embed.mjs", "field_reports.py", "tilly_update.py", "root_context.py")
@@ -285,6 +285,9 @@ def install(args: argparse.Namespace) -> int:
 
     if not require_confirmation(args):
         return 1
+
+    if not args.dry_run:
+        field_reports.ensure_git_exclude(target)
 
     adapters = selected_adapters(args.adapter)
     server_actions, server_failures = install_server_files(target, args.dry_run, args.overwrite, not args.no_backup)

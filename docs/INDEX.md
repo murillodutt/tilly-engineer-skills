@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.1
+tver: 0.4.2
 ---
 
 # Tilly Engineer Skills Docs
@@ -30,6 +30,7 @@ turning the repository root into an inventory.
 | Tilly Cortex | `mesh/CORTEX.md` |
 | Tilly Cortex MCP | `mesh/CORTEX-MCP.md` |
 | Tilly Field Reports | `mesh/FIELD-REPORTS.md` |
+| Tilly Git safety | `mesh/GIT-SAFETY.md` |
 | Adoption and convergence scorecard | `mesh/SCORECARD.md` |
 | Eval and ablation design | `evals/EVALS.md` |
 | Detailed examples | `evals/EXAMPLES.md` |

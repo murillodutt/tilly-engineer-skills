@@ -20,7 +20,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.28"
+VERSION = "0.3.29"
 RETROFIT_DIR = ".tilly/retrofit"
 
 
@@ -298,6 +298,9 @@ def install(args: argparse.Namespace) -> int:
         if not require_confirmation(args):
             capture_install_result(target_root, args.adapter, "CANCELLED", args.dry_run, 0)
             return 1
+
+        if not args.dry_run:
+            field_reports.ensure_git_exclude(target_root)
 
         actions: list[dict[str, str]] = []
         for adapter in selected_adapters(args.adapter):

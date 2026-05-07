@@ -1,4 +1,4 @@
-version: 0.3.28
+version: 0.3.29
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -237,6 +237,13 @@ documents:
     class: mesh
     status: active
     consumer: installer authors, adopters, and agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/mesh/GIT-SAFETY.md
+    id: mesh.git_safety
+    class: governance
+    status: active
+    consumer: adopters, installing agents, and package maintainers
     source_of_truth: true
     evidence_level: L2
   - path: docs/mesh/PRINCIPLES.md

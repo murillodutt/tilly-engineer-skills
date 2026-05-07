@@ -6,7 +6,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.10.3
+tver: 0.10.4
 ---
 
 # Tilly Assisted Context Installer
@@ -184,6 +184,25 @@ git revert <install-commit>
 ```
 
 Do not run rollback commands automatically.
+
+## Local Git Hygiene
+
+If the target is a Git repository, protect local-only Tilly artifacts through
+`.git/info/exclude` before creating backups, caches, Field Reports state, or
+derived Cortex indexes. This is a local repo exclude, not a project `.gitignore`
+rewrite.
+
+Required local excludes:
+
+- `.tilly/bin/*.bak-*`
+- `.tilly/bin/__pycache__/`
+- `*.pyc`
+- `.tilly/field-reports/`
+- `.tilly/cortex/*.sqlite`
+- `.tilly/cortex/*.sqlite-*`
+
+Do not ignore `.tilly/bin/*.py`; installed helper scripts are the
+project-scoped runtime surface.
 
 ## Phase 0 - Internal Preflight
 
@@ -638,7 +657,7 @@ After adapter/Cortex/MCP writes are complete and the user authorized local initi
 python3 scripts/tilly_init.py --target <target-root> --yes
 ```
 
-This writes `docs/agents/PROJECT-REGISTER.md` and timestamped evidence such as `docs/agents/evidence/YYYYMMDDTHHMMSSZ-tilly-project-manifest.json`. It must not bulk-absorb project files into Cortex or write to `sources/**`. It also installs the local Field Reports `pre-push` drain when the target is a Git repository and must report `BLOCKED` instead of pretending activation.
+This writes `docs/agents/PROJECT-REGISTER.md` and timestamped evidence such as `docs/agents/evidence/YYYYMMDDTHHMMSSZ-tilly-project-manifest.json`. It must not bulk-absorb project files into Cortex or write to `sources/**`. It also installs the local Field Reports `pre-push` drain and local Git hygiene excludes when the target is a Git repository, and must report `BLOCKED` instead of pretending activation.
 
 If Codex skill is present:
 

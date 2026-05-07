@@ -15,7 +15,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.28"
+VERSION = "0.3.29"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 
 
@@ -123,7 +123,12 @@ def install_field_reports(target: Path) -> list[str]:
         ".tilly/bin/field_reports.py",
         ".tilly/field-reports/outbox.jsonl",
         ".git/hooks/pre-push",
+        ".git/info/exclude",
     )))
+    exclude_text = (target / ".git/info/exclude").read_text(encoding="utf-8") if (target / ".git/info/exclude").exists() else ""
+    for line in field_reports.GIT_EXCLUDE_LINES:
+        if line not in exclude_text.splitlines():
+            failures.append(f"missing local git hygiene exclude: {line}")
     if (target / ".tilly/field-reports/DISABLED").exists():
         failures.append("field reports must be active by default")
     return failures

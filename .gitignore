@@ -3,7 +3,10 @@
 __pycache__/
 node_modules/
 dist/
-.tilly/cortex/recall.sqlite
-.tilly/cortex/recall.sqlite-*
+.tilly/bin/*.bak-*
+.tilly/bin/__pycache__/
+.tilly/field-reports/
+.tilly/cortex/*.sqlite
+.tilly/cortex/*.sqlite-*
 .env
 .env.*
