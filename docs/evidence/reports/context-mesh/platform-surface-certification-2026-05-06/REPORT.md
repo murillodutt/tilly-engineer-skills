@@ -16,7 +16,7 @@ Result: `GO`
 Claim:
 
 ```text
-Tilly Engineer Skills v0.3.13 has certified local package alignment for the
+Tilly Engineer Skills v0.3.14 has certified local package alignment for the
 Codex, Claude, and Cursor platform surfaces it claims.
 ```
 
@@ -61,7 +61,7 @@ Observed result before final commit:
 
 ```text
 [platform-surface] PASS
-version=0.3.13
+version=0.3.14
 git_head=2a3a89df4ad758bb6588dcaee4a1665aa39c4d03
 failures=[]
 ```
