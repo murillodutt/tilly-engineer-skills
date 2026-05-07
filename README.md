@@ -6,7 +6,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, and clearer proof before they claim a task
 is done.
 
-Version: `0.3.10`
+Version: `0.3.11`
 
 License: MIT
 
@@ -18,7 +18,15 @@ For the structured user guide in English, Spanish, and Portuguese, open:
 docs/install/USER-MANUAL.html
 ```
 
-Open your target project in Codex, Claude Code, or Cursor and paste:
+Open your target project in Codex, Claude Code, or Cursor. When the Tilly init
+skill or rule is available, type:
+
+```text
+/tilly:init
+```
+
+That shortcut is the preferred entrypoint. It expands to the assisted installer
+workflow below. If the shortcut is not available yet, paste the full prompt:
 
 ```text
 Install Tilly Engineer Skills as an assisted context mesh, not as blind file
@@ -98,6 +106,11 @@ portable helper tools for that agent. Skills, rules, bootloaders, and adapter
 files route behavior and explain when those oracles should be used. Hooks are
 local Git gates that run only on Git events. MCP is a read-only Cortex access
 surface for agents; it is not the memory and not the installer.
+
+`/tilly:init` is the standard user-facing shortcut for initialization, update,
+audit, and recertification. Where a runtime supports skills, it maps to the
+`tilly-init` skill. Where it does not, rules and bootloaders should treat the
+same phrase as an intent that loads the assisted installer contract.
 
 When a runtime has no shell/tool access, the agent must not pretend a command
 ran. It should complete the file work it can safely perform, mark unavailable

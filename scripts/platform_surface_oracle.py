@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.10"
+VERSION = "0.3.11"
 
 DOCS = {
     "codex_agents": "https://developers.openai.com/codex/guides/agents-md",
@@ -103,6 +103,7 @@ def materialized_results() -> tuple[dict[str, Any], list[str]]:
             "codex": (
                 "AGENTS.md",
                 ".agents/skills/tilly-engineering-discipline/SKILL.md",
+                ".agents/skills/tilly-init/SKILL.md",
                 ".agents/skills/tilly-engineering-discipline/scripts/discipline_oracle.py",
             ),
             "claude": (
@@ -110,6 +111,7 @@ def materialized_results() -> tuple[dict[str, Any], list[str]]:
                 ".claude-plugin/plugin.json",
                 ".claude-plugin/marketplace.json",
                 "skills/tilly-guidelines/SKILL.md",
+                "skills/tilly-init/SKILL.md",
             ),
             "cursor": (
                 "CURSOR.md",
@@ -153,11 +155,15 @@ def analyze() -> dict[str, Any]:
         "src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md",
         "tilly-engineering-discipline",
     ))
+    failures.extend(check_skill(
+        "src/adapters/codex/skills/tilly-init/SKILL.md",
+        "tilly-init",
+    ))
     if not exists("src/adapters/codex/skills/tilly-engineering-discipline/agents/openai.yaml"):
         failures.append("missing Codex skill agent metadata")
     surface("codex", "agent", "certified", codex_agent)
-    surface("codex", "skill", "certified", "src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md")
-    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.10 ships a local skill first.")
+    surface("codex", "skill", "certified", "src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md; src/adapters/codex/skills/tilly-init/SKILL.md")
+    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.11 ships a local skill first.")
     surface("codex", "hook", "git-governed", ".githooks/pre-commit")
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
@@ -172,6 +178,7 @@ def analyze() -> dict[str, Any]:
             if term not in text:
                 failures.append(f"{claude_agent} missing {term}")
     failures.extend(check_skill("src/adapters/claude/skills/tilly-guidelines/SKILL.md", "tilly-guidelines"))
+    failures.extend(check_skill("src/adapters/claude/skills/tilly-init/SKILL.md", "tilly-init"))
     for relpath in (
         "src/adapters/claude/plugin/plugin.json",
         "src/adapters/claude/plugin/marketplace.json",
@@ -181,7 +188,7 @@ def analyze() -> dict[str, Any]:
         elif VERSION not in read(relpath):
             failures.append(f"{relpath} must declare {VERSION}")
     surface("claude", "agent", "certified", claude_agent)
-    surface("claude", "skill", "certified", "src/adapters/claude/skills/tilly-guidelines/SKILL.md")
+    surface("claude", "skill", "certified", "src/adapters/claude/skills/tilly-guidelines/SKILL.md; src/adapters/claude/skills/tilly-init/SKILL.md")
     surface("claude", "plugin", "certified", "src/adapters/claude/plugin/plugin.json")
     surface("claude", "hook", "deferred", "Claude plugin hooks are native, but not claimed by this package.")
     surface("claude", "rules", "not-native", "Claude uses CLAUDE.md, permissions, hooks, skills, plugins, and MCP.")

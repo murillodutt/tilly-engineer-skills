@@ -13,7 +13,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.10"
+VERSION = "0.3.11"
 
 
 def run(command: list[str]) -> tuple[int, str, str]:
@@ -47,6 +47,7 @@ def validate_plugin(target: Path) -> list[str]:
         ".claude-plugin/plugin.json",
         ".claude-plugin/marketplace.json",
         "skills/tilly-guidelines/SKILL.md",
+        "skills/tilly-init/SKILL.md",
     )
     for relpath in required:
         if not (target / relpath).exists():
@@ -62,6 +63,8 @@ def validate_plugin(target: Path) -> list[str]:
     skills = plugin.get("skills", [])
     if not isinstance(skills, list) or not skills:
         failures.append("plugin.json must declare at least one skill")
+    if isinstance(skills, list) and "skills/tilly-init" not in skills:
+        failures.append("plugin.json must declare skills/tilly-init")
     for item in skills if isinstance(skills, list) else []:
         path = str(item.get("path", "")) if isinstance(item, dict) else str(item)
         if not path or path.startswith("/") or ".." in Path(path).parts:
