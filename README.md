@@ -1,179 +1,141 @@
-# Tilly Engineer Skills
+# Tilly Engineer Skills (TES)
 
-Mesh a project with portable agent governance for Codex, Claude Code, and
-Cursor.
+[![Version](https://img.shields.io/badge/version-0.3.34-1f6feb)](package.json)
+[![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE)
+[![Field Report Governance](https://github.com/murillodutt/tilly-engineer-skills/actions/workflows/field-report-governance.yml/badge.svg)](https://github.com/murillodutt/tilly-engineer-skills/actions/workflows/field-report-governance.yml)
+[![Context Mesh](https://img.shields.io/badge/context--mesh-agent--operating--layer-2ea44f)](docs/mesh/CONTEXT-MESH-METHOD.md)
+[![Local Gates](https://img.shields.io/badge/local--gates-certified-6f42c1)](package.json)
 
-Tilly Engineer Skills helps coding agents work with less ambiguity, less
-overbuilding, fewer drive-by edits, stronger memory, and clearer proof before
-they claim a task is done.
+<p align="center">
+  <img src="docs/assets/tes-readme-banner.avif" alt="Tilly Engineer Skills: local operating layer for AI coding agents" width="100%">
+</p>
 
-Version: `0.3.34`
+**Turn AI coding agents into governed engineering collaborators.**
 
-License: MIT
+TES is a local operating layer for LLM development. It wraps Codex, Claude Code,
+and Cursor with shared governance, adapter routing, Git-safe installation,
+deterministic oracles, certification reports, and durable context that survives
+the next agent window.
 
-## Start Here
+Retained v1 evidence shows up to **6x baseline disciplined behavior** in scoped
+Claude CLI evals, positive Codex lift, and zero confirmed distractor leaks in
+the certified scope.
+[Evidence](docs/evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md)
 
-Open the user manual:
+## 1. Install TES
+
+Open your target project in Codex, Claude Code, or Cursor and paste this into
+the agent window:
 
 ```text
-docs/install/USER-MANUAL.html
+Install Tilly Engineer Skills as an assisted context mesh, not as blind file
+copying.
+
+Read and follow this raw installer spec:
+
+https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
+
+Run in quiet installer mode: show compact progress, blockers and the final
+certification report only. Start by detecting the current IDE/runtime and
+classifying this project as new, existing, or meshed. Preserve local project
+governance, build or update docs/agents/** as the canonical context mesh, keep
+AGENTS.md, CLAUDE.md and Cursor rules as thin runtime bootloaders, create the
+docs/agents/cortex/** continuity layer when needed, activate the read-only
+project-scoped Cortex MCP server for the selected runtime route, and finish
+with the certification report required by the spec.
+
+Before installation edits, run Step Zero from the spec: inspect Git status and
+offer a local baseline commit if the working tree is dirty. At the end, tell
+me how to undo the installation with Git. Do not push, amend, tag, publish,
+install dependencies, overwrite files, or change remotes unless I explicitly
+ask after reviewing the certification report.
 ```
 
-Then open your target project in Codex, Claude Code, or Cursor and type an
-intent in the agent window:
+Short intents also work after the route is available:
 
 ```text
 /tes:init
-```
-
-Natural command/prompts are accepted too:
-
-```text
-tes init
-TES, initialize this project.
-TES, inicialize este projeto.
-Install Tilly here.
-Update and recertify TES.
 /tes:update
 Atualizar TES.
 ```
 
-These are not shell commands. The active agent is the executor. It reads the
-assisted installer contract, protects the Git state, meshes the project, runs
-available local oracles, and returns a compact certification report.
-For already meshed projects, `/tes:update` checks the installed version
-against the cloud package version, detects applied IDE surfaces, and recommends
-the smallest safe route.
-Before new assets are copied, `tes_legacy_retirement.py` removes known old
-runtime surfaces, migrates Field Reports state, and blocks unknown legacy.
-Before root bootloaders are overwritten, Tilly scans `AGENTS.md`, `CLAUDE.md`
-and Cursor rules for project-owned context and requires migration first.
+Canonical mini prompt: [docs/install/MINI-PROMPT.md](docs/install/MINI-PROMPT.md)
 
-If the command/prompt router is not available yet, paste this fallback prompt
-into the agent window:
+## Why Teams Use TES
+
+| Without TES | With TES |
+|-------------|----------|
+| Each agent has separate prompt files and habits. | One context mesh governs Codex, Claude Code, and Cursor. |
+| Installation can overwrite local agent rules. | Step Zero and root-context gates preserve project governance. |
+| Completion depends on model confidence. | Local oracles produce certification evidence. |
+| Context disappears after the chat window. | Durable docs, evidence, and Cortex preserve continuity. |
+| Teams cannot tell what changed agent behavior. | Benchmarks, parity gates, and Field Reports create feedback loops. |
+
+TES is for teams that use AI coding agents inside real repositories and need
+the agents to behave like careful collaborators, not disposable chat windows.
+
+## What It Orchestrates
 
 ```text
-Mesh Tilly Engineer Skills into this project as an assisted context mesh, not
-as blind file copying.
-
-Read and follow this raw installer spec:
-https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
-
-Run in quiet installer mode. Detect the current IDE/runtime, classify this
-project as new, existing, or meshed, run Step Zero before edits, preserve local
-governance, create or update docs/agents/** and docs/agents/cortex/**, keep
-runtime bootloaders thin, activate read-only Cortex MCP for the selected route,
-and finish with the required certification report and Git rollback path.
+docs/agents/**          project context mesh
+AGENTS.md               Codex route
+CLAUDE.md               Claude Code route
+CURSOR.md               Cursor route
+.tes/bin/**             local helper runtime
+docs/agents/cortex/**   continuity and compiled knowledge
+docs/agents/evidence/** certification records
 ```
 
-## What Tilly Meshes
+Runtime files stay thin. Project truth lives in versioned Markdown so humans
+can inspect it, review it, and roll it back.
 
-Tilly does not copy a pile of prompt files into a project. It creates a local
-context mesh.
+## Product Layers
 
-Project truth lives in `docs/agents/**`. Runtime files such as `AGENTS.md`,
-`CLAUDE.md`, Cursor rules, skills, plugin metadata, hooks, and MCP config stay
-thin and route back to that mesh.
+| Layer | Role |
+|-------|------|
+| Governance | Four engineering gates: assumptions, simplicity, surgical scope, verification. |
+| Adapter runtime | Thin Codex, Claude Code, and Cursor surfaces that route to one contract. |
+| Assisted installer | Detects runtime, classifies project state, preserves existing governance, and reports rollback. |
+| Local oracles | Validation, smoke, platform, materialization, MCP, Cortex, and Field Reports checks. |
+| Evidence loop | Certification reports, evals, parity gates, and sanitized operational feedback. |
+| Cortex | The continuity layer: auditable Markdown memory, recall, curation, and read-only MCP access. |
 
-Cortex is the compiled memory layer under `docs/agents/cortex/**`. Its memory
-lives in versioned Markdown artifacts: `sources/**`, `cells/**`, `MAP.md`,
-`TRAIL.md`, `LINKS.md`, and `CONTRACT.md`. SQLite files under `.tes/cortex/**`
-are derived indexes only. They are rebuildable and never the memory.
+## 2. Trust And Audit
 
-Obsidian is a visual surface, not a dependency. Tilly keeps Cortex readable in
-Obsidian without creating or editing `.obsidian/**`.
+TES does **not** push, publish, tag, amend commits, change remotes, install
+marketplace assets, send code telemetry, or overwrite project-owned governance
+without explicit approval.
 
-MCP is read-only in this package. It gives agents access to Cortex recall,
-audit, read, reflection, and curation tools. It is not memory and not the
-installer.
-
-Field Reports are active by default. They send only sanitized operational facts
-to GitHub issues during push, never code, diffs, prompts, file contents,
-secrets, personal data, private paths, raw remotes, branch names, or stack
-traces. The GitHub receiver has a template, schema oracle, labels, and a
-quarantine workflow. Opt-out and re-enable prompts live in the user manual.
-
-## Execution Model
-
-The executor is always the active coding agent inside the current context
-window. Python scripts and `npm run ...` entries are deterministic oracles the
-agent may invoke when local tools are available.
-
-Skills, rules, bootloaders, and adapter files are routing surfaces. Hooks are
-local Git gates. Git remains the project history. Tilly does not push, amend,
-tag, publish, install dependencies, change remotes, or overwrite project
-governance without explicit user approval.
-
-When a target is a Git repo, Tilly protects local-only runtime artifacts through
-`.git/info/exclude`: rollback backups, Python bytecode, Field Reports transport,
-and Cortex SQLite caches stay out of normal staging. Installed helper scripts
-under `.tes/bin/*.py` are not ignored because they are the project-scoped
-runtime surface.
-
-The standard intent surface is intentionally small:
-
-- `/tes:init` or an init command/prompt: mesh, update, audit, or recertify.
-- `/tes:update` or `Atualizar TES`: detect version drift and update route.
-- `/tes:cortex`: query, inspect, audit, rebuild, learn, reflect, or apply
-  Cortex memory.
-- `/tes:curate`: run no-write Cortex semantic curation.
-- `/tes:mcp`: activate or verify read-only Cortex MCP.
-- `/tes:field-reports`: inspect, drain, disable, or re-enable Field Reports.
-- `/tes:doctor`: run health and certification gates.
-- `/tes:adapter`: materialize, dry-run, retrofit, or apply adapter surfaces.
-- `/tes:bench`: plan, run, or converge context-mesh benchmarks.
-
-See `docs/install/COMMAND-TRIGGERS.md` for routing detail and
-`docs/install/USER-MANUAL.html` for user-facing usage.
-
-## Certification
-
-Every assisted mesh, retrofit, update, or audit run ends with a certification
-report. A `GO meshed` result means the selected route was created or updated,
-routed, and locally checked. It does not mean the result was committed, pushed,
-published, or proven universal across every model and project.
-
-The report must also state the Tilly source snapshot used. If that snapshot is
-behind the current `main`, the run is certified only for the recorded snapshot
-and must say `STALE_SOURCE`.
-
-Step Zero protects the working tree before edits. If the target is dirty, the
-agent offers a local baseline commit first. Rollback is always reported with
-Git instructions.
-
-## Repository Shape
-
-Root stays thin.
-
-- `src/**` contains adapter source.
-- `docs/**` contains method, contracts, manuals, evidence, and architecture.
-- `scripts/**` contains deterministic oracles.
-- `benchmarks/**` contains evaluation fixtures.
-- `dist/**` is generated materialization output and ignored by Git.
-
-Start with `docs/INDEX.md` for the complete documentation map.
-
-## Maintainer Gates
-
-For package work in this repository, use the local gates:
+For this reference package, the full local closure gate is:
 
 ```bash
-npm run validate
-npm run tds:validate
-npm run docs:size
-npm run cortex:self-test
-npm run cortex:mcp:self-test
-npm run field-reports:self-test
-npm run field-reports:github-oracle
-npm run install:smoke
-npm run platform:surface:check
-npm run materialize:check
 npm run commit:check
 ```
 
-`commit:check` is the closure gate. It is stricter than `validate` and catches
-required files that are untracked or unstaged.
+Focused maintainer gates:
 
-Manual adapter materialization is for maintainers and debugging only. Real
-target projects should use the assisted context mesh flow so existing
-governance is preserved.
+```bash
+npm run validate
+npm run install:smoke
+npm run cortex:self-test
+npm run cortex:mcp:self-test
+npm run field-reports:self-test
+npm run platform:surface:check
+```
+
+## Documentation
+
+| Need | Link |
+|------|------|
+| Installation mini prompt | [docs/install/MINI-PROMPT.md](docs/install/MINI-PROMPT.md) |
+| User manual | [docs/install/USER-MANUAL.html](docs/install/USER-MANUAL.html) |
+| Command routing | [docs/install/COMMAND-TRIGGERS.md](docs/install/COMMAND-TRIGGERS.md) |
+| Context mesh method | [docs/mesh/CONTEXT-MESH-METHOD.md](docs/mesh/CONTEXT-MESH-METHOD.md) |
+| Cortex continuity | [docs/mesh/CORTEX.md](docs/mesh/CORTEX.md) |
+| Read-only MCP | [docs/mesh/CORTEX-MCP.md](docs/mesh/CORTEX-MCP.md) |
+| Field Reports | [docs/mesh/FIELD-REPORTS.md](docs/mesh/FIELD-REPORTS.md) |
+| Adapter support | [docs/adapters/ADAPTER-CAPABILITY-MATRIX.md](docs/adapters/ADAPTER-CAPABILITY-MATRIX.md) |
+
+## License
+
+MIT. See [LICENSE](LICENSE).
