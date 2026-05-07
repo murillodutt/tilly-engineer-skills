@@ -21,10 +21,12 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.33"
+VERSION = "0.3.34"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
 PASSING_GATE_STATUSES = {"PASS", "PRESERVED"}
+DEFAULT_COMMAND_TIMEOUT_SECONDS = 60.0
+DEFAULT_GIT_LIST_TIMEOUT_SECONDS = 15.0
 
 EXCLUDED_PARTS = {
     ".git",
@@ -55,6 +57,17 @@ EXCLUDED_SUFFIXES = {
 MAX_HASH_BYTES = 10 * 1024 * 1024
 
 
+def timeout_from_env(name: str, default: float) -> float:
+    raw = os.environ.get(name)
+    if not raw:
+        return default
+    try:
+        value = float(raw)
+    except ValueError:
+        return default
+    return value if value > 0 else default
+
+
 def utc_stamp() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -75,13 +88,26 @@ def rel(path: Path, target: Path) -> str:
 
 
 def run(command: list[str], cwd: Path) -> dict[str, Any]:
-    result = subprocess.run(
-        command,
-        cwd=cwd,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    timeout = timeout_from_env("TES_INIT_COMMAND_TIMEOUT_SECONDS", DEFAULT_COMMAND_TIMEOUT_SECONDS)
+    try:
+        result = subprocess.run(
+            command,
+            cwd=cwd,
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout if isinstance(exc.stdout, str) else ""
+        stderr = exc.stderr if isinstance(exc.stderr, str) else ""
+        return {
+            "command": " ".join(command),
+            "returncode": 124,
+            "stdout": stdout.strip(),
+            "stderr": (stderr.strip() + f"\ncommand timed out after {timeout:g}s").strip(),
+            "status": "BLOCKED",
+        }
     return {
         "command": " ".join(command),
         "returncode": result.returncode,
@@ -139,12 +165,16 @@ def is_excluded(relpath: Path) -> bool:
 
 
 def git_files(target: Path) -> list[Path] | None:
-    result = subprocess.run(
-        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
-        cwd=target,
-        capture_output=True,
-        check=False,
-    )
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+            cwd=target,
+            capture_output=True,
+            check=False,
+            timeout=timeout_from_env("TES_INIT_GIT_LIST_TIMEOUT_SECONDS", DEFAULT_GIT_LIST_TIMEOUT_SECONDS),
+        )
+    except subprocess.TimeoutExpired:
+        return []
     if result.returncode != 0:
         return None
     files: list[Path] = []
@@ -176,15 +206,21 @@ def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def file_record(path: Path, target: Path) -> dict[str, Any]:
-    stat = path.stat()
+def file_record(path: Path, target: Path) -> dict[str, Any] | None:
+    try:
+        stat = path.stat()
+    except OSError:
+        return None
     record: dict[str, Any] = {
         "path": rel(path, target),
         "bytes": stat.st_size,
         "suffix": path.suffix,
     }
     if stat.st_size <= MAX_HASH_BYTES:
-        record["sha256"] = sha256_file(path)
+        try:
+            record["sha256"] = sha256_file(path)
+        except OSError:
+            record["sha256"] = "skipped:unreadable"
     else:
         record["sha256"] = "skipped:large-file"
     return record
@@ -219,7 +255,7 @@ def surface_inventory(target: Path) -> dict[str, Any]:
 
 def scan_project(target: Path) -> dict[str, Any]:
     files = all_files(target)
-    records = [file_record(path, target) for path in files]
+    records = [record for path in files if (record := file_record(path, target)) is not None]
     suffixes = Counter(record["suffix"] or "[none]" for record in records)
     dirs = Counter(Path(record["path"]).parts[0] if Path(record["path"]).parts else "." for record in records)
     return {
@@ -233,6 +269,23 @@ def scan_project(target: Path) -> dict[str, Any]:
         "top_level": dict(sorted(dirs.items())),
         "surfaces": surface_inventory(target),
         "files": records,
+    }
+
+
+def bootstrap_scan(target: Path, manifest_rel: str) -> dict[str, Any]:
+    return {
+        "generated_at": utc_stamp(),
+        "target": str(target),
+        "git_head": git_head(target),
+        "git_status": git_status(target),
+        "file_count": 0,
+        "total_bytes": 0,
+        "suffixes": {},
+        "top_level": {},
+        "surfaces": surface_inventory(target),
+        "files": [],
+        "bootstrap": True,
+        "manifest": manifest_rel,
     }
 
 
@@ -409,6 +462,29 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
             "message": "tes init writes a project register and evidence manifest; rerun with --yes",
         }
 
+    evidence_dir = target / EVIDENCE_DIR
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    (target / REGISTER).parent.mkdir(parents=True, exist_ok=True)
+
+    manifest_path = evidence_dir / f"{stamp}-tes-project-manifest.json"
+    evidence_path = evidence_dir / f"{stamp}-tes-initialization.md"
+    manifest_rel = rel(manifest_path, target)
+
+    bootstrap = bootstrap_scan(target, manifest_rel)
+    bootstrap_gate = {
+        "command": "tes_init bootstrap",
+        "returncode": 2,
+        "stdout": "",
+        "stderr": "final gates not completed yet",
+        "status": "NEEDS_REVIEW",
+    }
+    manifest_path.write_text(json.dumps(bootstrap, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (target / REGISTER).write_text(write_register(target, bootstrap, [bootstrap_gate], manifest_rel), encoding="utf-8")
+    evidence_path.write_text(
+        write_evidence(target, bootstrap, [bootstrap_gate], planned_writes, manifest_rel),
+        encoding="utf-8",
+    )
+
     cortex_result: dict[str, Any] | None = None
     if ensure_cortex:
         cortex_result = cortex.init(target)
@@ -425,13 +501,6 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
     gates = [*package_gates(), *target_gates(target)]
     status = "PASS" if all(gate_passed(gate) for gate in gates) else "NEEDS_REVIEW"
 
-    evidence_dir = target / EVIDENCE_DIR
-    evidence_dir.mkdir(parents=True, exist_ok=True)
-    (target / REGISTER).parent.mkdir(parents=True, exist_ok=True)
-
-    manifest_path = evidence_dir / f"{stamp}-tes-project-manifest.json"
-    evidence_path = evidence_dir / f"{stamp}-tes-initialization.md"
-    manifest_rel = rel(manifest_path, target)
     register_text = write_register(target, scan, gates, manifest_rel)
     evidence_text = write_evidence(target, scan, gates, planned_writes, manifest_rel)
 
@@ -473,6 +542,7 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
 
 
 def self_test() -> dict[str, Any]:
+    failures: list[str] = []
     with tempfile.TemporaryDirectory(prefix="tes-init-") as tempdir:
         target = Path(tempdir)
         (target / "README.md").write_text("# Fixture\n", encoding="utf-8")
@@ -493,7 +563,6 @@ def self_test() -> dict[str, Any]:
         )
         needs_auth = initialize(target, yes=False, ensure_cortex=True)
         result = initialize(target, yes=True, ensure_cortex=True)
-        failures: list[str] = []
         if needs_auth["status"] != "NEEDS_AUTH":
             failures.append("init without --yes must require authorization")
         for relpath in result["writes"]:
@@ -503,12 +572,37 @@ def self_test() -> dict[str, Any]:
             failures.append(f"expected PASS, got {result['status']}")
         if not any(gate["status"] == "PRESERVED" for gate in result["gates"]):
             failures.append("project-owned root context must close as PRESERVED during init")
-        return {
-            "version": VERSION,
-            "status": "PASS" if not failures else "FAIL",
-            "failures": failures,
-            "result": result,
-        }
+
+    with tempfile.TemporaryDirectory(prefix="tes-init-timeout-") as tempdir:
+        target = Path(tempdir)
+        (target / "README.md").write_text("# Timeout fixture\n", encoding="utf-8")
+        (target / ".tes/bin").mkdir(parents=True)
+        (target / ".tes/bin/cortex_mcp.py").write_text(
+            "import time\n"
+            "time.sleep(5)\n",
+            encoding="utf-8",
+        )
+        previous = os.environ.get("TES_INIT_COMMAND_TIMEOUT_SECONDS")
+        os.environ["TES_INIT_COMMAND_TIMEOUT_SECONDS"] = "0.1"
+        try:
+            timeout_result = initialize(target, yes=True, ensure_cortex=False)
+        finally:
+            if previous is None:
+                os.environ.pop("TES_INIT_COMMAND_TIMEOUT_SECONDS", None)
+            else:
+                os.environ["TES_INIT_COMMAND_TIMEOUT_SECONDS"] = previous
+        if not (target / REGISTER).exists():
+            failures.append("register must exist even when a later gate times out")
+        if timeout_result["status"] != "NEEDS_REVIEW":
+            failures.append("timeout fixture must return NEEDS_REVIEW")
+        if not any(gate["status"] == "BLOCKED" for gate in timeout_result["gates"]):
+            failures.append("timeout fixture must expose a BLOCKED gate")
+
+    return {
+        "version": VERSION,
+        "status": "PASS" if not failures else "FAIL",
+        "failures": failures,
+    }
 
 
 def main() -> int:

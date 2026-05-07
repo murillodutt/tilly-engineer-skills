@@ -19,7 +19,7 @@ import uuid
 from typing import Any
 
 
-VERSION = "0.3.33"
+VERSION = "0.3.34"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@1"
 FIELD_ROOT = Path(".tes/field-reports")

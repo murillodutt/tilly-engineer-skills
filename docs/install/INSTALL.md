@@ -140,6 +140,10 @@ the target project, writes `docs/agents/PROJECT-REGISTER.md`, and stores a full
 manifest under `docs/agents/evidence/**`. Cortex can also be initialized and
 checked directly:
 
+The register is written before slower certification gates finish. If a later
+oracle is blocked or times out, the run closes as `NEEDS_REVIEW` with local
+evidence instead of leaving the project unregistered.
+
 ```bash
 python3 scripts/tes_init.py --target /path/to/project --yes
 python3 scripts/tes_init.py --self-test

@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.33"
+VERSION = "0.3.34"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -305,7 +305,7 @@ def self_test() -> dict[str, Any]:
         write(target / ".agents/skills/tilly-init/SKILL.md", "name: tilly-init\n")
         args = argparse.Namespace(
             target=target,
-            remote_version="0.3.33",
+            remote_version="0.3.34",
             remote_commit="a" * 40,
             runtime="codex",
             offline=False,

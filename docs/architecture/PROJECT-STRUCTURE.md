@@ -68,6 +68,10 @@ the read-only Cortex MCP server in a target project by copying local helpers to
 cloud package versions, detecting applied IDE surfaces, and recommending the
 route behind `/tes:update`.
 
+`scripts/tes_init.py` initializes and recertifies a target project. It writes
+`docs/agents/PROJECT-REGISTER.md` before slower gates finish, so blocked gates
+leave auditable evidence instead of an unregistered runtime.
+
 `scripts/tes_legacy_retirement.py` is the closed-catalog cleanup gate for
 updates. It removes known old runtime assets, migrates Field Reports state,
 archives legacy retrofit records, and preserves project context.
