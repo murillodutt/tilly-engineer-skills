@@ -11,6 +11,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
+VERSION = "0.3.24"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -225,6 +226,27 @@ PROJECT_STRUCTURE_FORBIDDEN_TERMS = (
     "| `scripts/**` | Deterministic package checks |",
 )
 
+INSTALLER_REPORT_REQUIRED_TERMS = (
+    "`source_package_commit`",
+    "`source_remote_head`",
+    "`source_freshness`",
+    "`STALE_SOURCE`",
+    "snapshot certification",
+    "full changed-file inventory",
+    "`git status --short --untracked-files=all`",
+    "short factual prose",
+    "Do not use Markdown tables unless",
+    "Updated existing mesh files",
+)
+
+USER_MANUAL_REPORT_REQUIRED_TERMS = (
+    "source snapshot freshness",
+    "STALE_SOURCE",
+    "certified against the recorded snapshot",
+    "frescor do snapshot fonte",
+    "certificado contra o snapshot registrado",
+)
+
 
 def package_paths() -> list[Path]:
     result = subprocess.run(
@@ -329,6 +351,26 @@ def project_structure_failures() -> list[str]:
     return failures
 
 
+def installer_report_contract_failures() -> list[str]:
+    failures: list[str] = []
+    installer = ROOT / "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md"
+    if not installer.exists():
+        return ["missing assisted installer prompt"]
+    installer_text = installer.read_text(encoding="utf-8")
+    for term in INSTALLER_REPORT_REQUIRED_TERMS:
+        if term not in installer_text:
+            failures.append(f"assisted installer missing report-hardening term: {term}")
+
+    manual = ROOT / "docs/install/USER-MANUAL.html"
+    if not manual.exists():
+        return [*failures, "missing user manual"]
+    manual_text = manual.read_text(encoding="utf-8")
+    for term in USER_MANUAL_REPORT_REQUIRED_TERMS:
+        if term not in manual_text:
+            failures.append(f"user manual missing report-hardening term: {term}")
+    return failures
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--staged-ready", action="store_true")
@@ -358,6 +400,7 @@ def main() -> int:
     failures.extend(maintainer_correlation_failures())
     failures.extend(agents_bootloader_failures())
     failures.extend(project_structure_failures())
+    failures.extend(installer_report_contract_failures())
 
     for relpath in SYNCED_FILES:
         path = ROOT / relpath
@@ -371,8 +414,8 @@ def main() -> int:
     package_json = ROOT / "package.json"
     if package_json.exists():
         package = json.loads(package_json.read_text(encoding="utf-8"))
-        if package.get("version") != "0.3.23":
-            failures.append("package.json version must be 0.3.23")
+        if package.get("version") != VERSION:
+            failures.append(f"package.json version must be {VERSION}")
         scripts = package.get("scripts", {})
         for script in REQUIRED_PACKAGE_SCRIPTS:
             if script not in scripts:
@@ -380,8 +423,8 @@ def main() -> int:
 
     for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
         path = ROOT / relpath
-        if path.exists() and "0.3.23" not in path.read_text(encoding="utf-8"):
-            failures.append(f"{relpath} must declare 0.3.23")
+        if path.exists() and VERSION not in path.read_text(encoding="utf-8"):
+            failures.append(f"{relpath} must declare {VERSION}")
 
     oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():

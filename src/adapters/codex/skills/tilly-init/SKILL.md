@@ -42,7 +42,8 @@ the user for package contents.
    claim it passed.
 7. Install or report the Field Reports `pre-push` drain. It is active by
    default and controlled by the user manual prompts.
-8. Finish with the certification report and Git rollback instructions.
+8. Finish with a short certification report, source snapshot freshness, changed
+   surfaces, evidence path, limits, and Git rollback instructions.
 
 ## Locks
 

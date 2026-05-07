@@ -5,7 +5,7 @@ status: active
 consumer: codex adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.0
+tver: 0.4.1
 ---
 
 # Codex Derivation
@@ -13,7 +13,7 @@ tver: 0.4.0
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.23`.
+Project version: `0.3.24`.
 
 It follows the Codex customization order:
 
