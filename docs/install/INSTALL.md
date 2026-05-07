@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.9.1
+tver: 0.9.2
 ---
 
 # Adapter Installation
@@ -127,6 +127,11 @@ Tilly Field Reports is active by default. The initializer installs a local
 `pre-push` drain for sanitized operational facts, stores pending state under
 `.tilly/field-reports/**`, never sends project code or private paths, and
 documents opt-out and reactivation prompts in the user manual.
+
+When the target is a Git repository, Tilly also maintains local artifact hygiene
+in `.git/info/exclude`. Rollback backups, Python bytecode, Field Reports state,
+and Cortex SQLite caches are excluded from normal staging; `.tilly/bin/*.py`
+helpers are not excluded because they are the installed runtime surface.
 
 When this package is available locally, `tilly_init.py` is the project
 initialization and recertification command. It verifies package health, scans
@@ -317,6 +322,8 @@ Allowed responses:
 | Replace without backups | `--overwrite --no-backup --yes` |
 
 `--overwrite` creates `.bak-<timestamp>` files by default.
+Those backups are local rollback artifacts and must be ignored through
+`.git/info/exclude`, not counted as new Tilly surfaces.
 
 ## LLM Retrofit
 

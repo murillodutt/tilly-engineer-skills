@@ -21,7 +21,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.28"
+VERSION = "0.3.29"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
 PASSING_GATE_STATUSES = {"PASS", "PRESERVED"}
@@ -47,6 +47,8 @@ EXCLUDED_SUFFIXES = {
     ".pyc",
     ".pyo",
     ".sqlite",
+    ".sqlite-shm",
+    ".sqlite-wal",
     ".db",
     ".DS_Store",
 }
@@ -124,6 +126,8 @@ def git_status(target: Path) -> str:
 
 def is_excluded(relpath: Path) -> bool:
     if len(relpath.parts) >= 2 and relpath.parts[0] == ".tilly" and relpath.parts[1] == "field-reports":
+        return True
+    if len(relpath.parts) >= 3 and relpath.parts[0] == ".tilly" and relpath.parts[1] == "bin" and ".bak-" in relpath.name:
         return True
     if any(part in EXCLUDED_PARTS for part in relpath.parts):
         return True
@@ -393,6 +397,7 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
         ".tilly/bin/field_reports.py",
         ".tilly/field-reports/outbox.jsonl",
         ".git/hooks/pre-push",
+        ".git/info/exclude",
     ]
     if not yes:
         return {

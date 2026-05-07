@@ -19,7 +19,7 @@ import uuid
 from typing import Any
 
 
-VERSION = "0.3.28"
+VERSION = "0.3.29"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tilly-field-report@1"
 FIELD_ROOT = Path(".tilly/field-reports")
@@ -30,6 +30,14 @@ INSTALL_ID = FIELD_ROOT / "install_id"
 BIN_HELPER = Path(".tilly/bin/field_reports.py")
 HOOK_MARKER = "TILLY_FIELD_REPORTS_PRE_PUSH"
 MAX_ISSUE_BODY_CHARS = 48000
+GIT_EXCLUDE_LINES = (
+    ".tilly/bin/*.bak-*",
+    ".tilly/bin/__pycache__/",
+    "*.pyc",
+    ".tilly/field-reports/",
+    ".tilly/cortex/*.sqlite",
+    ".tilly/cortex/*.sqlite-*",
+)
 
 SAFE_SLUG = re.compile(r"[^a-zA-Z0-9_.:-]+")
 ABSOLUTE_PATH = re.compile(r"(/Users|/home|/private|/var/folders|[A-Za-z]:\\)[^\s`\"')]+")
@@ -427,9 +435,12 @@ def ensure_git_exclude(target: Path) -> str | None:
     exclude = info / "exclude"
     exclude.touch(exist_ok=True)
     text = exclude.read_text(encoding="utf-8")
-    line = ".tilly/field-reports/"
-    if line not in text.splitlines():
-        exclude.write_text(text.rstrip() + ("\n" if text.strip() else "") + line + "\n", encoding="utf-8")
+    present = set(text.splitlines())
+    missing = [line for line in GIT_EXCLUDE_LINES if line not in present]
+    if missing:
+        prefix = text.rstrip()
+        body = (prefix + "\n" if prefix else "") + "\n".join(missing) + "\n"
+        exclude.write_text(body, encoding="utf-8")
     return rel(exclude, target)
 
 
@@ -552,6 +563,33 @@ def self_test() -> dict[str, object]:
                 failures.append(f"missing installed path: {relpath}")
         if hook_result["status"] != "PASS":
             failures.append("install-hook did not pass in a Git fixture")
+        exclude_text = (target / ".git/info/exclude").read_text(encoding="utf-8")
+        for line in GIT_EXCLUDE_LINES:
+            if line not in exclude_text.splitlines():
+                failures.append(f"missing local git hygiene exclude: {line}")
+        for relpath in (
+            ".tilly/bin/cortex.py.bak-20260507T000000Z",
+            ".tilly/bin/__pycache__/field_reports.cpython-314.pyc",
+            ".tilly/field-reports/probe.jsonl",
+            ".tilly/cortex/recall.sqlite",
+            ".tilly/cortex/semantic.sqlite-wal",
+            "root.pyc",
+        ):
+            probe = target / relpath
+            probe.parent.mkdir(parents=True, exist_ok=True)
+            probe.write_text("probe\n", encoding="utf-8")
+            ignored = subprocess.run(["git", "check-ignore", relpath], cwd=target, text=True, capture_output=True, check=False)
+            if ignored.returncode != 0:
+                failures.append(f"local git hygiene did not ignore: {relpath}")
+        helper_ignored = subprocess.run(
+            ["git", "check-ignore", ".tilly/bin/field_reports.py"],
+            cwd=target,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if helper_ignored.returncode == 0:
+            failures.append("local git hygiene must not ignore installed helper .tilly/bin/field_reports.py")
 
         record_event(
             target,

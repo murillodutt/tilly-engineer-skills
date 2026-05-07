@@ -7,7 +7,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, stronger memory, and clearer proof before
 they claim a task is done.
 
-Version: `0.3.28`
+Version: `0.3.29`
 
 License: MIT
 
@@ -101,6 +101,12 @@ Skills, rules, bootloaders, and adapter files are routing surfaces. Hooks are
 local Git gates. Git remains the project history. Tilly does not push, amend,
 tag, publish, install dependencies, change remotes, or overwrite project
 governance without explicit user approval.
+
+When a target is a Git repo, Tilly protects local-only runtime artifacts through
+`.git/info/exclude`: rollback backups, Python bytecode, Field Reports transport,
+and Cortex SQLite caches stay out of normal staging. Installed helper scripts
+under `.tilly/bin/*.py` are not ignored because they are the project-scoped
+runtime surface.
 
 The standard intent surface is intentionally small:
 

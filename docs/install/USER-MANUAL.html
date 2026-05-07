@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.28</span>
+          <span class="brand-meta">User manual · v0.3.29</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1030,6 +1030,10 @@
             <div class="panel">
               <span class="panel-tag">Execution model</span>
               <p>The executor is the active coding agent inside the current IDE or runtime window. Skills, rules and bootloaders route behavior; Python scripts and <code>npm run ...</code> entries are deterministic oracles the agent invokes when local tool access exists; hooks are Git-event gates for validation and no-write Cortex reflection/curation; MCP is a read-only Cortex access surface. If a runtime cannot execute an oracle, the agent must report it as blocked or skipped instead of claiming certification.</p>
+            </div>
+            <div class="panel">
+              <span class="panel-tag">Git safety</span>
+              <p>Tilly protects local rollback and cache artifacts with <code>.git/info/exclude</code>: <code>.tilly/bin/*.bak-*</code>, Python bytecode, Field Reports state, and Cortex SQLite caches stay out of normal staging. Tilly does not ignore <code>.tilly/bin/*.py</code>, because those helpers are the installed runtime surface.</p>
             </div>
             <div class="panel">
               <span class="panel-tag">Gatillos de comando</span>
@@ -1358,6 +1362,10 @@ git revert &lt;install-commit&gt;</code></pre>
               <p>El ejecutor es el agente de código activo dentro de la ventana actual del IDE o runtime. Skills, reglas y bootloaders enrutan el comportamiento; los scripts Python y las entradas <code>npm run ...</code> son oráculos deterministas que el agente invoca cuando existe acceso local a herramientas; los hooks son gates de eventos Git para validación y reflexión/curaduría Cortex sin escritura; MCP es una superficie Cortex de solo lectura. Si un runtime no puede ejecutar un oráculo, el agente debe reportarlo como bloqueado o omitido en vez de certificarlo.</p>
             </div>
             <div class="panel">
+              <span class="panel-tag">Seguridad Git</span>
+              <p>Tilly protege artefactos locales de rollback y caché con <code>.git/info/exclude</code>: <code>.tilly/bin/*.bak-*</code>, bytecode Python, estado de Field Reports y cachés SQLite de Cortex quedan fuera del staging normal. Tilly no ignora <code>.tilly/bin/*.py</code>, porque esos helpers son la superficie runtime instalada.</p>
+            </div>
+            <div class="panel">
               <span class="panel-tag">Gatilhos de comando</span>
               <p>La interfaz normal del usuario es una intención Tilly escrita en la ventana del agente, no un comando de shell. Usa <code>/tilly:init</code> para la primera instalación y <code>/tilly:update</code> para un proyecto ya meshed; el agente activo elige y ejecuta el oráculo seguro más pequeño.</p>
             </div>
@@ -1684,6 +1692,10 @@ git revert &lt;install-commit&gt;</code></pre>
               <p>O executor é o agente de código ativo dentro da janela atual do IDE ou runtime. Skills, rules e bootloaders roteiam comportamento; scripts Python e entradas <code>npm run ...</code> são oráculos determinísticos que o agente invoca quando existe acesso local a ferramentas; hooks são gates de eventos Git para validação e reflexão/curadoria Cortex sem escrita; MCP é uma superfície Cortex somente leitura. Se um runtime não consegue executar um oráculo, o agente deve reportar como bloqueado ou ignorado em vez de certificar.</p>
             </div>
             <div class="panel">
+              <span class="panel-tag">Segurança Git</span>
+              <p>A Tilly protege artefatos locais de rollback e cache com <code>.git/info/exclude</code>: <code>.tilly/bin/*.bak-*</code>, bytecode Python, estado do Field Reports e caches SQLite do Cortex ficam fora do staging normal. A Tilly não ignora <code>.tilly/bin/*.py</code>, porque estes helpers são a superfície runtime instalada.</p>
+            </div>
+            <div class="panel">
               <span class="panel-tag">Command triggers</span>
               <p>A interface normal do usuário é uma intenção Tilly digitada na janela do agente, não um comando de shell. Use <code>/tilly:init</code> para primeira instalação e <code>/tilly:update</code> ou <code>Atualizar a Tilly</code> para um projeto já meshed; o agente ativo escolhe e executa o menor oráculo seguro.</p>
             </div>
@@ -1988,7 +2000,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.28</span>
+        <span>Tilly Engineer Skills · v0.3.29</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>

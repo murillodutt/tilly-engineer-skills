@@ -5,7 +5,7 @@ status: active
 consumer: installer authors, adopters, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.0
+tver: 0.2.1
 ---
 
 # Tilly Field Reports
@@ -49,9 +49,10 @@ The local transport state is:
 - `.tilly/field-reports/DISABLED` as the opt-out sentinel.
 
 When the target is a Git repository, `.git/info/exclude` must ignore
-`.tilly/field-reports/`. Git remains the project history. The outbox, GitHub
-issues, hooks, and receipts are transport and evidence aids, not source of
-truth for project behavior.
+`.tilly/field-reports/` and the local artifact hygiene paths defined in
+`GIT-SAFETY.md`. Git remains the project history. The outbox, GitHub issues,
+hooks, receipts, rollback backups, bytecode, and SQLite caches are transport,
+cache, or evidence aids, not source of truth for project behavior.
 
 ## Runtime
 

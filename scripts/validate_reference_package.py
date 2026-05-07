@@ -11,7 +11,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.28"
+VERSION = "0.3.29"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -44,6 +44,7 @@ REQUIRED_PATHS = (
     "docs/mesh/CORTEX.md",
     "docs/mesh/CORTEX-MCP.md",
     "docs/mesh/FIELD-REPORTS.md",
+    "docs/mesh/GIT-SAFETY.md",
     "docs/mesh/SCORECARD.md",
     "docs/evals/EVALS.md",
     "docs/evals/EXAMPLES.md",
@@ -289,6 +290,15 @@ ROOT_CONTEXT_REQUIRED_TERMS = (
     "PRESERVED",
 )
 
+GIT_SAFETY_REQUIRED_TERMS = (
+    ".tilly/bin/*.bak-*",
+    ".tilly/bin/__pycache__/",
+    "*.pyc",
+    ".tilly/field-reports/",
+    ".tilly/cortex/*.sqlite",
+    "must not ignore `.tilly/bin/*.py`",
+)
+
 
 def package_paths() -> list[Path]:
     result = subprocess.run(
@@ -436,6 +446,19 @@ def installer_report_contract_failures() -> list[str]:
     for term in ROOT_CONTEXT_REQUIRED_TERMS:
         if term not in root_context_sources:
             failures.append(f"root context gate missing term: {term}")
+    git_safety_sources = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (
+            ROOT / "docs/mesh/GIT-SAFETY.md",
+            ROOT / "scripts/field_reports.py",
+            ROOT / "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
+            ROOT / "docs/install/USER-MANUAL.html",
+        )
+        if path.exists()
+    )
+    for term in GIT_SAFETY_REQUIRED_TERMS:
+        if term not in git_safety_sources:
+            failures.append(f"Git safety contract missing term: {term}")
     return failures
 
 
