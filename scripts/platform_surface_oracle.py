@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.27"
+VERSION = "0.3.28"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -162,7 +162,7 @@ def analyze() -> dict[str, Any]:
         failures.append("missing Codex skill agent metadata")
     surface("codex", "agent", "certified", codex_agent)
     surface("codex", "skill", "certified", "; ".join(f"src/adapters/codex/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS))
-    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.27 ships local skills first.")
+    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.28 ships local skills first.")
     surface("codex", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
@@ -247,9 +247,10 @@ def analyze() -> dict[str, Any]:
         if term not in install_text:
             failures.append(f"scripts/install_mcp.py missing {term}")
     root_text = read("scripts/root_context.py")
-    for term in ("AGENTS.md", "CLAUDE.md", ".cursor/rules", "NEEDS_REVIEW"):
-        if term not in root_text:
-            failures.append(f"scripts/root_context.py missing {term}")
+    root_gate_text = root_text + "\n" + read("scripts/tilly_init.py")
+    for term in ("AGENTS.md", "CLAUDE.md", ".cursor/rules", "NEEDS_REVIEW", "PRESERVED"):
+        if term not in root_gate_text:
+            failures.append(f"root context gate missing {term}")
     update_text = read("scripts/tilly_update.py")
     for term in ("recommended_route", "update_available", "remote_version", "/tilly:update"):
         if term not in update_text:

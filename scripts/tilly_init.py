@@ -21,9 +21,10 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.27"
+VERSION = "0.3.28"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
+PASSING_GATE_STATUSES = {"PASS", "PRESERVED"}
 
 EXCLUDED_PARTS = {
     ".git",
@@ -85,6 +86,29 @@ def run(command: list[str], cwd: Path) -> dict[str, Any]:
         "stdout": result.stdout.strip(),
         "stderr": result.stderr.strip(),
         "status": "PASS" if result.returncode == 0 else "FAIL",
+    }
+
+
+def gate_passed(gate: dict[str, Any]) -> bool:
+    return gate.get("status") in PASSING_GATE_STATUSES
+
+
+def root_context_gate(target: Path) -> dict[str, Any]:
+    command = [sys.executable, str(ROOT / "scripts/root_context.py"), "analyze", "--target", str(target)]
+    result = root_context.analyze(target)
+    status = result["status"]
+    resolution = None
+    if status == "NEEDS_REVIEW":
+        status = "PRESERVED"
+        resolution = "project-owned root context detected and preserved; overwrite remains blocked without review"
+    return {
+        "command": " ".join(command),
+        "returncode": 2 if result["status"] == "NEEDS_REVIEW" else (0 if result["status"] == "PASS" else 1),
+        "stdout": json.dumps(result, indent=2, sort_keys=True),
+        "stderr": "",
+        "status": status,
+        "root_context_status": result["status"],
+        "resolution": resolution,
     }
 
 
@@ -217,7 +241,7 @@ def package_gates() -> list[dict[str, Any]]:
 
 def target_gates(target: Path) -> list[dict[str, Any]]:
     gates: list[dict[str, Any]] = [run(["git", "diff", "--check"], target)]
-    gates.append(run([sys.executable, str(ROOT / "scripts/root_context.py"), "analyze", "--target", str(target)], ROOT))
+    gates.append(root_context_gate(target))
     gates.append(run([sys.executable, str(ROOT / "scripts/field_reports.py"), "status", "--target", str(target)], ROOT))
     cortex_root = cortex.cortex_path(target)
     if (cortex_root / "CONTRACT.md").exists():
@@ -296,6 +320,9 @@ replacement for Git history.
   lineage.
 - Tilly Field Reports are operational transport only; Git and local governed
   artifacts remain project truth.
+- Root context result `PRESERVED` means project-owned bootloader context was
+  detected and intentionally left untouched. It remains a blocker only for
+  overwrite attempts.
 """
 
 
@@ -317,7 +344,7 @@ Generated: `{scan['generated_at']}`
 
 ## Decision
 
-Status: `{'PASS' if all(gate['status'] == 'PASS' for gate in gates) else 'NEEDS_REVIEW'}`
+Status: `{'PASS' if all(gate_passed(gate) for gate in gates) else 'NEEDS_REVIEW'}`
 
 ## Scope
 
@@ -381,10 +408,16 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
         cortex_result = cortex.init(target)
     field_report_result = field_reports.install_hook(target)
     root_context_result = root_context.analyze(target)
+    if root_context_result["status"] == "NEEDS_REVIEW":
+        root_context_result = {
+            **root_context_result,
+            "certification_status": "PRESERVED",
+            "resolution": "project-owned root context preserved; overwrite remains blocked without review",
+        }
 
     scan = scan_project(target)
     gates = [*package_gates(), *target_gates(target)]
-    status = "PASS" if all(gate["status"] == "PASS" for gate in gates) else "NEEDS_REVIEW"
+    status = "PASS" if all(gate_passed(gate) for gate in gates) else "NEEDS_REVIEW"
 
     evidence_dir = target / EVIDENCE_DIR
     evidence_dir.mkdir(parents=True, exist_ok=True)
@@ -414,7 +447,7 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
         "cli",
         details={
             "file_count": scan["file_count"],
-            "gate_failures": sum(1 for gate in gates if gate["status"] != "PASS"),
+            "gate_failures": sum(1 for gate in gates if not gate_passed(gate)),
             "field_reports": field_report_result.get("status", "UNKNOWN"),
         },
     )
@@ -437,6 +470,10 @@ def self_test() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tilly-init-") as tempdir:
         target = Path(tempdir)
         (target / "README.md").write_text("# Fixture\n", encoding="utf-8")
+        (target / "AGENTS.md").write_text(
+            "# Project Agent Rules\n\nUse local project governance before package defaults.\n",
+            encoding="utf-8",
+        )
         subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
         subprocess.run(["git", "add", "README.md"], cwd=target, text=True, capture_output=True, check=False)
         subprocess.run(
@@ -458,6 +495,8 @@ def self_test() -> dict[str, Any]:
                 failures.append(f"missing write: {relpath}")
         if result["status"] != "PASS":
             failures.append(f"expected PASS, got {result['status']}")
+        if not any(gate["status"] == "PRESERVED" for gate in result["gates"]):
+            failures.append("project-owned root context must close as PRESERVED during init")
         return {
             "version": VERSION,
             "status": "PASS" if not failures else "FAIL",

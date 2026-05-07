@@ -6,7 +6,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.10.2
+tver: 0.10.3
 ---
 
 # Tilly Assisted Context Installer
@@ -279,6 +279,8 @@ For an existing project, treat all current instructions as project-owned until
 proven otherwise.
 
 Before rewriting root runtime files, run `python3 scripts/root_context.py analyze --target <target-root>` when available. If it reports `NEEDS_REVIEW`, migrate durable instructions from `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, `.cursor/rules/**`, or `.cursorrules` into `docs/agents/**` or evidence before overwrite; `--write-plan` may create the local structure plan.
+
+When no root overwrite is attempted and project-owned bootloaders are intentionally left untouched, close the root-context gate as `PRESERVED`, not `FAIL`.
 
 For a meshed project, treat the run as assisted update/convergence, not reinstall. Run the update probe when available: `python3 scripts/tilly_update.py plan --target <target-root>`. It compares the installed version with the cloud package version, detects applied IDE surfaces, and recommends `current`, `codex`, `claude`, `cursor`, or `all`. Preserve local governance, apply only surgical updates needed by the selected route, and certify the resulting state.
 
@@ -599,6 +601,7 @@ Include:
 - source package URL, raw paths used, source package commit, remote `main` commit when available, and `source_freshness`;
 - files created;
 - files retrofitted or updated;
+- overwrite backups created, grouped as rollback artifacts, not as new Tilly surfaces;
 - root context gate result and any structure plan;
 - full changed-file inventory from `git status --short --untracked-files=all`, grouped as new Tilly surfaces, updated existing mesh files, generated evidence, local runtime config, and ignored local state;
 - conflicts discovered and how they were resolved;
@@ -747,13 +750,14 @@ Source Snapshot
 Changed Surfaces
 - New Tilly surfaces: <short list or none>
 - Updated existing mesh files: <short list or none>
-- Root context gate: PASS | NEEDS_REVIEW | SKIP; plan: <path | none>
+- Rollback backups: <short list or none; do not count .bak-* files as new surfaces>
+- Root context gate: PASS | PRESERVED | NEEDS_REVIEW | SKIP; plan/resolution: <path | preserve | none>
 - Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tilly_update.py, root_context.py: PASS/BLOCKED/MISSING
 - Runtime/MCP config, evidence, ignored local state: <short list>
 
 Certification
 - Context, thin runtime assets, Cortex, MCP, platform surfaces, project register, Obsidian boundary, secrets, and oracles: PASS/FAIL/SKIP
-- Field Reports: PASS | BLOCKED | DISABLED | SKIP; hook/drain/sentinel: <...>
+- Field Reports: PASS | BLOCKED | DISABLED | SKIP; hook/drain/sentinel/outbox pending count: <...>
 - `/tilly:update` routine: PASS | BLOCKED | SKIP; route probe: <...>
 
 Evidence
@@ -779,7 +783,7 @@ GO requires:
 - `docs/agents/**` exists and is the canonical source;
 - selected runtime assets route to that source;
 - Cortex exists or is explicitly skipped/deferred with a reason;
-- root runtime context was migrated, preserved, or explicitly cleared;
+- root runtime context was migrated, preserved, or explicitly cleared; `PRESERVED` is passing only when no root overwrite occurred;
 - read-only Cortex MCP is activated for selected routes or explicitly blocked;
 - Field Reports state and installed helper set are explicit in the report;
 - if helper files were copied but hook/drain status is unknown, use `NEEDS_REVIEW`;

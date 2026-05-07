@@ -20,7 +20,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.27"
+VERSION = "0.3.28"
 RETROFIT_DIR = ".tilly/retrofit"
 
 
