@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.25"
+VERSION = "0.3.26"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -281,7 +281,7 @@ def self_test() -> dict[str, Any]:
         write(target / ".tilly/bin/cortex_mcp.py", 'VERSION = "0.3.24"\n')
         args = argparse.Namespace(
             target=target,
-            remote_version="0.3.25",
+            remote_version="0.3.26",
             remote_commit="a" * 40,
             runtime="codex",
             offline=False,

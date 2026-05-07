@@ -195,9 +195,12 @@ Navigation Renderer: ...
 Navigation Mode: ...
 Source Snapshot: package commit, remote main, freshness
 Changed Surfaces: new surfaces, updated existing mesh files, runtime config
+Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tilly_update.py
+Field Reports: PASS | BLOCKED | DISABLED | SKIP
 Certification: compact PASS/FAIL/SKIP bullets
 Evidence: ...
 User Manual: ...
+Rollback Summary: reset baseline plus clean installer-created files
 Limits: ...
 Next Step: ...
 ```
@@ -206,7 +209,9 @@ The chat report is deliberately short. Detailed inventories, conflicts,
 oracles, and reconstruction notes belong in the evidence file. A report must
 not use tables by default, and it must not hide files changed by the installer.
 Before closing, compare the changed-file summary against
-`git status --short --untracked-files=all`.
+`git status --short --untracked-files=all`. Do not collapse Field Reports into a
+generic gate: the report must say whether the hook/drain is `PASS`, `BLOCKED`,
+`DISABLED`, or `SKIP`.
 
 GO requires canonical `docs/agents/**`, a created or explicitly deferred
 Cortex layer, selected-runtime Cortex MCP activation or a named blocker, thin

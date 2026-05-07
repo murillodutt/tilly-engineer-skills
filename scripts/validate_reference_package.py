@@ -11,7 +11,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.25"
+VERSION = "0.3.26"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -240,6 +240,11 @@ INSTALLER_REPORT_REQUIRED_TERMS = (
     "short factual prose",
     "Do not use Markdown tables unless",
     "Updated existing mesh files",
+    "Installed helper set",
+    "Field Reports: PASS | BLOCKED | DISABLED | SKIP",
+    "`/tilly:update` routine",
+    "Rollback",
+    "Summary: reset baseline plus clean installer-created files",
 )
 
 USER_MANUAL_REPORT_REQUIRED_TERMS = (
@@ -248,6 +253,12 @@ USER_MANUAL_REPORT_REQUIRED_TERMS = (
     "certified against the recorded snapshot",
     "frescor do snapshot fonte",
     "certificado contra o snapshot registrado",
+    "installed helper set",
+    "Field Reports state",
+    "helper set instalado",
+    "estado do Field Reports",
+    "rollback summary",
+    "resumo de rollback",
 )
 
 UPDATE_ROUTINE_REQUIRED_TERMS = (
