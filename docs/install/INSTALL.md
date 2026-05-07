@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.6.0
+tver: 0.7.0
 ---
 
 # Adapter Installation
@@ -105,7 +105,8 @@ Cortex is the default compiled memory layer under `docs/agents/cortex/**`.
 Memory lives in versioned artifacts: immutable `sources/**`, compiled
 `cells/**`, `MAP.md`, `TRAIL.md`, `LINKS.md`, and `CONTRACT.md`. SQLite FTS5 at
 `.tilly/cortex/recall.sqlite` is a derived recall index, never memory, and `rg`
-is the fallback.
+is the fallback. `.tilly/cortex/semantic.sqlite` is a derived curation index,
+also never memory, rebuilt by `curate-plan` from `cells/**`.
 
 Cortex is Obsidian-compatible plain Markdown. The installer does not create
 `.obsidian/**`, require community plugins, or depend on Obsidian state for
@@ -113,7 +114,8 @@ certification.
 
 Cortex MCP is activated by default for selected runtime routes. It remains
 read-only and project-scoped. The installer may write `.tilly/bin/cortex.py`,
-`.tilly/bin/cortex_mcp.py`, `.codex/config.toml`, `.mcp.json`, and
+`.tilly/bin/cortex_mcp.py`, `.tilly/bin/cortex_embed.mjs`,
+`.codex/config.toml`, `.mcp.json`, and
 `.cursor/mcp.json`; it must not edit global MCP configuration, secrets, hooks,
 or write-capable MCP tools.
 
@@ -130,6 +132,7 @@ python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
+python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical
 ```
 
 Project-scoped MCP can be installed and checked with:

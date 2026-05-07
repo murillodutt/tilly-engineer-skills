@@ -13,7 +13,7 @@ from typing import Any
 import cortex
 
 
-VERSION = "0.3.14"
+VERSION = "0.3.15"
 PROTOCOL_VERSION = "2025-06-18"
 
 
@@ -95,6 +95,26 @@ def tool_definitions() -> list[dict[str, object]]:
             },
         },
         {
+            "name": "cortex_curate_plan",
+            "title": "Plan Cortex Curation",
+            "description": (
+                "Run the no-write semantic curation gate for duplicate, split, link, "
+                "tension, evidence-gap, redundancy, and reject candidates."
+            ),
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "target": target,
+                    "backend": {
+                        "type": "string",
+                        "description": "Curation backend: auto, xenova, or lexical.",
+                        "enum": ["auto", "xenova", "lexical"],
+                        "default": "lexical",
+                    },
+                },
+            },
+        },
+        {
             "name": "cortex_reflect",
             "title": "Reflect Cortex Capture",
             "description": "Generate a no-write closure reflection for possible Cortex promotion.",
@@ -117,7 +137,7 @@ def result_text(payload: dict[str, Any]) -> str:
 
 def tool_result(payload: dict[str, Any], is_error: bool | None = None) -> dict[str, Any]:
     if is_error is None:
-        is_error = payload.get("status") == "FAIL"
+        is_error = payload.get("status") in {"FAIL", "BLOCKED"}
     return {
         "content": [{"type": "text", "text": result_text(payload)}],
         "structuredContent": payload,
@@ -182,6 +202,11 @@ def call_tool(default_target: Path, name: str, args: dict[str, Any]) -> dict[str
         if not source:
             return tool_result({"status": "FAIL", "failures": ["source is required"]}, True)
         return tool_result(cortex.absorb_plan(resolve_target(default_target, args), Path(str(source))))
+    if name == "cortex_curate_plan":
+        backend = str(args.get("backend", "lexical")).strip() or "lexical"
+        if backend not in {"auto", "xenova", "lexical"}:
+            return tool_result({"status": "FAIL", "failures": ["backend must be auto, xenova, or lexical"]}, True)
+        return tool_result(cortex.curate_plan(resolve_target(default_target, args), backend, write_index=False))
     if name == "cortex_reflect":
         query = str(args.get("query", "")).strip() or None
         limit = int(args.get("limit", 20))
@@ -285,7 +310,8 @@ def self_test() -> int:
             {"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "cortex_recall", "arguments": {"query": "MCP"}}},
             {"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": "cortex_read_cell", "arguments": {"cell": "mcp-read-only"}}},
             {"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"name": "cortex_absorb_plan", "arguments": {"source": "docs/agents/cortex/sources/mcp-source.md"}}},
-            {"jsonrpc": "2.0", "id": 7, "method": "tools/call", "params": {"name": "cortex_reflect", "arguments": {"query": "MCP closure should consider memory capture"}}},
+            {"jsonrpc": "2.0", "id": 7, "method": "tools/call", "params": {"name": "cortex_curate_plan", "arguments": {"backend": "lexical"}}},
+            {"jsonrpc": "2.0", "id": 8, "method": "tools/call", "params": {"name": "cortex_reflect", "arguments": {"query": "MCP closure should consider memory capture"}}},
         ]
         replies = [handle_message(target.resolve(), message) for message in messages]
         failures: list[str] = []
@@ -300,6 +326,7 @@ def self_test() -> int:
             "cortex_recall",
             "cortex_read_cell",
             "cortex_absorb_plan",
+            "cortex_curate_plan",
             "cortex_reflect",
         }
         if tool_names != expected_tools:
@@ -310,6 +337,8 @@ def self_test() -> int:
                 failures.append(result["content"][0]["text"])
         if "MCP Read Only" not in replies[4]["result"]["structuredContent"]["text"]:  # type: ignore[index]
             failures.append("read_cell did not return cell text")
+        if replies[6]["result"]["structuredContent"]["writes"] != []:  # type: ignore[index]
+            failures.append("curate_plan did not remain no-write over MCP")
 
         print(json.dumps({"status": "FAIL" if failures else "PASS", "failures": failures}, indent=2))
         if failures:

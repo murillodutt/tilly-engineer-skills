@@ -5,7 +5,7 @@ status: active
 consumer: MCP adapter authors, installer authors, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.0
+tver: 0.3.0
 ---
 
 # Tilly Cortex MCP
@@ -29,8 +29,9 @@ docs/agents/cortex/cells/**
 
 The MCP server may read these files and may call the deterministic Cortex CLI
 functions. It must not write cells, sources, maps, links, trail entries, runtime
-bootloaders, `.obsidian/**`, or `.tilly/cortex/recall.sqlite` except through an
-explicit local rebuild command exposed by the CLI, not by the v1 MCP tools.
+bootloaders, `.obsidian/**`, `.tilly/cortex/recall.sqlite`, or
+`.tilly/cortex/semantic.sqlite` except through explicit local CLI commands, not
+by the v1 MCP tools.
 
 ## Tools
 
@@ -45,6 +46,7 @@ through project-scoped runtime config, never through global config mutation.
 | `cortex_recall` | Search through SQLite FTS5 and fall back to `rg` |
 | `cortex_read_cell` | Read one file under `docs/agents/cortex/cells/**` |
 | `cortex_absorb_plan` | Generate a no-write plan for a source under `sources/**` |
+| `cortex_curate_plan` | Classify semantic curation risks without writing memory or derived indexes |
 | `cortex_reflect` | Generate a no-write closure and curation proposal |
 
 ## Local Command
@@ -84,6 +86,7 @@ The activation path installs local MCP helpers into the target project:
 ```text
 .tilly/bin/cortex.py
 .tilly/bin/cortex_mcp.py
+.tilly/bin/cortex_embed.mjs
 ```
 
 It then writes only project-scoped config for the selected runtime:
@@ -107,6 +110,7 @@ cortex_cut:
   escreve_em:
     - .tilly/bin/cortex.py
     - .tilly/bin/cortex_mcp.py
+    - .tilly/bin/cortex_embed.mjs
     - .codex/config.toml
     - .mcp.json
     - .cursor/mcp.json
@@ -116,6 +120,7 @@ cortex_cut:
     - docs/agents/cortex/MAP.md
     - docs/agents/cortex/TRAIL.md
     - docs/agents/cortex/LINKS.md
+    - .tilly/cortex/semantic.sqlite
     - .obsidian/**
   oracle: python3 scripts/install_mcp.py --self-test
   rollback: git revert <commit>

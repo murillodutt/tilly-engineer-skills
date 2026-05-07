@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.14</span>
+          <span class="brand-meta">User manual · v0.3.15</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1028,11 +1028,11 @@
             </div>
             <div class="panel">
               <span class="panel-tag">Execution model</span>
-              <p>The executor is the active coding agent inside the current IDE or runtime window. Skills, rules and bootloaders route behavior; Python scripts and <code>npm run ...</code> entries are deterministic oracles the agent invokes when local tool access exists; hooks are Git-event gates; MCP is a read-only Cortex access surface. If a runtime cannot execute an oracle, the agent must report it as blocked or skipped instead of claiming certification.</p>
+              <p>The executor is the active coding agent inside the current IDE or runtime window. Skills, rules and bootloaders route behavior; Python scripts and <code>npm run ...</code> entries are deterministic oracles the agent invokes when local tool access exists; hooks are Git-event gates for validation and no-write Cortex reflection/curation; MCP is a read-only Cortex access surface. If a runtime cannot execute an oracle, the agent must report it as blocked or skipped instead of claiming certification.</p>
             </div>
             <div class="panel">
               <span class="panel-tag">Gatillos de comando</span>
-              <p>The normal user interface is a Tilly intent typed in the agent window, not a shell command. Use <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> or <code>/tilly:bench</code>; the active agent then selects and runs the smallest safe oracle. The shell commands in this manual are exposed so users can audit what the agent may invoke.</p>
+              <p>The normal user interface is a Tilly intent typed in the agent window, not a shell command. Use <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:curate</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> or <code>/tilly:bench</code>; the active agent then selects and runs the smallest safe oracle. The shell commands in this manual are exposed so users can audit what the agent may invoke.</p>
             </div>
           </div>
         </section>
@@ -1089,7 +1089,7 @@
         <section class="chapter" id="cortex">
           <div class="chapter-head"><span class="chapter-num">04</span><h2>Cortex</h2></div>
           <div class="chapter-body">
-            <p>Cortex is the project's compiled memory. Memory lives in versioned Markdown; SQLite is only a derived index.</p>
+            <p>Cortex is the project's compiled memory. Memory lives in versioned Markdown; SQLite is only derived recall and semantic curation cache.</p>
             <div class="pre-wrap" data-label="tree">
 <pre><code>docs/agents/cortex/
   CONTRACT.md
@@ -1098,9 +1098,11 @@
   LINKS.md
   sources/
   cells/
-.tilly/cortex/recall.sqlite</code></pre>
+.tilly/cortex/recall.sqlite
+.tilly/cortex/semantic.sqlite</code></pre>
             </div>
-            <p>Cells must include <code>## Claim</code> and <code>## Evidence</code>. <code>sources/**</code> is immutable after import. <code>learn</code> proposes without writing; <code>apply --yes</code> writes only authorized, evidenced cells and refreshes recall after audit.</p>
+            <p>Cells must include <code>## Claim</code> and <code>## Evidence</code>. <code>sources/**</code> is immutable after import. <code>learn</code> proposes without writing; <code>curate-plan</code> classifies merge, split, link, tension, evidence-gap, redundancy and reject candidates without writing memory; <code>apply --yes</code> writes only authorized, evidenced cells and refreshes recall after audit.</p>
+            <p>The deterministic gate uses <code>--backend lexical</code>. Real environments may run <code>--backend xenova</code> or <code>--backend auto</code> with the optional <code>@huggingface/transformers</code> dependency and <code>Xenova/multilingual-e5-small</code>. Explicit Xenova reports <code>BLOCKED</code> when unavailable; <code>auto</code> reports <code>DEGRADED</code> when it falls back to lexical.</p>
           </div>
         </section>
 
@@ -1108,7 +1110,7 @@
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>These commands are agent-callable oracles, not the normal user interface. In normal use, the active IDE agent invokes them from the current context window; humans run them directly only for package maintenance, debugging or certification review. Use the Tilly package root for package checks, or pass <code>--target</code> when operating on another project or vault. <code>tilly_init.py</code> recertifies package health, scans the target project, writes <code>docs/agents/PROJECT-REGISTER.md</code> and stores a full manifest under <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefer intent shortcuts: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> and <code>/tilly:bench</code>. The agent translates them into the smallest safe oracle. The complete command inventory is below because this manual is the user entrypoint; the routing matrix lives in <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
+            <p>Prefer intent shortcuts: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:curate</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> and <code>/tilly:bench</code>. The agent translates them into the smallest safe oracle. The complete command inventory is below because this manual is the user entrypoint; the routing matrix lives in <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
@@ -1116,6 +1118,7 @@ python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
+python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical
 python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
 python3 scripts/cortex.py read-cell --target /path/to/project-or-vault --cell cell-name
 python3 scripts/cortex.py absorb-plan --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
@@ -1124,7 +1127,7 @@ python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision o
 python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
 python3 scripts/cortex.py --self-test</code></pre>
             </div>
-            <p><code>learn</code> never writes. <code>apply</code> writes only with <code>--yes</code>, explicit evidence, audit and rebuild. It never writes to <code>sources/**</code>.</p>
+            <p><code>learn</code> never writes. <code>curate-plan</code> always reports <code>writes: []</code> and may refresh only the derived semantic index. <code>apply</code> writes only with <code>--yes</code>, explicit evidence, audit and rebuild. It never writes to <code>sources/**</code>.</p>
             <div class="pre-wrap" data-label="package">
 <pre><code>npm run validate
 npm run install:dry-run
@@ -1145,6 +1148,7 @@ npm run cortex:init -- --target /path/to/project-or-vault
 npm run cortex:verify -- --target /path/to/project-or-vault
 npm run cortex:audit -- --target /path/to/project-or-vault
 npm run cortex:rebuild -- --target /path/to/project-or-vault
+npm run cortex:curate-plan -- --target /path/to/project-or-vault --backend lexical
 npm run cortex:recall -- --target /path/to/project-or-vault "query"
 npm run cortex:read-cell -- --target /path/to/project-or-vault --cell cell-name
 npm run cortex:absorb-plan -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
@@ -1232,11 +1236,12 @@ npm run cortex:mcp:self-test</code></pre>
                   <tr><td><code>cortex_recall</code></td><td>Searches through SQLite FTS5 and falls back to <code>rg</code>.</td></tr>
                   <tr><td><code>cortex_read_cell</code></td><td>Reads one cell directly from <code>cells/**</code>.</td></tr>
                   <tr><td><code>cortex_absorb_plan</code></td><td>Produces a no-write absorb plan.</td></tr>
+                  <tr><td><code>cortex_curate_plan</code></td><td>Classifies semantic memory quality risks without writing memory or derived indexes.</td></tr>
                   <tr><td><code>cortex_reflect</code></td><td>Generates a no-write memory and curation proposal.</td></tr>
                 </tbody>
               </table>
             </div>
-            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tilly/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>.</p>
+            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tilly/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>. The installed helper set includes <code>cortex.py</code>, <code>cortex_mcp.py</code> and <code>cortex_embed.mjs</code>.</p>
           </div>
         </section>
 
@@ -1251,6 +1256,7 @@ npm run cortex:mcp:self-test</code></pre>
               <li>Keep source citations as repository paths such as <code>sources/article.md</code>; use wikilinks mainly between cells.</li>
               <li>Use Graph View to inspect hubs, isolated cells and relationship density after each meaningful absorb/apply cycle.</li>
               <li>Run <code>python3 scripts/cortex.py audit --target /path/to/project-or-vault</code> before trusting the graph.</li>
+              <li>Run <code>python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical</code> when the graph looks swollen, repetitive, contradictory or under-evidenced.</li>
             </ol>
             <div class="table-wrap">
               <table>
@@ -1312,11 +1318,11 @@ git revert &lt;install-commit&gt;</code></pre>
             </div>
             <div class="panel">
               <span class="panel-tag">Modelo de ejecución</span>
-              <p>El ejecutor es el agente de código activo dentro de la ventana actual del IDE o runtime. Skills, reglas y bootloaders enrutan el comportamiento; los scripts Python y las entradas <code>npm run ...</code> son oráculos deterministas que el agente invoca cuando existe acceso local a herramientas; los hooks son gates de eventos Git; MCP es una superficie Cortex de solo lectura. Si un runtime no puede ejecutar un oráculo, el agente debe reportarlo como bloqueado o omitido en vez de certificarlo.</p>
+              <p>El ejecutor es el agente de código activo dentro de la ventana actual del IDE o runtime. Skills, reglas y bootloaders enrutan el comportamiento; los scripts Python y las entradas <code>npm run ...</code> son oráculos deterministas que el agente invoca cuando existe acceso local a herramientas; los hooks son gates de eventos Git para validación y reflexión/curaduría Cortex sin escritura; MCP es una superficie Cortex de solo lectura. Si un runtime no puede ejecutar un oráculo, el agente debe reportarlo como bloqueado o omitido en vez de certificarlo.</p>
             </div>
             <div class="panel">
               <span class="panel-tag">Gatilhos de comando</span>
-              <p>La interfaz normal del usuario es una intención Tilly escrita en la ventana del agente, no un comando de shell. Usa <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> o <code>/tilly:bench</code>; el agente activo elige y ejecuta el oráculo seguro más pequeño. Los comandos shell de este manual están expuestos para que el usuario pueda auditar lo que el agente puede invocar.</p>
+              <p>La interfaz normal del usuario es una intención Tilly escrita en la ventana del agente, no un comando de shell. Usa <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:curate</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> o <code>/tilly:bench</code>; el agente activo elige y ejecuta el oráculo seguro más pequeño. Los comandos shell de este manual están expuestos para que el usuario pueda auditar lo que el agente puede invocar.</p>
             </div>
           </div>
         </section>
@@ -1373,7 +1379,7 @@ git revert &lt;install-commit&gt;</code></pre>
         <section class="chapter" id="cortex-es">
           <div class="chapter-head"><span class="chapter-num">04</span><h2>Cortex</h2></div>
           <div class="chapter-body">
-            <p>Cortex es la memoria compilada del proyecto. La memoria vive en Markdown versionado; SQLite es solo un índice derivado.</p>
+            <p>Cortex es la memoria compilada del proyecto. La memoria vive en Markdown versionado; SQLite es solo recall derivado y cache de curaduría semántica.</p>
             <div class="pre-wrap" data-label="tree">
 <pre><code>docs/agents/cortex/
   CONTRACT.md
@@ -1382,9 +1388,11 @@ git revert &lt;install-commit&gt;</code></pre>
   LINKS.md
   sources/
   cells/
-.tilly/cortex/recall.sqlite</code></pre>
+.tilly/cortex/recall.sqlite
+.tilly/cortex/semantic.sqlite</code></pre>
             </div>
-            <p>Las cells deben incluir <code>## Claim</code> y <code>## Evidence</code>. <code>sources/**</code> es inmutable después del import. <code>learn</code> propone sin escribir; <code>apply --yes</code> escribe solo cells autorizadas con evidencia y refresca recall después del audit.</p>
+            <p>Las cells deben incluir <code>## Claim</code> y <code>## Evidence</code>. <code>sources/**</code> es inmutable después del import. <code>learn</code> propone sin escribir; <code>curate-plan</code> clasifica candidatos de merge, split, link, tensión, gap de evidencia, redundancia y rechazo sin escribir memoria; <code>apply --yes</code> escribe solo cells autorizadas con evidencia y refresca recall después del audit.</p>
+            <p>El gate determinista usa <code>--backend lexical</code>. Ambientes reales pueden ejecutar <code>--backend xenova</code> o <code>--backend auto</code> con la dependencia opcional <code>@huggingface/transformers</code> y <code>Xenova/multilingual-e5-small</code>. Xenova explícito reporta <code>BLOCKED</code> si no está disponible; <code>auto</code> reporta <code>DEGRADED</code> cuando cae a lexical.</p>
           </div>
         </section>
 
@@ -1392,7 +1400,7 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>Estos comandos son oráculos invocables por el agente, no la interfaz normal del usuario. En el uso normal, el agente activo del IDE los ejecuta desde la ventana de contexto; humanos los ejecutan directamente solo para mantenimiento del paquete, debugging o revisión de certificación. Usa la raíz del paquete Tilly para checks del paquete, o <code>--target</code> para operar sobre otro proyecto o vault. <code>tilly_init.py</code> recertifica la salud del paquete, escanea el proyecto objetivo, escribe <code>docs/agents/PROJECT-REGISTER.md</code> y guarda manifiestos con timestamp en <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefiere atajos de intención: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> y <code>/tilly:bench</code>. El agente los traduce al oráculo seguro más pequeño. El inventario completo de comandos está abajo porque este manual es la entrada del usuario; la matriz de ruteo vive en <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
+            <p>Prefiere atajos de intención: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:curate</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> y <code>/tilly:bench</code>. El agente los traduce al oráculo seguro más pequeño. El inventario completo de comandos está abajo porque este manual es la entrada del usuario; la matriz de ruteo vive en <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
@@ -1400,6 +1408,7 @@ python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
+python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical
 python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
 python3 scripts/cortex.py read-cell --target /path/to/project-or-vault --cell cell-name
 python3 scripts/cortex.py absorb-plan --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
@@ -1408,7 +1417,7 @@ python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision o
 python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
 python3 scripts/cortex.py --self-test</code></pre>
             </div>
-            <p><code>learn</code> nunca escribe. <code>apply</code> solo escribe con <code>--yes</code>, evidencia explícita, audit y rebuild. Nunca escribe en <code>sources/**</code>.</p>
+            <p><code>learn</code> nunca escribe. <code>curate-plan</code> siempre reporta <code>writes: []</code> y puede refrescar solo el índice semántico derivado. <code>apply</code> solo escribe con <code>--yes</code>, evidencia explícita, audit y rebuild. Nunca escribe en <code>sources/**</code>.</p>
             <div class="pre-wrap" data-label="package">
 <pre><code>npm run validate
 npm run install:dry-run
@@ -1429,6 +1438,7 @@ npm run cortex:init -- --target /path/to/project-or-vault
 npm run cortex:verify -- --target /path/to/project-or-vault
 npm run cortex:audit -- --target /path/to/project-or-vault
 npm run cortex:rebuild -- --target /path/to/project-or-vault
+npm run cortex:curate-plan -- --target /path/to/project-or-vault --backend lexical
 npm run cortex:recall -- --target /path/to/project-or-vault "query"
 npm run cortex:read-cell -- --target /path/to/project-or-vault --cell cell-name
 npm run cortex:absorb-plan -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
@@ -1516,11 +1526,12 @@ npm run cortex:mcp:self-test</code></pre>
                   <tr><td><code>cortex_recall</code></td><td>Busca con SQLite FTS5 y cae a <code>rg</code>.</td></tr>
                   <tr><td><code>cortex_read_cell</code></td><td>Lee una cell directamente desde <code>cells/**</code>.</td></tr>
                   <tr><td><code>cortex_absorb_plan</code></td><td>Produce un plan de absorción sin escritura.</td></tr>
+                  <tr><td><code>cortex_curate_plan</code></td><td>Clasifica riesgos semánticos de memoria sin escribir memoria ni índices derivados.</td></tr>
                   <tr><td><code>cortex_reflect</code></td><td>Genera una propuesta de memoria y curaduría sin escribir.</td></tr>
                 </tbody>
               </table>
             </div>
-            <p>Las herramientas MCP con escritura quedan fuera de esta versión. La activación escribe solo <code>.tilly/bin/**</code> y configuración de runtime por proyecto; no debe tocar configuración MCP global, secretos, hooks o <code>sources/**</code>.</p>
+            <p>Las herramientas MCP con escritura quedan fuera de esta versión. La activación escribe solo <code>.tilly/bin/**</code> y configuración de runtime por proyecto; no debe tocar configuración MCP global, secretos, hooks o <code>sources/**</code>. El conjunto instalado incluye <code>cortex.py</code>, <code>cortex_mcp.py</code> y <code>cortex_embed.mjs</code>.</p>
           </div>
         </section>
 
@@ -1535,6 +1546,7 @@ npm run cortex:mcp:self-test</code></pre>
               <li>Mantén las citas de fuentes como paths del repositorio, por ejemplo <code>sources/article.md</code>; usa wikilinks principalmente entre cells.</li>
               <li>Usa Graph View para revisar hubs, cells aisladas y densidad de relaciones después de cada ciclo importante de absorb/apply.</li>
               <li>Ejecuta <code>python3 scripts/cortex.py audit --target /path/to/project-or-vault</code> antes de confiar en el grafo.</li>
+              <li>Ejecuta <code>python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical</code> cuando el grafo parezca inflado, repetitivo, contradictorio o débil en evidencia.</li>
             </ol>
             <div class="table-wrap">
               <table>
@@ -1596,11 +1608,11 @@ git revert &lt;install-commit&gt;</code></pre>
             </div>
             <div class="panel">
               <span class="panel-tag">Modelo de execução</span>
-              <p>O executor é o agente de código ativo dentro da janela atual do IDE ou runtime. Skills, rules e bootloaders roteiam comportamento; scripts Python e entradas <code>npm run ...</code> são oráculos determinísticos que o agente invoca quando existe acesso local a ferramentas; hooks são gates de eventos Git; MCP é uma superfície Cortex somente leitura. Se um runtime não consegue executar um oráculo, o agente deve reportar como bloqueado ou ignorado em vez de certificar.</p>
+              <p>O executor é o agente de código ativo dentro da janela atual do IDE ou runtime. Skills, rules e bootloaders roteiam comportamento; scripts Python e entradas <code>npm run ...</code> são oráculos determinísticos que o agente invoca quando existe acesso local a ferramentas; hooks são gates de eventos Git para validação e reflexão/curadoria Cortex sem escrita; MCP é uma superfície Cortex somente leitura. Se um runtime não consegue executar um oráculo, o agente deve reportar como bloqueado ou ignorado em vez de certificar.</p>
             </div>
             <div class="panel">
               <span class="panel-tag">Command triggers</span>
-              <p>A interface normal do usuário é uma intenção Tilly digitada na janela do agente, não um comando de shell. Use <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> ou <code>/tilly:bench</code>; o agente ativo escolhe e executa o menor oráculo seguro. Os comandos shell deste manual ficam expostos para que o usuário possa auditar o que o agente pode invocar.</p>
+              <p>A interface normal do usuário é uma intenção Tilly digitada na janela do agente, não um comando de shell. Use <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:curate</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> ou <code>/tilly:bench</code>; o agente ativo escolhe e executa o menor oráculo seguro. Os comandos shell deste manual ficam expostos para que o usuário possa auditar o que o agente pode invocar.</p>
             </div>
           </div>
         </section>
@@ -1657,7 +1669,7 @@ git revert &lt;install-commit&gt;</code></pre>
         <section class="chapter" id="cortex-pt">
           <div class="chapter-head"><span class="chapter-num">04</span><h2>Cortex</h2></div>
           <div class="chapter-body">
-            <p>Cortex é a memória compilada do projeto. A memória vive em Markdown versionado; SQLite é apenas índice derivado.</p>
+            <p>Cortex é a memória compilada do projeto. A memória vive em Markdown versionado; SQLite é apenas recall derivado e cache de curadoria semântica.</p>
             <div class="pre-wrap" data-label="tree">
 <pre><code>docs/agents/cortex/
   CONTRACT.md
@@ -1666,9 +1678,11 @@ git revert &lt;install-commit&gt;</code></pre>
   LINKS.md
   sources/
   cells/
-.tilly/cortex/recall.sqlite</code></pre>
+.tilly/cortex/recall.sqlite
+.tilly/cortex/semantic.sqlite</code></pre>
             </div>
-            <p>Cells precisam ter <code>## Claim</code> e <code>## Evidence</code>. <code>sources/**</code> é imutável depois do import. <code>learn</code> propõe sem escrever; <code>apply --yes</code> escreve só cells autorizadas com evidência e atualiza recall depois do audit.</p>
+            <p>Cells precisam ter <code>## Claim</code> e <code>## Evidence</code>. <code>sources/**</code> é imutável depois do import. <code>learn</code> propõe sem escrever; <code>curate-plan</code> classifica candidatos de merge, split, link, tensão, gap de evidência, redundância e rejeição sem escrever memória; <code>apply --yes</code> escreve só cells autorizadas com evidência e atualiza recall depois do audit.</p>
+            <p>O gate determinístico usa <code>--backend lexical</code>. Ambientes reais podem rodar <code>--backend xenova</code> ou <code>--backend auto</code> com a dependência opcional <code>@huggingface/transformers</code> e <code>Xenova/multilingual-e5-small</code>. Xenova explícito reporta <code>BLOCKED</code> quando indisponível; <code>auto</code> reporta <code>DEGRADED</code> quando cai para lexical.</p>
           </div>
         </section>
 
@@ -1676,7 +1690,7 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>Estes comandos são oráculos chamáveis pelo agente, não a interface normal do usuário. No uso normal, o agente ativo do IDE os invoca a partir da janela de contexto; humanos os rodam diretamente só para manutenção do pacote, debug ou revisão de certificação. Use a raiz do pacote Tilly para checks do pacote, ou <code>--target</code> para operar em outro projeto ou vault. <code>tilly_init.py</code> recertifica a saúde do pacote, varre o projeto alvo, escreve <code>docs/agents/PROJECT-REGISTER.md</code> e guarda manifestos com timestamp em <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefira atalhos de intenção: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> e <code>/tilly:bench</code>. O agente traduz isso para o menor oráculo seguro. O inventário completo de comandos está abaixo porque este manual é a porta de entrada do usuário; a matriz de roteamento vive em <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
+            <p>Prefira atalhos de intenção: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:curate</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> e <code>/tilly:bench</code>. O agente traduz isso para o menor oráculo seguro. O inventário completo de comandos está abaixo porque este manual é a porta de entrada do usuário; a matriz de roteamento vive em <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
@@ -1684,6 +1698,7 @@ python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
+python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical
 python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
 python3 scripts/cortex.py read-cell --target /path/to/project-or-vault --cell cell-name
 python3 scripts/cortex.py absorb-plan --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
@@ -1692,7 +1707,7 @@ python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision o
 python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
 python3 scripts/cortex.py --self-test</code></pre>
             </div>
-            <p><code>learn</code> nunca escreve. <code>apply</code> só escreve com <code>--yes</code>, evidência explícita, audit e rebuild. Ele nunca escreve em <code>sources/**</code>.</p>
+            <p><code>learn</code> nunca escreve. <code>curate-plan</code> sempre reporta <code>writes: []</code> e pode atualizar apenas o índice semântico derivado. <code>apply</code> só escreve com <code>--yes</code>, evidência explícita, audit e rebuild. Ele nunca escreve em <code>sources/**</code>.</p>
             <div class="pre-wrap" data-label="package">
 <pre><code>npm run validate
 npm run install:dry-run
@@ -1713,6 +1728,7 @@ npm run cortex:init -- --target /path/to/project-or-vault
 npm run cortex:verify -- --target /path/to/project-or-vault
 npm run cortex:audit -- --target /path/to/project-or-vault
 npm run cortex:rebuild -- --target /path/to/project-or-vault
+npm run cortex:curate-plan -- --target /path/to/project-or-vault --backend lexical
 npm run cortex:recall -- --target /path/to/project-or-vault "query"
 npm run cortex:read-cell -- --target /path/to/project-or-vault --cell cell-name
 npm run cortex:absorb-plan -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
@@ -1800,11 +1816,12 @@ npm run cortex:mcp:self-test</code></pre>
                   <tr><td><code>cortex_recall</code></td><td>Busca com SQLite FTS5 e cai para <code>rg</code>.</td></tr>
                   <tr><td><code>cortex_read_cell</code></td><td>Lê uma cell diretamente de <code>cells/**</code>.</td></tr>
                   <tr><td><code>cortex_absorb_plan</code></td><td>Produz um plano de absorção sem escrita.</td></tr>
+                  <tr><td><code>cortex_curate_plan</code></td><td>Classifica riscos semânticos da memória sem escrever memória nem índices derivados.</td></tr>
                   <tr><td><code>cortex_reflect</code></td><td>Gera uma proposta de memória e curadoria sem escrever.</td></tr>
                 </tbody>
               </table>
             </div>
-            <p>Ferramentas MCP com escrita ficam fora desta versão. A ativação escreve apenas <code>.tilly/bin/**</code> e configuração de runtime por projeto; não deve tocar configuração MCP global, segredos, hooks ou <code>sources/**</code>.</p>
+            <p>Ferramentas MCP com escrita ficam fora desta versão. A ativação escreve apenas <code>.tilly/bin/**</code> e configuração de runtime por projeto; não deve tocar configuração MCP global, segredos, hooks ou <code>sources/**</code>. O conjunto instalado inclui <code>cortex.py</code>, <code>cortex_mcp.py</code> e <code>cortex_embed.mjs</code>.</p>
           </div>
         </section>
 
@@ -1819,6 +1836,7 @@ npm run cortex:mcp:self-test</code></pre>
               <li>Mantenha citações de fontes como paths do repositório, por exemplo <code>sources/article.md</code>; use wikilinks principalmente entre cells.</li>
               <li>Use o Graph View para revisar hubs, cells isoladas e densidade de relações depois de cada ciclo relevante de absorb/apply.</li>
               <li>Rode <code>python3 scripts/cortex.py audit --target /path/to/project-or-vault</code> antes de confiar no grafo.</li>
+              <li>Rode <code>python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical</code> quando o grafo parecer inchado, repetitivo, contraditório ou fraco em evidência.</li>
             </ol>
             <div class="table-wrap">
               <table>
@@ -1861,7 +1879,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.14</span>
+        <span>Tilly Engineer Skills · v0.3.15</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>

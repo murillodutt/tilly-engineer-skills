@@ -42,6 +42,19 @@ engineering_discipline:
 Keep it in conversation or working notes unless the target project requires a
 retained artifact.
 
+## Diamond Build-Test-Fail-Fix
+
+For critical capabilities, build from the finished contract down:
+
+1. State the final behavior.
+2. Create or identify the adversarial fixture that should fail first.
+3. Observe the failure.
+4. Implement the smallest repair.
+5. Run the gate again until it passes.
+
+Do not call certified behavior experimental. Use `blocked`, `degraded`,
+`not available`, `certified`, or `fail`.
+
 ## Workflow
 
 1. Classify the task.
@@ -69,6 +82,9 @@ retained artifact.
      `python3 .tilly/bin/cortex.py reflect --target . "<decision or lesson>"`.
    - Treat the result as a proposal. Do not write Cortex cells without
      explicit user authorization.
+   - If the result has `curation_due=true`, call `cortex_curate_plan` through
+     MCP or run `python3 .tilly/bin/cortex.py curate-plan --target . --backend lexical`
+     before proposing any merge, split, compaction, or rejection.
 
 ## Module Map
 

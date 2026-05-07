@@ -5,7 +5,7 @@ status: active
 consumer: adapter authors and agents
 source_of_truth: true
 evidence_level: L1
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # Tilly Engineering Discipline Principles
@@ -24,6 +24,23 @@ because they sound right. They become project truth only when retained evidence
 shows measurable lift against baseline, no confirmed distractor leak, auditably
 different behavior when the rule is ablated, and convergence through targeted
 repair loops.
+
+## Diamond Build-Test-Fail-Fix
+
+Critical capabilities are built top-down from the final contract, not bottom-up
+from speculative experiments.
+
+The expected order is:
+
+1. Declare the finished contract and user-visible behavior.
+2. Build an adversarial test or fixture that should fail before implementation.
+3. Observe the failure.
+4. Implement the smallest capability that satisfies the contract.
+5. Repair until the gate is green.
+6. Certify only the state that the oracle actually proved.
+
+Do not describe a certified capability as experimental. Use precise operational
+states: `blocked`, `degraded`, `not available`, `certified`, or `fail`.
 
 ## 1. Think Before Coding
 

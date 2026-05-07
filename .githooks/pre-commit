@@ -10,8 +10,10 @@ python3 src/adapters/codex/skills/tilly-engineering-discipline/scripts/disciplin
 if [ -f docs/agents/cortex/CONTRACT.md ]; then
   if [ -f .tilly/bin/cortex.py ]; then
     python3 .tilly/bin/cortex.py reflect --target . "pre-commit Cortex reflection"
+    python3 .tilly/bin/cortex.py curate-plan --target . --backend lexical
   elif [ -f scripts/cortex.py ]; then
     python3 scripts/cortex.py reflect --target . "pre-commit Cortex reflection"
+    python3 scripts/cortex.py curate-plan --target . --backend lexical
   fi
 fi
 git diff --check

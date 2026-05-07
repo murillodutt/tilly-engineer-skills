@@ -75,9 +75,16 @@ surgical, or verification is missing.
 These guidelines are working when diffs are smaller, clarifying questions come
 before implementation mistakes, and closure is backed by a concrete check.
 
+## Diamond Build-Test-Fail-Fix
+
+For critical capabilities, build from the finished contract down: final
+behavior, adversarial fixture, observed failure, smallest repair, and green
+gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
+`not available`, `certified`, or `fail`.
+
 ## Tilly Shortcuts
 
-Treat `/tilly:init`, `/tilly:cortex`, `/tilly:mcp`, `/tilly:doctor`,
+Treat `/tilly:init`, `/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`, `/tilly:doctor`,
 `/tilly:adapter`, and `/tilly:bench` as intent shortcuts. Use the matching
 skill and let the agent choose the smallest safe oracle. These are not shell
 commands.
@@ -94,3 +101,8 @@ python3 .tilly/bin/cortex.py reflect --target . "<decision or lesson>"
 
 Mention useful proposals. Do not write Cortex cells without explicit user
 authorization.
+If `curation_due=true`, run read-only `cortex_curate_plan` when available, or:
+
+```bash
+python3 .tilly/bin/cortex.py curate-plan --target . --backend lexical
+```

@@ -16,10 +16,10 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.14"
+VERSION = "0.3.15"
 SERVER_NAME = "tilly-cortex"
 BIN_DIR = Path(".tilly/bin")
-SERVER_FILES = ("cortex.py", "cortex_mcp.py")
+SERVER_FILES = ("cortex.py", "cortex_mcp.py", "cortex_embed.mjs")
 ADAPTERS = ("codex", "claude", "cursor")
 
 
@@ -334,6 +334,7 @@ def self_test() -> int:
         for relpath in (
             ".tilly/bin/cortex.py",
             ".tilly/bin/cortex_mcp.py",
+            ".tilly/bin/cortex_embed.mjs",
             ".codex/config.toml",
             ".mcp.json",
             ".cursor/mcp.json",

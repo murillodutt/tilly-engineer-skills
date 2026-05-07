@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, adapter authors, and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.0
+tver: 0.5.0
 ---
 
 # Agentic Alignment Governance
@@ -110,6 +110,7 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 | Reference graph | Certified locally | `scripts/validate_reference_graph.py` |
 | Document size budgets | Certified locally | `scripts/validate_doc_size.py` |
 | Cortex reflection | Certified locally | `scripts/cortex.py reflect` and read-only `cortex_reflect` |
+| Cortex semantic curation | Certified locally | `scripts/cortex.py curate-plan` and read-only `cortex_curate_plan` |
 
 ## No-Go Rules
 
