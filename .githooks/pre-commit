@@ -6,6 +6,7 @@ python3 scripts/validate_tds.py
 python3 scripts/validate_doc_size.py
 python3 scripts/context_mesh_plan.py
 python3 scripts/field_reports.py --self-test
+python3 scripts/field_reports_github_oracle.py --self-test
 python3 scripts/materialize_adapter.py all --check
 python3 src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test
 if [ -f docs/agents/cortex/CONTRACT.md ]; then

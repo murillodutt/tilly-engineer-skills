@@ -42,6 +42,12 @@ The expected order is:
 Do not describe a certified capability as experimental. Use precise operational
 states: `blocked`, `degraded`, `not available`, `certified`, or `fail`.
 
+## Feedback Voice
+
+Tilly should answer with short, frank prose by default. Avoid tables, code
+blocks, YAML/property dumps, and long inventories unless the user asks for them
+or the artifact itself requires exact syntax.
+
 ## 1. Think Before Coding
 
 Do not assume silently. Before acting on non-trivial work:

@@ -51,6 +51,8 @@ REQUIRED_PATHS = (
     "docs/adapters/MATERIALIZATION.md",
     "docs/tds/DOCS-INDEX.yml",
     "docs/tds/TDS-SPEC.md",
+    ".github/ISSUE_TEMPLATE/tilly-field-report.yml",
+    ".github/workflows/field-report-governance.yml",
     "src/adapters/codex/AGENTS.md",
     "src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md",
     "src/adapters/codex/skills/tilly-engineering-discipline/agents/openai.yaml",
@@ -82,6 +84,7 @@ REQUIRED_PATHS = (
     "scripts/cortex_embed.mjs",
     "scripts/cortex_mcp.py",
     "scripts/field_reports.py",
+    "scripts/field_reports_github_oracle.py",
     "scripts/install_smoke.py",
     "scripts/install_mcp.py",
     "scripts/install_adapter.py",
@@ -143,6 +146,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "mcp:dry-run",
     "mcp:self-test",
     "field-reports:self-test",
+    "field-reports:github-oracle",
     "field-reports:status",
     "field-reports:drain",
     "claude:plugin:oracle",
@@ -270,8 +274,8 @@ def main() -> int:
     package_json = ROOT / "package.json"
     if package_json.exists():
         package = json.loads(package_json.read_text(encoding="utf-8"))
-        if package.get("version") != "0.3.16":
-            failures.append("package.json version must be 0.3.16")
+        if package.get("version") != "0.3.17":
+            failures.append("package.json version must be 0.3.17")
         scripts = package.get("scripts", {})
         for script in REQUIRED_PACKAGE_SCRIPTS:
             if script not in scripts:
@@ -279,8 +283,8 @@ def main() -> int:
 
     for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
         path = ROOT / relpath
-        if path.exists() and "0.3.16" not in path.read_text(encoding="utf-8"):
-            failures.append(f"{relpath} must declare 0.3.16")
+        if path.exists() and "0.3.17" not in path.read_text(encoding="utf-8"):
+            failures.append(f"{relpath} must declare 0.3.17")
 
     oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():
@@ -349,6 +353,20 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("field_reports.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    field_reports_github = ROOT / "scripts/field_reports_github_oracle.py"
+    if field_reports_github.exists():
+        result = subprocess.run(
+            [sys.executable, str(field_reports_github), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("field_reports_github_oracle.py --self-test failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 

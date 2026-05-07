@@ -47,6 +47,14 @@ gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 
 </diamond_build_test_fail_fix>
 
+<feedback_voice>
+
+Default to short, frank prose. Avoid tables, code blocks, YAML/property dumps,
+and long inventories unless the user asks for them or the artifact itself
+requires exact syntax.
+
+</feedback_voice>
+
 <routing>
 
 | Need | Source |
