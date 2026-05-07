@@ -7,7 +7,7 @@
 [![Local Gates](https://img.shields.io/badge/local--gates-certified-6f42c1)](package.json)
 
 <p align="center">
-  <img src="docs/assets/tes-readme-banner.avif" alt="Tilly Engineer Skills: local operating layer for AI coding agents" width="100%">
+  <img src="https://github.com/user-attachments/assets/bc1b4c00-6021-48c3-bb01-a72ff29c447c" alt="Tilly Engineer Skills: local operating layer for AI coding agents" width="100%">
 </p>
 
 **Turn AI coding agents into governed engineering collaborators.**
