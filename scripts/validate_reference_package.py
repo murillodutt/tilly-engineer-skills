@@ -197,6 +197,20 @@ MAINTAINER_CORRELATION_FORBIDDEN_TERMS = (
     "user-facing behavior belongs in `docs/install/**`, `src/adapters/**`, scripts,",
 )
 
+AGENTS_BOOTLOADER_REQUIRED_TERMS = (
+    "Repository bootloader for the independent Tilly Engineer Skills reference",
+    "Classify `scripts/**` by consumer",
+    "Maintainer correlation rule",
+    "Closure gate",
+    "`npm run commit:check`",
+    "This file governs agents working on the Tilly Engineer Skills package itself.",
+    "It is not an installed target-project rule.",
+)
+
+AGENTS_BOOTLOADER_FORBIDDEN_TERMS = (
+    "Treat `src/**` as source, `docs/**` as explanation, and scripts as gates.",
+)
+
 
 def package_paths() -> list[Path]:
     result = subprocess.run(
@@ -269,6 +283,22 @@ def maintainer_correlation_failures() -> list[str]:
     return failures
 
 
+def agents_bootloader_failures() -> list[str]:
+    path = ROOT / "AGENTS.md"
+    if not path.exists():
+        return ["missing AGENTS.md"]
+
+    text = path.read_text(encoding="utf-8")
+    failures: list[str] = []
+    for term in AGENTS_BOOTLOADER_REQUIRED_TERMS:
+        if term not in text:
+            failures.append(f"AGENTS.md missing alignment term: {term}")
+    for term in AGENTS_BOOTLOADER_FORBIDDEN_TERMS:
+        if term in text:
+            failures.append(f"AGENTS.md contains ambiguous term: {term}")
+    return failures
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--staged-ready", action="store_true")
@@ -296,6 +326,7 @@ def main() -> int:
         failures.extend(staged_ready_failures())
 
     failures.extend(maintainer_correlation_failures())
+    failures.extend(agents_bootloader_failures())
 
     for relpath in SYNCED_FILES:
         path = ROOT / relpath
@@ -309,8 +340,8 @@ def main() -> int:
     package_json = ROOT / "package.json"
     if package_json.exists():
         package = json.loads(package_json.read_text(encoding="utf-8"))
-        if package.get("version") != "0.3.21":
-            failures.append("package.json version must be 0.3.21")
+        if package.get("version") != "0.3.22":
+            failures.append("package.json version must be 0.3.22")
         scripts = package.get("scripts", {})
         for script in REQUIRED_PACKAGE_SCRIPTS:
             if script not in scripts:
@@ -318,8 +349,8 @@ def main() -> int:
 
     for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
         path = ROOT / relpath
-        if path.exists() and "0.3.21" not in path.read_text(encoding="utf-8"):
-            failures.append(f"{relpath} must declare 0.3.21")
+        if path.exists() and "0.3.22" not in path.read_text(encoding="utf-8"):
+            failures.append(f"{relpath} must declare 0.3.22")
 
     oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():
