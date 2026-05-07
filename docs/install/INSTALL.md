@@ -39,7 +39,7 @@ https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/in
 
 Start by detecting the current IDE/runtime and classifying this project as new,
 existing, or meshed. If Tilly is already meshed, treat this as an assisted
-update/convergence run, not a reinstall. `/tilly:update` means "Atualizar a
+update/convergence run, not a reinstall. `/tes:update` means "Atualizar a
 Tilly" and should run the update probe before route selection. Run in quiet
 installer mode: show
 compact progress, blockers and the final certification report only. When
@@ -106,8 +106,8 @@ project-specific governance belongs in `docs/agents/**`.
 Cortex is the default compiled memory layer under `docs/agents/cortex/**`.
 Memory lives in versioned artifacts: immutable `sources/**`, compiled
 `cells/**`, `MAP.md`, `TRAIL.md`, `LINKS.md`, and `CONTRACT.md`. SQLite FTS5 at
-`.tilly/cortex/recall.sqlite` is a derived recall index, never memory, and `rg`
-is the fallback. `.tilly/cortex/semantic.sqlite` is a derived curation index,
+`.tes/cortex/recall.sqlite` is a derived recall index, never memory, and `rg`
+is the fallback. `.tes/cortex/semantic.sqlite` is a derived curation index,
 also never memory, rebuilt by `curate-plan` from `cells/**`.
 
 Cortex is Obsidian-compatible plain Markdown. The installer does not create
@@ -115,33 +115,33 @@ Cortex is Obsidian-compatible plain Markdown. The installer does not create
 certification.
 
 Cortex MCP is activated by default for selected runtime routes. It remains
-read-only and project-scoped. The installer may write `.tilly/bin/cortex.py`,
-`.tilly/bin/cortex_mcp.py`, `.tilly/bin/cortex_embed.mjs`,
-`.tilly/bin/field_reports.py`, `.tilly/bin/tilly_update.py`,
-`.tilly/bin/root_context.py`,
+read-only and project-scoped. The installer may write `.tes/bin/cortex.py`,
+`.tes/bin/cortex_mcp.py`, `.tes/bin/cortex_embed.mjs`,
+`.tes/bin/field_reports.py`, `.tes/bin/tes_update.py`,
+`.tes/bin/root_context.py`,
 `.codex/config.toml`, `.mcp.json`, and
 `.cursor/mcp.json`; MCP activation must not edit global MCP configuration,
 secrets, hooks, or write-capable MCP tools.
 
-Tilly Field Reports is active by default. The initializer installs a local
+TES Field Reports is active by default. The initializer installs a local
 `pre-push` drain for sanitized operational facts, stores pending state under
-`.tilly/field-reports/**`, never sends project code or private paths, and
+`.tes/field-reports/**`, never sends project code or private paths, and
 documents opt-out and reactivation prompts in the user manual.
 
 When the target is a Git repository, Tilly also maintains local artifact hygiene
 in `.git/info/exclude`. Rollback backups, Python bytecode, Field Reports state,
-and Cortex SQLite caches are excluded from normal staging; `.tilly/bin/*.py`
+and Cortex SQLite caches are excluded from normal staging; `.tes/bin/*.py`
 helpers are not excluded because they are the installed runtime surface.
 
-When this package is available locally, `tilly_init.py` is the project
+When this package is available locally, `tes_init.py` is the project
 initialization and recertification command. It verifies package health, scans
 the target project, writes `docs/agents/PROJECT-REGISTER.md`, and stores a full
 manifest under `docs/agents/evidence/**`. Cortex can also be initialized and
 checked directly:
 
 ```bash
-python3 scripts/tilly_init.py --target /path/to/project --yes
-python3 scripts/tilly_init.py --self-test
+python3 scripts/tes_init.py --target /path/to/project --yes
+python3 scripts/tes_init.py --self-test
 python3 scripts/field_reports.py status --target /path/to/project
 python3 scripts/field_reports.py --self-test
 python3 scripts/cortex.py init --target /path/to/project-or-vault
@@ -188,7 +188,7 @@ preserves local governance, and certifies the resulting state.
 Every assisted install, retrofit, update, or audit run ends with:
 
 ```text
-Tilly Context Mesh Convergence Report
+TES Context Mesh Convergence Report
 
 Status: GO | NEEDS_REVIEW | NO-GO
 Scope: new project install | existing project retrofit | meshed project update | audit
@@ -203,7 +203,7 @@ Source Snapshot: package commit, remote main, freshness
 Changed Surfaces: new surfaces, updated existing mesh files, runtime config
 Rollback Backups: short list or none; .bak-* files are rollback artifacts, not new surfaces
 Root Context Gate: PASS | PRESERVED | NEEDS_REVIEW | SKIP
-Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tilly_update.py, root_context.py
+Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, root_context.py
 Field Reports: PASS | BLOCKED | DISABLED | SKIP, with pending outbox count
 Certification: compact PASS/FAIL/SKIP bullets
 Evidence: ...
@@ -323,7 +323,7 @@ Allowed responses:
 
 `--overwrite` creates `.bak-<timestamp>` files by default.
 Those backups are local rollback artifacts and must be ignored through
-`.git/info/exclude`, not counted as new Tilly surfaces.
+`.git/info/exclude`, not counted as new TES surfaces.
 
 ## LLM Retrofit
 
@@ -340,7 +340,7 @@ python3 scripts/install_adapter.py \
 The generated file lives under:
 
 ```text
-/path/to/project/.tilly/retrofit/
+/path/to/project/.tes/retrofit/
 ```
 
 The command still exits with a conflict status because no install was applied.
@@ -370,10 +370,10 @@ From this package:
 npm run install:dry-run
 npm run mcp:self-test
 npm run install:smoke
-npm run tilly:init -- --target /path/to/project --yes
-npm run tilly:init:self-test
-npm run tilly:update -- --target /path/to/project
-npm run tilly:update:self-test
+npm run tes:init -- --target /path/to/project --yes
+npm run tes:init:self-test
+npm run tes:update -- --target /path/to/project
+npm run tes:update:self-test
 npm run claude:plugin:oracle
 npm run platform:surface:check
 npm run retention:check

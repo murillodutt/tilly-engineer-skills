@@ -15,7 +15,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.30"
+VERSION = "0.3.31"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 
 
@@ -104,7 +104,7 @@ def cortex_gate(target: Path) -> list[str]:
 
 def mcp_gate(target: Path) -> list[str]:
     code, stdout, stderr = run(
-        [sys.executable, str(target / ".tilly/bin/cortex_mcp.py"), "--self-test"],
+        [sys.executable, str(target / ".tes/bin/cortex_mcp.py"), "--self-test"],
         cwd=target,
     )
     if code == 0:
@@ -120,8 +120,8 @@ def install_field_reports(target: Path) -> list[str]:
     if code != 0:
         failures.extend(["field reports hook install failed", *stdout.splitlines(), *stderr.splitlines()])
     failures.extend(require_paths(target, (
-        ".tilly/bin/field_reports.py",
-        ".tilly/field-reports/outbox.jsonl",
+        ".tes/bin/field_reports.py",
+        ".tes/field-reports/outbox.jsonl",
         ".git/hooks/pre-push",
         ".git/info/exclude",
     )))
@@ -129,29 +129,29 @@ def install_field_reports(target: Path) -> list[str]:
     for line in field_reports.GIT_EXCLUDE_LINES:
         if line not in exclude_text.splitlines():
             failures.append(f"missing local git hygiene exclude: {line}")
-    if (target / ".tilly/field-reports/DISABLED").exists():
+    if (target / ".tes/field-reports/DISABLED").exists():
         failures.append("field reports must be active by default")
     return failures
 
 
 def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
     if adapter == "codex":
-        return ("AGENTS.md", ".agents/skills/tilly-engineering-discipline/SKILL.md")
+        return ("AGENTS.md", ".agents/skills/tes-engineering-discipline/SKILL.md")
     if adapter == "claude":
-        return ("CLAUDE.md", ".claude-plugin/plugin.json", "skills/tilly-guidelines/SKILL.md")
+        return ("CLAUDE.md", ".claude-plugin/plugin.json", "skills/tes-guidelines/SKILL.md")
     if adapter == "cursor":
-        return ("CURSOR.md", ".cursor/rules/tilly-guidelines.mdc")
+        return ("CURSOR.md", ".cursor/rules/tes-guidelines.mdc")
     raise ValueError(f"unknown adapter: {adapter}")
 
 
 def expected_mcp_paths(adapter: str) -> tuple[str, ...]:
     base = (
-        ".tilly/bin/cortex.py",
-        ".tilly/bin/cortex_mcp.py",
-        ".tilly/bin/cortex_embed.mjs",
-        ".tilly/bin/field_reports.py",
-        ".tilly/bin/tilly_update.py",
-        ".tilly/bin/root_context.py",
+        ".tes/bin/cortex.py",
+        ".tes/bin/cortex_mcp.py",
+        ".tes/bin/cortex_embed.mjs",
+        ".tes/bin/field_reports.py",
+        ".tes/bin/tes_update.py",
+        ".tes/bin/root_context.py",
     )
     if adapter == "codex":
         return (*base, ".codex/config.toml")
@@ -175,7 +175,7 @@ def route_adapters(route: str) -> list[str]:
 
 
 def probe_route(route: str) -> dict[str, Any]:
-    with tempfile.TemporaryDirectory(prefix=f"tilly-install-smoke-{route}-") as tempdir:
+    with tempfile.TemporaryDirectory(prefix=f"tes-install-smoke-{route}-") as tempdir:
         target = Path(tempdir)
         failures: list[str] = []
         failures.extend(init_git(target))
@@ -195,7 +195,7 @@ def probe_route(route: str) -> dict[str, Any]:
         if route == "audit":
             failures.extend(install_adapter(target, "all", dry_run=True))
             failures.extend(install_mcp(target, "all", dry_run=True))
-            for unexpected in ("AGENTS.md", "CLAUDE.md", ".tilly/bin/cortex_mcp.py"):
+            for unexpected in ("AGENTS.md", "CLAUDE.md", ".tes/bin/cortex_mcp.py"):
                 if (target / unexpected).exists():
                     failures.append(f"audit route wrote unexpected path: {unexpected}")
             return finish()

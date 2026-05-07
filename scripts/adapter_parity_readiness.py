@@ -20,30 +20,30 @@ DATASET = ROOT / "benchmarks/context-mesh/eval-dataset.json"
 ADAPTER_SOURCE_PATHS = {
     "claude": (
         "src/adapters/claude/CLAUDE.md",
-        "src/adapters/claude/skills/tilly-guidelines/SKILL.md",
+        "src/adapters/claude/skills/tes-guidelines/SKILL.md",
     ),
     "codex": (
         "src/adapters/codex/AGENTS.md",
-        "src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md",
+        "src/adapters/codex/skills/tes-engineering-discipline/SKILL.md",
     ),
     "cursor": (
         "src/adapters/cursor/CURSOR.md",
-        "src/adapters/cursor/rules/tilly-guidelines.mdc",
+        "src/adapters/cursor/rules/tes-guidelines.mdc",
     ),
 }
 
 ADAPTER_MATERIALIZED_PATHS = {
     "claude": (
         "CLAUDE.md",
-        "skills/tilly-guidelines/SKILL.md",
+        "skills/tes-guidelines/SKILL.md",
     ),
     "codex": (
         "AGENTS.md",
-        ".agents/skills/tilly-engineering-discipline/SKILL.md",
+        ".agents/skills/tes-engineering-discipline/SKILL.md",
     ),
     "cursor": (
         "CURSOR.md",
-        ".cursor/rules/tilly-guidelines.mdc",
+        ".cursor/rules/tes-guidelines.mdc",
     ),
 }
 
@@ -128,7 +128,7 @@ def check_adapter_text(
 
 
 def materialize_to_temp() -> tuple[tempfile.TemporaryDirectory[str], Path, dict[str, Any], list[str]]:
-    tempdir = tempfile.TemporaryDirectory(prefix="tilly-adapter-parity-")
+    tempdir = tempfile.TemporaryDirectory(prefix="tes-adapter-parity-")
     out_root = Path(tempdir.name) / "adapters"
 
     result = subprocess.run(

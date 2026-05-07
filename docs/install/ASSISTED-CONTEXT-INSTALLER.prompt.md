@@ -15,13 +15,13 @@ You are installing Tilly Engineer Skills into the current target project as an a
 
 ## Mission
 
-Install, retrofit, or update Tilly so that the target project gets durable, maintainable agent context:
+Install, retrofit, or update TES so that the target project gets durable, maintainable agent context:
 
 ```text
 docs/agents/** is source. Runtime assets route and execute.
 ```
 
-Runtime assets include `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, `.agents/**`, `skills/**`, `.cursor/**`, `.claude-plugin/**`, `.codex/config.toml`, `.mcp.json`, `.tilly/bin/**`, and future agent plugin/hook/MCP files. They must stay thin. Durable project governance belongs in `docs/agents/**`.
+Runtime assets include `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, `.agents/**`, `skills/**`, `.cursor/**`, `.claude-plugin/**`, `.codex/config.toml`, `.mcp.json`, `.tes/bin/**`, and future agent plugin/hook/MCP files. They must stay thin. Durable project governance belongs in `docs/agents/**`.
 
 ## Executor Model
 
@@ -29,9 +29,9 @@ The executor is the active LLM coding agent inside the current IDE/runtime conte
 
 Treat Python scripts and `npm run ...` entries as deterministic oracles and portable helper tools. Treat skills, rules, bootloaders, and adapter files as routing/governance surfaces that tell the agent when and how to act. Treat hooks as local Git gates for validation, Field Reports drain, and no-write Cortex reflection/curation. Treat MCP as a read-only Cortex access surface for agents, not as memory and not as the installer.
 
-`/tilly:init`, `/tilly:update`, `tilly init`, and direct command/prompts such as `Tilly, initialize this project` or `Atualizar a Tilly` are preferred entries. Treat them as intents that load this installer contract, not as raw shell commands.
+`/tes:init`, `/tes:update`, `tes init`, and direct command/prompts such as `TES, initialize this project` or `Atualizar TES` are preferred entries. Treat them as intents that load this installer contract, not as raw shell commands.
 
-Other shortcuts are routed by `docs/install/COMMAND-TRIGGERS.md`: `/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`, `/tilly:doctor`, `/tilly:adapter`, and `/tilly:bench`.
+Other shortcuts are routed by `docs/install/COMMAND-TRIGGERS.md`: `/tes:cortex`, `/tes:curate`, `/tes:mcp`, `/tes:doctor`, `/tes:adapter`, and `/tes:bench`.
 
 If the current runtime cannot execute a command, do not claim it passed. Finish safe file work where possible, mark the oracle `BLOCKED` or `SKIP` with the reason in evidence and the final report, and ask for the smallest native equivalent or user-run command only when certification depends on it.
 
@@ -50,11 +50,11 @@ Useful source paths, relative to `raw_base`:
 docs/install/navigation/{common,codex,codex-cli,claude-code,claude-desktop,cursor,cursor-acp,anthropic-api,generic}.prompt.md
 docs/install/{USER-MANUAL.html,COMMAND-TRIGGERS.md}
 docs/mesh/{CORTEX.md,CORTEX-MCP.md}
-scripts/{cortex.py,cortex_embed.mjs,cortex_mcp.py,tilly_init.py,tilly_update.py,root_context.py,install_adapter.py,install_mcp.py,field_reports.py,install_smoke.py,materialize_adapter.py,platform_surface_oracle.py}
+scripts/{cortex.py,cortex_embed.mjs,cortex_mcp.py,tes_init.py,tes_update.py,root_context.py,install_adapter.py,install_mcp.py,field_reports.py,install_smoke.py,materialize_adapter.py,platform_surface_oracle.py}
 src/adapters/codex/AGENTS.md
-src/adapters/codex/skills/tilly-engineering-discipline/{SKILL.md,agents/openai.yaml,references/failure-patterns.md,references/source-portability.md,scripts/discipline_oracle.py}
-src/adapters/claude/{CLAUDE.md,plugin/plugin.json,plugin/marketplace.json,skills/tilly-guidelines/SKILL.md}
-src/adapters/cursor/rules/tilly-guidelines.mdc
+src/adapters/codex/skills/tes-engineering-discipline/{SKILL.md,agents/openai.yaml,references/failure-patterns.md,references/source-portability.md,scripts/discipline_oracle.py}
+src/adapters/claude/{CLAUDE.md,plugin/plugin.json,plugin/marketplace.json,skills/tes-guidelines/SKILL.md}
+src/adapters/cursor/rules/tes-guidelines.mdc
 ```
 
 If you cannot fetch raw URLs, stop and ask the user to provide local package contents or permission to continue from already available context.
@@ -73,7 +73,7 @@ If `source_freshness` is `STALE_SOURCE`, continue only as a snapshot certificati
 - Never replace local product governance with generic Tilly prose.
 - Never move target-project-specific rules into the external Tilly skill.
 - Never edit secrets, `.env`, credentials, production remotes, non-Tilly hooks, CI secrets, cloud settings, or package-manager lockfiles unless the user explicitly asks and a project oracle requires it.
-- Never edit global MCP configuration. Project-scoped Tilly Cortex MCP config may be created only by the selected install route and only for the read-only local `tilly-cortex` server.
+- Never edit global MCP configuration. Project-scoped TES Cortex MCP config may be created only by the selected install route and only for the read-only local `tes-cortex` server.
 - Never push, amend, tag, publish, install dependencies, overwrite files, or change remotes unless the user explicitly asks after reviewing the certification report.
 - A local baseline commit before installation is allowed only through Step Zero below. Post-install commits still require explicit approval after the certification report.
 - Do not claim certification until you run the smallest relevant local oracles available in the target project.
@@ -194,14 +194,14 @@ rewrite.
 
 Required local excludes:
 
-- `.tilly/bin/*.bak-*`
-- `.tilly/bin/__pycache__/`
+- `.tes/bin/*.bak-*`
+- `.tes/bin/__pycache__/`
 - `*.pyc`
-- `.tilly/field-reports/`
-- `.tilly/cortex/*.sqlite`
-- `.tilly/cortex/*.sqlite-*`
+- `.tes/field-reports/`
+- `.tes/cortex/*.sqlite`
+- `.tes/cortex/*.sqlite-*`
 
-Do not ignore `.tilly/bin/*.py`; installed helper scripts are the
+Do not ignore `.tes/bin/*.py`; installed helper scripts are the
 project-scoped runtime surface.
 
 ## Phase 0 - Internal Preflight
@@ -209,7 +209,7 @@ project-scoped runtime surface.
 Before editing, capture this internally:
 
 ```yaml
-tilly_context_install:
+tes_context_install:
   baseline_head:
   baseline_status:
   detected_runtime:
@@ -292,7 +292,7 @@ docs/agents/**, docs/agents/cortex/**, AGENTS.md routing to docs/agents/**,
 CLAUDE.md routing to docs/agents/**, .cursor/rules/** routing to docs/agents/**
 ```
 
-Classify as `existing` when any local agent guidance, project rules, architecture docs, decision docs, or validation scripts already exist, but the Tilly mesh is not yet present enough to treat as `meshed`.
+Classify as `existing` when any local agent guidance, project rules, architecture docs, decision docs, or validation scripts already exist, but the TES mesh is not yet present enough to treat as `meshed`.
 
 For an existing project, treat all current instructions as project-owned until
 proven otherwise.
@@ -301,7 +301,7 @@ Before rewriting root runtime files, run `python3 scripts/root_context.py analyz
 
 When no root overwrite is attempted and project-owned bootloaders are intentionally left untouched, close the root-context gate as `PRESERVED`, not `FAIL`.
 
-For a meshed project, treat the run as assisted update/convergence, not reinstall. Run the update probe when available: `python3 scripts/tilly_update.py plan --target <target-root>`. It compares the installed version with the cloud package version, detects applied IDE surfaces, and recommends `current`, `codex`, `claude`, `cursor`, or `all`. Preserve local governance, apply only surgical updates needed by the selected route, and certify the resulting state.
+For a meshed project, treat the run as assisted update/convergence, not reinstall. Run the update probe when available: `python3 scripts/tes_update.py plan --target <target-root>`. It compares the installed version with the cloud package version, detects applied IDE surfaces, and recommends `current`, `codex`, `claude`, `cursor`, or `all`. Preserve local governance, apply only surgical updates needed by the selected route, and certify the resulting state.
 
 ## Phase 3 - Navigation Menu
 
@@ -313,7 +313,7 @@ If the navigation library cannot be loaded, render this fallback shape, with
 detected values filled in:
 
 ```text
-Tilly Context Mesh Navigation
+TES Context Mesh Navigation
 
 Detected runtime: <detected-runtime>
 Project state: <new | existing | meshed | uncertain>
@@ -375,7 +375,7 @@ docs/agents/
       assets/
     cells/
   evidence/
-    YYYY-MM-DD-tilly-context-installation.md
+    YYYY-MM-DD-tes-context-installation.md
 ```
 
 For a new project: create minimal contracts from discovered project facts, keep placeholders explicit where facts are unknown, and do not invent product, compliance, architecture, or validation claims.
@@ -389,7 +389,7 @@ For an existing project:
 
 ## Phase 4.5 - Create Cortex
 
-Create or retrofit the compiled Tilly Cortex layer under:
+Create or retrofit the compiled TES Cortex layer under:
 
 ```text
 docs/agents/cortex/**
@@ -401,7 +401,7 @@ Use the package contract from:
 docs/mesh/CORTEX.md
 ```
 
-Cortex is the target project's compiled memory and evolution layer. Memory lives in versioned Markdown artifacts; SQLite FTS5 is only the derived recall index at `.tilly/cortex/recall.sqlite`, and `rg` is the fallback. It is not a vector database, MCP server, background daemon, bulk import job, or hidden LLM memory.
+Cortex is the target project's compiled memory and evolution layer. Memory lives in versioned Markdown artifacts; SQLite FTS5 is only the derived recall index at `.tes/cortex/recall.sqlite`, and `rg` is the fallback. It is not a vector database, MCP server, background daemon, bulk import job, or hidden LLM memory.
 
 It is Obsidian-compatible by default, but Obsidian is not required for install or certification. Do not create `.obsidian/**`, install plugins, configure Dataview, or depend on Obsidian state unless the user explicitly asks.
 
@@ -447,8 +447,8 @@ Use these local rules:
 - `MAP.md` is a content catalog with links and one-line summaries;
 - `LINKS.md` is a human-readable adjacency list of important relationships;
 - `TRAIL.md` is append-only and uses headings like `## [YYYY-MM-DD] absorb | <topic>`;
-- `.tilly/cortex/recall.sqlite` is a derived, rebuildable recall index, never memory;
-- `.tilly/cortex/semantic.sqlite` is a derived, rebuildable curation index, never memory;
+- `.tes/cortex/recall.sqlite` is a derived, rebuildable recall index, never memory;
+- `.tes/cortex/semantic.sqlite` is a derived, rebuildable curation index, never memory;
 - Cortex links should render in Obsidian and remain readable in GitHub or a plain editor;
 - source citations should stay as explicit repository paths, even when Cortex cells use Obsidian wikilinks for navigation;
 - `learn` may generate a promotion proposal but must not write;
@@ -471,10 +471,10 @@ Create or retrofit:
 
 ```text
 AGENTS.md
-.agents/skills/tilly-engineering-discipline/**
+.agents/skills/tes-engineering-discipline/**
 ```
 
-Copy `.agents/skills/tilly-engineering-discipline/**` from the source package without adding target-project rules to it. If a local overlay is needed, create a separate target-owned document under `docs/agents/**`.
+Copy `.agents/skills/tes-engineering-discipline/**` from the source package without adding target-project rules to it. If a local overlay is needed, create a separate target-owned document under `docs/agents/**`.
 
 `AGENTS.md` must be a target-project bootloader:
 
@@ -492,7 +492,7 @@ Create or retrofit:
 
 ```text
 CLAUDE.md
-skills/tilly-guidelines/**
+skills/tes-guidelines/**
 .claude-plugin/plugin.json
 .claude-plugin/marketplace.json
 ```
@@ -532,12 +532,12 @@ docs/mesh/CORTEX-MCP.md
 The activation writes only project-scoped local assets:
 
 ```text
-.tilly/bin/cortex.py
-.tilly/bin/cortex_mcp.py
-.tilly/bin/cortex_embed.mjs
-.tilly/bin/field_reports.py
-.tilly/bin/tilly_update.py
-.tilly/bin/root_context.py
+.tes/bin/cortex.py
+.tes/bin/cortex_mcp.py
+.tes/bin/cortex_embed.mjs
+.tes/bin/field_reports.py
+.tes/bin/tes_update.py
+.tes/bin/root_context.py
 .codex/config.toml        # Codex route only
 .mcp.json                 # Claude Code route only
 .cursor/mcp.json          # Cursor route only
@@ -559,9 +559,9 @@ Minimum config shapes:
 Codex project config at `.codex/config.toml`:
 
 ```toml
-[mcp_servers.tilly-cortex]
+[mcp_servers.tes-cortex]
 command = "python3"
-args = [".tilly/bin/cortex_mcp.py", "--target", "."]
+args = [".tes/bin/cortex_mcp.py", "--target", "."]
 cwd = "."
 startup_timeout_sec = 10
 tool_timeout_sec = 60
@@ -573,10 +573,10 @@ Claude Code project config at `.mcp.json`:
 ```json
 {
   "mcpServers": {
-    "tilly-cortex": {
+    "tes-cortex": {
       "type": "stdio",
       "command": "python3",
-      "args": [".tilly/bin/cortex_mcp.py", "--target", "."],
+      "args": [".tes/bin/cortex_mcp.py", "--target", "."],
       "env": {}
     }
   }
@@ -588,11 +588,11 @@ Cursor project config at `.cursor/mcp.json`:
 ```json
 {
   "mcpServers": {
-    "tilly-cortex": {
+    "tes-cortex": {
       "type": "stdio",
       "command": "python3",
       "args": [
-        "${workspaceFolder}/.tilly/bin/cortex_mcp.py",
+        "${workspaceFolder}/.tes/bin/cortex_mcp.py",
         "--target",
         "${workspaceFolder}"
       ],
@@ -602,14 +602,14 @@ Cursor project config at `.cursor/mcp.json`:
 }
 ```
 
-If a config file already exists, merge only the `tilly-cortex` server entry. If that server name exists with different content, stop with `NEEDS_REVIEW` unless the user explicitly authorizes overwrite. Backups are required for overwrites.
+If a config file already exists, merge only the `tes-cortex` server entry. If that server name exists with different content, stop with `NEEDS_REVIEW` unless the user explicitly authorizes overwrite. Backups are required for overwrites.
 
 ## Phase 6 - Evidence Journal
 
 Create a concise installation evidence file:
 
 ```text
-docs/agents/evidence/YYYY-MM-DD-tilly-context-installation.md
+docs/agents/evidence/YYYY-MM-DD-tes-context-installation.md
 ```
 
 Include:
@@ -620,9 +620,9 @@ Include:
 - source package URL, raw paths used, source package commit, remote `main` commit when available, and `source_freshness`;
 - files created;
 - files retrofitted or updated;
-- overwrite backups created, grouped as rollback artifacts, not as new Tilly surfaces;
+- overwrite backups created, grouped as rollback artifacts, not as new TES surfaces;
 - root context gate result and any structure plan;
-- full changed-file inventory from `git status --short --untracked-files=all`, grouped as new Tilly surfaces, updated existing mesh files, generated evidence, local runtime config, and ignored local state;
+- full changed-file inventory from `git status --short --untracked-files=all`, grouped as new TES surfaces, updated existing mesh files, generated evidence, local runtime config, and ignored local state;
 - conflicts discovered and how they were resolved;
 - local rules preserved;
 - Cortex files created, retrofitted, skipped, or deferred;
@@ -645,7 +645,7 @@ git diff --check
 If this package is available locally, also run the package surface gates:
 
 ```bash
-python3 scripts/tilly_init.py --self-test
+python3 scripts/tes_init.py --self-test
 python3 scripts/root_context.py --self-test
 python3 scripts/install_smoke.py --self-test
 python3 scripts/platform_surface_oracle.py --self-test
@@ -654,15 +654,15 @@ python3 scripts/platform_surface_oracle.py --self-test
 After adapter/Cortex/MCP writes are complete and the user authorized local initialization, run the project initializer to recertify and register the target project:
 
 ```bash
-python3 scripts/tilly_init.py --target <target-root> --yes
+python3 scripts/tes_init.py --target <target-root> --yes
 ```
 
-This writes `docs/agents/PROJECT-REGISTER.md` and timestamped evidence such as `docs/agents/evidence/YYYYMMDDTHHMMSSZ-tilly-project-manifest.json`. It must not bulk-absorb project files into Cortex or write to `sources/**`. It also installs the local Field Reports `pre-push` drain and local Git hygiene excludes when the target is a Git repository, and must report `BLOCKED` instead of pretending activation.
+This writes `docs/agents/PROJECT-REGISTER.md` and timestamped evidence such as `docs/agents/evidence/YYYYMMDDTHHMMSSZ-tes-project-manifest.json`. It must not bulk-absorb project files into Cortex or write to `sources/**`. It also installs the local Field Reports `pre-push` drain and local Git hygiene excludes when the target is a Git repository, and must report `BLOCKED` instead of pretending activation.
 
 If Codex skill is present:
 
 ```bash
-python3 .agents/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test
+python3 .agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test
 ```
 
 If Cortex is present:
@@ -679,11 +679,11 @@ test -f docs/agents/cortex/LINKS.md
 rg "^## \\[" docs/agents/cortex/TRAIL.md || true
 ```
 
-If Tilly Cortex MCP is activated:
+If TES Cortex MCP is activated:
 
 ```bash
-test -f .tilly/bin/cortex_mcp.py
-python3 .tilly/bin/cortex_mcp.py --self-test
+test -f .tes/bin/cortex_mcp.py
+python3 .tes/bin/cortex_mcp.py --self-test
 test -f .codex/config.toml || test -f .mcp.json || test -f .cursor/mcp.json
 ```
 
@@ -754,7 +754,7 @@ Finish with a professional certification report. The user's report must be short
 Use this structure. This is snapshot certification when freshness is `STALE_SOURCE`; do not claim the latest source was certified.
 
 ```text
-Tilly Context Mesh Convergence Report
+TES Context Mesh Convergence Report
 
 Status: GO | NEEDS_REVIEW | NO-GO
 Scope: <install | retrofit | update | audit>
@@ -767,17 +767,17 @@ Source Snapshot
 - Freshness: PASS | STALE_SOURCE | BLOCKED; meaning: <latest | snapshot-only | unknown>
 
 Changed Surfaces
-- New Tilly surfaces: <short list or none>
+- New TES surfaces: <short list or none>
 - Updated existing mesh files: <short list or none>
 - Rollback backups: <short list or none; do not count .bak-* files as new surfaces>
 - Root context gate: PASS | PRESERVED | NEEDS_REVIEW | SKIP; plan/resolution: <path | preserve | none>
-- Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tilly_update.py, root_context.py: PASS/BLOCKED/MISSING
+- Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, root_context.py: PASS/BLOCKED/MISSING
 - Runtime/MCP config, evidence, ignored local state: <short list>
 
 Certification
 - Context, thin runtime assets, Cortex, MCP, platform surfaces, project register, Obsidian boundary, secrets, and oracles: PASS/FAIL/SKIP
 - Field Reports: PASS | BLOCKED | DISABLED | SKIP; hook/drain/sentinel/outbox pending count: <...>
-- `/tilly:update` routine: PASS | BLOCKED | SKIP; route probe: <...>
+- `/tes:update` routine: PASS | BLOCKED | SKIP; route probe: <...>
 
 Evidence
 - <docs/agents/evidence/...>

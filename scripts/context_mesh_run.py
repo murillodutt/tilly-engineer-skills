@@ -465,7 +465,7 @@ def remove_markdown_section(text: str, section: str) -> str:
 def remove_codex_gate_from_workspace(workspace: Path, section: str) -> None:
     for relpath in (
         "AGENTS.md",
-        ".agents/skills/tilly-engineering-discipline/SKILL.md",
+        ".agents/skills/tes-engineering-discipline/SKILL.md",
     ):
         path = workspace / relpath
         if not path.exists():
@@ -498,7 +498,7 @@ class CodexCliBackend(Backend):
             raise ValueError(f"codex model not allowed for bounded runs: {self.model}; allowed: {allowed}")
 
     def _new_tempdir(self) -> Path:
-        tempdir = tempfile.TemporaryDirectory(prefix="tilly-codex-context-mesh-")
+        tempdir = tempfile.TemporaryDirectory(prefix="tes-codex-context-mesh-")
         self._tempdirs.append(tempdir)
         return Path(tempdir.name)
 

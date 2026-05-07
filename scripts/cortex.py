@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Operate the Tilly Cortex filesystem memory layer."""
+"""Operate the TES Cortex filesystem memory layer."""
 
 from __future__ import annotations
 
@@ -21,10 +21,10 @@ import field_reports
 
 
 CORTEX_ROOT = Path("docs/agents/cortex")
-RECALL_DB = Path(".tilly/cortex/recall.sqlite")
-SEMANTIC_DB = Path(".tilly/cortex/semantic.sqlite")
+RECALL_DB = Path(".tes/cortex/recall.sqlite")
+SEMANTIC_DB = Path(".tes/cortex/semantic.sqlite")
 DEFAULT_SEMANTIC_MODEL = "Xenova/multilingual-e5-small"
-LEXICAL_MODEL = "tilly-lexical-curation-v1"
+LEXICAL_MODEL = "tes-lexical-curation-v1"
 LEXICAL_DIMENSIONS = 64
 REQUIRED_FILES = (
     "CONTRACT.md",
@@ -143,7 +143,7 @@ def read_text(path: Path) -> str:
 
 def starter_files(today: str) -> dict[str, str]:
     return {
-        "CONTRACT.md": f"""# Tilly Cortex Contract
+        "CONTRACT.md": f"""# TES Cortex Contract
 
 Cortex is the Tilly filesystem memory layer for this project.
 
@@ -162,8 +162,8 @@ Memory lives in versioned Cortex artifacts. SQLite is only derived recall.
 | Map | `MAP.md` | Navigable catalog |
 | Trail | `TRAIL.md` | Append-only evolution timeline |
 | Links | `LINKS.md` | Durable relationship map |
-| Recall index | `.tilly/cortex/recall.sqlite` | Derived cache, rebuilt from files |
-| Semantic index | `.tilly/cortex/semantic.sqlite` | Derived curation cache, rebuilt from cells |
+| Recall index | `.tes/cortex/recall.sqlite` | Derived cache, rebuilt from files |
+| Semantic index | `.tes/cortex/semantic.sqlite` | Derived curation cache, rebuilt from cells |
 
 SQLite is never memory and never source of truth. Both recall and semantic
 indexes may be deleted and rebuilt from `sources/**`, `cells/**`, `MAP.md`,
@@ -235,7 +235,7 @@ Agents should read this map before answering Cortex-backed historical questions.
 
 Created the initial Cortex structure. Sources stay under `sources/**`;
 compiled knowledge belongs under `cells/**`; this trail remains append-only.
-The recall index at `.tilly/cortex/recall.sqlite` is derived and rebuildable.
+The recall index at `.tes/cortex/recall.sqlite` is derived and rebuildable.
 """,
         "LINKS.md": """# Cortex Links
 
@@ -294,7 +294,7 @@ def normalize_v1_text(path: Path) -> bool:
     text = read_text(path)
     updated = text
     replacements = (
-        ("Tilly Cortex Schema", "Tilly Cortex Contract"),
+        ("TES Cortex Schema", "TES Cortex Contract"),
         ("# Cortex Index", "# Cortex Map"),
         ("# Cortex Log", "# Cortex Trail"),
         ("# Cortex Graph", "# Cortex Links"),
@@ -333,15 +333,15 @@ Memory lives in versioned Cortex artifacts: `sources/**`, `cells/**`,
 `MAP.md`, `TRAIL.md`, `LINKS.md`, and `CONTRACT.md`.
 
 SQLite is never memory and never source of truth. The recall index at
-`.tilly/cortex/recall.sqlite` is derived and rebuildable from the versioned
+`.tes/cortex/recall.sqlite` is derived and rebuildable from the versioned
 artifacts. `rg` is the required fallback when FTS5 recall is unavailable.
 """
-    if path.name == "CONTRACT.md" and ".tilly/cortex/semantic.sqlite" not in updated:
+    if path.name == "CONTRACT.md" and ".tes/cortex/semantic.sqlite" not in updated:
         updated += """
 
 ## Semantic Curation Boundary
 
-The semantic index at `.tilly/cortex/semantic.sqlite` is a derived curation
+The semantic index at `.tes/cortex/semantic.sqlite` is a derived curation
 cache rebuilt from `cells/**`. `curate-plan` may refresh that cache, but it
 never writes `sources/**`, `cells/**`, `MAP.md`, `LINKS.md`, or `TRAIL.md`.
 """
@@ -1389,13 +1389,13 @@ def durable_signal(path: str) -> bool:
 
 
 def preferred_cortex_command(target: Path) -> str:
-    local_helper = target / ".tilly/bin/cortex.py"
+    local_helper = target / ".tes/bin/cortex.py"
     if local_helper.exists():
-        return "python3 .tilly/bin/cortex.py"
+        return "python3 .tes/bin/cortex.py"
     package_helper = target / "scripts/cortex.py"
     if package_helper.exists():
         return "python3 scripts/cortex.py"
-    return "python3 <tilly-package>/scripts/cortex.py"
+    return "python3 <tes-package>/scripts/cortex.py"
 
 
 def reflect(target: Path, query: str | None, limit: int = 20, line_budget: int = 500) -> dict[str, object]:
@@ -1607,7 +1607,7 @@ def apply_cell(
 
 
 def self_test() -> int:
-    with tempfile.TemporaryDirectory(prefix="tilly-cortex-") as tempdir:
+    with tempfile.TemporaryDirectory(prefix="tes-cortex-") as tempdir:
         target = Path(tempdir)
         init_result = init(target)
         source = cortex_path(target) / "sources" / "karpathy-pattern.md"

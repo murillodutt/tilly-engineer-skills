@@ -8,9 +8,9 @@ evidence_level: L2
 tver: 0.5.0
 ---
 
-# Tilly Cortex
+# TES Cortex
 
-Tilly Cortex transforms the LLM Wiki pattern into Tilly memory: versioned,
+TES Cortex transforms the LLM Wiki pattern into Tilly memory: versioned,
 auditable, filesystem-first, Obsidian-visible, and governed by contract.
 
 Cortex is not copied LLM Wiki terminology. It is the Tilly-native projection of
@@ -40,8 +40,8 @@ Memory lives in the versioned Cortex artifacts:
 The local recall index lives at:
 
 ```text
-.tilly/cortex/recall.sqlite
-.tilly/cortex/semantic.sqlite
+.tes/cortex/recall.sqlite
+.tes/cortex/semantic.sqlite
 ```
 
 These databases are never memory and never source of truth. They are derived
@@ -72,12 +72,12 @@ docs/agents/cortex/
     README.md
     assets/
   cells/
-.tilly/cortex/
+.tes/cortex/
   recall.sqlite
   semantic.sqlite
 ```
 
-The `.tilly/cortex/recall.sqlite` and `.tilly/cortex/semantic.sqlite` files are
+The `.tes/cortex/recall.sqlite` and `.tes/cortex/semantic.sqlite` files are
 derived and may be deleted. Running `rebuild` recreates recall. Running
 `curate-plan` recreates the semantic curation index from `cells/**`.
 
@@ -153,7 +153,7 @@ The conveyor has three gates:
 The semantic index is:
 
 ```text
-.tilly/cortex/semantic.sqlite
+.tes/cortex/semantic.sqlite
 ```
 
 It stores path, content hash, model, dimensions, and serialized vectors derived
@@ -180,8 +180,8 @@ memory-quality failures are also present.
 - Contradictions are retained as contradictions until a newer source or user
   decision resolves them.
 - Durable answers may be promoted into `cells/**`; transient chat is not filed.
-- Do not call `.tilly/cortex/recall.sqlite` memory.
-- Do not call `.tilly/cortex/semantic.sqlite` memory.
+- Do not call `.tes/cortex/recall.sqlite` memory.
+- Do not call `.tes/cortex/semantic.sqlite` memory.
 - Do not allow an answer to depend only on the recall index.
 
 ## Operations
@@ -191,7 +191,7 @@ memory-quality failures are also present.
 | `absorb` | Compile one source or a small batch into cells, map, links, and trail |
 | `recall` | Search Cortex artifacts through SQLite FTS5 or `rg` fallback |
 | `audit` | Find drift, stale claims, contradictions, broken links, ungrounded cells, orphan cells, and unlisted cells |
-| `rebuild` | Recreate `.tilly/cortex/recall.sqlite` from versioned Cortex artifacts |
+| `rebuild` | Recreate `.tes/cortex/recall.sqlite` from versioned Cortex artifacts |
 | `curate-plan` | Rebuild the semantic curation index and classify memory-quality risks without writing memory |
 | `learn` | Generate a promotion proposal with evidence; do not write automatically |
 | `reflect` | No-write closure reflex that decides whether a memory proposal or curation review is due |
@@ -301,7 +301,7 @@ Initial certification proves that:
 
 - the Cortex contract exists;
 - source and cell layers are separated;
-- `.tilly/cortex/recall.sqlite` is documented as derived and rebuildable;
+- `.tes/cortex/recall.sqlite` is documented as derived and rebuildable;
 - the Obsidian boundary is declared without requiring `.obsidian/**`;
 - runtime bootloaders route to Cortex when durable project memory is relevant;
 - read-only Cortex MCP is activated for selected runtime routes or explicitly

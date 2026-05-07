@@ -1,19 +1,19 @@
 {
-  "name": "tilly-skills",
-  "id": "tilly-skills",
+  "name": "tes-skills",
+  "id": "tes-skills",
   "owner": {
     "name": "forrestchang"
   },
   "metadata": {
     "description": "Portable engineering discipline for coding agents",
-    "version": "0.3.30"
+    "version": "0.3.31"
   },
   "plugins": [
     {
       "name": "tilly-engineer-skills",
       "source": "../",
       "description": "Engineering discipline for coding agents: Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution",
-      "version": "0.3.30",
+      "version": "0.3.31",
       "author": {
         "name": "forrestchang"
       },

@@ -7,7 +7,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, stronger memory, and clearer proof before
 they claim a task is done.
 
-Version: `0.3.30`
+Version: `0.3.31`
 
 License: MIT
 
@@ -23,25 +23,25 @@ Then open your target project in Codex, Claude Code, or Cursor and type an
 intent in the agent window:
 
 ```text
-/tilly:init
+/tes:init
 ```
 
 Natural command/prompts are accepted too:
 
 ```text
-tilly init
-Tilly, initialize this project.
-Tilly, inicialize este projeto.
+tes init
+TES, initialize this project.
+TES, inicialize este projeto.
 Install Tilly here.
-Update and recertify Tilly.
-/tilly:update
-Atualizar a Tilly.
+Update and recertify TES.
+/tes:update
+Atualizar TES.
 ```
 
 These are not shell commands. The active agent is the executor. It reads the
 assisted installer contract, protects the Git state, meshes the project, runs
 available local oracles, and returns a compact certification report.
-For already meshed projects, `/tilly:update` checks the installed version
+For already meshed projects, `/tes:update` checks the installed version
 against the cloud package version, detects applied IDE surfaces, and recommends
 the smallest safe route.
 Before root bootloaders are overwritten, Tilly scans `AGENTS.md`, `CLAUDE.md`
@@ -75,7 +75,7 @@ thin and route back to that mesh.
 
 Cortex is the compiled memory layer under `docs/agents/cortex/**`. Its memory
 lives in versioned Markdown artifacts: `sources/**`, `cells/**`, `MAP.md`,
-`TRAIL.md`, `LINKS.md`, and `CONTRACT.md`. SQLite files under `.tilly/cortex/**`
+`TRAIL.md`, `LINKS.md`, and `CONTRACT.md`. SQLite files under `.tes/cortex/**`
 are derived indexes only. They are rebuildable and never the memory.
 
 Obsidian is a visual surface, not a dependency. Tilly keeps Cortex readable in
@@ -105,21 +105,21 @@ governance without explicit user approval.
 When a target is a Git repo, Tilly protects local-only runtime artifacts through
 `.git/info/exclude`: rollback backups, Python bytecode, Field Reports transport,
 and Cortex SQLite caches stay out of normal staging. Installed helper scripts
-under `.tilly/bin/*.py` are not ignored because they are the project-scoped
+under `.tes/bin/*.py` are not ignored because they are the project-scoped
 runtime surface.
 
 The standard intent surface is intentionally small:
 
-- `/tilly:init` or an init command/prompt: mesh, update, audit, or recertify.
-- `/tilly:update` or `Atualizar a Tilly`: detect version drift and update route.
-- `/tilly:cortex`: query, inspect, audit, rebuild, learn, reflect, or apply
+- `/tes:init` or an init command/prompt: mesh, update, audit, or recertify.
+- `/tes:update` or `Atualizar TES`: detect version drift and update route.
+- `/tes:cortex`: query, inspect, audit, rebuild, learn, reflect, or apply
   Cortex memory.
-- `/tilly:curate`: run no-write Cortex semantic curation.
-- `/tilly:mcp`: activate or verify read-only Cortex MCP.
-- `/tilly:field-reports`: inspect, drain, disable, or re-enable Field Reports.
-- `/tilly:doctor`: run health and certification gates.
-- `/tilly:adapter`: materialize, dry-run, retrofit, or apply adapter surfaces.
-- `/tilly:bench`: plan, run, or converge context-mesh benchmarks.
+- `/tes:curate`: run no-write Cortex semantic curation.
+- `/tes:mcp`: activate or verify read-only Cortex MCP.
+- `/tes:field-reports`: inspect, drain, disable, or re-enable Field Reports.
+- `/tes:doctor`: run health and certification gates.
+- `/tes:adapter`: materialize, dry-run, retrofit, or apply adapter surfaces.
+- `/tes:bench`: plan, run, or converge context-mesh benchmarks.
 
 See `docs/install/COMMAND-TRIGGERS.md` for routing detail and
 `docs/install/USER-MANUAL.html` for user-facing usage.

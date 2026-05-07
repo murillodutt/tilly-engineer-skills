@@ -4,7 +4,7 @@ Portable Codex bootloader for repositories adopting Tilly Engineering
 Discipline.
 
 Keep this file small. Put detailed workflows in
-`.agents/skills/tilly-*/**`.
+`.agents/skills/tes-*/**`.
 
 <instructions>
 
@@ -59,31 +59,31 @@ requires exact syntax.
 
 | Need | Source |
 |------|--------|
-| Reusable workflow | `.agents/skills/tilly-engineering-discipline/SKILL.md` |
-| Tilly initialization shortcut | `.agents/skills/tilly-init/SKILL.md` |
-| Cortex memory operations | `.agents/skills/tilly-cortex/SKILL.md` |
-| MCP activation and checks | `.agents/skills/tilly-mcp/SKILL.md` |
-| Health and certification gates | `.agents/skills/tilly-doctor/SKILL.md` |
-| Adapter materialization | `.agents/skills/tilly-adapter/SKILL.md` |
-| Benchmark evidence | `.agents/skills/tilly-bench/SKILL.md` |
-| Failure examples | `.agents/skills/tilly-engineering-discipline/references/failure-patterns.md` |
-| Tool migration | `.agents/skills/tilly-engineering-discipline/references/source-portability.md` |
-| Skill self-test | `python3 .agents/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test` |
+| Reusable workflow | `.agents/skills/tes-engineering-discipline/SKILL.md` |
+| Tilly initialization shortcut | `.agents/skills/tes-init/SKILL.md` |
+| Cortex memory operations | `.agents/skills/tes-cortex/SKILL.md` |
+| MCP activation and checks | `.agents/skills/tes-mcp/SKILL.md` |
+| Health and certification gates | `.agents/skills/tes-doctor/SKILL.md` |
+| Adapter materialization | `.agents/skills/tes-adapter/SKILL.md` |
+| Benchmark evidence | `.agents/skills/tes-bench/SKILL.md` |
+| Failure examples | `.agents/skills/tes-engineering-discipline/references/failure-patterns.md` |
+| Tool migration | `.agents/skills/tes-engineering-discipline/references/source-portability.md` |
+| Skill self-test | `python3 .agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test` |
 
 </routing>
 
-<tilly_init>
+<tes_init>
 
-Treat `/tilly:init`, `/tilly:update`, `tilly init`, and natural command/prompts
-such as `Tilly, initialize this project`, `Tilly, inicialize este projeto`, or
-`Atualizar a Tilly` as installer intents. `/tilly:update` first checks installed
+Treat `/tes:init`, `/tes:update`, `tes init`, and natural command/prompts
+such as `TES, initialize this project`, `TES, inicialize este projeto`, or
+`Atualizar TES` as installer intents. `/tes:update` first checks installed
 version, cloud version, applied IDE surfaces, and recommended route. Also treat
-`/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`, `/tilly:field-reports`,
-`/tilly:doctor`, `/tilly:adapter`, and `/tilly:bench` as intent shortcuts. Load
+`/tes:cortex`, `/tes:curate`, `/tes:mcp`, `/tes:field-reports`,
+`/tes:doctor`, `/tes:adapter`, and `/tes:bench` as intent shortcuts. Load
 the matching skill and let the agent choose the smallest safe oracle. These are
 not shell commands.
 
-</tilly_init>
+</tes_init>
 
 <cortex_reflex>
 
@@ -92,7 +92,7 @@ surface. Before the final response for material work, run the read-only MCP
 tool `cortex_reflect` when available, or:
 
 ```bash
-python3 .tilly/bin/cortex.py reflect --target . "<decision or lesson>"
+python3 .tes/bin/cortex.py reflect --target . "<decision or lesson>"
 ```
 
 Report the proposal only when it is useful. Do not write Cortex cells unless
@@ -100,14 +100,14 @@ the user explicitly authorizes promotion.
 If `curation_due=true`, run read-only `cortex_curate_plan` when available, or:
 
 ```bash
-python3 .tilly/bin/cortex.py curate-plan --target . --backend lexical
+python3 .tes/bin/cortex.py curate-plan --target . --backend lexical
 ```
 
 </cortex_reflex>
 
 <field_reports>
 
-Tilly Field Reports is active by default. It records only sanitized operational
+TES Field Reports is active by default. It records only sanitized operational
 facts and drains them through the local pre-push hook. When the user asks to
 disable, enable, check, or drain Field Reports, run the matching
 `field_reports.py` oracle and never expand collection levels or schema.

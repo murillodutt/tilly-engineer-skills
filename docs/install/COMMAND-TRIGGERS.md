@@ -5,12 +5,12 @@ status: active
 consumer: adopters, installing agents, and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.1
+tver: 0.4.2
 ---
 
-# Tilly Command Triggers
+# TES Command Triggers
 
-Tilly commands are not the user interface. The user interface is an intent in
+TES commands are not the user interface. The user interface is an intent in
 the current agent window; scripts and npm aliases are deterministic oracles the
 agent invokes when the runtime exposes local tools.
 
@@ -18,29 +18,29 @@ agent invokes when the runtime exposes local tools.
 
 | Trigger | User intent | Primary oracles | Writes |
 |---------|-------------|-----------------|--------|
-| `/tilly:init` or init command/prompt | install, update, audit, or recertify Tilly in a project | `root_context.py`, `tilly_init.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, Cortex, runtime bootloaders, project MCP config |
-| `/tilly:update` or update command/prompt | update an already meshed project with the lowest-friction route | `tilly_update.py`, `root_context.py`, assisted installer, install smoke, MCP install | only selected Tilly surfaces after Step Zero |
-| `/tilly:cortex` | inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `cortex.py`, read-only Cortex MCP | Cortex files only when authorized |
-| `/tilly:curate` | classify Cortex memory quality risks without writing memory | `cortex.py curate-plan`, read-only `cortex_curate_plan` | no memory writes; CLI may refresh `.tilly/cortex/semantic.sqlite` |
-| `/tilly:mcp` | activate or verify read-only Cortex MCP | `install_mcp.py`, `cortex_mcp.py`, MCP smoke | `.tilly/bin/**` and project-scoped MCP config |
-| `/tilly:field-reports` | inspect, drain, disable, or re-enable sanitized operational reports | `field_reports.py`, local `pre-push` hook | `.tilly/field-reports/**`, `.git/info/exclude`, `.git/hooks/pre-push` |
-| `/tilly:doctor` | health-check, certify, or prepare a commit | validation, TDS, doc-size, platform, materialization, commit gates | none unless evidence is explicitly requested |
-| `/tilly:adapter` | materialize, dry-run, retrofit, or install adapter surfaces | `materialize_adapter.py`, `install_adapter.py`, adapter oracles | adapter files only after review or approval |
-| `/tilly:bench` | plan, run, or converge context-mesh benchmarks | benchmark plan/run/converge scripts | benchmark evidence artifacts |
+| `/tes:init` or init command/prompt | install, update, audit, or recertify TES in a project | `root_context.py`, `tes_init.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, Cortex, runtime bootloaders, project MCP config |
+| `/tes:update` or update command/prompt | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, assisted installer, install smoke, MCP install | only selected TES surfaces after Step Zero |
+| `/tes:cortex` | inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `cortex.py`, read-only Cortex MCP | Cortex files only when authorized |
+| `/tes:curate` | classify Cortex memory quality risks without writing memory | `cortex.py curate-plan`, read-only `cortex_curate_plan` | no memory writes; CLI may refresh `.tes/cortex/semantic.sqlite` |
+| `/tes:mcp` | activate or verify read-only Cortex MCP | `install_mcp.py`, `cortex_mcp.py`, MCP smoke | `.tes/bin/**` and project-scoped MCP config |
+| `/tes:field-reports` | inspect, drain, disable, or re-enable sanitized operational reports | `field_reports.py`, local `pre-push` hook | `.tes/field-reports/**`, `.git/info/exclude`, `.git/hooks/pre-push` |
+| `/tes:doctor` | health-check, certify, or prepare a commit | validation, TDS, doc-size, platform, materialization, commit gates | none unless evidence is explicitly requested |
+| `/tes:adapter` | materialize, dry-run, retrofit, or install adapter surfaces | `materialize_adapter.py`, `install_adapter.py`, adapter oracles | adapter files only after review or approval |
+| `/tes:bench` | plan, run, or converge context-mesh benchmarks | benchmark plan/run/converge scripts | benchmark evidence artifacts |
 
 Aliases:
 
 ```text
-tilly init  -> /tilly:init
-tilly update / update Tilly / Atualizar a Tilly / atualizar Tilly -> /tilly:update
-initialize Tilly / install Tilly / recertify Tilly -> /tilly:init
-inicializar Tilly / instalar Tilly / recertificar Tilly -> /tilly:init
-/tilly:recall  -> /tilly:cortex recall
-/tilly:learn   -> /tilly:cortex learn
-/tilly:reflect -> /tilly:cortex reflect
-/tilly:curate  -> /tilly:cortex curate-plan
-/tilly:check   -> /tilly:doctor
-/tilly:certify -> /tilly:doctor
+tes init  -> /tes:init
+tes update / update TES / Atualizar TES / atualizar TES -> /tes:update
+initialize TES / install TES / recertify TES -> /tes:init
+inicializar TES / instalar TES / recertificar TES -> /tes:init
+/tes:recall  -> /tes:cortex recall
+/tes:learn   -> /tes:cortex learn
+/tes:reflect -> /tes:cortex reflect
+/tes:curate  -> /tes:cortex curate-plan
+/tes:check   -> /tes:doctor
+/tes:certify -> /tes:doctor
 ```
 
 ## Classification
@@ -61,7 +61,7 @@ inicializar Tilly / instalar Tilly / recertificar Tilly -> /tilly:init
 - Do not claim latest-source certification when the installer reports
   `STALE_SOURCE` or `BLOCKED` source freshness.
 - Do not call SQLite, MCP, or generated output memory.
-- Do not call `.tilly/cortex/semantic.sqlite` memory; it is only derived
+- Do not call `.tes/cortex/semantic.sqlite` memory; it is only derived
   curation cache.
 - Do not overwrite root runtime files before `root_context.py` has preserved or
   rejected project-owned instructions.

@@ -88,14 +88,14 @@ Default to short, frank prose. Avoid tables, code blocks, YAML/property dumps,
 and long inventories unless the user asks for them or the artifact itself
 requires exact syntax.
 
-## Tilly Shortcuts
+## TES Shortcuts
 
-Treat `/tilly:init`, `/tilly:update`, `tilly init`, and natural command/prompts
-such as `Tilly, initialize this project`, `Tilly, inicialize este projeto`, or
-`Atualizar a Tilly` as installer intents. `/tilly:update` first checks installed
+Treat `/tes:init`, `/tes:update`, `tes init`, and natural command/prompts
+such as `TES, initialize this project`, `TES, inicialize este projeto`, or
+`Atualizar TES` as installer intents. `/tes:update` first checks installed
 version, cloud version, applied IDE surfaces, and recommended route. Also treat
-`/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`, `/tilly:field-reports`,
-`/tilly:doctor`, `/tilly:adapter`, and `/tilly:bench` as intent shortcuts. Use
+`/tes:cortex`, `/tes:curate`, `/tes:mcp`, `/tes:field-reports`,
+`/tes:doctor`, `/tes:adapter`, and `/tes:bench` as intent shortcuts. Use
 the matching skill and let the agent choose the smallest safe oracle. These are
 not shell commands.
 
@@ -106,7 +106,7 @@ surface. Before the final response for material work, use read-only
 `cortex_reflect` when available, or run:
 
 ```bash
-python3 .tilly/bin/cortex.py reflect --target . "<decision or lesson>"
+python3 .tes/bin/cortex.py reflect --target . "<decision or lesson>"
 ```
 
 Mention useful proposals. Do not write Cortex cells without explicit user
@@ -114,12 +114,12 @@ authorization.
 If `curation_due=true`, run read-only `cortex_curate_plan` when available, or:
 
 ```bash
-python3 .tilly/bin/cortex.py curate-plan --target . --backend lexical
+python3 .tes/bin/cortex.py curate-plan --target . --backend lexical
 ```
 
 ## Field Reports
 
-Tilly Field Reports is active by default. It records only sanitized operational
+TES Field Reports is active by default. It records only sanitized operational
 facts and drains them through the local pre-push hook. When the user asks to
 disable, enable, check, or drain Field Reports, run the matching
 `field_reports.py` oracle and never expand collection levels or schema.

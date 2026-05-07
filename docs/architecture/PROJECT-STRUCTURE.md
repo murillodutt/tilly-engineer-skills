@@ -62,21 +62,21 @@ Use `npm run materialize:check` to verify this without writing to `dist/**`.
 
 `scripts/install_mcp.py` is separate from adapter materialization. It activates
 the read-only Cortex MCP server in a target project by copying local helpers to
-`.tilly/bin/**` and writing project-scoped runtime config.
+`.tes/bin/**` and writing project-scoped runtime config.
 
-`scripts/tilly_update.py` plans low-friction updates by comparing installed and
+`scripts/tes_update.py` plans low-friction updates by comparing installed and
 cloud package versions, detecting applied IDE surfaces, and recommending the
-route behind `/tilly:update`.
+route behind `/tes:update`.
 
 `scripts/root_context.py` scans root runtime files such as `AGENTS.md`,
 `CLAUDE.md`, and Cursor rules before overwrite. Project-owned instructions must
 be migrated into `docs/agents/**` or evidence first.
 
 `scripts/field_reports.py` installs the local Field Reports `pre-push` drain
-and records sanitized operational facts under `.tilly/field-reports/**`. That
+and records sanitized operational facts under `.tes/field-reports/**`. That
 directory is local transport state, not repository truth.
 
-`.github/ISSUE_TEMPLATE/tilly-field-report.yml` and
+`.github/ISSUE_TEMPLATE/tes-field-report.yml` and
 `.github/workflows/field-report-governance.yml` govern the central GitHub
 receiver for those reports. The local oracle is
 `scripts/field_reports_github_oracle.py`.

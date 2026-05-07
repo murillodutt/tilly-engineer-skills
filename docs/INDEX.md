@@ -28,9 +28,9 @@ turning the repository root into an inventory.
 | Tool-neutral engineering principles | `mesh/PRINCIPLES.md` |
 | Neutral behavioral contract manifest | `mesh/CONTRACT-MANIFEST.yml` |
 | Context mesh method | `mesh/CONTEXT-MESH-METHOD.md` |
-| Tilly Cortex | `mesh/CORTEX.md` |
-| Tilly Cortex MCP | `mesh/CORTEX-MCP.md` |
-| Tilly Field Reports | `mesh/FIELD-REPORTS.md` |
+| TES Cortex | `mesh/CORTEX.md` |
+| TES Cortex MCP | `mesh/CORTEX-MCP.md` |
+| TES Field Reports | `mesh/FIELD-REPORTS.md` |
 | Tilly Git safety | `mesh/GIT-SAFETY.md` |
 | Adoption and convergence scorecard | `mesh/SCORECARD.md` |
 | Eval and ablation design | `evals/EVALS.md` |

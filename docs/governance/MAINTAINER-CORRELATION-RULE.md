@@ -42,7 +42,7 @@ relevant installer surface.
 
 `scripts/**` is not a layer by itself. A script change is classified by the
 consumer and behavior it changes. A validator-only change is maintainer layer. A
-change to `tilly_init.py`, `cortex.py`, `install_mcp.py`, `install_adapter.py`,
+change to `tes_init.py`, `cortex.py`, `install_mcp.py`, `install_adapter.py`,
 `install_smoke.py`, `field_reports.py`, or an adapter materializer can be
 delivered behavior when it changes what adopters receive, invoke, or certify.
 

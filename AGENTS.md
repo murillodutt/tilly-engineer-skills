@@ -63,9 +63,9 @@ gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 | Claude adapter guide | `docs/adapters/CLAUDE.md` |
 | Cursor adapter guide | `docs/adapters/CURSOR.md` |
 | Codex bootloader source | `src/adapters/codex/AGENTS.md` |
-| Codex skill source | `src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md` |
+| Codex skill source | `src/adapters/codex/skills/tes-engineering-discipline/SKILL.md` |
 | Claude instruction source | `src/adapters/claude/CLAUDE.md` |
-| Cursor rule source | `src/adapters/cursor/rules/tilly-guidelines.mdc` |
+| Cursor rule source | `src/adapters/cursor/rules/tes-guidelines.mdc` |
 | Package validation | `python3 scripts/validate_reference_package.py` |
 | TDS validation | `python3 scripts/validate_tds.py` |
 | Closure gate | `npm run commit:check` |

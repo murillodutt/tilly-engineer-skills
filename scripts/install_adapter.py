@@ -20,8 +20,8 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.30"
-RETROFIT_DIR = ".tilly/retrofit"
+VERSION = "0.3.31"
+RETROFIT_DIR = ".tes/retrofit"
 
 
 def sha256_file(path: Path) -> str:
@@ -64,7 +64,7 @@ def build_retrofit_plan(
     path.write_text(
         "\n".join(
             [
-                "# Tilly Adapter Retrofit Plan",
+                "# TES Adapter Retrofit Plan",
                 "",
                 "This file was generated because installation found existing target files",
                 "that differ from the materialized Tilly adapter files.",
@@ -214,7 +214,7 @@ def install(args: argparse.Namespace) -> int:
         print(f"- target is not a directory: {target_root}")
         return 1
 
-    with tempfile.TemporaryDirectory(prefix="tilly-install-") as tempdir:
+    with tempfile.TemporaryDirectory(prefix="tes-install-") as tempdir:
         out_root = Path(tempdir) / "adapters"
         materialized = [
             materialize_adapter.materialize(adapter, out_root)

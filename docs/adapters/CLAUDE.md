@@ -42,8 +42,8 @@ Official references: [Memory](https://code.claude.com/docs/en/memory),
 | Source | Purpose |
 |--------|---------|
 | `src/adapters/claude/CLAUDE.md` | Short target root instruction file |
-| `src/adapters/claude/skills/tilly-guidelines/SKILL.md` | Claude skill source |
-| `src/adapters/claude/skills/tilly-*/SKILL.md` | Command-shortcut skills |
+| `src/adapters/claude/skills/tes-guidelines/SKILL.md` | Claude skill source |
+| `src/adapters/claude/skills/tes-*/SKILL.md` | Command-shortcut skills |
 | `src/adapters/claude/plugin/plugin.json` | Plugin metadata source |
 | `src/adapters/claude/plugin/marketplace.json` | Local marketplace metadata source |
 
@@ -57,12 +57,12 @@ dedicated decision.
 - `.claude-plugin/plugin.json` must not depend on files outside the plugin
   root.
 - Skill paths in plugin metadata must be root-relative, such as
-  `skills/tilly-guidelines`, not `../skills/tilly-guidelines`.
-- `/tilly:*` shortcuts map to Claude skills and then to deterministic oracles.
-  `/tilly:init`, `/tilly:update`, `tilly init`, and natural init/update
-  command-prompts all route to `tilly-init`; the other shortcuts route to
-  `tilly-cortex`, `tilly-mcp`, `tilly-doctor`, `tilly-adapter`, and
-  `tilly-bench`.
+  `skills/tes-guidelines`, not `../skills/tes-guidelines`.
+- `/tes:*` shortcuts map to Claude skills and then to deterministic oracles.
+  `/tes:init`, `/tes:update`, `tes init`, and natural init/update
+  command-prompts all route to `tes-init`; the other shortcuts route to
+  `tes-cortex`, `tes-mcp`, `tes-doctor`, `tes-adapter`, and
+  `tes-bench`.
 - Hooks, write-capable MCP, and subagents must not be added to the default
   plugin.
 - Read-only Cortex MCP is activated by the assisted installer through

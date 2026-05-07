@@ -33,5 +33,5 @@ Record:
 ```text
 navigation_renderer: anthropic-api
 navigation_mode: custom-tool-use | command-navigation
-navigation_library: tilly-navigation@0.1.1
+navigation_library: tes-navigation@0.1.1
 ```

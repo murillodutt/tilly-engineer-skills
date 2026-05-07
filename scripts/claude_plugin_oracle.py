@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.30"
+VERSION = "0.3.31"
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
 
@@ -97,7 +97,7 @@ def validate_plugin(target: Path) -> list[str]:
 
 
 def self_test() -> int:
-    with tempfile.TemporaryDirectory(prefix="tilly-claude-plugin-oracle-") as tempdir:
+    with tempfile.TemporaryDirectory(prefix="tes-claude-plugin-oracle-") as tempdir:
         target = Path(tempdir)
         code, stdout, stderr = run(
             [

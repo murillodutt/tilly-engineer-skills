@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   govern:
-    if: contains(github.event.issue.body || '', 'tilly-field-report@1') || startsWith(github.event.issue.title || '', 'Tilly Field Report')
+    if: contains(github.event.issue.body || '', 'tes-field-report@1') || startsWith(github.event.issue.title || '', 'TES Field Report')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout receiver contract
@@ -37,7 +37,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh label create field-report --repo "$GITHUB_REPOSITORY" --color 0E8A16 --description "Automated Tilly Field Report" --force
+          gh label create field-report --repo "$GITHUB_REPOSITORY" --color 0E8A16 --description "Automated TES Field Report" --force
           gh label create privacy-sanitized --repo "$GITHUB_REPOSITORY" --color 1D76DB --description "Report passed receiver privacy checks" --force
           gh label create field-report-quarantine --repo "$GITHUB_REPOSITORY" --color D93F0B --description "Report failed receiver governance checks" --force
 
@@ -56,5 +56,5 @@ jobs:
           REASON: ${{ steps.validate.outputs.reason }}
         run: |
           gh issue edit "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label "field-report,field-report-quarantine"
-          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "This Tilly Field Report failed receiver governance and was closed for safety. Reason: ${REASON}"
+          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "This TES Field Report failed receiver governance and was closed for safety. Reason: ${REASON}"
           gh issue close "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --reason not_planned

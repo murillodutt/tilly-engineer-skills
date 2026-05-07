@@ -36,7 +36,7 @@ Official references: [Rules](https://docs.cursor.com/en/context/rules),
 
 | Source | Purpose |
 |--------|---------|
-| `src/adapters/cursor/rules/tilly-guidelines.mdc` | Always-on Cursor rule source |
+| `src/adapters/cursor/rules/tes-guidelines.mdc` | Always-on Cursor rule source |
 | `src/adapters/cursor/CURSOR.md` | Human adapter note |
 
 The base discipline uses `alwaysApply: true` because the four gates are a
@@ -44,9 +44,9 @@ general behavioral overlay for non-trivial coding, review, refactor, and
 instruction migration work.
 
 Cursor does not receive a separate skill package. The always-on rule treats
-`/tilly:init`, `/tilly:update`, `tilly init`, natural init/update
-command-prompts, `/tilly:cortex`, `/tilly:mcp`, `/tilly:doctor`,
-`/tilly:adapter`, and `/tilly:bench` as intent shortcuts for the same
+`/tes:init`, `/tes:update`, `tes init`, natural init/update
+command-prompts, `/tes:cortex`, `/tes:mcp`, `/tes:doctor`,
+`/tes:adapter`, and `/tes:bench` as intent shortcuts for the same
 deterministic oracles used by Codex and Claude.
 
 Future workflow-specific rules should be separate `Agent Requested` or

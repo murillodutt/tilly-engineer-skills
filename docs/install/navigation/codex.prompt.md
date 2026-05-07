@@ -57,5 +57,5 @@ Record:
 ```text
 navigation_renderer: codex
 navigation_mode: request-user-input | string-question | command-navigation
-navigation_library: tilly-navigation@0.1.1
+navigation_library: tes-navigation@0.1.1
 ```
