@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "dist" / "adapters"
-VERSION = "0.3.10"
+VERSION = "0.3.11"
 FORBIDDEN_OUTPUT_REFS = (
     "src/adapters/",
     "docs/adapters/",
@@ -41,6 +41,11 @@ ADAPTERS: dict[str, tuple[CopyRule, ...]] = {
             ".agents/skills/tilly-engineering-discipline",
             "tree",
         ),
+        CopyRule(
+            "src/adapters/codex/skills/tilly-init",
+            ".agents/skills/tilly-init",
+            "tree",
+        ),
     ),
     "cursor": (
         CopyRule("src/adapters/cursor/CURSOR.md", "CURSOR.md"),
@@ -56,6 +61,11 @@ ADAPTERS: dict[str, tuple[CopyRule, ...]] = {
         CopyRule(
             "src/adapters/claude/skills/tilly-guidelines",
             "skills/tilly-guidelines",
+            "tree",
+        ),
+        CopyRule(
+            "src/adapters/claude/skills/tilly-init",
+            "skills/tilly-init",
             "tree",
         ),
     ),
@@ -129,6 +139,8 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
             oracle_failure = run_oracle(adapter_root, oracle)
             if oracle_failure:
                 failures.append(f"codex oracle failed: {oracle_failure}")
+        if not (adapter_root / ".agents/skills/tilly-init/SKILL.md").exists():
+            failures.append("codex: missing tilly-init skill")
 
     if adapter == "cursor":
         rule = adapter_root / ".cursor/rules/tilly-guidelines.mdc"
@@ -154,6 +166,8 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
                 resolved = (plugin_root / skill_path).resolve()
                 if not resolved.exists():
                     failures.append(f"claude: plugin skill path does not exist: {skill}")
+            if "skills/tilly-init" not in data.get("skills", []):
+                failures.append("claude: plugin must declare tilly-init skill")
         else:
             failures.append("claude: missing plugin.json")
         if marketplace.exists():

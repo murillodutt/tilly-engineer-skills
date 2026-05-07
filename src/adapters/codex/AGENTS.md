@@ -4,7 +4,8 @@ Portable Codex bootloader for repositories adopting Tilly Engineering
 Discipline.
 
 Keep this file small. Put detailed workflows in
-`.agents/skills/tilly-engineering-discipline/**`.
+`.agents/skills/tilly-engineering-discipline/**` and
+`.agents/skills/tilly-init/**`.
 
 <instructions>
 
@@ -43,11 +44,21 @@ surgical, or verification is missing.
 | Need | Source |
 |------|--------|
 | Reusable workflow | `.agents/skills/tilly-engineering-discipline/SKILL.md` |
+| Tilly initialization shortcut | `.agents/skills/tilly-init/SKILL.md` |
 | Failure examples | `.agents/skills/tilly-engineering-discipline/references/failure-patterns.md` |
 | Tool migration | `.agents/skills/tilly-engineering-discipline/references/source-portability.md` |
 | Skill self-test | `python3 .agents/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test` |
 
 </routing>
+
+<tilly_init>
+
+When the user says `/tilly:init`, "initialize Tilly", "install Tilly", "update
+Tilly", or "recertify Tilly", load `.agents/skills/tilly-init/SKILL.md` and run
+the assisted context installer workflow. Treat the slash form as an intent
+shortcut, not as a shell command.
+
+</tilly_init>
 
 <cortex_reflex>
 

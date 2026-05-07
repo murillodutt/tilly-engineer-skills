@@ -42,6 +42,9 @@ hooks as local Git gates that run only during Git events. Treat MCP as a
 read-only Cortex access surface for agents, not as memory and not as the
 installer.
 
+`/tilly:init` is the preferred user-facing shortcut for this workflow. Treat it
+as an intent that loads this installer contract, not as a raw shell command.
+
 If the current runtime cannot execute a command, do not claim it passed. Finish
 safe file work where possible, mark the oracle `BLOCKED` or `SKIP` with the
 reason in evidence and the final report, and ask for the smallest native

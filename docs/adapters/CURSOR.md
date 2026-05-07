@@ -43,6 +43,9 @@ The base discipline uses `alwaysApply: true` because the four gates are a
 general behavioral overlay for non-trivial coding, review, refactor, and
 instruction migration work.
 
+Cursor does not receive a separate skill package. The always-on rule treats
+`/tilly:init` as an intent shortcut for the assisted installer workflow.
+
 Future workflow-specific rules should be separate `Agent Requested` or
 manual rules instead of expanding the always-on rule.
 

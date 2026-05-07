@@ -13,7 +13,7 @@ tver: 0.2.0
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.10`.
+Project version: `0.3.11`.
 
 It follows the Codex customization order:
 
@@ -31,6 +31,7 @@ Official reference: <https://developers.openai.com/codex/concepts/customization>
 |--------|--------|
 | `src/adapters/codex/AGENTS.md` | Target repo root `AGENTS.md` or merge into existing one |
 | `src/adapters/codex/skills/tilly-engineering-discipline/` | Target repo `.agents/skills/tilly-engineering-discipline/` |
+| `src/adapters/codex/skills/tilly-init/` | Target repo `.agents/skills/tilly-init/` |
 | `scripts/install_mcp.py` | Optional project-scoped Cortex MCP activation |
 | `scripts/validate_reference_package.py` | Optional package validation script |
 
@@ -47,6 +48,9 @@ Codex uses progressive disclosure for skills:
 - Metadata stays visible for discovery.
 - `SKILL.md` loads only when the workflow is selected.
 - References and scripts load or run only when needed.
+
+`/tilly:init` maps to the `tilly-init` skill. The skill keeps the user entry
+point short while delegating the real work to the assisted installer contract.
 
 This keeps the four gates available without bloating every context window.
 
