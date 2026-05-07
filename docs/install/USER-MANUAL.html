@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.13</span>
+          <span class="brand-meta">User manual · v0.3.14</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1029,6 +1029,10 @@
             <div class="panel">
               <span class="panel-tag">Execution model</span>
               <p>The executor is the active coding agent inside the current IDE or runtime window. Skills, rules and bootloaders route behavior; Python scripts and <code>npm run ...</code> entries are deterministic oracles the agent invokes when local tool access exists; hooks are Git-event gates; MCP is a read-only Cortex access surface. If a runtime cannot execute an oracle, the agent must report it as blocked or skipped instead of claiming certification.</p>
+            </div>
+            <div class="panel">
+              <span class="panel-tag">Gatillos de comando</span>
+              <p>The normal user interface is a Tilly intent typed in the agent window, not a shell command. Use <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> or <code>/tilly:bench</code>; the active agent then selects and runs the smallest safe oracle. The shell commands in this manual are exposed so users can audit what the agent may invoke.</p>
             </div>
           </div>
         </section>
@@ -1310,6 +1314,10 @@ git revert &lt;install-commit&gt;</code></pre>
               <span class="panel-tag">Modelo de ejecución</span>
               <p>El ejecutor es el agente de código activo dentro de la ventana actual del IDE o runtime. Skills, reglas y bootloaders enrutan el comportamiento; los scripts Python y las entradas <code>npm run ...</code> son oráculos deterministas que el agente invoca cuando existe acceso local a herramientas; los hooks son gates de eventos Git; MCP es una superficie Cortex de solo lectura. Si un runtime no puede ejecutar un oráculo, el agente debe reportarlo como bloqueado o omitido en vez de certificarlo.</p>
             </div>
+            <div class="panel">
+              <span class="panel-tag">Gatilhos de comando</span>
+              <p>La interfaz normal del usuario es una intención Tilly escrita en la ventana del agente, no un comando de shell. Usa <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> o <code>/tilly:bench</code>; el agente activo elige y ejecuta el oráculo seguro más pequeño. Los comandos shell de este manual están expuestos para que el usuario pueda auditar lo que el agente puede invocar.</p>
+            </div>
           </div>
         </section>
 
@@ -1590,6 +1598,10 @@ git revert &lt;install-commit&gt;</code></pre>
               <span class="panel-tag">Modelo de execução</span>
               <p>O executor é o agente de código ativo dentro da janela atual do IDE ou runtime. Skills, rules e bootloaders roteiam comportamento; scripts Python e entradas <code>npm run ...</code> são oráculos determinísticos que o agente invoca quando existe acesso local a ferramentas; hooks são gates de eventos Git; MCP é uma superfície Cortex somente leitura. Se um runtime não consegue executar um oráculo, o agente deve reportar como bloqueado ou ignorado em vez de certificar.</p>
             </div>
+            <div class="panel">
+              <span class="panel-tag">Command triggers</span>
+              <p>A interface normal do usuário é uma intenção Tilly digitada na janela do agente, não um comando de shell. Use <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> ou <code>/tilly:bench</code>; o agente ativo escolhe e executa o menor oráculo seguro. Os comandos shell deste manual ficam expostos para que o usuário possa auditar o que o agente pode invocar.</p>
+            </div>
           </div>
         </section>
 
@@ -1849,7 +1861,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.13</span>
+        <span>Tilly Engineer Skills · v0.3.14</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>
