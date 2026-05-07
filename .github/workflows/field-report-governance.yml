@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   govern:
-    if: contains(github.event.issue.body || '', 'tes-field-report@1') || startsWith(github.event.issue.title || '', 'TES Field Report')
+    if: contains(github.event.issue.body || '', 'tes-field-report@2') || startsWith(github.event.issue.title || '', 'TES Field Report')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout receiver contract

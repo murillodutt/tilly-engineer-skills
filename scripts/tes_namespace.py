@@ -192,7 +192,7 @@ CONTENT_REPLACEMENTS = (
     Replacement("tilly-cortex", "tes-cortex", "mcp server or skill"),
     Replacement("Tilly Field Reports", "TES Field Reports", "field reports name"),
     Replacement("Tilly Field Report", "TES Field Report", "field report name"),
-    Replacement("tilly-field-report@1", "tes-field-report@1", "field report schema"),
+    Replacement("tilly-field-report@1", "tes-field-report@2", "field report schema"),
     Replacement("tilly-field-report", "tes-field-report", "field report issue template"),
     Replacement("tilly-engineering-discipline", "tes-engineering-discipline", "codex skill"),
     Replacement("tilly-guidelines", "tes-guidelines", "adapter guideline"),

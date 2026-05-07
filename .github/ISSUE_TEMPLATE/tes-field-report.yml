@@ -14,7 +14,7 @@ body:
     id: schema
     attributes:
       label: Schema
-      value: tes-field-report@1
+      value: tes-field-report@2
     validations:
       required: true
   - type: dropdown
@@ -29,6 +29,30 @@ body:
     validations:
       required: true
   - type: input
+    id: report-class
+    attributes:
+      label: Report class
+      placeholder: "version-drift, failure-or-blocker, installation-signal, cortex-certification"
+    validations:
+      required: true
+  - type: dropdown
+    id: actionability
+    attributes:
+      label: Actionability
+      options:
+        - high
+        - medium
+        - low
+    validations:
+      required: true
+  - type: input
+    id: report-fingerprint
+    attributes:
+      label: Report fingerprint
+      placeholder: "16-character sanitized report fingerprint"
+    validations:
+      required: true
+  - type: input
     id: tes-version
     attributes:
       label: TES version
@@ -40,7 +64,7 @@ body:
     attributes:
       label: Sanitized facts
       description: Factual prose or bullets only. No tables and no code blocks.
-      placeholder: "Event, surface, status, duration bucket, return code, and sanitized failure category."
+      placeholder: "Actionable findings, signal score, surfaces, routes, versions, status counts, and sanitized failure category."
     validations:
       required: true
   - type: checkboxes

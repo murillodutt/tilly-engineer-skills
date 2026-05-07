@@ -202,7 +202,7 @@ Field Reports must become a TES operational surface.
 - `Tilly Field Reports` becomes `TES Field Reports`.
 - `.github/ISSUE_TEMPLATE/tilly-field-report.yml` becomes
   `.github/ISSUE_TEMPLATE/tes-field-report.yml`.
-- Schema marker `tilly-field-report@1` becomes `tes-field-report@1`.
+- Schema marker `tilly-field-report@1` becomes `tes-field-report@2`.
 - Issue titles and labels should use `TES Field Report`.
 
 The GitHub destination may remain `murillodutt/tilly-engineer-skills` because it

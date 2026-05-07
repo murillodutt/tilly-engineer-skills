@@ -265,7 +265,7 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing GitHub receiver oracle: {github_oracle}")
     else:
         text = read(github_oracle)
-        for term in ("tes-field-report@1", "field-report-quarantine", "validate_body"):
+        for term in ("tes-field-report@2", "field-report-quarantine", "validate_body"):
             if term not in text:
                 failures.append(f"{github_oracle} missing {term}")
 
@@ -274,7 +274,7 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing Field Reports issue form: {issue_form}")
     else:
         text = read(issue_form)
-        for term in ("TES Field Report", "tes-field-report@1", "privacy-sanitized", "Never include code"):
+        for term in ("TES Field Report", "tes-field-report@2", "privacy-sanitized", "Actionability", "Never include code"):
             if term not in text:
                 failures.append(f"{issue_form} missing {term}")
 
