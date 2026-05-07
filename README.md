@@ -6,7 +6,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, and clearer proof before they claim a task
 is done.
 
-Version: `0.3.15`
+Version: `0.3.16`
 
 License: MIT
 
@@ -106,7 +106,8 @@ reports certification.
 The Python scripts and `npm run ...` entries are deterministic oracles and
 portable helper tools for that agent. Skills, rules, bootloaders, and adapter
 files route behavior and explain when those oracles should be used. Hooks are
-local Git gates for validation and no-write Cortex reflection/curation. MCP is
+local Git gates for validation, no-write Cortex reflection/curation, and Field
+Reports drain. MCP is
 a read-only Cortex access surface for agents; it is not the memory and not the
 installer.
 
@@ -123,11 +124,15 @@ The broader shortcut surface is intentionally small:
 | `/tilly:cortex` | query, inspect, audit, rebuild, curate, learn, reflect, or apply Cortex memory |
 | `/tilly:curate` | run no-write semantic curation over Cortex memory |
 | `/tilly:mcp` | activate or verify read-only Cortex MCP |
+| `/tilly:field-reports` | inspect, drain, disable, or re-enable sanitized operational reports |
 | `/tilly:doctor` | run health, certification, and commit-readiness gates |
 | `/tilly:adapter` | materialize, dry-run, retrofit, or install adapter surfaces |
 | `/tilly:bench` | plan, run, or converge context-mesh benchmarks |
 
 See `docs/install/COMMAND-TRIGGERS.md` for the full command-to-trigger matrix.
+Field Reports is active by default and sends only sanitized operational facts
+to the TES GitHub issue tracker on push. Privacy and opt-out prompts are in the
+user manual.
 
 When a runtime has no shell/tool access, the agent must not pretend a command
 ran. It should complete the file work it can safely perform, mark unavailable
@@ -143,6 +148,8 @@ checked directly:
 ```bash
 python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
+python3 scripts/field_reports.py status --target /path/to/project
+python3 scripts/field_reports.py --self-test
 python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
@@ -330,6 +337,7 @@ npm run tds:validate
 npm run cortex:self-test
 npm run cortex:mcp:self-test
 npm run mcp:self-test
+npm run field-reports:self-test
 npm run install:smoke
 npm run tilly:init -- --target /path/to/project --yes
 npm run tilly:init:self-test

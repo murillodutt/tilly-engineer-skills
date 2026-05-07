@@ -11,9 +11,10 @@ import tempfile
 from typing import Any
 
 import cortex
+import field_reports
 
 
-VERSION = "0.3.15"
+VERSION = "0.3.16"
 PROTOCOL_VERSION = "2025-06-18"
 
 
@@ -340,6 +341,14 @@ def self_test() -> int:
         if replies[6]["result"]["structuredContent"]["writes"] != []:  # type: ignore[index]
             failures.append("curate_plan did not remain no-write over MCP")
 
+        field_reports.safe_record_event(
+            target,
+            "cortex_mcp.self_test",
+            "FAIL" if failures else "PASS",
+            "mcp",
+            "self-test",
+            details={"tools": len(expected_tools), "failures": len(failures)},
+        )
         print(json.dumps({"status": "FAIL" if failures else "PASS", "failures": failures}, indent=2))
         if failures:
             print("[cortex-mcp] FAIL")

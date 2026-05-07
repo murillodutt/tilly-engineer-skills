@@ -16,10 +16,11 @@ from pathlib import Path
 from typing import Any
 
 import cortex
+import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.15"
+VERSION = "0.3.16"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
 
@@ -97,6 +98,8 @@ def git_status(target: Path) -> str:
 
 
 def is_excluded(relpath: Path) -> bool:
+    if len(relpath.parts) >= 2 and relpath.parts[0] == ".tilly" and relpath.parts[1] == "field-reports":
+        return True
     if any(part in EXCLUDED_PARTS for part in relpath.parts):
         return True
     if relpath.suffix in EXCLUDED_SUFFIXES:
@@ -174,6 +177,10 @@ def surface_inventory(target: Path) -> dict[str, Any]:
         "cursor_mcp": ".cursor/mcp.json",
         "tilly_mcp_server": ".tilly/bin/cortex_mcp.py",
         "tilly_mcp_embed_helper": ".tilly/bin/cortex_embed.mjs",
+        "tilly_field_reports_helper": ".tilly/bin/field_reports.py",
+        "tilly_field_reports_outbox": ".tilly/field-reports/outbox.jsonl",
+        "tilly_field_reports_disabled": ".tilly/field-reports/DISABLED",
+        "tilly_field_reports_pre_push": ".git/hooks/pre-push",
     }
     return {name: (target / relpath).exists() for name, relpath in paths.items()}
 
@@ -207,6 +214,7 @@ def package_gates() -> list[dict[str, Any]]:
 
 def target_gates(target: Path) -> list[dict[str, Any]]:
     gates: list[dict[str, Any]] = [run(["git", "diff", "--check"], target)]
+    gates.append(run([sys.executable, str(ROOT / "scripts/field_reports.py"), "status", "--target", str(target)], ROOT))
     cortex_root = cortex.cortex_path(target)
     if (cortex_root / "CONTRACT.md").exists():
         for command in ("verify", "audit", "rebuild", "curate-plan"):
@@ -282,6 +290,8 @@ replacement for Git history.
   Cortex `learn` and authorized `apply`.
 - Keep generated manifests in `docs/agents/evidence/**` so Git preserves the
   lineage.
+- Tilly Field Reports are operational transport only; Git and local governed
+  artifacts remain project truth.
 """
 
 
@@ -335,6 +345,7 @@ project, and wrote a project register plus full manifest.
 - This does not write to `sources/**`.
 - This does not publish, push, tag, or install dependencies.
 - This does not replace local project governance.
+- This does not send project code or file contents through Field Reports.
 """
 
 
@@ -348,6 +359,9 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
         REGISTER.as_posix(),
         f"{EVIDENCE_DIR.as_posix()}/{stamp}-tilly-initialization.md",
         f"{EVIDENCE_DIR.as_posix()}/{stamp}-tilly-project-manifest.json",
+        ".tilly/bin/field_reports.py",
+        ".tilly/field-reports/outbox.jsonl",
+        ".git/hooks/pre-push",
     ]
     if not yes:
         return {
@@ -361,6 +375,7 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
     cortex_result: dict[str, Any] | None = None
     if ensure_cortex:
         cortex_result = cortex.init(target)
+    field_report_result = field_reports.install_hook(target)
 
     scan = scan_project(target)
     gates = [*package_gates(), *target_gates(target)]
@@ -380,14 +395,34 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
     (target / REGISTER).write_text(register_text, encoding="utf-8")
     evidence_path.write_text(evidence_text, encoding="utf-8")
 
+    actual_writes = [
+        REGISTER.as_posix(),
+        rel(evidence_path, target),
+        rel(manifest_path, target),
+        *[str(item) for item in field_report_result.get("writes", [])],
+    ]
+    field_reports.safe_record_event(
+        target,
+        "tilly_init",
+        status,
+        "installer",
+        "cli",
+        details={
+            "file_count": scan["file_count"],
+            "gate_failures": sum(1 for gate in gates if gate["status"] != "PASS"),
+            "field_reports": field_report_result.get("status", "UNKNOWN"),
+        },
+    )
+
     return {
         "version": VERSION,
         "status": status,
         "target": str(target),
         "git_head": scan["git_head"],
         "file_count": scan["file_count"],
-        "writes": [REGISTER.as_posix(), rel(evidence_path, target), rel(manifest_path, target)],
+        "writes": actual_writes,
         "cortex": cortex_result,
+        "field_reports": field_report_result,
         "gates": gates,
     }
 

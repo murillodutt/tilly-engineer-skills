@@ -60,6 +60,10 @@ Use `npm run materialize:check` to verify this without writing to `dist/**`.
 the read-only Cortex MCP server in a target project by copying local helpers to
 `.tilly/bin/**` and writing project-scoped runtime config.
 
+`scripts/field_reports.py` installs the local Field Reports `pre-push` drain
+and records sanitized operational facts under `.tilly/field-reports/**`. That
+directory is local transport state, not repository truth.
+
 `scripts/install_smoke.py`, `scripts/claude_plugin_oracle.py`,
 `scripts/retention_metadata.py`, and `scripts/validate_reference_graph.py`
 provide deterministic closure gates for assisted installation, local Claude

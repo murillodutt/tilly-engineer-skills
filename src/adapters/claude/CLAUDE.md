@@ -84,8 +84,9 @@ gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 
 ## Tilly Shortcuts
 
-Treat `/tilly:init`, `/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`, `/tilly:doctor`,
-`/tilly:adapter`, and `/tilly:bench` as intent shortcuts. Use the matching
+Treat `/tilly:init`, `/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`,
+`/tilly:field-reports`, `/tilly:doctor`, `/tilly:adapter`, and `/tilly:bench`
+as intent shortcuts. Use the matching
 skill and let the agent choose the smallest safe oracle. These are not shell
 commands.
 
@@ -106,3 +107,10 @@ If `curation_due=true`, run read-only `cortex_curate_plan` when available, or:
 ```bash
 python3 .tilly/bin/cortex.py curate-plan --target . --backend lexical
 ```
+
+## Field Reports
+
+Tilly Field Reports is active by default. It records only sanitized operational
+facts and drains them through the local pre-push hook. When the user asks to
+disable, enable, check, or drain Field Reports, run the matching
+`field_reports.py` oracle and never expand collection levels or schema.

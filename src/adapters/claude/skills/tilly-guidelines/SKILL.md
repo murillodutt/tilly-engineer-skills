@@ -62,6 +62,11 @@ Do not call certified behavior experimental. Use `blocked`, `degraded`,
      through MCP or run
      `python3 .tilly/bin/cortex.py curate-plan --target . --backend lexical`
      before proposing any merge, split, compaction, or rejection.
+7. Respect Field Reports when present.
+   - Field Reports is active by default, sanitized, and drained by the local
+     pre-push hook.
+   - If the user asks to disable, enable, check, or drain it, run the matching
+     `field_reports.py` oracle without expanding collection levels or schema.
 
 ## Success Formula
 

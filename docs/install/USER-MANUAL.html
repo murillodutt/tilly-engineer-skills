@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.15</span>
+          <span class="brand-meta">User manual · v0.3.16</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -996,9 +996,10 @@
             <li><a href="#cortex" data-nav="cortex"><span class="toc-num">04</span><span class="toc-text">Cortex</span></a></li>
             <li><a href="#cli" data-nav="cli"><span class="toc-num">05</span><span class="toc-text">CLI</span></a></li>
             <li><a href="#mcp" data-nav="mcp"><span class="toc-num">06</span><span class="toc-text">MCP</span></a></li>
-            <li><a href="#obsidian" data-nav="obsidian"><span class="toc-num">07</span><span class="toc-text">Obsidian</span></a></li>
-            <li><a href="#report" data-nav="report"><span class="toc-num">08</span><span class="toc-text">Final report</span></a></li>
-            <li><a href="#rollback" data-nav="rollback"><span class="toc-num">09</span><span class="toc-text">Rollback</span></a></li>
+            <li><a href="#field-reports" data-nav="fieldReports"><span class="toc-num">07</span><span class="toc-text">Field Reports</span></a></li>
+            <li><a href="#obsidian" data-nav="obsidian"><span class="toc-num">08</span><span class="toc-text">Obsidian</span></a></li>
+            <li><a href="#report" data-nav="report"><span class="toc-num">09</span><span class="toc-text">Final report</span></a></li>
+            <li><a href="#rollback" data-nav="rollback"><span class="toc-num">10</span><span class="toc-text">Rollback</span></a></li>
           </ol>
         </nav>
       </div>
@@ -1114,6 +1115,11 @@
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
+python3 scripts/field_reports.py status --target /path/to/project
+python3 scripts/field_reports.py drain --target /path/to/project
+python3 scripts/field_reports.py disable --target /path/to/project
+python3 scripts/field_reports.py enable --target /path/to/project
+python3 scripts/field_reports.py --self-test
 python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
@@ -1139,6 +1145,9 @@ npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
 npm run mcp:install -- --target /path/to/project --adapter all --yes
 npm run mcp:self-test
+npm run field-reports:self-test
+npm run field-reports:status -- --target /path/to/project
+npm run field-reports:drain -- --target /path/to/project
 npm run claude:plugin:oracle
 npm run retention:check
 npm run reference:graph
@@ -1215,6 +1224,9 @@ python3 scripts/install_smoke.py --route mcp
 python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
 python3 scripts/cortex_mcp.py --self-test
 npm run mcp:self-test
+npm run field-reports:self-test
+npm run field-reports:status -- --target /path/to/project
+npm run field-reports:drain -- --target /path/to/project
 npm run cortex:mcp:self-test</code></pre>
             </div>
             <div class="table-wrap">
@@ -1241,12 +1253,29 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tilly/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>. The installed helper set includes <code>cortex.py</code>, <code>cortex_mcp.py</code> and <code>cortex_embed.mjs</code>.</p>
+            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tilly/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>. The installed helper set includes <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code> and <code>field_reports.py</code>.</p>
+          </div>
+        </section>
+
+        <section class="chapter" id="field-reports">
+          <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
+          <div class="chapter-body">
+            <p>Tilly Field Reports is active by default. It sends only sanitized operational facts to the TES GitHub issue tracker during <code>git push</code>. It never sends code, diffs, prompts, file contents, secrets, personal data, absolute paths, raw stack traces, raw branch names or raw remotes.</p>
+            <p>The active agent installs a local <code>pre-push</code> hook and local state under <code>.tilly/field-reports/**</code>. If <code>gh</code>, network or authentication is unavailable, the outbox stays pending and the push continues.</p>
+            <p>To stop collaborating with TES field learning, type this prompt in the agent window, not in a shell:</p>
+            <div class="pre-wrap" data-label="prompt">
+<pre><code>/tilly:field-reports:disable</code></pre>
+            </div>
+            <p>To re-enable the default behavior later, type:</p>
+            <div class="pre-wrap" data-label="prompt">
+<pre><code>/tilly:field-reports:enable</code></pre>
+            </div>
+            <p>These prompts are interpreted by Tilly inside the current context window. The shell commands above are listed only so users can audit the internal oracle the agent may invoke.</p>
           </div>
         </section>
 
         <section class="chapter" id="obsidian">
-          <div class="chapter-head"><span class="chapter-num">07</span><h2>Obsidian</h2></div>
+          <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
             <p>Use Obsidian as the visual workbench for Cortex, not as the authority layer. The installer never creates or edits <code>.obsidian/**</code>; the user configures Obsidian locally and Cortex remains plain Markdown.</p>
             <ol>
@@ -1275,7 +1304,7 @@ npm run cortex:mcp:self-test</code></pre>
         </section>
 
         <section class="chapter" id="report">
-          <div class="chapter-head"><span class="chapter-num">08</span><h2>Final report</h2></div>
+          <div class="chapter-head"><span class="chapter-num">09</span><h2>Final report</h2></div>
           <div class="chapter-body">
             <p>Every run ends with a <strong>Tilly Context Mesh Convergence Report</strong>. The report must always expose this manual through a web link or local path.</p>
             <div class="pre-wrap" data-label="report excerpt">
@@ -1287,7 +1316,7 @@ npm run cortex:mcp:self-test</code></pre>
         </section>
 
         <section class="chapter" id="rollback">
-          <div class="chapter-head"><span class="chapter-num">09</span><h2>Rollback</h2></div>
+          <div class="chapter-head"><span class="chapter-num">10</span><h2>Rollback</h2></div>
           <div class="chapter-body">
             <p>Use the baseline recorded during Step Zero.</p>
             <div class="pre-wrap" data-label="shell">
@@ -1404,6 +1433,11 @@ git revert &lt;install-commit&gt;</code></pre>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
+python3 scripts/field_reports.py status --target /path/to/project
+python3 scripts/field_reports.py drain --target /path/to/project
+python3 scripts/field_reports.py disable --target /path/to/project
+python3 scripts/field_reports.py enable --target /path/to/project
+python3 scripts/field_reports.py --self-test
 python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
@@ -1429,6 +1463,9 @@ npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
 npm run mcp:install -- --target /path/to/project --adapter all --yes
 npm run mcp:self-test
+npm run field-reports:self-test
+npm run field-reports:status -- --target /path/to/project
+npm run field-reports:drain -- --target /path/to/project
 npm run claude:plugin:oracle
 npm run retention:check
 npm run reference:graph
@@ -1505,6 +1542,9 @@ python3 scripts/install_smoke.py --route mcp
 python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
 python3 scripts/cortex_mcp.py --self-test
 npm run mcp:self-test
+npm run field-reports:self-test
+npm run field-reports:status -- --target /path/to/project
+npm run field-reports:drain -- --target /path/to/project
 npm run cortex:mcp:self-test</code></pre>
             </div>
             <div class="table-wrap">
@@ -1531,12 +1571,29 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Las herramientas MCP con escritura quedan fuera de esta versión. La activación escribe solo <code>.tilly/bin/**</code> y configuración de runtime por proyecto; no debe tocar configuración MCP global, secretos, hooks o <code>sources/**</code>. El conjunto instalado incluye <code>cortex.py</code>, <code>cortex_mcp.py</code> y <code>cortex_embed.mjs</code>.</p>
+            <p>Las herramientas MCP con escritura quedan fuera de esta versión. La activación escribe solo <code>.tilly/bin/**</code> y configuración de runtime por proyecto; no debe tocar configuración MCP global, secretos, hooks o <code>sources/**</code>. El conjunto instalado incluye <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code> y <code>field_reports.py</code>.</p>
+          </div>
+        </section>
+
+        <section class="chapter" id="field-reports-es">
+          <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
+          <div class="chapter-body">
+            <p>Tilly Field Reports está activo por defecto. Envía solo hechos operativos sanitizados al issue tracker GitHub de TES durante <code>git push</code>. Nunca envía código, diffs, prompts, contenido de archivos, secretos, datos personales, paths absolutos, stack traces crudos, nombres de branch crudos o remotes crudos.</p>
+            <p>El agente activo instala un hook local <code>pre-push</code> y estado local en <code>.tilly/field-reports/**</code>. Si <code>gh</code>, red o autenticación no están disponibles, el outbox queda pendiente y el push continúa.</p>
+            <p>Para dejar de colaborar con el aprendizaje de campo de TES, escribe este prompt en la ventana del agente, no en una shell:</p>
+            <div class="pre-wrap" data-label="prompt">
+<pre><code>/tilly:field-reports:disable</code></pre>
+            </div>
+            <p>Para reactivar el comportamiento por defecto después, escribe:</p>
+            <div class="pre-wrap" data-label="prompt">
+<pre><code>/tilly:field-reports:enable</code></pre>
+            </div>
+            <p>Estos prompts son interpretados por Tilly dentro de la ventana de contexto actual. Los comandos shell se listan arriba solo para auditar el oráculo interno que el agente puede invocar.</p>
           </div>
         </section>
 
         <section class="chapter" id="obsidian-es">
-          <div class="chapter-head"><span class="chapter-num">07</span><h2>Obsidian</h2></div>
+          <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
             <p>Usa Obsidian como mesa visual de trabajo para Cortex, no como capa de autoridad. El instalador nunca crea ni edita <code>.obsidian/**</code>; el usuario configura Obsidian localmente y Cortex sigue siendo Markdown común.</p>
             <ol>
@@ -1565,7 +1622,7 @@ npm run cortex:mcp:self-test</code></pre>
         </section>
 
         <section class="chapter" id="report-es">
-          <div class="chapter-head"><span class="chapter-num">08</span><h2>Informe final</h2></div>
+          <div class="chapter-head"><span class="chapter-num">09</span><h2>Informe final</h2></div>
           <div class="chapter-body">
             <p>Cada ejecución termina con un <strong>Tilly Context Mesh Convergence Report</strong>. El informe siempre debe exponer este manual mediante link web o path local.</p>
             <div class="pre-wrap" data-label="extracto">
@@ -1577,7 +1634,7 @@ npm run cortex:mcp:self-test</code></pre>
         </section>
 
         <section class="chapter" id="rollback-es">
-          <div class="chapter-head"><span class="chapter-num">09</span><h2>Rollback</h2></div>
+          <div class="chapter-head"><span class="chapter-num">10</span><h2>Rollback</h2></div>
           <div class="chapter-body">
             <p>Usa el baseline registrado en Step Zero.</p>
             <div class="pre-wrap" data-label="shell">
@@ -1694,6 +1751,11 @@ git revert &lt;install-commit&gt;</code></pre>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
+python3 scripts/field_reports.py status --target /path/to/project
+python3 scripts/field_reports.py drain --target /path/to/project
+python3 scripts/field_reports.py disable --target /path/to/project
+python3 scripts/field_reports.py enable --target /path/to/project
+python3 scripts/field_reports.py --self-test
 python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
@@ -1719,6 +1781,9 @@ npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
 npm run mcp:install -- --target /path/to/project --adapter all --yes
 npm run mcp:self-test
+npm run field-reports:self-test
+npm run field-reports:status -- --target /path/to/project
+npm run field-reports:drain -- --target /path/to/project
 npm run claude:plugin:oracle
 npm run retention:check
 npm run reference:graph
@@ -1795,6 +1860,9 @@ python3 scripts/install_smoke.py --route mcp
 python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
 python3 scripts/cortex_mcp.py --self-test
 npm run mcp:self-test
+npm run field-reports:self-test
+npm run field-reports:status -- --target /path/to/project
+npm run field-reports:drain -- --target /path/to/project
 npm run cortex:mcp:self-test</code></pre>
             </div>
             <div class="table-wrap">
@@ -1821,12 +1889,29 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Ferramentas MCP com escrita ficam fora desta versão. A ativação escreve apenas <code>.tilly/bin/**</code> e configuração de runtime por projeto; não deve tocar configuração MCP global, segredos, hooks ou <code>sources/**</code>. O conjunto instalado inclui <code>cortex.py</code>, <code>cortex_mcp.py</code> e <code>cortex_embed.mjs</code>.</p>
+            <p>Ferramentas MCP com escrita ficam fora desta versão. A ativação escreve apenas <code>.tilly/bin/**</code> e configuração de runtime por projeto; não deve tocar configuração MCP global, segredos, hooks ou <code>sources/**</code>. O conjunto instalado inclui <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code> e <code>field_reports.py</code>.</p>
+          </div>
+        </section>
+
+        <section class="chapter" id="field-reports-pt">
+          <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
+          <div class="chapter-body">
+            <p>O Tilly Field Reports fica ativo por padrão. Ele envia apenas fatos operacionais sanitizados para issues do GitHub da TES durante <code>git push</code>. Ele nunca envia código, diff, prompt, conteúdo de arquivo, segredo, dado pessoal, path absoluto, stack trace cru, nome bruto de branch ou remote bruto.</p>
+            <p>O agente ativo instala um hook local <code>pre-push</code> e estado local em <code>.tilly/field-reports/**</code>. Se <code>gh</code>, rede ou autenticação estiverem indisponíveis, o outbox fica pendente e o push continua.</p>
+            <p>O usuário que não desejar colaborar com a evolução da TES deve digitar este prompt na janela do agente, não no shell:</p>
+            <div class="pre-wrap" data-label="prompt">
+<pre><code>/tilly:field-reports:disable</code></pre>
+            </div>
+            <p>Para reativar o comportamento padrão depois, digite:</p>
+            <div class="pre-wrap" data-label="prompt">
+<pre><code>/tilly:field-reports:enable</code></pre>
+            </div>
+            <p>Estes prompts são interpretados pela Tilly dentro da janela de contexto atual. Os comandos shell acima aparecem apenas para auditar o oráculo interno que o agente pode invocar.</p>
           </div>
         </section>
 
         <section class="chapter" id="obsidian-pt">
-          <div class="chapter-head"><span class="chapter-num">07</span><h2>Obsidian</h2></div>
+          <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
             <p>Use o Obsidian como bancada visual do Cortex, não como camada de autoridade. O instalador nunca cria nem edita <code>.obsidian/**</code>; o usuário configura o Obsidian localmente e o Cortex continua sendo Markdown comum.</p>
             <ol>
@@ -1855,7 +1940,7 @@ npm run cortex:mcp:self-test</code></pre>
         </section>
 
         <section class="chapter" id="report-pt">
-          <div class="chapter-head"><span class="chapter-num">08</span><h2>Relatório final</h2></div>
+          <div class="chapter-head"><span class="chapter-num">09</span><h2>Relatório final</h2></div>
           <div class="chapter-body">
             <p>Todo fluxo termina com <strong>Tilly Context Mesh Convergence Report</strong>. O relatório sempre deve expor este manual por link web ou path local.</p>
             <div class="pre-wrap" data-label="trecho">
@@ -1867,7 +1952,7 @@ npm run cortex:mcp:self-test</code></pre>
         </section>
 
         <section class="chapter" id="rollback-pt">
-          <div class="chapter-head"><span class="chapter-num">09</span><h2>Rollback</h2></div>
+          <div class="chapter-head"><span class="chapter-num">10</span><h2>Rollback</h2></div>
           <div class="chapter-body">
             <p>Use o baseline registrado no Step Zero.</p>
             <div class="pre-wrap" data-label="shell">
@@ -1879,7 +1964,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.15</span>
+        <span>Tilly Engineer Skills · v0.3.16</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>
@@ -1902,9 +1987,9 @@ git revert &lt;install-commit&gt;</code></pre>
       const html = document.documentElement;
 
       const i18n = {
-        en: { contents: "Contents", overview: "Overview", install: "Quick install", routes: "Routes", states: "Project states", cortex: "Cortex", cli: "CLI", mcp: "MCP", obsidian: "Obsidian", report: "Final report", rollback: "Rollback" },
-        es: { contents: "Índice", overview: "Vista general", install: "Instalación rápida", routes: "Rutas", states: "Estados", cortex: "Cortex", cli: "CLI", mcp: "MCP", obsidian: "Obsidian", report: "Informe final", rollback: "Rollback" },
-        pt: { contents: "Sumário", overview: "Visão geral", install: "Instalação rápida", routes: "Rotas", states: "Estados", cortex: "Cortex", cli: "CLI", mcp: "MCP", obsidian: "Obsidian", report: "Relatório final", rollback: "Rollback" },
+        en: { contents: "Contents", overview: "Overview", install: "Quick install", routes: "Routes", states: "Project states", cortex: "Cortex", cli: "CLI", mcp: "MCP", fieldReports: "Field Reports", obsidian: "Obsidian", report: "Final report", rollback: "Rollback" },
+        es: { contents: "Índice", overview: "Vista general", install: "Instalación rápida", routes: "Rutas", states: "Estados", cortex: "Cortex", cli: "CLI", mcp: "MCP", fieldReports: "Field Reports", obsidian: "Obsidian", report: "Informe final", rollback: "Rollback" },
+        pt: { contents: "Sumário", overview: "Visão geral", install: "Instalação rápida", routes: "Rotas", states: "Estados", cortex: "Cortex", cli: "CLI", mcp: "MCP", fieldReports: "Field Reports", obsidian: "Obsidian", report: "Relatório final", rollback: "Rollback" },
       };
 
       const sectionIdMap = (lang) => (key) =>

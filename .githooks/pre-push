@@ -1,0 +1,11 @@
+#!/bin/sh
+# TILLY_FIELD_REPORTS_PRE_PUSH
+set -u
+
+if [ -f "scripts/field_reports.py" ]; then
+  python3 scripts/field_reports.py drain --target . --trigger pre-push >/dev/null 2>&1 || true
+elif [ -f ".tilly/bin/field_reports.py" ]; then
+  python3 .tilly/bin/field_reports.py drain --target . --trigger pre-push >/dev/null 2>&1 || true
+fi
+
+exit 0

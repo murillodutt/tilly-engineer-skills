@@ -22,6 +22,7 @@ agent invokes when the runtime exposes local tools.
 | `/tilly:cortex` | inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `cortex.py`, read-only Cortex MCP | Cortex files only when authorized |
 | `/tilly:curate` | classify Cortex memory quality risks without writing memory | `cortex.py curate-plan`, read-only `cortex_curate_plan` | no memory writes; CLI may refresh `.tilly/cortex/semantic.sqlite` |
 | `/tilly:mcp` | activate or verify read-only Cortex MCP | `install_mcp.py`, `cortex_mcp.py`, MCP smoke | `.tilly/bin/**` and project-scoped MCP config |
+| `/tilly:field-reports` | inspect, drain, disable, or re-enable sanitized operational reports | `field_reports.py`, local `pre-push` hook | `.tilly/field-reports/**`, `.git/info/exclude`, `.git/hooks/pre-push` |
 | `/tilly:doctor` | health-check, certify, or prepare a commit | validation, TDS, doc-size, platform, materialization, commit gates | none unless evidence is explicitly requested |
 | `/tilly:adapter` | materialize, dry-run, retrofit, or install adapter surfaces | `materialize_adapter.py`, `install_adapter.py`, adapter oracles | adapter files only after review or approval |
 | `/tilly:bench` | plan, run, or converge context-mesh benchmarks | benchmark plan/run/converge scripts | benchmark evidence artifacts |
@@ -46,7 +47,7 @@ Aliases:
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
 | rules | always-on intent routers where skills are not native |
-| hooks | Git-event gates for validation and no-write Cortex reflection/curation |
+| hooks | Git-event gates for validation, no-write Cortex reflection/curation, and Field Reports drain |
 
 ## No-Go
 
@@ -55,6 +56,7 @@ Aliases:
 - Do not call SQLite, MCP, or generated output memory.
 - Do not call `.tilly/cortex/semantic.sqlite` memory; it is only derived
   curation cache.
+- Do not treat Field Reports, GitHub issues, outbox, or hooks as project truth.
 - Do not run write operations such as adapter install, MCP activation, Cortex
   apply, materialization, or benchmark artifact updates without a clear target
   and authorization.

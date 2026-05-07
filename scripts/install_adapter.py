@@ -14,11 +14,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import field_reports
 import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.15"
+VERSION = "0.3.16"
 RETROFIT_DIR = ".tilly/retrofit"
 
 
@@ -159,6 +160,19 @@ def require_confirmation(args: argparse.Namespace) -> bool:
     return True
 
 
+def capture_install_result(target: Path, adapter: str, status: str, dry_run: bool, failure_count: int) -> None:
+    if dry_run:
+        return
+    field_reports.safe_record_event(
+        target,
+        "install_adapter",
+        status,
+        "adapter",
+        "cli",
+        details={"adapter": adapter, "dry_run": dry_run, "failures": failure_count},
+    )
+
+
 def copy_files(
     copies: list[dict[str, str]],
     overwrite_conflicts: list[dict[str, str]],
@@ -254,13 +268,16 @@ def install(args: argparse.Namespace) -> int:
                 indent=2,
             ))
             if args.dry_run:
+                capture_install_result(target_root, args.adapter, "DRY-RUN-CONFLICT", args.dry_run, len(all_conflicts))
                 print("[install-adapter] PASS")
                 return 0
+            capture_install_result(target_root, args.adapter, "CONFLICT", args.dry_run, len(all_conflicts))
             print("[install-adapter] FAIL")
             print("- target has conflicting files; rerun with --overwrite or use --retrofit-plan")
             return 2
 
         if not require_confirmation(args):
+            capture_install_result(target_root, args.adapter, "CANCELLED", args.dry_run, 0)
             return 1
 
         actions: list[dict[str, str]] = []
@@ -286,6 +303,7 @@ def install(args: argparse.Namespace) -> int:
             "actions": actions,
         }
         print(json.dumps(result, indent=2))
+        capture_install_result(target_root, args.adapter, str(result["status"]), args.dry_run, 0)
         print("[install-adapter] PASS")
         return 0
 

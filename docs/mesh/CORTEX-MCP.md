@@ -87,6 +87,7 @@ The activation path installs local MCP helpers into the target project:
 .tilly/bin/cortex.py
 .tilly/bin/cortex_mcp.py
 .tilly/bin/cortex_embed.mjs
+.tilly/bin/field_reports.py
 ```
 
 It then writes only project-scoped config for the selected runtime:
@@ -111,6 +112,7 @@ cortex_cut:
     - .tilly/bin/cortex.py
     - .tilly/bin/cortex_mcp.py
     - .tilly/bin/cortex_embed.mjs
+    - .tilly/bin/field_reports.py
     - .codex/config.toml
     - .mcp.json
     - .cursor/mcp.json

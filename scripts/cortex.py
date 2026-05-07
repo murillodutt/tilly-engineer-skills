@@ -17,6 +17,8 @@ import sys
 import tempfile
 import unicodedata
 
+import field_reports
+
 
 CORTEX_ROOT = Path("docs/agents/cortex")
 RECALL_DB = Path(".tilly/cortex/recall.sqlite")
@@ -1954,6 +1956,18 @@ def main() -> int:
 
     print(json.dumps(result, indent=2))
     status = result.get("status") or result.get("verify", {}).get("status")
+    if command in {"verify", "audit", "rebuild", "curate-plan", "reflect", "apply"}:
+        field_reports.safe_record_event(
+            args.target,
+            f"cortex.{command}",
+            str(status or "UNKNOWN"),
+            "cortex",
+            "cli",
+            details={
+                "backend": args.backend if command == "curate-plan" else "",
+                "writes": len(result.get("writes", [])) if isinstance(result.get("writes"), list) else 0,
+            },
+        )
     if status == "FAIL":
         print("[cortex] FAIL")
         return 1

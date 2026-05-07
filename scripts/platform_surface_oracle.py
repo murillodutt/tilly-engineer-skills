@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.15"
+VERSION = "0.3.16"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -148,7 +148,7 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing Codex agent bootloader: {codex_agent}")
     else:
         text = read(codex_agent)
-        for term in ("Think Before Coding", "Simplicity First", "cortex_reflex", "/tilly:cortex"):
+        for term in ("Think Before Coding", "Simplicity First", "cortex_reflex", "/tilly:cortex", "/tilly:field-reports"):
             if term not in text:
                 failures.append(f"{codex_agent} missing {term}")
     for skill in CODEX_SKILLS:
@@ -160,8 +160,8 @@ def analyze() -> dict[str, Any]:
         failures.append("missing Codex skill agent metadata")
     surface("codex", "agent", "certified", codex_agent)
     surface("codex", "skill", "certified", "; ".join(f"src/adapters/codex/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS))
-    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.15 ships a local skill first.")
-    surface("codex", "hook", "git-governed", ".githooks/pre-commit")
+    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.16 ships local skills first.")
+    surface("codex", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
 
@@ -171,7 +171,7 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing Claude bootloader: {claude_agent}")
     else:
         text = read(claude_agent)
-        for term in ("Think Before Coding", "Simplicity First", "Cortex Reflection", "/tilly:cortex"):
+        for term in ("Think Before Coding", "Simplicity First", "Cortex Reflection", "/tilly:cortex", "/tilly:field-reports"):
             if term not in text:
                 failures.append(f"{claude_agent} missing {term}")
     for skill in CLAUDE_SKILLS:
@@ -201,14 +201,15 @@ def analyze() -> dict[str, Any]:
             failures.append(f"{cursor_rule} must keep alwaysApply: true")
         if "description:" not in text:
             failures.append(f"{cursor_rule} missing description")
-        if "/tilly:cortex" not in text:
-            failures.append(f"{cursor_rule} missing /tilly:cortex shortcut routing")
+        for term in ("/tilly:cortex", "/tilly:field-reports"):
+            if term not in text:
+                failures.append(f"{cursor_rule} missing {term} shortcut routing")
     if not exists("src/adapters/cursor/CURSOR.md"):
         failures.append("missing Cursor bootloader: src/adapters/cursor/CURSOR.md")
     surface("cursor", "agent", "certified", "src/adapters/cursor/CURSOR.md")
     surface("cursor", "skill", "not-native", "Cursor rules are the portable instruction surface.")
     surface("cursor", "plugin", "not-native", "No Cursor plugin packaging is claimed.")
-    surface("cursor", "hook", "git-governed", ".githooks/pre-commit")
+    surface("cursor", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("cursor", "rules", "certified", cursor_rule)
     surface("cursor", "mcp", "certified", "scripts/install_mcp.py writes .cursor/mcp.json")
 
@@ -221,10 +222,23 @@ def analyze() -> dict[str, Any]:
             if term not in text:
                 failures.append(f"{hook} missing {term}")
 
+    pre_push = ".githooks/pre-push"
+    if not exists(pre_push):
+        failures.append("missing repository pre-push hook")
+    else:
+        text = read(pre_push)
+        for term in ("field_reports.py drain", "TILLY_FIELD_REPORTS_PRE_PUSH"):
+            if term not in text:
+                failures.append(f"{pre_push} missing {term}")
+
     install_text = read("scripts/install_mcp.py")
-    for term in ("[mcp_servers.tilly-cortex]", ".mcp.json", ".cursor/mcp.json"):
+    for term in ("[mcp_servers.tilly-cortex]", ".mcp.json", ".cursor/mcp.json", "field_reports.py"):
         if term not in install_text:
             failures.append(f"scripts/install_mcp.py missing {term}")
+    field_reports_text = read("scripts/field_reports.py")
+    for term in ("DESTINATION_REPO", "murillodutt/tilly-engineer-skills", "DISABLED", "gh issue create"):
+        if term not in field_reports_text:
+            failures.append(f"scripts/field_reports.py missing {term}")
 
     materialized, materialize_failures = materialized_results()
     failures.extend(materialize_failures)

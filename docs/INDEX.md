@@ -29,6 +29,7 @@ turning the repository root into an inventory.
 | Context mesh method | `mesh/CONTEXT-MESH-METHOD.md` |
 | Tilly Cortex | `mesh/CORTEX.md` |
 | Tilly Cortex MCP | `mesh/CORTEX-MCP.md` |
+| Tilly Field Reports | `mesh/FIELD-REPORTS.md` |
 | Adoption and convergence scorecard | `mesh/SCORECARD.md` |
 | Eval and ablation design | `evals/EVALS.md` |
 | Detailed examples | `evals/EXAMPLES.md` |

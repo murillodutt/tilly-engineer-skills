@@ -70,8 +70,9 @@ preserve local governance, initialize or update `docs/agents/**` and Cortex,
 activate read-only MCP when selected, run available oracles, and finish with a
 certification report. It is not a blind shell command.
 
-Also treat `/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`, `/tilly:doctor`, `/tilly:adapter`,
-and `/tilly:bench` as intent shortcuts. Choose the smallest safe oracle behind
+Also treat `/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`,
+`/tilly:field-reports`, `/tilly:doctor`, `/tilly:adapter`, and `/tilly:bench`
+as intent shortcuts. Choose the smallest safe oracle behind
 the scenes and report skipped or blocked commands honestly.
 
 ## Cortex Reflection
@@ -91,3 +92,10 @@ If `curation_due=true`, run read-only `cortex_curate_plan` when available, or:
 ```bash
 python3 .tilly/bin/cortex.py curate-plan --target . --backend lexical
 ```
+
+## Field Reports
+
+Tilly Field Reports is active by default. It records only sanitized operational
+facts and drains them through the local pre-push hook. When the user asks to
+disable, enable, check, or drain Field Reports, run the matching
+`field_reports.py` oracle and never expand collection levels or schema.

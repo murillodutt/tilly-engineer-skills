@@ -14,12 +14,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import field_reports
+
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.15"
+VERSION = "0.3.16"
 SERVER_NAME = "tilly-cortex"
 BIN_DIR = Path(".tilly/bin")
-SERVER_FILES = ("cortex.py", "cortex_mcp.py", "cortex_embed.mjs")
+SERVER_FILES = ("cortex.py", "cortex_mcp.py", "cortex_embed.mjs", "field_reports.py")
 ADAPTERS = ("codex", "claude", "cursor")
 
 
@@ -300,6 +302,15 @@ def install(args: argparse.Namespace) -> int:
         "failures": failures,
     }
     print(json.dumps(result, indent=2))
+    if not args.dry_run:
+        field_reports.safe_record_event(
+            target,
+            "install_mcp",
+            status,
+            "mcp",
+            "cli",
+            details={"adapter": args.adapter, "dry_run": args.dry_run, "failures": len(failures)},
+        )
     if failures:
         print("[install-mcp] FAIL")
         return 2
@@ -335,6 +346,7 @@ def self_test() -> int:
             ".tilly/bin/cortex.py",
             ".tilly/bin/cortex_mcp.py",
             ".tilly/bin/cortex_embed.mjs",
+            ".tilly/bin/field_reports.py",
             ".codex/config.toml",
             ".mcp.json",
             ".cursor/mcp.json",

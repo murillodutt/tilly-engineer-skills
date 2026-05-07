@@ -20,6 +20,7 @@ Run the smallest gate that proves the claim:
 | TDS is aligned | `npm run tds:validate` |
 | Cortex core works | `npm run cortex:self-test` |
 | MCP helper works | `npm run mcp:self-test` and `npm run cortex:mcp:self-test` |
+| Field Reports works | `npm run field-reports:self-test` |
 | adapters materialize | `npm run materialize:check` |
 | platform surfaces align | `npm run platform:surface:check` |
 | final local closure | `npm run commit:check` |
