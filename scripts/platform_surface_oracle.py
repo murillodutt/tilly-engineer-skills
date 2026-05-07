@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.12"
+VERSION = "0.3.13"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -160,7 +160,7 @@ def analyze() -> dict[str, Any]:
         failures.append("missing Codex skill agent metadata")
     surface("codex", "agent", "certified", codex_agent)
     surface("codex", "skill", "certified", "; ".join(f"src/adapters/codex/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS))
-    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.12 ships a local skill first.")
+    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.13 ships a local skill first.")
     surface("codex", "hook", "git-governed", ".githooks/pre-commit")
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")

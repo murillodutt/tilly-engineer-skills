@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.12</span>
+          <span class="brand-meta">User manual · v0.3.13</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1104,7 +1104,7 @@
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>These commands are agent-callable oracles, not the normal user interface. In normal use, the active IDE agent invokes them from the current context window; humans run them directly only for package maintenance, debugging or certification review. Use the Tilly package root for package checks, or pass <code>--target</code> when operating on another project or vault. <code>tilly_init.py</code> recertifies package health, scans the target project, writes <code>docs/agents/PROJECT-REGISTER.md</code> and stores a full manifest under <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefer intent shortcuts: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> and <code>/tilly:bench</code>. The agent translates them into the smallest safe oracle. The full matrix lives in <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
+            <p>Prefer intent shortcuts: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> and <code>/tilly:bench</code>. The agent translates them into the smallest safe oracle. The complete command inventory is below because this manual is the user entrypoint; the routing matrix lives in <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
@@ -1130,6 +1130,7 @@ npm run tilly:init:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
+npm run mcp:install -- --target /path/to/project --adapter all --yes
 npm run mcp:self-test
 npm run claude:plugin:oracle
 npm run retention:check
@@ -1165,12 +1166,31 @@ npm run commit:check</code></pre>
             <div class="pre-wrap" data-label="adapter">
 <pre><code>python3 scripts/install_adapter.py --dry-run --target /path/to/project --adapter all
 python3 scripts/install_adapter.py --target /path/to/project --adapter codex --yes
+python3 scripts/install_adapter.py --target /path/to/project --adapter all --yes
 python3 scripts/install_smoke.py --self-test
 python3 scripts/claude_plugin_oracle.py --self-test
 python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
+python3 scripts/install_mcp.py --self-test
+python3 scripts/install_smoke.py --route mcp
+python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
+python3 scripts/cortex_mcp.py --self-test
 python3 scripts/materialize_adapter.py all --check
 python3 scripts/materialize_adapter.py all</code></pre>
+            </div>
+            <div class="pre-wrap" data-label="gates">
+<pre><code>python3 scripts/validate_reference_package.py
+python3 scripts/validate_reference_package.py --staged-ready
+python3 scripts/validate_tds.py
+python3 scripts/validate_doc_size.py
+python3 scripts/retention_metadata.py --check
+python3 scripts/validate_reference_graph.py
+python3 scripts/platform_surface_oracle.py --self-test
+python3 scripts/adapter_parity_readiness.py
+python3 scripts/context_mesh_plan.py
+python3 scripts/context_mesh_run.py --backend fixture
+python3 scripts/context_mesh_convergence.py
+python3 src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test</code></pre>
             </div>
           </div>
         </section>
@@ -1364,7 +1384,7 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>Estos comandos son oráculos invocables por el agente, no la interfaz normal del usuario. En el uso normal, el agente activo del IDE los ejecuta desde la ventana de contexto; humanos los ejecutan directamente solo para mantenimiento del paquete, debugging o revisión de certificación. Usa la raíz del paquete Tilly para checks del paquete, o <code>--target</code> para operar sobre otro proyecto o vault. <code>tilly_init.py</code> recertifica la salud del paquete, escanea el proyecto objetivo, escribe <code>docs/agents/PROJECT-REGISTER.md</code> y guarda manifiestos con timestamp en <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefiere atajos de intención: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> y <code>/tilly:bench</code>. El agente los traduce al oráculo seguro más pequeño. La matriz completa vive en <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
+            <p>Prefiere atajos de intención: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> y <code>/tilly:bench</code>. El agente los traduce al oráculo seguro más pequeño. El inventario completo de comandos está abajo porque este manual es la entrada del usuario; la matriz de ruteo vive en <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
@@ -1390,6 +1410,7 @@ npm run tilly:init:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
+npm run mcp:install -- --target /path/to/project --adapter all --yes
 npm run mcp:self-test
 npm run claude:plugin:oracle
 npm run retention:check
@@ -1425,12 +1446,31 @@ npm run commit:check</code></pre>
             <div class="pre-wrap" data-label="adapter">
 <pre><code>python3 scripts/install_adapter.py --dry-run --target /path/to/project --adapter all
 python3 scripts/install_adapter.py --target /path/to/project --adapter codex --yes
+python3 scripts/install_adapter.py --target /path/to/project --adapter all --yes
 python3 scripts/install_smoke.py --self-test
 python3 scripts/claude_plugin_oracle.py --self-test
 python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
+python3 scripts/install_mcp.py --self-test
+python3 scripts/install_smoke.py --route mcp
+python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
+python3 scripts/cortex_mcp.py --self-test
 python3 scripts/materialize_adapter.py all --check
 python3 scripts/materialize_adapter.py all</code></pre>
+            </div>
+            <div class="pre-wrap" data-label="gates">
+<pre><code>python3 scripts/validate_reference_package.py
+python3 scripts/validate_reference_package.py --staged-ready
+python3 scripts/validate_tds.py
+python3 scripts/validate_doc_size.py
+python3 scripts/retention_metadata.py --check
+python3 scripts/validate_reference_graph.py
+python3 scripts/platform_surface_oracle.py --self-test
+python3 scripts/adapter_parity_readiness.py
+python3 scripts/context_mesh_plan.py
+python3 scripts/context_mesh_run.py --backend fixture
+python3 scripts/context_mesh_convergence.py
+python3 src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test</code></pre>
             </div>
           </div>
         </section>
@@ -1624,7 +1664,7 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
             <p>Estes comandos são oráculos chamáveis pelo agente, não a interface normal do usuário. No uso normal, o agente ativo do IDE os invoca a partir da janela de contexto; humanos os rodam diretamente só para manutenção do pacote, debug ou revisão de certificação. Use a raiz do pacote Tilly para checks do pacote, ou <code>--target</code> para operar em outro projeto ou vault. <code>tilly_init.py</code> recertifica a saúde do pacote, varre o projeto alvo, escreve <code>docs/agents/PROJECT-REGISTER.md</code> e guarda manifestos com timestamp em <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefira atalhos de intenção: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> e <code>/tilly:bench</code>. O agente traduz isso para o menor oráculo seguro. A matriz completa vive em <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
+            <p>Prefira atalhos de intenção: <code>/tilly:init</code>, <code>/tilly:cortex</code>, <code>/tilly:mcp</code>, <code>/tilly:doctor</code>, <code>/tilly:adapter</code> e <code>/tilly:bench</code>. O agente traduz isso para o menor oráculo seguro. O inventário completo de comandos está abaixo porque este manual é a porta de entrada do usuário; a matriz de roteamento vive em <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
@@ -1650,6 +1690,7 @@ npm run tilly:init:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
+npm run mcp:install -- --target /path/to/project --adapter all --yes
 npm run mcp:self-test
 npm run claude:plugin:oracle
 npm run retention:check
@@ -1685,12 +1726,31 @@ npm run commit:check</code></pre>
             <div class="pre-wrap" data-label="adapter">
 <pre><code>python3 scripts/install_adapter.py --dry-run --target /path/to/project --adapter all
 python3 scripts/install_adapter.py --target /path/to/project --adapter codex --yes
+python3 scripts/install_adapter.py --target /path/to/project --adapter all --yes
 python3 scripts/install_smoke.py --self-test
 python3 scripts/claude_plugin_oracle.py --self-test
 python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
+python3 scripts/install_mcp.py --self-test
+python3 scripts/install_smoke.py --route mcp
+python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
+python3 scripts/cortex_mcp.py --self-test
 python3 scripts/materialize_adapter.py all --check
 python3 scripts/materialize_adapter.py all</code></pre>
+            </div>
+            <div class="pre-wrap" data-label="gates">
+<pre><code>python3 scripts/validate_reference_package.py
+python3 scripts/validate_reference_package.py --staged-ready
+python3 scripts/validate_tds.py
+python3 scripts/validate_doc_size.py
+python3 scripts/retention_metadata.py --check
+python3 scripts/validate_reference_graph.py
+python3 scripts/platform_surface_oracle.py --self-test
+python3 scripts/adapter_parity_readiness.py
+python3 scripts/context_mesh_plan.py
+python3 scripts/context_mesh_run.py --backend fixture
+python3 scripts/context_mesh_convergence.py
+python3 src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test</code></pre>
             </div>
           </div>
         </section>
@@ -1789,7 +1849,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.12</span>
+        <span>Tilly Engineer Skills · v0.3.13</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>

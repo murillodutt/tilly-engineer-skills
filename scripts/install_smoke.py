@@ -13,7 +13,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.12"
+VERSION = "0.3.13"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 
 
