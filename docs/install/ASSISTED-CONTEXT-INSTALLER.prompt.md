@@ -663,7 +663,7 @@ After adapter/Cortex/MCP writes are complete and the user authorized local initi
 python3 scripts/tes_init.py --target <target-root> --yes
 ```
 
-This writes `docs/agents/PROJECT-REGISTER.md` and timestamped evidence such as `docs/agents/evidence/YYYYMMDDTHHMMSSZ-tes-project-manifest.json`. It must not bulk-absorb project files into Cortex or write to `sources/**`. It also installs the local Field Reports `pre-push` drain and local Git hygiene excludes when the target is a Git repository, and must report `BLOCKED` instead of pretending activation.
+This writes `docs/agents/PROJECT-REGISTER.md` and timestamped evidence such as `docs/agents/evidence/YYYYMMDDTHHMMSSZ-tes-project-manifest.json`. The initializer writes a provisional register before later gates, so a slow or blocked oracle must leave auditable `NEEDS_REVIEW` evidence instead of leaving the project unregistered. It must not bulk-absorb project files into Cortex or write to `sources/**`. It also installs the local Field Reports `pre-push` drain and local Git hygiene excludes when the target is a Git repository, and must report `BLOCKED` instead of pretending activation.
 
 If Codex skill is present:
 
