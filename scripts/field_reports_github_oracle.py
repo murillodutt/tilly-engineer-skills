@@ -14,7 +14,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.24"
+VERSION = "0.3.25"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tilly-field-report@1"
 MAX_BODY_CHARS = 48000

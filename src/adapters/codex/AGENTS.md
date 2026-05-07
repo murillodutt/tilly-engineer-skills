@@ -74,12 +74,14 @@ requires exact syntax.
 
 <tilly_init>
 
-Treat `/tilly:init`, `tilly init`, and natural command/prompts such as
-`Tilly, initialize this project` or `Tilly, inicialize este projeto` as the
-same init intent. Also treat `/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`,
-`/tilly:field-reports`, `/tilly:doctor`, `/tilly:adapter`, and `/tilly:bench`
-as intent shortcuts. Load the matching skill and let the agent choose the
-smallest safe oracle. These are not shell commands.
+Treat `/tilly:init`, `/tilly:update`, `tilly init`, and natural command/prompts
+such as `Tilly, initialize this project`, `Tilly, inicialize este projeto`, or
+`Atualizar a Tilly` as installer intents. `/tilly:update` first checks installed
+version, cloud version, applied IDE surfaces, and recommended route. Also treat
+`/tilly:cortex`, `/tilly:curate`, `/tilly:mcp`, `/tilly:field-reports`,
+`/tilly:doctor`, `/tilly:adapter`, and `/tilly:bench` as intent shortcuts. Load
+the matching skill and let the agent choose the smallest safe oracle. These are
+not shell commands.
 
 </tilly_init>
 

@@ -39,7 +39,9 @@ https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/in
 
 Start by detecting the current IDE/runtime and classifying this project as new,
 existing, or meshed. If Tilly is already meshed, treat this as an assisted
-update/convergence run, not a reinstall. Run in quiet installer mode: show
+update/convergence run, not a reinstall. `/tilly:update` means "Atualizar a
+Tilly" and should run the update probe before route selection. Run in quiet
+installer mode: show
 compact progress, blockers and the final certification report only. When
 navigation is required, load the runtime navigation library from the spec, use
 native structured cards only when the current runtime safely supports them,
@@ -115,7 +117,7 @@ certification.
 Cortex MCP is activated by default for selected runtime routes. It remains
 read-only and project-scoped. The installer may write `.tilly/bin/cortex.py`,
 `.tilly/bin/cortex_mcp.py`, `.tilly/bin/cortex_embed.mjs`,
-`.tilly/bin/field_reports.py`,
+`.tilly/bin/field_reports.py`, `.tilly/bin/tilly_update.py`,
 `.codex/config.toml`, `.mcp.json`, and
 `.cursor/mcp.json`; MCP activation must not edit global MCP configuration,
 secrets, hooks, or write-capable MCP tools.
@@ -170,9 +172,10 @@ Existing context is project-owned by default. Conflicts mean retrofit, not
 overwrite.
 
 For a meshed project, the installer treats the run as update/convergence. It
-inspects the existing `docs/agents/**` mesh, detects contract and TVer/version
-drift, applies only surgical updates needed by the selected route, preserves
-local governance, and certifies the resulting state.
+inspects the existing `docs/agents/**` mesh, compares the installed Tilly
+version with the cloud package version, detects applied IDE surfaces, recommends
+`all`, `codex`, `claude`, `cursor`, or `current`, applies only surgical updates,
+preserves local governance, and certifies the resulting state.
 
 ## Certification Output
 
@@ -350,6 +353,8 @@ npm run mcp:self-test
 npm run install:smoke
 npm run tilly:init -- --target /path/to/project --yes
 npm run tilly:init:self-test
+npm run tilly:update -- --target /path/to/project
+npm run tilly:update:self-test
 npm run claude:plugin:oracle
 npm run platform:surface:check
 npm run retention:check

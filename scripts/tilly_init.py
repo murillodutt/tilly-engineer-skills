@@ -20,7 +20,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.24"
+VERSION = "0.3.25"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
 
@@ -178,6 +178,7 @@ def surface_inventory(target: Path) -> dict[str, Any]:
         "tilly_mcp_server": ".tilly/bin/cortex_mcp.py",
         "tilly_mcp_embed_helper": ".tilly/bin/cortex_embed.mjs",
         "tilly_field_reports_helper": ".tilly/bin/field_reports.py",
+        "tilly_update_helper": ".tilly/bin/tilly_update.py",
         "tilly_field_reports_outbox": ".tilly/field-reports/outbox.jsonl",
         "tilly_field_reports_disabled": ".tilly/field-reports/DISABLED",
         "tilly_field_reports_pre_push": ".git/hooks/pre-push",

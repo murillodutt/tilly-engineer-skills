@@ -1,14 +1,14 @@
 ---
 name: tilly-init
-description: Use when the user says /tilly:init, tilly init, a natural init command/prompt, or asks to initialize, install, retrofit, update, audit, or recertify Tilly Engineer Skills in the current project. Runs the assisted context installer contract through the active agent.
+description: Use when the user says /tilly:init, /tilly:update, tilly init, Atualizar a Tilly, a natural init command/prompt, a natural update command/prompt, or asks to initialize, install, retrofit, update, audit, or recertify Tilly Engineer Skills in the current project. Runs the assisted context installer contract through the active agent.
 ---
 
 # Tilly Init
 
-`/tilly:init`, `tilly init`, and direct command/prompts such as `Tilly,
-initialize this project` or `Tilly, inicialize este projeto` are user-facing
-init intents. They are not blind shell commands and not background daemons. The
-active agent remains the executor.
+`/tilly:init`, `/tilly:update`, `tilly init`, and direct command/prompts such as
+`Tilly, initialize this project`, `Tilly, inicialize este projeto`, or
+`Atualizar a Tilly` are user-facing installer intents. They are not blind shell
+commands and not background daemons. The active agent remains the executor.
 
 ## Mission
 
@@ -31,18 +31,20 @@ the user for package contents.
    `meshed`.
 3. Run Step Zero before edits: inspect Git status and offer a local baseline
    commit when the tree is dirty.
-4. Use the detected runtime as the default route. Ask for route only when the
+4. For `/tilly:update`, run `tilly_update.py plan` when available to compare
+   installed/cloud versions, detect applied IDE surfaces, and recommend route.
+5. Use the detected runtime as the default route. Ask for route only when the
    installer contract requires it.
-5. Preserve local governance, build or update `docs/agents/**`, initialize
+6. Preserve local governance, build or update `docs/agents/**`, initialize
    `docs/agents/cortex/**`, keep runtime bootloaders thin, and activate the
    read-only Cortex MCP route when selected.
-6. Invoke available package oracles such as `tilly_init.py`,
+7. Invoke available package oracles such as `tilly_init.py`, `tilly_update.py`,
    `install_smoke.py`, `install_mcp.py`, and Cortex checks. If local tool
    execution is unavailable, mark the oracle as `BLOCKED` or `SKIP`; do not
    claim it passed.
-7. Install or report the Field Reports `pre-push` drain. It is active by
+8. Install or report the Field Reports `pre-push` drain. It is active by
    default and controlled by the user manual prompts.
-8. Finish with a short certification report, source snapshot freshness, changed
+9. Finish with a short certification report, source snapshot freshness, changed
    surfaces, evidence path, limits, and Git rollback instructions.
 
 ## Locks

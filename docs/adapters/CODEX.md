@@ -5,7 +5,7 @@ status: active
 consumer: codex adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.1
+tver: 0.5.0
 ---
 
 # Codex Derivation
@@ -13,7 +13,7 @@ tver: 0.4.1
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.24`.
+Project version: `0.3.25`.
 
 It follows the Codex customization order:
 
@@ -49,13 +49,15 @@ Codex uses progressive disclosure for skills:
 - `SKILL.md` loads only when the workflow is selected.
 - References and scripts load or run only when needed.
 
-The `/tilly:*` shortcuts map to Codex skills. `/tilly:init`, `tilly init`, and
-natural init command/prompts all route to `tilly-init`. They keep the user
-entrypoint short while delegating real work to deterministic oracles:
+The `/tilly:*` shortcuts map to Codex skills. `/tilly:init`, `/tilly:update`,
+`tilly init`, and natural init/update command-prompts all route to
+`tilly-init`. They keep the user entrypoint short while delegating real work to
+deterministic oracles:
 
 | Shortcut | Skill |
 |----------|-------|
 | `/tilly:init` | `tilly-init` |
+| `/tilly:update` | `tilly-init` |
 | `/tilly:cortex` | `tilly-cortex` |
 | `/tilly:mcp` | `tilly-mcp` |
 | `/tilly:doctor` | `tilly-doctor` |

@@ -7,7 +7,7 @@ Tilly Engineer Skills helps coding agents work with less ambiguity, less
 overbuilding, fewer drive-by edits, stronger memory, and clearer proof before
 they claim a task is done.
 
-Version: `0.3.24`
+Version: `0.3.25`
 
 License: MIT
 
@@ -34,11 +34,16 @@ Tilly, initialize this project.
 Tilly, inicialize este projeto.
 Install Tilly here.
 Update and recertify Tilly.
+/tilly:update
+Atualizar a Tilly.
 ```
 
 These are not shell commands. The active agent is the executor. It reads the
 assisted installer contract, protects the Git state, meshes the project, runs
 available local oracles, and returns a compact certification report.
+For already meshed projects, `/tilly:update` checks the installed version
+against the cloud package version, detects applied IDE surfaces, and recommends
+the smallest safe route.
 
 If the command/prompt router is not available yet, paste this fallback prompt
 into the agent window:
@@ -98,6 +103,7 @@ governance without explicit user approval.
 The standard intent surface is intentionally small:
 
 - `/tilly:init` or an init command/prompt: mesh, update, audit, or recertify.
+- `/tilly:update` or `Atualizar a Tilly`: detect version drift and update route.
 - `/tilly:cortex`: query, inspect, audit, rebuild, learn, reflect, or apply
   Cortex memory.
 - `/tilly:curate`: run no-write Cortex semantic curation.
