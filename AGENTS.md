@@ -15,7 +15,10 @@ Apply Tilly Engineering Discipline to material changes in this repository:
 2. Simplicity First
    - Keep root thin and avoid duplicate source copies.
 3. Surgical Changes
-   - Treat `src/**` as source, `docs/**` as explanation, and scripts as gates.
+   - Treat `src/**` as adapter source and `docs/**` as governed explanation.
+   - Classify `scripts/**` by consumer: validators are maintainer gates;
+     installer, Cortex, MCP, Field Reports, and adapter scripts may be
+     delivered behavior when adopters receive, invoke, or certify them.
 4. Goal-Driven Execution
    - Run the smallest relevant oracle before closure.
 
@@ -65,6 +68,7 @@ gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 | Cursor rule source | `src/adapters/cursor/rules/tilly-guidelines.mdc` |
 | Package validation | `python3 scripts/validate_reference_package.py` |
 | TDS validation | `python3 scripts/validate_tds.py` |
+| Closure gate | `npm run commit:check` |
 
 </routing>
 
@@ -75,6 +79,7 @@ It is not an installed target-project rule.
 
 Before closing a material package change, use
 `docs/governance/MAINTAINER-CORRELATION-RULE.md` to check correlated files.
+Classify `scripts/**` by consumer before deciding which surfaces must move.
 Keep maintainer-only rules in `AGENTS.md` or `docs/governance/**`; do not copy
 them into `src/adapters/**`, target bootloaders, user manuals, or
 `docs/agents/**` unless the delivered Tilly behavior intentionally changed.

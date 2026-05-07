@@ -18,7 +18,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.21"
+VERSION = "0.3.22"
 SERVER_NAME = "tilly-cortex"
 BIN_DIR = Path(".tilly/bin")
 SERVER_FILES = ("cortex.py", "cortex_mcp.py", "cortex_embed.mjs", "field_reports.py")
