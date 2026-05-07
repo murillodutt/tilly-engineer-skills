@@ -211,6 +211,20 @@ AGENTS_BOOTLOADER_FORBIDDEN_TERMS = (
     "Treat `src/**` as source, `docs/**` as explanation, and scripts as gates.",
 )
 
+PROJECT_STRUCTURE_REQUIRED_TERMS = (
+    "| `AGENTS.md` | Thin repository bootloader for agents working here |",
+    "| `scripts/**` | Deterministic oracles and package helpers |",
+    "`scripts/**` is classified by consumer, not by directory.",
+    "Validator-only",
+    "scripts are maintainer gates.",
+    "Installer, Cortex, MCP, Field Reports, and adapter",
+    "delivered behavior",
+)
+
+PROJECT_STRUCTURE_FORBIDDEN_TERMS = (
+    "| `scripts/**` | Deterministic package checks |",
+)
+
 
 def package_paths() -> list[Path]:
     result = subprocess.run(
@@ -299,6 +313,22 @@ def agents_bootloader_failures() -> list[str]:
     return failures
 
 
+def project_structure_failures() -> list[str]:
+    path = ROOT / "docs/architecture/PROJECT-STRUCTURE.md"
+    if not path.exists():
+        return ["missing project structure document"]
+
+    text = path.read_text(encoding="utf-8")
+    failures: list[str] = []
+    for term in PROJECT_STRUCTURE_REQUIRED_TERMS:
+        if term not in text:
+            failures.append(f"project structure missing alignment term: {term}")
+    for term in PROJECT_STRUCTURE_FORBIDDEN_TERMS:
+        if term in text:
+            failures.append(f"project structure contains ambiguous term: {term}")
+    return failures
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--staged-ready", action="store_true")
@@ -327,6 +357,7 @@ def main() -> int:
 
     failures.extend(maintainer_correlation_failures())
     failures.extend(agents_bootloader_failures())
+    failures.extend(project_structure_failures())
 
     for relpath in SYNCED_FILES:
         path = ROOT / relpath
@@ -340,8 +371,8 @@ def main() -> int:
     package_json = ROOT / "package.json"
     if package_json.exists():
         package = json.loads(package_json.read_text(encoding="utf-8"))
-        if package.get("version") != "0.3.22":
-            failures.append("package.json version must be 0.3.22")
+        if package.get("version") != "0.3.23":
+            failures.append("package.json version must be 0.3.23")
         scripts = package.get("scripts", {})
         for script in REQUIRED_PACKAGE_SCRIPTS:
             if script not in scripts:
@@ -349,8 +380,8 @@ def main() -> int:
 
     for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
         path = ROOT / relpath
-        if path.exists() and "0.3.22" not in path.read_text(encoding="utf-8"):
-            failures.append(f"{relpath} must declare 0.3.22")
+        if path.exists() and "0.3.23" not in path.read_text(encoding="utf-8"):
+            failures.append(f"{relpath} must declare 0.3.23")
 
     oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():
