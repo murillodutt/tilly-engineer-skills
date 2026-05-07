@@ -18,9 +18,11 @@ except Exception:  # noqa: BLE001 - installed copies may audit without package c
     field_reports = None  # type: ignore[assignment]
 
 
-VERSION = "0.3.32"
+VERSION = "0.3.33"
 LEGACY_FIELD_ROOT = Path(".tilly/field-reports")
 FIELD_ROOT = Path(".tes/field-reports")
+LEGACY_RETROFIT_ROOT = Path(".tilly/retrofit")
+RETROFIT_ARCHIVE_ROOT = Path(".tes/legacy-retirement/retrofit")
 BACKUP_ROOT = Path(".tes/legacy-retirement")
 LEGACY_MCP_SERVER = "tilly-cortex"
 KNOWN_TEMPLATE_MARKERS = ("tilly-field-report@1", "Tilly Field Report", "tilly-version")
@@ -87,10 +89,10 @@ def known_removals(target: Path) -> list[dict[str, Any]]:
             add_action(actions, "remove", cache, target, "legacy derived Cortex cache")
 
     for path in sorted(target.rglob("__pycache__")):
-        if not should_skip(path, target):
+        if not should_skip(path, target) and not covered_by_known(path, target, actions):
             add_action(actions, "remove", path, target, "python bytecode cache")
     for path in sorted(target.rglob("*.pyc")):
-        if not should_skip(path, target):
+        if not should_skip(path, target) and not covered_by_known(path, target, actions):
             add_action(actions, "remove", path, target, "python bytecode cache")
 
     template = target / ".github/ISSUE_TEMPLATE/tilly-field-report.yml"
@@ -137,7 +139,26 @@ def migration_actions(target: Path) -> list[dict[str, Any]]:
     actions: list[dict[str, Any]] = []
     legacy = target / LEGACY_FIELD_ROOT
     if legacy.exists():
-        add_action(actions, "migrate", legacy, target, "preserve legacy Field Reports state", target_path=FIELD_ROOT.as_posix())
+        add_action(
+            actions,
+            "migrate",
+            legacy,
+            target,
+            "preserve legacy Field Reports state",
+            target_path=FIELD_ROOT.as_posix(),
+            mode="field-reports",
+        )
+    retrofit = target / LEGACY_RETROFIT_ROOT
+    if retrofit.exists():
+        add_action(
+            actions,
+            "migrate",
+            retrofit,
+            target,
+            "archive legacy retrofit records",
+            target_path=RETROFIT_ARCHIVE_ROOT.as_posix(),
+            mode="retrofit-records",
+        )
     return actions
 
 
@@ -338,6 +359,29 @@ def migrate_field_reports(target: Path) -> None:
     remove_empty_parents(legacy, target)
 
 
+def migrate_directory_contents(source: Path, destination: Path) -> None:
+    if not source.exists():
+        return
+    destination.mkdir(parents=True, exist_ok=True)
+    for item in sorted(source.rglob("*")):
+        if item.is_dir():
+            continue
+        relative = item.relative_to(source)
+        target_item = destination / relative
+        target_item.parent.mkdir(parents=True, exist_ok=True)
+        if target_item.exists():
+            target_item = target_item.with_name(f"legacy-{utc_stamp()}-{target_item.name}")
+        item.replace(target_item)
+    shutil.rmtree(source, ignore_errors=True)
+
+
+def migrate_retrofit_records(target: Path) -> None:
+    legacy = target / LEGACY_RETROFIT_ROOT
+    destination = target / RETROFIT_ARCHIVE_ROOT
+    migrate_directory_contents(legacy, destination)
+    remove_empty_parents(legacy, target)
+
+
 def ensure_local_excludes(target: Path) -> str | None:
     if field_reports is None:
         return None
@@ -377,7 +421,19 @@ def apply_plan(target: Path, *, yes: bool) -> dict[str, Any]:
             edit_config(path, str(action["mode"]))
             writes.append(action["path"])
         elif action["action"] == "migrate":
-            migrate_field_reports(target)
+            if action.get("mode") == "field-reports":
+                migrate_field_reports(target)
+            elif action.get("mode") == "retrofit-records":
+                migrate_retrofit_records(target)
+            else:
+                return {
+                    "version": VERSION,
+                    "status": "FAIL",
+                    "target": str(target),
+                    "writes": writes,
+                    "backups": backups,
+                    "failures": [f"unknown migration mode: {action.get('mode')}"],
+                }
             writes.append(action["path"])
             writes.append(str(action["target_path"]))
 
@@ -438,6 +494,8 @@ def run_self_test() -> dict[str, Any]:
         (target / ".tilly/field-reports/install_id").write_text("legacy-install\n", encoding="utf-8")
         (target / ".tilly/field-reports/DISABLED").write_text("disabled\n", encoding="utf-8")
         (target / ".tilly/field-reports/receipts/one.json").write_text('{"issue_url":"legacy"}\n', encoding="utf-8")
+        (target / ".tilly/retrofit").mkdir(parents=True)
+        (target / ".tilly/retrofit/previous-retrofit.md").write_text("# Previous retrofit\n", encoding="utf-8")
         (target / ".codex").mkdir()
         (target / ".codex/config.toml").write_text(
             "[mcp_servers.other]\ncommand = \"true\"\n\n[mcp_servers.tilly-cortex]\ncommand = \"python3\"\n",
@@ -473,6 +531,7 @@ def run_self_test() -> dict[str, Any]:
             ".cursor/rules/tilly-guidelines.mdc",
             ".tilly/bin",
             ".tilly/field-reports",
+            ".tilly/retrofit",
             ".github/ISSUE_TEMPLATE/tilly-field-report.yml",
             "__pycache__",
         ):
@@ -482,6 +541,8 @@ def run_self_test() -> dict[str, Any]:
             failures.append("Field Reports outbox must migrate")
         if not (target / ".tes/field-reports/DISABLED").exists():
             failures.append("Field Reports DISABLED sentinel must migrate")
+        if not (target / ".tes/legacy-retirement/retrofit/previous-retrofit.md").exists():
+            failures.append("legacy retrofit records must migrate to TES archive")
         if not (target / ".cursor/rules/project.mdc").exists():
             failures.append("project-owned Cursor rule must be preserved")
         if not (target / "AGENTS.md").exists():

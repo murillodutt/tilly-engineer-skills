@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.32"
+VERSION = "0.3.33"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -67,6 +67,10 @@ def version_records(target: Path) -> list[dict[str, str]]:
         ".tes/bin/cortex_mcp.py",
         ".tes/bin/cortex.py",
         ".tes/bin/field_reports.py",
+        ".tilly/bin/tilly_update.py",
+        ".tilly/bin/cortex_mcp.py",
+        ".tilly/bin/cortex.py",
+        ".tilly/bin/field_reports.py",
         ".claude-plugin/plugin.json",
         "docs/agents/PROJECT-REGISTER.md",
         "README.md",
@@ -105,8 +109,10 @@ def surfaces(target: Path) -> dict[str, bool]:
         "mcp_codex": (target / ".codex/config.toml").exists(),
         "mcp_claude": (target / ".mcp.json").exists(),
         "mcp_cursor": (target / ".cursor/mcp.json").exists(),
-        "mcp_server": (target / ".tes/bin/cortex_mcp.py").exists(),
+        "mcp_server": (target / ".tes/bin/cortex_mcp.py").exists()
+        or (target / ".tilly/bin/cortex_mcp.py").exists(),
         "field_reports": (target / ".tes/bin/field_reports.py").exists()
+        or (target / ".tilly/bin/field_reports.py").exists()
         or (target / ".git/hooks/pre-push").exists(),
     }
 
@@ -257,7 +263,6 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "writes": [],
         "failures": [],
     }
-    record_field_report(target, result)
     return result
 
 
@@ -300,7 +305,7 @@ def self_test() -> dict[str, Any]:
         write(target / ".agents/skills/tilly-init/SKILL.md", "name: tilly-init\n")
         args = argparse.Namespace(
             target=target,
-            remote_version="0.3.32",
+            remote_version="0.3.33",
             remote_commit="a" * 40,
             runtime="codex",
             offline=False,

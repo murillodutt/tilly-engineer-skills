@@ -304,6 +304,10 @@ python3 scripts/tes_legacy_retirement.py apply --target /path/to/project --yes
 python3 scripts/tes_legacy_retirement.py audit --target /path/to/project
 ```
 
+The gate archives legacy retrofit records from `.tilly/retrofit/**` under
+`.tes/legacy-retirement/retrofit/**`; these records must not block runtime
+retirement when all other legacy paths are known.
+
 macOS/Linux wrapper:
 
 ```bash
