@@ -11,7 +11,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.29"
+VERSION = "0.3.30"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -23,6 +23,7 @@ REQUIRED_PATHS = (
     "install.ps1",
     "docs/INDEX.md",
     "docs/architecture/PROJECT-STRUCTURE.md",
+    "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/install/USER-MANUAL.html",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
@@ -93,6 +94,7 @@ REQUIRED_PATHS = (
     "scripts/install_adapter.py",
     "scripts/tilly_init.py",
     "scripts/tilly_update.py",
+    "scripts/tes_namespace.py",
     "scripts/root_context.py",
     "scripts/claude_plugin_oracle.py",
     "scripts/platform_surface_oracle.py",
@@ -149,6 +151,10 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "tilly:init:self-test",
     "tilly:update",
     "tilly:update:self-test",
+    "tes:namespace:report",
+    "tes:namespace:audit",
+    "tes:namespace:inventory",
+    "tes:namespace:self-test",
     "root-context:check",
     "root-context:self-test",
     "mcp:install",
