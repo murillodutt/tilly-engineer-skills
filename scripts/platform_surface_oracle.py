@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.30"
+VERSION = "0.3.31"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -93,7 +93,7 @@ def check_skill(relpath: str, expected_name: str) -> list[str]:
 
 def materialized_results() -> tuple[dict[str, Any], list[str]]:
     failures: list[str] = []
-    with tempfile.TemporaryDirectory(prefix="tilly-platform-surface-") as tempdir:
+    with tempfile.TemporaryDirectory(prefix="tes-platform-surface-") as tempdir:
         out_root = Path(tempdir) / "adapters"
         results = [
             materialize_adapter.materialize(adapter, out_root)
@@ -106,7 +106,7 @@ def materialized_results() -> tuple[dict[str, Any], list[str]]:
         required = {
             "codex": (
                 "AGENTS.md",
-                ".agents/skills/tilly-engineering-discipline/scripts/discipline_oracle.py",
+                ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py",
                 *(f".agents/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS),
             ),
             "claude": (
@@ -117,7 +117,7 @@ def materialized_results() -> tuple[dict[str, Any], list[str]]:
             ),
             "cursor": (
                 "CURSOR.md",
-                ".cursor/rules/tilly-guidelines.mdc",
+                ".cursor/rules/tes-guidelines.mdc",
             ),
         }
         for adapter, paths in required.items():
@@ -150,7 +150,7 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing Codex agent bootloader: {codex_agent}")
     else:
         text = read(codex_agent)
-        for term in ("Think Before Coding", "Simplicity First", "cortex_reflex", "/tilly:init", "/tilly:update", "tilly init", "Tilly, inicialize este projeto", "/tilly:cortex", "/tilly:field-reports"):
+        for term in ("Think Before Coding", "Simplicity First", "cortex_reflex", "/tes:init", "/tes:update", "tes init", "TES, inicialize este projeto", "/tes:cortex", "/tes:field-reports"):
             if term not in text:
                 failures.append(f"{codex_agent} missing {term}")
     for skill in CODEX_SKILLS:
@@ -158,11 +158,11 @@ def analyze() -> dict[str, Any]:
             f"src/adapters/codex/skills/{skill}/SKILL.md",
             skill,
         ))
-    if not exists("src/adapters/codex/skills/tilly-engineering-discipline/agents/openai.yaml"):
+    if not exists("src/adapters/codex/skills/tes-engineering-discipline/agents/openai.yaml"):
         failures.append("missing Codex skill agent metadata")
     surface("codex", "agent", "certified", codex_agent)
     surface("codex", "skill", "certified", "; ".join(f"src/adapters/codex/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS))
-    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.30 ships local skills first.")
+    surface("codex", "plugin", "deferred", "Codex plugins are native, but TES v0.3.31 ships local skills first.")
     surface("codex", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
@@ -173,7 +173,7 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing Claude bootloader: {claude_agent}")
     else:
         text = read(claude_agent)
-        for term in ("Think Before Coding", "Simplicity First", "Cortex Reflection", "/tilly:init", "/tilly:update", "tilly init", "Tilly, inicialize este projeto", "/tilly:cortex", "/tilly:field-reports"):
+        for term in ("Think Before Coding", "Simplicity First", "Cortex Reflection", "/tes:init", "/tes:update", "tes init", "TES, inicialize este projeto", "/tes:cortex", "/tes:field-reports"):
             if term not in text:
                 failures.append(f"{claude_agent} missing {term}")
     for skill in CLAUDE_SKILLS:
@@ -194,7 +194,7 @@ def analyze() -> dict[str, Any]:
     surface("claude", "mcp", "certified", "scripts/install_mcp.py writes .mcp.json")
 
     # Cursor
-    cursor_rule = "src/adapters/cursor/rules/tilly-guidelines.mdc"
+    cursor_rule = "src/adapters/cursor/rules/tes-guidelines.mdc"
     if not exists(cursor_rule):
         failures.append(f"missing Cursor rule: {cursor_rule}")
     else:
@@ -203,16 +203,16 @@ def analyze() -> dict[str, Any]:
             failures.append(f"{cursor_rule} must keep alwaysApply: true")
         if "description:" not in text:
             failures.append(f"{cursor_rule} missing description")
-        for term in ("/tilly:init", "/tilly:update", "tilly init", "Tilly, inicialize este projeto", "/tilly:cortex", "/tilly:field-reports"):
+        for term in ("/tes:init", "/tes:update", "tes init", "TES, inicialize este projeto", "/tes:cortex", "/tes:field-reports"):
             if term not in text:
                 failures.append(f"{cursor_rule} missing {term} shortcut routing")
     for relpath in (
-        "src/adapters/codex/skills/tilly-init/SKILL.md",
-        "src/adapters/claude/skills/tilly-init/SKILL.md",
+        "src/adapters/codex/skills/tes-init/SKILL.md",
+        "src/adapters/claude/skills/tes-init/SKILL.md",
     ):
         if exists(relpath):
             text = read(relpath)
-            for term in ("/tilly:init", "/tilly:update", "tilly init", "natural init command/prompt", "Tilly, inicialize este projeto"):
+            for term in ("/tes:init", "/tes:update", "tes init", "natural init command/prompt", "TES, inicialize este projeto"):
                 if term not in text:
                     failures.append(f"{relpath} missing {term}")
     if not exists("src/adapters/cursor/CURSOR.md"):
@@ -238,23 +238,23 @@ def analyze() -> dict[str, Any]:
         failures.append("missing repository pre-push hook")
     else:
         text = read(pre_push)
-        for term in ("field_reports.py drain", "TILLY_FIELD_REPORTS_PRE_PUSH"):
+        for term in ("field_reports.py drain", "TES_FIELD_REPORTS_PRE_PUSH"):
             if term not in text:
                 failures.append(f"{pre_push} missing {term}")
 
     install_text = read("scripts/install_mcp.py")
-    for term in ("[mcp_servers.tilly-cortex]", ".mcp.json", ".cursor/mcp.json", "field_reports.py", "tilly_update.py", "root_context.py"):
+    for term in ("[mcp_servers.tes-cortex]", ".mcp.json", ".cursor/mcp.json", "field_reports.py", "tes_update.py", "root_context.py"):
         if term not in install_text:
             failures.append(f"scripts/install_mcp.py missing {term}")
     root_text = read("scripts/root_context.py")
-    root_gate_text = root_text + "\n" + read("scripts/tilly_init.py")
+    root_gate_text = root_text + "\n" + read("scripts/tes_init.py")
     for term in ("AGENTS.md", "CLAUDE.md", ".cursor/rules", "NEEDS_REVIEW", "PRESERVED"):
         if term not in root_gate_text:
             failures.append(f"root context gate missing {term}")
-    update_text = read("scripts/tilly_update.py")
-    for term in ("recommended_route", "update_available", "remote_version", "/tilly:update"):
+    update_text = read("scripts/tes_update.py")
+    for term in ("recommended_route", "update_available", "remote_version", "/tes:update"):
         if term not in update_text:
-            failures.append(f"scripts/tilly_update.py missing {term}")
+            failures.append(f"scripts/tes_update.py missing {term}")
     field_reports_text = read("scripts/field_reports.py")
     for term in ("DESTINATION_REPO", "murillodutt/tilly-engineer-skills", "DISABLED", "gh issue create"):
         if term not in field_reports_text:
@@ -265,16 +265,16 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing GitHub receiver oracle: {github_oracle}")
     else:
         text = read(github_oracle)
-        for term in ("tilly-field-report@1", "field-report-quarantine", "validate_body"):
+        for term in ("tes-field-report@1", "field-report-quarantine", "validate_body"):
             if term not in text:
                 failures.append(f"{github_oracle} missing {term}")
 
-    issue_form = ".github/ISSUE_TEMPLATE/tilly-field-report.yml"
+    issue_form = ".github/ISSUE_TEMPLATE/tes-field-report.yml"
     if not exists(issue_form):
         failures.append(f"missing Field Reports issue form: {issue_form}")
     else:
         text = read(issue_form)
-        for term in ("Tilly Field Report", "tilly-field-report@1", "privacy-sanitized", "Never include code"):
+        for term in ("TES Field Report", "tes-field-report@1", "privacy-sanitized", "Never include code"):
             if term not in text:
                 failures.append(f"{issue_form} missing {term}")
 

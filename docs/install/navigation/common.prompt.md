@@ -10,7 +10,7 @@ tver: 0.2.0
 
 # Common Navigation Renderer
 
-navigation_library: tilly-navigation@0.1.1
+navigation_library: tes-navigation@0.1.1
 
 Use this renderer for every runtime unless a runtime-specific renderer safely
 upgrades the user interface.

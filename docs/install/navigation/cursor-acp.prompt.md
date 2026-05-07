@@ -36,5 +36,5 @@ Record:
 ```text
 navigation_renderer: cursor-acp
 navigation_mode: cursor-ask-question
-navigation_library: tilly-navigation@0.1.1
+navigation_library: tes-navigation@0.1.1
 ```

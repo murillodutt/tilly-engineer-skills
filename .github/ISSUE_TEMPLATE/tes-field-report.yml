@@ -1,0 +1,52 @@
+name: TES Field Report
+description: Sanitized operational feedback from a TES runtime.
+title: "TES Field Report"
+labels:
+  - field-report
+  - privacy-sanitized
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this only for sanitized TES operational facts.
+        Never include code, diffs, prompts, file contents, secrets, personal data, absolute paths, raw stack traces, raw branch names or raw remotes.
+  - type: input
+    id: schema
+    attributes:
+      label: Schema
+      value: tes-field-report@1
+    validations:
+      required: true
+  - type: dropdown
+    id: status
+    attributes:
+      label: Status
+      options:
+        - PASS
+        - FAIL
+        - BLOCKED
+        - DEGRADED
+    validations:
+      required: true
+  - type: input
+    id: tes-version
+    attributes:
+      label: TES version
+      placeholder: "0.3.23"
+    validations:
+      required: true
+  - type: textarea
+    id: facts
+    attributes:
+      label: Sanitized facts
+      description: Factual prose or bullets only. No tables and no code blocks.
+      placeholder: "Event, surface, status, duration bucket, return code, and sanitized failure category."
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy-confirmation
+    attributes:
+      label: Privacy confirmation
+      options:
+        - label: This report contains no code, diff, prompt, file content, secret, personal data, absolute path, raw stack trace, raw branch name or raw remote.
+          required: true

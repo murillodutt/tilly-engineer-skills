@@ -11,7 +11,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.30"
+VERSION = "0.3.31"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -55,32 +55,32 @@ REQUIRED_PATHS = (
     "docs/adapters/MATERIALIZATION.md",
     "docs/tds/DOCS-INDEX.yml",
     "docs/tds/TDS-SPEC.md",
-    ".github/ISSUE_TEMPLATE/tilly-field-report.yml",
+    ".github/ISSUE_TEMPLATE/tes-field-report.yml",
     ".github/workflows/field-report-governance.yml",
     "src/adapters/codex/AGENTS.md",
-    "src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md",
-    "src/adapters/codex/skills/tilly-engineering-discipline/agents/openai.yaml",
-    "src/adapters/codex/skills/tilly-engineering-discipline/references/failure-patterns.md",
-    "src/adapters/codex/skills/tilly-engineering-discipline/references/source-portability.md",
-    "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py",
-    "src/adapters/codex/skills/tilly-init/SKILL.md",
-    "src/adapters/codex/skills/tilly-cortex/SKILL.md",
-    "src/adapters/codex/skills/tilly-mcp/SKILL.md",
-    "src/adapters/codex/skills/tilly-doctor/SKILL.md",
-    "src/adapters/codex/skills/tilly-adapter/SKILL.md",
-    "src/adapters/codex/skills/tilly-bench/SKILL.md",
+    "src/adapters/codex/skills/tes-engineering-discipline/SKILL.md",
+    "src/adapters/codex/skills/tes-engineering-discipline/agents/openai.yaml",
+    "src/adapters/codex/skills/tes-engineering-discipline/references/failure-patterns.md",
+    "src/adapters/codex/skills/tes-engineering-discipline/references/source-portability.md",
+    "src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py",
+    "src/adapters/codex/skills/tes-init/SKILL.md",
+    "src/adapters/codex/skills/tes-cortex/SKILL.md",
+    "src/adapters/codex/skills/tes-mcp/SKILL.md",
+    "src/adapters/codex/skills/tes-doctor/SKILL.md",
+    "src/adapters/codex/skills/tes-adapter/SKILL.md",
+    "src/adapters/codex/skills/tes-bench/SKILL.md",
     "src/adapters/claude/CLAUDE.md",
     "src/adapters/claude/plugin/plugin.json",
     "src/adapters/claude/plugin/marketplace.json",
-    "src/adapters/claude/skills/tilly-guidelines/SKILL.md",
-    "src/adapters/claude/skills/tilly-init/SKILL.md",
-    "src/adapters/claude/skills/tilly-cortex/SKILL.md",
-    "src/adapters/claude/skills/tilly-mcp/SKILL.md",
-    "src/adapters/claude/skills/tilly-doctor/SKILL.md",
-    "src/adapters/claude/skills/tilly-adapter/SKILL.md",
-    "src/adapters/claude/skills/tilly-bench/SKILL.md",
+    "src/adapters/claude/skills/tes-guidelines/SKILL.md",
+    "src/adapters/claude/skills/tes-init/SKILL.md",
+    "src/adapters/claude/skills/tes-cortex/SKILL.md",
+    "src/adapters/claude/skills/tes-mcp/SKILL.md",
+    "src/adapters/claude/skills/tes-doctor/SKILL.md",
+    "src/adapters/claude/skills/tes-adapter/SKILL.md",
+    "src/adapters/claude/skills/tes-bench/SKILL.md",
     "src/adapters/cursor/CURSOR.md",
-    "src/adapters/cursor/rules/tilly-guidelines.mdc",
+    "src/adapters/cursor/rules/tes-guidelines.mdc",
     "benchmarks/context-mesh/eval-dataset.json",
     "scripts/context_mesh_plan.py",
     "scripts/context_mesh_run.py",
@@ -92,8 +92,8 @@ REQUIRED_PATHS = (
     "scripts/install_smoke.py",
     "scripts/install_mcp.py",
     "scripts/install_adapter.py",
-    "scripts/tilly_init.py",
-    "scripts/tilly_update.py",
+    "scripts/tes_init.py",
+    "scripts/tes_update.py",
     "scripts/tes_namespace.py",
     "scripts/root_context.py",
     "scripts/claude_plugin_oracle.py",
@@ -121,9 +121,9 @@ SYNCED_FILES = (
     "docs/mesh/PRINCIPLES.md",
     "src/adapters/codex/AGENTS.md",
     "src/adapters/claude/CLAUDE.md",
-    "src/adapters/cursor/rules/tilly-guidelines.mdc",
-    "src/adapters/claude/skills/tilly-guidelines/SKILL.md",
-    "src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md",
+    "src/adapters/cursor/rules/tes-guidelines.mdc",
+    "src/adapters/claude/skills/tes-guidelines/SKILL.md",
+    "src/adapters/codex/skills/tes-engineering-discipline/SKILL.md",
 )
 
 FORBIDDEN_ROOT_PATHS = (
@@ -147,10 +147,10 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "install:adapter",
     "install:dry-run",
     "install:smoke",
-    "tilly:init",
-    "tilly:init:self-test",
-    "tilly:update",
-    "tilly:update:self-test",
+    "tes:init",
+    "tes:init:self-test",
+    "tes:update",
+    "tes:update:self-test",
     "tes:namespace:report",
     "tes:namespace:audit",
     "tes:namespace:inventory",
@@ -254,7 +254,7 @@ INSTALLER_REPORT_REQUIRED_TERMS = (
     "Installed helper set",
     "Field Reports: PASS | BLOCKED | DISABLED | SKIP",
     "outbox pending count",
-    "`/tilly:update` routine",
+    "`/tes:update` routine",
     "Rollback",
     "Summary: reset baseline plus clean installer-created files",
 )
@@ -279,8 +279,8 @@ USER_MANUAL_REPORT_REQUIRED_TERMS = (
 )
 
 UPDATE_ROUTINE_REQUIRED_TERMS = (
-    "/tilly:update",
-    "tilly_update.py",
+    "/tes:update",
+    "tes_update.py",
     "installed and cloud versions",
     "versão instalada e versão na nuvem",
     "recommended_route",
@@ -297,12 +297,12 @@ ROOT_CONTEXT_REQUIRED_TERMS = (
 )
 
 GIT_SAFETY_REQUIRED_TERMS = (
-    ".tilly/bin/*.bak-*",
-    ".tilly/bin/__pycache__/",
+    ".tes/bin/*.bak-*",
+    ".tes/bin/__pycache__/",
     "*.pyc",
-    ".tilly/field-reports/",
-    ".tilly/cortex/*.sqlite",
-    "must not ignore `.tilly/bin/*.py`",
+    ".tes/field-reports/",
+    ".tes/cortex/*.sqlite",
+    "must not ignore `.tes/bin/*.py`",
 )
 
 
@@ -432,7 +432,7 @@ def installer_report_contract_failures() -> list[str]:
             ROOT / "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
             ROOT / "docs/install/COMMAND-TRIGGERS.md",
             ROOT / "docs/install/USER-MANUAL.html",
-            ROOT / "scripts/tilly_update.py",
+            ROOT / "scripts/tes_update.py",
         )
         if path.exists()
     )
@@ -523,7 +523,7 @@ def main() -> int:
         if path.exists() and VERSION not in path.read_text(encoding="utf-8"):
             failures.append(f"{relpath} must declare {VERSION}")
 
-    oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
+    oracle = ROOT / "src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():
         result = subprocess.run(
             [sys.executable, str(oracle), "--self-test"],
@@ -748,12 +748,12 @@ def main() -> int:
             failures.extend(result.stderr.splitlines())
 
     if failures:
-        print("[tilly-reference] FAIL")
+        print("[tes-reference] FAIL")
         for failure in failures:
             print(f"- {failure}")
         return 1
 
-    print("[tilly-reference] PASS")
+    print("[tes-reference] PASS")
     print(f"root={ROOT}")
     print(f"checked_files={len(REQUIRED_PATHS)}")
     return 0

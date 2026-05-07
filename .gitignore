@@ -3,10 +3,10 @@
 __pycache__/
 node_modules/
 dist/
-.tilly/bin/*.bak-*
-.tilly/bin/__pycache__/
-.tilly/field-reports/
-.tilly/cortex/*.sqlite
-.tilly/cortex/*.sqlite-*
+.tes/bin/*.bak-*
+.tes/bin/__pycache__/
+.tes/field-reports/
+.tes/cortex/*.sqlite
+.tes/cortex/*.sqlite-*
 .env
 .env.*

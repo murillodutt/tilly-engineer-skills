@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the GitHub receiver surface for Tilly Field Reports."""
+"""Validate the GitHub receiver surface for TES Field Reports."""
 
 from __future__ import annotations
 
@@ -14,14 +14,14 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.30"
+VERSION = "0.3.31"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
-SCHEMA = "tilly-field-report@1"
+SCHEMA = "tes-field-report@1"
 MAX_BODY_CHARS = 48000
 
 REQUIRED_BODY_TERMS = (
     f"<!-- {SCHEMA} -->",
-    "Tilly Field Report",
+    "TES Field Report",
     f"- Schema: {SCHEMA}",
     f"- Destination: {DESTINATION_REPO}",
     "- Event count:",
@@ -32,7 +32,7 @@ REQUIRED_FORM_TERMS = (
     "### Schema",
     SCHEMA,
     "### Status",
-    "### Tilly version",
+    "### TES version",
     "### Sanitized facts",
     "### Privacy confirmation",
 )
@@ -51,7 +51,7 @@ FORBIDDEN_PATTERNS = (
 
 
 def validate_body(text: str, require_field_report: bool = False) -> dict[str, object]:
-    if SCHEMA not in text and not text.lstrip().startswith("Tilly Field Report"):
+    if SCHEMA not in text and not text.lstrip().startswith("TES Field Report"):
         if require_field_report:
             return {
                 "version": VERSION,
@@ -63,7 +63,7 @@ def validate_body(text: str, require_field_report: bool = False) -> dict[str, ob
         return {
             "version": VERSION,
             "status": "IGNORE",
-            "reason": "not a Tilly Field Report",
+            "reason": "not a TES Field Report",
             "labels": [],
             "failures": [],
         }
@@ -90,7 +90,7 @@ def validate_body(text: str, require_field_report: bool = False) -> dict[str, ob
 
 def github_receiver_contract() -> list[str]:
     failures: list[str] = []
-    issue_form = ROOT / ".github/ISSUE_TEMPLATE/tilly-field-report.yml"
+    issue_form = ROOT / ".github/ISSUE_TEMPLATE/tes-field-report.yml"
     workflow = ROOT / ".github/workflows/field-report-governance.yml"
 
     if not issue_form.exists():
@@ -123,7 +123,7 @@ def write_github_output(path: Path, result: dict[str, object]) -> None:
 
 def self_test() -> dict[str, object]:
     failures: list[str] = []
-    with tempfile.TemporaryDirectory(prefix="tilly-field-github-") as tempdir:
+    with tempfile.TemporaryDirectory(prefix="tes-field-github-") as tempdir:
         target = Path(tempdir)
         event = field_reports.build_event(target, "cortex.verify", "PASS", "cortex", "self-test")
         good_body = field_reports.build_issue_body([event], 1, 1)
@@ -140,7 +140,7 @@ def self_test() -> dict[str, object]:
         ignored = validate_body("General user issue without Tilly schema.")
         if ignored["status"] != "IGNORE":
             failures.append("non-field-report issue must be ignored")
-        required = validate_body("Tilly Field Report without schema.", True)
+        required = validate_body("TES Field Report without schema.", True)
         if required["status"] != "FAIL":
             failures.append("required field report without schema must fail")
 
@@ -150,7 +150,7 @@ def self_test() -> dict[str, object]:
                 SCHEMA,
                 "### Status",
                 "PASS",
-                "### Tilly version",
+                "### TES version",
                 VERSION,
                 "### Sanitized facts",
                 "- event=cortex.verify",

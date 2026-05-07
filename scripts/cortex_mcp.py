@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Expose Tilly Cortex read-only tools over MCP stdio."""
+"""Expose TES Cortex read-only tools over MCP stdio."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import cortex
 import field_reports
 
 
-VERSION = "0.3.30"
+VERSION = "0.3.31"
 PROTOCOL_VERSION = "2025-06-18"
 
 
@@ -237,8 +237,8 @@ def handle_message(default_target: Path, message: dict[str, Any]) -> dict[str, A
             "protocolVersion": client_version,
             "capabilities": {"tools": {"listChanged": False}},
             "serverInfo": {
-                "name": "tilly-cortex-mcp",
-                "title": "Tilly Cortex MCP",
+                "name": "tes-cortex-mcp",
+                "title": "TES Cortex MCP",
                 "version": VERSION,
             },
             "instructions": (
@@ -284,7 +284,7 @@ def serve(default_target: Path) -> int:
 
 
 def self_test() -> int:
-    with tempfile.TemporaryDirectory(prefix="tilly-cortex-mcp-") as tempdir:
+    with tempfile.TemporaryDirectory(prefix="tes-cortex-mcp-") as tempdir:
         target = Path(tempdir)
         cortex.init(target)
         source = cortex.cortex_path(target) / "sources" / "mcp-source.md"

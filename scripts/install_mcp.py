@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install project-scoped Tilly Cortex MCP activation files."""
+"""Install project-scoped TES Cortex MCP activation files."""
 
 from __future__ import annotations
 
@@ -18,10 +18,10 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.30"
-SERVER_NAME = "tilly-cortex"
-BIN_DIR = Path(".tilly/bin")
-SERVER_FILES = ("cortex.py", "cortex_mcp.py", "cortex_embed.mjs", "field_reports.py", "tilly_update.py", "root_context.py")
+VERSION = "0.3.31"
+SERVER_NAME = "tes-cortex"
+BIN_DIR = Path(".tes/bin")
+SERVER_FILES = ("cortex.py", "cortex_mcp.py", "cortex_embed.mjs", "field_reports.py", "tes_update.py", "root_context.py")
 ADAPTERS = ("codex", "claude", "cursor")
 
 
@@ -148,9 +148,9 @@ def install_server_files(target: Path, dry_run: bool, overwrite: bool, backup: b
 
 
 def codex_snippet() -> str:
-    return """[mcp_servers.tilly-cortex]
+    return """[mcp_servers.tes-cortex]
 command = "python3"
-args = [".tilly/bin/cortex_mcp.py", "--target", "."]
+args = [".tes/bin/cortex_mcp.py", "--target", "."]
 cwd = "."
 startup_timeout_sec = 10
 tool_timeout_sec = 60
@@ -167,12 +167,12 @@ def merge_codex_config(target: Path, dry_run: bool, overwrite: bool, backup: boo
         return action, None
 
     text = path.read_text(encoding="utf-8")
-    if "[mcp_servers.tilly-cortex]" in text:
+    if "[mcp_servers.tes-cortex]" in text:
         if snippet.strip() in text:
             return {"path": rel(path, target), "action": "skip-identical"}, None
         if not overwrite:
             return None, "conflicting Codex MCP config: .codex/config.toml"
-        updated = replace_toml_section(text, "[mcp_servers.tilly-cortex]", snippet)
+        updated = replace_toml_section(text, "[mcp_servers.tes-cortex]", snippet)
     else:
         updated = text.rstrip() + "\n\n" + snippet
     action = write_text_file(path, updated, dry_run, backup)
@@ -193,9 +193,9 @@ def replace_toml_section(text: str, header: str, replacement: str) -> str:
 
 def json_config(adapter: str) -> dict[str, Any]:
     if adapter == "cursor":
-        args = ["${workspaceFolder}/.tilly/bin/cortex_mcp.py", "--target", "${workspaceFolder}"]
+        args = ["${workspaceFolder}/.tes/bin/cortex_mcp.py", "--target", "${workspaceFolder}"]
     else:
-        args = [".tilly/bin/cortex_mcp.py", "--target", "."]
+        args = [".tes/bin/cortex_mcp.py", "--target", "."]
     return {
         "type": "stdio",
         "command": "python3",
@@ -269,7 +269,7 @@ def require_confirmation(args: argparse.Namespace) -> bool:
         print("[install-mcp] FAIL")
         print("- write mode requires --yes when stdin is not interactive")
         return False
-    answer = input("Install Tilly Cortex MCP into target project? Type 'yes' to continue: ")
+    answer = input("Install TES Cortex MCP into target project? Type 'yes' to continue: ")
     if answer.strip().lower() != "yes":
         print("[install-mcp] CANCELLED")
         return False
@@ -322,7 +322,7 @@ def install(args: argparse.Namespace) -> int:
 
 
 def self_test() -> int:
-    with tempfile.TemporaryDirectory(prefix="tilly-mcp-install-") as tempdir:
+    with tempfile.TemporaryDirectory(prefix="tes-mcp-install-") as tempdir:
         target = Path(tempdir)
         result = subprocess.run(
             [sys.executable, str(ROOT / "scripts/cortex.py"), "init", "--target", str(target)],
@@ -346,12 +346,12 @@ def self_test() -> int:
             failures.extend(install_result.stdout.splitlines())
             failures.extend(install_result.stderr.splitlines())
         for relpath in (
-            ".tilly/bin/cortex.py",
-            ".tilly/bin/cortex_mcp.py",
-            ".tilly/bin/cortex_embed.mjs",
-            ".tilly/bin/field_reports.py",
-            ".tilly/bin/tilly_update.py",
-            ".tilly/bin/root_context.py",
+            ".tes/bin/cortex.py",
+            ".tes/bin/cortex_mcp.py",
+            ".tes/bin/cortex_embed.mjs",
+            ".tes/bin/field_reports.py",
+            ".tes/bin/tes_update.py",
+            ".tes/bin/root_context.py",
             ".codex/config.toml",
             ".mcp.json",
             ".cursor/mcp.json",
@@ -359,7 +359,7 @@ def self_test() -> int:
             if not (target / relpath).exists():
                 failures.append(f"missing installed path: {relpath}")
         mcp_self_test = subprocess.run(
-            [sys.executable, str(target / ".tilly/bin/cortex_mcp.py"), "--self-test"],
+            [sys.executable, str(target / ".tes/bin/cortex_mcp.py"), "--self-test"],
             cwd=target,
             text=True,
             capture_output=True,
@@ -384,7 +384,7 @@ def main() -> int:
     parser.add_argument("--target", type=Path, default=Path.cwd())
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--yes", action="store_true", help="confirm writes without an interactive prompt")
-    parser.add_argument("--overwrite", action="store_true", help="replace existing tilly-cortex MCP entries")
+    parser.add_argument("--overwrite", action="store_true", help="replace existing tes-cortex MCP entries")
     parser.add_argument("--no-backup", action="store_true", help="do not create .bak-* files before overwrite")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()

@@ -15,24 +15,24 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "dist" / "adapters"
-VERSION = "0.3.30"
+VERSION = "0.3.31"
 CODEX_SKILLS = (
-    "tilly-engineering-discipline",
-    "tilly-init",
-    "tilly-cortex",
-    "tilly-mcp",
-    "tilly-doctor",
-    "tilly-adapter",
-    "tilly-bench",
+    "tes-engineering-discipline",
+    "tes-init",
+    "tes-cortex",
+    "tes-mcp",
+    "tes-doctor",
+    "tes-adapter",
+    "tes-bench",
 )
 CLAUDE_SKILLS = (
-    "tilly-guidelines",
-    "tilly-init",
-    "tilly-cortex",
-    "tilly-mcp",
-    "tilly-doctor",
-    "tilly-adapter",
-    "tilly-bench",
+    "tes-guidelines",
+    "tes-init",
+    "tes-cortex",
+    "tes-mcp",
+    "tes-doctor",
+    "tes-adapter",
+    "tes-bench",
 )
 FORBIDDEN_OUTPUT_REFS = (
     "src/adapters/",
@@ -66,8 +66,8 @@ ADAPTERS: dict[str, tuple[CopyRule, ...]] = {
     "cursor": (
         CopyRule("src/adapters/cursor/CURSOR.md", "CURSOR.md"),
         CopyRule(
-            "src/adapters/cursor/rules/tilly-guidelines.mdc",
-            ".cursor/rules/tilly-guidelines.mdc",
+            "src/adapters/cursor/rules/tes-guidelines.mdc",
+            ".cursor/rules/tes-guidelines.mdc",
         ),
     ),
     "claude": (
@@ -146,7 +146,7 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
                 failures.append(f"{adapter}: materialized {relpath} references source-only path {forbidden}")
 
     if adapter == "codex":
-        oracle = ".agents/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
+        oracle = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
         if not (adapter_root / oracle).exists():
             failures.append(f"codex: missing oracle {oracle}")
         else:
@@ -158,7 +158,7 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
                 failures.append(f"codex: missing {skill} skill")
 
     if adapter == "cursor":
-        rule = adapter_root / ".cursor/rules/tilly-guidelines.mdc"
+        rule = adapter_root / ".cursor/rules/tes-guidelines.mdc"
         text = rule.read_text(encoding="utf-8") if rule.exists() else ""
         if "description:" not in text:
             failures.append("cursor: rule must keep description frontmatter")
@@ -238,7 +238,7 @@ def main() -> int:
     failures: list[str] = []
 
     if args.check:
-        with tempfile.TemporaryDirectory(prefix="tilly-engineer-skills-") as tempdir:
+        with tempfile.TemporaryDirectory(prefix="tes-engineer-skills-") as tempdir:
             out_root = Path(tempdir) / "adapters"
             results = [materialize(adapter, out_root) for adapter in selected_adapters(args.adapter)]
             for result in results:

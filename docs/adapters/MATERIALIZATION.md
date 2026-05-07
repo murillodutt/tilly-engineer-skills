@@ -30,9 +30,9 @@ that source and are not edited by hand.
 
 | Adapter | Generated install tree |
 |---------|------------------------|
-| Codex | `AGENTS.md` and `.agents/skills/tilly-engineering-discipline/**` |
-| Cursor | `CURSOR.md` and `.cursor/rules/tilly-guidelines.mdc` |
-| Claude | `CLAUDE.md`, `.claude-plugin/**`, and `skills/tilly-guidelines/**` |
+| Codex | `AGENTS.md` and `.agents/skills/tes-engineering-discipline/**` |
+| Cursor | `CURSOR.md` and `.cursor/rules/tes-guidelines.mdc` |
+| Claude | `CLAUDE.md`, `.claude-plugin/**`, and `skills/tes-guidelines/**` |
 
 ## Gate
 

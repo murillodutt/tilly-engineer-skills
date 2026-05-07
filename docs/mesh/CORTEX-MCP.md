@@ -8,7 +8,7 @@ evidence_level: L2
 tver: 0.3.2
 ---
 
-# Tilly Cortex MCP
+# TES Cortex MCP
 
 The Cortex MCP surface is a read-only access layer over the filesystem Cortex
 contract. It exposes recall and inspection tools to MCP-capable runtimes without
@@ -29,8 +29,8 @@ docs/agents/cortex/cells/**
 
 The MCP server may read these files and may call the deterministic Cortex CLI
 functions. It must not write cells, sources, maps, links, trail entries, runtime
-bootloaders, `.obsidian/**`, `.tilly/cortex/recall.sqlite`, or
-`.tilly/cortex/semantic.sqlite` except through explicit local CLI commands, not
+bootloaders, `.obsidian/**`, `.tes/cortex/recall.sqlite`, or
+`.tes/cortex/semantic.sqlite` except through explicit local CLI commands, not
 by the v1 MCP tools.
 
 ## Tools
@@ -84,12 +84,12 @@ before calling the script. The script accepts `codex`, `claude`, `cursor`, or
 The activation path installs local MCP helpers into the target project:
 
 ```text
-.tilly/bin/cortex.py
-.tilly/bin/cortex_mcp.py
-.tilly/bin/cortex_embed.mjs
-.tilly/bin/field_reports.py
-.tilly/bin/tilly_update.py
-.tilly/bin/root_context.py
+.tes/bin/cortex.py
+.tes/bin/cortex_mcp.py
+.tes/bin/cortex_embed.mjs
+.tes/bin/field_reports.py
+.tes/bin/tes_update.py
+.tes/bin/root_context.py
 ```
 
 It then writes only project-scoped config for the selected runtime:
@@ -100,8 +100,8 @@ It then writes only project-scoped config for the selected runtime:
 | Claude Code | `.mcp.json` |
 | Cursor | `.cursor/mcp.json` |
 
-Existing config is merged when the `tilly-cortex` server name is absent. If a
-different `tilly-cortex` entry already exists, activation stops unless the user
+Existing config is merged when the `tes-cortex` server name is absent. If a
+different `tes-cortex` entry already exists, activation stops unless the user
 explicitly passes `--overwrite`; backups are created by default.
 
 ## MCP Cut
@@ -111,12 +111,12 @@ cortex_cut:
   consumer: MCP-capable agents
   camada: mcp
   escreve_em:
-    - .tilly/bin/cortex.py
-    - .tilly/bin/cortex_mcp.py
-    - .tilly/bin/cortex_embed.mjs
-    - .tilly/bin/field_reports.py
-    - .tilly/bin/tilly_update.py
-    - .tilly/bin/root_context.py
+    - .tes/bin/cortex.py
+    - .tes/bin/cortex_mcp.py
+    - .tes/bin/cortex_embed.mjs
+    - .tes/bin/field_reports.py
+    - .tes/bin/tes_update.py
+    - .tes/bin/root_context.py
     - .codex/config.toml
     - .mcp.json
     - .cursor/mcp.json
@@ -126,7 +126,7 @@ cortex_cut:
     - docs/agents/cortex/MAP.md
     - docs/agents/cortex/TRAIL.md
     - docs/agents/cortex/LINKS.md
-    - .tilly/cortex/semantic.sqlite
+    - .tes/cortex/semantic.sqlite
     - .obsidian/**
   oracle: python3 scripts/install_mcp.py --self-test
   rollback: git revert <commit>

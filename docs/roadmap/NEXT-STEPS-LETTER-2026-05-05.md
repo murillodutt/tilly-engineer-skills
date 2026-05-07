@@ -12,7 +12,7 @@ evidence:
   - npm run commit:check
   - npm run tds:validate
   - npm run materialize:all
-  - quick_validate.py src/adapters/codex/skills/tilly-engineering-discipline
+  - quick_validate.py src/adapters/codex/skills/tes-engineering-discipline
 ---
 
 # Next Window Reentry Letter
@@ -48,7 +48,7 @@ cd /Users/murillo/Dev/tilly-engineer-skills
 git status --short --branch --untracked-files=all
 git log -5 --oneline
 npm run commit:check
-python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py src/adapters/codex/skills/tilly-engineering-discipline
+python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py src/adapters/codex/skills/tes-engineering-discipline
 git diff --cached --stat
 ```
 

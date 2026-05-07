@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Collect and drain sanitized Tilly operational field reports."""
+"""Collect and drain sanitized TES operational field reports."""
 
 from __future__ import annotations
 
@@ -19,24 +19,25 @@ import uuid
 from typing import Any
 
 
-VERSION = "0.3.30"
+VERSION = "0.3.31"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
-SCHEMA = "tilly-field-report@1"
-FIELD_ROOT = Path(".tilly/field-reports")
+SCHEMA = "tes-field-report@1"
+FIELD_ROOT = Path(".tes/field-reports")
 OUTBOX = FIELD_ROOT / "outbox.jsonl"
 RECEIPTS = FIELD_ROOT / "receipts"
 DISABLED = FIELD_ROOT / "DISABLED"
 INSTALL_ID = FIELD_ROOT / "install_id"
-BIN_HELPER = Path(".tilly/bin/field_reports.py")
-HOOK_MARKER = "TILLY_FIELD_REPORTS_PRE_PUSH"
+LEGACY_FIELD_ROOT = Path(".tilly/field-reports")
+BIN_HELPER = Path(".tes/bin/field_reports.py")
+HOOK_MARKER = "TES_FIELD_REPORTS_PRE_PUSH"
 MAX_ISSUE_BODY_CHARS = 48000
 GIT_EXCLUDE_LINES = (
-    ".tilly/bin/*.bak-*",
-    ".tilly/bin/__pycache__/",
+    ".tes/bin/*.bak-*",
+    ".tes/bin/__pycache__/",
     "*.pyc",
-    ".tilly/field-reports/",
-    ".tilly/cortex/*.sqlite",
-    ".tilly/cortex/*.sqlite-*",
+    ".tes/field-reports/",
+    ".tes/cortex/*.sqlite",
+    ".tes/cortex/*.sqlite-*",
 )
 
 SAFE_SLUG = re.compile(r"[^a-zA-Z0-9_.:-]+")
@@ -85,6 +86,10 @@ def install_id_path(target: Path) -> Path:
     return target / INSTALL_ID
 
 
+def legacy_root(target: Path) -> Path:
+    return target / LEGACY_FIELD_ROOT
+
+
 def rel(path: Path, target: Path) -> str:
     try:
         return path.relative_to(target).as_posix()
@@ -102,10 +107,66 @@ def status_slug(value: str) -> str:
 
 
 def field_reports_disabled(target: Path) -> bool:
+    migrate_legacy_layout(target)
     return disabled_path(target).exists()
 
 
+def merge_legacy_outbox(source: Path, destination: Path) -> None:
+    if not source.exists():
+        return
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    legacy_text = source.read_text(encoding="utf-8", errors="replace").strip()
+    if legacy_text:
+        current_text = destination.read_text(encoding="utf-8") if destination.exists() else ""
+        prefix = current_text if current_text.endswith("\n") or not current_text else current_text + "\n"
+        destination.write_text(prefix + legacy_text + "\n", encoding="utf-8")
+    elif not destination.exists():
+        destination.touch()
+    source.unlink()
+
+
+def move_legacy_file(source: Path, destination: Path) -> None:
+    if not source.exists():
+        return
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if destination.exists():
+        source.unlink()
+        return
+    source.replace(destination)
+
+
+def migrate_legacy_layout(target: Path) -> None:
+    legacy = legacy_root(target)
+    if not legacy.exists():
+        return
+    root(target).mkdir(parents=True, exist_ok=True)
+    receipts_path(target).mkdir(parents=True, exist_ok=True)
+    merge_legacy_outbox(legacy / "outbox.jsonl", outbox_path(target))
+    move_legacy_file(legacy / "install_id", install_id_path(target))
+    move_legacy_file(legacy / "DISABLED", disabled_path(target))
+    legacy_receipts = legacy / "receipts"
+    if legacy_receipts.exists():
+        for receipt in sorted(legacy_receipts.glob("*.json")):
+            destination = receipts_path(target) / receipt.name
+            if destination.exists():
+                destination = receipts_path(target) / f"legacy-{sha256_text(receipt.read_text(encoding='utf-8', errors='replace'))[:8]}-{receipt.name}"
+            receipt.replace(destination)
+        try:
+            legacy_receipts.rmdir()
+        except OSError:
+            pass
+    try:
+        legacy.rmdir()
+    except OSError:
+        pass
+    try:
+        legacy.parent.rmdir()
+    except OSError:
+        pass
+
+
 def ensure_layout(target: Path) -> None:
+    migrate_legacy_layout(target)
     root(target).mkdir(parents=True, exist_ok=True)
     receipts_path(target).mkdir(parents=True, exist_ok=True)
     outbox_path(target).touch(exist_ok=True)
@@ -186,7 +247,7 @@ def build_event(
         safe_details["duration_bucket"] = sanitize_value(duration_bucket)
     return {
         "schema": SCHEMA,
-        "tilly_version": VERSION,
+        "tes_version": VERSION,
         "created_at": utc_stamp(),
         "install_id": ensure_install_id(target),
         "event": safe_slug(event, "unknown-event"),
@@ -289,10 +350,10 @@ def build_issue_body(events: list[dict[str, object]], chunk_index: int, chunk_co
         surfaces[str(event.get("surface", "unknown"))] = surfaces.get(str(event.get("surface", "unknown")), 0) + 1
     lines = [
         f"<!-- {SCHEMA} -->",
-        "Tilly Field Report",
+        "TES Field Report",
         "",
         f"- Schema: {SCHEMA}",
-        f"- Tilly version: {VERSION}",
+        f"- TES version: {VERSION}",
         f"- Destination: {DESTINATION_REPO}",
         f"- Sent at: {utc_stamp()}",
         f"- Chunk: {chunk_index} of {chunk_count}",
@@ -404,7 +465,7 @@ def drain(target: Path, trigger: str = "manual", env: dict[str, str] | None = No
     receipt_paths: list[str] = []
     for idx, chunk in enumerate(chunks, start=1):
         body = build_issue_body(chunk, idx, len(chunks))
-        title = f"Tilly Field Report {datetime.now(timezone.utc).strftime('%Y-%m-%d')} ({idx}/{len(chunks)})"
+        title = f"TES Field Report {datetime.now(timezone.utc).strftime('%Y-%m-%d')} ({idx}/{len(chunks)})"
         ok, value = gh_issue_create(title, body, env=env)
         if not ok:
             return {
@@ -469,7 +530,7 @@ def install_hook(target: Path) -> dict[str, object]:
     if hook.exists():
         current = hook.read_text(encoding="utf-8", errors="replace")
         if HOOK_MARKER not in current:
-            backup = hook.with_name(f"pre-push.before-tilly-{file_stamp()}")
+            backup = hook.with_name(f"pre-push.before-tes-{file_stamp()}")
             shutil.copy2(hook, backup)
             backup.chmod(0o755)
             backup_rel = rel(backup, target)
@@ -492,8 +553,8 @@ fi
 # {HOOK_MARKER}
 set -u
 {backup_shell}
-if [ -f ".tilly/bin/field_reports.py" ]; then
-  python3 ".tilly/bin/field_reports.py" drain --target . --trigger pre-push >/dev/null 2>&1 || true
+if [ -f ".tes/bin/field_reports.py" ]; then
+  python3 ".tes/bin/field_reports.py" drain --target . --trigger pre-push >/dev/null 2>&1 || true
 elif [ -f "scripts/field_reports.py" ]; then
   python3 "scripts/field_reports.py" drain --target . --trigger pre-push >/dev/null 2>&1 || true
 fi
@@ -519,6 +580,7 @@ exit 0
 
 def status(target: Path) -> dict[str, object]:
     target = target.expanduser().resolve()
+    ensure_layout(target)
     events, failures = read_outbox(target)
     receipts = sorted(receipts_path(target).glob("*.json")) if receipts_path(target).exists() else []
     last_receipt = rel(receipts[-1], target) if receipts else None
@@ -537,7 +599,7 @@ def status(target: Path) -> dict[str, object]:
 def disable(target: Path) -> dict[str, object]:
     target = target.expanduser().resolve()
     ensure_layout(target)
-    disabled_path(target).write_text("Tilly Field Reports disabled by local user intent.\n", encoding="utf-8")
+    disabled_path(target).write_text("TES Field Reports disabled by local user intent.\n", encoding="utf-8")
     ensure_git_exclude(target)
     return {"version": VERSION, "status": "PASS", "disabled": True, "writes": [rel(disabled_path(target), target)]}
 
@@ -553,12 +615,22 @@ def enable(target: Path) -> dict[str, object]:
 
 def self_test() -> dict[str, object]:
     failures: list[str] = []
-    with tempfile.TemporaryDirectory(prefix="tilly-field-reports-") as tempdir:
+    with tempfile.TemporaryDirectory(prefix="tes-field-reports-") as tempdir:
         target = Path(tempdir)
         subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
 
+        legacy = legacy_root(target)
+        (legacy / "receipts").mkdir(parents=True)
+        (legacy / "install_id").write_text("legacy-install-id\n", encoding="utf-8")
+        (legacy / "receipts/legacy.json").write_text('{"issue_url":"legacy"}\n', encoding="utf-8")
         hook_result = install_hook(target)
-        for relpath in (".tilly/bin/field_reports.py", ".tilly/field-reports/outbox.jsonl", ".git/hooks/pre-push"):
+        if legacy.exists():
+            failures.append("install-hook must migrate legacy .tilly field reports state")
+        if install_id_path(target).read_text(encoding="utf-8").strip() != "legacy-install-id":
+            failures.append("legacy install_id must be preserved during migration")
+        if not (receipts_path(target) / "legacy.json").exists():
+            failures.append("legacy receipts must be moved into .tes")
+        for relpath in (".tes/bin/field_reports.py", ".tes/field-reports/outbox.jsonl", ".git/hooks/pre-push"):
             if not (target / relpath).exists():
                 failures.append(f"missing installed path: {relpath}")
         if hook_result["status"] != "PASS":
@@ -568,11 +640,11 @@ def self_test() -> dict[str, object]:
             if line not in exclude_text.splitlines():
                 failures.append(f"missing local git hygiene exclude: {line}")
         for relpath in (
-            ".tilly/bin/cortex.py.bak-20260507T000000Z",
-            ".tilly/bin/__pycache__/field_reports.cpython-314.pyc",
-            ".tilly/field-reports/probe.jsonl",
-            ".tilly/cortex/recall.sqlite",
-            ".tilly/cortex/semantic.sqlite-wal",
+            ".tes/bin/cortex.py.bak-20260507T000000Z",
+            ".tes/bin/__pycache__/field_reports.cpython-314.pyc",
+            ".tes/field-reports/probe.jsonl",
+            ".tes/cortex/recall.sqlite",
+            ".tes/cortex/semantic.sqlite-wal",
             "root.pyc",
         ):
             probe = target / relpath
@@ -582,14 +654,14 @@ def self_test() -> dict[str, object]:
             if ignored.returncode != 0:
                 failures.append(f"local git hygiene did not ignore: {relpath}")
         helper_ignored = subprocess.run(
-            ["git", "check-ignore", ".tilly/bin/field_reports.py"],
+            ["git", "check-ignore", ".tes/bin/field_reports.py"],
             cwd=target,
             text=True,
             capture_output=True,
             check=False,
         )
         if helper_ignored.returncode == 0:
-            failures.append("local git hygiene must not ignore installed helper .tilly/bin/field_reports.py")
+            failures.append("local git hygiene must not ignore installed helper .tes/bin/field_reports.py")
 
         record_event(
             target,
@@ -653,10 +725,15 @@ echo "https://github.com/murillodutt/tilly-engineer-skills/issues/999"
             failures.append(f"pre-push hook must not fail: {hook_run.returncode}")
         if outbox_path(target).read_text(encoding="utf-8").strip():
             failures.append("pre-push drain must clear outbox after confirmed issue")
-        if not list(receipts_path(target).glob("*.json")):
+        issue_receipts = sorted(
+            receipt
+            for receipt in receipts_path(target).glob("*.json")
+            if receipt.name[0].isdigit()
+        )
+        if not issue_receipts:
             failures.append("drain must write a receipt")
         else:
-            receipt = json.loads(sorted(receipts_path(target).glob("*.json"))[-1].read_text(encoding="utf-8"))
+            receipt = json.loads(issue_receipts[-1].read_text(encoding="utf-8"))
             if not str(receipt.get("issue_url", "")).endswith("/issues/999"):
                 failures.append("receipt must preserve the confirmed issue URL")
         body = body_capture.read_text(encoding="utf-8") if body_capture.exists() else ""
@@ -688,6 +765,20 @@ echo "https://github.com/murillodutt/tilly-engineer-skills/issues/999"
             failures.append("missing gh must return BLOCKED")
         if not outbox_path(target).read_text(encoding="utf-8").strip():
             failures.append("missing gh must keep outbox pending")
+
+        legacy_target = target / "legacy-status"
+        legacy_target.mkdir()
+        legacy_status_root = legacy_root(legacy_target)
+        legacy_status_root.mkdir(parents=True)
+        (legacy_status_root / "outbox.jsonl").write_text(
+            json.dumps({"schema": SCHEMA, "event": "legacy", "status": "PASS"}) + "\n",
+            encoding="utf-8",
+        )
+        legacy_status = status(legacy_target)
+        if legacy_status.get("pending") != 1:
+            failures.append("status must read migrated legacy outbox entries")
+        if legacy_root(legacy_target).exists():
+            failures.append("status must remove migrated legacy field reports root")
 
     return {"version": VERSION, "status": "PASS" if not failures else "FAIL", "failures": failures}
 

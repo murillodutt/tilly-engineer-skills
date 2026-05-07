@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, installer authors, adapter authors, and installing agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.1
+tver: 0.2.0
 ---
 
 # TES Naming Migration Catalog
@@ -26,6 +26,20 @@ The migration target is simple:
 - Active prompt commands must use `/tes:*`.
 - Installed runtime files must avoid `tilly-*`, `tilly_*.py`, and `.tilly/**`
   unless a specific migration bridge declares a temporary compatibility reason.
+
+## Current Status
+
+The TES operational namespace is implemented in v0.3.31.
+
+Active scripts, npm command prompts, skills, rules, MCP server IDs, issue
+templates, installed helper paths, navigation IDs, and generated evidence names
+use `TES`, `tes`, or `tes-*`.
+
+The raw inventory may still find `tilly-engineer-skills` because that remains
+the repository name, formal package identity, raw installer URL, and Field
+Reports destination. It may also find old names in this catalog, the namespace
+oracle, and historical evidence. Those are allowed by source boundary, not
+active runtime surfaces.
 
 ## Why This Exists
 
@@ -300,23 +314,21 @@ The migration is not certified until these checks pass:
 - `python3 scripts/platform_surface_oracle.py --self-test`.
 - `npm run commit:check`.
 
-## Open Decisions
+## Closed Decisions
 
-These decisions should be closed before code migration starts:
+These decisions were closed during the v0.3.31 migration:
 
-- Whether the Claude plugin package ID should remain the repository-oriented
-  name or move to a TES-specific runtime ID.
-- Whether old `/tilly:*` prompts should be recognized only by the installer for
-  one migration release, or rejected immediately to avoid ambiguity.
-- Whether installed `.tilly/field-reports/outbox.jsonl` should be moved to
-  `.tes/field-reports/outbox.jsonl` automatically or left in place with a final
-  drain attempt before migration.
-- Whether GitHub issue labels should be renamed immediately or dual-labeled
-  during the transition.
+- The Claude plugin package name remains `tilly-engineer-skills` because it is
+  repository identity, not an active command namespace.
+- Active docs, skills, and rules do not teach `/tilly:*` as current commands.
+- Local `.tilly/field-reports/**` state is migrated to `.tes/field-reports/**`
+  when present.
+- GitHub issue template and schema moved to `tes-field-report`; generic labels
+  such as `field-report` remain because they are not runtime command IDs.
 
 ## Certification Claim
 
-This catalog does not implement the rename. It defines the required migration
-surface and the certification boundary. The package is not TES-namespaced until
-the required gates pass and installed project probes show no active `tilly-*`
-runtime surfaces.
+This catalog defines the required migration surface and certification boundary.
+The package is TES-namespaced when the required gates pass and installed project
+probes show no active `tilly-*`, `tilly_`, `.tilly/**`, or `/tilly:*` runtime
+surfaces outside declared migration and historical scopes.

@@ -8,9 +8,9 @@ evidence_level: L2
 tver: 0.2.1
 ---
 
-# Tilly Field Reports
+# TES Field Reports
 
-Tilly Field Reports is the project feedback gate for real-world TES operation.
+TES Field Reports is the project feedback gate for real-world TES operation.
 It is active by default and sends only sanitized operational facts to GitHub
 issues in `murillodutt/tilly-engineer-skills`.
 
@@ -26,15 +26,15 @@ remote URLs. Reports are factual prose and bullets only; they must not contain
 tables or code blocks.
 
 The local identity is a random `install_id` stored under
-`.tilly/field-reports/`. It is not the project name and not a user identity.
+`.tes/field-reports/`. It is not the project name and not a user identity.
 
 ## GitHub Receiver
 
-The GitHub side is governed by `.github/ISSUE_TEMPLATE/tilly-field-report.yml`,
+The GitHub side is governed by `.github/ISSUE_TEMPLATE/tes-field-report.yml`,
 `.github/workflows/field-report-governance.yml`, and
 `scripts/field_reports_github_oracle.py`.
 
-The receiver requires the `tilly-field-report@1` schema marker, rejects reports
+The receiver requires the `tes-field-report@1` schema marker, rejects reports
 with code blocks, tables, absolute paths, private URLs, raw remotes, raw branch
 names, secrets, personal data, or raw stack traces, and labels accepted reports
 as sanitized. A rejected report is quarantined and closed. This workflow is a
@@ -44,12 +44,12 @@ second gate, not a privacy substitute for local sanitization.
 
 The local transport state is:
 
-- `.tilly/field-reports/outbox.jsonl` for pending sanitized events.
-- `.tilly/field-reports/receipts/**` for issue receipts without payload.
-- `.tilly/field-reports/DISABLED` as the opt-out sentinel.
+- `.tes/field-reports/outbox.jsonl` for pending sanitized events.
+- `.tes/field-reports/receipts/**` for issue receipts without payload.
+- `.tes/field-reports/DISABLED` as the opt-out sentinel.
 
 When the target is a Git repository, `.git/info/exclude` must ignore
-`.tilly/field-reports/` and the local artifact hygiene paths defined in
+`.tes/field-reports/` and the local artifact hygiene paths defined in
 `GIT-SAFETY.md`. Git remains the project history. The outbox, GitHub issues,
 hooks, receipts, rollback backups, bytecode, and SQLite caches are transport,
 cache, or evidence aids, not source of truth for project behavior.
@@ -64,7 +64,7 @@ Supported internal operations are `capture`, `drain`, `status`, `disable`,
 `install-hook` installs a local `pre-push` wrapper that calls:
 
 ```text
-python3 .tilly/bin/field_reports.py drain --target . --trigger pre-push
+python3 .tes/bin/field_reports.py drain --target . --trigger pre-push
 ```
 
 If an existing `pre-push` hook exists, it is backed up and chained before the
@@ -74,7 +74,7 @@ must not block the push.
 
 ## Opt-Out
 
-Opt-out is binary. Creating `.tilly/field-reports/DISABLED` stops both
+Opt-out is binary. Creating `.tes/field-reports/DISABLED` stops both
 collection and drain. Re-enabling removes that sentinel and restores the
 default active behavior.
 

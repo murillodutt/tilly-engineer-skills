@@ -8,11 +8,11 @@ python3 scripts/context_mesh_plan.py
 python3 scripts/field_reports.py --self-test
 python3 scripts/field_reports_github_oracle.py --self-test
 python3 scripts/materialize_adapter.py all --check
-python3 src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test
+python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test
 if [ -f docs/agents/cortex/CONTRACT.md ]; then
-  if [ -f .tilly/bin/cortex.py ]; then
-    python3 .tilly/bin/cortex.py reflect --target . "pre-commit Cortex reflection"
-    python3 .tilly/bin/cortex.py curate-plan --target . --backend lexical
+  if [ -f .tes/bin/cortex.py ]; then
+    python3 .tes/bin/cortex.py reflect --target . "pre-commit Cortex reflection"
+    python3 .tes/bin/cortex.py curate-plan --target . --backend lexical
   elif [ -f scripts/cortex.py ]; then
     python3 scripts/cortex.py reflect --target . "pre-commit Cortex reflection"
     python3 scripts/cortex.py curate-plan --target . --backend lexical

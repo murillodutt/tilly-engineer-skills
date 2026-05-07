@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.30</span>
+          <span class="brand-meta">User manual · v0.3.31</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1033,11 +1033,11 @@
             </div>
             <div class="panel">
               <span class="panel-tag">Git safety</span>
-              <p>Tilly protects local rollback and cache artifacts with <code>.git/info/exclude</code>: <code>.tilly/bin/*.bak-*</code>, Python bytecode, Field Reports state, and Cortex SQLite caches stay out of normal staging. Tilly does not ignore <code>.tilly/bin/*.py</code>, because those helpers are the installed runtime surface.</p>
+              <p>Tilly protects local rollback and cache artifacts with <code>.git/info/exclude</code>: <code>.tes/bin/*.bak-*</code>, Python bytecode, Field Reports state, and Cortex SQLite caches stay out of normal staging. Tilly does not ignore <code>.tes/bin/*.py</code>, because those helpers are the installed runtime surface.</p>
             </div>
             <div class="panel">
               <span class="panel-tag">Gatillos de comando</span>
-              <p>The normal user interface is a Tilly intent typed in the agent window, not a shell command. Use <code>/tilly:init</code> for first setup and <code>/tilly:update</code> for an already meshed project; the active agent then selects and runs the smallest safe oracle. The shell commands in this manual are exposed so users can audit what the agent may invoke.</p>
+              <p>The normal user interface is a Tilly intent typed in the agent window, not a shell command. Use <code>/tes:init</code> for first setup and <code>/tes:update</code> for an already meshed project; the active agent then selects and runs the smallest safe oracle. The shell commands in this manual are exposed so users can audit what the agent may invoke.</p>
             </div>
           </div>
         </section>
@@ -1047,7 +1047,7 @@
           <div class="chapter-body">
             <ol>
               <li>Open the target project in Codex, Claude Code or Cursor.</li>
-              <li>Type <code>/tilly:init</code> for first setup or <code>/tilly:update</code> for an existing Tilly mesh. Otherwise paste the installer prompt from the README or <code>docs/install/MINI-PROMPT.md</code>.</li>
+              <li>Type <code>/tes:init</code> for first setup or <code>/tes:update</code> for an existing TES mesh. Otherwise paste the installer prompt from the README or <code>docs/install/MINI-PROMPT.md</code>.</li>
               <li>Let the installer run Step Zero before any edit.</li>
               <li>Choose a route: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code> or <code>audit</code>.</li>
               <li>Read the final report before asking for commit or push.</li>
@@ -1103,8 +1103,8 @@
   LINKS.md
   sources/
   cells/
-.tilly/cortex/recall.sqlite
-.tilly/cortex/semantic.sqlite</code></pre>
+.tes/cortex/recall.sqlite
+.tes/cortex/semantic.sqlite</code></pre>
             </div>
             <p>Cells must include <code>## Claim</code> and <code>## Evidence</code>. <code>sources/**</code> is immutable after import. <code>learn</code> proposes without writing; <code>curate-plan</code> classifies merge, split, link, tension, evidence-gap, redundancy and reject candidates without writing memory; <code>apply --yes</code> writes only authorized, evidenced cells and refreshes recall after audit.</p>
             <p>The deterministic gate uses <code>--backend lexical</code>. Real environments may run <code>--backend xenova</code> or <code>--backend auto</code> with the optional <code>@huggingface/transformers</code> dependency and <code>Xenova/multilingual-e5-small</code>. Explicit Xenova reports <code>BLOCKED</code> when unavailable; <code>auto</code> reports <code>DEGRADED</code> when it falls back to lexical.</p>
@@ -1114,13 +1114,13 @@
         <section class="chapter" id="cli">
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
-            <p>These commands are agent-callable oracles, not the normal user interface. In normal use, the active IDE agent invokes them from the current context window; humans run them directly only for package maintenance, debugging or certification review. Use the Tilly package root for package checks, or pass <code>--target</code> when operating on another project or vault. <code>tilly_init.py</code> recertifies package health, scans the target project, writes <code>docs/agents/PROJECT-REGISTER.md</code> and stores a full manifest under <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefer intent command/prompts: <code>/tilly:init</code> for setup and <code>/tilly:update</code> for updating. The update probe compares installed and cloud versions, detects applied IDE surfaces and recommends the route. The complete command inventory is below because this manual is the user entrypoint; the routing matrix lives in <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
+            <p>These commands are agent-callable oracles, not the normal user interface. In normal use, the active IDE agent invokes them from the current context window; humans run them directly only for package maintenance, debugging or certification review. Use the TES package root for package checks, or pass <code>--target</code> when operating on another project or vault. <code>tes_init.py</code> recertifies package health, scans the target project, writes <code>docs/agents/PROJECT-REGISTER.md</code> and stores a full manifest under <code>docs/agents/evidence/**</code>.</p>
+            <p>Prefer intent command/prompts: <code>/tes:init</code> for setup and <code>/tes:update</code> for updating. The update probe compares installed and cloud versions, detects applied IDE surfaces and recommends the route. The complete command inventory is below because this manual is the user entrypoint; the routing matrix lives in <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
             <div class="pre-wrap" data-label="cortex">
-<pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
-python3 scripts/tilly_init.py --self-test
-python3 scripts/tilly_update.py plan --target /path/to/project
-python3 scripts/tilly_update.py --self-test
+<pre><code>python3 scripts/tes_init.py --target /path/to/project --yes
+python3 scripts/tes_init.py --self-test
+python3 scripts/tes_update.py plan --target /path/to/project
+python3 scripts/tes_update.py --self-test
 python3 scripts/root_context.py analyze --target /path/to/project
 python3 scripts/root_context.py --self-test
 python3 scripts/field_reports.py status --target /path/to/project
@@ -1146,10 +1146,10 @@ python3 scripts/cortex.py --self-test</code></pre>
 <pre><code>npm run validate
 npm run install:dry-run
 npm run install:smoke
-npm run tilly:init -- --target /path/to/project --yes
-npm run tilly:init:self-test
-npm run tilly:update -- --target /path/to/project
-npm run tilly:update:self-test
+npm run tes:init -- --target /path/to/project --yes
+npm run tes:init:self-test
+npm run tes:update -- --target /path/to/project
+npm run tes:update:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
@@ -1217,7 +1217,7 @@ python3 scripts/adapter_parity_readiness.py
 python3 scripts/context_mesh_plan.py
 python3 scripts/context_mesh_run.py --backend fixture
 python3 scripts/context_mesh_convergence.py
-python3 src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test</code></pre>
+python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test</code></pre>
             </div>
           </div>
         </section>
@@ -1263,23 +1263,23 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tilly/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>. The installed helper set includes <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tilly_update.py</code> and <code>root_context.py</code>.</p>
+            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tes/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>. The installed helper set includes <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tes_update.py</code> and <code>root_context.py</code>.</p>
           </div>
         </section>
 
         <section class="chapter" id="field-reports">
           <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
           <div class="chapter-body">
-            <p>Tilly Field Reports is active by default. It sends only sanitized operational facts to the TES GitHub issue tracker during <code>git push</code>. It never sends code, diffs, prompts, file contents, secrets, personal data, absolute paths, raw stack traces, raw branch names or raw remotes.</p>
-            <p>The active agent installs a local <code>pre-push</code> hook and local state under <code>.tilly/field-reports/**</code>. If <code>gh</code>, network or authentication is unavailable, the outbox stays pending and the push continues.</p>
+            <p>TES Field Reports is active by default. It sends only sanitized operational facts to the TES GitHub issue tracker during <code>git push</code>. It never sends code, diffs, prompts, file contents, secrets, personal data, absolute paths, raw stack traces, raw branch names or raw remotes.</p>
+            <p>The active agent installs a local <code>pre-push</code> hook and local state under <code>.tes/field-reports/**</code>. If <code>gh</code>, network or authentication is unavailable, the outbox stays pending and the push continues.</p>
             <p>The GitHub receiver has its own issue template, schema check and quarantine workflow. Local sanitization remains the first privacy gate; GitHub governance is the second audit gate.</p>
             <p>To stop collaborating with TES field learning, type this prompt in the agent window, not in a shell:</p>
             <div class="pre-wrap" data-label="prompt">
-<pre><code>/tilly:field-reports:disable</code></pre>
+<pre><code>/tes:field-reports:disable</code></pre>
             </div>
             <p>To re-enable the default behavior later, type:</p>
             <div class="pre-wrap" data-label="prompt">
-<pre><code>/tilly:field-reports:enable</code></pre>
+<pre><code>/tes:field-reports:enable</code></pre>
             </div>
             <p>These prompts are interpreted by Tilly inside the current context window. The shell commands above are listed only so users can audit the internal oracle the agent may invoke.</p>
           </div>
@@ -1317,7 +1317,7 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="report">
           <div class="chapter-head"><span class="chapter-num">09</span><h2>Final report</h2></div>
           <div class="chapter-body">
-            <p>Every run ends with a short <strong>Tilly Context Mesh Convergence Report</strong>. The chat report should state status, source snapshot freshness, changed surfaces, root context gate, installed helper set, Field Reports state, gates, limits and rollback summary. Root context may be <code>PRESERVED</code> when project-owned bootloaders were intentionally left untouched; overwrite still requires review. Backup files are rollback artifacts, not new Tilly surfaces. Long inventories belong in the evidence file.</p>
+            <p>Every run ends with a short <strong>TES Context Mesh Convergence Report</strong>. The chat report should state status, source snapshot freshness, changed surfaces, root context gate, installed helper set, Field Reports state, gates, limits and rollback summary. Root context may be <code>PRESERVED</code> when project-owned bootloaders were intentionally left untouched; overwrite still requires review. Backup files are rollback artifacts, not new TES surfaces. Long inventories belong in the evidence file.</p>
             <p>If the source package commit is behind the current Tilly <code>main</code>, the report must say <code>STALE_SOURCE</code>. That means the target was certified against the recorded snapshot, not the latest package.</p>
             <div class="pre-wrap" data-label="report excerpt">
 <pre><code><span class="tok-key">User Manual</span>
@@ -1363,11 +1363,11 @@ git revert &lt;install-commit&gt;</code></pre>
             </div>
             <div class="panel">
               <span class="panel-tag">Seguridad Git</span>
-              <p>Tilly protege artefactos locales de rollback y caché con <code>.git/info/exclude</code>: <code>.tilly/bin/*.bak-*</code>, bytecode Python, estado de Field Reports y cachés SQLite de Cortex quedan fuera del staging normal. Tilly no ignora <code>.tilly/bin/*.py</code>, porque esos helpers son la superficie runtime instalada.</p>
+              <p>Tilly protege artefactos locales de rollback y caché con <code>.git/info/exclude</code>: <code>.tes/bin/*.bak-*</code>, bytecode Python, estado de Field Reports y cachés SQLite de Cortex quedan fuera del staging normal. Tilly no ignora <code>.tes/bin/*.py</code>, porque esos helpers son la superficie runtime instalada.</p>
             </div>
             <div class="panel">
               <span class="panel-tag">Gatilhos de comando</span>
-              <p>La interfaz normal del usuario es una intención Tilly escrita en la ventana del agente, no un comando de shell. Usa <code>/tilly:init</code> para la primera instalación y <code>/tilly:update</code> para un proyecto ya meshed; el agente activo elige y ejecuta el oráculo seguro más pequeño.</p>
+              <p>La interfaz normal del usuario es una intención Tilly escrita en la ventana del agente, no un comando de shell. Usa <code>/tes:init</code> para la primera instalación y <code>/tes:update</code> para un proyecto ya meshed; el agente activo elige y ejecuta el oráculo seguro más pequeño.</p>
             </div>
           </div>
         </section>
@@ -1377,7 +1377,7 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-body">
             <ol>
               <li>Abre el proyecto objetivo en Codex, Claude Code o Cursor.</li>
-              <li>Escribe <code>/tilly:init</code> para la primera instalación o <code>/tilly:update</code> para un mesh Tilly existente. Si no, pega el prompt de instalación del README o de <code>docs/install/MINI-PROMPT.md</code>.</li>
+              <li>Escribe <code>/tes:init</code> para la primera instalación o <code>/tes:update</code> para un mesh Tilly existente. Si no, pega el prompt de instalación del README o de <code>docs/install/MINI-PROMPT.md</code>.</li>
               <li>Deja que el instalador ejecute Step Zero antes de editar.</li>
               <li>Elige una ruta: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code> o <code>audit</code>.</li>
               <li>Lee el informe final antes de pedir commit o push.</li>
@@ -1433,8 +1433,8 @@ git revert &lt;install-commit&gt;</code></pre>
   LINKS.md
   sources/
   cells/
-.tilly/cortex/recall.sqlite
-.tilly/cortex/semantic.sqlite</code></pre>
+.tes/cortex/recall.sqlite
+.tes/cortex/semantic.sqlite</code></pre>
             </div>
             <p>Las cells deben incluir <code>## Claim</code> y <code>## Evidence</code>. <code>sources/**</code> es inmutable después del import. <code>learn</code> propone sin escribir; <code>curate-plan</code> clasifica candidatos de merge, split, link, tensión, gap de evidencia, redundancia y rechazo sin escribir memoria; <code>apply --yes</code> escribe solo cells autorizadas con evidencia y refresca recall después del audit.</p>
             <p>El gate determinista usa <code>--backend lexical</code>. Ambientes reales pueden ejecutar <code>--backend xenova</code> o <code>--backend auto</code> con la dependencia opcional <code>@huggingface/transformers</code> y <code>Xenova/multilingual-e5-small</code>. Xenova explícito reporta <code>BLOCKED</code> si no está disponible; <code>auto</code> reporta <code>DEGRADED</code> cuando cae a lexical.</p>
@@ -1444,13 +1444,13 @@ git revert &lt;install-commit&gt;</code></pre>
         <section class="chapter" id="cli-es">
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
-            <p>Estos comandos son oráculos invocables por el agente, no la interfaz normal del usuario. En el uso normal, el agente activo del IDE los ejecuta desde la ventana de contexto; humanos los ejecutan directamente solo para mantenimiento del paquete, debugging o revisión de certificación. Usa la raíz del paquete Tilly para checks del paquete, o <code>--target</code> para operar sobre otro proyecto o vault. <code>tilly_init.py</code> recertifica la salud del paquete, escanea el proyecto objetivo, escribe <code>docs/agents/PROJECT-REGISTER.md</code> y guarda manifiestos con timestamp en <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefiere comandos/prompts de intención: <code>/tilly:init</code> para instalar y <code>/tilly:update</code> para actualizar. El update probe compara versión instalada y versión cloud, detecta superficies IDE aplicadas y recomienda la ruta.</p>
+            <p>Estos comandos son oráculos invocables por el agente, no la interfaz normal del usuario. En el uso normal, el agente activo del IDE los ejecuta desde la ventana de contexto; humanos los ejecutan directamente solo para mantenimiento del paquete, debugging o revisión de certificación. Usa la raíz del paquete Tilly para checks del paquete, o <code>--target</code> para operar sobre otro proyecto o vault. <code>tes_init.py</code> recertifica la salud del paquete, escanea el proyecto objetivo, escribe <code>docs/agents/PROJECT-REGISTER.md</code> y guarda manifiestos con timestamp en <code>docs/agents/evidence/**</code>.</p>
+            <p>Prefiere comandos/prompts de intención: <code>/tes:init</code> para instalar y <code>/tes:update</code> para actualizar. El update probe compara versión instalada y versión cloud, detecta superficies IDE aplicadas y recomienda la ruta.</p>
             <div class="pre-wrap" data-label="cortex">
-<pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
-python3 scripts/tilly_init.py --self-test
-python3 scripts/tilly_update.py plan --target /path/to/project
-python3 scripts/tilly_update.py --self-test
+<pre><code>python3 scripts/tes_init.py --target /path/to/project --yes
+python3 scripts/tes_init.py --self-test
+python3 scripts/tes_update.py plan --target /path/to/project
+python3 scripts/tes_update.py --self-test
 python3 scripts/root_context.py analyze --target /path/to/project
 python3 scripts/root_context.py --self-test
 python3 scripts/field_reports.py status --target /path/to/project
@@ -1476,10 +1476,10 @@ python3 scripts/cortex.py --self-test</code></pre>
 <pre><code>npm run validate
 npm run install:dry-run
 npm run install:smoke
-npm run tilly:init -- --target /path/to/project --yes
-npm run tilly:init:self-test
-npm run tilly:update -- --target /path/to/project
-npm run tilly:update:self-test
+npm run tes:init -- --target /path/to/project --yes
+npm run tes:init:self-test
+npm run tes:update -- --target /path/to/project
+npm run tes:update:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
@@ -1547,7 +1547,7 @@ python3 scripts/adapter_parity_readiness.py
 python3 scripts/context_mesh_plan.py
 python3 scripts/context_mesh_run.py --backend fixture
 python3 scripts/context_mesh_convergence.py
-python3 src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test</code></pre>
+python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test</code></pre>
             </div>
           </div>
         </section>
@@ -1593,23 +1593,23 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Las herramientas MCP con escritura quedan fuera de esta versión. La activación escribe solo <code>.tilly/bin/**</code> y configuración de runtime por proyecto; no debe tocar configuración MCP global, secretos, hooks o <code>sources/**</code>. El conjunto instalado incluye <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tilly_update.py</code> y <code>root_context.py</code>.</p>
+            <p>Las herramientas MCP con escritura quedan fuera de esta versión. La activación escribe solo <code>.tes/bin/**</code> y configuración de runtime por proyecto; no debe tocar configuración MCP global, secretos, hooks o <code>sources/**</code>. El conjunto instalado incluye <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tes_update.py</code> y <code>root_context.py</code>.</p>
           </div>
         </section>
 
         <section class="chapter" id="field-reports-es">
           <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
           <div class="chapter-body">
-            <p>Tilly Field Reports está activo por defecto. Envía solo hechos operativos sanitizados al issue tracker GitHub de TES durante <code>git push</code>. Nunca envía código, diffs, prompts, contenido de archivos, secretos, datos personales, paths absolutos, stack traces crudos, nombres de branch crudos o remotes crudos.</p>
-            <p>El agente activo instala un hook local <code>pre-push</code> y estado local en <code>.tilly/field-reports/**</code>. Si <code>gh</code>, red o autenticación no están disponibles, el outbox queda pendiente y el push continúa.</p>
+            <p>TES Field Reports está activo por defecto. Envía solo hechos operativos sanitizados al issue tracker GitHub de TES durante <code>git push</code>. Nunca envía código, diffs, prompts, contenido de archivos, secretos, datos personales, paths absolutos, stack traces crudos, nombres de branch crudos o remotes crudos.</p>
+            <p>El agente activo instala un hook local <code>pre-push</code> y estado local en <code>.tes/field-reports/**</code>. Si <code>gh</code>, red o autenticación no están disponibles, el outbox queda pendiente y el push continúa.</p>
             <p>El receptor GitHub tiene template, verificación de schema y workflow de cuarentena. La sanitización local es la primera barrera de privacidad; GitHub es la segunda barrera de auditoría.</p>
             <p>Para dejar de colaborar con el aprendizaje de campo de TES, escribe este prompt en la ventana del agente, no en una shell:</p>
             <div class="pre-wrap" data-label="prompt">
-<pre><code>/tilly:field-reports:disable</code></pre>
+<pre><code>/tes:field-reports:disable</code></pre>
             </div>
             <p>Para reactivar el comportamiento por defecto después, escribe:</p>
             <div class="pre-wrap" data-label="prompt">
-<pre><code>/tilly:field-reports:enable</code></pre>
+<pre><code>/tes:field-reports:enable</code></pre>
             </div>
             <p>Estos prompts son interpretados por Tilly dentro de la ventana de contexto actual. Los comandos shell se listan arriba solo para auditar el oráculo interno que el agente puede invocar.</p>
           </div>
@@ -1647,7 +1647,7 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="report-es">
           <div class="chapter-head"><span class="chapter-num">09</span><h2>Informe final</h2></div>
           <div class="chapter-body">
-            <p>Cada ejecución termina con un <strong>Tilly Context Mesh Convergence Report</strong> corto. El informe en el chat debe decir estado, frescura del snapshot fuente, superficies cambiadas, gate de contexto raíz, helper set instalado, estado de Field Reports, gates, límites y resumen de rollback. El contexto raíz puede aparecer como <code>PRESERVED</code> cuando bootloaders propios del proyecto se dejaron intactos; sobrescribirlos sigue requiriendo revisión. Los backups son artefactos de rollback, no nuevas superficies Tilly. Los inventarios largos van al archivo de evidencia.</p>
+            <p>Cada ejecución termina con un <strong>TES Context Mesh Convergence Report</strong> corto. El informe en el chat debe decir estado, frescura del snapshot fuente, superficies cambiadas, gate de contexto raíz, helper set instalado, estado de Field Reports, gates, límites y resumen de rollback. El contexto raíz puede aparecer como <code>PRESERVED</code> cuando bootloaders propios del proyecto se dejaron intactos; sobrescribirlos sigue requiriendo revisión. Los backups son artefactos de rollback, no nuevas superficies TES. Los inventarios largos van al archivo de evidencia.</p>
             <p>Si el commit del paquete fuente está detrás del <code>main</code> actual de Tilly, el informe debe decir <code>STALE_SOURCE</code>. Eso significa que el target fue certificado contra el snapshot registrado, no contra el paquete más reciente.</p>
             <div class="pre-wrap" data-label="extracto">
 <pre><code><span class="tok-key">User Manual</span>
@@ -1693,11 +1693,11 @@ git revert &lt;install-commit&gt;</code></pre>
             </div>
             <div class="panel">
               <span class="panel-tag">Segurança Git</span>
-              <p>A Tilly protege artefatos locais de rollback e cache com <code>.git/info/exclude</code>: <code>.tilly/bin/*.bak-*</code>, bytecode Python, estado do Field Reports e caches SQLite do Cortex ficam fora do staging normal. A Tilly não ignora <code>.tilly/bin/*.py</code>, porque estes helpers são a superfície runtime instalada.</p>
+              <p>A Tilly protege artefatos locais de rollback e cache com <code>.git/info/exclude</code>: <code>.tes/bin/*.bak-*</code>, bytecode Python, estado do Field Reports e caches SQLite do Cortex ficam fora do staging normal. A Tilly não ignora <code>.tes/bin/*.py</code>, porque estes helpers são a superfície runtime instalada.</p>
             </div>
             <div class="panel">
               <span class="panel-tag">Command triggers</span>
-              <p>A interface normal do usuário é uma intenção Tilly digitada na janela do agente, não um comando de shell. Use <code>/tilly:init</code> para primeira instalação e <code>/tilly:update</code> ou <code>Atualizar a Tilly</code> para um projeto já meshed; o agente ativo escolhe e executa o menor oráculo seguro.</p>
+              <p>A interface normal do usuário é uma intenção Tilly digitada na janela do agente, não um comando de shell. Use <code>/tes:init</code> para primeira instalação e <code>/tes:update</code> ou <code>Atualizar TES</code> para um projeto já meshed; o agente ativo escolhe e executa o menor oráculo seguro.</p>
             </div>
           </div>
         </section>
@@ -1707,7 +1707,7 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-body">
             <ol>
               <li>Abra o projeto alvo no Codex, Claude Code ou Cursor.</li>
-              <li>Digite <code>/tilly:init</code> para primeira instalação ou <code>/tilly:update</code> para um mesh Tilly existente. Caso contrário, cole o prompt de instalação do README ou de <code>docs/install/MINI-PROMPT.md</code>.</li>
+              <li>Digite <code>/tes:init</code> para primeira instalação ou <code>/tes:update</code> para um mesh Tilly existente. Caso contrário, cole o prompt de instalação do README ou de <code>docs/install/MINI-PROMPT.md</code>.</li>
               <li>Deixe o instalador rodar o Step Zero antes de qualquer edição.</li>
               <li>Escolha uma rota: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code> ou <code>audit</code>.</li>
               <li>Leia o relatório final antes de pedir commit ou push.</li>
@@ -1763,8 +1763,8 @@ git revert &lt;install-commit&gt;</code></pre>
   LINKS.md
   sources/
   cells/
-.tilly/cortex/recall.sqlite
-.tilly/cortex/semantic.sqlite</code></pre>
+.tes/cortex/recall.sqlite
+.tes/cortex/semantic.sqlite</code></pre>
             </div>
             <p>Cells precisam ter <code>## Claim</code> e <code>## Evidence</code>. <code>sources/**</code> é imutável depois do import. <code>learn</code> propõe sem escrever; <code>curate-plan</code> classifica candidatos de merge, split, link, tensão, gap de evidência, redundância e rejeição sem escrever memória; <code>apply --yes</code> escreve só cells autorizadas com evidência e atualiza recall depois do audit.</p>
             <p>O gate determinístico usa <code>--backend lexical</code>. Ambientes reais podem rodar <code>--backend xenova</code> ou <code>--backend auto</code> com a dependência opcional <code>@huggingface/transformers</code> e <code>Xenova/multilingual-e5-small</code>. Xenova explícito reporta <code>BLOCKED</code> quando indisponível; <code>auto</code> reporta <code>DEGRADED</code> quando cai para lexical.</p>
@@ -1774,13 +1774,13 @@ git revert &lt;install-commit&gt;</code></pre>
         <section class="chapter" id="cli-pt">
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
-            <p>Estes comandos são oráculos chamáveis pelo agente, não a interface normal do usuário. No uso normal, o agente ativo do IDE os invoca a partir da janela de contexto; humanos os rodam diretamente só para manutenção do pacote, debug ou revisão de certificação. Use a raiz do pacote Tilly para checks do pacote, ou <code>--target</code> para operar em outro projeto ou vault. <code>tilly_init.py</code> recertifica a saúde do pacote, varre o projeto alvo, escreve <code>docs/agents/PROJECT-REGISTER.md</code> e guarda manifestos com timestamp em <code>docs/agents/evidence/**</code>.</p>
-            <p>Prefira comandos/prompts de intenção: <code>/tilly:init</code> para instalar e <code>/tilly:update</code> para atualizar. O update probe compara versão instalada e versão na nuvem, detecta superfícies IDE aplicadas e recomenda a rota.</p>
+            <p>Estes comandos são oráculos chamáveis pelo agente, não a interface normal do usuário. No uso normal, o agente ativo do IDE os invoca a partir da janela de contexto; humanos os rodam diretamente só para manutenção do pacote, debug ou revisão de certificação. Use a raiz do pacote Tilly para checks do pacote, ou <code>--target</code> para operar em outro projeto ou vault. <code>tes_init.py</code> recertifica a saúde do pacote, varre o projeto alvo, escreve <code>docs/agents/PROJECT-REGISTER.md</code> e guarda manifestos com timestamp em <code>docs/agents/evidence/**</code>.</p>
+            <p>Prefira comandos/prompts de intenção: <code>/tes:init</code> para instalar e <code>/tes:update</code> para atualizar. O update probe compara versão instalada e versão na nuvem, detecta superfícies IDE aplicadas e recomenda a rota.</p>
             <div class="pre-wrap" data-label="cortex">
-<pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
-python3 scripts/tilly_init.py --self-test
-python3 scripts/tilly_update.py plan --target /path/to/project
-python3 scripts/tilly_update.py --self-test
+<pre><code>python3 scripts/tes_init.py --target /path/to/project --yes
+python3 scripts/tes_init.py --self-test
+python3 scripts/tes_update.py plan --target /path/to/project
+python3 scripts/tes_update.py --self-test
 python3 scripts/root_context.py analyze --target /path/to/project
 python3 scripts/root_context.py --self-test
 python3 scripts/field_reports.py status --target /path/to/project
@@ -1806,10 +1806,10 @@ python3 scripts/cortex.py --self-test</code></pre>
 <pre><code>npm run validate
 npm run install:dry-run
 npm run install:smoke
-npm run tilly:init -- --target /path/to/project --yes
-npm run tilly:init:self-test
-npm run tilly:update -- --target /path/to/project
-npm run tilly:update:self-test
+npm run tes:init -- --target /path/to/project --yes
+npm run tes:init:self-test
+npm run tes:update -- --target /path/to/project
+npm run tes:update:self-test
 npm run install:adapter -- --target /path/to/project --adapter all --yes
 npm run mcp:dry-run -- --target /path/to/project --adapter all
 npm run mcp:install -- --target /path/to/project --adapter codex --yes
@@ -1877,7 +1877,7 @@ python3 scripts/adapter_parity_readiness.py
 python3 scripts/context_mesh_plan.py
 python3 scripts/context_mesh_run.py --backend fixture
 python3 scripts/context_mesh_convergence.py
-python3 src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test</code></pre>
+python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test</code></pre>
             </div>
           </div>
         </section>
@@ -1923,23 +1923,23 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Ferramentas MCP com escrita ficam fora desta versão. A ativação escreve apenas <code>.tilly/bin/**</code> e configuração de runtime por projeto; não deve tocar configuração MCP global, segredos, hooks ou <code>sources/**</code>. O conjunto instalado inclui <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tilly_update.py</code> e <code>root_context.py</code>.</p>
+            <p>Ferramentas MCP com escrita ficam fora desta versão. A ativação escreve apenas <code>.tes/bin/**</code> e configuração de runtime por projeto; não deve tocar configuração MCP global, segredos, hooks ou <code>sources/**</code>. O conjunto instalado inclui <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tes_update.py</code> e <code>root_context.py</code>.</p>
           </div>
         </section>
 
         <section class="chapter" id="field-reports-pt">
           <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
           <div class="chapter-body">
-            <p>O Tilly Field Reports fica ativo por padrão. Ele envia apenas fatos operacionais sanitizados para issues do GitHub da TES durante <code>git push</code>. Ele nunca envia código, diff, prompt, conteúdo de arquivo, segredo, dado pessoal, path absoluto, stack trace cru, nome bruto de branch ou remote bruto.</p>
-            <p>O agente ativo instala um hook local <code>pre-push</code> e estado local em <code>.tilly/field-reports/**</code>. Se <code>gh</code>, rede ou autenticação estiverem indisponíveis, o outbox fica pendente e o push continua.</p>
+            <p>O TES Field Reports fica ativo por padrão. Ele envia apenas fatos operacionais sanitizados para issues do GitHub da TES durante <code>git push</code>. Ele nunca envia código, diff, prompt, conteúdo de arquivo, segredo, dado pessoal, path absoluto, stack trace cru, nome bruto de branch ou remote bruto.</p>
+            <p>O agente ativo instala um hook local <code>pre-push</code> e estado local em <code>.tes/field-reports/**</code>. Se <code>gh</code>, rede ou autenticação estiverem indisponíveis, o outbox fica pendente e o push continua.</p>
             <p>O receptor GitHub tem template, verificação de schema e workflow de quarentena. A sanitização local é a primeira barreira de privacidade; o GitHub é a segunda barreira de auditoria.</p>
             <p>O usuário que não desejar colaborar com a evolução da TES deve digitar este prompt na janela do agente, não no shell:</p>
             <div class="pre-wrap" data-label="prompt">
-<pre><code>/tilly:field-reports:disable</code></pre>
+<pre><code>/tes:field-reports:disable</code></pre>
             </div>
             <p>Para reativar o comportamento padrão depois, digite:</p>
             <div class="pre-wrap" data-label="prompt">
-<pre><code>/tilly:field-reports:enable</code></pre>
+<pre><code>/tes:field-reports:enable</code></pre>
             </div>
             <p>Estes prompts são interpretados pela Tilly dentro da janela de contexto atual. Os comandos shell acima aparecem apenas para auditar o oráculo interno que o agente pode invocar.</p>
           </div>
@@ -1977,7 +1977,7 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="report-pt">
           <div class="chapter-head"><span class="chapter-num">09</span><h2>Relatório final</h2></div>
           <div class="chapter-body">
-            <p>Todo fluxo termina com um <strong>Tilly Context Mesh Convergence Report</strong> curto. O relatório na conversa deve dizer status, frescor do snapshot fonte, superfícies alteradas, gate de contexto raiz, helper set instalado, estado do Field Reports, gates, limites e resumo de rollback. O contexto raiz pode aparecer como <code>PRESERVED</code> quando bootloaders próprios do projeto foram deixados intactos; sobrescrever ainda exige revisão. Backups são artefatos de rollback, não novas superfícies Tilly. Inventários longos ficam no arquivo de evidência.</p>
+            <p>Todo fluxo termina com um <strong>TES Context Mesh Convergence Report</strong> curto. O relatório na conversa deve dizer status, frescor do snapshot fonte, superfícies alteradas, gate de contexto raiz, helper set instalado, estado do Field Reports, gates, limites e resumo de rollback. O contexto raiz pode aparecer como <code>PRESERVED</code> quando bootloaders próprios do projeto foram deixados intactos; sobrescrever ainda exige revisão. Backups são artefatos de rollback, não novas superfícies TES. Inventários longos ficam no arquivo de evidência.</p>
             <p>Se o commit do pacote fonte estiver atrás do <code>main</code> atual da Tilly, o relatório deve dizer <code>STALE_SOURCE</code>. Isso significa que o alvo foi certificado contra o snapshot registrado, não contra o pacote mais recente.</p>
             <div class="pre-wrap" data-label="trecho">
 <pre><code><span class="tok-key">User Manual</span>
@@ -2000,7 +2000,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.30</span>
+        <span>Tilly Engineer Skills · v0.3.31</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>
@@ -2011,7 +2011,7 @@ git revert &lt;install-commit&gt;</code></pre>
 
   <script>
     (() => {
-      const STORAGE_KEY = "tilly-manual-lang";
+      const STORAGE_KEY = "tes-manual-lang";
       const SUPPORTED = ["en", "es", "pt"];
 
       const langButtons = document.querySelectorAll("[data-lang-pick]");

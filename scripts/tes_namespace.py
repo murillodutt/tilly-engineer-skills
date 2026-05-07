@@ -17,7 +17,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.30"
+VERSION = "0.3.31"
 
 ACTIVE_PREFIXES = (
     ".github/",
@@ -46,8 +46,13 @@ DEFAULT_SKIPPED_PREFIXES = (
 SEARCH_PATTERN = (
     r"(/tilly:|tilly:|tilly-|tilly_|tilly\.|\.tilly/|\.tilly\b|"
     r"tilly-cortex|tilly-field-report|tilly-engineering-discipline|tilly-guidelines|"
+    r"tilly-version|tilly-skills|tilly-root|tilly-reference|tilly-discipline|"
+    r"tilly-navigation|tilly-root-context|tilly-install-smoke|tilly-engineer-skills-|"
+    r"tilly update|update Tilly|atualizar Tilly|initialize Tilly|install Tilly|recertify Tilly|"
+    r"inicializar Tilly|instalar Tilly|recertificar Tilly|"
     r"Tilly (Init|Cortex|MCP|Doctor|Adapter|Bench|Field Report|Field Reports)|"
-    r"Atualizar a Tilly|Tilly, inicialize este projeto|TILLY_FIELD_REPORTS_PRE_PUSH)"
+    r"Atualizar a Tilly|Tilly, initialize this project|Tilly, inicialize este projeto|"
+    r"tilly init|TILLY_FIELD_REPORTS_PRE_PUSH)"
 )
 SKIPPED_PARTS = {
     "__pycache__",
@@ -167,10 +172,19 @@ CONTENT_REPLACEMENTS = (
     Replacement("scripts/tilly_update.py", "scripts/tes_update.py", "python script"),
     Replacement("tilly_init.py", "tes_init.py", "python script"),
     Replacement("tilly_update.py", "tes_update.py", "python script"),
+    Replacement("tilly_init", "tes_init", "python script"),
+    Replacement("tilly_update", "tes_update", "python script"),
+    Replacement(".agents/skills/tilly-*/", ".agents/skills/tes-*/", "skill wildcard"),
+    Replacement(".agents/skills/tilly-*/**", ".agents/skills/tes-*/**", "skill wildcard"),
+    Replacement("src/adapters/codex/skills/tilly-*/", "src/adapters/codex/skills/tes-*/", "skill wildcard"),
+    Replacement("src/adapters/claude/skills/tilly-*/", "src/adapters/claude/skills/tes-*/", "skill wildcard"),
+    Replacement("src/adapters/claude/skills/tilly-*/SKILL.md", "src/adapters/claude/skills/tes-*/SKILL.md", "skill wildcard"),
     Replacement(".tilly/bin", ".tes/bin", "installed runtime path"),
     Replacement(".tilly/field-reports", ".tes/field-reports", "field reports runtime path"),
     Replacement(".tilly/cortex", ".tes/cortex", "cortex derived cache path"),
     Replacement(".tilly/**", ".tes/**", "installed runtime path"),
+    Replacement(".tilly/", ".tes/", "installed runtime path"),
+    Replacement(".tilly", ".tes", "installed runtime path"),
     Replacement("tilly-cortex-mcp", "tes-cortex-mcp", "mcp server title"),
     Replacement("mcp_servers.tilly-cortex", "mcp_servers.tes-cortex", "mcp config"),
     Replacement("tilly-cortex", "tes-cortex", "mcp server or skill"),
@@ -193,8 +207,48 @@ CONTENT_REPLACEMENTS = (
     Replacement("Tilly Init", "TES Init", "skill display name"),
     Replacement("Tilly MCP", "TES MCP", "skill display name"),
     Replacement("Atualizar a Tilly", "Atualizar TES", "natural language trigger"),
+    Replacement("tilly update", "tes update", "natural language trigger"),
+    Replacement("update Tilly", "update TES", "natural language trigger"),
+    Replacement("atualizar Tilly", "atualizar TES", "natural language trigger"),
+    Replacement("initialize Tilly", "initialize TES", "natural language trigger"),
+    Replacement("install Tilly", "install TES", "natural language trigger"),
+    Replacement("recertify Tilly", "recertify TES", "natural language trigger"),
+    Replacement("inicializar Tilly", "inicializar TES", "natural language trigger"),
+    Replacement("instalar Tilly", "instalar TES", "natural language trigger"),
+    Replacement("recertificar Tilly", "recertificar TES", "natural language trigger"),
+    Replacement("Tilly, initialize this project", "TES, initialize this project", "natural language trigger"),
     Replacement("Tilly, inicialize este projeto", "TES, inicialize este projeto", "natural language trigger"),
+    Replacement("tilly init", "tes init", "natural language trigger"),
     Replacement("TILLY_FIELD_REPORTS_PRE_PUSH", "TES_FIELD_REPORTS_PRE_PUSH", "environment flag"),
+    Replacement("[tilly-discipline]", "[tes-discipline]", "oracle label"),
+    Replacement("[tilly-reference]", "[tes-reference]", "oracle label"),
+    Replacement("[tilly-update]", "[tes-update]", "oracle label"),
+    Replacement("tilly-version", "tes-version", "issue field id"),
+    Replacement("tilly-skills", "tes-skills", "plugin id"),
+    Replacement("current-tilly-root", "current-tes-root", "root context state"),
+    Replacement("tilly-root-drift", "tes-root-drift", "root context state"),
+    Replacement("has_tilly", "has_tes", "python identifier"),
+    Replacement("-tilly-project-manifest", "-tes-project-manifest", "evidence filename"),
+    Replacement("-tilly-project-register", "-tes-project-register", "evidence filename"),
+    Replacement("-tilly-initialization", "-tes-initialization", "evidence filename"),
+    Replacement("tilly-context-installation", "tes-context-installation", "evidence filename"),
+    Replacement("tilly-lexical-curation-v1", "tes-lexical-curation-v1", "cortex model id"),
+    Replacement("<tilly-package>", "<tes-package>", "package placeholder"),
+    Replacement("tilly-manual-lang", "tes-manual-lang", "manual storage key"),
+    Replacement("tilly-navigation", "tes-navigation", "navigation library id"),
+    Replacement("pre-push.before-tilly-", "pre-push.before-tes-", "hook backup filename"),
+    Replacement('prefix="tilly-platform-surface-', 'prefix="tes-platform-surface-', "tempdir prefix"),
+    Replacement('prefix="tilly-field-github-', 'prefix="tes-field-github-', "tempdir prefix"),
+    Replacement('prefix="tilly-install-smoke-', 'prefix="tes-install-smoke-', "tempdir prefix"),
+    Replacement('prefix="tilly-claude-plugin-oracle-', 'prefix="tes-claude-plugin-oracle-', "tempdir prefix"),
+    Replacement('prefix="tilly-codex-context-mesh-', 'prefix="tes-codex-context-mesh-', "tempdir prefix"),
+    Replacement('prefix="tilly-update-', 'prefix="tes-update-', "tempdir prefix"),
+    Replacement('prefix="tilly-install-', 'prefix="tes-install-', "tempdir prefix"),
+    Replacement('prefix=f"tilly-install-smoke-', 'prefix=f"tes-install-smoke-', "tempdir prefix"),
+    Replacement('prefix="tilly-root-context-', 'prefix="tes-root-context-', "tempdir prefix"),
+    Replacement('prefix="tilly-engineer-skills-', 'prefix="tes-engineer-skills-', "tempdir prefix"),
+    Replacement("tilly_", "tes_", "python identifier"),
+    Replacement("tilly.", "tes.", "dotted namespace"),
 )
 
 
@@ -207,6 +261,8 @@ def classify_scope(rel: str) -> str:
         return "namespace_oracle"
     if rel == CATALOG_PATH:
         return "migration_catalog"
+    if rel == ".tilly" or rel.startswith(".tilly/"):
+        return "local_runtime"
     if rel.startswith("docs/evidence/"):
         return "historical_evidence"
     if rel in ACTIVE_FILES or rel.startswith(ACTIVE_PREFIXES):
@@ -214,6 +270,14 @@ def classify_scope(rel: str) -> str:
     if rel.startswith("docs/"):
         return "governed_doc"
     return "supporting_file"
+
+
+def classify_content_scope(rel: str, line: str) -> str:
+    if rel == "scripts/field_reports.py" and (
+        ".tilly/field-reports" in line or "legacy .tilly field reports" in line
+    ):
+        return "migration_bridge"
+    return classify_scope(rel)
 
 
 def is_active_scope(scope: str) -> bool:
@@ -285,8 +349,8 @@ def scan_content(files: list[Path], target: Path) -> list[ContentRename]:
         if text is None:
             continue
         rel = relpath(path, target)
-        scope = classify_scope(rel)
         for line_no, line in enumerate(text.splitlines(), start=1):
+            scope = classify_content_scope(rel, line)
             matched_positions: set[tuple[int, str]] = set()
             for replacement in CONTENT_REPLACEMENTS:
                 start = 0
@@ -345,6 +409,75 @@ def scan_package_scripts(target: Path) -> list[ScriptRename]:
 
 def active_items(items: list[Any]) -> list[Any]:
     return [item for item in items if is_active_scope(getattr(item, "scope", "active_surface"))]
+
+
+def remove_empty_parents(path: Path, target: Path) -> list[str]:
+    removed: list[str] = []
+    current = path.parent
+    while current != target and target in current.parents:
+        try:
+            current.rmdir()
+        except OSError:
+            break
+        removed.append(relpath(current, target))
+        current = current.parent
+    return removed
+
+
+def apply_namespace(target: Path, dry_run: bool = True) -> dict[str, Any]:
+    target = target.resolve()
+    before = build_report(target)
+    files = iter_files(target, include_historical=False)
+    content_writes: list[dict[str, Any]] = []
+    for path in files:
+        rel = relpath(path, target)
+        if not is_active_scope(classify_scope(rel)):
+            continue
+        text = read_text(path)
+        if text is None:
+            continue
+        new_text, categories = apply_replacements(text, CONTENT_REPLACEMENTS)
+        if new_text == text:
+            continue
+        content_writes.append({"path": rel, "categories": categories})
+        if not dry_run:
+            path.write_text(new_text, encoding="utf-8")
+
+    files_after_content = iter_files(target, include_historical=False)
+    path_renames = active_items(scan_paths(files_after_content, target))
+    moved: list[dict[str, Any]] = []
+    removed_dirs: list[str] = []
+    failures: list[str] = []
+    for item in sorted(path_renames, key=lambda rename: rename.path.count("/"), reverse=True):
+        source = target / item.path
+        destination = target / item.target
+        if not source.exists():
+            failures.append(f"source path missing before rename: {item.path}")
+            continue
+        if destination.exists():
+            failures.append(f"target path already exists before rename: {item.target}")
+            continue
+        moved.append(asdict(item))
+        if not dry_run:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            source.rename(destination)
+            removed_dirs.extend(remove_empty_parents(source, target))
+
+    after = build_report(target) if not dry_run else before
+    return {
+        "version": VERSION,
+        "status": "FAIL" if failures else "PASS",
+        "mode": "dry-run" if dry_run else "apply",
+        "target": str(target),
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "failures": failures,
+        "content_writes": content_writes,
+        "path_renames": moved,
+        "removed_empty_dirs": removed_dirs,
+        "before_counts": before["counts"],
+        "after_counts": after["counts"],
+        "writes": [] if dry_run else [item["path"] for item in content_writes] + [item["target"] for item in moved],
+    }
 
 
 def run_tool(command: list[str], target: Path) -> dict[str, Any]:
@@ -548,7 +681,13 @@ def build_report(target: Path, include_historical: bool = False, with_raw_invent
         "path_renames": [asdict(item) for item in path_renames],
         "package_script_renames": [asdict(item) for item in script_renames],
         "content_renames": [asdict(item) for item in content_renames],
-        "allowed_scopes": ["namespace_oracle", "migration_catalog", "historical_evidence"],
+        "allowed_scopes": [
+            "namespace_oracle",
+            "migration_catalog",
+            "historical_evidence",
+            "local_runtime",
+            "migration_bridge",
+        ],
         "skipped_prefixes": list(DEFAULT_SKIPPED_PREFIXES),
         "writes": [],
     }
@@ -742,6 +881,15 @@ def run_self_test() -> int:
             failures.append("rg inventory did not report line and column")
         if not inventory["grep_locations"]:
             failures.append("grep cross-check did not report locations")
+        dry_run = apply_namespace(target, dry_run=True)
+        if dry_run["status"] != "PASS" or not dry_run["path_renames"] or not dry_run["content_writes"]:
+            failures.append("dry-run apply must report planned writes and path renames")
+        applied = apply_namespace(target, dry_run=False)
+        if applied["status"] != "PASS":
+            failures.append("apply fixture must pass")
+        post_apply = build_report(target)
+        if post_apply["status"] != "PASS":
+            failures.append("post-apply fixture must pass namespace audit")
 
         clean = target / "clean"
         clean.mkdir()
@@ -782,6 +930,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     inventory_parser.add_argument("--output", type=Path)
     inventory_parser.add_argument("--include-historical", action="store_true")
     inventory_parser.add_argument("--no-ignore", action="store_true")
+    apply_parser = subparsers.add_parser("apply", help="Apply active TES namespace renames after review.")
+    apply_parser.add_argument("--target", type=Path, default=ROOT)
+    apply_parser.add_argument("--dry-run", action="store_true")
+    apply_parser.add_argument("--yes", action="store_true")
+    apply_parser.add_argument("--format", choices=("json",), default="json")
+    apply_parser.add_argument("--output", type=Path)
     return parser.parse_args(argv)
 
 
@@ -793,8 +947,15 @@ def main(argv: list[str]) -> int:
         inventory = build_raw_inventory(args.target, include_historical=args.include_historical, no_ignore=args.no_ignore)
         emit(inventory, args.format, args.output)
         return 0
+    if args.command == "apply":
+        if not args.dry_run and not args.yes:
+            print("apply requires --yes unless --dry-run is used", file=sys.stderr)
+            return 2
+        result = apply_namespace(args.target, dry_run=args.dry_run)
+        emit(result, args.format, args.output)
+        return 0 if result["status"] == "PASS" else 1
     if args.command not in {"report", "audit"}:
-        print("usage: tes_namespace.py [--self-test] {report,audit,inventory}", file=sys.stderr)
+        print("usage: tes_namespace.py [--self-test] {report,audit,inventory,apply}", file=sys.stderr)
         return 2
 
     report = build_report(

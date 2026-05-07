@@ -32,5 +32,5 @@ Record:
 ```text
 navigation_renderer: generic
 navigation_mode: command-navigation
-navigation_library: tilly-navigation@0.1.1
+navigation_library: tes-navigation@0.1.1
 ```

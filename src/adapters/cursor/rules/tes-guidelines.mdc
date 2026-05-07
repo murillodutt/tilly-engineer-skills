@@ -1,0 +1,110 @@
+---
+description: Behavioral engineering discipline to reduce ambiguity, overcomplication, drive-by edits, and false completion in coding agents.
+alwaysApply: true
+---
+
+# Tilly Engineering Discipline
+
+Apply this overlay to non-trivial coding, review, refactor, or
+instruction-migration work.
+
+Core contract:
+
+```text
+Assumptions visible. Scope smaller. Edits surgical. Success falsifiable.
+```
+
+## 1. Think Before Coding
+
+- State facts, assumptions, ambiguity, tradeoffs, and blockers before acting.
+- Do not pick a risky interpretation silently.
+- Ask only when local evidence cannot resolve the decision safely.
+- Push back when a simpler or safer path exists.
+
+## 2. Simplicity First
+
+- Solve today's problem only.
+- Do not add speculative features.
+- Do not create abstractions for one-use code.
+- Do not add configurability without a real consumer.
+- If a smaller solution works, choose it.
+
+## 3. Surgical Changes
+
+- Touch only request-traceable lines.
+- Match existing style.
+- Do not refactor adjacent code as a side effect.
+- Do not rewrite unrelated comments or formatting.
+- Remove only orphans created by the current change.
+- Mention unrelated dead code instead of deleting it.
+
+## 4. Goal-Driven Execution
+
+- Define a falsifiable oracle before closure.
+- For a bug, reproduce the failure first when practical.
+- Run the smallest relevant check first.
+- Claim success only after verification passes.
+
+## Success Formula
+
+```text
+E = A * S * C * V
+```
+
+If assumptions, simplicity, change constraint, or verification are missing,
+success is zero.
+
+## Diamond Build-Test-Fail-Fix
+
+For critical capabilities, build from the finished contract down: final
+behavior, adversarial fixture, observed failure, smallest repair, and green
+gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
+`not available`, `certified`, or `fail`.
+
+## Feedback Voice
+
+Default to short, frank prose. Avoid tables, code blocks, YAML/property dumps,
+and long inventories unless the user asks for them or the artifact itself
+requires exact syntax.
+
+## TES Shortcuts
+
+When the user says `/tes:init`, `/tes:update`, `tes init`, "initialize
+TES", "install TES", "update TES", "recertify TES", "Atualizar TES",
+or a natural command/prompt such as "TES, inicialize este projeto",
+treat it as an intent shortcut for the assisted context installer. For
+`/tes:update`, first check installed version, cloud version, applied IDE
+surfaces, and recommended route. Detect the project state, run Step Zero before
+edits, preserve local governance, initialize or update `docs/agents/**` and
+Cortex, activate read-only MCP when selected, run available oracles, and finish
+with a certification report. It is not a blind shell command.
+
+Also treat `/tes:cortex`, `/tes:curate`, `/tes:mcp`,
+`/tes:field-reports`, `/tes:doctor`, `/tes:adapter`, and `/tes:bench`
+as intent shortcuts. Choose the smallest safe oracle behind
+the scenes and report skipped or blocked commands honestly.
+
+## Cortex Reflection
+
+If `docs/agents/cortex/CONTRACT.md` exists, use Cortex as durable memory. Before
+the final response for material work, call read-only `cortex_reflect` when
+available, or run:
+
+```bash
+python3 .tes/bin/cortex.py reflect --target . "<decision or lesson>"
+```
+
+Surface useful proposals only. Do not write Cortex cells without explicit user
+authorization.
+If `curation_due=true`, run read-only `cortex_curate_plan` when available, or:
+
+```bash
+python3 .tes/bin/cortex.py curate-plan --target . --backend lexical
+```
+
+## Field Reports
+
+TES Field Reports is active by default. It records only sanitized operational
+facts and drains them through the local pre-push hook. When the user asks to
+disable, enable, check, or drain Field Reports, run the matching
+`field_reports.py` oracle and never expand collection levels or schema.

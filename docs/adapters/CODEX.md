@@ -13,7 +13,7 @@ tver: 0.5.0
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.30`.
+Project version: `0.3.31`.
 
 It follows the Codex customization order:
 
@@ -30,13 +30,13 @@ Official reference: <https://developers.openai.com/codex/concepts/customization>
 | Source | Target |
 |--------|--------|
 | `src/adapters/codex/AGENTS.md` | Target repo root `AGENTS.md` or merge into existing one |
-| `src/adapters/codex/skills/tilly-engineering-discipline/` | Target repo `.agents/skills/tilly-engineering-discipline/` |
-| `src/adapters/codex/skills/tilly-*/` | Target repo `.agents/skills/tilly-*/` command-shortcut skills |
+| `src/adapters/codex/skills/tes-engineering-discipline/` | Target repo `.agents/skills/tes-engineering-discipline/` |
+| `src/adapters/codex/skills/tes-*/` | Target repo `.agents/skills/tes-*/` command-shortcut skills |
 | `scripts/install_mcp.py` | Optional project-scoped Cortex MCP activation |
 | `scripts/validate_reference_package.py` | Optional package validation script |
 
 For a global personal skill, copy the skill directory to
-`$HOME/.agents/skills/tilly-engineering-discipline/`.
+`$HOME/.agents/skills/tes-engineering-discipline/`.
 
 Do not treat local Codex runtime caches or tool-specific user directories as
 canonical package source. They are installed/runtime surfaces.
@@ -49,20 +49,20 @@ Codex uses progressive disclosure for skills:
 - `SKILL.md` loads only when the workflow is selected.
 - References and scripts load or run only when needed.
 
-The `/tilly:*` shortcuts map to Codex skills. `/tilly:init`, `/tilly:update`,
-`tilly init`, and natural init/update command-prompts all route to
-`tilly-init`. They keep the user entrypoint short while delegating real work to
+The `/tes:*` shortcuts map to Codex skills. `/tes:init`, `/tes:update`,
+`tes init`, and natural init/update command-prompts all route to
+`tes-init`. They keep the user entrypoint short while delegating real work to
 deterministic oracles:
 
 | Shortcut | Skill |
 |----------|-------|
-| `/tilly:init` | `tilly-init` |
-| `/tilly:update` | `tilly-init` |
-| `/tilly:cortex` | `tilly-cortex` |
-| `/tilly:mcp` | `tilly-mcp` |
-| `/tilly:doctor` | `tilly-doctor` |
-| `/tilly:adapter` | `tilly-adapter` |
-| `/tilly:bench` | `tilly-bench` |
+| `/tes:init` | `tes-init` |
+| `/tes:update` | `tes-init` |
+| `/tes:cortex` | `tes-cortex` |
+| `/tes:mcp` | `tes-mcp` |
+| `/tes:doctor` | `tes-doctor` |
+| `/tes:adapter` | `tes-adapter` |
+| `/tes:bench` | `tes-bench` |
 
 This keeps the four gates available without bloating every context window.
 
@@ -85,7 +85,7 @@ From this repository:
 python3 scripts/validate_reference_package.py
 python3 scripts/context_mesh_plan.py
 python3 scripts/materialize_adapter.py codex --check
-python3 src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py --self-test
+python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test
 ```
 
 In a target Codex repository, add project-specific checks such as tests,

@@ -15,13 +15,13 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.30"
+VERSION = "0.3.31"
 EVIDENCE_DIR = Path("docs/agents/evidence")
 ROOT_FILES = (
     ("codex", "AGENTS.md", "src/adapters/codex/AGENTS.md"),
     ("claude", "CLAUDE.md", "src/adapters/claude/CLAUDE.md"),
     ("cursor", "CURSOR.md", "src/adapters/cursor/CURSOR.md"),
-    ("cursor", ".cursor/rules/tilly-guidelines.mdc", "src/adapters/cursor/rules/tilly-guidelines.mdc"),
+    ("cursor", ".cursor/rules/tes-guidelines.mdc", "src/adapters/cursor/rules/tes-guidelines.mdc"),
     ("cursor", ".cursorrules", None),
 )
 IGNORE_TERMS = (
@@ -125,16 +125,16 @@ def classify_file(target: Path, adapter: str, path: Path, source_rel: str | None
     expected_sha = source_sha(source_rel)
     line_count = len(text.splitlines())
     snippets = project_context_lines(text)
-    has_tilly = any(term in text.lower() for term in ("tilly", "docs/agents", ".agents/skills", "/tilly"))
+    has_tes = any(term in text.lower() for term in ("tilly", "docs/agents", ".agents/skills", "/tilly"))
 
     if expected_sha and current_sha == expected_sha:
-        state = "current-tilly-root"
+        state = "current-tes-root"
         requires = False
     elif snippets:
-        state = "mixed-or-project-root-context" if has_tilly else "project-root-context"
+        state = "mixed-or-project-root-context" if has_tes else "project-root-context"
         requires = True
-    elif has_tilly:
-        state = "tilly-root-drift"
+    elif has_tes:
+        state = "tes-root-drift"
         requires = False
     elif line_count == 0:
         state = "empty"
@@ -222,7 +222,7 @@ def write_structure_plan(target: Path, required: list[dict[str, Any]]) -> str:
 
 def self_test() -> dict[str, Any]:
     failures: list[str] = []
-    with tempfile.TemporaryDirectory(prefix="tilly-root-context-") as tempdir:
+    with tempfile.TemporaryDirectory(prefix="tes-root-context-") as tempdir:
         target = Path(tempdir)
         clean = analyze(target)
         if clean["status"] != "PASS":

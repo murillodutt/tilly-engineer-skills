@@ -37,17 +37,17 @@ and does not modify the user's project `.gitignore`.
 
 The local exclude must cover:
 
-- `.tilly/bin/*.bak-*`
-- `.tilly/bin/__pycache__/`
+- `.tes/bin/*.bak-*`
+- `.tes/bin/__pycache__/`
 - `*.pyc`
-- `.tilly/field-reports/`
-- `.tilly/cortex/*.sqlite`
-- `.tilly/cortex/*.sqlite-*`
+- `.tes/field-reports/`
+- `.tes/cortex/*.sqlite`
+- `.tes/cortex/*.sqlite-*`
 
 These paths are rollback, transport, bytecode, or derived cache artifacts. They
-are not project memory and not durable Tilly surfaces.
+are not project memory and not durable TES surfaces.
 
-The installer must not ignore `.tilly/bin/*.py`. Those helper scripts are the
+The installer must not ignore `.tes/bin/*.py`. Those helper scripts are the
 project-scoped Tilly runtime surface and may be committed when the user chooses
 to preserve the installed mesh.
 
