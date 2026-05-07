@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.0
+tver: 0.4.1
 ---
 
 # Tilly Engineer Skills Docs
@@ -35,6 +35,7 @@ turning the repository root into an inventory.
 | Detailed examples | `evals/EXAMPLES.md` |
 | Cross-adapter parity gate | `evals/PARITY-GATE.md` |
 | Cross-tool agentic governance | `governance/AGENTIC-ALIGNMENT-GOVERNANCE.md` |
+| Maintainer correlation rule | `governance/MAINTAINER-CORRELATION-RULE.md` |
 | Adapter capability matrix | `adapters/ADAPTER-CAPABILITY-MATRIX.md` |
 | Codex adapter guide | `adapters/CODEX.md` |
 | Claude adapter guide | `adapters/CLAUDE.md` |

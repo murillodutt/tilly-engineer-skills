@@ -50,6 +50,7 @@ gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 | TDS contract | `docs/tds/TDS-SPEC.md` |
 | TDS governed index | `docs/tds/DOCS-INDEX.yml` |
 | Cross-tool governance | `docs/governance/AGENTIC-ALIGNMENT-GOVERNANCE.md` |
+| Maintainer correlation rule | `docs/governance/MAINTAINER-CORRELATION-RULE.md` |
 | Tool-neutral principles | `docs/mesh/PRINCIPLES.md` |
 | Context mesh method | `docs/mesh/CONTEXT-MESH-METHOD.md` |
 | Adoption scorecard | `docs/mesh/SCORECARD.md` |
@@ -66,6 +67,19 @@ gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 | TDS validation | `python3 scripts/validate_tds.py` |
 
 </routing>
+
+<maintainer_boundary>
+
+This file governs agents working on the Tilly Engineer Skills package itself.
+It is not an installed target-project rule.
+
+Before closing a material package change, use
+`docs/governance/MAINTAINER-CORRELATION-RULE.md` to check correlated files.
+Keep maintainer-only rules in `AGENTS.md` or `docs/governance/**`; do not copy
+them into `src/adapters/**`, target bootloaders, user manuals, or
+`docs/agents/**` unless the delivered Tilly behavior intentionally changed.
+
+</maintainer_boundary>
 
 <locks>
 
