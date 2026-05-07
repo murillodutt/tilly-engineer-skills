@@ -115,9 +115,15 @@ certification.
 Cortex MCP is activated by default for selected runtime routes. It remains
 read-only and project-scoped. The installer may write `.tilly/bin/cortex.py`,
 `.tilly/bin/cortex_mcp.py`, `.tilly/bin/cortex_embed.mjs`,
+`.tilly/bin/field_reports.py`,
 `.codex/config.toml`, `.mcp.json`, and
-`.cursor/mcp.json`; it must not edit global MCP configuration, secrets, hooks,
-or write-capable MCP tools.
+`.cursor/mcp.json`; MCP activation must not edit global MCP configuration,
+secrets, hooks, or write-capable MCP tools.
+
+Tilly Field Reports is active by default. The initializer installs a local
+`pre-push` drain for sanitized operational facts, stores pending state under
+`.tilly/field-reports/**`, never sends project code or private paths, and
+documents opt-out and reactivation prompts in the user manual.
 
 When this package is available locally, `tilly_init.py` is the project
 initialization and recertification command. It verifies package health, scans
@@ -128,6 +134,8 @@ checked directly:
 ```bash
 python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
+python3 scripts/field_reports.py status --target /path/to/project
+python3 scripts/field_reports.py --self-test
 python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault

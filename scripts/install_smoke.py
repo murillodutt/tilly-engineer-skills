@@ -11,9 +11,11 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+import field_reports
+
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.15"
+VERSION = "0.3.16"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 
 
@@ -34,6 +36,13 @@ def require_paths(target: Path, relpaths: tuple[str, ...]) -> list[str]:
         if not (target / relpath).exists():
             failures.append(f"missing path: {relpath}")
     return failures
+
+
+def init_git(target: Path) -> list[str]:
+    code, stdout, stderr = run(["git", "init"], cwd=target)
+    if code == 0:
+        return []
+    return ["git init failed", *stdout.splitlines(), *stderr.splitlines()]
 
 
 def init_cortex(target: Path) -> list[str]:
@@ -103,6 +112,23 @@ def mcp_gate(target: Path) -> list[str]:
     return ["installed cortex_mcp.py --self-test failed", *stdout.splitlines(), *stderr.splitlines()]
 
 
+def install_field_reports(target: Path) -> list[str]:
+    code, stdout, stderr = run(
+        [sys.executable, str(ROOT / "scripts/field_reports.py"), "install-hook", "--target", str(target)]
+    )
+    failures: list[str] = []
+    if code != 0:
+        failures.extend(["field reports hook install failed", *stdout.splitlines(), *stderr.splitlines()])
+    failures.extend(require_paths(target, (
+        ".tilly/bin/field_reports.py",
+        ".tilly/field-reports/outbox.jsonl",
+        ".git/hooks/pre-push",
+    )))
+    if (target / ".tilly/field-reports/DISABLED").exists():
+        failures.append("field reports must be active by default")
+    return failures
+
+
 def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
     if adapter == "codex":
         return ("AGENTS.md", ".agents/skills/tilly-engineering-discipline/SKILL.md")
@@ -114,7 +140,12 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
 
 
 def expected_mcp_paths(adapter: str) -> tuple[str, ...]:
-    base = (".tilly/bin/cortex.py", ".tilly/bin/cortex_mcp.py", ".tilly/bin/cortex_embed.mjs")
+    base = (
+        ".tilly/bin/cortex.py",
+        ".tilly/bin/cortex_mcp.py",
+        ".tilly/bin/cortex_embed.mjs",
+        ".tilly/bin/field_reports.py",
+    )
     if adapter == "codex":
         return (*base, ".codex/config.toml")
     if adapter == "claude":
@@ -140,6 +171,19 @@ def probe_route(route: str) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix=f"tilly-install-smoke-{route}-") as tempdir:
         target = Path(tempdir)
         failures: list[str] = []
+        failures.extend(init_git(target))
+
+        def finish() -> dict[str, Any]:
+            status = "FAIL" if failures else "PASS"
+            field_reports.safe_record_event(
+                target,
+                "install_smoke",
+                status,
+                "installer",
+                "self-test",
+                details={"route": route, "failures": len(failures)},
+            )
+            return {"route": route, "status": status, "failures": failures}
 
         if route == "audit":
             failures.extend(install_adapter(target, "all", dry_run=True))
@@ -147,16 +191,17 @@ def probe_route(route: str) -> dict[str, Any]:
             for unexpected in ("AGENTS.md", "CLAUDE.md", ".tilly/bin/cortex_mcp.py"):
                 if (target / unexpected).exists():
                     failures.append(f"audit route wrote unexpected path: {unexpected}")
-            return {"route": route, "status": "FAIL" if failures else "PASS", "failures": failures}
+            return finish()
 
         failures.extend(init_cortex(target))
+        failures.extend(install_field_reports(target))
 
         if route == "mcp":
             failures.extend(install_mcp(target, "all"))
             failures.extend(require_paths(target, expected_mcp_paths("all")))
             failures.extend(mcp_gate(target))
             failures.extend(cortex_gate(target))
-            return {"route": route, "status": "FAIL" if failures else "PASS", "failures": failures}
+            return finish()
 
         adapters = route_adapters(route)
         adapter_arg = "all" if route == "all" else adapters[0]
@@ -168,7 +213,7 @@ def probe_route(route: str) -> dict[str, Any]:
             failures.extend(require_paths(target, expected_adapter_paths(adapter)))
             failures.extend(require_paths(target, expected_mcp_paths(adapter)))
 
-        return {"route": route, "status": "FAIL" if failures else "PASS", "failures": failures}
+        return finish()
 
 
 def main() -> int:

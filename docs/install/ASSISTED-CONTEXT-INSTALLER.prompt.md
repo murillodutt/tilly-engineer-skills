@@ -38,8 +38,8 @@ reports certification.
 Treat Python scripts and `npm run ...` entries as deterministic oracles and
 portable helper tools. Treat skills, rules, bootloaders, and adapter files as
 routing/governance surfaces that tell the agent when and how to act. Treat
-hooks as local Git gates for validation and no-write Cortex
-reflection/curation. Treat MCP as a read-only Cortex access surface for agents,
+hooks as local Git gates for validation, Field Reports drain, and no-write
+Cortex reflection/curation. Treat MCP as a read-only Cortex access surface for agents,
 not as memory and not as the installer.
 
 `/tilly:init` is the preferred user-facing shortcut for this workflow. Treat it
@@ -84,6 +84,7 @@ scripts/cortex_mcp.py
 scripts/tilly_init.py
 scripts/install_adapter.py
 scripts/install_mcp.py
+scripts/field_reports.py
 scripts/install_smoke.py
 scripts/materialize_adapter.py
 scripts/platform_surface_oracle.py
@@ -108,8 +109,8 @@ contents or permission to continue from already available context.
 - Never overwrite existing agent instructions blindly.
 - Never replace local product governance with generic Tilly prose.
 - Never move target-project-specific rules into the external Tilly skill.
-- Never edit secrets, `.env`, credentials, production remotes, hooks, CI
-  secrets, cloud settings, or package-manager lockfiles unless the user
+- Never edit secrets, `.env`, credentials, production remotes, non-Tilly hooks,
+  CI secrets, cloud settings, or package-manager lockfiles unless the user
   explicitly asks and a project oracle requires it.
 - Never edit global MCP configuration. Project-scoped Tilly Cortex MCP config
   may be created only by the selected install route and only for the read-only
@@ -820,6 +821,8 @@ python3 scripts/tilly_init.py --target <target-root> --yes
 This writes `docs/agents/PROJECT-REGISTER.md` and timestamped evidence such as
 `docs/agents/evidence/YYYYMMDDTHHMMSSZ-tilly-project-manifest.json`. It must not
 bulk-absorb project files into Cortex or write to `sources/**`.
+It also installs the local Field Reports `pre-push` drain when the target is a
+Git repository and must report `BLOCKED` instead of pretending activation.
 
 If Codex skill is present:
 
@@ -940,6 +943,7 @@ Integration Matrix
 | docs/agents/** | PASS/FAIL | <paths> |
 | Cortex | PASS/SKIP/FAIL | <paths> |
 | Cortex MCP | PASS/SKIP/FAIL | <paths> |
+| Field Reports | PASS/SKIP/BLOCKED | hook, outbox, opt-out state |
 | Codex | PASS/SKIP/FAIL | <paths> |
 | Claude Code | PASS/SKIP/FAIL | <paths> |
 | Cursor | PASS/SKIP/FAIL | <paths> |

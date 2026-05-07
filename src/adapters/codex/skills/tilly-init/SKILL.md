@@ -38,7 +38,9 @@ the user for package contents.
    `install_smoke.py`, `install_mcp.py`, and Cortex checks. If local tool
    execution is unavailable, mark the oracle as `BLOCKED` or `SKIP`; do not
    claim it passed.
-7. Finish with the certification report and Git rollback instructions.
+7. Install or report the Field Reports `pre-push` drain. It is active by
+   default and controlled by the user manual prompts.
+8. Finish with the certification report and Git rollback instructions.
 
 ## Locks
 

@@ -1,4 +1,4 @@
-version: 0.3.15
+version: 0.3.16
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -223,6 +223,13 @@ documents:
     class: mesh
     status: active
     consumer: MCP adapter authors, installer authors, and agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/mesh/FIELD-REPORTS.md
+    id: mesh.field_reports
+    class: mesh
+    status: active
+    consumer: installer authors, adopters, and agents
     source_of_truth: true
     evidence_level: L2
   - path: docs/mesh/PRINCIPLES.md

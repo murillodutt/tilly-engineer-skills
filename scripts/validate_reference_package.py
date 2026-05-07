@@ -41,6 +41,7 @@ REQUIRED_PATHS = (
     "docs/mesh/CONTEXT-MESH-METHOD.md",
     "docs/mesh/CORTEX.md",
     "docs/mesh/CORTEX-MCP.md",
+    "docs/mesh/FIELD-REPORTS.md",
     "docs/mesh/SCORECARD.md",
     "docs/evals/EVALS.md",
     "docs/evals/EXAMPLES.md",
@@ -80,6 +81,7 @@ REQUIRED_PATHS = (
     "scripts/cortex.py",
     "scripts/cortex_embed.mjs",
     "scripts/cortex_mcp.py",
+    "scripts/field_reports.py",
     "scripts/install_smoke.py",
     "scripts/install_mcp.py",
     "scripts/install_adapter.py",
@@ -93,6 +95,7 @@ REQUIRED_PATHS = (
     "scripts/materialize_adapter.py",
     "scripts/validate_tds.py",
     ".githooks/pre-commit",
+    ".githooks/pre-push",
 )
 
 REQUIRED_TERMS = (
@@ -139,6 +142,9 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "mcp:install",
     "mcp:dry-run",
     "mcp:self-test",
+    "field-reports:self-test",
+    "field-reports:status",
+    "field-reports:drain",
     "claude:plugin:oracle",
     "materialize:all",
     "materialize:codex",
@@ -264,8 +270,8 @@ def main() -> int:
     package_json = ROOT / "package.json"
     if package_json.exists():
         package = json.loads(package_json.read_text(encoding="utf-8"))
-        if package.get("version") != "0.3.15":
-            failures.append("package.json version must be 0.3.15")
+        if package.get("version") != "0.3.16":
+            failures.append("package.json version must be 0.3.16")
         scripts = package.get("scripts", {})
         for script in REQUIRED_PACKAGE_SCRIPTS:
             if script not in scripts:
@@ -273,8 +279,8 @@ def main() -> int:
 
     for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
         path = ROOT / relpath
-        if path.exists() and "0.3.15" not in path.read_text(encoding="utf-8"):
-            failures.append(f"{relpath} must declare 0.3.15")
+        if path.exists() and "0.3.16" not in path.read_text(encoding="utf-8"):
+            failures.append(f"{relpath} must declare 0.3.16")
 
     oracle = ROOT / "src/adapters/codex/skills/tilly-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():
@@ -329,6 +335,20 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("cortex_mcp.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    field_reports = ROOT / "scripts/field_reports.py"
+    if field_reports.exists():
+        result = subprocess.run(
+            [sys.executable, str(field_reports), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("field_reports.py --self-test failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 
