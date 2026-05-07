@@ -1351,7 +1351,7 @@ git revert &lt;install-commit&gt;</code></pre>
         <section class="chapter" id="cli-es">
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
-            <p>Ejecuta estos comandos desde la raíz del paquete Tilly al mantener este paquete, o usa <code>--target</code> para operar sobre otro proyecto o vault.</p>
+            <p>Ejecuta estos comandos desde la raíz del paquete Tilly al mantener este paquete, o usa <code>--target</code> para operar sobre otro proyecto o vault. <code>tilly_init.py</code> recertifica la salud del paquete, escanea el proyecto objetivo, escribe <code>docs/agents/PROJECT-REGISTER.md</code> y guarda manifiestos con timestamp en <code>docs/agents/evidence/**</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
@@ -1603,7 +1603,7 @@ git revert &lt;install-commit&gt;</code></pre>
         <section class="chapter" id="cli-pt">
           <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
           <div class="chapter-body">
-            <p>Rode estes comandos a partir da raiz do pacote Tilly ao manter este pacote, ou use <code>--target</code> para operar em outro projeto ou vault.</p>
+            <p>Rode estes comandos a partir da raiz do pacote Tilly ao manter este pacote, ou use <code>--target</code> para operar em outro projeto ou vault. <code>tilly_init.py</code> recertifica a saúde do pacote, varre o projeto alvo, escreve <code>docs/agents/PROJECT-REGISTER.md</code> e guarda manifestos com timestamp em <code>docs/agents/evidence/**</code>.</p>
             <div class="pre-wrap" data-label="cortex">
 <pre><code>python3 scripts/tilly_init.py --target /path/to/project --yes
 python3 scripts/tilly_init.py --self-test
