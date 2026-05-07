@@ -11,9 +11,12 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+import materialize_adapter
+
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.11"
+VERSION = "0.3.12"
+CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
 
 def run(command: list[str]) -> tuple[int, str, str]:
@@ -46,8 +49,7 @@ def validate_plugin(target: Path) -> list[str]:
         "CLAUDE.md",
         ".claude-plugin/plugin.json",
         ".claude-plugin/marketplace.json",
-        "skills/tilly-guidelines/SKILL.md",
-        "skills/tilly-init/SKILL.md",
+        *(f"skills/{skill}/SKILL.md" for skill in CLAUDE_SKILLS),
     )
     for relpath in required:
         if not (target / relpath).exists():
@@ -63,8 +65,11 @@ def validate_plugin(target: Path) -> list[str]:
     skills = plugin.get("skills", [])
     if not isinstance(skills, list) or not skills:
         failures.append("plugin.json must declare at least one skill")
-    if isinstance(skills, list) and "skills/tilly-init" not in skills:
-        failures.append("plugin.json must declare skills/tilly-init")
+    if isinstance(skills, list):
+        expected_skills = {f"skills/{skill}" for skill in CLAUDE_SKILLS}
+        declared_skills = {str(item.get("path", "")) if isinstance(item, dict) else str(item) for item in skills}
+        for skill in sorted(expected_skills - declared_skills):
+            failures.append(f"plugin.json must declare {skill}")
     for item in skills if isinstance(skills, list) else []:
         path = str(item.get("path", "")) if isinstance(item, dict) else str(item)
         if not path or path.startswith("/") or ".." in Path(path).parts:

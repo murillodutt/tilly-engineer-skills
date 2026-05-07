@@ -16,7 +16,7 @@ Result: `GO`
 Claim:
 
 ```text
-Tilly Engineer Skills v0.3.11 has certified local package alignment for the
+Tilly Engineer Skills v0.3.12 has certified local package alignment for the
 Codex, Claude, and Cursor platform surfaces it claims.
 ```
 
@@ -61,8 +61,8 @@ Observed result before final commit:
 
 ```text
 [platform-surface] PASS
-version=0.3.11
-git_head=977af713f36ba7f72c52c713e8eb0c753d109899
+version=0.3.12
+git_head=2a3a89df4ad758bb6588dcaee4a1665aa39c4d03
 failures=[]
 ```
 
@@ -71,13 +71,13 @@ failures=[]
 | Platform | Surface | Status | Evidence |
 |----------|---------|--------|----------|
 | Codex | agent | `certified` | `src/adapters/codex/AGENTS.md` |
-| Codex | skill | `certified` | `src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md`; `src/adapters/codex/skills/tilly-init/SKILL.md` |
+| Codex | skill | `certified` | `src/adapters/codex/skills/tilly-*/SKILL.md` |
 | Codex | plugin | `deferred` | Native platform support exists; Tilly ships local skill first. |
 | Codex | hook | `git-governed` | `.githooks/pre-commit` |
 | Codex | rules | `not-packaged` | No sandbox escalation rule is required by this package. |
 | Codex | MCP | `certified` | `scripts/install_mcp.py` writes `.codex/config.toml`. |
 | Claude | agent | `certified` | `src/adapters/claude/CLAUDE.md` |
-| Claude | skill | `certified` | `src/adapters/claude/skills/tilly-guidelines/SKILL.md`; `src/adapters/claude/skills/tilly-init/SKILL.md` |
+| Claude | skill | `certified` | `src/adapters/claude/skills/tilly-*/SKILL.md` |
 | Claude | plugin | `certified` | `src/adapters/claude/plugin/plugin.json` |
 | Claude | hook | `deferred` | Native platform support exists; no plugin hook is claimed. |
 | Claude | rules | `not-native` | Claude uses CLAUDE.md, permissions, hooks, skills, plugins, and MCP. |

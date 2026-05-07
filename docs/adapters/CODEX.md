@@ -13,7 +13,7 @@ tver: 0.2.0
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.11`.
+Project version: `0.3.12`.
 
 It follows the Codex customization order:
 
@@ -31,7 +31,7 @@ Official reference: <https://developers.openai.com/codex/concepts/customization>
 |--------|--------|
 | `src/adapters/codex/AGENTS.md` | Target repo root `AGENTS.md` or merge into existing one |
 | `src/adapters/codex/skills/tilly-engineering-discipline/` | Target repo `.agents/skills/tilly-engineering-discipline/` |
-| `src/adapters/codex/skills/tilly-init/` | Target repo `.agents/skills/tilly-init/` |
+| `src/adapters/codex/skills/tilly-*/` | Target repo `.agents/skills/tilly-*/` command-shortcut skills |
 | `scripts/install_mcp.py` | Optional project-scoped Cortex MCP activation |
 | `scripts/validate_reference_package.py` | Optional package validation script |
 
@@ -49,8 +49,17 @@ Codex uses progressive disclosure for skills:
 - `SKILL.md` loads only when the workflow is selected.
 - References and scripts load or run only when needed.
 
-`/tilly:init` maps to the `tilly-init` skill. The skill keeps the user entry
-point short while delegating the real work to the assisted installer contract.
+The `/tilly:*` shortcuts map to Codex skills. They keep the user entrypoint
+short while delegating real work to deterministic oracles:
+
+| Shortcut | Skill |
+|----------|-------|
+| `/tilly:init` | `tilly-init` |
+| `/tilly:cortex` | `tilly-cortex` |
+| `/tilly:mcp` | `tilly-mcp` |
+| `/tilly:doctor` | `tilly-doctor` |
+| `/tilly:adapter` | `tilly-adapter` |
+| `/tilly:bench` | `tilly-bench` |
 
 This keeps the four gates available without bloating every context window.
 

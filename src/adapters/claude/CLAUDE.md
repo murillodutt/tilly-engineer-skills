@@ -75,12 +75,12 @@ surgical, or verification is missing.
 These guidelines are working when diffs are smaller, clarifying questions come
 before implementation mistakes, and closure is backed by a concrete check.
 
-## Tilly Init
+## Tilly Shortcuts
 
-When the user says `/tilly:init`, "initialize Tilly", "install Tilly", "update
-Tilly", or "recertify Tilly", use the `tilly-init` skill. Treat the slash form
-as an intent shortcut for the assisted context installer, not as a shell
-command.
+Treat `/tilly:init`, `/tilly:cortex`, `/tilly:mcp`, `/tilly:doctor`,
+`/tilly:adapter`, and `/tilly:bench` as intent shortcuts. Use the matching
+skill and let the agent choose the smallest safe oracle. These are not shell
+commands.
 
 ## Cortex Reflection
 

@@ -15,7 +15,9 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.11"
+VERSION = "0.3.12"
+CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
+CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
 DOCS = {
     "codex_agents": "https://developers.openai.com/codex/guides/agents-md",
@@ -102,16 +104,14 @@ def materialized_results() -> tuple[dict[str, Any], list[str]]:
         required = {
             "codex": (
                 "AGENTS.md",
-                ".agents/skills/tilly-engineering-discipline/SKILL.md",
-                ".agents/skills/tilly-init/SKILL.md",
                 ".agents/skills/tilly-engineering-discipline/scripts/discipline_oracle.py",
+                *(f".agents/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS),
             ),
             "claude": (
                 "CLAUDE.md",
                 ".claude-plugin/plugin.json",
                 ".claude-plugin/marketplace.json",
-                "skills/tilly-guidelines/SKILL.md",
-                "skills/tilly-init/SKILL.md",
+                *(f"skills/{skill}/SKILL.md" for skill in CLAUDE_SKILLS),
             ),
             "cursor": (
                 "CURSOR.md",
@@ -148,22 +148,19 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing Codex agent bootloader: {codex_agent}")
     else:
         text = read(codex_agent)
-        for term in ("Think Before Coding", "Simplicity First", "cortex_reflex"):
+        for term in ("Think Before Coding", "Simplicity First", "cortex_reflex", "/tilly:cortex"):
             if term not in text:
                 failures.append(f"{codex_agent} missing {term}")
-    failures.extend(check_skill(
-        "src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md",
-        "tilly-engineering-discipline",
-    ))
-    failures.extend(check_skill(
-        "src/adapters/codex/skills/tilly-init/SKILL.md",
-        "tilly-init",
-    ))
+    for skill in CODEX_SKILLS:
+        failures.extend(check_skill(
+            f"src/adapters/codex/skills/{skill}/SKILL.md",
+            skill,
+        ))
     if not exists("src/adapters/codex/skills/tilly-engineering-discipline/agents/openai.yaml"):
         failures.append("missing Codex skill agent metadata")
     surface("codex", "agent", "certified", codex_agent)
-    surface("codex", "skill", "certified", "src/adapters/codex/skills/tilly-engineering-discipline/SKILL.md; src/adapters/codex/skills/tilly-init/SKILL.md")
-    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.11 ships a local skill first.")
+    surface("codex", "skill", "certified", "; ".join(f"src/adapters/codex/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS))
+    surface("codex", "plugin", "deferred", "Codex plugins are native, but Tilly v0.3.12 ships a local skill first.")
     surface("codex", "hook", "git-governed", ".githooks/pre-commit")
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
@@ -174,11 +171,11 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing Claude bootloader: {claude_agent}")
     else:
         text = read(claude_agent)
-        for term in ("Think Before Coding", "Simplicity First", "Cortex Reflection"):
+        for term in ("Think Before Coding", "Simplicity First", "Cortex Reflection", "/tilly:cortex"):
             if term not in text:
                 failures.append(f"{claude_agent} missing {term}")
-    failures.extend(check_skill("src/adapters/claude/skills/tilly-guidelines/SKILL.md", "tilly-guidelines"))
-    failures.extend(check_skill("src/adapters/claude/skills/tilly-init/SKILL.md", "tilly-init"))
+    for skill in CLAUDE_SKILLS:
+        failures.extend(check_skill(f"src/adapters/claude/skills/{skill}/SKILL.md", skill))
     for relpath in (
         "src/adapters/claude/plugin/plugin.json",
         "src/adapters/claude/plugin/marketplace.json",
@@ -188,7 +185,7 @@ def analyze() -> dict[str, Any]:
         elif VERSION not in read(relpath):
             failures.append(f"{relpath} must declare {VERSION}")
     surface("claude", "agent", "certified", claude_agent)
-    surface("claude", "skill", "certified", "src/adapters/claude/skills/tilly-guidelines/SKILL.md; src/adapters/claude/skills/tilly-init/SKILL.md")
+    surface("claude", "skill", "certified", "; ".join(f"src/adapters/claude/skills/{skill}/SKILL.md" for skill in CLAUDE_SKILLS))
     surface("claude", "plugin", "certified", "src/adapters/claude/plugin/plugin.json")
     surface("claude", "hook", "deferred", "Claude plugin hooks are native, but not claimed by this package.")
     surface("claude", "rules", "not-native", "Claude uses CLAUDE.md, permissions, hooks, skills, plugins, and MCP.")
@@ -204,6 +201,8 @@ def analyze() -> dict[str, Any]:
             failures.append(f"{cursor_rule} must keep alwaysApply: true")
         if "description:" not in text:
             failures.append(f"{cursor_rule} missing description")
+        if "/tilly:cortex" not in text:
+            failures.append(f"{cursor_rule} missing /tilly:cortex shortcut routing")
     if not exists("src/adapters/cursor/CURSOR.md"):
         failures.append("missing Cursor bootloader: src/adapters/cursor/CURSOR.md")
     surface("cursor", "agent", "certified", "src/adapters/cursor/CURSOR.md")

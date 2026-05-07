@@ -15,7 +15,25 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "dist" / "adapters"
-VERSION = "0.3.11"
+VERSION = "0.3.12"
+CODEX_SKILLS = (
+    "tilly-engineering-discipline",
+    "tilly-init",
+    "tilly-cortex",
+    "tilly-mcp",
+    "tilly-doctor",
+    "tilly-adapter",
+    "tilly-bench",
+)
+CLAUDE_SKILLS = (
+    "tilly-guidelines",
+    "tilly-init",
+    "tilly-cortex",
+    "tilly-mcp",
+    "tilly-doctor",
+    "tilly-adapter",
+    "tilly-bench",
+)
 FORBIDDEN_OUTPUT_REFS = (
     "src/adapters/",
     "docs/adapters/",
@@ -36,15 +54,13 @@ class CopyRule:
 ADAPTERS: dict[str, tuple[CopyRule, ...]] = {
     "codex": (
         CopyRule("src/adapters/codex/AGENTS.md", "AGENTS.md"),
-        CopyRule(
-            "src/adapters/codex/skills/tilly-engineering-discipline",
-            ".agents/skills/tilly-engineering-discipline",
-            "tree",
-        ),
-        CopyRule(
-            "src/adapters/codex/skills/tilly-init",
-            ".agents/skills/tilly-init",
-            "tree",
+        *(
+            CopyRule(
+                f"src/adapters/codex/skills/{skill}",
+                f".agents/skills/{skill}",
+                "tree",
+            )
+            for skill in CODEX_SKILLS
         ),
     ),
     "cursor": (
@@ -58,15 +74,13 @@ ADAPTERS: dict[str, tuple[CopyRule, ...]] = {
         CopyRule("src/adapters/claude/CLAUDE.md", "CLAUDE.md"),
         CopyRule("src/adapters/claude/plugin/plugin.json", ".claude-plugin/plugin.json"),
         CopyRule("src/adapters/claude/plugin/marketplace.json", ".claude-plugin/marketplace.json"),
-        CopyRule(
-            "src/adapters/claude/skills/tilly-guidelines",
-            "skills/tilly-guidelines",
-            "tree",
-        ),
-        CopyRule(
-            "src/adapters/claude/skills/tilly-init",
-            "skills/tilly-init",
-            "tree",
+        *(
+            CopyRule(
+                f"src/adapters/claude/skills/{skill}",
+                f"skills/{skill}",
+                "tree",
+            )
+            for skill in CLAUDE_SKILLS
         ),
     ),
 }
@@ -139,8 +153,9 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
             oracle_failure = run_oracle(adapter_root, oracle)
             if oracle_failure:
                 failures.append(f"codex oracle failed: {oracle_failure}")
-        if not (adapter_root / ".agents/skills/tilly-init/SKILL.md").exists():
-            failures.append("codex: missing tilly-init skill")
+        for skill in CODEX_SKILLS:
+            if not (adapter_root / f".agents/skills/{skill}/SKILL.md").exists():
+                failures.append(f"codex: missing {skill} skill")
 
     if adapter == "cursor":
         rule = adapter_root / ".cursor/rules/tilly-guidelines.mdc"
@@ -166,8 +181,11 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
                 resolved = (plugin_root / skill_path).resolve()
                 if not resolved.exists():
                     failures.append(f"claude: plugin skill path does not exist: {skill}")
-            if "skills/tilly-init" not in data.get("skills", []):
-                failures.append("claude: plugin must declare tilly-init skill")
+            expected_skills = {f"skills/{skill}" for skill in CLAUDE_SKILLS}
+            declared_skills = {str(skill) for skill in data.get("skills", [])}
+            missing_skills = sorted(expected_skills - declared_skills)
+            for skill in missing_skills:
+                failures.append(f"claude: plugin must declare {skill}")
         else:
             failures.append("claude: missing plugin.json")
         if marketplace.exists():
