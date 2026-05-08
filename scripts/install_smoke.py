@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.52"
+VERSION = "0.3.53"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -349,6 +349,11 @@ def codex_preserved_bootloader_probe() -> dict[str, Any]:
         failures: list[str] = []
         failures.extend(init_git(target))
         (target / "AGENTS.md").write_text(CODEX_LOCAL_BOOTLOADER, encoding="utf-8")
+        (target / ".agents/skills/tes-init").mkdir(parents=True)
+        (target / ".agents/skills/tes-init/SKILL.md").write_text(
+            "# Stale TES Init\n\nMissing current trigger vocabulary.\n",
+            encoding="utf-8",
+        )
 
         code, stdout, stderr = run(
             [
@@ -377,6 +382,11 @@ def codex_preserved_bootloader_probe() -> dict[str, Any]:
             failures.append("codex preserve install must preserve conflicting AGENTS.md")
         if (target / "AGENTS.md").read_text(encoding="utf-8") != CODEX_LOCAL_BOOTLOADER:
             failures.append("codex preserve install overwrote local AGENTS.md")
+        installed_init = (target / ".agents/skills/tes-init/SKILL.md").read_text(encoding="utf-8")
+        if "Missing current trigger vocabulary" in installed_init:
+            failures.append("codex preserve install did not repair stale TES-owned skill")
+        if "/tes-field-reports" not in installed_init:
+            failures.append("repaired Codex tes-init skill must include field reports trigger")
         failures.extend(require_paths(target, (
             ".agents/skills/tes-engineering-discipline/SKILL.md",
             ".agents/skills/tes-init/SKILL.md",
