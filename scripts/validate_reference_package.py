@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.47"
+VERSION = "0.3.48"
 
 REQUIRED_PATHS = (
     "README.md",
