@@ -50,6 +50,13 @@ documents:
     consumer: adopters, installing agents, and package maintainers
     source_of_truth: true
     evidence_level: L2
+  - path: docs/install/INDEPENDENT-CANARY-CONVERGENCE.prompt.md
+    id: install.independent_canary_convergence_prompt
+    class: adapter
+    status: active
+    consumer: second-window TES convergence operators, maintainers, and certification reviewers
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/install/navigation/NAVIGATION-LIBRARY.md
     id: install.navigation_library
     class: adapter
