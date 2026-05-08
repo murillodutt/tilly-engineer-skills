@@ -1,6 +1,6 @@
 # Tilly Engineer Skills (TES)
 
-[![Version](https://img.shields.io/badge/version-0.3.61-1f6feb)](package.json)
+[![Version](https://img.shields.io/badge/version-0.3.62-1f6feb)](package.json)
 [![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE)
 [![Field Report Governance](https://github.com/murillodutt/tilly-engineer-skills/actions/workflows/field-report-governance.yml/badge.svg)](https://github.com/murillodutt/tilly-engineer-skills/actions/workflows/field-report-governance.yml)
 [![Context Mesh](https://img.shields.io/badge/context--mesh-agent--operating--layer-2ea44f)](docs/mesh/CONTEXT-MESH-METHOD.md)
@@ -123,6 +123,7 @@ Focused maintainer gates:
 npm run validate
 npm run install:smoke
 npm run cortex:self-test
+npm run cortex:quality:self-test
 npm run cortex:mcp:self-test
 npm run field-reports:self-test
 npm run platform:surface:check

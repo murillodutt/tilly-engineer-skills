@@ -125,7 +125,9 @@ cells remain warnings; broken wikilinks and ungrounded cells are failures.
 `curate-plan` adds the semantic gate above structural integrity. It classifies
 merge candidates, split candidates, link candidates, semantic tensions,
 evidence gaps, redundancy warnings, and reject candidates. It never writes
-memory artifacts.
+memory artifacts. Every curation candidate carries an action, rationale, and
+next step so an agent can decide what to merge, split, link, resolve, ground, or
+reject without inventing the reason.
 
 ## Curation Conveyor
 
@@ -140,6 +142,10 @@ The conveyor has three gates:
 | `reflection_gate` | `reflect` decides whether durable capture or curation review is due. It writes nothing. |
 | `semantic_curation_gate` | `curate-plan` classifies duplicates, swollen cells, nearby unlinked cells, tensions, evidence gaps, redundancy, and transient material. It writes no memory. |
 | `promotion_gate` | `apply --yes` is the only built-in path that writes compiled memory, and only with explicit evidence and authorization. |
+
+`learn` and `reflect` reject or no-op generic prompts that lack source evidence
+or a specific durable lesson. Weak inputs return an explicit evidence gap or
+no-capture reason instead of producing a plausible-looking memory proposal.
 
 `curate-plan` statuses:
 

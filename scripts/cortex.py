@@ -554,6 +554,12 @@ def tokenize(value: str) -> list[str]:
     return tokens
 
 
+def weak_memory_prompt(value: str) -> bool:
+    tokens = tokenize(value)
+    signal = [token for token in tokens if token not in GENERIC_TERMS]
+    return len(set(signal)) < 2
+
+
 def lexical_vector(tokens: list[str], dimensions: int = LEXICAL_DIMENSIONS) -> list[float]:
     vector = [0.0] * dimensions
     for token in tokens:
@@ -872,6 +878,22 @@ def linked_pair(left: dict[str, object], right: dict[str, object]) -> dict[str, 
     }
 
 
+def curation_candidate(
+    category: str,
+    action: str,
+    rationale: str,
+    next_step: str,
+    **values: object,
+) -> dict[str, object]:
+    return {
+        "category": category,
+        "action": action,
+        "rationale": rationale,
+        "next_step": next_step,
+        **values,
+    }
+
+
 def curate_plan(target: Path, backend: str = "auto", write_index: bool = True) -> dict[str, object]:
     target = target.resolve()
     verify_result = verify(target)
@@ -927,25 +949,56 @@ def curate_plan(target: Path, backend: str = "auto", write_index: bool = True) -
     for record in records:
         split = split_reason(record)
         if split:
-            split_candidates.append({"path": record["path"], "reason": split})
+            split_candidates.append(
+                curation_candidate(
+                    "split",
+                    "split-cell",
+                    f"{record['path']} is carrying too much independent material: {split}.",
+                    "Split the cell into narrower claims, preserve evidence refs, then rerun audit and curate-plan.",
+                    path=record["path"],
+                    reason=split,
+                )
+            )
         reject = reject_reason(record)
         if reject:
-            reject_candidates.append({"path": record["path"], "reason": reject})
+            reject_candidates.append(
+                curation_candidate(
+                    "reject",
+                    "keep-out-of-cortex",
+                    f"{record['path']} looks transient rather than durable memory: {reject}.",
+                    "Remove the transient claim from Cortex or move it to a project work queue outside memory.",
+                    path=record["path"],
+                    reason=reject,
+                )
+            )
         evidence = str(record["evidence"])
         evidence_refs = real_evidence_refs(evidence)
         if not evidence_refs or int(record["assumption_count"]) > 1:
             reason = "missing real source evidence" if not evidence_refs else "too many Assumption lines"
             evidence_gaps.append(
-                {
-                    "path": record["path"],
-                    "reason": reason,
-                    "assumption_count": record["assumption_count"],
-                    "real_evidence_refs": evidence_refs,
-                }
+                curation_candidate(
+                    "evidence_gap",
+                    "add-evidence-or-defer",
+                    f"{record['path']} is not grounded enough for durable memory: {reason}.",
+                    "Add a source under sources/** or defer the claim until evidence exists; do not apply from assumption alone.",
+                    path=record["path"],
+                    reason=reason,
+                    assumption_count=record["assumption_count"],
+                    real_evidence_refs=evidence_refs,
+                )
             )
         redundant = redundancy_reason(record)
         if redundant:
-            redundancy_warnings.append({"path": record["path"], "reason": redundant})
+            redundancy_warnings.append(
+                curation_candidate(
+                    "redundancy",
+                    "review-wording",
+                    f"{record['path']} may be too generic or repetitive: {redundant}.",
+                    "Tighten the claim or merge it into a stronger adjacent cell if it adds no durable distinction.",
+                    path=record["path"],
+                    reason=redundant,
+                )
+            )
 
     for index, left in enumerate(records):
         for right in records[index + 1:]:
@@ -959,18 +1012,43 @@ def curate_plan(target: Path, backend: str = "auto", write_index: bool = True) -
             pair = linked_pair(left, right)
             if conflict and scores["score"] >= 0.18:
                 tension_candidates.append(
-                    {
+                    curation_candidate(
+                        "tension",
+                        "resolve-contradiction",
+                        (
+                            f"{pair['left']} and {pair['right']} point in conflicting directions "
+                            f"({left_direction} vs {right_direction}) with score {scores['score']}."
+                        ),
+                        "Read both cells and their sources, then record the surviving rule or explicit contradiction.",
                         **pair,
-                        "score": scores["score"],
-                        "left_direction": left_direction,
-                        "right_direction": right_direction,
-                    }
+                        score=scores["score"],
+                        left_direction=left_direction,
+                        right_direction=right_direction,
+                    )
                 )
                 continue
             if scores["score"] >= 0.54:
-                merge_candidates.append({**pair, "score": scores["score"]})
+                merge_candidates.append(
+                    curation_candidate(
+                        "merge",
+                        "merge-or-dedupe",
+                        f"{pair['left']} and {pair['right']} overlap strongly with score {scores['score']}.",
+                        "Compare claims and evidence, merge only the duplicated durable claim, and keep provenance.",
+                        **pair,
+                        score=scores["score"],
+                    )
+                )
             elif scores["score"] >= 0.32 and not relation_exists(left, right, links_text):
-                link_candidates.append({**pair, "score": scores["score"]})
+                link_candidates.append(
+                    curation_candidate(
+                        "link",
+                        "add-relationship",
+                        f"{pair['left']} and {pair['right']} are related with score {scores['score']} but not linked.",
+                        "Add a deliberate LINKS.md or cell wikilink edge if the relationship survives source review.",
+                        **pair,
+                        score=scores["score"],
+                    )
+                )
 
     merge_candidates.sort(key=lambda item: (-float(item["score"]), str(item["left"]), str(item["right"])))
     link_candidates.sort(key=lambda item: (-float(item["score"]), str(item["left"]), str(item["right"])))
@@ -1310,9 +1388,22 @@ def learn(target: Path, query: str | None, source: Path | None = None) -> dict[s
     prompt = query or (Path(source_rel).stem if source_rel else "")
     if not prompt:
         failures.append("learn requires a query or --source")
+    weak_prompt = bool(prompt) and weak_memory_prompt(prompt)
 
     cell_name = slugify(Path(source_rel).stem if source_rel else prompt)
     evidence = f"`{source_rel.removeprefix('docs/agents/cortex/')}`" if source_rel else "Assumption: user-approved conversation evidence"
+    if not failures and source_rel is None and weak_prompt:
+        return {
+            "target": str(target),
+            "status": "NEEDS_EVIDENCE",
+            "failures": [],
+            "writes": [],
+            "proposal": None,
+            "evidence_gap_reason": (
+                "learn needs a specific durable claim or --source under docs/agents/cortex/sources/**; "
+                "the query is too generic to promote safely"
+            ),
+        }
 
     return {
         "target": str(target),
@@ -1323,6 +1414,8 @@ def learn(target: Path, query: str | None, source: Path | None = None) -> dict[s
             "cell": f"docs/agents/cortex/cells/{cell_name}.md",
             "claim_needed": "Write a durable claim, not a loose summary.",
             "evidence": evidence,
+            "evidence_status": "source" if source_rel else "assumption",
+            "route": "proposal-only; run apply with --yes after reviewing the claim and evidence",
             "apply_command": (
                 "python3 scripts/cortex.py apply "
                 f"--target {target} "
@@ -1424,7 +1517,8 @@ def reflect(target: Path, query: str | None, limit: int = 20, line_budget: int =
     changed_lines = git_diff_line_count(target)
     curation_due = changed_lines >= line_budget > 0
     prompt = (query or "").strip()
-    capture_needed = bool(prompt or durable_files or curation_due)
+    weak_prompt = bool(prompt) and weak_memory_prompt(prompt)
+    capture_needed = bool((prompt and not weak_prompt) or durable_files or curation_due)
     cell_seed = prompt or (durable_files[0] if durable_files else "closure-reflection")
     cell_name = slugify(cell_seed)
     evidence = (
@@ -1432,7 +1526,15 @@ def reflect(target: Path, query: str | None, limit: int = 20, line_budget: int =
         if prompt else
         "Assumption: agent-observed local git diff after material work"
     )
+    evidence_status = "closure-note" if prompt else "local-diff"
     command = preferred_cortex_command(target)
+    no_capture_reason = None
+    if not capture_needed:
+        no_capture_reason = (
+            "reflection query is too generic to promote without evidence"
+            if weak_prompt else
+            "no durable changed files, specific closure note, or curation threshold was observed"
+        )
 
     return {
         "target": str(target),
@@ -1448,10 +1550,13 @@ def reflect(target: Path, query: str | None, limit: int = 20, line_budget: int =
             "When curation is due, run curate-plan before proposing compaction, split, "
             "merge, rejection, or redundancy removal. Do not delete Cortex content automatically."
         ),
+        "no_capture_reason": no_capture_reason,
         "proposal": None if not capture_needed else {
             "cell": f"docs/agents/cortex/cells/{cell_name}.md",
             "claim_needed": "Promote only a durable decision, lesson, contract change, or reusable project fact.",
             "evidence": evidence,
+            "evidence_status": evidence_status,
+            "route": "proposal-only; review the claim and run apply with --yes only after explicit approval",
             "apply_command": (
                 f"{command} apply "
                 f"--target {target} "

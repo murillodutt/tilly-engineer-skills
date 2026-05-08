@@ -142,3 +142,7 @@ lockfiles, `.obsidian/**`, or Cortex source material.
 
 Write-capable MCP tools remain outside v1. `learn` and `apply` stay CLI-governed
 because promotion into Cortex requires explicit evidence and authorization.
+The MCP self-test includes negative calls for unknown write-like tools, invalid
+argument shapes, path traversal, invalid targets, invalid curation backends, and
+empty required arguments. `cortex_curate_plan` is required to report no writes
+and no derived semantic-index writes over MCP.

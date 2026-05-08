@@ -119,6 +119,9 @@ Memory lives in versioned artifacts: immutable `sources/**`, compiled
 `.tes/cortex/recall.sqlite` is a derived recall index, never memory, and `rg`
 is the fallback. `.tes/cortex/semantic.sqlite` is a derived curation index,
 also never memory, rebuilt by `curate-plan` from `cells/**`.
+`curate-plan` reports actionable candidates with rationale and next step.
+`learn` and `reflect` remain proposal-only and return explicit evidence-gap or
+no-capture reasons for weak generic inputs.
 
 Cortex is Obsidian-compatible plain Markdown. The installer does not create
 `.obsidian/**`, require community plugins, or depend on Obsidian state for
@@ -133,6 +136,8 @@ read-only and project-scoped. The installer may write `.tes/bin/cortex.py`,
 `.codex/config.toml`, `.mcp.json`, and
 `.cursor/mcp.json`; MCP activation must not edit global MCP configuration,
 secrets, hooks, or write-capable MCP tools.
+The MCP self-test covers negative malformed and write-like calls, and
+`cortex_curate_plan` over MCP must not create the derived semantic index.
 
 TES Field Reports is active by default. The initializer installs a local
 `pre-push` drain for sanitized operational facts, stores pending state under
@@ -171,6 +176,7 @@ python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault
 python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
 python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical
+python3 scripts/cortex_quality_oracle.py --self-test
 ```
 
 Project-scoped MCP can be installed and checked with:

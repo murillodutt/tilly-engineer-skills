@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.61</span>
+          <span class="brand-meta">User manual · v0.3.62</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1106,7 +1106,7 @@
 .tes/cortex/recall.sqlite
 .tes/cortex/semantic.sqlite</code></pre>
             </div>
-            <p>Cells must include <code>## Claim</code> and <code>## Evidence</code>. <code>sources/**</code> is immutable after import. <code>learn</code> proposes without writing; <code>curate-plan</code> classifies merge, split, link, tension, evidence-gap, redundancy and reject candidates without writing memory; <code>apply --yes</code> writes only authorized, evidenced cells and refreshes recall after audit.</p>
+            <p>Cells must include <code>## Claim</code> and <code>## Evidence</code>. <code>sources/**</code> is immutable after import. <code>learn</code> proposes without writing and requires source evidence or a specific durable lesson; generic inputs return evidence-gap/no-capture results. <code>curate-plan</code> classifies actionable merge, split, link, tension, evidence-gap, redundancy and reject candidates without writing memory; <code>apply --yes</code> writes only authorized, evidenced cells and refreshes recall after audit.</p>
             <p>The deterministic gate uses <code>--backend lexical</code>. Real environments may run <code>--backend xenova</code> or <code>--backend auto</code> with the optional <code>@huggingface/transformers</code> dependency and <code>Xenova/multilingual-e5-small</code>. Explicit Xenova reports <code>BLOCKED</code> when unavailable; <code>auto</code> reports <code>DEGRADED</code> when it falls back to lexical.</p>
           </div>
         </section>
@@ -1148,7 +1148,7 @@ python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision o
 python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
 python3 scripts/cortex.py --self-test</code></pre>
             </div>
-            <p><code>learn</code> never writes. <code>curate-plan</code> always reports <code>writes: []</code> and may refresh only the derived semantic index. <code>apply</code> writes only with <code>--yes</code>, explicit evidence, audit and rebuild. It never writes to <code>sources/**</code>.</p>
+            <p><code>learn</code> and <code>reflect</code> never write. Weak or generic prompts do not produce memory proposals. <code>curate-plan</code> always reports <code>writes: []</code> and may refresh only the derived semantic index from the CLI, not over MCP. <code>apply</code> writes only with <code>--yes</code>, explicit evidence, audit and rebuild. It never writes to <code>sources/**</code>.</p>
             <div class="pre-wrap" data-label="package">
 <pre><code>npm run validate
 npm run install:dry-run
@@ -1447,7 +1447,7 @@ git revert &lt;install-commit&gt;</code></pre>
 .tes/cortex/recall.sqlite
 .tes/cortex/semantic.sqlite</code></pre>
             </div>
-            <p>Las cells deben incluir <code>## Claim</code> y <code>## Evidence</code>. <code>sources/**</code> es inmutable después del import. <code>learn</code> propone sin escribir; <code>curate-plan</code> clasifica candidatos de merge, split, link, tensión, gap de evidencia, redundancia y rechazo sin escribir memoria; <code>apply --yes</code> escribe solo cells autorizadas con evidencia y refresca recall después del audit.</p>
+            <p>Las cells deben incluir <code>## Claim</code> y <code>## Evidence</code>. <code>sources/**</code> es inmutable después del import. <code>learn</code> propone sin escribir y requiere evidencia fuente o una lección durable específica; entradas genéricas devuelven evidence-gap/no-capture. <code>curate-plan</code> clasifica candidatos accionables de merge, split, link, tensión, gap de evidencia, redundancia y rechazo sin escribir memoria; <code>apply --yes</code> escribe solo cells autorizadas con evidencia y refresca recall después del audit.</p>
             <p>El gate determinista usa <code>--backend lexical</code>. Ambientes reales pueden ejecutar <code>--backend xenova</code> o <code>--backend auto</code> con la dependencia opcional <code>@huggingface/transformers</code> y <code>Xenova/multilingual-e5-small</code>. Xenova explícito reporta <code>BLOCKED</code> si no está disponible; <code>auto</code> reporta <code>DEGRADED</code> cuando cae a lexical.</p>
           </div>
         </section>
@@ -1489,7 +1489,7 @@ python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision o
 python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
 python3 scripts/cortex.py --self-test</code></pre>
             </div>
-            <p><code>learn</code> nunca escribe. <code>curate-plan</code> siempre reporta <code>writes: []</code> y puede refrescar solo el índice semántico derivado. <code>apply</code> solo escribe con <code>--yes</code>, evidencia explícita, audit y rebuild. Nunca escribe en <code>sources/**</code>.</p>
+            <p><code>learn</code> y <code>reflect</code> nunca escriben. Prompts débiles o genéricos no producen propuestas de memoria. <code>curate-plan</code> siempre reporta <code>writes: []</code> y puede refrescar solo el índice semántico derivado desde CLI, no sobre MCP. <code>apply</code> solo escribe con <code>--yes</code>, evidencia explícita, audit y rebuild. Nunca escribe en <code>sources/**</code>.</p>
             <div class="pre-wrap" data-label="package">
 <pre><code>npm run validate
 npm run install:dry-run
@@ -1788,7 +1788,7 @@ git revert &lt;install-commit&gt;</code></pre>
 .tes/cortex/recall.sqlite
 .tes/cortex/semantic.sqlite</code></pre>
             </div>
-            <p>Cells precisam ter <code>## Claim</code> e <code>## Evidence</code>. <code>sources/**</code> é imutável depois do import. <code>learn</code> propõe sem escrever; <code>curate-plan</code> classifica candidatos de merge, split, link, tensão, gap de evidência, redundância e rejeição sem escrever memória; <code>apply --yes</code> escreve só cells autorizadas com evidência e atualiza recall depois do audit.</p>
+            <p>Cells precisam ter <code>## Claim</code> e <code>## Evidence</code>. <code>sources/**</code> é imutável depois do import. <code>learn</code> propõe sem escrever e exige fonte de evidência ou uma lição durável específica; entradas genéricas retornam evidence-gap/no-capture. <code>curate-plan</code> classifica candidatos acionáveis de merge, split, link, tensão, gap de evidência, redundância e rejeição sem escrever memória; <code>apply --yes</code> escreve só cells autorizadas com evidência e atualiza recall depois do audit.</p>
             <p>O gate determinístico usa <code>--backend lexical</code>. Ambientes reais podem rodar <code>--backend xenova</code> ou <code>--backend auto</code> com a dependência opcional <code>@huggingface/transformers</code> e <code>Xenova/multilingual-e5-small</code>. Xenova explícito reporta <code>BLOCKED</code> quando indisponível; <code>auto</code> reporta <code>DEGRADED</code> quando cai para lexical.</p>
           </div>
         </section>
@@ -1830,7 +1830,7 @@ python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision o
 python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
 python3 scripts/cortex.py --self-test</code></pre>
             </div>
-            <p><code>learn</code> nunca escreve. <code>curate-plan</code> sempre reporta <code>writes: []</code> e pode atualizar apenas o índice semântico derivado. <code>apply</code> só escreve com <code>--yes</code>, evidência explícita, audit e rebuild. Ele nunca escreve em <code>sources/**</code>.</p>
+            <p><code>learn</code> e <code>reflect</code> nunca escrevem. Prompts fracos ou genéricos não produzem propostas de memória. <code>curate-plan</code> sempre reporta <code>writes: []</code> e pode atualizar apenas o índice semântico derivado via CLI, não sobre MCP. <code>apply</code> só escreve com <code>--yes</code>, evidência explícita, audit e rebuild. Ele nunca escreve em <code>sources/**</code>.</p>
             <div class="pre-wrap" data-label="package">
 <pre><code>npm run validate
 npm run install:dry-run
@@ -2033,7 +2033,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.61</span>
+        <span>Tilly Engineer Skills · v0.3.62</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>
