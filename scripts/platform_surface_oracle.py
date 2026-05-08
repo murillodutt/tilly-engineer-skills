@@ -28,10 +28,10 @@ DOCS = {
     "codex_mcp": "https://developers.openai.com/codex/mcp",
     "claude_features": "https://code.claude.com/docs/en/features-overview",
     "claude_skills": "https://code.claude.com/docs/en/skills",
-    "claude_plugins": "https://code.claude.com/docs/en/plugins-reference",
+    "claude_plugins": "https://code.claude.com/docs/en/plugins",
     "claude_hooks": "https://code.claude.com/docs/en/hooks",
-    "cursor_rules": "https://docs.cursor.com/context/rules",
-    "cursor_mcp": "https://docs.cursor.com/context/model-context-protocol",
+    "cursor_rules": "https://cursor.com/docs/rules",
+    "cursor_mcp": "https://cursor.com/docs/mcp",
     "mcp_spec": "https://modelcontextprotocol.io/specification/latest",
     "github_issue_forms": "https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms",
     "github_actions": "https://docs.github.com/actions/reference/workflows-and-actions/workflow-syntax",
@@ -222,8 +222,8 @@ def analyze() -> dict[str, Any]:
     if not exists("src/adapters/cursor/CURSOR.md"):
         failures.append("missing Cursor bootloader: src/adapters/cursor/CURSOR.md")
     surface("cursor", "agent", "certified", "src/adapters/cursor/CURSOR.md")
-    surface("cursor", "skill", "not-native", "Cursor rules are the portable instruction surface.")
-    surface("cursor", "plugin", "not-native", "No Cursor plugin packaging is claimed.")
+    surface("cursor", "skill", "deferred", "Cursor plugin skills exist officially, but TES v0.3.40 ships Cursor rules first.")
+    surface("cursor", "plugin", "deferred", "Cursor plugins are native, but no TES .cursor-plugin package is claimed.")
     surface("cursor", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("cursor", "rules", "certified", cursor_rule)
     surface("cursor", "mcp", "certified", "scripts/install_mcp.py writes .cursor/mcp.json")

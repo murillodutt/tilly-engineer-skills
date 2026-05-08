@@ -13,7 +13,8 @@ tver: 0.3.0
 Adapters are aligned by behavioral contract and evidence, not by identical
 text. Different tool capabilities are expected. Drift exists when equivalent
 contract gates produce divergent decisions, or when an adapter claims a
-capability without evidence.
+capability without evidence. For the native packaging differences behind this
+matrix, see `docs/adapters/PLATFORM-DIFFERENCES.md`.
 
 ## Core Rule
 
@@ -33,11 +34,11 @@ The neutral contract is `docs/mesh/CONTRACT-MANIFEST.yml`.
 
 | Surface | Codex | Claude | Cursor |
 |---------|-------|--------|--------|
-| Agent bootloader | `AGENTS.md` | `CLAUDE.md` | `CURSOR.md` plus project rules |
+| Agent bootloader | `AGENTS.md` | `CLAUDE.md` | `.cursor/rules/*.mdc`; `CURSOR.md` as human handoff |
 | Always-on rules | `AGENTS.md` project guidance | `CLAUDE.md` project guidance | `.cursor/rules/*.mdc` |
-| Skill | `.agents/skills/**` | `.claude/skills/**` project skills plus `skills/**` plugin copy | no native equivalent |
-| Plugin | native platform support; deferred by Tilly | `.claude-plugin/**` certified locally | no native package claimed |
-| Hooks | native platform support; Tilly uses Git hook only | native platform support; Tilly plugin hook deferred | Git hook only |
+| Skill | `.agents/skills/**` | `.claude/skills/**` project skills plus `skills/**` plugin copy | Cursor plugin `skills/**` exists officially; TES v1 uses rules only |
+| Plugin | native platform support; deferred by Tilly | `.claude-plugin/**` certified locally | `.cursor-plugin/**` exists officially; TES v1 does not claim it |
+| Hooks | native platform support; Tilly uses Git hook only | native platform support; Tilly plugin hook deferred | native plugin hooks exist; Tilly uses Git hook only |
 | MCP | project `.codex/config.toml` | project `.mcp.json` | project `.cursor/mcp.json` |
 | Behavior backend | `codex-cli` retained v1 scope | `claude-cli` retained v1 scope | deferred; no clean non-interactive route certified |
 
@@ -51,9 +52,9 @@ inputs:
 
 | Platform | Relevant docs |
 |----------|---------------|
-| Codex | `https://developers.openai.com/codex/guides/agents-md`, `https://developers.openai.com/codex/skills`, `https://developers.openai.com/codex/plugins`, `https://developers.openai.com/codex/hooks`, `https://developers.openai.com/codex/rules`, `https://developers.openai.com/codex/mcp` |
-| Claude | `https://code.claude.com/docs/en/features-overview`, `https://code.claude.com/docs/en/skills`, `https://code.claude.com/docs/en/plugins-reference`, `https://code.claude.com/docs/en/hooks` |
-| Cursor | `https://docs.cursor.com/context/rules`, `https://docs.cursor.com/context/model-context-protocol` |
+| Codex | `https://github.com/openai/codex`, `https://developers.openai.com/codex/guides/agents-md`, `https://developers.openai.com/codex/skills`, `https://developers.openai.com/codex/cli/slash-commands` |
+| Claude | `https://github.com/anthropics/skills`, `https://code.claude.com/docs/en/skills`, `https://code.claude.com/docs/en/plugins`, `https://code.claude.com/docs/en/slash-commands` |
+| Cursor | `https://github.com/cursor/plugins`, `https://github.com/cursor/plugin-template`, `https://cursor.com/docs/rules`, `https://cursor.com/docs/plugins`, `https://cursor.com/docs/mcp` |
 | MCP | `https://modelcontextprotocol.io/specification/latest` |
 
 ## Surface Oracle
@@ -70,7 +71,8 @@ This certifies local package shape against the platform-surface contract:
 - Claude bootloader, skill, plugin manifests, MCP install config, and plugin
   non-claims.
 - Cursor bootloader, `.cursor/rules/*.mdc`, MCP install config, and legacy
-  `.cursorrules` exclusion through materialization.
+  `.cursorrules` exclusion through materialization. Cursor plugin skills are a
+  known native surface, but not a TES v1 packaging claim.
 - Shared pre-commit hook for document size and Cortex reflection.
 
 The oracle does not claim live marketplace publication, live IDE UI behavior,
@@ -95,6 +97,8 @@ or platform hooks that are intentionally not packaged.
 - Do not block Claude behavior certification waiting for symmetric adapter
   capability.
 - Do not claim Codex plugin packaging until a `.codex-plugin/plugin.json`
+  package exists and has its own oracle.
+- Do not claim Cursor plugin skills until a `.cursor-plugin/plugin.json`
   package exists and has its own oracle.
 - Do not claim platform lifecycle hooks just because the repository Git hook is
   active.

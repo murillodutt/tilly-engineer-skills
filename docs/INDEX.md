@@ -39,6 +39,7 @@ turning the repository root into an inventory.
 | Cross-tool agentic governance | `governance/AGENTIC-ALIGNMENT-GOVERNANCE.md` |
 | Maintainer correlation rule | `governance/MAINTAINER-CORRELATION-RULE.md` |
 | Adapter capability matrix | `adapters/ADAPTER-CAPABILITY-MATRIX.md` |
+| Platform differences reference | `adapters/PLATFORM-DIFFERENCES.md` |
 | Codex adapter guide | `adapters/CODEX.md` |
 | Claude adapter guide | `adapters/CLAUDE.md` |
 | Cursor adapter guide | `adapters/CURSOR.md` |

@@ -25,11 +25,11 @@ shared contract.
 
 | Surface | Codex | Claude Code | Cursor |
 |---------|-------|-------------|--------|
-| Base instructions | [AGENTS.md](https://developers.openai.com/codex/guides/agents-md) | [Memory and CLAUDE.md](https://code.claude.com/docs/en/memory) | [Rules and AGENTS.md](https://docs.cursor.com/en/context/rules) |
-| Reusable workflows | [Skills](https://developers.openai.com/codex/skills) | [Skills](https://code.claude.com/docs/en/skills) | Project rules, commands, and agent mode |
-| Distribution | [Plugins](https://developers.openai.com/codex/plugins/build) | [Plugins](https://code.claude.com/docs/en/plugins) | Versioned project files |
+| Base instructions | [AGENTS.md](https://developers.openai.com/codex/guides/agents-md) | [Memory and CLAUDE.md](https://code.claude.com/docs/en/memory) | [Rules and AGENTS.md](https://cursor.com/docs/rules) |
+| Reusable workflows | [Skills](https://developers.openai.com/codex/skills) | [Skills](https://code.claude.com/docs/en/skills) | [Plugins with skills, rules, agents, and commands](https://cursor.com/docs/plugins) |
+| Distribution | [Plugins](https://developers.openai.com/codex/plugins/build) | [Plugins](https://code.claude.com/docs/en/plugins) | [Cursor plugins](https://github.com/cursor/plugins) |
 | Hooks | [Hooks](https://developers.openai.com/codex/hooks) | [Hooks](https://code.claude.com/docs/en/hooks) | [Hooks](https://cursor.com/docs/hooks) |
-| MCP | [MCP](https://developers.openai.com/codex/mcp) | [MCP](https://code.claude.com/docs/en/mcp) | [MCP](https://docs.cursor.com/en/tools/mcp) |
+| MCP | [MCP](https://developers.openai.com/codex/mcp) | [MCP](https://code.claude.com/docs/en/mcp) | [MCP](https://cursor.com/docs/mcp) |
 | Agents | [Subagents](https://developers.openai.com/codex/concepts/subagents) | [Subagents](https://code.claude.com/docs/en/sub-agents) | Agent, CLI, and background agents |
 
 If any official source changes the packaging model, update this document, the
@@ -53,8 +53,8 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 | Need | Codex Adapter | Claude Adapter | Cursor Adapter | Governance Decision |
 |------|---------------|----------------|----------------|---------------------|
 | Durable base guidance | `AGENTS.md` | `CLAUDE.md` | `.cursor/rules/*.mdc`; `AGENTS.md` only by explicit choice | Do not force one filename across all tools |
-| Reusable discipline workflow | Skill in `.agents/skills/**` | Project skill in `.claude/skills/**`; plugin copy in `skills/**` | Always-on project rule | Preserve behavioral parity, not packaging parity |
-| Distribution | Future `.codex-plugin/**` if needed | `.claude-plugin/**` plus plugin root skills | Repository files | Distribution is adapter-specific |
+| Reusable discipline workflow | Skill in `.agents/skills/**` | Project skill in `.claude/skills/**`; plugin copy in `skills/**` | Always-on project rule; Cursor plugin skills are future surface | Preserve behavioral parity, not packaging parity |
+| Distribution | Future `.codex-plugin/**` if needed | `.claude-plugin/**` plus plugin root skills | Future `.cursor-plugin/**` if needed | Distribution is adapter-specific |
 | Hooks | Sensitive, feature-gated | Sensitive enforcement surface | Sensitive agent-loop surface | Excluded from default package until separately authorized |
 | MCP | External capability layer | External capability layer | External capability layer | Read-only Cortex MCP is installer-gated; other MCP requires decision and tests |
 | Agents and subagents | Powerful specialist layer | Powerful specialist layer | Agent/background execution layer | Excluded by default; requires permission, tools, and oracle contract |
