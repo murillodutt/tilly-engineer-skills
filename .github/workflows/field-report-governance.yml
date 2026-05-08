@@ -57,4 +57,9 @@ jobs:
         run: |
           gh issue edit "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label "field-report,field-report-quarantine"
           gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "This TES Field Report failed receiver governance and was closed for safety. Reason: ${REASON}"
-          gh issue close "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --reason not_planned
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER" -f state=closed -f state_reason=not_planned
+          STATE="$(gh api "repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER" --jq .state)"
+          if [ "$STATE" != "closed" ]; then
+            echo "Expected rejected TES Field Report to close, got state=$STATE" >&2
+            exit 1
+          fi

@@ -32,7 +32,11 @@ Start by detecting the current IDE/runtime and classifying this project as new,
 existing, or meshed. If Tilly is already meshed, treat this as an assisted
 update/convergence run, not a reinstall. When I ask `/tes:update` or
 `Atualizar TES`, compare the installed TES version with the cloud package
-version, detect applied IDE surfaces, and recommend the route before editing.
+version, verify helper contract parity, detect applied IDE surfaces, and
+recommend the route before editing. Do not report `CURRENT` while helper
+fingerprints or contract markers are `STALE_HELPERS`; in that case, replace
+only TES-owned `.tes/bin/**` helpers with backups as part of the authorized
+update route.
 Use the detected IDE as the default adapter. Ask me for a route command only
 where the spec requires one. Preserve local project governance, move durable
 agent context into docs/agents/** when needed, create or update the compiled

@@ -52,6 +52,9 @@ Preserve local project governance, move durable agent context into
 docs/agents/**, keep AGENTS.md, CLAUDE.md and Cursor rules as thin runtime
 bootloaders, activate the read-only project-scoped Cortex MCP server for the
 selected runtime route, and finish with the certification report required by the spec.
+The update probe must verify installed and cloud versions plus helper contract
+parity; `STALE_HELPERS` is update-required, not `CURRENT`. For helper drift,
+replace only TES-owned `.tes/bin/**` helpers with backups on the selected route.
 The final report must expose the user manual link/path.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and

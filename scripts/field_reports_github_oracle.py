@@ -14,7 +14,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.34"
+VERSION = "0.3.35"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 MAX_BODY_CHARS = 48000
@@ -115,7 +115,14 @@ def github_receiver_contract() -> list[str]:
         failures.append("missing GitHub governance workflow")
     else:
         text = workflow.read_text(encoding="utf-8")
-        for term in ("issues:", "issues: write", "field_reports_github_oracle.py validate-body", "field-report-quarantine"):
+        for term in (
+            "issues:",
+            "issues: write",
+            "field_reports_github_oracle.py validate-body",
+            "field-report-quarantine",
+            "state_reason=not_planned",
+            "Expected rejected TES Field Report to close",
+        ):
             if term not in text:
                 failures.append(f"governance workflow missing {term}")
 
