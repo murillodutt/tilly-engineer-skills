@@ -35,8 +35,8 @@ update/convergence run, not a reinstall. When I ask `/tes:update` or
 version, verify helper contract parity, detect applied IDE surfaces, and
 recommend the route before editing. Do not report `CURRENT` while helper
 fingerprints or contract markers are `STALE_HELPERS`; in that case, replace
-only TES-owned `.tes/bin/**` helpers with backups as part of the authorized
-update route.
+only TES-owned `.tes/bin/**` helpers with backups first, using the helper-only
+Layer Zero route, then rerun the update probe and require parity PASS.
 Use the detected IDE as the default adapter. Ask me for a route command only
 where the spec requires one. Preserve local project governance, move durable
 agent context into docs/agents/** when needed, create or update the compiled

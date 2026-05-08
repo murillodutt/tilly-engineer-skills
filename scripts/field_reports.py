@@ -19,7 +19,7 @@ import uuid
 from typing import Any
 
 
-VERSION = "0.3.35"
+VERSION = "0.3.36"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 LEGACY_SCHEMAS = ("tes-field-report@1", "tilly-field-report@1")
@@ -44,11 +44,14 @@ SUMMARY_FACT_KEYS = (
     "cloud_version",
     "duration_bucket",
     "failures",
+    "helper_contract_status",
+    "helpers_only",
     "legacy_retirement_required",
     "returncode",
     "route",
     "surface_count",
     "update_available",
+    "update_reasons",
 )
 GIT_EXCLUDE_LINES = (
     ".tes/bin/*.bak-*",
@@ -759,11 +762,17 @@ def ensure_git_exclude(target: Path) -> str | None:
     exclude = info / "exclude"
     exclude.touch(exist_ok=True)
     text = exclude.read_text(encoding="utf-8")
-    present = set(text.splitlines())
-    missing = [line for line in GIT_EXCLUDE_LINES if line not in present]
-    if missing:
-        prefix = text.rstrip()
-        body = (prefix + "\n" if prefix else "") + "\n".join(missing) + "\n"
+    seen: set[str] = set()
+    lines: list[str] = []
+    for line in text.splitlines():
+        if line in GIT_EXCLUDE_LINES:
+            if line in seen:
+                continue
+            seen.add(line)
+        lines.append(line)
+    missing = [line for line in GIT_EXCLUDE_LINES if line not in seen]
+    body = "\n".join([*lines, *missing]).rstrip() + "\n"
+    if body != text:
         exclude.write_text(body, encoding="utf-8")
     return rel(exclude, target)
 
@@ -902,6 +911,13 @@ def self_test() -> dict[str, object]:
         for line in GIT_EXCLUDE_LINES:
             if line not in exclude_text.splitlines():
                 failures.append(f"missing local git hygiene exclude: {line}")
+        with (target / ".git/info/exclude").open("a", encoding="utf-8") as handle:
+            handle.write("\n" + "\n".join(GIT_EXCLUDE_LINES[:3]) + "\n")
+        ensure_git_exclude(target)
+        deduped_exclude = (target / ".git/info/exclude").read_text(encoding="utf-8").splitlines()
+        for line in GIT_EXCLUDE_LINES[:3]:
+            if deduped_exclude.count(line) != 1:
+                failures.append(f"local git hygiene must deduplicate exclude: {line}")
         for relpath in (
             ".tes/bin/cortex.py.bak-20260507T000000Z",
             ".tes/bin/__pycache__/field_reports.cpython-314.pyc",
@@ -1077,10 +1093,11 @@ echo "https://github.com/murillodutt/tilly-engineer-skills/issues/999"
     return {"version": VERSION, "status": "PASS" if not failures else "FAIL", "failures": failures}
 
 
-def print_result(result: dict[str, object], label: str) -> int:
+def print_result(result: dict[str, object], label: str, json_only: bool = False) -> int:
     print(json.dumps(result, indent=2, sort_keys=True))
     status_value = str(result.get("status", "FAIL"))
-    print(f"[field-reports] {status_value}")
+    if not json_only:
+        print(f"[field-reports] {status_value}")
     if status_value == "FAIL":
         return 1
     return 0
@@ -1096,11 +1113,12 @@ def main() -> int:
     parser.add_argument("--trigger", default="cli")
     parser.add_argument("--duration-bucket")
     parser.add_argument("--detail", action="append", default=[])
+    parser.add_argument("--json-only", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
 
     if args.self_test:
-        return print_result(self_test(), "self-test")
+        return print_result(self_test(), "self-test", args.json_only)
     if args.command == "capture":
         if not args.event or not args.status:
             parser.error("capture requires --event and --status")
@@ -1125,7 +1143,7 @@ def main() -> int:
         result = install_hook(args.target)
     else:
         parser.error("command is required unless --self-test is used")
-    return print_result(result, str(args.command))
+    return print_result(result, str(args.command), args.json_only)
 
 
 if __name__ == "__main__":

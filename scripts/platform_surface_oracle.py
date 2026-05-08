@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.35"
+VERSION = "0.3.36"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -162,7 +162,7 @@ def analyze() -> dict[str, Any]:
         failures.append("missing Codex skill agent metadata")
     surface("codex", "agent", "certified", codex_agent)
     surface("codex", "skill", "certified", "; ".join(f"src/adapters/codex/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS))
-    surface("codex", "plugin", "deferred", "Codex plugins are native, but TES v0.3.35 ships local skills first.")
+    surface("codex", "plugin", "deferred", "Codex plugins are native, but TES v0.3.36 ships local skills first.")
     surface("codex", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
@@ -243,7 +243,17 @@ def analyze() -> dict[str, Any]:
                 failures.append(f"{pre_push} missing {term}")
 
     install_text = read("scripts/install_mcp.py")
-    for term in ("[mcp_servers.tes-cortex]", ".mcp.json", ".cursor/mcp.json", "field_reports.py", "tes_update.py", "tes_legacy_retirement.py", "root_context.py"):
+    for term in (
+        "[mcp_servers.tes-cortex]",
+        ".mcp.json",
+        ".cursor/mcp.json",
+        "field_reports.py",
+        "tes_update.py",
+        "tes_legacy_retirement.py",
+        "root_context.py",
+        "helpers_only",
+        "--json-only",
+    ):
         if term not in install_text:
             failures.append(f"scripts/install_mcp.py missing {term}")
     root_text = read("scripts/root_context.py")
@@ -260,6 +270,8 @@ def analyze() -> dict[str, Any]:
         "legacy_retirement_required",
         "helper_contract_status",
         "STALE_HELPERS",
+        "record_field_report",
+        "--json-only",
     ):
         if term not in update_text:
             failures.append(f"scripts/tes_update.py missing {term}")
