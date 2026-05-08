@@ -93,11 +93,11 @@ requires exact syntax.
 Treat `/tes:init`, `/tes:update`, `tes init`, and natural command/prompts
 such as `TES, initialize this project`, `TES, inicialize este projeto`, or
 `Atualizar TES` as installer intents. `/tes:update` first checks installed
-version, cloud version, applied IDE surfaces, and recommended route. Also treat
-`/tes:cortex`, `/tes:curate`, `/tes:mcp`, `/tes:field-reports`,
-`/tes:doctor`, `/tes:adapter`, and `/tes:bench` as intent shortcuts. Use
-the matching skill and let the agent choose the smallest safe oracle. These are
-not shell commands.
+version, cloud version, helper contract parity, applied IDE surfaces, and
+recommended route. Also treat `/tes:cortex`, `/tes:curate`, `/tes:mcp`,
+`/tes:field-reports`, `/tes:doctor`, `/tes:adapter`, and `/tes:bench` as
+intent shortcuts. Use the matching skill and let the agent choose the smallest
+safe oracle. These are not shell commands.
 
 ## Cortex Reflection
 

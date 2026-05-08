@@ -60,6 +60,8 @@ inicializar TES / instalar TES / recertificar TES -> /tes:init
 - Do not certify a command that was skipped or blocked.
 - Do not claim latest-source certification when the installer reports
   `STALE_SOURCE` or `BLOCKED` source freshness.
+- Do not claim `/tes:update` is `CURRENT` while helper contract parity is
+  `STALE_HELPERS` or `BLOCKED`.
 - Do not call SQLite, MCP, or generated output memory.
 - Do not call `.tes/cortex/semantic.sqlite` memory; it is only derived
   curation cache.

@@ -67,6 +67,8 @@ Before using copied or cloned package files, record the exact package snapshot:
 
 If `source_freshness` is `STALE_SOURCE`, continue only as a snapshot certification. The final report must say that the target was certified against the recorded snapshot, not against the latest Tilly Engineer Skills `main`. If `source_freshness` is `BLOCKED`, do not claim latest-source certification. This is not a target-project failure; it is certification metadata that protects the user from stale installer conclusions.
 
+For `/tes:update`, `CURRENT` also requires helper contract parity. If installed helper hashes or required contract markers differ from the package source, report `STALE_HELPERS`, route to update, and do not call the target current even when installed and cloud versions match.
+
 ## Non-Negotiable Rules
 
 - Never overwrite existing agent instructions blindly.
@@ -301,7 +303,7 @@ Before rewriting root runtime files, run `python3 scripts/root_context.py analyz
 
 When no root overwrite is attempted and project-owned bootloaders are intentionally left untouched, close the root-context gate as `PRESERVED`, not `FAIL`.
 
-For a meshed project, treat the run as assisted update/convergence, not reinstall. Run the update probe when available: `python3 scripts/tes_update.py plan --target <target-root>`. It compares the installed version with the cloud package version, detects applied IDE surfaces, recommends `current`, `codex`, `claude`, `cursor`, or `all`, and reports `legacy_retirement_required`.
+For a meshed project, treat the run as assisted update/convergence, not reinstall. Run the update probe when available: `python3 scripts/tes_update.py plan --target <target-root>`. It compares the installed and cloud versions, checks helper contract parity with installed helper fingerprints and required schema markers, detects applied IDE surfaces, recommends `current`, `codex`, `claude`, `cursor`, or `all`, and reports `legacy_retirement_required`. If it reports `STALE_HELPERS`, update the selected TES helper route before claiming convergence. Use `python3 scripts/install_mcp.py --target <target-root> --adapter <route> --dry-run --overwrite` to review helper replacement, then `python3 scripts/install_mcp.py --target <target-root> --adapter <route> --overwrite --yes` only for TES-owned `.tes/bin/**` helpers and project-scoped MCP config after the update run is authorized. This does not authorize overwriting project-owned root bootloaders.
 
 If legacy retirement is required, run `python3 scripts/tes_legacy_retirement.py plan --target <target-root>` after the root context gate and before materializing new assets. The gate may remove only known old runtime assets, migrate `.tilly/field-reports/**` to `.tes/field-reports/**`, archive `.tilly/retrofit/**` under `.tes/legacy-retirement/retrofit/**`, and preserve project context. If it reports `NEEDS_REVIEW`, stop; do not copy new TES assets over old surfaces. When it is clean and the run is authorized, apply with `python3 scripts/tes_legacy_retirement.py apply --target <target-root> --yes`, then certify with `python3 scripts/tes_legacy_retirement.py audit --target <target-root>`.
 
@@ -778,6 +780,7 @@ Changed Surfaces
 - Rollback backups: <short list or none; do not count .bak-* files as new surfaces>
 - Root context gate: PASS | PRESERVED | NEEDS_REVIEW | SKIP; plan/resolution: <path | preserve | none>
 - Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py: PASS/BLOCKED/MISSING
+- Helper contract parity: PASS | STALE_HELPERS | BLOCKED | NOT_INSTALLED
 - Runtime/MCP config, evidence, ignored local state: <short list>
 
 Certification
@@ -811,6 +814,7 @@ GO requires:
 - root runtime context was migrated, preserved, or explicitly cleared; `PRESERVED` is passing only when no root overwrite occurred;
 - read-only Cortex MCP is activated for selected routes or explicitly blocked;
 - Field Reports state and installed helper set are explicit in the report;
+- helper contract parity is PASS or NOT_INSTALLED; `STALE_HELPERS` cannot close as GO;
 - if helper files were copied but hook/drain status is unknown, use `NEEDS_REVIEW`;
 - context was preserved, no secrets changed, and at least one oracle passed.
 

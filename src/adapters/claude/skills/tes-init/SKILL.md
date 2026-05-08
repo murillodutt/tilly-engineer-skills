@@ -33,7 +33,10 @@ the user for package contents.
 3. Run Step Zero before edits: inspect Git status and offer a local baseline
    commit when the tree is dirty.
 4. For `/tes:update`, run `tes_update.py plan` when available to compare
-   installed/cloud versions, detect applied IDE surfaces, and recommend route.
+   installed/cloud versions, verify helper contract parity, detect applied IDE
+   surfaces, and recommend route.
+   Treat `STALE_HELPERS` as update-required and replace only TES-owned
+   `.tes/bin/**` helpers with backups.
 5. Before rewriting root bootloaders, run `root_context.py analyze` when
    available and migrate durable root context into `docs/agents/**` first.
 6. When `legacy_retirement_required=true`, run `tes_legacy_retirement.py plan`,

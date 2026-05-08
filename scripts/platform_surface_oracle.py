@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.34"
+VERSION = "0.3.35"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -162,7 +162,7 @@ def analyze() -> dict[str, Any]:
         failures.append("missing Codex skill agent metadata")
     surface("codex", "agent", "certified", codex_agent)
     surface("codex", "skill", "certified", "; ".join(f"src/adapters/codex/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS))
-    surface("codex", "plugin", "deferred", "Codex plugins are native, but TES v0.3.34 ships local skills first.")
+    surface("codex", "plugin", "deferred", "Codex plugins are native, but TES v0.3.35 ships local skills first.")
     surface("codex", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
@@ -252,7 +252,15 @@ def analyze() -> dict[str, Any]:
         if term not in root_gate_text:
             failures.append(f"root context gate missing {term}")
     update_text = read("scripts/tes_update.py")
-    for term in ("recommended_route", "update_available", "remote_version", "/tes:update", "legacy_retirement_required"):
+    for term in (
+        "recommended_route",
+        "update_available",
+        "remote_version",
+        "/tes:update",
+        "legacy_retirement_required",
+        "helper_contract_status",
+        "STALE_HELPERS",
+    ):
         if term not in update_text:
             failures.append(f"scripts/tes_update.py missing {term}")
     field_reports_text = read("scripts/field_reports.py")
@@ -265,7 +273,7 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing GitHub receiver oracle: {github_oracle}")
     else:
         text = read(github_oracle)
-        for term in ("tes-field-report@2", "field-report-quarantine", "validate_body"):
+        for term in ("tes-field-report@2", "field-report-quarantine", "validate_body", "state_reason=not_planned"):
             if term not in text:
                 failures.append(f"{github_oracle} missing {term}")
 

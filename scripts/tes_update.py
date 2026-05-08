@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -15,12 +16,25 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.34"
+VERSION = "0.3.35"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
 )
+REMOTE_RAW_BASE = "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main"
 REMOTE_REF = "refs/heads/main"
+HELPER_FILES = (
+    "cortex.py",
+    "cortex_mcp.py",
+    "cortex_embed.mjs",
+    "field_reports.py",
+    "tes_update.py",
+    "tes_legacy_retirement.py",
+    "root_context.py",
+)
+HELPER_CONTRACT_MARKERS = {
+    "field_reports.py": ('SCHEMA = "tes-field-report@2"',),
+}
 VERSION_RE = re.compile(
     r"""(?x)
     (?:VERSION\s*=\s*|["']version["']\s*:\s*|Version:\s*`?|version:\s*)
@@ -35,6 +49,21 @@ def read_text(path: Path) -> str:
         return path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
         return ""
+
+
+def read_bytes(path: Path) -> bytes:
+    try:
+        return path.read_bytes()
+    except OSError:
+        return b""
+
+
+def sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def sha256_file(path: Path) -> str:
+    return sha256_bytes(read_bytes(path))
 
 
 def rel(path: Path, target: Path) -> str:
@@ -183,7 +212,87 @@ def fetch_remote_commit(timeout: float) -> dict[str, str]:
     return {"status": "PASS", "commit": commit, "source": REPO_URL}
 
 
-def remote_facts(args: argparse.Namespace) -> dict[str, Any]:
+def helper_manifest_from_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    helpers = payload.get("helpers", payload)
+    if not isinstance(helpers, dict):
+        raise ValueError("remote helper manifest must be an object")
+    normalized: dict[str, dict[str, Any]] = {}
+    for name in HELPER_FILES:
+        value = helpers.get(name)
+        if isinstance(value, str):
+            normalized[name] = {"sha256": value}
+        elif isinstance(value, dict) and isinstance(value.get("sha256"), str):
+            normalized[name] = dict(value)
+    return normalized
+
+
+def local_helper_manifest() -> dict[str, Any]:
+    helpers: dict[str, dict[str, Any]] = {}
+    for name in HELPER_FILES:
+        path = ROOT / "scripts" / name
+        data = read_bytes(path)
+        if not data:
+            continue
+        text = data.decode("utf-8", errors="replace")
+        helpers[name] = {
+            "sha256": sha256_bytes(data),
+            "source": f"local:scripts/{name}",
+            "markers": {
+                marker: marker in text
+                for marker in HELPER_CONTRACT_MARKERS.get(name, ())
+            },
+        }
+    if len(helpers) != len(HELPER_FILES):
+        missing = sorted(set(HELPER_FILES) - set(helpers))
+        raise FileNotFoundError(f"missing local helper source: {', '.join(missing)}")
+    return {"status": "PASS", "helpers": helpers, "source": "local-package"}
+
+
+def fetch_remote_helper_manifest(timeout: float) -> dict[str, Any]:
+    helpers: dict[str, dict[str, Any]] = {}
+    for name in HELPER_FILES:
+        url = f"{REMOTE_RAW_BASE}/scripts/{name}"
+        with urllib.request.urlopen(url, timeout=timeout) as response:
+            data = response.read()
+        text = data.decode("utf-8", errors="replace")
+        helpers[name] = {
+            "sha256": sha256_bytes(data),
+            "source": url,
+            "markers": {
+                marker: marker in text
+                for marker in HELPER_CONTRACT_MARKERS.get(name, ())
+            },
+        }
+    return {"status": "PASS", "helpers": helpers, "source": f"{REMOTE_RAW_BASE}/scripts"}
+
+
+def remote_helper_facts(args: argparse.Namespace, required: bool = True) -> dict[str, Any]:
+    if not required:
+        return {"status": "SKIP", "helpers": {}, "source": "not-installed"}
+    manifest_path = getattr(args, "remote_helper_manifest", None)
+    if getattr(args, "local_package_helpers", False):
+        try:
+            return local_helper_manifest()
+        except Exception as exc:  # noqa: BLE001 - report blocker without hiding update state
+            return {"status": "BLOCKED", "helpers": {}, "source": "local-package", "reason": str(exc)}
+    if manifest_path:
+        try:
+            return {
+                "status": "PASS",
+                "helpers": helper_manifest_from_payload(json.loads(manifest_path.read_text(encoding="utf-8"))),
+                "source": str(manifest_path),
+            }
+        except Exception as exc:  # noqa: BLE001
+            return {"status": "BLOCKED", "helpers": {}, "source": str(manifest_path), "reason": str(exc)}
+    if args.offline:
+        return {"status": "BLOCKED", "helpers": {}, "source": "offline"}
+    try:
+        return fetch_remote_helper_manifest(args.timeout)
+    except Exception as exc:  # noqa: BLE001
+        return {"status": "BLOCKED", "helpers": {}, "source": f"{REMOTE_RAW_BASE}/scripts", "reason": str(exc)}
+
+
+def remote_facts(args: argparse.Namespace, helper_required: bool = True) -> dict[str, Any]:
     version_fact: dict[str, Any]
     commit_fact: dict[str, Any]
     if args.remote_version:
@@ -206,7 +315,106 @@ def remote_facts(args: argparse.Namespace) -> dict[str, Any]:
         except Exception as exc:  # noqa: BLE001
             commit_fact = {"status": "BLOCKED", "commit": None, "source": REPO_URL, "reason": str(exc)}
 
-    return {"version": version_fact, "commit": commit_fact}
+    return {"version": version_fact, "commit": commit_fact, "helpers": remote_helper_facts(args, helper_required)}
+
+
+def installed_helper_records(target: Path) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for bin_dir in (".tes/bin", ".tilly/bin"):
+        for name in HELPER_FILES:
+            path = target / bin_dir / name
+            if not path.exists() or not path.is_file():
+                continue
+            text = read_text(path)
+            records.append(
+                {
+                    "name": name,
+                    "path": rel(path, target),
+                    "sha256": sha256_file(path),
+                    "markers": {
+                        marker: marker in text
+                        for marker in HELPER_CONTRACT_MARKERS.get(name, ())
+                    },
+                }
+            )
+    legacy_update = target / ".tilly/bin/tilly_update.py"
+    if legacy_update.exists() and legacy_update.is_file():
+        records.append(
+            {
+                "name": "tes_update.py",
+                "path": rel(legacy_update, target),
+                "sha256": sha256_file(legacy_update),
+                "legacy_name": "tilly_update.py",
+                "markers": {},
+            }
+        )
+    return records
+
+
+def helper_contract(target: Path, remote_helpers: dict[str, Any], installed: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    installed = installed if installed is not None else installed_helper_records(target)
+    if not installed:
+        return {"status": "NOT_INSTALLED", "records": [], "failures": []}
+
+    if remote_helpers.get("status") != "PASS":
+        return {
+            "status": "BLOCKED",
+            "records": [
+                {
+                    **record,
+                    "status": "UNKNOWN",
+                    "remote_sha256": None,
+                    "failures": ["remote helper manifest unavailable"],
+                }
+                for record in installed
+            ],
+            "failures": [str(remote_helpers.get("reason") or "remote helper manifest unavailable")],
+        }
+
+    expected = remote_helpers.get("helpers") or {}
+    records: list[dict[str, Any]] = []
+    failures: list[str] = []
+    for record in installed:
+        name = str(record["name"])
+        remote = expected.get(name)
+        record_failures: list[str] = []
+        status = "PASS"
+        if not isinstance(remote, dict) or not remote.get("sha256"):
+            status = "UNKNOWN"
+            record_failures.append("remote helper hash missing")
+        elif record["sha256"] != remote["sha256"]:
+            status = "STALE_HELPER"
+            record_failures.append("installed helper hash differs from remote source")
+
+        for marker, present in record.get("markers", {}).items():
+            if not present:
+                status = "STALE_HELPER"
+                record_failures.append(f"missing contract marker: {marker}")
+
+        if record.get("legacy_name"):
+            status = "STALE_HELPER"
+            record_failures.append("legacy helper name is still installed")
+
+        if record_failures:
+            failures.append(f"{record['path']}: {'; '.join(record_failures)}")
+        records.append(
+            {
+                **record,
+                "remote_sha256": remote.get("sha256") if isinstance(remote, dict) else None,
+                "status": status,
+                "failures": record_failures,
+            }
+        )
+
+    statuses = {str(record["status"]) for record in records}
+    status = (
+        "STALE_HELPERS"
+        if "STALE_HELPER" in statuses
+        else "BLOCKED"
+        if "UNKNOWN" in statuses
+        else "PASS"
+    )
+    return {"status": status, "records": records, "failures": failures}
 
 
 def analyze(args: argparse.Namespace) -> dict[str, Any]:
@@ -220,16 +428,26 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
     state = project_state(surface_map)
     runtimes = runtime_surfaces(surface_map)
     route, route_reason = recommended_route(state, runtimes, args.runtime)
-    remote = remote_facts(args)
+    installed_helpers = installed_helper_records(target)
+    remote = remote_facts(args, bool(installed_helpers))
     installed = installed_version(records)
     cloud_version = remote["version"].get("version")
     cmp_result = compare_semver(installed, cloud_version)
-    update_available = True if cmp_result is not None and cmp_result < 0 else False
+    helper = helper_contract(target, remote["helpers"], installed_helpers)
+    helper_stale = helper["status"] == "STALE_HELPERS"
+    update_available = True if (cmp_result is not None and cmp_result < 0) or helper_stale else False
+    update_reasons: list[str] = []
+    if cmp_result is not None and cmp_result < 0:
+        update_reasons.append("installed_version_behind")
+    if helper_stale:
+        update_reasons.append("helper_contract_drift")
+    if helper["status"] == "BLOCKED":
+        update_reasons.append("helper_contract_blocked")
     update_status = (
         "AVAILABLE"
         if update_available
         else "CURRENT"
-        if cmp_result == 0
+        if cmp_result == 0 and helper["status"] in {"PASS", "NOT_INSTALLED"}
         else "UNKNOWN"
     )
     if state == "new":
@@ -250,8 +468,16 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "remote_version_status": remote["version"].get("status"),
         "remote_commit": remote["commit"].get("commit"),
         "remote_commit_status": remote["commit"].get("status"),
+        "remote_helper_status": remote["helpers"].get("status"),
+        "remote_helper_source": remote["helpers"].get("source"),
         "update_status": update_status,
         "update_available": update_available,
+        "update_reasons": update_reasons,
+        "requires_helper_overwrite": helper_stale,
+        "helper_update_action": "overwrite-with-backup" if helper_stale else "none",
+        "helper_contract_status": helper["status"],
+        "installed_helper_records": helper["records"],
+        "helper_contract_failures": helper["failures"],
         "legacy_retirement_required": bool(legacy.get("legacy_retirement_required")),
         "legacy_retirement_status": legacy.get("status"),
         "legacy_retirement_counts": legacy.get("counts", {}),
@@ -281,6 +507,8 @@ def record_field_report(target: Path, result: dict[str, Any]) -> None:
             "installed_version": result.get("installed_version") or "unknown",
             "cloud_version": result.get("remote_version") or "unknown",
             "update_available": result.get("update_available"),
+            "update_reasons": ",".join(result.get("update_reasons") or []),
+            "helper_contract_status": result.get("helper_contract_status"),
             "route": result.get("recommended_route"),
             "surface_count": len(result.get("applied_runtimes") or []),
             "legacy_retirement_required": result.get("legacy_retirement_required"),
@@ -305,8 +533,10 @@ def self_test() -> dict[str, Any]:
         write(target / ".agents/skills/tilly-init/SKILL.md", "name: tilly-init\n")
         args = argparse.Namespace(
             target=target,
-            remote_version="0.3.34",
+            remote_version=VERSION,
             remote_commit="a" * 40,
+            remote_helper_manifest=None,
+            local_package_helpers=True,
             runtime="codex",
             offline=False,
             timeout=0.1,
@@ -332,15 +562,44 @@ def self_test() -> dict[str, Any]:
             target=target,
             remote_version=VERSION,
             remote_commit="b" * 40,
+            remote_helper_manifest=None,
+            local_package_helpers=True,
             runtime="codex",
             offline=False,
             timeout=0.1,
         )
+        write(target / ".tes/bin/tes_update.py", read_text(ROOT / "scripts/tes_update.py"))
         result = analyze(args)
         if result["update_status"] != "CURRENT":
             failures.append("equal version must report current")
         if result["recommended_route"] != "codex":
             failures.append("single Codex fixture must recommend codex")
+
+    with tempfile.TemporaryDirectory(prefix="tes-update-stale-helper-") as tempdir:
+        target = Path(tempdir)
+        write(target / "docs/agents/PROJECT-REGISTER.md", "Generated by Tilly\n")
+        write(target / "AGENTS.md", "Route to docs/agents/**\n")
+        write(target / ".tes/bin/tes_update.py", read_text(ROOT / "scripts/tes_update.py"))
+        write(target / ".tes/bin/field_reports.py", f'VERSION = "{VERSION}"\nSCHEMA = "tes-field-report@1"\n')
+        args = argparse.Namespace(
+            target=target,
+            remote_version=VERSION,
+            remote_commit="d" * 40,
+            remote_helper_manifest=None,
+            local_package_helpers=True,
+            runtime="codex",
+            offline=False,
+            timeout=0.1,
+        )
+        result = analyze(args)
+        if result["update_status"] != "AVAILABLE":
+            failures.append("equal version with stale helper must report update available")
+        if result["helper_contract_status"] != "STALE_HELPERS":
+            failures.append("stale field_reports contract must report STALE_HELPERS")
+        if "helper_contract_drift" not in result["update_reasons"]:
+            failures.append("stale helper update must include helper_contract_drift reason")
+        if result["requires_helper_overwrite"] is not True:
+            failures.append("stale helper update must require helper overwrite with backup")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-new-") as tempdir:
         target = Path(tempdir)
@@ -348,6 +607,8 @@ def self_test() -> dict[str, Any]:
             target=target,
             remote_version=VERSION,
             remote_commit="c" * 40,
+            remote_helper_manifest=None,
+            local_package_helpers=True,
             runtime="cursor",
             offline=False,
             timeout=0.1,
@@ -368,6 +629,8 @@ def main() -> int:
     parser.add_argument("--runtime", choices=["codex", "claude", "cursor"])
     parser.add_argument("--remote-version")
     parser.add_argument("--remote-commit")
+    parser.add_argument("--remote-helper-manifest", type=Path)
+    parser.add_argument("--local-package-helpers", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--offline", action="store_true")
     parser.add_argument("--timeout", type=float, default=5.0)
     parser.add_argument("--self-test", action="store_true")

@@ -74,10 +74,11 @@ TES", "install TES", "update TES", "recertify TES", "Atualizar TES",
 or a natural command/prompt such as "TES, inicialize este projeto",
 treat it as an intent shortcut for the assisted context installer. For
 `/tes:update`, first check installed version, cloud version, applied IDE
-surfaces, and recommended route. Detect the project state, run Step Zero before
-edits, preserve local governance, initialize or update `docs/agents/**` and
-Cortex, activate read-only MCP when selected, run available oracles, and finish
-with a certification report. It is not a blind shell command.
+surfaces, helper contract parity, and recommended route. Detect the project
+state, run Step Zero before edits, preserve local governance, initialize or
+update `docs/agents/**` and Cortex, activate read-only MCP when selected, run
+available oracles, and finish with a certification report. It is not a blind
+shell command.
 
 Also treat `/tes:cortex`, `/tes:curate`, `/tes:mcp`,
 `/tes:field-reports`, `/tes:doctor`, `/tes:adapter`, and `/tes:bench`
