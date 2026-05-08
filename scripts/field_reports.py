@@ -19,7 +19,7 @@ import uuid
 from typing import Any
 
 
-VERSION = "0.3.44"
+VERSION = "0.3.45"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 LEGACY_SCHEMAS = ("tes-field-report@1", "tilly-field-report@1")

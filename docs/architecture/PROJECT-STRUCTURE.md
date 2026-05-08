@@ -98,7 +98,8 @@ receiver for those reports. The local oracle is
 `scripts/install_smoke.py`, `scripts/claude_plugin_oracle.py`,
 `scripts/retention_metadata.py`, and `scripts/validate_reference_graph.py`
 provide deterministic closure gates for assisted installation, local Claude
-plugin shape, evidence retention policy, and governed link drift.
+plugin shape, portable project-context fixtures, evidence retention policy, and
+governed link drift.
 
 ## Docs
 
