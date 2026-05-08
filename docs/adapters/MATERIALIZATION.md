@@ -32,7 +32,7 @@ that source and are not edited by hand.
 |---------|------------------------|
 | Codex | `AGENTS.md` and `.agents/skills/tes-engineering-discipline/**` |
 | Cursor | `CURSOR.md` and `.cursor/rules/tes-guidelines.mdc` |
-| Claude | `CLAUDE.md`, `.claude-plugin/**`, and `skills/tes-guidelines/**` |
+| Claude | `CLAUDE.md`, `.claude/skills/**`, `.claude-plugin/**`, and `skills/**` |
 
 ## Gate
 
@@ -42,7 +42,8 @@ check builds all adapters in a temporary directory and verifies:
 - each expected target path exists;
 - Codex skill self-test passes after materialization;
 - Cursor keeps `.mdc` frontmatter with `description` and `alwaysApply: true`;
-- Claude plugin metadata points to a root-contained materialized skill;
+- Claude project skills materialize under `.claude/skills/**` and plugin
+  metadata points to the root-contained `./skills/` copy;
 - no `src/**` source tree leaks into an install output.
 
 `commit:check` also requires required package files to be staged or already
@@ -57,7 +58,7 @@ If a target tool changes packaging rules, update `src/adapters/<tool>/**`,
 | Adapter | Risk | Rule |
 |---------|------|------|
 | Codex | Editing installed user/runtime skill instead of source | Edit `src/adapters/codex/**` only |
-| Claude | Plugin metadata depends on `../` outside the plugin root | Skill paths must be root-relative |
+| Claude | Plugin metadata depends on `../` outside the plugin root, or project installs omit `.claude/skills/**` | Skill paths must be root-relative and project skills must be present |
 | Cursor | Legacy `.cursorrules` leaks back into the package | Validator blocks `.cursorrules` |
 | All | Generated output becomes perceived source | `dist/**` remains ignored and reproducible |
 

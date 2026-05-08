@@ -1,11 +1,11 @@
 ---
 name: tes-init
-description: Use when the user says /tes:init, /tes:update, tes init, Atualizar TES, a natural init command/prompt, a natural update command/prompt, or asks to initialize, install, retrofit, update, audit, or recertify TES in the current project. Runs the assisted context installer contract through the active agent.
+description: Use when the user says /tes-init, /tes-update, /tes:init, /tes:update, tes init, Atualizar TES, a natural init command/prompt, a natural update command/prompt, or asks to initialize, install, retrofit, update, audit, or recertify TES in the current project. Runs the assisted context installer contract through the active agent.
 ---
 
 # TES Init
 
-`/tes:init`, `/tes:update`, `tes init`, and direct command/prompts such as
+`/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, and direct command/prompts such as
 `TES, initialize this project`, `TES, inicialize este projeto`, or
 `Atualizar TES` are user-facing installer intents. They are not blind shell
 commands and not background daemons. The active agent remains the executor.
@@ -31,9 +31,10 @@ the user for package contents.
    `meshed`.
 3. Run Step Zero before edits: inspect Git status and offer a local baseline
    commit when the tree is dirty.
-4. For `/tes:update`, run `tes_update.py plan --json-only` when available to
-   compare installed/cloud versions, verify helper contract parity, detect
-   applied IDE surfaces, and recommend route plus `recommended_update_scope`.
+4. For `/tes-update` or `/tes:update`, run `tes_update.py plan --json-only`
+   when available to compare installed/cloud versions, verify helper contract
+   parity, detect applied IDE surfaces, and recommend route plus
+   `recommended_update_scope`.
    Use `--record-field-report` only on the final certification probe. Treat
    `recommended_update_scope=helpers-only` or `STALE_HELPERS` as
    update-required and replace only TES-owned

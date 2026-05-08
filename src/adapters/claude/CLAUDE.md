@@ -90,21 +90,28 @@ requires exact syntax.
 
 ## TES Shortcuts
 
-Treat `/tes:init`, `/tes:update`, `tes init`, and natural command/prompts
-such as `TES, initialize this project`, `TES, inicialize este projeto`, or
-`Atualizar TES` as installer intents. `/tes:update` first checks installed
-version, cloud version, helper contract parity, applied IDE surfaces,
-recommended route, and `recommended_update_scope`. Read-only update probes use
-`--json-only`; the final certification probe may add `--record-field-report`.
+Treat `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, and
+natural command/prompts such as `TES, initialize this project`,
+`TES, inicialize este projeto`, or `Atualizar TES` as installer intents.
+Across Codex, Claude Code, and Cursor, `/tes-*` forms are the preferred shared
+triggers and `/tes:*` forms are compatible TES intent aliases. If Claude Code
+says `/tes:init` or another `/tes:*` form is an invalid slash command, continue
+as TES intent text; do not stop to ask which TES route the user meant when the
+intent is clear. `/tes-update` first checks installed version, cloud version,
+helper contract parity, applied IDE surfaces, recommended route, and
+`recommended_update_scope`. Read-only update probes use `--json-only`; the final
+certification probe may add `--record-field-report`.
 `recommended_update_scope=helpers-only` or `STALE_HELPERS` is repaired first
 through the helper-only Layer Zero route before MCP config activation. After any
 helper overwrite, the final recorded probe is required before GO, commit, or
 push and must show `helper_contract_status=PASS`, `update_available=False`, and
 `recommended_update_scope=none`. Also
-treat `/tes:cortex`,
-`/tes:curate`, `/tes:mcp`, `/tes:field-reports`, `/tes:doctor`,
-`/tes:adapter`, and `/tes:bench` as intent shortcuts. Use the matching skill
-and let the agent choose the smallest safe oracle. These are not shell commands.
+treat `/tes-cortex`, `/tes:cortex`, `/tes-curate`, `/tes:curate`,
+`/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
+`/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`, `/tes-bench`,
+and `/tes:bench` as intent shortcuts. Use the matching `.claude/skills/tes-*`
+skill when present; otherwise follow the local installer or helper spec
+directly and choose the smallest safe oracle. These are not shell commands.
 
 ## Cortex Reflection
 

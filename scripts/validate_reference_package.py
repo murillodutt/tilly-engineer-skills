@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.39"
+VERSION = "0.3.40"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -260,7 +260,7 @@ INSTALLER_REPORT_REQUIRED_TERMS = (
     "Installed helper set",
     "Field Reports: PASS | BLOCKED | DISABLED | SKIP",
     "outbox pending count",
-    "`/tes:update` routine",
+    "`/tes-update` routine",
     "Rollback",
     "Summary: reset baseline plus clean installer-created files",
 )
@@ -285,6 +285,7 @@ USER_MANUAL_REPORT_REQUIRED_TERMS = (
 )
 
 UPDATE_ROUTINE_REQUIRED_TERMS = (
+    "/tes-update",
     "/tes:update",
     "tes_update.py",
     "installed and cloud versions",

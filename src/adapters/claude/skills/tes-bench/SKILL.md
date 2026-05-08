@@ -1,13 +1,15 @@
 ---
 name: tes-bench
-description: Use when the user says /tes:bench or asks to plan, run, converge, inspect, or certify TES context-mesh benchmarks and behavior evidence.
+description: Use when the user says /tes-bench, /tes:bench, or asks to plan, run, converge, inspect, or certify TES context-mesh benchmarks and behavior evidence.
 license: MIT
 ---
 
 # TES Bench
 
-`/tes:bench` is the shortcut for benchmark planning, fixture runs, convergence
-review, and behavior-evidence discussion.
+`/tes-bench` is the preferred shared TES trigger for benchmark planning,
+fixture runs, convergence review, and behavior-evidence discussion.
+`/tes:bench` is a compatible TES intent alias if the host reports it as an
+invalid slash.
 
 ## Workflow
 

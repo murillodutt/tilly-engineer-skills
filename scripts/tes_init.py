@@ -21,7 +21,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.39"
+VERSION = "0.3.40"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
 PASSING_GATE_STATUSES = {"PASS", "PRESERVED"}
@@ -234,7 +234,8 @@ def surface_inventory(target: Path) -> dict[str, Any]:
         "codex_skill": ".agents/skills/tes-engineering-discipline/SKILL.md",
         "claude_md": "CLAUDE.md",
         "claude_plugin": ".claude-plugin/plugin.json",
-        "claude_skill": "skills/tes-guidelines/SKILL.md",
+        "claude_project_skill": ".claude/skills/tes-guidelines/SKILL.md",
+        "claude_plugin_skill": "skills/tes-guidelines/SKILL.md",
         "cursor_bootloader": "CURSOR.md",
         "cursor_rules": ".cursor/rules",
         "codex_mcp": ".codex/config.toml",

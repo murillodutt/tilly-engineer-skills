@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.39"
+VERSION = "0.3.40"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -114,6 +114,7 @@ def materialized_results() -> tuple[dict[str, Any], list[str]]:
                 ".claude-plugin/plugin.json",
                 ".claude-plugin/marketplace.json",
                 *(f"skills/{skill}/SKILL.md" for skill in CLAUDE_SKILLS),
+                *(f".claude/skills/{skill}/SKILL.md" for skill in CLAUDE_SKILLS),
             ),
             "cursor": (
                 "CURSOR.md",
@@ -150,7 +151,7 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing Codex agent bootloader: {codex_agent}")
     else:
         text = read(codex_agent)
-        for term in ("Think Before Coding", "Simplicity First", "cortex_reflex", "/tes:init", "/tes:update", "tes init", "TES, inicialize este projeto", "/tes:cortex", "/tes:field-reports"):
+        for term in ("Think Before Coding", "Simplicity First", "cortex_reflex", "/tes-init", "/tes-update", "/tes:init", "/tes:update", "tes init", "TES, inicialize este projeto", "/tes-cortex", "/tes:cortex", "/tes-field-reports", "/tes:field-reports"):
             if term not in text:
                 failures.append(f"{codex_agent} missing {term}")
     for skill in CODEX_SKILLS:
@@ -162,7 +163,7 @@ def analyze() -> dict[str, Any]:
         failures.append("missing Codex skill agent metadata")
     surface("codex", "agent", "certified", codex_agent)
     surface("codex", "skill", "certified", "; ".join(f"src/adapters/codex/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS))
-    surface("codex", "plugin", "deferred", "Codex plugins are native, but TES v0.3.39 ships local skills first.")
+    surface("codex", "plugin", "deferred", "Codex plugins are native, but TES v0.3.40 ships local skills first.")
     surface("codex", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
@@ -173,7 +174,7 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing Claude bootloader: {claude_agent}")
     else:
         text = read(claude_agent)
-        for term in ("Think Before Coding", "Simplicity First", "Cortex Reflection", "/tes:init", "/tes:update", "tes init", "TES, inicialize este projeto", "/tes:cortex", "/tes:field-reports"):
+        for term in ("Think Before Coding", "Simplicity First", "Cortex Reflection", "/tes-init", "/tes-update", "/tes:init", "invalid slash", "/tes:update", "tes init", "TES, inicialize este projeto", "/tes-cortex", "/tes:cortex", "/tes-field-reports", "/tes:field-reports"):
             if term not in text:
                 failures.append(f"{claude_agent} missing {term}")
     for skill in CLAUDE_SKILLS:
@@ -187,7 +188,7 @@ def analyze() -> dict[str, Any]:
         elif VERSION not in read(relpath):
             failures.append(f"{relpath} must declare {VERSION}")
     surface("claude", "agent", "certified", claude_agent)
-    surface("claude", "skill", "certified", "; ".join(f"src/adapters/claude/skills/{skill}/SKILL.md" for skill in CLAUDE_SKILLS))
+    surface("claude", "skill", "certified", ".claude/skills/** project skills and skills/** plugin copies sourced from src/adapters/claude/skills/**")
     surface("claude", "plugin", "certified", "src/adapters/claude/plugin/plugin.json")
     surface("claude", "hook", "deferred", "Claude plugin hooks are native, but not claimed by this package.")
     surface("claude", "rules", "not-native", "Claude uses CLAUDE.md, permissions, hooks, skills, plugins, and MCP.")
@@ -203,7 +204,7 @@ def analyze() -> dict[str, Any]:
             failures.append(f"{cursor_rule} must keep alwaysApply: true")
         if "description:" not in text:
             failures.append(f"{cursor_rule} missing description")
-        for term in ("/tes:init", "/tes:update", "tes init", "TES, inicialize este projeto", "/tes:cortex", "/tes:field-reports"):
+        for term in ("/tes-init", "/tes-update", "/tes:init", "/tes:update", "tes init", "TES, inicialize este projeto", "/tes-cortex", "/tes:cortex", "/tes-field-reports", "/tes:field-reports"):
             if term not in text:
                 failures.append(f"{cursor_rule} missing {term} shortcut routing")
     for relpath in (
@@ -212,7 +213,10 @@ def analyze() -> dict[str, Any]:
     ):
         if exists(relpath):
             text = read(relpath)
-            for term in ("/tes:init", "/tes:update", "tes init", "natural init command/prompt", "TES, inicialize este projeto"):
+            terms = ["/tes-init", "/tes-update", "/tes:init", "/tes:update", "tes init", "natural init command/prompt", "TES, inicialize este projeto"]
+            if "/claude/" in relpath:
+                terms.append("invalid")
+            for term in terms:
                 if term not in text:
                     failures.append(f"{relpath} missing {term}")
     if not exists("src/adapters/cursor/CURSOR.md"):
@@ -266,6 +270,7 @@ def analyze() -> dict[str, Any]:
         "recommended_route",
         "update_available",
         "remote_version",
+        "/tes-update",
         "/tes:update",
         "legacy_retirement_required",
         "helper_contract_status",

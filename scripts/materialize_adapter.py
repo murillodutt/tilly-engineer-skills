@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "dist" / "adapters"
-VERSION = "0.3.39"
+VERSION = "0.3.40"
 CODEX_SKILLS = (
     "tes-engineering-discipline",
     "tes-init",
@@ -34,6 +34,8 @@ CLAUDE_SKILLS = (
     "tes-adapter",
     "tes-bench",
 )
+CLAUDE_PLUGIN_SKILL_ROOT = "skills"
+CLAUDE_PROJECT_SKILL_ROOT = ".claude/skills"
 FORBIDDEN_OUTPUT_REFS = (
     "src/adapters/",
     "docs/adapters/",
@@ -77,7 +79,15 @@ ADAPTERS: dict[str, tuple[CopyRule, ...]] = {
         *(
             CopyRule(
                 f"src/adapters/claude/skills/{skill}",
-                f"skills/{skill}",
+                f"{CLAUDE_PLUGIN_SKILL_ROOT}/{skill}",
+                "tree",
+            )
+            for skill in CLAUDE_SKILLS
+        ),
+        *(
+            CopyRule(
+                f"src/adapters/claude/skills/{skill}",
+                f"{CLAUDE_PROJECT_SKILL_ROOT}/{skill}",
                 "tree",
             )
             for skill in CLAUDE_SKILLS
@@ -172,20 +182,29 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
             data = json.loads(plugin.read_text(encoding="utf-8"))
             if data.get("version") != VERSION:
                 failures.append(f"claude: plugin version must be {VERSION}")
-            for skill in data.get("skills", []):
-                skill_path = Path(skill)
+            declared_paths = data.get("skills", [])
+            if not isinstance(declared_paths, list):
+                failures.append("claude: plugin skills must be a list")
+                declared_paths = []
+            for skill in declared_paths:
+                skill_path = Path(str(skill))
                 if skill_path.is_absolute() or ".." in skill_path.parts:
                     failures.append(f"claude: plugin skill path must stay inside plugin root: {skill}")
+                    continue
+                if not str(skill).startswith("./"):
+                    failures.append(f"claude: plugin skill path must start with ./: {skill}")
                     continue
                 plugin_root = plugin.parent.parent
                 resolved = (plugin_root / skill_path).resolve()
                 if not resolved.exists():
                     failures.append(f"claude: plugin skill path does not exist: {skill}")
-            expected_skills = {f"skills/{skill}" for skill in CLAUDE_SKILLS}
-            declared_skills = {str(skill) for skill in data.get("skills", [])}
-            missing_skills = sorted(expected_skills - declared_skills)
-            for skill in missing_skills:
-                failures.append(f"claude: plugin must declare {skill}")
+            if "./skills/" not in {str(skill) for skill in declared_paths}:
+                failures.append("claude: plugin must declare ./skills/")
+            for skill in CLAUDE_SKILLS:
+                if not (adapter_root / f"{CLAUDE_PLUGIN_SKILL_ROOT}/{skill}/SKILL.md").exists():
+                    failures.append(f"claude: missing plugin skill {skill}")
+                if not (adapter_root / f"{CLAUDE_PROJECT_SKILL_ROOT}/{skill}/SKILL.md").exists():
+                    failures.append(f"claude: missing project skill {skill}")
         else:
             failures.append("claude: missing plugin.json")
         if marketplace.exists():

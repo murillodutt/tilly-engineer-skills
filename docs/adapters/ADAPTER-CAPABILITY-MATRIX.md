@@ -35,7 +35,7 @@ The neutral contract is `docs/mesh/CONTRACT-MANIFEST.yml`.
 |---------|-------|--------|--------|
 | Agent bootloader | `AGENTS.md` | `CLAUDE.md` | `CURSOR.md` plus project rules |
 | Always-on rules | `AGENTS.md` project guidance | `CLAUDE.md` project guidance | `.cursor/rules/*.mdc` |
-| Skill | `.agents/skills/**` | `skills/**` | no native equivalent |
+| Skill | `.agents/skills/**` | `.claude/skills/**` project skills plus `skills/**` plugin copy | no native equivalent |
 | Plugin | native platform support; deferred by Tilly | `.claude-plugin/**` certified locally | no native package claimed |
 | Hooks | native platform support; Tilly uses Git hook only | native platform support; Tilly plugin hook deferred | Git hook only |
 | MCP | project `.codex/config.toml` | project `.mcp.json` | project `.cursor/mcp.json` |

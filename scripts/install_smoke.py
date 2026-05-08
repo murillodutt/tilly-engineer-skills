@@ -15,7 +15,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.39"
+VERSION = "0.3.40"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 
 
@@ -138,7 +138,13 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
     if adapter == "codex":
         return ("AGENTS.md", ".agents/skills/tes-engineering-discipline/SKILL.md")
     if adapter == "claude":
-        return ("CLAUDE.md", ".claude-plugin/plugin.json", "skills/tes-guidelines/SKILL.md")
+        return (
+            "CLAUDE.md",
+            ".claude-plugin/plugin.json",
+            "skills/tes-guidelines/SKILL.md",
+            ".claude/skills/tes-guidelines/SKILL.md",
+            ".claude/skills/tes-init/SKILL.md",
+        )
     if adapter == "cursor":
         return ("CURSOR.md", ".cursor/rules/tes-guidelines.mdc")
     raise ValueError(f"unknown adapter: {adapter}")

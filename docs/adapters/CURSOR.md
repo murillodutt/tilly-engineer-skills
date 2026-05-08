@@ -44,10 +44,11 @@ general behavioral overlay for non-trivial coding, review, refactor, and
 instruction migration work.
 
 Cursor does not receive a separate skill package. The always-on rule treats
-`/tes:init`, `/tes:update`, `tes init`, natural init/update
-command-prompts, `/tes:cortex`, `/tes:mcp`, `/tes:doctor`,
-`/tes:adapter`, and `/tes:bench` as intent shortcuts for the same
-deterministic oracles used by Codex and Claude.
+`/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, natural
+init/update command-prompts, `/tes-cortex`, `/tes:cortex`, `/tes-mcp`,
+`/tes:mcp`, `/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`,
+`/tes-bench`, and `/tes:bench` as intent shortcuts for the same deterministic
+oracles used by Codex and Claude.
 
 Future workflow-specific rules should be separate `Agent Requested` or
 manual rules instead of expanding the always-on rule.

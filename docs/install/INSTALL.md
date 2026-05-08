@@ -39,8 +39,8 @@ https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/in
 
 Start by detecting the current IDE/runtime and classifying this project as new,
 existing, or meshed. If Tilly is already meshed, treat this as an assisted
-update/convergence run, not a reinstall. `/tes:update` means "Atualizar a
-Tilly" and should run the update probe before route selection. Run in quiet
+update/convergence run, not a reinstall. `/tes-update`, `/tes:update`, and
+"Atualizar TES" should run the update probe before route selection. Run in quiet
 installer mode: show
 compact progress, blockers and the final certification report only. When
 navigation is required, load the runtime navigation library from the spec, use
@@ -106,7 +106,7 @@ The installer follows current adapter surfaces:
 | Tool | Install Surface |
 |------|-----------------|
 | Codex | `AGENTS.md` and `.agents/skills/**` |
-| Claude Code | `CLAUDE.md`, `.claude-plugin/**`, and `skills/**` |
+| Claude Code | `CLAUDE.md`, `.claude/skills/**`, `.claude-plugin/**`, and `skills/**` |
 | Cursor | `.cursor/rules/*.mdc` project rules |
 
 The common pattern is file-based installation into the target repository, but
