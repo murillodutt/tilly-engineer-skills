@@ -12,11 +12,22 @@ from pathlib import Path
 from typing import Any
 
 import field_reports
+import project_context_oracle
+import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.44"
+VERSION = "0.3.45"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
+PROJECT_CONTEXT_FIXTURES = (
+    "fixture-minimal",
+    "fixture-docs-only",
+    "fixture-npm-app",
+    "fixture-python-package",
+    "fixture-monorepo",
+    "fixture-meshed",
+    "fixture-owned-bootloaders",
+)
 CODEX_LOCAL_BOOTLOADER = "Local product governance. Preserve this file.\n"
 CLAUDE_LOCAL_BOOTLOADER = "Local product governance. Preserve this file.\n"
 
@@ -45,6 +56,11 @@ def init_git(target: Path) -> list[str]:
     if code == 0:
         return []
     return ["git init failed", *stdout.splitlines(), *stderr.splitlines()]
+
+
+def write(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
 
 
 def init_cortex(target: Path) -> list[str]:
@@ -381,6 +397,137 @@ def codex_preserved_bootloader_probe() -> dict[str, Any]:
         return {"route": "codex-preserved-bootloader", "status": "FAIL" if failures else "PASS", "failures": failures}
 
 
+def minimal_fixture(target: Path) -> None:
+    write(target / "README.md", "# Minimal Fixture\n")
+
+
+def docs_only_fixture(target: Path) -> None:
+    write(target / "README.md", "# Docs Fixture\n")
+    write(target / "docs/overview.md", "# Overview\n\nA docs-only project fixture.\n")
+    write(target / "docs/decisions/0001-record-context.md", "# Record Context\n\nUse durable Markdown context.\n")
+
+
+def npm_app_fixture(target: Path) -> None:
+    write(
+        target / "package.json",
+        json.dumps(
+            {
+                "name": "tes-npm-fixture",
+                "description": "portable npm fixture",
+                "scripts": {
+                    "lint": "echo lint",
+                    "typecheck": "echo typecheck",
+                    "test": "echo test",
+                    "build": "echo build",
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+    )
+    write(target / "README.md", "# TES NPM Fixture\n")
+    write(target / "src/index.ts", "export const answer = 42;\n")
+    write(target / "tests/index.test.ts", "import { answer } from '../src/index';\nconsole.log(answer);\n")
+
+
+def python_package_fixture(target: Path) -> None:
+    write(target / "README.md", "# TES Python Fixture\n")
+    write(
+        target / "pyproject.toml",
+        "[project]\nname = \"tes-python-fixture\"\nversion = \"0.1.0\"\ndescription = \"portable python fixture\"\n",
+    )
+    write(target / "src/tes_python_fixture/__init__.py", "__all__ = ['meaning']\n\ndef meaning():\n    return 42\n")
+    write(target / "tests/test_meaning.py", "from tes_python_fixture import meaning\n\ndef test_meaning():\n    assert meaning() == 42\n")
+
+
+def monorepo_fixture(target: Path) -> None:
+    write(
+        target / "package.json",
+        json.dumps(
+            {
+                "name": "tes-monorepo-fixture",
+                "private": True,
+                "workspaces": ["apps/*", "packages/*"],
+                "scripts": {
+                    "lint": "echo lint",
+                    "test": "echo test",
+                    "build": "echo build",
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+    )
+    write(target / "README.md", "# TES Monorepo Fixture\n")
+    write(target / "apps/web/package.json", '{"name":"web"}\n')
+    write(target / "apps/web/src/main.ts", "console.log('web');\n")
+    write(target / "packages/core/src/index.ts", "export function core() { return 'core'; }\n")
+
+
+def meshed_fixture(target: Path) -> None:
+    write(target / "README.md", "# Existing Meshed Fixture\n")
+    write(target / "docs/agents/PROJECT-REGISTER.md", "# Existing Register\n")
+    write(target / "docs/agents/PROJECT-CONTEXT.md", "# Existing Context\n")
+    write(target / "src/app.py", "print('meshed')\n")
+
+
+def owned_bootloaders_fixture(target: Path) -> None:
+    write(target / "README.md", "# Owned Bootloaders Fixture\n")
+    write(target / "package.json", '{"name":"tes-owned-bootloaders","scripts":{"test":"echo test"}}\n')
+    write(target / "AGENTS.md", CODEX_LOCAL_BOOTLOADER)
+    write(target / "CLAUDE.md", CLAUDE_LOCAL_BOOTLOADER)
+    write(target / "CURSOR.md", "Local Cursor governance. Preserve this file.\n")
+    write(target / "src/main.js", "console.log('owned bootloaders');\n")
+
+
+FIXTURE_BUILDERS = {
+    "fixture-minimal": minimal_fixture,
+    "fixture-docs-only": docs_only_fixture,
+    "fixture-npm-app": npm_app_fixture,
+    "fixture-python-package": python_package_fixture,
+    "fixture-monorepo": monorepo_fixture,
+    "fixture-meshed": meshed_fixture,
+    "fixture-owned-bootloaders": owned_bootloaders_fixture,
+}
+
+
+def project_context_fixture_probe(name: str) -> dict[str, Any]:
+    with tempfile.TemporaryDirectory(prefix=f"tes-install-smoke-{name}-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        FIXTURE_BUILDERS[name](target)
+
+        # Avoid recursive install_smoke.py --self-test while this smoke test
+        # exercises tes_init's target scan and project-context output.
+        original_package_gates = tes_init.package_gates
+        tes_init.package_gates = lambda: []
+        try:
+            init_result = tes_init.initialize(target, yes=True, ensure_cortex=True)
+        finally:
+            tes_init.package_gates = original_package_gates
+
+        if init_result["status"] != "PASS":
+            failures.append(f"tes_init expected PASS, got {init_result['status']}")
+            for gate in init_result.get("gates", []):
+                if gate.get("status") not in tes_init.PASSING_GATE_STATUSES:
+                    failures.append(f"blocked gate: {gate.get('command')} -> {gate.get('status')}")
+
+        context_result = project_context_oracle.analyze(target)
+        if context_result["status"] != "PASS":
+            failures.extend(f"project context oracle: {failure}" for failure in context_result["failures"])
+
+        for relpath in (
+            "docs/agents/PROJECT-REGISTER.md",
+            "docs/agents/PROJECT-CONTEXT.md",
+            "docs/agents/cortex/CONTRACT.md",
+        ):
+            if not (target / relpath).exists():
+                failures.append(f"fixture missing initialized path: {relpath}")
+
+        return {"route": name, "status": "FAIL" if failures else "PASS", "failures": failures}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--route", choices=ROUTES, default="all")
@@ -393,6 +540,7 @@ def main() -> int:
         results.append(legacy_retirement_probe())
         results.append(codex_preserved_bootloader_probe())
         results.append(claude_preserved_bootloader_probe())
+        results.extend(project_context_fixture_probe(name) for name in PROJECT_CONTEXT_FIXTURES)
     failures = [
         failure
         for result in results

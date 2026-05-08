@@ -319,7 +319,9 @@ git revert <install-commit>
 ## Script Support
 
 The script remains available for maintainers, package checks, and low-risk
-mechanical smoke tests.
+mechanical smoke tests. `install_smoke.py --self-test` also runs portable
+project-context fixtures for minimal, docs-only, npm, Python, monorepo,
+already-meshed, and project-owned bootloader targets.
 
 Dry-run all adapters into a target project:
 
