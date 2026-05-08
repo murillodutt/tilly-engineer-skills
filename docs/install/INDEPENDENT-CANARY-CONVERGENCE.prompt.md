@@ -1,7 +1,7 @@
 ---
 tds_id: install.independent_canary_convergence_prompt
 tds_class: adapter
-tver: 0.1.0
+tver: 0.1.1
 status: active
 consumer: second-window TES convergence operators, maintainers, and certification reviewers
 source_of_truth: true
@@ -10,7 +10,7 @@ evidence_level: L2
 
 # Independent Canary Convergence Prompt
 
-Prompt version: `0.1.0`
+Prompt version: `0.1.1`
 
 Purpose: start a clean, independent TES convergence window that tests the
 published package against real projects, records a journal, converts findings
@@ -46,6 +46,12 @@ Each run may also create local disposable files under:
 The durable journal/report live in the TES repository. The local canary run
 root is disposable and must not become product truth.
 
+Before creating canary clones, create or update the sandbox `.gitignore` at
+`/Users/murillo/Dev/tes-canaries/.gitignore` so local journals, run indexes,
+logs, clones, and transient tool layers remain untracked by default. Do not
+ignore governed evidence under `docs/evidence/**`; promotion into that tree is
+the explicit audit boundary.
+
 ## Copyable Prompt
 
 ```text
@@ -62,6 +68,9 @@ Repository and sandbox:
 - Canary sandbox root: /Users/murillo/Dev/tes-canaries
 - Put all new canary clones under:
   /Users/murillo/Dev/tes-canaries/runs/<UTC_RUN_ID>/
+- Before cloning, ensure `/Users/murillo/Dev/tes-canaries/.gitignore` ignores
+  `RUN-INDEX.md`, local `JOURNAL.md`/`REPORT.md`, `_logs/`, `runs/`, `.tes/`,
+  `.codex/`, `.claude/`, `.cursor/`, and `.mcp.json`.
 - Do not commit or push from canary repositories.
 - Do not treat any canary as the TES design mold.
 - Promote only portable findings back into the TES repository.
@@ -239,4 +248,5 @@ in a compatible project.
 
 | Version | Date | Change |
 |---|---|---|
+| `0.1.1` | 2026-05-08 | Clarifies sandbox `.gitignore` guardrail for local journals, run indexes, clones, logs, and transient tool layers while preserving governed `docs/evidence/**`. |
 | `0.1.0` | 2026-05-08 | Initial independent canary convergence prompt with journal, sandbox, gates, and versioning contract. |
