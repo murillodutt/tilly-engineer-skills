@@ -5,13 +5,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.64"
+VERSION = "0.3.65"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -62,6 +63,13 @@ CLAUDE_INVALID_SLASH_TERMS = (
     "do not stop to ask",
 )
 
+INIT_ROUTER_TERMS = (
+    "Install/Update Gate",
+    "Project Context Gate",
+    "Step Zero protects installer/update writes",
+    "must not block project-context initialization",
+)
+
 DOC_SOURCE_GROUPS = {
     "command_triggers_doc": ("docs/install/COMMAND-TRIGGERS.md",),
     "platform_differences_doc": ("docs/adapters/PLATFORM-DIFFERENCES.md",),
@@ -90,6 +98,16 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/cursor/rules/tes-guidelines.mdc",
     ),
 }
+
+INIT_ROUTER_SOURCE_PATHS = (
+    "docs/install/COMMAND-TRIGGERS.md",
+    "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
+    "src/adapters/codex/AGENTS.md",
+    "src/adapters/codex/skills/tes-init/SKILL.md",
+    "src/adapters/claude/CLAUDE.md",
+    "src/adapters/claude/skills/tes-init/SKILL.md",
+    "src/adapters/cursor/rules/tes-guidelines.mdc",
+)
 
 
 CLAUDE_PROJECT_SKILLS = (
@@ -133,6 +151,10 @@ def missing_natural(text: str) -> list[str]:
     return [term for term in NATURAL_INTENTS if term.casefold() not in folded]
 
 
+def normalized(text: str) -> str:
+    return re.sub(r"\s+", " ", text)
+
+
 def check_text(name: str, text: str) -> list[str]:
     failures: list[str] = []
     for term in missing_exact(text, PREFERRED_TRIGGERS):
@@ -150,6 +172,23 @@ def check_claude_invalid_slash(text: str) -> list[str]:
         if term not in text:
             failures.append(f"claude missing invalid-slash fallback term: {term}")
     return failures
+
+
+def check_init_router(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    checked: list[dict[str, Any]] = []
+    failures: list[str] = []
+    for relpath in INIT_ROUTER_SOURCE_PATHS:
+        path = root / relpath
+        if not path.exists():
+            failures.append(f"missing init router source: {relpath}")
+            checked.append({"path": relpath, "status": "MISSING"})
+            continue
+        text = path.read_text(encoding="utf-8")
+        normalized_text = normalized(text)
+        missing = [term for term in INIT_ROUTER_TERMS if term not in normalized_text]
+        failures.extend(f"{relpath} missing init router term: {term}" for term in missing)
+        checked.append({"path": relpath, "status": "PASS" if not missing else "FAIL"})
+    return checked, failures
 
 
 def installed_platform_paths(root: Path, platform: str) -> tuple[str, ...]:
@@ -272,6 +311,17 @@ def analyze(root: Path = ROOT) -> dict[str, Any]:
             group_failures.extend(check_claude_invalid_slash(text))
         failures.extend(item for item in group_failures if item not in failures)
         checked.append({"group": platform, "paths": list(paths), "status": "PASS" if not group_failures else "FAIL"})
+
+    init_router_checked, init_router_failures = check_init_router(root)
+    failures.extend(init_router_failures)
+    checked.append(
+        {
+            "group": "init_router",
+            "paths": list(INIT_ROUTER_SOURCE_PATHS),
+            "status": "PASS" if not init_router_failures else "FAIL",
+            "files": init_router_checked,
+        }
+    )
 
     return {
         "version": VERSION,

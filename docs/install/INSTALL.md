@@ -167,6 +167,14 @@ stores a full manifest under `docs/agents/evidence/**`, and can be certified
 with `project_context_oracle.py`. Cortex can also be initialized and checked
 directly:
 
+The user-facing `/tes-init` intent is a router, not a separate command family.
+It first runs an Install/Update Gate and a Project Context Gate. Installer or
+update writes still require Step Zero protection. If TES is already
+installed/current and only the project context is missing or weak, Step Zero
+protects installer/update writes but must not block project-context
+initialization; the agent reports the dirty tree, avoids helper/adapter/MCP
+changes, runs `tes_init.py`, and certifies `PROJECT-CONTEXT.md`.
+
 The register and project context are written before slower certification gates
 finish. If a later oracle is blocked or times out, the run closes as
 `NEEDS_REVIEW` with local evidence instead of leaving the project

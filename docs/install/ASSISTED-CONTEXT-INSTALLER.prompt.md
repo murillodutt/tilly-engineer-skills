@@ -116,6 +116,19 @@ Do not expose file-by-file commentary unless it is a blocker, a requested diff r
 ## Step Zero - Local Git Baseline
 
 Before any installation edit, protect the target project with a local Git baseline.
+For `/tes-init`, run the router gates first:
+
+- **Install/Update Gate** determines whether installer, helper, adapter, MCP,
+  bootloader, or legacy-retirement writes are needed.
+- **Project Context Gate** determines whether
+  `docs/agents/PROJECT-CONTEXT.md` is absent, bootstrap-only, stale, weak, or
+  failing the project-context oracle.
+
+Step Zero protects installer/update writes. It must not block project-context
+initialization when TES is already installed/current and the only failing gate
+is the Project Context Gate. In that case, report the dirty tree as rollback
+context, avoid helper/adapter/MCP/bootloader writes, run the project-context
+scaffold, and certify with `project_context_oracle.py`.
 
 Render this short check:
 
@@ -135,7 +148,8 @@ git status --short --branch --untracked-files=all
 
 If the working tree is clean, record the current `HEAD` as the rollback point and continue.
 
-If the working tree is dirty, stop before editing and ask for one route:
+If the working tree is dirty and the Install/Update Gate needs installer/update
+writes, stop before editing and ask for one route:
 
 Load the Step Zero intent from:
 
@@ -406,6 +420,12 @@ For an existing project:
 ## Phase 4.1 - Initialize Project Context
 
 `/tes-init` is not only an installer. It is the project start ritual for agents.
+It routes internally through the **Install/Update Gate** and **Project Context
+Gate**. If the install/update surface is current but the project context is
+missing or weak, `/tes-init` performs only project-context initialization and
+must not refresh helpers, adapters, MCP config, bootloaders, remotes, tags, or
+release surfaces.
+
 After classification and before certification closeout, analyze the project as
 deeply as the current context window and local tools permit:
 

@@ -67,6 +67,28 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 | command-trigger oracle | package gate that checks docs, Codex, Claude, and Cursor share the same trigger vocabulary |
 | project-context oracle | target gate that checks `/tes-init` left a useful, evidenced project map |
 
+## `/tes-init` Router Contract
+
+`/tes-init` is the single user-facing initialization entrypoint. It must not
+split into user-visible parameters or a second context command. The active agent
+routes internally through two read-only gates before choosing writes:
+
+1. **Install/Update Gate**: detect whether TES is missing, stale, helper-drifted,
+   adapter-drifted, or legacy-blocked. When this gate requires installer/update
+   writes, Step Zero protects installer/update writes with the normal Git
+   baseline or dirty-tree choice.
+2. **Project Context Gate**: detect whether
+   `docs/agents/PROJECT-CONTEXT.md` is missing, bootstrap-only, stale, weak, or
+   failing `project_context_oracle.py`. When TES is already installed/current and
+   only this gate fails, a dirty tree must not block project-context
+   initialization; report the dirty tree, then run the project-context scaffold
+   and oracle without refreshing helpers, adapters, MCP config, bootloaders, or
+   remotes.
+
+This keeps `/tes-init` simple for users: make this project usable by TES. If
+both gates pass, close with certification and recommend `/tes-doctor` only for a
+full health check.
+
 ## No-Go
 
 - Do not create one slash command per script.
