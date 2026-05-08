@@ -14,33 +14,39 @@ TES commands are not the user interface. The user interface is an intent in
 the current agent window; scripts and npm aliases are deterministic oracles the
 agent invokes when the runtime exposes local tools.
 
+All adapters share the same preferred user triggers: `/tes-init`,
+`/tes-update`, `/tes-cortex`, `/tes-mcp`, `/tes-doctor`, `/tes-adapter`, and
+`/tes-bench`. Treat `/tes:*` forms as compatible TES intent aliases; if a host
+reports one as an invalid slash, continue through the matching `tes-*`
+skill/rule/spec instead of asking the user to restate the route.
+
 ## Trigger Matrix
 
 | Trigger | User intent | Primary oracles | Writes |
 |---------|-------------|-----------------|--------|
-| `/tes:init` or init command/prompt | install, update, audit, or recertify TES in a project | `root_context.py`, `tes_init.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, Cortex, runtime bootloaders, project MCP config |
-| `/tes:update` or update command/prompt | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, `tes_legacy_retirement.py`, assisted installer, install smoke, MCP install | only selected TES surfaces after Step Zero and legacy retirement |
-| `/tes:cortex` | inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `cortex.py`, read-only Cortex MCP | Cortex files only when authorized |
-| `/tes:curate` | classify Cortex memory quality risks without writing memory | `cortex.py curate-plan`, read-only `cortex_curate_plan` | no memory writes; CLI may refresh `.tes/cortex/semantic.sqlite` |
-| `/tes:mcp` | activate or verify read-only Cortex MCP | `install_mcp.py`, `cortex_mcp.py`, MCP smoke | `.tes/bin/**` and project-scoped MCP config |
-| `/tes:field-reports` | inspect, drain, disable, or re-enable sanitized operational reports | `field_reports.py`, local `pre-push` hook | `.tes/field-reports/**`, `.git/info/exclude`, `.git/hooks/pre-push` |
-| `/tes:doctor` | health-check, certify, or prepare a commit | validation, TDS, doc-size, platform, materialization, commit gates | none unless evidence is explicitly requested |
-| `/tes:adapter` | materialize, dry-run, retrofit, or install adapter surfaces | `materialize_adapter.py`, `install_adapter.py`, adapter oracles | adapter files only after review or approval |
-| `/tes:bench` | plan, run, or converge context-mesh benchmarks | benchmark plan/run/converge scripts | benchmark evidence artifacts |
+| `/tes-init` or `/tes:init` | install, update, audit, or recertify TES in a project | `root_context.py`, `tes_init.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, Cortex, runtime bootloaders, project MCP config |
+| `/tes-update` or `/tes:update` | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, `tes_legacy_retirement.py`, assisted installer, install smoke, MCP install | only selected TES surfaces after Step Zero and legacy retirement |
+| `/tes-cortex` or `/tes:cortex` | inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `cortex.py`, read-only Cortex MCP | Cortex files only when authorized |
+| `/tes-curate` or `/tes:curate` | classify Cortex memory quality risks without writing memory | `cortex.py curate-plan`, read-only `cortex_curate_plan` | no memory writes; CLI may refresh `.tes/cortex/semantic.sqlite` |
+| `/tes-mcp` or `/tes:mcp` | activate or verify read-only Cortex MCP | `install_mcp.py`, `cortex_mcp.py`, MCP smoke | `.tes/bin/**` and project-scoped MCP config |
+| `/tes-field-reports` or `/tes:field-reports` | inspect, drain, disable, or re-enable sanitized operational reports | `field_reports.py`, local `pre-push` hook | `.tes/field-reports/**`, `.git/info/exclude`, `.git/hooks/pre-push` |
+| `/tes-doctor` or `/tes:doctor` | health-check, certify, or prepare a commit | validation, TDS, doc-size, platform, materialization, commit gates | none unless evidence is explicitly requested |
+| `/tes-adapter` or `/tes:adapter` | materialize, dry-run, retrofit, or install adapter surfaces | `materialize_adapter.py`, `install_adapter.py`, adapter oracles | adapter files only after review or approval |
+| `/tes-bench` or `/tes:bench` | plan, run, or converge context-mesh benchmarks | benchmark plan/run/converge scripts | benchmark evidence artifacts |
 
 Aliases:
 
 ```text
-tes init  -> /tes:init
-tes update / update TES / Atualizar TES / atualizar TES -> /tes:update
-initialize TES / install TES / recertify TES -> /tes:init
-inicializar TES / instalar TES / recertificar TES -> /tes:init
-/tes:recall  -> /tes:cortex recall
-/tes:learn   -> /tes:cortex learn
-/tes:reflect -> /tes:cortex reflect
-/tes:curate  -> /tes:cortex curate-plan
-/tes:check   -> /tes:doctor
-/tes:certify -> /tes:doctor
+tes init  -> /tes-init
+tes update / update TES / Atualizar TES / atualizar TES -> /tes-update
+initialize TES / install TES / recertify TES -> /tes-init
+inicializar TES / instalar TES / recertificar TES -> /tes-init
+/tes:recall  -> /tes-cortex recall
+/tes:learn   -> /tes-cortex learn
+/tes:reflect -> /tes-cortex reflect
+/tes:curate  -> /tes-cortex curate-plan
+/tes:check   -> /tes-doctor
+/tes:certify -> /tes-doctor
 ```
 
 ## Classification
@@ -60,9 +66,9 @@ inicializar TES / instalar TES / recertificar TES -> /tes:init
 - Do not certify a command that was skipped or blocked.
 - Do not claim latest-source certification when the installer reports
   `STALE_SOURCE` or `BLOCKED` source freshness.
-- Do not claim `/tes:update` is `CURRENT` while helper contract parity is
+- Do not claim `/tes-update` or `/tes:update` is `CURRENT` while helper contract parity is
   `STALE_HELPERS` or `BLOCKED`.
-- Do not record Field Reports from exploratory `/tes:update` probes; use
+- Do not record Field Reports from exploratory `/tes-update` or `/tes:update` probes; use
   `--record-field-report` only on the final certification probe.
 - Do not commit or push after a helper overwrite until a post-Layer Zero final
   recorded probe shows `helper_contract_status=PASS`,

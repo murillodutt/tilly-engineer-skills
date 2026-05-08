@@ -17,7 +17,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.39"
+VERSION = "0.3.40"
 
 ACTIVE_PREFIXES = (
     ".github/",
@@ -143,29 +143,26 @@ PATH_REPLACEMENTS = (
     Replacement("tilly-mcp", "tes-mcp", "mcp skill"),
 )
 
-PROMPT_REPLACEMENTS = tuple(
-    Replacement(f"/tilly:{command}", f"/tes:{command}", "prompt command")
-    for command in (
-        "adapter",
-        "bench",
-        "certify",
-        "check",
-        "cortex",
-        "curate",
-        "doctor",
-        "field-reports",
-        "init",
-        "learn",
-        "mcp",
-        "recall",
-        "reflect",
-        "update",
-    )
+PROMPT_REPLACEMENTS = (
+    Replacement("/tilly:adapter", "/tes-adapter", "prompt command"),
+    Replacement("/tilly:bench", "/tes-bench", "prompt command"),
+    Replacement("/tilly:certify", "/tes-doctor", "prompt command"),
+    Replacement("/tilly:check", "/tes-doctor", "prompt command"),
+    Replacement("/tilly:cortex", "/tes-cortex", "prompt command"),
+    Replacement("/tilly:curate", "/tes-curate", "prompt command"),
+    Replacement("/tilly:doctor", "/tes-doctor", "prompt command"),
+    Replacement("/tilly:field-reports", "/tes-field-reports", "prompt command"),
+    Replacement("/tilly:init", "/tes-init", "prompt command"),
+    Replacement("/tilly:learn", "/tes-cortex learn", "prompt command"),
+    Replacement("/tilly:mcp", "/tes-mcp", "prompt command"),
+    Replacement("/tilly:recall", "/tes-cortex recall", "prompt command"),
+    Replacement("/tilly:reflect", "/tes-cortex reflect", "prompt command"),
+    Replacement("/tilly:update", "/tes-update", "prompt command"),
 )
 
 CONTENT_REPLACEMENTS = (
     *PROMPT_REPLACEMENTS,
-    Replacement("/tilly:", "/tes:", "prompt namespace"),
+    Replacement("/tilly:", "/tes-", "prompt namespace"),
     Replacement("tilly:init:self-test", "tes:init:self-test", "npm command"),
     Replacement("tilly:update:self-test", "tes:update:self-test", "npm command"),
     Replacement("tilly:init", "tes:init", "npm command"),
@@ -864,7 +861,7 @@ def run_self_test() -> int:
             encoding="utf-8",
         )
         (target / CATALOG_PATH).write_text(
-            "The old /tilly:init command becomes /tes:init.\n",
+            "The old /tilly:init command becomes /tes-init.\n",
             encoding="utf-8",
         )
         (target / "docs/evidence/reports/old/REPORT.md").write_text(

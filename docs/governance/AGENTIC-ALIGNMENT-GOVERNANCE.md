@@ -53,12 +53,12 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 | Need | Codex Adapter | Claude Adapter | Cursor Adapter | Governance Decision |
 |------|---------------|----------------|----------------|---------------------|
 | Durable base guidance | `AGENTS.md` | `CLAUDE.md` | `.cursor/rules/*.mdc`; `AGENTS.md` only by explicit choice | Do not force one filename across all tools |
-| Reusable discipline workflow | Skill in `.agents/skills/**` | Skill in `skills/**` | Always-on project rule | Preserve behavioral parity, not packaging parity |
+| Reusable discipline workflow | Skill in `.agents/skills/**` | Project skill in `.claude/skills/**`; plugin copy in `skills/**` | Always-on project rule | Preserve behavioral parity, not packaging parity |
 | Distribution | Future `.codex-plugin/**` if needed | `.claude-plugin/**` plus plugin root skills | Repository files | Distribution is adapter-specific |
 | Hooks | Sensitive, feature-gated | Sensitive enforcement surface | Sensitive agent-loop surface | Excluded from default package until separately authorized |
 | MCP | External capability layer | External capability layer | External capability layer | Read-only Cortex MCP is installer-gated; other MCP requires decision and tests |
 | Agents and subagents | Powerful specialist layer | Powerful specialist layer | Agent/background execution layer | Excluded by default; requires permission, tools, and oracle contract |
-| Commands | Not a package source here | Skills preferred over custom commands | CLI commands are runtime controls | Do not encode runtime commands as behavioral truth |
+| Commands | Shared `/tes-*` trigger vocabulary plus `/tes:*` aliases | Shared `/tes-*` trigger vocabulary plus `/tes:*` aliases | Shared `/tes-*` trigger vocabulary plus `/tes:*` aliases | Keep entry vocabulary consistent while materialization stays adapter-specific |
 
 ## Authority Rules
 
@@ -91,7 +91,7 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 | Adapter | Must Preserve | Must Not Do |
 |---------|---------------|-------------|
 | Codex | Thin `AGENTS.md`, repo skill in `.agents/skills/**`, progressive disclosure | Treat plugin cache or user runtime as source |
-| Claude | Short `CLAUDE.md`, root-contained plugin skills, read-only Cortex MCP only through project config | Use `../` skill paths inside plugin metadata |
+| Claude | Short `CLAUDE.md`, project skills in `.claude/skills/**`, root-contained plugin skills, read-only Cortex MCP only through project config | Use `../` skill paths inside plugin metadata or make Claude-only trigger names |
 | Cursor | `.cursor/rules/*.mdc`, `alwaysApply: true` for the base discipline, no `.cursorrules` | Treat `CURSOR.md` as the primary operative context |
 
 ## Current Certification State

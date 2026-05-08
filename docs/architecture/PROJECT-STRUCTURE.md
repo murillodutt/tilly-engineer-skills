@@ -55,7 +55,7 @@ trees under `dist/adapters/**`:
 | Adapter | Materialized shape |
 |---------|--------------------|
 | Codex | `AGENTS.md` plus `.agents/skills/**` |
-| Claude | `CLAUDE.md`, `.claude-plugin/**`, and `skills/**` |
+| Claude | `CLAUDE.md`, `.claude/skills/**`, `.claude-plugin/**`, and `skills/**` |
 | Cursor | `CURSOR.md` plus `.cursor/rules/**` |
 
 Use `npm run materialize:check` to verify this without writing to `dist/**`.
@@ -66,7 +66,7 @@ the read-only Cortex MCP server in a target project by copying local helpers to
 
 `scripts/tes_update.py` plans low-friction updates by comparing installed and
 cloud package versions, detecting applied IDE surfaces, and recommending the
-route behind `/tes:update`.
+route behind `/tes-update` and its `/tes:update` compatibility alias.
 
 `scripts/tes_init.py` initializes and recertifies a target project. It writes
 `docs/agents/PROJECT-REGISTER.md` before slower gates finish, so blocked gates

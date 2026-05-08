@@ -30,8 +30,8 @@ Do not display internal reasoning, scratch YAML or long inventories.
 
 Start by detecting the current IDE/runtime and classifying this project as new,
 existing, or meshed. If Tilly is already meshed, treat this as an assisted
-update/convergence run, not a reinstall. When I ask `/tes:update` or
-`Atualizar TES`, compare the installed TES version with the cloud package
+update/convergence run, not a reinstall. When I ask `/tes-update`,
+`/tes:update`, or `Atualizar TES`, compare the installed TES version with the cloud package
 version, verify helper contract parity, detect applied IDE surfaces, and
 recommend the route and `recommended_update_scope` before editing. Read-only
 probes must use `tes_update.py plan --json-only`; only the final certification
@@ -42,6 +42,10 @@ push; it must show `helper_contract_status=PASS`, `update_available=False`, and
 fingerprints or contract markers are `STALE_HELPERS`; in that case, replace
 only TES-owned `.tes/bin/**` helpers with backups first, using the helper-only
 Layer Zero route, then rerun the update probe and require parity PASS.
+Across Codex, Claude Code, and Cursor, prefer shared hyphen triggers such as
+`/tes-init`, `/tes-update`, and `/tes-cortex`. If a host reports a `/tes:*`
+alias as invalid, treat it as TES intent text and continue through the matching
+skill/rule/spec.
 Use the detected IDE as the default adapter. Ask me for a route command only
 where the spec requires one. Preserve local project governance, move durable
 agent context into docs/agents/** when needed, create or update the compiled

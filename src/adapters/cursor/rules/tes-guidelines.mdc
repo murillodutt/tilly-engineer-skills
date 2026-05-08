@@ -69,12 +69,13 @@ requires exact syntax.
 
 ## TES Shortcuts
 
-When the user says `/tes:init`, `/tes:update`, `tes init`, "initialize
-TES", "install TES", "update TES", "recertify TES", "Atualizar TES",
+When the user says `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`,
+`tes init`, "initialize TES", "install TES", "update TES", "recertify TES",
+"Atualizar TES",
 or a natural command/prompt such as "TES, inicialize este projeto",
 treat it as an intent shortcut for the assisted context installer. For
-`/tes:update`, first check installed version, cloud version, applied IDE
-surfaces, helper contract parity, recommended route, and
+`/tes-update` or `/tes:update`, first check installed version, cloud version,
+applied IDE surfaces, helper contract parity, recommended route, and
 `recommended_update_scope`. Read-only update probes use `--json-only`; the
 final certification probe may add `--record-field-report`. Detect the project
 state, run Step Zero before edits, preserve local governance, initialize or
@@ -86,8 +87,10 @@ shows `helper_contract_status=PASS`, `update_available=False`, and
 oracles, and finish with a certification report. It is not a blind shell
 command.
 
-Also treat `/tes:cortex`, `/tes:curate`, `/tes:mcp`,
-`/tes:field-reports`, `/tes:doctor`, `/tes:adapter`, and `/tes:bench`
+Also treat `/tes-cortex`, `/tes:cortex`, `/tes-curate`, `/tes:curate`,
+`/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
+`/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`, `/tes-bench`,
+and `/tes:bench`
 as intent shortcuts. Choose the smallest safe oracle behind
 the scenes and report skipped or blocked commands honestly.
 

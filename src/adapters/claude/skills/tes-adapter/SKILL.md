@@ -1,13 +1,14 @@
 ---
 name: tes-adapter
-description: Use when the user says /tes:adapter or asks to materialize, install, dry-run, retrofit, validate, or certify Codex, Claude, Cursor, or all TES adapters.
+description: Use when the user says /tes-adapter, /tes:adapter, or asks to materialize, install, dry-run, retrofit, validate, or certify Codex, Claude, Cursor, or all TES adapters.
 license: MIT
 ---
 
 # TES Adapter
 
-`/tes:adapter` is the shortcut for adapter materialization, dry-run install,
-retrofit review, and adapter certification.
+`/tes-adapter` is the preferred shared TES trigger for adapter materialization,
+dry-run install, retrofit review, and adapter certification. `/tes:adapter` is
+a compatible TES intent alias if the host reports it as an invalid slash.
 
 ## Workflow
 

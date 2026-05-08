@@ -21,7 +21,7 @@ Install, retrofit, or update TES so that the target project gets durable, mainta
 docs/agents/** is source. Runtime assets route and execute.
 ```
 
-Runtime assets include `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, `.agents/**`, `skills/**`, `.cursor/**`, `.claude-plugin/**`, `.codex/config.toml`, `.mcp.json`, `.tes/bin/**`, and future agent plugin/hook/MCP files. They must stay thin. Durable project governance belongs in `docs/agents/**`.
+Runtime assets include `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, `.agents/**`, `.claude/skills/**`, `skills/**`, `.cursor/**`, `.claude-plugin/**`, `.codex/config.toml`, `.mcp.json`, `.tes/bin/**`, and future agent plugin/hook/MCP files. They must stay thin. Durable project governance belongs in `docs/agents/**`.
 
 ## Executor Model
 
@@ -29,9 +29,9 @@ The executor is the active LLM coding agent inside the current IDE/runtime conte
 
 Treat Python scripts and `npm run ...` entries as deterministic oracles and portable helper tools. Treat skills, rules, bootloaders, and adapter files as routing/governance surfaces that tell the agent when and how to act. Treat hooks as local Git gates for validation, Field Reports drain, and no-write Cortex reflection/curation. Treat MCP as a read-only Cortex access surface for agents, not as memory and not as the installer.
 
-`/tes:init`, `/tes:update`, `tes init`, and direct command/prompts such as `TES, initialize this project` or `Atualizar TES` are preferred entries. Treat them as intents that load this installer contract, not as raw shell commands.
+`/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, and direct command/prompts such as `TES, initialize this project` or `Atualizar TES` are preferred entries. Treat them as intents that load this installer contract, not as raw shell commands. Across Codex, Claude Code, and Cursor, prefer shared hyphen triggers such as `/tes-init`, `/tes-update`, and `/tes-cortex`; if a host reports a `/tes:*` alias as invalid, continue as TES intent text through the matching `tes-*` skill/rule/spec instead of asking the user to choose a route.
 
-Other shortcuts are routed by `docs/install/COMMAND-TRIGGERS.md`: `/tes:cortex`, `/tes:curate`, `/tes:mcp`, `/tes:doctor`, `/tes:adapter`, and `/tes:bench`.
+Other shortcuts are routed by `docs/install/COMMAND-TRIGGERS.md`: `/tes-cortex`, `/tes-curate`, `/tes-mcp`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, and their `/tes:*` compatibility aliases.
 
 If the current runtime cannot execute a command, do not claim it passed. Finish safe file work where possible, mark the oracle `BLOCKED` or `SKIP` with the reason in evidence and the final report, and ask for the smallest native equivalent or user-run command only when certification depends on it.
 
@@ -53,7 +53,7 @@ docs/mesh/{CORTEX.md,CORTEX-MCP.md}
 scripts/{cortex.py,cortex_embed.mjs,cortex_mcp.py,tes_init.py,tes_update.py,tes_legacy_retirement.py,root_context.py,install_adapter.py,install_mcp.py,field_reports.py,install_smoke.py,materialize_adapter.py,platform_surface_oracle.py}
 src/adapters/codex/AGENTS.md
 src/adapters/codex/skills/tes-engineering-discipline/{SKILL.md,agents/openai.yaml,references/failure-patterns.md,references/source-portability.md,scripts/discipline_oracle.py}
-src/adapters/claude/{CLAUDE.md,plugin/plugin.json,plugin/marketplace.json,skills/tes-guidelines/SKILL.md}
+src/adapters/claude/{CLAUDE.md,plugin/plugin.json,plugin/marketplace.json,skills/tes-*/SKILL.md}
 src/adapters/cursor/rules/tes-guidelines.mdc
 ```
 
@@ -67,7 +67,7 @@ Before using copied or cloned package files, record the exact package snapshot:
 
 If `source_freshness` is `STALE_SOURCE`, continue only as a snapshot certification. The final report must say that the target was certified against the recorded snapshot, not against the latest Tilly Engineer Skills `main`. If `source_freshness` is `BLOCKED`, do not claim latest-source certification. This is not a target-project failure; it is certification metadata that protects the user from stale installer conclusions.
 
-For `/tes:update`, `CURRENT` also requires helper contract parity. If installed helper hashes or required contract markers differ from the package source, report `STALE_HELPERS`, route to update, and do not call the target current even when installed and cloud versions match.
+For `/tes-update` or `/tes:update`, `CURRENT` also requires helper contract parity. If installed helper hashes or required contract markers differ from the package source, report `STALE_HELPERS`, route to update, and do not call the target current even when installed and cloud versions match.
 
 ## Non-Negotiable Rules
 
@@ -498,12 +498,13 @@ Create or retrofit:
 
 ```text
 CLAUDE.md
-skills/tes-guidelines/**
+.claude/skills/tes-*/**
+skills/tes-*/**
 .claude-plugin/plugin.json
 .claude-plugin/marketplace.json
 ```
 
-`CLAUDE.md` must stay short. It should route to `docs/agents/**`, mention `docs/agents/cortex/**` as the durable memory layer when relevant, preserve project-specific sentinels required by local validation, and list local oracles. Claude skill and plugin files are package/runtime assets; do not put target-project governance inside them. If the target already uses additional Claude-scoped rule files, preserve them and route them back to `docs/agents/**` instead of deleting or replacing them.
+`CLAUDE.md` must stay short. It should route to `docs/agents/**`, mention `docs/agents/cortex/**` as the durable memory layer when relevant, preserve project-specific sentinels required by local validation, and list local oracles. Claude project skills live under `.claude/skills/**`; plugin-root skill copies live under `skills/**` only for explicit plugin testing/distribution. Claude skill and plugin files are package/runtime assets; do not put target-project governance inside them. If the target already uses additional Claude-scoped rule files, preserve them and route them back to `docs/agents/**` instead of deleting or replacing them.
 
 ### Cursor
 
@@ -797,7 +798,7 @@ Changed Surfaces
 Certification
 - Context, thin runtime assets, Cortex, MCP, platform surfaces, project register, Obsidian boundary, secrets, and oracles: PASS/FAIL/SKIP
 - Field Reports: PASS | BLOCKED | DISABLED | SKIP; hook/drain/sentinel/outbox pending count: <...>
-- `/tes:update` routine: PASS | BLOCKED | SKIP; route probe and post-Layer Zero final Field Reports `tes_update` event: <...>
+- `/tes-update` routine: PASS | BLOCKED | SKIP; route probe and post-Layer Zero final Field Reports `tes_update` event: <...>
 
 Evidence
 - <docs/agents/evidence/...>

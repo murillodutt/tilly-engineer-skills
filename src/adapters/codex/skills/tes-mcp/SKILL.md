@@ -1,12 +1,12 @@
 ---
 name: tes-mcp
-description: Use when the user says /tes:mcp or asks to activate, verify, repair, audit, or explain the read-only TES Cortex MCP server for Codex, Claude, Cursor, or all runtimes.
+description: Use when the user says /tes-mcp, /tes:mcp, or asks to activate, verify, repair, audit, or explain the read-only TES Cortex MCP server for Codex, Claude, Cursor, or all runtimes.
 ---
 
 # TES MCP
 
-`/tes:mcp` is the shortcut for project-scoped Cortex MCP activation and
-health checks.
+`/tes-mcp` and `/tes:mcp` are shortcuts for project-scoped Cortex MCP
+activation and health checks.
 
 ## Workflow
 

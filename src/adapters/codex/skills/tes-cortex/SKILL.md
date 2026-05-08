@@ -1,11 +1,11 @@
 ---
 name: tes-cortex
-description: Use when the user says /tes:cortex, /tes:recall, /tes:learn, /tes:reflect, /tes:curate, or asks to inspect, audit, rebuild, query, read, learn from, reflect into, semantically curate, or apply TES Cortex memory.
+description: Use when the user says /tes-cortex, /tes:cortex, /tes:recall, /tes:learn, /tes:reflect, /tes:curate, or asks to inspect, audit, rebuild, query, read, learn from, reflect into, semantically curate, or apply TES Cortex memory.
 ---
 
 # TES Cortex
 
-`/tes:cortex` is the user-facing shortcut for Cortex memory operations. The
+`/tes-cortex` and `/tes:cortex` are user-facing shortcuts for Cortex memory operations. The
 agent remains the executor; scripts and MCP tools are oracles.
 
 ## Intent Map

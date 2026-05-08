@@ -13,7 +13,7 @@ tver: 0.5.0
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.39`.
+Project version: `0.3.40`.
 
 It follows the Codex customization order:
 
@@ -49,20 +49,20 @@ Codex uses progressive disclosure for skills:
 - `SKILL.md` loads only when the workflow is selected.
 - References and scripts load or run only when needed.
 
-The `/tes:*` shortcuts map to Codex skills. `/tes:init`, `/tes:update`,
-`tes init`, and natural init/update command-prompts all route to
+The preferred TES shortcuts map to Codex skills. `/tes-init`, `/tes-update`,
+`/tes:init`, `/tes:update`, `tes init`, and natural init/update command-prompts all route to
 `tes-init`. They keep the user entrypoint short while delegating real work to
 deterministic oracles:
 
 | Shortcut | Skill |
 |----------|-------|
-| `/tes:init` | `tes-init` |
-| `/tes:update` | `tes-init` |
-| `/tes:cortex` | `tes-cortex` |
-| `/tes:mcp` | `tes-mcp` |
-| `/tes:doctor` | `tes-doctor` |
-| `/tes:adapter` | `tes-adapter` |
-| `/tes:bench` | `tes-bench` |
+| `/tes-init`, `/tes:init` | `tes-init` |
+| `/tes-update`, `/tes:update` | `tes-init` |
+| `/tes-cortex`, `/tes:cortex` | `tes-cortex` |
+| `/tes-mcp`, `/tes:mcp` | `tes-mcp` |
+| `/tes-doctor`, `/tes:doctor` | `tes-doctor` |
+| `/tes-adapter`, `/tes:adapter` | `tes-adapter` |
+| `/tes-bench`, `/tes:bench` | `tes-bench` |
 
 This keeps the four gates available without bloating every context window.
 

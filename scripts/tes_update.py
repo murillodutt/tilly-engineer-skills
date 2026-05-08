@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.39"
+VERSION = "0.3.40"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -37,6 +37,8 @@ HELPER_CONTRACT_MARKERS = {
     "field_reports.py": ('SCHEMA = "tes-field-report@2"',),
 }
 UPDATE_SCOPES = ("none", "helpers-only", "adapter-config", "full-convergence")
+PREFERRED_INTENT_TRIGGERS = ("/tes-init", "/tes-update", "/tes-doctor")
+COMPATIBLE_INTENT_ALIASES = ("/tes:init", "/tes:update", "/tes:doctor")
 POST_LAYER_ZERO_FINAL_PROBE_CONTRACT = (
     "helper_contract_status=PASS",
     "update_available=False",
@@ -140,6 +142,7 @@ def surfaces(target: Path) -> dict[str, bool]:
         or (target / ".agents/skills/tes-engineering-discipline/SKILL.md").exists(),
         "claude": (target / "CLAUDE.md").exists()
         or (target / ".claude-plugin/plugin.json").exists()
+        or (target / ".claude/skills/tes-guidelines/SKILL.md").exists()
         or (target / "skills/tes-guidelines/SKILL.md").exists(),
         "cursor": (target / ".cursor/rules").exists() or (target / "CURSOR.md").exists(),
         "mcp_codex": (target / ".codex/config.toml").exists(),
@@ -480,12 +483,12 @@ def recommended_update_scope(state: str, update_available: bool, helper_status: 
 
 def recommended_intent(state: str, update_status: str, route: str, update_scope: str) -> str:
     if state == "new":
-        return "/tes:init"
+        return "/tes-init"
     if update_scope == "helpers-only":
-        return f"/tes:update {route} --helpers-only"
+        return f"/tes-update {route} --helpers-only"
     if update_scope in {"adapter-config", "full-convergence"}:
-        return f"/tes:update {route}"
-    return "/tes:doctor" if update_status == "CURRENT" else f"/tes:update {route}"
+        return f"/tes-update {route}"
+    return "/tes-doctor" if update_status == "CURRENT" else f"/tes-update {route}"
 
 
 def post_layer_zero_final_probe(result: dict[str, Any]) -> dict[str, Any]:
@@ -650,8 +653,8 @@ def self_test() -> dict[str, Any]:
             failures.append("multi-runtime fixture must recommend all")
         if result["recommended_update_scope"] != "helpers-only":
             failures.append("stale multi-runtime fixture must recommend helpers-only update scope")
-        if result["recommended_intent"] != "/tes:update all --helpers-only":
-            failures.append("multi-runtime helper update intent must be /tes:update all --helpers-only")
+        if result["recommended_intent"] != "/tes-update all --helpers-only":
+            failures.append("multi-runtime helper update intent must be /tes-update all --helpers-only")
         if result["legacy_retirement_required"] is not True:
             failures.append("legacy runtime fixture must require legacy retirement")
 
@@ -711,7 +714,7 @@ def self_test() -> dict[str, Any]:
             failures.append("stale helper update must require helper overwrite with backup")
         if result["recommended_update_scope"] != "helpers-only":
             failures.append("stale helper update must recommend helpers-only scope")
-        if result["recommended_intent"] != "/tes:update codex --helpers-only":
+        if result["recommended_intent"] != "/tes-update codex --helpers-only":
             failures.append("stale helper update must recommend helpers-only intent")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-new-") as tempdir:
@@ -729,8 +732,8 @@ def self_test() -> dict[str, Any]:
         result = analyze(args)
         if result["project_state"] != "new":
             failures.append("empty fixture must be new")
-        if result["recommended_intent"] != "/tes:init":
-            failures.append("new fixture must route to /tes:init")
+        if result["recommended_intent"] != "/tes-init":
+            failures.append("new fixture must route to /tes-init")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-field-report-") as tempdir:
         target = Path(tempdir)

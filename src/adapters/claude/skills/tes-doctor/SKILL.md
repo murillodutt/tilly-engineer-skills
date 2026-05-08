@@ -1,13 +1,14 @@
 ---
 name: tes-doctor
-description: Use when the user says /tes:doctor, /tes:check, /tes:certify, or asks to validate, health-check, certify, or prepare a Tilly Engineer Skills commit.
+description: Use when the user says /tes-doctor, /tes:doctor, /tes:check, /tes:certify, or asks to validate, health-check, certify, or prepare a Tilly Engineer Skills commit.
 license: MIT
 ---
 
 # TES Doctor
 
-`/tes:doctor` is the shortcut for package and mesh health checks. Use
-`/tes:check` and `/tes:certify` as aliases.
+`/tes-doctor` is the preferred shared TES trigger for package and mesh health
+checks. `/tes:doctor`, `/tes:check`, and `/tes:certify` are compatible TES
+intent aliases if the host reports them as invalid slashes.
 
 ## Gate Selection
 

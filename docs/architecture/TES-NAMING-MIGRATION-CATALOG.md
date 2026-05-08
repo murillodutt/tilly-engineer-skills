@@ -23,7 +23,9 @@ The migration target is simple:
 
 - Product prose may say `Tilly Engineer Skills`.
 - Operational IDs must use `TES`, `tes`, or `tes-*`.
-- Active prompt commands must use `/tes:*`.
+- Active prompt commands must use `/tes-*` as the preferred user-facing trigger.
+  `/tes:*` forms may remain only as compatibility aliases interpreted as TES
+  intent text.
 - Installed runtime files must avoid `tilly-*`, `tilly_*.py`, and `.tilly/**`
   unless a specific migration bridge declares a temporary compatibility reason.
 
@@ -61,7 +63,9 @@ This is not a cosmetic issue. It is a routing and authority issue.
   installed helper surfaces.
 - `tes` is the lowercase executable namespace.
 - `tes-*` is the skill, MCP server, issue template, and installed asset prefix.
-- `/tes:*` is the only active command prompt namespace.
+- `/tes-*` is the preferred active command prompt namespace.
+- `/tes:*` remains a compatibility alias namespace for existing prompts and
+  agent transcripts.
 - `/tilly:*` must not appear in active skill descriptions after migration.
 - Historical evidence may keep old names when it records past behavior.
 - Migration code may detect old names, but it must not present them as the
@@ -71,22 +75,23 @@ This is not a cosmetic issue. It is a routing and authority issue.
 
 ### Prompt Commands
 
-The active command prompts move from `/tilly:*` to `/tes:*`.
+The active command prompts move from `/tilly:*` to preferred `/tes-*`
+triggers. Existing `/tes:*` forms remain compatibility aliases.
 
-- `/tilly:init` becomes `/tes:init`.
-- `/tilly:update` becomes `/tes:update`.
-- `/tilly:cortex` becomes `/tes:cortex`.
-- `/tilly:recall` becomes `/tes:recall`.
-- `/tilly:learn` becomes `/tes:learn`.
-- `/tilly:reflect` becomes `/tes:reflect`.
-- `/tilly:curate` becomes `/tes:curate`.
-- `/tilly:mcp` becomes `/tes:mcp`.
-- `/tilly:field-reports` becomes `/tes:field-reports`.
-- `/tilly:doctor` becomes `/tes:doctor`.
-- `/tilly:check` becomes `/tes:check`.
-- `/tilly:certify` becomes `/tes:certify`.
-- `/tilly:adapter` becomes `/tes:adapter`.
-- `/tilly:bench` becomes `/tes:bench`.
+- `/tilly:init` becomes `/tes-init`.
+- `/tilly:update` becomes `/tes-update`.
+- `/tilly:cortex` becomes `/tes-cortex`.
+- `/tilly:recall` becomes `/tes-cortex recall`.
+- `/tilly:learn` becomes `/tes-cortex learn`.
+- `/tilly:reflect` becomes `/tes-cortex reflect`.
+- `/tilly:curate` becomes `/tes-curate`.
+- `/tilly:mcp` becomes `/tes-mcp`.
+- `/tilly:field-reports` becomes `/tes-field-reports`.
+- `/tilly:doctor` becomes `/tes-doctor`.
+- `/tilly:check` becomes `/tes-doctor`.
+- `/tilly:certify` becomes `/tes-doctor`.
+- `/tilly:adapter` becomes `/tes-adapter`.
+- `/tilly:bench` becomes `/tes-bench`.
 
 Natural language triggers must also stop saying `Atualizar a Tilly` as the
 default phrase for this package. The current phrase becomes `Atualizar TES` or

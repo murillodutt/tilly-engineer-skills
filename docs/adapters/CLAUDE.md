@@ -14,14 +14,15 @@ This document governs the Claude Code derivation of Tilly Engineering
 Discipline.
 
 The Claude adapter is aligned behaviorally with Codex and Cursor, but it must
-use Claude-native surfaces instead of copying Codex packaging.
+use Claude Code surfaces instead of copying Codex packaging.
 
 ## Official Surfaces
 
 | Surface | Role | Package Status |
 |---------|------|----------------|
 | `CLAUDE.md` | Persistent project guidance loaded as memory | Included |
-| `skills/**` | Reusable workflows with `SKILL.md` frontmatter | Included |
+| `.claude/skills/**` | Project-native reusable workflows and direct `/tes-*` slash commands | Included |
+| `skills/**` | Plugin-root reusable workflows for explicit plugin testing/distribution | Included |
 | `.claude-plugin/**` | Distribution metadata | Included as source, not published |
 | Settings | Enforcement and permission policy | Documented only |
 | Hooks | Operational enforcement scripts | Blocked by default |
@@ -43,7 +44,7 @@ Official references: [Memory](https://code.claude.com/docs/en/memory),
 |--------|---------|
 | `src/adapters/claude/CLAUDE.md` | Short target root instruction file |
 | `src/adapters/claude/skills/tes-guidelines/SKILL.md` | Claude skill source |
-| `src/adapters/claude/skills/tes-*/SKILL.md` | Command-shortcut skills |
+| `src/adapters/claude/skills/tes-*/SKILL.md` | Project skill and plugin skill source |
 | `src/adapters/claude/plugin/plugin.json` | Plugin metadata source |
 | `src/adapters/claude/plugin/marketplace.json` | Local marketplace metadata source |
 
@@ -53,16 +54,24 @@ dedicated decision.
 
 ## Packaging Rules
 
-- The materialized plugin root is `dist/adapters/claude/**`.
+- The materialized target root is `dist/adapters/claude/**`.
+- Project installs must include `.claude/skills/tes-*/SKILL.md`; Claude Code
+  discovers these as project skills and exposes direct slash names such as
+  `/tes-init` and `/tes-cortex`.
 - `.claude-plugin/plugin.json` must not depend on files outside the plugin
   root.
 - Skill paths in plugin metadata must be root-relative, such as
-  `skills/tes-guidelines`, not `../skills/tes-guidelines`.
-- `/tes:*` shortcuts map to Claude skills and then to deterministic oracles.
-  `/tes:init`, `/tes:update`, `tes init`, and natural init/update
-  command-prompts all route to `tes-init`; the other shortcuts route to
-  `tes-cortex`, `tes-mcp`, `tes-doctor`, `tes-adapter`, and
-  `tes-bench`.
+  `./skills/`, not `../skills/tes-guidelines`.
+- `/tes-*` is the preferred cross-tool TES trigger vocabulary across Codex,
+  Claude Code, and Cursor. Claude project installs expose direct slash names
+  such as `/tes-init`, `/tes-update`, `/tes-cortex`, `/tes-mcp`,
+  `/tes-doctor`, `/tes-adapter`, and `/tes-bench` through project skills.
+  `/tes:*` forms remain compatible TES intent aliases. If Claude receives
+  `/tes:init` or `/tes:update` as invalid slash text, treat it as the matching
+  TES intent and continue through `tes-init` instead of asking the user to
+  choose a hypothesis.
+- `tes init`, `Atualizar TES`, and natural init/update command-prompts all
+  route to `tes-init`.
 - Hooks, write-capable MCP, and subagents must not be added to the default
   plugin.
 - Read-only Cortex MCP is activated by the assisted installer through
