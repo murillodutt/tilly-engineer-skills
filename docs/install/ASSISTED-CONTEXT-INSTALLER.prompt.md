@@ -851,7 +851,7 @@ Changed Surfaces
 - Updated existing mesh files: <short list or none>
 - Rollback backups: <short list or none; do not count .bak-* files as new surfaces>
 - Root context gate: PASS | PRESERVED | NEEDS_REVIEW | SKIP; plan/resolution: <path | preserve | none>
-- Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py: PASS/BLOCKED/MISSING
+- Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py, tes_init.py, project_context_oracle.py: PASS/BLOCKED/MISSING
 - Helper contract parity: PASS | STALE_HELPERS | BLOCKED | NOT_INSTALLED
 - Project context: docs/agents/PROJECT-CONTEXT.md PASS | NEEDS_REVIEW | SKIP
 - Runtime/MCP config, evidence, ignored local state: <short list>

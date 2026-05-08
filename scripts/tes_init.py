@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -20,8 +21,12 @@ import field_reports
 import root_context
 
 
-ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.48"
+SCRIPT_PATH = Path(__file__).resolve()
+HELPER_ROOT = SCRIPT_PATH.parent
+ROOT = SCRIPT_PATH.parents[1]
+SOURCE_ROOT = ROOT / "scripts" if (ROOT / "scripts").exists() else HELPER_ROOT
+PACKAGE_MODE = SOURCE_ROOT.name == "scripts"
+VERSION = "0.3.49"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -57,6 +62,7 @@ EXCLUDED_SUFFIXES = {
 }
 MAX_HASH_BYTES = 10 * 1024 * 1024
 MAX_CONTEXT_ANCHORS = 40
+MAX_README_SUMMARY_CHARS = 320
 MANIFEST_NAMES = {
     "package.json",
     "pyproject.toml",
@@ -186,12 +192,19 @@ def run(command: list[str], cwd: Path) -> dict[str, Any]:
     }
 
 
+def helper_script(name: str) -> Path:
+    package_path = ROOT / "scripts" / name
+    if package_path.exists():
+        return package_path
+    return HELPER_ROOT / name
+
+
 def gate_passed(gate: dict[str, Any]) -> bool:
     return gate.get("status") in PASSING_GATE_STATUSES
 
 
 def root_context_gate(target: Path) -> dict[str, Any]:
-    command = [sys.executable, str(ROOT / "scripts/root_context.py"), "analyze", "--target", str(target)]
+    command = [sys.executable, str(helper_script("root_context.py")), "analyze", "--target", str(target)]
     result = root_context.analyze(target)
     status = result["status"]
     resolution = None
@@ -345,21 +358,80 @@ def first_markdown_heading(path: Path) -> str | None:
             if stripped.startswith("# "):
                 return stripped[2:].strip()
     except OSError:
-        return None
+            return None
+    return None
+
+
+def clean_markdown_inline(text: str) -> str:
+    text = re.sub(r"!\[([^\]]*)\]\([^)]+\)", r"\1", text)
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+    text = re.sub(r"[*_`>#]", "", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def trim_summary(text: str, limit: int = MAX_README_SUMMARY_CHARS) -> str:
+    if len(text) <= limit:
+        return text
+    trimmed = text[:limit].rsplit(" ", 1)[0].strip()
+    return f"{trimmed}..." if trimmed else text[:limit].strip()
+
+
+def readme_signal(target: Path) -> dict[str, str] | None:
+    for relpath in ("README.md", "README"):
+        path = target / relpath
+        if not path.exists():
+            continue
+        try:
+            lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+        except OSError:
+            continue
+        heading: str | None = None
+        paragraph: list[str] = []
+        for line in lines:
+            stripped = line.strip()
+            if not stripped:
+                if paragraph:
+                    break
+                continue
+            if stripped.startswith("# "):
+                heading = stripped[2:].strip()
+                continue
+            if stripped.startswith(("##", "|", "-", "* ", "!", "<", "```")):
+                if paragraph:
+                    break
+                continue
+            if set(stripped) <= {"-", "_", "="}:
+                continue
+            paragraph.append(stripped)
+        summary = trim_summary(clean_markdown_inline(" ".join(paragraph))) if paragraph else ""
+        return {
+            "source": relpath,
+            "heading": heading or "",
+            "summary": summary,
+        }
     return None
 
 
 def detect_project_identity(target: Path) -> dict[str, str]:
+    readme = readme_signal(target)
     package = safe_read_json(target / "package.json")
     if package:
         name = str(package.get("name") or target.name)
         description = str(package.get("description") or "").strip()
+        if not description and readme and readme.get("summary"):
+            description = readme["summary"]
         return {
             "name": name,
             "description": description or "unknown",
-            "source": "package.json",
+            "source": "package.json + README" if readme and readme.get("summary") and not package.get("description") else "package.json",
         }
 
+    if readme and readme.get("heading"):
+        return {
+            "name": readme["heading"],
+            "description": readme.get("summary") or "unknown",
+            "source": readme["source"],
+        }
     for relpath in ("README.md", "README"):
         heading = first_markdown_heading(target / relpath)
         if heading:
@@ -374,6 +446,61 @@ def detect_project_identity(target: Path) -> dict[str, str]:
         "description": "unknown",
         "source": "directory-name",
     }
+
+
+def dependency_names(target: Path) -> set[str]:
+    package = safe_read_json(target / "package.json")
+    if not package:
+        return set()
+    names: set[str] = set()
+    for field in ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies"):
+        deps = package.get(field)
+        if isinstance(deps, dict):
+            names.update(str(name) for name in deps)
+    return names
+
+
+def stack_signals(target: Path) -> list[str]:
+    deps = dependency_names(target)
+    signals: list[str] = []
+    checks = (
+        ("nuxt", "Nuxt application"),
+        ("@nuxt/ui", "Nuxt UI interface"),
+        ("drizzle-orm", "Drizzle ORM persistence"),
+        ("pg", "PostgreSQL integration"),
+        ("vitest", "Vitest test suite"),
+        ("typescript", "TypeScript codebase"),
+        ("vue-tsc", "Vue typechecking"),
+        ("zod", "Zod validation"),
+    )
+    for dep, label in checks:
+        if dep in deps:
+            signals.append(label)
+    file_checks = (
+        ("docker-compose.yml", "Docker Compose services"),
+        ("docker-compose.dev.yml", "Docker Compose dev services"),
+        ("pyproject.toml", "Python package metadata"),
+        ("go.mod", "Go module"),
+        ("Cargo.toml", "Rust crate"),
+    )
+    for relpath, label in file_checks:
+        if (target / relpath).exists():
+            signals.append(label)
+    return sorted(dict.fromkeys(signals))
+
+
+def semantic_signals(target: Path) -> list[dict[str, str]]:
+    signals: list[dict[str, str]] = []
+    readme = readme_signal(target)
+    if readme:
+        if readme.get("heading"):
+            signals.append({"signal": "README heading", "value": readme["heading"], "source": readme["source"]})
+        if readme.get("summary"):
+            signals.append({"signal": "README summary", "value": readme["summary"], "source": readme["source"]})
+    stack = stack_signals(target)
+    if stack:
+        signals.append({"signal": "Detected stack", "value": ", ".join(stack[:10]), "source": "package/config files"})
+    return signals
 
 
 def package_scripts(target: Path) -> dict[str, str]:
@@ -470,8 +597,18 @@ def infer_territory_role(name: str, paths: list[str]) -> str:
     lowered = name.lower()
     if lowered in {"docs", "doc"}:
         return "documentation and durable explanation"
-    if lowered in {".agents", ".claude", ".cursor"}:
+    if lowered in {".agents", ".claude", ".cursor", ".codex", ".claude-plugin", "skills"}:
         return "agent runtime surface"
+    if lowered in {"drizzle", "migrations", "migration"}:
+        return "database schema and migration territory"
+    if lowered in {"shared", "contracts", "schemas", "types"}:
+        return "shared contracts and cross-runtime types"
+    if lowered in {"infra", "infrastructure", "ops"}:
+        return "infrastructure and environment bootstrap"
+    if lowered in {"public", "static", "assets"}:
+        return "static assets and public files"
+    if lowered in {"labs", "examples", "fixtures"}:
+        return "experiments, reproductions, and fixtures"
     if lowered in {"tests", "test", "spec"} or any("/test" in path or "/spec" in path for path in paths):
         return "test or verification territory"
     if lowered in {"scripts", "tools"}:
@@ -488,6 +625,7 @@ def project_context(scan: dict[str, Any], target: Path, manifest_rel: str) -> di
     anchors = context_anchors(scan)
     return {
         "identity": detect_project_identity(target),
+        "semantic_signals": semantic_signals(target),
         "manifest": manifest_rel,
         "anchors": anchors,
         "territories": territory_summary(scan),
@@ -533,6 +671,19 @@ def bootstrap_scan(target: Path, manifest_rel: str) -> dict[str, Any]:
 
 
 def package_gates() -> list[dict[str, Any]]:
+    if not PACKAGE_MODE:
+        project_context = helper_script("project_context_oracle.py")
+        if project_context.exists():
+            return [run([sys.executable, str(project_context), "--self-test"], HELPER_ROOT)]
+        return [
+            {
+                "command": "installed TES package gates",
+                "returncode": 0,
+                "stdout": "",
+                "stderr": "package-only gates unavailable in installed helper mode",
+                "status": "PRESERVED",
+            }
+        ]
     gates = [
         [sys.executable, "scripts/install_smoke.py", "--self-test"],
         [sys.executable, "scripts/platform_surface_oracle.py", "--self-test"],
@@ -543,15 +694,16 @@ def package_gates() -> list[dict[str, Any]]:
 def target_gates(target: Path) -> list[dict[str, Any]]:
     gates: list[dict[str, Any]] = [run(["git", "diff", "--check"], target)]
     gates.append(root_context_gate(target))
-    gates.append(run([sys.executable, str(ROOT / "scripts/field_reports.py"), "status", "--target", str(target)], ROOT))
+    gate_cwd = ROOT if PACKAGE_MODE else HELPER_ROOT
+    gates.append(run([sys.executable, str(helper_script("field_reports.py")), "status", "--target", str(target)], gate_cwd))
     cortex_root = cortex.cortex_path(target)
     if (cortex_root / "CONTRACT.md").exists():
         for command in ("verify", "audit", "rebuild", "curate-plan"):
             extra_args = ["--backend", "lexical"] if command == "curate-plan" else []
             gates.append(
                 run(
-                    [sys.executable, str(ROOT / "scripts/cortex.py"), command, "--target", str(target), *extra_args],
-                    ROOT,
+                    [sys.executable, str(helper_script("cortex.py")), command, "--target", str(target), *extra_args],
+                    gate_cwd,
                 )
             )
     mcp = target / ".tes/bin/cortex_mcp.py"
@@ -645,6 +797,7 @@ def markdown_table(rows: list[tuple[str, ...]], headers: tuple[str, ...]) -> str
 def write_project_context(target: Path, scan: dict[str, Any], gates: list[dict[str, Any]], manifest_rel: str) -> str:
     context = project_context(scan, target, manifest_rel)
     identity = context["identity"]
+    signals = context["semantic_signals"]
     anchors = context["anchors"]
     territories = context["territories"]
     scripts = context["package_scripts"]
@@ -669,6 +822,7 @@ def write_project_context(target: Path, scan: dict[str, Any], gates: list[dict[s
     script_rows = [(name, command) for name, command in scripts.items()]
     quality_rows = [(name, command) for name, command in qscripts.items()]
     gate_rows = [(gate["command"], gate["status"]) for gate in gates]
+    signal_rows = [(item["signal"], item["value"], item["source"]) for item in signals]
     deep_reads = "\n".join(f"- `{anchor['path']}`" for anchor in anchors[:12]) or "- none"
 
     return f"""# Tilly Project Context
@@ -691,6 +845,12 @@ context when new durable understanding is learned.
 | Git HEAD | `{scan['git_head']}` |
 | Manifest | `{manifest_rel}` |
 
+## Initial Semantic Signals
+
+These signals are deterministic extracts from high-signal project files. They
+are starting evidence for the active agent, not a final semantic analysis.
+
+{markdown_table(signal_rows, ("Signal", "Value", "Source"))}
 ## Maximum-Depth Initialization Contract
 
 - `/tes-init` must initialize the project, not only install TES runtime files.
@@ -990,6 +1150,19 @@ def self_test() -> dict[str, Any]:
         if not any(gate["status"] == "PRESERVED" for gate in result["gates"]):
             failures.append("project-owned root context must close as PRESERVED during init")
 
+    with tempfile.TemporaryDirectory(prefix="tes-init-readme-identity-") as tempdir:
+        target = Path(tempdir)
+        (target / "README.md").write_text(
+            "# README Identity Fixture\n\nA portable project whose package manifest omits a description.\n",
+            encoding="utf-8",
+        )
+        (target / "package.json").write_text('{"name":"readme-identity-fixture"}\n', encoding="utf-8")
+        identity = detect_project_identity(target)
+        if identity["description"] == "unknown":
+            failures.append("project identity must derive README prose when package description is absent")
+        if "README" not in identity["source"]:
+            failures.append("project identity source must mention README when README prose supplies description")
+
     with tempfile.TemporaryDirectory(prefix="tes-init-timeout-") as tempdir:
         target = Path(tempdir)
         (target / "README.md").write_text("# Timeout fixture\n", encoding="utf-8")
@@ -1019,6 +1192,8 @@ def self_test() -> dict[str, Any]:
         "version": VERSION,
         "status": "PASS" if not failures else "FAIL",
         "failures": failures,
+        "self_test_mode": "package" if PACKAGE_MODE else "installed",
+        "coverage": "source-package-contract" if PACKAGE_MODE else "installed-helper-contract",
     }
 
 
