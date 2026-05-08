@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.48"
+VERSION = "0.3.49"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -32,6 +32,8 @@ HELPER_FILES = (
     "tes_update.py",
     "tes_legacy_retirement.py",
     "root_context.py",
+    "tes_init.py",
+    "project_context_oracle.py",
 )
 HELPER_CONTRACT_MARKERS = {
     "field_reports.py": ('SCHEMA = "tes-field-report@2"',),

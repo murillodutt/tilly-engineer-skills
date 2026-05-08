@@ -14,11 +14,13 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.48"
+VERSION = "0.3.49"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
+PACKAGE_MODE = (ROOT / "scripts").exists()
 REQUIRED_SECTIONS = (
     "# Tilly Project Context",
     "## Identity",
+    "## Initial Semantic Signals",
     "## Maximum-Depth Initialization Contract",
     "## Active Agent Refinement Contract",
     "## Coverage",
@@ -163,6 +165,41 @@ def identity_terms(target: Path) -> list[str]:
     return terms
 
 
+def readme_summary(target: Path) -> str:
+    readme = target / "README.md"
+    if not readme.exists():
+        readme = target / "README"
+    if not readme.exists():
+        return ""
+    paragraph: list[str] = []
+    try:
+        lines = readme.read_text(encoding="utf-8", errors="ignore").splitlines()
+    except OSError:
+        return ""
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            if paragraph:
+                break
+            continue
+        if stripped.startswith(("# ", "##", "|", "-", "* ", "!", "<", "```")):
+            if paragraph:
+                break
+            continue
+        if set(stripped) <= {"-", "_", "="}:
+            continue
+        paragraph.append(stripped)
+    return re.sub(r"\s+", " ", " ".join(paragraph)).strip()
+
+
+def package_has_description(target: Path) -> bool:
+    package = load_json(target / "package.json")
+    if not package:
+        return False
+    description = package.get("description")
+    return isinstance(description, str) and bool(description.strip())
+
+
 def expected_anchors(target: Path) -> list[str]:
     files = iter_project_files(target)
     anchors: list[str] = []
@@ -235,6 +272,9 @@ def analyze(target: Path) -> dict[str, Any]:
     if not any(term and term in text for term in identities):
         failures.append(f"PROJECT-CONTEXT.md missing project identity term: one of {identities}")
 
+    if readme_summary(target) and not package_has_description(target) and "| Description | `unknown` |" in text:
+        failures.append("PROJECT-CONTEXT.md must derive a non-unknown description from README prose when package description is absent")
+
     anchors = expected_anchors(target)
     missing_anchors = [anchor for anchor in anchors if anchor not in text]
     if missing_anchors:
@@ -283,8 +323,15 @@ def good_context(target: Path) -> str:
 | Field | Value |
 |-------|-------|
 | Name | `fixture-app` |
-| Description | `unknown` |
+| Description | `Fixture app for oracle validation.` |
 | Manifest | `docs/agents/evidence/20260508T000000Z-tes-project-manifest.json` |
+
+## Initial Semantic Signals
+
+| Signal | Value | Source |
+|---|---|---|
+| README heading | fixture-app | README.md |
+| README summary | Fixture app for oracle validation. | README.md |
 
 ## Maximum-Depth Initialization Contract
 
@@ -366,7 +413,7 @@ Update this file when project meaning changes.
 
 
 def make_fixture(target: Path) -> None:
-    write(target / "README.md", "# fixture-app\n")
+    write(target / "README.md", "# fixture-app\n\nFixture app for oracle validation.\n")
     write(target / "VERSION", "0.1.0\n")
     write(target / ".nvmrc", "20\n")
     write(
@@ -396,6 +443,11 @@ def self_test() -> dict[str, Any]:
             failures.extend(f"good fixture failed: {item}" for item in result["failures"])
 
         text = (target / PROJECT_CONTEXT).read_text(encoding="utf-8")
+        (target / PROJECT_CONTEXT).write_text(text.replace("Fixture app for oracle validation.", "unknown", 1), encoding="utf-8")
+        unknown_description = analyze(target)
+        if unknown_description["status"] != "FAIL" or not any("non-unknown description" in item for item in unknown_description["failures"]):
+            failures.append("oracle must fail when README prose exists but description remains unknown")
+
         (target / PROJECT_CONTEXT).write_text(text.replace("src/app.py", "src/missing.py"), encoding="utf-8")
         bad_anchor = analyze(target)
         if bad_anchor["status"] != "FAIL" or not any("missing source anchors" in item for item in bad_anchor["failures"]):
@@ -413,6 +465,8 @@ def self_test() -> dict[str, Any]:
         "version": VERSION,
         "status": "PASS" if not failures else "FAIL",
         "failures": failures,
+        "self_test_mode": "package" if PACKAGE_MODE else "installed",
+        "coverage": "source-package-contract" if PACKAGE_MODE else "installed-helper-contract",
     }
 
 
