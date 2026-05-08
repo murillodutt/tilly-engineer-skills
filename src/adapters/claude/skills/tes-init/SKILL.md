@@ -65,6 +65,10 @@ the user for package contents.
    target project in depth, write or update `docs/agents/PROJECT-CONTEXT.md`,
    initialize `docs/agents/cortex/**`, keep runtime bootloaders thin, and
    activate the read-only Cortex MCP route when selected.
+   Treat `tes_init.py` as deterministic scaffold generation. The active agent
+   must open strong anchors before claiming deep project understanding, refine
+   `PROJECT-CONTEXT.md` when supported by evidence, or report
+   `Project context: NEEDS_REVIEW` with the blocker.
 9. Invoke package oracles such as `tes_init.py`, `tes_update.py`,
    `tes_legacy_retirement.py`, `root_context.py`, `install_smoke.py`,
    `install_mcp.py`, and Cortex checks.

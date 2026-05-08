@@ -21,7 +21,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.45"
+VERSION = "0.3.46"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -660,10 +660,19 @@ context when new durable understanding is learned.
 - The project was inventoried through tracked and unignored files.
 - Raw project files remain the source of truth; this context cites anchors
   instead of copying code or secrets.
-- The active agent must use this document plus the listed anchors for future
-  work and should refine it after meaningful project discoveries.
 - Unknowns stay explicit. Do not invent product, architecture, compliance, or
   deployment claims not supported by project files.
+
+## Active Agent Refinement Contract
+
+- Deterministic scaffold: `tes_init.py` creates the inventory, anchors,
+  scripts, runtime surfaces, evidence manifest, and initial gaps.
+- Semantic refinement: the active agent must open the strongest listed anchors
+  before claiming deep project understanding for non-trivial projects.
+- After reading anchors, refine this file with supported product domain,
+  architecture, operational boundaries, validation gates, and durable unknowns.
+- If anchor reading or local tools are blocked, report
+  `Project context: NEEDS_REVIEW` with the blocker instead of claiming depth.
 
 ## Coverage
 
@@ -930,6 +939,7 @@ def self_test() -> dict[str, Any]:
         context_text = (target / PROJECT_CONTEXT).read_text(encoding="utf-8") if (target / PROJECT_CONTEXT).exists() else ""
         for term in (
             "Maximum-Depth Initialization Contract",
+            "Active Agent Refinement Contract",
             "tes-init-fixture",
             "package.json",
             "src/app.py",

@@ -58,6 +58,9 @@ with the certification report required by the spec. If package source is
 available, certify docs/agents/PROJECT-CONTEXT.md with
 project_context_oracle.py before claiming Project context PASS; otherwise
 report that gate as BLOCKED or NEEDS_REVIEW with the reason.
+Treat tes_init.py as the deterministic scaffold and the active agent as the
+semantic refiner: for non-trivial projects, open strong anchors before claiming
+deep context, then refine the file or mark Project context NEEDS_REVIEW.
 The final report must expose the PT/EN/ES user manual link/path, installed
 helper set, root context gate, project context path, Field Reports state, and
 rollback summary.

@@ -99,6 +99,9 @@ installer intents.
 For `/tes-init`, initialize the project as well as TES: read the strongest
 project anchors available and leave `docs/agents/PROJECT-CONTEXT.md` as the
 initial durable project map for future agents.
+`tes_init.py` creates the scaffold; the active agent must open strong anchors
+before claiming deep project understanding and refine the context or report
+`Project context: NEEDS_REVIEW`.
 Across Codex, Claude Code, and Cursor, `/tes-*` forms are the preferred shared
 triggers and `/tes:*` forms are compatible TES intent aliases. If Claude Code
 says `/tes:init` or another `/tes:*` form is an invalid slash command, continue

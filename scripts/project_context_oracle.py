@@ -14,12 +14,13 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.45"
+VERSION = "0.3.46"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 REQUIRED_SECTIONS = (
     "# Tilly Project Context",
     "## Identity",
     "## Maximum-Depth Initialization Contract",
+    "## Active Agent Refinement Contract",
     "## Coverage",
     "## Project Territories",
     "## Source Anchors Read First",
@@ -288,6 +289,13 @@ def good_context(target: Path) -> str:
 ## Maximum-Depth Initialization Contract
 
 - Unknowns remain explicit.
+
+## Active Agent Refinement Contract
+
+- Deterministic scaffold: inventory, anchors, scripts, surfaces, and gaps.
+- Semantic refinement: the active agent must open strong anchors before
+  claiming deep project understanding.
+- If anchor reading is blocked, report `Project context: NEEDS_REVIEW`.
 
 ## Coverage
 
