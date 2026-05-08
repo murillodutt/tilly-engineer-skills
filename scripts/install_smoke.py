@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.56"
+VERSION = "0.3.57"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -42,6 +42,19 @@ This file is intentionally project-owned canary setup. TES must not overwrite
 or merge it automatically.
 
 Hostile marker: `cursor-local-governance-must-survive`.
+"""
+STALE_TES_CURSOR_BOOTLOADER = """# Using This Repo With Cursor
+
+This target repository includes a Cursor project rule for Tilly Engineering
+Discipline.
+
+## In This Repository
+
+Cursor loads `.cursor/rules/tes-guidelines.mdc`.
+
+## Behavioral Source Of Truth
+
+Keep Cursor, Claude, and Codex variants synchronized at the behavioral level.
 """
 
 
@@ -427,6 +440,7 @@ def hostile_governance_conflict_probe() -> dict[str, Any]:
         failures.extend(init_git(target))
         (target / "AGENTS.md").write_text(CODEX_LOCAL_BOOTLOADER, encoding="utf-8")
         (target / "CLAUDE.md").write_text(CLAUDE_LOCAL_BOOTLOADER, encoding="utf-8")
+        (target / "CURSOR.md").write_text(STALE_TES_CURSOR_BOOTLOADER, encoding="utf-8")
         write(target / ".cursor/rules/tes-guidelines.mdc", HOSTILE_CURSOR_RULE)
 
         code, stdout, stderr = run(
@@ -453,12 +467,17 @@ def hostile_governance_conflict_probe() -> dict[str, Any]:
         for relpath in ("AGENTS.md", "CLAUDE.md", ".cursor/rules/tes-guidelines.mdc"):
             if not any(str(item.get("relpath")) == relpath for item in preserved):
                 failures.append(f"hostile governance install must preserve conflict: {relpath}")
+        if any(str(item.get("relpath")) == "CURSOR.md" for item in preserved):
+            failures.append("hostile governance install must update TES-owned CURSOR.md")
         if (target / "AGENTS.md").read_text(encoding="utf-8") != CODEX_LOCAL_BOOTLOADER:
             failures.append("hostile governance install overwrote AGENTS.md")
         if (target / "CLAUDE.md").read_text(encoding="utf-8") != CLAUDE_LOCAL_BOOTLOADER:
             failures.append("hostile governance install overwrote CLAUDE.md")
         if (target / ".cursor/rules/tes-guidelines.mdc").read_text(encoding="utf-8") != HOSTILE_CURSOR_RULE:
             failures.append("hostile governance install overwrote Cursor rule")
+        cursor_bootloader = (target / "CURSOR.md").read_text(encoding="utf-8")
+        if cursor_bootloader == STALE_TES_CURSOR_BOOTLOADER or "/tes-init" not in cursor_bootloader:
+            failures.append("hostile governance install did not refresh TES-owned CURSOR.md")
         failures.extend(require_paths(target, (
             ".agents/skills/tes-init/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
