@@ -28,7 +28,7 @@ HELPER_ROOT = SCRIPT_PATH.parent
 ROOT = SCRIPT_PATH.parents[1]
 SOURCE_ROOT = ROOT / "scripts" if (ROOT / "scripts").exists() else HELPER_ROOT
 PACKAGE_MODE = SOURCE_ROOT.name == "scripts"
-VERSION = "0.3.59"
+VERSION = "0.3.60"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -631,6 +631,12 @@ def detect_project_identity(target: Path) -> dict[str, str]:
             "name": readme["heading"],
             "description": readme.get("summary") or "unknown",
             "source": readme["source"],
+        }
+    if readme and readme.get("summary"):
+        return {
+            "name": target.name,
+            "description": readme["summary"],
+            "source": f"directory-name + {readme['source']}",
         }
     for path in readme_paths(target):
         heading = first_markdown_heading(path)
@@ -1778,6 +1784,17 @@ def self_test() -> dict[str, Any]:
             failures.append("project identity must derive README prose when package description is absent")
         if "README" not in identity["source"]:
             failures.append("project identity source must mention README when README prose supplies description")
+
+    with tempfile.TemporaryDirectory(prefix="tes-init-sparse-readme-") as tempdir:
+        target = Path(tempdir)
+        (target / "README").write_text("Hello World!\n", encoding="utf-8")
+        identity = detect_project_identity(target)
+        if identity["name"] != target.name:
+            failures.append("sparse README identity must keep directory name when no heading exists")
+        if identity["description"] != "Hello World!":
+            failures.append("sparse README identity must use README prose as description")
+        if "README" not in identity["source"]:
+            failures.append("sparse README identity source must include README")
 
     with tempfile.TemporaryDirectory(prefix="tes-init-pyproject-identity-") as tempdir:
         target = Path(tempdir)

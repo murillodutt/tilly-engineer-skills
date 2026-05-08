@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.59"
+VERSION = "0.3.60"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 PACKAGE_MODE = (ROOT / "scripts").exists()
 MARKDOWN_HEADING_RE = re.compile(r"^#{1,3}\s+(.+?)\s*$")
