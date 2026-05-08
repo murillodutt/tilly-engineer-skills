@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.65"
+VERSION = "0.3.66"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -66,8 +66,11 @@ CLAUDE_INVALID_SLASH_TERMS = (
 INIT_ROUTER_TERMS = (
     "Install/Update Gate",
     "Project Context Gate",
+    "Project-Start Gate",
     "Step Zero protects installer/update writes",
     "must not block project-context initialization",
+    "preflight context PASS does not replace project-start execution",
+    "after helper-only",
 )
 
 DOC_SOURCE_GROUPS = {
@@ -184,8 +187,8 @@ def check_init_router(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
             checked.append({"path": relpath, "status": "MISSING"})
             continue
         text = path.read_text(encoding="utf-8")
-        normalized_text = normalized(text)
-        missing = [term for term in INIT_ROUTER_TERMS if term not in normalized_text]
+        normalized_text = normalized(text).casefold()
+        missing = [term for term in INIT_ROUTER_TERMS if term.casefold() not in normalized_text]
         failures.extend(f"{relpath} missing init router term: {term}" for term in missing)
         checked.append({"path": relpath, "status": "PASS" if not missing else "FAIL"})
     return checked, failures

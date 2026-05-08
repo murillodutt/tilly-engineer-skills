@@ -51,6 +51,11 @@ the user for package contents.
    project-context initialization when TES is already installed/current and the
    Project Context Gate is the only failing gate; report the dirty tree, avoid
    helper/adapter/MCP/bootloader writes, and initialize/certify project context.
+   For `/tes-init`, a preflight context PASS does not replace project-start
+   execution. After helper-only or adapter repairs, run the **Project-Start
+   Gate** before final reporting: execute `python3 .tes/bin/tes_init.py --target
+   . --yes` in an installed target, or package `scripts/tes_init.py --target
+   <target> --yes`, then run `project_context_oracle.py --target <target>`.
 4. Run Step Zero before installer/update edits: inspect Git status and offer a
    local baseline commit when the tree is dirty and install/update writes are
    required.

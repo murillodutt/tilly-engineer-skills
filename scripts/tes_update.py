@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.65"
+VERSION = "0.3.66"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -109,6 +109,13 @@ POST_LAYER_ZERO_FINAL_PROBE_CONTRACT = (
     "project_context_status=PASS|NOT_APPLIED",
     "update_available=False",
     "recommended_update_scope=none",
+)
+PROJECT_START_GATE_CONTRACT = (
+    "required_when_active_intent=/tes-init",
+    "preflight_context_pass_replaces_execution=False",
+    "run_after=helpers-only|adapter-config|project-context|full-convergence",
+    "init_command=tes_init.py --target . --yes",
+    "oracle_command=project_context_oracle.py --target .",
 )
 VERSION_RE = re.compile(
     r"""(?x)
@@ -743,6 +750,38 @@ def post_layer_zero_final_probe(result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def project_start_gate(target: Path) -> dict[str, Any]:
+    installed_init = target / ".tes/bin/tes_init.py"
+    installed_oracle = target / ".tes/bin/project_context_oracle.py"
+    has_installed_helpers = installed_init.exists() and installed_oracle.exists()
+    installed_commands = (
+        [
+            "python3 .tes/bin/tes_init.py --target . --yes",
+            "python3 .tes/bin/project_context_oracle.py --target .",
+        ]
+        if has_installed_helpers
+        else []
+    )
+    return {
+        "name": "Project-Start Gate",
+        "required_when_active_intent": "/tes-init",
+        "preflight_context_pass_replaces_execution": False,
+        "run_after": [
+            "helpers-only",
+            "adapter-config",
+            "project-context",
+            "full-convergence",
+        ],
+        "status": "READY" if has_installed_helpers else "SOURCE_CERTIFICATION_AVAILABLE",
+        "installed_target_commands": installed_commands,
+        "source_certification_commands": [
+            "python3 scripts/tes_init.py --target <target> --yes",
+            "python3 scripts/project_context_oracle.py --target <target>",
+        ],
+        "contract": list(PROJECT_START_GATE_CONTRACT),
+    }
+
+
 def analyze(args: argparse.Namespace) -> dict[str, Any]:
     target = args.target.expanduser().resolve()
     if not target.exists() or not target.is_dir():
@@ -833,6 +872,7 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "recommended_route": route,
         "route_reason": route_reason,
         "recommended_intent": intent,
+        "project_start_gate": project_start_gate(target),
         "writes": [],
         "failures": [],
     }
@@ -868,6 +908,9 @@ def record_field_report(target: Path, result: dict[str, Any]) -> dict[str, Any] 
                 "legacy_retirement_required": result.get("legacy_retirement_required"),
                 "post_layer_zero_final_probe_status": (
                     (result.get("post_layer_zero_final_probe") or {}).get("status")
+                ),
+                "project_start_gate_status": (
+                    (result.get("project_start_gate") or {}).get("status")
                 ),
             },
         )
@@ -1002,6 +1045,24 @@ Update this file when project meaning changes.
     )
 
 
+def assert_project_start_gate(result: dict[str, Any], failures: list[str], label: str) -> None:
+    gate = result.get("project_start_gate") or {}
+    if gate.get("name") != "Project-Start Gate":
+        failures.append(f"{label}: planner must expose Project-Start Gate")
+    if gate.get("required_when_active_intent") != "/tes-init":
+        failures.append(f"{label}: Project-Start Gate must bind to /tes-init")
+    if gate.get("preflight_context_pass_replaces_execution") is not False:
+        failures.append(f"{label}: preflight context PASS must not replace Project-Start Gate execution")
+    contract = gate.get("contract") or []
+    if list(PROJECT_START_GATE_CONTRACT) != contract:
+        failures.append(f"{label}: Project-Start Gate contract must be stable")
+    joined = "\n".join(gate.get("installed_target_commands") or gate.get("source_certification_commands") or [])
+    if "tes_init.py --target" not in joined:
+        failures.append(f"{label}: Project-Start Gate must include tes_init.py command")
+    if "project_context_oracle.py --target" not in joined:
+        failures.append(f"{label}: Project-Start Gate must include project_context_oracle.py command")
+
+
 def self_test() -> dict[str, Any]:
     failures: list[str] = []
     mode = "package" if package_source_available() else "installed"
@@ -1041,6 +1102,7 @@ def self_test() -> dict[str, Any]:
             failures.append("multi-runtime helper update intent must be /tes-update all --helpers-only")
         if result["legacy_retirement_required"] is not True:
             failures.append("legacy runtime fixture must require legacy retirement")
+        assert_project_start_gate(result, failures, "multi-runtime fixture")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-single-") as tempdir:
         target = Path(tempdir)
@@ -1049,6 +1111,8 @@ def self_test() -> dict[str, Any]:
         write(target / ".agents/skills/tes-init/SKILL.md", trigger_fixture_text())
         write(target / ".agents/skills/tes-engineering-discipline/SKILL.md", trigger_fixture_text())
         write(target / ".tes/bin/tes_update.py", f'VERSION = "{VERSION}"\n')
+        write(target / ".tes/bin/tes_init.py", helper_source_text("tes_init.py"))
+        write(target / ".tes/bin/project_context_oracle.py", helper_source_text("project_context_oracle.py"))
         write_context_fixture(target)
         args = argparse.Namespace(
             target=target,
@@ -1073,6 +1137,9 @@ def self_test() -> dict[str, Any]:
             failures.append("current fixture must be ready for post-Layer Zero final recorded probe")
         if final_probe.get("contract") != list(POST_LAYER_ZERO_FINAL_PROBE_CONTRACT):
             failures.append("final recorded probe contract must list required proof fields")
+        assert_project_start_gate(result, failures, "current fixture")
+        if (result.get("project_start_gate") or {}).get("status") != "READY":
+            failures.append("current fixture with installed init helpers must mark Project-Start Gate ready")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-stale-helper-") as tempdir:
         target = Path(tempdir)
@@ -1105,6 +1172,7 @@ def self_test() -> dict[str, Any]:
             failures.append("stale helper update must recommend helpers-only scope")
         if result["recommended_intent"] != "/tes-update codex --helpers-only":
             failures.append("stale helper update must recommend helpers-only intent")
+        assert_project_start_gate(result, failures, "stale helper fixture")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-trigger-drift-") as tempdir:
         target = Path(tempdir)
@@ -1136,6 +1204,7 @@ def self_test() -> dict[str, Any]:
             failures.append("runtime trigger drift must require adapter refresh")
         if (result.get("post_layer_zero_final_probe") or {}).get("status") != "PENDING":
             failures.append("runtime trigger drift must block final probe readiness")
+        assert_project_start_gate(result, failures, "trigger drift fixture")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-new-") as tempdir:
         target = Path(tempdir)
@@ -1154,6 +1223,7 @@ def self_test() -> dict[str, Any]:
             failures.append("empty fixture must be new")
         if result["recommended_intent"] != "/tes-init":
             failures.append("new fixture must route to /tes-init")
+        assert_project_start_gate(result, failures, "new fixture")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-field-report-") as tempdir:
         target = Path(tempdir)
@@ -1242,6 +1312,8 @@ def self_test() -> dict[str, Any]:
                 failures.append("tes_update field report must include recommended update scope")
             if facts.get("post_layer_zero_final_probe_status") != "READY":
                 failures.append("tes_update field report must include final probe readiness")
+            if facts.get("project_start_gate_status") not in {"READY", "SOURCE_CERTIFICATION_AVAILABLE"}:
+                failures.append("tes_update field report must include Project-Start Gate status")
         readonly_again = subprocess.run(
             [
                 sys.executable,

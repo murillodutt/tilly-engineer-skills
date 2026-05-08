@@ -18,7 +18,7 @@ import project_context_oracle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.65"
+VERSION = "0.3.66"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -232,7 +232,7 @@ def analyze() -> dict[str, Any]:
     if not exists("src/adapters/cursor/CURSOR.md"):
         failures.append("missing Cursor bootloader: src/adapters/cursor/CURSOR.md")
     surface("cursor", "agent", "certified", "src/adapters/cursor/CURSOR.md")
-    surface("cursor", "skill", "deferred", "Cursor plugin skills exist officially, but TES v0.3.65 ships Cursor rules first.")
+    surface("cursor", "skill", "deferred", "Cursor plugin skills exist officially, but TES v0.3.66 ships Cursor rules first.")
     surface("cursor", "plugin", "deferred", "Cursor plugins are native, but no TES .cursor-plugin package is claimed.")
     surface("cursor", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("cursor", "rules", "certified", cursor_rule)
@@ -327,6 +327,10 @@ def analyze() -> dict[str, Any]:
         "recommended_update_scope",
         "adapter-config",
         "post-Layer Zero",
+        "project_start_gate",
+        "Project-Start Gate",
+        "preflight_context_pass_replaces_execution",
+        "required_when_active_intent",
         "helper_contract_status=PASS",
         "runtime_trigger_status",
         "update_available=False",

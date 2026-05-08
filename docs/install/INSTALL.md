@@ -173,7 +173,11 @@ update writes still require Step Zero protection. If TES is already
 installed/current and only the project context is missing or weak, Step Zero
 protects installer/update writes but must not block project-context
 initialization; the agent reports the dirty tree, avoids helper/adapter/MCP
-changes, runs `tes_init.py`, and certifies `PROJECT-CONTEXT.md`.
+changes, runs `tes_init.py`, and certifies `PROJECT-CONTEXT.md`. For
+`/tes-init`, the Project-Start Gate always runs before final reporting: a
+preflight context PASS does not replace project-start execution. After
+helper-only or adapter repairs, run `tes_init.py --target <target> --yes` and
+`project_context_oracle.py --target <target>` again.
 
 The register and project context are written before slower certification gates
 finish. If a later oracle is blocked or times out, the run closes as
