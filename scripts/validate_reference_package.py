@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.35"
+VERSION = "0.3.36"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -289,6 +289,8 @@ UPDATE_ROUTINE_REQUIRED_TERMS = (
     "tes_update.py",
     "installed and cloud versions",
     "helper contract parity",
+    "helper-only Layer Zero",
+    "final Field Reports `tes_update` event",
     "STALE_HELPERS",
     "versão instalada e versão na nuvem",
     "paridade de contrato dos helpers",

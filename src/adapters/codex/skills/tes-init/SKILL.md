@@ -35,7 +35,8 @@ the user for package contents.
    installed/cloud versions, verify helper contract parity, detect applied IDE
    surfaces, and recommend route.
    Treat `STALE_HELPERS` as update-required and replace only TES-owned
-   `.tes/bin/**` helpers with backups.
+   `.tes/bin/**` helpers with backups through the helper-only Layer Zero route,
+   then rerun the update probe before activating MCP configs.
 5. Before rewriting root bootloaders, run `root_context.py analyze` when
    available and migrate durable root context into `docs/agents/**` first.
 6. When `legacy_retirement_required=true`, run `tes_legacy_retirement.py plan`,

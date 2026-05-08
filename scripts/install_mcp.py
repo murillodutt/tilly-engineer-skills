@@ -18,7 +18,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.35"
+VERSION = "0.3.36"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = ("cortex.py", "cortex_mcp.py", "cortex_embed.mjs", "field_reports.py", "tes_update.py", "tes_legacy_retirement.py", "root_context.py")
@@ -291,7 +291,11 @@ def install(args: argparse.Namespace) -> int:
 
     adapters = selected_adapters(args.adapter)
     server_actions, server_failures = install_server_files(target, args.dry_run, args.overwrite, not args.no_backup)
-    config_actions, config_failures = install_configs(target, adapters, args.dry_run, args.overwrite, not args.no_backup)
+    config_actions, config_failures = (
+        ([], [])
+        if args.helpers_only
+        else install_configs(target, adapters, args.dry_run, args.overwrite, not args.no_backup)
+    )
     failures = [*server_failures, *config_failures]
     status = "FAIL" if failures else ("DRY-RUN" if args.dry_run else "INSTALLED")
     result = {
@@ -299,6 +303,8 @@ def install(args: argparse.Namespace) -> int:
         "status": status,
         "target": str(target),
         "adapter": args.adapter,
+        "route": args.adapter,
+        "helpers_only": args.helpers_only,
         "server": SERVER_NAME,
         "server_files": server_actions,
         "configs": config_actions,
@@ -312,12 +318,20 @@ def install(args: argparse.Namespace) -> int:
             status,
             "mcp",
             "cli",
-            details={"adapter": args.adapter, "dry_run": args.dry_run, "failures": len(failures)},
+            details={
+                "adapter": args.adapter,
+                "route": args.adapter,
+                "helpers_only": args.helpers_only,
+                "dry_run": args.dry_run,
+                "failures": len(failures),
+            },
         )
     if failures:
-        print("[install-mcp] FAIL")
+        if not args.json_only:
+            print("[install-mcp] FAIL")
         return 2
-    print("[install-mcp] PASS")
+    if not args.json_only:
+        print("[install-mcp] PASS")
     return 0
 
 
@@ -371,6 +385,36 @@ def self_test() -> int:
             failures.extend(mcp_self_test.stdout.splitlines())
             failures.extend(mcp_self_test.stderr.splitlines())
 
+    with tempfile.TemporaryDirectory(prefix="tes-mcp-helpers-only-") as tempdir:
+        target = Path(tempdir)
+        helpers_only_result = subprocess.run(
+            [sys.executable, __file__, "--target", str(target), "--adapter", "all", "--helpers-only", "--yes", "--json-only"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if helpers_only_result.returncode != 0:
+            failures.append("helpers-only install failed")
+            failures.extend(helpers_only_result.stdout.splitlines())
+            failures.extend(helpers_only_result.stderr.splitlines())
+        else:
+            try:
+                payload = json.loads(helpers_only_result.stdout)
+            except json.JSONDecodeError as exc:
+                failures.append(f"helpers-only --json-only returned invalid JSON: {exc}")
+            else:
+                if payload.get("helpers_only") is not True:
+                    failures.append("helpers-only install must mark helpers_only=true")
+                if payload.get("configs"):
+                    failures.append("helpers-only install must not write MCP configs")
+        for relpath in SERVER_FILES:
+            if not (target / BIN_DIR / relpath).exists():
+                failures.append(f"helpers-only install missing helper: {relpath}")
+        for relpath in (".codex/config.toml", ".mcp.json", ".cursor/mcp.json"):
+            if (target / relpath).exists():
+                failures.append(f"helpers-only install wrote config: {relpath}")
+
     print(json.dumps({"status": "FAIL" if failures else "PASS", "failures": failures}, indent=2))
     if failures:
         print("[install-mcp] FAIL")
@@ -386,7 +430,9 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--yes", action="store_true", help="confirm writes without an interactive prompt")
     parser.add_argument("--overwrite", action="store_true", help="replace existing tes-cortex MCP entries")
+    parser.add_argument("--helpers-only", action="store_true", help="copy only TES helper files under .tes/bin/**")
     parser.add_argument("--no-backup", action="store_true", help="do not create .bak-* files before overwrite")
+    parser.add_argument("--json-only", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
 

@@ -62,6 +62,8 @@ inicializar TES / instalar TES / recertificar TES -> /tes:init
   `STALE_SOURCE` or `BLOCKED` source freshness.
 - Do not claim `/tes:update` is `CURRENT` while helper contract parity is
   `STALE_HELPERS` or `BLOCKED`.
+- Do not use MCP config activation to repair stale helpers; run the helper-only
+  Layer Zero route first.
 - Do not call SQLite, MCP, or generated output memory.
 - Do not call `.tes/cortex/semantic.sqlite` memory; it is only derived
   curation cache.
