@@ -21,6 +21,11 @@ duration bucket, Tilly gate names, return codes, feature presence, failure
 categories, report class, actionability level, signal score, and hash
 fingerprints.
 
+High-signal classes include version drift, helper-contract failure,
+adapter/runtime drift, MCP activation failure, Cortex certification batches,
+legacy migration, installation signals, and multi-surface operations. Low-signal
+heartbeats are suppressed locally with a receipt instead of becoming issues.
+
 Field Reports must never send code, diffs, prompts, file contents, raw stack
 traces, secrets, tokens, personal data, absolute paths, raw branch names, or raw
 remote URLs. Reports are factual prose and bullets only; they must not contain
@@ -75,6 +80,9 @@ check with no version drift and no operational change, are suppressed locally
 with a receipt instead of opening a GitHub issue. If Git, `gh`, network, or
 authentication is unavailable, Field Reports records `BLOCKED` where possible,
 keeps the outbox pending, and must not block the push.
+Drain results distinguish `disabled`, `empty`, `suppressed`, `blocked`,
+`invalid`, and `sent` transport states. Blocked and invalid drains write
+receipts without payload bodies and do not clear pending events.
 
 ## Opt-Out
 
@@ -103,6 +111,7 @@ The official deterministic gate is:
 
 ```text
 python3 scripts/field_reports.py --self-test
+python3 scripts/field_reports_quality_oracle.py --self-test
 python3 scripts/field_reports_github_oracle.py --self-test
 ```
 

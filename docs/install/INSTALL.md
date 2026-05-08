@@ -142,7 +142,10 @@ The MCP self-test covers negative malformed and write-like calls, and
 TES Field Reports is active by default. The initializer installs a local
 `pre-push` drain for sanitized operational facts, stores pending state under
 `.tes/field-reports/**`, never sends project code or private paths, and
-documents opt-out and reactivation prompts in the user manual.
+documents opt-out and reactivation prompts in the user manual. Drains report
+explicit transport states such as suppressed, blocked, invalid, sent, disabled,
+and empty; blocked/invalid drains keep pending events and write payload-free
+receipts.
 
 When the target is a Git repository, Tilly also maintains local artifact hygiene
 in `.git/info/exclude`. Rollback backups, Python bytecode, Field Reports state,
@@ -171,6 +174,7 @@ python3 scripts/tes_update.py plan --target /path/to/project --json-only
 python3 scripts/tes_update.py plan --target /path/to/project --json-only --record-field-report
 python3 scripts/field_reports.py status --target /path/to/project
 python3 scripts/field_reports.py --self-test
+python3 scripts/field_reports_quality_oracle.py --self-test
 python3 scripts/cortex.py init --target /path/to/project-or-vault
 python3 scripts/cortex.py verify --target /path/to/project-or-vault
 python3 scripts/cortex.py audit --target /path/to/project-or-vault

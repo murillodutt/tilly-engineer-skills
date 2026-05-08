@@ -19,7 +19,7 @@ import uuid
 from typing import Any
 
 
-VERSION = "0.3.62"
+VERSION = "0.3.63"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 LEGACY_SCHEMAS = ("tes-field-report@1", "tilly-field-report@1")
@@ -77,7 +77,9 @@ STACK_TRACE = re.compile(r"(?i)(traceback \(most recent call last\)|\bat .+:\d+:
 CODE_FENCE = re.compile(r"```")
 GIT_REMOTE = re.compile(r"(?i)(github\.com[:/][^\s]+\.git|git@[^:\s]+:[^\s]+)")
 BRANCH_NAME = re.compile(r"(?i)\b(branch|ref)\s*[:=]\s*[^\s]+")
-PROHIBITED_KEY = re.compile(r"(?i)(api|auth|branch|code|content|diff|email|file|path|prompt|remote|secret|stack|token|url)")
+PROHIBITED_KEY = re.compile(
+    r"(?i)(api|auth|branch|code|command|content|diff|email|file|path|prompt|remote|secret|shell|stack|token|url)"
+)
 
 
 def utc_stamp() -> str:
@@ -238,13 +240,22 @@ def sanitize_value(value: object) -> str:
     return sanitized
 
 
+def sanitize_fact(key: object, value: object) -> tuple[str, str]:
+    raw_key = str(key)
+    safe_key = sanitize_key(raw_key)
+    if PROHIBITED_KEY.search(raw_key):
+        return safe_key, redaction_label(str(value))
+    return safe_key, sanitize_value(value)
+
+
 def parse_detail(items: list[str]) -> dict[str, str]:
     details: dict[str, str] = {}
     for item in items:
         key, sep, value = item.partition("=")
         if not sep:
             key, value = "note", item
-        details[sanitize_key(key)] = sanitize_value(value)
+        safe_key, safe_value = sanitize_fact(key, value)
+        details[safe_key] = safe_value
     return details
 
 
@@ -265,10 +276,7 @@ def build_event(
     duration_bucket: str | None = None,
     details: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    safe_details = {
-        sanitize_key(key): sanitize_value(value)
-        for key, value in (details or {}).items()
-    }
+    safe_details = dict(sanitize_fact(key, value) for key, value in (details or {}).items())
     if duration_bucket:
         safe_details["duration_bucket"] = sanitize_value(duration_bucket)
     return {
@@ -366,6 +374,12 @@ def sanitize_issue_url(value: str) -> str:
         if suffix.isdigit():
             return cleaned
     return sanitize_value(cleaned)
+
+
+def valid_issue_url(value: str) -> bool:
+    prefix = f"https://github.com/{DESTINATION_REPO}/issues/"
+    cleaned = value.strip()
+    return cleaned.startswith(prefix) and cleaned.removeprefix(prefix).isdigit()
 
 
 def facts_for(event: dict[str, object]) -> dict[str, object]:
@@ -475,6 +489,24 @@ def classify_report(events: list[dict[str, object]]) -> dict[str, object]:
         )
         for event in material
     )
+    helper_contract_failure = any(
+        str(facts_for(event).get("helper_contract_status", "")).upper() == "FAIL"
+        or str(facts_for(event).get("helper_contract_status", "")).upper() == "BLOCKED"
+        for event in material
+    )
+    adapter_drift = any(
+        str(facts_for(event).get("runtime_trigger_status", "")).upper() in {"DRIFT", "FAIL", "BLOCKED"}
+        or (
+            event_surface(event) == "adapter"
+            and event_status(event) in {"FAIL", "BLOCKED", "DEGRADED", "NEEDS_REVIEW"}
+        )
+        for event in material
+    )
+    mcp_activation_failure = any(
+        event_surface(event) == "mcp"
+        and event_status(event) in {"FAIL", "BLOCKED", "DEGRADED", "NEEDS_REVIEW"}
+        for event in material
+    )
     legacy_signal = any(
         str(event.get("schema", "")) in LEGACY_SCHEMAS
         or "tilly_version" in event
@@ -488,19 +520,40 @@ def classify_report(events: list[dict[str, object]]) -> dict[str, object]:
     )
     capability_signal = any(event_surface(event) in CAPABILITY_SURFACES for event in material)
     multi_surface_signal = len([surface for surface in surfaces if surface != "field-reports"]) >= 2
-    cortex_batch_signal = sum(1 for event in material if event_surface(event) == "cortex") >= 2
+    cortex_batch_signal = (
+        sum(1 for event in material if event_surface(event) == "cortex") >= 2
+        or any(
+            event_surface(event) == "cortex"
+            and int(str(facts_for(event).get("surface_count", "0")) or "0") >= 2
+            for event in material
+        )
+    )
 
     score = 0
     findings: list[str] = []
     report_class = "low-signal-heartbeat"
 
+    if helper_contract_failure:
+        score += 6
+        report_class = "helper-contract-failure"
+        findings.append("Helper contract failure requires Layer Zero or helper parity review.")
+    if adapter_drift:
+        score += 6
+        report_class = "adapter-drift" if report_class == "low-signal-heartbeat" else report_class
+        findings.append("Adapter/runtime trigger drift requires adapter-surface review.")
+    if mcp_activation_failure:
+        score += 6
+        report_class = "mcp-activation-failure" if report_class == "low-signal-heartbeat" else report_class
+        findings.append("MCP activation failure requires local config or helper inspection.")
     if failure_events:
         score += 5
-        report_class = "failure-or-blocker"
+        if report_class == "low-signal-heartbeat":
+            report_class = "failure-or-blocker"
         findings.append("Failure or blocked events require review: " + ", ".join(failure_events[:6]))
     if version_drift:
         score += 4
-        report_class = "version-drift"
+        if report_class == "low-signal-heartbeat":
+            report_class = "version-drift"
         findings.append(
             "Version drift observed: installed="
             + sorted_values(installed_versions)
@@ -531,7 +584,7 @@ def classify_report(events: list[dict[str, object]]) -> dict[str, object]:
     if not findings:
         findings.append("Suppressed because the drain contained only successful low-signal heartbeat events.")
 
-    actionability = "high" if score >= 5 else "medium" if score >= 2 else "low"
+    actionability = "high" if score >= 4 else "medium" if score >= 2 else "low"
     fingerprint_payload = {
         "events": [compact_event_signature(event) for event in material],
         "report_class": report_class,
@@ -653,7 +706,10 @@ def gh_issue_create(title: str, body: str, env: dict[str, str] | None = None) ->
     if result.returncode != 0:
         return False, "gh issue create failed"
     output = result.stdout.strip() or result.stderr.strip()
-    return True, sanitize_issue_url(output)
+    issue_url = sanitize_issue_url(output)
+    if not valid_issue_url(issue_url):
+        return False, "gh issue create returned unsafe output"
+    return True, issue_url
 
 
 def write_receipt(target: Path, issue_url: str, events: list[dict[str, object]], body: str, chunk: int) -> str:
@@ -689,10 +745,43 @@ def write_suppression_receipt(target: Path, events: list[dict[str, object]], sum
     return rel(path, target)
 
 
+def write_transport_receipt(
+    target: Path,
+    outcome: str,
+    reason: str,
+    events: list[dict[str, object]] | None = None,
+) -> str:
+    receipts_path(target).mkdir(parents=True, exist_ok=True)
+    payload: dict[str, object] = {
+        "event_count": len(events or []),
+        "outcome": outcome,
+        "reason": sanitize_value(reason),
+        "sent_at": utc_stamp(),
+    }
+    if events:
+        summary = classify_report(events)
+        payload.update(
+            {
+                "actionability": summary.get("actionability"),
+                "report_class": summary.get("report_class"),
+                "report_fingerprint": summary.get("report_fingerprint"),
+            }
+        )
+    path = receipts_path(target) / f"{file_stamp()}-{safe_slug(outcome, 'transport')}.json"
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return rel(path, target)
+
+
 def drain(target: Path, trigger: str = "manual", env: dict[str, str] | None = None) -> dict[str, object]:
     target = target.expanduser().resolve()
     if field_reports_disabled(target):
-        return {"version": VERSION, "status": "SKIP", "reason": "field reports disabled", "writes": []}
+        return {
+            "version": VERSION,
+            "status": "SKIP",
+            "transport_state": "disabled",
+            "reason": "field reports disabled",
+            "writes": [],
+        }
 
     ensure_layout(target)
     events, failures = read_outbox(target)
@@ -711,9 +800,24 @@ def drain(target: Path, trigger: str = "manual", env: dict[str, str] | None = No
         events, more_failures = read_outbox(target)
         failures.extend(more_failures)
     if failures:
-        return {"version": VERSION, "status": "BLOCKED", "reason": "outbox contains invalid records", "failures": failures, "writes": []}
+        receipt = write_transport_receipt(target, "invalid-outbox", "outbox contains invalid records", events)
+        return {
+            "version": VERSION,
+            "status": "BLOCKED",
+            "transport_state": "invalid",
+            "reason": "outbox contains invalid records",
+            "failures": failures,
+            "receipt": receipt,
+            "writes": [receipt],
+        }
     if not events:
-        return {"version": VERSION, "status": "PASS", "pending": 0, "writes": []}
+        return {
+            "version": VERSION,
+            "status": "PASS",
+            "transport_state": "empty",
+            "pending": 0,
+            "writes": [],
+        }
 
     summary = classify_report(events)
     if summary.get("suppressed"):
@@ -722,6 +826,7 @@ def drain(target: Path, trigger: str = "manual", env: dict[str, str] | None = No
         return {
             "version": VERSION,
             "status": "PASS",
+            "transport_state": "suppressed",
             "pending": 0,
             "suppressed": True,
             "reason": "low-signal-heartbeat",
@@ -737,12 +842,15 @@ def drain(target: Path, trigger: str = "manual", env: dict[str, str] | None = No
         title = f"TES Field Report {datetime.now(timezone.utc).strftime('%Y-%m-%d')} ({idx}/{len(chunks)})"
         ok, value = gh_issue_create(title, body, env=env)
         if not ok:
+            receipt = write_transport_receipt(target, "transport-blocked", value, events)
             return {
                 "version": VERSION,
                 "status": "BLOCKED",
+                "transport_state": "blocked",
                 "reason": value,
                 "pending": len(events),
-                "writes": [],
+                "receipt": receipt,
+                "writes": [receipt],
             }
         issue_urls.append(value)
         receipt_paths.append(write_receipt(target, value, chunk, body, idx))
@@ -751,6 +859,7 @@ def drain(target: Path, trigger: str = "manual", env: dict[str, str] | None = No
     return {
         "version": VERSION,
         "status": "PASS",
+        "transport_state": "sent",
         "pending": 0,
         "issues": issue_urls,
         "receipts": receipt_paths,

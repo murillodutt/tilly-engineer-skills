@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.62"
+VERSION = "0.3.63"
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
 

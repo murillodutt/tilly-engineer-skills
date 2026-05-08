@@ -14,7 +14,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.62"
+VERSION = "0.3.63"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 MAX_BODY_CHARS = 48000
@@ -57,6 +57,9 @@ FORBIDDEN_PATTERNS = (
     ("git remote", re.compile(r"(?i)(github\.com[:/][^\s]+\.git|git@[^:\s]+:[^\s]+)")),
     ("branch name", re.compile(r"(?i)\b(branch|ref)\s*[:=]\s*[^\s]+")),
     ("stack trace", re.compile(r"(?i)(traceback \(most recent call last\)|\bat .+:\d+:\d+|exception: .+)")),
+    ("raw prompt", re.compile(r"(?im)^\s*(prompt|raw prompt)\s*:")),
+    ("raw diff", re.compile(r"(?im)^\s*(diff|patch)\s*:|^\s*(\+\+\+|---|@@)\s")),
+    ("raw code", re.compile(r"(?im)^\s*(code|content)\s*:|def\s+\w+\(|function\s+\w+\(")),
 )
 
 
@@ -153,6 +156,28 @@ def self_test() -> dict[str, object]:
         bad = validate_body(bad_body)
         if bad["status"] != "FAIL":
             failures.append("unsafe field report body must fail")
+
+        negative_tails = {
+            "missing schema": "TES Field Report\n- Event count: 1\n",
+            "over-large body": good_body + ("x" * (MAX_BODY_CHARS + 1)),
+            "code fence": good_body + "\n```python\nprint('x')\n```",
+            "markdown table": good_body + "\n| leaked | table |\n",
+            "absolute path": good_body + "\n/Users/person/private.py\n",
+            "email": good_body + "\nperson@example.com\n",
+            "private url": good_body + "\nhttps://private.example.test/repo\n",
+            "secret": good_body + "\nAuthorization: Bearer abc123\n",
+            "git remote": good_body + "\ngit@github.com:private/repo.git\n",
+            "branch": good_body + "\nbranch=feature/private-work\n",
+            "stack trace": good_body + "\nTraceback (most recent call last):\n",
+            "prompt": good_body + "\nPrompt: raw prompt text\n",
+            "diff": good_body + "\nDiff: + leaked line\n",
+            "code": good_body + "\nCode: def leaked_function(): pass\n",
+            "unsafe tail": good_body + "\nAccepted header\n\n/Users/person/private.py\n",
+        }
+        for label, body in negative_tails.items():
+            result = validate_body(body, require_field_report=(label == "missing schema"))
+            if result["status"] != "FAIL":
+                failures.append(f"unsafe receiver fixture must fail: {label}")
 
         ignored = validate_body("General user issue without Tilly schema.")
         if ignored["status"] != "IGNORE":
