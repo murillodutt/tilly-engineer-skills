@@ -603,6 +603,20 @@ documents:
     consumer: installer authors, context-oracle maintainers, and certification reviewers
     source_of_truth: false
     evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/independent-canary-convergence-2026-05-08/JOURNAL.md
+    id: evidence.context_mesh.independent_canary_convergence_2026_05_08_journal
+    class: evidence
+    status: active
+    consumer: TES maintainers and certification reviewers
+    source_of_truth: false
+    evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/independent-canary-convergence-2026-05-08/REPORT.md
+    id: evidence.context_mesh.independent_canary_convergence_2026_05_08
+    class: evidence
+    status: active
+    consumer: TES maintainers and certification reviewers
+    source_of_truth: false
+    evidence_level: L3
   - path: docs/evidence/reports/context-mesh/claude-plugin-oracle-2026-05-06/REPORT.md
     id: evidence.context_mesh.claude_plugin_oracle_2026_05_06
     class: evidence
