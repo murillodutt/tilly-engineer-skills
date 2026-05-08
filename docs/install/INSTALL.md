@@ -57,7 +57,10 @@ helper contract parity, and `recommended_update_scope`; `STALE_HELPERS` is
 update-required, not `CURRENT`. For `recommended_update_scope=helpers-only`,
 replace only TES-owned `.tes/bin/**` helpers with backups on the selected Layer
 Zero route, rerun the update probe, then continue only after parity is PASS.
-Use `--record-field-report` only on the final certification probe.
+Use `--record-field-report` only on the final certification probe. After any
+helper overwrite, that final recorded probe is mandatory before GO, evidence
+closeout, commit, or push, and it must show `helper_contract_status=PASS`,
+`update_available=False`, and `recommended_update_scope=none`.
 The final report must expose the user manual link/path.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
@@ -177,6 +180,8 @@ read-only and must not write Field Reports. Use
 `--record-field-report` only for the final certification probe. When the probe
 returns `recommended_update_scope=helpers-only`, run Layer Zero with
 `install_mcp.py --helpers-only` before adapter or MCP config activation.
+After Layer Zero, record the final proof with
+`tes_update.py plan --json-only --record-field-report` before commit or push.
 Self-tests run from `scripts/**` certify the package source contract; self-tests
 run from `.tes/bin/**` certify the installed helper contract.
 

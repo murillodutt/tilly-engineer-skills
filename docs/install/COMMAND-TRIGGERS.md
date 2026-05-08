@@ -64,6 +64,9 @@ inicializar TES / instalar TES / recertificar TES -> /tes:init
   `STALE_HELPERS` or `BLOCKED`.
 - Do not record Field Reports from exploratory `/tes:update` probes; use
   `--record-field-report` only on the final certification probe.
+- Do not commit or push after a helper overwrite until a post-Layer Zero final
+  recorded probe shows `helper_contract_status=PASS`,
+  `update_available=False`, and `recommended_update_scope=none`.
 - Do not use MCP config activation to repair stale helpers; run the helper-only
   Layer Zero route first.
 - Do not call SQLite, MCP, or generated output memory.

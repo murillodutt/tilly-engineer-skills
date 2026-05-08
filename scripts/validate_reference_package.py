@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.38"
+VERSION = "0.3.39"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -293,6 +293,10 @@ UPDATE_ROUTINE_REQUIRED_TERMS = (
     "--record-field-report",
     "recommended_update_scope",
     "adapter-config",
+    "post-Layer Zero",
+    "helper_contract_status=PASS",
+    "update_available=False",
+    "recommended_update_scope=none",
     "final Field Reports `tes_update` event",
     "STALE_HELPERS",
     "versão instalada e versão na nuvem",

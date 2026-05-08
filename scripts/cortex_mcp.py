@@ -14,7 +14,7 @@ import cortex
 import field_reports
 
 
-VERSION = "0.3.38"
+VERSION = "0.3.39"
 PROTOCOL_VERSION = "2025-06-18"
 
 
