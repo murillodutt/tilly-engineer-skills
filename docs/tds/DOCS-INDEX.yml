@@ -267,6 +267,13 @@ documents:
     consumer: adopters, installing agents, and package maintainers
     source_of_truth: true
     evidence_level: L2
+  - path: docs/mesh/LOCAL-QUALITY-RECIPE.md
+    id: mesh.local_quality_recipe
+    class: mesh
+    status: active
+    consumer: adopters, installing agents, and package maintainers
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/mesh/PRINCIPLES.md
     id: mesh.principles
     class: mesh
