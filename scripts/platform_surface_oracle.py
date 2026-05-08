@@ -12,12 +12,13 @@ from pathlib import Path
 from typing import Any
 
 import command_trigger_oracle
+import codex_plugin_oracle
 import materialize_adapter
 import project_context_oracle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.60"
+VERSION = "0.3.61"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -108,8 +109,11 @@ def materialized_results() -> tuple[dict[str, Any], list[str]]:
         required = {
             "codex": (
                 "AGENTS.md",
+                ".agents/plugins/marketplace.json",
+                "plugins/tilly-engineer-skills/.codex-plugin/plugin.json",
                 ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py",
                 *(f".agents/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS),
+                *(f"plugins/tilly-engineer-skills/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS),
             ),
             "claude": (
                 "CLAUDE.md",
@@ -165,7 +169,26 @@ def analyze() -> dict[str, Any]:
         failures.append("missing Codex skill agent metadata")
     surface("codex", "agent", "certified", codex_agent)
     surface("codex", "skill", "certified", "; ".join(f"src/adapters/codex/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS))
-    surface("codex", "plugin", "deferred", "Codex plugins are native, but TES v0.3.60 ships local skills first.")
+    for relpath in (
+        "src/adapters/codex/plugin/plugin.json",
+        "src/adapters/codex/plugin/marketplace.json",
+    ):
+        if not exists(relpath):
+            failures.append(f"missing Codex plugin manifest: {relpath}")
+        elif VERSION not in read(relpath):
+            failures.append(f"{relpath} must declare {VERSION}")
+    codex_plugin_result = codex_plugin_oracle.self_test_result()
+    if codex_plugin_result["status"] != "PASS":
+        failures.extend(
+            f"codex plugin oracle: {failure}"
+            for failure in codex_plugin_result["failures"]
+        )
+    surface(
+        "codex",
+        "plugin",
+        "certified" if codex_plugin_result["status"] == "PASS" else "fail",
+        "src/adapters/codex/plugin/plugin.json; scripts/codex_plugin_oracle.py",
+    )
     surface("codex", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
@@ -209,7 +232,7 @@ def analyze() -> dict[str, Any]:
     if not exists("src/adapters/cursor/CURSOR.md"):
         failures.append("missing Cursor bootloader: src/adapters/cursor/CURSOR.md")
     surface("cursor", "agent", "certified", "src/adapters/cursor/CURSOR.md")
-    surface("cursor", "skill", "deferred", "Cursor plugin skills exist officially, but TES v0.3.60 ships Cursor rules first.")
+    surface("cursor", "skill", "deferred", "Cursor plugin skills exist officially, but TES v0.3.61 ships Cursor rules first.")
     surface("cursor", "plugin", "deferred", "Cursor plugins are native, but no TES .cursor-plugin package is claimed.")
     surface("cursor", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("cursor", "rules", "certified", cursor_rule)

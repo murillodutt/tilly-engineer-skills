@@ -1,0 +1,24 @@
+{
+  "name": "tes-skills",
+  "interface": {
+    "displayName": "Tilly Engineer Skills"
+  },
+  "metadata": {
+    "version": "0.3.61"
+  },
+  "plugins": [
+    {
+      "name": "tilly-engineer-skills",
+      "version": "0.3.61",
+      "source": {
+        "source": "local",
+        "path": "./plugins/tilly-engineer-skills"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

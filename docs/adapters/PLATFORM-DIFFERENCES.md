@@ -20,7 +20,7 @@ Last official-source check: 2026-05-08.
 
 | Platform | Official source checked | TES implication |
 |----------|-------------------------|-----------------|
-| Codex | [`openai/codex`](https://github.com/openai/codex), [AGENTS.md guide](https://developers.openai.com/codex/guides/agents-md), [skills](https://developers.openai.com/codex/skills), [slash commands](https://developers.openai.com/codex/cli/slash-commands) | Codex centers project guidance in `AGENTS.md` and reusable workflows in skills. |
+| Codex | [`openai/codex`](https://github.com/openai/codex), [AGENTS.md guide](https://developers.openai.com/codex/guides/agents-md), [skills](https://developers.openai.com/codex/skills), [plugins](https://developers.openai.com/codex/plugins/build), [slash commands](https://developers.openai.com/codex/cli/slash-commands) | Codex centers project guidance in `AGENTS.md`, reusable workflows in skills, and local distribution in `.codex-plugin/plugin.json`. |
 | Claude Code | [`anthropics/skills`](https://github.com/anthropics/skills), [skills](https://code.claude.com/docs/en/skills), [plugins](https://code.claude.com/docs/en/plugins), [slash commands](https://code.claude.com/docs/en/slash-commands), [settings](https://code.claude.com/docs/en/settings) | Claude centers project memory in `CLAUDE.md`, skills in `SKILL.md` folders, and optional plugin metadata under `.claude-plugin/**`. |
 | Cursor | [`cursor/plugins`](https://github.com/cursor/plugins), [`cursor/plugin-template`](https://github.com/cursor/plugin-template), [rules](https://cursor.com/docs/rules), [plugins](https://cursor.com/docs/plugins), [MCP](https://cursor.com/docs/mcp) | Cursor centers persistent project instructions in `.cursor/rules/*.mdc` and supports richer plugin packaging with rules, skills, agents, commands, hooks, and MCP. |
 
@@ -56,7 +56,7 @@ same contract.
 | Base guidance | `AGENTS.md` | `CLAUDE.md` | `.cursor/rules/*.mdc`; `AGENTS.md` may be a simple alternative in Cursor projects |
 | TES package source | `src/adapters/codex/AGENTS.md` | `src/adapters/claude/CLAUDE.md` | `src/adapters/cursor/rules/tes-guidelines.mdc` plus `src/adapters/cursor/CURSOR.md` as a human handoff note |
 | Skills | `.agents/skills/**` | `.claude/skills/**` and plugin `skills/**` | Official Cursor plugins support `skills/**`; TES v1 does not yet claim a Cursor plugin skill package |
-| Plugin metadata | Native support exists, but TES does not ship Codex plugin metadata yet | `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` | `.cursor-plugin/plugin.json` exists officially; TES v1 does not publish or certify a Cursor plugin |
+| Plugin metadata | `plugins/tilly-engineer-skills/.codex-plugin/plugin.json` and `.agents/plugins/marketplace.json` certified locally | `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` | `.cursor-plugin/plugin.json` exists officially; TES v1 does not publish or certify a Cursor plugin |
 | Rules | Project guidance through `AGENTS.md` | No Cursor-style `.mdc` rule surface | `.cursor/rules/*.mdc` with frontmatter such as `description` and `alwaysApply` |
 | MCP config | `.codex/config.toml` | `.mcp.json` | `.cursor/mcp.json` for project config; plugin MCP is a future packaging decision |
 | Hooks | Tool-native hooks are sensitive and not claimed by TES default package | Tool-native hooks are sensitive and not claimed by TES default package | Plugin hooks exist officially; TES default package still uses repository Git hooks only |

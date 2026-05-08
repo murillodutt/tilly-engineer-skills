@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.60"
+VERSION = "0.3.61"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -60,6 +60,8 @@ REQUIRED_PATHS = (
     ".github/ISSUE_TEMPLATE/tes-field-report.yml",
     ".github/workflows/field-report-governance.yml",
     "src/adapters/codex/AGENTS.md",
+    "src/adapters/codex/plugin/plugin.json",
+    "src/adapters/codex/plugin/marketplace.json",
     "src/adapters/codex/skills/tes-engineering-discipline/SKILL.md",
     "src/adapters/codex/skills/tes-engineering-discipline/agents/openai.yaml",
     "src/adapters/codex/skills/tes-engineering-discipline/references/failure-patterns.md",
@@ -100,6 +102,7 @@ REQUIRED_PATHS = (
     "scripts/tes_legacy_retirement.py",
     "scripts/tes_namespace.py",
     "scripts/root_context.py",
+    "scripts/codex_plugin_oracle.py",
     "scripts/claude_plugin_oracle.py",
     "scripts/platform_surface_oracle.py",
     "scripts/command_trigger_oracle.py",
@@ -174,6 +177,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "field-reports:github-oracle",
     "field-reports:status",
     "field-reports:drain",
+    "codex:plugin:oracle",
     "claude:plugin:oracle",
     "materialize:all",
     "materialize:codex",
@@ -347,6 +351,8 @@ VERSION_LOCKED_SURFACES = (
     "docs/adapters/CODEX.md",
     "docs/install/USER-MANUAL.html",
     "docs/tds/DOCS-INDEX.yml",
+    "src/adapters/codex/plugin/plugin.json",
+    "src/adapters/codex/plugin/marketplace.json",
     "src/adapters/claude/plugin/plugin.json",
     "src/adapters/claude/plugin/marketplace.json",
 )
@@ -596,7 +602,12 @@ def main() -> int:
             if script not in scripts:
                 failures.append(f"package.json missing script: {script}")
 
-    for relpath in ("src/adapters/claude/plugin/plugin.json", "src/adapters/claude/plugin/marketplace.json"):
+    for relpath in (
+        "src/adapters/codex/plugin/plugin.json",
+        "src/adapters/codex/plugin/marketplace.json",
+        "src/adapters/claude/plugin/plugin.json",
+        "src/adapters/claude/plugin/marketplace.json",
+    ):
         path = ROOT / relpath
         if path.exists() and VERSION not in path.read_text(encoding="utf-8"):
             failures.append(f"{relpath} must declare {VERSION}")
@@ -752,6 +763,20 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("project_context_oracle.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    codex_oracle = ROOT / "scripts/codex_plugin_oracle.py"
+    if codex_oracle.exists():
+        result = subprocess.run(
+            [sys.executable, str(codex_oracle), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("codex_plugin_oracle.py --self-test failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 

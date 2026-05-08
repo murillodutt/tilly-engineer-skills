@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.60"
+VERSION = "0.3.61"
 EVIDENCE_DIR = Path("docs/agents/evidence")
 ROOT_FILES = (
     ("codex", "AGENTS.md", "src/adapters/codex/AGENTS.md"),

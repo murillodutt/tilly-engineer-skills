@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "dist" / "adapters"
-VERSION = "0.3.60"
+VERSION = "0.3.61"
 CODEX_SKILLS = (
     "tes-engineering-discipline",
     "tes-init",
@@ -36,6 +36,8 @@ CLAUDE_SKILLS = (
 )
 CLAUDE_PLUGIN_SKILL_ROOT = "skills"
 CLAUDE_PROJECT_SKILL_ROOT = ".claude/skills"
+CODEX_PLUGIN_ROOT = "plugins/tilly-engineer-skills"
+CODEX_PLUGIN_SKILL_ROOT = f"{CODEX_PLUGIN_ROOT}/skills"
 FORBIDDEN_OUTPUT_REFS = (
     "src/adapters/",
     "docs/adapters/",
@@ -56,10 +58,20 @@ class CopyRule:
 ADAPTERS: dict[str, tuple[CopyRule, ...]] = {
     "codex": (
         CopyRule("src/adapters/codex/AGENTS.md", "AGENTS.md"),
+        CopyRule("src/adapters/codex/plugin/plugin.json", f"{CODEX_PLUGIN_ROOT}/.codex-plugin/plugin.json"),
+        CopyRule("src/adapters/codex/plugin/marketplace.json", ".agents/plugins/marketplace.json"),
         *(
             CopyRule(
                 f"src/adapters/codex/skills/{skill}",
                 f".agents/skills/{skill}",
+                "tree",
+            )
+            for skill in CODEX_SKILLS
+        ),
+        *(
+            CopyRule(
+                f"src/adapters/codex/skills/{skill}",
+                f"{CODEX_PLUGIN_SKILL_ROOT}/{skill}",
                 "tree",
             )
             for skill in CODEX_SKILLS
@@ -166,6 +178,46 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
         for skill in CODEX_SKILLS:
             if not (adapter_root / f".agents/skills/{skill}/SKILL.md").exists():
                 failures.append(f"codex: missing {skill} skill")
+            if not (adapter_root / f"{CODEX_PLUGIN_SKILL_ROOT}/{skill}/SKILL.md").exists():
+                failures.append(f"codex: missing plugin skill {skill}")
+        plugin = adapter_root / f"{CODEX_PLUGIN_ROOT}/.codex-plugin/plugin.json"
+        marketplace = adapter_root / ".agents/plugins/marketplace.json"
+        if plugin.exists():
+            data = json.loads(plugin.read_text(encoding="utf-8"))
+            if data.get("version") != VERSION:
+                failures.append(f"codex: plugin version must be {VERSION}")
+            if data.get("skills") != "./skills/":
+                failures.append("codex: plugin must declare ./skills/")
+        else:
+            failures.append("codex: missing plugin.json")
+        if marketplace.exists():
+            data = json.loads(marketplace.read_text(encoding="utf-8"))
+            metadata = data.get("metadata", {})
+            if not isinstance(metadata, dict) or metadata.get("version") != VERSION:
+                failures.append(f"codex: marketplace metadata version must be {VERSION}")
+            plugins = data.get("plugins", [])
+            if not isinstance(plugins, list) or not plugins:
+                failures.append("codex: marketplace must declare plugins")
+            else:
+                if isinstance(plugins[0], dict) and plugins[0].get("version") != VERSION:
+                    failures.append(f"codex: marketplace plugin version must be {VERSION}")
+                source = plugins[0].get("source") if isinstance(plugins[0], dict) else None
+                if not isinstance(source, dict):
+                    failures.append("codex: marketplace source must be object")
+                else:
+                    path = source.get("path")
+                    if path != f"./{CODEX_PLUGIN_ROOT}":
+                        failures.append(f"codex: marketplace source.path must be ./{CODEX_PLUGIN_ROOT}")
+                    resolved = (adapter_root / str(path)).resolve()
+                    resolved_adapter_root = adapter_root.resolve()
+                    try:
+                        resolved.relative_to(resolved_adapter_root)
+                    except ValueError:
+                        failures.append(f"codex: marketplace source must resolve inside adapter root: {path}")
+                    if not (resolved / ".codex-plugin/plugin.json").exists():
+                        failures.append("codex: marketplace source does not resolve to plugin root")
+        else:
+            failures.append("codex: missing marketplace.json")
 
     if adapter == "cursor":
         rule = adapter_root / ".cursor/rules/tes-guidelines.mdc"
