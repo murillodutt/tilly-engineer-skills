@@ -11,3 +11,16 @@ dist/
 .tes/cortex/*.sqlite-*
 .env
 .env.*
+
+# Local execution diaries, canary sandboxes, and scratch run layers.
+# Governed evidence under docs/evidence/** stays versionable by design.
+/JOURNAL.md
+/JORNAL.md
+/RUN-INDEX.md
+/REPORT.local.md
+/_logs/
+/runs/
+/tes-canaries/
+/.canaries/
+.tes/runs/
+.tes/canaries/
