@@ -28,7 +28,7 @@ HELPER_ROOT = SCRIPT_PATH.parent
 ROOT = SCRIPT_PATH.parents[1]
 SOURCE_ROOT = ROOT / "scripts" if (ROOT / "scripts").exists() else HELPER_ROOT
 PACKAGE_MODE = SOURCE_ROOT.name == "scripts"
-VERSION = "0.3.58"
+VERSION = "0.3.59"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -853,6 +853,8 @@ def anchor_score(record: dict[str, Any]) -> tuple[int, str]:
         score -= 5 if is_root else 0
     if "test" in relpath.parts or "tests" in relpath.parts:
         score -= 10
+    if first in {"test", "tests"} and name in MANIFEST_NAMES:
+        score += 120
     generated_or_example_parts = {
         "__fixtures__",
         "_theme",
@@ -1029,16 +1031,18 @@ def infer_territory_role(name: str, paths: list[str]) -> str:
         return "frontend application and static asset territory"
     if lowered == "static":
         return "static assets and public files"
+    if lowered == "crates" and any(path.startswith("crates/") and path.endswith("/Cargo.toml") for path in paths):
+        return "Rust Cargo workspace and crate ownership"
     if lowered in {"labs", "examples", "fixtures"}:
         return "experiments, reproductions, and fixtures"
-    if lowered in {"tests", "test", "spec"} or any("/test" in path or "/spec" in path for path in paths):
-        return "test or verification territory"
     if lowered in {"scripts", "tools"}:
         return "local automation and oracles"
-    if lowered in {"src", "app", "server", "client", "api", "lib", "packages"}:
-        return "product/source code territory"
     if lowered in {".github"}:
         return "repository automation and collaboration"
+    if lowered in {"tests", "test", "spec"} or any("/test" in path or "/spec" in path for path in paths):
+        return "test or verification territory"
+    if lowered in {"src", "app", "server", "client", "api", "lib", "packages"}:
+        return "product/source code territory"
     return "project territory to inspect"
 
 
@@ -1054,6 +1058,16 @@ def semantic_boundary_for_territory(name: str, paths: list[str]) -> tuple[str, s
         return (
             "likely frontend UI/client application boundary; avoid treating static fixtures as architecture",
             "start with static/AGENTS.md and package TypeScript gates",
+        )
+    if lowered == "crates" and any(path.startswith("crates/") and path.endswith("/Cargo.toml") for path in paths):
+        return (
+            "Rust Cargo workspace boundary; crates likely hold CLI, resolver, distribution, and package-manager domain ownership",
+            "start with Cargo.toml workspace members, crates/README.md, and the nearest crate README before changing behavior",
+        )
+    if lowered == "python" and any(path.startswith("python/") for path in paths):
+        return (
+            "Python package/shim boundary around the Rust implementation",
+            "cross-check pyproject metadata against Rust crate behavior before editing packaging",
         )
     if lowered in {"tests", "test", "spec"}:
         return (
