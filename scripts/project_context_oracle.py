@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.58"
+VERSION = "0.3.59"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 PACKAGE_MODE = (ROOT / "scripts").exists()
 MARKDOWN_HEADING_RE = re.compile(r"^#{1,3}\s+(.+?)\s*$")
@@ -535,6 +535,11 @@ def is_large_context_target(target: Path) -> bool:
 
 def expected_semantic_terms(target: Path) -> list[str]:
     terms: list[str] = []
+    if (target / "Cargo.toml").exists() and (target / "crates").exists():
+        terms.append("Rust Cargo workspace boundary")
+        terms.append("CLI, resolver, distribution, and package-manager domain ownership")
+    if (target / "python").exists() and (target / "pyproject.toml").exists():
+        terms.append("Python package/shim boundary")
     if (target / "src").exists():
         terms.append("likely Python backend/domain application boundary" if (target / "src/sentry").exists() else "product/source code")
     if (target / "static/app").exists():
@@ -1053,14 +1058,18 @@ def self_test() -> dict[str, Any]:
         write(target / "package.json", json.dumps({"name": "monorepo-fixture", "workspaces": ["packages/*"]}) + "\n")
         write(target / "pnpm-workspace.yaml", "packages:\n  - 'apps/*'\n  - 'crates/*/js'\n")
         write(target / "Cargo.toml", "[workspace]\nmembers = [\"crates/*\"]\n")
+        write(target / "crates/uv/Cargo.toml", "[package]\nname = \"uv\"\n")
+        write(target / "crates/uv/src/lib.rs", "pub fn run() {}\n")
         expected = expected_workspace_boundaries(target)
         for pattern in ("packages/*", "apps/*", "crates/*/js", "crates/*"):
             if pattern not in expected:
                 failures.append(f"oracle must expect workspace boundary: {pattern}")
         write(target / PROJECT_CONTEXT, good_context(target).replace("| package.json | npm workspace | packages/* |\n", ""))
         bad = analyze(target)
-        if bad["status"] != "FAIL" or not any("missing workspace boundaries" in item for item in bad["failures"]):
-            failures.append("oracle must fail when workspace boundaries are missing")
+        if bad["status"] != "FAIL" or not any(
+            "missing workspace boundaries" in item or "Rust Cargo workspace boundary" in item for item in bad["failures"]
+        ):
+            failures.append("oracle must fail when workspace boundaries or Cargo workspace semantics are missing")
 
     with tempfile.TemporaryDirectory(prefix="tes-project-context-go-provider-") as tempdir:
         target = Path(tempdir)
