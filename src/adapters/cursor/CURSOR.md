@@ -19,6 +19,42 @@ duplicating long prose:
 - Surgical Changes
 - Goal-Driven Execution
 
+## TES Command Intents
+
+Use these exact TES intents when the project rule is unavailable, preserved, or
+owned by the target project:
+
+- `/tes-init`
+- `/tes-update`
+- `/tes-cortex`
+- `/tes-curate`
+- `/tes-mcp`
+- `/tes-field-reports`
+- `/tes-doctor`
+- `/tes-adapter`
+- `/tes-bench`
+
+Compatible aliases:
+
+- `/tes:init`
+- `/tes:update`
+- `/tes:cortex`
+- `/tes:mcp`
+- `/tes:field-reports`
+- `/tes:doctor`
+- `/tes:adapter`
+- `/tes:bench`
+- `/tes:check`
+- `/tes:certify`
+- `/tes:recall`
+- `/tes:learn`
+- `/tes:reflect`
+- `/tes:curate`
+
+Natural intents include: tes init, tes update, initialize TES, install TES,
+recertify TES, Atualizar TES, atualizar TES, inicializar TES, instalar TES, and
+recertificar TES.
+
 ## Behavioral Source Of Truth
 
 Keep Cursor, Claude, and Codex variants synchronized at the behavioral level:
