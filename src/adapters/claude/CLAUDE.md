@@ -105,6 +105,10 @@ Route `/tes-init` through two read-only gates before choosing writes:
 the context oracle. Step Zero protects installer/update writes; it must not
 block project-context initialization when TES is already installed/current and
 only the Project Context Gate fails.
+Then run the **Project-Start Gate** before the final `/tes-init` report:
+execute the installed `tes_init.py --target . --yes`, open strong anchors, and
+run `project_context_oracle.py --target .`. A preflight context PASS does not
+replace project-start execution; after helper-only repairs, rerun this gate.
 `tes_init.py` creates the scaffold; the active agent must open strong anchors
 before claiming deep project understanding and refine the context or report
 `Project context: NEEDS_REVIEW`.

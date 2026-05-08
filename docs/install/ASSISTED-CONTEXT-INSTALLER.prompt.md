@@ -123,6 +123,9 @@ For `/tes-init`, run the router gates first:
 - **Project Context Gate** determines whether
   `docs/agents/PROJECT-CONTEXT.md` is absent, bootstrap-only, stale, weak, or
   failing the project-context oracle.
+- **Project-Start Gate** is the `/tes-init` execution gate. It runs the
+  installed project-context initializer and oracle before the final report. A
+  preflight context PASS does not replace project-start execution.
 
 Step Zero protects installer/update writes. It must not block project-context
 initialization when TES is already installed/current and the only failing gate
@@ -425,6 +428,14 @@ Gate**. If the install/update surface is current but the project context is
 missing or weak, `/tes-init` performs only project-context initialization and
 must not refresh helpers, adapters, MCP config, bootloaders, remotes, tags, or
 release surfaces.
+
+For `/tes-init`, the **Project-Start Gate** must run before final closeout even
+when Project Context Gate preflight reports `PASS`. Run
+`python3 .tes/bin/tes_init.py --target . --yes` in an installed target, or
+`python3 scripts/tes_init.py --target <target-root> --yes` from the package
+source. Then run `project_context_oracle.py --target <target-root>`. After
+helper-only or adapter repairs, rerun the Project-Start Gate; preflight context
+PASS does not replace project-start execution.
 
 After classification and before certification closeout, analyze the project as
 deeply as the current context window and local tools permit:

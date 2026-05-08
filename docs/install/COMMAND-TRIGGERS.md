@@ -84,6 +84,15 @@ routes internally through two read-only gates before choosing writes:
    initialization; report the dirty tree, then run the project-context scaffold
    and oracle without refreshing helpers, adapters, MCP config, bootloaders, or
    remotes.
+3. **Project-Start Gate**: for `/tes-init`, always run the installed
+   project-context initializer before the final report:
+   `python3 .tes/bin/tes_init.py --target . --yes` when operating inside an
+   installed target, or the package `scripts/tes_init.py --target <target> --yes`
+   when certifying from source. A preflight context PASS does not replace
+   project-start execution. After helper-only or adapter repairs, rerun the
+   Project-Start Gate before closing `/tes-init`; `tes_update.py plan` exposes
+   the `project_start_gate` contract so executors cannot treat route planning
+   as context initialization.
 
 This keeps `/tes-init` simple for users: make this project usable by TES. If
 both gates pass, close with certification and recommend `/tes-doctor` only for a
