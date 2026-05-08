@@ -142,10 +142,13 @@ The MCP self-test covers negative malformed and write-like calls, and
 TES Field Reports is active by default. The initializer installs a local
 `pre-push` drain for sanitized operational facts, stores pending state under
 `.tes/field-reports/**`, never sends project code or private paths, and
-documents opt-out and reactivation prompts in the user manual. Drains report
-explicit transport states such as suppressed, blocked, invalid, sent, disabled,
-and empty; blocked/invalid drains keep pending events and write payload-free
-receipts.
+documents opt-out and reactivation prompts in the user manual. Certification
+covers local capture/drain, fake `gh` transport, and receiver quarantine. Real
+GitHub issue publication depends on local `gh`, authentication, and network and
+remains a partial surface until explicitly authorized and replayed against the
+live transport. Drains report explicit transport states such as suppressed,
+blocked, invalid, sent, disabled, and empty; blocked/invalid drains keep
+pending events and write payload-free receipts.
 
 When the target is a Git repository, Tilly also maintains local artifact hygiene
 in `.git/info/exclude`. Rollback backups, Python bytecode, Field Reports state,
