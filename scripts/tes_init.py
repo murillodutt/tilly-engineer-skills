@@ -21,7 +21,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.46"
+VERSION = "0.3.47"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -207,6 +207,13 @@ def git_status(target: Path) -> str:
 
 
 def is_excluded(relpath: Path) -> bool:
+    if relpath.as_posix() in {
+        REGISTER.as_posix(),
+        PROJECT_CONTEXT.as_posix(),
+    }:
+        return True
+    if len(relpath.parts) >= 3 and relpath.parts[:3] == ("docs", "agents", "evidence"):
+        return True
     if len(relpath.parts) >= 2 and relpath.parts[0] == ".tes" and relpath.parts[1] == "field-reports":
         return True
     if len(relpath.parts) >= 3 and relpath.parts[0] == ".tes" and relpath.parts[1] == "bin" and ".bak-" in relpath.name:
@@ -410,8 +417,13 @@ def context_anchors(scan: dict[str, Any]) -> list[dict[str, Any]]:
 
 def territory_summary(scan: dict[str, Any]) -> list[dict[str, Any]]:
     territories: list[dict[str, Any]] = []
+    territory_names = {
+        Path(str(record["path"])).parts[0]
+        for record in scan["files"]
+        if len(Path(str(record["path"])).parts) > 1
+    }
     for name, count in sorted(scan["top_level"].items(), key=lambda item: (-int(item[1]), item[0])):
-        if name in {".git", ".tes"}:
+        if name in {".git", ".tes"} or name not in territory_names:
             continue
         paths = [
             str(record["path"])

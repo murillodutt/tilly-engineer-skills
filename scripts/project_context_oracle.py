@@ -14,7 +14,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.46"
+VERSION = "0.3.47"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 REQUIRED_SECTIONS = (
     "# Tilly Project Context",
@@ -188,7 +188,7 @@ def expected_territories(target: Path) -> list[str]:
     territories: set[str] = set()
     for path in iter_project_files(target):
         relpath = path.relative_to(target)
-        if relpath.parts:
+        if len(relpath.parts) > 1:
             territories.add(relpath.parts[0])
     return sorted(name for name in territories if name not in {".git", ".tes"})
 
@@ -367,6 +367,8 @@ Update this file when project meaning changes.
 
 def make_fixture(target: Path) -> None:
     write(target / "README.md", "# fixture-app\n")
+    write(target / "VERSION", "0.1.0\n")
+    write(target / ".nvmrc", "20\n")
     write(
         target / "package.json",
         json.dumps(
