@@ -16,7 +16,7 @@ import field_reports
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = "0.3.34"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
-SCHEMA = "tes-field-report@1"
+SCHEMA = "tes-field-report@2"
 MAX_BODY_CHARS = 48000
 
 REQUIRED_BODY_TERMS = (
@@ -25,6 +25,13 @@ REQUIRED_BODY_TERMS = (
     f"- Schema: {SCHEMA}",
     f"- Destination: {DESTINATION_REPO}",
     "- Event count:",
+    "- Material event count:",
+    "- Report class:",
+    "- Actionability:",
+    "- Signal score:",
+    "- Report fingerprint:",
+    "- Install fingerprints:",
+    "Actionable findings",
     "Events",
 )
 
@@ -32,6 +39,9 @@ REQUIRED_FORM_TERMS = (
     "### Schema",
     SCHEMA,
     "### Status",
+    "### Report class",
+    "### Actionability",
+    "### Report fingerprint",
     "### TES version",
     "### Sanitized facts",
     "### Privacy confirmation",
@@ -97,7 +107,7 @@ def github_receiver_contract() -> list[str]:
         failures.append("missing GitHub issue form")
     else:
         text = issue_form.read_text(encoding="utf-8")
-        for term in (SCHEMA, "field-report", "privacy-sanitized", "Never include code"):
+        for term in (SCHEMA, "field-report", "privacy-sanitized", "Actionability", "Never include code"):
             if term not in text:
                 failures.append(f"issue form missing {term}")
 
@@ -150,6 +160,12 @@ def self_test() -> dict[str, object]:
                 SCHEMA,
                 "### Status",
                 "PASS",
+                "### Report class",
+                "version-drift",
+                "### Actionability",
+                "high",
+                "### Report fingerprint",
+                "abc123def4567890",
                 "### TES version",
                 VERSION,
                 "### Sanitized facts",
