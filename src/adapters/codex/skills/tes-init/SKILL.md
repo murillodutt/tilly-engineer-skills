@@ -22,7 +22,10 @@ as TES intents, even when the root `AGENTS.md` is project-owned and preserved.
 ## Mission
 
 Initialize, retrofit, update, audit, or recertify TES in the current project by
-following the assisted context installer contract.
+following the assisted context installer contract. `/tes-init` must also
+initialize the project for future agent work by reading the strongest project
+anchors and writing `docs/agents/PROJECT-CONTEXT.md` as the first durable
+project map.
 
 Canonical installer spec:
 
@@ -59,9 +62,10 @@ the user for package contents.
    `tes_legacy_retirement.py audit` before copying new TES assets.
 7. Use the detected runtime as the default route. Ask for route only when the
    installer contract requires it.
-8. Preserve local governance, build or update `docs/agents/**`, initialize
-   `docs/agents/cortex/**`, keep runtime bootloaders thin, and activate the
-   read-only Cortex MCP route when selected.
+8. Preserve local governance, build or update `docs/agents/**`, analyze the
+   target project in depth, write or update `docs/agents/PROJECT-CONTEXT.md`,
+   initialize `docs/agents/cortex/**`, keep runtime bootloaders thin, and
+   activate the read-only Cortex MCP route when selected.
 9. Invoke package oracles such as `tes_init.py`, `tes_update.py`,
    `tes_legacy_retirement.py`, `root_context.py`, `install_smoke.py`,
    `install_mcp.py`, and Cortex checks.
@@ -70,7 +74,7 @@ the user for package contents.
    default and controlled by the user manual prompts.
 11. Finish with a short certification report, source snapshot freshness, changed
    surfaces, installed helper set, Field Reports state, evidence path, limits,
-   rollback summary, and Git rollback instructions.
+   project context path, rollback summary, and Git rollback instructions.
 
 ## Locks
 

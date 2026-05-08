@@ -21,8 +21,9 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.42"
+VERSION = "0.3.43"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
+PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
 PASSING_GATE_STATUSES = {"PASS", "PRESERVED"}
 DEFAULT_COMMAND_TIMEOUT_SECONDS = 60.0
@@ -55,6 +56,61 @@ EXCLUDED_SUFFIXES = {
     ".DS_Store",
 }
 MAX_HASH_BYTES = 10 * 1024 * 1024
+MAX_CONTEXT_ANCHORS = 40
+MANIFEST_NAMES = {
+    "package.json",
+    "pyproject.toml",
+    "Cargo.toml",
+    "go.mod",
+    "pom.xml",
+    "build.gradle",
+    "build.gradle.kts",
+    "requirements.txt",
+    "Gemfile",
+    "composer.json",
+    "deno.json",
+    "bun.lockb",
+}
+DOC_ANCHOR_NAMES = {
+    "README.md",
+    "README",
+    "ARCHITECTURE.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CURSOR.md",
+}
+SOURCE_DIR_HINTS = {
+    "app",
+    "apps",
+    "src",
+    "server",
+    "client",
+    "web",
+    "api",
+    "lib",
+    "packages",
+    "modules",
+    "components",
+    "pages",
+    "routes",
+    "tests",
+    "test",
+    "spec",
+    "scripts",
+    "docs",
+}
+QUALITY_SCRIPT_TERMS = (
+    "lint",
+    "typecheck",
+    "test",
+    "spec",
+    "check",
+    "build",
+    "contract",
+    "validate",
+)
 
 
 def timeout_from_env(name: str, default: float) -> float:
@@ -254,6 +310,155 @@ def surface_inventory(target: Path) -> dict[str, Any]:
     return {name: (target / relpath).exists() for name, relpath in paths.items()}
 
 
+def safe_read_json(path: Path) -> dict[str, Any] | None:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def first_markdown_heading(path: Path) -> str | None:
+    try:
+        for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+            stripped = line.strip()
+            if stripped.startswith("# "):
+                return stripped[2:].strip()
+    except OSError:
+        return None
+    return None
+
+
+def detect_project_identity(target: Path) -> dict[str, str]:
+    package = safe_read_json(target / "package.json")
+    if package:
+        name = str(package.get("name") or target.name)
+        description = str(package.get("description") or "").strip()
+        return {
+            "name": name,
+            "description": description or "unknown",
+            "source": "package.json",
+        }
+
+    for relpath in ("README.md", "README"):
+        heading = first_markdown_heading(target / relpath)
+        if heading:
+            return {
+                "name": heading,
+                "description": "unknown",
+                "source": relpath,
+            }
+
+    return {
+        "name": target.name,
+        "description": "unknown",
+        "source": "directory-name",
+    }
+
+
+def package_scripts(target: Path) -> dict[str, str]:
+    package = safe_read_json(target / "package.json")
+    if not package:
+        return {}
+    scripts = package.get("scripts")
+    if not isinstance(scripts, dict):
+        return {}
+    return {
+        str(name): str(command)
+        for name, command in sorted(scripts.items())
+        if isinstance(name, str)
+    }
+
+
+def quality_scripts(scripts: dict[str, str]) -> dict[str, str]:
+    return {
+        name: command
+        for name, command in scripts.items()
+        if any(term in name.lower() for term in QUALITY_SCRIPT_TERMS)
+    }
+
+
+def anchor_score(record: dict[str, Any]) -> tuple[int, str]:
+    relpath = Path(str(record["path"]))
+    name = relpath.name
+    first = relpath.parts[0] if relpath.parts else ""
+    suffix = str(record.get("suffix") or "")
+    score = 0
+    if name in DOC_ANCHOR_NAMES:
+        score -= 100
+    if name in MANIFEST_NAMES:
+        score -= 90
+    if first in {"docs", ".github", ".agents", ".claude", ".cursor"}:
+        score -= 60
+    if first in SOURCE_DIR_HINTS:
+        score -= 40
+    if suffix in {".md", ".mdc", ".json", ".toml", ".yaml", ".yml"}:
+        score -= 20
+    if "test" in relpath.parts or "tests" in relpath.parts:
+        score -= 10
+    return (score, str(record["path"]))
+
+
+def context_anchors(scan: dict[str, Any]) -> list[dict[str, Any]]:
+    records = [
+        record
+        for record in scan["files"]
+        if str(record.get("suffix") or "") in {".md", ".mdc", ".json", ".toml", ".yaml", ".yml", ".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs"}
+    ]
+    return sorted(records, key=anchor_score)[:MAX_CONTEXT_ANCHORS]
+
+
+def territory_summary(scan: dict[str, Any]) -> list[dict[str, Any]]:
+    territories: list[dict[str, Any]] = []
+    for name, count in sorted(scan["top_level"].items(), key=lambda item: (-int(item[1]), item[0])):
+        if name in {".git", ".tes"}:
+            continue
+        paths = [
+            str(record["path"])
+            for record in scan["files"]
+            if Path(str(record["path"])).parts and Path(str(record["path"])).parts[0] == name
+        ][:6]
+        territories.append(
+            {
+                "name": name,
+                "file_count": count,
+                "sample_paths": paths,
+                "role": infer_territory_role(name, paths),
+            }
+        )
+    return territories[:20]
+
+
+def infer_territory_role(name: str, paths: list[str]) -> str:
+    lowered = name.lower()
+    if lowered in {"docs", "doc"}:
+        return "documentation and durable explanation"
+    if lowered in {".agents", ".claude", ".cursor"}:
+        return "agent runtime surface"
+    if lowered in {"tests", "test", "spec"} or any("/test" in path or "/spec" in path for path in paths):
+        return "test or verification territory"
+    if lowered in {"scripts", "tools"}:
+        return "local automation and oracles"
+    if lowered in {"src", "app", "server", "client", "api", "lib", "packages"}:
+        return "product/source code territory"
+    if lowered in {".github"}:
+        return "repository automation and collaboration"
+    return "project territory to inspect"
+
+
+def project_context(scan: dict[str, Any], target: Path, manifest_rel: str) -> dict[str, Any]:
+    scripts = package_scripts(target)
+    anchors = context_anchors(scan)
+    return {
+        "identity": detect_project_identity(target),
+        "manifest": manifest_rel,
+        "anchors": anchors,
+        "territories": territory_summary(scan),
+        "package_scripts": scripts,
+        "quality_scripts": quality_scripts(scripts),
+    }
+
+
 def scan_project(target: Path) -> dict[str, Any]:
     files = all_files(target)
     records = [record for path in files if (record := file_record(path, target)) is not None]
@@ -350,6 +555,7 @@ replacement for Git history.
 | File count | `{scan['file_count']}` |
 | Total bytes | `{scan['total_bytes']}` |
 | Manifest | `{manifest_rel}` |
+| Project context | `{PROJECT_CONTEXT.as_posix()}` |
 
 ## Tilly Surfaces
 
@@ -373,6 +579,8 @@ replacement for Git history.
 
 - Re-run `python3 scripts/tes_init.py --target <project> --yes` after major
   project reshapes.
+- Treat `docs/agents/PROJECT-CONTEXT.md` as the initial project map for agents:
+  update it when major architecture, product, or operational meaning changes.
 - Do not treat this inventory as memory. Promote durable knowledge through
   Cortex `learn` and authorized `apply`.
 - Keep generated manifests in `docs/agents/evidence/**` so Git preserves the
@@ -382,6 +590,127 @@ replacement for Git history.
 - Root context result `PRESERVED` means project-owned bootloader context was
   detected and intentionally left untouched. It remains a blocker only for
   overwrite attempts.
+"""
+
+
+def markdown_table(rows: list[tuple[str, ...]], headers: tuple[str, ...]) -> str:
+    if not rows:
+        return "| " + " | ".join(headers) + " |\n| " + " | ".join("---" for _ in headers) + " |\n"
+    lines = [
+        "| " + " | ".join(headers) + " |",
+        "| " + " | ".join("---" for _ in headers) + " |",
+    ]
+    for row in rows:
+        lines.append("| " + " | ".join(cell.replace("\n", " ").replace("|", "\\|") for cell in row) + " |")
+    return "\n".join(lines) + "\n"
+
+
+def write_project_context(target: Path, scan: dict[str, Any], gates: list[dict[str, Any]], manifest_rel: str) -> str:
+    context = project_context(scan, target, manifest_rel)
+    identity = context["identity"]
+    anchors = context["anchors"]
+    territories = context["territories"]
+    scripts = context["package_scripts"]
+    qscripts = context["quality_scripts"]
+    surface_rows = [
+        (name, "present" if present else "missing")
+        for name, present in sorted(scan["surfaces"].items())
+    ]
+    anchor_rows = [
+        (str(anchor["path"]), str(anchor.get("suffix") or "[none]"), str(anchor["bytes"]))
+        for anchor in anchors
+    ]
+    territory_rows = [
+        (
+            str(territory["name"]),
+            str(territory["role"]),
+            str(territory["file_count"]),
+            ", ".join(f"`{path}`" for path in territory["sample_paths"]) or "none",
+        )
+        for territory in territories
+    ]
+    script_rows = [(name, command) for name, command in scripts.items()]
+    quality_rows = [(name, command) for name, command in qscripts.items()]
+    gate_rows = [(gate["command"], gate["status"]) for gate in gates]
+    deep_reads = "\n".join(f"- `{anchor['path']}`" for anchor in anchors[:12]) or "- none"
+
+    return f"""# Tilly Project Context
+
+Generated: `{scan['generated_at']}`
+
+This is the initial project context compiled by `/tes-init`. It is a durable
+starting map for agents, not a substitute for the source files. Agents should
+read this before broad project work, then open the cited anchors and update the
+context when new durable understanding is learned.
+
+## Identity
+
+| Field | Value |
+|-------|-------|
+| Name | `{identity['name']}` |
+| Description | `{identity['description']}` |
+| Identity source | `{identity['source']}` |
+| Target | `{scan['target']}` |
+| Git HEAD | `{scan['git_head']}` |
+| Manifest | `{manifest_rel}` |
+
+## Maximum-Depth Initialization Contract
+
+- `/tes-init` must initialize the project, not only install TES runtime files.
+- The project was inventoried through tracked and unignored files.
+- Raw project files remain the source of truth; this context cites anchors
+  instead of copying code or secrets.
+- The active agent must use this document plus the listed anchors for future
+  work and should refine it after meaningful project discoveries.
+- Unknowns stay explicit. Do not invent product, architecture, compliance, or
+  deployment claims not supported by project files.
+
+## Coverage
+
+| Field | Value |
+|-------|-------|
+| File count | `{scan['file_count']}` |
+| Total bytes | `{scan['total_bytes']}` |
+| Anchor count | `{len(anchors)}` |
+| Gate status | `{'PASS' if all(gate_passed(gate) for gate in gates) else 'NEEDS_REVIEW'}` |
+
+## Project Territories
+
+{markdown_table(territory_rows, ("Territory", "Initial role", "Files", "Sample anchors"))}
+## Source Anchors Read First
+
+{markdown_table(anchor_rows, ("Path", "Kind", "Bytes"))}
+## Runtime And Governance Surfaces
+
+{markdown_table(surface_rows, ("Surface", "Status"))}
+## Package Scripts
+
+{markdown_table(script_rows, ("Script", "Command"))}
+## Quality And Certification Scripts
+
+{markdown_table(quality_rows, ("Script", "Command"))}
+## Recertification Gates
+
+{markdown_table(gate_rows, ("Command", "Status"))}
+## Recommended Deep Reads
+
+{deep_reads}
+
+## Open Context Questions
+
+- What is the project domain in one sentence, based on product docs and source
+  entrypoints?
+- Which directories define the runtime boundary, persistence boundary, and
+  external integration boundary?
+- Which commands are the smallest safe quality gates before commit?
+- Which facts should be promoted into Cortex cells after human review?
+
+## Maintenance Rule
+
+Update this file when project meaning changes: architecture reshapes, new
+runtime surfaces, major scripts, public API boundaries, test strategy,
+deployment model, or agent governance. Keep detailed file inventories in
+`docs/agents/evidence/**`; keep durable memory in `docs/agents/cortex/**`.
 """
 
 
@@ -408,7 +737,7 @@ Status: `{'PASS' if all(gate_passed(gate) for gate in gates) else 'NEEDS_REVIEW'
 ## Scope
 
 This initialization recertified TES package health, scanned the target
-project, and wrote a project register plus full manifest.
+project, and wrote a project register, project context, and full manifest.
 
 ## Target
 
@@ -418,6 +747,7 @@ project, and wrote a project register plus full manifest.
 | Git HEAD | `{scan['git_head']}` |
 | File count | `{scan['file_count']}` |
 | Manifest | `{manifest_rel}` |
+| Project context | `{PROJECT_CONTEXT.as_posix()}` |
 
 ## Gates
 
@@ -447,6 +777,7 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
     stamp = file_stamp()
     planned_writes = [
         REGISTER.as_posix(),
+        PROJECT_CONTEXT.as_posix(),
         f"{EVIDENCE_DIR.as_posix()}/{stamp}-tes-initialization.md",
         f"{EVIDENCE_DIR.as_posix()}/{stamp}-tes-project-manifest.json",
         ".tes/bin/field_reports.py",
@@ -460,7 +791,7 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
             "status": "NEEDS_AUTH",
             "target": str(target),
             "writes": planned_writes,
-            "message": "tes init writes a project register and evidence manifest; rerun with --yes",
+            "message": "tes init writes a project register, project context, and evidence manifest; rerun with --yes",
         }
 
     evidence_dir = target / EVIDENCE_DIR
@@ -470,6 +801,7 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
     manifest_path = evidence_dir / f"{stamp}-tes-project-manifest.json"
     evidence_path = evidence_dir / f"{stamp}-tes-initialization.md"
     manifest_rel = rel(manifest_path, target)
+    (target / PROJECT_CONTEXT).parent.mkdir(parents=True, exist_ok=True)
 
     bootstrap = bootstrap_scan(target, manifest_rel)
     bootstrap_gate = {
@@ -481,6 +813,10 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
     }
     manifest_path.write_text(json.dumps(bootstrap, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (target / REGISTER).write_text(write_register(target, bootstrap, [bootstrap_gate], manifest_rel), encoding="utf-8")
+    (target / PROJECT_CONTEXT).write_text(
+        write_project_context(target, bootstrap, [bootstrap_gate], manifest_rel),
+        encoding="utf-8",
+    )
     evidence_path.write_text(
         write_evidence(target, bootstrap, [bootstrap_gate], planned_writes, manifest_rel),
         encoding="utf-8",
@@ -503,14 +839,17 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
     status = "PASS" if all(gate_passed(gate) for gate in gates) else "NEEDS_REVIEW"
 
     register_text = write_register(target, scan, gates, manifest_rel)
+    project_context_text = write_project_context(target, scan, gates, manifest_rel)
     evidence_text = write_evidence(target, scan, gates, planned_writes, manifest_rel)
 
     manifest_path.write_text(json.dumps(scan, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (target / REGISTER).write_text(register_text, encoding="utf-8")
+    (target / PROJECT_CONTEXT).write_text(project_context_text, encoding="utf-8")
     evidence_path.write_text(evidence_text, encoding="utf-8")
 
     actual_writes = [
         REGISTER.as_posix(),
+        PROJECT_CONTEXT.as_posix(),
         rel(evidence_path, target),
         rel(manifest_path, target),
         *[str(item) for item in field_report_result.get("writes", [])],
@@ -525,6 +864,7 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
             "file_count": scan["file_count"],
             "gate_failures": sum(1 for gate in gates if not gate_passed(gate)),
             "field_reports": field_report_result.get("status", "UNKNOWN"),
+            "project_context": PROJECT_CONTEXT.as_posix(),
         },
     )
 
@@ -547,12 +887,30 @@ def self_test() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tes-init-") as tempdir:
         target = Path(tempdir)
         (target / "README.md").write_text("# Fixture\n", encoding="utf-8")
+        (target / "package.json").write_text(
+            json.dumps(
+                {
+                    "name": "tes-init-fixture",
+                    "description": "fixture package for project context",
+                    "scripts": {
+                        "lint": "echo lint",
+                        "test": "echo test",
+                        "build": "echo build",
+                    },
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (target / "src").mkdir()
+        (target / "src/app.py").write_text("print('fixture')\n", encoding="utf-8")
         (target / "AGENTS.md").write_text(
             "# Project Agent Rules\n\nUse local project governance before package defaults.\n",
             encoding="utf-8",
         )
         subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
-        subprocess.run(["git", "add", "README.md"], cwd=target, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "add", "README.md", "package.json", "src/app.py"], cwd=target, text=True, capture_output=True, check=False)
         subprocess.run(
             ["git", "commit", "-m", "fixture"],
             cwd=target,
@@ -569,6 +927,17 @@ def self_test() -> dict[str, Any]:
         for relpath in result["writes"]:
             if not (target / relpath).exists():
                 failures.append(f"missing write: {relpath}")
+        context_text = (target / PROJECT_CONTEXT).read_text(encoding="utf-8") if (target / PROJECT_CONTEXT).exists() else ""
+        for term in (
+            "Maximum-Depth Initialization Contract",
+            "tes-init-fixture",
+            "package.json",
+            "src/app.py",
+            "lint",
+            "Recommended Deep Reads",
+        ):
+            if term not in context_text:
+                failures.append(f"project context missing term: {term}")
         if result["status"] != "PASS":
             failures.append(f"expected PASS, got {result['status']}")
         if not any(gate["status"] == "PRESERVED" for gate in result["gates"]):

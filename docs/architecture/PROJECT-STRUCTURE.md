@@ -69,8 +69,9 @@ cloud package versions, detecting applied IDE surfaces, and recommending the
 route behind `/tes-update` and its `/tes:update` compatibility alias.
 
 `scripts/tes_init.py` initializes and recertifies a target project. It writes
-`docs/agents/PROJECT-REGISTER.md` before slower gates finish, so blocked gates
-leave auditable evidence instead of an unregistered runtime.
+`docs/agents/PROJECT-REGISTER.md` and `docs/agents/PROJECT-CONTEXT.md` before
+slower gates finish, so blocked gates leave auditable evidence instead of an
+uninitialized runtime.
 
 `scripts/tes_legacy_retirement.py` is the closed-catalog cleanup gate for
 updates. It removes known old runtime assets, migrates Field Reports state,

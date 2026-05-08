@@ -146,13 +146,15 @@ helpers are not excluded because they are the installed runtime surface.
 
 When this package is available locally, `tes_init.py` is the project
 initialization and recertification command. It verifies package health, scans
-the target project, writes `docs/agents/PROJECT-REGISTER.md`, and stores a full
-manifest under `docs/agents/evidence/**`. Cortex can also be initialized and
-checked directly:
+the target project, writes `docs/agents/PROJECT-REGISTER.md`, writes
+`docs/agents/PROJECT-CONTEXT.md` as the initial project map for future agents,
+and stores a full manifest under `docs/agents/evidence/**`. Cortex can also be
+initialized and checked directly:
 
-The register is written before slower certification gates finish. If a later
-oracle is blocked or times out, the run closes as `NEEDS_REVIEW` with local
-evidence instead of leaving the project unregistered.
+The register and project context are written before slower certification gates
+finish. If a later oracle is blocked or times out, the run closes as
+`NEEDS_REVIEW` with local evidence instead of leaving the project
+uninitialized.
 
 ```bash
 python3 scripts/tes_init.py --target /path/to/project --yes
@@ -198,12 +200,17 @@ supports them safely; command navigation remains the certified fallback.
 ## New vs Existing Projects
 
 For a new project, the installer creates a minimal `docs/agents/**` mesh and
-thin runtime files for the selected IDE.
+thin runtime files for the selected IDE. It also creates
+`docs/agents/PROJECT-CONTEXT.md` from discovered project facts and names
+unknowns explicitly.
 
 For an existing project, the installer migrates durable rules from existing
 agent files and docs into `docs/agents/**`, then turns `AGENTS.md`, `CLAUDE.md`,
 `.cursor/rules/**`, `.claude/**`, and `.agents/**` into runtime assets that
-route to the mesh.
+route to the mesh. It should read strong anchors such as README, package
+manifests, architecture docs, root agent instructions, local validation
+scripts, source entrypoints, and test roots, then synthesize the initial
+project map in `PROJECT-CONTEXT.md`.
 
 Existing context is project-owned by default. Conflicts mean retrofit, not
 overwrite.
@@ -226,6 +233,7 @@ Scope: new project install | existing project retrofit | meshed project update |
 Detected Runtime: Codex | Claude Code | Cursor | uncertain
 Selected Adapters: ...
 Canonical Source: docs/agents/**
+Project Context: docs/agents/PROJECT-CONTEXT.md
 Cortex: docs/agents/cortex/**
 Navigation Library: ...
 Navigation Renderer: ...

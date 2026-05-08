@@ -15,7 +15,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.42"
+VERSION = "0.3.43"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 CODEX_LOCAL_BOOTLOADER = "Local product governance. Preserve this file.\n"
 CLAUDE_LOCAL_BOOTLOADER = "Local product governance. Preserve this file.\n"

@@ -29,7 +29,7 @@ Installed target parity can be checked with
 
 | Trigger | User intent | Primary oracles | Writes |
 |---------|-------------|-----------------|--------|
-| `/tes-init` or `/tes:init` | install, update, audit, or recertify TES in a project | `root_context.py`, `tes_init.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, Cortex, runtime bootloaders, project MCP config |
+| `/tes-init` or `/tes:init` | install, update, audit, recertify, and initialize project context for TES in a project | `root_context.py`, `tes_init.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, `docs/agents/PROJECT-CONTEXT.md`, Cortex, runtime bootloaders, project MCP config |
 | `/tes-update` or `/tes:update` | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, `tes_legacy_retirement.py`, assisted installer, install smoke, MCP install | only selected TES surfaces after Step Zero and legacy retirement |
 | `/tes-cortex` or `/tes:cortex` | inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `cortex.py`, read-only Cortex MCP | Cortex files only when authorized |
 | `/tes-curate` or `/tes:curate` | classify Cortex memory quality risks without writing memory | `cortex.py curate-plan`, read-only `cortex_curate_plan` | no memory writes; CLI may refresh `.tes/cortex/semantic.sqlite` |
@@ -102,3 +102,6 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 - Do not run write operations such as adapter install, MCP activation, Cortex
   apply, materialization, or benchmark artifact updates without a clear target
   and authorization.
+- Do not treat `/tes-init` as only an installer. It must leave an initial
+  `docs/agents/PROJECT-CONTEXT.md` project map or report why project
+  contextualization was blocked.

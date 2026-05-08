@@ -96,6 +96,9 @@ Treat `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`,
 command/prompts such as `TES, initialize this project`,
 `TES, inicialize este projeto`, `Atualizar TES`, or `atualizar TES` as
 installer intents.
+For `/tes-init`, initialize the project as well as TES: read the strongest
+project anchors available and leave `docs/agents/PROJECT-CONTEXT.md` as the
+initial durable project map for future agents.
 Across Codex, Claude Code, and Cursor, `/tes-*` forms are the preferred shared
 triggers and `/tes:*` forms are compatible TES intent aliases. If Claude Code
 says `/tes:init` or another `/tes:*` form is an invalid slash command, continue

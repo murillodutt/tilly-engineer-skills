@@ -15,13 +15,19 @@ You are installing Tilly Engineer Skills into the current target project as an a
 
 ## Mission
 
-Install, retrofit, or update TES so that the target project gets durable, maintainable agent context:
+Install, retrofit, or update TES so that the target project gets durable,
+maintainable agent context and an initial project contextualization:
 
 ```text
 docs/agents/** is source. Runtime assets route and execute.
 ```
 
 Runtime assets include `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, `.agents/**`, `.claude/skills/**`, `skills/**`, `.cursor/**`, `.claude-plugin/**`, `.codex/config.toml`, `.mcp.json`, `.tes/bin/**`, and future agent plugin/hook/MCP files. They must stay thin. Durable project governance belongs in `docs/agents/**`.
+
+`/tes-init` must also initialize the project for future agent work. It should
+analyze the target root, read the strongest project anchors available, write
+`docs/agents/PROJECT-CONTEXT.md`, and make unknowns explicit instead of
+claiming domain or architecture facts without evidence.
 
 ## Executor Model
 
@@ -360,6 +366,8 @@ Create or retrofit this structure:
 ```text
 docs/agents/
   INDEX.md
+  PROJECT-CONTEXT.md
+  PROJECT-REGISTER.md
   contracts/
     core.md
     execution.md
@@ -389,9 +397,36 @@ For a new project: create minimal contracts from discovered project facts, keep 
 For an existing project:
 
 - migrate durable rules from `AGENTS.md`, `CLAUDE.md`, `.cursor/**`, `.claude/**`, README, architecture docs, decision docs, and package scripts into the smallest appropriate `docs/agents/**` files;
+- create or update `docs/agents/PROJECT-CONTEXT.md` as the initial project
+  map, citing the project anchors actually read;
 - preserve local commands, test oracles, security boundaries, product identity,
   language rules, ownership, release rules, and no-go conditions;
 - runtime assets should route to `docs/agents/**` instead of carrying long canonical prose.
+
+## Phase 4.1 - Initialize Project Context
+
+`/tes-init` is not only an installer. It is the project start ritual for agents.
+After classification and before certification closeout, analyze the project as
+deeply as the current context window and local tools permit:
+
+- inventory tracked and unignored files;
+- read the strongest project anchors first: README, package or build
+  manifests, architecture docs, root agent instructions, local validation
+  scripts, source entrypoints, test roots, deployment/configuration docs, and
+  existing `docs/agents/**`;
+- synthesize project identity, territories, runtime/build/test signals,
+  governance surfaces, quality gates, source anchors, known unknowns, and
+  recommended deep reads;
+- write the synthesis to `docs/agents/PROJECT-CONTEXT.md`;
+- write the deterministic inventory to `docs/agents/PROJECT-REGISTER.md`;
+- store full manifests and evidence under `docs/agents/evidence/**`.
+
+The context file must be evidence-led. Cite repository paths and say
+`unknown`, `not found`, or `needs deeper read` when the project files do not
+support a claim. Do not copy source code, secrets, or raw private content into
+the context file. Do not bulk-absorb history into Cortex during installation;
+only seed stable facts discovered while initializing and record deeper absorb
+work as a post-install next step.
 
 ## Phase 4.5 - Create Cortex
 
@@ -465,7 +500,7 @@ Use these local rules:
 - every durable claim should cite a source path, evidence entry, or explicit assumption;
 - do not file secrets, credentials, `.env` contents, private keys, or regulated personal data into Cortex unless the target project has an explicit privacy contract.
 
-For a new project, create starter files with clear placeholders. For an existing project, do not bulk-import history during installation. Only seed Cortex with stable facts discovered while building the mesh, and record deeper absorb work as a post-install next step.
+For a new project, create starter files with clear placeholders. For an existing project, do not bulk-import history into Cortex during installation. Use `PROJECT-CONTEXT.md` for the initial project map, seed Cortex only with stable facts discovered while building the mesh, and record deeper absorb work as a post-install next step.
 
 ## Phase 5 - Install Runtime Assets
 
@@ -677,7 +712,15 @@ After adapter/Cortex/MCP writes are complete and the user authorized local initi
 python3 scripts/tes_init.py --target <target-root> --yes
 ```
 
-This writes `docs/agents/PROJECT-REGISTER.md` and timestamped evidence such as `docs/agents/evidence/YYYYMMDDTHHMMSSZ-tes-project-manifest.json`. The initializer writes a provisional register before later gates, so a slow or blocked oracle must leave auditable `NEEDS_REVIEW` evidence instead of leaving the project unregistered. It must not bulk-absorb project files into Cortex or write to `sources/**`. It also installs the local Field Reports `pre-push` drain and local Git hygiene excludes when the target is a Git repository, and must report `BLOCKED` instead of pretending activation.
+This writes `docs/agents/PROJECT-REGISTER.md`,
+`docs/agents/PROJECT-CONTEXT.md`, and timestamped evidence such as
+`docs/agents/evidence/YYYYMMDDTHHMMSSZ-tes-project-manifest.json`. The
+initializer writes provisional register/context files before later gates, so a
+slow or blocked oracle must leave auditable `NEEDS_REVIEW` evidence instead of
+leaving the project uninitialized. It must not bulk-absorb project files into
+Cortex or write to `sources/**`. It also installs the local Field Reports
+`pre-push` drain and local Git hygiene excludes when the target is a Git
+repository, and must report `BLOCKED` instead of pretending activation.
 
 If Codex skill is present:
 
@@ -793,10 +836,11 @@ Changed Surfaces
 - Root context gate: PASS | PRESERVED | NEEDS_REVIEW | SKIP; plan/resolution: <path | preserve | none>
 - Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py: PASS/BLOCKED/MISSING
 - Helper contract parity: PASS | STALE_HELPERS | BLOCKED | NOT_INSTALLED
+- Project context: docs/agents/PROJECT-CONTEXT.md PASS | NEEDS_REVIEW | SKIP
 - Runtime/MCP config, evidence, ignored local state: <short list>
 
 Certification
-- Context, thin runtime assets, Cortex, MCP, platform surfaces, project register, Obsidian boundary, secrets, and oracles: PASS/FAIL/SKIP
+- Context, project register, project context, thin runtime assets, Cortex, MCP, platform surfaces, Obsidian boundary, secrets, and oracles: PASS/FAIL/SKIP
 - Field Reports: PASS | BLOCKED | DISABLED | SKIP; hook/drain/sentinel/outbox pending count: <...>
 - `/tes-update` routine: PASS | BLOCKED | SKIP; route probe and post-Layer Zero final Field Reports `tes_update` event: <...>
 

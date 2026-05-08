@@ -20,7 +20,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.42"
+VERSION = "0.3.43"
 RETROFIT_DIR = ".tes/retrofit"
 
 
