@@ -18,7 +18,8 @@ issues in `murillodutt/tilly-engineer-skills`.
 
 Field Reports may record package version, runtime, OS, event name, status,
 duration bucket, Tilly gate names, return codes, feature presence, failure
-categories, and hash fingerprints.
+categories, report class, actionability level, signal score, and hash
+fingerprints.
 
 Field Reports must never send code, diffs, prompts, file contents, raw stack
 traces, secrets, tokens, personal data, absolute paths, raw branch names, or raw
@@ -27,6 +28,7 @@ tables or code blocks.
 
 The local identity is a random `install_id` stored under
 `.tes/field-reports/`. It is not the project name and not a user identity.
+Published reports use a hash fingerprint of that ID, not the raw value.
 
 ## GitHub Receiver
 
@@ -34,7 +36,7 @@ The GitHub side is governed by `.github/ISSUE_TEMPLATE/tes-field-report.yml`,
 `.github/workflows/field-report-governance.yml`, and
 `scripts/field_reports_github_oracle.py`.
 
-The receiver requires the `tes-field-report@1` schema marker, rejects reports
+The receiver requires the `tes-field-report@2` schema marker, rejects reports
 with code blocks, tables, absolute paths, private URLs, raw remotes, raw branch
 names, secrets, personal data, or raw stack traces, and labels accepted reports
 as sanitized. A rejected report is quarantined and closed. This workflow is a
@@ -68,9 +70,11 @@ python3 .tes/bin/field_reports.py drain --target . --trigger pre-push
 ```
 
 If an existing `pre-push` hook exists, it is backed up and chained before the
-Field Reports drain. If Git, `gh`, network, or authentication is unavailable,
-Field Reports records `BLOCKED` where possible, keeps the outbox pending, and
-must not block the push.
+Field Reports drain. Low-signal heartbeat drains, such as a successful update
+check with no version drift and no operational change, are suppressed locally
+with a receipt instead of opening a GitHub issue. If Git, `gh`, network, or
+authentication is unavailable, Field Reports records `BLOCKED` where possible,
+keeps the outbox pending, and must not block the push.
 
 ## Opt-Out
 
@@ -88,7 +92,10 @@ through a raw shell command.
 Field Reports records high-value operational facts from initialization, adapter
 installation, MCP activation, install smoke, Cortex verify/audit/rebuild,
 Cortex curation/reflection/apply, MCP self-test, commit gates, and failed,
-blocked, or degraded states.
+blocked, or degraded states. A published report must include actionable
+findings, report class, actionability, signal score, report fingerprint,
+surface counts, routes, versions, schemas seen, and event details. Transport
+heartbeats alone are not product feedback.
 
 ## Certification
 
