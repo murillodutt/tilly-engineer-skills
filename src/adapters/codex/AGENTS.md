@@ -80,6 +80,9 @@ Treat `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`,
 command/prompts such as `TES, initialize this project`,
 `TES, inicialize este projeto`, `Atualizar TES`, or `atualizar TES` as
 installer intents.
+For `/tes-init`, initialize the project as well as TES: read the strongest
+project anchors available and leave `docs/agents/PROJECT-CONTEXT.md` as the
+initial durable project map for future agents.
 `/tes-update` first checks installed
 version, cloud version, helper contract parity, applied IDE surfaces,
 recommended route, and `recommended_update_scope`. Read-only update probes use

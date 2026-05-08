@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.42"
+VERSION = "0.3.43"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -322,6 +322,14 @@ ROOT_CONTEXT_REQUIRED_TERMS = (
     "self_test_mode",
 )
 
+INIT_CONTEXT_REQUIRED_TERMS = (
+    "PROJECT-CONTEXT.md",
+    "Maximum-Depth Initialization Contract",
+    "write_project_context",
+    "project context",
+    "Recommended Deep Reads",
+)
+
 GIT_SAFETY_REQUIRED_TERMS = (
     ".tes/bin/*.bak-*",
     ".tes/bin/__pycache__/",
@@ -489,6 +497,23 @@ def installer_report_contract_failures() -> list[str]:
     for term in ROOT_CONTEXT_REQUIRED_TERMS:
         if term not in root_context_sources:
             failures.append(f"root context gate missing term: {term}")
+    init_context_sources = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (
+            ROOT / "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
+            ROOT / "docs/install/COMMAND-TRIGGERS.md",
+            ROOT / "docs/install/INSTALL.md",
+            ROOT / "docs/install/USER-MANUAL.html",
+            ROOT / "scripts/tes_init.py",
+            ROOT / "src/adapters/codex/skills/tes-init/SKILL.md",
+            ROOT / "src/adapters/claude/skills/tes-init/SKILL.md",
+            ROOT / "src/adapters/cursor/rules/tes-guidelines.mdc",
+        )
+        if path.exists()
+    )
+    for term in INIT_CONTEXT_REQUIRED_TERMS:
+        if term not in init_context_sources:
+            failures.append(f"init project context missing term: {term}")
     git_safety_sources = "\n".join(
         path.read_text(encoding="utf-8")
         for path in (

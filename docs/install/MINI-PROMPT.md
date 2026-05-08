@@ -49,13 +49,15 @@ alias as invalid, treat it as TES intent text and continue through the matching
 skill/rule/spec.
 Use the detected IDE as the default adapter. Ask me for a route command only
 where the spec requires one. Preserve local project governance, move durable
-agent context into docs/agents/** when needed, create or update the compiled
-docs/agents/cortex/** Cortex layer, keep AGENTS.md, CLAUDE.md and Cursor rules
-as thin runtime bootloaders, activate the read-only project-scoped Cortex MCP
-server for the selected runtime route, and finish with the certification report
-required by the spec.
+agent context into docs/agents/** when needed, analyze the project in depth and
+write docs/agents/PROJECT-CONTEXT.md as the initial project map, create or
+update the compiled docs/agents/cortex/** Cortex layer, keep AGENTS.md,
+CLAUDE.md and Cursor rules as thin runtime bootloaders, activate the read-only
+project-scoped Cortex MCP server for the selected runtime route, and finish
+with the certification report required by the spec.
 The final report must expose the PT/EN/ES user manual link/path, installed
-helper set, root context gate, Field Reports state, and rollback summary.
+helper set, root context gate, project context path, Field Reports state, and
+rollback summary.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, tell me
