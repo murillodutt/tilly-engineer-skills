@@ -19,7 +19,7 @@ import uuid
 from typing import Any
 
 
-VERSION = "0.3.49"
+VERSION = "0.3.50"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 LEGACY_SCHEMAS = ("tes-field-report@1", "tilly-field-report@1")
@@ -783,7 +783,9 @@ def ensure_git_exclude(target: Path) -> str | None:
 def copy_helper(target: Path) -> str:
     destination = target / BIN_HELPER
     destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(Path(__file__).resolve(), destination)
+    source = Path(__file__).resolve()
+    if source != destination.resolve():
+        shutil.copy2(source, destination)
     return rel(destination, target)
 
 
@@ -910,6 +912,23 @@ def self_test() -> dict[str, object]:
                 failures.append(f"missing installed path: {relpath}")
         if hook_result["status"] != "PASS":
             failures.append("install-hook did not pass in a Git fixture")
+        installed = target / "installed-helper"
+        installed.mkdir()
+        subprocess.run(["git", "init"], cwd=installed, text=True, capture_output=True, check=False)
+        installed_helper = installed / BIN_HELPER
+        installed_helper.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(Path(__file__).resolve(), installed_helper)
+        installed_result = subprocess.run(
+            [sys.executable, str(installed_helper), "install-hook", "--target", str(installed), "--json-only"],
+            cwd=installed,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if installed_result.returncode != 0:
+            failures.append("installed field_reports helper install-hook must be idempotent")
+            failures.extend(installed_result.stdout.splitlines())
+            failures.extend(installed_result.stderr.splitlines())
         exclude_text = (target / ".git/info/exclude").read_text(encoding="utf-8")
         for line in GIT_EXCLUDE_LINES:
             if line not in exclude_text.splitlines():

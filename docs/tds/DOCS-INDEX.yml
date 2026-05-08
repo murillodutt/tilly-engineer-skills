@@ -1,4 +1,4 @@
-version: 0.3.49
+version: 0.3.50
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -587,6 +587,13 @@ documents:
     class: evidence
     status: active
     consumer: installer authors, adapter maintainers, and certification reviewers
+    source_of_truth: false
+    evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/project-context-real-canaries-2026-05-08/REPORT.md
+    id: evidence.context_mesh.project_context_real_canaries_2026_05_08
+    class: evidence
+    status: active
+    consumer: installer authors, context-oracle maintainers, and certification reviewers
     source_of_truth: false
     evidence_level: L3
   - path: docs/evidence/reports/context-mesh/claude-plugin-oracle-2026-05-06/REPORT.md
