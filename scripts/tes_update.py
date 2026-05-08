@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.51"
+VERSION = "0.3.52"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -934,6 +934,11 @@ def write_context_fixture(target: Path) -> None:
 | Territory | Initial role | Files | Sample anchors |
 |---|---|---|---|
 | .agents | agent runtime surface | 2 | `.agents/skills/tes-init/SKILL.md` |
+
+## Workspace Boundaries
+
+| Source | Kind | Pattern |
+|---|---|---|
 
 ## Source Anchors Read First
 

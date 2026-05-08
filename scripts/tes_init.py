@@ -28,7 +28,7 @@ HELPER_ROOT = SCRIPT_PATH.parent
 ROOT = SCRIPT_PATH.parents[1]
 SOURCE_ROOT = ROOT / "scripts" if (ROOT / "scripts").exists() else HELPER_ROOT
 PACKAGE_MODE = SOURCE_ROOT.name == "scripts"
-VERSION = "0.3.51"
+VERSION = "0.3.52"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -80,6 +80,7 @@ TES_ROOT_BOOTLOADER_MARKERS = {
 }
 MAX_HASH_BYTES = 10 * 1024 * 1024
 MAX_CONTEXT_ANCHORS = 40
+MAX_CONTEXT_TERRITORIES = 80
 MAX_README_SUMMARY_CHARS = 320
 MANIFEST_NAMES = {
     "package.json",
@@ -824,6 +825,75 @@ def context_anchors(scan: dict[str, Any]) -> list[dict[str, Any]]:
     return sorted(records, key=anchor_score)[:MAX_CONTEXT_ANCHORS]
 
 
+def package_workspace_patterns(package: dict[str, Any]) -> list[str]:
+    workspaces = package.get("workspaces")
+    if isinstance(workspaces, list):
+        return [str(item) for item in workspaces]
+    if isinstance(workspaces, dict):
+        packages = workspaces.get("packages")
+        if isinstance(packages, list):
+            return [str(item) for item in packages]
+    return []
+
+
+def pnpm_workspace_patterns(target: Path) -> list[str]:
+    path = target / "pnpm-workspace.yaml"
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    patterns: list[str] = []
+    in_packages = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("packages:"):
+            in_packages = True
+            continue
+        if not in_packages:
+            continue
+        if stripped.startswith("- "):
+            value = stripped[2:].strip().strip("'\"")
+            if value:
+                patterns.append(value)
+            continue
+        if stripped and not line.startswith((" ", "\t")):
+            break
+    return patterns
+
+
+def cargo_workspace_patterns(target: Path) -> list[str]:
+    cargo = safe_read_toml(target / "Cargo.toml")
+    workspace = cargo.get("workspace") if cargo else None
+    if not isinstance(workspace, dict):
+        return []
+    members = workspace.get("members")
+    if not isinstance(members, list):
+        return []
+    return [str(item) for item in members]
+
+
+def workspace_boundaries(target: Path) -> list[dict[str, str]]:
+    records: list[dict[str, str]] = []
+    package = safe_read_json(target / "package.json")
+    if package:
+        for pattern in package_workspace_patterns(package):
+            records.append({"source": "package.json", "kind": "npm workspace", "pattern": pattern})
+    for pattern in pnpm_workspace_patterns(target):
+        records.append({"source": "pnpm-workspace.yaml", "kind": "pnpm workspace", "pattern": pattern})
+    for pattern in cargo_workspace_patterns(target):
+        records.append({"source": "Cargo.toml", "kind": "cargo workspace", "pattern": pattern})
+
+    seen: set[tuple[str, str, str]] = set()
+    unique: list[dict[str, str]] = []
+    for record in records:
+        key = (record["source"], record["kind"], record["pattern"])
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(record)
+    return unique
+
+
 def territory_summary(scan: dict[str, Any]) -> list[dict[str, Any]]:
     territories: list[dict[str, Any]] = []
     territory_names = {
@@ -847,7 +917,7 @@ def territory_summary(scan: dict[str, Any]) -> list[dict[str, Any]]:
                 "role": infer_territory_role(name, paths),
             }
         )
-    return territories[:20]
+    return territories[:MAX_CONTEXT_TERRITORIES]
 
 
 def infer_territory_role(name: str, paths: list[str]) -> str:
@@ -888,6 +958,7 @@ def project_context(scan: dict[str, Any], target: Path, manifest_rel: str) -> di
         "manifest": manifest_rel,
         "anchors": anchors,
         "territories": territory_summary(scan),
+        "workspace_boundaries": workspace_boundaries(target),
         "package_scripts": scripts,
         "quality_scripts": dict(sorted(qscripts.items())),
     }
@@ -1059,6 +1130,7 @@ def write_project_context(target: Path, scan: dict[str, Any], gates: list[dict[s
     signals = context["semantic_signals"]
     anchors = context["anchors"]
     territories = context["territories"]
+    workspaces = context["workspace_boundaries"]
     scripts = context["package_scripts"]
     qscripts = context["quality_scripts"]
     surface_rows = [
@@ -1077,6 +1149,10 @@ def write_project_context(target: Path, scan: dict[str, Any], gates: list[dict[s
             ", ".join(f"`{path}`" for path in territory["sample_paths"]) or "none",
         )
         for territory in territories
+    ]
+    workspace_rows = [
+        (str(workspace["source"]), str(workspace["kind"]), str(workspace["pattern"]))
+        for workspace in workspaces
     ]
     script_rows = [(name, command) for name, command in scripts.items()]
     quality_rows = [(name, command) for name, command in qscripts.items()]
@@ -1142,6 +1218,9 @@ are starting evidence for the active agent, not a final semantic analysis.
 ## Project Territories
 
 {markdown_table(territory_rows, ("Territory", "Initial role", "Files", "Sample anchors"))}
+## Workspace Boundaries
+
+{markdown_table(workspace_rows, ("Source", "Kind", "Pattern"))}
 ## Source Anchors Read First
 
 {markdown_table(anchor_rows, ("Path", "Kind", "Bytes"))}
@@ -1400,6 +1479,7 @@ def self_test() -> dict[str, Any]:
             "package.json",
             "src/app.py",
             "lint",
+            "Workspace Boundaries",
             "Recommended Deep Reads",
         ):
             if term not in context_text:
@@ -1522,6 +1602,34 @@ def self_test() -> dict[str, Any]:
         anchors = [str(anchor["path"]) for anchor in context_anchors(scan)]
         if "main.tf" not in anchors:
             failures.append("Terraform root files must become project context anchors")
+
+    with tempfile.TemporaryDirectory(prefix="tes-init-monorepo-workspaces-") as tempdir:
+        target = Path(tempdir)
+        (target / "README.md").write_text("# Monorepo fixture\n\nWorkspace prose.\n", encoding="utf-8")
+        (target / "package.json").write_text(
+            json.dumps({"name": "monorepo-fixture", "workspaces": ["packages/*"]}) + "\n",
+            encoding="utf-8",
+        )
+        (target / "pnpm-workspace.yaml").write_text(
+            "packages:\n"
+            "  - 'apps/*'\n"
+            "  - 'packages/*'\n"
+            "  - 'crates/*/js'\n",
+            encoding="utf-8",
+        )
+        (target / "Cargo.toml").write_text("[workspace]\nmembers = [\"crates/*\"]\n", encoding="utf-8")
+        for dirname in (".cargo", ".cursor", ".husky", "apps", "crates", "packages", "test-config-errors"):
+            (target / dirname).mkdir(parents=True)
+            (target / dirname / "anchor.txt").write_text(dirname + "\n", encoding="utf-8")
+        scan = scan_project(target)
+        territory_names = {str(territory["name"]) for territory in territory_summary(scan)}
+        for expected in (".cargo", ".cursor", ".husky", "apps", "crates", "packages", "test-config-errors"):
+            if expected not in territory_names:
+                failures.append(f"monorepo territory must be retained: {expected}")
+        workspace_patterns = {record["pattern"] for record in workspace_boundaries(target)}
+        for expected in ("packages/*", "apps/*", "crates/*/js", "crates/*"):
+            if expected not in workspace_patterns:
+                failures.append(f"workspace boundary must be detected: {expected}")
 
     with tempfile.TemporaryDirectory(prefix="tes-init-timeout-") as tempdir:
         target = Path(tempdir)

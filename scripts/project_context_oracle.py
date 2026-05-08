@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.51"
+VERSION = "0.3.52"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 PACKAGE_MODE = (ROOT / "scripts").exists()
 MARKDOWN_HEADING_RE = re.compile(r"^#{1,3}\s+(.+?)\s*$")
@@ -27,6 +27,7 @@ REQUIRED_SECTIONS = (
     "## Active Agent Refinement Contract",
     "## Coverage",
     "## Project Territories",
+    "## Workspace Boundaries",
     "## Source Anchors Read First",
     "## Runtime And Governance Surfaces",
     "## Recommended Deep Reads",
@@ -457,6 +458,63 @@ def expected_territories(target: Path) -> list[str]:
     return sorted(name for name in territories if name not in {".git", ".tes"})
 
 
+def package_workspace_patterns(package: dict[str, Any]) -> list[str]:
+    workspaces = package.get("workspaces")
+    if isinstance(workspaces, list):
+        return [str(item) for item in workspaces]
+    if isinstance(workspaces, dict):
+        packages = workspaces.get("packages")
+        if isinstance(packages, list):
+            return [str(item) for item in packages]
+    return []
+
+
+def pnpm_workspace_patterns(target: Path) -> list[str]:
+    path = target / "pnpm-workspace.yaml"
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    patterns: list[str] = []
+    in_packages = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("packages:"):
+            in_packages = True
+            continue
+        if not in_packages:
+            continue
+        if stripped.startswith("- "):
+            value = stripped[2:].strip().strip("'\"")
+            if value:
+                patterns.append(value)
+            continue
+        if stripped and not line.startswith((" ", "\t")):
+            break
+    return patterns
+
+
+def cargo_workspace_patterns(target: Path) -> list[str]:
+    cargo = load_toml(target / "Cargo.toml")
+    workspace = cargo.get("workspace") if cargo else None
+    if not isinstance(workspace, dict):
+        return []
+    members = workspace.get("members")
+    if not isinstance(members, list):
+        return []
+    return [str(item) for item in members]
+
+
+def expected_workspace_boundaries(target: Path) -> list[str]:
+    expected: list[str] = []
+    package = load_json(target / "package.json")
+    if package:
+        expected.extend(package_workspace_patterns(package))
+    expected.extend(pnpm_workspace_patterns(target))
+    expected.extend(cargo_workspace_patterns(target))
+    return sorted(dict.fromkeys(expected))
+
+
 def code_fence_failures(text: str) -> list[str]:
     failures: list[str] = []
     for match in re.finditer(r"```[^\n]*\n(.*?)```", text, flags=re.DOTALL):
@@ -542,6 +600,11 @@ def analyze(target: Path) -> dict[str, Any]:
     if missing_territories:
         failures.append(f"PROJECT-CONTEXT.md missing territories: {', '.join(missing_territories[:8])}")
 
+    workspace_boundaries = expected_workspace_boundaries(target)
+    missing_workspaces = [pattern for pattern in workspace_boundaries if pattern not in text]
+    if missing_workspaces:
+        failures.append(f"PROJECT-CONTEXT.md missing workspace boundaries: {', '.join(missing_workspaces[:8])}")
+
     qscripts = quality_scripts(target)
     missing_scripts = [name for name in qscripts if name not in text]
     if missing_scripts:
@@ -563,6 +626,7 @@ def analyze(target: Path) -> dict[str, Any]:
         "warnings": warnings,
         "anchors_checked": anchors,
         "territories_checked": territories,
+        "workspace_boundaries_checked": workspace_boundaries,
         "quality_scripts_checked": sorted(qscripts),
     }
 
@@ -614,6 +678,12 @@ def good_context(target: Path) -> str:
 | docs | documentation and durable explanation | 1 | `docs/architecture.md` |
 | src | product/source code territory | 1 | `src/app.py` |
 | tests | test or verification territory | 1 | `tests/test_app.py` |
+
+## Workspace Boundaries
+
+| Source | Kind | Pattern |
+|---|---|---|
+| package.json | npm workspace | packages/* |
 
 ## Source Anchors Read First
 
@@ -801,6 +871,21 @@ def self_test() -> dict[str, Any]:
                 failures.append(f"oracle must exclude generated TES anchor: {generated}")
         if "src" not in territories or "src/app.py" not in anchors:
             failures.append("oracle must keep real project territory while excluding TES runtime surfaces")
+
+    with tempfile.TemporaryDirectory(prefix="tes-project-context-monorepo-") as tempdir:
+        target = Path(tempdir)
+        write(target / "README.md", "# Monorepo fixture\n\nWorkspace prose.\n")
+        write(target / "package.json", json.dumps({"name": "monorepo-fixture", "workspaces": ["packages/*"]}) + "\n")
+        write(target / "pnpm-workspace.yaml", "packages:\n  - 'apps/*'\n  - 'crates/*/js'\n")
+        write(target / "Cargo.toml", "[workspace]\nmembers = [\"crates/*\"]\n")
+        expected = expected_workspace_boundaries(target)
+        for pattern in ("packages/*", "apps/*", "crates/*/js", "crates/*"):
+            if pattern not in expected:
+                failures.append(f"oracle must expect workspace boundary: {pattern}")
+        write(target / PROJECT_CONTEXT, good_context(target).replace("| package.json | npm workspace | packages/* |\n", ""))
+        bad = analyze(target)
+        if bad["status"] != "FAIL" or not any("missing workspace boundaries" in item for item in bad["failures"]):
+            failures.append("oracle must fail when workspace boundaries are missing")
 
     with tempfile.TemporaryDirectory(prefix="tes-project-context-lower-readme-") as tempdir:
         target = Path(tempdir)
