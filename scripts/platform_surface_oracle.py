@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+import command_trigger_oracle
 import materialize_adapter
 
 
@@ -151,7 +152,7 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing Codex agent bootloader: {codex_agent}")
     else:
         text = read(codex_agent)
-        for term in ("Think Before Coding", "Simplicity First", "cortex_reflex", "/tes-init", "/tes-update", "/tes:init", "/tes:update", "tes init", "TES, inicialize este projeto", "/tes-cortex", "/tes:cortex", "/tes-field-reports", "/tes:field-reports"):
+        for term in ("Think Before Coding", "Simplicity First", "cortex_reflex"):
             if term not in text:
                 failures.append(f"{codex_agent} missing {term}")
     for skill in CODEX_SKILLS:
@@ -174,7 +175,7 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing Claude bootloader: {claude_agent}")
     else:
         text = read(claude_agent)
-        for term in ("Think Before Coding", "Simplicity First", "Cortex Reflection", "/tes-init", "/tes-update", "/tes:init", "invalid slash", "/tes:update", "tes init", "TES, inicialize este projeto", "/tes-cortex", "/tes:cortex", "/tes-field-reports", "/tes:field-reports"):
+        for term in ("Think Before Coding", "Simplicity First", "Cortex Reflection"):
             if term not in text:
                 failures.append(f"{claude_agent} missing {term}")
     for skill in CLAUDE_SKILLS:
@@ -204,21 +205,6 @@ def analyze() -> dict[str, Any]:
             failures.append(f"{cursor_rule} must keep alwaysApply: true")
         if "description:" not in text:
             failures.append(f"{cursor_rule} missing description")
-        for term in ("/tes-init", "/tes-update", "/tes:init", "/tes:update", "tes init", "TES, inicialize este projeto", "/tes-cortex", "/tes:cortex", "/tes-field-reports", "/tes:field-reports"):
-            if term not in text:
-                failures.append(f"{cursor_rule} missing {term} shortcut routing")
-    for relpath in (
-        "src/adapters/codex/skills/tes-init/SKILL.md",
-        "src/adapters/claude/skills/tes-init/SKILL.md",
-    ):
-        if exists(relpath):
-            text = read(relpath)
-            terms = ["/tes-init", "/tes-update", "/tes:init", "/tes:update", "tes init", "natural init command/prompt", "TES, inicialize este projeto"]
-            if "/claude/" in relpath:
-                terms.append("invalid")
-            for term in terms:
-                if term not in text:
-                    failures.append(f"{relpath} missing {term}")
     if not exists("src/adapters/cursor/CURSOR.md"):
         failures.append("missing Cursor bootloader: src/adapters/cursor/CURSOR.md")
     surface("cursor", "agent", "certified", "src/adapters/cursor/CURSOR.md")
@@ -291,6 +277,19 @@ def analyze() -> dict[str, Any]:
     for term in ("DESTINATION_REPO", "murillodutt/tilly-engineer-skills", "DISABLED", "gh issue create"):
         if term not in field_reports_text:
             failures.append(f"scripts/field_reports.py missing {term}")
+
+    command_trigger_result = command_trigger_oracle.analyze(ROOT)
+    if command_trigger_result["status"] != "PASS":
+        failures.extend(
+            f"command trigger oracle: {failure}"
+            for failure in command_trigger_result["failures"]
+        )
+    surface(
+        "shared",
+        "command-triggers",
+        "certified" if command_trigger_result["status"] == "PASS" else "fail",
+        "scripts/command_trigger_oracle.py",
+    )
 
     github_oracle = "scripts/field_reports_github_oracle.py"
     if not exists(github_oracle):

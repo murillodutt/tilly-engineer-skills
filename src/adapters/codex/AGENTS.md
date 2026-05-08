@@ -74,9 +74,12 @@ requires exact syntax.
 
 <tes_init>
 
-Treat `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, and
-natural command/prompts such as `TES, initialize this project`,
-`TES, inicialize este projeto`, or `Atualizar TES` as installer intents.
+Treat `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`,
+`tes update`, `initialize TES`, `install TES`, `recertify TES`,
+`inicializar TES`, `instalar TES`, `recertificar TES`, and natural
+command/prompts such as `TES, initialize this project`,
+`TES, inicialize este projeto`, `Atualizar TES`, or `atualizar TES` as
+installer intents.
 `/tes-update` first checks installed
 version, cloud version, helper contract parity, applied IDE surfaces,
 recommended route, and `recommended_update_scope`. Read-only update probes use

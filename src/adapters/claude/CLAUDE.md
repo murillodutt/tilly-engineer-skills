@@ -90,9 +90,12 @@ requires exact syntax.
 
 ## TES Shortcuts
 
-Treat `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, and
-natural command/prompts such as `TES, initialize this project`,
-`TES, inicialize este projeto`, or `Atualizar TES` as installer intents.
+Treat `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`,
+`tes update`, `initialize TES`, `install TES`, `recertify TES`,
+`inicializar TES`, `instalar TES`, `recertificar TES`, and natural
+command/prompts such as `TES, initialize this project`,
+`TES, inicialize este projeto`, `Atualizar TES`, or `atualizar TES` as
+installer intents.
 Across Codex, Claude Code, and Cursor, `/tes-*` forms are the preferred shared
 triggers and `/tes:*` forms are compatible TES intent aliases. If Claude Code
 says `/tes:init` or another `/tes:*` form is an invalid slash command, continue

@@ -5,10 +5,13 @@ description: Use when the user says /tes-init, /tes-update, /tes:init, /tes:upda
 
 # TES Init
 
-`/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, and direct command/prompts such as
-`TES, initialize this project`, `TES, inicialize este projeto`, or
-`Atualizar TES` are user-facing installer intents. They are not blind shell
-commands and not background daemons. The active agent remains the executor.
+`/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`,
+`tes update`, `initialize TES`, `install TES`, `recertify TES`,
+`inicializar TES`, `instalar TES`, `recertificar TES`, and direct
+command/prompts such as `TES, initialize this project`,
+`TES, inicialize este projeto`, `Atualizar TES`, or `atualizar TES` are
+user-facing installer intents. They are not blind shell commands and not
+background daemons. The active agent remains the executor.
 
 ## Mission
 
