@@ -75,13 +75,20 @@ When the user says `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`,
 "Atualizar TES", "atualizar TES", or a natural command/prompt such as
 "TES, inicialize este projeto",
 treat it as an intent shortcut for the assisted context installer. For
-`/tes-update` or `/tes:update`, first check installed version, cloud version,
-applied IDE surfaces, helper contract parity, recommended route, and
-`recommended_update_scope`. Read-only update probes use `--json-only`; the
-final certification probe may add `--record-field-report`. Detect the project
-state, run Step Zero before edits, preserve local governance, initialize or
-update `docs/agents/**`, analyze the target project in depth, write or update
-`docs/agents/PROJECT-CONTEXT.md`, initialize Cortex, repair
+`/tes-init`, first run the **Install/Update Gate** and **Project Context Gate**
+before choosing writes. The Install/Update Gate checks installed/cloud version,
+helper contract, adapter/runtime drift, MCP activation, and legacy retirement.
+The Project Context Gate checks whether `docs/agents/PROJECT-CONTEXT.md` exists
+and passes the project-context oracle. Step Zero protects installer/update
+writes; it must not block project-context initialization when TES is already
+installed/current and only the Project Context Gate fails. For `/tes-update` or
+`/tes:update`, first check installed version, cloud version, applied IDE
+surfaces, helper contract parity, recommended route, and
+`recommended_update_scope`. Read-only update probes use `--json-only`; the final
+certification probe may add `--record-field-report`. Detect the project state,
+run Step Zero before installer/update edits, preserve local governance,
+initialize or update `docs/agents/**`, analyze the target project in depth,
+write or update `docs/agents/PROJECT-CONTEXT.md`, initialize Cortex, repair
 `recommended_update_scope=helpers-only` or `STALE_HELPERS` through the
 helper-only Layer Zero route before MCP config activation, then require a final
 recorded probe before GO, commit, or push that shows

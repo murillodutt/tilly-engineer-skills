@@ -83,6 +83,12 @@ installer intents.
 For `/tes-init`, initialize the project as well as TES: read the strongest
 project anchors available and leave `docs/agents/PROJECT-CONTEXT.md` as the
 initial durable project map for future agents.
+Route `/tes-init` through two read-only gates before choosing writes:
+**Install/Update Gate** checks whether TES install/update work is needed, and
+**Project Context Gate** checks whether `PROJECT-CONTEXT.md` exists and passes
+the context oracle. Step Zero protects installer/update writes; it must not
+block project-context initialization when TES is already installed/current and
+only the Project Context Gate fails.
 `tes_init.py` creates the scaffold; the active agent must open strong anchors
 before claiming deep project understanding and refine the context or report
 `Project context: NEEDS_REVIEW`.

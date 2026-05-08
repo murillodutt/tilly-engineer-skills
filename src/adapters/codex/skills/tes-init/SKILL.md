@@ -41,9 +41,20 @@ the user for package contents.
 1. Enter quiet installer mode.
 2. Detect the current runtime and classify the project as `new`, `existing`, or
    `meshed`.
-3. Run Step Zero before edits: inspect Git status and offer a local baseline
-   commit when the tree is dirty.
-4. For `/tes-update` or `/tes:update`, run `tes_update.py plan --json-only`
+3. Run the `/tes-init` router gates before choosing writes:
+   - **Install/Update Gate** checks installed/cloud versions, helper contract,
+     adapter/runtime drift, MCP activation, and legacy retirement.
+   - **Project Context Gate** checks whether
+     `docs/agents/PROJECT-CONTEXT.md` exists and passes
+     `project_context_oracle.py`.
+   Step Zero protects installer/update writes. It must not block
+   project-context initialization when TES is already installed/current and the
+   Project Context Gate is the only failing gate; report the dirty tree, avoid
+   helper/adapter/MCP/bootloader writes, and initialize/certify project context.
+4. Run Step Zero before installer/update edits: inspect Git status and offer a
+   local baseline commit when the tree is dirty and install/update writes are
+   required.
+5. For `/tes-update` or `/tes:update`, run `tes_update.py plan --json-only`
    when available to compare installed/cloud versions, verify helper contract
    parity, detect applied IDE surfaces, and recommend route plus
    `recommended_update_scope`.
@@ -55,14 +66,14 @@ the user for package contents.
    overwrite, record the final probe before GO, commit, or push; it must show
    `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or
    `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`.
-5. Before rewriting root bootloaders, run `root_context.py analyze` when
+6. Before rewriting root bootloaders, run `root_context.py analyze` when
    available and migrate durable root context into `docs/agents/**` first.
-6. When `legacy_retirement_required=true`, run `tes_legacy_retirement.py plan`,
+7. When `legacy_retirement_required=true`, run `tes_legacy_retirement.py plan`,
    apply only if the run is authorized, then require
    `tes_legacy_retirement.py audit` before copying new TES assets.
-7. Use the detected runtime as the default route. Ask for route only when the
+8. Use the detected runtime as the default route. Ask for route only when the
    installer contract requires it.
-8. Preserve local governance, build or update `docs/agents/**`, analyze the
+9. Preserve local governance, build or update `docs/agents/**`, analyze the
    target project in depth, write or update `docs/agents/PROJECT-CONTEXT.md`,
    initialize `docs/agents/cortex/**`, keep runtime bootloaders thin, and
    activate the read-only Cortex MCP route when selected.
@@ -70,13 +81,13 @@ the user for package contents.
    must open strong anchors before claiming deep project understanding, refine
    `PROJECT-CONTEXT.md` when supported by evidence, or report
    `Project context: NEEDS_REVIEW` with the blocker.
-9. Invoke package oracles such as `tes_init.py`, `tes_update.py`,
+10. Invoke package oracles such as `tes_init.py`, `tes_update.py`,
    `tes_legacy_retirement.py`, `root_context.py`, `install_smoke.py`,
    `install_mcp.py`, and Cortex checks.
    If local execution is unavailable, mark it `BLOCKED` or `SKIP`.
-10. Install or report the Field Reports `pre-push` drain. It is active by
+11. Install or report the Field Reports `pre-push` drain. It is active by
    default and controlled by the user manual prompts.
-11. Finish with a short certification report, source snapshot freshness, changed
+12. Finish with a short certification report, source snapshot freshness, changed
    surfaces, installed helper set, Field Reports state, evidence path, limits,
    project context path, rollback summary, and Git rollback instructions.
 
