@@ -21,7 +21,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.43"
+VERSION = "0.3.44"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")

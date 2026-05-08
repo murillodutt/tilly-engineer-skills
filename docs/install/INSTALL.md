@@ -148,8 +148,9 @@ When this package is available locally, `tes_init.py` is the project
 initialization and recertification command. It verifies package health, scans
 the target project, writes `docs/agents/PROJECT-REGISTER.md`, writes
 `docs/agents/PROJECT-CONTEXT.md` as the initial project map for future agents,
-and stores a full manifest under `docs/agents/evidence/**`. Cortex can also be
-initialized and checked directly:
+stores a full manifest under `docs/agents/evidence/**`, and can be certified
+with `project_context_oracle.py`. Cortex can also be initialized and checked
+directly:
 
 The register and project context are written before slower certification gates
 finish. If a later oracle is blocked or times out, the run closes as
@@ -159,6 +160,8 @@ uninitialized.
 ```bash
 python3 scripts/tes_init.py --target /path/to/project --yes
 python3 scripts/tes_init.py --self-test
+python3 scripts/project_context_oracle.py --target /path/to/project
+python3 scripts/project_context_oracle.py --self-test
 python3 scripts/tes_update.py plan --target /path/to/project --json-only
 python3 scripts/tes_update.py plan --target /path/to/project --json-only --record-field-report
 python3 scripts/field_reports.py status --target /path/to/project
@@ -202,7 +205,8 @@ supports them safely; command navigation remains the certified fallback.
 For a new project, the installer creates a minimal `docs/agents/**` mesh and
 thin runtime files for the selected IDE. It also creates
 `docs/agents/PROJECT-CONTEXT.md` from discovered project facts and names
-unknowns explicitly.
+unknowns explicitly. `project_context_oracle.py` must pass or the installer
+must close as `NEEDS_REVIEW` with a concrete blocker.
 
 For an existing project, the installer migrates durable rules from existing
 agent files and docs into `docs/agents/**`, then turns `AGENTS.md`, `CLAUDE.md`,
