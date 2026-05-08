@@ -12,6 +12,22 @@ Core contract:
 Assumptions visible. Scope smaller. Edits surgical. Success falsifiable.
 ```
 
+## TES Trigger Fallback
+
+Treat `/tes-init`, `/tes-update`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
+`/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench` as the
+shared TES trigger vocabulary. Treat `/tes:init`, `/tes:update`,
+`/tes:cortex`, `/tes:mcp`, `/tes:field-reports`, `/tes:doctor`,
+`/tes:adapter`, `/tes:bench`, `/tes:check`, `/tes:certify`, `/tes:recall`,
+`/tes:learn`, `/tes:reflect`, and `/tes:curate` as compatible aliases.
+
+Natural intents also route to TES: `tes init`, `tes update`, `Atualizar TES`,
+`atualizar TES`, `initialize TES`, `install TES`, `recertify TES`,
+`inicializar TES`, `instalar TES`, and `recertificar TES`.
+
+If Claude reports `/tes:*` text as an invalid slash, treat it as TES intent and
+do not stop to ask for a route when the intended TES action is clear.
+
 Tradeoff: this skill biases toward caution over speed. Use judgment for trivial
 one-liners.
 

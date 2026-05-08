@@ -11,7 +11,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.40"
+VERSION = "0.3.41"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -92,6 +92,26 @@ PLATFORM_SOURCE_GROUPS = {
 }
 
 
+CLAUDE_PROJECT_SKILLS = (
+    "tes-guidelines",
+    "tes-init",
+    "tes-cortex",
+    "tes-mcp",
+    "tes-doctor",
+    "tes-adapter",
+    "tes-bench",
+)
+CODEX_PROJECT_SKILLS = (
+    "tes-engineering-discipline",
+    "tes-init",
+    "tes-cortex",
+    "tes-mcp",
+    "tes-doctor",
+    "tes-adapter",
+    "tes-bench",
+)
+
+
 def read_group(root: Path, paths: tuple[str, ...]) -> tuple[str, list[str]]:
     chunks: list[str] = []
     failures: list[str] = []
@@ -130,6 +150,107 @@ def check_claude_invalid_slash(text: str) -> list[str]:
         if term not in text:
             failures.append(f"claude missing invalid-slash fallback term: {term}")
     return failures
+
+
+def installed_platform_paths(root: Path, platform: str) -> tuple[str, ...]:
+    if platform == "codex":
+        return (
+            "AGENTS.md",
+            *(f".agents/skills/{skill}/SKILL.md" for skill in CODEX_PROJECT_SKILLS),
+        )
+    if platform == "claude":
+        return (
+            "CLAUDE.md",
+            *(f".claude/skills/{skill}/SKILL.md" for skill in CLAUDE_PROJECT_SKILLS),
+            *(f"skills/{skill}/SKILL.md" for skill in CLAUDE_PROJECT_SKILLS),
+        )
+    if platform == "cursor":
+        cursor_rules = tuple(
+            path.relative_to(root).as_posix()
+            for path in sorted((root / ".cursor/rules").glob("*.mdc"))
+            if path.is_file()
+        )
+        return ("CURSOR.md", *cursor_rules)
+    return ()
+
+
+def installed_platform_detected(root: Path, platform: str) -> bool:
+    if platform == "codex":
+        return (root / "AGENTS.md").exists() or (root / ".agents/skills").exists()
+    if platform == "claude":
+        return (
+            (root / "CLAUDE.md").exists()
+            or (root / ".claude/skills").exists()
+            or (root / "skills").exists()
+            or (root / ".claude-plugin/plugin.json").exists()
+        )
+    if platform == "cursor":
+        return (root / "CURSOR.md").exists() or (root / ".cursor/rules").exists()
+    return False
+
+
+def required_installed_files(platform: str) -> tuple[str, ...]:
+    if platform == "codex":
+        return (
+            "AGENTS.md",
+            ".agents/skills/tes-engineering-discipline/SKILL.md",
+            ".agents/skills/tes-init/SKILL.md",
+        )
+    if platform == "claude":
+        return (
+            "CLAUDE.md",
+            ".claude/skills/tes-guidelines/SKILL.md",
+            ".claude/skills/tes-init/SKILL.md",
+        )
+    if platform == "cursor":
+        return (".cursor/rules/*.mdc",)
+    return ()
+
+
+def check_installed_target(root: Path) -> dict[str, Any]:
+    failures: list[str] = []
+    checked: list[dict[str, Any]] = []
+
+    for platform in ("codex", "claude", "cursor"):
+        if not installed_platform_detected(root, platform):
+            checked.append({"group": platform, "paths": [], "status": "NOT_APPLIED"})
+            continue
+
+        paths = installed_platform_paths(root, platform)
+        existing_paths = tuple(path for path in paths if (root / path).exists())
+        text, group_failures = read_group(root, existing_paths)
+        missing_required = []
+        for relpath in required_installed_files(platform):
+            if relpath.endswith("*.mdc"):
+                if not any((root / ".cursor/rules").glob("*.mdc")):
+                    missing_required.append(relpath)
+                continue
+            if not (root / relpath).exists():
+                missing_required.append(relpath)
+        group_failures.extend(f"missing installed trigger surface: {relpath}" for relpath in missing_required)
+        group_failures.extend(check_text(platform, text))
+        if platform == "claude":
+            group_failures.extend(check_claude_invalid_slash(text))
+        failures.extend(group_failures)
+        checked.append(
+            {
+                "group": platform,
+                "paths": list(existing_paths),
+                "status": "PASS" if not group_failures else "FAIL",
+            }
+        )
+
+    return {
+        "version": VERSION,
+        "status": "PASS" if not failures else "FAIL",
+        "mode": "installed-target",
+        "target": str(root),
+        "preferred_triggers": list(PREFERRED_TRIGGERS),
+        "compatible_aliases": list(COMPATIBLE_ALIASES),
+        "natural_intents": list(NATURAL_INTENTS),
+        "checked": checked,
+        "failures": failures,
+    }
 
 
 def analyze(root: Path = ROOT) -> dict[str, Any]:
@@ -188,15 +309,35 @@ def run_fixture_tests() -> list[str]:
     if not any("recertificar TES" in item for item in check_text("fixture_bad_natural", bad_natural)):
         failures.append("bad natural fixture must fail when a natural intent is absent")
 
+    import tempfile
+
+    with tempfile.TemporaryDirectory(prefix="tes-trigger-oracle-good-") as tempdir:
+        target = Path(tempdir)
+        (target / ".claude/skills/tes-guidelines").mkdir(parents=True)
+        (target / ".claude/skills/tes-init").mkdir(parents=True)
+        (target / "CLAUDE.md").write_text(good_text, encoding="utf-8")
+        (target / ".claude/skills/tes-guidelines/SKILL.md").write_text(good_text, encoding="utf-8")
+        (target / ".claude/skills/tes-init/SKILL.md").write_text(good_text, encoding="utf-8")
+        if check_installed_target(target)["status"] != "PASS":
+            failures.append("good installed Claude fixture must pass")
+
+    with tempfile.TemporaryDirectory(prefix="tes-trigger-oracle-bad-") as tempdir:
+        target = Path(tempdir)
+        (target / "CLAUDE.md").write_text(good_text, encoding="utf-8")
+        result = check_installed_target(target)
+        if result["status"] != "FAIL" or not any(".claude/skills/tes-init/SKILL.md" in item for item in result["failures"]):
+            failures.append("bad installed Claude fixture must fail without project skills")
+
     return failures
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--target", type=Path, help="validate installed trigger surfaces in a target project")
     args = parser.parse_args()
 
-    result = analyze()
+    result = check_installed_target(args.target.resolve()) if args.target else analyze()
     fixture_failures = run_fixture_tests() if args.self_test else []
     if fixture_failures:
         result["status"] = "FAIL"

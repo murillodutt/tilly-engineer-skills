@@ -49,8 +49,8 @@ the user for package contents.
    `.tes/bin/**` helpers with backups through the helper-only Layer Zero route,
    then rerun the update probe before activating MCP configs. After any helper
    overwrite, record the final probe before GO, commit, or push; it must show
-   `helper_contract_status=PASS`, `update_available=False`, and
-   `recommended_update_scope=none`.
+   `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or
+   `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`.
 5. Before rewriting root bootloaders, run `root_context.py analyze` when
    available and migrate durable root context into `docs/agents/**` first.
 6. When `legacy_retirement_required=true`, run `tes_legacy_retirement.py plan`,

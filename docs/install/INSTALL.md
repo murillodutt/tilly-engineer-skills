@@ -180,6 +180,10 @@ read-only and must not write Field Reports. Use
 `--record-field-report` only for the final certification probe. When the probe
 returns `recommended_update_scope=helpers-only`, run Layer Zero with
 `install_mcp.py --helpers-only` before adapter or MCP config activation.
+When it returns `recommended_update_scope=adapter-config` because
+`runtime_trigger_status=DRIFT`, run `install_adapter.py` for the selected route;
+project-owned bootloaders may be preserved while non-conflicting TES assets are
+copied.
 After Layer Zero, record the final proof with
 `tes_update.py plan --json-only --record-field-report` before commit or push.
 Self-tests run from `scripts/**` certify the package source contract; self-tests
@@ -384,8 +388,12 @@ The generated file lives under:
 /path/to/project/.tes/retrofit/
 ```
 
-The command still exits with a conflict status because no install was applied.
-That is intentional: retrofit is a merge plan, not a silent write.
+The command preserves conflicting bootloaders and still installs
+non-conflicting TES-owned assets. Its JSON status includes
+`INSTALLED_WITH_PRESERVED_CONFLICTS` or
+`DRY-RUN-WITH-PRESERVED-CONFLICTS`, plus a `preserved_conflicts` list. That is
+intentional: retrofit protects project governance without blocking assets such
+as `.claude/skills/**`.
 
 Give that file to an LLM or human reviewer. The merge instruction is to add the
 Tilly discipline while preserving project-local commands, paths, tests,

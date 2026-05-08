@@ -15,8 +15,9 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.40"
+VERSION = "0.3.41"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
+CLAUDE_LOCAL_BOOTLOADER = "Local product governance. Preserve this file.\n"
 
 
 def run(command: list[str], cwd: Path = ROOT) -> tuple[int, str, str]:
@@ -267,6 +268,63 @@ def legacy_retirement_probe() -> dict[str, Any]:
         return {"route": "legacy-retirement", "status": "FAIL" if failures else "PASS", "failures": failures}
 
 
+def claude_preserved_bootloader_probe() -> dict[str, Any]:
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-claude-preserve-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        (target / "CLAUDE.md").write_text(CLAUDE_LOCAL_BOOTLOADER, encoding="utf-8")
+
+        code, stdout, stderr = run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/install_adapter.py"),
+                "--target",
+                str(target),
+                "--adapter",
+                "claude",
+                "--yes",
+            ]
+        )
+        if code != 0:
+            failures.extend(["claude preserve install failed", *stdout.splitlines(), *stderr.splitlines()])
+            return {"route": "claude-preserved-bootloader", "status": "FAIL", "failures": failures}
+
+        try:
+            payload = json.loads(stdout[stdout.index("{"):stdout.rindex("}") + 1])
+        except (ValueError, json.JSONDecodeError) as exc:
+            failures.append(f"claude preserve install returned invalid JSON: {exc}")
+            payload = {}
+        if payload.get("status") != "INSTALLED_WITH_PRESERVED_CONFLICTS":
+            failures.append("claude preserve install must report INSTALLED_WITH_PRESERVED_CONFLICTS")
+        preserved = payload.get("preserved_conflicts") or []
+        if not any(str(item.get("relpath")) == "CLAUDE.md" for item in preserved):
+            failures.append("claude preserve install must preserve conflicting CLAUDE.md")
+        if (target / "CLAUDE.md").read_text(encoding="utf-8") != CLAUDE_LOCAL_BOOTLOADER:
+            failures.append("claude preserve install overwrote local CLAUDE.md")
+        failures.extend(require_paths(target, (
+            ".claude/skills/tes-guidelines/SKILL.md",
+            ".claude/skills/tes-init/SKILL.md",
+            ".claude/skills/tes-cortex/SKILL.md",
+            "skills/tes-guidelines/SKILL.md",
+            "skills/tes-init/SKILL.md",
+            ".claude-plugin/plugin.json",
+        )))
+
+        code, stdout, stderr = run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/command_trigger_oracle.py"),
+                "--target",
+                str(target),
+            ]
+        )
+        if code != 0:
+            failures.extend(["installed Claude trigger oracle failed", *stdout.splitlines(), *stderr.splitlines()])
+
+        return {"route": "claude-preserved-bootloader", "status": "FAIL" if failures else "PASS", "failures": failures}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--route", choices=ROUTES, default="all")
@@ -277,6 +335,7 @@ def main() -> int:
     results = [probe_route(route) for route in routes]
     if args.self_test:
         results.append(legacy_retirement_probe())
+        results.append(claude_preserved_bootloader_probe())
     failures = [
         failure
         for result in results

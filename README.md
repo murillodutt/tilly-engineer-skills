@@ -1,6 +1,6 @@
 # Tilly Engineer Skills (TES)
 
-[![Version](https://img.shields.io/badge/version-0.3.40-1f6feb)](package.json)
+[![Version](https://img.shields.io/badge/version-0.3.41-1f6feb)](package.json)
 [![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE)
 [![Field Report Governance](https://github.com/murillodutt/tilly-engineer-skills/actions/workflows/field-report-governance.yml/badge.svg)](https://github.com/murillodutt/tilly-engineer-skills/actions/workflows/field-report-governance.yml)
 [![Context Mesh](https://img.shields.io/badge/context--mesh-agent--operating--layer-2ea44f)](docs/mesh/CONTEXT-MESH-METHOD.md)

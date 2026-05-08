@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.40"
+VERSION = "0.3.41"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -37,8 +37,70 @@ HELPER_CONTRACT_MARKERS = {
     "field_reports.py": ('SCHEMA = "tes-field-report@2"',),
 }
 UPDATE_SCOPES = ("none", "helpers-only", "adapter-config", "full-convergence")
-PREFERRED_INTENT_TRIGGERS = ("/tes-init", "/tes-update", "/tes-doctor")
-COMPATIBLE_INTENT_ALIASES = ("/tes:init", "/tes:update", "/tes:doctor")
+PREFERRED_INTENT_TRIGGERS = (
+    "/tes-init",
+    "/tes-update",
+    "/tes-cortex",
+    "/tes-curate",
+    "/tes-mcp",
+    "/tes-field-reports",
+    "/tes-doctor",
+    "/tes-adapter",
+    "/tes-bench",
+)
+COMPATIBLE_INTENT_ALIASES = (
+    "/tes:init",
+    "/tes:update",
+    "/tes:cortex",
+    "/tes:mcp",
+    "/tes:field-reports",
+    "/tes:doctor",
+    "/tes:adapter",
+    "/tes:bench",
+    "/tes:check",
+    "/tes:certify",
+    "/tes:recall",
+    "/tes:learn",
+    "/tes:reflect",
+    "/tes:curate",
+)
+NATURAL_INTENTS = (
+    "tes init",
+    "tes update",
+    "Atualizar TES",
+    "atualizar TES",
+    "initialize TES",
+    "install TES",
+    "recertify TES",
+    "inicializar TES",
+    "instalar TES",
+    "recertificar TES",
+)
+CLAUDE_INVALID_SLASH_TERMS = (
+    "/tes:*",
+    "invalid slash",
+    "TES intent",
+    "do not stop to ask",
+)
+TRIGGER_TERMS = (*PREFERRED_INTENT_TRIGGERS, *COMPATIBLE_INTENT_ALIASES)
+CODEX_TRIGGER_SKILLS = (
+    "tes-engineering-discipline",
+    "tes-init",
+    "tes-cortex",
+    "tes-mcp",
+    "tes-doctor",
+    "tes-adapter",
+    "tes-bench",
+)
+CLAUDE_TRIGGER_SKILLS = (
+    "tes-guidelines",
+    "tes-init",
+    "tes-cortex",
+    "tes-mcp",
+    "tes-doctor",
+    "tes-adapter",
+    "tes-bench",
+)
 POST_LAYER_ZERO_FINAL_PROBE_CONTRACT = (
     "helper_contract_status=PASS",
     "update_available=False",
@@ -154,6 +216,113 @@ def surfaces(target: Path) -> dict[str, bool]:
         or (target / ".tilly/bin/field_reports.py").exists()
         or (target / ".git/hooks/pre-push").exists(),
     }
+
+
+def existing_relpaths(target: Path, relpaths: tuple[str, ...]) -> list[str]:
+    return [
+        relpath
+        for relpath in relpaths
+        if (target / relpath).exists() and (target / relpath).is_file()
+    ]
+
+
+def runtime_trigger_paths(target: Path, runtime: str) -> tuple[str, ...]:
+    if runtime == "codex":
+        return (
+            "AGENTS.md",
+            *(f".agents/skills/{skill}/SKILL.md" for skill in CODEX_TRIGGER_SKILLS),
+        )
+    if runtime == "claude":
+        return (
+            "CLAUDE.md",
+            ".claude-plugin/plugin.json",
+            ".claude-plugin/marketplace.json",
+            *(f".claude/skills/{skill}/SKILL.md" for skill in CLAUDE_TRIGGER_SKILLS),
+            *(f"skills/{skill}/SKILL.md" for skill in CLAUDE_TRIGGER_SKILLS),
+        )
+    if runtime == "cursor":
+        cursor_rules = tuple(
+            rel(path, target)
+            for path in sorted((target / ".cursor/rules").glob("*.mdc"))
+            if path.is_file()
+        )
+        return ("CURSOR.md", *cursor_rules)
+    return ()
+
+
+def missing_runtime_files(target: Path, runtime: str) -> list[str]:
+    if runtime == "codex":
+        return [
+            relpath
+            for relpath in (
+                "AGENTS.md",
+                ".agents/skills/tes-init/SKILL.md",
+                ".agents/skills/tes-engineering-discipline/SKILL.md",
+            )
+            if not (target / relpath).exists()
+        ]
+    if runtime == "claude":
+        return [
+            relpath
+            for relpath in (
+                "CLAUDE.md",
+                ".claude/skills/tes-guidelines/SKILL.md",
+                ".claude/skills/tes-init/SKILL.md",
+            )
+            if not (target / relpath).exists()
+        ]
+    if runtime == "cursor":
+        if (target / ".cursor/rules").exists() or (target / "CURSOR.md").exists():
+            return []
+        return [".cursor/rules/*.mdc"]
+    return []
+
+
+def runtime_trigger_contract(target: Path, surface_map: dict[str, bool]) -> dict[str, Any]:
+    records: list[dict[str, Any]] = []
+    failures: list[str] = []
+    for runtime in ("codex", "claude", "cursor"):
+        if not surface_map.get(runtime):
+            records.append({"runtime": runtime, "status": "NOT_APPLIED", "paths": []})
+            continue
+
+        paths = runtime_trigger_paths(target, runtime)
+        existing = existing_relpaths(target, paths)
+        text = "\n".join(read_text(target / relpath) for relpath in existing)
+        missing_terms = [term for term in TRIGGER_TERMS if term not in text]
+        folded = text.casefold()
+        missing_natural = [term for term in NATURAL_INTENTS if term.casefold() not in folded]
+        missing_files = missing_runtime_files(target, runtime)
+        if runtime == "claude":
+            missing_terms.extend(term for term in CLAUDE_INVALID_SLASH_TERMS if term not in text)
+
+        record_failures = [
+            *(f"missing runtime file: {relpath}" for relpath in missing_files),
+            *(f"missing trigger term: {term}" for term in missing_terms),
+            *(f"missing natural intent: {term}" for term in missing_natural),
+        ]
+        if record_failures:
+            failures.extend(f"{runtime}: {failure}" for failure in record_failures)
+        records.append(
+            {
+                "runtime": runtime,
+                "status": "DRIFT" if record_failures else "PASS",
+                "paths": existing,
+                "missing_files": missing_files,
+                "missing_terms": missing_terms,
+                "missing_natural_intents": missing_natural,
+                "failures": record_failures,
+            }
+        )
+
+    statuses = {record["status"] for record in records}
+    if "DRIFT" in statuses:
+        status = "DRIFT"
+    elif "PASS" in statuses:
+        status = "PASS"
+    else:
+        status = "NOT_APPLIED"
+    return {"status": status, "records": records, "failures": failures}
 
 
 def legacy_retirement(target: Path) -> dict[str, Any]:
@@ -471,11 +640,18 @@ def helper_source_text(name: str) -> str:
     return f'VERSION = "{VERSION}"\n'
 
 
-def recommended_update_scope(state: str, update_available: bool, helper_status: str) -> str:
+def recommended_update_scope(
+    state: str,
+    update_available: bool,
+    helper_status: str,
+    trigger_status: str,
+) -> str:
     if state == "new":
         return "full-convergence"
     if helper_status == "STALE_HELPERS":
         return "helpers-only"
+    if trigger_status == "DRIFT":
+        return "adapter-config"
     if update_available:
         return "full-convergence"
     return "none"
@@ -517,6 +693,7 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
     state = project_state(surface_map)
     runtimes = runtime_surfaces(surface_map)
     route, route_reason = recommended_route(state, runtimes, args.runtime)
+    triggers = runtime_trigger_contract(target, surface_map)
     installed_helpers = installed_helper_records(target)
     remote = remote_facts(args, bool(installed_helpers))
     installed = installed_version(records)
@@ -524,22 +701,25 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
     cmp_result = compare_semver(installed, cloud_version)
     helper = helper_contract(target, remote["helpers"], installed_helpers)
     helper_stale = helper["status"] == "STALE_HELPERS"
-    update_available = True if (cmp_result is not None and cmp_result < 0) or helper_stale else False
+    trigger_drift = triggers["status"] == "DRIFT"
+    update_available = True if (cmp_result is not None and cmp_result < 0) or helper_stale or trigger_drift else False
     update_reasons: list[str] = []
     if cmp_result is not None and cmp_result < 0:
         update_reasons.append("installed_version_behind")
     if helper_stale:
         update_reasons.append("helper_contract_drift")
+    if trigger_drift:
+        update_reasons.append("runtime_trigger_drift")
     if helper["status"] == "BLOCKED":
         update_reasons.append("helper_contract_blocked")
     update_status = (
         "AVAILABLE"
         if update_available
         else "CURRENT"
-        if cmp_result == 0 and helper["status"] in {"PASS", "NOT_INSTALLED"}
+        if cmp_result == 0 and helper["status"] in {"PASS", "NOT_INSTALLED"} and triggers["status"] in {"PASS", "NOT_APPLIED"}
         else "UNKNOWN"
     )
-    update_scope = recommended_update_scope(state, update_available, helper["status"])
+    update_scope = recommended_update_scope(state, update_available, helper["status"], triggers["status"])
     intent = recommended_intent(state, update_status, route, update_scope)
 
     result: dict[str, Any] = {
@@ -563,6 +743,9 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "requires_helper_overwrite": helper_stale,
         "helper_update_action": "overwrite-with-backup" if helper_stale else "none",
         "recommended_update_scope": update_scope,
+        "runtime_trigger_status": triggers["status"],
+        "runtime_trigger_records": triggers["records"],
+        "runtime_trigger_failures": triggers["failures"],
         "adapter_refresh_required": update_scope in {"adapter-config", "full-convergence"},
         "next_probe_required": update_scope != "none",
         "helper_contract_status": helper["status"],
@@ -603,6 +786,7 @@ def record_field_report(target: Path, result: dict[str, Any]) -> dict[str, Any] 
                 "update_available": result.get("update_available"),
                 "update_reasons": ",".join(result.get("update_reasons") or []),
                 "helper_contract_status": result.get("helper_contract_status"),
+                "runtime_trigger_status": result.get("runtime_trigger_status"),
                 "update_scope": result.get("recommended_update_scope"),
                 "recommended_update_scope": result.get("recommended_update_scope"),
                 "route": result.get("recommended_route"),
@@ -622,6 +806,17 @@ def write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def trigger_fixture_text(*, claude: bool = False) -> str:
+    lines = [
+        *PREFERRED_INTENT_TRIGGERS,
+        *COMPATIBLE_INTENT_ALIASES,
+        *NATURAL_INTENTS,
+    ]
+    if claude:
+        lines.extend(CLAUDE_INVALID_SLASH_TERMS)
+    return "\n".join(lines) + "\n"
+
+
 def self_test() -> dict[str, Any]:
     failures: list[str] = []
     mode = "package" if package_source_available() else "installed"
@@ -629,9 +824,13 @@ def self_test() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tes-update-") as tempdir:
         target = Path(tempdir)
         write(target / "docs/agents/cortex/CONTRACT.md", "# Contract\n")
-        write(target / "AGENTS.md", "Route to docs/agents/**\n")
-        write(target / "CLAUDE.md", "Route to docs/agents/**\n")
-        write(target / ".cursor/rules/tes-guidelines.mdc", "Route to docs/agents/**\n")
+        write(target / "AGENTS.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-init/SKILL.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-engineering-discipline/SKILL.md", trigger_fixture_text())
+        write(target / "CLAUDE.md", trigger_fixture_text(claude=True))
+        write(target / ".claude/skills/tes-guidelines/SKILL.md", trigger_fixture_text(claude=True))
+        write(target / ".claude/skills/tes-init/SKILL.md", trigger_fixture_text(claude=True))
+        write(target / ".cursor/rules/tes-guidelines.mdc", trigger_fixture_text())
         write(target / ".tes/bin/cortex_mcp.py", 'VERSION = "0.3.24"\n')
         write(target / ".agents/skills/tilly-init/SKILL.md", "name: tilly-init\n")
         args = argparse.Namespace(
@@ -661,7 +860,9 @@ def self_test() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tes-update-single-") as tempdir:
         target = Path(tempdir)
         write(target / "docs/agents/PROJECT-REGISTER.md", "Generated by Tilly\n")
-        write(target / "AGENTS.md", "Route to docs/agents/**\n")
+        write(target / "AGENTS.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-init/SKILL.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-engineering-discipline/SKILL.md", trigger_fixture_text())
         write(target / ".tes/bin/tes_update.py", f'VERSION = "{VERSION}"\n')
         args = argparse.Namespace(
             target=target,
@@ -690,7 +891,9 @@ def self_test() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tes-update-stale-helper-") as tempdir:
         target = Path(tempdir)
         write(target / "docs/agents/PROJECT-REGISTER.md", "Generated by Tilly\n")
-        write(target / "AGENTS.md", "Route to docs/agents/**\n")
+        write(target / "AGENTS.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-init/SKILL.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-engineering-discipline/SKILL.md", trigger_fixture_text())
         write(target / ".tes/bin/tes_update.py", helper_source_text("tes_update.py"))
         write(target / ".tes/bin/field_reports.py", f'VERSION = "{VERSION}"\nSCHEMA = "tes-field-report@1"\n')
         args = argparse.Namespace(
@@ -717,6 +920,37 @@ def self_test() -> dict[str, Any]:
         if result["recommended_intent"] != "/tes-update codex --helpers-only":
             failures.append("stale helper update must recommend helpers-only intent")
 
+    with tempfile.TemporaryDirectory(prefix="tes-update-trigger-drift-") as tempdir:
+        target = Path(tempdir)
+        write(target / "docs/agents/PROJECT-REGISTER.md", "Generated by Tilly\n")
+        write(target / "CLAUDE.md", "Route to docs/agents/**\n")
+        write(target / ".tes/bin/tes_update.py", helper_source_text("tes_update.py"))
+        args = argparse.Namespace(
+            target=target,
+            remote_version=VERSION,
+            remote_commit="f" * 40,
+            remote_helper_manifest=None,
+            local_package_helpers=True,
+            runtime="claude",
+            offline=False,
+            timeout=0.1,
+        )
+        result = analyze(args)
+        if result["update_status"] != "AVAILABLE":
+            failures.append("runtime trigger drift must report update available")
+        if result["runtime_trigger_status"] != "DRIFT":
+            failures.append("missing Claude skills must report runtime trigger drift")
+        if "runtime_trigger_drift" not in result["update_reasons"]:
+            failures.append("missing Claude skills must add runtime_trigger_drift reason")
+        if result["recommended_update_scope"] != "adapter-config":
+            failures.append("runtime trigger drift must recommend adapter-config scope")
+        if result["recommended_intent"] != "/tes-update claude":
+            failures.append("runtime trigger drift must recommend /tes-update claude")
+        if result["adapter_refresh_required"] is not True:
+            failures.append("runtime trigger drift must require adapter refresh")
+        if (result.get("post_layer_zero_final_probe") or {}).get("status") != "PENDING":
+            failures.append("runtime trigger drift must block final probe readiness")
+
     with tempfile.TemporaryDirectory(prefix="tes-update-new-") as tempdir:
         target = Path(tempdir)
         args = argparse.Namespace(
@@ -739,7 +973,9 @@ def self_test() -> dict[str, Any]:
         target = Path(tempdir)
         subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
         write(target / "docs/agents/PROJECT-REGISTER.md", "Generated by Tilly\n")
-        write(target / "AGENTS.md", "Route to docs/agents/**\n")
+        write(target / "AGENTS.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-init/SKILL.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-engineering-discipline/SKILL.md", trigger_fixture_text())
         write(target / ".tes/bin/tes_update.py", helper_source_text("tes_update.py"))
         write(target / ".tes/bin/field_reports.py", helper_source_text("field_reports.py"))
         args = argparse.Namespace(
