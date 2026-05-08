@@ -44,6 +44,8 @@ check builds all adapters in a temporary directory and verifies:
 - Cursor keeps `.mdc` frontmatter with `description` and `alwaysApply: true`;
 - Claude project skills materialize under `.claude/skills/**` and plugin
   metadata points to the root-contained `./skills/` copy;
+- existing project-owned bootloaders may be preserved while non-conflicting
+  package-owned adapter assets are still copied;
 - no `src/**` source tree leaks into an install output.
 
 `commit:check` also requires required package files to be staged or already
@@ -58,7 +60,7 @@ If a target tool changes packaging rules, update `src/adapters/<tool>/**`,
 | Adapter | Risk | Rule |
 |---------|------|------|
 | Codex | Editing installed user/runtime skill instead of source | Edit `src/adapters/codex/**` only |
-| Claude | Plugin metadata depends on `../` outside the plugin root, or project installs omit `.claude/skills/**` | Skill paths must be root-relative and project skills must be present |
+| Claude | Plugin metadata depends on `../` outside the plugin root, project installs omit `.claude/skills/**`, or a `CLAUDE.md` conflict blocks skill copies | Skill paths must be root-relative, project skills must be present, and bootloader conflicts must be preserved without blocking non-conflicting assets |
 | Cursor | Legacy `.cursorrules` leaks back into the package | Validator blocks `.cursorrules` |
 | All | Generated output becomes perceived source | `dist/**` remains ignored and reproducible |
 

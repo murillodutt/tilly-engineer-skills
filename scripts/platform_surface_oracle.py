@@ -16,7 +16,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.40"
+VERSION = "0.3.41"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -164,7 +164,7 @@ def analyze() -> dict[str, Any]:
         failures.append("missing Codex skill agent metadata")
     surface("codex", "agent", "certified", codex_agent)
     surface("codex", "skill", "certified", "; ".join(f"src/adapters/codex/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS))
-    surface("codex", "plugin", "deferred", "Codex plugins are native, but TES v0.3.40 ships local skills first.")
+    surface("codex", "plugin", "deferred", "Codex plugins are native, but TES v0.3.41 ships local skills first.")
     surface("codex", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
@@ -208,7 +208,7 @@ def analyze() -> dict[str, Any]:
     if not exists("src/adapters/cursor/CURSOR.md"):
         failures.append("missing Cursor bootloader: src/adapters/cursor/CURSOR.md")
     surface("cursor", "agent", "certified", "src/adapters/cursor/CURSOR.md")
-    surface("cursor", "skill", "deferred", "Cursor plugin skills exist officially, but TES v0.3.40 ships Cursor rules first.")
+    surface("cursor", "skill", "deferred", "Cursor plugin skills exist officially, but TES v0.3.41 ships Cursor rules first.")
     surface("cursor", "plugin", "deferred", "Cursor plugins are native, but no TES .cursor-plugin package is claimed.")
     surface("cursor", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("cursor", "rules", "certified", cursor_rule)
@@ -246,6 +246,15 @@ def analyze() -> dict[str, Any]:
     ):
         if term not in install_text:
             failures.append(f"scripts/install_mcp.py missing {term}")
+    adapter_text = read("scripts/install_adapter.py")
+    for term in (
+        "preserve-conflict",
+        "INSTALLED_WITH_PRESERVED_CONFLICTS",
+        "DRY-RUN-WITH-PRESERVED-CONFLICTS",
+        "preserved_conflicts",
+    ):
+        if term not in adapter_text:
+            failures.append(f"scripts/install_adapter.py missing {term}")
     root_text = read("scripts/root_context.py")
     root_gate_text = root_text + "\n" + read("scripts/tes_init.py")
     for term in ("AGENTS.md", "CLAUDE.md", ".cursor/rules", "NEEDS_REVIEW", "PRESERVED", "self_test_mode"):

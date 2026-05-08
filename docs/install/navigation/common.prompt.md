@@ -117,7 +117,7 @@ options:
   - command: claude
     label: Claude
     recommended: false
-    description: Create or retrofit CLAUDE.md and Claude Cortex MCP.
+    description: Create or retrofit CLAUDE.md, .claude/skills/**, plugin skills, and Claude MCP.
   - command: cursor
     label: Cursor
     recommended: false

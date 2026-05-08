@@ -20,7 +20,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.40"
+VERSION = "0.3.41"
 RETROFIT_DIR = ".tes/retrofit"
 
 
@@ -177,10 +177,13 @@ def capture_install_result(target: Path, adapter: str, status: str, dry_run: boo
 def copy_files(
     copies: list[dict[str, str]],
     overwrite_conflicts: list[dict[str, str]],
+    preserved_conflicts: list[dict[str, str]],
     dry_run: bool,
     backup: bool,
 ) -> list[dict[str, str]]:
     actions: list[dict[str, str]] = []
+    for item in preserved_conflicts:
+        actions.append({**item, "action": "preserve-conflict"})
     for item in [*copies, *overwrite_conflicts]:
         source = Path(item["source"])
         target = Path(item["target"])
@@ -257,27 +260,6 @@ def install(args: argparse.Namespace) -> int:
                     all_conflicts,
                     " ".join(sys.argv),
                 )
-            print(json.dumps(
-                {
-                    "version": VERSION,
-                    "status": "DRY-RUN-CONFLICT" if args.dry_run else "CONFLICT",
-                    "target": str(target_root),
-                    "adapter": args.adapter,
-                    "planned": planned,
-                    "root_context": root_context_result,
-                    "conflicts": all_conflicts,
-                    "retrofit_plan": str(retrofit_plan) if retrofit_plan else None,
-                },
-                indent=2,
-            ))
-            if args.dry_run:
-                capture_install_result(target_root, args.adapter, "DRY-RUN-CONFLICT", args.dry_run, len(all_conflicts))
-                print("[install-adapter] PASS")
-                return 0
-            capture_install_result(target_root, args.adapter, "CONFLICT", args.dry_run, len(all_conflicts))
-            print("[install-adapter] FAIL")
-            print("- target has conflicting files; rerun with --overwrite or use --retrofit-plan")
-            return 2
 
         if args.overwrite and root_context_result["status"] == "NEEDS_REVIEW" and not args.root_context_reviewed:
             print(json.dumps(
@@ -303,6 +285,7 @@ def install(args: argparse.Namespace) -> int:
             field_reports.ensure_git_exclude(target_root)
 
         actions: list[dict[str, str]] = []
+        preserved_conflicts: list[dict[str, str]] = []
         for adapter in selected_adapters(args.adapter):
             adapter_root = out_root / adapter
             copies, conflicts = collect_adapter_plan(adapter_root, target_root)
@@ -314,19 +297,53 @@ def install(args: argparse.Namespace) -> int:
                 }
                 for item in conflicts
             ] if args.overwrite else []
-            actions.extend(copy_files(copies, overwrite_items, args.dry_run, backup=not args.no_backup))
+            preserved_items = [
+                {
+                    **item,
+                    "relpath": Path(item["source"]).relative_to(adapter_root).as_posix(),
+                }
+                for item in conflicts
+            ] if not args.overwrite else []
+            preserved_conflicts.extend(preserved_items)
+            actions.extend(copy_files(
+                copies,
+                overwrite_items,
+                preserved_items,
+                args.dry_run,
+                backup=not args.no_backup,
+            ))
+
+        status = "DRY-RUN" if args.dry_run else "INSTALLED"
+        if preserved_conflicts:
+            status = "DRY-RUN-WITH-PRESERVED-CONFLICTS" if args.dry_run else "INSTALLED_WITH_PRESERVED_CONFLICTS"
+        safe_action_names = {
+            "copy",
+            "overwrite",
+            "skip-identical",
+            "would-copy",
+            "would-overwrite",
+        }
+        has_safe_adapter_surface = any(action.get("action") in safe_action_names for action in actions)
+        if preserved_conflicts and not has_safe_adapter_surface:
+            status = "DRY-RUN-CONFLICT" if args.dry_run else "CONFLICT"
 
         result = {
             "version": VERSION,
-            "status": "DRY-RUN" if args.dry_run else "INSTALLED",
+            "status": status,
             "target": str(target_root),
             "adapter": args.adapter,
             "planned": planned,
             "root_context": root_context_result,
             "actions": actions,
+            "preserved_conflicts": preserved_conflicts,
+            "retrofit_plan": str(retrofit_plan) if retrofit_plan else None,
         }
         print(json.dumps(result, indent=2))
-        capture_install_result(target_root, args.adapter, str(result["status"]), args.dry_run, 0)
+        capture_install_result(target_root, args.adapter, str(result["status"]), args.dry_run, len(preserved_conflicts))
+        if result["status"] == "CONFLICT":
+            print("[install-adapter] FAIL")
+            print("- target has only conflicting files; use --retrofit-plan or explicit --overwrite after review")
+            return 2
         print("[install-adapter] PASS")
         return 0
 

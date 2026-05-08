@@ -15,12 +15,15 @@ the current agent window; scripts and npm aliases are deterministic oracles the
 agent invokes when the runtime exposes local tools.
 
 All adapters share the same preferred user triggers: `/tes-init`,
-`/tes-update`, `/tes-cortex`, `/tes-mcp`, `/tes-doctor`, `/tes-adapter`, and
-`/tes-bench`. Treat `/tes:*` forms as compatible TES intent aliases; if a host
-reports one as an invalid slash, continue through the matching `tes-*`
-skill/rule/spec instead of asking the user to restate the route.
+`/tes-update`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
+`/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench`. Treat
+`/tes:*` forms as compatible TES intent aliases; if a host reports one as an
+invalid slash, continue through the matching `tes-*` skill/rule/spec instead
+of asking the user to restate the route.
 The executable parity gate is `python3 scripts/command_trigger_oracle.py
 --self-test`.
+Installed target parity can be checked with
+`python3 scripts/command_trigger_oracle.py --target <target-root>`.
 
 ## Trigger Matrix
 
@@ -76,6 +79,11 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 - Do not commit or push after a helper overwrite until a post-Layer Zero final
   recorded probe shows `helper_contract_status=PASS`,
   `update_available=False`, and `recommended_update_scope=none`.
+- Do not claim `CURRENT` when `runtime_trigger_status=DRIFT`; run the adapter
+  refresh route until installed trigger parity is PASS.
+- Do not let a project-owned bootloader conflict block non-conflicting TES
+  runtime assets. Preserve the bootloader and copy package-owned assets such as
+  `.claude/skills/**` or `.agents/skills/**`.
 - Do not use MCP config activation to repair stale helpers; run the helper-only
   Layer Zero route first.
 - Do not call SQLite, MCP, or generated output memory.
