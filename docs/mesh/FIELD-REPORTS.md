@@ -11,8 +11,12 @@ tver: 0.2.1
 # TES Field Reports
 
 TES Field Reports is the project feedback gate for real-world TES operation.
-It is active by default and sends only sanitized operational facts to GitHub
-issues in `murillodutt/tilly-engineer-skills`.
+It is active by default, captures only sanitized operational facts locally, and
+drains through `gh issue create` only when local GitHub CLI, authentication, and
+network are available. Deterministic certification covers local capture/drain,
+fake `gh` transport, and receiver quarantine; live GitHub publication remains a
+partial surface until explicitly authorized and replayed against the real
+transport.
 
 ## Contract
 
@@ -44,8 +48,9 @@ The GitHub side is governed by `.github/ISSUE_TEMPLATE/tes-field-report.yml`,
 The receiver requires the `tes-field-report@2` schema marker, rejects reports
 with code blocks, tables, absolute paths, private URLs, raw remotes, raw branch
 names, secrets, personal data, or raw stack traces, and labels accepted reports
-as sanitized. A rejected report is quarantined and closed. This workflow is a
-second gate, not a privacy substitute for local sanitization.
+as sanitized when a real issue exists. The receiver oracle proves this
+quarantine contract without creating live issues. This workflow is a second
+gate, not a privacy substitute for local sanitization.
 
 ## Local State
 
@@ -100,10 +105,11 @@ through a raw shell command.
 Field Reports records high-value operational facts from initialization, adapter
 installation, MCP activation, install smoke, Cortex verify/audit/rebuild,
 Cortex curation/reflection/apply, MCP self-test, commit gates, and failed,
-blocked, or degraded states. A published report must include actionable
-findings, report class, actionability, signal score, report fingerprint,
-surface counts, routes, versions, schemas seen, and event details. Transport
-heartbeats alone are not product feedback.
+blocked, or degraded states. A report body, whether fake-drained in
+certification or later published through real GitHub transport, must include
+actionable findings, report class, actionability, signal score, report
+fingerprint, surface counts, routes, versions, schemas seen, and event details.
+Transport heartbeats alone are not product feedback.
 
 ## Certification
 
