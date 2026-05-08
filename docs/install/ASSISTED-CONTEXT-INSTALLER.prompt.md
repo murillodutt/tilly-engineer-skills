@@ -829,7 +829,7 @@ GO requires:
 - helper contract parity is PASS or NOT_INSTALLED; `STALE_HELPERS` cannot close as GO;
 - runtime trigger parity is PASS or NOT_APPLIED; `DRIFT` cannot close as GO;
 - final `tes_update` evidence is recorded when Field Reports is installed;
-- if Layer Zero copied helpers, final `tes_update` evidence must be recorded after the overwrite and must show `helper_contract_status=PASS`, `update_available=False`, and `recommended_update_scope=none`;
+- if Layer Zero copied helpers, final `tes_update` evidence must be recorded after the overwrite and must show `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`;
 - when Field Reports drains through the silent pre-push hook, verify `field_reports.py status` or `.tes/field-reports/receipts/**` before claiming that no upstream issue was created;
 - if helper files were copied but hook/drain status is unknown, use `NEEDS_REVIEW`;
 - context was preserved, no secrets changed, and at least one oracle passed.

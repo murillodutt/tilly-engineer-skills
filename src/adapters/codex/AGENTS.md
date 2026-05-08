@@ -87,8 +87,9 @@ recommended route, and `recommended_update_scope`. Read-only update probes use
 `recommended_update_scope=helpers-only` or `STALE_HELPERS` is repaired first
 through the helper-only Layer Zero route before MCP config activation. After any
 helper overwrite, the final recorded probe is required before GO, commit, or
-push and must show `helper_contract_status=PASS`, `update_available=False`, and
-`recommended_update_scope=none`. Also treat `/tes-cortex`, `/tes:cortex`, `/tes-curate`, `/tes:curate`,
+push and must show `helper_contract_status=PASS`, `runtime_trigger_status=PASS`
+or `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`.
+Also treat `/tes-cortex`, `/tes:cortex`, `/tes-curate`, `/tes:curate`,
 `/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
 `/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`, `/tes-bench`,
 and `/tes:bench` as intent shortcuts. Load the matching skill

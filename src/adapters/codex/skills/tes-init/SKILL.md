@@ -12,6 +12,12 @@ command/prompts such as `TES, initialize this project`,
 `TES, inicialize este projeto`, `Atualizar TES`, or `atualizar TES` are
 user-facing installer intents. They are not blind shell commands and not
 background daemons. The active agent remains the executor.
+Across Codex, Claude Code, and Cursor, `/tes-*` forms are the preferred shared
+triggers and `/tes:*` forms are compatible TES intent aliases. Treat
+`/tes-cortex`, `/tes:curate`, `/tes-curate`, `/tes-mcp`, `/tes-field-reports`,
+`/tes:field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`,
+`/tes:check`, `/tes:certify`, `/tes:recall`, `/tes:learn`, and `/tes:reflect`
+as TES intents, even when the root `AGENTS.md` is project-owned and preserved.
 
 ## Mission
 
@@ -44,8 +50,8 @@ the user for package contents.
    `.tes/bin/**` helpers with backups through the helper-only Layer Zero route,
    then rerun the update probe before activating MCP configs. After any helper
    overwrite, record the final probe before GO, commit, or push; it must show
-   `helper_contract_status=PASS`, `update_available=False`, and
-   `recommended_update_scope=none`.
+   `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or
+   `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`.
 5. Before rewriting root bootloaders, run `root_context.py analyze` when
    available and migrate durable root context into `docs/agents/**` first.
 6. When `legacy_retirement_required=true`, run `tes_legacy_retirement.py plan`,

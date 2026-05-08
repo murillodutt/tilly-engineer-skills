@@ -78,7 +78,8 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
   `--record-field-report` only on the final certification probe.
 - Do not commit or push after a helper overwrite until a post-Layer Zero final
   recorded probe shows `helper_contract_status=PASS`,
-  `update_available=False`, and `recommended_update_scope=none`.
+  `runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`,
+  and `recommended_update_scope=none`.
 - Do not claim `CURRENT` when `runtime_trigger_status=DRIFT`; run the adapter
   refresh route until installed trigger parity is PASS.
 - Do not let a project-owned bootloader conflict block non-conflicting TES
