@@ -32,6 +32,7 @@ turning the repository root into an inventory.
 | TES Cortex MCP | `mesh/CORTEX-MCP.md` |
 | TES Field Reports | `mesh/FIELD-REPORTS.md` |
 | Tilly Git safety | `mesh/GIT-SAFETY.md` |
+| Local quality recipe | `mesh/LOCAL-QUALITY-RECIPE.md` |
 | Adoption and convergence scorecard | `mesh/SCORECARD.md` |
 | Eval and ablation design | `evals/EVALS.md` |
 | Detailed examples | `evals/EXAMPLES.md` |
