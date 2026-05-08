@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.57"
+VERSION = "0.3.58"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 PACKAGE_MODE = (ROOT / "scripts").exists()
 MARKDOWN_HEADING_RE = re.compile(r"^#{1,3}\s+(.+?)\s*$")
@@ -27,10 +27,14 @@ REQUIRED_SECTIONS = (
     "## Active Agent Refinement Contract",
     "## Coverage",
     "## Project Territories",
+    "## Semantic Territory Guide",
+    "## Weak Anchor Triage",
+    "## Caution Zones",
     "## Workspace Boundaries",
     "## Source Anchors Read First",
     "## Runtime And Governance Surfaces",
     "## Recommended Deep Reads",
+    "## Next Work Guidance",
     "## Open Context Questions",
     "## Maintenance Rule",
 )
@@ -523,6 +527,42 @@ def expected_territories(target: Path) -> list[str]:
     return sorted(name for name in territories if name not in {".git", ".tes"})
 
 
+def is_large_context_target(target: Path) -> bool:
+    files = iter_project_files(target)
+    top_level = {path.relative_to(target).parts[0] for path in files if len(path.relative_to(target).parts) > 1}
+    return len(files) >= 500 or len(top_level) >= 12
+
+
+def expected_semantic_terms(target: Path) -> list[str]:
+    terms: list[str] = []
+    if (target / "src").exists():
+        terms.append("likely Python backend/domain application boundary" if (target / "src/sentry").exists() else "product/source code")
+    if (target / "static/app").exists():
+        terms.append("likely frontend UI/client application boundary")
+    if (target / "tests").exists():
+        terms.append("verification boundary")
+    if (target / "api-docs").exists():
+        terms.append("documentation/API contract boundary")
+    if (target / "self-hosted").exists() or (target / "devservices").exists() or (target / "devenv").exists():
+        terms.append("operational or local-environment boundary")
+    if (target / "AGENTS.md").exists() or (target / "CLAUDE.md").exists():
+        terms.append("project-owned agent governance")
+    return terms
+
+
+def expected_caution_terms(target: Path) -> list[str]:
+    terms: list[str] = []
+    if (target / "AGENTS.md").exists() or (target / "CLAUDE.md").exists():
+        terms.append("project-owned agent governance")
+    if any(path.name in {"pnpm-lock.yaml", "uv.lock", "Cargo.lock", "package-lock.json"} for path in target.iterdir() if path.is_file()):
+        terms.append("dependency locks")
+    if (target / "self-hosted").exists() or (target / "devservices").exists() or (target / "devenv").exists() or (target / "config").exists():
+        terms.append("self-hosted or environment config")
+    if any("/migrations/" in rel(path, target) for path in iter_project_files(target)[:5000]):
+        terms.append("migrations and schema history")
+    return terms
+
+
 def package_workspace_patterns(package: dict[str, Any]) -> list[str]:
     workspaces = package.get("workspaces")
     if isinstance(workspaces, list):
@@ -678,6 +718,21 @@ def analyze(target: Path) -> dict[str, Any]:
     if missing_territories:
         failures.append(f"PROJECT-CONTEXT.md missing territories: {', '.join(missing_territories[:8])}")
 
+    if is_large_context_target(target):
+        for section in ("## Semantic Territory Guide", "## Weak Anchor Triage", "## Caution Zones", "## Next Work Guidance"):
+            if section not in text:
+                failures.append(f"large PROJECT-CONTEXT.md missing anti-generic section: {section}")
+        missing_semantic = [term for term in expected_semantic_terms(target) if term not in text]
+        if missing_semantic:
+            failures.append(f"large PROJECT-CONTEXT.md missing semantic territory guidance: {', '.join(missing_semantic[:6])}")
+        missing_cautions = [term for term in expected_caution_terms(target) if term not in text]
+        if missing_cautions:
+            failures.append(f"large PROJECT-CONTEXT.md missing caution zones: {', '.join(missing_cautions[:6])}")
+        if "unclassified territory" not in text and "likely " not in text:
+            failures.append("large PROJECT-CONTEXT.md must separate deterministic interpretation from raw inventory")
+        if "fixtures" in territories and "good for repros, weak evidence for product architecture" not in text:
+            failures.append("large PROJECT-CONTEXT.md must mark fixtures/examples as weak architecture evidence")
+
     workspace_boundaries = expected_workspace_boundaries(target)
     missing_workspaces = [pattern for pattern in workspace_boundaries if pattern not in text]
     if missing_workspaces:
@@ -757,6 +812,26 @@ def good_context(target: Path) -> str:
 | src | product/source code territory | 1 | `src/app.py` |
 | tests | test or verification territory | 1 | `tests/test_app.py` |
 
+## Semantic Territory Guide
+
+| Territory | Likely boundary | Evidence | Next move |
+|---|---|---|---|
+| docs | documentation/API contract boundary | `docs/architecture.md` | cross-check claims against source anchors before editing behavior |
+| src | product/source code territory | `src/app.py` | open the listed anchors before claiming ownership or runtime role |
+| tests | verification boundary | `tests/test_app.py` | start with local test governance and smallest related test command |
+
+## Weak Anchor Triage
+
+| Category | Sample | Handling |
+|---|---|---|
+| none detected | n/a | no weak-anchor category was detected by the deterministic scanner |
+
+## Caution Zones
+
+| Zone | Evidence | Guidance |
+|---|---|---|
+| none detected | n/a | no caution zone was detected by the deterministic scanner |
+
 ## Workspace Boundaries
 
 | Source | Kind | Pattern |
@@ -806,6 +881,11 @@ def good_context(target: Path) -> str:
 - `docs/architecture.md`
 - `src/app.py`
 - `tests/test_app.py`
+
+## Next Work Guidance
+
+- For `src`, open the listed anchors before claiming ownership or runtime role.
+- For `tests`, start with local test governance and smallest related test command.
 
 ## Open Context Questions
 
@@ -865,6 +945,23 @@ def self_test() -> dict[str, Any]:
         copied_code = analyze(target)
         if copied_code["status"] != "FAIL" or not any("bulk copied source code" in item for item in copied_code["failures"]):
             failures.append("oracle must fail when project context bulk-copies source code")
+
+    with tempfile.TemporaryDirectory(prefix="tes-project-context-large-") as tempdir:
+        target = Path(tempdir)
+        make_fixture(target)
+        write(target / "AGENTS.md", "# Local rules\n")
+        write(target / "static/app/index.tsx", "export const App = null;\n")
+        write(target / "api-docs/schema.json", "{}\n")
+        write(target / "self-hosted/config.yml", "service: fixture\n")
+        write(target / "fixtures/example.json", "{}\n")
+        write(target / "pnpm-lock.yaml", "lockfileVersion: '9.0'\n")
+        for index in range(520):
+            write(target / "src/generated" / f"file_{index}.py", "VALUE = 1\n")
+        generic = good_context(target).replace("## Semantic Territory Guide", "## Missing Semantic Territory Guide")
+        write(target / PROJECT_CONTEXT, generic)
+        large_generic = analyze(target)
+        if large_generic["status"] != "FAIL" or not any("anti-generic section" in item for item in large_generic["failures"]):
+            failures.append("oracle must fail large contexts missing anti-generic semantic sections")
 
     with tempfile.TemporaryDirectory(prefix="tes-project-context-bootstrap-") as tempdir:
         target = Path(tempdir)

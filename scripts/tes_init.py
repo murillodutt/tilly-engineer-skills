@@ -28,7 +28,7 @@ HELPER_ROOT = SCRIPT_PATH.parent
 ROOT = SCRIPT_PATH.parents[1]
 SOURCE_ROOT = ROOT / "scripts" if (ROOT / "scripts").exists() else HELPER_ROOT
 PACKAGE_MODE = SOURCE_ROOT.name == "scripts"
-VERSION = "0.3.57"
+VERSION = "0.3.58"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -879,6 +879,10 @@ def anchor_score(record: dict[str, Any]) -> tuple[int, str]:
         score += 150
     if suffix == ".json" and ("test" in relpath.parts or "tests" in relpath.parts):
         score += 80
+    if suffix == ".txt" and not is_root and len(relpath.parts) > 3:
+        score += 110
+    if "enhancement-configs" in lowered_parts or "generated" in lowered_parts:
+        score += 130
     if first == "docs" and second in {"evidence", "agents"}:
         score += 70
     return (score, str(record["path"]))
@@ -988,17 +992,18 @@ def territory_summary(scan: dict[str, Any]) -> list[dict[str, Any]]:
     for name, count in sorted(scan["top_level"].items(), key=lambda item: (-int(item[1]), item[0])):
         if name in {".git", ".tes"} or name not in territory_names:
             continue
-        paths = [
+        all_paths = [
             str(record["path"])
             for record in scan["files"]
             if Path(str(record["path"])).parts and Path(str(record["path"])).parts[0] == name
-        ][:6]
+        ]
         territories.append(
             {
                 "name": name,
                 "file_count": count,
-                "sample_paths": paths,
-                "role": infer_territory_role(name, paths),
+                "sample_paths": all_paths[:6],
+                "semantic_paths": all_paths,
+                "role": infer_territory_role(name, all_paths),
             }
         )
     return territories[:MAX_CONTEXT_TERRITORIES]
@@ -1018,7 +1023,11 @@ def infer_territory_role(name: str, paths: list[str]) -> str:
         return "provider internals and service ownership"
     if lowered in {"infra", "infrastructure", "ops"}:
         return "infrastructure and environment bootstrap"
-    if lowered in {"public", "static", "assets"}:
+    if lowered in {"public", "assets"}:
+        return "static assets and public files"
+    if lowered == "static" and any(path.startswith("static/app/") for path in paths):
+        return "frontend application and static asset territory"
+    if lowered == "static":
         return "static assets and public files"
     if lowered in {"labs", "examples", "fixtures"}:
         return "experiments, reproductions, and fixtures"
@@ -1031,6 +1040,118 @@ def infer_territory_role(name: str, paths: list[str]) -> str:
     if lowered in {".github"}:
         return "repository automation and collaboration"
     return "project territory to inspect"
+
+
+def semantic_boundary_for_territory(name: str, paths: list[str]) -> tuple[str, str]:
+    lowered = name.lower()
+    evidence = next((path for path in paths if path), name)
+    if lowered == "src" and any(path.startswith("src/sentry/") for path in paths):
+        return (
+            "likely Python backend/domain application boundary; read local AGENTS/CLAUDE guidance before edits",
+            "start with src/AGENTS.md plus nearby package README files",
+        )
+    if lowered == "static" and any(path.startswith("static/app/") for path in paths):
+        return (
+            "likely frontend UI/client application boundary; avoid treating static fixtures as architecture",
+            "start with static/AGENTS.md and package TypeScript gates",
+        )
+    if lowered in {"tests", "test", "spec"}:
+        return (
+            "verification boundary; use this to choose focused tests rather than infer runtime design",
+            "start with local test governance and smallest related test command",
+        )
+    if lowered in {"api-docs", "docs", "doc"}:
+        return (
+            "documentation/API contract boundary; useful for public behavior but not sufficient runtime proof",
+            "cross-check claims against source anchors before editing behavior",
+        )
+    if lowered in {"self-hosted", "devservices", "devenv", "config"}:
+        return (
+            "operational or local-environment boundary; touch cautiously because changes may affect boot/dev/deploy flows",
+            "read config and service docs before changing defaults",
+        )
+    if lowered in {".agents", ".claude", ".cursor", ".codex"}:
+        return (
+            "project-owned agent governance boundary; preserve local instructions by default",
+            "do not replace without explicit review",
+        )
+    if lowered in {".github"}:
+        return (
+            "repository automation, ownership, and CI boundary",
+            "check workflows and CODEOWNERS before workflow or ownership changes",
+        )
+    if lowered in {"scripts", "tools", "bin", "build-utils"}:
+        return (
+            "developer automation/tooling boundary",
+            "prefer existing commands and self-tests over ad hoc scripts",
+        )
+    if lowered in {"fixtures", "examples", "samples"}:
+        return (
+            "fixture/example boundary; good for repros, weak evidence for product architecture",
+            "do not promote fixture shape as core runtime design",
+        )
+    if lowered in {"migrations", "migration"} or any("/migrations/" in path for path in paths):
+        return (
+            "schema/data migration boundary; high caution for generated or historical state",
+            "inspect migration policy before editing",
+        )
+    return (
+        "unclassified territory; evidence is inventory-level until anchors are read",
+        "open the listed anchors before claiming ownership or runtime role",
+    )
+
+
+def semantic_territory_guide(territories: list[dict[str, Any]]) -> list[dict[str, str]]:
+    records: list[dict[str, str]] = []
+    for territory in territories:
+        paths = [str(path) for path in territory.get("semantic_paths") or territory.get("sample_paths") or []]
+        boundary, guidance = semantic_boundary_for_territory(str(territory["name"]), paths)
+        samples = [str(path) for path in territory.get("sample_paths") or paths[:3]]
+        records.append(
+            {
+                "territory": str(territory["name"]),
+                "boundary": boundary,
+                "evidence": ", ".join(f"`{path}`" for path in samples[:3]) or "none",
+                "guidance": guidance,
+            }
+        )
+    return records
+
+
+def weak_anchor_triage(scan: dict[str, Any]) -> list[dict[str, str]]:
+    files = [str(record["path"]) for record in scan["files"]]
+    rows: list[dict[str, str]] = []
+    checks = (
+        ("fixture/example data", ("fixtures/", "/fixtures/", "examples/", "/examples/"), "use for repros, not architecture"),
+        ("generated or build artifacts", ("generated", "__generated__", ".map", "enhancement-configs"), "treat as derived/specialized evidence"),
+        ("dependency lockfiles", ("pnpm-lock.yaml", "uv.lock", "package-lock.json", "yarn.lock", "Cargo.lock"), "use for dependency state, not ownership"),
+        ("TES runtime", (".tes/", "docs/agents/evidence/", "docs/agents/cortex/"), "exclude from project architecture claims"),
+        ("migrations", ("/migrations/", "migrations/"), "high-caution historical/schema state"),
+    )
+    for label, needles, reason in checks:
+        sample = next((path for path in files if any(needle in path for needle in needles)), None)
+        if sample:
+            rows.append({"category": label, "sample": sample, "handling": reason})
+    if not rows:
+        rows.append({"category": "none detected", "sample": "n/a", "handling": "no weak-anchor category was detected by the deterministic scanner"})
+    return rows
+
+
+def caution_zones(scan: dict[str, Any]) -> list[dict[str, str]]:
+    files = [str(record["path"]) for record in scan["files"]]
+    rows: list[dict[str, str]] = []
+    checks = (
+        ("project-owned agent governance", ("AGENTS.md", "CLAUDE.md", "CURSOR.md"), "preserve by default; merge only after review"),
+        ("migrations and schema history", ("/migrations/", "migrations/"), "do not edit casually; use project migration workflow"),
+        ("self-hosted or environment config", ("self-hosted/", "devservices/", "devenv/", "config/"), "changes may affect boot/deploy/dev services"),
+        ("dependency locks", ("pnpm-lock.yaml", "uv.lock", "Cargo.lock", "package-lock.json"), "update only through package manager workflow"),
+        ("fixtures and generated data", ("fixtures/", "__generated__", "enhancement-configs"), "avoid deriving product boundaries from these alone"),
+    )
+    for zone, needles, guidance in checks:
+        sample = next((path for path in files if any(path == needle or needle in path for needle in needles)), None)
+        if sample:
+            rows.append({"zone": zone, "evidence": sample, "guidance": guidance})
+    return rows
 
 
 def project_context(scan: dict[str, Any], target: Path, manifest_rel: str) -> dict[str, Any]:
@@ -1049,6 +1170,7 @@ def project_context(scan: dict[str, Any], target: Path, manifest_rel: str) -> di
         "workspace_boundaries": workspace_boundaries(target),
         "package_scripts": scripts,
         "quality_scripts": dict(sorted(qscripts.items())),
+        "weak_anchor_triage": weak_anchor_triage(scan),
     }
 
 
@@ -1221,6 +1343,9 @@ def write_project_context(target: Path, scan: dict[str, Any], gates: list[dict[s
     workspaces = context["workspace_boundaries"]
     scripts = context["package_scripts"]
     qscripts = context["quality_scripts"]
+    semantic_territories = semantic_territory_guide(territories)
+    weak_triage = context["weak_anchor_triage"]
+    cautions = caution_zones(scan)
     surface_rows = [
         (name, "present" if present else "missing")
         for name, present in sorted(scan["surfaces"].items())
@@ -1238,6 +1363,23 @@ def write_project_context(target: Path, scan: dict[str, Any], gates: list[dict[s
         )
         for territory in territories
     ]
+    semantic_rows = [
+        (
+            row["territory"],
+            row["boundary"],
+            row["evidence"],
+            row["guidance"],
+        )
+        for row in semantic_territories
+    ]
+    weak_rows = [
+        (row["category"], row["sample"], row["handling"])
+        for row in weak_triage
+    ]
+    caution_rows = [
+        (row["zone"], row["evidence"], row["guidance"])
+        for row in cautions
+    ]
     workspace_rows = [
         (str(workspace["source"]), str(workspace["kind"]), str(workspace["pattern"]))
         for workspace in workspaces
@@ -1247,6 +1389,10 @@ def write_project_context(target: Path, scan: dict[str, Any], gates: list[dict[s
     gate_rows = [(gate["command"], gate["status"]) for gate in gates]
     signal_rows = [(item["signal"], item["value"], item["source"]) for item in signals]
     deep_reads = "\n".join(f"- `{anchor['path']}`" for anchor in anchors[:12]) or "- none"
+    next_guidance = "\n".join(
+        f"- For `{row['territory']}`, {row['guidance']}."
+        for row in semantic_territories[:8]
+    ) or "- Open the strongest source anchors before planning work."
 
     return f"""# Tilly Project Context
 
@@ -1306,6 +1452,21 @@ are starting evidence for the active agent, not a final semantic analysis.
 ## Project Territories
 
 {markdown_table(territory_rows, ("Territory", "Initial role", "Files", "Sample anchors"))}
+## Semantic Territory Guide
+
+This section is deterministic interpretation from paths and known project
+surfaces. It is meant to guide first reads, not replace source inspection.
+
+{markdown_table(semantic_rows, ("Territory", "Likely boundary", "Evidence", "Next move"))}
+## Weak Anchor Triage
+
+These surfaces were detected as weak evidence for architecture. They may be
+useful for focused work, but they should not dominate first-pass understanding.
+
+{markdown_table(weak_rows, ("Category", "Sample", "Handling"))}
+## Caution Zones
+
+{markdown_table(caution_rows, ("Zone", "Evidence", "Guidance"))}
 ## Workspace Boundaries
 
 {markdown_table(workspace_rows, ("Source", "Kind", "Pattern"))}
@@ -1327,6 +1488,10 @@ are starting evidence for the active agent, not a final semantic analysis.
 ## Recommended Deep Reads
 
 {deep_reads}
+
+## Next Work Guidance
+
+{next_guidance}
 
 ## Open Context Questions
 
@@ -1568,7 +1733,11 @@ def self_test() -> dict[str, Any]:
             "src/app.py",
             "lint",
             "Workspace Boundaries",
+            "Semantic Territory Guide",
+            "Weak Anchor Triage",
+            "Caution Zones",
             "Recommended Deep Reads",
+            "Next Work Guidance",
         ):
             if term not in context_text:
                 failures.append(f"project context missing term: {term}")

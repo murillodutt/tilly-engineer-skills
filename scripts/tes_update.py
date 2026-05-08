@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.57"
+VERSION = "0.3.58"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -935,6 +935,24 @@ def write_context_fixture(target: Path) -> None:
 |---|---|---|---|
 | .agents | agent runtime surface | 2 | `.agents/skills/tes-init/SKILL.md` |
 
+## Semantic Territory Guide
+
+| Territory | Likely boundary | Evidence | Next move |
+|---|---|---|---|
+| .agents | agent runtime surface | `.agents/skills/tes-init/SKILL.md` | inspect runtime instructions before changing agent behavior |
+
+## Weak Anchor Triage
+
+| Category | Sample | Handling |
+|---|---|---|
+| none detected | n/a | no weak-anchor category was detected by the deterministic scanner |
+
+## Caution Zones
+
+| Zone | Evidence | Guidance |
+|---|---|---|
+| project-owned agent governance | AGENTS.md | preserve project-owned instructions and avoid blind overwrite |
+
 ## Workspace Boundaries
 
 | Source | Kind | Pattern |
@@ -967,6 +985,11 @@ def write_context_fixture(target: Path) -> None:
 
 - `AGENTS.md`
 - `.agents/skills/tes-init/SKILL.md`
+
+## Next Work Guidance
+
+- For `.agents`, inspect runtime instructions before changing agent behavior.
+- Treat this fixture as contract coverage; real project architecture needs deeper read.
 
 ## Open Context Questions
 
