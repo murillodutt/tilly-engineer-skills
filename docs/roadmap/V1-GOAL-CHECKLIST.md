@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.v1_goal_checklist
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, certification reviewers, and next-loop planners
 source_of_truth: false
 evidence_level: L2

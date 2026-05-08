@@ -32,8 +32,6 @@ ACTIVE_PREFIXES = (
 ACTIVE_FILES = {
     "AGENTS.md",
     "README.md",
-    "install.ps1",
-    "install.sh",
     "package.json",
 }
 CATALOG_PATH = "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md"

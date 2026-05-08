@@ -25,6 +25,10 @@ The script installer remains as a maintainer tool for materialization smoke
 tests and mechanical copying. It is not the recommended path for projects that
 already have agent instructions.
 
+Mechanical shell entrypoints live in `scripts/bootstrap/**`; the repository root
+does not carry install script wrappers. The recommended path remains the
+assisted installer prompt above.
+
 ## Primary Flow
 
 Open the target project in Codex, Claude Code, or Cursor and paste:
@@ -373,16 +377,16 @@ The gate archives legacy retrofit records from `.tilly/retrofit/**` under
 `.tes/legacy-retirement/retrofit/**`; these records must not block runtime
 retirement when all other legacy paths are known.
 
-macOS/Linux wrapper:
+macOS/Linux bootstrap entrypoint:
 
 ```bash
-./install.sh --adapter codex --target /path/to/project --dry-run
+./scripts/bootstrap/install.sh --adapter codex --target /path/to/project --dry-run
 ```
 
-Windows PowerShell wrapper:
+Windows PowerShell bootstrap entrypoint:
 
 ```powershell
-.\install.ps1 --adapter codex --target C:\path\to\project --dry-run
+.\scripts\bootstrap\install.ps1 --adapter codex --target C:\path\to\project --dry-run
 ```
 
 ## Conflict Policy

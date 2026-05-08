@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.v1_convergence_loop
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, certification reviewers, and convergence-loop operators
 source_of_truth: false
 evidence_level: L2

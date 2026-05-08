@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.senior_mentorship_context_2026_05_05
 tds_class: roadmap
-status: proposed
+status: archived
 consumer: next certification session
 source_of_truth: false
 evidence_level: L2

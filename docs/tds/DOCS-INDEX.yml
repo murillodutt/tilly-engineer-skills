@@ -291,28 +291,42 @@ documents:
   - path: docs/roadmap/NEXT-STEPS-LETTER-2026-05-05.md
     id: roadmap.next_steps_2026_05_05
     class: roadmap
-    status: proposed
+    status: archived
     consumer: next engineering session
     source_of_truth: false
     evidence_level: L0
+  - path: docs/roadmap/README.md
+    id: roadmap.index
+    class: roadmap
+    status: active
+    consumer: maintainers, release reviewers, and next-loop operators
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/roadmap/RC1-READINESS-ROADMAP.md
+    id: roadmap.rc1_readiness
+    class: roadmap
+    status: active
+    consumer: maintainers, release reviewers, and documentation operators
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/roadmap/SENIOR-MENTORSHIP-CONTEXT-2026-05-05.md
     id: roadmap.senior_mentorship_context_2026_05_05
     class: roadmap
-    status: proposed
+    status: archived
     consumer: next certification session
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/V1-CONVERGENCE-LOOP.md
     id: roadmap.v1_convergence_loop
     class: roadmap
-    status: active
+    status: archived
     consumer: maintainers, certification reviewers, and convergence-loop operators
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/V1-GOAL-CHECKLIST.md
     id: roadmap.v1_goal_checklist
     class: roadmap
-    status: active
+    status: archived
     consumer: maintainers, certification reviewers, and next-loop planners
     source_of_truth: false
     evidence_level: L2
