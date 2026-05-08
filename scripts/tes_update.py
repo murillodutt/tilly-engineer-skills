@@ -16,12 +16,13 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.36"
+VERSION = "0.3.37"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
 )
-REMOTE_RAW_BASE = "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main"
+REMOTE_RAW_ORIGIN = "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills"
+REMOTE_RAW_BASE = f"{REMOTE_RAW_ORIGIN}/main"
 REMOTE_REF = "refs/heads/main"
 HELPER_FILES = (
     "cortex.py",
@@ -187,13 +188,22 @@ def recommended_route(state: str, runtimes: list[str], runtime: str | None) -> t
     return "current", "No applied runtime surface was detected."
 
 
-def fetch_remote_version(timeout: float) -> dict[str, str]:
-    with urllib.request.urlopen(REMOTE_PACKAGE_JSON, timeout=timeout) as response:
+def remote_raw_base(ref: str | None = None) -> str:
+    return f"{REMOTE_RAW_ORIGIN}/{ref or 'main'}"
+
+
+def remote_raw_url(path: str, ref: str | None = None) -> str:
+    return f"{remote_raw_base(ref)}/{path.lstrip('/')}"
+
+
+def fetch_remote_version(timeout: float, ref: str | None = None) -> dict[str, str]:
+    url = remote_raw_url("package.json", ref) if ref else REMOTE_PACKAGE_JSON
+    with urllib.request.urlopen(url, timeout=timeout) as response:
         payload = json.loads(response.read().decode("utf-8"))
     version = str(payload.get("version") or "")
     if not parse_semver(version):
         raise ValueError("remote package.json has no semantic version")
-    return {"status": "PASS", "version": version, "source": REMOTE_PACKAGE_JSON}
+    return {"status": "PASS", "version": version, "source": url}
 
 
 def fetch_remote_commit(timeout: float) -> dict[str, str]:
@@ -248,10 +258,11 @@ def local_helper_manifest() -> dict[str, Any]:
     return {"status": "PASS", "helpers": helpers, "source": "local-package"}
 
 
-def fetch_remote_helper_manifest(timeout: float) -> dict[str, Any]:
+def fetch_remote_helper_manifest(timeout: float, ref: str | None = None) -> dict[str, Any]:
     helpers: dict[str, dict[str, Any]] = {}
+    base = remote_raw_base(ref)
     for name in HELPER_FILES:
-        url = f"{REMOTE_RAW_BASE}/scripts/{name}"
+        url = f"{base}/scripts/{name}"
         with urllib.request.urlopen(url, timeout=timeout) as response:
             data = response.read()
         text = data.decode("utf-8", errors="replace")
@@ -263,10 +274,10 @@ def fetch_remote_helper_manifest(timeout: float) -> dict[str, Any]:
                 for marker in HELPER_CONTRACT_MARKERS.get(name, ())
             },
         }
-    return {"status": "PASS", "helpers": helpers, "source": f"{REMOTE_RAW_BASE}/scripts"}
+    return {"status": "PASS", "helpers": helpers, "source": f"{base}/scripts"}
 
 
-def remote_helper_facts(args: argparse.Namespace, required: bool = True) -> dict[str, Any]:
+def remote_helper_facts(args: argparse.Namespace, required: bool = True, remote_commit: str | None = None) -> dict[str, Any]:
     if not required:
         return {"status": "SKIP", "helpers": {}, "source": "not-installed"}
     manifest_path = getattr(args, "remote_helper_manifest", None)
@@ -287,24 +298,19 @@ def remote_helper_facts(args: argparse.Namespace, required: bool = True) -> dict
     if args.offline:
         return {"status": "BLOCKED", "helpers": {}, "source": "offline"}
     try:
-        return fetch_remote_helper_manifest(args.timeout)
+        return fetch_remote_helper_manifest(args.timeout, remote_commit)
     except Exception as exc:  # noqa: BLE001
-        return {"status": "BLOCKED", "helpers": {}, "source": f"{REMOTE_RAW_BASE}/scripts", "reason": str(exc)}
+        return {
+            "status": "BLOCKED",
+            "helpers": {},
+            "source": f"{remote_raw_base(remote_commit)}/scripts",
+            "reason": str(exc),
+        }
 
 
 def remote_facts(args: argparse.Namespace, helper_required: bool = True) -> dict[str, Any]:
     version_fact: dict[str, Any]
     commit_fact: dict[str, Any]
-    if args.remote_version:
-        version_fact = {"status": "PASS", "version": args.remote_version, "source": "override"}
-    elif args.offline:
-        version_fact = {"status": "BLOCKED", "version": None, "source": "offline"}
-    else:
-        try:
-            version_fact = fetch_remote_version(args.timeout)
-        except Exception as exc:  # noqa: BLE001 - report blocker without failing update planning
-            version_fact = {"status": "BLOCKED", "version": None, "source": REMOTE_PACKAGE_JSON, "reason": str(exc)}
-
     if args.remote_commit:
         commit_fact = {"status": "PASS", "commit": args.remote_commit, "source": "override"}
     elif args.offline:
@@ -315,7 +321,27 @@ def remote_facts(args: argparse.Namespace, helper_required: bool = True) -> dict
         except Exception as exc:  # noqa: BLE001
             commit_fact = {"status": "BLOCKED", "commit": None, "source": REPO_URL, "reason": str(exc)}
 
-    return {"version": version_fact, "commit": commit_fact, "helpers": remote_helper_facts(args, helper_required)}
+    remote_commit = str(commit_fact.get("commit") or "") if commit_fact.get("status") == "PASS" else None
+    if args.remote_version:
+        version_fact = {"status": "PASS", "version": args.remote_version, "source": "override"}
+    elif args.offline:
+        version_fact = {"status": "BLOCKED", "version": None, "source": "offline"}
+    else:
+        try:
+            version_fact = fetch_remote_version(args.timeout, remote_commit)
+        except Exception as exc:  # noqa: BLE001 - report blocker without failing update planning
+            version_fact = {
+                "status": "BLOCKED",
+                "version": None,
+                "source": remote_raw_url("package.json", remote_commit),
+                "reason": str(exc),
+            }
+
+    return {
+        "version": version_fact,
+        "commit": commit_fact,
+        "helpers": remote_helper_facts(args, helper_required, remote_commit),
+    }
 
 
 def installed_helper_records(target: Path) -> list[dict[str, Any]]:
@@ -466,8 +492,10 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "installed_version_records": records,
         "remote_version": cloud_version,
         "remote_version_status": remote["version"].get("status"),
+        "remote_version_source": remote["version"].get("source"),
         "remote_commit": remote["commit"].get("commit"),
         "remote_commit_status": remote["commit"].get("status"),
+        "remote_commit_source": remote["commit"].get("source"),
         "remote_helper_status": remote["helpers"].get("status"),
         "remote_helper_source": remote["helpers"].get("source"),
         "update_status": update_status,
@@ -658,6 +686,44 @@ def self_test() -> dict[str, Any]:
                 failures.append("tes_update field report must include helper_contract_status")
             if facts.get("route") != "codex":
                 failures.append("tes_update field report must include recommended route")
+
+    original_fetch_remote_version = fetch_remote_version
+    original_remote_helper_facts = remote_helper_facts
+    observed_refs: dict[str, str | None] = {}
+
+    def fake_fetch_remote_version(timeout: float, ref: str | None = None) -> dict[str, str]:
+        observed_refs["version_ref"] = ref
+        return {"status": "PASS", "version": VERSION, "source": remote_raw_url("package.json", ref)}
+
+    def fake_remote_helper_facts(
+        args: argparse.Namespace,
+        required: bool = True,
+        remote_commit: str | None = None,
+    ) -> dict[str, Any]:
+        observed_refs["helper_ref"] = remote_commit
+        return {"status": "SKIP", "helpers": {}, "source": "test"}
+
+    try:
+        globals()["fetch_remote_version"] = fake_fetch_remote_version
+        globals()["remote_helper_facts"] = fake_remote_helper_facts
+        commit = "f" * 40
+        remote_facts(
+            argparse.Namespace(
+                remote_version=None,
+                remote_commit=commit,
+                remote_helper_manifest=None,
+                local_package_helpers=False,
+                offline=False,
+                timeout=0.1,
+            )
+        )
+        if observed_refs.get("version_ref") != commit:
+            failures.append("remote version lookup must use commit-pinned raw source")
+        if observed_refs.get("helper_ref") != commit:
+            failures.append("remote helper lookup must use commit-pinned raw source")
+    finally:
+        globals()["fetch_remote_version"] = original_fetch_remote_version
+        globals()["remote_helper_facts"] = original_remote_helper_facts
 
     return {"version": VERSION, "status": "PASS" if not failures else "FAIL", "failures": failures}
 
