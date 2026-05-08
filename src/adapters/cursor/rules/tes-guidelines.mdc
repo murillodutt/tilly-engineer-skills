@@ -88,7 +88,10 @@ recorded probe before GO, commit, or push that shows
 `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or `NOT_APPLIED`,
 `update_available=False`, and `recommended_update_scope=none`. Run available
 oracles, and finish with a certification report that includes the project
-context path. It is not a blind shell command.
+context path. Treat `tes_init.py` as scaffold generation; the active agent must
+open strong anchors before claiming deep understanding, refine
+`PROJECT-CONTEXT.md` when evidence supports it, or report `Project context:
+NEEDS_REVIEW`. It is not a blind shell command.
 
 Also treat `/tes-cortex`, `/tes:cortex`, `/tes-curate`, `/tes:curate`,
 `/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,

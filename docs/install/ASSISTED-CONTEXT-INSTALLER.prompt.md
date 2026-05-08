@@ -421,6 +421,14 @@ deeply as the current context window and local tools permit:
 - write the deterministic inventory to `docs/agents/PROJECT-REGISTER.md`;
 - store full manifests and evidence under `docs/agents/evidence/**`.
 
+Distinguish deterministic scaffold from semantic refinement. `tes_init.py`
+creates the inventory-backed scaffold: identity, anchors, territories, scripts,
+surfaces, evidence, and gaps. The active agent performs semantic refinement by
+opening the strongest anchors and improving `PROJECT-CONTEXT.md` with supported
+project meaning. For a non-trivial project, do not claim deep context until the
+agent has opened strong anchors in the current run. If anchor reading is
+blocked, close as `Project context: NEEDS_REVIEW` with the reason.
+
 The context file must be evidence-led. Cite repository paths and say
 `unknown`, `not found`, or `needs deeper read` when the project files do not
 support a claim. Do not copy source code, secrets, or raw private content into
@@ -727,6 +735,9 @@ The project-context oracle is the executable quality gate for the generated
 project map. It must pass before the report claims `Project context: PASS`; if
 it fails, report `Project context: NEEDS_REVIEW` and include the missing
 anchors, territories, scripts, or explicit unknowns in evidence.
+Passing the oracle proves the scaffold contract, not human-grade semantic
+mastery; the agent must still report whether semantic refinement was completed,
+blocked, or left as next work.
 
 If Codex skill is present:
 

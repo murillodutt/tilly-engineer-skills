@@ -216,6 +216,11 @@ manifests, architecture docs, root agent instructions, local validation
 scripts, source entrypoints, and test roots, then synthesize the initial
 project map in `PROJECT-CONTEXT.md`.
 
+The deterministic initializer creates the scaffold. The active agent must then
+open strong anchors before claiming deep project understanding, and either
+refine `PROJECT-CONTEXT.md` with supported semantic context or report
+`Project context: NEEDS_REVIEW`.
+
 Existing context is project-owned by default. Conflicts mean retrofit, not
 overwrite.
 

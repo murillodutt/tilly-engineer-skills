@@ -83,6 +83,9 @@ installer intents.
 For `/tes-init`, initialize the project as well as TES: read the strongest
 project anchors available and leave `docs/agents/PROJECT-CONTEXT.md` as the
 initial durable project map for future agents.
+`tes_init.py` creates the scaffold; the active agent must open strong anchors
+before claiming deep project understanding and refine the context or report
+`Project context: NEEDS_REVIEW`.
 `/tes-update` first checks installed
 version, cloud version, helper contract parity, applied IDE surfaces,
 recommended route, and `recommended_update_scope`. Read-only update probes use
