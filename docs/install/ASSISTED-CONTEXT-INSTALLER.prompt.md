@@ -689,6 +689,7 @@ If this package is available locally, also run the package surface gates:
 
 ```bash
 python3 scripts/tes_init.py --self-test
+python3 scripts/project_context_oracle.py --self-test
 python3 scripts/root_context.py --self-test
 python3 scripts/tes_legacy_retirement.py --self-test
 python3 scripts/install_smoke.py --self-test
@@ -710,6 +711,7 @@ After adapter/Cortex/MCP writes are complete and the user authorized local initi
 
 ```bash
 python3 scripts/tes_init.py --target <target-root> --yes
+python3 scripts/project_context_oracle.py --target <target-root>
 ```
 
 This writes `docs/agents/PROJECT-REGISTER.md`,
@@ -721,6 +723,10 @@ leaving the project uninitialized. It must not bulk-absorb project files into
 Cortex or write to `sources/**`. It also installs the local Field Reports
 `pre-push` drain and local Git hygiene excludes when the target is a Git
 repository, and must report `BLOCKED` instead of pretending activation.
+The project-context oracle is the executable quality gate for the generated
+project map. It must pass before the report claims `Project context: PASS`; if
+it fails, report `Project context: NEEDS_REVIEW` and include the missing
+anchors, territories, scripts, or explicit unknowns in evidence.
 
 If Codex skill is present:
 

@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.43"
+VERSION = "0.3.44"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -95,6 +95,7 @@ REQUIRED_PATHS = (
     "scripts/install_mcp.py",
     "scripts/install_adapter.py",
     "scripts/tes_init.py",
+    "scripts/project_context_oracle.py",
     "scripts/tes_update.py",
     "scripts/tes_legacy_retirement.py",
     "scripts/tes_namespace.py",
@@ -153,6 +154,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "install:smoke",
     "tes:init",
     "tes:init:self-test",
+    "project-context:self-test",
     "tes:update",
     "tes:update:self-test",
     "tes:legacy:plan",
@@ -736,6 +738,20 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("install_smoke.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    project_context = ROOT / "scripts/project_context_oracle.py"
+    if project_context.exists():
+        result = subprocess.run(
+            [sys.executable, str(project_context), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("project_context_oracle.py --self-test failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 

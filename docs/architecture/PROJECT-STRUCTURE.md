@@ -73,6 +73,11 @@ route behind `/tes-update` and its `/tes:update` compatibility alias.
 slower gates finish, so blocked gates leave auditable evidence instead of an
 uninitialized runtime.
 
+`scripts/project_context_oracle.py` certifies that the generated
+`PROJECT-CONTEXT.md` is useful rather than decorative: it checks identity,
+manifest evidence, territories, source anchors, quality scripts, explicit
+unknowns, and absence of bulk-copied source code.
+
 `scripts/tes_legacy_retirement.py` is the closed-catalog cleanup gate for
 updates. It removes known old runtime assets, migrates Field Reports state,
 archives legacy retrofit records, and preserves project context.

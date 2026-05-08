@@ -54,7 +54,10 @@ write docs/agents/PROJECT-CONTEXT.md as the initial project map, create or
 update the compiled docs/agents/cortex/** Cortex layer, keep AGENTS.md,
 CLAUDE.md and Cursor rules as thin runtime bootloaders, activate the read-only
 project-scoped Cortex MCP server for the selected runtime route, and finish
-with the certification report required by the spec.
+with the certification report required by the spec. If package source is
+available, certify docs/agents/PROJECT-CONTEXT.md with
+project_context_oracle.py before claiming Project context PASS; otherwise
+report that gate as BLOCKED or NEEDS_REVIEW with the reason.
 The final report must expose the PT/EN/ES user manual link/path, installed
 helper set, root context gate, project context path, Field Reports state, and
 rollback summary.
