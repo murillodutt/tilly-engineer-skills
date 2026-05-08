@@ -20,8 +20,21 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.52"
+VERSION = "0.3.53"
 RETROFIT_DIR = ".tes/retrofit"
+
+
+def is_tes_runtime_conflict(relpath: str) -> bool:
+    parts = Path(relpath).parts
+    if len(parts) >= 3 and parts[0] == ".agents" and parts[1] == "skills" and parts[2].startswith("tes-"):
+        return True
+    if len(parts) >= 3 and parts[0] == ".claude" and parts[1] == "skills" and parts[2].startswith("tes-"):
+        return True
+    if len(parts) >= 2 and parts[0] == "skills" and parts[1].startswith("tes-"):
+        return True
+    if relpath == ".cursor/rules/tes-guidelines.mdc":
+        return True
+    return False
 
 
 def sha256_file(path: Path) -> str:
@@ -296,13 +309,15 @@ def install(args: argparse.Namespace) -> int:
                     "action": "overwrite",
                 }
                 for item in conflicts
-            ] if args.overwrite else []
+                if args.overwrite or is_tes_runtime_conflict(Path(item["source"]).relative_to(adapter_root).as_posix())
+            ]
             preserved_items = [
                 {
                     **item,
                     "relpath": Path(item["source"]).relative_to(adapter_root).as_posix(),
                 }
                 for item in conflicts
+                if not is_tes_runtime_conflict(Path(item["source"]).relative_to(adapter_root).as_posix())
             ] if not args.overwrite else []
             preserved_conflicts.extend(preserved_items)
             actions.extend(copy_files(
