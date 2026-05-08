@@ -135,6 +135,9 @@ npm run platform:surface:check
 | Need | Link |
 |------|------|
 | Installation mini prompt | [docs/install/MINI-PROMPT.md](docs/install/MINI-PROMPT.md) |
+| GitHub Pages landing source | [docs/index.html](docs/index.html) |
+| Current roadmap | [docs/roadmap/README.md](docs/roadmap/README.md) |
+| RC1 readiness roadmap | [docs/roadmap/RC1-READINESS-ROADMAP.md](docs/roadmap/RC1-READINESS-ROADMAP.md) |
 | User manual | [docs/install/USER-MANUAL.html](docs/install/USER-MANUAL.html) |
 | Command routing | [docs/install/COMMAND-TRIGGERS.md](docs/install/COMMAND-TRIGGERS.md) |
 | Context mesh method | [docs/mesh/CONTEXT-MESH-METHOD.md](docs/mesh/CONTEXT-MESH-METHOD.md) |

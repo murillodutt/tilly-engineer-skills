@@ -3,7 +3,7 @@ tds_id: roadmap.next_steps_2026_05_05
 tds_class: roadmap
 title: Next Window Reentry Letter
 date: 2026-05-05
-status: proposed
+status: archived
 consumer: next engineering session
 source_of_truth: false
 evidence_level: L0

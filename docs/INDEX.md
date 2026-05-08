@@ -20,6 +20,7 @@ turning the repository root into an inventory.
 | Repository shape and ownership | `architecture/PROJECT-STRUCTURE.md` |
 | TES namespace migration catalog | `architecture/TES-NAMING-MIGRATION-CATALOG.md` |
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
+| GitHub Pages landing | `index.html` |
 | Adapter installation | `install/INSTALL.md` |
 | Assisted context installer mini prompt | `install/MINI-PROMPT.md` |
 | Assisted context installer raw spec | `install/ASSISTED-CONTEXT-INSTALLER.prompt.md` |
@@ -48,7 +49,9 @@ turning the repository root into an inventory.
 | Codex adapter pipeline | `adapters/pipelines/CODEX-PIPELINE.md` |
 | Claude adapter pipeline | `adapters/pipelines/CLAUDE-PIPELINE.md` |
 | Cursor adapter pipeline | `adapters/pipelines/CURSOR-PIPELINE.md` |
-| Next-session continuity | `roadmap/NEXT-STEPS-LETTER-2026-05-05.md` |
+| Current roadmap index | `roadmap/README.md` |
+| RC1 readiness roadmap | `roadmap/RC1-READINESS-ROADMAP.md` |
+| Historical next-session continuity | `roadmap/NEXT-STEPS-LETTER-2026-05-05.md` |
 | TDS specification | `tds/TDS-SPEC.md` |
 | TDS document index | `tds/DOCS-INDEX.yml` |
 

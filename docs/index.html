@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tilly Engineer Skills</title>
+  <meta name="description" content="A local operating layer for governed AI coding agents across Codex, Claude Code, and Cursor.">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #526070;
+      --line: #d8dee8;
+      --paper: #f7f9fc;
+      --white: #ffffff;
+      --blue: #1f6feb;
+      --green: #1f8f54;
+      --plum: #6f42c1;
+      --amber: #9a6700;
+      --navy: #111827;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.55;
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .hero {
+      min-height: 78vh;
+      display: grid;
+      align-items: end;
+      background:
+        linear-gradient(90deg, rgba(8, 16, 32, 0.88), rgba(8, 16, 32, 0.58), rgba(8, 16, 32, 0.2)),
+        url("https://github.com/user-attachments/assets/bc1b4c00-6021-48c3-bb01-a72ff29c447c") center / cover;
+      color: var(--white);
+    }
+
+    .wrap {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .hero-content {
+      padding: 96px 0 72px;
+      max-width: 760px;
+    }
+
+    .eyebrow {
+      margin: 0 0 18px;
+      color: #b8d8ff;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(3rem, 8vw, 6.4rem);
+      line-height: 0.94;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 24px 0 0;
+      max-width: 700px;
+      color: #edf4ff;
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: 6px;
+      color: var(--white);
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .button.primary {
+      color: var(--navy);
+      border-color: #ffffff;
+      background: #ffffff;
+    }
+
+    main {
+      padding: 54px 0 72px;
+    }
+
+    section {
+      margin-top: 54px;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: clamp(1.6rem, 3vw, 2.25rem);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    p {
+      margin: 0 0 14px;
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      padding: 22px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .tile {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      padding: 20px;
+      min-height: 154px;
+    }
+
+    .tile strong {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: #eef2f7;
+      color: #334155;
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .tag.green {
+      background: #e7f6ee;
+      color: var(--green);
+    }
+
+    .tag.amber {
+      background: #fff4d6;
+      color: var(--amber);
+    }
+
+    .tag.plum {
+      background: #f2eafd;
+      color: var(--plum);
+    }
+
+    pre {
+      overflow-x: auto;
+      border-radius: 8px;
+      padding: 18px;
+      background: #111827;
+      color: #f8fafc;
+      font-size: 0.92rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: #334155;
+      background: #eef2f7;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    footer {
+      padding: 30px 0 42px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+    }
+
+    @media (max-width: 760px) {
+      .hero {
+        min-height: 86vh;
+      }
+
+      .intro,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .wrap {
+        width: min(100% - 28px, 1120px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap hero-content">
+      <p class="eyebrow">Local operating layer for AI coding agents</p>
+      <h1>Tilly Engineer Skills</h1>
+      <p class="lead">
+        TES turns Codex, Claude Code, and Cursor into governed engineering
+        collaborators with durable project context, local oracles, evidence,
+        Cortex continuity, and release-safe adapter routing.
+      </p>
+      <div class="actions">
+        <a class="button primary" href="./install/MINI-PROMPT.md">Install prompt</a>
+        <a class="button" href="./install/USER-MANUAL.html">User manual</a>
+        <a class="button" href="./roadmap/RC1-READINESS-ROADMAP.md">RC1 roadmap</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="intro">
+      <div>
+        <h2>Context That Survives The Chat</h2>
+        <p>
+          TES installs an assisted context mesh into a target project. Runtime
+          files stay thin. Project truth moves into versioned Markdown under
+          <code>docs/agents/**</code>, with evidence, rollback instructions, and
+          a read-only Cortex MCP server for local recall.
+        </p>
+        <p>
+          The package is currently candidate-ready for a human RC decision. No
+          tag, release, package publish, marketplace submission, or live GitHub
+          issue publication is claimed by this page.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Certified Baseline</h3>
+        <p><strong>Version:</strong> 0.3.64</p>
+        <p><strong>State:</strong> release-candidate ready, pending human release decision</p>
+        <p><strong>Closure:</strong> remote adoption replay, helper contract parity, update status, governance preservation</p>
+        <div class="tag-row">
+          <span class="tag green">Codex</span>
+          <span class="tag green">Claude Code</span>
+          <span class="tag green">Cursor</span>
+          <span class="tag plum">Cortex MCP</span>
+          <span class="tag amber">Field Reports partial live transport</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Install</h2>
+      <p>Open a target repository in Codex, Claude Code, or Cursor and paste:</p>
+      <pre><code>Install Tilly Engineer Skills as an assisted context mesh, not as blind file
+copying.
+
+Read and follow this raw installer spec:
+
+https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md</code></pre>
+      <p>
+        The installer starts with Git status, classifies the project as new,
+        existing, or meshed, preserves project-owned governance, activates
+        project-scoped helpers, and closes with a certification report.
+      </p>
+    </section>
+
+    <section>
+      <h2>What TES Provides</h2>
+      <div class="grid">
+        <div class="tile">
+          <strong>Governance</strong>
+          Engineering discipline, root-context protection, adapter routing,
+          rollback instructions, and explicit no-release locks.
+        </div>
+        <div class="tile">
+          <strong>Project Context</strong>
+          Initial project understanding, territories, anchors, gaps, evidence,
+          and durable docs for the next agent session.
+        </div>
+        <div class="tile">
+          <strong>Verification</strong>
+          Local oracles for install, adapters, command triggers, Cortex, MCP,
+          Field Reports, docs, package structure, and release readiness.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Claim Boundaries</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Surface</th>
+            <th>Status</th>
+            <th>Boundary</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Assisted install</td>
+            <td>Certified</td>
+            <td>Remote replay and local helper contract checks.</td>
+          </tr>
+          <tr>
+            <td>Cortex MCP</td>
+            <td>Certified read-only</td>
+            <td>No write-capable MCP tools are claimed.</td>
+          </tr>
+          <tr>
+            <td>Field Reports</td>
+            <td>Partial live transport</td>
+            <td>Local capture, fake transport, and receiver quarantine are certified; real issue publication requires explicit authorization.</td>
+          </tr>
+          <tr>
+            <td>Marketplace and release actions</td>
+            <td>Not taken</td>
+            <td>No release, tag, package publish, or marketplace submission has been performed.</td>
+          </tr>
+          <tr>
+            <td>Optional vector/Xenova behavior</td>
+            <td>Deferred</td>
+            <td>Optional dependency behavior is not installed or certified by default.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Audit Trail</h2>
+      <div class="grid">
+        <div class="tile">
+          <strong>Docs index</strong>
+          <a href="./INDEX.md">docs/INDEX.md</a>
+        </div>
+        <div class="tile">
+          <strong>Architecture</strong>
+          <a href="./architecture/PROJECT-STRUCTURE.md">Project structure</a>
+        </div>
+        <div class="tile">
+          <strong>Roadmap</strong>
+          <a href="./roadmap/README.md">Current roadmap index</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      MIT licensed. Local-first by design. Verify with <code>npm run commit:check</code>.
+    </div>
+  </footer>
+</body>
+</html>

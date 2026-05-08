@@ -32,6 +32,8 @@ Root files are only entrypoints and local project controls:
 `scripts/**` is classified by consumer, not by directory. Validator-only
 scripts are maintainer gates. Installer, Cortex, MCP, Field Reports, and adapter
 scripts are delivered behavior when adopters receive, invoke, or certify them.
+Bootstrap script entrypoints live under `scripts/bootstrap/**`; installer
+wrappers do not belong in the repository root.
 
 ## Source
 
@@ -59,6 +61,11 @@ trees under `dist/adapters/**`:
 | Cursor | `CURSOR.md` plus `.cursor/rules/**` |
 
 Use `npm run materialize:check` to verify this without writing to `dist/**`.
+
+`scripts/bootstrap/install.sh` and `scripts/bootstrap/install.ps1` are the
+canonical shell entrypoints for mechanical adapter installation. Root
+`install.sh` and `install.ps1` are intentionally absent so the root remains
+human-facing rather than a script surface.
 
 `scripts/install_mcp.py` is separate from adapter materialization. It activates
 the read-only Cortex MCP server in a target project by copying local helpers to
@@ -93,13 +100,17 @@ directory is local transport state, not repository truth.
 `.github/ISSUE_TEMPLATE/tes-field-report.yml` and
 `.github/workflows/field-report-governance.yml` govern the central GitHub
 receiver for those reports. The local oracle is
-`scripts/field_reports_github_oracle.py`.
+`scripts/field_reports_github_oracle.py`. GitHub automation readiness,
+including Dependabot ecosystem and directory sanity when
+`.github/dependabot.yml` exists, is checked by
+`scripts/github_readiness_oracle.py`.
 
 `scripts/install_smoke.py`, `scripts/claude_plugin_oracle.py`,
-`scripts/retention_metadata.py`, and `scripts/validate_reference_graph.py`
-provide deterministic closure gates for assisted installation, local Claude
-plugin shape, portable project-context fixtures, evidence retention policy, and
-governed link drift.
+`scripts/github_readiness_oracle.py`, `scripts/retention_metadata.py`, and
+`scripts/validate_reference_graph.py` provide deterministic closure gates for
+assisted installation, local Claude plugin shape, GitHub automation readiness,
+portable project-context fixtures, evidence retention policy, and governed link
+drift.
 
 ## Docs
 
