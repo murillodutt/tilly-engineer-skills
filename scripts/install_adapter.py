@@ -20,7 +20,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.54"
+VERSION = "0.3.55"
 RETROFIT_DIR = ".tes/retrofit"
 
 
@@ -32,9 +32,31 @@ def is_tes_runtime_conflict(relpath: str) -> bool:
         return True
     if len(parts) >= 2 and parts[0] == "skills" and parts[1].startswith("tes-"):
         return True
-    if relpath == ".cursor/rules/tes-guidelines.mdc":
-        return True
     return False
+
+
+def is_tes_owned_cursor_rule(relpath: str, target: Path) -> bool:
+    if relpath != ".cursor/rules/tes-guidelines.mdc" or not target.exists():
+        return False
+    try:
+        text = target.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return False
+    markers = (
+        "Tilly Engineering",
+        "Think Before Coding",
+        "Goal-Driven Execution",
+        "/tes-init",
+    )
+    return sum(1 for marker in markers if marker in text) >= 2
+
+
+def can_overwrite_conflict(relpath: str, target: Path, broad_overwrite: bool) -> bool:
+    if broad_overwrite:
+        return True
+    if is_tes_runtime_conflict(relpath):
+        return True
+    return is_tes_owned_cursor_rule(relpath, target)
 
 
 def sha256_file(path: Path) -> str:
@@ -309,7 +331,11 @@ def install(args: argparse.Namespace) -> int:
                     "action": "overwrite",
                 }
                 for item in conflicts
-                if args.overwrite or is_tes_runtime_conflict(Path(item["source"]).relative_to(adapter_root).as_posix())
+                if can_overwrite_conflict(
+                    Path(item["source"]).relative_to(adapter_root).as_posix(),
+                    Path(item["target"]),
+                    args.overwrite,
+                )
             ]
             preserved_items = [
                 {
@@ -317,7 +343,11 @@ def install(args: argparse.Namespace) -> int:
                     "relpath": Path(item["source"]).relative_to(adapter_root).as_posix(),
                 }
                 for item in conflicts
-                if not is_tes_runtime_conflict(Path(item["source"]).relative_to(adapter_root).as_posix())
+                if not can_overwrite_conflict(
+                    Path(item["source"]).relative_to(adapter_root).as_posix(),
+                    Path(item["target"]),
+                    args.overwrite,
+                )
             ] if not args.overwrite else []
             preserved_conflicts.extend(preserved_items)
             actions.extend(copy_files(
