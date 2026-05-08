@@ -62,6 +62,8 @@ inicializar TES / instalar TES / recertificar TES -> /tes:init
   `STALE_SOURCE` or `BLOCKED` source freshness.
 - Do not claim `/tes:update` is `CURRENT` while helper contract parity is
   `STALE_HELPERS` or `BLOCKED`.
+- Do not record Field Reports from exploratory `/tes:update` probes; use
+  `--record-field-report` only on the final certification probe.
 - Do not use MCP config activation to repair stale helpers; run the helper-only
   Layer Zero route first.
 - Do not call SQLite, MCP, or generated output memory.
@@ -72,6 +74,8 @@ inicializar TES / instalar TES / recertificar TES -> /tes:init
 - Do not copy new TES assets over old runtime surfaces while
   `tes_legacy_retirement.py audit` still reports active legacy.
 - Do not treat Field Reports, GitHub issues, outbox, or hooks as project truth.
+- Do not assume a silent pre-push hook created no upstream issue; verify
+  `.tes/field-reports/receipts/**` or `field_reports.py status`.
 - Field Reports also has a GitHub receiver gate: issue template, schema oracle,
   labels, and quarantine workflow.
 - Do not run write operations such as adapter install, MCP activation, Cortex

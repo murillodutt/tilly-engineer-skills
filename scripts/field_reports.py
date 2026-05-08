@@ -19,7 +19,7 @@ import uuid
 from typing import Any
 
 
-VERSION = "0.3.37"
+VERSION = "0.3.38"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 LEGACY_SCHEMAS = ("tes-field-report@1", "tilly-field-report@1")
@@ -52,6 +52,7 @@ SUMMARY_FACT_KEYS = (
     "surface_count",
     "update_available",
     "update_reasons",
+    "update_scope",
 )
 GIT_EXCLUDE_LINES = (
     ".tes/bin/*.bak-*",

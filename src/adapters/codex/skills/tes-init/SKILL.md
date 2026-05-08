@@ -31,10 +31,12 @@ the user for package contents.
    `meshed`.
 3. Run Step Zero before edits: inspect Git status and offer a local baseline
    commit when the tree is dirty.
-4. For `/tes:update`, run `tes_update.py plan` when available to compare
-   installed/cloud versions, verify helper contract parity, detect applied IDE
-   surfaces, and recommend route.
-   Treat `STALE_HELPERS` as update-required and replace only TES-owned
+4. For `/tes:update`, run `tes_update.py plan --json-only` when available to
+   compare installed/cloud versions, verify helper contract parity, detect
+   applied IDE surfaces, and recommend route plus `recommended_update_scope`.
+   Use `--record-field-report` only on the final certification probe. Treat
+   `recommended_update_scope=helpers-only` or `STALE_HELPERS` as
+   update-required and replace only TES-owned
    `.tes/bin/**` helpers with backups through the helper-only Layer Zero route,
    then rerun the update probe before activating MCP configs.
 5. Before rewriting root bootloaders, run `root_context.py analyze` when

@@ -52,11 +52,12 @@ Preserve local project governance, move durable agent context into
 docs/agents/**, keep AGENTS.md, CLAUDE.md and Cursor rules as thin runtime
 bootloaders, activate the read-only project-scoped Cortex MCP server for the
 selected runtime route, and finish with the certification report required by the spec.
-The update probe must verify installed and cloud versions plus helper contract
-parity; `STALE_HELPERS` is update-required, not `CURRENT`. For helper drift,
-replace only TES-owned `.tes/bin/**` helpers with backups on the selected
-helper-only Layer Zero route, rerun the update probe, then continue only after
-parity is PASS.
+The update probe must be read-only by default, verify installed/cloud versions,
+helper contract parity, and `recommended_update_scope`; `STALE_HELPERS` is
+update-required, not `CURRENT`. For `recommended_update_scope=helpers-only`,
+replace only TES-owned `.tes/bin/**` helpers with backups on the selected Layer
+Zero route, rerun the update probe, then continue only after parity is PASS.
+Use `--record-field-report` only on the final certification probe.
 The final report must expose the user manual link/path.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
@@ -152,6 +153,8 @@ evidence instead of leaving the project unregistered.
 ```bash
 python3 scripts/tes_init.py --target /path/to/project --yes
 python3 scripts/tes_init.py --self-test
+python3 scripts/tes_update.py plan --target /path/to/project --json-only
+python3 scripts/tes_update.py plan --target /path/to/project --json-only --record-field-report
 python3 scripts/field_reports.py status --target /path/to/project
 python3 scripts/field_reports.py --self-test
 python3 scripts/cortex.py init --target /path/to/project-or-vault
@@ -168,6 +171,14 @@ python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
 python3 scripts/install_mcp.py --self-test
 ```
+
+Use the first `tes_update.py plan --json-only` form for inspection. It is
+read-only and must not write Field Reports. Use
+`--record-field-report` only for the final certification probe. When the probe
+returns `recommended_update_scope=helpers-only`, run Layer Zero with
+`install_mcp.py --helpers-only` before adapter or MCP config activation.
+Self-tests run from `scripts/**` certify the package source contract; self-tests
+run from `.tes/bin/**` certify the installed helper contract.
 
 Navigation is runtime-aware. The installer declares menus as intent, loads
 `docs/install/navigation/common.prompt.md`, then loads the renderer for Codex,
@@ -230,6 +241,9 @@ Before closing, compare the changed-file summary against
 `git status --short --untracked-files=all`. Do not collapse Field Reports into a
 generic gate: the report must say whether the hook/drain is `PASS`, `BLOCKED`,
 `DISABLED`, or `SKIP`.
+Because the pre-push hook drains silently, confirm created upstream reports by
+checking `field_reports.py status` or `.tes/field-reports/receipts/**` after
+push.
 
 GO requires canonical `docs/agents/**`, a created or explicitly deferred
 Cortex layer, selected-runtime Cortex MCP activation or a named blocker, thin

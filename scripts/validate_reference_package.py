@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.37"
+VERSION = "0.3.38"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -290,11 +290,15 @@ UPDATE_ROUTINE_REQUIRED_TERMS = (
     "installed and cloud versions",
     "helper contract parity",
     "helper-only Layer Zero",
+    "--record-field-report",
+    "recommended_update_scope",
+    "adapter-config",
     "final Field Reports `tes_update` event",
     "STALE_HELPERS",
     "versão instalada e versão na nuvem",
     "paridade de contrato dos helpers",
     "recommended_route",
+    "self_test_mode",
     "legacy_retirement_required",
 )
 
@@ -306,6 +310,7 @@ ROOT_CONTEXT_REQUIRED_TERMS = (
     ".cursor/rules/**",
     "docs/agents/**",
     "PRESERVED",
+    "self_test_mode",
 )
 
 GIT_SAFETY_REQUIRED_TERMS = (

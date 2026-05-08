@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.37"
+VERSION = "0.3.38"
 EVIDENCE_DIR = Path("docs/agents/evidence")
 ROOT_FILES = (
     ("codex", "AGENTS.md", "src/adapters/codex/AGENTS.md"),
@@ -76,6 +76,17 @@ def source_sha(source_rel: str | None) -> str | None:
         return None
     source = ROOT / source_rel
     return sha256(source) if source.exists() else None
+
+
+def package_source_available() -> bool:
+    return (ROOT / "src/adapters/codex/AGENTS.md").exists()
+
+
+def packaged_codex_bootloader() -> str:
+    source = ROOT / "src/adapters/codex/AGENTS.md"
+    if source.exists():
+        return source.read_text(encoding="utf-8")
+    return "# Tilly Codex Bootloader\n\nRoute to `docs/agents/**`.\nTilly applies.\n"
 
 
 def root_candidates(target: Path) -> list[tuple[str, Path, str | None]]:
@@ -222,13 +233,15 @@ def write_structure_plan(target: Path, required: list[dict[str, Any]]) -> str:
 
 def self_test() -> dict[str, Any]:
     failures: list[str] = []
+    mode = "package" if package_source_available() else "installed"
+    coverage = "source-package-contract" if mode == "package" else "installed-helper-contract"
     with tempfile.TemporaryDirectory(prefix="tes-root-context-") as tempdir:
         target = Path(tempdir)
         clean = analyze(target)
         if clean["status"] != "PASS":
             failures.append("empty project must pass")
 
-        (target / "AGENTS.md").write_text((ROOT / "src/adapters/codex/AGENTS.md").read_text(encoding="utf-8"), encoding="utf-8")
+        (target / "AGENTS.md").write_text(packaged_codex_bootloader(), encoding="utf-8")
         current = analyze(target)
         if current["status"] != "PASS":
             failures.append("current Tilly AGENTS.md must pass")
@@ -249,7 +262,13 @@ def self_test() -> dict[str, Any]:
         if cursor["requires_structure_count"] < 3:
             failures.append("custom Cursor root rule must be detected")
 
-    return {"version": VERSION, "status": "PASS" if not failures else "FAIL", "failures": failures}
+    return {
+        "version": VERSION,
+        "status": "PASS" if not failures else "FAIL",
+        "failures": failures,
+        "self_test_mode": mode,
+        "coverage": coverage,
+    }
 
 
 def main() -> int:

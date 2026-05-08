@@ -303,7 +303,7 @@ Before rewriting root runtime files, run `python3 scripts/root_context.py analyz
 
 When no root overwrite is attempted and project-owned bootloaders are intentionally left untouched, close the root-context gate as `PRESERVED`, not `FAIL`.
 
-For a meshed project, treat the run as assisted update/convergence, not reinstall. Run the update probe when available: `python3 scripts/tes_update.py plan --target <target-root> --json-only`. It compares the installed and cloud versions, checks helper contract parity with installed helper fingerprints and required schema markers, detects applied IDE surfaces, recommends `current`, `codex`, `claude`, `cursor`, or `all`, records a `tes_update` Field Reports event when Field Reports is installed, and reports `legacy_retirement_required`. If it reports `STALE_HELPERS`, run Layer Zero before other updates: `python3 scripts/install_mcp.py --target <target-root> --adapter <route> --dry-run --overwrite --helpers-only --json-only`, then `python3 scripts/install_mcp.py --target <target-root> --adapter <route> --overwrite --helpers-only --yes`. Layer Zero may replace only TES-owned `.tes/bin/**` helpers with backups. Run `tes_update.py plan --json-only` again and require `helper_contract_status=PASS` before adapter/MCP config activation. This does not authorize overwriting project-owned root bootloaders.
+For a meshed project, treat the run as assisted update/convergence, not reinstall. Run read-only update probes when available: `python3 scripts/tes_update.py plan --target <target-root> --json-only`. It compares the installed and cloud versions, checks helper contract parity with installed helper fingerprints and required schema markers, detects applied IDE surfaces, recommends `current`, `codex`, `claude`, `cursor`, or `all`, reports `recommended_update_scope`, and reports `legacy_retirement_required`. Read-only probes must not record Field Reports. If it reports `recommended_update_scope=helpers-only` or `STALE_HELPERS`, run Layer Zero before other updates: `python3 scripts/install_mcp.py --target <target-root> --adapter <route> --dry-run --overwrite --helpers-only --json-only`, then `python3 scripts/install_mcp.py --target <target-root> --adapter <route> --overwrite --helpers-only --yes`. Layer Zero may replace only TES-owned `.tes/bin/**` helpers with backups. Run `tes_update.py plan --json-only` again and require `helper_contract_status=PASS` before adapter/MCP config activation. Record the final `/tes:update` evidence only with `python3 scripts/tes_update.py plan --target <target-root> --json-only --record-field-report`. This does not authorize overwriting project-owned root bootloaders.
 
 If legacy retirement is required, run `python3 scripts/tes_legacy_retirement.py plan --target <target-root>` after the root context gate and before materializing new assets. The gate may remove only known old runtime assets, migrate `.tilly/field-reports/**` to `.tes/field-reports/**`, archive `.tilly/retrofit/**` under `.tes/legacy-retirement/retrofit/**`, and preserve project context. If it reports `NEEDS_REVIEW`, stop; do not copy new TES assets over old surfaces. When it is clean and the run is authorized, apply with `python3 scripts/tes_legacy_retirement.py apply --target <target-root> --yes`, then certify with `python3 scripts/tes_legacy_retirement.py audit --target <target-root>`.
 
@@ -659,6 +659,17 @@ python3 scripts/install_smoke.py --self-test
 python3 scripts/platform_surface_oracle.py --self-test
 ```
 
+Package self-tests report `self_test_mode=package` and certify the source-package
+contract. Installed helper self-tests report `self_test_mode=installed` and
+certify only the materialized helper contract. When package source is not
+available, use installed helper self-tests instead of claiming package-source
+coverage:
+
+```bash
+python3 .tes/bin/root_context.py --self-test
+python3 .tes/bin/tes_update.py --self-test
+```
+
 After adapter/Cortex/MCP writes are complete and the user authorized local initialization, run the project initializer to recertify and register the target project:
 
 ```bash
@@ -816,6 +827,7 @@ GO requires:
 - Field Reports state and installed helper set are explicit in the report;
 - helper contract parity is PASS or NOT_INSTALLED; `STALE_HELPERS` cannot close as GO;
 - final `tes_update` evidence is recorded when Field Reports is installed;
+- when Field Reports drains through the silent pre-push hook, verify `field_reports.py status` or `.tes/field-reports/receipts/**` before claiming that no upstream issue was created;
 - if helper files were copied but hook/drain status is unknown, use `NEEDS_REVIEW`;
 - context was preserved, no secrets changed, and at least one oracle passed.
 

@@ -77,9 +77,12 @@ requires exact syntax.
 Treat `/tes:init`, `/tes:update`, `tes init`, and natural command/prompts
 such as `TES, initialize this project`, `TES, inicialize este projeto`, or
 `Atualizar TES` as installer intents. `/tes:update` first checks installed
-version, cloud version, helper contract parity, applied IDE surfaces, and
-recommended route. `STALE_HELPERS` is repaired first through the helper-only
-Layer Zero route before MCP config activation. Also treat `/tes:cortex`,
+version, cloud version, helper contract parity, applied IDE surfaces,
+recommended route, and `recommended_update_scope`. Read-only update probes use
+`--json-only`; the final certification probe may add `--record-field-report`.
+`recommended_update_scope=helpers-only` or `STALE_HELPERS` is repaired first
+through the helper-only Layer Zero route before MCP config activation. Also
+treat `/tes:cortex`,
 `/tes:curate`, `/tes:mcp`, `/tes:field-reports`, `/tes:doctor`,
 `/tes:adapter`, and `/tes:bench` as intent shortcuts. Load the matching skill
 and let the agent choose the smallest safe oracle. These are not shell commands.
