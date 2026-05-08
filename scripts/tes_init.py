@@ -21,7 +21,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.47"
+VERSION = "0.3.48"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -70,6 +70,19 @@ MANIFEST_NAMES = {
     "composer.json",
     "deno.json",
     "bun.lockb",
+}
+ROOT_CONFIG_ANCHOR_NAMES = {
+    "nuxt.config.ts",
+    "nuxt.config.js",
+    "vite.config.ts",
+    "vite.config.js",
+    "next.config.js",
+    "tsconfig.json",
+    "vitest.config.ts",
+    "eslint.config.mjs",
+    "drizzle.config.ts",
+    "docker-compose.yml",
+    "docker-compose.dev.yml",
 }
 DOC_ANCHOR_NAMES = {
     "README.md",
@@ -389,20 +402,32 @@ def anchor_score(record: dict[str, Any]) -> tuple[int, str]:
     relpath = Path(str(record["path"]))
     name = relpath.name
     first = relpath.parts[0] if relpath.parts else ""
+    second = relpath.parts[1] if len(relpath.parts) > 1 else ""
     suffix = str(record.get("suffix") or "")
     score = 0
-    if name in DOC_ANCHOR_NAMES:
-        score -= 100
-    if name in MANIFEST_NAMES:
-        score -= 90
-    if first in {"docs", ".github", ".agents", ".claude", ".cursor"}:
+    is_root = len(relpath.parts) == 1
+    if is_root and name in DOC_ANCHOR_NAMES:
+        score -= 220
+    elif name in DOC_ANCHOR_NAMES:
         score -= 60
+    if is_root and name in MANIFEST_NAMES:
+        score -= 210
+    elif name in MANIFEST_NAMES:
+        score -= 80
+    if is_root and name in ROOT_CONFIG_ANCHOR_NAMES:
+        score -= 160
+    if first in {"src", "app", "server", "client", "api", "lib", "packages"}:
+        score -= 80
+    if first in {"docs", ".github", ".agents", ".claude", ".cursor"}:
+        score -= 40
     if first in SOURCE_DIR_HINTS:
         score -= 40
     if suffix in {".md", ".mdc", ".json", ".toml", ".yaml", ".yml"}:
         score -= 20
     if "test" in relpath.parts or "tests" in relpath.parts:
         score -= 10
+    if first == "docs" and second in {"evidence", "agents"}:
+        score += 70
     return (score, str(record["path"]))
 
 
