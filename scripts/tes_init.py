@@ -28,7 +28,7 @@ HELPER_ROOT = SCRIPT_PATH.parent
 ROOT = SCRIPT_PATH.parents[1]
 SOURCE_ROOT = ROOT / "scripts" if (ROOT / "scripts").exists() else HELPER_ROOT
 PACKAGE_MODE = SOURCE_ROOT.name == "scripts"
-VERSION = "0.3.54"
+VERSION = "0.3.55"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")

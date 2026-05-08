@@ -18,7 +18,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.54"
+VERSION = "0.3.55"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (

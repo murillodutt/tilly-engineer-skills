@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.54"
+VERSION = "0.3.55"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -31,6 +31,18 @@ PROJECT_CONTEXT_FIXTURES = (
 )
 CODEX_LOCAL_BOOTLOADER = "Local product governance. Preserve this file.\n"
 CLAUDE_LOCAL_BOOTLOADER = "Local product governance. Preserve this file.\n"
+HOSTILE_CURSOR_RULE = """---
+description: Hostile local Cursor rule for TES governance canary.
+alwaysApply: true
+---
+
+# Hostile Project Cursor Rule
+
+This file is intentionally project-owned canary setup. TES must not overwrite
+or merge it automatically.
+
+Hostile marker: `cursor-local-governance-must-survive`.
+"""
 
 
 def run(command: list[str], cwd: Path = ROOT) -> tuple[int, str, str]:
@@ -408,6 +420,54 @@ def codex_preserved_bootloader_probe() -> dict[str, Any]:
         return {"route": "codex-preserved-bootloader", "status": "FAIL" if failures else "PASS", "failures": failures}
 
 
+def hostile_governance_conflict_probe() -> dict[str, Any]:
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-hostile-governance-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        (target / "AGENTS.md").write_text(CODEX_LOCAL_BOOTLOADER, encoding="utf-8")
+        (target / "CLAUDE.md").write_text(CLAUDE_LOCAL_BOOTLOADER, encoding="utf-8")
+        write(target / ".cursor/rules/tes-guidelines.mdc", HOSTILE_CURSOR_RULE)
+
+        code, stdout, stderr = run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/install_adapter.py"),
+                "--target",
+                str(target),
+                "--adapter",
+                "all",
+                "--yes",
+            ]
+        )
+        if code != 0:
+            failures.extend(["hostile governance install failed", *stdout.splitlines(), *stderr.splitlines()])
+            return {"route": "hostile-governance-conflict", "status": "FAIL", "failures": failures}
+
+        try:
+            payload = json.loads(stdout[stdout.index("{"):stdout.rindex("}") + 1])
+        except (ValueError, json.JSONDecodeError) as exc:
+            failures.append(f"hostile governance install returned invalid JSON: {exc}")
+            payload = {}
+        preserved = payload.get("preserved_conflicts") or []
+        for relpath in ("AGENTS.md", "CLAUDE.md", ".cursor/rules/tes-guidelines.mdc"):
+            if not any(str(item.get("relpath")) == relpath for item in preserved):
+                failures.append(f"hostile governance install must preserve conflict: {relpath}")
+        if (target / "AGENTS.md").read_text(encoding="utf-8") != CODEX_LOCAL_BOOTLOADER:
+            failures.append("hostile governance install overwrote AGENTS.md")
+        if (target / "CLAUDE.md").read_text(encoding="utf-8") != CLAUDE_LOCAL_BOOTLOADER:
+            failures.append("hostile governance install overwrote CLAUDE.md")
+        if (target / ".cursor/rules/tes-guidelines.mdc").read_text(encoding="utf-8") != HOSTILE_CURSOR_RULE:
+            failures.append("hostile governance install overwrote Cursor rule")
+        failures.extend(require_paths(target, (
+            ".agents/skills/tes-init/SKILL.md",
+            ".claude/skills/tes-init/SKILL.md",
+            "skills/tes-init/SKILL.md",
+            "CURSOR.md",
+        )))
+        return {"route": "hostile-governance-conflict", "status": "FAIL" if failures else "PASS", "failures": failures}
+
+
 def minimal_fixture(target: Path) -> None:
     write(target / "README.md", "# Minimal Fixture\n")
 
@@ -563,6 +623,7 @@ def main() -> int:
         results.append(legacy_retirement_probe())
         results.append(codex_preserved_bootloader_probe())
         results.append(claude_preserved_bootloader_probe())
+        results.append(hostile_governance_conflict_probe())
         results.extend(project_context_fixture_probe(name) for name in PROJECT_CONTEXT_FIXTURES)
     failures = [
         failure
