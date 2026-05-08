@@ -17,13 +17,14 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.49"
+VERSION = "0.3.50"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
     "fixture-docs-only",
     "fixture-npm-app",
     "fixture-python-package",
+    "fixture-terraform-docs",
     "fixture-monorepo",
     "fixture-meshed",
     "fixture-owned-bootloaders",
@@ -440,6 +441,17 @@ def python_package_fixture(target: Path) -> None:
     write(target / "tests/test_meaning.py", "from tes_python_fixture import meaning\n\ndef test_meaning():\n    assert meaning() == 42\n")
 
 
+def terraform_docs_fixture(target: Path) -> None:
+    write(
+        target / "README.md",
+        "## Learn Terraform Import\n\n"
+        "Learn how to import existing resources under Terraform's management.\n\n"
+        "```hcl\n# docker_container.web:\nresource \"docker_container\" \"web\" {}\n```\n",
+    )
+    write(target / "main.tf", 'resource "null_resource" "example" {}\n')
+    write(target / "versions.tf", 'terraform { required_version = ">= 1.6.0" }\n')
+
+
 def monorepo_fixture(target: Path) -> None:
     write(
         target / "package.json",
@@ -485,6 +497,7 @@ FIXTURE_BUILDERS = {
     "fixture-docs-only": docs_only_fixture,
     "fixture-npm-app": npm_app_fixture,
     "fixture-python-package": python_package_fixture,
+    "fixture-terraform-docs": terraform_docs_fixture,
     "fixture-monorepo": monorepo_fixture,
     "fixture-meshed": meshed_fixture,
     "fixture-owned-bootloaders": owned_bootloaders_fixture,

@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.49"
+VERSION = "0.3.50"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -38,7 +38,7 @@ HELPER_FILES = (
 HELPER_CONTRACT_MARKERS = {
     "field_reports.py": ('SCHEMA = "tes-field-report@2"',),
 }
-UPDATE_SCOPES = ("none", "helpers-only", "adapter-config", "full-convergence")
+UPDATE_SCOPES = ("none", "helpers-only", "adapter-config", "project-context", "full-convergence")
 PREFERRED_INTENT_TRIGGERS = (
     "/tes-init",
     "/tes-update",
@@ -106,6 +106,7 @@ CLAUDE_TRIGGER_SKILLS = (
 POST_LAYER_ZERO_FINAL_PROBE_CONTRACT = (
     "helper_contract_status=PASS",
     "runtime_trigger_status=PASS|NOT_APPLIED",
+    "project_context_status=PASS|NOT_APPLIED",
     "update_available=False",
     "recommended_update_scope=none",
 )
@@ -347,6 +348,56 @@ def project_state(surface_map: dict[str, bool]) -> str:
     if surface_map["docs_agents"] or routed_runtime:
         return "existing"
     return "new"
+
+
+def project_context_contract(target: Path, surface_map: dict[str, bool]) -> dict[str, Any]:
+    context_path = target / "docs/agents/PROJECT-CONTEXT.md"
+    if not surface_map.get("docs_agents") and not context_path.exists():
+        return {"status": "NOT_APPLIED", "failures": [], "warnings": [], "path": None}
+    if not context_path.exists():
+        return {
+            "status": "DRIFT",
+            "failures": ["missing docs/agents/PROJECT-CONTEXT.md"],
+            "warnings": [],
+            "path": "docs/agents/PROJECT-CONTEXT.md",
+        }
+
+    oracle = ROOT / "scripts/project_context_oracle.py"
+    if not oracle.exists():
+        oracle = ROOT / "bin/project_context_oracle.py"
+    if not oracle.exists():
+        oracle = target / ".tes/bin/project_context_oracle.py"
+    if not oracle.exists():
+        return {
+            "status": "BLOCKED",
+            "failures": ["project_context_oracle.py unavailable"],
+            "warnings": [],
+            "path": "docs/agents/PROJECT-CONTEXT.md",
+        }
+    result = subprocess.run(
+        [sys.executable, str(oracle), "--target", str(target), "--json-only"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return {
+            "status": "BLOCKED",
+            "failures": ["project_context_oracle.py returned invalid JSON", *result.stderr.splitlines()],
+            "warnings": [],
+            "path": "docs/agents/PROJECT-CONTEXT.md",
+        }
+    status = "PASS" if result.returncode == 0 and payload.get("status") == "PASS" else "DRIFT"
+    failures = [str(item) for item in payload.get("failures") or []]
+    warnings = [str(item) for item in payload.get("warnings") or []]
+    return {
+        "status": status,
+        "failures": failures,
+        "warnings": warnings,
+        "path": "docs/agents/PROJECT-CONTEXT.md",
+    }
 
 
 def runtime_surfaces(surface_map: dict[str, bool]) -> list[str]:
@@ -648,6 +699,7 @@ def recommended_update_scope(
     update_available: bool,
     helper_status: str,
     trigger_status: str,
+    project_context_status: str,
 ) -> str:
     if state == "new":
         return "full-convergence"
@@ -655,6 +707,8 @@ def recommended_update_scope(
         return "helpers-only"
     if trigger_status == "DRIFT":
         return "adapter-config"
+    if project_context_status in {"DRIFT", "BLOCKED"}:
+        return "project-context"
     if update_available:
         return "full-convergence"
     return "none"
@@ -665,6 +719,8 @@ def recommended_intent(state: str, update_status: str, route: str, update_scope:
         return "/tes-init"
     if update_scope == "helpers-only":
         return f"/tes-update {route} --helpers-only"
+    if update_scope == "project-context":
+        return "/tes-init"
     if update_scope in {"adapter-config", "full-convergence"}:
         return f"/tes-update {route}"
     return "/tes-doctor" if update_status == "CURRENT" else f"/tes-update {route}"
@@ -674,6 +730,7 @@ def post_layer_zero_final_probe(result: dict[str, Any]) -> dict[str, Any]:
     ready = (
         result.get("helper_contract_status") == "PASS"
         and result.get("runtime_trigger_status") in {"PASS", "NOT_APPLIED"}
+        and result.get("project_context_status") in {"PASS", "NOT_APPLIED"}
         and result.get("update_available") is False
         and result.get("recommended_update_scope") == "none"
     )
@@ -706,7 +763,9 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
     helper = helper_contract(target, remote["helpers"], installed_helpers)
     helper_stale = helper["status"] == "STALE_HELPERS"
     trigger_drift = triggers["status"] == "DRIFT"
-    update_available = True if (cmp_result is not None and cmp_result < 0) or helper_stale or trigger_drift else False
+    context = project_context_contract(target, surface_map)
+    context_drift = context["status"] in {"DRIFT", "BLOCKED"}
+    update_available = True if (cmp_result is not None and cmp_result < 0) or helper_stale or trigger_drift or context_drift else False
     update_reasons: list[str] = []
     if cmp_result is not None and cmp_result < 0:
         update_reasons.append("installed_version_behind")
@@ -714,16 +773,23 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         update_reasons.append("helper_contract_drift")
     if trigger_drift:
         update_reasons.append("runtime_trigger_drift")
+    if context["status"] == "DRIFT":
+        update_reasons.append("project_context_drift")
+    if context["status"] == "BLOCKED":
+        update_reasons.append("project_context_blocked")
     if helper["status"] == "BLOCKED":
         update_reasons.append("helper_contract_blocked")
     update_status = (
         "AVAILABLE"
         if update_available
         else "CURRENT"
-        if cmp_result == 0 and helper["status"] in {"PASS", "NOT_INSTALLED"} and triggers["status"] in {"PASS", "NOT_APPLIED"}
+        if cmp_result == 0
+        and helper["status"] in {"PASS", "NOT_INSTALLED"}
+        and triggers["status"] in {"PASS", "NOT_APPLIED"}
+        and context["status"] in {"PASS", "NOT_APPLIED"}
         else "UNKNOWN"
     )
-    update_scope = recommended_update_scope(state, update_available, helper["status"], triggers["status"])
+    update_scope = recommended_update_scope(state, update_available, helper["status"], triggers["status"], context["status"])
     intent = recommended_intent(state, update_status, route, update_scope)
 
     result: dict[str, Any] = {
@@ -750,6 +816,10 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "runtime_trigger_status": triggers["status"],
         "runtime_trigger_records": triggers["records"],
         "runtime_trigger_failures": triggers["failures"],
+        "project_context_status": context["status"],
+        "project_context_path": context["path"],
+        "project_context_failures": context["failures"],
+        "project_context_warnings": context["warnings"],
         "adapter_refresh_required": update_scope in {"adapter-config", "full-convergence"},
         "next_probe_required": update_scope != "none",
         "helper_contract_status": helper["status"],
@@ -821,6 +891,89 @@ def trigger_fixture_text(*, claude: bool = False) -> str:
     return "\n".join(lines) + "\n"
 
 
+def write_context_fixture(target: Path) -> None:
+    write(
+        target / "docs/agents/evidence/fixture-tes-project-manifest.json",
+        "{}\n",
+    )
+    write(
+        target / "docs/agents/PROJECT-CONTEXT.md",
+        f"""# Tilly Project Context
+
+## Identity
+
+| Field | Value |
+|-------|-------|
+| Name | `{target.name}` |
+| Description | `Update fixture context.` |
+| Manifest | `docs/agents/evidence/fixture-tes-project-manifest.json` |
+
+## Initial Semantic Signals
+
+| Signal | Value | Source |
+|---|---|---|
+| fixture | Update fixture context. | test |
+
+## Maximum-Depth Initialization Contract
+
+- Unknowns remain explicit.
+
+## Active Agent Refinement Contract
+
+- Deterministic scaffold: inventory, anchors, scripts, surfaces, and gaps.
+- Semantic refinement: the active agent must open strong anchors before claiming depth.
+
+## Coverage
+
+| Field | Value |
+|---|---|
+| File count | `3` |
+
+## Project Territories
+
+| Territory | Initial role | Files | Sample anchors |
+|---|---|---|---|
+| .agents | agent runtime surface | 2 | `.agents/skills/tes-init/SKILL.md` |
+
+## Source Anchors Read First
+
+| Path | Kind | Bytes |
+|---|---|---|
+| AGENTS.md | .md | 10 |
+| .agents/skills/tes-init/SKILL.md | .md | 10 |
+
+## Runtime And Governance Surfaces
+
+| Surface | Status |
+|---|---|
+| codex_agents | present |
+
+## Package Scripts
+
+| Script | Command |
+|---|---|
+
+## Quality And Certification Scripts
+
+| Script | Command |
+|---|---|
+
+## Recommended Deep Reads
+
+- `AGENTS.md`
+- `.agents/skills/tes-init/SKILL.md`
+
+## Open Context Questions
+
+- What project facts need deeper read?
+
+## Maintenance Rule
+
+Update this file when project meaning changes.
+""",
+    )
+
+
 def self_test() -> dict[str, Any]:
     failures: list[str] = []
     mode = "package" if package_source_available() else "installed"
@@ -868,6 +1021,7 @@ def self_test() -> dict[str, Any]:
         write(target / ".agents/skills/tes-init/SKILL.md", trigger_fixture_text())
         write(target / ".agents/skills/tes-engineering-discipline/SKILL.md", trigger_fixture_text())
         write(target / ".tes/bin/tes_update.py", f'VERSION = "{VERSION}"\n')
+        write_context_fixture(target)
         args = argparse.Namespace(
             target=target,
             remote_version=VERSION,
@@ -982,6 +1136,7 @@ def self_test() -> dict[str, Any]:
         write(target / ".agents/skills/tes-engineering-discipline/SKILL.md", trigger_fixture_text())
         write(target / ".tes/bin/tes_update.py", helper_source_text("tes_update.py"))
         write(target / ".tes/bin/field_reports.py", helper_source_text("field_reports.py"))
+        write_context_fixture(target)
         args = argparse.Namespace(
             target=target,
             remote_version=VERSION,

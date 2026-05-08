@@ -9,14 +9,16 @@ import re
 import subprocess
 import sys
 import tempfile
+import tomllib
 from pathlib import Path
 from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.49"
+VERSION = "0.3.50"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 PACKAGE_MODE = (ROOT / "scripts").exists()
+MARKDOWN_HEADING_RE = re.compile(r"^#{1,3}\s+(.+?)\s*$")
 REQUIRED_SECTIONS = (
     "# Tilly Project Context",
     "## Identity",
@@ -50,8 +52,24 @@ EXCLUDED_PARTS = {
     "build",
     "coverage",
 }
+TES_RUNTIME_PREFIXES = (
+    (".agents", "skills", "tes-"),
+    (".claude", "skills", "tes-"),
+    ("skills", "tes-"),
+    (".claude-plugin",),
+    ("docs", "agents", "cortex"),
+)
+TES_RUNTIME_RELPATHS = {
+    ".cursor/rules/tes-guidelines.mdc",
+}
+TES_ROOT_BOOTLOADER_MARKERS = {
+    "AGENTS.md": "Portable Codex bootloader for repositories adopting Tilly Engineering",
+    "CLAUDE.md": "Behavioral engineering discipline for reducing common LLM coding mistakes.",
+    "CURSOR.md": "This target repository includes a Cursor project rule for Tilly Engineering",
+}
 ANCHOR_NAMES = (
     "README.md",
+    "readme.md",
     "README",
     "package.json",
     "pyproject.toml",
@@ -60,6 +78,13 @@ ANCHOR_NAMES = (
     "AGENTS.md",
     "CLAUDE.md",
     "CURSOR.md",
+    "main.tf",
+    "versions.tf",
+    "providers.tf",
+    "variables.tf",
+    "outputs.tf",
+    "terraform.tfvars",
+    "docker.tf",
 )
 
 
@@ -74,6 +99,14 @@ def load_json(path: Path) -> dict[str, Any] | None:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def load_toml(path: Path) -> dict[str, Any] | None:
+    try:
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError):
         return None
     return data if isinstance(data, dict) else None
 
@@ -115,10 +148,44 @@ def is_excluded(path: Path, target: Path) -> bool:
         "docs/agents/PROJECT-REGISTER.md",
     }:
         return True
+    if is_tes_runtime_relpath(relpath) or is_generated_root_bootloader(relpath, path):
+        return True
     if len(relpath.parts) >= 3 and relpath.parts[:3] == ("docs", "agents", "evidence"):
         return True
     parts = relpath.parts
     return any(part in EXCLUDED_PARTS for part in parts)
+
+
+def is_tes_runtime_relpath(relpath: Path) -> bool:
+    parts = relpath.parts
+    if relpath.as_posix() in TES_RUNTIME_RELPATHS:
+        return True
+    for prefix in TES_RUNTIME_PREFIXES:
+        if len(parts) < len(prefix):
+            continue
+        matched = True
+        for idx, value in enumerate(prefix):
+            part = parts[idx]
+            if value.endswith("-"):
+                if not part.startswith(value):
+                    matched = False
+                    break
+            elif part != value:
+                matched = False
+                break
+        if matched:
+            return True
+    return False
+
+
+def is_generated_root_bootloader(relpath: Path, path: Path) -> bool:
+    marker = TES_ROOT_BOOTLOADER_MARKERS.get(relpath.as_posix())
+    if not marker or not path.exists():
+        return False
+    try:
+        return marker in path.read_text(encoding="utf-8", errors="ignore")[:1200]
+    except OSError:
+        return False
 
 
 def read_context(target: Path) -> tuple[str | None, list[str]]:
@@ -129,6 +196,30 @@ def read_context(target: Path) -> tuple[str | None, list[str]]:
         return path.read_text(encoding="utf-8"), []
     except UnicodeDecodeError as exc:
         return None, [f"invalid UTF-8 project context: {exc}"]
+
+
+def context_manifest(target: Path, text: str) -> dict[str, Any] | None:
+    match = re.search(r"docs/agents/evidence/[0-9T]+Z-tes-project-manifest\.json", text)
+    if not match:
+        return None
+    return load_json(target / match.group(0))
+
+
+def readme_paths(target: Path) -> list[Path]:
+    candidates = [
+        path
+        for path in target.iterdir()
+        if path.is_file() and path.name.casefold() in {"readme", "readme.md"}
+    ]
+    return sorted(candidates, key=lambda path: (path.name.casefold() != "readme.md", path.name))
+
+
+def clean_markdown_inline(text: str) -> str:
+    text = re.sub(r"!\[([^\]]*)\]\([^)]+\)", r"\1", text)
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+    text = re.sub(r"\[([^\]]+)\]\[[^\]]+\]", r"\1", text)
+    text = re.sub(r"[*_`>#]", "", text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def package_scripts(target: Path) -> dict[str, str]:
@@ -142,11 +233,39 @@ def package_scripts(target: Path) -> dict[str, str]:
 
 
 def quality_scripts(target: Path) -> dict[str, str]:
-    return {
+    scripts = {
         name: command
         for name, command in package_scripts(target).items()
         if any(term in name.lower() for term in QUALITY_SCRIPT_TERMS)
     }
+    pyproject = load_toml(target / "pyproject.toml") or {}
+    tools = pyproject.get("tool")
+    dependency_groups = pyproject.get("dependency-groups")
+    if (target / "noxfile.py").exists():
+        scripts["nox"] = "nox"
+    if (target / "tox.ini").exists() or (isinstance(tools, dict) and "tox" in tools):
+        scripts["tox"] = "tox"
+    if isinstance(tools, dict):
+        for name, command in (
+            ("pytest", "pytest"),
+            ("ruff", "ruff check ."),
+            ("mypy", "mypy"),
+            ("pyright", "pyright"),
+        ):
+            if name in tools:
+                scripts[name] = command
+    if isinstance(dependency_groups, dict):
+        group_text = json.dumps(dependency_groups)
+        for name, command in (
+            ("pytest", "pytest"),
+            ("ruff", "ruff check ."),
+            ("mypy", "mypy"),
+            ("pyright", "pyright"),
+            ("sphinx", "sphinx-build docs docs/_build"),
+        ):
+            if name in group_text:
+                scripts.setdefault(name, command)
+    return scripts
 
 
 def identity_terms(target: Path) -> list[str]:
@@ -154,11 +273,22 @@ def identity_terms(target: Path) -> list[str]:
     package = load_json(target / "package.json")
     if package and package.get("name"):
         terms.append(str(package["name"]))
-    readme = target / "README.md"
-    if readme.exists():
+    pyproject = load_toml(target / "pyproject.toml")
+    project = pyproject.get("project") if pyproject else None
+    if isinstance(project, dict) and project.get("name"):
+        terms.append(str(project["name"]))
+    for readme in readme_paths(target):
+        in_fence = False
         for line in readme.read_text(encoding="utf-8", errors="ignore").splitlines():
-            if line.startswith("# "):
-                terms.append(line[2:].strip())
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            match = MARKDOWN_HEADING_RE.match(stripped)
+            if match:
+                terms.append(clean_markdown_inline(match.group(1)))
                 break
     if not terms:
         terms.append(target.name)
@@ -166,47 +296,92 @@ def identity_terms(target: Path) -> list[str]:
 
 
 def readme_summary(target: Path) -> str:
-    readme = target / "README.md"
-    if not readme.exists():
-        readme = target / "README"
-    if not readme.exists():
+    readmes = readme_paths(target)
+    if not readmes:
         return ""
+    readme = readmes[0]
     paragraph: list[str] = []
     try:
         lines = readme.read_text(encoding="utf-8", errors="ignore").splitlines()
     except OSError:
         return ""
+    html_depth = 0
+    in_fence = False
     for line in lines:
         stripped = line.strip()
+        if stripped.startswith("```"):
+            if paragraph:
+                break
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        opens = len(re.findall(r"<(div|p|a|sup|picture|span|center|table|tbody|tr|td)\b", stripped, flags=re.IGNORECASE))
+        closes = len(re.findall(r"</(div|p|a|sup|picture|span|center|table|tbody|tr|td)>", stripped, flags=re.IGNORECASE))
+        if html_depth > 0:
+            html_depth = max(0, html_depth + opens - closes)
+            continue
+        if opens and stripped.startswith("<"):
+            html_depth = max(0, opens - closes)
+            continue
         if not stripped:
             if paragraph:
                 break
             continue
-        if stripped.startswith(("# ", "##", "|", "-", "* ", "!", "<", "```")):
+        if stripped.startswith(">"):
+            quote = stripped.lstrip("> ").strip()
+            if quote.startswith("[!"):
+                if paragraph:
+                    break
+                continue
+            paragraph.append(quote)
+            continue
+        if MARKDOWN_HEADING_RE.match(stripped):
+            continue
+        if stripped.startswith(("|", "-", "* ", "!", "[![", "<", "```")):
             if paragraph:
                 break
             continue
         if set(stripped) <= {"-", "_", "="}:
             continue
         paragraph.append(stripped)
-    return re.sub(r"\s+", " ", " ".join(paragraph)).strip()
+    return clean_markdown_inline(" ".join(paragraph))
 
 
-def package_has_description(target: Path) -> bool:
+def project_has_description(target: Path) -> bool:
     package = load_json(target / "package.json")
-    if not package:
-        return False
-    description = package.get("description")
-    return isinstance(description, str) and bool(description.strip())
+    if package:
+        description = package.get("description")
+        if isinstance(description, str) and bool(description.strip()):
+            return True
+    pyproject = load_toml(target / "pyproject.toml")
+    project = pyproject.get("project") if pyproject else None
+    if isinstance(project, dict):
+        description = project.get("description")
+        if isinstance(description, str) and bool(description.strip()):
+            return True
+    return False
 
 
 def expected_anchors(target: Path) -> list[str]:
     files = iter_project_files(target)
     anchors: list[str] = []
+    for path in readme_paths(target):
+        if not is_excluded(path, target):
+            anchors.append(path.name)
     for name in ANCHOR_NAMES:
+        if name.casefold() in {"readme", "readme.md"}:
+            continue
         path = target / name
         if path.exists() and path.is_file() and not is_excluded(path, target):
             anchors.append(name)
+    for path in files:
+        try:
+            relpath = path.relative_to(target)
+        except ValueError:
+            continue
+        if len(relpath.parts) == 1 and relpath.suffix in {".tf", ".tfvars", ".hcl"}:
+            anchors.append(relpath.as_posix())
     for dirname in ("src", "app", "server", "client", "tests", "test", "docs", "scripts"):
         root = target / dirname
         if root.exists():
@@ -261,6 +436,24 @@ def analyze(target: Path) -> dict[str, Any]:
             "warnings": warnings,
         }
 
+    manifest = context_manifest(target, text)
+    bootstrap_partial = False
+    if manifest and manifest.get("bootstrap") is True:
+        bootstrap_partial = True
+    if manifest and int(manifest.get("file_count") or 0) == 0 and "tes_init bootstrap" in text:
+        bootstrap_partial = True
+    if bootstrap_partial:
+        return {
+            "version": VERSION,
+            "target": str(target),
+            "status": "FAIL",
+            "failures": ["PROJECT-CONTEXT.md is bootstrap-only; rerun /tes-init after fixing blocked gates"],
+            "warnings": warnings,
+            "anchors_checked": [],
+            "territories_checked": [],
+            "quality_scripts_checked": [],
+        }
+
     for section in REQUIRED_SECTIONS:
         if section not in text:
             failures.append(f"PROJECT-CONTEXT.md missing section: {section}")
@@ -272,7 +465,7 @@ def analyze(target: Path) -> dict[str, Any]:
     if not any(term and term in text for term in identities):
         failures.append(f"PROJECT-CONTEXT.md missing project identity term: one of {identities}")
 
-    if readme_summary(target) and not package_has_description(target) and "| Description | `unknown` |" in text:
+    if readme_summary(target) and not project_has_description(target) and "| Description | `unknown` |" in text:
         failures.append("PROJECT-CONTEXT.md must derive a non-unknown description from README prose when package description is absent")
 
     anchors = expected_anchors(target)
@@ -460,6 +653,81 @@ def self_test() -> dict[str, Any]:
         copied_code = analyze(target)
         if copied_code["status"] != "FAIL" or not any("bulk copied source code" in item for item in copied_code["failures"]):
             failures.append("oracle must fail when project context bulk-copies source code")
+
+    with tempfile.TemporaryDirectory(prefix="tes-project-context-bootstrap-") as tempdir:
+        target = Path(tempdir)
+        write(target / "README.md", "# Bootstrap fixture\n")
+        write(
+            target / "docs/agents/evidence/20260508T000000Z-tes-project-manifest.json",
+            json.dumps({"bootstrap": True, "file_count": 0}) + "\n",
+        )
+        write(
+            target / PROJECT_CONTEXT,
+            good_context(target).replace("fixture-app", "Bootstrap fixture") + "\n`tes_init bootstrap`\n",
+        )
+        bootstrap = analyze(target)
+        if bootstrap["status"] != "FAIL" or not any("bootstrap-only" in item for item in bootstrap["failures"]):
+            failures.append("oracle must fail a bootstrap-only partial PROJECT-CONTEXT.md")
+
+    with tempfile.TemporaryDirectory(prefix="tes-project-context-py-") as tempdir:
+        target = Path(tempdir)
+        write(target / "README.md", "# README Heading\n\nREADME fallback prose.\n")
+        write(target / "pyproject.toml", "[project]\nname = \"py-oracle\"\ndescription = \"Canonical pyproject description.\"\n[tool.pytest.ini_options]\naddopts = \"-q\"\n[tool.ruff]\nline-length = 100\n")
+        qscripts = quality_scripts(target)
+        if "pytest" not in qscripts or "ruff" not in qscripts:
+            failures.append("oracle must derive Python quality scripts from pyproject.toml")
+        if not project_has_description(target):
+            failures.append("oracle must treat pyproject project.description as a known description")
+        if "py-oracle" not in identity_terms(target):
+            failures.append("oracle must derive identity terms from pyproject project.name")
+
+    with tempfile.TemporaryDirectory(prefix="tes-project-context-generated-") as tempdir:
+        target = Path(tempdir)
+        write(target / "README.md", "# Generated-surface fixture\n\nProject prose.\n")
+        write(target / "src/app.py", "print('project')\n")
+        write(target / ".agents/skills/tes-init/SKILL.md", "# TES skill\n")
+        write(target / ".claude/skills/tes-init/SKILL.md", "# TES skill\n")
+        write(target / "skills/tes-init/SKILL.md", "# TES skill\n")
+        write(target / ".claude-plugin/plugin.json", "{}\n")
+        write(target / ".cursor/rules/tes-guidelines.mdc", "# TES Cursor rule\n")
+        write(target / "docs/agents/cortex/CONTRACT.md", "# Cortex\n")
+        write(target / "AGENTS.md", "Portable Codex bootloader for repositories adopting Tilly Engineering\n")
+        write(target / "CLAUDE.md", "Behavioral engineering discipline for reducing common LLM coding mistakes.\n")
+        write(target / "CURSOR.md", "This target repository includes a Cursor project rule for Tilly Engineering\n")
+        territories = expected_territories(target)
+        anchors = expected_anchors(target)
+        for generated in (".agents", ".claude", "skills", ".claude-plugin", "docs"):
+            if generated in territories:
+                failures.append(f"oracle must exclude generated TES territory: {generated}")
+        for generated in ("AGENTS.md", "CLAUDE.md", "CURSOR.md", ".cursor/rules/tes-guidelines.mdc"):
+            if generated in anchors:
+                failures.append(f"oracle must exclude generated TES anchor: {generated}")
+        if "src" not in territories or "src/app.py" not in anchors:
+            failures.append("oracle must keep real project territory while excluding TES runtime surfaces")
+
+    with tempfile.TemporaryDirectory(prefix="tes-project-context-lower-readme-") as tempdir:
+        target = Path(tempdir)
+        write(target / "readme.md", "# lowercase\n\nLowercase README prose.\n")
+        if "lowercase" not in identity_terms(target):
+            failures.append("oracle must read lowercase readme.md headings")
+        if "Lowercase README prose" not in readme_summary(target):
+            failures.append("oracle must read lowercase readme.md prose")
+
+    with tempfile.TemporaryDirectory(prefix="tes-project-context-terraform-") as tempdir:
+        target = Path(tempdir)
+        write(
+            target / "README.md",
+            "## Learn Terraform Import\n\n"
+            "Learn how to import existing resources under Terraform's management.\n\n"
+            "```hcl\n# docker_container.web:\nresource \"docker_container\" \"web\" {}\n```\n",
+        )
+        write(target / "main.tf", 'resource "null_resource" "example" {}\n')
+        if "Learn Terraform Import" not in identity_terms(target):
+            failures.append("oracle must accept README level-2 headings outside fenced code")
+        if "docker_container.web" in identity_terms(target):
+            failures.append("oracle must ignore headings inside fenced code")
+        if "main.tf" not in expected_anchors(target):
+            failures.append("oracle must expect Terraform root files as source anchors")
 
     return {
         "version": VERSION,
