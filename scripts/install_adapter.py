@@ -20,7 +20,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.56"
+VERSION = "0.3.57"
 RETROFIT_DIR = ".tes/retrofit"
 
 
@@ -33,6 +33,21 @@ def is_tes_runtime_conflict(relpath: str) -> bool:
     if len(parts) >= 2 and parts[0] == "skills" and parts[1].startswith("tes-"):
         return True
     return False
+
+
+def is_tes_owned_cursor_bootloader(relpath: str, target: Path) -> bool:
+    if relpath != "CURSOR.md" or not target.exists():
+        return False
+    try:
+        text = target.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return False
+    markers = (
+        "# Using This Repo With Cursor",
+        "Cursor loads `.cursor/rules/tes-guidelines.mdc`.",
+        "## Behavioral Source Of Truth",
+    )
+    return sum(1 for marker in markers if marker in text) >= 2
 
 
 def is_tes_owned_cursor_rule(relpath: str, target: Path) -> bool:
@@ -56,7 +71,7 @@ def can_overwrite_conflict(relpath: str, target: Path, broad_overwrite: bool) ->
         return True
     if is_tes_runtime_conflict(relpath):
         return True
-    return is_tes_owned_cursor_rule(relpath, target)
+    return is_tes_owned_cursor_bootloader(relpath, target) or is_tes_owned_cursor_rule(relpath, target)
 
 
 def sha256_file(path: Path) -> str:
