@@ -30,7 +30,7 @@ that source and are not edited by hand.
 
 | Adapter | Generated install tree |
 |---------|------------------------|
-| Codex | `AGENTS.md` and `.agents/skills/tes-engineering-discipline/**` |
+| Codex | `AGENTS.md`, `.agents/skills/**`, `.agents/plugins/marketplace.json`, and `plugins/tilly-engineer-skills/**` |
 | Cursor | `CURSOR.md` and `.cursor/rules/tes-guidelines.mdc` |
 | Claude | `CLAUDE.md`, `.claude/skills/**`, `.claude-plugin/**`, and `skills/**` |
 
@@ -41,6 +41,8 @@ check builds all adapters in a temporary directory and verifies:
 
 - each expected target path exists;
 - Codex skill self-test passes after materialization;
+- Codex plugin metadata points to the generated root-contained `./skills/`
+  copy and the repo marketplace resolves to `plugins/tilly-engineer-skills`;
 - Cursor keeps `.mdc` frontmatter with `description` and `alwaysApply: true`;
 - Claude project skills materialize under `.claude/skills/**` and plugin
   metadata points to the root-contained `./skills/` copy;
@@ -59,7 +61,7 @@ If a target tool changes packaging rules, update `src/adapters/<tool>/**`,
 
 | Adapter | Risk | Rule |
 |---------|------|------|
-| Codex | Editing installed user/runtime skill instead of source | Edit `src/adapters/codex/**` only |
+| Codex | Editing installed user/runtime skill or plugin instead of source | Edit `src/adapters/codex/**` only; `plugins/tilly-engineer-skills/**` is generated output |
 | Claude | Plugin metadata depends on `../` outside the plugin root, project installs omit `.claude/skills/**`, or a `CLAUDE.md` conflict blocks skill copies | Skill paths must be root-relative, project skills must be present, and bootloader conflicts must be preserved without blocking non-conflicting assets |
 | Cursor | Legacy `.cursorrules` leaks back into the package | Validator blocks `.cursorrules` |
 | All | Generated output becomes perceived source | `dist/**` remains ignored and reproducible |

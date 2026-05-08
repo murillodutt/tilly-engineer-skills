@@ -1,0 +1,33 @@
+{
+  "name": "tilly-engineer-skills",
+  "version": "0.3.61",
+  "description": "Portable engineering discipline to reduce ambiguity, overcomplication, drive-by edits, and false completion in coding agents",
+  "author": {
+    "name": "forrestchang"
+  },
+  "license": "MIT",
+  "keywords": [
+    "guidelines",
+    "best-practices",
+    "coding",
+    "tilly",
+    "engineering-discipline"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Tilly Engineer Skills",
+    "shortDescription": "Engineering discipline workflows for Codex",
+    "longDescription": "Reusable TES skills for Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution, initialization, update checks, MCP inspection, doctor checks, adapter materialization, and benchmark planning.",
+    "developerName": "forrestchang",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use Tilly Engineer Skills to run /tes-init against this repository.",
+      "Use Tilly Engineer Skills to run /tes-update and report whether local TES helpers are current.",
+      "Use Tilly Engineer Skills to inspect adapter parity without claiming unsupported native surfaces."
+    ]
+  }
+}

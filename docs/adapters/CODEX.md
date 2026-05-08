@@ -13,7 +13,7 @@ tver: 0.5.0
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.60`.
+Project version: `0.3.61`.
 
 It follows the Codex customization order:
 
@@ -21,7 +21,7 @@ It follows the Codex customization order:
 2. Skills for reusable workflows and domain expertise.
 3. Scripts and references for progressive disclosure.
 4. Read-only Cortex MCP through project-scoped `.codex/config.toml`.
-5. Plugins only when distribution needs them.
+5. A local Codex plugin package only for distribution/materialization proof.
 
 Official reference: <https://developers.openai.com/codex/concepts/customization>
 
@@ -32,6 +32,8 @@ Official reference: <https://developers.openai.com/codex/concepts/customization>
 | `src/adapters/codex/AGENTS.md` | Target repo root `AGENTS.md` or merge into existing one |
 | `src/adapters/codex/skills/tes-engineering-discipline/` | Target repo `.agents/skills/tes-engineering-discipline/` |
 | `src/adapters/codex/skills/tes-*/` | Target repo `.agents/skills/tes-*/` command-shortcut skills |
+| `src/adapters/codex/plugin/plugin.json` | Target repo `plugins/tilly-engineer-skills/.codex-plugin/plugin.json` |
+| `src/adapters/codex/plugin/marketplace.json` | Target repo `.agents/plugins/marketplace.json` |
 | `scripts/install_mcp.py` | Optional project-scoped Cortex MCP activation |
 | `scripts/validate_reference_package.py` | Optional package validation script |
 
@@ -40,6 +42,18 @@ For a global personal skill, copy the skill directory to
 
 Do not treat local Codex runtime caches or tool-specific user directories as
 canonical package source. They are installed/runtime surfaces.
+
+## Local Plugin Package
+
+TES materializes a local Codex plugin package under
+`plugins/tilly-engineer-skills/**`. The package contains
+`.codex-plugin/plugin.json` and plugin-root `skills/**` generated from the same
+canonical skill sources used for project `.agents/skills/**`.
+
+The package is certified as a local materialized artifact only. It does not
+claim marketplace publication, live Codex UI installation, native hooks, or
+plugin-bundled MCP servers. Those surfaces require separate official-source
+proof, safety contract, smoke, and negative tests.
 
 ## Why This Shape
 
@@ -84,6 +98,7 @@ From this repository:
 ```bash
 python3 scripts/validate_reference_package.py
 python3 scripts/context_mesh_plan.py
+python3 scripts/codex_plugin_oracle.py --self-test
 python3 scripts/materialize_adapter.py codex --check
 python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test
 ```
