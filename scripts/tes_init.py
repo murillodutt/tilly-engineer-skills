@@ -28,7 +28,7 @@ HELPER_ROOT = SCRIPT_PATH.parent
 ROOT = SCRIPT_PATH.parents[1]
 SOURCE_ROOT = ROOT / "scripts" if (ROOT / "scripts").exists() else HELPER_ROOT
 PACKAGE_MODE = SOURCE_ROOT.name == "scripts"
-VERSION = "0.3.53"
+VERSION = "0.3.54"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -125,6 +125,7 @@ DOC_ANCHOR_NAMES = {
     "README.TXT",
     "README",
     "Makefile",
+    "GNUmakefile",
     "makefile",
     "ARCHITECTURE.md",
     "CONTRIBUTING.md",
@@ -154,6 +155,10 @@ SOURCE_DIR_HINTS = {
     "docs",
 }
 QUALITY_SCRIPT_TERMS = (
+    "ci",
+    "doc",
+    "fmt",
+    "gen",
     "lint",
     "typecheck",
     "test",
@@ -162,7 +167,38 @@ QUALITY_SCRIPT_TERMS = (
     "build",
     "contract",
     "validate",
+    "website",
 )
+MAKEFILE_NAMES = ("GNUmakefile", "Makefile", "makefile")
+MAKEFILE_QUALITY_TARGETS = {
+    "acctest-lint",
+    "build",
+    "ci",
+    "ci-quick",
+    "docs",
+    "examples-tflint",
+    "fmt",
+    "fmt-check",
+    "gen",
+    "gen-check",
+    "go-build",
+    "golangci-lint",
+    "golangci-lint1",
+    "import-lint",
+    "provider-lint",
+    "provider-markdown-lint",
+    "quick-fix",
+    "semgrep",
+    "sweep",
+    "test",
+    "testacc",
+    "testacc-lint",
+    "tfproviderdocs",
+    "tools",
+    "website",
+    "yamllint",
+}
+MAKE_TARGET_RE = re.compile(r"^([A-Za-z0-9_.-]+):(?!=)")
 
 
 def timeout_from_env(name: str, default: float) -> float:
@@ -521,6 +557,10 @@ def readme_signal(target: Path) -> dict[str, str] | None:
                 if paragraph:
                     break
                 continue
+            if re.match(r"^\[[^\]]+\]:\s+\S+", stripped):
+                if paragraph:
+                    break
+                continue
             heading_match = MARKDOWN_HEADING_RE.match(stripped)
             rst_underline = lines[index + 1].strip() if index + 1 < len(lines) else ""
             if heading_match:
@@ -696,6 +736,27 @@ def package_scripts(target: Path) -> dict[str, str]:
     }
 
 
+def makefile_scripts(target: Path) -> dict[str, str]:
+    scripts: dict[str, str] = {}
+    for name in MAKEFILE_NAMES:
+        path = target / name
+        try:
+            lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+        except OSError:
+            continue
+        for line in lines:
+            if line.startswith(("\t", " ", "#", ".")):
+                continue
+            match = MAKE_TARGET_RE.match(line)
+            if not match:
+                continue
+            target_name = match.group(1)
+            if "%" in target_name or target_name in scripts:
+                continue
+            scripts[target_name] = f"make {target_name}"
+    return scripts
+
+
 def python_quality_scripts(target: Path) -> dict[str, str]:
     scripts: dict[str, str] = {}
     pyproject = safe_read_toml(target / "pyproject.toml") or {}
@@ -730,6 +791,16 @@ def python_quality_scripts(target: Path) -> dict[str, str]:
             if name in group_text and name not in scripts:
                 scripts[name] = command
     return scripts
+
+
+def makefile_quality_scripts(target: Path) -> dict[str, str]:
+    scripts = makefile_scripts(target)
+    return {
+        name: command
+        for name, command in scripts.items()
+        if name in MAKEFILE_QUALITY_TARGETS
+        or any(term in name.lower() for term in QUALITY_SCRIPT_TERMS)
+    }
 
 
 def quality_scripts(scripts: dict[str, str]) -> dict[str, str]:
@@ -882,6 +953,19 @@ def workspace_boundaries(target: Path) -> list[dict[str, str]]:
         records.append({"source": "pnpm-workspace.yaml", "kind": "pnpm workspace", "pattern": pattern})
     for pattern in cargo_workspace_patterns(target):
         records.append({"source": "Cargo.toml", "kind": "cargo workspace", "pattern": pattern})
+    if (target / "go.mod").exists():
+        for path in sorted(target.rglob("go.mod")):
+            if path == target / "go.mod":
+                continue
+            try:
+                relpath = path.parent.relative_to(target).as_posix()
+            except ValueError:
+                continue
+            if relpath:
+                records.append({"source": "go.mod", "kind": "nested Go module", "pattern": relpath})
+    provider_services = target / "internal" / "service"
+    if provider_services.is_dir() and any(path.is_dir() for path in provider_services.iterdir()):
+        records.append({"source": "internal/service", "kind": "provider service packages", "pattern": "internal/service/*"})
 
     seen: set[tuple[str, str, str]] = set()
     unique: list[dict[str, str]] = []
@@ -930,6 +1014,8 @@ def infer_territory_role(name: str, paths: list[str]) -> str:
         return "database schema and migration territory"
     if lowered in {"shared", "contracts", "schemas", "types"}:
         return "shared contracts and cross-runtime types"
+    if lowered == "internal" and any(path.startswith("internal/service/") for path in paths):
+        return "provider internals and service ownership"
     if lowered in {"infra", "infrastructure", "ops"}:
         return "infrastructure and environment bootstrap"
     if lowered in {"public", "static", "assets"}:
@@ -949,8 +1035,10 @@ def infer_territory_role(name: str, paths: list[str]) -> str:
 
 def project_context(scan: dict[str, Any], target: Path, manifest_rel: str) -> dict[str, Any]:
     scripts = package_scripts(target)
+    scripts.update(makefile_scripts(target))
     qscripts = quality_scripts(scripts)
     qscripts.update(python_quality_scripts(target))
+    qscripts.update(makefile_quality_scripts(target))
     anchors = context_anchors(scan)
     return {
         "identity": detect_project_identity(target),
@@ -1569,6 +1657,47 @@ def self_test() -> dict[str, Any]:
             failures.append("README signal must skip leading HTML sponsor blocks")
         if "tiny and elegant HTTP client" not in signal.get("summary", ""):
             failures.append("README signal must accept the first real blockquote tagline")
+
+    with tempfile.TemporaryDirectory(prefix="tes-init-go-provider-") as tempdir:
+        target = Path(tempdir)
+        (target / "README.md").write_text(
+            "# Terraform AWS Provider\n\n"
+            "[discuss-badge]: https://example.test/badge.svg\n"
+            "[discuss]: https://example.test/discuss\n\n"
+            "The Terraform AWS Provider maps AWS APIs into Terraform resources and data sources.\n",
+            encoding="utf-8",
+        )
+        (target / "go.mod").write_text("module github.com/hashicorp/terraform-provider-aws\n", encoding="utf-8")
+        (target / "GNUmakefile").write_text(
+            "build: prereq-go fmt-check ## Build provider\n"
+            "ci-quick: tools go-build testacc-lint ## Run quicker CI checks\n"
+            "fmt: ## Fix Go source formatting\n"
+            "gen: ## Run generators\n"
+            "test: prereq-go ## Run unit tests\n"
+            "testacc: prereq-go fmt-check ## Run acceptance tests\n",
+            encoding="utf-8",
+        )
+        (target / "internal/service/s3").mkdir(parents=True)
+        (target / "internal/service/s3/bucket.go").write_text("package s3\n", encoding="utf-8")
+        (target / "skaff").mkdir()
+        (target / "skaff/go.mod").write_text("module skaff\n", encoding="utf-8")
+        (target / "docs").mkdir()
+        (target / "docs/README.md").write_text("# Docs\n", encoding="utf-8")
+        identity = detect_project_identity(target)
+        if "discuss-badge" in identity["description"] or "maps AWS APIs" not in identity["description"]:
+            failures.append("README identity must skip markdown reference definitions before prose")
+        scripts = makefile_scripts(target)
+        qscripts = makefile_quality_scripts(target)
+        for name in ("build", "ci-quick", "fmt", "gen", "test", "testacc"):
+            if name not in scripts or name not in qscripts:
+                failures.append(f"GNUmakefile target must become a quality script: {name}")
+        boundaries = {record["pattern"] for record in workspace_boundaries(target)}
+        if "internal/service/*" not in boundaries or "skaff" not in boundaries:
+            failures.append("Go provider contexts must expose service packages and nested Go modules")
+        context = project_context(scan_project(target), target, "docs/agents/evidence/fixture-tes-project-manifest.json")
+        roles = {territory["name"]: territory["role"] for territory in context["territories"]}
+        if roles.get("internal") != "provider internals and service ownership":
+            failures.append("internal/service territory must be labeled as provider service ownership")
 
     with tempfile.TemporaryDirectory(prefix="tes-init-lower-readme-") as tempdir:
         target = Path(tempdir)
