@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.62"
+VERSION = "0.3.63"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -94,6 +94,7 @@ REQUIRED_PATHS = (
     "scripts/cortex_quality_oracle.py",
     "scripts/field_reports.py",
     "scripts/field_reports_github_oracle.py",
+    "scripts/field_reports_quality_oracle.py",
     "scripts/install_smoke.py",
     "scripts/install_mcp.py",
     "scripts/install_adapter.py",
@@ -175,6 +176,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "mcp:dry-run",
     "mcp:self-test",
     "field-reports:self-test",
+    "field-reports:quality:self-test",
     "field-reports:github-oracle",
     "field-reports:status",
     "field-reports:drain",
@@ -695,6 +697,20 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("field_reports.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    field_reports_quality = ROOT / "scripts/field_reports_quality_oracle.py"
+    if field_reports_quality.exists():
+        result = subprocess.run(
+            [sys.executable, str(field_reports_quality), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("field_reports_quality_oracle.py --self-test failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 
