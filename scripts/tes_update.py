@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.38"
+VERSION = "0.3.39"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -37,6 +37,11 @@ HELPER_CONTRACT_MARKERS = {
     "field_reports.py": ('SCHEMA = "tes-field-report@2"',),
 }
 UPDATE_SCOPES = ("none", "helpers-only", "adapter-config", "full-convergence")
+POST_LAYER_ZERO_FINAL_PROBE_CONTRACT = (
+    "helper_contract_status=PASS",
+    "update_available=False",
+    "recommended_update_scope=none",
+)
 VERSION_RE = re.compile(
     r"""(?x)
     (?:VERSION\s*=\s*|["']version["']\s*:\s*|Version:\s*`?|version:\s*)
@@ -483,6 +488,21 @@ def recommended_intent(state: str, update_status: str, route: str, update_scope:
     return "/tes:doctor" if update_status == "CURRENT" else f"/tes:update {route}"
 
 
+def post_layer_zero_final_probe(result: dict[str, Any]) -> dict[str, Any]:
+    ready = (
+        result.get("helper_contract_status") == "PASS"
+        and result.get("update_available") is False
+        and result.get("recommended_update_scope") == "none"
+    )
+    return {
+        "required_after": "post-Layer Zero helper overwrite",
+        "command": "tes_update.py plan --json-only --record-field-report",
+        "event": "final Field Reports `tes_update` event",
+        "contract": list(POST_LAYER_ZERO_FINAL_PROBE_CONTRACT),
+        "status": "READY" if ready else "PENDING",
+    }
+
+
 def analyze(args: argparse.Namespace) -> dict[str, Any]:
     target = args.target.expanduser().resolve()
     if not target.exists() or not target.is_dir():
@@ -556,6 +576,7 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "writes": [],
         "failures": [],
     }
+    result["post_layer_zero_final_probe"] = post_layer_zero_final_probe(result)
     return result
 
 
@@ -580,9 +601,13 @@ def record_field_report(target: Path, result: dict[str, Any]) -> dict[str, Any] 
                 "update_reasons": ",".join(result.get("update_reasons") or []),
                 "helper_contract_status": result.get("helper_contract_status"),
                 "update_scope": result.get("recommended_update_scope"),
+                "recommended_update_scope": result.get("recommended_update_scope"),
                 "route": result.get("recommended_route"),
                 "surface_count": len(result.get("applied_runtimes") or []),
                 "legacy_retirement_required": result.get("legacy_retirement_required"),
+                "post_layer_zero_final_probe_status": (
+                    (result.get("post_layer_zero_final_probe") or {}).get("status")
+                ),
             },
         )
     except Exception:
@@ -653,6 +678,11 @@ def self_test() -> dict[str, Any]:
             failures.append("single Codex fixture must recommend codex")
         if result["recommended_update_scope"] != "none":
             failures.append("current fixture must recommend no update scope")
+        final_probe = result.get("post_layer_zero_final_probe") or {}
+        if final_probe.get("status") != "READY":
+            failures.append("current fixture must be ready for post-Layer Zero final recorded probe")
+        if final_probe.get("contract") != list(POST_LAYER_ZERO_FINAL_PROBE_CONTRACT):
+            failures.append("final recorded probe contract must list required proof fields")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-stale-helper-") as tempdir:
         target = Path(tempdir)
@@ -776,10 +806,16 @@ def self_test() -> dict[str, Any]:
                 failures.append("tes_update field report must use tes_update event")
             if facts.get("helper_contract_status") != "PASS":
                 failures.append("tes_update field report must include helper_contract_status")
+            if facts.get("update_available") != "False":
+                failures.append("tes_update field report must include update_available=False")
             if facts.get("route") != "codex":
                 failures.append("tes_update field report must include recommended route")
             if facts.get("update_scope") != "none":
                 failures.append("tes_update field report must include update scope")
+            if facts.get("recommended_update_scope") != "none":
+                failures.append("tes_update field report must include recommended update scope")
+            if facts.get("post_layer_zero_final_probe_status") != "READY":
+                failures.append("tes_update field report must include final probe readiness")
         readonly_again = subprocess.run(
             [
                 sys.executable,

@@ -19,7 +19,7 @@ import uuid
 from typing import Any
 
 
-VERSION = "0.3.38"
+VERSION = "0.3.39"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 LEGACY_SCHEMAS = ("tes-field-report@1", "tilly-field-report@1")
@@ -47,6 +47,8 @@ SUMMARY_FACT_KEYS = (
     "helper_contract_status",
     "helpers_only",
     "legacy_retirement_required",
+    "post_layer_zero_final_probe_status",
+    "recommended_update_scope",
     "returncode",
     "route",
     "surface_count",
