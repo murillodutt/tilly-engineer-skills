@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.53"
+VERSION = "0.3.54"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 PACKAGE_MODE = (ROOT / "scripts").exists()
 MARKDOWN_HEADING_RE = re.compile(r"^#{1,3}\s+(.+?)\s*$")
@@ -34,7 +34,37 @@ REQUIRED_SECTIONS = (
     "## Open Context Questions",
     "## Maintenance Rule",
 )
-QUALITY_SCRIPT_TERMS = ("lint", "typecheck", "test", "spec", "check", "build", "contract", "validate")
+QUALITY_SCRIPT_TERMS = ("ci", "doc", "fmt", "gen", "lint", "typecheck", "test", "spec", "check", "build", "contract", "validate", "website")
+MAKEFILE_NAMES = ("GNUmakefile", "Makefile", "makefile")
+MAKEFILE_QUALITY_TARGETS = {
+    "acctest-lint",
+    "build",
+    "ci",
+    "ci-quick",
+    "docs",
+    "examples-tflint",
+    "fmt",
+    "fmt-check",
+    "gen",
+    "gen-check",
+    "go-build",
+    "golangci-lint",
+    "golangci-lint1",
+    "import-lint",
+    "provider-lint",
+    "provider-markdown-lint",
+    "quick-fix",
+    "semgrep",
+    "sweep",
+    "test",
+    "testacc",
+    "testacc-lint",
+    "tfproviderdocs",
+    "tools",
+    "website",
+    "yamllint",
+}
+MAKE_TARGET_RE = re.compile(r"^([A-Za-z0-9_.-]+):(?!=)")
 EXCLUDED_PARTS = {
     ".git",
     ".hg",
@@ -80,6 +110,8 @@ ANCHOR_NAMES = (
     "pyproject.toml",
     "Cargo.toml",
     "go.mod",
+    "GNUmakefile",
+    "Makefile",
     "AGENTS.md",
     "CLAUDE.md",
     "CURSOR.md",
@@ -257,12 +289,41 @@ def package_scripts(target: Path) -> dict[str, str]:
     return {str(key): str(value) for key, value in scripts.items()}
 
 
+def makefile_scripts(target: Path) -> dict[str, str]:
+    scripts: dict[str, str] = {}
+    for name in MAKEFILE_NAMES:
+        path = target / name
+        try:
+            lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+        except OSError:
+            continue
+        for line in lines:
+            if line.startswith(("\t", " ", "#", ".")):
+                continue
+            match = MAKE_TARGET_RE.match(line)
+            if not match:
+                continue
+            target_name = match.group(1)
+            if "%" in target_name or target_name in scripts:
+                continue
+            scripts[target_name] = f"make {target_name}"
+    return scripts
+
+
 def quality_scripts(target: Path) -> dict[str, str]:
     scripts = {
         name: command
         for name, command in package_scripts(target).items()
         if any(term in name.lower() for term in QUALITY_SCRIPT_TERMS)
     }
+    scripts.update(
+        {
+            name: command
+            for name, command in makefile_scripts(target).items()
+            if name in MAKEFILE_QUALITY_TARGETS
+            or any(term in name.lower() for term in QUALITY_SCRIPT_TERMS)
+        }
+    )
     pyproject = load_toml(target / "pyproject.toml") or {}
     tools = pyproject.get("tool")
     dependency_groups = pyproject.get("dependency-groups")
@@ -359,6 +420,10 @@ def readme_summary(target: Path) -> str:
             html_depth = max(0, opens - closes)
             continue
         if not stripped:
+            if paragraph:
+                break
+            continue
+        if re.match(r"^\[[^\]]+\]:\s+\S+", stripped):
             if paragraph:
                 break
             continue
@@ -512,6 +577,19 @@ def expected_workspace_boundaries(target: Path) -> list[str]:
         expected.extend(package_workspace_patterns(package))
     expected.extend(pnpm_workspace_patterns(target))
     expected.extend(cargo_workspace_patterns(target))
+    if (target / "go.mod").exists():
+        for path in sorted(target.rglob("go.mod")):
+            if path == target / "go.mod":
+                continue
+            try:
+                relpath = path.parent.relative_to(target).as_posix()
+            except ValueError:
+                continue
+            if relpath:
+                expected.append(relpath)
+    provider_services = target / "internal" / "service"
+    if provider_services.is_dir() and any(path.is_dir() for path in provider_services.iterdir()):
+        expected.append("internal/service/*")
     return sorted(dict.fromkeys(expected))
 
 
@@ -886,6 +964,80 @@ def self_test() -> dict[str, Any]:
         bad = analyze(target)
         if bad["status"] != "FAIL" or not any("missing workspace boundaries" in item for item in bad["failures"]):
             failures.append("oracle must fail when workspace boundaries are missing")
+
+    with tempfile.TemporaryDirectory(prefix="tes-project-context-go-provider-") as tempdir:
+        target = Path(tempdir)
+        write(
+            target / "README.md",
+            "# Terraform AWS Provider\n\n"
+            "[discuss-badge]: https://example.test/badge.svg\n"
+            "[discuss]: https://example.test/discuss\n\n"
+            "The Terraform AWS Provider maps AWS APIs into Terraform resources and data sources.\n",
+        )
+        write(target / "go.mod", "module github.com/hashicorp/terraform-provider-aws\n")
+        write(
+            target / "GNUmakefile",
+            "build: prereq-go fmt-check ## Build provider\n"
+            "ci-quick: tools go-build testacc-lint ## Run quicker CI checks\n"
+            "fmt: ## Fix Go source formatting\n"
+            "gen: ## Run generators\n"
+            "test: prereq-go ## Run unit tests\n"
+            "testacc: prereq-go fmt-check ## Run acceptance tests\n",
+        )
+        write(target / "docs/README.md", "# Docs\n")
+        write(target / "internal/service/s3/bucket.go", "package s3\n")
+        write(target / "skaff/go.mod", "module skaff\n")
+        if "discuss-badge" in readme_summary(target) or "maps AWS APIs" not in readme_summary(target):
+            failures.append("oracle README summary must skip markdown reference definitions before prose")
+        qscripts = quality_scripts(target)
+        for name in ("build", "ci-quick", "fmt", "gen", "test", "testacc"):
+            if name not in qscripts:
+                failures.append(f"oracle must derive GNUmakefile quality target: {name}")
+        expected = expected_workspace_boundaries(target)
+        for pattern in ("internal/service/*", "skaff"):
+            if pattern not in expected:
+                failures.append(f"oracle must expect Go provider boundary: {pattern}")
+        bad_context = good_context(target).replace("fixture-app", "Terraform AWS Provider").replace(
+            "| Description | `Fixture app for oracle validation.` |",
+            "| Description | `unknown` |",
+        )
+        write(target / PROJECT_CONTEXT, bad_context)
+        bad = analyze(target)
+        if bad["status"] != "FAIL" or not any(
+            "missing workspace boundaries" in item or "missing quality scripts" in item for item in bad["failures"]
+        ):
+            failures.append("oracle must fail Go provider contexts without Makefile gates and service boundaries")
+        good = bad_context.replace(
+            "| Description | `unknown` |",
+            "| Description | `The Terraform AWS Provider maps AWS APIs into Terraform resources and data sources.` |",
+        )
+        good = good.replace(
+            "| src | product/source code territory | 1 | `src/app.py` |",
+            "| internal | provider internals and service ownership | 1 | `internal/service/s3/bucket.go` |\n"
+            "| docs | documentation and durable explanation | 1 | `docs/README.md` |\n"
+            "| skaff | local automation and oracles | 1 | `skaff/go.mod` |",
+        )
+        good = good.replace(
+            "| package.json | npm workspace | packages/* |",
+            "| go.mod | nested Go module | skaff |\n"
+            "| internal/service | provider service packages | internal/service/* |",
+        )
+        good = good.replace(
+            "| package.json | .json | 100 |",
+            "| go.mod | .mod | 80 |\n| GNUmakefile | [none] | 120 |\n| docs/README.md | .md | 20 |\n| internal/service/s3/bucket.go | .go | 20 |\n| skaff/go.mod | .mod | 20 |",
+        )
+        good = good.replace(
+            "| lint | echo lint |\n| test | echo test |",
+            "| build | make build |\n| ci-quick | make ci-quick |\n| fmt | make fmt |\n| gen | make gen |\n| test | make test |\n| testacc | make testacc |",
+        )
+        good = good.replace(
+            "- `package.json`\n- `docs/architecture.md`\n- `src/app.py`\n- `tests/test_app.py`",
+            "- `go.mod`\n- `GNUmakefile`\n- `docs/README.md`\n- `internal/service/s3/bucket.go`\n- `skaff/go.mod`",
+        )
+        write(target / PROJECT_CONTEXT, good)
+        go_good = analyze(target)
+        if go_good["status"] != "PASS":
+            failures.extend(f"Go provider fixture failed: {item}" for item in go_good["failures"])
 
     with tempfile.TemporaryDirectory(prefix="tes-project-context-lower-readme-") as tempdir:
         target = Path(tempdir)
