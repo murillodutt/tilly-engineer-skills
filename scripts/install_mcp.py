@@ -18,7 +18,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.37"
+VERSION = "0.3.38"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = ("cortex.py", "cortex_mcp.py", "cortex_embed.mjs", "field_reports.py", "tes_update.py", "tes_legacy_retirement.py", "root_context.py")
@@ -414,6 +414,32 @@ def self_test() -> int:
         for relpath in (".codex/config.toml", ".mcp.json", ".cursor/mcp.json"):
             if (target / relpath).exists():
                 failures.append(f"helpers-only install wrote config: {relpath}")
+        for relpath in ("root_context.py", "tes_update.py"):
+            helper_self_test = subprocess.run(
+                [sys.executable, str(target / BIN_DIR / relpath), "--self-test"],
+                cwd=target,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if helper_self_test.returncode != 0:
+                failures.append(f"installed helper self-test failed: {relpath}")
+                failures.extend(helper_self_test.stdout.splitlines())
+                failures.extend(helper_self_test.stderr.splitlines())
+                continue
+            json_text = "\n".join(
+                line for line in helper_self_test.stdout.splitlines()
+                if not line.startswith("[")
+            )
+            try:
+                payload = json.loads(json_text)
+            except json.JSONDecodeError as exc:
+                failures.append(f"installed helper self-test returned invalid JSON: {relpath}: {exc}")
+                continue
+            if payload.get("self_test_mode") != "installed":
+                failures.append(f"installed helper self-test must report installed mode: {relpath}")
+            if payload.get("coverage") != "installed-helper-contract":
+                failures.append(f"installed helper self-test must report installed coverage: {relpath}")
 
     print(json.dumps({"status": "FAIL" if failures else "PASS", "failures": failures}, indent=2))
     if failures:

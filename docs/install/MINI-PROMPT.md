@@ -33,7 +33,9 @@ existing, or meshed. If Tilly is already meshed, treat this as an assisted
 update/convergence run, not a reinstall. When I ask `/tes:update` or
 `Atualizar TES`, compare the installed TES version with the cloud package
 version, verify helper contract parity, detect applied IDE surfaces, and
-recommend the route before editing. Do not report `CURRENT` while helper
+recommend the route and `recommended_update_scope` before editing. Read-only
+probes must use `tes_update.py plan --json-only`; only the final certification
+probe may add `--record-field-report`. Do not report `CURRENT` while helper
 fingerprints or contract markers are `STALE_HELPERS`; in that case, replace
 only TES-owned `.tes/bin/**` helpers with backups first, using the helper-only
 Layer Zero route, then rerun the update probe and require parity PASS.

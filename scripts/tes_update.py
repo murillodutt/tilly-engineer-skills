@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.37"
+VERSION = "0.3.38"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -36,6 +36,7 @@ HELPER_FILES = (
 HELPER_CONTRACT_MARKERS = {
     "field_reports.py": ('SCHEMA = "tes-field-report@2"',),
 }
+UPDATE_SCOPES = ("none", "helpers-only", "adapter-config", "full-convergence")
 VERSION_RE = re.compile(
     r"""(?x)
     (?:VERSION\s*=\s*|["']version["']\s*:\s*|Version:\s*`?|version:\s*)
@@ -238,15 +239,20 @@ def helper_manifest_from_payload(payload: dict[str, Any]) -> dict[str, Any]:
 
 def local_helper_manifest() -> dict[str, Any]:
     helpers: dict[str, dict[str, Any]] = {}
+    source_root = ROOT / "scripts"
+    source_label = "local-package"
+    if not source_root.exists():
+        source_root = ROOT / "bin"
+        source_label = "installed-helper"
     for name in HELPER_FILES:
-        path = ROOT / "scripts" / name
+        path = source_root / name
         data = read_bytes(path)
         if not data:
             continue
         text = data.decode("utf-8", errors="replace")
         helpers[name] = {
             "sha256": sha256_bytes(data),
-            "source": f"local:scripts/{name}",
+            "source": f"{source_label}:{name}",
             "markers": {
                 marker: marker in text
                 for marker in HELPER_CONTRACT_MARKERS.get(name, ())
@@ -255,7 +261,7 @@ def local_helper_manifest() -> dict[str, Any]:
     if len(helpers) != len(HELPER_FILES):
         missing = sorted(set(HELPER_FILES) - set(helpers))
         raise FileNotFoundError(f"missing local helper source: {', '.join(missing)}")
-    return {"status": "PASS", "helpers": helpers, "source": "local-package"}
+    return {"status": "PASS", "helpers": helpers, "source": source_label}
 
 
 def fetch_remote_helper_manifest(timeout: float, ref: str | None = None) -> dict[str, Any]:
@@ -443,6 +449,40 @@ def helper_contract(target: Path, remote_helpers: dict[str, Any], installed: lis
     return {"status": status, "records": records, "failures": failures}
 
 
+def package_source_available() -> bool:
+    return (ROOT / "scripts/tes_update.py").exists() and (ROOT / "scripts/field_reports.py").exists()
+
+
+def helper_source_text(name: str) -> str:
+    for folder in ("scripts", "bin"):
+        text = read_text(ROOT / folder / name)
+        if text:
+            return text
+    if name == "field_reports.py":
+        return f'VERSION = "{VERSION}"\nSCHEMA = "tes-field-report@2"\n'
+    return f'VERSION = "{VERSION}"\n'
+
+
+def recommended_update_scope(state: str, update_available: bool, helper_status: str) -> str:
+    if state == "new":
+        return "full-convergence"
+    if helper_status == "STALE_HELPERS":
+        return "helpers-only"
+    if update_available:
+        return "full-convergence"
+    return "none"
+
+
+def recommended_intent(state: str, update_status: str, route: str, update_scope: str) -> str:
+    if state == "new":
+        return "/tes:init"
+    if update_scope == "helpers-only":
+        return f"/tes:update {route} --helpers-only"
+    if update_scope in {"adapter-config", "full-convergence"}:
+        return f"/tes:update {route}"
+    return "/tes:doctor" if update_status == "CURRENT" else f"/tes:update {route}"
+
+
 def analyze(args: argparse.Namespace) -> dict[str, Any]:
     target = args.target.expanduser().resolve()
     if not target.exists() or not target.is_dir():
@@ -476,12 +516,8 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         if cmp_result == 0 and helper["status"] in {"PASS", "NOT_INSTALLED"}
         else "UNKNOWN"
     )
-    if state == "new":
-        intent = "/tes:init"
-    elif update_available:
-        intent = f"/tes:update {route}"
-    else:
-        intent = "/tes:doctor" if update_status == "CURRENT" else f"/tes:update {route}"
+    update_scope = recommended_update_scope(state, update_available, helper["status"])
+    intent = recommended_intent(state, update_status, route, update_scope)
 
     result: dict[str, Any] = {
         "version": VERSION,
@@ -503,6 +539,9 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "update_reasons": update_reasons,
         "requires_helper_overwrite": helper_stale,
         "helper_update_action": "overwrite-with-backup" if helper_stale else "none",
+        "recommended_update_scope": update_scope,
+        "adapter_refresh_required": update_scope in {"adapter-config", "full-convergence"},
+        "next_probe_required": update_scope != "none",
         "helper_contract_status": helper["status"],
         "installed_helper_records": helper["records"],
         "helper_contract_failures": helper["failures"],
@@ -540,6 +579,7 @@ def record_field_report(target: Path, result: dict[str, Any]) -> dict[str, Any] 
                 "update_available": result.get("update_available"),
                 "update_reasons": ",".join(result.get("update_reasons") or []),
                 "helper_contract_status": result.get("helper_contract_status"),
+                "update_scope": result.get("recommended_update_scope"),
                 "route": result.get("recommended_route"),
                 "surface_count": len(result.get("applied_runtimes") or []),
                 "legacy_retirement_required": result.get("legacy_retirement_required"),
@@ -556,6 +596,8 @@ def write(path: Path, text: str) -> None:
 
 def self_test() -> dict[str, Any]:
     failures: list[str] = []
+    mode = "package" if package_source_available() else "installed"
+    coverage = "source-package-contract" if mode == "package" else "installed-helper-contract"
     with tempfile.TemporaryDirectory(prefix="tes-update-") as tempdir:
         target = Path(tempdir)
         write(target / "docs/agents/cortex/CONTRACT.md", "# Contract\n")
@@ -581,8 +623,10 @@ def self_test() -> dict[str, Any]:
             failures.append("older installed version must report update available")
         if result["recommended_route"] != "all":
             failures.append("multi-runtime fixture must recommend all")
-        if result["recommended_intent"] != "/tes:update all":
-            failures.append("multi-runtime update intent must be /tes:update all")
+        if result["recommended_update_scope"] != "helpers-only":
+            failures.append("stale multi-runtime fixture must recommend helpers-only update scope")
+        if result["recommended_intent"] != "/tes:update all --helpers-only":
+            failures.append("multi-runtime helper update intent must be /tes:update all --helpers-only")
         if result["legacy_retirement_required"] is not True:
             failures.append("legacy runtime fixture must require legacy retirement")
 
@@ -601,18 +645,20 @@ def self_test() -> dict[str, Any]:
             offline=False,
             timeout=0.1,
         )
-        write(target / ".tes/bin/tes_update.py", read_text(ROOT / "scripts/tes_update.py"))
+        write(target / ".tes/bin/tes_update.py", helper_source_text("tes_update.py"))
         result = analyze(args)
         if result["update_status"] != "CURRENT":
             failures.append("equal version must report current")
         if result["recommended_route"] != "codex":
             failures.append("single Codex fixture must recommend codex")
+        if result["recommended_update_scope"] != "none":
+            failures.append("current fixture must recommend no update scope")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-stale-helper-") as tempdir:
         target = Path(tempdir)
         write(target / "docs/agents/PROJECT-REGISTER.md", "Generated by Tilly\n")
         write(target / "AGENTS.md", "Route to docs/agents/**\n")
-        write(target / ".tes/bin/tes_update.py", read_text(ROOT / "scripts/tes_update.py"))
+        write(target / ".tes/bin/tes_update.py", helper_source_text("tes_update.py"))
         write(target / ".tes/bin/field_reports.py", f'VERSION = "{VERSION}"\nSCHEMA = "tes-field-report@1"\n')
         args = argparse.Namespace(
             target=target,
@@ -633,6 +679,10 @@ def self_test() -> dict[str, Any]:
             failures.append("stale helper update must include helper_contract_drift reason")
         if result["requires_helper_overwrite"] is not True:
             failures.append("stale helper update must require helper overwrite with backup")
+        if result["recommended_update_scope"] != "helpers-only":
+            failures.append("stale helper update must recommend helpers-only scope")
+        if result["recommended_intent"] != "/tes:update codex --helpers-only":
+            failures.append("stale helper update must recommend helpers-only intent")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-new-") as tempdir:
         target = Path(tempdir)
@@ -657,8 +707,8 @@ def self_test() -> dict[str, Any]:
         subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
         write(target / "docs/agents/PROJECT-REGISTER.md", "Generated by Tilly\n")
         write(target / "AGENTS.md", "Route to docs/agents/**\n")
-        write(target / ".tes/bin/tes_update.py", read_text(ROOT / "scripts/tes_update.py"))
-        write(target / ".tes/bin/field_reports.py", read_text(ROOT / "scripts/field_reports.py"))
+        write(target / ".tes/bin/tes_update.py", helper_source_text("tes_update.py"))
+        write(target / ".tes/bin/field_reports.py", helper_source_text("field_reports.py"))
         args = argparse.Namespace(
             target=target,
             remote_version=VERSION,
@@ -669,11 +719,53 @@ def self_test() -> dict[str, Any]:
             offline=False,
             timeout=0.1,
         )
-        result = analyze(args)
-        report = record_field_report(target, result)
-        if not report or report.get("status") != "PASS":
-            failures.append("tes_update must record Field Reports evidence when installed")
+        readonly = subprocess.run(
+            [
+                sys.executable,
+                __file__,
+                "plan",
+                "--target",
+                str(target),
+                "--remote-version",
+                VERSION,
+                "--remote-commit",
+                "e" * 40,
+                "--local-package-helpers",
+                "--json-only",
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if readonly.returncode != 0:
+            failures.append("tes_update read-only plan must pass")
+            failures.extend(readonly.stderr.splitlines())
         outbox = target / ".tes/field-reports/outbox.jsonl"
+        lines = outbox.read_text(encoding="utf-8").splitlines() if outbox.exists() else []
+        if lines:
+            failures.append("tes_update read-only plan must not write Field Reports evidence")
+        recorded = subprocess.run(
+            [
+                sys.executable,
+                __file__,
+                "plan",
+                "--target",
+                str(target),
+                "--remote-version",
+                VERSION,
+                "--remote-commit",
+                "e" * 40,
+                "--local-package-helpers",
+                "--json-only",
+                "--record-field-report",
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if recorded.returncode != 0:
+            failures.append("tes_update recorded plan must pass")
+            failures.extend(recorded.stderr.splitlines())
         lines = outbox.read_text(encoding="utf-8").splitlines() if outbox.exists() else []
         if not lines:
             failures.append("tes_update field report must write an outbox event")
@@ -686,6 +778,32 @@ def self_test() -> dict[str, Any]:
                 failures.append("tes_update field report must include helper_contract_status")
             if facts.get("route") != "codex":
                 failures.append("tes_update field report must include recommended route")
+            if facts.get("update_scope") != "none":
+                failures.append("tes_update field report must include update scope")
+        readonly_again = subprocess.run(
+            [
+                sys.executable,
+                __file__,
+                "plan",
+                "--target",
+                str(target),
+                "--remote-version",
+                VERSION,
+                "--remote-commit",
+                "e" * 40,
+                "--local-package-helpers",
+                "--json-only",
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if readonly_again.returncode != 0:
+            failures.append("tes_update repeated read-only plan must pass")
+            failures.extend(readonly_again.stderr.splitlines())
+        repeated_lines = outbox.read_text(encoding="utf-8").splitlines() if outbox.exists() else []
+        if len(repeated_lines) != len(lines):
+            failures.append("tes_update repeated read-only plan must not duplicate Field Reports evidence")
 
     original_fetch_remote_version = fetch_remote_version
     original_remote_helper_facts = remote_helper_facts
@@ -725,7 +843,13 @@ def self_test() -> dict[str, Any]:
         globals()["fetch_remote_version"] = original_fetch_remote_version
         globals()["remote_helper_facts"] = original_remote_helper_facts
 
-    return {"version": VERSION, "status": "PASS" if not failures else "FAIL", "failures": failures}
+    return {
+        "version": VERSION,
+        "status": "PASS" if not failures else "FAIL",
+        "failures": failures,
+        "self_test_mode": mode,
+        "coverage": coverage,
+    }
 
 
 def main() -> int:
@@ -738,6 +862,7 @@ def main() -> int:
     parser.add_argument("--remote-helper-manifest", type=Path)
     parser.add_argument("--local-package-helpers", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--json-only", action="store_true")
+    parser.add_argument("--record-field-report", action="store_true")
     parser.add_argument("--no-field-report", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--offline", action="store_true")
     parser.add_argument("--timeout", type=float, default=5.0)
@@ -745,7 +870,7 @@ def main() -> int:
     args = parser.parse_args()
 
     result = self_test() if args.self_test else analyze(args)
-    if not args.self_test and not args.no_field_report:
+    if not args.self_test and args.record_field_report and not args.no_field_report:
         report = record_field_report(args.target.expanduser().resolve(), result)
         if report:
             result["field_report_status"] = report.get("status")
