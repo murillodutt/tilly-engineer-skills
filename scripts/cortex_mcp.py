@@ -14,7 +14,7 @@ import cortex
 import field_reports
 
 
-VERSION = "0.3.61"
+VERSION = "0.3.62"
 PROTOCOL_VERSION = "2025-06-18"
 
 
@@ -252,7 +252,9 @@ def handle_message(default_target: Path, message: dict[str, Any]) -> dict[str, A
         return response(request_id, {"tools": tool_definitions()})
     if method == "tools/call":
         name = params.get("name")
-        arguments = params.get("arguments") or {}
+        arguments = params.get("arguments") if "arguments" in params else {}
+        if arguments is None:
+            arguments = {}
         if not isinstance(arguments, dict):
             return error_response(request_id, -32602, "tool arguments must be an object")
         try:
@@ -303,6 +305,7 @@ def self_test() -> int:
         links_path = cortex.cortex_path(target) / "LINKS.md"
         links_path.write_text(cortex.read_text(links_path) + "\n- [[mcp-read-only]] -> `sources/mcp-source.md`\n", encoding="utf-8")
         cortex.rebuild(target)
+        cortex.semantic_db_path(target).unlink(missing_ok=True)
 
         messages = [
             {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": PROTOCOL_VERSION}},
@@ -332,6 +335,12 @@ def self_test() -> int:
         }
         if tool_names != expected_tools:
             failures.append(f"tool list mismatch: {sorted(tool_names)}")
+        forbidden_tools = {
+            name for name in tool_names
+            if any(term in name for term in ("apply", "learn", "write", "mutate", "hook", "config"))
+        }
+        if forbidden_tools:
+            failures.append(f"write-capable or unsafe tools exposed: {sorted(forbidden_tools)}")
         for reply in replies[2:]:
             result = reply["result"]  # type: ignore[index]
             if result.get("isError"):
@@ -340,6 +349,55 @@ def self_test() -> int:
             failures.append("read_cell did not return cell text")
         if replies[6]["result"]["structuredContent"]["writes"] != []:  # type: ignore[index]
             failures.append("curate_plan did not remain no-write over MCP")
+        if replies[6]["result"]["structuredContent"].get("derived_writes") != []:  # type: ignore[index]
+            failures.append("curate_plan reported derived writes over MCP")
+        if cortex.semantic_db_path(target).exists():
+            failures.append("MCP curate_plan created a derived semantic index")
+
+        negative_messages = [
+            (
+                "unknown write-like tool rejected",
+                {"jsonrpc": "2.0", "id": 101, "method": "tools/call", "params": {"name": "cortex_apply", "arguments": {}}},
+            ),
+            (
+                "path traversal rejected",
+                {"jsonrpc": "2.0", "id": 102, "method": "tools/call", "params": {"name": "cortex_read_cell", "arguments": {"cell": "../CONTRACT.md"}}},
+            ),
+            (
+                "invalid target rejected",
+                {"jsonrpc": "2.0", "id": 103, "method": "tools/call", "params": {"name": "cortex_verify", "arguments": {"target": str(target / "missing")}}},
+            ),
+            (
+                "invalid backend rejected",
+                {"jsonrpc": "2.0", "id": 104, "method": "tools/call", "params": {"name": "cortex_curate_plan", "arguments": {"backend": "unsafe"}}},
+            ),
+            (
+                "empty recall query rejected",
+                {"jsonrpc": "2.0", "id": 105, "method": "tools/call", "params": {"name": "cortex_recall", "arguments": {"query": ""}}},
+            ),
+            (
+                "empty read-cell argument rejected",
+                {"jsonrpc": "2.0", "id": 106, "method": "tools/call", "params": {"name": "cortex_read_cell", "arguments": {"cell": ""}}},
+            ),
+            (
+                "empty absorb source rejected",
+                {"jsonrpc": "2.0", "id": 107, "method": "tools/call", "params": {"name": "cortex_absorb_plan", "arguments": {"source": ""}}},
+            ),
+            (
+                "non-object arguments rejected",
+                {"jsonrpc": "2.0", "id": 108, "method": "tools/call", "params": {"name": "cortex_verify", "arguments": []}},
+            ),
+        ]
+        for label, message in negative_messages:
+            reply = handle_message(target.resolve(), message)
+            if reply is None:
+                failures.append(f"{label}: no reply")
+                continue
+            if "error" in reply:
+                continue
+            result = reply.get("result", {})
+            if not result.get("isError"):
+                failures.append(f"{label}: call was not rejected")
 
         field_reports.safe_record_event(
             target,

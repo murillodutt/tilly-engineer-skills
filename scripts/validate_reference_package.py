@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.61"
+VERSION = "0.3.62"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -91,6 +91,7 @@ REQUIRED_PATHS = (
     "scripts/cortex.py",
     "scripts/cortex_embed.mjs",
     "scripts/cortex_mcp.py",
+    "scripts/cortex_quality_oracle.py",
     "scripts/field_reports.py",
     "scripts/field_reports_github_oracle.py",
     "scripts/install_smoke.py",
@@ -197,6 +198,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "cortex:reflect",
     "cortex:apply",
     "cortex:self-test",
+    "cortex:quality:self-test",
     "cortex:mcp:self-test",
     "oracle:self-test",
     "benchmark:plan",
@@ -665,6 +667,20 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("cortex_mcp.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    cortex_quality = ROOT / "scripts/cortex_quality_oracle.py"
+    if cortex_quality.exists():
+        result = subprocess.run(
+            [sys.executable, str(cortex_quality), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("cortex_quality_oracle.py --self-test failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 
