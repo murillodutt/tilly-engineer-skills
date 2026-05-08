@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, adapter authors, and installing agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # Platform Differences Reference
@@ -32,15 +32,22 @@ TES entry vocabulary is shared across platforms:
 |--------|-------------------|------------------|---------|
 | Initialize or recertify | `/tes-init` | `/tes:init` | Load the assisted installer and classify the project. |
 | Update existing mesh | `/tes-update` | `/tes:update` | Run the update probe, Layer Zero if needed, then converge. |
-| Doctor / health check | `/tes-doctor` | `/tes:doctor` | Inspect local TES health and blockers. |
-| Cortex | `/tes-cortex` | `/tes:cortex` | Inspect or certify the continuity layer. |
+| Cortex | `/tes-cortex` | `/tes:cortex`, `/tes:recall`, `/tes:learn`, `/tes:reflect` | Inspect or certify the continuity layer. |
+| Curate | `/tes-curate` | `/tes:curate` | Classify Cortex memory quality risks without writing memory. |
 | MCP | `/tes-mcp` | `/tes:mcp` | Inspect or activate read-only Cortex MCP. |
 | Field Reports | `/tes-field-reports` | `/tes:field-reports` | Inspect or drain sanitized local feedback. |
+| Doctor / health check | `/tes-doctor` | `/tes:doctor`, `/tes:check`, `/tes:certify` | Inspect local TES health and blockers. |
+| Adapter | `/tes-adapter` | `/tes:adapter` | Materialize, dry-run, retrofit, or certify adapter surfaces. |
+| Bench | `/tes-bench` | `/tes:bench` | Plan, run, or inspect context-mesh benchmark evidence. |
 
 The hyphen form is the preferred cross-platform trigger. The colon form is a
 compatibility alias and may be rejected by a host slash-command parser. If a
 host says a `/tes:*` slash command is invalid, the agent must treat the text as
 TES intent and route to the matching `tes-*` skill, rule, or installer spec.
+Natural intent text such as `tes init`, `tes update`, `Atualizar TES`,
+`atualizar TES`, `initialize TES`, `install TES`, `recertify TES`,
+`inicializar TES`, `instalar TES`, and `recertificar TES` must route to the
+same contract.
 
 ## Surface Differences
 
@@ -76,12 +83,14 @@ same patch:
 | Claude changes skills, plugins, slash commands, settings, hooks, or MCP semantics | `docs/adapters/CLAUDE.md`, `src/adapters/claude/**`, `scripts/claude_plugin_oracle.py`, `scripts/platform_surface_oracle.py` |
 | Cursor changes rules, plugins, skills, commands, hooks, agents, or MCP semantics | `docs/adapters/CURSOR.md`, `src/adapters/cursor/**`, `scripts/platform_surface_oracle.py` |
 | Any command trigger behavior changes | `docs/install/COMMAND-TRIGGERS.md`, `docs/install/MINI-PROMPT.md`, `docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md`, adapter skills/rules |
+| Trigger parity changes across adapters | `scripts/command_trigger_oracle.py --self-test` |
 
 Minimum closure gates:
 
 ```bash
 python3 scripts/validate_tds.py
 python3 scripts/validate_reference_package.py
+python3 scripts/command_trigger_oracle.py --self-test
 python3 scripts/platform_surface_oracle.py --self-test
 python3 scripts/materialize_adapter.py all --check
 npm run commit:check

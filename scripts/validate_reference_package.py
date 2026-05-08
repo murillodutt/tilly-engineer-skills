@@ -29,6 +29,7 @@ REQUIRED_PATHS = (
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
+    "docs/adapters/PLATFORM-DIFFERENCES.md",
     "docs/install/navigation/NAVIGATION-LIBRARY.md",
     "docs/install/navigation/common.prompt.md",
     "docs/install/navigation/codex.prompt.md",
@@ -100,6 +101,7 @@ REQUIRED_PATHS = (
     "scripts/root_context.py",
     "scripts/claude_plugin_oracle.py",
     "scripts/platform_surface_oracle.py",
+    "scripts/command_trigger_oracle.py",
     "scripts/retention_metadata.py",
     "scripts/validate_reference_graph.py",
     "scripts/validate_doc_size.py",
@@ -196,6 +198,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "commit:check",
     "adapter:parity:check",
     "platform:surface:check",
+    "command-triggers:self-test",
     "retention:check",
     "reference:graph",
     "docs:size",
@@ -721,6 +724,20 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("claude_plugin_oracle.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    command_trigger_oracle = ROOT / "scripts/command_trigger_oracle.py"
+    if command_trigger_oracle.exists():
+        result = subprocess.run(
+            [sys.executable, str(command_trigger_oracle), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("command_trigger_oracle.py --self-test failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 

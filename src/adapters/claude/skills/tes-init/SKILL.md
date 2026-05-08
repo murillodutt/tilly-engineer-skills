@@ -6,11 +6,13 @@ license: MIT
 
 # TES Init
 
-`/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, and direct
-command/prompts such as
-`TES, initialize this project`, `TES, inicialize este projeto`, or
-`Atualizar TES` are user-facing installer intents. They are not blind shell
-commands and not background daemons. The active agent remains the executor.
+`/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`,
+`tes update`, `initialize TES`, `install TES`, `recertify TES`,
+`inicializar TES`, `instalar TES`, `recertificar TES`, and direct
+command/prompts such as `TES, initialize this project`,
+`TES, inicialize este projeto`, `Atualizar TES`, or `atualizar TES` are
+user-facing installer intents. They are not blind shell commands and not
+background daemons. The active agent remains the executor.
 Across Codex, Claude Code, and Cursor, `/tes-*` forms are the preferred shared
 triggers and `/tes:*` forms are compatible TES intent aliases. If the host
 reports `/tes:init` as invalid, treat it as the same TES intent and continue

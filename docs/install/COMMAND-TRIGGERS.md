@@ -5,7 +5,7 @@ status: active
 consumer: adopters, installing agents, and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.3
+tver: 0.4.4
 ---
 
 # TES Command Triggers
@@ -19,6 +19,8 @@ All adapters share the same preferred user triggers: `/tes-init`,
 `/tes-bench`. Treat `/tes:*` forms as compatible TES intent aliases; if a host
 reports one as an invalid slash, continue through the matching `tes-*`
 skill/rule/spec instead of asking the user to restate the route.
+The executable parity gate is `python3 scripts/command_trigger_oracle.py
+--self-test`.
 
 ## Trigger Matrix
 
@@ -59,6 +61,7 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 | skills | user-intent routers in runtimes that support skills |
 | rules | always-on intent routers where skills are not native |
 | hooks | Git-event gates for validation, no-write Cortex reflection/curation, and Field Reports drain |
+| command-trigger oracle | package gate that checks docs, Codex, Claude, and Cursor share the same trigger vocabulary |
 
 ## No-Go
 

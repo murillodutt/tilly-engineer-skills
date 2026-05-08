@@ -70,9 +70,10 @@ requires exact syntax.
 ## TES Shortcuts
 
 When the user says `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`,
-`tes init`, "initialize TES", "install TES", "update TES", "recertify TES",
-"Atualizar TES",
-or a natural command/prompt such as "TES, inicialize este projeto",
+`tes init`, `tes update`, "initialize TES", "install TES", "update TES",
+"recertify TES", "inicializar TES", "instalar TES", "recertificar TES",
+"Atualizar TES", "atualizar TES", or a natural command/prompt such as
+"TES, inicialize este projeto",
 treat it as an intent shortcut for the assisted context installer. For
 `/tes-update` or `/tes:update`, first check installed version, cloud version,
 applied IDE surfaces, helper contract parity, recommended route, and
@@ -89,8 +90,9 @@ command.
 
 Also treat `/tes-cortex`, `/tes:cortex`, `/tes-curate`, `/tes:curate`,
 `/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
-`/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`, `/tes-bench`,
-and `/tes:bench`
+`/tes-doctor`, `/tes:doctor`, `/tes:check`, `/tes:certify`, `/tes-adapter`,
+`/tes:adapter`, `/tes-bench`, `/tes:bench`, `/tes:recall`, `/tes:learn`,
+and `/tes:reflect`
 as intent shortcuts. Choose the smallest safe oracle behind
 the scenes and report skipped or blocked commands honestly.
 
