@@ -60,7 +60,8 @@ Zero route, rerun the update probe, then continue only after parity is PASS.
 Use `--record-field-report` only on the final certification probe. After any
 helper overwrite, that final recorded probe is mandatory before GO, evidence
 closeout, commit, or push, and it must show `helper_contract_status=PASS`,
-`update_available=False`, and `recommended_update_scope=none`.
+`runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and
+`recommended_update_scope=none`.
 The final report must expose the user manual link/path.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and

@@ -15,8 +15,9 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.41"
+VERSION = "0.3.42"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
+CODEX_LOCAL_BOOTLOADER = "Local product governance. Preserve this file.\n"
 CLAUDE_LOCAL_BOOTLOADER = "Local product governance. Preserve this file.\n"
 
 
@@ -325,6 +326,61 @@ def claude_preserved_bootloader_probe() -> dict[str, Any]:
         return {"route": "claude-preserved-bootloader", "status": "FAIL" if failures else "PASS", "failures": failures}
 
 
+def codex_preserved_bootloader_probe() -> dict[str, Any]:
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-codex-preserve-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        (target / "AGENTS.md").write_text(CODEX_LOCAL_BOOTLOADER, encoding="utf-8")
+
+        code, stdout, stderr = run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/install_adapter.py"),
+                "--target",
+                str(target),
+                "--adapter",
+                "codex",
+                "--yes",
+            ]
+        )
+        if code != 0:
+            failures.extend(["codex preserve install failed", *stdout.splitlines(), *stderr.splitlines()])
+            return {"route": "codex-preserved-bootloader", "status": "FAIL", "failures": failures}
+
+        try:
+            payload = json.loads(stdout[stdout.index("{"):stdout.rindex("}") + 1])
+        except (ValueError, json.JSONDecodeError) as exc:
+            failures.append(f"codex preserve install returned invalid JSON: {exc}")
+            payload = {}
+        if payload.get("status") != "INSTALLED_WITH_PRESERVED_CONFLICTS":
+            failures.append("codex preserve install must report INSTALLED_WITH_PRESERVED_CONFLICTS")
+        preserved = payload.get("preserved_conflicts") or []
+        if not any(str(item.get("relpath")) == "AGENTS.md" for item in preserved):
+            failures.append("codex preserve install must preserve conflicting AGENTS.md")
+        if (target / "AGENTS.md").read_text(encoding="utf-8") != CODEX_LOCAL_BOOTLOADER:
+            failures.append("codex preserve install overwrote local AGENTS.md")
+        failures.extend(require_paths(target, (
+            ".agents/skills/tes-engineering-discipline/SKILL.md",
+            ".agents/skills/tes-init/SKILL.md",
+            ".agents/skills/tes-cortex/SKILL.md",
+            ".agents/skills/tes-mcp/SKILL.md",
+        )))
+
+        code, stdout, stderr = run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/command_trigger_oracle.py"),
+                "--target",
+                str(target),
+            ]
+        )
+        if code != 0:
+            failures.extend(["installed Codex trigger oracle failed", *stdout.splitlines(), *stderr.splitlines()])
+
+        return {"route": "codex-preserved-bootloader", "status": "FAIL" if failures else "PASS", "failures": failures}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--route", choices=ROUTES, default="all")
@@ -335,6 +391,7 @@ def main() -> int:
     results = [probe_route(route) for route in routes]
     if args.self_test:
         results.append(legacy_retirement_probe())
+        results.append(codex_preserved_bootloader_probe())
         results.append(claude_preserved_bootloader_probe())
     failures = [
         failure

@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.41"
+VERSION = "0.3.42"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -299,6 +299,7 @@ UPDATE_ROUTINE_REQUIRED_TERMS = (
     "adapter-config",
     "post-Layer Zero",
     "helper_contract_status=PASS",
+    "runtime_trigger_status",
     "update_available=False",
     "recommended_update_scope=none",
     "final Field Reports `tes_update` event",

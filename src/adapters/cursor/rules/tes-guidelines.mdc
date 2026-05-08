@@ -83,8 +83,8 @@ state, run Step Zero before edits, preserve local governance, initialize or
 update `docs/agents/**` and Cortex, repair `recommended_update_scope=helpers-only`
 or `STALE_HELPERS` through the helper-only Layer Zero route before MCP config
 activation, then require a final recorded probe before GO, commit, or push that
-shows `helper_contract_status=PASS`, `update_available=False`, and
-`recommended_update_scope=none`. Run available
+shows `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or
+`NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`. Run available
 oracles, and finish with a certification report. It is not a blind shell
 command.
 

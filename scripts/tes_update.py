@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.41"
+VERSION = "0.3.42"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -103,6 +103,7 @@ CLAUDE_TRIGGER_SKILLS = (
 )
 POST_LAYER_ZERO_FINAL_PROBE_CONTRACT = (
     "helper_contract_status=PASS",
+    "runtime_trigger_status=PASS|NOT_APPLIED",
     "update_available=False",
     "recommended_update_scope=none",
 )
@@ -670,6 +671,7 @@ def recommended_intent(state: str, update_status: str, route: str, update_scope:
 def post_layer_zero_final_probe(result: dict[str, Any]) -> dict[str, Any]:
     ready = (
         result.get("helper_contract_status") == "PASS"
+        and result.get("runtime_trigger_status") in {"PASS", "NOT_APPLIED"}
         and result.get("update_available") is False
         and result.get("recommended_update_scope") == "none"
     )
