@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.50"
+VERSION = "0.3.51"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 PACKAGE_MODE = (ROOT / "scripts").exists()
 MARKDOWN_HEADING_RE = re.compile(r"^#{1,3}\s+(.+?)\s*$")
@@ -70,6 +70,10 @@ TES_ROOT_BOOTLOADER_MARKERS = {
 ANCHOR_NAMES = (
     "README.md",
     "readme.md",
+    "README.rst",
+    "readme.rst",
+    "README.txt",
+    "README.TXT",
     "README",
     "package.json",
     "pyproject.toml",
@@ -206,12 +210,14 @@ def context_manifest(target: Path, text: str) -> dict[str, Any] | None:
 
 
 def readme_paths(target: Path) -> list[Path]:
+    names = {"readme", "readme.md", "readme.rst", "readme.txt"}
     candidates = [
         path
         for path in target.iterdir()
-        if path.is_file() and path.name.casefold() in {"readme", "readme.md"}
+        if path.is_file() and path.name.casefold() in names
     ]
-    return sorted(candidates, key=lambda path: (path.name.casefold() != "readme.md", path.name))
+    priority = {"readme.md": 0, "readme.rst": 1, "readme": 2, "readme.txt": 3}
+    return sorted(candidates, key=lambda path: (priority.get(path.name.casefold(), 99), path.name))
 
 
 def clean_markdown_inline(text: str) -> str:
@@ -220,6 +226,24 @@ def clean_markdown_inline(text: str) -> str:
     text = re.sub(r"\[([^\]]+)\]\[[^\]]+\]", r"\1", text)
     text = re.sub(r"[*_`>#]", "", text)
     return re.sub(r"\s+", " ", text).strip()
+
+
+def first_readme_heading(lines: list[str]) -> str | None:
+    in_fence = False
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence or not stripped:
+            continue
+        match = MARKDOWN_HEADING_RE.match(stripped)
+        if match:
+            return clean_markdown_inline(match.group(1))
+        underline = lines[index + 1].strip() if index + 1 < len(lines) else ""
+        if len(underline) >= 3 and len(set(underline)) == 1 and underline[0] in "=-~^":
+            return clean_markdown_inline(stripped)
+    return None
 
 
 def package_scripts(target: Path) -> dict[str, str]:
@@ -245,6 +269,10 @@ def quality_scripts(target: Path) -> dict[str, str]:
         scripts["nox"] = "nox"
     if (target / "tox.ini").exists() or (isinstance(tools, dict) and "tox" in tools):
         scripts["tox"] = "tox"
+    if (target / "tests/runtests.py").exists():
+        scripts["runtests"] = "cd tests && ./runtests.py"
+    if (target / "docs/Makefile").exists():
+        scripts["docs"] = "make -C docs html"
     if isinstance(tools, dict):
         for name, command in (
             ("pytest", "pytest"),
@@ -279,7 +307,12 @@ def identity_terms(target: Path) -> list[str]:
         terms.append(str(project["name"]))
     for readme in readme_paths(target):
         in_fence = False
-        for line in readme.read_text(encoding="utf-8", errors="ignore").splitlines():
+        lines = readme.read_text(encoding="utf-8", errors="ignore").splitlines()
+        heading = first_readme_heading(lines)
+        if heading:
+            terms.append(heading)
+            continue
+        for line in lines:
             stripped = line.strip()
             if stripped.startswith("```"):
                 in_fence = not in_fence
@@ -307,7 +340,7 @@ def readme_summary(target: Path) -> str:
         return ""
     html_depth = 0
     in_fence = False
-    for line in lines:
+    for index, line in enumerate(lines):
         stripped = line.strip()
         if stripped.startswith("```"):
             if paragraph:
@@ -338,6 +371,9 @@ def readme_summary(target: Path) -> str:
             continue
         if MARKDOWN_HEADING_RE.match(stripped):
             continue
+        underline = lines[index + 1].strip() if index + 1 < len(lines) else ""
+        if len(underline) >= 3 and len(set(underline)) == 1 and underline[0] in "=-~^":
+            continue
         if stripped.startswith(("|", "-", "* ", "!", "[![", "<", "```")):
             if paragraph:
                 break
@@ -363,6 +399,22 @@ def project_has_description(target: Path) -> bool:
     return False
 
 
+def project_description_terms(target: Path) -> list[str]:
+    terms: list[str] = []
+    package = load_json(target / "package.json")
+    if package:
+        description = package.get("description")
+        if isinstance(description, str) and description.strip():
+            terms.append(clean_markdown_inline(description.strip()))
+    pyproject = load_toml(target / "pyproject.toml")
+    project = pyproject.get("project") if pyproject else None
+    if isinstance(project, dict):
+        description = project.get("description")
+        if isinstance(description, str) and description.strip():
+            terms.append(clean_markdown_inline(description.strip()))
+    return terms
+
+
 def expected_anchors(target: Path) -> list[str]:
     files = iter_project_files(target)
     anchors: list[str] = []
@@ -370,7 +422,7 @@ def expected_anchors(target: Path) -> list[str]:
         if not is_excluded(path, target):
             anchors.append(path.name)
     for name in ANCHOR_NAMES:
-        if name.casefold() in {"readme", "readme.md"}:
+        if name.casefold() in {"readme", "readme.md", "readme.rst", "readme.txt"}:
             continue
         path = target / name
         if path.exists() and path.is_file() and not is_excluded(path, target):
@@ -467,11 +519,23 @@ def analyze(target: Path) -> dict[str, Any]:
 
     if readme_summary(target) and not project_has_description(target) and "| Description | `unknown` |" in text:
         failures.append("PROJECT-CONTEXT.md must derive a non-unknown description from README prose when package description is absent")
+    if project_has_description(target) and "| Description | `unknown` |" in text:
+        failures.append("PROJECT-CONTEXT.md must derive a non-unknown description from package metadata when available")
+    description_terms = project_description_terms(target)
+    if description_terms and not any(term in text for term in description_terms):
+        failures.append("PROJECT-CONTEXT.md missing package metadata description")
 
     anchors = expected_anchors(target)
     missing_anchors = [anchor for anchor in anchors if anchor not in text]
     if missing_anchors:
         failures.append(f"PROJECT-CONTEXT.md missing source anchors: {', '.join(missing_anchors[:8])}")
+
+    if (target / "README.rst").exists() and "README.rst" not in text:
+        failures.append("PROJECT-CONTEXT.md must include README.rst as a strong source anchor")
+    if (target / "pyproject.toml").exists() and (target / "package.json").exists():
+        identity_block = text.split("## Identity", 1)[1].split("## Initial Semantic Signals", 1)[0] if "## Identity" in text and "## Initial Semantic Signals" in text else ""
+        if "pyproject.toml" not in identity_block:
+            failures.append("PROJECT-CONTEXT.md must prefer pyproject identity over package.json when Python project metadata is present")
 
     territories = expected_territories(target)
     missing_territories = [name for name in territories if name not in text]
@@ -680,6 +744,39 @@ def self_test() -> dict[str, Any]:
             failures.append("oracle must treat pyproject project.description as a known description")
         if "py-oracle" not in identity_terms(target):
             failures.append("oracle must derive identity terms from pyproject project.name")
+
+    with tempfile.TemporaryDirectory(prefix="tes-project-context-rst-py-") as tempdir:
+        target = Path(tempdir)
+        write(target / "README.rst", "Django\n======\n\nDjango is a high-level Python web framework.\n")
+        write(target / "package.json", json.dumps({"name": "Django", "scripts": {"test": "grunt test"}}) + "\n")
+        write(
+            target / "pyproject.toml",
+            "[project]\n"
+            "name = \"Django\"\n"
+            "description = \"A high-level Python web framework.\"\n"
+            "[tool.tox]\nlegacy_tox_ini = \"\"\n",
+        )
+        write(target / "tests/runtests.py", "#!/usr/bin/env python\n")
+        write(target / "docs/Makefile", "html:\n\t@echo docs\n")
+        bad_context = good_context(target).replace("fixture-app", "Django").replace(
+            "| Description | `Fixture app for oracle validation.` |",
+            "| Description | `unknown` |\n| Identity source | `package.json` |",
+        )
+        write(target / PROJECT_CONTEXT, bad_context)
+        bad = analyze(target)
+        if bad["status"] != "FAIL" or not any("package metadata" in item or "prefer pyproject" in item for item in bad["failures"]):
+            failures.append("oracle must fail Python projects whose context ignores pyproject description or identity source")
+        good = bad_context.replace("| Description | `unknown` |", "| Description | `A high-level Python web framework.` |").replace(
+            "| Identity source | `package.json` |",
+            "| Identity source | `pyproject.toml` |",
+        )
+        good = good.replace("| README.md | .md | 14 |", "| README.rst | .rst | 60 |\n| pyproject.toml | .toml | 90 |\n| package.json | .json | 50 |\n| docs/Makefile | [none] | 20 |\n| tests/runtests.py | .py | 20 |")
+        good = good.replace("- `README.md`", "- `README.rst`\n- `pyproject.toml`\n- `tests/runtests.py`")
+        good = good.replace("| test | echo test |", "| test | grunt test |\n| tox | tox |\n| runtests | cd tests && ./runtests.py |\n| docs | make -C docs html |")
+        write(target / PROJECT_CONTEXT, good)
+        rst_good = analyze(target)
+        if rst_good["status"] != "PASS":
+            failures.extend(f"RST Python fixture failed: {item}" for item in rst_good["failures"])
 
     with tempfile.TemporaryDirectory(prefix="tes-project-context-generated-") as tempdir:
         target = Path(tempdir)

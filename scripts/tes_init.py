@@ -28,7 +28,7 @@ HELPER_ROOT = SCRIPT_PATH.parent
 ROOT = SCRIPT_PATH.parents[1]
 SOURCE_ROOT = ROOT / "scripts" if (ROOT / "scripts").exists() else HELPER_ROOT
 PACKAGE_MODE = SOURCE_ROOT.name == "scripts"
-VERSION = "0.3.50"
+VERSION = "0.3.51"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -118,7 +118,13 @@ ROOT_CONFIG_ANCHOR_NAMES = {
 DOC_ANCHOR_NAMES = {
     "README.md",
     "readme.md",
+    "README.rst",
+    "readme.rst",
+    "README.txt",
+    "README.TXT",
     "README",
+    "Makefile",
+    "makefile",
     "ARCHITECTURE.md",
     "CONTRIBUTING.md",
     "SECURITY.md",
@@ -437,13 +443,34 @@ def first_markdown_heading(path: Path) -> str | None:
     return None
 
 
+def first_readme_heading(lines: list[str]) -> str | None:
+    in_fence = False
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence or not stripped:
+            continue
+        match = MARKDOWN_HEADING_RE.match(stripped)
+        if match:
+            return clean_markdown_inline(match.group(1))
+        if index + 1 < len(lines):
+            underline = lines[index + 1].strip()
+            if len(underline) >= 3 and len(set(underline)) == 1 and underline[0] in "=-~^":
+                return clean_markdown_inline(stripped)
+    return None
+
+
 def readme_paths(target: Path) -> list[Path]:
+    names = {"readme", "readme.md", "readme.rst", "readme.txt"}
     candidates = [
         path
         for path in target.iterdir()
-        if path.is_file() and path.name.casefold() in {"readme", "readme.md"}
+        if path.is_file() and path.name.casefold() in names
     ]
-    return sorted(candidates, key=lambda path: (path.name.casefold() != "readme.md", path.name))
+    priority = {"readme.md": 0, "readme.rst": 1, "readme": 2, "readme.txt": 3}
+    return sorted(candidates, key=lambda path: (priority.get(path.name.casefold(), 99), path.name))
 
 
 def clean_markdown_inline(text: str) -> str:
@@ -472,7 +499,7 @@ def readme_signal(target: Path) -> dict[str, str] | None:
         paragraph: list[str] = []
         html_depth = 0
         in_fence = False
-        for line in lines:
+        for index, line in enumerate(lines):
             stripped = line.strip()
             if stripped.startswith("```"):
                 if paragraph:
@@ -494,8 +521,18 @@ def readme_signal(target: Path) -> dict[str, str] | None:
                     break
                 continue
             heading_match = MARKDOWN_HEADING_RE.match(stripped)
+            rst_underline = lines[index + 1].strip() if index + 1 < len(lines) else ""
             if heading_match:
                 heading = clean_markdown_inline(heading_match.group(1))
+                continue
+            if (
+                not heading
+                and rst_underline
+                and len(rst_underline) >= 3
+                and len(set(rst_underline)) == 1
+                and rst_underline[0] in "=-~^"
+            ):
+                heading = clean_markdown_inline(stripped)
                 continue
             if stripped.startswith(">"):
                 quote = stripped.lstrip("> ").strip()
@@ -523,18 +560,6 @@ def readme_signal(target: Path) -> dict[str, str] | None:
 
 def detect_project_identity(target: Path) -> dict[str, str]:
     readme = readme_signal(target)
-    package = safe_read_json(target / "package.json")
-    if package:
-        name = str(package.get("name") or target.name)
-        description = str(package.get("description") or "").strip()
-        if not description and readme and readme.get("summary"):
-            description = readme["summary"]
-        return {
-            "name": name,
-            "description": description or "unknown",
-            "source": "package.json + README" if readme and readme.get("summary") and not package.get("description") else "package.json",
-        }
-
     pyproject = safe_read_toml(target / "pyproject.toml")
     project = pyproject.get("project") if pyproject else None
     if isinstance(project, dict):
@@ -546,6 +571,18 @@ def detect_project_identity(target: Path) -> dict[str, str]:
             "name": name,
             "description": description or "unknown",
             "source": "pyproject.toml + README" if readme and readme.get("summary") and not project.get("description") else "pyproject.toml",
+        }
+
+    package = safe_read_json(target / "package.json")
+    if package:
+        name = str(package.get("name") or target.name)
+        description = str(package.get("description") or "").strip()
+        if not description and readme and readme.get("summary"):
+            description = readme["summary"]
+        return {
+            "name": name,
+            "description": description or "unknown",
+            "source": "package.json + README" if readme and readme.get("summary") and not package.get("description") else "package.json",
         }
 
     if readme and readme.get("heading"):
@@ -667,6 +704,10 @@ def python_quality_scripts(target: Path) -> dict[str, str]:
         scripts["nox"] = "nox"
     if (target / "tox.ini").exists() or (isinstance(tools, dict) and "tox" in tools):
         scripts["tox"] = "tox"
+    if (target / "tests/runtests.py").exists():
+        scripts["runtests"] = "cd tests && ./runtests.py"
+    if (target / "docs/Makefile").exists():
+        scripts["docs"] = "make -C docs html"
     if isinstance(tools, dict):
         if "pytest" in tools:
             scripts["pytest"] = "pytest"
@@ -704,8 +745,16 @@ def anchor_score(record: dict[str, Any]) -> tuple[int, str]:
     first = relpath.parts[0] if relpath.parts else ""
     second = relpath.parts[1] if len(relpath.parts) > 1 else ""
     suffix = str(record.get("suffix") or "")
+    size = int(record.get("bytes") or 0)
     score = 0
     is_root = len(relpath.parts) == 1
+    lowered_parts = {part.lower() for part in relpath.parts}
+    if size == 0:
+        score += 220
+    if name.casefold().startswith("readme"):
+        score -= 240 if is_root else 90
+        if not is_root and len(relpath.parts) > 2:
+            score += 80
     if is_root and name in DOC_ANCHOR_NAMES:
         score -= 220
     elif name in DOC_ANCHOR_NAMES:
@@ -716,6 +765,8 @@ def anchor_score(record: dict[str, Any]) -> tuple[int, str]:
         score -= 80
     if is_root and name in ROOT_CONFIG_ANCHOR_NAMES:
         score -= 160
+    if name in {"Makefile", "makefile", "runtests.py", "tox.ini", "noxfile.py", "pytest.ini", ".coveragerc"}:
+        score -= 130
     if is_root and suffix in {".tf", ".tfvars", ".hcl"}:
         score -= 140
     if first in {"src", "app", "server", "client", "api", "lib", "packages"}:
@@ -724,10 +775,38 @@ def anchor_score(record: dict[str, Any]) -> tuple[int, str]:
         score -= 40
     if first in SOURCE_DIR_HINTS:
         score -= 40
-    if suffix in {".md", ".mdc", ".json", ".toml", ".yaml", ".yml", ".tf", ".tfvars", ".hcl"}:
+    if suffix in {".md", ".mdc", ".rst", ".txt", ".toml", ".yaml", ".yml", ".tf", ".tfvars", ".hcl"}:
         score -= 20
+    if suffix == ".json":
+        score -= 5 if is_root else 0
     if "test" in relpath.parts or "tests" in relpath.parts:
         score -= 10
+    generated_or_example_parts = {
+        "__fixtures__",
+        "_theme",
+        "assets",
+        "data",
+        "example",
+        "examples",
+        "fixture",
+        "fixtures",
+        "fontawesome",
+        "sample",
+        "samples",
+        "static",
+        "template",
+        "templates",
+        "third_party",
+        "vendor",
+    }
+    if lowered_parts & generated_or_example_parts or any(
+        token in part
+        for part in lowered_parts
+        for token in ("example", "fixture", "sample", "template")
+    ):
+        score += 150
+    if suffix == ".json" and ("test" in relpath.parts or "tests" in relpath.parts):
+        score += 80
     if first == "docs" and second in {"evidence", "agents"}:
         score += 70
     return (score, str(record["path"]))
@@ -737,7 +816,10 @@ def context_anchors(scan: dict[str, Any]) -> list[dict[str, Any]]:
     records = [
         record
         for record in scan["files"]
-        if str(record.get("suffix") or "") in {".md", ".mdc", ".json", ".toml", ".yaml", ".yml", ".tf", ".tfvars", ".hcl", ".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs"}
+        if str(record.get("suffix") or "") in {".md", ".mdc", ".rst", ".txt", ".json", ".toml", ".yaml", ".yml", ".tf", ".tfvars", ".hcl", ".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs"}
+        or Path(str(record["path"])).name in DOC_ANCHOR_NAMES
+        or Path(str(record["path"])).name in ROOT_CONFIG_ANCHOR_NAMES
+        or Path(str(record["path"])).name in MANIFEST_NAMES
     ]
     return sorted(records, key=anchor_score)[:MAX_CONTEXT_ANCHORS]
 
@@ -1366,6 +1448,34 @@ def self_test() -> dict[str, Any]:
             failures.append("pyproject identity source must be pyproject.toml")
         if "Python tool config: pytest" not in stack_signals(target):
             failures.append("stack signals must include pyproject tool configuration")
+
+    with tempfile.TemporaryDirectory(prefix="tes-init-rst-anchor-rank-") as tempdir:
+        target = Path(tempdir)
+        (target / "README.rst").write_text("Django\n======\n\nFramework prose.\n", encoding="utf-8")
+        (target / "pyproject.toml").write_text(
+            "[project]\nname = \"django-fixture\"\ndescription = \"Framework prose.\"\n",
+            encoding="utf-8",
+        )
+        (target / "package.json").write_text('{"name":"django-fixture","scripts":{"test":"grunt test"}}\n', encoding="utf-8")
+        (target / "docs").mkdir()
+        (target / "docs/README.rst").write_text("Docs\n====\n", encoding="utf-8")
+        (target / "tests/fixtures/data").mkdir(parents=True)
+        (target / "tests/README.rst").write_text("Tests\n=====\n", encoding="utf-8")
+        (target / "tests/fixtures/data/README.md").write_text("# Fixture data\n", encoding="utf-8")
+        (target / "tests/forms").mkdir(parents=True)
+        (target / "tests/forms/README").write_text("", encoding="utf-8")
+        (target / "docs/_theme/static/fontawesome").mkdir(parents=True)
+        (target / "docs/_theme/static/fontawesome/README.md").write_text("# Static asset\n", encoding="utf-8")
+        scan = scan_project(target)
+        anchors = [str(anchor["path"]) for anchor in context_anchors(scan)]
+        if "README.rst" not in anchors[:3]:
+            failures.append("root README.rst must rank as a strongest context anchor")
+        if anchors.index("tests/fixtures/data/README.md") < anchors.index("tests/README.rst"):
+            failures.append("nested fixture README must not outrank real test anchors")
+        if anchors.index("docs/_theme/static/fontawesome/README.md") < anchors.index("docs/README.rst"):
+            failures.append("static asset README must not outrank real documentation anchors")
+        if anchors.index("tests/forms/README") < anchors.index("tests/README.rst"):
+            failures.append("empty nested README must not outrank real test anchors")
 
     with tempfile.TemporaryDirectory(prefix="tes-init-ky-readme-") as tempdir:
         target = Path(tempdir)
