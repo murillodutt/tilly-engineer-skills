@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.66"
+VERSION = "0.3.67"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -45,6 +45,7 @@ REQUIRED_PATHS = (
     "docs/governance/MAINTAINER-CORRELATION-RULE.md",
     "docs/mesh/PRINCIPLES.md",
     "docs/mesh/CONTEXT-MESH-METHOD.md",
+    "docs/mesh/TES-ALIGN-SKILL-SOURCE-OF-TRUTH.md",
     "docs/mesh/CORTEX.md",
     "docs/mesh/CORTEX-MCP.md",
     "docs/mesh/FIELD-REPORTS.md",
@@ -74,6 +75,10 @@ REQUIRED_PATHS = (
     "src/adapters/codex/skills/tes-engineering-discipline/references/source-portability.md",
     "src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py",
     "src/adapters/codex/skills/tes-init/SKILL.md",
+    "src/adapters/codex/skills/tes-align/SKILL.md",
+    "src/adapters/codex/skills/tes-align/agents/openai.yaml",
+    "src/adapters/codex/skills/tes-align/references/alignment-procedure.md",
+    "src/adapters/codex/skills/tes-align/docs/CONTRACT-HISTORY.md",
     "src/adapters/codex/skills/tes-cortex/SKILL.md",
     "src/adapters/codex/skills/tes-mcp/SKILL.md",
     "src/adapters/codex/skills/tes-doctor/SKILL.md",
@@ -84,6 +89,10 @@ REQUIRED_PATHS = (
     "src/adapters/claude/plugin/marketplace.json",
     "src/adapters/claude/skills/tes-guidelines/SKILL.md",
     "src/adapters/claude/skills/tes-init/SKILL.md",
+    "src/adapters/claude/skills/tes-align/SKILL.md",
+    "src/adapters/claude/skills/tes-align/agents/openai.yaml",
+    "src/adapters/claude/skills/tes-align/references/alignment-procedure.md",
+    "src/adapters/claude/skills/tes-align/docs/CONTRACT-HISTORY.md",
     "src/adapters/claude/skills/tes-cortex/SKILL.md",
     "src/adapters/claude/skills/tes-mcp/SKILL.md",
     "src/adapters/claude/skills/tes-doctor/SKILL.md",
@@ -107,6 +116,7 @@ REQUIRED_PATHS = (
     "scripts/install_adapter.py",
     "scripts/tes_init.py",
     "scripts/project_context_oracle.py",
+    "scripts/project_alignment_oracle.py",
     "scripts/tes_update.py",
     "scripts/tes_legacy_retirement.py",
     "scripts/tes_namespace.py",
@@ -171,6 +181,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "tes:init",
     "tes:init:self-test",
     "project-context:self-test",
+    "project-alignment:self-test",
     "tes:update",
     "tes:update:self-test",
     "tes:legacy:plan",

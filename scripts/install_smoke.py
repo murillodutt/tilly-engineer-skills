@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.66"
+VERSION = "0.3.67"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -180,7 +180,11 @@ def install_field_reports(target: Path) -> list[str]:
 
 def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
     if adapter == "codex":
-        return ("AGENTS.md", ".agents/skills/tes-engineering-discipline/SKILL.md")
+        return (
+            "AGENTS.md",
+            ".agents/skills/tes-engineering-discipline/SKILL.md",
+            ".agents/skills/tes-align/SKILL.md",
+        )
     if adapter == "claude":
         return (
             "CLAUDE.md",
@@ -188,6 +192,8 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
             "skills/tes-guidelines/SKILL.md",
             ".claude/skills/tes-guidelines/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
+            ".claude/skills/tes-align/SKILL.md",
+            "skills/tes-align/SKILL.md",
         )
     if adapter == "cursor":
         return ("CURSOR.md", ".cursor/rules/tes-guidelines.mdc")
@@ -203,6 +209,9 @@ def expected_mcp_paths(adapter: str) -> tuple[str, ...]:
         ".tes/bin/tes_update.py",
         ".tes/bin/tes_legacy_retirement.py",
         ".tes/bin/root_context.py",
+        ".tes/bin/tes_init.py",
+        ".tes/bin/project_context_oracle.py",
+        ".tes/bin/project_alignment_oracle.py",
     )
     if adapter == "codex":
         return (*base, ".codex/config.toml")

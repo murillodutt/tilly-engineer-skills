@@ -12,11 +12,12 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.66"
+VERSION = "0.3.67"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
     "/tes-update",
+    "/tes-align",
     "/tes-cortex",
     "/tes-curate",
     "/tes-mcp",
@@ -29,6 +30,7 @@ PREFERRED_TRIGGERS = (
 COMPATIBLE_ALIASES = (
     "/tes:init",
     "/tes:update",
+    "/tes:align",
     "/tes:cortex",
     "/tes:mcp",
     "/tes:field-reports",
@@ -46,8 +48,13 @@ COMPATIBLE_ALIASES = (
 NATURAL_INTENTS = (
     "tes init",
     "tes update",
+    "tes align",
+    "align TES",
+    "align this project",
     "Atualizar TES",
     "atualizar TES",
+    "alinhar TES",
+    "alinhar projeto",
     "initialize TES",
     "install TES",
     "recertify TES",
@@ -82,6 +89,7 @@ PLATFORM_SOURCE_GROUPS = {
     "codex": (
         "src/adapters/codex/AGENTS.md",
         "src/adapters/codex/skills/tes-init/SKILL.md",
+        "src/adapters/codex/skills/tes-align/SKILL.md",
         "src/adapters/codex/skills/tes-cortex/SKILL.md",
         "src/adapters/codex/skills/tes-mcp/SKILL.md",
         "src/adapters/codex/skills/tes-doctor/SKILL.md",
@@ -91,6 +99,7 @@ PLATFORM_SOURCE_GROUPS = {
     "claude": (
         "src/adapters/claude/CLAUDE.md",
         "src/adapters/claude/skills/tes-init/SKILL.md",
+        "src/adapters/claude/skills/tes-align/SKILL.md",
         "src/adapters/claude/skills/tes-cortex/SKILL.md",
         "src/adapters/claude/skills/tes-mcp/SKILL.md",
         "src/adapters/claude/skills/tes-doctor/SKILL.md",
@@ -116,6 +125,7 @@ INIT_ROUTER_SOURCE_PATHS = (
 CLAUDE_PROJECT_SKILLS = (
     "tes-guidelines",
     "tes-init",
+    "tes-align",
     "tes-cortex",
     "tes-mcp",
     "tes-doctor",
@@ -125,6 +135,7 @@ CLAUDE_PROJECT_SKILLS = (
 CODEX_PROJECT_SKILLS = (
     "tes-engineering-discipline",
     "tes-init",
+    "tes-align",
     "tes-cortex",
     "tes-mcp",
     "tes-doctor",
@@ -354,8 +365,8 @@ def run_fixture_tests() -> list[str]:
     if not any("invalid-slash fallback" in item for item in check_claude_invalid_slash(bad_claude)):
         failures.append("bad Claude fixture must fail without invalid-slash fallback")
 
-    bad_trigger = good_text.replace("/tes-bench", "")
-    if not any("/tes-bench" in item for item in check_text("fixture_bad_trigger", bad_trigger)):
+    bad_trigger = good_text.replace("/tes-align", "")
+    if not any("/tes-align" in item for item in check_text("fixture_bad_trigger", bad_trigger)):
         failures.append("bad trigger fixture must fail when a preferred trigger is absent")
 
     bad_natural = good_text.replace("recertificar TES", "")

@@ -5,7 +5,32 @@ status: active
 consumer: maintainers and adapter authors
 source_of_truth: true
 evidence_level: L3
-tver: 0.3.0
+tver: 0.3.1
+sources_verified_on: 2026-05-09
+source_refresh_interval_days: 15
+source_refresh_policy: >-
+  If this document is accessed after a cycle of 15 days or more since
+  sources_verified_on, verify the listed sources first, update this document if
+  the sources changed, and only then use it as construction truth.
+sources:
+  - "docs/mesh/TES-ALIGN-SKILL-SOURCE-OF-TRUTH.md"
+  - "docs/adapters/PLATFORM-DIFFERENCES.md"
+  - "docs/mesh/CONTRACT-MANIFEST.yml"
+  - "https://github.com/openai/codex"
+  - "https://developers.openai.com/codex/guides/agents-md"
+  - "https://developers.openai.com/codex/skills"
+  - "https://developers.openai.com/codex/plugins/build"
+  - "https://developers.openai.com/codex/cli/slash-commands"
+  - "https://github.com/anthropics/skills"
+  - "https://code.claude.com/docs/en/skills"
+  - "https://code.claude.com/docs/en/plugins"
+  - "https://code.claude.com/docs/en/slash-commands"
+  - "https://github.com/cursor/plugins"
+  - "https://github.com/cursor/plugin-template"
+  - "https://cursor.com/docs/rules"
+  - "https://cursor.com/docs/plugins"
+  - "https://cursor.com/docs/mcp"
+  - "https://modelcontextprotocol.io/specification/latest"
 ---
 
 # Adapter Capability Matrix
@@ -29,6 +54,11 @@ Core Contract
 ```
 
 The neutral contract is `docs/mesh/CONTRACT-MANIFEST.yml`.
+
+For project semantic alignment, adapter behavior must also remain compatible
+with `docs/mesh/TES-ALIGN-SKILL-SOURCE-OF-TRUTH.md`. That document defines how
+`/tes-align` turns a target project into an Obsidian-compatible operating mesh
+without making any single runtime adapter the design center.
 
 ## Platform Surface Matrix
 

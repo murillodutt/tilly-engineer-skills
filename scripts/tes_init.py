@@ -28,10 +28,29 @@ HELPER_ROOT = SCRIPT_PATH.parent
 ROOT = SCRIPT_PATH.parents[1]
 SOURCE_ROOT = ROOT / "scripts" if (ROOT / "scripts").exists() else HELPER_ROOT
 PACKAGE_MODE = SOURCE_ROOT.name == "scripts"
-VERSION = "0.3.66"
+VERSION = "0.3.67"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
+PROJECT_STATE = Path("docs/agents/PROJECT-STATE.md")
+PROJECT_ROADMAP = Path("docs/agents/PROJECT-ROADMAP.md")
+EXECUTION_LINE = Path("docs/agents/EXECUTION-LINE.md")
+QUALITY_GATES = Path("docs/agents/QUALITY-GATES.md")
+BOUNDARIES = Path("docs/agents/BOUNDARIES-AND-CONSTRAINTS.md")
+KNOWLEDGE_LIFECYCLE = Path("docs/agents/KNOWLEDGE-LIFECYCLE.md")
+GLOSSARY = Path("docs/agents/GLOSSARY.md")
+DECISIONS_DIR = Path("docs/agents/DECISIONS")
+TES_AGENT_MESH_RELPATHS = {
+    REGISTER.as_posix(),
+    PROJECT_CONTEXT.as_posix(),
+    PROJECT_STATE.as_posix(),
+    PROJECT_ROADMAP.as_posix(),
+    EXECUTION_LINE.as_posix(),
+    QUALITY_GATES.as_posix(),
+    BOUNDARIES.as_posix(),
+    KNOWLEDGE_LIFECYCLE.as_posix(),
+    GLOSSARY.as_posix(),
+}
 PASSING_GATE_STATUSES = {"PASS", "PRESERVED"}
 DEFAULT_COMMAND_TIMEOUT_SECONDS = 60.0
 DEFAULT_GIT_LIST_TIMEOUT_SECONDS = 15.0
@@ -334,10 +353,9 @@ def is_generated_root_bootloader(relpath: Path, path: Path | None) -> bool:
 
 
 def is_excluded(relpath: Path, path: Path | None = None) -> bool:
-    if relpath.as_posix() in {
-        REGISTER.as_posix(),
-        PROJECT_CONTEXT.as_posix(),
-    }:
+    if relpath.as_posix() in TES_AGENT_MESH_RELPATHS:
+        return True
+    if len(relpath.parts) >= 3 and relpath.parts[:3] == ("docs", "agents", "DECISIONS"):
         return True
     if is_tes_runtime_relpath(relpath) or is_generated_root_bootloader(relpath, path):
         return True
@@ -1256,6 +1274,10 @@ def target_gates(target: Path) -> list[dict[str, Any]]:
     gates.append(root_context_gate(target))
     gate_cwd = ROOT if PACKAGE_MODE else HELPER_ROOT
     gates.append(run([sys.executable, str(helper_script("field_reports.py")), "status", "--target", str(target)], gate_cwd))
+    for oracle_name in ("project_context_oracle.py", "project_alignment_oracle.py"):
+        oracle = helper_script(oracle_name)
+        if oracle.exists():
+            gates.append(run([sys.executable, str(oracle), "--target", str(target)], gate_cwd))
     cortex_root = cortex.cortex_path(target)
     if (cortex_root / "CONTRACT.md").exists():
         for command in ("verify", "audit", "rebuild", "curate-plan"):
@@ -1275,6 +1297,357 @@ def target_gates(target: Path) -> list[dict[str, Any]]:
     return gates
 
 
+def format_frontmatter(
+    tes_doc: str,
+    evidence_paths: list[str],
+    *,
+    confidence: str = "medium",
+    related: list[str] | None = None,
+) -> str:
+    evidence = "\n".join(f"  - path: {path}" for path in evidence_paths[:5]) or "  - path: docs/agents/PROJECT-CONTEXT.md"
+    tags = f"  - tes\n  - {tes_doc}"
+    related_lines = "\n".join(f"  - \"[[{item}]]\"" for item in (related or []))
+    related_block = f"\nrelated:\n{related_lines}" if related_lines else ""
+    return f"""---
+tes_doc: {tes_doc}
+status: active
+owner: project
+updated: {date_stamp()}
+confidence: {confidence}
+evidence:
+{evidence}
+tags:
+{tags}{related_block}
+---
+
+"""
+
+
+def alignment_anchor_paths(scan: dict[str, Any], target: Path, manifest_rel: str) -> list[str]:
+    context = project_context(scan, target, manifest_rel)
+    anchors = [str(anchor["path"]) for anchor in context["anchors"]]
+    anchors.extend(str(record["path"]) for record in scan["files"][:8])
+    anchors.extend([PROJECT_CONTEXT.as_posix(), REGISTER.as_posix(), manifest_rel])
+    return list(dict.fromkeys(anchor for anchor in anchors if anchor))
+
+
+def first_anchor(anchors: list[str]) -> str:
+    return anchors[0] if anchors else PROJECT_CONTEXT.as_posix()
+
+
+def initial_alignment_texts(
+    target: Path,
+    scan: dict[str, Any],
+    gates: list[dict[str, Any]],
+    manifest_rel: str,
+    stamp: str,
+    *,
+    oracle_status: str,
+) -> dict[Path, str]:
+    context = project_context(scan, target, manifest_rel)
+    anchors = alignment_anchor_paths(scan, target, manifest_rel)
+    primary = first_anchor(anchors)
+    secondary = anchors[1] if len(anchors) > 1 else PROJECT_CONTEXT.as_posix()
+    identity = context["identity"]
+    quality = context["quality_scripts"]
+    required_gate = "python3 .tes/bin/project_context_oracle.py --target ."
+    focused_gate = "python3 .tes/bin/project_alignment_oracle.py --target ."
+    if quality:
+        first_quality_name, first_quality_command = next(iter(quality.items()))
+        advisory_gate = f"{first_quality_name}: {first_quality_command}"
+    else:
+        advisory_gate = f"Open `{primary}` and confirm the project-specific validation path."
+    gate_failures = [gate for gate in gates if not gate_passed(gate)]
+    gate_status = "PASS" if not gate_failures else "NEEDS_REVIEW"
+    anchor_yaml = "\n".join(f"    - {anchor}" for anchor in anchors[:6])
+    alignment_paths = [
+        PROJECT_CONTEXT.as_posix(),
+        PROJECT_STATE.as_posix(),
+        PROJECT_ROADMAP.as_posix(),
+        EXECUTION_LINE.as_posix(),
+        QUALITY_GATES.as_posix(),
+        BOUNDARIES.as_posix(),
+        KNOWLEDGE_LIFECYCLE.as_posix(),
+        GLOSSARY.as_posix(),
+        f"{DECISIONS_DIR.as_posix()}/001-initial-operating-mesh.md",
+    ]
+    created_yaml = "\n".join(f"    - {path}" for path in alignment_paths)
+
+    return {
+        PROJECT_STATE:
+            format_frontmatter(
+                "project-state",
+                [primary, secondary, PROJECT_CONTEXT.as_posix()],
+                related=["PROJECT-CONTEXT", "PROJECT-ROADMAP", "QUALITY-GATES"],
+            )
+            + f"""# Project State
+
+This is the initial `/tes-init` state for `{identity['name']}`. It is a
+starter operating view derived from `{primary}` and
+`{manifest_rel}`.
+
+## Done
+
+- Initial project inventory exists in `docs/agents/PROJECT-REGISTER.md`.
+- Initial project context exists in `docs/agents/PROJECT-CONTEXT.md`.
+- Initial Obsidian-compatible operating mesh links
+  [[PROJECT-CONTEXT]], [[PROJECT-ROADMAP]], and [[QUALITY-GATES]].
+
+## Active
+
+- Refine project meaning with `/tes-align` after reading strong anchors such as
+  `{primary}` and `{secondary}`.
+- Keep unknowns visible until source evidence supports a stronger claim.
+
+## Blocked
+
+- No blocker was certified during initialization.
+- If a local command is unavailable, record it in [[QUALITY-GATES]] before
+  changing implementation.
+
+## Deferred
+
+- Deep architecture decisions remain deferred to `/tes-align` unless already
+  evidenced by project-owned docs.
+
+## Unknown
+
+- Runtime, deployment, and ownership details may need deeper source reads.
+""",
+        PROJECT_ROADMAP:
+            format_frontmatter(
+                "project-roadmap",
+                [primary, manifest_rel, PROJECT_CONTEXT.as_posix()],
+                related=["PROJECT-CONTEXT", "PROJECT-STATE", "EXECUTION-LINE"],
+            )
+            + f"""# Project Roadmap
+
+This roadmap is a first-pass work lane. It prevents future agents from
+rebuilding what `/tes-init` already identified and keeps uncertainty explicit.
+
+## Done
+
+- Project identity and source anchors were captured from `{primary}`.
+- `docs/agents/PROJECT-CONTEXT.md` and `docs/agents/PROJECT-REGISTER.md` were
+  created as initial durable context.
+
+## Active
+
+- Execute `/tes-align` semantics by reading the strongest anchors and refining
+  [[PROJECT-STATE]], [[EXECUTION-LINE]], and [[QUALITY-GATES]].
+
+## Next
+
+- Confirm the smallest safe project gate from `{primary}` or package metadata.
+- Promote stable facts to Cortex only after review.
+
+## Later
+
+- Add project-specific ADRs when architectural decisions become clear.
+
+## Deferred
+
+- Visual Obsidian Canvas or Bases views are optional and must point back to
+  Markdown truth.
+
+## Blocked
+
+- Mark work blocked when secrets, external services, destructive operations, or
+  missing local dependencies prevent proof.
+
+## Unknown
+
+- Any architecture or product claim not supported by `{primary}` or
+  `{manifest_rel}` remains unknown.
+""",
+        EXECUTION_LINE:
+            format_frontmatter(
+                "execution-line",
+                [primary, PROJECT_CONTEXT.as_posix(), manifest_rel],
+                related=["PROJECT-ROADMAP", "QUALITY-GATES", "BOUNDARIES-AND-CONSTRAINTS"],
+            )
+            + f"""# Execution Line
+
+Current lane: use `docs/agents/PROJECT-CONTEXT.md` as the entry map, then open
+`{primary}` before planning material work.
+
+## Reentry
+
+- Read [[PROJECT-CONTEXT]], [[PROJECT-STATE]], and [[PROJECT-ROADMAP]].
+- Check `git status --short --branch`.
+- Confirm the next gate from [[QUALITY-GATES]] before editing.
+
+## Build-Test-Fail-Fix
+
+- State the hypothesis.
+- Run the smallest relevant gate.
+- Classify failure before fixing.
+- Retest the exact failing proof before broader gates.
+
+## Stop Condition
+
+Stop when the work touches secrets, external systems, destructive operations,
+project-owned governance, remotes, tags, releases, or unreviewed generated
+artifacts.
+""",
+        QUALITY_GATES:
+            format_frontmatter(
+                "quality-gates",
+                [primary, PROJECT_CONTEXT.as_posix(), manifest_rel],
+                related=["PROJECT-CONTEXT", "EXECUTION-LINE", "BOUNDARIES-AND-CONSTRAINTS"],
+            )
+            + f"""# Quality Gates
+
+| Gate | Class | Command Or Proof |
+|------|-------|------------------|
+| Project context oracle | required | `{required_gate}` |
+| Project alignment oracle | focused | `{focused_gate}` |
+| Project-specific validation | advisory | `{advisory_gate}` |
+| Missing local toolchain | unavailable | Record the blocker before claiming coverage. |
+| Production or secret-backed action | unsafe | Requires explicit human approval. |
+
+Initialization gate status: `{gate_status}`.
+""",
+        BOUNDARIES:
+            format_frontmatter(
+                "boundaries",
+                [primary, PROJECT_CONTEXT.as_posix(), manifest_rel],
+                related=["PROJECT-CONTEXT", "EXECUTION-LINE", "QUALITY-GATES"],
+            )
+            + f"""# Boundaries And Constraints
+
+- Preserve project-owned governance such as `AGENTS.md`, `CLAUDE.md`, Cursor
+  rules, and existing docs unless the user authorizes a reviewed merge.
+- Do not expose secrets or copy sensitive source content into Field Reports.
+- Do not call external services, publish, push, tag, or create issues without
+  explicit approval.
+- Do not run destructive commands to get a green result.
+- Treat `{primary}` and Git-tracked source as truth; treat generated TES files
+  as context aids.
+""",
+        KNOWLEDGE_LIFECYCLE:
+            format_frontmatter(
+                "knowledge-lifecycle",
+                [primary, PROJECT_CONTEXT.as_posix(), manifest_rel],
+                related=["PROJECT-CONTEXT", "PROJECT-ROADMAP", "GLOSSARY"],
+            )
+            + f"""# Knowledge Lifecycle
+
+- Validate new claims against `{primary}`, `{secondary}`, or another cited
+  project path before promotion.
+- Refresh [[PROJECT-CONTEXT]] and [[PROJECT-STATE]] after architecture,
+  runtime, ownership, or quality-gate changes.
+- Retire superseded roadmap items by moving them to Done, Deferred, or Blocked
+  with evidence instead of deleting history silently.
+- Preserve contradictions until source evidence resolves them.
+""",
+        GLOSSARY:
+            format_frontmatter(
+                "glossary",
+                [primary, PROJECT_CONTEXT.as_posix(), manifest_rel],
+                related=["PROJECT-CONTEXT", "PROJECT-STATE"],
+            )
+            + f"""# Glossary
+
+| Term | Meaning |
+|------|---------|
+| Project anchor | A high-signal path such as `{primary}` used to verify context. |
+| Gate | A command, oracle, or documented proof used to certify a claim. |
+| Operating mesh | The linked `docs/agents/**` layer used by future agents. |
+""",
+        DECISIONS_DIR / "001-initial-operating-mesh.md":
+            format_frontmatter(
+                "decision",
+                [primary, PROJECT_CONTEXT.as_posix(), manifest_rel],
+                confidence="medium",
+                related=["PROJECT-CONTEXT", "PROJECT-ROADMAP", "EXECUTION-LINE"],
+            )
+            + f"""# Decision: Initial Operating Mesh
+
+Use `docs/agents/**` as the portable Markdown operating mesh for this project.
+Obsidian may visualize the mesh, but Markdown and Git remain the source of
+truth.
+
+## Evidence
+
+- `{primary}`
+- `{PROJECT_CONTEXT.as_posix()}`
+- `{manifest_rel}`
+
+## Consequences
+
+- Runtime adapter files stay thin.
+- Future work starts from [[PROJECT-CONTEXT]] and [[EXECUTION-LINE]].
+- Deeper semantic refinement belongs to `/tes-align`.
+""",
+        EVIDENCE_DIR / f"{stamp}-project-alignment.md":
+            f"""# TES Project Alignment Evidence
+
+```yaml
+alignment_evidence:
+  target: {target}
+  tes_version: {VERSION}
+  anchors_read:
+{anchor_yaml}
+  existing_docs_classification:
+    PROJECT-CONTEXT.md: created_or_updated
+    PROJECT-STATE.md: created_if_missing
+    PROJECT-ROADMAP.md: created_if_missing
+    EXECUTION-LINE.md: created_if_missing
+    QUALITY-GATES.md: created_if_missing
+    BOUNDARIES-AND-CONSTRAINTS.md: created_if_missing
+    KNOWLEDGE-LIFECYCLE.md: created_if_missing
+    GLOSSARY.md: created_if_missing
+    DECISIONS/001-initial-operating-mesh.md: created_if_missing
+  created_or_updated:
+{created_yaml}
+  contradictions: []
+  quality_gates_discovered:
+    - {required_gate}
+    - {focused_gate}
+  roadmap_changes:
+    - created initial Done, Active, Next, Later, Deferred, Blocked, and Unknown lanes
+  obsidian_native_checks:
+    frontmatter: PASS
+    wikilinks: PASS
+    dot_obsidian_writes: none
+  oracle_result: {oracle_status}
+  limits: initial deterministic mesh; run /tes-align for deeper semantic refinement
+```
+""",
+    }
+
+
+def ensure_initial_alignment_mesh(
+    target: Path,
+    scan: dict[str, Any],
+    gates: list[dict[str, Any]],
+    manifest_rel: str,
+    stamp: str,
+    *,
+    rewrite_paths: set[str] | None = None,
+    oracle_status: str = "PENDING",
+) -> list[str]:
+    rewritable = rewrite_paths or set()
+    writes: list[str] = []
+    for relpath, text in initial_alignment_texts(
+        target,
+        scan,
+        gates,
+        manifest_rel,
+        stamp,
+        oracle_status=oracle_status,
+    ).items():
+        path = target / relpath
+        relpath_str = relpath.as_posix()
+        if path.exists() and relpath_str not in rewritable:
+            continue
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        writes.append(relpath_str)
+    return writes
+
+
 def write_register(target: Path, scan: dict[str, Any], gates: list[dict[str, Any]], manifest_rel: str) -> str:
     suffix_rows = "\n".join(
         f"| `{suffix}` | {count} |" for suffix, count in sorted(scan["suffixes"].items())
@@ -1287,7 +1660,12 @@ def write_register(target: Path, scan: dict[str, Any], gates: list[dict[str, Any
         f"| `{gate['command']}` | `{gate['status']}` |"
         for gate in gates
     )
-    return f"""# Tilly Project Register
+    return format_frontmatter(
+        "project-register",
+        [manifest_rel, PROJECT_CONTEXT.as_posix()],
+        confidence="medium",
+        related=["PROJECT-CONTEXT", "PROJECT-STATE", "PROJECT-ROADMAP"],
+    ) + f"""# Tilly Project Register
 
 Generated: `{scan['generated_at']}`
 
@@ -1413,8 +1791,15 @@ def write_project_context(target: Path, scan: dict[str, Any], gates: list[dict[s
         f"- For `{row['territory']}`, {row['guidance']}."
         for row in semantic_territories[:8]
     ) or "- Open the strongest source anchors before planning work."
+    evidence_paths = [str(anchor["path"]) for anchor in anchors[:3]]
+    evidence_paths.append(manifest_rel)
 
-    return f"""# Tilly Project Context
+    return format_frontmatter(
+        "project-context",
+        list(dict.fromkeys(evidence_paths)),
+        confidence="medium",
+        related=["PROJECT-REGISTER", "PROJECT-STATE", "PROJECT-ROADMAP", "EXECUTION-LINE"],
+    ) + f"""# Tilly Project Context
 
 Generated: `{scan['generated_at']}`
 
@@ -1592,9 +1977,21 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
         return {"status": "FAIL", "failures": [f"target must be a directory: {target}"], "writes": []}
 
     stamp = file_stamp()
+    alignment_planned = [
+        PROJECT_STATE.as_posix(),
+        PROJECT_ROADMAP.as_posix(),
+        EXECUTION_LINE.as_posix(),
+        QUALITY_GATES.as_posix(),
+        BOUNDARIES.as_posix(),
+        KNOWLEDGE_LIFECYCLE.as_posix(),
+        GLOSSARY.as_posix(),
+        f"{DECISIONS_DIR.as_posix()}/001-initial-operating-mesh.md",
+        f"{EVIDENCE_DIR.as_posix()}/{stamp}-project-alignment.md",
+    ]
     planned_writes = [
         REGISTER.as_posix(),
         PROJECT_CONTEXT.as_posix(),
+        *alignment_planned,
         f"{EVIDENCE_DIR.as_posix()}/{stamp}-tes-initialization.md",
         f"{EVIDENCE_DIR.as_posix()}/{stamp}-tes-project-manifest.json",
         ".tes/bin/field_reports.py",
@@ -1652,12 +2049,37 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
         }
 
     scan = scan_project(target)
-    gates = [*package_gates(), *target_gates(target)]
+    package_gate_results = package_gates()
+    manifest_path.write_text(json.dumps(scan, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (target / REGISTER).write_text(write_register(target, scan, package_gate_results, manifest_rel), encoding="utf-8")
+    (target / PROJECT_CONTEXT).write_text(
+        write_project_context(target, scan, package_gate_results, manifest_rel),
+        encoding="utf-8",
+    )
+    alignment_writes = ensure_initial_alignment_mesh(
+        target,
+        scan,
+        package_gate_results,
+        manifest_rel,
+        stamp,
+        oracle_status="PENDING",
+    )
+
+    gates = [*package_gate_results, *target_gates(target)]
     status = "PASS" if all(gate_passed(gate) for gate in gates) else "NEEDS_REVIEW"
 
     register_text = write_register(target, scan, gates, manifest_rel)
     project_context_text = write_project_context(target, scan, gates, manifest_rel)
     evidence_text = write_evidence(target, scan, gates, planned_writes, manifest_rel)
+    alignment_writes = ensure_initial_alignment_mesh(
+        target,
+        scan,
+        gates,
+        manifest_rel,
+        stamp,
+        rewrite_paths=set(alignment_writes),
+        oracle_status=status,
+    )
 
     manifest_path.write_text(json.dumps(scan, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (target / REGISTER).write_text(register_text, encoding="utf-8")
@@ -1667,6 +2089,7 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
     actual_writes = [
         REGISTER.as_posix(),
         PROJECT_CONTEXT.as_posix(),
+        *alignment_writes,
         rel(evidence_path, target),
         rel(manifest_path, target),
         *[str(item) for item in field_report_result.get("writes", [])],

@@ -15,7 +15,7 @@ the current agent window; scripts and npm aliases are deterministic oracles the
 agent invokes when the runtime exposes local tools.
 
 All adapters share the same preferred user triggers: `/tes-init`,
-`/tes-update`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
+`/tes-update`, `/tes-align`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
 `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench`. Treat
 `/tes:*` forms as compatible TES intent aliases; if a host reports one as an
 invalid slash, continue through the matching `tes-*` skill/rule/spec instead
@@ -29,8 +29,9 @@ Installed target parity can be checked with
 
 | Trigger | User intent | Primary oracles | Writes |
 |---------|-------------|-----------------|--------|
-| `/tes-init` or `/tes:init` | install, update, audit, recertify, and initialize project context for TES in a project | `root_context.py`, `tes_init.py`, `project_context_oracle.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, `docs/agents/PROJECT-CONTEXT.md`, Cortex, runtime bootloaders, project MCP config |
+| `/tes-init` or `/tes:init` | install, update, audit, recertify, initialize project context, and create first-pass project alignment for TES in a project | `root_context.py`, `tes_init.py`, `project_context_oracle.py`, `project_alignment_oracle.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, `docs/agents/PROJECT-CONTEXT.md`, initial operating mesh, Cortex, runtime bootloaders, project MCP config |
 | `/tes-update` or `/tes:update` | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, `tes_legacy_retirement.py`, assisted installer, install smoke, MCP install | only selected TES surfaces after Step Zero and legacy retirement |
+| `/tes-align` or `/tes:align` | semantically align a TES-initialized project into an operating mesh | `project_alignment_oracle.py`, `project_context_oracle.py`, project gates | `docs/agents/PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`, `DECISIONS/**`, evidence |
 | `/tes-cortex` or `/tes:cortex` | inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `cortex.py`, read-only Cortex MCP | Cortex files only when authorized |
 | `/tes-curate` or `/tes:curate` | classify Cortex memory quality risks without writing memory | `cortex.py curate-plan`, read-only `cortex_curate_plan` | no memory writes; CLI may refresh `.tes/cortex/semantic.sqlite` |
 | `/tes-mcp` or `/tes:mcp` | activate or verify read-only Cortex MCP | `install_mcp.py`, `cortex_mcp.py`, MCP smoke | `.tes/bin/**` and project-scoped MCP config |
@@ -44,6 +45,7 @@ Aliases:
 ```text
 tes init  -> /tes-init
 tes update / update TES / Atualizar TES / atualizar TES -> /tes-update
+tes align / align TES / align this project / alinhar TES / alinhar projeto -> /tes-align
 initialize TES / install TES / recertify TES -> /tes-init
 inicializar TES / instalar TES / recertificar TES -> /tes-init
 /tes:recall  -> /tes-cortex recall
@@ -66,6 +68,7 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 | hooks | Git-event gates for validation, no-write Cortex reflection/curation, and Field Reports drain |
 | command-trigger oracle | package gate that checks docs, Codex, Claude, and Cursor share the same trigger vocabulary |
 | project-context oracle | target gate that checks `/tes-init` left a useful, evidenced project map |
+| project-alignment oracle | target gate that checks `/tes-align` left an evidenced operating mesh |
 
 ## `/tes-init` Router Contract
 
@@ -85,14 +88,16 @@ routes internally through two read-only gates before choosing writes:
    and oracle without refreshing helpers, adapters, MCP config, bootloaders, or
    remotes.
 3. **Project-Start Gate**: for `/tes-init`, always run the installed
-   project-context initializer before the final report:
+   project-context initializer before the final report. The initializer also
+   creates the first-pass Obsidian-compatible operating mesh when missing:
    `python3 .tes/bin/tes_init.py --target . --yes` when operating inside an
    installed target, or the package `scripts/tes_init.py --target <target> --yes`
    when certifying from source. A preflight context PASS does not replace
-   project-start execution. After helper-only or adapter repairs, rerun the
-   Project-Start Gate before closing `/tes-init`; `tes_update.py plan` exposes
-   the `project_start_gate` contract so executors cannot treat route planning
-   as context initialization.
+   project-start execution. Certify both `project_context_oracle.py --target
+   <target>` and `project_alignment_oracle.py --target <target>`. After
+   helper-only or adapter repairs, rerun the Project-Start Gate before closing
+   `/tes-init`; `tes_update.py plan` exposes the `project_start_gate` contract
+   so executors cannot treat route planning as context initialization.
 
 This keeps `/tes-init` simple for users: make this project usable by TES. If
 both gates pass, close with certification and recommend `/tes-doctor` only for a

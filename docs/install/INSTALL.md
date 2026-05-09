@@ -163,9 +163,10 @@ When this package is available locally, `tes_init.py` is the project
 initialization and recertification command. It verifies package health, scans
 the target project, writes `docs/agents/PROJECT-REGISTER.md`, writes
 `docs/agents/PROJECT-CONTEXT.md` as the initial project map for future agents,
-stores a full manifest under `docs/agents/evidence/**`, and can be certified
-with `project_context_oracle.py`. Cortex can also be initialized and checked
-directly:
+creates the first-pass Obsidian-compatible operating mesh when missing, stores
+a full manifest under `docs/agents/evidence/**`, and can be certified with
+`project_context_oracle.py` plus `project_alignment_oracle.py`. Cortex can also
+be initialized and checked directly:
 
 The user-facing `/tes-init` intent is a router, not a separate command family.
 It first runs an Install/Update Gate and a Project Context Gate. Installer or
@@ -173,11 +174,13 @@ update writes still require Step Zero protection. If TES is already
 installed/current and only the project context is missing or weak, Step Zero
 protects installer/update writes but must not block project-context
 initialization; the agent reports the dirty tree, avoids helper/adapter/MCP
-changes, runs `tes_init.py`, and certifies `PROJECT-CONTEXT.md`. For
-`/tes-init`, the Project-Start Gate always runs before final reporting: a
-preflight context PASS does not replace project-start execution. After
-helper-only or adapter repairs, run `tes_init.py --target <target> --yes` and
-`project_context_oracle.py --target <target>` again.
+changes, runs `tes_init.py`, and certifies both `PROJECT-CONTEXT.md` and the
+first-pass operating mesh. For `/tes-init`, the Project-Start Gate always runs
+before final reporting: a preflight context PASS does not replace project-start
+execution. After helper-only or adapter repairs, run
+`tes_init.py --target <target> --yes` and both
+`project_context_oracle.py --target <target>` and
+`project_alignment_oracle.py --target <target>` again.
 
 The register and project context are written before slower certification gates
 finish. If a later oracle is blocked or times out, the run closes as
@@ -189,6 +192,8 @@ python3 scripts/tes_init.py --target /path/to/project --yes
 python3 scripts/tes_init.py --self-test
 python3 scripts/project_context_oracle.py --target /path/to/project
 python3 scripts/project_context_oracle.py --self-test
+python3 scripts/project_alignment_oracle.py --target /path/to/project
+python3 scripts/project_alignment_oracle.py --self-test
 python3 scripts/tes_update.py plan --target /path/to/project --json-only
 python3 scripts/tes_update.py plan --target /path/to/project --json-only --record-field-report
 python3 scripts/field_reports.py status --target /path/to/project
@@ -234,8 +239,11 @@ supports them safely; command navigation remains the certified fallback.
 For a new project, the installer creates a minimal `docs/agents/**` mesh and
 thin runtime files for the selected IDE. It also creates
 `docs/agents/PROJECT-CONTEXT.md` from discovered project facts and names
-unknowns explicitly. `project_context_oracle.py` must pass or the installer
-must close as `NEEDS_REVIEW` with a concrete blocker.
+unknowns explicitly, then creates an Obsidian-compatible first-pass operating
+mesh with project state, roadmap, execution line, quality gates, boundaries,
+knowledge lifecycle, glossary, decisions, and evidence.
+`project_context_oracle.py` and `project_alignment_oracle.py` must pass or the
+installer must close as `NEEDS_REVIEW` with a concrete blocker.
 
 For an existing project, the installer migrates durable rules from existing
 agent files and docs into `docs/agents/**`, then turns `AGENTS.md`, `CLAUDE.md`,
@@ -272,6 +280,7 @@ Detected Runtime: Codex | Claude Code | Cursor | uncertain
 Selected Adapters: ...
 Canonical Source: docs/agents/**
 Project Context: docs/agents/PROJECT-CONTEXT.md
+Project Alignment: docs/agents/PROJECT-STATE.md, PROJECT-ROADMAP.md, EXECUTION-LINE.md, QUALITY-GATES.md, BOUNDARIES-AND-CONSTRAINTS.md, KNOWLEDGE-LIFECYCLE.md, GLOSSARY.md, DECISIONS/**
 Cortex: docs/agents/cortex/**
 Navigation Library: ...
 Navigation Renderer: ...
@@ -280,7 +289,7 @@ Source Snapshot: package commit, remote main, freshness
 Changed Surfaces: new surfaces, updated existing mesh files, runtime config
 Rollback Backups: short list or none; .bak-* files are rollback artifacts, not new surfaces
 Root Context Gate: PASS | PRESERVED | NEEDS_REVIEW | SKIP
-Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py, tes_init.py, project_context_oracle.py
+Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py, tes_init.py, project_context_oracle.py, project_alignment_oracle.py
 Field Reports: PASS | BLOCKED | DISABLED | SKIP, with pending outbox count
 Certification: compact PASS/FAIL/SKIP bullets
 Evidence: ...

@@ -1,4 +1,4 @@
-version: 0.3.66
+version: 0.3.67
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -230,6 +230,13 @@ documents:
     class: mesh
     status: active
     consumer: maintainers and adopters
+    source_of_truth: true
+    evidence_level: L1
+  - path: docs/mesh/TES-ALIGN-SKILL-SOURCE-OF-TRUTH.md
+    id: mesh.tes_align_skill_source_of_truth
+    class: mesh
+    status: active
+    consumer: maintainers and `/tes-align` skill authors
     source_of_truth: true
     evidence_level: L1
   - path: docs/mesh/CONTEXT-MESH-CONVERGENCE.md
