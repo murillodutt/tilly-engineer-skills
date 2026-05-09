@@ -36,6 +36,13 @@ documents:
     consumer: adopters
     source_of_truth: true
     evidence_level: L2
+  - path: docs/install/AGENT-MANUAL.md
+    id: install.agent_manual
+    class: adapter
+    status: active
+    consumer: installing agents and runtime adapters
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
     id: install.assisted_context_installer
     class: adapter
