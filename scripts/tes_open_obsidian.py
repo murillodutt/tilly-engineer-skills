@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.69"
+VERSION = "0.3.70"
 
 
 def sha256_file(path: Path) -> str:
@@ -102,28 +102,39 @@ def detect_obsidian() -> dict[str, Any]:
     }
 
 
+def obsidian_vault_root(target: Path) -> Path:
+    return target / "docs/agents"
+
+
 def build_open_action(target: Path, app: dict[str, Any]) -> dict[str, Any]:
-    project_context = target / "docs/agents/PROJECT-CONTEXT.md"
-    context_arg = "path=docs/agents/PROJECT-CONTEXT.md"
+    vault_root = obsidian_vault_root(target)
+    project_context = vault_root / "PROJECT-CONTEXT.md"
+    context_arg = "path=PROJECT-CONTEXT.md"
     if app.get("cli", {}).get("found") and project_context.exists():
         return {
             "command": ["obsidian", "open", context_arg],
-            "cwd": str(target),
-            "method": "obsidian_cli_open_project_context",
+            "cwd": str(vault_root),
+            "method": "obsidian_cli_open_docs_agents_project_context",
             "source": "https://obsidian.md/help/cli",
+            "vault_root": str(vault_root),
+            "vault_root_relative": "docs/agents",
         }
     if app["system"] == "Darwin":
         return {
-            "command": ["open", "-a", "Obsidian", str(target)],
+            "command": ["open", "-a", "Obsidian", str(vault_root)],
             "cwd": None,
-            "method": "macos_open_app_target",
+            "method": "macos_open_docs_agents_vault",
             "source": "macOS open fallback",
+            "vault_root": str(vault_root),
+            "vault_root_relative": "docs/agents",
         }
     return {
         "command": ["obsidian", "open", context_arg],
-        "cwd": str(target),
+        "cwd": str(vault_root),
         "method": "obsidian_cli_expected",
         "source": "https://obsidian.md/help/cli",
+        "vault_root": str(vault_root),
+        "vault_root_relative": "docs/agents",
     }
 
 
@@ -142,10 +153,11 @@ def analyze(target: Path, open_requested: bool, dry_run: bool) -> dict[str, Any]
     target = target.resolve()
     failures: list[str] = []
     warnings: list[str] = []
+    vault_root = obsidian_vault_root(target)
     if not target.exists():
         failures.append(f"target does not exist: {target}")
 
-    docs_agents = target / "docs/agents"
+    docs_agents = vault_root
     if not docs_agents.exists():
         failures.append("missing docs/agents/**; run /tes-init first")
 
@@ -176,6 +188,8 @@ def analyze(target: Path, open_requested: bool, dry_run: bool) -> dict[str, Any]
         "cwd": None,
         "method": None,
         "status": "NOT_REQUESTED",
+        "vault_root": str(vault_root),
+        "vault_root_relative": "docs/agents",
     }
 
     status = "BLOCKED" if failures else "READY"
@@ -183,9 +197,22 @@ def analyze(target: Path, open_requested: bool, dry_run: bool) -> dict[str, Any]
         open_action = build_open_action(target, app)
         command = open_action["command"]
         action.update(open_action)
-        if dry_run:
+        vault_root_ok = True
+        if Path(str(action.get("vault_root"))).resolve() != vault_root.resolve():
+            action["status"] = "WRONG_VAULT_ROOT"
+            status = "BLOCKED"
+            failures.append("open action must target docs/agents as the Obsidian vault root")
+            vault_root_ok = False
+        elif "docs/agents" not in str(action.get("vault_root_relative")):
+            action["status"] = "WRONG_VAULT_ROOT"
+            status = "BLOCKED"
+            failures.append("open action must expose docs/agents vault_root_relative evidence")
+            vault_root_ok = False
+        if dry_run and vault_root_ok:
             action["status"] = "WOULD_OPEN"
             status = "READY"
+        elif not vault_root_ok:
+            pass
         elif not app["found"]:
             action["status"] = "APP_NOT_FOUND"
             status = "BLOCKED"
@@ -215,6 +242,8 @@ def analyze(target: Path, open_requested: bool, dry_run: bool) -> dict[str, Any]
         "version": VERSION,
         "status": status,
         "target": str(target),
+        "vault_root": str(vault_root),
+        "vault_root_relative": "docs/agents",
         "docs_agents": docs_agents.exists(),
         "project_context_status": context.get("status"),
         "project_alignment_status": alignment.get("status"),
@@ -284,8 +313,23 @@ def self_test() -> int:
             failures.append(f"ready fixture must be READY, got {ready_result['status']}")
         if ready_result["action"]["status"] != "WOULD_OPEN":
             failures.append("dry-run open must report WOULD_OPEN")
+        if Path(str(ready_result["action"].get("vault_root"))).resolve() != (ready / "docs/agents").resolve():
+            failures.append("open action must target docs/agents vault root")
+        if "docs/agents" not in " ".join(str(part) for part in ready_result["action"].get("command") or []):
+            failures.append("open command must contain docs/agents")
         if (ready / ".obsidian").exists():
             failures.append("dry-run must not create .obsidian/**")
+        if (ready / "docs/agents/.obsidian").exists():
+            failures.append("dry-run must not create docs/agents/.obsidian/**")
+
+        cli_action = build_open_action(
+            ready,
+            {"system": platform.system(), "found": True, "cli": {"found": True}},
+        )
+        if Path(str(cli_action.get("cwd"))).resolve() != (ready / "docs/agents").resolve():
+            failures.append("CLI open action must use docs/agents as cwd")
+        if "path=PROJECT-CONTEXT.md" not in cli_action.get("command", []):
+            failures.append("CLI open action must target PROJECT-CONTEXT.md from docs/agents vault root")
 
         owned = Path(tempdir) / "owned-obsidian"
         owned.mkdir()

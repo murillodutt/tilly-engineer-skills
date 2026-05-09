@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.69</span>
+          <span class="brand-meta">User manual · v0.3.70</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1299,10 +1299,10 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="obsidian">
           <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
-            <p>Use Obsidian as the visual workbench for the project operating mesh and Cortex, not as the authority layer. The installer never creates or edits <code>.obsidian/**</code>; after <code>/tes-init</code> and <code>/tes-align</code>, <code>/tes-open-obsidian</code> may open the project through the registered Obsidian CLI or a macOS app fallback, while the mesh and Cortex remain plain Markdown.</p>
+            <p>Use Obsidian as the visual workbench for the project operating mesh and Cortex, not as the authority layer. The installer never creates or edits <code>.obsidian/**</code>; after <code>/tes-init</code> and <code>/tes-align</code>, <code>/tes-open-obsidian</code> opens <code>docs/agents/</code> through the registered Obsidian CLI or a macOS app fallback, while the mesh and Cortex remain plain Markdown.</p>
             <ol>
-              <li>Open the project root as the vault when you want to see agent docs, evidence and Cortex together.</li>
-              <li>Open <code>docs/agents/cortex/</code> as the vault when you want a focused memory workspace.</li>
+              <li>Open <code>docs/agents/</code> as the vault when you want to see agent docs, evidence and Cortex together.</li>
+              <li>Open <code>docs/agents/cortex/</code> only when you want a focused memory workspace.</li>
               <li>Set the attachment folder to <code>sources/assets/</code> when saving local images or clipped article assets.</li>
               <li>Keep source citations as repository paths such as <code>sources/article.md</code>; use wikilinks mainly between cells.</li>
               <li>Use Graph View to inspect hubs, isolated cells and relationship density after each meaningful absorb/apply cycle.</li>
@@ -1313,7 +1313,7 @@ npm run cortex:mcp:self-test</code></pre>
               <table>
                 <thead><tr><th>Obsidian setting</th><th>Recommended use</th></tr></thead>
                 <tbody>
-                  <tr><td>Vault root</td><td>Project root for full context, or <code>docs/agents/cortex/</code> for focused memory.</td></tr>
+                  <tr><td>Vault root</td><td><code>docs/agents/</code> for the TES mesh, or <code>docs/agents/cortex/</code> for focused memory.</td></tr>
                   <tr><td>Files and links</td><td>Keep Markdown links readable outside Obsidian; avoid Obsidian-only proof.</td></tr>
                   <tr><td>Attachments</td><td>Use <code>sources/assets/</code> for local images and clipped media.</td></tr>
                   <tr><td>Graph filters</td><td>Focus on <code>cells/</code>, <code>MAP.md</code> and <code>LINKS.md</code>; hide transient or generated files.</td></tr>
@@ -1640,10 +1640,10 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="obsidian-es">
           <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
-            <p>Usa Obsidian como mesa visual de trabajo para la malla operativa del proyecto y Cortex, no como capa de autoridad. El instalador nunca crea ni edita <code>.obsidian/**</code>; después de <code>/tes-init</code> y <code>/tes-align</code>, <code>/tes-open-obsidian</code> puede abrir el proyecto con la CLI registrada de Obsidian o un fallback de app en macOS, mientras la malla y Cortex siguen siendo Markdown común.</p>
+            <p>Usa Obsidian como mesa visual de trabajo para la malla operativa del proyecto y Cortex, no como capa de autoridad. El instalador nunca crea ni edita <code>.obsidian/**</code>; después de <code>/tes-init</code> y <code>/tes-align</code>, <code>/tes-open-obsidian</code> abre <code>docs/agents/</code> con la CLI registrada de Obsidian o un fallback de app en macOS, mientras la malla y Cortex siguen siendo Markdown común.</p>
             <ol>
-              <li>Abre la raíz del proyecto como vault cuando quieras ver docs de agente, evidencia y Cortex juntos.</li>
-              <li>Abre <code>docs/agents/cortex/</code> como vault cuando quieras un espacio de memoria enfocado.</li>
+              <li>Abre <code>docs/agents/</code> como vault cuando quieras ver docs de agente, evidencias y Cortex juntos.</li>
+              <li>Abre <code>docs/agents/cortex/</code> solo cuando quieras un espacio de memoria enfocado.</li>
               <li>Configura la carpeta de adjuntos como <code>sources/assets/</code> para imágenes locales o assets de artículos recortados.</li>
               <li>Mantén las citas de fuentes como paths del repositorio, por ejemplo <code>sources/article.md</code>; usa wikilinks principalmente entre cells.</li>
               <li>Usa Graph View para revisar hubs, cells aisladas y densidad de relaciones después de cada ciclo importante de absorb/apply.</li>
@@ -1654,7 +1654,7 @@ npm run cortex:mcp:self-test</code></pre>
               <table>
                 <thead><tr><th>Ajuste de Obsidian</th><th>Uso recomendado</th></tr></thead>
                 <tbody>
-                  <tr><td>Vault root</td><td>Raíz del proyecto para contexto completo, o <code>docs/agents/cortex/</code> para memoria enfocada.</td></tr>
+                  <tr><td>Vault root</td><td><code>docs/agents/</code> para la malla TES, o <code>docs/agents/cortex/</code> para memoria enfocada.</td></tr>
                   <tr><td>Files and links</td><td>Mantén los links Markdown legibles fuera de Obsidian; evita pruebas solo de Obsidian.</td></tr>
                   <tr><td>Attachments</td><td>Usa <code>sources/assets/</code> para imágenes locales y medios recortados.</td></tr>
                   <tr><td>Graph filters</td><td>Enfoca <code>cells/</code>, <code>MAP.md</code> y <code>LINKS.md</code>; oculta archivos transitorios o generados.</td></tr>
@@ -1981,10 +1981,10 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="obsidian-pt">
           <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
-            <p>Use o Obsidian como bancada visual da malha operacional do projeto e do Cortex, não como camada de autoridade. O instalador nunca cria nem edita <code>.obsidian/**</code>; após <code>/tes-init</code> e <code>/tes-align</code>, <code>/tes-open-obsidian</code> pode abrir o projeto pela CLI registrada do Obsidian ou por fallback do app no macOS, enquanto a malha e o Cortex continuam em Markdown comum.</p>
+            <p>Use o Obsidian como bancada visual da malha operacional do projeto e do Cortex, não como camada de autoridade. O instalador nunca cria nem edita <code>.obsidian/**</code>; após <code>/tes-init</code> e <code>/tes-align</code>, <code>/tes-open-obsidian</code> abre <code>docs/agents/</code> pela CLI registrada do Obsidian ou por fallback do app no macOS, enquanto a malha e o Cortex continuam em Markdown comum.</p>
             <ol>
-              <li>Abra a raiz do projeto como vault quando quiser ver docs de agente, evidências e Cortex juntos.</li>
-              <li>Abra <code>docs/agents/cortex/</code> como vault quando quiser um espaço focado de memória.</li>
+              <li>Abra <code>docs/agents/</code> como vault quando quiser ver docs de agente, evidências e Cortex juntos.</li>
+              <li>Abra <code>docs/agents/cortex/</code> apenas quando quiser um espaço focado de memória.</li>
               <li>Configure a pasta de anexos como <code>sources/assets/</code> para imagens locais ou assets de artigos recortados.</li>
               <li>Mantenha citações de fontes como paths do repositório, por exemplo <code>sources/article.md</code>; use wikilinks principalmente entre cells.</li>
               <li>Use o Graph View para revisar hubs, cells isoladas e densidade de relações depois de cada ciclo relevante de absorb/apply.</li>
@@ -1995,7 +1995,7 @@ npm run cortex:mcp:self-test</code></pre>
               <table>
                 <thead><tr><th>Ajuste do Obsidian</th><th>Uso recomendado</th></tr></thead>
                 <tbody>
-                  <tr><td>Vault root</td><td>Raiz do projeto para contexto completo, ou <code>docs/agents/cortex/</code> para memória focada.</td></tr>
+                  <tr><td>Vault root</td><td><code>docs/agents/</code> para a malha TES, ou <code>docs/agents/cortex/</code> para memória focada.</td></tr>
                   <tr><td>Files and links</td><td>Mantenha links Markdown legíveis fora do Obsidian; evite prova que só existe no Obsidian.</td></tr>
                   <tr><td>Attachments</td><td>Use <code>sources/assets/</code> para imagens locais e mídia recortada.</td></tr>
                   <tr><td>Graph filters</td><td>Foque em <code>cells/</code>, <code>MAP.md</code> e <code>LINKS.md</code>; esconda arquivos transitórios ou gerados.</td></tr>
@@ -2033,7 +2033,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.69</span>
+        <span>Tilly Engineer Skills · v0.3.70</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>
