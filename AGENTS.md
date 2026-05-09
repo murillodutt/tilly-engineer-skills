@@ -44,6 +44,27 @@ gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 
 </diamond_build_test_fail_fix>
 
+<real_project_learning_standard>
+
+Real project executions are learning loops, not one-off support runs. After each
+TES update cycle, use at least one real project canary to expose drift, false
+greens, stale helpers, adapter gaps, and semantic-context gaps.
+
+When a canary reports `NEEDS_REVIEW`, `DEGRADED`, `BLOCKED`, or any meaningful
+drift:
+
+1. Treat the finding as TES product evidence.
+2. Classify the failure before fixing it.
+3. Patch TES source, oracle, docs, adapter, installer, or governance as needed.
+4. Return to `~/Dev/tes-canaries` and certify the fix with a durable run record.
+5. Re-run the original project canary to prove the fix.
+6. Repeat on two additional real projects before making a commercial-use claim.
+
+Do not promote a project-specific workaround into TES. Only promote portable
+learning that survives canary replay and maintainer gates.
+
+</real_project_learning_standard>
+
 <routing>
 
 | Need | Source |

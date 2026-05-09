@@ -183,6 +183,10 @@ execution. After helper-only or adapter repairs, run
 `tes_init.py --target <target> --yes` and both
 `project_context_oracle.py --target <target>` and
 `project_alignment_oracle.py --target <target>` again.
+For old meshed projects with stale helpers, trigger drift, or incomplete
+alignment, report the planner `continuation_plan` instead of a bare
+`NEEDS_REVIEW`; include phases, approvals, write surfaces, commands, and the
+final recorded probe that must return helper/runtime/context/alignment PASS.
 
 The register and project context are written before slower certification gates
 finish. If a later oracle is blocked or times out, the run closes as

@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.68"
+VERSION = "0.3.69"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -127,6 +127,7 @@ POST_LAYER_ZERO_FINAL_PROBE_CONTRACT = (
     "helper_contract_status=PASS",
     "runtime_trigger_status=PASS|NOT_APPLIED",
     "project_context_status=PASS|NOT_APPLIED",
+    "project_alignment_status=PASS|NOT_APPLIED",
     "update_available=False",
     "recommended_update_scope=none",
 )
@@ -136,6 +137,7 @@ PROJECT_START_GATE_CONTRACT = (
     "run_after=helpers-only|adapter-config|project-context|full-convergence",
     "init_command=tes_init.py --target . --yes",
     "oracle_command=project_context_oracle.py --target .",
+    "alignment_oracle_command=project_alignment_oracle.py --target .",
 )
 VERSION_RE = re.compile(
     r"""(?x)
@@ -173,6 +175,15 @@ def rel(path: Path, target: Path) -> str:
         return path.relative_to(target).as_posix()
     except ValueError:
         return path.name
+
+
+def decode_first_json(text: str) -> dict[str, Any]:
+    stripped = text.lstrip()
+    decoder = json.JSONDecoder()
+    data, _ = decoder.raw_decode(stripped)
+    if not isinstance(data, dict):
+        return {}
+    return data
 
 
 def parse_semver(value: str | None) -> tuple[int, int, int] | None:
@@ -424,6 +435,69 @@ def project_context_contract(target: Path, surface_map: dict[str, bool]) -> dict
         "failures": failures,
         "warnings": warnings,
         "path": "docs/agents/PROJECT-CONTEXT.md",
+    }
+
+
+def project_alignment_contract(target: Path, surface_map: dict[str, bool]) -> dict[str, Any]:
+    alignment_paths = (
+        "docs/agents/PROJECT-STATE.md",
+        "docs/agents/PROJECT-ROADMAP.md",
+        "docs/agents/EXECUTION-LINE.md",
+        "docs/agents/QUALITY-GATES.md",
+        "docs/agents/BOUNDARIES-AND-CONSTRAINTS.md",
+        "docs/agents/KNOWLEDGE-LIFECYCLE.md",
+        "docs/agents/GLOSSARY.md",
+    )
+    if not surface_map.get("docs_agents"):
+        return {"status": "NOT_APPLIED", "failures": [], "warnings": [], "paths": []}
+
+    missing = [path for path in alignment_paths if not (target / path).exists()]
+    decisions_dir = target / "docs/agents/DECISIONS"
+    if not decisions_dir.exists():
+        missing.append("docs/agents/DECISIONS/**")
+    if missing:
+        return {
+            "status": "DRIFT",
+            "failures": [f"missing project alignment surface: {path}" for path in missing],
+            "warnings": [],
+            "paths": list(alignment_paths),
+        }
+
+    oracle = ROOT / "scripts/project_alignment_oracle.py"
+    if not oracle.exists():
+        oracle = ROOT / "bin/project_alignment_oracle.py"
+    if not oracle.exists():
+        oracle = target / ".tes/bin/project_alignment_oracle.py"
+    if not oracle.exists():
+        return {
+            "status": "BLOCKED",
+            "failures": ["project_alignment_oracle.py unavailable"],
+            "warnings": [],
+            "paths": list(alignment_paths),
+        }
+    result = subprocess.run(
+        [sys.executable, str(oracle), "--target", str(target)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    try:
+        payload = decode_first_json(result.stdout)
+    except json.JSONDecodeError:
+        return {
+            "status": "BLOCKED",
+            "failures": ["project_alignment_oracle.py returned invalid JSON", *result.stderr.splitlines()],
+            "warnings": [],
+            "paths": list(alignment_paths),
+        }
+    status = "PASS" if result.returncode == 0 and payload.get("status") == "PASS" else "DRIFT"
+    failures = [str(item) for item in payload.get("failures") or []]
+    warnings = [str(item) for item in payload.get("warnings") or []]
+    return {
+        "status": status,
+        "failures": failures,
+        "warnings": warnings,
+        "paths": list(alignment_paths),
     }
 
 
@@ -727,6 +801,7 @@ def recommended_update_scope(
     helper_status: str,
     trigger_status: str,
     project_context_status: str,
+    project_alignment_status: str,
 ) -> str:
     if state == "new":
         return "full-convergence"
@@ -734,7 +809,7 @@ def recommended_update_scope(
         return "helpers-only"
     if trigger_status == "DRIFT":
         return "adapter-config"
-    if project_context_status in {"DRIFT", "BLOCKED"}:
+    if project_context_status in {"DRIFT", "BLOCKED"} or project_alignment_status in {"DRIFT", "BLOCKED"}:
         return "project-context"
     if update_available:
         return "full-convergence"
@@ -758,6 +833,7 @@ def post_layer_zero_final_probe(result: dict[str, Any]) -> dict[str, Any]:
         result.get("helper_contract_status") == "PASS"
         and result.get("runtime_trigger_status") in {"PASS", "NOT_APPLIED"}
         and result.get("project_context_status") in {"PASS", "NOT_APPLIED"}
+        and result.get("project_alignment_status") in {"PASS", "NOT_APPLIED"}
         and result.get("update_available") is False
         and result.get("recommended_update_scope") == "none"
     )
@@ -773,11 +849,20 @@ def post_layer_zero_final_probe(result: dict[str, Any]) -> dict[str, Any]:
 def project_start_gate(target: Path) -> dict[str, Any]:
     installed_init = target / ".tes/bin/tes_init.py"
     installed_oracle = target / ".tes/bin/project_context_oracle.py"
-    has_installed_helpers = installed_init.exists() and installed_oracle.exists()
+    installed_alignment_oracle = target / ".tes/bin/project_alignment_oracle.py"
+    installed_open_gate = target / ".tes/bin/tes_open_obsidian.py"
+    has_installed_helpers = (
+        installed_init.exists()
+        and installed_oracle.exists()
+        and installed_alignment_oracle.exists()
+        and installed_open_gate.exists()
+    )
     installed_commands = (
         [
             "python3 .tes/bin/tes_init.py --target . --yes",
             "python3 .tes/bin/project_context_oracle.py --target .",
+            "python3 .tes/bin/project_alignment_oracle.py --target .",
+            "python3 .tes/bin/tes_open_obsidian.py --target . --dry-run --open",
         ]
         if has_installed_helpers
         else []
@@ -797,8 +882,107 @@ def project_start_gate(target: Path) -> dict[str, Any]:
         "source_certification_commands": [
             "python3 scripts/tes_init.py --target <target> --yes",
             "python3 scripts/project_context_oracle.py --target <target>",
+            "python3 scripts/project_alignment_oracle.py --target <target>",
+            "python3 scripts/tes_open_obsidian.py --target <target> --dry-run --open",
         ],
         "contract": list(PROJECT_START_GATE_CONTRACT),
+    }
+
+
+def continuation_plan(
+    target: Path,
+    route: str,
+    update_scope: str,
+    helper_status: str,
+    trigger_status: str,
+    context_status: str,
+    alignment_status: str,
+    legacy_retirement_required: bool,
+) -> dict[str, Any]:
+    helper_required = helper_status == "STALE_HELPERS"
+    adapter_required = trigger_status == "DRIFT" or update_scope in {"adapter-config", "full-convergence"}
+    context_required = context_status in {"DRIFT", "BLOCKED"} or alignment_status in {"DRIFT", "BLOCKED"}
+    legacy_required = bool(legacy_retirement_required)
+    final_required = update_scope != "none" or helper_required or adapter_required or context_required or legacy_required
+    phases = [
+        {
+            "name": "step_zero",
+            "required": final_required,
+            "approval_required": False,
+            "writes": [],
+            "commands": ["git status --short --branch"],
+            "goal": "capture baseline and decide whether installer/update writes need approval",
+        },
+        {
+            "name": "layer_zero_helpers",
+            "required": helper_required,
+            "approval_required": helper_required,
+            "writes": [".tes/bin/**"] if helper_required else [],
+            "commands": [
+                f"python3 <tes-package>/scripts/install_mcp.py --target {target} --adapter {route} --dry-run --overwrite --helpers-only --json-only",
+                f"python3 <tes-package>/scripts/install_mcp.py --target {target} --adapter {route} --overwrite --helpers-only --yes",
+                "python3 .tes/bin/tes_update.py plan --target . --json-only",
+            ],
+            "goal": "refresh only TES-owned helpers with backups and require helper_contract_status=PASS",
+        },
+        {
+            "name": "adapter_runtime_refresh",
+            "required": adapter_required,
+            "approval_required": adapter_required,
+            "writes": [
+                ".agents/skills/**",
+                ".claude/skills/**",
+                "skills/**",
+                ".claude-plugin/**",
+                ".cursor/rules/**",
+                "CURSOR.md",
+            ] if adapter_required else [],
+            "commands": [
+                f"python3 <tes-package>/scripts/install_adapter.py --target {target} --adapter {route} --dry-run --overwrite",
+                f"python3 <tes-package>/scripts/install_adapter.py --target {target} --adapter {route} --overwrite --yes",
+            ],
+            "goal": "restore TES-owned runtime triggers while preserving project-owned governance",
+        },
+        {
+            "name": "project_start_alignment",
+            "required": context_required or helper_required or adapter_required,
+            "approval_required": False,
+            "writes": ["docs/agents/**"],
+            "commands": [
+                "python3 .tes/bin/tes_init.py --target . --yes",
+                "python3 .tes/bin/project_context_oracle.py --target .",
+                "python3 .tes/bin/project_alignment_oracle.py --target .",
+            ],
+            "goal": "create or refresh PROJECT-CONTEXT plus the operating alignment mesh",
+        },
+        {
+            "name": "obsidian_open_preflight",
+            "required": context_required or helper_required or adapter_required,
+            "approval_required": False,
+            "writes": [],
+            "commands": ["python3 .tes/bin/tes_open_obsidian.py --target . --dry-run --open"],
+            "goal": "prove the project is ready for optional Obsidian visualization without writing .obsidian/**",
+        },
+        {
+            "name": "final_recorded_probe",
+            "required": final_required,
+            "approval_required": False,
+            "writes": [".tes/field-reports/outbox.jsonl"],
+            "commands": ["python3 .tes/bin/tes_update.py plan --target . --json-only --record-field-report"],
+            "goal": "require helper PASS, runtime trigger PASS, context PASS, alignment PASS, update_available=false, scope=none",
+        },
+    ]
+    return {
+        "status": "PENDING_APPROVAL" if any(phase["required"] and phase["approval_required"] for phase in phases) else ("READY" if final_required else "NONE"),
+        "report_status_if_not_authorized": "NEEDS_REVIEW" if final_required else "GO",
+        "approval_required": any(phase["required"] and phase["approval_required"] for phase in phases),
+        "migration_class": "old_meshed_project_convergence" if final_required else "current",
+        "summary": (
+            "Old meshed project migration requires approval-gated continuation."
+            if final_required
+            else "No continuation required."
+        ),
+        "phases": phases,
     }
 
 
@@ -823,8 +1007,10 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
     helper_stale = helper["status"] == "STALE_HELPERS"
     trigger_drift = triggers["status"] == "DRIFT"
     context = project_context_contract(target, surface_map)
+    alignment = project_alignment_contract(target, surface_map)
     context_drift = context["status"] in {"DRIFT", "BLOCKED"}
-    update_available = True if (cmp_result is not None and cmp_result < 0) or helper_stale or trigger_drift or context_drift else False
+    alignment_drift = alignment["status"] in {"DRIFT", "BLOCKED"}
+    update_available = True if (cmp_result is not None and cmp_result < 0) or helper_stale or trigger_drift or context_drift or alignment_drift else False
     update_reasons: list[str] = []
     if cmp_result is not None and cmp_result < 0:
         update_reasons.append("installed_version_behind")
@@ -836,6 +1022,10 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         update_reasons.append("project_context_drift")
     if context["status"] == "BLOCKED":
         update_reasons.append("project_context_blocked")
+    if alignment["status"] == "DRIFT":
+        update_reasons.append("project_alignment_drift")
+    if alignment["status"] == "BLOCKED":
+        update_reasons.append("project_alignment_blocked")
     if helper["status"] == "BLOCKED":
         update_reasons.append("helper_contract_blocked")
     update_status = (
@@ -846,9 +1036,10 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         and helper["status"] in {"PASS", "NOT_INSTALLED"}
         and triggers["status"] in {"PASS", "NOT_APPLIED"}
         and context["status"] in {"PASS", "NOT_APPLIED"}
+        and alignment["status"] in {"PASS", "NOT_APPLIED"}
         else "UNKNOWN"
     )
-    update_scope = recommended_update_scope(state, update_available, helper["status"], triggers["status"], context["status"])
+    update_scope = recommended_update_scope(state, update_available, helper["status"], triggers["status"], context["status"], alignment["status"])
     intent = recommended_intent(state, update_status, route, update_scope)
 
     result: dict[str, Any] = {
@@ -879,6 +1070,10 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "project_context_path": context["path"],
         "project_context_failures": context["failures"],
         "project_context_warnings": context["warnings"],
+        "project_alignment_status": alignment["status"],
+        "project_alignment_paths": alignment["paths"],
+        "project_alignment_failures": alignment["failures"],
+        "project_alignment_warnings": alignment["warnings"],
         "adapter_refresh_required": update_scope in {"adapter-config", "full-convergence"},
         "next_probe_required": update_scope != "none",
         "helper_contract_status": helper["status"],
@@ -896,6 +1091,16 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "writes": [],
         "failures": [],
     }
+    result["continuation_plan"] = continuation_plan(
+        target,
+        route,
+        update_scope,
+        helper["status"],
+        triggers["status"],
+        context["status"],
+        alignment["status"],
+        bool(legacy.get("legacy_retirement_required")),
+    )
     result["post_layer_zero_final_probe"] = post_layer_zero_final_probe(result)
     return result
 
@@ -968,7 +1173,7 @@ def write_context_fixture(target: Path) -> None:
 | Field | Value |
 |-------|-------|
 | Name | `{target.name}` |
-| Description | `Update fixture context.` |
+| Description | `Update Fixture context.` |
 | Manifest | `docs/agents/evidence/fixture-tes-project-manifest.json` |
 
 ## Initial Semantic Signals
@@ -1025,6 +1230,8 @@ def write_context_fixture(target: Path) -> None:
 
 | Path | Kind | Bytes |
 |---|---|---|
+| README.md | .md | 10 |
+| package.json | .json | 10 |
 | AGENTS.md | .md | 10 |
 | .agents/skills/tes-init/SKILL.md | .md | 10 |
 
@@ -1038,14 +1245,20 @@ def write_context_fixture(target: Path) -> None:
 
 | Script | Command |
 |---|---|
+| test | `node test.js` |
+| lint | `eslint .` |
 
 ## Quality And Certification Scripts
 
 | Script | Command |
 |---|---|
+| test | `node test.js` |
+| lint | `eslint .` |
 
 ## Recommended Deep Reads
 
+- `README.md`
+- `package.json`
 - `AGENTS.md`
 - `.agents/skills/tes-init/SKILL.md`
 
@@ -1065,6 +1278,121 @@ Update this file when project meaning changes.
     )
 
 
+def alignment_frontmatter(tes_doc: str) -> str:
+    return f"""---
+tes_doc: {tes_doc}
+status: active
+owner: project
+updated: 2026-05-09
+confidence: medium
+evidence:
+  - path: README.md
+  - path: package.json
+tags:
+  - tes
+  - {tes_doc}
+related:
+  - "[[PROJECT-CONTEXT]]"
+---
+
+"""
+
+
+def write_alignment_fixture(target: Path) -> None:
+    write(target / "README.md", "# Update Fixture\n")
+    write(target / "package.json", '{"scripts":{"test":"node test.js","lint":"eslint ."}}\n')
+    write_context_fixture(target)
+    context_path = target / "docs/agents/PROJECT-CONTEXT.md"
+    context_text = read_text(context_path)
+    write(
+        context_path,
+        alignment_frontmatter("project-context")
+        + context_text
+        + "Related: [[PROJECT-STATE]], [[PROJECT-ROADMAP]], [[QUALITY-GATES]].\n",
+    )
+    write(
+        target / "docs/agents/PROJECT-STATE.md",
+        alignment_frontmatter("project-state")
+        + "# Project State\n\nDone: package scaffold in `package.json`.\n"
+        + "Active: TES fixture update. Blocked: no remote release. Unknown: external deployment.\n",
+    )
+    write(
+        target / "docs/agents/PROJECT-ROADMAP.md",
+        alignment_frontmatter("project-roadmap")
+        + "# Project Roadmap\n\n"
+        + "## Done\n- Existing TES fixture in `README.md`.\n"
+        + "## Active\n- Validate migration gates from `package.json`.\n"
+        + "## Next\n- Re-run adapter proof.\n"
+        + "## Later\n- Add commercial canaries.\n"
+        + "## Deferred\n- Marketplace proof.\n"
+        + "## Blocked\n- External deployment target.\n"
+        + "## Unknown\n- Runtime support matrix.\n",
+    )
+    write(
+        target / "docs/agents/EXECUTION-LINE.md",
+        alignment_frontmatter("execution-line")
+        + "# Execution Line\n\nRead `README.md` first. Use Build-Test-Fail-Fix. Reentry packet includes target and baseline.\n"
+        + "Gate: `npm test`.\n\n## Stop Condition\nStop on secret, destructive, or remote mutation risk.\n",
+    )
+    write(
+        target / "docs/agents/QUALITY-GATES.md",
+        alignment_frontmatter("quality-gates")
+        + "# Quality Gates\n\n| Gate | Class | Command |\n|------|-------|---------|\n"
+        + "| Unit test | required | `npm test` |\n"
+        + "| Lint | focused | `npm run lint` |\n"
+        + "| Coverage | advisory | `npm run coverage` |\n"
+        + "| Typecheck | unavailable | No TypeScript config in `package.json` |\n"
+        + "| Deploy | unsafe | Requires external credentials |\n",
+    )
+    write(
+        target / "docs/agents/BOUNDARIES-AND-CONSTRAINTS.md",
+        alignment_frontmatter("boundaries")
+        + "# Boundaries And Constraints\n\nProtect `AGENTS.md` governance. Do not touch secrets, external services, destructive commands, or remotes.\n",
+    )
+    write(
+        target / "docs/agents/KNOWLEDGE-LIFECYCLE.md",
+        alignment_frontmatter("knowledge-lifecycle")
+        + "# Knowledge Lifecycle\n\nValidate claims against `README.md`. Refresh stale claims, retire superseded facts, and preserve contradictions until resolved.\n",
+    )
+    write(
+        target / "docs/agents/GLOSSARY.md",
+        alignment_frontmatter("glossary")
+        + "# Glossary\n\n| Term | Meaning |\n|------|---------|\n"
+        + "| Fixture | The project described by `README.md`. |\n"
+        + "| Gate | A command such as `npm test`. |\n",
+    )
+    write(
+        target / "docs/agents/DECISIONS/001-alignment-mesh.md",
+        alignment_frontmatter("decision")
+        + "# Decision: Alignment Mesh\n\nUse `docs/agents/**` as the project operating mesh.\n",
+    )
+    write(
+        target / "docs/agents/evidence/20260509T000000Z-project-alignment.md",
+        "# Project Alignment Evidence\n\n"
+        + "```yaml\nalignment_evidence:\n"
+        + "  target: fixture\n"
+        + f"  tes_version: {VERSION}\n"
+        + "  anchors_read:\n"
+        + "    - README.md\n"
+        + "    - package.json\n"
+        + "    - .agents/skills/tes-init/SKILL.md\n"
+        + "  existing_docs_classification:\n"
+        + "    PROJECT-ROADMAP.md: created\n"
+        + "  created_or_updated:\n"
+        + "    - docs/agents/PROJECT-ROADMAP.md\n"
+        + "  contradictions: []\n"
+        + "  quality_gates_discovered:\n"
+        + "    - npm test\n"
+        + "  roadmap_changes:\n"
+        + "    - created initial lanes\n"
+        + "  obsidian_native_checks:\n"
+        + "    wikilinks: PASS\n"
+        + "    dot_obsidian_writes: none\n"
+        + "  oracle_result: PASS\n"
+        + "  limits: fixture\n```\n",
+    )
+
+
 def assert_project_start_gate(result: dict[str, Any], failures: list[str], label: str) -> None:
     gate = result.get("project_start_gate") or {}
     if gate.get("name") != "Project-Start Gate":
@@ -1081,6 +1409,8 @@ def assert_project_start_gate(result: dict[str, Any], failures: list[str], label
         failures.append(f"{label}: Project-Start Gate must include tes_init.py command")
     if "project_context_oracle.py --target" not in joined:
         failures.append(f"{label}: Project-Start Gate must include project_context_oracle.py command")
+    if "project_alignment_oracle.py --target" not in joined:
+        failures.append(f"{label}: Project-Start Gate must include project_alignment_oracle.py command")
 
 
 def self_test() -> dict[str, Any]:
@@ -1133,7 +1463,9 @@ def self_test() -> dict[str, Any]:
         write(target / ".tes/bin/tes_update.py", f'VERSION = "{VERSION}"\n')
         write(target / ".tes/bin/tes_init.py", helper_source_text("tes_init.py"))
         write(target / ".tes/bin/project_context_oracle.py", helper_source_text("project_context_oracle.py"))
-        write_context_fixture(target)
+        write(target / ".tes/bin/project_alignment_oracle.py", helper_source_text("project_alignment_oracle.py"))
+        write(target / ".tes/bin/tes_open_obsidian.py", helper_source_text("tes_open_obsidian.py"))
+        write_alignment_fixture(target)
         args = argparse.Namespace(
             target=target,
             remote_version=VERSION,
@@ -1152,6 +1484,10 @@ def self_test() -> dict[str, Any]:
             failures.append("single Codex fixture must recommend codex")
         if result["recommended_update_scope"] != "none":
             failures.append("current fixture must recommend no update scope")
+        if result["project_alignment_status"] != "PASS":
+            failures.append("current fixture must pass project alignment contract")
+        if (result.get("continuation_plan") or {}).get("status") != "NONE":
+            failures.append("current fixture must not require a continuation plan")
         final_probe = result.get("post_layer_zero_final_probe") or {}
         if final_probe.get("status") != "READY":
             failures.append("current fixture must be ready for post-Layer Zero final recorded probe")
@@ -1192,6 +1528,16 @@ def self_test() -> dict[str, Any]:
             failures.append("stale helper update must recommend helpers-only scope")
         if result["recommended_intent"] != "/tes-update codex --helpers-only":
             failures.append("stale helper update must recommend helpers-only intent")
+        stale_plan = result.get("continuation_plan") or {}
+        if stale_plan.get("status") != "PENDING_APPROVAL":
+            failures.append("stale helper update must expose approval-gated continuation plan")
+        stale_phases = {
+            phase.get("name")
+            for phase in stale_plan.get("phases", [])
+            if phase.get("required")
+        }
+        if "layer_zero_helpers" not in stale_phases:
+            failures.append("stale helper continuation plan must require Layer Zero helpers")
         assert_project_start_gate(result, failures, "stale helper fixture")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-trigger-drift-") as tempdir:
@@ -1224,7 +1570,65 @@ def self_test() -> dict[str, Any]:
             failures.append("runtime trigger drift must require adapter refresh")
         if (result.get("post_layer_zero_final_probe") or {}).get("status") != "PENDING":
             failures.append("runtime trigger drift must block final probe readiness")
+        drift_plan = result.get("continuation_plan") or {}
+        drift_phases = {
+            phase.get("name")
+            for phase in drift_plan.get("phases", [])
+            if phase.get("required")
+        }
+        if "adapter_runtime_refresh" not in drift_phases:
+            failures.append("runtime trigger drift continuation plan must require adapter runtime refresh")
         assert_project_start_gate(result, failures, "trigger drift fixture")
+
+    with tempfile.TemporaryDirectory(prefix="tes-update-old-meshed-") as tempdir:
+        target = Path(tempdir)
+        write(target / "docs/agents/PROJECT-REGISTER.md", "Generated by Tilly\n")
+        write(target / "AGENTS.md", "Route to docs/agents/**\n")
+        write(target / ".agents/skills/tes-init/SKILL.md", "Route to /tes-init\n")
+        write(target / ".agents/skills/tes-engineering-discipline/SKILL.md", "Tilly discipline\n")
+        write(target / ".tes/bin/tes_update.py", 'VERSION = "0.3.48"\n')
+        write_context_fixture(target)
+        args = argparse.Namespace(
+            target=target,
+            remote_version=VERSION,
+            remote_commit="a" * 40,
+            remote_helper_manifest=None,
+            local_package_helpers=True,
+            runtime="codex",
+            offline=False,
+            timeout=0.1,
+        )
+        result = analyze(args)
+        if result["project_state"] != "meshed":
+            failures.append("old meshed fixture must be detected as meshed")
+        if result["helper_contract_status"] != "STALE_HELPERS":
+            failures.append("old meshed fixture must expose stale helpers")
+        if result["runtime_trigger_status"] != "DRIFT":
+            failures.append("old meshed fixture must expose runtime trigger drift")
+        if result["project_context_status"] != "PASS":
+            failures.append("old meshed fixture must preserve passing project context")
+        if result["project_alignment_status"] != "DRIFT":
+            failures.append("old meshed fixture must expose missing alignment mesh")
+        if result["recommended_update_scope"] != "helpers-only":
+            failures.append("old meshed fixture must keep helpers-only as first safe scope")
+        plan = result.get("continuation_plan") or {}
+        if plan.get("status") != "PENDING_APPROVAL":
+            failures.append("old meshed fixture must expose approval-gated continuation plan")
+        required_phases = {
+            phase.get("name")
+            for phase in plan.get("phases", [])
+            if phase.get("required")
+        }
+        for phase_name in (
+            "layer_zero_helpers",
+            "adapter_runtime_refresh",
+            "project_start_alignment",
+            "obsidian_open_preflight",
+            "final_recorded_probe",
+        ):
+            if phase_name not in required_phases:
+                failures.append(f"old meshed continuation plan must require {phase_name}")
+        assert_project_start_gate(result, failures, "old meshed fixture")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-new-") as tempdir:
         target = Path(tempdir)
@@ -1254,7 +1658,11 @@ def self_test() -> dict[str, Any]:
         write(target / ".agents/skills/tes-engineering-discipline/SKILL.md", trigger_fixture_text())
         write(target / ".tes/bin/tes_update.py", helper_source_text("tes_update.py"))
         write(target / ".tes/bin/field_reports.py", helper_source_text("field_reports.py"))
-        write_context_fixture(target)
+        write(target / ".tes/bin/tes_init.py", helper_source_text("tes_init.py"))
+        write(target / ".tes/bin/project_context_oracle.py", helper_source_text("project_context_oracle.py"))
+        write(target / ".tes/bin/project_alignment_oracle.py", helper_source_text("project_alignment_oracle.py"))
+        write(target / ".tes/bin/tes_open_obsidian.py", helper_source_text("tes_open_obsidian.py"))
+        write_alignment_fixture(target)
         args = argparse.Namespace(
             target=target,
             remote_version=VERSION,

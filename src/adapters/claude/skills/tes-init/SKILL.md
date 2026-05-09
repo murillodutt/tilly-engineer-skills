@@ -71,6 +71,10 @@ the user for package contents.
    overwrite, record the final probe before GO, commit, or push; it must show
    `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or
    `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`.
+   If the planner returns `continuation_plan.status=PENDING_APPROVAL`, stop with
+   `NEEDS_REVIEW` and include the plan's required phases, approvals, write
+   surfaces, commands, and final recorded probe. Do not leave an old meshed
+   project with a bare blocker that the next agent cannot resume.
 6. Before rewriting root bootloaders, run `root_context.py analyze` when
    available and migrate durable root context into `docs/agents/**` first.
 7. When `legacy_retirement_required=true`, run `tes_legacy_retirement.py plan`,
