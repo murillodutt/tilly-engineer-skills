@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.9.3
+tver: 0.9.4
 ---
 
 # Adapter Installation
@@ -20,6 +20,9 @@ open:
 ```text
 docs/install/USER-MANUAL.html
 ```
+
+For the agent-side contract behind runtime commands, gates, schemas, and
+closure vocabulary, open `docs/install/AGENT-MANUAL.md`.
 
 The script installer remains as a maintainer tool for materialization smoke
 tests and mechanical copying. It is not the recommended path for projects that

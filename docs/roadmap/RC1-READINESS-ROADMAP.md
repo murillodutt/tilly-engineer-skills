@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, release reviewers, and documentation operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # RC1 Readiness Roadmap
@@ -36,7 +36,11 @@ Acceptance:
 - `docs/roadmap/**` has an active index and current RC1 line.
 - Historical roadmap documents are explicitly marked as lineage.
 - `docs/INDEX.md` routes readers to current roadmap authority.
+- `README.md`, `docs/INDEX.md`, and `docs/install/INSTALL.md` route humans to
+  both the user manual and the agent manual.
 - `docs/tds/DOCS-INDEX.yml` includes every governed Markdown document.
+- Rendered HTML entrypoints are treated as public surfaces, not TDS Markdown
+  records, and are linked from the human-facing maps.
 - Public docs do not claim tag, release, marketplace, publish, live GitHub
   issue creation, vector certification, write-capable MCP, or global install.
 
@@ -70,6 +74,9 @@ Acceptance:
 Acceptance:
 
 - `docs/index.html` is a GitHub Pages-ready landing page.
+- The live landing at `https://murillodutt.github.io/tilly-engineer-skills/`
+  exposes the current package version, install prompt, user manual, agent
+  manual, certified/partial/deferred boundaries, and RC1 status.
 - The landing page links to install, docs, roadmap, evidence, and safety
   boundaries.
 - The page distinguishes certified, partial, deferred, and not-taken release
