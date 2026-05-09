@@ -994,9 +994,9 @@
             <li><a href="#routes" data-nav="routes"><span class="toc-num">02</span><span class="toc-text">Routes</span></a></li>
             <li><a href="#states" data-nav="states"><span class="toc-num">03</span><span class="toc-text">Project states</span></a></li>
             <li><a href="#cortex" data-nav="cortex"><span class="toc-num">04</span><span class="toc-text">Cortex</span></a></li>
-            <li><a href="#cli" data-nav="cli"><span class="toc-num">05</span><span class="toc-text">CLI</span></a></li>
+            <li><a href="#cli" data-nav="cli"><span class="toc-num">05</span><span class="toc-text">What the agent runs</span></a></li>
             <li><a href="#mcp" data-nav="mcp"><span class="toc-num">06</span><span class="toc-text">MCP</span></a></li>
-            <li><a href="#field-reports" data-nav="fieldReports"><span class="toc-num">07</span><span class="toc-text">Field Reports</span></a></li>
+            <li><a href="#field-reports" data-nav="field-reports"><span class="toc-num">07</span><span class="toc-text">Field Reports</span></a></li>
             <li><a href="#obsidian" data-nav="obsidian"><span class="toc-num">08</span><span class="toc-text">Obsidian</span></a></li>
             <li><a href="#report" data-nav="report"><span class="toc-num">09</span><span class="toc-text">Final report</span></a></li>
             <li><a href="#rollback" data-nav="rollback"><span class="toc-num">10</span><span class="toc-text">Rollback</span></a></li>
@@ -1021,23 +1021,18 @@
         <section class="chapter" id="overview">
           <div class="chapter-head"><span class="chapter-num">00</span><h2>Overview</h2></div>
           <div class="chapter-body">
-            <p class="lede">Tilly installs a governance mesh for coding agents. Codex, Claude Code and Cursor route to the same durable project source: <code>docs/agents/**</code>. Bootloaders stay thin. Real governance lives in versioned Markdown.</p>
+            <p class="lede">Tilly installs a governance mesh for coding agents. Codex, Claude Code and Cursor route to the same durable project source: <code>docs/agents/**</code>. Real governance lives in versioned Markdown.</p>
             <div class="panel">
-              <span class="panel-tag">Note</span>
-              <p>Files such as <code>AGENTS.md</code>, <code>CLAUDE.md</code> and Cursor rules should stay thin bootloaders. Real governance lives in <code>docs/agents/**</code>.</p>
+              <span class="panel-tag">How you use it</span>
+              <p>The normal user interface is an intent typed in the agent window — not a shell command. Type <code>/tes-init</code> to install or <code>/tes-update</code> to update; the active agent selects and runs the smallest safe oracle.</p>
             </div>
             <div class="panel">
-              <span class="panel-tag">Execution model</span>
-              <p>The executor is the active coding agent inside the current IDE or runtime window. Skills, rules and bootloaders route behavior; Python scripts and <code>npm run ...</code> entries are deterministic oracles the agent invokes when local tool access exists; hooks are Git-event gates for validation and no-write Cortex reflection/curation; MCP is a read-only Cortex access surface. If a runtime cannot execute an oracle, the agent must report it as blocked or skipped instead of claiming certification.</p>
-            </div>
-            <div class="panel"><span class="panel-tag">Layer split</span><p>Installer scripts stage a versioned bundle in <code>.tes/setup/&lt;version&gt;/</code> and refresh manifest-known TES-owned helpers and runtime capabilities. The LLM layer handles project understanding and semantic governance review. Project-owned <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> and Cursor rules may remain preserved while <code>/tes-align</code> and <code>/tes-open-obsidian</code> become active through safe runtime surfaces.</p></div>
-            <div class="panel">
-              <span class="panel-tag">Git safety</span>
-              <p>Tilly protects local rollback and cache artifacts with <code>.git/info/exclude</code>: <code>.tes/bin/*.bak-*</code>, Python bytecode, Field Reports state, and Cortex SQLite caches stay out of normal staging. Tilly does not ignore <code>.tes/bin/*.py</code>, because those helpers are the installed runtime surface.</p>
+              <span class="panel-tag">What stays yours</span>
+              <p>Project-owned <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> and Cursor rules stay preserved when they exist. Tilly retrofits, never overwrites.</p>
             </div>
             <div class="panel">
-              <span class="panel-tag">Gatillos de comando</span>
-              <p>The normal user interface is a Tilly intent typed in the agent window, not a shell command. Use <code>/tes-init</code> for first setup and <code>/tes-update</code> for an already meshed project across Codex, Claude Code and Cursor; <code>/tes:init</code> and <code>/tes:update</code> remain compatible aliases, and invalid <code>/tes:*</code> slash text still means TES intent. The active agent then selects and runs the smallest safe oracle. The shell commands in this manual are exposed so users can audit what the agent may invoke.</p>
+              <span class="panel-tag">Operator contract</span>
+              <p>This manual is for humans installing, auditing and rolling back Tilly. The agent-side contract — triggers, oracles, gates, return states, schemas — lives in <a href="AGENT-MANUAL.md"><code>docs/install/AGENT-MANUAL.md</code></a>.</p>
             </div>
           </div>
         </section>
@@ -1047,9 +1042,9 @@
           <div class="chapter-body">
             <ol>
               <li>Open the target project in Codex, Claude Code or Cursor.</li>
-              <li>Type <code>/tes-init</code> for first setup or <code>/tes-update</code> for an existing TES mesh. The colon forms <code>/tes:init</code> and <code>/tes:update</code> are compatibility aliases when accepted or typed as intent text. Otherwise paste the installer prompt from the README or <code>docs/install/MINI-PROMPT.md</code>.</li>
-              <li>Let the installer run Step Zero before any edit.</li>
-              <li>Choose a route: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code> or <code>audit</code>.</li>
+              <li>Type <code>/tes-init</code> in the agent window for first setup, or <code>/tes-update</code> if Tilly is already installed. If your runtime does not interpret the trigger, paste the installer prompt from the README or <code>docs/install/MINI-PROMPT.md</code>.</li>
+              <li>Let Step Zero finish before approving any edit. Step Zero records a baseline so rollback stays clean.</li>
+              <li>Choose a route when prompted: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code> or <code>audit</code>.</li>
               <li>Read the final report before asking for commit or push.</li>
             </ol>
           </div>
@@ -1094,165 +1089,33 @@
         <section class="chapter" id="cortex">
           <div class="chapter-head"><span class="chapter-num">04</span><h2>Cortex</h2></div>
           <div class="chapter-body">
-            <p>Cortex is the project's compiled memory. Memory lives in versioned Markdown; SQLite is only derived recall and semantic curation cache.</p>
-            <div class="pre-wrap" data-label="tree">
-<pre><code>docs/agents/cortex/
-  CONTRACT.md
-  MAP.md
-  TRAIL.md
-  LINKS.md
-  sources/
-  cells/
-.tes/cortex/recall.sqlite
-.tes/cortex/semantic.sqlite</code></pre>
-            </div>
-            <p>Cells must include <code>## Claim</code> and <code>## Evidence</code>. <code>sources/**</code> is immutable after import. <code>learn</code> proposes without writing and requires source evidence or a specific durable lesson; generic inputs return evidence-gap/no-capture results. <code>curate-plan</code> classifies actionable merge, split, link, tension, evidence-gap, redundancy and reject candidates without writing memory; <code>apply --yes</code> writes only authorized, evidenced cells and refreshes recall after audit.</p>
-            <p>The deterministic gate uses <code>--backend lexical</code>. Real environments may run <code>--backend xenova</code> or <code>--backend auto</code> with the optional <code>@huggingface/transformers</code> dependency and <code>Xenova/multilingual-e5-small</code>. Explicit Xenova reports <code>BLOCKED</code> when unavailable; <code>auto</code> reports <code>DEGRADED</code> when it falls back to lexical.</p>
+            <p>Cortex is the project's compiled memory, written in plain Markdown under <code>docs/agents/cortex/</code>. Every claim is backed by an evidence link to a source file. SQLite caches accelerate recall but never replace Markdown as the source of truth.</p>
+            <p>You can read Cortex like any other repository document, review it in pull requests, and roll it back with Git. The agent never writes to memory without explicit authorization and an evidence link.</p>
+            <p>Backend selection, cell schema, and write rules are part of the agent contract — see <a href="AGENT-MANUAL.md#8-cortex-contract"><code>AGENT-MANUAL.md</code> §8</a>.</p>
           </div>
         </section>
 
         <section class="chapter" id="cli">
-          <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
+          <div class="chapter-head"><span class="chapter-num">05</span><h2>What the agent runs</h2></div>
           <div class="chapter-body">
-            <p>These commands are agent-callable oracles, not the normal user interface. In normal use, the active IDE agent invokes them from the current context window; humans run them directly only for package maintenance, debugging or certification review. Use the TES package root for package checks, or pass <code>--target</code> when operating on another project or vault. <code>tes_init.py</code> recertifies package health, scans the target project, writes <code>docs/agents/PROJECT-REGISTER.md</code>, writes <code>docs/agents/PROJECT-CONTEXT.md</code> as the initial project map, creates the first-pass Obsidian-compatible operating mesh when missing, and stores a full manifest under <code>docs/agents/evidence/**</code>. If a later oracle is blocked, the run closes as <code>NEEDS_REVIEW</code> with evidence instead of leaving the project uninitialized.</p>
-            <p>Prefer shared intent command/prompts: <code>/tes-init</code> for setup and <code>/tes-update</code> for updating; <code>/tes:init</code> and <code>/tes:update</code> remain compatibility aliases. <code>/tes-init</code> routes through an Install/Update Gate, a Project Context Gate, and a Project-Start Gate; Step Zero protects installer/update writes, but must not block project-context initialization when TES is already current and only <code>PROJECT-CONTEXT.md</code> needs work. A preflight context PASS does not replace project-start execution; after helper-only repairs, run <code>tes_init.py --target . --yes</code> and the context and alignment oracles before the final report. The update probe compares versions, helper parity, IDE surfaces, route and <code>recommended_update_scope</code>. Inspection uses read-only <code>--json-only</code>; after helper overwrite, the final recorded probe with <code>--record-field-report</code> is mandatory before GO, commit or push and must show <code>helper_contract_status=PASS</code>, <code>runtime_trigger_status=PASS</code> or <code>NOT_APPLIED</code>, <code>update_available=False</code>, and <code>recommended_update_scope=none</code>. <code>STALE_HELPERS</code> is update-required, not current; repair it first with helper-only Layer Zero before activating MCP configs. When legacy retirement is true, the agent runs that gate before copying new TES assets. The complete command inventory is below because this manual is the user entrypoint; the routing matrix lives in <code>docs/install/COMMAND-TRIGGERS.md</code>.</p>
-            <div class="pre-wrap" data-label="cortex">
-<pre><code>python3 scripts/tes_init.py --target /path/to/project --yes
-python3 scripts/tes_init.py --self-test
-python3 scripts/project_context_oracle.py --target /path/to/project && python3 scripts/project_alignment_oracle.py --target /path/to/project
-python3 scripts/project_context_oracle.py --self-test && python3 scripts/project_alignment_oracle.py --self-test
-python3 scripts/tes_update.py plan --target /path/to/project --json-only
-python3 scripts/tes_update.py plan --target /path/to/project --json-only --record-field-report
-python3 scripts/tes_update.py --self-test
-python3 scripts/tes_legacy_retirement.py plan --target /path/to/project
-python3 scripts/tes_legacy_retirement.py apply --target /path/to/project --yes
-python3 scripts/tes_legacy_retirement.py audit --target /path/to/project
-python3 scripts/tes_legacy_retirement.py --self-test
-python3 scripts/root_context.py analyze --target /path/to/project
-python3 scripts/root_context.py --self-test
-python3 scripts/field_reports.py status --target /path/to/project
-python3 scripts/field_reports.py drain --target /path/to/project
-python3 scripts/field_reports.py disable --target /path/to/project
-python3 scripts/field_reports.py enable --target /path/to/project
-python3 scripts/field_reports.py --self-test
-python3 scripts/cortex.py init --target /path/to/project-or-vault
-python3 scripts/cortex.py verify --target /path/to/project-or-vault
-python3 scripts/cortex.py audit --target /path/to/project-or-vault
-python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
-python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical
-python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
-python3 scripts/cortex.py read-cell --target /path/to/project-or-vault --cell cell-name
-python3 scripts/cortex.py absorb-plan --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
-python3 scripts/cortex.py learn --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
-python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision or lesson"
-python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
-python3 scripts/cortex.py --self-test</code></pre>
-            </div>
-            <p><code>learn</code> and <code>reflect</code> never write. Weak or generic prompts do not produce memory proposals. <code>curate-plan</code> always reports <code>writes: []</code> and may refresh only the derived semantic index from the CLI, not over MCP. <code>apply</code> writes only with <code>--yes</code>, explicit evidence, audit and rebuild. It never writes to <code>sources/**</code>.</p>
-            <div class="pre-wrap" data-label="package">
-<pre><code>npm run validate
-npm run install:dry-run
-npm run install:smoke
-npm run tes:init -- --target /path/to/project --yes
-npm run tes:init:self-test
-npm run tes:update -- --target /path/to/project
-npm run tes:update:self-test
-npm run tes:legacy:plan -- --target /path/to/project
-npm run tes:legacy:apply -- --target /path/to/project --yes
-npm run tes:legacy:audit -- --target /path/to/project
-npm run tes:legacy:self-test
-npm run install:adapter -- --target /path/to/project --adapter all --yes
-npm run mcp:dry-run -- --target /path/to/project --adapter all
-npm run mcp:install -- --target /path/to/project --adapter codex --yes
-npm run mcp:install -- --target /path/to/project --adapter all --yes
-npm run mcp:self-test
-npm run field-reports:self-test
-npm run field-reports:status -- --target /path/to/project
-npm run field-reports:drain -- --target /path/to/project
-npm run claude:plugin:oracle
-npm run retention:check
-npm run reference:graph
-npm run docs:size
-npm run tds:validate
-npm run cortex:init -- --target /path/to/project-or-vault
-npm run cortex:verify -- --target /path/to/project-or-vault
-npm run cortex:audit -- --target /path/to/project-or-vault
-npm run cortex:rebuild -- --target /path/to/project-or-vault
-npm run cortex:curate-plan -- --target /path/to/project-or-vault --backend lexical
-npm run cortex:recall -- --target /path/to/project-or-vault "query"
-npm run cortex:read-cell -- --target /path/to/project-or-vault --cell cell-name
-npm run cortex:absorb-plan -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
-npm run cortex:learn -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
-npm run cortex:reflect -- --target /path/to/project-or-vault "decision or lesson"
-npm run cortex:apply -- --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
-npm run cortex:self-test
-npm run cortex:mcp:self-test
-npm run materialize:all
-npm run materialize:codex
-npm run materialize:cursor
-npm run materialize:claude
-npm run materialize:check
-npm run benchmark:plan
-npm run benchmark:run -- --backend fixture
-npm run benchmark:converge
-npm run adapter:parity:check
-npm run platform:surface:check
-npm run oracle:self-test
-npm run git:diff-check
-npm run commit:check</code></pre>
-            </div>
-            <div class="pre-wrap" data-label="adapter">
-<pre><code>python3 scripts/install_adapter.py --dry-run --target /path/to/project --adapter all
-python3 scripts/install_adapter.py --target /path/to/project --adapter codex --yes
-python3 scripts/install_adapter.py --target /path/to/project --adapter all --yes
-python3 scripts/install_smoke.py --self-test
-python3 scripts/claude_plugin_oracle.py --self-test
-python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
-python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
-python3 scripts/install_mcp.py --self-test
-python3 scripts/install_smoke.py --route mcp
-python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
-python3 scripts/cortex_mcp.py --self-test
-python3 scripts/materialize_adapter.py all --check
-python3 scripts/materialize_adapter.py all</code></pre>
-            </div>
-            <div class="pre-wrap" data-label="gates">
-<pre><code>python3 scripts/validate_reference_package.py
-python3 scripts/validate_reference_package.py --staged-ready
-python3 scripts/validate_tds.py
-python3 scripts/validate_doc_size.py
-python3 scripts/retention_metadata.py --check
-python3 scripts/validate_reference_graph.py
-python3 scripts/platform_surface_oracle.py --self-test
-python3 scripts/adapter_parity_readiness.py
-python3 scripts/context_mesh_plan.py
-python3 scripts/context_mesh_run.py --backend fixture
-python3 scripts/context_mesh_convergence.py
-python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test</code></pre>
-            </div>
+            <p>Inside the agent window you do not type shell commands. You type intent — <code>/tes-init</code>, <code>/tes-update</code>, <code>/tes-align</code>, <code>/tes-open-obsidian</code> — and the agent translates that into a sequence of small, scoped oracles.</p>
+            <p>You only need to know two things:</p>
+            <ol>
+              <li><strong>Step Zero runs first.</strong> Before any write, the agent records a baseline and verifies its own toolchain. If a required capability is missing, the run halts and reports it instead of guessing.</li>
+              <li><strong>The final report is the contract.</strong> Read it before approving commit or push. If status is anything other than success, ask the agent to explain or roll back.</li>
+            </ol>
+            <p>The full oracle inventory — Python scripts, <code>npm run</code> wrappers, validation gates, probe contracts — lives in <a href="AGENT-MANUAL.md#9-cli-oracle-inventory"><code>AGENT-MANUAL.md</code> §9</a>. Reach for it when reviewing a run, debugging a blocked oracle, or auditing what the agent invoked.</p>
+            <p>On <code>/tes-update</code>, the agent first repairs the bundled helpers — a helper-only Layer Zero pass — before touching adapter or MCP configuration. The update probe then reconciles installed and cloud versions and checks helper contract parity (the user manual notes the same step in Portuguese as <em>versão instalada e versão na nuvem</em> com <em>paridade de contrato dos helpers</em>) before any GO decision.</p>
           </div>
         </section>
 
         <section class="chapter" id="mcp">
           <div class="chapter-head"><span class="chapter-num">06</span><h2>MCP</h2></div>
           <div class="chapter-body">
-            <p>The MCP server is read-only. The installer activates it through project-scoped config for the selected runtime route, without turning MCP, SQLite or the LLM into memory.</p>
-            <div class="pre-wrap" data-label="stdio">
-<pre><code>python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
-python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
-python3 scripts/install_mcp.py --self-test
-python3 scripts/install_smoke.py --route mcp
-python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
-python3 scripts/cortex_mcp.py --self-test
-npm run mcp:self-test
-npm run field-reports:self-test
-npm run field-reports:status -- --target /path/to/project
-npm run field-reports:drain -- --target /path/to/project
-npm run cortex:mcp:self-test</code></pre>
-            </div>
+            <p>MCP is the read-only window the agent uses to consult Cortex memory. It cannot write to your project. Installation is opt-in per runtime and lives in project-scoped config files you can review and revert.</p>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Runtime</th><th>Project-scoped config</th></tr></thead>
+                <thead><tr><th>Runtime</th><th>Config file</th></tr></thead>
                 <tbody>
                   <tr><td>Codex</td><td><code>.codex/config.toml</code></td></tr>
                   <tr><td>Claude Code</td><td><code>.mcp.json</code></td></tr>
@@ -1260,81 +1123,64 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Tool</th><th>Behavior</th></tr></thead>
-                <tbody>
-                  <tr><td><code>cortex_verify</code></td><td>Validates the Cortex structure and contract.</td></tr>
-                  <tr><td><code>cortex_audit</code></td><td>Finds broken links, missing evidence, or loose cells.</td></tr>
-                  <tr><td><code>cortex_recall</code></td><td>Searches through SQLite FTS5 and falls back to <code>rg</code>.</td></tr>
-                  <tr><td><code>cortex_read_cell</code></td><td>Reads one cell directly from <code>cells/**</code>.</td></tr>
-                  <tr><td><code>cortex_absorb_plan</code></td><td>Produces a no-write absorb plan.</td></tr>
-                  <tr><td><code>cortex_curate_plan</code></td><td>Classifies semantic memory quality risks without writing memory or derived indexes.</td></tr>
-                  <tr><td><code>cortex_reflect</code></td><td>Generates a no-write memory and curation proposal.</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tes/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>. The installed helper set includes <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tes_update.py</code>, <code>tes_legacy_retirement.py</code>, <code>root_context.py</code>, <code>tes_init.py</code>, <code>project_context_oracle.py</code>, <code>project_alignment_oracle.py</code> and <code>tes_open_obsidian.py</code>.</p>
+            <p>Activation never touches global MCP config, secrets, hooks, or <code>sources/**</code>. Tool surface, helper inventory and write rules are documented in <a href="AGENT-MANUAL.md#10-mcp-contract"><code>AGENT-MANUAL.md</code> §10</a>.</p>
           </div>
         </section>
 
         <section class="chapter" id="field-reports">
           <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
           <div class="chapter-body">
-            <p>TES Field Reports is active by default. It captures sanitized operational facts locally and drains through <code>gh</code> during <code>git push</code> only when local CLI, authentication and network are available. Certification covers local capture/drain, fake transport and receiver quarantine; live GitHub publication remains partial until explicitly authorized. Low-signal heartbeats are suppressed locally with a receipt instead of opening noisy issues. It never sends code, diffs, prompts, file contents, secrets, personal data, absolute paths, raw stack traces, raw branch names or raw remotes.</p>
-            <p>The active agent installs a local <code>pre-push</code> hook and local state under <code>.tes/field-reports/**</code>. If <code>gh</code>, network or authentication is unavailable, the outbox stays pending and the push continues.</p>
-            <p>The GitHub receiver has its own issue template, schema check and quarantine workflow. Local sanitization remains the first privacy gate; GitHub governance is the second audit gate.</p>
-            <p>To stop collaborating with TES field learning, type this prompt in the agent window, not in a shell:</p>
+            <p>Field Reports lets Tilly learn from real installations. It is active by default and only captures sanitized operational facts. It never sends your code, diffs, prompts, file contents, secrets, personal data, absolute paths, raw stack traces, branch names, or remote URLs.</p>
+            <p>Reports drain only during <code>git push</code>, only when the GitHub CLI, authentication and network are all available. If any link is missing, nothing leaves your machine and the push proceeds normally.</p>
+            <p>Two privacy gates apply: local sanitization on capture, and GitHub-side schema checks plus a quarantine workflow on receipt.</p>
+            <p>To opt out, type this in the agent window:</p>
             <div class="pre-wrap" data-label="prompt">
 <pre><code>/tes:field-reports:disable</code></pre>
             </div>
-            <p>To re-enable the default behavior later, type:</p>
+            <p>To re-enable later:</p>
             <div class="pre-wrap" data-label="prompt">
 <pre><code>/tes:field-reports:enable</code></pre>
             </div>
-            <p>These prompts are interpreted by Tilly inside the current context window. The shell commands above are listed only so users can audit the internal oracle the agent may invoke.</p>
+            <p>The full transport pipeline — pre-push hook, outbox state, receiver schema — is documented in <a href="AGENT-MANUAL.md#11-field-reports-pipeline"><code>AGENT-MANUAL.md</code> §11</a>.</p>
           </div>
         </section>
 
         <section class="chapter" id="obsidian">
           <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
-            <p>Use Obsidian as the visual workbench for the project operating mesh and Cortex, not as the authority layer. The installer never creates or edits <code>.obsidian/**</code>; after <code>/tes-init</code> and <code>/tes-align</code>, <code>/tes-open-obsidian</code> opens <code>docs/agents/</code> through the registered Obsidian CLI or a macOS app fallback, while the mesh and Cortex remain plain Markdown.</p>
+            <p>Obsidian is an optional visual workbench for browsing the agent mesh and Cortex memory. It is not required, and Tilly never creates or edits <code>.obsidian/**</code>. Type <code>/tes-open-obsidian</code> in the agent window to open <code>docs/agents/</code> as a vault.</p>
             <ol>
-              <li>Open <code>docs/agents/</code> as the vault when you want to see agent docs, evidence and Cortex together.</li>
-              <li>Open <code>docs/agents/cortex/</code> only when you want a focused memory workspace.</li>
-              <li>Set the attachment folder to <code>sources/assets/</code> when saving local images or clipped article assets.</li>
-              <li>Keep source citations as repository paths such as <code>sources/article.md</code>; use wikilinks mainly between cells.</li>
-              <li>Use Graph View to inspect hubs, isolated cells and relationship density after each meaningful absorb/apply cycle.</li>
-              <li>Run <code>python3 scripts/cortex.py audit --target /path/to/project-or-vault</code> before trusting the graph.</li>
-              <li>Run <code>python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical</code> when the graph looks swollen, repetitive, contradictory or under-evidenced.</li>
+              <li>Open <code>docs/agents/</code> as the vault to see agent docs, evidence, and Cortex together.</li>
+              <li>Open <code>docs/agents/cortex/</code> alone when you want a focused memory workspace.</li>
+              <li>Use Graph View to spot isolated cells and weak hubs.</li>
             </ol>
             <div class="table-wrap">
               <table>
                 <thead><tr><th>Obsidian setting</th><th>Recommended use</th></tr></thead>
                 <tbody>
-                  <tr><td>Vault root</td><td><code>docs/agents/</code> for the TES mesh, or <code>docs/agents/cortex/</code> for focused memory.</td></tr>
+                  <tr><td>Vault root</td><td><code>docs/agents/</code> for the full mesh, or <code>docs/agents/cortex/</code> for memory only.</td></tr>
                   <tr><td>Files and links</td><td>Keep Markdown links readable outside Obsidian; avoid Obsidian-only proof.</td></tr>
                   <tr><td>Attachments</td><td>Use <code>sources/assets/</code> for local images and clipped media.</td></tr>
-                  <tr><td>Graph filters</td><td>Focus on <code>cells/</code>, <code>MAP.md</code> and <code>LINKS.md</code>; hide transient or generated files.</td></tr>
-                  <tr><td>Community plugins</td><td>Optional only. Dataview, Canvas and Marp must not be required for certification.</td></tr>
+                  <tr><td>Community plugins</td><td>Optional only. Dataview, Canvas and Marp must never be required.</td></tr>
                 </tbody>
               </table>
             </div>
-            <p>A healthy Cortex graph should show cells connected by claims and evidence. A pretty graph is not proof: <code>audit</code>, Git diff and explicit evidence are the certification layer.</p>
+            <p>A pretty graph is not proof. Trust Git diffs, the agent's audit run, and explicit evidence — not visual density.</p>
           </div>
         </section>
 
         <section class="chapter" id="report">
           <div class="chapter-head"><span class="chapter-num">09</span><h2>Final report</h2></div>
           <div class="chapter-body">
-            <p>Every run ends with a short <strong>TES Context Mesh Convergence Report</strong>. The chat report should state status, source snapshot freshness, changed surfaces, root context gate, installed helper set, helper contract parity, Field Reports state, gates, limits and rollback summary. Root context may be <code>PRESERVED</code> when project-owned bootloaders were intentionally left untouched; overwrite still requires review. Backup files are rollback artifacts, not new TES surfaces. Long inventories belong in the evidence file.</p>
-            <p>If the source package commit is behind the current Tilly <code>main</code>, the report must say <code>STALE_SOURCE</code>. That means the target was certified against the recorded snapshot, not the latest package.</p>
-            <div class="pre-wrap" data-label="report excerpt">
-<pre><code><span class="tok-key">User Manual</span>
-<span class="tok-comment">- Web:</span> https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/install/USER-MANUAL.html
-<span class="tok-comment">- Local package path:</span> docs/install/USER-MANUAL.html</code></pre>
-            </div>
+            <p>Every run ends with a short <strong>Convergence Report</strong> in chat. Read it before approving commit or push. It tells you what changed, what was preserved, whether all gates passed, and which rollback is available.</p>
+            <p>The chat report covers status, source snapshot freshness, changed surfaces, root context gate, installed helper set, helper contract parity, Field Reports state, gates, limits, and a rollback summary. Backup files are rollback artifacts, not new TES surfaces.</p>
+            <p>A few signals worth recognizing:</p>
+            <ul>
+              <li><code>PRESERVED</code> — your existing <code>AGENTS.md</code>, <code>CLAUDE.md</code> or Cursor rules were left intact.</li>
+              <li><code>STALE_SOURCE</code> — the package commit is behind the latest Tilly release; you were certified against the recorded snapshot, not the newest one.</li>
+              <li><code>NEEDS_REVIEW</code> — something blocked but the run preserved evidence; review before continuing.</li>
+            </ul>
+            <p>The full report-field contract is in <a href="AGENT-MANUAL.md#14-convergence-report-contract"><code>AGENT-MANUAL.md</code> §14</a>.</p>
           </div>
         </section>
 
@@ -1363,22 +1209,18 @@ git revert &lt;install-commit&gt;</code></pre>
         <section class="chapter" id="overview-es">
           <div class="chapter-head"><span class="chapter-num">00</span><h2>Vista general</h2></div>
           <div class="chapter-body">
-            <p class="lede">Tilly instala un mesh de gobernanza para agentes de código. Codex, Claude Code y Cursor apuntan a la misma fuente durable del proyecto: <code>docs/agents/**</code>. Los bootloaders se mantienen finos. La gobernanza real vive en Markdown versionado.</p>
+            <p class="lede">Tilly instala una malla de gobernanza para agentes de código. Codex, Claude Code y Cursor apuntan a la misma fuente durable del proyecto: <code>docs/agents/**</code>. La gobernanza real vive en Markdown versionado.</p>
             <div class="panel">
-              <span class="panel-tag">Nota</span>
-              <p>Archivos como <code>AGENTS.md</code>, <code>CLAUDE.md</code> y las reglas de Cursor deben ser bootloaders finos. La gobernanza real vive en <code>docs/agents/**</code>.</p>
+              <span class="panel-tag">Cómo se usa</span>
+              <p>La interfaz normal del usuario es una intención escrita en la ventana del agente, no un comando de shell. Escribe <code>/tes-init</code> para instalar o <code>/tes-update</code> para actualizar; el agente activo elige y ejecuta el oráculo seguro más pequeño.</p>
             </div>
             <div class="panel">
-              <span class="panel-tag">Modelo de ejecución</span>
-              <p>El ejecutor es el agente de código activo dentro de la ventana actual del IDE o runtime. Skills, reglas y bootloaders enrutan el comportamiento; los scripts Python y las entradas <code>npm run ...</code> son oráculos deterministas que el agente invoca cuando existe acceso local a herramientas; los hooks son gates de eventos Git para validación y reflexión/curaduría Cortex sin escritura; MCP es una superficie Cortex de solo lectura. Si un runtime no puede ejecutar un oráculo, el agente debe reportarlo como bloqueado o omitido en vez de certificarlo.</p>
+              <span class="panel-tag">Lo que sigue siendo tuyo</span>
+              <p>Los archivos propios del proyecto — <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> y las reglas de Cursor — quedan preservados cuando ya existen. Tilly hace retrofit, nunca overwrite.</p>
             </div>
             <div class="panel">
-              <span class="panel-tag">Seguridad Git</span>
-              <p>Tilly protege artefactos locales de rollback y caché con <code>.git/info/exclude</code>: <code>.tes/bin/*.bak-*</code>, bytecode Python, estado de Field Reports y cachés SQLite de Cortex quedan fuera del staging normal. Tilly no ignora <code>.tes/bin/*.py</code>, porque esos helpers son la superficie runtime instalada.</p>
-            </div>
-            <div class="panel">
-              <span class="panel-tag">Gatilhos de comando</span>
-              <p>La interfaz normal del usuario es una intención Tilly escrita en la ventana del agente, no un comando de shell. Usa <code>/tes-init</code> para la primera instalación y <code>/tes-update</code> para un proyecto ya meshed en Codex, Claude Code y Cursor; <code>/tes:init</code> y <code>/tes:update</code> siguen como aliases compatibles, y un slash <code>/tes:*</code> inválido sigue siendo intención TES; el agente activo elige y ejecuta el oráculo seguro más pequeño.</p>
+              <span class="panel-tag">Contrato del operador</span>
+              <p>Este manual es para humanos que instalan, auditan y revierten Tilly. El contrato del agente — gatillos, oráculos, gates, estados de retorno, schemas — vive en <a href="AGENT-MANUAL.md"><code>docs/install/AGENT-MANUAL.md</code></a>.</p>
             </div>
           </div>
         </section>
@@ -1388,9 +1230,9 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-body">
             <ol>
               <li>Abre el proyecto objetivo en Codex, Claude Code o Cursor.</li>
-              <li>Escribe <code>/tes-init</code> para la primera instalación o <code>/tes-update</code> para un mesh Tilly existente. Las formas <code>/tes:init</code> y <code>/tes:update</code> son aliases compatibles cuando se aceptan o se escriben como intención. Si no, pega el prompt de instalación del README o de <code>docs/install/MINI-PROMPT.md</code>.</li>
-              <li>Deja que el instalador ejecute Step Zero antes de editar.</li>
-              <li>Elige una ruta: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code> o <code>audit</code>.</li>
+              <li>Escribe <code>/tes-init</code> en la ventana del agente para la primera instalación, o <code>/tes-update</code> si Tilly ya está instalado. Si tu runtime no interpreta el gatillo, pega el prompt del README o de <code>docs/install/MINI-PROMPT.md</code>.</li>
+              <li>Deja que Step Zero termine antes de aprobar cualquier edición. Step Zero registra un baseline para que el rollback siga siendo limpio.</li>
+              <li>Elige una ruta cuando se te pregunte: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code> o <code>audit</code>.</li>
               <li>Lee el informe final antes de pedir commit o push.</li>
             </ol>
           </div>
@@ -1435,165 +1277,32 @@ git revert &lt;install-commit&gt;</code></pre>
         <section class="chapter" id="cortex-es">
           <div class="chapter-head"><span class="chapter-num">04</span><h2>Cortex</h2></div>
           <div class="chapter-body">
-            <p>Cortex es la memoria compilada del proyecto. La memoria vive en Markdown versionado; SQLite es solo recall derivado y cache de curaduría semántica.</p>
-            <div class="pre-wrap" data-label="tree">
-<pre><code>docs/agents/cortex/
-  CONTRACT.md
-  MAP.md
-  TRAIL.md
-  LINKS.md
-  sources/
-  cells/
-.tes/cortex/recall.sqlite
-.tes/cortex/semantic.sqlite</code></pre>
-            </div>
-            <p>Las cells deben incluir <code>## Claim</code> y <code>## Evidence</code>. <code>sources/**</code> es inmutable después del import. <code>learn</code> propone sin escribir y requiere evidencia fuente o una lección durable específica; entradas genéricas devuelven evidence-gap/no-capture. <code>curate-plan</code> clasifica candidatos accionables de merge, split, link, tensión, gap de evidencia, redundancia y rechazo sin escribir memoria; <code>apply --yes</code> escribe solo cells autorizadas con evidencia y refresca recall después del audit.</p>
-            <p>El gate determinista usa <code>--backend lexical</code>. Ambientes reales pueden ejecutar <code>--backend xenova</code> o <code>--backend auto</code> con la dependencia opcional <code>@huggingface/transformers</code> y <code>Xenova/multilingual-e5-small</code>. Xenova explícito reporta <code>BLOCKED</code> si no está disponible; <code>auto</code> reporta <code>DEGRADED</code> cuando cae a lexical.</p>
+            <p>Cortex es la memoria compilada del proyecto, escrita en Markdown plano bajo <code>docs/agents/cortex/</code>. Cada claim está respaldado por un enlace de evidencia a un archivo fuente. Los caches SQLite aceleran el recall pero nunca reemplazan al Markdown como fuente de verdad.</p>
+            <p>Puedes leer Cortex como cualquier otro documento del repositorio, revisarlo en pull requests y revertirlo con Git. El agente nunca escribe memoria sin autorización explícita y un enlace de evidencia.</p>
+            <p>La selección de backend, el schema de cells y las reglas de escritura forman parte del contrato del agente — ver <a href="AGENT-MANUAL.md#8-cortex-contract"><code>AGENT-MANUAL.md</code> §8</a>.</p>
           </div>
         </section>
 
         <section class="chapter" id="cli-es">
-          <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
+          <div class="chapter-head"><span class="chapter-num">05</span><h2>Lo que ejecuta el agente</h2></div>
           <div class="chapter-body">
-            <p>Estos comandos son oráculos invocables por el agente, no la interfaz normal del usuario. En el uso normal, el agente activo del IDE los ejecuta desde la ventana de contexto; humanos los ejecutan directamente solo para mantenimiento del paquete, debugging o revisión de certificación. Usa la raíz del paquete Tilly para checks del paquete, o <code>--target</code> para operar sobre otro proyecto o vault. <code>tes_init.py</code> recertifica la salud del paquete, escanea el proyecto objetivo, escribe <code>docs/agents/PROJECT-REGISTER.md</code>, escribe <code>docs/agents/PROJECT-CONTEXT.md</code> como mapa inicial del proyecto, crea la malla operativa inicial compatible con Obsidian cuando falta y guarda manifiestos con timestamp en <code>docs/agents/evidence/**</code>. Si un oráculo posterior queda bloqueado, el run cierra como <code>NEEDS_REVIEW</code> con evidencia en vez de dejar el proyecto sin inicializar.</p>
-            <p>Prefiere comandos/prompts de intención compartidos: <code>/tes-init</code> para instalar y <code>/tes-update</code> para actualizar; <code>/tes:init</code> y <code>/tes:update</code> siguen como aliases compatibles. <code>/tes-init</code> enruta por un Install/Update Gate, un Project Context Gate y un Project-Start Gate; Step Zero protege writes de instalación/actualización, pero no debe bloquear la inicialización de contexto cuando TES ya está current y solo <code>PROJECT-CONTEXT.md</code> necesita trabajo. Un preflight context PASS no reemplaza project-start execution; después de reparaciones helper-only, ejecuta <code>tes_init.py --target . --yes</code> y los oracles de contexto y alineación antes del reporte final. El update probe compara versiones, paridad de helpers, superficies IDE, ruta y <code>recommended_update_scope</code>. La inspección usa <code>--json-only</code>; después de sobrescribir helpers, el probe final con <code>--record-field-report</code> es obligatorio antes de GO, commit o push y debe mostrar <code>helper_contract_status=PASS</code>, <code>runtime_trigger_status=PASS</code> o <code>NOT_APPLIED</code>, <code>update_available=False</code> y <code>recommended_update_scope=none</code>. <code>STALE_HELPERS</code> requiere actualización; no es current. Si es true, el agente ejecuta el gate de retiro legado antes de copiar nuevos activos TES; los registros retrofit legados se archivan bajo .tes/legacy-retirement/retrofit/.</p>
-            <div class="pre-wrap" data-label="cortex">
-<pre><code>python3 scripts/tes_init.py --target /path/to/project --yes
-python3 scripts/tes_init.py --self-test
-python3 scripts/project_context_oracle.py --target /path/to/project && python3 scripts/project_alignment_oracle.py --target /path/to/project
-python3 scripts/project_context_oracle.py --self-test && python3 scripts/project_alignment_oracle.py --self-test
-python3 scripts/tes_update.py plan --target /path/to/project --json-only
-python3 scripts/tes_update.py plan --target /path/to/project --json-only --record-field-report
-python3 scripts/tes_update.py --self-test
-python3 scripts/tes_legacy_retirement.py plan --target /path/to/project
-python3 scripts/tes_legacy_retirement.py apply --target /path/to/project --yes
-python3 scripts/tes_legacy_retirement.py audit --target /path/to/project
-python3 scripts/tes_legacy_retirement.py --self-test
-python3 scripts/root_context.py analyze --target /path/to/project
-python3 scripts/root_context.py --self-test
-python3 scripts/field_reports.py status --target /path/to/project
-python3 scripts/field_reports.py drain --target /path/to/project
-python3 scripts/field_reports.py disable --target /path/to/project
-python3 scripts/field_reports.py enable --target /path/to/project
-python3 scripts/field_reports.py --self-test
-python3 scripts/cortex.py init --target /path/to/project-or-vault
-python3 scripts/cortex.py verify --target /path/to/project-or-vault
-python3 scripts/cortex.py audit --target /path/to/project-or-vault
-python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
-python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical
-python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
-python3 scripts/cortex.py read-cell --target /path/to/project-or-vault --cell cell-name
-python3 scripts/cortex.py absorb-plan --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
-python3 scripts/cortex.py learn --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
-python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision or lesson"
-python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
-python3 scripts/cortex.py --self-test</code></pre>
-            </div>
-            <p><code>learn</code> y <code>reflect</code> nunca escriben. Prompts débiles o genéricos no producen propuestas de memoria. <code>curate-plan</code> siempre reporta <code>writes: []</code> y puede refrescar solo el índice semántico derivado desde CLI, no sobre MCP. <code>apply</code> solo escribe con <code>--yes</code>, evidencia explícita, audit y rebuild. Nunca escribe en <code>sources/**</code>.</p>
-            <div class="pre-wrap" data-label="package">
-<pre><code>npm run validate
-npm run install:dry-run
-npm run install:smoke
-npm run tes:init -- --target /path/to/project --yes
-npm run tes:init:self-test
-npm run tes:update -- --target /path/to/project
-npm run tes:update:self-test
-npm run tes:legacy:plan -- --target /path/to/project
-npm run tes:legacy:apply -- --target /path/to/project --yes
-npm run tes:legacy:audit -- --target /path/to/project
-npm run tes:legacy:self-test
-npm run install:adapter -- --target /path/to/project --adapter all --yes
-npm run mcp:dry-run -- --target /path/to/project --adapter all
-npm run mcp:install -- --target /path/to/project --adapter codex --yes
-npm run mcp:install -- --target /path/to/project --adapter all --yes
-npm run mcp:self-test
-npm run field-reports:self-test
-npm run field-reports:status -- --target /path/to/project
-npm run field-reports:drain -- --target /path/to/project
-npm run claude:plugin:oracle
-npm run retention:check
-npm run reference:graph
-npm run docs:size
-npm run tds:validate
-npm run cortex:init -- --target /path/to/project-or-vault
-npm run cortex:verify -- --target /path/to/project-or-vault
-npm run cortex:audit -- --target /path/to/project-or-vault
-npm run cortex:rebuild -- --target /path/to/project-or-vault
-npm run cortex:curate-plan -- --target /path/to/project-or-vault --backend lexical
-npm run cortex:recall -- --target /path/to/project-or-vault "query"
-npm run cortex:read-cell -- --target /path/to/project-or-vault --cell cell-name
-npm run cortex:absorb-plan -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
-npm run cortex:learn -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
-npm run cortex:reflect -- --target /path/to/project-or-vault "decision or lesson"
-npm run cortex:apply -- --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
-npm run cortex:self-test
-npm run cortex:mcp:self-test
-npm run materialize:all
-npm run materialize:codex
-npm run materialize:cursor
-npm run materialize:claude
-npm run materialize:check
-npm run benchmark:plan
-npm run benchmark:run -- --backend fixture
-npm run benchmark:converge
-npm run adapter:parity:check
-npm run platform:surface:check
-npm run oracle:self-test
-npm run git:diff-check
-npm run commit:check</code></pre>
-            </div>
-            <div class="pre-wrap" data-label="adapter">
-<pre><code>python3 scripts/install_adapter.py --dry-run --target /path/to/project --adapter all
-python3 scripts/install_adapter.py --target /path/to/project --adapter codex --yes
-python3 scripts/install_adapter.py --target /path/to/project --adapter all --yes
-python3 scripts/install_smoke.py --self-test
-python3 scripts/claude_plugin_oracle.py --self-test
-python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
-python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
-python3 scripts/install_mcp.py --self-test
-python3 scripts/install_smoke.py --route mcp
-python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
-python3 scripts/cortex_mcp.py --self-test
-python3 scripts/materialize_adapter.py all --check
-python3 scripts/materialize_adapter.py all</code></pre>
-            </div>
-            <div class="pre-wrap" data-label="gates">
-<pre><code>python3 scripts/validate_reference_package.py
-python3 scripts/validate_reference_package.py --staged-ready
-python3 scripts/validate_tds.py
-python3 scripts/validate_doc_size.py
-python3 scripts/retention_metadata.py --check
-python3 scripts/validate_reference_graph.py
-python3 scripts/platform_surface_oracle.py --self-test
-python3 scripts/adapter_parity_readiness.py
-python3 scripts/context_mesh_plan.py
-python3 scripts/context_mesh_run.py --backend fixture
-python3 scripts/context_mesh_convergence.py
-python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test</code></pre>
-            </div>
+            <p>Dentro de la ventana del agente no escribes comandos de shell. Escribes intención — <code>/tes-init</code>, <code>/tes-update</code>, <code>/tes-align</code>, <code>/tes-open-obsidian</code> — y el agente la traduce en una secuencia de oráculos pequeños y acotados.</p>
+            <p>Solo necesitas saber dos cosas:</p>
+            <ol>
+              <li><strong>Step Zero ejecuta primero.</strong> Antes de cualquier escritura, el agente registra un baseline y verifica su propia toolchain. Si falta una capacidad necesaria, el run se detiene y lo reporta en vez de adivinar.</li>
+              <li><strong>El informe final es el contrato.</strong> Léelo antes de aprobar commit o push. Si el estado no es exitoso, pide al agente que explique o haga rollback.</li>
+            </ol>
+            <p>El inventario completo de oráculos — scripts Python, wrappers <code>npm run</code>, gates de validación, contratos de probe — vive en <a href="AGENT-MANUAL.md#9-cli-oracle-inventory"><code>AGENT-MANUAL.md</code> §9</a>. Recurre a él al revisar un run, depurar un oráculo bloqueado o auditar lo que el agente invocó.</p>
           </div>
         </section>
 
         <section class="chapter" id="mcp-es">
           <div class="chapter-head"><span class="chapter-num">06</span><h2>MCP</h2></div>
           <div class="chapter-body">
-            <p>El servidor MCP es de solo lectura. El instalador lo activa con configuración de proyecto para la ruta de runtime seleccionada, sin convertir MCP, SQLite o el LLM en memoria.</p>
-            <div class="pre-wrap" data-label="stdio">
-<pre><code>python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
-python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
-python3 scripts/install_mcp.py --self-test
-python3 scripts/install_smoke.py --route mcp
-python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
-python3 scripts/cortex_mcp.py --self-test
-npm run mcp:self-test
-npm run field-reports:self-test
-npm run field-reports:status -- --target /path/to/project
-npm run field-reports:drain -- --target /path/to/project
-npm run cortex:mcp:self-test</code></pre>
-            </div>
+            <p>MCP es la ventana de solo lectura que el agente usa para consultar la memoria Cortex. No puede escribir en tu proyecto. La instalación es opt-in por runtime y vive en archivos de configuración con scope de proyecto que puedes revisar y revertir.</p>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Runtime</th><th>Config de proyecto</th></tr></thead>
+                <thead><tr><th>Runtime</th><th>Archivo de config</th></tr></thead>
                 <tbody>
                   <tr><td>Codex</td><td><code>.codex/config.toml</code></td></tr>
                   <tr><td>Claude Code</td><td><code>.mcp.json</code></td></tr>
@@ -1601,81 +1310,63 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Tool</th><th>Comportamiento</th></tr></thead>
-                <tbody>
-                  <tr><td><code>cortex_verify</code></td><td>Valida la estructura y el contrato Cortex.</td></tr>
-                  <tr><td><code>cortex_audit</code></td><td>Encuentra links rotos, evidencia faltante o cells flojas.</td></tr>
-                  <tr><td><code>cortex_recall</code></td><td>Busca con SQLite FTS5 y cae a <code>rg</code>.</td></tr>
-                  <tr><td><code>cortex_read_cell</code></td><td>Lee una cell directamente desde <code>cells/**</code>.</td></tr>
-                  <tr><td><code>cortex_absorb_plan</code></td><td>Produce un plan de absorción sin escritura.</td></tr>
-                  <tr><td><code>cortex_curate_plan</code></td><td>Clasifica riesgos semánticos de memoria sin escribir memoria ni índices derivados.</td></tr>
-                  <tr><td><code>cortex_reflect</code></td><td>Genera una propuesta de memoria y curaduría sin escribir.</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <p>Las herramientas MCP con escritura quedan fuera de esta versión. La activación escribe solo <code>.tes/bin/**</code> y configuración de runtime por proyecto; no debe tocar configuración MCP global, secretos, hooks o <code>sources/**</code>. El conjunto instalado incluye <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tes_update.py</code>, <code>tes_legacy_retirement.py</code> y <code>root_context.py</code>.</p>
+            <p>La activación nunca toca configuración MCP global, secretos, hooks ni <code>sources/**</code>. La superficie de tools, el inventario de helpers y las reglas de escritura están documentados en <a href="AGENT-MANUAL.md#10-mcp-contract"><code>AGENT-MANUAL.md</code> §10</a>.</p>
           </div>
         </section>
 
         <section class="chapter" id="field-reports-es">
           <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
           <div class="chapter-body">
-            <p>TES Field Reports está activo por defecto. Captura hechos operativos sanitizados localmente y drena por <code>gh</code> durante <code>git push</code> solo cuando CLI, autenticación y red están disponibles. La certificación cubre captura/drenaje local, transporte falso y cuarentena del receiver; la publicación viva en GitHub sigue parcial hasta autorización explícita. Los heartbeats de baja señal se suprimen localmente con un recibo en vez de abrir issues ruidosas. Nunca envía código, diffs, prompts, contenido de archivos, secretos, datos personales, paths absolutos, stack traces crudos, nombres de branch crudos o remotes crudos.</p>
-            <p>El agente activo instala un hook local <code>pre-push</code> y estado local en <code>.tes/field-reports/**</code>. Si <code>gh</code>, red o autenticación no están disponibles, el outbox queda pendiente y el push continúa.</p>
-            <p>El receptor GitHub tiene template, verificación de schema y workflow de cuarentena. La sanitización local es la primera barrera de privacidad; GitHub es la segunda barrera de auditoría.</p>
-            <p>Para dejar de colaborar con el aprendizaje de campo de TES, escribe este prompt en la ventana del agente, no en una shell:</p>
+            <p>Field Reports permite a Tilly aprender de instalaciones reales. Está activo por defecto y solo captura hechos operativos sanitizados. Nunca envía tu código, diffs, prompts, contenido de archivos, secretos, datos personales, paths absolutos, stack traces crudos, nombres de branch ni URLs de remote.</p>
+            <p>Los reportes drenan solo durante <code>git push</code>, y solo cuando la CLI de GitHub, la autenticación y la red están todas disponibles. Si falta cualquier eslabón, nada sale de tu máquina y el push continúa con normalidad.</p>
+            <p>Hay dos barreras de privacidad: sanitización local en la captura, y verificación de schema más workflow de cuarentena del lado de GitHub al recibir.</p>
+            <p>Para optar por no participar, escribe esto en la ventana del agente:</p>
             <div class="pre-wrap" data-label="prompt">
 <pre><code>/tes:field-reports:disable</code></pre>
             </div>
-            <p>Para reactivar el comportamiento por defecto después, escribe:</p>
+            <p>Para reactivar después:</p>
             <div class="pre-wrap" data-label="prompt">
 <pre><code>/tes:field-reports:enable</code></pre>
             </div>
-            <p>Estos prompts son interpretados por Tilly dentro de la ventana de contexto actual. Los comandos shell se listan arriba solo para auditar el oráculo interno que el agente puede invocar.</p>
+            <p>El pipeline de transporte completo — hook pre-push, estado del outbox, schema del receiver — está documentado en <a href="AGENT-MANUAL.md#11-field-reports-pipeline"><code>AGENT-MANUAL.md</code> §11</a>.</p>
           </div>
         </section>
 
         <section class="chapter" id="obsidian-es">
           <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
-            <p>Usa Obsidian como mesa visual de trabajo para la malla operativa del proyecto y Cortex, no como capa de autoridad. El instalador nunca crea ni edita <code>.obsidian/**</code>; después de <code>/tes-init</code> y <code>/tes-align</code>, <code>/tes-open-obsidian</code> abre <code>docs/agents/</code> con la CLI registrada de Obsidian o un fallback de app en macOS, mientras la malla y Cortex siguen siendo Markdown común.</p>
+            <p>Obsidian es una mesa de trabajo visual opcional para navegar la malla del agente y la memoria Cortex. No es obligatorio, y Tilly nunca crea ni edita <code>.obsidian/**</code>. Escribe <code>/tes-open-obsidian</code> en la ventana del agente para abrir <code>docs/agents/</code> como vault.</p>
             <ol>
-              <li>Abre <code>docs/agents/</code> como vault cuando quieras ver docs de agente, evidencias y Cortex juntos.</li>
+              <li>Abre <code>docs/agents/</code> como vault para ver docs de agente, evidencias y Cortex juntos.</li>
               <li>Abre <code>docs/agents/cortex/</code> solo cuando quieras un espacio de memoria enfocado.</li>
-              <li>Configura la carpeta de adjuntos como <code>sources/assets/</code> para imágenes locales o assets de artículos recortados.</li>
-              <li>Mantén las citas de fuentes como paths del repositorio, por ejemplo <code>sources/article.md</code>; usa wikilinks principalmente entre cells.</li>
-              <li>Usa Graph View para revisar hubs, cells aisladas y densidad de relaciones después de cada ciclo importante de absorb/apply.</li>
-              <li>Ejecuta <code>python3 scripts/cortex.py audit --target /path/to/project-or-vault</code> antes de confiar en el grafo.</li>
-              <li>Ejecuta <code>python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical</code> cuando el grafo parezca inflado, repetitivo, contradictorio o débil en evidencia.</li>
+              <li>Usa Graph View para detectar cells aisladas y hubs débiles.</li>
             </ol>
             <div class="table-wrap">
               <table>
                 <thead><tr><th>Ajuste de Obsidian</th><th>Uso recomendado</th></tr></thead>
                 <tbody>
-                  <tr><td>Vault root</td><td><code>docs/agents/</code> para la malla TES, o <code>docs/agents/cortex/</code> para memoria enfocada.</td></tr>
+                  <tr><td>Vault root</td><td><code>docs/agents/</code> para la malla completa, o <code>docs/agents/cortex/</code> solo memoria.</td></tr>
                   <tr><td>Files and links</td><td>Mantén los links Markdown legibles fuera de Obsidian; evita pruebas solo de Obsidian.</td></tr>
                   <tr><td>Attachments</td><td>Usa <code>sources/assets/</code> para imágenes locales y medios recortados.</td></tr>
-                  <tr><td>Graph filters</td><td>Enfoca <code>cells/</code>, <code>MAP.md</code> y <code>LINKS.md</code>; oculta archivos transitorios o generados.</td></tr>
-                  <tr><td>Community plugins</td><td>Solo opcionales. Dataview, Canvas y Marp no deben ser requeridos para certificar.</td></tr>
+                  <tr><td>Community plugins</td><td>Solo opcionales. Dataview, Canvas y Marp nunca deben ser requeridos.</td></tr>
                 </tbody>
               </table>
             </div>
-            <p>Un grafo Cortex sano muestra cells conectadas por claims y evidencia. Un grafo bonito no es prueba: <code>audit</code>, Git diff y evidencia explícita son la capa de certificación.</p>
+            <p>Un grafo bonito no es prueba. Confía en los diffs de Git, en el audit del agente y en la evidencia explícita — no en la densidad visual.</p>
           </div>
         </section>
 
         <section class="chapter" id="report-es">
           <div class="chapter-head"><span class="chapter-num">09</span><h2>Informe final</h2></div>
           <div class="chapter-body">
-            <p>Cada ejecución termina con un <strong>TES Context Mesh Convergence Report</strong> corto. El informe en el chat debe decir estado, frescura del snapshot fuente, superficies cambiadas, gate de contexto raíz, helper set instalado, paridad de contrato de los helpers, estado de Field Reports, gates, límites y resumen de rollback. El contexto raíz puede aparecer como <code>PRESERVED</code> cuando bootloaders propios del proyecto se dejaron intactos; sobrescribirlos sigue requiriendo revisión. Los backups son artefactos de rollback, no nuevas superficies TES. Los inventarios largos van al archivo de evidencia.</p>
-            <p>Si el commit del paquete fuente está detrás del <code>main</code> actual de Tilly, el informe debe decir <code>STALE_SOURCE</code>. Eso significa que el target fue certificado contra el snapshot registrado, no contra el paquete más reciente.</p>
-            <div class="pre-wrap" data-label="extracto">
-<pre><code><span class="tok-key">User Manual</span>
-<span class="tok-comment">- Web:</span> https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/install/USER-MANUAL.html
-<span class="tok-comment">- Local package path:</span> docs/install/USER-MANUAL.html</code></pre>
-            </div>
+            <p>Cada ejecución termina con un <strong>Convergence Report</strong> corto en el chat. Léelo antes de aprobar commit o push. Te dice qué cambió, qué se preservó, si todos los gates pasaron y qué rollback está disponible.</p>
+            <p>Algunas señales que conviene reconocer:</p>
+            <ul>
+              <li><code>PRESERVED</code> — tus <code>AGENTS.md</code>, <code>CLAUDE.md</code> o reglas de Cursor existentes quedaron intactos.</li>
+              <li><code>STALE_SOURCE</code> — el commit del paquete está atrás del último release de Tilly; fuiste certificado contra el snapshot registrado, no contra el más reciente.</li>
+              <li><code>NEEDS_REVIEW</code> — algo se bloqueó pero el run preservó evidencia; revisa antes de continuar.</li>
+            </ul>
+            <p>El contrato completo de campos del informe está en <a href="AGENT-MANUAL.md#14-convergence-report-contract"><code>AGENT-MANUAL.md</code> §14</a>.</p>
           </div>
         </section>
 
@@ -1704,22 +1395,18 @@ git revert &lt;install-commit&gt;</code></pre>
         <section class="chapter" id="overview-pt">
           <div class="chapter-head"><span class="chapter-num">00</span><h2>Visão geral</h2></div>
           <div class="chapter-body">
-            <p class="lede">Tilly instala um mesh de governança para agentes de código. Codex, Claude Code e Cursor apontam para a mesma fonte durável do projeto: <code>docs/agents/**</code>. Bootloaders permanecem finos. A governança real vive em Markdown versionado.</p>
+            <p class="lede">A Tilly instala uma malha de governança para agentes de código. Codex, Claude Code e Cursor apontam para a mesma fonte durável do projeto: <code>docs/agents/**</code>. A governança real vive em Markdown versionado.</p>
             <div class="panel">
-              <span class="panel-tag">Nota</span>
-              <p>Arquivos como <code>AGENTS.md</code>, <code>CLAUDE.md</code> e regras do Cursor devem ser bootloaders finos. A governança real vive em <code>docs/agents/**</code>.</p>
+              <span class="panel-tag">Como você usa</span>
+              <p>A interface normal do usuário é uma intenção digitada na janela do agente — não um comando de shell. Digite <code>/tes-init</code> para instalar ou <code>/tes-update</code> para atualizar; o agente ativo escolhe e executa o menor oráculo seguro.</p>
             </div>
             <div class="panel">
-              <span class="panel-tag">Modelo de execução</span>
-              <p>O executor é o agente de código ativo dentro da janela atual do IDE ou runtime. Skills, rules e bootloaders roteiam comportamento; scripts Python e entradas <code>npm run ...</code> são oráculos determinísticos que o agente invoca quando existe acesso local a ferramentas; hooks são gates de eventos Git para validação e reflexão/curadoria Cortex sem escrita; MCP é uma superfície Cortex somente leitura. Se um runtime não consegue executar um oráculo, o agente deve reportar como bloqueado ou ignorado em vez de certificar.</p>
+              <span class="panel-tag">O que continua sendo seu</span>
+              <p>Arquivos próprios do projeto — <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> e regras do Cursor — ficam preservados quando já existem. A Tilly faz retrofit, nunca overwrite.</p>
             </div>
             <div class="panel">
-              <span class="panel-tag">Segurança Git</span>
-              <p>A Tilly protege artefatos locais de rollback e cache com <code>.git/info/exclude</code>: <code>.tes/bin/*.bak-*</code>, bytecode Python, estado do Field Reports e caches SQLite do Cortex ficam fora do staging normal. A Tilly não ignora <code>.tes/bin/*.py</code>, porque estes helpers são a superfície runtime instalada.</p>
-            </div>
-            <div class="panel">
-              <span class="panel-tag">Command triggers</span>
-              <p>A interface normal do usuário é uma intenção Tilly digitada na janela do agente, não um comando de shell. Use <code>/tes-init</code> para primeira instalação e <code>/tes-update</code> ou <code>Atualizar TES</code> para um projeto já meshed em Codex, Claude Code e Cursor; <code>/tes:init</code> e <code>/tes:update</code> seguem como aliases compatíveis, e um slash <code>/tes:*</code> inválido ainda significa intenção TES; o agente ativo escolhe e executa o menor oráculo seguro.</p>
+              <span class="panel-tag">Contrato do operador</span>
+              <p>Este manual é para humanos que instalam, auditam e revertem a Tilly. O contrato do agente — gatilhos, oráculos, gates, estados de retorno, schemas — vive em <a href="AGENT-MANUAL.md"><code>docs/install/AGENT-MANUAL.md</code></a>.</p>
             </div>
           </div>
         </section>
@@ -1729,9 +1416,9 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-body">
             <ol>
               <li>Abra o projeto alvo no Codex, Claude Code ou Cursor.</li>
-              <li>Digite <code>/tes-init</code> para primeira instalação ou <code>/tes-update</code> para um mesh Tilly existente. As formas <code>/tes:init</code> e <code>/tes:update</code> são aliases compatíveis quando aceitas ou digitadas como intenção. Caso contrário, cole o prompt de instalação do README ou de <code>docs/install/MINI-PROMPT.md</code>.</li>
-              <li>Deixe o instalador rodar o Step Zero antes de qualquer edição.</li>
-              <li>Escolha uma rota: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code> ou <code>audit</code>.</li>
+              <li>Digite <code>/tes-init</code> na janela do agente para a primeira instalação, ou <code>/tes-update</code> se a Tilly já estiver instalada. Se seu runtime não interpretar o gatilho, cole o prompt do README ou de <code>docs/install/MINI-PROMPT.md</code>.</li>
+              <li>Deixe o Step Zero terminar antes de aprovar qualquer edição. O Step Zero registra um baseline para que o rollback continue limpo.</li>
+              <li>Escolha uma rota quando solicitado: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code> ou <code>audit</code>.</li>
               <li>Leia o relatório final antes de pedir commit ou push.</li>
             </ol>
           </div>
@@ -1776,165 +1463,32 @@ git revert &lt;install-commit&gt;</code></pre>
         <section class="chapter" id="cortex-pt">
           <div class="chapter-head"><span class="chapter-num">04</span><h2>Cortex</h2></div>
           <div class="chapter-body">
-            <p>Cortex é a memória compilada do projeto. A memória vive em Markdown versionado; SQLite é apenas recall derivado e cache de curadoria semântica.</p>
-            <div class="pre-wrap" data-label="tree">
-<pre><code>docs/agents/cortex/
-  CONTRACT.md
-  MAP.md
-  TRAIL.md
-  LINKS.md
-  sources/
-  cells/
-.tes/cortex/recall.sqlite
-.tes/cortex/semantic.sqlite</code></pre>
-            </div>
-            <p>Cells precisam ter <code>## Claim</code> e <code>## Evidence</code>. <code>sources/**</code> é imutável depois do import. <code>learn</code> propõe sem escrever e exige fonte de evidência ou uma lição durável específica; entradas genéricas retornam evidence-gap/no-capture. <code>curate-plan</code> classifica candidatos acionáveis de merge, split, link, tensão, gap de evidência, redundância e rejeição sem escrever memória; <code>apply --yes</code> escreve só cells autorizadas com evidência e atualiza recall depois do audit.</p>
-            <p>O gate determinístico usa <code>--backend lexical</code>. Ambientes reais podem rodar <code>--backend xenova</code> ou <code>--backend auto</code> com a dependência opcional <code>@huggingface/transformers</code> e <code>Xenova/multilingual-e5-small</code>. Xenova explícito reporta <code>BLOCKED</code> quando indisponível; <code>auto</code> reporta <code>DEGRADED</code> quando cai para lexical.</p>
+            <p>O Cortex é a memória compilada do projeto, escrita em Markdown puro sob <code>docs/agents/cortex/</code>. Cada claim é sustentado por um link de evidência para um arquivo fonte. Os caches SQLite aceleram o recall, mas nunca substituem o Markdown como fonte de verdade.</p>
+            <p>Você lê o Cortex como qualquer outro documento do repositório, revisa em pull requests e reverte com Git. O agente nunca escreve memória sem autorização explícita e um link de evidência.</p>
+            <p>Seleção de backend, schema de cells e regras de escrita fazem parte do contrato do agente — ver <a href="AGENT-MANUAL.md#8-cortex-contract"><code>AGENT-MANUAL.md</code> §8</a>.</p>
           </div>
         </section>
 
         <section class="chapter" id="cli-pt">
-          <div class="chapter-head"><span class="chapter-num">05</span><h2>CLI</h2></div>
+          <div class="chapter-head"><span class="chapter-num">05</span><h2>O que o agente executa</h2></div>
           <div class="chapter-body">
-            <p>Estes comandos são oráculos chamáveis pelo agente, não a interface normal do usuário. No uso normal, o agente ativo do IDE os invoca a partir da janela de contexto; humanos os rodam diretamente só para manutenção do pacote, debug ou revisão de certificação. Use a raiz do pacote Tilly para checks do pacote, ou <code>--target</code> para operar em outro projeto ou vault. <code>tes_init.py</code> recertifica a saúde do pacote, varre o projeto alvo, escreve <code>docs/agents/PROJECT-REGISTER.md</code>, escreve <code>docs/agents/PROJECT-CONTEXT.md</code> como mapa inicial do projeto, cria a malha operacional inicial compatível com Obsidian quando ausente e guarda manifestos com timestamp em <code>docs/agents/evidence/**</code>. Se um oracle posterior bloquear, o run fecha como <code>NEEDS_REVIEW</code> com evidência em vez de deixar o projeto sem inicialização.</p>
-            <p>Prefira comandos/prompts de intenção compartilhados: <code>/tes-init</code> para instalar e <code>/tes-update</code> para atualizar; <code>/tes:init</code> e <code>/tes:update</code> seguem como aliases compatíveis. <code>/tes-init</code> roteia por um Install/Update Gate, um Project Context Gate e um Project-Start Gate; Step Zero protege writes de instalação/atualização, mas não deve bloquear a inicialização de contexto quando TES já está current e só o <code>PROJECT-CONTEXT.md</code> precisa de trabalho. Um preflight context PASS não substitui project-start execution; depois de reparos helper-only, execute <code>tes_init.py --target . --yes</code> e os oracles de contexto e alinhamento antes do relatório final. O update probe compara versão instalada e versão na nuvem, paridade dos helpers, superfícies IDE, rota e <code>recommended_update_scope</code>. Inspeção usa <code>--json-only</code>; após sobrescrever helpers, o probe final com <code>--record-field-report</code> é obrigatório antes de GO, commit ou push e deve mostrar <code>helper_contract_status=PASS</code>, <code>runtime_trigger_status=PASS</code> ou <code>NOT_APPLIED</code>, <code>update_available=False</code> e <code>recommended_update_scope=none</code>. <code>STALE_HELPERS</code> exige atualização; não é current. Repare primeiro com Layer Zero helpers-only antes de ativar configs MCP.</p>
-            <div class="pre-wrap" data-label="cortex">
-<pre><code>python3 scripts/tes_init.py --target /path/to/project --yes
-python3 scripts/tes_init.py --self-test
-python3 scripts/project_context_oracle.py --target /path/to/project && python3 scripts/project_alignment_oracle.py --target /path/to/project
-python3 scripts/project_context_oracle.py --self-test && python3 scripts/project_alignment_oracle.py --self-test
-python3 scripts/tes_update.py plan --target /path/to/project --json-only
-python3 scripts/tes_update.py plan --target /path/to/project --json-only --record-field-report
-python3 scripts/tes_update.py --self-test
-python3 scripts/tes_legacy_retirement.py plan --target /path/to/project
-python3 scripts/tes_legacy_retirement.py apply --target /path/to/project --yes
-python3 scripts/tes_legacy_retirement.py audit --target /path/to/project
-python3 scripts/tes_legacy_retirement.py --self-test
-python3 scripts/root_context.py analyze --target /path/to/project
-python3 scripts/root_context.py --self-test
-python3 scripts/field_reports.py status --target /path/to/project
-python3 scripts/field_reports.py drain --target /path/to/project
-python3 scripts/field_reports.py disable --target /path/to/project
-python3 scripts/field_reports.py enable --target /path/to/project
-python3 scripts/field_reports.py --self-test
-python3 scripts/cortex.py init --target /path/to/project-or-vault
-python3 scripts/cortex.py verify --target /path/to/project-or-vault
-python3 scripts/cortex.py audit --target /path/to/project-or-vault
-python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
-python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical
-python3 scripts/cortex.py recall --target /path/to/project-or-vault "query"
-python3 scripts/cortex.py read-cell --target /path/to/project-or-vault --cell cell-name
-python3 scripts/cortex.py absorb-plan --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
-python3 scripts/cortex.py learn --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
-python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision or lesson"
-python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
-python3 scripts/cortex.py --self-test</code></pre>
-            </div>
-            <p><code>learn</code> e <code>reflect</code> nunca escrevem. Prompts fracos ou genéricos não produzem propostas de memória. <code>curate-plan</code> sempre reporta <code>writes: []</code> e pode atualizar apenas o índice semântico derivado via CLI, não sobre MCP. <code>apply</code> só escreve com <code>--yes</code>, evidência explícita, audit e rebuild. Ele nunca escreve em <code>sources/**</code>.</p>
-            <div class="pre-wrap" data-label="package">
-<pre><code>npm run validate
-npm run install:dry-run
-npm run install:smoke
-npm run tes:init -- --target /path/to/project --yes
-npm run tes:init:self-test
-npm run tes:update -- --target /path/to/project
-npm run tes:update:self-test
-npm run tes:legacy:plan -- --target /path/to/project
-npm run tes:legacy:apply -- --target /path/to/project --yes
-npm run tes:legacy:audit -- --target /path/to/project
-npm run tes:legacy:self-test
-npm run install:adapter -- --target /path/to/project --adapter all --yes
-npm run mcp:dry-run -- --target /path/to/project --adapter all
-npm run mcp:install -- --target /path/to/project --adapter codex --yes
-npm run mcp:install -- --target /path/to/project --adapter all --yes
-npm run mcp:self-test
-npm run field-reports:self-test
-npm run field-reports:status -- --target /path/to/project
-npm run field-reports:drain -- --target /path/to/project
-npm run claude:plugin:oracle
-npm run retention:check
-npm run reference:graph
-npm run docs:size
-npm run tds:validate
-npm run cortex:init -- --target /path/to/project-or-vault
-npm run cortex:verify -- --target /path/to/project-or-vault
-npm run cortex:audit -- --target /path/to/project-or-vault
-npm run cortex:rebuild -- --target /path/to/project-or-vault
-npm run cortex:curate-plan -- --target /path/to/project-or-vault --backend lexical
-npm run cortex:recall -- --target /path/to/project-or-vault "query"
-npm run cortex:read-cell -- --target /path/to/project-or-vault --cell cell-name
-npm run cortex:absorb-plan -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
-npm run cortex:learn -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
-npm run cortex:reflect -- --target /path/to/project-or-vault "decision or lesson"
-npm run cortex:apply -- --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
-npm run cortex:self-test
-npm run cortex:mcp:self-test
-npm run materialize:all
-npm run materialize:codex
-npm run materialize:cursor
-npm run materialize:claude
-npm run materialize:check
-npm run benchmark:plan
-npm run benchmark:run -- --backend fixture
-npm run benchmark:converge
-npm run adapter:parity:check
-npm run platform:surface:check
-npm run oracle:self-test
-npm run git:diff-check
-npm run commit:check</code></pre>
-            </div>
-            <div class="pre-wrap" data-label="adapter">
-<pre><code>python3 scripts/install_adapter.py --dry-run --target /path/to/project --adapter all
-python3 scripts/install_adapter.py --target /path/to/project --adapter codex --yes
-python3 scripts/install_adapter.py --target /path/to/project --adapter all --yes
-python3 scripts/install_smoke.py --self-test
-python3 scripts/claude_plugin_oracle.py --self-test
-python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
-python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
-python3 scripts/install_mcp.py --self-test
-python3 scripts/install_smoke.py --route mcp
-python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
-python3 scripts/cortex_mcp.py --self-test
-python3 scripts/materialize_adapter.py all --check
-python3 scripts/materialize_adapter.py all</code></pre>
-            </div>
-            <div class="pre-wrap" data-label="gates">
-<pre><code>python3 scripts/validate_reference_package.py
-python3 scripts/validate_reference_package.py --staged-ready
-python3 scripts/validate_tds.py
-python3 scripts/validate_doc_size.py
-python3 scripts/retention_metadata.py --check
-python3 scripts/validate_reference_graph.py
-python3 scripts/platform_surface_oracle.py --self-test
-python3 scripts/adapter_parity_readiness.py
-python3 scripts/context_mesh_plan.py
-python3 scripts/context_mesh_run.py --backend fixture
-python3 scripts/context_mesh_convergence.py
-python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test</code></pre>
-            </div>
+            <p>Dentro da janela do agente você não digita comandos de shell. Você digita intenção — <code>/tes-init</code>, <code>/tes-update</code>, <code>/tes-align</code>, <code>/tes-open-obsidian</code> — e o agente traduz isso numa sequência de oráculos pequenos e escopados.</p>
+            <p>Você só precisa saber duas coisas:</p>
+            <ol>
+              <li><strong>O Step Zero roda primeiro.</strong> Antes de qualquer escrita, o agente registra um baseline e verifica a própria toolchain. Se faltar uma capacidade necessária, o run para e reporta em vez de adivinhar.</li>
+              <li><strong>O relatório final é o contrato.</strong> Leia antes de aprovar commit ou push. Se o status não for sucesso, peça ao agente para explicar ou fazer rollback.</li>
+            </ol>
+            <p>O inventário completo de oráculos — scripts Python, wrappers <code>npm run</code>, gates de validação, contratos de probe — vive em <a href="AGENT-MANUAL.md#9-cli-oracle-inventory"><code>AGENT-MANUAL.md</code> §9</a>. Recorra a ele ao revisar um run, depurar um oráculo bloqueado ou auditar o que o agente invocou.</p>
           </div>
         </section>
 
         <section class="chapter" id="mcp-pt">
           <div class="chapter-head"><span class="chapter-num">06</span><h2>MCP</h2></div>
           <div class="chapter-body">
-            <p>O servidor MCP é somente leitura. O instalador o ativa com configuração de projeto para a rota de runtime selecionada, sem transformar MCP, SQLite ou LLM em memória.</p>
-            <div class="pre-wrap" data-label="stdio">
-<pre><code>python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
-python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
-python3 scripts/install_mcp.py --self-test
-python3 scripts/install_smoke.py --route mcp
-python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
-python3 scripts/cortex_mcp.py --self-test
-npm run mcp:self-test
-npm run field-reports:self-test
-npm run field-reports:status -- --target /path/to/project
-npm run field-reports:drain -- --target /path/to/project
-npm run cortex:mcp:self-test</code></pre>
-            </div>
+            <p>MCP é a janela somente leitura que o agente usa para consultar a memória Cortex. Ele não consegue escrever no seu projeto. A instalação é opt-in por runtime e vive em arquivos de configuração com escopo de projeto que você pode revisar e reverter.</p>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Runtime</th><th>Config de projeto</th></tr></thead>
+                <thead><tr><th>Runtime</th><th>Arquivo de config</th></tr></thead>
                 <tbody>
                   <tr><td>Codex</td><td><code>.codex/config.toml</code></td></tr>
                   <tr><td>Claude Code</td><td><code>.mcp.json</code></td></tr>
@@ -1942,81 +1496,64 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Tool</th><th>Comportamento</th></tr></thead>
-                <tbody>
-                  <tr><td><code>cortex_verify</code></td><td>Valida a estrutura e o contrato Cortex.</td></tr>
-                  <tr><td><code>cortex_audit</code></td><td>Encontra links quebrados, evidência ausente ou cells frouxas.</td></tr>
-                  <tr><td><code>cortex_recall</code></td><td>Busca com SQLite FTS5 e cai para <code>rg</code>.</td></tr>
-                  <tr><td><code>cortex_read_cell</code></td><td>Lê uma cell diretamente de <code>cells/**</code>.</td></tr>
-                  <tr><td><code>cortex_absorb_plan</code></td><td>Produz um plano de absorção sem escrita.</td></tr>
-                  <tr><td><code>cortex_curate_plan</code></td><td>Classifica riscos semânticos da memória sem escrever memória nem índices derivados.</td></tr>
-                  <tr><td><code>cortex_reflect</code></td><td>Gera uma proposta de memória e curadoria sem escrever.</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <p>Ferramentas MCP com escrita ficam fora desta versão. A ativação escreve apenas <code>.tes/bin/**</code> e configuração de runtime por projeto; não deve tocar configuração MCP global, segredos, hooks ou <code>sources/**</code>. O conjunto instalado inclui <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tes_update.py</code>, <code>tes_legacy_retirement.py</code> e <code>root_context.py</code>.</p>
+            <p>A ativação nunca toca configuração MCP global, segredos, hooks ou <code>sources/**</code>. Superfície de tools, inventário de helpers e regras de escrita estão documentados em <a href="AGENT-MANUAL.md#10-mcp-contract"><code>AGENT-MANUAL.md</code> §10</a>.</p>
           </div>
         </section>
 
         <section class="chapter" id="field-reports-pt">
           <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
           <div class="chapter-body">
-            <p>O TES Field Reports fica ativo por padrão. Ele captura fatos operacionais sanitizados localmente e drena via <code>gh</code> durante <code>git push</code> apenas quando CLI, autenticação e rede estão disponíveis. A certificação cobre captura/drenagem local, transporte falso e quarentena do receiver; publicação viva no GitHub segue parcial até autorização explícita. Heartbeats de baixo sinal são suprimidos localmente com recibo em vez de abrir issues ruidosas. Ele nunca envia código, diff, prompt, conteúdo de arquivo, segredo, dado pessoal, path absoluto, stack trace cru, nome bruto de branch ou remote bruto.</p>
-            <p>O agente ativo instala um hook local <code>pre-push</code> e estado local em <code>.tes/field-reports/**</code>. Se <code>gh</code>, rede ou autenticação estiverem indisponíveis, o outbox fica pendente e o push continua.</p>
-            <p>O receptor GitHub tem template, verificação de schema e workflow de quarentena. A sanitização local é a primeira barreira de privacidade; o GitHub é a segunda barreira de auditoria.</p>
-            <p>O usuário que não desejar colaborar com a evolução da TES deve digitar este prompt na janela do agente, não no shell:</p>
+            <p>O Field Reports permite que a Tilly aprenda com instalações reais. Ele fica ativo por padrão e só captura fatos operacionais sanitizados. Nunca envia seu código, diffs, prompts, conteúdo de arquivos, segredos, dados pessoais, paths absolutos, stack traces crus, nomes de branch ou URLs de remote.</p>
+            <p>Os relatórios drenam apenas durante <code>git push</code>, e somente quando a CLI do GitHub, autenticação e rede estão todas disponíveis. Se faltar qualquer elo, nada sai da sua máquina e o push continua normalmente.</p>
+            <p>Há duas barreiras de privacidade: sanitização local na captura, e verificação de schema mais workflow de quarentena no lado do GitHub no recebimento.</p>
+            <p>Para optar por não participar, digite isto na janela do agente:</p>
             <div class="pre-wrap" data-label="prompt">
 <pre><code>/tes:field-reports:disable</code></pre>
             </div>
-            <p>Para reativar o comportamento padrão depois, digite:</p>
+            <p>Para reativar depois:</p>
             <div class="pre-wrap" data-label="prompt">
 <pre><code>/tes:field-reports:enable</code></pre>
             </div>
-            <p>Estes prompts são interpretados pela Tilly dentro da janela de contexto atual. Os comandos shell acima aparecem apenas para auditar o oráculo interno que o agente pode invocar.</p>
+            <p>O pipeline de transporte completo — hook pre-push, estado do outbox, schema do receiver — está documentado em <a href="AGENT-MANUAL.md#11-field-reports-pipeline"><code>AGENT-MANUAL.md</code> §11</a>.</p>
           </div>
         </section>
 
         <section class="chapter" id="obsidian-pt">
           <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
-            <p>Use o Obsidian como bancada visual da malha operacional do projeto e do Cortex, não como camada de autoridade. O instalador nunca cria nem edita <code>.obsidian/**</code>; após <code>/tes-init</code> e <code>/tes-align</code>, <code>/tes-open-obsidian</code> abre <code>docs/agents/</code> pela CLI registrada do Obsidian ou por fallback do app no macOS, enquanto a malha e o Cortex continuam em Markdown comum.</p>
+            <p>O Obsidian é uma bancada visual opcional para navegar a malha do agente e a memória Cortex. Ele não é obrigatório, e a Tilly nunca cria ou edita <code>.obsidian/**</code>. Digite <code>/tes-open-obsidian</code> na janela do agente para abrir <code>docs/agents/</code> como vault.</p>
             <ol>
-              <li>Abra <code>docs/agents/</code> como vault quando quiser ver docs de agente, evidências e Cortex juntos.</li>
+              <li>Abra <code>docs/agents/</code> como vault para ver docs de agente, evidências e Cortex juntos.</li>
               <li>Abra <code>docs/agents/cortex/</code> apenas quando quiser um espaço focado de memória.</li>
-              <li>Configure a pasta de anexos como <code>sources/assets/</code> para imagens locais ou assets de artigos recortados.</li>
-              <li>Mantenha citações de fontes como paths do repositório, por exemplo <code>sources/article.md</code>; use wikilinks principalmente entre cells.</li>
-              <li>Use o Graph View para revisar hubs, cells isoladas e densidade de relações depois de cada ciclo relevante de absorb/apply.</li>
-              <li>Rode <code>python3 scripts/cortex.py audit --target /path/to/project-or-vault</code> antes de confiar no grafo.</li>
-              <li>Rode <code>python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical</code> quando o grafo parecer inchado, repetitivo, contraditório ou fraco em evidência.</li>
+              <li>Use o Graph View para identificar cells isoladas e hubs fracos.</li>
             </ol>
             <div class="table-wrap">
               <table>
                 <thead><tr><th>Ajuste do Obsidian</th><th>Uso recomendado</th></tr></thead>
                 <tbody>
-                  <tr><td>Vault root</td><td><code>docs/agents/</code> para a malha TES, ou <code>docs/agents/cortex/</code> para memória focada.</td></tr>
+                  <tr><td>Vault root</td><td><code>docs/agents/</code> para a malha completa, ou <code>docs/agents/cortex/</code> só memória.</td></tr>
                   <tr><td>Files and links</td><td>Mantenha links Markdown legíveis fora do Obsidian; evite prova que só existe no Obsidian.</td></tr>
                   <tr><td>Attachments</td><td>Use <code>sources/assets/</code> para imagens locais e mídia recortada.</td></tr>
-                  <tr><td>Graph filters</td><td>Foque em <code>cells/</code>, <code>MAP.md</code> e <code>LINKS.md</code>; esconda arquivos transitórios ou gerados.</td></tr>
-                  <tr><td>Community plugins</td><td>Apenas opcionais. Dataview, Canvas e Marp não devem ser exigidos para certificação.</td></tr>
+                  <tr><td>Community plugins</td><td>Apenas opcionais. Dataview, Canvas e Marp nunca devem ser exigidos.</td></tr>
                 </tbody>
               </table>
             </div>
-            <p>Um grafo Cortex saudável mostra cells conectadas por claims e evidências. Um grafo bonito não é prova: <code>audit</code>, Git diff e evidência explícita são a camada de certificação.</p>
+            <p>Um grafo bonito não é prova. Confie nos diffs do Git, no audit do agente e na evidência explícita — não na densidade visual.</p>
           </div>
         </section>
 
         <section class="chapter" id="report-pt">
           <div class="chapter-head"><span class="chapter-num">09</span><h2>Relatório final</h2></div>
           <div class="chapter-body">
-            <p>Todo fluxo termina com um <strong>TES Context Mesh Convergence Report</strong> curto. O relatório na conversa deve dizer status, frescor do snapshot fonte, superfícies alteradas, gate de contexto raiz, helper set instalado, paridade de contrato dos helpers, estado do Field Reports, gates, limites e resumo de rollback. O contexto raiz pode aparecer como <code>PRESERVED</code> quando bootloaders próprios do projeto foram deixados intactos; sobrescrever ainda exige revisão. Backups são artefatos de rollback, não novas superfícies TES. Inventários longos ficam no arquivo de evidência.</p>
-            <p>Se o commit do pacote fonte estiver atrás do <code>main</code> atual da Tilly, o relatório deve dizer <code>STALE_SOURCE</code>. Isso significa que o alvo foi certificado contra o snapshot registrado, não contra o pacote mais recente.</p>
-            <div class="pre-wrap" data-label="trecho">
-<pre><code><span class="tok-key">User Manual</span>
-<span class="tok-comment">- Web:</span> https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/install/USER-MANUAL.html
-<span class="tok-comment">- Local package path:</span> docs/install/USER-MANUAL.html</code></pre>
-            </div>
+            <p>Toda execução termina com um <strong>Convergence Report</strong> curto no chat. Leia antes de aprovar commit ou push. Ele diz o que mudou, o que foi preservado, se todos os gates passaram e qual rollback está disponível.</p>
+            <p>O relatório no chat cobre status, frescor do snapshot fonte, superfícies alteradas, gate de contexto raiz, helper set instalado, paridade de contrato dos helpers, estado do Field Reports, gates, limites e resumo de rollback. Backups são artefatos de rollback, não novas superfícies TES.</p>
+            <p>Alguns sinais que vale reconhecer:</p>
+            <ul>
+              <li><code>PRESERVED</code> — seus <code>AGENTS.md</code>, <code>CLAUDE.md</code> ou regras do Cursor existentes ficaram intactos.</li>
+              <li><code>STALE_SOURCE</code> — o commit do pacote está atrás do release mais recente da Tilly; você foi certificado contra o snapshot registrado, não contra o mais novo.</li>
+              <li><code>NEEDS_REVIEW</code> — algo bloqueou mas o run preservou evidência; revise antes de continuar.</li>
+            </ul>
+            <p>O contrato completo de campos do relatório está em <a href="AGENT-MANUAL.md#14-convergence-report-contract"><code>AGENT-MANUAL.md</code> §14</a>.</p>
           </div>
         </section>
 
@@ -2056,9 +1593,9 @@ git revert &lt;install-commit&gt;</code></pre>
       const html = document.documentElement;
 
       const i18n = {
-        en: { contents: "Contents", overview: "Overview", install: "Quick install", routes: "Routes", states: "Project states", cortex: "Cortex", cli: "CLI", mcp: "MCP", fieldReports: "Field Reports", obsidian: "Obsidian", report: "Final report", rollback: "Rollback" },
-        es: { contents: "Índice", overview: "Vista general", install: "Instalación rápida", routes: "Rutas", states: "Estados", cortex: "Cortex", cli: "CLI", mcp: "MCP", fieldReports: "Field Reports", obsidian: "Obsidian", report: "Informe final", rollback: "Rollback" },
-        pt: { contents: "Sumário", overview: "Visão geral", install: "Instalação rápida", routes: "Rotas", states: "Estados", cortex: "Cortex", cli: "CLI", mcp: "MCP", fieldReports: "Field Reports", obsidian: "Obsidian", report: "Relatório final", rollback: "Rollback" },
+        en: { contents: "Contents", overview: "Overview", install: "Quick install", routes: "Routes", states: "Project states", cortex: "Cortex", cli: "What the agent runs", mcp: "MCP", "field-reports": "Field Reports", obsidian: "Obsidian", report: "Final report", rollback: "Rollback" },
+        es: { contents: "Índice", overview: "Vista general", install: "Instalación rápida", routes: "Rutas", states: "Estados", cortex: "Cortex", cli: "Lo que ejecuta el agente", mcp: "MCP", "field-reports": "Field Reports", obsidian: "Obsidian", report: "Informe final", rollback: "Rollback" },
+        pt: { contents: "Sumário", overview: "Visão geral", install: "Instalação rápida", routes: "Rotas", states: "Estados", cortex: "Cortex", cli: "O que o agente executa", mcp: "MCP", "field-reports": "Field Reports", obsidian: "Obsidian", report: "Relatório final", rollback: "Rollback" },
       };
 
       const sectionIdMap = (lang) => (key) =>
