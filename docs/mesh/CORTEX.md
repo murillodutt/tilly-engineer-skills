@@ -83,7 +83,8 @@ derived and may be deleted. Running `rebuild` recreates recall. Running
 
 ## Obsidian Compatibility
 
-Open either the project root or `docs/agents/cortex/` as an Obsidian vault.
+Open `docs/agents/` as the TES mesh vault, or `docs/agents/cortex/` only when
+you want a focused memory workspace.
 
 Use plain Markdown files and links that remain useful outside Obsidian. Agents
 may use Obsidian wikilinks between Cortex cells when that improves graph view,

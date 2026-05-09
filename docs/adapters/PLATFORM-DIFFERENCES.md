@@ -33,7 +33,7 @@ TES entry vocabulary is shared across platforms:
 | Initialize or recertify | `/tes-init` | `/tes:init` | Load the assisted installer and classify the project. |
 | Update existing mesh | `/tes-update` | `/tes:update` | Run the update probe, Layer Zero if needed, then converge. |
 | Align project operating mesh | `/tes-align` | `/tes:align` | Deepen initial context into roadmap, state, execution line, gates, boundaries, glossary, decisions, and evidence. |
-| Open Obsidian | `/tes-open-obsidian` | `/tes:open-obsidian` | Preflight context/alignment and open the project in Obsidian without writing `.obsidian/**`. |
+| Open Obsidian | `/tes-open-obsidian` | `/tes:open-obsidian` | Preflight context/alignment and open `docs/agents` as the Obsidian vault without writing `.obsidian/**`. |
 | Cortex | `/tes-cortex` | `/tes:cortex`, `/tes:recall`, `/tes:learn`, `/tes:reflect` | Inspect or certify the continuity layer. |
 | Curate | `/tes-curate` | `/tes:curate` | Classify Cortex memory quality risks without writing memory. |
 | MCP | `/tes-mcp` | `/tes:mcp` | Inspect or activate read-only Cortex MCP. |

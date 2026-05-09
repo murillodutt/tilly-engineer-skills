@@ -17,13 +17,14 @@ Obsidian-ready Markdown mesh under `docs/agents/**`.
 TES prepares and verifies the Markdown knowledge mesh. Obsidian belongs to the
 human or host project.
 
-This skill may open the project folder in Obsidian when explicitly invoked, but
-it must not create, edit, clean, or version `.obsidian/**`.
+This skill opens `docs/agents` as the Obsidian vault when explicitly invoked,
+because that folder is the TES operating mesh. It must not create, edit, clean,
+or version `.obsidian/**`.
 
 Prefer the official Obsidian CLI when it is available and registered. The CLI
 requires the Obsidian 1.12+ installer with **Command line interface** enabled in
 Obsidian settings: <https://obsidian.md/help/cli>. On macOS, the helper may fall
-back to opening the target folder with the Obsidian app.
+back to opening `<target>/docs/agents` with the Obsidian app.
 
 ## Workflow
 
@@ -49,7 +50,8 @@ python3 .tes/bin/tes_open_obsidian.py --target . --open
 ```
 
 5. Report whether the project was `OPENED`, `READY`, or `BLOCKED`, including
-   whether the helper used the Obsidian CLI or the macOS app fallback.
+   `vault_root`, `vault_root_relative`, and whether the helper used the
+   Obsidian CLI or the macOS app fallback.
 
 ## Status Semantics
 

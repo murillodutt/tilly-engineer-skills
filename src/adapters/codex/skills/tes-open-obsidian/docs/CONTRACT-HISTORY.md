@@ -30,6 +30,7 @@ Obsidian without turning TES into an Obsidian configuration manager.
 ## Contracts Preserved
 
 - TES Markdown under `docs/agents/**` is the operational source of truth.
+- The open target is `docs/agents`, not the repository root.
 - Obsidian state under `.obsidian/**` is host-owned.
 - Opening Obsidian is a visible local action and must be opt-in.
 - The skill certifies context and alignment before opening.
@@ -38,6 +39,7 @@ Obsidian without turning TES into an Obsidian configuration manager.
 
 - Treating `.obsidian/**` as a TES-owned install surface.
 - Opening an uninitialized project and calling that success.
+- Opening the repository root and calling that the TES mesh vault.
 - Installing plugins or mutating app settings during a context task.
 - Confusing Obsidian visualization with TES runtime dependency.
 
@@ -53,6 +55,7 @@ remains the health check.
 |---|---|---|---|
 | 2026-05-09 | Created `tes-open-obsidian` contract. | User directive; `scripts/tes_open_obsidian.py --self-test`. | high |
 | 2026-05-09 | Preferred official Obsidian CLI when registered, with macOS app fallback. | <https://obsidian.md/help/cli>. | high |
+| 2026-05-09 | Corrected the open target to `docs/agents` and added `vault_root` evidence. | Real `tilly-mini-agi` dry-run; `scripts/tes_open_obsidian.py --self-test`. | high |
 
 ## Do Not Lose
 
