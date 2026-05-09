@@ -1,6 +1,6 @@
 # Tilly Engineer Skills (TES)
 
-[![Version](https://img.shields.io/badge/version-0.3.67-1f6feb)](package.json)
+[![Version](https://img.shields.io/badge/version-0.3.68-1f6feb)](package.json)
 [![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE)
 [![Field Report Governance](https://github.com/murillodutt/tilly-engineer-skills/actions/workflows/field-report-governance.yml/badge.svg)](https://github.com/murillodutt/tilly-engineer-skills/actions/workflows/field-report-governance.yml)
 [![Context Mesh](https://img.shields.io/badge/context--mesh-agent--operating--layer-2ea44f)](docs/mesh/CONTEXT-MESH-METHOD.md)
@@ -60,13 +60,15 @@ Short intents also work after the route is available:
 ```text
 /tes-init
 /tes-update
+/tes-open-obsidian
 /tes:init
 /tes:update
 Atualizar TES.
 ```
 
-`/tes-init` and `/tes-update` are the preferred cross-platform triggers.
-`/tes:init` and `/tes:update` remain compatible intent aliases.
+`/tes-init`, `/tes-update`, and `/tes-open-obsidian` are the preferred
+cross-platform triggers. `/tes:init`, `/tes:update`, and
+`/tes:open-obsidian` remain compatible intent aliases.
 
 Canonical mini prompt: [docs/install/MINI-PROMPT.md](docs/install/MINI-PROMPT.md)
 

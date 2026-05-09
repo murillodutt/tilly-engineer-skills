@@ -1,6 +1,6 @@
 {
   "name": "tilly-engineer-skills",
-  "version": "0.3.67",
+  "version": "0.3.68",
   "private": true,
   "description": "Portable engineering discipline and context-mesh method for coding agents.",
   "license": "MIT",
@@ -14,6 +14,7 @@
     "tes:init:self-test": "python3 scripts/tes_init.py --self-test",
     "project-context:self-test": "python3 scripts/project_context_oracle.py --self-test",
     "project-alignment:self-test": "python3 scripts/project_alignment_oracle.py --self-test",
+    "tes-open-obsidian:self-test": "python3 scripts/tes_open_obsidian.py --self-test",
     "tes:update": "python3 scripts/tes_update.py",
     "tes:update:self-test": "python3 scripts/tes_update.py --self-test",
     "tes:legacy:plan": "python3 scripts/tes_legacy_retirement.py plan",
@@ -68,7 +69,7 @@
     "reference:graph": "python3 scripts/validate_reference_graph.py",
     "docs:size": "python3 scripts/validate_doc_size.py",
     "git:diff-check": "git diff --check && git diff --cached --check",
-    "commit:check": "python3 scripts/validate_reference_package.py --staged-ready && python3 scripts/validate_tds.py && python3 scripts/validate_doc_size.py && python3 scripts/context_mesh_plan.py && python3 scripts/cortex.py --self-test && python3 scripts/cortex_quality_oracle.py --self-test && python3 scripts/cortex_mcp.py --self-test && python3 scripts/field_reports.py --self-test && python3 scripts/field_reports_quality_oracle.py --self-test && python3 scripts/field_reports_github_oracle.py --self-test && python3 scripts/github_readiness_oracle.py --self-test && python3 scripts/root_context.py --self-test && python3 scripts/install_mcp.py --self-test && python3 scripts/install_smoke.py --self-test && python3 scripts/tes_init.py --self-test && python3 scripts/project_context_oracle.py --self-test && python3 scripts/project_alignment_oracle.py --self-test && python3 scripts/tes_update.py --self-test && python3 scripts/tes_legacy_retirement.py --self-test && python3 scripts/tes_namespace.py --self-test && python3 scripts/codex_plugin_oracle.py --self-test && python3 scripts/claude_plugin_oracle.py --self-test && python3 scripts/command_trigger_oracle.py --self-test && python3 scripts/platform_surface_oracle.py --self-test && python3 scripts/retention_metadata.py --check && python3 scripts/validate_reference_graph.py && python3 scripts/materialize_adapter.py all --check && python3 scripts/adapter_parity_readiness.py && git diff --check && git diff --cached --check"
+    "commit:check": "python3 scripts/validate_reference_package.py --staged-ready && python3 scripts/validate_tds.py && python3 scripts/validate_doc_size.py && python3 scripts/context_mesh_plan.py && python3 scripts/cortex.py --self-test && python3 scripts/cortex_quality_oracle.py --self-test && python3 scripts/cortex_mcp.py --self-test && python3 scripts/field_reports.py --self-test && python3 scripts/field_reports_quality_oracle.py --self-test && python3 scripts/field_reports_github_oracle.py --self-test && python3 scripts/github_readiness_oracle.py --self-test && python3 scripts/root_context.py --self-test && python3 scripts/install_mcp.py --self-test && python3 scripts/install_smoke.py --self-test && python3 scripts/tes_init.py --self-test && python3 scripts/project_context_oracle.py --self-test && python3 scripts/project_alignment_oracle.py --self-test && python3 scripts/tes_open_obsidian.py --self-test && python3 scripts/tes_update.py --self-test && python3 scripts/tes_legacy_retirement.py --self-test && python3 scripts/tes_namespace.py --self-test && python3 scripts/codex_plugin_oracle.py --self-test && python3 scripts/claude_plugin_oracle.py --self-test && python3 scripts/command_trigger_oracle.py --self-test && python3 scripts/platform_surface_oracle.py --self-test && python3 scripts/retention_metadata.py --check && python3 scripts/validate_reference_graph.py && python3 scripts/materialize_adapter.py all --check && python3 scripts/adapter_parity_readiness.py && git diff --check && git diff --cached --check"
   },
   "optionalDependencies": {
     "@huggingface/transformers": "^4.2.0"

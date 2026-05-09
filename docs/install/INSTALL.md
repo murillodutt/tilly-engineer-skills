@@ -129,7 +129,9 @@ no-capture reasons for weak generic inputs.
 
 Cortex is Obsidian-compatible plain Markdown. The installer does not create
 `.obsidian/**`, require community plugins, or depend on Obsidian state for
-certification.
+certification. After `/tes-init` and `/tes-align`, `/tes-open-obsidian` may
+open the project through the registered Obsidian CLI or a macOS app fallback,
+but TES still does not write `.obsidian/**`.
 
 Cortex MCP is activated by default for selected runtime routes. It remains
 read-only and project-scoped. The installer may write `.tes/bin/cortex.py`,
@@ -289,7 +291,7 @@ Source Snapshot: package commit, remote main, freshness
 Changed Surfaces: new surfaces, updated existing mesh files, runtime config
 Rollback Backups: short list or none; .bak-* files are rollback artifacts, not new surfaces
 Root Context Gate: PASS | PRESERVED | NEEDS_REVIEW | SKIP
-Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py, tes_init.py, project_context_oracle.py, project_alignment_oracle.py
+Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py, tes_init.py, project_context_oracle.py, project_alignment_oracle.py, tes_open_obsidian.py
 Field Reports: PASS | BLOCKED | DISABLED | SKIP, with pending outbox count
 Certification: compact PASS/FAIL/SKIP bullets
 Evidence: ...

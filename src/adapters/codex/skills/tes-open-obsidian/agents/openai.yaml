@@ -1,0 +1,7 @@
+name: tes-open-obsidian
+description: Open a TES-initialized project in Obsidian after context/alignment preflight.
+default_prompt: |
+  Use $tes-open-obsidian to preflight this project for Obsidian visualization.
+  Verify docs/agents project context and alignment with tes_open_obsidian.py,
+  preserve .obsidian/** as project-owned state, and open Obsidian only when the
+  user explicitly requested the visible local action.

@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.67"
+VERSION = "0.3.68"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -79,6 +79,9 @@ REQUIRED_PATHS = (
     "src/adapters/codex/skills/tes-align/agents/openai.yaml",
     "src/adapters/codex/skills/tes-align/references/alignment-procedure.md",
     "src/adapters/codex/skills/tes-align/docs/CONTRACT-HISTORY.md",
+    "src/adapters/codex/skills/tes-open-obsidian/SKILL.md",
+    "src/adapters/codex/skills/tes-open-obsidian/agents/openai.yaml",
+    "src/adapters/codex/skills/tes-open-obsidian/docs/CONTRACT-HISTORY.md",
     "src/adapters/codex/skills/tes-cortex/SKILL.md",
     "src/adapters/codex/skills/tes-mcp/SKILL.md",
     "src/adapters/codex/skills/tes-doctor/SKILL.md",
@@ -93,6 +96,9 @@ REQUIRED_PATHS = (
     "src/adapters/claude/skills/tes-align/agents/openai.yaml",
     "src/adapters/claude/skills/tes-align/references/alignment-procedure.md",
     "src/adapters/claude/skills/tes-align/docs/CONTRACT-HISTORY.md",
+    "src/adapters/claude/skills/tes-open-obsidian/SKILL.md",
+    "src/adapters/claude/skills/tes-open-obsidian/agents/openai.yaml",
+    "src/adapters/claude/skills/tes-open-obsidian/docs/CONTRACT-HISTORY.md",
     "src/adapters/claude/skills/tes-cortex/SKILL.md",
     "src/adapters/claude/skills/tes-mcp/SKILL.md",
     "src/adapters/claude/skills/tes-doctor/SKILL.md",
@@ -117,6 +123,7 @@ REQUIRED_PATHS = (
     "scripts/tes_init.py",
     "scripts/project_context_oracle.py",
     "scripts/project_alignment_oracle.py",
+    "scripts/tes_open_obsidian.py",
     "scripts/tes_update.py",
     "scripts/tes_legacy_retirement.py",
     "scripts/tes_namespace.py",
@@ -182,6 +189,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "tes:init:self-test",
     "project-context:self-test",
     "project-alignment:self-test",
+    "tes-open-obsidian:self-test",
     "tes:update",
     "tes:update:self-test",
     "tes:legacy:plan",

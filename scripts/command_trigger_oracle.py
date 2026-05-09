@@ -12,12 +12,13 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.67"
+VERSION = "0.3.68"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
     "/tes-update",
     "/tes-align",
+    "/tes-open-obsidian",
     "/tes-cortex",
     "/tes-curate",
     "/tes-mcp",
@@ -31,6 +32,7 @@ COMPATIBLE_ALIASES = (
     "/tes:init",
     "/tes:update",
     "/tes:align",
+    "/tes:open-obsidian",
     "/tes:cortex",
     "/tes:mcp",
     "/tes:field-reports",
@@ -49,12 +51,17 @@ NATURAL_INTENTS = (
     "tes init",
     "tes update",
     "tes align",
+    "tes open obsidian",
     "align TES",
     "align this project",
+    "open Obsidian",
+    "open this project in Obsidian",
     "Atualizar TES",
     "atualizar TES",
     "alinhar TES",
     "alinhar projeto",
+    "abrir Obsidian",
+    "abrir no Obsidian",
     "initialize TES",
     "install TES",
     "recertify TES",
@@ -90,6 +97,7 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/codex/AGENTS.md",
         "src/adapters/codex/skills/tes-init/SKILL.md",
         "src/adapters/codex/skills/tes-align/SKILL.md",
+        "src/adapters/codex/skills/tes-open-obsidian/SKILL.md",
         "src/adapters/codex/skills/tes-cortex/SKILL.md",
         "src/adapters/codex/skills/tes-mcp/SKILL.md",
         "src/adapters/codex/skills/tes-doctor/SKILL.md",
@@ -100,6 +108,7 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/claude/CLAUDE.md",
         "src/adapters/claude/skills/tes-init/SKILL.md",
         "src/adapters/claude/skills/tes-align/SKILL.md",
+        "src/adapters/claude/skills/tes-open-obsidian/SKILL.md",
         "src/adapters/claude/skills/tes-cortex/SKILL.md",
         "src/adapters/claude/skills/tes-mcp/SKILL.md",
         "src/adapters/claude/skills/tes-doctor/SKILL.md",
@@ -126,6 +135,7 @@ CLAUDE_PROJECT_SKILLS = (
     "tes-guidelines",
     "tes-init",
     "tes-align",
+    "tes-open-obsidian",
     "tes-cortex",
     "tes-mcp",
     "tes-doctor",
@@ -136,6 +146,7 @@ CODEX_PROJECT_SKILLS = (
     "tes-engineering-discipline",
     "tes-init",
     "tes-align",
+    "tes-open-obsidian",
     "tes-cortex",
     "tes-mcp",
     "tes-doctor",

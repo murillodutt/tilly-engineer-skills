@@ -48,8 +48,10 @@ Cursor does not receive a separate skill package. The always-on rule treats
 init/update command-prompts, `/tes-cortex`, `/tes:cortex`, `/tes-mcp`,
 `/tes:mcp`, `/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`,
 `/tes-bench`, `/tes:bench`, `/tes-align`, `/tes:align`, `tes align`,
-`align TES`, `align this project`, `alinhar TES`, and `alinhar projeto` as intent shortcuts for the same deterministic
-oracles used by Codex and Claude.
+`align TES`, `align this project`, `alinhar TES`, `alinhar projeto`,
+`/tes-open-obsidian`, `/tes:open-obsidian`, `open Obsidian`,
+`open this project in Obsidian`, `abrir Obsidian`, and `abrir no Obsidian` as
+intent shortcuts for the same deterministic oracles used by Codex and Claude.
 
 Future workflow-specific rules should be separate `Agent Requested` or
 manual rules instead of expanding the always-on rule.

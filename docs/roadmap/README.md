@@ -26,8 +26,9 @@ readiness baseline.
 
 ## Baseline
 
-The current release-readiness baseline is TES `0.3.67`, after Wave 6 certified
-remote adoption replay and corrected Field Reports publication scope.
+The current release-readiness baseline is TES `0.3.68`, after Wave 6 certified
+remote adoption replay, `/tes-init` project alignment bootstrap, and the
+Obsidian open gate.
 
 The next work is not to create a release. The next work is to remove obvious
 pre-RC1 friction:

@@ -62,6 +62,7 @@ requires exact syntax.
 | Reusable workflow | `.agents/skills/tes-engineering-discipline/SKILL.md` |
 | Tilly initialization shortcut | `.agents/skills/tes-init/SKILL.md` |
 | Project semantic alignment | `.agents/skills/tes-align/SKILL.md` |
+| Obsidian open gate | `.agents/skills/tes-open-obsidian/SKILL.md` |
 | Cortex memory operations | `.agents/skills/tes-cortex/SKILL.md` |
 | MCP activation and checks | `.agents/skills/tes-mcp/SKILL.md` |
 | Health and certification gates | `.agents/skills/tes-doctor/SKILL.md` |
@@ -107,7 +108,10 @@ helper overwrite, the final recorded probe is required before GO, commit, or
 push and must show `helper_contract_status=PASS`, `runtime_trigger_status=PASS`
 or `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`.
 Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
-`align this project`, `alinhar TES`, `alinhar projeto`, `/tes-cortex`,
+`align this project`, `alinhar TES`, `alinhar projeto`,
+`/tes-open-obsidian`, `/tes:open-obsidian`, `open Obsidian`,
+`open this project in Obsidian`, `abrir Obsidian`, `abrir no Obsidian`,
+`/tes-cortex`,
 `/tes:cortex`, `/tes-curate`, `/tes:curate`,
 `/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
 `/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`, `/tes-bench`,

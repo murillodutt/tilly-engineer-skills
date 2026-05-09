@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.67"
+VERSION = "0.3.68"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -184,6 +184,7 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
             "AGENTS.md",
             ".agents/skills/tes-engineering-discipline/SKILL.md",
             ".agents/skills/tes-align/SKILL.md",
+            ".agents/skills/tes-open-obsidian/SKILL.md",
         )
     if adapter == "claude":
         return (
@@ -193,7 +194,9 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
             ".claude/skills/tes-guidelines/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
             ".claude/skills/tes-align/SKILL.md",
+            ".claude/skills/tes-open-obsidian/SKILL.md",
             "skills/tes-align/SKILL.md",
+            "skills/tes-open-obsidian/SKILL.md",
         )
     if adapter == "cursor":
         return ("CURSOR.md", ".cursor/rules/tes-guidelines.mdc")
@@ -212,6 +215,7 @@ def expected_mcp_paths(adapter: str) -> tuple[str, ...]:
         ".tes/bin/tes_init.py",
         ".tes/bin/project_context_oracle.py",
         ".tes/bin/project_alignment_oracle.py",
+        ".tes/bin/tes_open_obsidian.py",
     )
     if adapter == "codex":
         return (*base, ".codex/config.toml")

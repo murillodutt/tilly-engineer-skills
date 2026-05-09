@@ -333,7 +333,7 @@ This contract is based on:
 | Obsidian internal links | `https://obsidian.md/help/links` | Internal links and wikilinks are the durable relationship layer for navigable project knowledge. |
 | Obsidian Graph view | `https://obsidian.md/help/plugins/graph` | Graph view informs hub, orphan, and relationship visualization. |
 | Obsidian Canvas | `https://obsidian.md/help/plugins/canvas` | Canvas is a visual synthesis layer; it must not become the only source of truth. |
-| Obsidian CLI | `https://obsidian.md/help/cli` | CLI support is relevant for future optional opening/navigation workflows, not a TES runtime dependency. |
+| Obsidian CLI | `https://obsidian.md/help/cli` | CLI support is relevant for the optional `/tes-open-obsidian` opening workflow, not a TES runtime dependency. |
 | Context7 Obsidian documentation lookup | Context7 library `/websites/obsidian_md_help`, checked on 2026-05-09 | Confirms the same direction: Bases and Properties are local Markdown/property-oriented and suitable as optional views. |
 
 ## Locks
