@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.67"
+VERSION = "0.3.68"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -35,6 +35,7 @@ HELPER_FILES = (
     "tes_init.py",
     "project_context_oracle.py",
     "project_alignment_oracle.py",
+    "tes_open_obsidian.py",
 )
 HELPER_CONTRACT_MARKERS = {
     "field_reports.py": ('SCHEMA = "tes-field-report@2"',),
@@ -44,6 +45,7 @@ PREFERRED_INTENT_TRIGGERS = (
     "/tes-init",
     "/tes-update",
     "/tes-align",
+    "/tes-open-obsidian",
     "/tes-cortex",
     "/tes-curate",
     "/tes-mcp",
@@ -56,6 +58,7 @@ COMPATIBLE_INTENT_ALIASES = (
     "/tes:init",
     "/tes:update",
     "/tes:align",
+    "/tes:open-obsidian",
     "/tes:cortex",
     "/tes:mcp",
     "/tes:field-reports",
@@ -73,12 +76,17 @@ NATURAL_INTENTS = (
     "tes init",
     "tes update",
     "tes align",
+    "tes open obsidian",
     "align TES",
     "align this project",
+    "open Obsidian",
+    "open this project in Obsidian",
     "Atualizar TES",
     "atualizar TES",
     "alinhar TES",
     "alinhar projeto",
+    "abrir Obsidian",
+    "abrir no Obsidian",
     "initialize TES",
     "install TES",
     "recertify TES",
@@ -97,6 +105,7 @@ CODEX_TRIGGER_SKILLS = (
     "tes-engineering-discipline",
     "tes-init",
     "tes-align",
+    "tes-open-obsidian",
     "tes-cortex",
     "tes-mcp",
     "tes-doctor",
@@ -107,6 +116,7 @@ CLAUDE_TRIGGER_SKILLS = (
     "tes-guidelines",
     "tes-init",
     "tes-align",
+    "tes-open-obsidian",
     "tes-cortex",
     "tes-mcp",
     "tes-doctor",

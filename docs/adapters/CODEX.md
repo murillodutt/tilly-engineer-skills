@@ -13,7 +13,7 @@ tver: 0.5.0
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.67`.
+Project version: `0.3.68`.
 
 It follows the Codex customization order:
 
@@ -64,16 +64,17 @@ Codex uses progressive disclosure for skills:
 - References and scripts load or run only when needed.
 
 The preferred TES shortcuts map to Codex skills. `/tes-init`, `/tes-update`,
-`/tes-align`, `/tes:init`, `/tes:update`, `/tes:align`, `tes init`, `tes align`,
-and natural init/update/alignment command-prompts route to TES skills. They
-keep the user entrypoint short while delegating real work to
-deterministic oracles:
+`/tes-align`, `/tes-open-obsidian`, `/tes:init`, `/tes:update`, `/tes:align`,
+`/tes:open-obsidian`, `tes init`, `tes align`, `open Obsidian`, and natural
+init/update/alignment/Obsidian command-prompts route to TES skills. They keep
+the user entrypoint short while delegating real work to deterministic oracles:
 
 | Shortcut | Skill |
 |----------|-------|
 | `/tes-init`, `/tes:init` | `tes-init` |
 | `/tes-update`, `/tes:update` | `tes-init` |
 | `/tes-align`, `/tes:align` | `tes-align` |
+| `/tes-open-obsidian`, `/tes:open-obsidian` | `tes-open-obsidian` |
 | `/tes-cortex`, `/tes:cortex` | `tes-cortex` |
 | `/tes-mcp`, `/tes:mcp` | `tes-mcp` |
 | `/tes-doctor`, `/tes:doctor` | `tes-doctor` |

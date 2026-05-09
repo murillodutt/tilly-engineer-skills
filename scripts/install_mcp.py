@@ -18,7 +18,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.67"
+VERSION = "0.3.68"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (
@@ -32,6 +32,7 @@ SERVER_FILES = (
     "tes_init.py",
     "project_context_oracle.py",
     "project_alignment_oracle.py",
+    "tes_open_obsidian.py",
 )
 ADAPTERS = ("codex", "claude", "cursor")
 
@@ -381,6 +382,7 @@ def self_test() -> int:
             ".tes/bin/tes_init.py",
             ".tes/bin/project_context_oracle.py",
             ".tes/bin/project_alignment_oracle.py",
+            ".tes/bin/tes_open_obsidian.py",
             ".codex/config.toml",
             ".mcp.json",
             ".cursor/mcp.json",
@@ -428,7 +430,14 @@ def self_test() -> int:
         for relpath in (".codex/config.toml", ".mcp.json", ".cursor/mcp.json"):
             if (target / relpath).exists():
                 failures.append(f"helpers-only install wrote config: {relpath}")
-        for relpath in ("root_context.py", "tes_update.py", "tes_init.py", "project_context_oracle.py", "project_alignment_oracle.py"):
+        for relpath in (
+            "root_context.py",
+            "tes_update.py",
+            "tes_init.py",
+            "project_context_oracle.py",
+            "project_alignment_oracle.py",
+            "tes_open_obsidian.py",
+        ):
             helper_self_test = subprocess.run(
                 [sys.executable, str(target / BIN_DIR / relpath), "--self-test"],
                 cwd=target,

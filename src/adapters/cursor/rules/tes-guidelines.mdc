@@ -106,7 +106,10 @@ open strong anchors before claiming deep understanding, refine
 NEEDS_REVIEW`. It is not a blind shell command.
 
 Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
-`align this project`, `alinhar TES`, `alinhar projeto`, `/tes-cortex`,
+`align this project`, `alinhar TES`, `alinhar projeto`,
+`/tes-open-obsidian`, `/tes:open-obsidian`, `tes open obsidian`, `open Obsidian`,
+`open this project in Obsidian`, `abrir Obsidian`, `abrir no Obsidian`,
+`/tes-cortex`,
 `/tes:cortex`, `/tes-curate`, `/tes:curate`,
 `/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
 `/tes-doctor`, `/tes:doctor`, `/tes:check`, `/tes:certify`, `/tes-adapter`,

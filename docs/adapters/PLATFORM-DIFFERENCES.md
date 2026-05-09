@@ -33,6 +33,7 @@ TES entry vocabulary is shared across platforms:
 | Initialize or recertify | `/tes-init` | `/tes:init` | Load the assisted installer and classify the project. |
 | Update existing mesh | `/tes-update` | `/tes:update` | Run the update probe, Layer Zero if needed, then converge. |
 | Align project operating mesh | `/tes-align` | `/tes:align` | Deepen initial context into roadmap, state, execution line, gates, boundaries, glossary, decisions, and evidence. |
+| Open Obsidian | `/tes-open-obsidian` | `/tes:open-obsidian` | Preflight context/alignment and open the project in Obsidian without writing `.obsidian/**`. |
 | Cortex | `/tes-cortex` | `/tes:cortex`, `/tes:recall`, `/tes:learn`, `/tes:reflect` | Inspect or certify the continuity layer. |
 | Curate | `/tes-curate` | `/tes:curate` | Classify Cortex memory quality risks without writing memory. |
 | MCP | `/tes-mcp` | `/tes:mcp` | Inspect or activate read-only Cortex MCP. |
@@ -45,10 +46,12 @@ The hyphen form is the preferred cross-platform trigger. The colon form is a
 compatibility alias and may be rejected by a host slash-command parser. If a
 host says a `/tes:*` slash command is invalid, the agent must treat the text as
 TES intent and route to the matching `tes-*` skill, rule, or installer spec.
-Natural intent text such as `tes init`, `tes update`, `tes align`, `align TES`,
-`align this project`, `Atualizar TES`, `atualizar TES`, `alinhar TES`,
-`alinhar projeto`, `initialize TES`, `install TES`, `recertify TES`,
-`inicializar TES`, `instalar TES`, and `recertificar TES` must route to the
+Natural intent text such as `tes init`, `tes update`, `tes align`,
+`tes open obsidian`, `align TES`, `align this project`, `open Obsidian`,
+`open this project in Obsidian`, `Atualizar TES`, `atualizar TES`,
+`alinhar TES`, `alinhar projeto`, `abrir Obsidian`, `abrir no Obsidian`,
+`initialize TES`, `install TES`, `recertify TES`, `inicializar TES`,
+`instalar TES`, and `recertificar TES` must route to the
 same contract.
 
 ## Surface Differences

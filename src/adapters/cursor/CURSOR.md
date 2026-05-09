@@ -27,6 +27,7 @@ owned by the target project:
 - `/tes-init`
 - `/tes-update`
 - `/tes-align`
+- `/tes-open-obsidian`
 - `/tes-cortex`
 - `/tes-curate`
 - `/tes-mcp`
@@ -40,6 +41,7 @@ Compatible aliases:
 - `/tes:init`
 - `/tes:update`
 - `/tes:align`
+- `/tes:open-obsidian`
 - `/tes:cortex`
 - `/tes:mcp`
 - `/tes:field-reports`
@@ -53,9 +55,10 @@ Compatible aliases:
 - `/tes:reflect`
 - `/tes:curate`
 
-Natural intents include: tes init, tes update, initialize TES, install TES,
-recertify TES, Atualizar TES, atualizar TES, inicializar TES, instalar TES, and
-recertificar TES.
+Natural intents include: tes init, tes update, tes open obsidian, initialize
+TES, install TES, recertify TES, open Obsidian, open this project in Obsidian,
+Atualizar TES, atualizar TES, abrir Obsidian, abrir no Obsidian, inicializar
+TES, instalar TES, and recertificar TES.
 
 ## Behavioral Source Of Truth
 
@@ -70,3 +73,6 @@ visible assumptions, smaller scope, surgical edits, and falsifiable closure.
 Do not copy `.cursor/**` into Codex or Claude runtime as authoritative context.
 Natural alignment prompts such as `tes align`, `align TES`, `align this
 project`, `alinhar TES`, and `alinhar projeto` route to `/tes-align`.
+Obsidian opening prompts such as `open Obsidian`,
+`open this project in Obsidian`, `abrir Obsidian`, and `abrir no Obsidian`
+route to `/tes-open-obsidian`.

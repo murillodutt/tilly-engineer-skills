@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.67</span>
+          <span class="brand-meta">User manual · v0.3.68</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1274,7 +1274,7 @@ npm run cortex:mcp:self-test</code></pre>
                 </tbody>
               </table>
             </div>
-            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tes/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>. The installed helper set includes <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tes_update.py</code>, <code>tes_legacy_retirement.py</code>, <code>root_context.py</code>, <code>tes_init.py</code>, <code>project_context_oracle.py</code> and <code>project_alignment_oracle.py</code>.</p>
+            <p>Write-capable MCP tools are intentionally outside this version. Activation writes only <code>.tes/bin/**</code> and project-scoped runtime config; it must not touch global MCP config, secrets, hooks or <code>sources/**</code>. The installed helper set includes <code>cortex.py</code>, <code>cortex_mcp.py</code>, <code>cortex_embed.mjs</code>, <code>field_reports.py</code>, <code>tes_update.py</code>, <code>tes_legacy_retirement.py</code>, <code>root_context.py</code>, <code>tes_init.py</code>, <code>project_context_oracle.py</code>, <code>project_alignment_oracle.py</code> and <code>tes_open_obsidian.py</code>.</p>
           </div>
         </section>
 
@@ -1299,7 +1299,7 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="obsidian">
           <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
-            <p>Use Obsidian as the visual workbench for the project operating mesh and Cortex, not as the authority layer. The installer never creates or edits <code>.obsidian/**</code>; the user configures Obsidian locally and the mesh and Cortex remain plain Markdown.</p>
+            <p>Use Obsidian as the visual workbench for the project operating mesh and Cortex, not as the authority layer. The installer never creates or edits <code>.obsidian/**</code>; after <code>/tes-init</code> and <code>/tes-align</code>, <code>/tes-open-obsidian</code> may open the project through the registered Obsidian CLI or a macOS app fallback, while the mesh and Cortex remain plain Markdown.</p>
             <ol>
               <li>Open the project root as the vault when you want to see agent docs, evidence and Cortex together.</li>
               <li>Open <code>docs/agents/cortex/</code> as the vault when you want a focused memory workspace.</li>
@@ -1640,7 +1640,7 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="obsidian-es">
           <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
-            <p>Usa Obsidian como mesa visual de trabajo para la malla operativa del proyecto y Cortex, no como capa de autoridad. El instalador nunca crea ni edita <code>.obsidian/**</code>; el usuario configura Obsidian localmente y la malla y Cortex siguen siendo Markdown común.</p>
+            <p>Usa Obsidian como mesa visual de trabajo para la malla operativa del proyecto y Cortex, no como capa de autoridad. El instalador nunca crea ni edita <code>.obsidian/**</code>; después de <code>/tes-init</code> y <code>/tes-align</code>, <code>/tes-open-obsidian</code> puede abrir el proyecto con la CLI registrada de Obsidian o un fallback de app en macOS, mientras la malla y Cortex siguen siendo Markdown común.</p>
             <ol>
               <li>Abre la raíz del proyecto como vault cuando quieras ver docs de agente, evidencia y Cortex juntos.</li>
               <li>Abre <code>docs/agents/cortex/</code> como vault cuando quieras un espacio de memoria enfocado.</li>
@@ -1981,7 +1981,7 @@ npm run cortex:mcp:self-test</code></pre>
         <section class="chapter" id="obsidian-pt">
           <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
-            <p>Use o Obsidian como bancada visual da malha operacional do projeto e do Cortex, não como camada de autoridade. O instalador nunca cria nem edita <code>.obsidian/**</code>; o usuário configura o Obsidian localmente e a malha e o Cortex continuam sendo Markdown comum.</p>
+            <p>Use o Obsidian como bancada visual da malha operacional do projeto e do Cortex, não como camada de autoridade. O instalador nunca cria nem edita <code>.obsidian/**</code>; após <code>/tes-init</code> e <code>/tes-align</code>, <code>/tes-open-obsidian</code> pode abrir o projeto pela CLI registrada do Obsidian ou por fallback do app no macOS, enquanto a malha e o Cortex continuam em Markdown comum.</p>
             <ol>
               <li>Abra a raiz do projeto como vault quando quiser ver docs de agente, evidências e Cortex juntos.</li>
               <li>Abra <code>docs/agents/cortex/</code> como vault quando quiser um espaço focado de memória.</li>
@@ -2033,7 +2033,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.67</span>
+        <span>Tilly Engineer Skills · v0.3.68</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>
