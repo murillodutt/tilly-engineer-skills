@@ -103,6 +103,13 @@ routes internally through two read-only gates before choosing writes:
    `/tes-init`; `tes_update.py plan` exposes the `project_start_gate` contract
    so executors cannot treat route planning as context initialization.
 
+When an old meshed project has stale helpers, runtime trigger drift, or an
+incomplete alignment mesh, `tes_update.py plan --json-only` also exposes a
+`continuation_plan`. If required writes are not authorized yet, the final
+report must include that plan with phases, approvals, write surfaces, commands,
+and final recorded probe instead of closing with an unstructured
+`NEEDS_REVIEW`.
+
 This keeps `/tes-init` simple for users: make this project usable by TES. If
 both gates pass, close with certification and recommend `/tes-doctor` only for a
 full health check.

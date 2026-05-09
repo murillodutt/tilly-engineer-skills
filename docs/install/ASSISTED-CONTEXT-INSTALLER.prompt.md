@@ -127,6 +127,14 @@ For `/tes-init`, run the router gates first:
   installed project-context initializer and oracle before the final report. A
   preflight context PASS does not replace project-start execution.
 
+If the Install/Update Gate finds an old meshed project that needs helper,
+adapter, legacy-retirement, context, or alignment repairs but the user has not
+authorized the required writes yet, close the pass as `NEEDS_REVIEW` and include
+the `continuation_plan` from `tes_update.py plan --json-only`. The plan must
+name the required phases, approvals, write surfaces, commands, final recorded
+probe, and the fact that Project-Start Gate still runs after repairs. A
+`NEEDS_REVIEW` report without this continuation plan is incomplete.
+
 Step Zero protects installer/update writes. It must not block project-context
 initialization when TES is already installed/current and the only failing gate
 is the Project Context Gate. In that case, report the dirty tree as rollback
@@ -439,6 +447,11 @@ the first-pass Obsidian-compatible operating mesh when missing; `/tes-align`
 remains the deeper semantic refinement route. After helper-only or adapter
 repairs, rerun the Project-Start Gate; preflight context PASS does not replace
 project-start execution.
+
+When the update planner returns `continuation_plan.status=PENDING_APPROVAL`, do
+not improvise a shorter route. Present the approval-gated plan compactly in the
+report and stop. After the user approves, resume at the first required phase,
+then rerun the exact final recorded probe required by the plan.
 
 After classification and before certification closeout, analyze the project as
 deeply as the current context window and local tools permit:
@@ -893,6 +906,7 @@ Changed Surfaces
 - Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py, tes_init.py, project_context_oracle.py: PASS/BLOCKED/MISSING
 - Helper contract parity: PASS | STALE_HELPERS | BLOCKED | NOT_INSTALLED
 - Project context: docs/agents/PROJECT-CONTEXT.md PASS | NEEDS_REVIEW | SKIP
+- Continuation plan: NONE | READY | PENDING_APPROVAL; required phases: <short list>
 - Runtime/MCP config, evidence, ignored local state: <short list>
 
 Certification
