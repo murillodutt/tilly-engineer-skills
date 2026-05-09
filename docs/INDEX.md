@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.3
+tver: 0.4.4
 ---
 
 # Tilly Engineer Skills Docs
@@ -20,7 +20,9 @@ turning the repository root into an inventory.
 | Repository shape and ownership | `architecture/PROJECT-STRUCTURE.md` |
 | TES namespace migration catalog | `architecture/TES-NAMING-MIGRATION-CATALOG.md` |
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
+| Agent manual | `install/AGENT-MANUAL.md` |
 | GitHub Pages landing | `index.html` |
+| Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Adapter installation | `install/INSTALL.md` |
 | Assisted context installer mini prompt | `install/MINI-PROMPT.md` |
 | Assisted context installer raw spec | `install/ASSISTED-CONTEXT-INSTALLER.prompt.md` |
@@ -59,6 +61,12 @@ turning the repository root into an inventory.
 ## Source Boundary
 
 `docs/**` explains and audits behavior. It is not the installable source.
+
+`docs/tds/DOCS-INDEX.yml` governs Markdown files under `docs/**`. Rendered
+HTML surfaces such as `docs/index.html` and `docs/install/USER-MANUAL.html`
+remain public documentation entrypoints referenced here and in `README.md`, but
+they are not listed as TDS documents because they do not carry Markdown
+frontmatter.
 
 Copyable adapter material lives in `src/adapters/**`:
 

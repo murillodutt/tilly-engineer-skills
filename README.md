@@ -5,10 +5,13 @@
 [![Field Report Governance](https://github.com/murillodutt/tilly-engineer-skills/actions/workflows/field-report-governance.yml/badge.svg)](https://github.com/murillodutt/tilly-engineer-skills/actions/workflows/field-report-governance.yml)
 [![Context Mesh](https://img.shields.io/badge/context--mesh-agent--operating--layer-2ea44f)](docs/mesh/CONTEXT-MESH-METHOD.md)
 [![Local Gates](https://img.shields.io/badge/local--gates-certified-6f42c1)](package.json)
+[![Live Landing](https://img.shields.io/badge/live--landing-GitHub%20Pages-0969da)](https://murillodutt.github.io/tilly-engineer-skills/)
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/1e8f35f0-2d30-4a86-b6d4-1593a528d70d" alt="Tilly Engineer Skills: agent operating layer for LLM development across Codex, Claude Code, Cursor, and Obsidian-ready project knowledge" width="100%">
 </p>
+
+**Live landing:** [murillodutt.github.io/tilly-engineer-skills](https://murillodutt.github.io/tilly-engineer-skills/)
 
 **Turn AI coding agents into a governed, auditable engineering system.**
 
@@ -145,10 +148,12 @@ npm run platform:surface:check
 | Need | Link |
 |------|------|
 | Installation mini prompt | [docs/install/MINI-PROMPT.md](docs/install/MINI-PROMPT.md) |
+| Live GitHub Pages landing | [murillodutt.github.io/tilly-engineer-skills](https://murillodutt.github.io/tilly-engineer-skills/) |
 | GitHub Pages landing source | [docs/index.html](docs/index.html) |
 | Current roadmap | [docs/roadmap/README.md](docs/roadmap/README.md) |
 | RC1 readiness roadmap | [docs/roadmap/RC1-READINESS-ROADMAP.md](docs/roadmap/RC1-READINESS-ROADMAP.md) |
 | User manual | [docs/install/USER-MANUAL.html](docs/install/USER-MANUAL.html) |
+| Agent manual | [docs/install/AGENT-MANUAL.md](docs/install/AGENT-MANUAL.md) |
 | Command routing | [docs/install/COMMAND-TRIGGERS.md](docs/install/COMMAND-TRIGGERS.md) |
 | Context mesh method | [docs/mesh/CONTEXT-MESH-METHOD.md](docs/mesh/CONTEXT-MESH-METHOD.md) |
 | Cortex continuity | [docs/mesh/CORTEX.md](docs/mesh/CORTEX.md) |
