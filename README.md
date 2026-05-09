@@ -1,21 +1,25 @@
 # Tilly Engineer Skills (TES)
 
-[![Version](https://img.shields.io/badge/version-0.3.66-1f6feb)](package.json)
+[![Version](https://img.shields.io/badge/version-0.3.67-1f6feb)](package.json)
 [![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE)
 [![Field Report Governance](https://github.com/murillodutt/tilly-engineer-skills/actions/workflows/field-report-governance.yml/badge.svg)](https://github.com/murillodutt/tilly-engineer-skills/actions/workflows/field-report-governance.yml)
 [![Context Mesh](https://img.shields.io/badge/context--mesh-agent--operating--layer-2ea44f)](docs/mesh/CONTEXT-MESH-METHOD.md)
 [![Local Gates](https://img.shields.io/badge/local--gates-certified-6f42c1)](package.json)
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/bc1b4c00-6021-48c3-bb01-a72ff29c447c" alt="Tilly Engineer Skills: local operating layer for AI coding agents" width="100%">
+  <img src="https://github.com/user-attachments/assets/1e8f35f0-2d30-4a86-b6d4-1593a528d70d" alt="Tilly Engineer Skills: agent operating layer for LLM development across Codex, Claude Code, Cursor, and Obsidian-ready project knowledge" width="100%">
 </p>
 
-**Turn AI coding agents into governed engineering collaborators.**
+**Turn AI coding agents into a governed, auditable engineering system.**
 
-TES is a local operating layer for LLM development. It wraps Codex, Claude Code,
-and Cursor with shared governance, adapter routing, Git-safe installation,
-deterministic oracles, certification reports, and durable context that survives
-the next agent window.
+TES is a local operating layer for LLM development. It governs Codex, Claude
+Code, and Cursor while compiling project knowledge into an Obsidian-ready
+Markdown mesh that survives agent windows, supports audits, and gives humans a
+visual way to inspect context, evidence, decisions, and execution state.
+
+Codex, Claude Code, and Cursor are execution surfaces. Obsidian is the optional
+human visualization layer over versioned Markdown. TES does not require
+Obsidian, install Obsidian plugins, or write `.obsidian/**`.
 
 Retained v1 evidence shows up to **6x baseline disciplined behavior** in scoped
 Claude CLI evals, positive Codex lift, and zero confirmed distractor leaks in
@@ -70,10 +74,10 @@ Canonical mini prompt: [docs/install/MINI-PROMPT.md](docs/install/MINI-PROMPT.md
 
 | Without TES | With TES |
 |-------------|----------|
-| Each agent has separate prompt files and habits. | One context mesh governs Codex, Claude Code, and Cursor. |
+| Each agent has separate prompt files and habits. | One context mesh governs Codex, Claude Code, Cursor, and an Obsidian-ready knowledge view. |
 | Installation can overwrite local agent rules. | Step Zero and root-context gates preserve project governance. |
 | Completion depends on model confidence. | Local oracles produce certification evidence. |
-| Context disappears after the chat window. | Durable docs, evidence, and Cortex preserve continuity. |
+| Context disappears after the chat window. | Durable docs, evidence, Cortex, and wikilinks preserve continuity. |
 | Teams cannot tell what changed agent behavior. | Benchmarks, parity gates, and Field Reports create feedback loops. |
 
 TES is for teams that use AI coding agents inside real repositories and need
@@ -89,10 +93,11 @@ CURSOR.md               Cursor route
 .tes/bin/**             local helper runtime
 docs/agents/cortex/**   continuity and compiled knowledge
 docs/agents/evidence/** certification records
+Obsidian                optional visual workbench over Markdown
 ```
 
 Runtime files stay thin. Project truth lives in versioned Markdown so humans
-can inspect it, review it, and roll it back.
+can inspect it, review it, open it in Obsidian, and roll it back.
 
 ## Product Layers
 
@@ -101,6 +106,7 @@ can inspect it, review it, and roll it back.
 | Governance | Four engineering gates: assumptions, simplicity, surgical scope, verification. |
 | Adapter runtime | Thin Codex, Claude Code, and Cursor surfaces that route to one contract. |
 | Assisted installer | Detects runtime, classifies project state, preserves existing governance, and reports rollback. |
+| Obsidian-ready mesh | Markdown properties, wikilinks, state, roadmap, decisions, quality gates, and evidence under `docs/agents/**`. |
 | Local oracles | Validation, smoke, platform, materialization, MCP, Cortex, and Field Reports checks. |
 | Evidence loop | Certification reports, evals, parity gates, and sanitized operational feedback. |
 | Cortex | The continuity layer: auditable Markdown memory, recall, curation, and read-only MCP access. |
@@ -108,8 +114,8 @@ can inspect it, review it, and roll it back.
 ## 2. Trust And Audit
 
 TES does **not** push, publish, tag, amend commits, change remotes, install
-marketplace assets, send code telemetry, or overwrite project-owned governance
-without explicit approval.
+marketplace assets, send code telemetry, write `.obsidian/**`, or overwrite
+project-owned governance without explicit approval.
 
 For this reference package, the full local closure gate is:
 

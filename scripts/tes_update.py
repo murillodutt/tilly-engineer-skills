@@ -16,7 +16,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.66"
+VERSION = "0.3.67"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -34,6 +34,7 @@ HELPER_FILES = (
     "root_context.py",
     "tes_init.py",
     "project_context_oracle.py",
+    "project_alignment_oracle.py",
 )
 HELPER_CONTRACT_MARKERS = {
     "field_reports.py": ('SCHEMA = "tes-field-report@2"',),
@@ -42,6 +43,7 @@ UPDATE_SCOPES = ("none", "helpers-only", "adapter-config", "project-context", "f
 PREFERRED_INTENT_TRIGGERS = (
     "/tes-init",
     "/tes-update",
+    "/tes-align",
     "/tes-cortex",
     "/tes-curate",
     "/tes-mcp",
@@ -53,6 +55,7 @@ PREFERRED_INTENT_TRIGGERS = (
 COMPATIBLE_INTENT_ALIASES = (
     "/tes:init",
     "/tes:update",
+    "/tes:align",
     "/tes:cortex",
     "/tes:mcp",
     "/tes:field-reports",
@@ -69,8 +72,13 @@ COMPATIBLE_INTENT_ALIASES = (
 NATURAL_INTENTS = (
     "tes init",
     "tes update",
+    "tes align",
+    "align TES",
+    "align this project",
     "Atualizar TES",
     "atualizar TES",
+    "alinhar TES",
+    "alinhar projeto",
     "initialize TES",
     "install TES",
     "recertify TES",
@@ -88,6 +96,7 @@ TRIGGER_TERMS = (*PREFERRED_INTENT_TRIGGERS, *COMPATIBLE_INTENT_ALIASES)
 CODEX_TRIGGER_SKILLS = (
     "tes-engineering-discipline",
     "tes-init",
+    "tes-align",
     "tes-cortex",
     "tes-mcp",
     "tes-doctor",
@@ -97,6 +106,7 @@ CODEX_TRIGGER_SKILLS = (
 CLAUDE_TRIGGER_SKILLS = (
     "tes-guidelines",
     "tes-init",
+    "tes-align",
     "tes-cortex",
     "tes-mcp",
     "tes-doctor",

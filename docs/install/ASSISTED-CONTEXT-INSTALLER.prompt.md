@@ -433,9 +433,12 @@ For `/tes-init`, the **Project-Start Gate** must run before final closeout even
 when Project Context Gate preflight reports `PASS`. Run
 `python3 .tes/bin/tes_init.py --target . --yes` in an installed target, or
 `python3 scripts/tes_init.py --target <target-root> --yes` from the package
-source. Then run `project_context_oracle.py --target <target-root>`. After
-helper-only or adapter repairs, rerun the Project-Start Gate; preflight context
-PASS does not replace project-start execution.
+source. Then run `project_context_oracle.py --target <target-root>` and
+`project_alignment_oracle.py --target <target-root>`. The initializer creates
+the first-pass Obsidian-compatible operating mesh when missing; `/tes-align`
+remains the deeper semantic refinement route. After helper-only or adapter
+repairs, rerun the Project-Start Gate; preflight context PASS does not replace
+project-start execution.
 
 After classification and before certification closeout, analyze the project as
 deeply as the current context window and local tools permit:
@@ -449,6 +452,11 @@ deeply as the current context window and local tools permit:
   governance surfaces, quality gates, source anchors, known unknowns, and
   recommended deep reads;
 - write the synthesis to `docs/agents/PROJECT-CONTEXT.md`;
+- create the initial alignment mesh under `docs/agents/**` when missing:
+  `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`,
+  `QUALITY-GATES.md`, `BOUNDARIES-AND-CONSTRAINTS.md`,
+  `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`, `DECISIONS/**`, and retained
+  project-alignment evidence;
 - write the deterministic inventory to `docs/agents/PROJECT-REGISTER.md`;
 - store full manifests and evidence under `docs/agents/evidence/**`.
 

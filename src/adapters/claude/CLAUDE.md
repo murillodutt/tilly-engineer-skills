@@ -126,7 +126,9 @@ helper overwrite, the final recorded probe is required before GO, commit, or
 push and must show `helper_contract_status=PASS`,
 `runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and
 `recommended_update_scope=none`. Also
-treat `/tes-cortex`, `/tes:cortex`, `/tes-curate`, `/tes:curate`,
+treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
+`align this project`, `alinhar TES`, `alinhar projeto`, `/tes-cortex`,
+`/tes:cortex`, `/tes-curate`, `/tes:curate`,
 `/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
 `/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`, `/tes-bench`,
 and `/tes:bench` as intent shortcuts. Use the matching `.claude/skills/tes-*`

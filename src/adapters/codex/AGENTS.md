@@ -61,6 +61,7 @@ requires exact syntax.
 |------|--------|
 | Reusable workflow | `.agents/skills/tes-engineering-discipline/SKILL.md` |
 | Tilly initialization shortcut | `.agents/skills/tes-init/SKILL.md` |
+| Project semantic alignment | `.agents/skills/tes-align/SKILL.md` |
 | Cortex memory operations | `.agents/skills/tes-cortex/SKILL.md` |
 | MCP activation and checks | `.agents/skills/tes-mcp/SKILL.md` |
 | Health and certification gates | `.agents/skills/tes-doctor/SKILL.md` |
@@ -105,7 +106,9 @@ through the helper-only Layer Zero route before MCP config activation. After any
 helper overwrite, the final recorded probe is required before GO, commit, or
 push and must show `helper_contract_status=PASS`, `runtime_trigger_status=PASS`
 or `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`.
-Also treat `/tes-cortex`, `/tes:cortex`, `/tes-curate`, `/tes:curate`,
+Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
+`align this project`, `alinhar TES`, `alinhar projeto`, `/tes-cortex`,
+`/tes:cortex`, `/tes-curate`, `/tes:curate`,
 `/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
 `/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`, `/tes-bench`,
 and `/tes:bench` as intent shortcuts. Load the matching skill

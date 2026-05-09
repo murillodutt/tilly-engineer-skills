@@ -26,6 +26,7 @@ owned by the target project:
 
 - `/tes-init`
 - `/tes-update`
+- `/tes-align`
 - `/tes-cortex`
 - `/tes-curate`
 - `/tes-mcp`
@@ -38,6 +39,7 @@ Compatible aliases:
 
 - `/tes:init`
 - `/tes:update`
+- `/tes:align`
 - `/tes:cortex`
 - `/tes:mcp`
 - `/tes:field-reports`
@@ -66,3 +68,5 @@ visible assumptions, smaller scope, surgical edits, and falsifiable closure.
 - Claude Code: use `CLAUDE.md` or tool-native plugin metadata.
 
 Do not copy `.cursor/**` into Codex or Claude runtime as authoritative context.
+Natural alignment prompts such as `tes align`, `align TES`, `align this
+project`, `alinhar TES`, and `alinhar projeto` route to `/tes-align`.

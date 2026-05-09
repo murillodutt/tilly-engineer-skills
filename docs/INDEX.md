@@ -29,6 +29,7 @@ turning the repository root into an inventory.
 | Tool-neutral engineering principles | `mesh/PRINCIPLES.md` |
 | Neutral behavioral contract manifest | `mesh/CONTRACT-MANIFEST.yml` |
 | Context mesh method | `mesh/CONTEXT-MESH-METHOD.md` |
+| TES Align skill source of truth | `mesh/TES-ALIGN-SKILL-SOURCE-OF-TRUTH.md` |
 | TES Cortex | `mesh/CORTEX.md` |
 | TES Cortex MCP | `mesh/CORTEX-MCP.md` |
 | TES Field Reports | `mesh/FIELD-REPORTS.md` |

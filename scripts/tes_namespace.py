@@ -17,7 +17,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.66"
+VERSION = "0.3.67"
 
 ACTIVE_PREFIXES = (
     ".github/",
@@ -134,6 +134,7 @@ PATH_REPLACEMENTS = (
     Replacement("tilly_init", "tes_init", "python script"),
     Replacement("tilly_update", "tes_update", "python script"),
     Replacement("tilly-cortex", "tes-cortex", "mcp or skill"),
+    Replacement("tilly-align", "tes-align", "alignment skill"),
     Replacement("tilly-adapter", "tes-adapter", "adapter skill"),
     Replacement("tilly-bench", "tes-bench", "bench skill"),
     Replacement("tilly-doctor", "tes-doctor", "doctor skill"),
@@ -143,6 +144,7 @@ PATH_REPLACEMENTS = (
 
 PROMPT_REPLACEMENTS = (
     Replacement("/tilly:adapter", "/tes-adapter", "prompt command"),
+    Replacement("/tilly:align", "/tes-align", "prompt command"),
     Replacement("/tilly:bench", "/tes-bench", "prompt command"),
     Replacement("/tilly:certify", "/tes-doctor", "prompt command"),
     Replacement("/tilly:check", "/tes-doctor", "prompt command"),

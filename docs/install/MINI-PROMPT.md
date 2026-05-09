@@ -50,21 +50,23 @@ skill/rule/spec.
 Use the detected IDE as the default adapter. Ask me for a route command only
 where the spec requires one. Preserve local project governance, move durable
 agent context into docs/agents/** when needed, analyze the project in depth and
-write docs/agents/PROJECT-CONTEXT.md as the initial project map, create or
-update the compiled docs/agents/cortex/** Cortex layer, keep AGENTS.md,
-CLAUDE.md and Cursor rules as thin runtime bootloaders, activate the read-only
-project-scoped Cortex MCP server for the selected runtime route, and finish
-with the certification report required by the spec. If package source is
-available, certify docs/agents/PROJECT-CONTEXT.md with
-project_context_oracle.py before claiming Project context PASS; otherwise
-report that gate as BLOCKED or NEEDS_REVIEW with the reason.
+write docs/agents/PROJECT-CONTEXT.md as the initial project map, create the
+first-pass Obsidian-compatible operating mesh when missing, create or update the
+compiled docs/agents/cortex/** Cortex layer, keep AGENTS.md, CLAUDE.md and
+Cursor rules as thin runtime bootloaders, activate the read-only project-scoped
+Cortex MCP server for the selected runtime route, and finish with the
+certification report required by the spec. If package source is available,
+certify docs/agents/PROJECT-CONTEXT.md with project_context_oracle.py and the
+operating mesh with project_alignment_oracle.py before claiming Project context
+PASS; otherwise report those gates as BLOCKED or NEEDS_REVIEW with the reason.
 Treat tes_init.py as the deterministic scaffold and the active agent as the
 semantic refiner: for non-trivial projects, open strong anchors before claiming
 deep context, then refine the file or mark Project context NEEDS_REVIEW.
 For `/tes-init`, run the Project-Start Gate before final reporting even when a
 preflight context check already passes. After helper-only or adapter repairs,
 run the installed `tes_init.py --target . --yes`, then certify with
-`project_context_oracle.py --target .`.
+`project_context_oracle.py --target .` and
+`project_alignment_oracle.py --target .`.
 The final report must expose the PT/EN/ES user manual link/path, installed
 helper set, root context gate, project context path, Field Reports state, and
 rollback summary.

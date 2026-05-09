@@ -14,11 +14,12 @@ from typing import Any
 import command_trigger_oracle
 import codex_plugin_oracle
 import materialize_adapter
+import project_alignment_oracle
 import project_context_oracle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.66"
+VERSION = "0.3.67"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -232,7 +233,7 @@ def analyze() -> dict[str, Any]:
     if not exists("src/adapters/cursor/CURSOR.md"):
         failures.append("missing Cursor bootloader: src/adapters/cursor/CURSOR.md")
     surface("cursor", "agent", "certified", "src/adapters/cursor/CURSOR.md")
-    surface("cursor", "skill", "deferred", "Cursor plugin skills exist officially, but TES v0.3.66 ships Cursor rules first.")
+    surface("cursor", "skill", "deferred", "Cursor plugin skills exist officially, but TES v0.3.67 ships Cursor rules first.")
     surface("cursor", "plugin", "deferred", "Cursor plugins are native, but no TES .cursor-plugin package is claimed.")
     surface("cursor", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("cursor", "rules", "certified", cursor_rule)
@@ -313,6 +314,18 @@ def analyze() -> dict[str, Any]:
         "project-context",
         "certified" if project_context_result["status"] == "PASS" else "fail",
         "scripts/project_context_oracle.py",
+    )
+    project_alignment_result = project_alignment_oracle.self_test()
+    if project_alignment_result["status"] != "PASS":
+        failures.extend(
+            f"project alignment oracle: {failure}"
+            for failure in project_alignment_result["failures"]
+        )
+    surface(
+        "shared",
+        "project-alignment",
+        "certified" if project_alignment_result["status"] == "PASS" else "fail",
+        "scripts/project_alignment_oracle.py",
     )
     update_text = read("scripts/tes_update.py")
     for term in (

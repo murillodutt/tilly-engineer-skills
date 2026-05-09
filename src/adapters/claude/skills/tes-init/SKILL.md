@@ -54,7 +54,8 @@ the user for package contents.
    execution. After helper-only or adapter repairs, run the **Project-Start
    Gate** before final reporting: execute `python3 .tes/bin/tes_init.py --target
    . --yes` in an installed target, or package `scripts/tes_init.py --target
-   <target> --yes`, then run `project_context_oracle.py --target <target>`.
+   <target> --yes`, then run `project_context_oracle.py --target <target>` and
+   `project_alignment_oracle.py --target <target>`.
 4. Run Step Zero before installer/update edits: inspect Git status and offer a
    local baseline commit when the tree is dirty and install/update writes are
    required.
@@ -79,12 +80,14 @@ the user for package contents.
    installer contract requires it.
 9. Preserve local governance, build or update `docs/agents/**`, analyze the
    target project in depth, write or update `docs/agents/PROJECT-CONTEXT.md`,
+   create the initial Obsidian-compatible operating mesh when missing,
    initialize `docs/agents/cortex/**`, keep runtime bootloaders thin, and
    activate the read-only Cortex MCP route when selected.
-   Treat `tes_init.py` as deterministic scaffold generation. The active agent
-   must open strong anchors before claiming deep project understanding, refine
-   `PROJECT-CONTEXT.md` when supported by evidence, or report
-   `Project context: NEEDS_REVIEW` with the blocker.
+   Treat `tes_init.py` as deterministic scaffold generation for context plus
+   first-pass alignment. The active agent must open strong anchors before
+   claiming deep project understanding, refine `PROJECT-CONTEXT.md` when
+   supported by evidence, or report `Project context: NEEDS_REVIEW` with the
+   blocker. `/tes-align` remains the deeper semantic refinement path.
 10. Invoke package oracles such as `tes_init.py`, `tes_update.py`,
    `tes_legacy_retirement.py`, `root_context.py`, `install_smoke.py`,
    `install_mcp.py`, and Cortex checks.

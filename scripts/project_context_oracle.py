@@ -15,8 +15,19 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.66"
+VERSION = "0.3.67"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
+TES_AGENT_MESH_RELPATHS = {
+    "docs/agents/PROJECT-CONTEXT.md",
+    "docs/agents/PROJECT-REGISTER.md",
+    "docs/agents/PROJECT-STATE.md",
+    "docs/agents/PROJECT-ROADMAP.md",
+    "docs/agents/EXECUTION-LINE.md",
+    "docs/agents/QUALITY-GATES.md",
+    "docs/agents/BOUNDARIES-AND-CONSTRAINTS.md",
+    "docs/agents/KNOWLEDGE-LIFECYCLE.md",
+    "docs/agents/GLOSSARY.md",
+}
 PACKAGE_MODE = (ROOT / "scripts").exists()
 MARKDOWN_HEADING_RE = re.compile(r"^#{1,3}\s+(.+?)\s*$")
 REQUIRED_SECTIONS = (
@@ -184,10 +195,9 @@ def is_excluded(path: Path, target: Path) -> bool:
         relpath = path.relative_to(target)
     except ValueError:
         return True
-    if relpath.as_posix() in {
-        "docs/agents/PROJECT-CONTEXT.md",
-        "docs/agents/PROJECT-REGISTER.md",
-    }:
+    if relpath.as_posix() in TES_AGENT_MESH_RELPATHS:
+        return True
+    if len(relpath.parts) >= 3 and relpath.parts[:3] == ("docs", "agents", "DECISIONS"):
         return True
     if is_tes_runtime_relpath(relpath) or is_generated_root_bootloader(relpath, path):
         return True
