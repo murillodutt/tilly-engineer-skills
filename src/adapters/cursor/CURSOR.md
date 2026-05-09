@@ -5,11 +5,13 @@ Discipline.
 
 ## In This Repository
 
-Cursor loads `.cursor/rules/tes-guidelines.mdc`.
+Cursor loads `.cursor/rules/tes-guidelines.mdc` for governance and
+`.cursor/rules/tes-runtime-capabilities.mdc` for TES command routing.
 
 ## Use In Another Project
 
-Copy `.cursor/rules/tes-guidelines.mdc` into the target project's rule set.
+Copy `.cursor/rules/tes-guidelines.mdc` and
+`.cursor/rules/tes-runtime-capabilities.mdc` into the target project's rule set.
 
 If the target project already has rules, merge the four gates rather than
 duplicating long prose:
@@ -55,10 +57,11 @@ Compatible aliases:
 - `/tes:reflect`
 - `/tes:curate`
 
-Natural intents include: tes init, tes update, tes open obsidian, initialize
-TES, install TES, recertify TES, open Obsidian, open this project in Obsidian,
-Atualizar TES, atualizar TES, abrir Obsidian, abrir no Obsidian, inicializar
-TES, instalar TES, and recertificar TES.
+Natural intents include: tes init, tes update, tes align, tes open obsidian,
+align TES, align this project, open Obsidian, open this project in Obsidian,
+Atualizar TES, atualizar TES, alinhar TES, alinhar projeto, abrir Obsidian,
+abrir no Obsidian, initialize TES, install TES, recertify TES, inicializar TES,
+instalar TES, and recertificar TES.
 
 ## Behavioral Source Of Truth
 
@@ -71,8 +74,8 @@ visible assumptions, smaller scope, surgical edits, and falsifiable closure.
 - Claude Code: use `CLAUDE.md` or tool-native plugin metadata.
 
 Do not copy `.cursor/**` into Codex or Claude runtime as authoritative context.
-Natural alignment prompts such as `tes align`, `align TES`, `align this
-project`, `alinhar TES`, and `alinhar projeto` route to `/tes-align`.
+Natural alignment prompts such as `tes align`, `align TES`, `align this project`,
+`alinhar TES`, and `alinhar projeto` route to `/tes-align`.
 Obsidian opening prompts such as `open Obsidian`,
 `open this project in Obsidian`, `abrir Obsidian`, and `abrir no Obsidian`
 route to `/tes-open-obsidian`.

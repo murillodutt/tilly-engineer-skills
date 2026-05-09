@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.70</span>
+          <span class="brand-meta">User manual · v0.3.71</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1008,7 +1008,6 @@
     <div class="scrim" id="scrim" aria-hidden="true"></div>
 
     <main class="stage" id="content">
-
       <!-- ============== EN ============== -->
       <section class="lang-section is-active" data-lang="en" lang="en" aria-live="polite">
         <header class="masthead">
@@ -1031,6 +1030,7 @@
               <span class="panel-tag">Execution model</span>
               <p>The executor is the active coding agent inside the current IDE or runtime window. Skills, rules and bootloaders route behavior; Python scripts and <code>npm run ...</code> entries are deterministic oracles the agent invokes when local tool access exists; hooks are Git-event gates for validation and no-write Cortex reflection/curation; MCP is a read-only Cortex access surface. If a runtime cannot execute an oracle, the agent must report it as blocked or skipped instead of claiming certification.</p>
             </div>
+            <div class="panel"><span class="panel-tag">Layer split</span><p>Installer scripts stage a versioned bundle in <code>.tes/setup/&lt;version&gt;/</code> and refresh manifest-known TES-owned helpers and runtime capabilities. The LLM layer handles project understanding and semantic governance review. Project-owned <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> and Cursor rules may remain preserved while <code>/tes-align</code> and <code>/tes-open-obsidian</code> become active through safe runtime surfaces.</p></div>
             <div class="panel">
               <span class="panel-tag">Git safety</span>
               <p>Tilly protects local rollback and cache artifacts with <code>.git/info/exclude</code>: <code>.tes/bin/*.bak-*</code>, Python bytecode, Field Reports state, and Cortex SQLite caches stay out of normal staging. Tilly does not ignore <code>.tes/bin/*.py</code>, because those helpers are the installed runtime surface.</p>
@@ -2033,7 +2033,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.70</span>
+        <span>Tilly Engineer Skills · v0.3.71</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>

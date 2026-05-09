@@ -75,25 +75,23 @@ dependencies, overwrite files, or change remotes unless I explicitly ask after
 reviewing the certification report.
 ```
 
-Short source:
+Short source: `docs/install/MINI-PROMPT.md`.
 
-```text
-docs/install/MINI-PROMPT.md
-```
-
-Full raw spec:
-
-```text
-docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
-```
+Full raw spec: `docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md`.
 
 ## Install Semantics
 
-The context installer is not a file copier. It performs:
+The context installer is not a blind file copier. The mechanical installer
+first stages a versioned TES bundle and manifest under
+`.tes/setup/<version>/`, then applies only manifest-known layers. The active
+LLM owns semantic project analysis and governance merge decisions.
+
+It performs:
 
 ```text
 environment detection
   -> new, existing, or meshed project classification
+  -> deterministic bundle staging
   -> runtime navigation library
   -> adapter menu
   -> docs/agents/** canonical mesh
@@ -112,7 +110,7 @@ The installer follows current adapter surfaces:
 |------|-----------------|
 | Codex | `AGENTS.md` and `.agents/skills/**` |
 | Claude Code | `CLAUDE.md`, `.claude/skills/**`, `.claude-plugin/**`, and `skills/**` |
-| Cursor | `.cursor/rules/*.mdc` project rules |
+| Cursor | `.cursor/rules/tes-guidelines.mdc` plus TES-owned `.cursor/rules/tes-runtime-capabilities.mdc` |
 
 The common pattern is file-based installation into the target repository, but
 project-specific governance belongs in `docs/agents/**`.
@@ -418,19 +416,18 @@ Windows PowerShell bootstrap entrypoint:
 
 ## Conflict Policy
 
-If a target file exists and differs, installation stops before copying files.
-This protects existing project instructions.
+If a project-owned governance file exists and differs, installation preserves
+it and continues copying non-conflicting TES-owned runtime capability files.
+This protects existing project instructions without blocking `/tes-align`,
+`/tes-open-obsidian`, or other TES command routers.
 
-Allowed responses:
+Allowed responses: `--dry-run` to preview, `--retrofit-plan` to generate an
+LLM merge plan, `--overwrite --yes` to refresh TES-owned runtime/helper
+conflicts with backups, and `--overwrite --no-backup --yes` to skip backups.
 
-| Need | Command |
-|------|---------|
-| See what would happen | `--dry-run` |
-| Generate an LLM merge plan | `--retrofit-plan` |
-| Replace conflicting files with backups | `--overwrite --yes` |
-| Replace without backups | `--overwrite --no-backup --yes` |
-
-`--overwrite` creates `.bak-<timestamp>` files by default.
+`--overwrite` creates `.bak-<timestamp>` files by default, but it does not
+authorize overwriting project-owned context governance. Explicit semantic
+review is still required for root bootloaders and project-owned rules.
 Those backups are local rollback artifacts and must be ignored through
 `.git/info/exclude`, not counted as new TES surfaces.
 
@@ -446,22 +443,20 @@ python3 scripts/install_adapter.py \
   --retrofit-plan
 ```
 
-The generated file lives under:
-
-```text
-/path/to/project/.tes/retrofit/
-```
+The generated file lives under `/path/to/project/.tes/retrofit/`.
 
 The command preserves conflicting bootloaders and still installs
 non-conflicting TES-owned assets. Its JSON status includes
-`INSTALLED_WITH_PRESERVED_CONFLICTS` or
-`DRY-RUN-WITH-PRESERVED-CONFLICTS`, plus a `preserved_conflicts` list. That is
+`INSTALLED_WITH_PRESERVED_CONTEXT` or
+`DRY-RUN-WITH-PRESERVED-CONTEXT`, plus `layer_results`,
+`preserved_context`, `installed_capabilities`, and `obsolete_removed`. That is
 intentional: retrofit protects project governance without blocking assets such
-as `.claude/skills/**`.
+as `.claude/skills/**`, `.agents/skills/**`, plugin metadata, or the
+TES-owned Cursor runtime-capabilities rule.
 
-Give that file to an LLM or human reviewer. The merge instruction is to add the
-Tilly discipline while preserving project-local commands, paths, tests,
-ownership, security constraints, and existing agent rules.
+Give that file to an LLM or human reviewer. Merge Tilly discipline while
+preserving project-local commands, paths, tests, ownership, security
+constraints, and existing agent rules.
 
 ## Security Boundaries
 

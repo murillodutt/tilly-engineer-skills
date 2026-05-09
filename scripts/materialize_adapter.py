@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "dist" / "adapters"
-VERSION = "0.3.70"
+VERSION = "0.3.71"
 CODEX_SKILLS = (
     "tes-engineering-discipline",
     "tes-init",
@@ -86,6 +86,10 @@ ADAPTERS: dict[str, tuple[CopyRule, ...]] = {
         CopyRule(
             "src/adapters/cursor/rules/tes-guidelines.mdc",
             ".cursor/rules/tes-guidelines.mdc",
+        ),
+        CopyRule(
+            "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",
+            ".cursor/rules/tes-runtime-capabilities.mdc",
         ),
     ),
     "claude": (
@@ -224,12 +228,19 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
             failures.append("codex: missing marketplace.json")
 
     if adapter == "cursor":
-        rule = adapter_root / ".cursor/rules/tes-guidelines.mdc"
-        text = rule.read_text(encoding="utf-8") if rule.exists() else ""
-        if "description:" not in text:
-            failures.append("cursor: rule must keep description frontmatter")
-        if "alwaysApply: true" not in text:
-            failures.append("cursor: rule must keep alwaysApply: true")
+        for relpath in (
+            ".cursor/rules/tes-guidelines.mdc",
+            ".cursor/rules/tes-runtime-capabilities.mdc",
+        ):
+            rule = adapter_root / relpath
+            text = rule.read_text(encoding="utf-8") if rule.exists() else ""
+            if not rule.exists():
+                failures.append(f"cursor: missing {relpath}")
+                continue
+            if "description:" not in text:
+                failures.append(f"cursor: {relpath} must keep description frontmatter")
+            if "alwaysApply: true" not in text:
+                failures.append(f"cursor: {relpath} must keep alwaysApply: true")
 
     if adapter == "claude":
         plugin = adapter_root / ".claude-plugin/plugin.json"

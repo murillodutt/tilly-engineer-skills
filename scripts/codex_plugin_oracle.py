@@ -16,7 +16,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.70"
+VERSION = "0.3.71"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 PLUGIN_ROOT = Path("plugins/tilly-engineer-skills")
 TRIGGER_TERMS = (

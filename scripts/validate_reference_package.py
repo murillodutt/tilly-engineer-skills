@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.70"
+VERSION = "0.3.71"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -106,6 +106,7 @@ REQUIRED_PATHS = (
     "src/adapters/claude/skills/tes-bench/SKILL.md",
     "src/adapters/cursor/CURSOR.md",
     "src/adapters/cursor/rules/tes-guidelines.mdc",
+    "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",
     "benchmarks/context-mesh/eval-dataset.json",
     "scripts/context_mesh_plan.py",
     "scripts/context_mesh_run.py",
@@ -117,6 +118,7 @@ REQUIRED_PATHS = (
     "scripts/field_reports_github_oracle.py",
     "scripts/field_reports_quality_oracle.py",
     "scripts/github_readiness_oracle.py",
+    "scripts/tes_bundle.py",
     "scripts/install_smoke.py",
     "scripts/install_mcp.py",
     "scripts/install_adapter.py",
@@ -185,6 +187,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "install:adapter",
     "install:dry-run",
     "install:smoke",
+    "tes:bundle:self-test",
     "tes:init",
     "tes:init:self-test",
     "project-context:self-test",
