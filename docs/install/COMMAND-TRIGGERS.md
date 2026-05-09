@@ -110,6 +110,21 @@ report must include that plan with phases, approvals, write surfaces, commands,
 and final recorded probe instead of closing with an unstructured
 `NEEDS_REVIEW`.
 
+The continuation plan separates deterministic script layers from semantic
+context layers:
+
+- `bundle_staging`: create `.tes/setup/<version>/` from the TES bundle manifest.
+- `layer_zero_helpers`: refresh manifest-known `.tes/bin/**` helpers.
+- `runtime_capability_refresh`: install TES-owned routers such as
+  `.agents/skills/tes-*`, `.claude/skills/tes-*`, `skills/tes-*`, plugin
+  metadata, and `.cursor/rules/tes-runtime-capabilities.mdc`.
+- `context_governance_review`: preserve `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`,
+  project-owned Cursor rules, and `.cursorrules` for LLM/human semantic merge.
+
+`runtime_trigger_status=PASS` may coexist with
+`context_governance_status=PRESERVED` when the runtime capability layer is
+active and project-owned governance remains intentionally untouched.
+
 This keeps `/tes-init` simple for users: make this project usable by TES. If
 both gates pass, close with certification and recommend `/tes-doctor` only for a
 full health check.
@@ -132,7 +147,8 @@ full health check.
   refresh route until installed trigger parity is PASS.
 - Do not let a project-owned bootloader conflict block non-conflicting TES
   runtime assets. Preserve the bootloader and copy package-owned assets such as
-  `.claude/skills/**` or `.agents/skills/**`.
+  `.claude/skills/**`, `.agents/skills/**`, and
+  `.cursor/rules/tes-runtime-capabilities.mdc`.
 - Do not use MCP config activation to repair stale helpers; run the helper-only
   Layer Zero route first.
 - Do not call SQLite, MCP, or generated output memory.

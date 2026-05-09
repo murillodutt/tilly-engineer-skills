@@ -1,6 +1,6 @@
 # Tilly Engineer Skills (TES)
 
-[![Version](https://img.shields.io/badge/version-0.3.70-1f6feb)](package.json)
+[![Version](https://img.shields.io/badge/version-0.3.71-1f6feb)](package.json)
 [![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE)
 [![Field Report Governance](https://github.com/murillodutt/tilly-engineer-skills/actions/workflows/field-report-governance.yml/badge.svg)](https://github.com/murillodutt/tilly-engineer-skills/actions/workflows/field-report-governance.yml)
 [![Context Mesh](https://img.shields.io/badge/context--mesh-agent--operating--layer-2ea44f)](docs/mesh/CONTEXT-MESH-METHOD.md)
@@ -42,11 +42,13 @@ https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/in
 Run in quiet installer mode: show compact progress, blockers and the final
 certification report only. Start by detecting the current IDE/runtime and
 classifying this project as new, existing, or meshed. Preserve local project
-governance, build or update docs/agents/** as the canonical context mesh, keep
-AGENTS.md, CLAUDE.md and Cursor rules as thin runtime bootloaders, create the
-docs/agents/cortex/** continuity layer when needed, activate the read-only
-project-scoped Cortex MCP server for the selected runtime route, and finish
-with the certification report required by the spec.
+governance, build or update docs/agents/** as the canonical context mesh, stage
+the deterministic TES bundle under .tes/setup/<version>/, keep AGENTS.md,
+CLAUDE.md and project-owned Cursor rules preserved for semantic review, install
+TES-owned runtime capabilities such as /tes-align and /tes-open-obsidian,
+create the docs/agents/cortex/** continuity layer when needed, activate the
+read-only project-scoped Cortex MCP server for the selected runtime route, and
+finish with the certification report required by the spec.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, tell

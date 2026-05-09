@@ -31,7 +31,7 @@ that source and are not edited by hand.
 | Adapter | Generated install tree |
 |---------|------------------------|
 | Codex | `AGENTS.md`, `.agents/skills/**`, `.agents/plugins/marketplace.json`, and `plugins/tilly-engineer-skills/**` |
-| Cursor | `CURSOR.md` and `.cursor/rules/tes-guidelines.mdc` |
+| Cursor | `CURSOR.md`, `.cursor/rules/tes-guidelines.mdc`, and `.cursor/rules/tes-runtime-capabilities.mdc` |
 | Claude | `CLAUDE.md`, `.claude/skills/**`, `.claude-plugin/**`, and `skills/**` |
 
 ## Gate
@@ -44,6 +44,8 @@ check builds all adapters in a temporary directory and verifies:
 - Codex plugin metadata points to the generated root-contained `./skills/`
   copy and the repo marketplace resolves to `plugins/tilly-engineer-skills`;
 - Cursor keeps `.mdc` frontmatter with `description` and `alwaysApply: true`;
+- Cursor separates governance (`tes-guidelines.mdc`) from TES-owned command
+  capability routing (`tes-runtime-capabilities.mdc`);
 - Claude project skills materialize under `.claude/skills/**` and plugin
   metadata points to the root-contained `./skills/` copy;
 - existing project-owned bootloaders may be preserved while non-conflicting
@@ -63,7 +65,7 @@ If a target tool changes packaging rules, update `src/adapters/<tool>/**`,
 |---------|------|------|
 | Codex | Editing installed user/runtime skill or plugin instead of source | Edit `src/adapters/codex/**` only; `plugins/tilly-engineer-skills/**` is generated output |
 | Claude | Plugin metadata depends on `../` outside the plugin root, project installs omit `.claude/skills/**`, or a `CLAUDE.md` conflict blocks skill copies | Skill paths must be root-relative, project skills must be present, and bootloader conflicts must be preserved without blocking non-conflicting assets |
-| Cursor | Legacy `.cursorrules` leaks back into the package | Validator blocks `.cursorrules` |
+| Cursor | Legacy `.cursorrules` leaks back into the package or project-owned rules block TES commands | Validator blocks `.cursorrules`; runtime capabilities materialize as a separate TES-owned rule |
 | All | Generated output becomes perceived source | `dist/**` remains ignored and reproducible |
 
 Hooks, write-capable MCP servers, agent definitions, cloud/background

@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.70"
+VERSION = "0.3.71"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -182,6 +182,7 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
     if adapter == "codex":
         return (
             "AGENTS.md",
+            f".tes/setup/{VERSION}/tes-bundle-manifest.json",
             ".agents/skills/tes-engineering-discipline/SKILL.md",
             ".agents/skills/tes-align/SKILL.md",
             ".agents/skills/tes-open-obsidian/SKILL.md",
@@ -189,6 +190,7 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
     if adapter == "claude":
         return (
             "CLAUDE.md",
+            f".tes/setup/{VERSION}/tes-bundle-manifest.json",
             ".claude-plugin/plugin.json",
             "skills/tes-guidelines/SKILL.md",
             ".claude/skills/tes-guidelines/SKILL.md",
@@ -199,7 +201,12 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
             "skills/tes-open-obsidian/SKILL.md",
         )
     if adapter == "cursor":
-        return ("CURSOR.md", ".cursor/rules/tes-guidelines.mdc")
+        return (
+            "CURSOR.md",
+            f".tes/setup/{VERSION}/tes-bundle-manifest.json",
+            ".cursor/rules/tes-guidelines.mdc",
+            ".cursor/rules/tes-runtime-capabilities.mdc",
+        )
     raise ValueError(f"unknown adapter: {adapter}")
 
 
@@ -213,9 +220,10 @@ def expected_mcp_paths(adapter: str) -> tuple[str, ...]:
         ".tes/bin/tes_legacy_retirement.py",
         ".tes/bin/root_context.py",
         ".tes/bin/tes_init.py",
-        ".tes/bin/project_context_oracle.py",
-        ".tes/bin/project_alignment_oracle.py",
-        ".tes/bin/tes_open_obsidian.py",
+            ".tes/bin/project_context_oracle.py",
+            ".tes/bin/project_alignment_oracle.py",
+            ".tes/bin/tes_open_obsidian.py",
+            f".tes/setup/{VERSION}/tes-bundle-manifest.json",
     )
     if adapter == "codex":
         return (*base, ".codex/config.toml")
@@ -351,8 +359,8 @@ def claude_preserved_bootloader_probe() -> dict[str, Any]:
         except (ValueError, json.JSONDecodeError) as exc:
             failures.append(f"claude preserve install returned invalid JSON: {exc}")
             payload = {}
-        if payload.get("status") != "INSTALLED_WITH_PRESERVED_CONFLICTS":
-            failures.append("claude preserve install must report INSTALLED_WITH_PRESERVED_CONFLICTS")
+        if payload.get("status") != "INSTALLED_WITH_PRESERVED_CONTEXT":
+            failures.append("claude preserve install must report INSTALLED_WITH_PRESERVED_CONTEXT")
         preserved = payload.get("preserved_conflicts") or []
         if not any(str(item.get("relpath")) == "CLAUDE.md" for item in preserved):
             failures.append("claude preserve install must preserve conflicting CLAUDE.md")
@@ -361,10 +369,15 @@ def claude_preserved_bootloader_probe() -> dict[str, Any]:
         failures.extend(require_paths(target, (
             ".claude/skills/tes-guidelines/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
+            ".claude/skills/tes-align/SKILL.md",
+            ".claude/skills/tes-open-obsidian/SKILL.md",
             ".claude/skills/tes-cortex/SKILL.md",
             "skills/tes-guidelines/SKILL.md",
             "skills/tes-init/SKILL.md",
+            "skills/tes-align/SKILL.md",
+            "skills/tes-open-obsidian/SKILL.md",
             ".claude-plugin/plugin.json",
+            f".tes/setup/{VERSION}/tes-bundle-manifest.json",
         )))
 
         code, stdout, stderr = run(
@@ -413,8 +426,8 @@ def codex_preserved_bootloader_probe() -> dict[str, Any]:
         except (ValueError, json.JSONDecodeError) as exc:
             failures.append(f"codex preserve install returned invalid JSON: {exc}")
             payload = {}
-        if payload.get("status") != "INSTALLED_WITH_PRESERVED_CONFLICTS":
-            failures.append("codex preserve install must report INSTALLED_WITH_PRESERVED_CONFLICTS")
+        if payload.get("status") != "INSTALLED_WITH_PRESERVED_CONTEXT":
+            failures.append("codex preserve install must report INSTALLED_WITH_PRESERVED_CONTEXT")
         preserved = payload.get("preserved_conflicts") or []
         if not any(str(item.get("relpath")) == "AGENTS.md" for item in preserved):
             failures.append("codex preserve install must preserve conflicting AGENTS.md")
@@ -428,8 +441,11 @@ def codex_preserved_bootloader_probe() -> dict[str, Any]:
         failures.extend(require_paths(target, (
             ".agents/skills/tes-engineering-discipline/SKILL.md",
             ".agents/skills/tes-init/SKILL.md",
+            ".agents/skills/tes-align/SKILL.md",
+            ".agents/skills/tes-open-obsidian/SKILL.md",
             ".agents/skills/tes-cortex/SKILL.md",
             ".agents/skills/tes-mcp/SKILL.md",
+            f".tes/setup/{VERSION}/tes-bundle-manifest.json",
         )))
 
         code, stdout, stderr = run(
@@ -477,6 +493,8 @@ def hostile_governance_conflict_probe() -> dict[str, Any]:
             failures.append(f"hostile governance install returned invalid JSON: {exc}")
             payload = {}
         preserved = payload.get("preserved_conflicts") or []
+        if payload.get("status") != "INSTALLED_WITH_PRESERVED_CONTEXT":
+            failures.append("hostile governance install must report INSTALLED_WITH_PRESERVED_CONTEXT")
         for relpath in ("AGENTS.md", "CLAUDE.md", ".cursor/rules/tes-guidelines.mdc"):
             if not any(str(item.get("relpath")) == relpath for item in preserved):
                 failures.append(f"hostile governance install must preserve conflict: {relpath}")
@@ -493,9 +511,17 @@ def hostile_governance_conflict_probe() -> dict[str, Any]:
             failures.append("hostile governance install did not refresh TES-owned CURSOR.md")
         failures.extend(require_paths(target, (
             ".agents/skills/tes-init/SKILL.md",
+            ".agents/skills/tes-align/SKILL.md",
+            ".agents/skills/tes-open-obsidian/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
+            ".claude/skills/tes-align/SKILL.md",
+            ".claude/skills/tes-open-obsidian/SKILL.md",
             "skills/tes-init/SKILL.md",
+            "skills/tes-align/SKILL.md",
+            "skills/tes-open-obsidian/SKILL.md",
             "CURSOR.md",
+            ".cursor/rules/tes-runtime-capabilities.mdc",
+            f".tes/setup/{VERSION}/tes-bundle-manifest.json",
         )))
         return {"route": "hostile-governance-conflict", "status": "FAIL" if failures else "PASS", "failures": failures}
 

@@ -17,10 +17,11 @@ from typing import Any
 import field_reports
 import materialize_adapter
 import root_context
+import tes_bundle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.70"
+VERSION = "0.3.71"
 RETROFIT_DIR = ".tes/retrofit"
 
 
@@ -32,7 +33,39 @@ def is_tes_runtime_conflict(relpath: str) -> bool:
         return True
     if len(parts) >= 2 and parts[0] == "skills" and parts[1].startswith("tes-"):
         return True
+    if (
+        len(parts) >= 4
+        and parts[0] == "plugins"
+        and parts[1] == "tilly-engineer-skills"
+        and parts[2] == "skills"
+        and parts[3].startswith("tes-")
+    ):
+        return True
+    if relpath.startswith(".claude-plugin/"):
+        return True
+    if relpath.startswith("plugins/tilly-engineer-skills/.codex-plugin/"):
+        return True
+    if relpath == ".agents/plugins/marketplace.json":
+        return True
+    if relpath == ".cursor/rules/tes-runtime-capabilities.mdc":
+        return True
     return False
+
+
+def is_context_governance_path(relpath: str) -> bool:
+    if relpath == ".cursor/rules/tes-runtime-capabilities.mdc":
+        return False
+    if relpath in {"AGENTS.md", "CLAUDE.md", "CURSOR.md", ".cursorrules"}:
+        return True
+    return relpath.startswith(".cursor/rules/")
+
+
+def layer_for_relpath(relpath: str) -> str:
+    if is_tes_runtime_conflict(relpath):
+        return "runtime_capability"
+    if is_context_governance_path(relpath):
+        return "context_governance"
+    return "runtime_capability"
 
 
 def is_tes_owned_cursor_bootloader(relpath: str, target: Path) -> bool:
@@ -66,12 +99,19 @@ def is_tes_owned_cursor_rule(relpath: str, target: Path) -> bool:
     return sum(1 for marker in markers if marker in text) >= 2
 
 
-def can_overwrite_conflict(relpath: str, target: Path, broad_overwrite: bool) -> bool:
-    if broad_overwrite:
-        return True
+def can_overwrite_conflict(
+    relpath: str,
+    target: Path,
+    broad_overwrite: bool,
+    root_context_reviewed: bool = False,
+) -> bool:
     if is_tes_runtime_conflict(relpath):
         return True
-    return is_tes_owned_cursor_bootloader(relpath, target) or is_tes_owned_cursor_rule(relpath, target)
+    if is_context_governance_path(relpath):
+        if root_context_reviewed:
+            return True
+        return is_tes_owned_cursor_bootloader(relpath, target) or is_tes_owned_cursor_rule(relpath, target)
+    return broad_overwrite
 
 
 def sha256_file(path: Path) -> str:
@@ -311,24 +351,23 @@ def install(args: argparse.Namespace) -> int:
                     " ".join(sys.argv),
                 )
 
-        if args.overwrite and root_context_result["status"] == "NEEDS_REVIEW" and not args.root_context_reviewed:
+        if not require_confirmation(args):
+            capture_install_result(target_root, args.adapter, "CANCELLED", args.dry_run, 0)
+            return 1
+
+        bundle_stage = tes_bundle.stage_source_bundle(target_root, dry_run=args.dry_run, adapter=args.adapter)
+        if bundle_stage.get("status") == "FAIL":
             print(json.dumps(
                 {
                     "version": VERSION,
-                    "status": "ROOT-CONTEXT-NEEDS-REVIEW",
+                    "status": "BUNDLE-STAGE-FAIL",
                     "target": str(target_root),
                     "adapter": args.adapter,
-                    "root_context": root_context_result,
+                    "bundle_stage": bundle_stage,
                 },
                 indent=2,
             ))
-            capture_install_result(target_root, args.adapter, "ROOT-CONTEXT-NEEDS-REVIEW", args.dry_run, len(root_context_result.get("roots", [])))
-            print("[install-adapter] FAIL")
-            print("- root bootloader context must be structured before overwrite; rerun root_context.py --write-plan")
-            return 2
-
-        if not require_confirmation(args):
-            capture_install_result(target_root, args.adapter, "CANCELLED", args.dry_run, 0)
+            capture_install_result(target_root, args.adapter, "BUNDLE-STAGE-FAIL", args.dry_run, 1)
             return 1
 
         if not args.dry_run:
@@ -339,10 +378,18 @@ def install(args: argparse.Namespace) -> int:
         for adapter in selected_adapters(args.adapter):
             adapter_root = out_root / adapter
             copies, conflicts = collect_adapter_plan(adapter_root, target_root)
+            copies = [
+                {
+                    **item,
+                    "layer": layer_for_relpath(item["relpath"]),
+                }
+                for item in copies
+            ]
             overwrite_items = [
                 {
                     **item,
                     "relpath": Path(item["source"]).relative_to(adapter_root).as_posix(),
+                    "layer": layer_for_relpath(Path(item["source"]).relative_to(adapter_root).as_posix()),
                     "action": "overwrite",
                 }
                 for item in conflicts
@@ -350,20 +397,23 @@ def install(args: argparse.Namespace) -> int:
                     Path(item["source"]).relative_to(adapter_root).as_posix(),
                     Path(item["target"]),
                     args.overwrite,
+                    args.root_context_reviewed,
                 )
             ]
             preserved_items = [
                 {
                     **item,
                     "relpath": Path(item["source"]).relative_to(adapter_root).as_posix(),
+                    "layer": layer_for_relpath(Path(item["source"]).relative_to(adapter_root).as_posix()),
                 }
                 for item in conflicts
                 if not can_overwrite_conflict(
                     Path(item["source"]).relative_to(adapter_root).as_posix(),
                     Path(item["target"]),
                     args.overwrite,
+                    args.root_context_reviewed,
                 )
-            ] if not args.overwrite else []
+            ]
             preserved_conflicts.extend(preserved_items)
             actions.extend(copy_files(
                 copies,
@@ -384,8 +434,26 @@ def install(args: argparse.Namespace) -> int:
             "would-overwrite",
         }
         has_safe_adapter_surface = any(action.get("action") in safe_action_names for action in actions)
+        preserved_context = [
+            item for item in preserved_conflicts
+            if item.get("layer") == "context_governance"
+        ]
         if preserved_conflicts and not has_safe_adapter_surface:
             status = "DRY-RUN-CONFLICT" if args.dry_run else "CONFLICT"
+        elif preserved_context:
+            status = "DRY-RUN-WITH-PRESERVED-CONTEXT" if args.dry_run else "INSTALLED_WITH_PRESERVED_CONTEXT"
+
+        layer_results: dict[str, dict[str, int]] = {}
+        for action in actions:
+            layer = action.get("layer", "unknown")
+            name = action.get("action", "unknown")
+            layer_results.setdefault(layer, {})
+            layer_results[layer][name] = layer_results[layer].get(name, 0) + 1
+        installed_capabilities = [
+            action for action in actions
+            if action.get("layer") == "runtime_capability"
+            and action.get("action") in {"copy", "overwrite", "skip-identical", "would-copy", "would-overwrite"}
+        ]
 
         result = {
             "version": VERSION,
@@ -393,9 +461,14 @@ def install(args: argparse.Namespace) -> int:
             "target": str(target_root),
             "adapter": args.adapter,
             "planned": planned,
+            "bundle_stage": bundle_stage,
             "root_context": root_context_result,
+            "layer_results": layer_results,
             "actions": actions,
             "preserved_conflicts": preserved_conflicts,
+            "preserved_context": preserved_context,
+            "installed_capabilities": installed_capabilities,
+            "obsolete_removed": [],
             "retrofit_plan": str(retrofit_plan) if retrofit_plan else None,
         }
         print(json.dumps(result, indent=2))

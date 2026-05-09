@@ -19,7 +19,7 @@ import project_context_oracle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.70"
+VERSION = "0.3.71"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -126,6 +126,7 @@ def materialized_results() -> tuple[dict[str, Any], list[str]]:
             "cursor": (
                 "CURSOR.md",
                 ".cursor/rules/tes-guidelines.mdc",
+                ".cursor/rules/tes-runtime-capabilities.mdc",
             ),
         }
         for adapter, paths in required.items():
@@ -222,18 +223,20 @@ def analyze() -> dict[str, Any]:
 
     # Cursor
     cursor_rule = "src/adapters/cursor/rules/tes-guidelines.mdc"
-    if not exists(cursor_rule):
-        failures.append(f"missing Cursor rule: {cursor_rule}")
-    else:
-        text = read(cursor_rule)
+    cursor_runtime_rule = "src/adapters/cursor/rules/tes-runtime-capabilities.mdc"
+    for rule in (cursor_rule, cursor_runtime_rule):
+        if not exists(rule):
+            failures.append(f"missing Cursor rule: {rule}")
+            continue
+        text = read(rule)
         if "alwaysApply: true" not in text:
-            failures.append(f"{cursor_rule} must keep alwaysApply: true")
+            failures.append(f"{rule} must keep alwaysApply: true")
         if "description:" not in text:
-            failures.append(f"{cursor_rule} missing description")
+            failures.append(f"{rule} missing description")
     if not exists("src/adapters/cursor/CURSOR.md"):
         failures.append("missing Cursor bootloader: src/adapters/cursor/CURSOR.md")
     surface("cursor", "agent", "certified", "src/adapters/cursor/CURSOR.md")
-    surface("cursor", "skill", "deferred", "Cursor plugin skills exist officially, but TES v0.3.70 ships Cursor rules first.")
+    surface("cursor", "skill", "certified", "src/adapters/cursor/rules/tes-runtime-capabilities.mdc provides command capability routing while project governance rules may stay preserved.")
     surface("cursor", "plugin", "deferred", "Cursor plugins are native, but no TES .cursor-plugin package is claimed.")
     surface("cursor", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("cursor", "rules", "certified", cursor_rule)
@@ -298,6 +301,7 @@ def analyze() -> dict[str, Any]:
         "src/adapters/codex/skills/tes-init/SKILL.md",
         "src/adapters/claude/skills/tes-init/SKILL.md",
         "src/adapters/cursor/rules/tes-guidelines.mdc",
+        "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",
     ):
         text = read(relpath)
         for term in ("PROJECT-CONTEXT.md", "analyze"):

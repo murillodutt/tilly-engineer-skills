@@ -1,0 +1,59 @@
+---
+description: TES runtime command capability routing for Cursor when project-owned governance rules are preserved.
+alwaysApply: true
+---
+
+# TES Runtime Capabilities
+
+This rule is TES-owned runtime capability, not project-owned governance. It may
+be refreshed by the deterministic installer while `AGENTS.md`, `CLAUDE.md`,
+`CURSOR.md`, and project-owned Cursor rules remain preserved for semantic review.
+
+## TES Command Intents
+
+Use these exact TES intents when the user asks for Tilly Engineering Skills:
+
+- `/tes-init`
+- `/tes-update`
+- `/tes-align`
+- `/tes-open-obsidian`
+- `/tes-cortex`
+- `/tes-curate`
+- `/tes-mcp`
+- `/tes-field-reports`
+- `/tes-doctor`
+- `/tes-adapter`
+- `/tes-bench`
+
+Compatible aliases:
+
+- `/tes:init`
+- `/tes:update`
+- `/tes:align`
+- `/tes:open-obsidian`
+- `/tes:cortex`
+- `/tes:mcp`
+- `/tes:field-reports`
+- `/tes:doctor`
+- `/tes:adapter`
+- `/tes:bench`
+- `/tes:check`
+- `/tes:certify`
+- `/tes:recall`
+- `/tes:learn`
+- `/tes:reflect`
+- `/tes:curate`
+
+Natural intents include: tes init, tes update, tes align, tes open obsidian,
+align TES, align this project, open Obsidian, open this project in Obsidian,
+Atualizar TES, atualizar TES, alinhar TES, alinhar projeto, abrir Obsidian,
+abrir no Obsidian, initialize TES, install TES, recertify TES, inicializar TES,
+instalar TES, and recertificar TES.
+
+Route `/tes-init` through the Install/Update Gate, Project Context Gate, and
+Project-Start Gate. Step Zero protects installer/update writes and must not
+block project-context initialization when TES is already installed/current and
+only the Project Context Gate fails. A preflight context PASS does not replace
+project-start execution; after helper-only or adapter repairs, rerun this gate.
+The target `docs/agents/PROJECT-CONTEXT.md` must analyze source anchors before
+TES claims durable project understanding.

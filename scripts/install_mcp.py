@@ -15,10 +15,11 @@ from pathlib import Path
 from typing import Any
 
 import field_reports
+import tes_bundle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.70"
+VERSION = "0.3.71"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (
@@ -302,13 +303,15 @@ def install(args: argparse.Namespace) -> int:
         field_reports.ensure_git_exclude(target)
 
     adapters = selected_adapters(args.adapter)
+    bundle_stage = tes_bundle.stage_source_bundle(target, dry_run=args.dry_run, adapter=args.adapter)
     server_actions, server_failures = install_server_files(target, args.dry_run, args.overwrite, not args.no_backup)
     config_actions, config_failures = (
         ([], [])
         if args.helpers_only
         else install_configs(target, adapters, args.dry_run, args.overwrite, not args.no_backup)
     )
-    failures = [*server_failures, *config_failures]
+    bundle_failures = bundle_stage.get("failures", []) if bundle_stage.get("status") == "FAIL" else []
+    failures = [*bundle_failures, *server_failures, *config_failures]
     status = "FAIL" if failures else ("DRY-RUN" if args.dry_run else "INSTALLED")
     result = {
         "version": VERSION,
@@ -317,6 +320,7 @@ def install(args: argparse.Namespace) -> int:
         "adapter": args.adapter,
         "route": args.adapter,
         "helpers_only": args.helpers_only,
+        "bundle_stage": bundle_stage,
         "server": SERVER_NAME,
         "server_files": server_actions,
         "configs": config_actions,
@@ -383,6 +387,7 @@ def self_test() -> int:
             ".tes/bin/project_context_oracle.py",
             ".tes/bin/project_alignment_oracle.py",
             ".tes/bin/tes_open_obsidian.py",
+            f".tes/setup/{VERSION}/tes-bundle-manifest.json",
             ".codex/config.toml",
             ".mcp.json",
             ".cursor/mcp.json",

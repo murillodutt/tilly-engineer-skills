@@ -14,9 +14,14 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+try:
+    import root_context as root_context_helper
+except Exception:  # pragma: no cover - installed helper may be inspected alone.
+    root_context_helper = None  # type: ignore[assignment]
+
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.70"
+VERSION = "0.3.71"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -889,6 +894,38 @@ def project_start_gate(target: Path) -> dict[str, Any]:
     }
 
 
+def context_governance_contract(target: Path) -> dict[str, Any]:
+    roots = [
+        "AGENTS.md",
+        "CLAUDE.md",
+        "CURSOR.md",
+        ".cursor/rules/tes-guidelines.mdc",
+        ".cursorrules",
+    ]
+    existing = [root for root in roots if (target / root).exists()]
+    if not existing:
+        return {"status": "NOT_APPLIED", "roots": [], "failures": []}
+    if root_context_helper is None:
+        return {"status": "PRESERVED", "roots": existing, "failures": []}
+    try:
+        analysis = root_context_helper.analyze(target)
+    except Exception as exc:  # pragma: no cover - defensive installed-helper path.
+        return {"status": "PRESERVED", "roots": existing, "failures": [str(exc)]}
+    status = str(analysis.get("status") or "")
+    if status == "NEEDS_REVIEW":
+        contract_status = "PRESERVED"
+    elif status == "PASS":
+        contract_status = "PASS"
+    else:
+        contract_status = "PRESERVED"
+    return {
+        "status": contract_status,
+        "roots": existing,
+        "analysis_status": status,
+        "failures": list(analysis.get("failures", [])) if isinstance(analysis.get("failures"), list) else [],
+    }
+
+
 def continuation_plan(
     target: Path,
     route: str,
@@ -914,6 +951,17 @@ def continuation_plan(
             "goal": "capture baseline and decide whether installer/update writes need approval",
         },
         {
+            "name": "bundle_staging",
+            "required": final_required,
+            "approval_required": False,
+            "writes": [".tes/setup/**"] if final_required else [],
+            "commands": [
+                f"python3 <tes-package>/scripts/tes_bundle.py stage --target {target}",
+                f"python3 <tes-package>/scripts/tes_bundle.py plan --target {target}",
+            ],
+            "goal": "stage a versioned TES bundle manifest before deterministic install/update writes",
+        },
+        {
             "name": "layer_zero_helpers",
             "required": helper_required,
             "approval_required": helper_required,
@@ -926,7 +974,7 @@ def continuation_plan(
             "goal": "refresh only TES-owned helpers with backups and require helper_contract_status=PASS",
         },
         {
-            "name": "adapter_runtime_refresh",
+            "name": "runtime_capability_refresh",
             "required": adapter_required,
             "approval_required": adapter_required,
             "writes": [
@@ -934,14 +982,32 @@ def continuation_plan(
                 ".claude/skills/**",
                 "skills/**",
                 ".claude-plugin/**",
-                ".cursor/rules/**",
-                "CURSOR.md",
+                "plugins/tilly-engineer-skills/**",
+                ".agents/plugins/**",
             ] if adapter_required else [],
             "commands": [
                 f"python3 <tes-package>/scripts/install_adapter.py --target {target} --adapter {route} --dry-run --overwrite",
                 f"python3 <tes-package>/scripts/install_adapter.py --target {target} --adapter {route} --overwrite --yes",
+                "python3 .tes/bin/tes_update.py plan --target . --json-only",
             ],
-            "goal": "restore TES-owned runtime triggers while preserving project-owned governance",
+            "goal": "restore TES-owned runtime capabilities while preserving project-owned context governance",
+        },
+        {
+            "name": "context_governance_review",
+            "required": adapter_required,
+            "approval_required": False,
+            "writes": [
+                "AGENTS.md",
+                "CLAUDE.md",
+                "CURSOR.md",
+                ".cursor/rules/**",
+                ".cursorrules",
+            ] if adapter_required else [],
+            "commands": [
+                "python3 .tes/bin/root_context.py --target .",
+                "review preserved context conflicts before any semantic merge",
+            ],
+            "goal": "leave project-owned governance preserved unless an LLM or human performs semantic review",
         },
         {
             "name": "project_start_alignment",
@@ -1008,6 +1074,7 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
     trigger_drift = triggers["status"] == "DRIFT"
     context = project_context_contract(target, surface_map)
     alignment = project_alignment_contract(target, surface_map)
+    governance = context_governance_contract(target)
     context_drift = context["status"] in {"DRIFT", "BLOCKED"}
     alignment_drift = alignment["status"] in {"DRIFT", "BLOCKED"}
     update_available = True if (cmp_result is not None and cmp_result < 0) or helper_stale or trigger_drift or context_drift or alignment_drift else False
@@ -1074,7 +1141,12 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "project_alignment_paths": alignment["paths"],
         "project_alignment_failures": alignment["failures"],
         "project_alignment_warnings": alignment["warnings"],
+        "context_governance_status": governance["status"],
+        "context_governance_roots": governance["roots"],
+        "context_governance_failures": governance["failures"],
         "adapter_refresh_required": update_scope in {"adapter-config", "full-convergence"},
+        "runtime_capability_refresh_required": trigger_drift or update_scope in {"adapter-config", "full-convergence"},
+        "context_governance_review_required": governance["status"] == "PRESERVED" and trigger_drift,
         "next_probe_required": update_scope != "none",
         "helper_contract_status": helper["status"],
         "installed_helper_records": helper["records"],
@@ -1576,8 +1648,10 @@ def self_test() -> dict[str, Any]:
             for phase in drift_plan.get("phases", [])
             if phase.get("required")
         }
-        if "adapter_runtime_refresh" not in drift_phases:
-            failures.append("runtime trigger drift continuation plan must require adapter runtime refresh")
+        if "runtime_capability_refresh" not in drift_phases:
+            failures.append("runtime trigger drift continuation plan must require runtime capability refresh")
+        if "context_governance_review" not in drift_phases:
+            failures.append("runtime trigger drift continuation plan must include context governance review")
         assert_project_start_gate(result, failures, "trigger drift fixture")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-old-meshed-") as tempdir:
@@ -1620,8 +1694,10 @@ def self_test() -> dict[str, Any]:
             if phase.get("required")
         }
         for phase_name in (
+            "bundle_staging",
             "layer_zero_helpers",
-            "adapter_runtime_refresh",
+            "runtime_capability_refresh",
+            "context_governance_review",
             "project_start_alignment",
             "obsidian_open_preflight",
             "final_recorded_probe",

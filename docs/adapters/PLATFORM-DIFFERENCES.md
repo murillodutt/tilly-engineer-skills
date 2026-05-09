@@ -59,10 +59,10 @@ same contract.
 | Surface | Codex | Claude Code | Cursor |
 |---------|-------|-------------|--------|
 | Base guidance | `AGENTS.md` | `CLAUDE.md` | `.cursor/rules/*.mdc`; `AGENTS.md` may be a simple alternative in Cursor projects |
-| TES package source | `src/adapters/codex/AGENTS.md` | `src/adapters/claude/CLAUDE.md` | `src/adapters/cursor/rules/tes-guidelines.mdc` plus `src/adapters/cursor/CURSOR.md` as a human handoff note |
-| Skills | `.agents/skills/**` | `.claude/skills/**` and plugin `skills/**` | Official Cursor plugins support `skills/**`; TES v1 does not yet claim a Cursor plugin skill package |
+| TES package source | `src/adapters/codex/AGENTS.md` | `src/adapters/claude/CLAUDE.md` | `src/adapters/cursor/rules/tes-guidelines.mdc`, `src/adapters/cursor/rules/tes-runtime-capabilities.mdc`, plus `src/adapters/cursor/CURSOR.md` as a human handoff note |
+| Skills | `.agents/skills/**` | `.claude/skills/**` and plugin `skills/**` | Official Cursor plugins support `skills/**`; TES currently certifies command capability routing through `.cursor/rules/tes-runtime-capabilities.mdc` |
 | Plugin metadata | `plugins/tilly-engineer-skills/.codex-plugin/plugin.json` and `.agents/plugins/marketplace.json` certified locally | `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` | `.cursor-plugin/plugin.json` exists officially; TES v1 does not publish or certify a Cursor plugin |
-| Rules | Project guidance through `AGENTS.md` | No Cursor-style `.mdc` rule surface | `.cursor/rules/*.mdc` with frontmatter such as `description` and `alwaysApply` |
+| Rules | Project guidance through `AGENTS.md` | No Cursor-style `.mdc` rule surface | `.cursor/rules/*.mdc` with frontmatter; TES separates governance from runtime command capability routing |
 | MCP config | `.codex/config.toml` | `.mcp.json` | `.cursor/mcp.json` for project config; plugin MCP is a future packaging decision |
 | Hooks | Tool-native hooks are sensitive and not claimed by TES default package | Tool-native hooks are sensitive and not claimed by TES default package | Plugin hooks exist officially; TES default package still uses repository Git hooks only |
 

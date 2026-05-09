@@ -12,14 +12,15 @@ tver: 0.3.1
 
 This document governs the Cursor derivation of Tilly Engineering Discipline.
 
-Cursor alignment is rule-first. The operative package surface is the project
-rule under `.cursor/rules/**`; `CURSOR.md` is a human handoff note only.
+Cursor alignment is rule-first. The operative package surfaces are project
+rules under `.cursor/rules/**`; `CURSOR.md` is a human handoff note only.
 
 ## Official Surfaces
 
 | Surface | Role | Package Status |
 |---------|------|----------------|
-| `.cursor/rules/*.mdc` | Project rules with frontmatter | Included |
+| `.cursor/rules/tes-guidelines.mdc` | Governance overlay with frontmatter | Included |
+| `.cursor/rules/tes-runtime-capabilities.mdc` | TES-owned command router that may refresh while project governance is preserved | Included |
 | `AGENTS.md` | Simple root-only alternative context | Not materialized by default |
 | `.cursorrules` | Legacy rule file | Forbidden |
 | MCP | Project-scoped Cortex access | Installer route only |
@@ -37,13 +38,14 @@ Official references: [Rules](https://docs.cursor.com/en/context/rules),
 | Source | Purpose |
 |--------|---------|
 | `src/adapters/cursor/rules/tes-guidelines.mdc` | Always-on Cursor rule source |
+| `src/adapters/cursor/rules/tes-runtime-capabilities.mdc` | TES-owned runtime capability router |
 | `src/adapters/cursor/CURSOR.md` | Human adapter note |
 
 The base discipline uses `alwaysApply: true` because the four gates are a
 general behavioral overlay for non-trivial coding, review, refactor, and
 instruction migration work.
 
-Cursor does not receive a separate skill package. The always-on rule treats
+Cursor does not receive a separate skill package. The rules treat
 `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, natural
 init/update command-prompts, `/tes-cortex`, `/tes:cortex`, `/tes-mcp`,
 `/tes:mcp`, `/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`,
@@ -62,6 +64,8 @@ manual rules instead of expanding the always-on rule.
 - Keep `.mdc` frontmatter with `description` and `alwaysApply: true`.
 - Do not materialize `AGENTS.md` for Cursor without an explicit decision,
   because it can duplicate `.cursor/rules/**`.
+- Preserve project-owned Cursor governance rules; refresh only manifest-known
+  TES-owned runtime capability rules such as `tes-runtime-capabilities.mdc`.
 - Do not add hook config or environment files to the default package.
 - Read-only Cortex MCP may be activated by the assisted installer through
   project-scoped `.cursor/mcp.json`.

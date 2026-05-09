@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.70"
+VERSION = "0.3.71"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -117,6 +117,7 @@ PLATFORM_SOURCE_GROUPS = {
     ),
     "cursor": (
         "src/adapters/cursor/rules/tes-guidelines.mdc",
+        "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",
     ),
 }
 
@@ -128,6 +129,7 @@ INIT_ROUTER_SOURCE_PATHS = (
     "src/adapters/claude/CLAUDE.md",
     "src/adapters/claude/skills/tes-init/SKILL.md",
     "src/adapters/cursor/rules/tes-guidelines.mdc",
+    "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",
 )
 
 
