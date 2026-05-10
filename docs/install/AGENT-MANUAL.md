@@ -457,7 +457,7 @@ chat. Required fields:
 | Field | Notes |
 |-------|-------|
 | Status | One of the return-state tokens (Section 7) |
-| Source snapshot freshness | `PASS` for latest source or current public bundle; `STALE_SOURCE` only when the source snapshot is behind or unrelated |
+| Source snapshot freshness | `PASS` for latest source or current public bundle; use `tes_bundle.py freshness --target <project>` when available; `STALE_SOURCE` only when the source snapshot is behind or unrelated |
 | Changed surfaces | List affected files/configs |
 | Root context gate | `PASS` / `PRESERVED` / `NEEDS_REVIEW` |
 | Installed helper set | Helper inventory (Section 10) |

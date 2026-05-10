@@ -95,6 +95,7 @@ def certify_public_bundle() -> dict[str, object]:
 
             extracted_target = Path(tempdir) / "extracted-target"
             extracted_target.mkdir()
+            subprocess.run(["git", "init"], cwd=extracted_target, text=True, capture_output=True, check=False)
             stage_result = subprocess.run(
                 [
                     sys.executable,
@@ -113,6 +114,32 @@ def certify_public_bundle() -> dict[str, object]:
                 failures.append("extracted public bundle tes_bundle.py stage failed")
                 failures.extend(stage_result.stdout.splitlines())
                 failures.extend(stage_result.stderr.splitlines())
+            else:
+                try:
+                    stage_json = json.loads(stage_result.stdout)
+                except json.JSONDecodeError:
+                    stage_json = {}
+                local_exclude = stage_json.get("local_exclude") if isinstance(stage_json, dict) else {}
+                if not isinstance(local_exclude, dict) or local_exclude.get("status") != "PASS":
+                    failures.append("extracted public bundle stage did not ensure local .tes/setup/ git exclusion")
+                ignored = subprocess.run(
+                    ["git", "check-ignore", f".tes/setup/{VERSION}/tes-bundle-manifest.json"],
+                    cwd=extracted_target,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                if ignored.returncode != 0:
+                    failures.append("extracted public bundle setup cache is not git-ignored")
+                status = subprocess.run(
+                    ["git", "status", "--short", "--untracked-files=all"],
+                    cwd=extracted_target,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                if ".tes/setup/" in status.stdout:
+                    failures.append("extracted public bundle setup cache is visible in git status")
             apply_result = subprocess.run(
                 [
                     sys.executable,
@@ -139,6 +166,7 @@ def certify_public_bundle() -> dict[str, object]:
 
         target = Path(tempdir) / "target"
         target.mkdir()
+        subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
         (target / "AGENTS.md").write_text("project-owned\n", encoding="utf-8")
 
         staged = tes_bundle.stage_public_bundle(
@@ -148,6 +176,27 @@ def certify_public_bundle() -> dict[str, object]:
         )
         if staged.get("status") != "STAGED":
             failures.extend(staged.get("failures", ["public bundle stage failed"]))
+        local_exclude = staged.get("local_exclude") if isinstance(staged.get("local_exclude"), dict) else {}
+        if local_exclude.get("status") != "PASS":
+            failures.append("public bundle stage did not ensure local .tes/setup/ git exclusion")
+        ignored = subprocess.run(
+            ["git", "check-ignore", f".tes/setup/{VERSION}/tes-bundle-manifest.json"],
+            cwd=target,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if ignored.returncode != 0:
+            failures.append("public bundle setup cache is not git-ignored")
+        status = subprocess.run(
+            ["git", "status", "--short", "--untracked-files=all"],
+            cwd=target,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if ".tes/setup/" in status.stdout:
+            failures.append("public bundle setup cache is visible in git status")
 
         manifest = tes_bundle.read_staged_manifest(target)
         manifest_metadata = manifest.get("metadata") if isinstance(manifest.get("metadata"), dict) else {}
@@ -157,6 +206,13 @@ def certify_public_bundle() -> dict[str, object]:
             failures.extend(f"staged manifest invalid: {failure}" for failure in tes_bundle.validate_manifest(manifest))
         if not (target / f".tes/setup/{VERSION}/tes-bundle-metadata.json").exists():
             failures.append("public bundle stage missing tes-bundle-metadata.json")
+        freshness = tes_bundle.certify_source_freshness(
+            target,
+            index=index_path,
+            remote_head=str(metadata.get("source_commit") or ""),
+        )
+        if freshness.get("source_freshness") != "PASS":
+            failures.append("public bundle freshness helper did not certify equal staged source")
 
         plan = tes_bundle.plan_target(target)
         if plan.get("status") != "PASS":
