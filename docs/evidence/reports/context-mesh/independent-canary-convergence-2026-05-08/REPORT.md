@@ -125,8 +125,8 @@ through the shipped adapter route without a TES source patch.
   `c7147c47038c66e30d214af2bb8f779f40fc8afb`, while this run records local
   HEAD `2026990417787f85960ff70dc06852c98863b0a4`.
 - Project-owned root bootloaders are preserved, not automatically merged.
-  Real installs still need human review when local governance should absorb TES
+  Real installs still need reviewer review when local governance should absorb TES
   root trigger prose.
 - The generated `PROJECT-CONTEXT.md` certification table necessarily records
-  installed `.tes/bin/**` gate commands; the human review found no `.tes/bin/**`
+  installed `.tes/bin/**` gate commands; the reviewer check found no `.tes/bin/**`
   pollution in Source Anchors or Recommended Deep Reads.

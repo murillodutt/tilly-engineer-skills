@@ -37,7 +37,7 @@ Copy this shape into each target project:
 | `.githooks/pre-commit` | Fast staged-file gate |
 | `.githooks/pre-push` | Optional non-blocking local drain or smoke |
 | `scripts/quality_router.py` | Auto-adaptive staged-file router |
-| `package.json` or project task file | Human commands and full closure |
+| `package.json` or project task file | User commands and full closure |
 | `.git/info/exclude` | Local caches, bytecode, rollback files |
 
 Activate hooks locally:
@@ -88,7 +88,7 @@ fail with a clear command to install or run.
 
 ## Command Names
 
-Use stable command names so agents and humans can rely on them:
+Use stable command names so agents and devs can rely on them:
 
 | Command | Meaning |
 |---------|---------|

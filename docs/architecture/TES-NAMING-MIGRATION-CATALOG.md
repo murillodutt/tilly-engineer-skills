@@ -58,7 +58,7 @@ This is not a cosmetic issue. It is a routing and authority issue.
 
 ## Naming Rules
 
-- `Tilly Engineer Skills` remains allowed as the human-readable package name.
+- `Tilly Engineer Skills` remains allowed as the people-facing package name.
 - `TES` is the user-facing acronym for commands, skills, scripts, rules, and
   installed helper surfaces.
 - `tes` is the lowercase executable namespace.
@@ -284,7 +284,7 @@ Keep these names unless a later decision says otherwise:
 - Formal product name `Tilly Engineer Skills`.
 - GitHub destination repository `murillodutt/tilly-engineer-skills`.
 - Historical evidence and past reports.
-- Human prose that clearly refers to the product name instead of an operational
+- User prose that clearly refers to the product name instead of an operational
   command or runtime ID.
 
 ## Implementation Order

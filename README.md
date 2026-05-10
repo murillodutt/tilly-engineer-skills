@@ -17,11 +17,11 @@
 
 TES is a local operating layer for LLM development. It governs Codex, Claude
 Code, and Cursor while compiling project knowledge into an Obsidian-ready
-Markdown mesh that survives agent windows, supports audits, and gives humans a
+Markdown mesh that survives agent windows, supports audits, and gives people a
 visual way to inspect context, evidence, decisions, and execution state.
 
 Codex, Claude Code, and Cursor are execution surfaces. Obsidian is the optional
-human visualization layer over versioned Markdown. TES does not require
+people-facing visualization layer over versioned Markdown. TES does not require
 Obsidian, install Obsidian plugins, or write `.obsidian/**`.
 
 Retained v1 evidence shows up to **6x baseline disciplined behavior** in scoped
@@ -104,7 +104,7 @@ docs/agents/evidence/** certification records
 Obsidian                optional visual workbench over Markdown
 ```
 
-Runtime files stay thin. Project truth lives in versioned Markdown so humans
+Runtime files stay thin. Project truth lives in versioned Markdown so people
 can inspect it, review it, open it in Obsidian, and roll it back.
 
 ## Product Layers

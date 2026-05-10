@@ -18,7 +18,7 @@ Root files are only entrypoints and local project controls:
 
 | Path | Responsibility |
 |------|----------------|
-| `README.md` | Human entrypoint |
+| `README.md` | User entrypoint |
 | `AGENTS.md` | Thin repository bootloader for agents working here |
 | `package.json` | Local validation commands |
 | `.githooks/**` | Local commit gates |
@@ -69,7 +69,7 @@ the public TES ZIP, `.sha256`, and `index.json` used by installer staging.
 `scripts/bootstrap/install.sh` and `scripts/bootstrap/install.ps1` are the
 canonical shell entrypoints for mechanical adapter installation. Root
 `install.sh` and `install.ps1` are intentionally absent so the root remains
-human-facing rather than a script surface.
+user-facing rather than a script surface.
 
 `scripts/install_mcp.py` is separate from adapter materialization. It activates
 the read-only Cortex MCP server in a target project by copying local helpers to
@@ -126,7 +126,7 @@ drift.
 | `docs/evals/**` | Eval design and examples |
 | `docs/governance/**` | Cross-tool authority and alignment rules |
 | `docs/governance/MAINTAINER-CORRELATION-RULE.md` | Local maintainer map for package edits, not installed project context |
-| `docs/adapters/**` | Human adapter guidance |
+| `docs/adapters/**` | User adapter guidance |
 | `docs/architecture/**` | Repository topology and boundaries |
 | `docs/tds/**` | Documentation contract and governed index |
 
@@ -137,7 +137,7 @@ drift.
 - Target projects may receive hidden adapter folders during installation, but
   this reference package keeps source in `src/**`.
 - A new adapter must create one source directory under `src/adapters/<tool>/`
-  and one short human guide under `docs/adapters/` only when needed.
+  and one short user guide under `docs/adapters/` only when needed.
 - Validation must fail if source leaks back into the root.
 - Generated `dist/**` output must be reproducible from `src/**`; versioned
   public bundles under `docs/dist/**` must pass `public_bundle_oracle.py`.

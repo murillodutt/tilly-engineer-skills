@@ -120,7 +120,7 @@ context layers:
   `.agents/skills/tes-*`, `.claude/skills/tes-*`, `skills/tes-*`, plugin
   metadata, and `.cursor/rules/tes-runtime-capabilities.mdc`.
 - `context_governance_review`: preserve `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`,
-  project-owned Cursor rules, and `.cursorrules` for LLM/human semantic merge.
+  project-owned Cursor rules, and `.cursorrules` for LLM/reviewer semantic merge.
 
 `runtime_trigger_status=PASS` may coexist with
 `context_governance_status=PRESERVED` when the runtime capability layer is

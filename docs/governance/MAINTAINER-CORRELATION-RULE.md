@@ -98,7 +98,7 @@ certification claim actually changed.
 - Governed documentation: check frontmatter, `docs/tds/DOCS-INDEX.yml`,
   `docs/INDEX.md`, document size budget, reference graph, and TDS validation.
 - Repository structure: check `AGENTS.md`,
-  `docs/architecture/PROJECT-STRUCTURE.md`, `README.md` only if the human
+  `docs/architecture/PROJECT-STRUCTURE.md`, `README.md` only if the user
   entrypoint changes, and `scripts/validate_reference_package.py`.
 - GitHub receiver governance: check issue templates, workflows, receiver
   oracle, Field Reports contract, and manual only if user-visible behavior

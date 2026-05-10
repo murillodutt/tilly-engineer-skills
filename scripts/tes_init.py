@@ -1504,7 +1504,7 @@ artifacts.
 | Project alignment oracle | focused | `{focused_gate}` |
 | Project-specific validation | advisory | `{advisory_gate}` |
 | Missing local toolchain | unavailable | Record the blocker before claiming coverage. |
-| Production or secret-backed action | unsafe | Requires explicit human approval. |
+| Production or secret-backed action | unsafe | Requires explicit user approval. |
 
 Initialization gate status: `{gate_status}`.
 """,
@@ -1905,7 +1905,7 @@ useful for focused work, but they should not dominate first-pass understanding.
 - Which directories define the runtime boundary, persistence boundary, and
   external integration boundary?
 - Which commands are the smallest safe quality gates before commit?
-- Which facts should be promoted into Cortex cells after human review?
+- Which facts should be promoted into Cortex cells after user review?
 
 ## Maintenance Rule
 

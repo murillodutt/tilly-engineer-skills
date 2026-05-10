@@ -140,7 +140,7 @@ Design rules:
 1. Use portable Markdown files as the authority.
 2. Use YAML frontmatter as Obsidian Properties, not hidden metadata.
 3. Use wikilinks for project-local relationships when they improve navigation.
-4. Keep hub documents small enough for humans and agents to scan.
+4. Keep hub documents small enough for people and agents to scan.
 5. Treat Graph view as a navigation signal for hubs, orphans, and relation
    density.
 6. Treat Bases as an optional view layer over Markdown properties, not as the

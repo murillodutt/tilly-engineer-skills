@@ -46,7 +46,7 @@ project into a reference package:
 | Area | Current state |
 |------|---------------|
 | Canonical adapter source | `src/adapters/**` |
-| Human method and governance docs | `docs/**` |
+| People-facing method and governance docs | `docs/**` |
 | Eval dataset | `benchmarks/context-mesh/eval-dataset.json` |
 | Planner | `scripts/context_mesh_plan.py` |
 | Evidence runner | `scripts/context_mesh_run.py` |

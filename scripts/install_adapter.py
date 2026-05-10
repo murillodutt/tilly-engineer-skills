@@ -159,7 +159,7 @@ def build_retrofit_plan(
                 "This file was generated because installation found existing target files",
                 "that differ from the materialized Tilly adapter files.",
                 "",
-                "Use an LLM or human reviewer to merge intent. Do not blindly replace",
+                "Use an LLM or reviewer to merge intent. Do not blindly replace",
                 "project-specific instructions.",
                 "",
                 "## Install Command",
