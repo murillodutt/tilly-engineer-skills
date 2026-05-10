@@ -9,6 +9,8 @@ import json
 import shutil
 import sys
 import tempfile
+import urllib.error
+import urllib.request
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,6 +24,9 @@ VERSION = "0.3.71"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
+PUBLIC_DIST_ROOT = ROOT / "docs" / "dist" / VERSION
+BUNDLE_FILENAME = f"tilly-engineer-skills-{VERSION}.zip"
+PUBLIC_BUNDLE_BASE_URL = "https://murillodutt.github.io/tilly-engineer-skills/dist"
 
 REQUIRED_LAYERS = {
     "helper",
@@ -77,6 +82,33 @@ def sha256_bytes(data: bytes) -> str:
 
 def sha256_file(path: Path) -> str:
     return sha256_bytes(path.read_bytes())
+
+
+def public_bundle_url(version: str = VERSION) -> str:
+    return f"{PUBLIC_BUNDLE_BASE_URL}/{version}/tilly-engineer-skills-{version}.zip"
+
+
+def public_bundle_path() -> Path:
+    return PUBLIC_DIST_ROOT / BUNDLE_FILENAME
+
+
+def public_sha_path() -> Path:
+    return PUBLIC_DIST_ROOT / f"{BUNDLE_FILENAME}.sha256"
+
+
+def public_index_path() -> Path:
+    return PUBLIC_DIST_ROOT / "index.json"
+
+
+def parse_sha256_text(text: str) -> str:
+    token = text.strip().split()[0] if text.strip() else ""
+    if len(token) != 64 or any(char not in "0123456789abcdefABCDEF" for char in token):
+        raise ValueError("invalid sha256 text")
+    return token.lower()
+
+
+def read_sha256_file(path: Path) -> str:
+    return parse_sha256_text(path.read_text(encoding="utf-8"))
 
 
 def rel(path: Path, root: Path) -> str:
@@ -245,6 +277,43 @@ def build_bundle(out: Path, adapter: str = "all") -> dict[str, Any]:
     }
 
 
+def publish_public_bundle(out_dir: Path = PUBLIC_DIST_ROOT, adapter: str = "all") -> dict[str, Any]:
+    out_dir = out_dir.resolve()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    bundle = out_dir / BUNDLE_FILENAME
+    built = build_bundle(bundle, adapter=adapter)
+    if built.get("status") != "BUILT":
+        return built
+    digest = sha256_file(bundle)
+    sha_path = out_dir / f"{bundle.name}.sha256"
+    sha_path.write_text(f"{digest}  {bundle.name}\n", encoding="utf-8")
+    index = {
+        "schema": "tes-public-bundle-index@1",
+        "version": VERSION,
+        "bundle": bundle.name,
+        "sha256": digest,
+        "sha256_file": sha_path.name,
+        "manifest": MANIFEST_NAME,
+        "stage_dir": f".tes/setup/{VERSION}",
+        "urls": {
+            "bundle": public_bundle_url(VERSION),
+            "sha256": f"{public_bundle_url(VERSION)}.sha256",
+        },
+    }
+    index_path = out_dir / "index.json"
+    index_path.write_text(json.dumps(index, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {
+        "version": VERSION,
+        "status": "PUBLISHED",
+        "bundle": str(bundle),
+        "sha256": digest,
+        "sha256_file": str(sha_path),
+        "index": str(index_path),
+        "entries": built.get("entries"),
+        "url": public_bundle_url(VERSION),
+    }
+
+
 def stage_bundle(bundle: Path, target: Path, dry_run: bool = False) -> dict[str, Any]:
     bundle = bundle.resolve()
     target = target.resolve()
@@ -279,6 +348,91 @@ def stage_bundle(bundle: Path, target: Path, dry_run: bool = False) -> dict[str,
     }
 
 
+def hash_url_for_bundle(url: str) -> str:
+    return f"{url}.sha256"
+
+
+def fetch_url_text(url: str, timeout: float = 30.0) -> str:
+    with urllib.request.urlopen(url, timeout=timeout) as response:
+        return response.read().decode("utf-8")
+
+
+def download_bundle(url: str, out: Path, expected_sha256: str | None = None, timeout: float = 30.0) -> dict[str, Any]:
+    out = out.resolve()
+    out.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        if expected_sha256 is None:
+            expected_sha256 = parse_sha256_text(fetch_url_text(hash_url_for_bundle(url), timeout=timeout))
+        with urllib.request.urlopen(url, timeout=timeout) as response:
+            out.write_bytes(response.read())
+    except (OSError, ValueError, urllib.error.URLError) as exc:
+        return {"version": VERSION, "status": "FAIL", "failures": [f"bundle download failed: {exc}"]}
+    actual = sha256_file(out)
+    if actual != expected_sha256.lower():
+        return {
+            "version": VERSION,
+            "status": "FAIL",
+            "failures": [f"bundle sha256 mismatch: expected {expected_sha256.lower()} got {actual}"],
+            "bundle": str(out),
+            "sha256": actual,
+        }
+    return {
+        "version": VERSION,
+        "status": "DOWNLOADED",
+        "url": url,
+        "bundle": str(out),
+        "sha256": actual,
+    }
+
+
+def stage_public_bundle(
+    target: Path,
+    url: str | None = None,
+    expected_sha256: str | None = None,
+    dry_run: bool = False,
+    timeout: float = 30.0,
+) -> dict[str, Any]:
+    target = target.resolve()
+    url = url or public_bundle_url(VERSION)
+    if dry_run:
+        return {
+            "version": VERSION,
+            "status": "DRY-RUN",
+            "action": "would-download-and-stage",
+            "url": url,
+            "sha256": expected_sha256,
+            "stage_dir": rel(target / SETUP_ROOT / VERSION, target),
+        }
+    with tempfile.TemporaryDirectory(prefix="tes-bundle-download-") as tempdir:
+        bundle = Path(tempdir) / BUNDLE_FILENAME
+        fetched = download_bundle(url, bundle, expected_sha256=expected_sha256, timeout=timeout)
+        if fetched.get("status") != "DOWNLOADED":
+            return fetched
+        staged = stage_bundle(bundle, target)
+        staged["download"] = {"url": url, "sha256": fetched.get("sha256")}
+        staged["source"] = "public-bundle"
+        return staged
+
+
+def stage_local_public_bundle(target: Path, dry_run: bool = False) -> dict[str, Any]:
+    bundle = public_bundle_path()
+    sha_path = public_sha_path()
+    if not bundle.exists() or not sha_path.exists():
+        return {"version": VERSION, "status": "FAIL", "failures": ["local public bundle is missing"]}
+    expected = read_sha256_file(sha_path)
+    actual = sha256_file(bundle)
+    if actual != expected:
+        return {
+            "version": VERSION,
+            "status": "FAIL",
+            "failures": [f"local public bundle sha256 mismatch: expected {expected} got {actual}"],
+        }
+    staged = stage_bundle(bundle, target, dry_run=dry_run)
+    staged["source"] = "local-public-bundle"
+    staged["sha256"] = actual
+    return staged
+
+
 def stage_source_bundle(target: Path, dry_run: bool = False, adapter: str = "all") -> dict[str, Any]:
     target = target.resolve()
     if dry_run:
@@ -295,7 +449,25 @@ def stage_source_bundle(target: Path, dry_run: bool = False, adapter: str = "all
             return built
         staged = stage_bundle(bundle, target)
         staged["built_sha256"] = built.get("sha256")
+        staged["source"] = "source-built-bundle"
         return staged
+
+
+def stage_preferred_bundle(
+    target: Path,
+    dry_run: bool = False,
+    adapter: str = "all",
+    url: str | None = None,
+    expected_sha256: str | None = None,
+    timeout: float = 30.0,
+) -> dict[str, Any]:
+    if url:
+        return stage_public_bundle(target, url=url, expected_sha256=expected_sha256, dry_run=dry_run, timeout=timeout)
+    if public_bundle_path().exists() and public_sha_path().exists():
+        local = stage_local_public_bundle(target, dry_run=dry_run)
+        if local.get("status") != "FAIL":
+            return local
+    return stage_source_bundle(target, dry_run=dry_run, adapter=adapter)
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -454,6 +626,15 @@ def self_test() -> dict[str, Any]:
         staged = stage_bundle(bundle, target)
         if staged.get("status") != "STAGED":
             failures.extend(staged.get("failures", ["stage failed"]))
+        downloaded_target = temp / "downloaded-target"
+        downloaded_target.mkdir()
+        downloaded = stage_public_bundle(
+            downloaded_target,
+            url=bundle.resolve().as_uri(),
+            expected_sha256=str(built.get("sha256")),
+        )
+        if downloaded.get("status") != "STAGED":
+            failures.extend(downloaded.get("failures", ["download stage failed"]))
         planned = plan_target(target)
         if planned.get("status") != "PASS":
             failures.extend(planned.get("failures", ["plan failed"]))
@@ -485,9 +666,15 @@ def main() -> int:
     build_parser.add_argument("--out", type=Path, required=True)
     build_parser.add_argument("--adapter", default="all", choices=["all", *sorted(materialize_adapter.ADAPTERS)])
 
+    publish_parser = subparsers.add_parser("publish")
+    publish_parser.add_argument("--out-dir", type=Path, default=PUBLIC_DIST_ROOT)
+    publish_parser.add_argument("--adapter", default="all", choices=["all", *sorted(materialize_adapter.ADAPTERS)])
+
     stage_parser = subparsers.add_parser("stage")
     stage_parser.add_argument("--target", type=Path, default=Path.cwd())
     stage_parser.add_argument("--bundle", type=Path)
+    stage_parser.add_argument("--url")
+    stage_parser.add_argument("--sha256")
     stage_parser.add_argument("--dry-run", action="store_true")
 
     plan_parser = subparsers.add_parser("plan")
@@ -503,11 +690,15 @@ def main() -> int:
         result = self_test()
     elif args.command == "build":
         result = build_bundle(args.out, adapter=args.adapter)
+    elif args.command == "publish":
+        result = publish_public_bundle(args.out_dir, adapter=args.adapter)
     elif args.command == "stage":
-        if args.bundle:
+        if args.url:
+            result = stage_public_bundle(args.target, url=args.url, expected_sha256=args.sha256, dry_run=args.dry_run)
+        elif args.bundle:
             result = stage_bundle(args.bundle, args.target, dry_run=args.dry_run)
         else:
-            result = stage_source_bundle(args.target, dry_run=args.dry_run)
+            result = stage_preferred_bundle(args.target, dry_run=args.dry_run)
     elif args.command == "plan":
         result = plan_target(args.target)
     elif args.command == "apply":
@@ -517,7 +708,7 @@ def main() -> int:
         return 2
 
     print(json.dumps(result, indent=2))
-    return 0 if result.get("status") in {"PASS", "BUILT", "STAGED", "DRY-RUN", "APPLIED"} else 1
+    return 0 if result.get("status") in {"PASS", "BUILT", "PUBLISHED", "STAGED", "DRY-RUN", "APPLIED"} else 1
 
 
 if __name__ == "__main__":

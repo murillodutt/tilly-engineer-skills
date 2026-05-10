@@ -5,7 +5,7 @@ status: active
 consumer: installing agents and runtime adapters
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # Tilly Engineer Skills — Agent Manual
@@ -425,7 +425,7 @@ python3 scripts/field_reports.py enable --target /path/to/project
 
 | Layer | Responsibility | Surface |
 |-------|----------------|---------|
-| Installer scripts | Stage versioned bundle in `.tes/setup/<version>/`; refresh manifest-known TES-owned helpers and runtime capabilities | Python + npm |
+| Installer scripts | Download or use the versioned ZIP, verify SHA-256, stage `.tes/setup/<version>/`, refresh manifest-known TES-owned helpers and runtime capabilities | Python + npm |
 | LLM layer | Project understanding, semantic governance review | Active agent in IDE window |
 | Project-owned files | `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, Cursor rules — may remain `PRESERVED` | Markdown bootloaders |
 

@@ -685,6 +685,14 @@
         font-weight: 500;
         padding: 4px 10px;
       }
+      .copy-note {
+        color: var(--ink-faint);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        line-height: 1.7;
+        margin: 18px 0 0;
+        overflow-wrap: anywhere;
+      }
 
       /* === Adapter parity grid === */
       .adapters {
@@ -1620,9 +1628,10 @@ Run in quiet installer mode: show compact progress, blockers and the final
 certification report only. Start by detecting the current IDE/runtime and
 classifying this project as new, existing, or meshed. Preserve local project
 governance, build or update docs/agents/** as the canonical context mesh, stage
-the deterministic TES bundle under .tes/setup/&lt;version&gt;/, keep AGENTS.md,
-CLAUDE.md and project-owned Cursor rules preserved for semantic review, install
-TES-owned runtime capabilities such as /tes-align and /tes-open-obsidian,
+the deterministic TES bundle under .tes/setup/&lt;version&gt;/ from the public ZIP
+when available, verify its SHA-256 before apply, keep AGENTS.md, CLAUDE.md and
+project-owned Cursor rules preserved for semantic review, install TES-owned
+runtime capabilities such as /tes-align and /tes-open-obsidian,
 create the docs/agents/cortex/** continuity layer when needed, activate the
 read-only project-scoped Cortex MCP server for the selected runtime route, and
 finish with the certification report required by the spec.
@@ -1640,6 +1649,11 @@ ask after reviewing the certification report.</code></pre>
               <span class="alias-chip">/tes:init</span>
               <span class="alias-chip">/tes:update</span>
             </div>
+            <p class="copy-note">
+              Public bundle:
+              <a href="dist/0.3.71/tilly-engineer-skills-0.3.71.zip">tilly-engineer-skills-0.3.71.zip</a>
+              · SHA-256 <code>e96f502fd97e0c28419acdbd0bd571832d6d20dafe28fedf57e2ba68d63f1b59</code>
+            </p>
           </div>
         </div>
       </section>

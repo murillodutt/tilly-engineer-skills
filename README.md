@@ -46,9 +46,10 @@ Run in quiet installer mode: show compact progress, blockers and the final
 certification report only. Start by detecting the current IDE/runtime and
 classifying this project as new, existing, or meshed. Preserve local project
 governance, build or update docs/agents/** as the canonical context mesh, stage
-the deterministic TES bundle under .tes/setup/<version>/, keep AGENTS.md,
-CLAUDE.md and project-owned Cursor rules preserved for semantic review, install
-TES-owned runtime capabilities such as /tes-align and /tes-open-obsidian,
+the deterministic TES bundle under .tes/setup/<version>/ from the public ZIP
+when available, verify its SHA-256 before apply, keep AGENTS.md, CLAUDE.md and
+project-owned Cursor rules preserved for semantic review, install TES-owned
+runtime capabilities such as /tes-align and /tes-open-obsidian,
 create the docs/agents/cortex/** continuity layer when needed, activate the
 read-only project-scoped Cortex MCP server for the selected runtime route, and
 finish with the certification report required by the spec.
@@ -149,6 +150,7 @@ npm run platform:surface:check
 |------|------|
 | Installation mini prompt | [docs/install/MINI-PROMPT.md](docs/install/MINI-PROMPT.md) |
 | Live GitHub Pages landing | [murillodutt.github.io/tilly-engineer-skills](https://murillodutt.github.io/tilly-engineer-skills/) |
+| Public installer bundle | [docs/dist/0.3.71/tilly-engineer-skills-0.3.71.zip](docs/dist/0.3.71/tilly-engineer-skills-0.3.71.zip) |
 | GitHub Pages landing source | [docs/index.html](docs/index.html) |
 | Current roadmap | [docs/roadmap/README.md](docs/roadmap/README.md) |
 | RC1 readiness roadmap | [docs/roadmap/RC1-READINESS-ROADMAP.md](docs/roadmap/RC1-READINESS-ROADMAP.md) |

@@ -303,7 +303,7 @@ def install(args: argparse.Namespace) -> int:
         field_reports.ensure_git_exclude(target)
 
     adapters = selected_adapters(args.adapter)
-    bundle_stage = tes_bundle.stage_source_bundle(target, dry_run=args.dry_run, adapter=args.adapter)
+    bundle_stage = tes_bundle.stage_preferred_bundle(target, dry_run=args.dry_run, adapter=args.adapter)
     server_actions, server_failures = install_server_files(target, args.dry_run, args.overwrite, not args.no_backup)
     config_actions, config_failures = (
         ([], [])

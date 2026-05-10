@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.9.4
+tver: 0.9.5
 ---
 
 # Adapter Installation
@@ -85,9 +85,9 @@ Full raw spec: `docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md`.
 ## Install Semantics
 
 The context installer is not a blind file copier. The mechanical installer
-first stages a versioned TES bundle and manifest under
-`.tes/setup/<version>/`, then applies only manifest-known layers. The active
-LLM owns semantic project analysis and governance merge decisions.
+downloads or uses the versioned TES ZIP, verifies SHA-256, stages it under
+`.tes/setup/<version>/`, then applies only manifest-known layers. The active LLM
+owns semantic project analysis and governance merge decisions.
 
 It performs:
 

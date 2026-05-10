@@ -5,7 +5,7 @@ status: active
 consumer: adopters, installing agents, and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.4
+tver: 0.4.5
 ---
 
 # TES Command Triggers
@@ -113,7 +113,8 @@ and final recorded probe instead of closing with an unstructured
 The continuation plan separates deterministic script layers from semantic
 context layers:
 
-- `bundle_staging`: create `.tes/setup/<version>/` from the TES bundle manifest.
+- `bundle_staging`: download or use the versioned TES ZIP, verify SHA-256, and
+  create `.tes/setup/<version>/` from the TES bundle manifest.
 - `layer_zero_helpers`: refresh manifest-known `.tes/bin/**` helpers.
 - `runtime_capability_refresh`: install TES-owned routers such as
   `.agents/skills/tes-*`, `.claude/skills/tes-*`, `skills/tes-*`, plugin
