@@ -1,5 +1,5 @@
 ---
-description: TES runtime command capability routing for Cursor when project-owned governance rules are preserved.
+description: TES runtime command capability routing for Cursor after clean runtime install and semantic recovery.
 alwaysApply: true
 ---
 
@@ -7,7 +7,7 @@ alwaysApply: true
 
 This rule is TES-owned runtime capability, not project-owned governance. It may
 be refreshed by the deterministic installer while `AGENTS.md`, `CLAUDE.md`,
-`CURSOR.md`, and project-owned Cursor rules remain preserved for semantic review.
+`CURSOR.md`, and previous project-owned Cursor rules are recovered from `.tes/bk/**`.
 
 ## TES Command Intents
 

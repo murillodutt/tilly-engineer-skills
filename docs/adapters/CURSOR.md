@@ -20,7 +20,7 @@ rules under `.cursor/rules/**`; `CURSOR.md` is a user handoff note only.
 | Surface | Role | Package Status |
 |---------|------|----------------|
 | `.cursor/rules/tes-guidelines.mdc` | Governance overlay with frontmatter | Included |
-| `.cursor/rules/tes-runtime-capabilities.mdc` | TES-owned command router that may refresh while project governance is preserved | Included |
+| `.cursor/rules/tes-runtime-capabilities.mdc` | TES-owned command router refreshed after central backup and clean runtime install | Included |
 | `AGENTS.md` | Simple root-only alternative context | Not materialized by default |
 | `.cursorrules` | Legacy rule file | Forbidden |
 | MCP | Project-scoped Cortex access | Installer route only |

@@ -19,7 +19,7 @@ import project_context_oracle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.79"
+VERSION = "0.3.80"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -236,7 +236,7 @@ def analyze() -> dict[str, Any]:
     if not exists("src/adapters/cursor/CURSOR.md"):
         failures.append("missing Cursor bootloader: src/adapters/cursor/CURSOR.md")
     surface("cursor", "agent", "certified", "src/adapters/cursor/CURSOR.md")
-    surface("cursor", "skill", "certified", "src/adapters/cursor/rules/tes-runtime-capabilities.mdc provides command capability routing while project governance rules may stay preserved.")
+    surface("cursor", "skill", "certified", "src/adapters/cursor/rules/tes-runtime-capabilities.mdc provides command capability routing after clean runtime install and semantic recovery.")
     surface("cursor", "plugin", "deferred", "Cursor plugins are native, but no TES .cursor-plugin package is claimed.")
     surface("cursor", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("cursor", "rules", "certified", cursor_rule)
@@ -276,16 +276,16 @@ def analyze() -> dict[str, Any]:
             failures.append(f"scripts/install_mcp.py missing {term}")
     adapter_text = read("scripts/install_adapter.py")
     for term in (
-        "preserve-conflict",
-        "INSTALLED_WITH_PRESERVED_CONFLICTS",
-        "DRY-RUN-WITH-PRESERVED-CONFLICTS",
-        "preserved_conflicts",
+        "INSTALLED_CLEAN_RUNTIME",
+        "clean_backup",
+        "semantic_recovery",
+        "preserve_context",
     ):
         if term not in adapter_text:
             failures.append(f"scripts/install_adapter.py missing {term}")
     root_text = read("scripts/root_context.py")
     root_gate_text = root_text + "\n" + read("scripts/tes_init.py")
-    for term in ("AGENTS.md", "CLAUDE.md", ".cursor/rules", "NEEDS_REVIEW", "PRESERVED", "self_test_mode"):
+    for term in ("AGENTS.md", "CLAUDE.md", ".cursor/rules", "NEEDS_REVIEW", "RECOVERED", "self_test_mode"):
         if term not in root_gate_text:
             failures.append(f"root context gate missing {term}")
     init_text = read("scripts/tes_init.py")

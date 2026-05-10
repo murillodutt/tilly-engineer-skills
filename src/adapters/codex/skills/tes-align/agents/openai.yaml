@@ -3,6 +3,6 @@ description: Semantically align a TES-initialized project into an operating mesh
 default_prompt: |
   Use $tes-align to refine this project after /tes-init. Read the TES Align
   source-of-truth document, inspect strong project anchors, classify existing
-  docs, create or update the docs/agents operating mesh, preserve project-owned
-  governance, keep the result Obsidian-native and Git-portable, and certify
+  docs, create or update the docs/agents operating mesh, recover project-owned
+  governance from `.tes/bk/**`, keep the result Obsidian-native and Git-portable, and certify
   with project_alignment_oracle.py.

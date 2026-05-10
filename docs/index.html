@@ -1360,7 +1360,7 @@
       <div class="nav-row">
         <div>
           <span class="brand">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">v0.3.79 · Release candidate</span>
+          <span class="brand-meta">v0.3.80 · Release candidate</span>
         </div>
         <nav aria-label="Primary">
           <ul class="nav-links">
@@ -1606,7 +1606,7 @@
         </div>
         <div class="chapter-body">
           <p class="lede">
-            Open your project in Codex, Claude Code, or Cursor. Paste this into the agent window — not into a shell. The agent runs Step Zero, classifies your project state, preserves what is yours, and ends with a certification report you can review before commit.
+            Open your project in Codex, Claude Code, or Cursor. Paste this into the agent window — not into a shell. The agent runs Step Zero, classifies your project state, creates a central backup, applies a clean runtime, and ends with a certification report you can review before commit.
           </p>
 
           <div class="install-card">
@@ -1626,12 +1626,12 @@ https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/in
 
 Run in quiet installer mode: show compact progress, blockers and the final
 certification report only. Start by detecting the current IDE/runtime and
-classifying this project as new, existing, or meshed. Preserve local project
-governance, build or update docs/agents/** as the canonical context mesh, stage
-the deterministic TES bundle under .tes/setup/&lt;version&gt;/ from the public ZIP
-when available, verify its SHA-256 before apply, keep AGENTS.md, CLAUDE.md and
-project-owned Cursor rules preserved for semantic review, install TES-owned
-runtime capabilities such as /tes-align and /tes-open-obsidian,
+classifying this project as new, existing, or meshed. Create a central
+.tes/bk/&lt;timestamp&gt;/ backup, apply a clean TES runtime, recover useful local
+governance semantics into docs/agents/**, stage the deterministic TES bundle
+under .tes/setup/&lt;version&gt;/ from the public ZIP when available, verify its
+SHA-256 before apply, keep active AGENTS.md, CLAUDE.md and Cursor rules as thin
+TES bootloaders, install TES-owned runtime capabilities such as /tes-align and /tes-open-obsidian,
 create the docs/agents/cortex/** continuity layer when needed, activate the
 read-only project-scoped Cortex MCP server for the selected runtime route, and
 finish with the certification report required by the spec.
@@ -1651,7 +1651,7 @@ ask after reviewing the certification report.</code></pre>
             </div>
             <p class="copy-note">
               Public bundle:
-              <a href="dist/0.3.79/tilly-engineer-skills-0.3.79.zip">tilly-engineer-skills-0.3.79.zip</a>
+              <a href="dist/0.3.80/tilly-engineer-skills-0.3.80.zip">tilly-engineer-skills-0.3.80.zip</a>
               · SHA-256 <code>dc5d581623c7e754324ca1ae21b009ddafb235d247e956445c7fd374d9ac16c9</code>
             </p>
           </div>
@@ -2199,7 +2199,7 @@ ask after reviewing the certification report.</code></pre>
         </div>
       </div>
       <div class="colophon-bottom">
-        <span>Tilly Engineer Skills · v0.3.79</span>
+        <span>Tilly Engineer Skills · v0.3.80</span>
         <span>Markdown is the contract · Auditable by Git · Runs offline</span>
       </div>
     </footer>

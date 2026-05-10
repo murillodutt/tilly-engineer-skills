@@ -55,10 +55,12 @@ native structured cards only when the current runtime safely supports them,
 otherwise render command navigation. Ask for a route command such as current,
 codex, claude, cursor, all, mcp, or audit. Use the detected IDE as the default
 adapter. Ask me for a route command only where the spec requires one.
-Preserve local project governance, move durable agent context into
-docs/agents/**, keep AGENTS.md, CLAUDE.md and Cursor rules as thin runtime
-bootloaders, activate the read-only project-scoped Cortex MCP server for the
-selected runtime route, and finish with the certification report required by the spec.
+Create a central `.tes/bk/<timestamp>/` backup before runtime writes, install a
+clean TES runtime from the staged bundle, recover durable local governance
+semantics into `docs/agents/**`, keep active AGENTS.md, CLAUDE.md and Cursor
+rules as thin TES bootloaders, activate the read-only project-scoped Cortex MCP
+server for the selected runtime route, and finish with the certification report
+required by the spec.
 The update probe must be read-only by default, verify installed/cloud versions,
 helper contract parity, and `recommended_update_scope`; `STALE_HELPERS` is
 update-required, not `CURRENT`. For `recommended_update_scope=helpers-only`,
@@ -72,10 +74,10 @@ closeout, commit, or push, and it must show `helper_contract_status=PASS`,
 The final report must expose the user manual link/path.
 
 Before installation edits, run Step Zero from the spec: inspect Git status and
-offer a local baseline commit if the working tree is dirty. At the end, tell me
-how to undo the installation with Git. Do not push, amend, tag, publish, install
-dependencies, overwrite files, or change remotes unless I explicitly ask after
-reviewing the certification report.
+offer a local baseline commit if the working tree is dirty. At the end, show the
+`.tes/bk/<timestamp>/` rollback id and tell me how to undo the installation with
+Git. Do not push, amend, tag, publish, install dependencies, or change remotes
+unless I explicitly ask after reviewing the certification report.
 ```
 
 Short source: `docs/install/MINI-PROMPT.md`.
@@ -86,8 +88,9 @@ Full raw spec: `docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md`.
 
 The context installer is not a blind file copier. The mechanical installer
 downloads or uses the versioned TES ZIP, verifies SHA-256, stages it under
-`.tes/setup/<version>/`, then applies only manifest-known layers. The active LLM
-owns semantic project analysis and governance merge decisions.
+`.tes/setup/<version>/`, creates a mandatory central backup under
+`.tes/bk/<timestamp>/`, then applies the canonical clean TES runtime. The active
+LLM owns semantic project analysis and recovery from backup evidence.
 
 It performs:
 
@@ -95,6 +98,9 @@ It performs:
 environment detection
   -> new, existing, or meshed project classification
   -> deterministic bundle staging
+  -> central .tes/bk/<timestamp>/ backup
+  -> clean runtime application
+  -> semantic recovery into docs/agents/**
   -> runtime navigation library
   -> adapter menu
   -> docs/agents/** canonical mesh
@@ -228,9 +234,9 @@ read-only and must not write Field Reports. Use
 returns `recommended_update_scope=helpers-only`, run Layer Zero with
 `install_mcp.py --helpers-only` before adapter or MCP config activation.
 When it returns `recommended_update_scope=adapter-config` because
-`runtime_trigger_status=DRIFT`, run `install_adapter.py` for the selected route;
-project-owned bootloaders may be preserved while non-conflicting TES assets are
-copied.
+`runtime_trigger_status=DRIFT`, run the clean runtime route for the selected
+adapter: stage the bundle, create `.tes/bk/<timestamp>/`, apply
+`tes_bundle.py apply --mode clean-runtime`, then run `recover-plan --apply-safe`.
 After Layer Zero, record the final proof with
 `tes_update.py plan --json-only --record-field-report` before commit or push.
 Self-tests run from `scripts/**` certify the package source contract; self-tests
@@ -265,14 +271,16 @@ open strong anchors before claiming deep project understanding, and either
 refine `PROJECT-CONTEXT.md` with supported semantic context or report
 `Project context: NEEDS_REVIEW`.
 
-Existing context is project-owned by default. Conflicts mean retrofit, not
-overwrite.
+Existing context is recovery evidence by default. Conflicts mean central backup,
+clean runtime overwrite, and semantic recovery into `docs/agents/**`.
 
 For a meshed project, the installer treats the run as update/convergence. It
 inspects the existing `docs/agents/**` mesh, compares the installed Tilly
 version with the cloud package version, detects applied IDE surfaces, recommends
 `all`, `codex`, `claude`, `cursor`, or `current`, applies only surgical updates,
-preserves local governance, and certifies the resulting state.
+preserves durable `.tes/**` state, refreshes active runtime from the canonical
+bundle, recovers local governance semantics from backup evidence, and certifies
+the resulting state.
 
 ## Certification Output
 
@@ -294,8 +302,9 @@ Navigation Renderer: ...
 Navigation Mode: ...
 Source Snapshot: package commit, remote main, freshness
 Changed Surfaces: new surfaces, updated existing mesh files, runtime config
-Rollback Backups: short list or none; .bak-* files are rollback artifacts, not new surfaces
-Root Context Gate: PASS | PRESERVED | NEEDS_REVIEW | SKIP
+Clean Backup: .tes/bk/<timestamp>/manifest.json plus restore command
+Semantic Recovery: RECOVERED | NEEDS_REVIEW | SKIP, evidence path
+Root Context Gate: PASS | RECOVERED | NEEDS_REVIEW | SKIP
 Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py, tes_init.py, project_context_oracle.py, project_alignment_oracle.py, tes_open_obsidian.py
 Field Reports: PASS | BLOCKED | DISABLED | SKIP, with pending outbox count
 Certification: compact PASS/FAIL/SKIP bullets
@@ -319,12 +328,10 @@ push.
 
 GO requires canonical `docs/agents/**`, a created or explicitly deferred
 Cortex layer, selected-runtime Cortex MCP activation or a named blocker, thin
-runtime assets, root context migrated or preserved before overwrite, no blind
-overwrite, no secret mutation, and at least one relevant local oracle.
-`PRESERVED` is a passing root-context state only when project-owned bootloaders
-were intentionally left untouched; it remains a blocker for overwrites.
-If the raw root context analyzer says `NEEDS_REVIEW` and the installer did not
-overwrite roots, the final report should say `PRESERVED`, not `FAIL`.
+runtime assets, central backup before overwrite, semantic recovery evidence, no
+secret mutation, and at least one relevant local oracle. `RECOVERED` is a
+passing root-context state when the old bootloader content is safely represented
+in `.tes/bk/**` and a recovery report exists under `docs/agents/evidence/**`.
 
 Source freshness is certification metadata: stale snapshots are `STALE_SOURCE`
 and cannot claim latest TES certification. For public bundles, the ZIP records
@@ -423,20 +430,15 @@ Windows PowerShell bootstrap entrypoint:
 
 ## Conflict Policy
 
-If a project-owned governance file exists and differs, installation preserves
-it and continues copying non-conflicting TES-owned runtime capability files.
-This protects existing project instructions without blocking `/tes-align`,
-`/tes-open-obsidian`, or other TES command routers.
+If a governance file exists and differs, installation first snapshots it under
+`.tes/bk/<timestamp>/`, then installs the canonical TES runtime. Old
+instructions are not active runtime after install; they are recovery evidence.
 
-Allowed responses: `--dry-run` to preview, `--retrofit-plan` to generate an
-LLM merge plan, `--overwrite --yes` to refresh TES-owned runtime/helper
-conflicts with backups, and `--overwrite --no-backup --yes` to skip backups.
-
-`--overwrite` creates `.bak-<timestamp>` files by default, but it does not
-authorize overwriting project-owned context governance. Explicit semantic
-review is still required for root bootloaders and project-owned rules.
-Those backups are local rollback artifacts and must be ignored through
-`.git/info/exclude`, not counted as new TES surfaces.
+Allowed responses: `--dry-run` to preview, `tes_bundle.py backup` to create the
+central snapshot, `tes_bundle.py apply --mode clean-runtime --yes` to install,
+`tes_bundle.py recover-plan --apply-safe --yes` to emit semantic recovery
+evidence, and `tes_bundle.py restore --backup-id <id> --yes` to restore the
+snapshot. `--mode preserve` exists only as a compatibility escape hatch.
 
 ## LLM Retrofit
 
@@ -452,14 +454,10 @@ python3 scripts/install_adapter.py \
 
 The generated file lives under `/path/to/project/.tes/retrofit/`.
 
-The command preserves conflicting bootloaders and still installs
-non-conflicting TES-owned assets. Its JSON status includes
-`INSTALLED_WITH_PRESERVED_CONTEXT` or
-`DRY-RUN-WITH-PRESERVED-CONTEXT`, plus `layer_results`,
-`preserved_context`, `installed_capabilities`, and `obsolete_removed`. That is
-intentional: retrofit protects project governance without blocking assets such
-as `.claude/skills/**`, `.agents/skills/**`, plugin metadata, or the
-TES-owned Cursor runtime-capabilities rule.
+The compatibility route preserves conflicting bootloaders and still installs
+non-conflicting TES-owned assets. The default route is now clean runtime:
+`INSTALLED_CLEAN_RUNTIME` with `clean_backup`, `semantic_recovery`,
+`layer_results`, and `installed_capabilities`.
 
 Give that file to an LLM or reviewer. Merge Tilly discipline while
 preserving project-local commands, paths, tests, ownership, security
@@ -473,9 +471,11 @@ constraints, and existing agent rules.
   write-capable MCP tools.
 - Project-scoped read-only Cortex MCP config is allowed only through the
   selected route and explicit installer report.
-- No overwrite without explicit `--overwrite`.
+- No runtime overwrite before `.tes/bk/<timestamp>/manifest.json` exists.
+- `.tes/bk/**` is local rollback/recovery history and must stay out of Git.
 - No non-interactive writes without `--yes`.
-- Backups are created before overwrites unless `--no-backup` is set.
+- Compatibility `.bak-*` files are secondary artifacts only; the clean route
+  depends on the central backup manifest.
 
 ## Validation
 

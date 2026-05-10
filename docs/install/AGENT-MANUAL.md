@@ -76,7 +76,7 @@ Determined during Step Zero scan.
 | State | Meaning |
 |-------|---------|
 | `new` | No relevant agent instructions; installer creates minimal mesh |
-| `existing` | Local rules/docs exist; installer retrofits, never overwrites |
+| `existing` | Local rules/docs exist; installer backs them up, applies clean runtime, then recovers semantics |
 | `meshed` | TES already present; run becomes update/convergence |
 
 ---
@@ -136,7 +136,7 @@ Use these literal tokens. Never substitute synonyms.
 | `NEEDS_REVIEW` | Run closed with evidence; manual review required |
 | `STALE_SOURCE` | Source package commit behind current Tilly `main`; not used when a public bundle source commit is an ancestor of the current distribution commit |
 | `STALE_HELPERS` | Helper contract drift detected; update required |
-| `PRESERVED` | Project-owned bootloader left intentionally untouched |
+| `RECOVERED` | Previous bootloader/rule context is backed up and semantically recovered from `.tes/bk/**` |
 | `NOT_APPLIED` | Trigger not relevant to detected runtime |
 | `FAIL` | Hard failure; close with evidence |
 
@@ -427,7 +427,7 @@ python3 scripts/field_reports.py enable --target /path/to/project
 |-------|----------------|---------|
 | Installer scripts | Download or use the versioned ZIP, verify SHA-256, stage `.tes/setup/<version>/`, refresh manifest-known TES-owned helpers and runtime capabilities | Python + npm |
 | LLM layer | Project understanding, semantic governance review | Active agent in IDE window |
-| Project-owned files | `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, Cursor rules — may remain `PRESERVED` | Markdown bootloaders |
+| Root runtime files | `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, Cursor rules — backed up before clean overwrite | Markdown bootloaders |
 
 `/tes-align` and `/tes-open-obsidian` become active through safe runtime
 surfaces.
@@ -439,7 +439,8 @@ surfaces.
 Tilly protects local rollback and cache artifacts via
 `.git/info/exclude`:
 
-- `.tes/bin/*.bak-*`
+- `.tes/bk/**`
+- legacy `.tes/bin/*.bak-*`
 - Python bytecode
 - Field Reports state
 - Cortex SQLite caches
@@ -459,7 +460,7 @@ chat. Required fields:
 | Status | One of the return-state tokens (Section 7) |
 | Source snapshot freshness | `PASS` for latest source or current public bundle; use `tes_bundle.py freshness --target <project>` when available; `STALE_SOURCE` only when the source snapshot is behind or unrelated |
 | Changed surfaces | List affected files/configs |
-| Root context gate | `PASS` / `PRESERVED` / `NEEDS_REVIEW` |
+| Root context gate | `PASS` / `RECOVERED` / `NEEDS_REVIEW` |
 | Installed helper set | Helper inventory (Section 10) |
 | Helper contract parity | `helper_contract_status=PASS` |
 | Field Reports state | `enabled` / `disabled` + outbox state |

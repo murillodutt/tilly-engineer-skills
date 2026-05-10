@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.79</span>
+          <span class="brand-meta">User manual · v0.3.80</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1029,7 +1029,7 @@
             </div>
             <div class="panel">
               <span class="panel-tag">What stays yours</span>
-              <p>Project-owned <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> and Cursor rules stay preserved when they exist. Tilly retrofits, never overwrites.</p>
+              <p>Existing <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> and Cursor rules are first backed up in <code>.tes/bk/&lt;timestamp&gt;/</code>. Tilly then installs a clean runtime and recovers useful local semantics into <code>docs/agents/**</code>.</p>
             </div>
             <div class="panel">
               <span class="panel-tag">Operator contract</span>
@@ -1105,7 +1105,7 @@
                 <thead><tr><th>State</th><th>Meaning</th></tr></thead>
                 <tbody>
                   <tr><td><code>new</code></td><td>No relevant agent instructions. The installer creates a minimal mesh.</td></tr>
-                  <tr><td><code>existing</code></td><td>Local rules or docs already exist. The installer retrofits, not overwrites.</td></tr>
+                  <tr><td><code>existing</code></td><td>Local rules or docs already exist. The installer backs them up, installs a clean runtime, and recovers useful semantics.</td></tr>
                   <tr><td><code>meshed</code></td><td>Tilly already exists. The run becomes update / convergence.</td></tr>
                 </tbody>
               </table>
@@ -1200,11 +1200,11 @@
         <section class="chapter" id="report">
           <div class="chapter-head"><span class="chapter-num">10</span><h2>Final report</h2></div>
           <div class="chapter-body">
-            <p>Every run ends with a short <strong>Convergence Report</strong> in chat. Read it before approving commit or push. It tells you what changed, what was preserved, whether all gates passed, and which rollback is available.</p>
+            <p>Every run ends with a short <strong>Convergence Report</strong> in chat. Read it before approving commit or push. It tells you what changed, which <code>.tes/bk/&lt;timestamp&gt;</code> backup was created, what was recovered, whether all gates passed, and which rollback is available.</p>
             <p>The chat report covers status, source snapshot freshness, changed surfaces, root context gate, installed helper set, helper contract parity, Field Reports state, gates, limits, and a rollback summary. Backup files are rollback artifacts, not new TES surfaces.</p>
             <p>A few signals worth recognizing:</p>
             <ul>
-              <li><code>PRESERVED</code> — your existing <code>AGENTS.md</code>, <code>CLAUDE.md</code> or Cursor rules were left intact.</li>
+              <li><code>RECOVERED</code> — previous <code>AGENTS.md</code>, <code>CLAUDE.md</code> or Cursor rules were backed up and useful semantics were recovered into <code>docs/agents/**</code>.</li>
               <li><code>STALE_SOURCE</code> — the package commit is behind or unrelated to the latest Tilly release; you were certified against the recorded snapshot. Current public bundles whose source commit is an ancestor of the distribution commit report <code>PASS</code>, not stale.</li>
               <li><code>NEEDS_REVIEW</code> — something blocked but the run preserved evidence; review before continuing.</li>
             </ul>
@@ -1244,7 +1244,7 @@ git revert &lt;install-commit&gt;</code></pre>
             </div>
             <div class="panel">
               <span class="panel-tag">Lo que sigue siendo tuyo</span>
-              <p>Los archivos propios del proyecto — <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> y las reglas de Cursor — quedan preservados cuando ya existen. Tilly hace retrofit, nunca overwrite.</p>
+              <p>Los archivos existentes — <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> y las reglas de Cursor — primero se guardan en <code>.tes/bk/&lt;timestamp&gt;/</code>. Tilly instala un runtime limpio y recupera la semántica útil en <code>docs/agents/**</code>.</p>
             </div>
             <div class="panel">
               <span class="panel-tag">Contrato del operador</span>
@@ -1320,7 +1320,7 @@ git revert &lt;install-commit&gt;</code></pre>
                 <thead><tr><th>Estado</th><th>Significado</th></tr></thead>
                 <tbody>
                   <tr><td><code>new</code></td><td>Sin instrucciones relevantes de agente. El instalador crea el mesh mínimo.</td></tr>
-                  <tr><td><code>existing</code></td><td>Ya existen reglas o docs locales. El instalador hace retrofit, no overwrite.</td></tr>
+                  <tr><td><code>existing</code></td><td>Ya existen reglas o docs locales. El instalador crea backup, instala un runtime limpio y recupera semántica útil.</td></tr>
                   <tr><td><code>meshed</code></td><td>Tilly ya existe. La ejecución se vuelve update / convergence.</td></tr>
                 </tbody>
               </table>
@@ -1413,10 +1413,10 @@ git revert &lt;install-commit&gt;</code></pre>
         <section class="chapter" id="report-es">
           <div class="chapter-head"><span class="chapter-num">10</span><h2>Informe final</h2></div>
           <div class="chapter-body">
-            <p>Cada ejecución termina con un <strong>Convergence Report</strong> corto en el chat. Léelo antes de aprobar commit o push. Te dice qué cambió, qué se preservó, si todos los gates pasaron y qué rollback está disponible.</p>
+            <p>Cada ejecución termina con un <strong>Convergence Report</strong> corto en el chat. Léelo antes de aprobar commit o push. Te dice qué cambió, qué backup <code>.tes/bk/&lt;timestamp&gt;</code> fue creado, qué se recuperó, si todos los gates pasaron y qué rollback está disponible.</p>
             <p>Algunas señales que conviene reconocer:</p>
             <ul>
-              <li><code>PRESERVED</code> — tus <code>AGENTS.md</code>, <code>CLAUDE.md</code> o reglas de Cursor existentes quedaron intactos.</li>
+              <li><code>RECOVERED</code> — tus <code>AGENTS.md</code>, <code>CLAUDE.md</code> o reglas de Cursor anteriores fueron respaldados y la semántica útil fue recuperada en <code>docs/agents/**</code>.</li>
               <li><code>STALE_SOURCE</code> — el commit del paquete está atrás o no está relacionado con el último release de Tilly; los bundles públicos actuales cuyo commit fuente es ancestro del commit de distribución reportan <code>PASS</code>, no stale.</li>
               <li><code>NEEDS_REVIEW</code> — algo se bloqueó pero el run preservó evidencia; revisa antes de continuar.</li>
             </ul>
@@ -1456,7 +1456,7 @@ git revert &lt;install-commit&gt;</code></pre>
             </div>
             <div class="panel">
               <span class="panel-tag">O que continua sendo seu</span>
-              <p>Arquivos próprios do projeto — <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> e regras do Cursor — ficam preservados quando já existem. A Tilly faz retrofit, nunca overwrite.</p>
+              <p>Arquivos existentes — <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> e regras do Cursor — primeiro são salvos em <code>.tes/bk/&lt;timestamp&gt;/</code>. A Tilly instala um runtime limpo e recupera a semântica útil em <code>docs/agents/**</code>.</p>
             </div>
             <div class="panel">
               <span class="panel-tag">Contrato do operador</span>
@@ -1532,7 +1532,7 @@ git revert &lt;install-commit&gt;</code></pre>
                 <thead><tr><th>Estado</th><th>Significado</th></tr></thead>
                 <tbody>
                   <tr><td><code>new</code></td><td>Sem instruções relevantes de agente. O instalador cria o mesh mínimo.</td></tr>
-                  <tr><td><code>existing</code></td><td>Já existem regras ou docs locais. O instalador faz retrofit, não overwrite.</td></tr>
+                  <tr><td><code>existing</code></td><td>Já existem regras ou docs locais. O instalador cria backup, instala runtime limpo e recupera semântica útil.</td></tr>
                   <tr><td><code>meshed</code></td><td>Tilly já existe. A execução vira update / convergence.</td></tr>
                 </tbody>
               </table>
@@ -1625,11 +1625,11 @@ git revert &lt;install-commit&gt;</code></pre>
         <section class="chapter" id="report-pt">
           <div class="chapter-head"><span class="chapter-num">10</span><h2>Relatório final</h2></div>
           <div class="chapter-body">
-            <p>Toda execução termina com um <strong>Convergence Report</strong> curto no chat. Leia antes de aprovar commit ou push. Ele diz o que mudou, o que foi preservado, se todos os gates passaram e qual rollback está disponível.</p>
+            <p>Toda execução termina com um <strong>Convergence Report</strong> curto no chat. Leia antes de aprovar commit ou push. Ele diz o que mudou, qual backup <code>.tes/bk/&lt;timestamp&gt;</code> foi criado, o que foi recuperado, se todos os gates passaram e qual rollback está disponível.</p>
             <p>O relatório no chat cobre status, frescor do snapshot fonte, superfícies alteradas, gate de contexto raiz, helper set instalado, paridade de contrato dos helpers, estado do Field Reports, gates, limites e resumo de rollback. Backups são artefatos de rollback, não novas superfícies TES.</p>
             <p>Alguns sinais que vale reconhecer:</p>
             <ul>
-              <li><code>PRESERVED</code> — seus <code>AGENTS.md</code>, <code>CLAUDE.md</code> ou regras do Cursor existentes ficaram intactos.</li>
+              <li><code>RECOVERED</code> — seus <code>AGENTS.md</code>, <code>CLAUDE.md</code> ou regras do Cursor anteriores foram salvos e a semântica útil foi recuperada em <code>docs/agents/**</code>.</li>
               <li><code>STALE_SOURCE</code> — o commit do pacote está atrás ou não se relaciona ao release mais recente da Tilly; você foi certificado contra o snapshot registrado. Bundles públicos atuais cujo commit fonte é ancestral do commit de distribuição reportam <code>PASS</code>, não stale.</li>
               <li><code>NEEDS_REVIEW</code> — algo bloqueou mas o run preservou evidência; revise antes de continuar.</li>
             </ul>
@@ -1650,7 +1650,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.79</span>
+        <span>Tilly Engineer Skills · v0.3.80</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>

@@ -15,8 +15,9 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.79"
+VERSION = "0.3.80"
 EVIDENCE_DIR = Path("docs/agents/evidence")
+BACKUP_ROOT = Path(".tes/bk")
 ROOT_FILES = (
     ("codex", "AGENTS.md", "src/adapters/codex/AGENTS.md"),
     ("claude", "CLAUDE.md", "src/adapters/claude/CLAUDE.md"),
@@ -99,6 +100,17 @@ def root_candidates(target: Path) -> list[tuple[str, Path, str | None]]:
     return candidates
 
 
+def backup_root_candidates(target: Path, backup_id: str) -> list[tuple[str, Path, str | None]]:
+    backup_files = target / BACKUP_ROOT / backup_id / "files"
+    candidates = [(adapter, backup_files / relpath, source) for adapter, relpath, source in ROOT_FILES]
+    rules = sorted((backup_files / ".cursor/rules").glob("*.mdc"))
+    known = {path for _, path, _ in candidates}
+    for path in rules:
+        if path not in known:
+            candidates.append(("cursor", path, None))
+    return candidates
+
+
 def meaningful_lines(text: str) -> list[tuple[int, str]]:
     lines: list[tuple[int, str]] = []
     for lineno, raw in enumerate(text.splitlines(), start=1):
@@ -167,17 +179,20 @@ def classify_file(target: Path, adapter: str, path: Path, source_rel: str | None
     }
 
 
-def analyze(target: Path, *, write_plan: bool = False) -> dict[str, Any]:
+def analyze(target: Path, *, write_plan: bool = False, backup_id: str | None = None) -> dict[str, Any]:
     target = target.expanduser().resolve()
     if not target.exists() or not target.is_dir():
         return {"version": VERSION, "status": "FAIL", "failures": [f"target is not a directory: {target}"]}
 
-    roots = [classify_file(target, adapter, path, source) for adapter, path, source in root_candidates(target)]
+    candidate_root = target if backup_id is None else target / BACKUP_ROOT / backup_id / "files"
+    candidates = root_candidates(target) if backup_id is None else backup_root_candidates(target, backup_id)
+    roots = [classify_file(candidate_root, adapter, path, source) for adapter, path, source in candidates]
     required = [item for item in roots if item.get("requires_structure_gate")]
     result: dict[str, Any] = {
         "version": VERSION,
         "status": "NEEDS_REVIEW" if required else "PASS",
         "target": str(target),
+        "source": "active-root" if backup_id is None else f"backup:{backup_id}",
         "structure_gate": "required" if required else "not_required",
         "root_count": len([item for item in roots if item["state"] != "missing"]),
         "requires_structure_count": len(required),
@@ -219,8 +234,9 @@ def write_structure_plan(target: Path, required: list[dict[str, Any]]) -> str:
             [
                 "# Tilly Root Context Structure Plan",
                 "",
-                "Root runtime files may contain project-owned instructions. Do not",
-                "overwrite them until durable context is migrated or explicitly rejected.",
+                "Root runtime files may contain project-owned instructions.",
+                "Back them up centrally before clean runtime overwrite, then recover",
+                "durable semantics into docs/agents evidence.",
                 "",
                 *sections,
                 "",
@@ -262,6 +278,13 @@ def self_test() -> dict[str, Any]:
         if cursor["requires_structure_count"] < 3:
             failures.append("custom Cursor root rule must be detected")
 
+        backup_files = target / ".tes/bk/selftest/files"
+        backup_files.mkdir(parents=True, exist_ok=True)
+        (backup_files / "AGENTS.md").write_text("# Legacy\n\nRun `npm test` before release.\n", encoding="utf-8")
+        backup = analyze(target, backup_id="selftest")
+        if backup["source"] != "backup:selftest" or backup["status"] != "NEEDS_REVIEW":
+            failures.append("backup root context analysis must inspect .tes/bk/<id>/files")
+
     return {
         "version": VERSION,
         "status": "PASS" if not failures else "FAIL",
@@ -276,10 +299,11 @@ def main() -> int:
     parser.add_argument("command", nargs="?", choices=["analyze"], default="analyze")
     parser.add_argument("--target", type=Path, default=Path.cwd())
     parser.add_argument("--write-plan", action="store_true")
+    parser.add_argument("--backup-id")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
 
-    result = self_test() if args.self_test else analyze(args.target, write_plan=args.write_plan)
+    result = self_test() if args.self_test else analyze(args.target, write_plan=args.write_plan, backup_id=args.backup_id)
     print(json.dumps(result, indent=2, sort_keys=True))
     print("[root-context] " + result["status"])
     if result["status"] == "PASS":

@@ -15,6 +15,7 @@ import urllib.parse
 import urllib.request
 import zipfile
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -22,14 +23,18 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.79"
+VERSION = "0.3.80"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
+BACKUP_ROOT = Path(".tes/bk")
 PUBLIC_DIST_ROOT = ROOT / "docs" / "dist" / VERSION
 BUNDLE_FILENAME = f"tilly-engineer-skills-{VERSION}.zip"
 PUBLIC_BUNDLE_BASE_URL = "https://murillodutt.github.io/tilly-engineer-skills/dist"
 SETUP_IGNORE_COMMENT = "# TES installer staging cache"
+BACKUP_IGNORE_COMMENT = "# TES clean install local backups"
+BACKUP_SCHEMA = "tes-clean-backup@1"
+RECOVERY_SCHEMA = "tes-root-governance-recovery@1"
 
 REQUIRED_LAYERS = {
     "helper",
@@ -69,6 +74,65 @@ MCP_CONFIG_PATHS = {
     ".mcp.json",
     ".cursor/mcp.json",
 }
+BACKUP_EXTRA_FILES = {
+    *CONTEXT_GOVERNANCE_PATHS,
+    *MCP_CONFIG_PATHS,
+    ".tes/manifest.json",
+    ".agents/plugins/marketplace.json",
+}
+BACKUP_EXTRA_DIRS = (
+    ".cursor/rules",
+    ".agents/skills",
+    ".claude/skills",
+    "skills",
+    ".claude-plugin",
+    "plugins/tilly-engineer-skills",
+    ".tes/bin",
+)
+SECRET_RE = (
+    "secret",
+    "token",
+    "apikey",
+    "api_key",
+    "password",
+    "passwd",
+    "private key",
+    "-----begin",
+)
+NOISE_RE = (
+    "tilly",
+    "tes runtime",
+    ".agents/skills",
+    ".claude/skills",
+    "plugins/tilly-engineer-skills",
+    "/tes-",
+    "docs/agents",
+)
+KEEP_RE = (
+    "run ",
+    "use ",
+    "before ",
+    "after ",
+    "require",
+    "must",
+    "gate",
+    "test",
+    "build",
+    "deploy",
+    "approval",
+    "owner",
+    "security",
+    "production",
+)
+REVIEW_RE = (
+    "rm -rf",
+    "sudo ",
+    "chmod 777",
+    "delete ",
+    "drop database",
+    "legal",
+    "compliance",
+)
 
 
 @dataclass(frozen=True)
@@ -88,6 +152,10 @@ def sha256_bytes(data: bytes) -> str:
 
 def sha256_file(path: Path) -> str:
     return sha256_bytes(path.read_bytes())
+
+
+def utc_stamp() -> str:
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
 def public_bundle_url(version: str = VERSION) -> str:
@@ -261,7 +329,7 @@ def layer_for_path(path: str) -> str:
 
 def owner_for_layer(layer: str) -> str:
     if layer == "context_governance":
-        return "project-owned"
+        return "tes-owned"
     if layer in {"project_alignment", "evidence"}:
         return "generated"
     if layer == "cache":
@@ -271,7 +339,7 @@ def owner_for_layer(layer: str) -> str:
 
 def install_policy_for(layer: str) -> str:
     if layer == "context_governance":
-        return "preserve-if-exists"
+        return "clean-overwrite-with-backup"
     if layer == "mcp_config":
         return "merge"
     if layer in {"project_alignment", "evidence", "cache"}:
@@ -564,13 +632,22 @@ def setup_exclude_pattern(target: Path, repo_root: Path) -> str:
     return f"{relative_target.as_posix()}/.tes/setup/"
 
 
-def ensure_setup_excluded(target: Path, dry_run: bool = False) -> dict[str, str]:
+def backup_exclude_pattern(target: Path, repo_root: Path) -> str:
+    try:
+        relative_target = target.resolve().relative_to(repo_root.resolve())
+    except ValueError:
+        return ".tes/bk/"
+    if relative_target == Path("."):
+        return ".tes/bk/"
+    return f"{relative_target.as_posix()}/.tes/bk/"
+
+
+def ensure_local_excluded(target: Path, pattern: str, comment: str, dry_run: bool = False) -> dict[str, str]:
     repo = git_repo_paths(target)
     if repo is None:
         return {"status": "NOT_APPLIED", "reason": "target is not inside a git worktree"}
-    repo_root, common_dir = repo
+    _, common_dir = repo
     exclude = common_dir / "info" / "exclude"
-    pattern = setup_exclude_pattern(target, repo_root)
     if dry_run:
         return {
             "status": "DRY-RUN",
@@ -588,15 +665,33 @@ def ensure_setup_excluded(target: Path, dry_run: bool = False) -> dict[str, str]
         }
     exclude.parent.mkdir(parents=True, exist_ok=True)
     prefix = "" if not existing or existing.endswith("\n") else "\n"
-    comment = "" if SETUP_IGNORE_COMMENT in existing else f"{SETUP_IGNORE_COMMENT}\n"
+    comment_text = "" if comment in existing else f"{comment}\n"
     with exclude.open("a", encoding="utf-8") as handle:
-        handle.write(f"{prefix}{comment}{pattern}\n")
+        handle.write(f"{prefix}{comment_text}{pattern}\n")
     return {
         "status": "PASS",
         "path": rel(exclude, target),
         "pattern": pattern,
         "action": "add-local-exclude",
     }
+
+
+def ensure_setup_excluded(target: Path, dry_run: bool = False) -> dict[str, str]:
+    repo = git_repo_paths(target)
+    if repo is None:
+        return {"status": "NOT_APPLIED", "reason": "target is not inside a git worktree"}
+    repo_root, _ = repo
+    pattern = setup_exclude_pattern(target, repo_root)
+    return ensure_local_excluded(target, pattern, SETUP_IGNORE_COMMENT, dry_run=dry_run)
+
+
+def ensure_backup_excluded(target: Path, dry_run: bool = False) -> dict[str, str]:
+    repo = git_repo_paths(target)
+    if repo is None:
+        return {"status": "NOT_APPLIED", "reason": "target is not inside a git worktree"}
+    repo_root, _ = repo
+    pattern = backup_exclude_pattern(target, repo_root)
+    return ensure_local_excluded(target, pattern, BACKUP_IGNORE_COMMENT, dry_run=dry_run)
 
 
 def hash_url_for_bundle(url: str) -> str:
@@ -739,6 +834,313 @@ def read_installed_manifest(target: Path) -> dict[str, Any]:
     return read_json(target / INSTALLED_MANIFEST)
 
 
+def target_git_value(target: Path, args: list[str]) -> str | None:
+    result = subprocess.run(
+        ["git", "-C", str(target), *args],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    value = result.stdout.strip()
+    return value or None
+
+
+def target_git_status(target: Path) -> str:
+    result = subprocess.run(
+        ["git", "-C", str(target), "status", "--short", "--branch"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return result.stdout.strip() if result.returncode == 0 else "git-status-unavailable"
+
+
+def backup_entry_index(manifest: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {
+        str(entry.get("path")): entry
+        for entry in manifest.get("entries", [])
+        if isinstance(entry, dict) and entry.get("path")
+    }
+
+
+def is_backupable_path(relpath: str) -> bool:
+    if not relpath or relpath.startswith("../") or relpath.startswith("/"):
+        return False
+    if relpath.startswith(".tes/setup/") or relpath.startswith(".tes/bk/"):
+        return False
+    return True
+
+
+def collect_backup_candidates(target: Path, manifest: dict[str, Any]) -> list[Path]:
+    candidates: set[Path] = set()
+    for entry in manifest.get("entries", []):
+        if not isinstance(entry, dict):
+            continue
+        relpath = str(entry.get("path") or "")
+        if is_backupable_path(relpath) and (target / relpath).is_file():
+            candidates.add(target / relpath)
+    for relpath in BACKUP_EXTRA_FILES:
+        path = target / relpath
+        if path.is_file():
+            candidates.add(path)
+    for relpath in BACKUP_EXTRA_DIRS:
+        root = target / relpath
+        if not root.exists():
+            continue
+        for path in root.rglob("*"):
+            if path.is_file() and is_backupable_path(rel(path, target)):
+                candidates.add(path)
+    return sorted(candidates)
+
+
+def clean_backup(
+    target: Path,
+    *,
+    adapter: str = "all",
+    project_state: str = "unknown",
+    backup_id: str | None = None,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    target = target.resolve()
+    manifest = read_staged_manifest(target)
+    if not manifest:
+        manifest = read_installed_manifest(target)
+    entry_index = backup_entry_index(manifest)
+    backup_id = backup_id or utc_stamp()
+    backup_dir = target / BACKUP_ROOT / backup_id
+    local_exclude = ensure_backup_excluded(target, dry_run=dry_run)
+    candidates = collect_backup_candidates(target, manifest)
+    entries: list[dict[str, Any]] = []
+    for path in candidates:
+        relpath = rel(path, target)
+        bundle_entry = entry_index.get(relpath, {})
+        backup_rel = f"files/{relpath}"
+        layer = str(bundle_entry.get("layer") or layer_for_path(relpath))
+        owner_guess = "project-owned" if layer == "context_governance" else str(bundle_entry.get("owner") or owner_for_layer(layer))
+        entries.append(
+            {
+                "path": relpath,
+                "backup_path": backup_rel,
+                "sha256": sha256_file(path),
+                "layer": layer,
+                "owner_guess": owner_guess,
+                "reason": "pre-clean-runtime-snapshot",
+                "restore_policy": "copy-back",
+            }
+        )
+    if dry_run:
+        return {
+            "version": VERSION,
+            "schema": BACKUP_SCHEMA,
+            "status": "DRY-RUN",
+            "backup_id": backup_id,
+            "backup_dir": rel(backup_dir, target),
+            "entries": entries,
+            "local_exclude": local_exclude,
+        }
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    for entry in entries:
+        source = target / entry["path"]
+        dest = backup_dir / entry["backup_path"]
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, dest)
+    payload = {
+        "schema": BACKUP_SCHEMA,
+        "version": VERSION,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "backup_id": backup_id,
+        "target": str(target),
+        "adapter": adapter,
+        "route": adapter,
+        "project_state": project_state,
+        "source_tes_version": str(manifest.get("version") or "unknown"),
+        "git_head": target_git_value(target, ["rev-parse", "HEAD"]) or "unknown",
+        "git_status": target_git_status(target),
+        "entries": entries,
+    }
+    manifest_path = backup_dir / "manifest.json"
+    manifest_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {
+        "version": VERSION,
+        "schema": BACKUP_SCHEMA,
+        "status": "BACKED_UP",
+        "backup_id": backup_id,
+        "backup_dir": rel(backup_dir, target),
+        "manifest": rel(manifest_path, target),
+        "entry_count": len(entries),
+        "entries": entries,
+        "local_exclude": local_exclude,
+    }
+
+
+def read_backup_manifest(target: Path, backup_id: str) -> dict[str, Any]:
+    return read_json(target / BACKUP_ROOT / backup_id / "manifest.json")
+
+
+def sanitize_excerpt(line: str) -> str:
+    stripped = line.strip()
+    if any(term in stripped.lower() for term in SECRET_RE):
+        return "[redacted secret-like line]"
+    return stripped[:180]
+
+
+def classify_recovery_line(line: str) -> str:
+    lower = line.lower()
+    if any(term in lower for term in SECRET_RE) or any(term in lower for term in REVIEW_RE):
+        return "needs_review"
+    if any(term in lower for term in NOISE_RE):
+        return "runtime_replaced"
+    if any(term in lower for term in KEEP_RE):
+        return "semantic_keep" if len(line) <= 140 else "semantic_compress"
+    if len(line) > 140:
+        return "semantic_compress"
+    return "reject_noise"
+
+
+def recovery_lines(text: str) -> list[str]:
+    lines: list[str] = []
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line in {"---", "```", "```text"}:
+            continue
+        compact = line.lstrip("#>*-0123456789. `").strip()
+        if len(compact) < 8:
+            continue
+        lines.append(compact)
+        if len(lines) >= 20:
+            break
+    return lines
+
+
+def recover_from_backup(
+    target: Path,
+    backup_id: str,
+    *,
+    apply_safe: bool = False,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    target = target.resolve()
+    manifest = read_backup_manifest(target, backup_id)
+    if manifest.get("schema") != BACKUP_SCHEMA:
+        return {"version": VERSION, "status": "FAIL", "failures": [f"missing clean backup: {backup_id}"]}
+    groups: dict[str, list[dict[str, str]]] = {
+        "semantic_keep": [],
+        "semantic_compress": [],
+        "runtime_replaced": [],
+        "reject_noise": [],
+        "needs_review": [],
+    }
+    backup_dir = target / BACKUP_ROOT / backup_id
+    for entry in manifest.get("entries", []):
+        if not isinstance(entry, dict):
+            continue
+        layer = str(entry.get("layer") or "")
+        if layer not in {"context_governance", "runtime_capability"}:
+            continue
+        backup_path = backup_dir / str(entry.get("backup_path") or "")
+        if not backup_path.is_file():
+            continue
+        try:
+            text = backup_path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            groups["needs_review"].append({"path": str(entry.get("path")), "excerpt": "non-utf8 file"})
+            continue
+        for line in recovery_lines(text):
+            category = classify_recovery_line(line)
+            item = {"path": str(entry.get("path")), "excerpt": sanitize_excerpt(line)}
+            if item not in groups[category]:
+                groups[category].append(item)
+    status = "RECOVERED"
+    if groups["needs_review"]:
+        status = "NEEDS_REVIEW"
+    report_rel = f"docs/agents/evidence/{backup_id}-root-governance-recovery.md"
+    writes: list[str] = []
+    if apply_safe and not dry_run:
+        report = recovery_report(markdown_groups=groups, backup_id=backup_id, status=status, manifest=manifest)
+        report_path = target / report_rel
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(report, encoding="utf-8")
+        writes.append(report_rel)
+    return {
+        "version": VERSION,
+        "schema": RECOVERY_SCHEMA,
+        "status": status if not dry_run else "DRY-RUN",
+        "backup_id": backup_id,
+        "report": report_rel if apply_safe else None,
+        "writes": writes,
+        "groups": groups,
+        "counts": {key: len(value) for key, value in groups.items()},
+    }
+
+
+def recovery_report(
+    *,
+    markdown_groups: dict[str, list[dict[str, str]]],
+    backup_id: str,
+    status: str,
+    manifest: dict[str, Any],
+) -> str:
+    sections: list[str] = []
+    labels = {
+        "semantic_keep": "Semantic Keep",
+        "semantic_compress": "Semantic Compress",
+        "runtime_replaced": "Runtime Replaced",
+        "reject_noise": "Rejected Noise",
+        "needs_review": "Needs Review",
+    }
+    for key, label in labels.items():
+        rows = markdown_groups.get(key, [])
+        body = "\n".join(f"- `{item['path']}`: {item['excerpt']}" for item in rows) or "- none"
+        sections.append(f"## {label}\n\n{body}")
+    return "\n\n".join(
+        [
+            "# TES Root Governance Recovery",
+            "",
+            f"Status: `{status}`",
+            f"Backup: `{backup_id}`",
+            f"TES Version: `{VERSION}`",
+            f"Source TES Version: `{manifest.get('source_tes_version', 'unknown')}`",
+            "",
+            "This report treats previous root/runtime files as recovery evidence.",
+            "The active runtime has already been replaced by canonical TES templates.",
+            "",
+            *sections,
+            "",
+        ]
+    )
+
+
+def restore_backup(target: Path, backup_id: str, *, dry_run: bool = False, yes: bool = False) -> dict[str, Any]:
+    target = target.resolve()
+    manifest = read_backup_manifest(target, backup_id)
+    if manifest.get("schema") != BACKUP_SCHEMA:
+        return {"version": VERSION, "status": "FAIL", "failures": [f"missing clean backup: {backup_id}"]}
+    if not dry_run and not yes:
+        return {"version": VERSION, "status": "FAIL", "failures": ["restore requires --yes"]}
+    actions: list[dict[str, str]] = []
+    backup_dir = target / BACKUP_ROOT / backup_id
+    for entry in manifest.get("entries", []):
+        if not isinstance(entry, dict):
+            continue
+        source = backup_dir / str(entry.get("backup_path") or "")
+        dest = target / str(entry.get("path") or "")
+        if not source.is_file():
+            actions.append({"path": str(entry.get("path")), "action": "missing-backup-source"})
+            continue
+        actions.append({"path": str(entry.get("path")), "action": "would-restore" if dry_run else "restore"})
+        if not dry_run:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, dest)
+    return {
+        "version": VERSION,
+        "status": "DRY-RUN" if dry_run else "RESTORED",
+        "backup_id": backup_id,
+        "actions": actions,
+    }
+
+
 def public_index_data(index: Path | None = None) -> dict[str, Any]:
     if index is None:
         return {}
@@ -862,8 +1264,8 @@ def plan_target(target: Path) -> dict[str, Any]:
             action = "skip-layer"
         elif target_path.exists() and sha256_file(target_path) == entry["sha256"]:
             action = "skip-identical"
-        elif policy == "preserve-if-exists" and target_path.exists():
-            action = "preserve-context"
+        elif policy == "clean-overwrite-with-backup" and target_path.exists():
+            action = "clean-overwrite-with-backup"
         elif policy == "merge":
             action = "needs-merge"
         elif target_path.exists():
@@ -880,24 +1282,20 @@ def plan_target(target: Path) -> dict[str, Any]:
     }
 
 
-def backup_path(path: Path) -> Path:
-    return path.with_name(f"{path.name}.bak-{VERSION}")
-
-
-def copy_from_staged(target: Path, entry: dict[str, Any], dry_run: bool) -> dict[str, str]:
+def copy_from_staged(target: Path, entry: dict[str, Any], dry_run: bool, backup_id: str | None) -> dict[str, str]:
     source = target / SETUP_ROOT / VERSION / entry["archive_path"]
     dest = target / entry["path"]
     if dry_run:
         return {"path": entry["path"], "layer": entry["layer"], "action": "would-copy"}
     dest.parent.mkdir(parents=True, exist_ok=True)
-    backup = None
-    if dest.exists() and sha256_file(dest) != entry["sha256"]:
-        backup = backup_path(dest)
-        shutil.copy2(dest, backup)
+    had_dest = dest.exists()
     shutil.copy2(source, dest)
-    result = {"path": entry["path"], "layer": entry["layer"], "action": "copy" if backup is None else "overwrite"}
-    if backup:
-        result["backup"] = rel(backup, target)
+    action = "copy"
+    if had_dest:
+        action = "clean-overwrite" if backup_id else "overwrite"
+    result = {"path": entry["path"], "layer": entry["layer"], "action": action}
+    if backup_id and action == "clean-overwrite":
+        result["backup_id"] = backup_id
     return result
 
 
@@ -926,7 +1324,14 @@ def purge_obsolete(target: Path, manifest: dict[str, Any], dry_run: bool) -> lis
     return actions
 
 
-def apply_staged_bundle(target: Path, dry_run: bool = False, yes: bool = False) -> dict[str, Any]:
+def apply_staged_bundle(
+    target: Path,
+    dry_run: bool = False,
+    yes: bool = False,
+    mode: str = "clean-runtime",
+    backup_id: str | None = None,
+    adapter: str = "all",
+) -> dict[str, Any]:
     target = target.resolve()
     manifest = read_staged_manifest(target)
     if not manifest:
@@ -936,6 +1341,17 @@ def apply_staged_bundle(target: Path, dry_run: bool = False, yes: bool = False) 
         return {"version": VERSION, "status": "FAIL", "failures": failures}
     if not dry_run and not yes:
         return {"version": VERSION, "status": "FAIL", "failures": ["apply requires --yes"]}
+    clean_backup_result: dict[str, Any] | None = None
+    if mode not in {"clean-runtime", "preserve"}:
+        return {"version": VERSION, "status": "FAIL", "failures": [f"unsupported apply mode: {mode}"]}
+    if mode == "clean-runtime" and not dry_run:
+        if backup_id is None:
+            clean_backup_result = clean_backup(target, adapter=adapter)
+            if clean_backup_result.get("status") != "BACKED_UP":
+                return clean_backup_result
+            backup_id = str(clean_backup_result["backup_id"])
+        elif not read_backup_manifest(target, backup_id):
+            return {"version": VERSION, "status": "FAIL", "failures": [f"missing backup-id: {backup_id}"]}
 
     actions = purge_obsolete(target, manifest, dry_run)
     for entry in manifest.get("entries", []):
@@ -945,7 +1361,7 @@ def apply_staged_bundle(target: Path, dry_run: bool = False, yes: bool = False) 
         if layer in {"project_alignment", "evidence", "cache"}:
             actions.append({"path": entry["path"], "layer": layer, "action": "skip-layer"})
             continue
-        if policy == "preserve-if-exists" and dest.exists():
+        if mode == "preserve" and policy in {"preserve-if-exists", "clean-overwrite-with-backup"} and dest.exists():
             actions.append({"path": entry["path"], "layer": layer, "action": "preserve-context"})
             continue
         if policy == "merge":
@@ -954,7 +1370,7 @@ def apply_staged_bundle(target: Path, dry_run: bool = False, yes: bool = False) 
         if dest.exists() and sha256_file(dest) == entry["sha256"]:
             actions.append({"path": entry["path"], "layer": layer, "action": "skip-identical"})
             continue
-        actions.append(copy_from_staged(target, entry, dry_run))
+        actions.append(copy_from_staged(target, entry, dry_run, backup_id))
 
     if not dry_run:
         installed_path = target / INSTALLED_MANIFEST
@@ -963,7 +1379,10 @@ def apply_staged_bundle(target: Path, dry_run: bool = False, yes: bool = False) 
 
     return {
         "version": VERSION,
-        "status": "DRY-RUN" if dry_run else "APPLIED",
+        "status": "DRY-RUN" if dry_run else ("CLEAN_APPLIED" if mode == "clean-runtime" else "APPLIED"),
+        "mode": mode,
+        "backup_id": backup_id,
+        "clean_backup": clean_backup_result,
         "actions": actions,
         "installed_manifest": rel(target / INSTALLED_MANIFEST, target),
     }
@@ -991,9 +1410,15 @@ def self_test() -> dict[str, Any]:
         target = temp / "target"
         target.mkdir()
         subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
-        (target / "AGENTS.md").write_text("project-owned\n", encoding="utf-8")
+        (target / "AGENTS.md").write_text("project-owned\nRun `npm test` before release.\n", encoding="utf-8")
+        (target / ".cursor/rules").mkdir(parents=True)
+        (target / ".cursor/rules/project.mdc").write_text("Use the internal emulator fixture.\n", encoding="utf-8")
         (target / ".tes/bin").mkdir(parents=True)
         (target / ".tes/bin/local-only.py").write_text("do not purge\n", encoding="utf-8")
+        (target / ".tes/cortex").mkdir(parents=True)
+        (target / ".tes/cortex/records.jsonl").write_text('{"durable":true}\n', encoding="utf-8")
+        (target / ".tes/field-reports").mkdir(parents=True)
+        (target / ".tes/field-reports/outbox.jsonl").write_text('{"event":"keep"}\n', encoding="utf-8")
         staged = stage_bundle(bundle, target)
         if staged.get("status") != "STAGED":
             failures.extend(staged.get("failures", ["stage failed"]))
@@ -1036,15 +1461,41 @@ def self_test() -> dict[str, Any]:
         planned = plan_target(target)
         if planned.get("status") != "PASS":
             failures.extend(planned.get("failures", ["plan failed"]))
+        if not any(action.get("action") == "clean-overwrite-with-backup" for action in planned.get("actions", [])):
+            failures.append("plan must mark existing context as clean-overwrite-with-backup")
+        backed_up = clean_backup(target, adapter="all", project_state="existing", backup_id="selftest")
+        if backed_up.get("status") != "BACKED_UP":
+            failures.extend(backed_up.get("failures", ["backup failed"]))
+        if not (target / ".tes/bk/selftest/manifest.json").exists():
+            failures.append("clean backup manifest missing")
+        if not (target / ".tes/bk/selftest/files/AGENTS.md").exists():
+            failures.append("clean backup did not preserve AGENTS.md")
         applied = apply_staged_bundle(target, yes=True)
-        if applied.get("status") != "APPLIED":
+        if applied.get("status") != "CLEAN_APPLIED":
             failures.extend(applied.get("failures", ["apply failed"]))
         installed = read_installed_manifest(target)
         installed_metadata = installed.get("metadata") if isinstance(installed.get("metadata"), dict) else {}
         if installed_metadata.get("source_commit") != metadata.get("source_commit"):
             failures.append("installed manifest source_commit metadata drifted")
-        if (target / "AGENTS.md").read_text(encoding="utf-8") != "project-owned\n":
-            failures.append("project-owned AGENTS.md was overwritten")
+        if "project-owned" in (target / "AGENTS.md").read_text(encoding="utf-8"):
+            failures.append("clean runtime did not replace project-owned AGENTS.md")
+        backup_id = str(applied.get("backup_id") or "")
+        if not backup_id or not (target / ".tes/bk" / backup_id / "manifest.json").exists():
+            failures.append("clean apply did not create central backup")
+        recovery = recover_from_backup(target, backup_id, apply_safe=True)
+        if recovery.get("status") not in {"RECOVERED", "NEEDS_REVIEW"}:
+            failures.extend(recovery.get("failures", ["recovery failed"]))
+        report = recovery.get("report")
+        if not report or not (target / str(report)).exists():
+            failures.append("recovery report missing")
+        restored = restore_backup(target, "selftest", yes=True)
+        if restored.get("status") != "RESTORED":
+            failures.extend(restored.get("failures", ["restore failed"]))
+        if "project-owned" not in (target / "AGENTS.md").read_text(encoding="utf-8"):
+            failures.append("restore did not recover original AGENTS.md")
+        reapplied_after_restore = apply_staged_bundle(target, yes=True)
+        if reapplied_after_restore.get("status") != "CLEAN_APPLIED":
+            failures.append("clean reapply after restore failed")
         if not (target / ".tes/setup" / VERSION / MANIFEST_NAME).exists():
             failures.append("staged manifest missing")
         if not (target / ".tes/bin/tes_open_obsidian.py").exists():
@@ -1053,8 +1504,12 @@ def self_test() -> dict[str, Any]:
             failures.append("runtime tes-open-obsidian skill missing after apply")
         if not (target / ".tes/bin/local-only.py").exists():
             failures.append("unknown local helper was purged")
+        if not (target / ".tes/cortex/records.jsonl").exists():
+            failures.append("durable cortex state was not preserved")
+        if not (target / ".tes/field-reports/outbox.jsonl").exists():
+            failures.append("field reports state was not preserved")
         reapplied = apply_staged_bundle(target, yes=True)
-        if reapplied.get("status") != "APPLIED":
+        if reapplied.get("status") != "CLEAN_APPLIED":
             failures.append("idempotent reapply failed")
         freshness = certify_source_freshness(target, remote_head=str(metadata.get("source_commit") or ""))
         if freshness.get("source_freshness") != "PASS":
@@ -1088,6 +1543,14 @@ def main() -> int:
     stage_parser.add_argument("--sha256")
     stage_parser.add_argument("--dry-run", action="store_true")
 
+    backup_parser = subparsers.add_parser("backup")
+    backup_parser.add_argument("--target", type=Path, default=Path.cwd())
+    backup_parser.add_argument("--adapter", default="all", choices=["all", *sorted(materialize_adapter.ADAPTERS)])
+    backup_parser.add_argument("--project-state", default="unknown")
+    backup_parser.add_argument("--backup-id")
+    backup_parser.add_argument("--dry-run", action="store_true")
+    backup_parser.add_argument("--yes", action="store_true", help="accepted for command symmetry")
+
     plan_parser = subparsers.add_parser("plan")
     plan_parser.add_argument("--target", type=Path, default=Path.cwd())
 
@@ -1095,6 +1558,22 @@ def main() -> int:
     apply_parser.add_argument("--target", type=Path, default=Path.cwd())
     apply_parser.add_argument("--dry-run", action="store_true")
     apply_parser.add_argument("--yes", action="store_true")
+    apply_parser.add_argument("--mode", default="clean-runtime", choices=["clean-runtime", "preserve"])
+    apply_parser.add_argument("--backup-id")
+    apply_parser.add_argument("--adapter", default="all", choices=["all", *sorted(materialize_adapter.ADAPTERS)])
+
+    recover_parser = subparsers.add_parser("recover-plan")
+    recover_parser.add_argument("--target", type=Path, default=Path.cwd())
+    recover_parser.add_argument("--backup-id", required=True)
+    recover_parser.add_argument("--apply-safe", action="store_true")
+    recover_parser.add_argument("--dry-run", action="store_true")
+    recover_parser.add_argument("--yes", action="store_true", help="confirm safe evidence writes")
+
+    restore_parser = subparsers.add_parser("restore")
+    restore_parser.add_argument("--target", type=Path, default=Path.cwd())
+    restore_parser.add_argument("--backup-id", required=True)
+    restore_parser.add_argument("--dry-run", action="store_true")
+    restore_parser.add_argument("--yes", action="store_true")
 
     freshness_parser = subparsers.add_parser("freshness")
     freshness_parser.add_argument("--target", type=Path, default=Path.cwd())
@@ -1115,10 +1594,37 @@ def main() -> int:
             result = stage_bundle(args.bundle, args.target, dry_run=args.dry_run)
         else:
             result = stage_preferred_bundle(args.target, dry_run=args.dry_run)
+    elif args.command == "backup":
+        result = clean_backup(
+            args.target,
+            adapter=args.adapter,
+            project_state=args.project_state,
+            backup_id=args.backup_id,
+            dry_run=args.dry_run,
+        )
     elif args.command == "plan":
         result = plan_target(args.target)
     elif args.command == "apply":
-        result = apply_staged_bundle(args.target, dry_run=args.dry_run, yes=args.yes)
+        result = apply_staged_bundle(
+            args.target,
+            dry_run=args.dry_run,
+            yes=args.yes,
+            mode=args.mode,
+            backup_id=args.backup_id,
+            adapter=args.adapter,
+        )
+    elif args.command == "recover-plan":
+        if args.apply_safe and not args.dry_run and not args.yes:
+            result = {"version": VERSION, "status": "FAIL", "failures": ["recover-plan --apply-safe requires --yes"]}
+        else:
+            result = recover_from_backup(
+                args.target,
+                args.backup_id,
+                apply_safe=args.apply_safe,
+                dry_run=args.dry_run,
+            )
+    elif args.command == "restore":
+        result = restore_backup(args.target, args.backup_id, dry_run=args.dry_run, yes=args.yes)
     elif args.command == "freshness":
         result = certify_source_freshness(args.target, index=args.index, remote_head=args.remote_head)
     else:
@@ -1126,7 +1632,21 @@ def main() -> int:
         return 2
 
     print(json.dumps(result, indent=2))
-    return 0 if result.get("status") in {"PASS", "BUILT", "PUBLISHED", "STAGED", "DRY-RUN", "APPLIED", "STALE_SOURCE", "BLOCKED"} else 1
+    return 0 if result.get("status") in {
+        "PASS",
+        "BUILT",
+        "PUBLISHED",
+        "STAGED",
+        "DRY-RUN",
+        "BACKED_UP",
+        "APPLIED",
+        "CLEAN_APPLIED",
+        "RECOVERED",
+        "RESTORED",
+        "NEEDS_REVIEW",
+        "STALE_SOURCE",
+        "BLOCKED",
+    } else 1
 
 
 if __name__ == "__main__":
