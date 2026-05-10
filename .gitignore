@@ -3,6 +3,8 @@
 __pycache__/
 node_modules/
 dist/
+!docs/dist/
+!docs/dist/**
 .tes/bin/*.bak-*
 .tes/bin/__pycache__/
 .tes/field-reports/

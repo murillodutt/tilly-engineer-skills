@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and adapter authors
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.4
+tver: 0.2.5
 ---
 
 # Project Structure
@@ -27,6 +27,7 @@ Root files are only entrypoints and local project controls:
 | `docs/**` | Method, architecture, and eval explanation |
 | `src/**` | Canonical copyable adapter source |
 | `dist/**` | Generated adapter output, ignored by Git |
+| `docs/dist/**` | Versioned public installer bundles served by GitHub Pages |
 | Git history | Versioning and changelog trail |
 
 `scripts/**` is classified by consumer, not by directory. Validator-only
@@ -61,6 +62,9 @@ trees under `dist/adapters/**`:
 | Cursor | `CURSOR.md` plus `.cursor/rules/**` |
 
 Use `npm run materialize:check` to verify this without writing to `dist/**`.
+
+`docs/dist/<version>/` is the exception to the ignored `dist/**` rule. It holds
+the public TES ZIP, `.sha256`, and `index.json` used by installer staging.
 
 `scripts/bootstrap/install.sh` and `scripts/bootstrap/install.ps1` are the
 canonical shell entrypoints for mechanical adapter installation. Root
@@ -135,5 +139,6 @@ drift.
 - A new adapter must create one source directory under `src/adapters/<tool>/`
   and one short human guide under `docs/adapters/` only when needed.
 - Validation must fail if source leaks back into the root.
-- Generated `dist/**` output must be reproducible from `src/**`.
+- Generated `dist/**` output must be reproducible from `src/**`; versioned
+  public bundles under `docs/dist/**` must pass `public_bundle_oracle.py`.
 - Do not add `CHANGELOG.md`; commit history is the changelog.

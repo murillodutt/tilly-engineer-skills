@@ -355,7 +355,7 @@ def install(args: argparse.Namespace) -> int:
             capture_install_result(target_root, args.adapter, "CANCELLED", args.dry_run, 0)
             return 1
 
-        bundle_stage = tes_bundle.stage_source_bundle(target_root, dry_run=args.dry_run, adapter=args.adapter)
+        bundle_stage = tes_bundle.stage_preferred_bundle(target_root, dry_run=args.dry_run, adapter=args.adapter)
         if bundle_stage.get("status") == "FAIL":
             print(json.dumps(
                 {
