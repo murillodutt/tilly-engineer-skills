@@ -115,6 +115,9 @@ context layers:
 
 - `bundle_staging`: download or use the versioned TES ZIP, verify SHA-256, and
   create `.tes/setup/<version>/` from the TES bundle manifest.
+- `.tes/setup/**` is local staging cache. The bundle script must add a
+  target-local Git exclude entry before extraction so adopter repositories do
+  not accidentally commit the downloaded ZIP or extracted setup payload.
 - `layer_zero_helpers`: refresh manifest-known `.tes/bin/**` helpers.
 - `runtime_capability_refresh`: install TES-owned routers such as
   `.agents/skills/tes-*`, `.claude/skills/tes-*`, `skills/tes-*`, plugin
@@ -136,6 +139,10 @@ full health check.
 - Do not certify a command that was skipped or blocked.
 - Do not claim latest-source certification when the installer reports
   `STALE_SOURCE` or `BLOCKED` source freshness.
+- For public bundles, do not call the bundle stale just because the bundle
+  `source_commit` differs from remote `main`. If that commit is an ancestor of
+  the distribution commit that serves the same version/hash, freshness is
+  `PASS` with meaning `current public bundle`.
 - Do not claim `/tes-update` or `/tes:update` is `CURRENT` while helper contract parity is
   `STALE_HELPERS` or `BLOCKED`.
 - Do not record Field Reports from exploratory `/tes-update` or `/tes:update` probes; use

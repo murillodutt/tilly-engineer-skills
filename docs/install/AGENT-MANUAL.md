@@ -134,7 +134,7 @@ Use these literal tokens. Never substitute synonyms.
 | `BLOCKED` | Required dependency or capability unavailable |
 | `DEGRADED` | Fell back to a lower-fidelity backend (e.g. `auto` → lexical) |
 | `NEEDS_REVIEW` | Run closed with evidence; manual review required |
-| `STALE_SOURCE` | Source package commit behind current Tilly `main` |
+| `STALE_SOURCE` | Source package commit behind current Tilly `main`; not used when a public bundle source commit is an ancestor of the current distribution commit |
 | `STALE_HELPERS` | Helper contract drift detected; update required |
 | `PRESERVED` | Project-owned bootloader left intentionally untouched |
 | `NOT_APPLIED` | Trigger not relevant to detected runtime |
@@ -457,7 +457,7 @@ chat. Required fields:
 | Field | Notes |
 |-------|-------|
 | Status | One of the return-state tokens (Section 7) |
-| Source snapshot freshness | `STALE_SOURCE` if package commit behind Tilly `main` |
+| Source snapshot freshness | `PASS` for latest source or current public bundle; `STALE_SOURCE` only when the source snapshot is behind or unrelated |
 | Changed surfaces | List affected files/configs |
 | Root context gate | `PASS` / `PRESERVED` / `NEEDS_REVIEW` |
 | Installed helper set | Helper inventory (Section 10) |
