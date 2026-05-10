@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import shutil
+import subprocess
 import sys
 import tempfile
 import urllib.error
@@ -20,7 +21,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.71"
+VERSION = "0.3.72"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -111,6 +112,43 @@ def read_sha256_file(path: Path) -> str:
     return parse_sha256_text(path.read_text(encoding="utf-8"))
 
 
+def git_value(args: list[str]) -> str | None:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    value = result.stdout.strip()
+    return value or None
+
+
+def bundle_metadata() -> dict[str, Any]:
+    source_commit = git_value(["rev-parse", "HEAD"])
+    status = subprocess.run(
+        ["git", "status", "--short"],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    source_tree_state = "clean" if status.returncode == 0 and not status.stdout.strip() else "dirty"
+    return {
+        "schema": "tes-bundle-metadata@1",
+        "version": VERSION,
+        "source_repository": git_value(["config", "--get", "remote.origin.url"])
+        or "https://github.com/murillodutt/tilly-engineer-skills.git",
+        "source_commit": source_commit,
+        "source_ref": "HEAD",
+        "source_branch": git_value(["branch", "--show-current"]),
+        "source_tree_state": source_tree_state,
+        "created_at": git_value(["show", "-s", "--format=%cI", "HEAD"]),
+    }
+
+
 def rel(path: Path, root: Path) -> str:
     try:
         return path.relative_to(root).as_posix()
@@ -188,9 +226,14 @@ def make_entry(target_path: str, archive_path: str, source: Path) -> BundleEntry
 
 
 def manifest_payload(entries: list[BundleEntry]) -> dict[str, Any]:
+    metadata = bundle_metadata()
     return {
         "schema": "tes-bundle-manifest@1",
         "version": VERSION,
+        "metadata": metadata,
+        "source_repository": metadata["source_repository"],
+        "source_commit": metadata["source_commit"],
+        "created_at": metadata["created_at"],
         "layers": sorted(REQUIRED_LAYERS),
         "owners": sorted(REQUIRED_OWNERS),
         "purge_rule": "purge/update only acts on known tes-owned paths from the previous or current manifest",
@@ -204,6 +247,18 @@ def validate_manifest(data: dict[str, Any]) -> list[str]:
         failures.append("manifest schema must be tes-bundle-manifest@1")
     if data.get("version") != VERSION:
         failures.append(f"manifest version must be {VERSION}")
+    metadata = data.get("metadata")
+    if not isinstance(metadata, dict):
+        failures.append("manifest metadata must be an object")
+        metadata = {}
+    for key in ("source_repository", "source_commit", "created_at"):
+        if not data.get(key) and not metadata.get(key):
+            failures.append(f"manifest missing {key}")
+    source_commit = str(data.get("source_commit") or metadata.get("source_commit") or "")
+    if len(source_commit) != 40 or any(char not in "0123456789abcdef" for char in source_commit.lower()):
+        failures.append("manifest source_commit must be a 40-character git SHA")
+    if metadata.get("schema") != "tes-bundle-metadata@1":
+        failures.append("manifest metadata schema must be tes-bundle-metadata@1")
     if set(data.get("layers", [])) != REQUIRED_LAYERS:
         failures.append("manifest layers do not match required layer set")
     if set(data.get("owners", [])) != REQUIRED_OWNERS:
@@ -265,6 +320,7 @@ def build_bundle(out: Path, adapter: str = "all") -> dict[str, Any]:
 
         with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
             bundle.writestr(MANIFEST_NAME, json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+            bundle.writestr("tes-bundle-metadata.json", json.dumps(manifest["metadata"], indent=2, sort_keys=True) + "\n")
             for source, archive_path in staged_files:
                 bundle.write(source, archive_path)
 
@@ -274,6 +330,7 @@ def build_bundle(out: Path, adapter: str = "all") -> dict[str, Any]:
         "bundle": str(out),
         "sha256": sha256_file(out),
         "entries": len(entries),
+        "metadata": manifest["metadata"],
     }
 
 
@@ -287,6 +344,7 @@ def publish_public_bundle(out_dir: Path = PUBLIC_DIST_ROOT, adapter: str = "all"
     digest = sha256_file(bundle)
     sha_path = out_dir / f"{bundle.name}.sha256"
     sha_path.write_text(f"{digest}  {bundle.name}\n", encoding="utf-8")
+    metadata = built.get("metadata", {})
     index = {
         "schema": "tes-public-bundle-index@1",
         "version": VERSION,
@@ -294,6 +352,10 @@ def publish_public_bundle(out_dir: Path = PUBLIC_DIST_ROOT, adapter: str = "all"
         "sha256": digest,
         "sha256_file": sha_path.name,
         "manifest": MANIFEST_NAME,
+        "metadata": metadata,
+        "source_repository": metadata.get("source_repository"),
+        "source_commit": metadata.get("source_commit"),
+        "created_at": metadata.get("created_at"),
         "stage_dir": f".tes/setup/{VERSION}",
         "urls": {
             "bundle": public_bundle_url(VERSION),
@@ -310,6 +372,7 @@ def publish_public_bundle(out_dir: Path = PUBLIC_DIST_ROOT, adapter: str = "all"
         "sha256_file": str(sha_path),
         "index": str(index_path),
         "entries": built.get("entries"),
+        "metadata": metadata,
         "url": public_bundle_url(VERSION),
     }
 
@@ -626,6 +689,12 @@ def self_test() -> dict[str, Any]:
         staged = stage_bundle(bundle, target)
         if staged.get("status") != "STAGED":
             failures.extend(staged.get("failures", ["stage failed"]))
+        manifest = read_staged_manifest(target)
+        metadata = manifest.get("metadata") if isinstance(manifest.get("metadata"), dict) else {}
+        if not metadata.get("source_commit"):
+            failures.append("staged bundle manifest missing source_commit metadata")
+        if validate_manifest(manifest):
+            failures.extend(f"staged manifest invalid: {failure}" for failure in validate_manifest(manifest))
         downloaded_target = temp / "downloaded-target"
         downloaded_target.mkdir()
         downloaded = stage_public_bundle(
@@ -641,6 +710,10 @@ def self_test() -> dict[str, Any]:
         applied = apply_staged_bundle(target, yes=True)
         if applied.get("status") != "APPLIED":
             failures.extend(applied.get("failures", ["apply failed"]))
+        installed = read_installed_manifest(target)
+        installed_metadata = installed.get("metadata") if isinstance(installed.get("metadata"), dict) else {}
+        if installed_metadata.get("source_commit") != metadata.get("source_commit"):
+            failures.append("installed manifest source_commit metadata drifted")
         if (target / "AGENTS.md").read_text(encoding="utf-8") != "project-owned\n":
             failures.append("project-owned AGENTS.md was overwritten")
         if not (target / ".tes/setup" / VERSION / MANIFEST_NAME).exists():

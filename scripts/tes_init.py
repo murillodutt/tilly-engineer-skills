@@ -27,8 +27,15 @@ SCRIPT_PATH = Path(__file__).resolve()
 HELPER_ROOT = SCRIPT_PATH.parent
 ROOT = SCRIPT_PATH.parents[1]
 SOURCE_ROOT = ROOT / "scripts" if (ROOT / "scripts").exists() else HELPER_ROOT
-PACKAGE_MODE = SOURCE_ROOT.name == "scripts"
-VERSION = "0.3.71"
+SOURCE_PACKAGE_MODE = (
+    SOURCE_ROOT.name == "scripts"
+    and (ROOT / "package.json").exists()
+    and (ROOT / "scripts/install_smoke.py").exists()
+    and (ROOT / "scripts/platform_surface_oracle.py").exists()
+)
+BUNDLE_MODE = SOURCE_ROOT.name == "scripts" and not SOURCE_PACKAGE_MODE
+PACKAGE_MODE = SOURCE_PACKAGE_MODE
+VERSION = "0.3.72"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -278,6 +285,18 @@ def run(command: list[str], cwd: Path) -> dict[str, Any]:
         "stderr": result.stderr.strip(),
         "status": "PASS" if result.returncode == 0 else "FAIL",
     }
+
+
+def isolated_git_env() -> dict[str, str]:
+    blocked = {
+        "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+        "GIT_DIR",
+        "GIT_INDEX_FILE",
+        "GIT_OBJECT_DIRECTORY",
+        "GIT_PREFIX",
+        "GIT_WORK_TREE",
+    }
+    return {key: value for key, value in os.environ.items() if key not in blocked}
 
 
 def helper_script(name: str) -> Path:
@@ -1249,6 +1268,16 @@ def bootstrap_scan(target: Path, manifest_rel: str) -> dict[str, Any]:
 
 
 def package_gates() -> list[dict[str, Any]]:
+    if BUNDLE_MODE:
+        return [
+            {
+                "command": "public bundle package gates",
+                "returncode": 0,
+                "stdout": "",
+                "stderr": "maintainer-only source package gates are not bundled",
+                "status": "PRESERVED",
+            }
+        ]
     if not PACKAGE_MODE:
         project_context = helper_script("project_context_oracle.py")
         if project_context.exists():
@@ -2149,15 +2178,23 @@ def self_test() -> dict[str, Any]:
             "# Project Agent Rules\n\nUse local project governance before package defaults.\n",
             encoding="utf-8",
         )
-        subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
-        subprocess.run(["git", "add", "README.md", "package.json", "src/app.py"], cwd=target, text=True, capture_output=True, check=False)
+        git_env = isolated_git_env()
+        subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False, env=git_env)
+        subprocess.run(
+            ["git", "add", "README.md", "package.json", "src/app.py"],
+            cwd=target,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=git_env,
+        )
         subprocess.run(
             ["git", "commit", "-m", "fixture"],
             cwd=target,
             text=True,
             capture_output=True,
             check=False,
-            env={**os.environ, "GIT_AUTHOR_NAME": "Tilly", "GIT_AUTHOR_EMAIL": "tilly@example.test",
+            env={**git_env, "GIT_AUTHOR_NAME": "Tilly", "GIT_AUTHOR_EMAIL": "tilly@example.test",
                  "GIT_COMMITTER_NAME": "Tilly", "GIT_COMMITTER_EMAIL": "tilly@example.test"},
         )
         needs_auth = initialize(target, yes=False, ensure_cortex=True)
@@ -2412,8 +2449,10 @@ def self_test() -> dict[str, Any]:
         "version": VERSION,
         "status": "PASS" if not failures else "FAIL",
         "failures": failures,
-        "self_test_mode": "package" if PACKAGE_MODE else "installed",
-        "coverage": "source-package-contract" if PACKAGE_MODE else "installed-helper-contract",
+        "self_test_mode": "package" if SOURCE_PACKAGE_MODE else ("bundle" if BUNDLE_MODE else "installed"),
+        "coverage": "source-package-contract"
+        if SOURCE_PACKAGE_MODE
+        else ("public-bundle-helper-contract" if BUNDLE_MODE else "installed-helper-contract"),
     }
 
 

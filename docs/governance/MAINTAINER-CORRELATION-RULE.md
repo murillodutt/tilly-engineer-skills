@@ -75,6 +75,11 @@ certification claim actually changed.
   `docs/tds/DOCS-INDEX.yml`, user-visible version labels, script `VERSION`
   constants, Claude plugin manifests, GitHub issue placeholders, and
   `scripts/validate_reference_package.py`.
+- Public installer bundle: check `scripts/tes_bundle.py`,
+  `scripts/public_bundle_oracle.py`,
+  `docs/dist/<version>/tilly-engineer-skills-<version>.zip`,
+  the matching `.sha256` sidecar, `docs/dist/<version>/index.json`,
+  source commit metadata, GitHub Pages URL claims, and retained canary evidence.
 - User command or prompt routing: check `docs/install/COMMAND-TRIGGERS.md`,
   `docs/install/USER-MANUAL.html`, installer prompts, adapter skills/rules,
   platform surface oracle, package scripts, and README only when the public

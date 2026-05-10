@@ -23,7 +23,7 @@ turning the repository root into an inventory.
 | Agent manual | `install/AGENT-MANUAL.md` |
 | GitHub Pages landing | `index.html` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
-| Public installer bundle | `dist/0.3.71/tilly-engineer-skills-0.3.71.zip` |
+| Public installer bundle | `dist/0.3.72/tilly-engineer-skills-0.3.72.zip` |
 | Adapter installation | `install/INSTALL.md` |
 | Assisted context installer mini prompt | `install/MINI-PROMPT.md` |
 | Assisted context installer raw spec | `install/ASSISTED-CONTEXT-INSTALLER.prompt.md` |

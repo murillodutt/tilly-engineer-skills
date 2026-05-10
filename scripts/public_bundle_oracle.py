@@ -12,7 +12,7 @@ import tes_bundle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.71"
+VERSION = tes_bundle.VERSION
 
 
 def certify_public_bundle() -> dict[str, object]:
@@ -52,6 +52,16 @@ def certify_public_bundle() -> dict[str, object]:
         failures.append("public bundle index sha256 mismatch")
     if index.get("urls", {}).get("bundle") != tes_bundle.public_bundle_url(VERSION):
         failures.append("public bundle index URL mismatch")
+    metadata = index.get("metadata")
+    if not isinstance(metadata, dict):
+        failures.append("public bundle index metadata must be an object")
+        metadata = {}
+    for key in ("source_repository", "source_commit", "created_at"):
+        if not index.get(key) and not metadata.get(key):
+            failures.append(f"public bundle index missing {key}")
+    source_commit = str(index.get("source_commit") or metadata.get("source_commit") or "")
+    if len(source_commit) != 40 or any(char not in "0123456789abcdef" for char in source_commit.lower()):
+        failures.append("public bundle index source_commit must be a 40-character git SHA")
 
     with tempfile.TemporaryDirectory(prefix="tes-public-bundle-oracle-") as tempdir:
         target = Path(tempdir) / "target"
@@ -66,6 +76,15 @@ def certify_public_bundle() -> dict[str, object]:
         if staged.get("status") != "STAGED":
             failures.extend(staged.get("failures", ["public bundle stage failed"]))
 
+        manifest = tes_bundle.read_staged_manifest(target)
+        manifest_metadata = manifest.get("metadata") if isinstance(manifest.get("metadata"), dict) else {}
+        if manifest_metadata.get("source_commit") != metadata.get("source_commit"):
+            failures.append("staged manifest source_commit must match public index")
+        if tes_bundle.validate_manifest(manifest):
+            failures.extend(f"staged manifest invalid: {failure}" for failure in tes_bundle.validate_manifest(manifest))
+        if not (target / f".tes/setup/{VERSION}/tes-bundle-metadata.json").exists():
+            failures.append("public bundle stage missing tes-bundle-metadata.json")
+
         plan = tes_bundle.plan_target(target)
         if plan.get("status") != "PASS":
             failures.extend(plan.get("failures", ["public bundle plan failed"]))
@@ -73,6 +92,10 @@ def certify_public_bundle() -> dict[str, object]:
         applied = tes_bundle.apply_staged_bundle(target, yes=True)
         if applied.get("status") != "APPLIED":
             failures.extend(applied.get("failures", ["public bundle apply failed"]))
+        installed_manifest = tes_bundle.read_installed_manifest(target)
+        installed_metadata = installed_manifest.get("metadata") if isinstance(installed_manifest.get("metadata"), dict) else {}
+        if installed_metadata.get("source_commit") != metadata.get("source_commit"):
+            failures.append("installed manifest source_commit must match public index")
 
         if (target / "AGENTS.md").read_text(encoding="utf-8") != "project-owned\n":
             failures.append("public bundle apply overwrote project-owned AGENTS.md")
