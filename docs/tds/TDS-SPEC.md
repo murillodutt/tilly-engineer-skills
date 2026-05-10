@@ -40,7 +40,7 @@ Every Markdown file under `docs/**` must start with:
 tds_id: stable.identifier
 tds_class: index|architecture|adapter|governance|mesh|eval|evidence|roadmap|tds
 status: active|proposed|archived
-consumer: human or agent consumer
+consumer: user or agent consumer
 source_of_truth: true|false
 evidence_level: L0|L1|L2|L3|L4
 ---
@@ -113,7 +113,7 @@ agree.
 
 ## Size And Modularity
 
-Documentation must stay modular enough for humans and agents to use without
+Documentation must stay modular enough for people and agents to use without
 context bloat.
 
 Default rule:

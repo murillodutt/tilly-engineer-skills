@@ -13,7 +13,7 @@ tver: 0.3.1
 This document governs the Cursor derivation of Tilly Engineering Discipline.
 
 Cursor alignment is rule-first. The operative package surfaces are project
-rules under `.cursor/rules/**`; `CURSOR.md` is a human handoff note only.
+rules under `.cursor/rules/**`; `CURSOR.md` is a user handoff note only.
 
 ## Official Surfaces
 
@@ -39,7 +39,7 @@ Official references: [Rules](https://docs.cursor.com/en/context/rules),
 |--------|---------|
 | `src/adapters/cursor/rules/tes-guidelines.mdc` | Always-on Cursor rule source |
 | `src/adapters/cursor/rules/tes-runtime-capabilities.mdc` | TES-owned runtime capability router |
-| `src/adapters/cursor/CURSOR.md` | Human adapter note |
+| `src/adapters/cursor/CURSOR.md` | User adapter note |
 
 The base discipline uses `alwaysApply: true` because the four gates are a
 general behavioral overlay for non-trivial coding, review, refactor, and

@@ -122,7 +122,7 @@ first runner humble. The goal is measured learning, not a theatrical benchmark.
 
 When that runner exists, TDS should receive an evidence path. Do not create a
 large evidence archive before there is evidence. The first useful shape is
-probably `docs/evidence/reports/**` for retained human-readable benchmark and
+probably `docs/evidence/reports/**` for retained plain-language benchmark and
 materialization reports. Raw bundles can wait until there is a real L4 artifact
 with a restore story. TDS discipline means evidence is findable and honest, not
 heavy.

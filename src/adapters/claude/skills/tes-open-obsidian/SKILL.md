@@ -16,7 +16,7 @@ Obsidian-ready Markdown mesh under `docs/agents/**`.
 ## Contract
 
 TES prepares and verifies the Markdown knowledge mesh. Obsidian belongs to the
-human or host project.
+user or host project.
 
 This skill opens `docs/agents` as the Obsidian vault when explicitly invoked,
 because that folder is the TES operating mesh. It must not create, edit, clean,

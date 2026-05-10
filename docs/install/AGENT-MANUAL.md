@@ -11,13 +11,13 @@ tver: 0.1.1
 # Tilly Engineer Skills — Agent Manual
 
 Operational contract for coding agents (Codex, Claude Code, Cursor) executing
-TES intents. Companion to `docs/install/USER-MANUAL.html` (human surface).
+TES intents. Companion to `docs/install/USER-MANUAL.html` (user surface).
 This file is the agent-side surface: triggers, oracles, gates, return states,
 schemas, MCP contract.
 
 > Audience: the active coding agent inside an IDE/runtime window.
-> Humans consume `USER-MANUAL.html`. This file is the contract the agent
-> follows when a human types a TES intent.
+> Users consume `USER-MANUAL.html`. This file is the contract the agent
+> follows when a user types a TES intent.
 
 ---
 
@@ -487,7 +487,7 @@ git revert <install-commit>
 
 | Need | Source |
 |------|--------|
-| Human-facing manual | `docs/install/USER-MANUAL.html` |
+| User-facing manual | `docs/install/USER-MANUAL.html` |
 | Installer prompt | `docs/install/MINI-PROMPT.md` |
 | Trigger routing matrix | `docs/install/COMMAND-TRIGGERS.md` |
 | Independent canary | `docs/install/INDEPENDENT-CANARY-CONVERGENCE.prompt.md` |

@@ -37,7 +37,7 @@ When a structured input tool exists:
 
 - one intent becomes one question;
 - `header` is the chip/header;
-- labels include the command in human-readable form;
+- labels include the command in plain-language form;
 - descriptions preserve trade-offs;
 - recommended option is first;
 - accepted answer is normalized back to the stable `command`.

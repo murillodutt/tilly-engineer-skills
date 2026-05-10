@@ -90,7 +90,7 @@ Do not call certified behavior experimental. Use `blocked`, `degraded`,
      pre-push hook.
    - If the user asks to disable, enable, check, or drain it, run the matching
      `field_reports.py` oracle without expanding collection levels or schema.
-8. Keep feedback human.
+8. Keep feedback grounded for people.
    - Prefer short, frank prose.
    - Avoid tables, code blocks, YAML/property dumps, and long inventories unless
      the user asks or the artifact requires exact syntax.

@@ -1007,7 +1007,7 @@ def continuation_plan(
                 "python3 .tes/bin/root_context.py --target .",
                 "review preserved context conflicts before any semantic merge",
             ],
-            "goal": "leave project-owned governance preserved unless an LLM or human performs semantic review",
+            "goal": "leave project-owned governance preserved unless an LLM or reviewer performs semantic review",
         },
         {
             "name": "project_start_alignment",

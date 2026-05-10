@@ -59,7 +59,7 @@ same contract.
 | Surface | Codex | Claude Code | Cursor |
 |---------|-------|-------------|--------|
 | Base guidance | `AGENTS.md` | `CLAUDE.md` | `.cursor/rules/*.mdc`; `AGENTS.md` may be a simple alternative in Cursor projects |
-| TES package source | `src/adapters/codex/AGENTS.md` | `src/adapters/claude/CLAUDE.md` | `src/adapters/cursor/rules/tes-guidelines.mdc`, `src/adapters/cursor/rules/tes-runtime-capabilities.mdc`, plus `src/adapters/cursor/CURSOR.md` as a human handoff note |
+| TES package source | `src/adapters/codex/AGENTS.md` | `src/adapters/claude/CLAUDE.md` | `src/adapters/cursor/rules/tes-guidelines.mdc`, `src/adapters/cursor/rules/tes-runtime-capabilities.mdc`, plus `src/adapters/cursor/CURSOR.md` as a user handoff note |
 | Skills | `.agents/skills/**` | `.claude/skills/**` and plugin `skills/**` | Official Cursor plugins support `skills/**`; TES currently certifies command capability routing through `.cursor/rules/tes-runtime-capabilities.mdc` |
 | Plugin metadata | `plugins/tilly-engineer-skills/.codex-plugin/plugin.json` and `.agents/plugins/marketplace.json` certified locally | `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` | `.cursor-plugin/plugin.json` exists officially; TES v1 does not publish or certify a Cursor plugin |
 | Rules | Project guidance through `AGENTS.md` | No Cursor-style `.mdc` rule surface | `.cursor/rules/*.mdc` with frontmatter; TES separates governance from runtime command capability routing |
@@ -71,7 +71,7 @@ same contract.
 | Decision | Rationale |
 |----------|-----------|
 | Do not force one filename across all tools. | `AGENTS.md`, `CLAUDE.md`, and `.cursor/rules/*.mdc` are different native surfaces. |
-| Keep `/tes-*` as the shared user vocabulary. | The human entrypoint should stay stable even when a host packages commands differently. |
+| Keep `/tes-*` as the shared user vocabulary. | The user entrypoint should stay stable even when a host packages commands differently. |
 | Treat `/tes:*` as intent text when native slash parsing fails. | This avoids Claude, Cursor, or Codex asking the user to choose a route when TES already knows the route. |
 | Do not call `CURSOR.md` the primary Cursor operative surface. | Cursor's governed surface is `.cursor/rules/*.mdc`; `CURSOR.md` is a TES handoff note. |
 | Do not claim marketplace or plugin publication from local files. | Local plugin metadata is not proof of marketplace distribution or live IDE activation. |

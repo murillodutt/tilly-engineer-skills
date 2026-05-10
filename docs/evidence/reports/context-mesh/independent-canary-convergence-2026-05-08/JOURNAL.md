@@ -81,7 +81,7 @@ Starting worktree: clean; branch ahead of upstream by one commit.
 - Patch or no-patch reason: no product patch; behavior matched contract.
 - Regression gate: final focused gates and `npm run commit:check`.
 - Evidence promoted: preserved-conflict route plus post-adapter update planner `CURRENT`.
-- Residual risk: project-owned bootloader content itself is intentionally not merged into TES root files during this run; a real installation would still need a human merge plan for root bootloader prose if the user wants root-trigger text inside those files.
+- Residual risk: project-owned bootloader content itself is intentionally not merged into TES root files during this run; a real installation would still need a reviewer merge plan for root bootloader prose if the user wants root-trigger text inside those files.
 
 ## [2026-05-08T13:59:40Z] loop | Closure gates
 

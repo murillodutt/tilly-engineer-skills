@@ -31,7 +31,7 @@ source writes: none
 - No MCP write tools.
 - No write access to `sources/**`.
 - No Obsidian configuration writes.
-- No semantic guarantee that a human-approved claim is true beyond the explicit
+- No semantic guarantee that a reviewer-approved claim is true beyond the explicit
   evidence provided to the cell.
 
 ## Evidence Anchors

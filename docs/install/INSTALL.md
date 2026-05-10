@@ -457,7 +457,7 @@ intentional: retrofit protects project governance without blocking assets such
 as `.claude/skills/**`, `.agents/skills/**`, plugin metadata, or the
 TES-owned Cursor runtime-capabilities rule.
 
-Give that file to an LLM or human reviewer. Merge Tilly discipline while
+Give that file to an LLM or reviewer. Merge Tilly discipline while
 preserving project-local commands, paths, tests, ownership, security
 constraints, and existing agent rules.
 

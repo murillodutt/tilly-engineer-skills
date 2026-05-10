@@ -64,7 +64,7 @@ without making any single runtime adapter the design center.
 
 | Surface | Codex | Claude | Cursor |
 |---------|-------|--------|--------|
-| Agent bootloader | `AGENTS.md` | `CLAUDE.md` | `.cursor/rules/*.mdc`; `CURSOR.md` as human handoff |
+| Agent bootloader | `AGENTS.md` | `CLAUDE.md` | `.cursor/rules/*.mdc`; `CURSOR.md` as user handoff |
 | Always-on rules | `AGENTS.md` project guidance | `CLAUDE.md` project guidance | `.cursor/rules/*.mdc` |
 | Skill | `.agents/skills/**` | `.claude/skills/**` project skills plus `skills/**` plugin copy | Cursor plugin `skills/**` exists officially; TES v1 uses rules only |
 | Plugin | local `plugins/tilly-engineer-skills/.codex-plugin/plugin.json` certified by oracle | `.claude-plugin/**` certified locally | `.cursor-plugin/**` exists officially; TES v1 does not claim it |

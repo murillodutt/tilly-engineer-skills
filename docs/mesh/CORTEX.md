@@ -34,7 +34,7 @@ Memory lives in the versioned Cortex artifacts:
 | `cells/**` | Compiled and evolving knowledge for entities, concepts, decisions, and syntheses |
 | `MAP.md` | Navigable catalog with links, one-line summaries, and source status |
 | `TRAIL.md` | Append-only chronological record of Cortex evolution |
-| `LINKS.md` | Human-readable relationship map |
+| `LINKS.md` | Plain-language relationship map |
 | `CONTRACT.md` | Local Cortex operating contract |
 
 The local recall index lives at:
@@ -52,7 +52,7 @@ time from `sources/**`, `cells/**`, `MAP.md`, `TRAIL.md`, `LINKS.md`, and
 ## Relationship To Mokh And TDS
 
 Mokh preserves operational memory and events. Cortex is the compiled,
-filesystem/Obsidian projection that agents and humans can navigate over time.
+filesystem/Obsidian projection that agents and people can navigate over time.
 
 TDS documents contracts, evidence, and governed explanations. TDS does not
 become memory; Cortex compiles durable knowledge from sources, questions,
@@ -97,7 +97,7 @@ Required boundary:
 - Do not depend on Obsidian state for certification.
 - Keep attachments under `sources/assets/**` when the user intentionally adds
   local assets.
-- Treat Obsidian graph view as a human navigation aid, not proof of correctness.
+- Treat Obsidian graph view as a user navigation aid, not proof of correctness.
 
 ## Starter File Minimums
 

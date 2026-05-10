@@ -4,7 +4,7 @@ Repository bootloader for the independent Tilly Engineer Skills reference
 package.
 
 Keep this root file small. The distributable agent source lives in `src/**`.
-Human method, eval, and architecture material lives in `docs/**`.
+People-facing method, eval, and architecture material lives in `docs/**`.
 
 <instructions>
 

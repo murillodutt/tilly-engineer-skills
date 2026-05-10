@@ -66,7 +66,7 @@ over-activate heavyweight guidance.
 `expected` is an exact all-of assertion. `expected_any` is a deterministic
 semantic-signal assertion: every group must have at least one matching string.
 Use `expected_any` when multiple languages or equivalent phrasings are valid,
-but keep groups small enough that a human can audit why a sample passed.
+but keep groups small enough that a reviewer can audit why a sample passed.
 
 ## Decision Rules
 
@@ -142,7 +142,7 @@ from the same run and dataset hash. Until token counts are captured, report
 lift but do not claim ROI.
 
 `E = A * S * C * V` may be reported only after A, S, C, and V are each defined
-as observable fields or human-coded review labels. Otherwise it remains method
+as observable fields or reviewer-coded review labels. Otherwise it remains method
 language, not a measured outcome.
 
 Adapter parity means behaviorally equivalent decisions under the same eval

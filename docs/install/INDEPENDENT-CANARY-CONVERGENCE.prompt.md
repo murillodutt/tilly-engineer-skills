@@ -175,7 +175,7 @@ For each canary:
    - `python3 scripts/project_context_oracle.py --target <canary>`
    - `<canary>/.tes/bin/tes_update.py plan --target <canary> --json-only`
    - helper self-tests relevant to the changed surface.
-6. Read `docs/agents/PROJECT-CONTEXT.md` as a human artifact:
+6. Read `docs/agents/PROJECT-CONTEXT.md` as a user artifact:
    - identity correct;
    - description supported by source;
    - territories useful;

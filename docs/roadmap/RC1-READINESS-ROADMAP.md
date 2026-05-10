@@ -27,7 +27,7 @@ coherent for a new adopter and auditable for a maintainer.
 | Package version | `0.3.71` |
 | Latest certified line | Wave 6 release readiness plus `/tes-open-obsidian` gate |
 | Release action status | Not taken |
-| Release readiness claim | Candidate-ready only, pending human decision |
+| Release readiness claim | Candidate-ready only, pending user decision |
 
 ## Stage 1: Documentation Freshness
 
@@ -36,11 +36,11 @@ Acceptance:
 - `docs/roadmap/**` has an active index and current RC1 line.
 - Historical roadmap documents are explicitly marked as lineage.
 - `docs/INDEX.md` routes readers to current roadmap authority.
-- `README.md`, `docs/INDEX.md`, and `docs/install/INSTALL.md` route humans to
+- `README.md`, `docs/INDEX.md`, and `docs/install/INSTALL.md` route users to
   both the user manual and the agent manual.
 - `docs/tds/DOCS-INDEX.yml` includes every governed Markdown document.
 - Rendered HTML entrypoints are treated as public surfaces, not TDS Markdown
-  records, and are linked from the human-facing maps.
+  records, and are linked from the user-facing maps.
 - Public docs do not claim tag, release, marketplace, publish, live GitHub
   issue creation, vector certification, write-capable MCP, or global install.
 
@@ -48,7 +48,7 @@ Acceptance:
 
 Acceptance:
 
-- Root remains thin and human-friendly.
+- Root remains thin and people-friendly.
 - Root `install.sh` and `install.ps1` are absent.
 - Installer shell entrypoints live under `scripts/bootstrap/**`.
 - `docs/architecture/PROJECT-STRUCTURE.md` explains root vs bootstrap
@@ -99,7 +99,7 @@ Acceptance:
 
 | Item | Status | Reason |
 |------|--------|--------|
-| Tag or release | Not authorized | Requires explicit human decision |
+| Tag or release | Not authorized | Requires explicit user decision |
 | Package publish | Not authorized | Wave 6 certified readiness, not publication |
 | Marketplace submission | Deferred | Local plugin/package surfaces only |
 | Live GitHub issue publication | Partial | Fake transport and receiver quarantine certified |
