@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.73"
+VERSION = "0.3.74"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -223,6 +223,7 @@ def expected_mcp_paths(adapter: str) -> tuple[str, ...]:
             ".tes/bin/project_context_oracle.py",
             ".tes/bin/project_alignment_oracle.py",
             ".tes/bin/tes_open_obsidian.py",
+            ".tes/bin/command_trigger_oracle.py",
             ".tes/bin/tes_bundle.py",
             ".tes/bin/materialize_adapter.py",
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",

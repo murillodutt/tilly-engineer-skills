@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.73"
+VERSION = "0.3.74"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -408,13 +408,27 @@ def run_fixture_tests() -> list[str]:
     return failures
 
 
+def installed_helper_target() -> Path | None:
+    if ROOT.name == ".tes" and Path(__file__).resolve().parent.name == "bin":
+        return ROOT.parent
+    return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--target", type=Path, help="validate installed trigger surfaces in a target project")
     args = parser.parse_args()
 
-    result = check_installed_target(args.target.resolve()) if args.target else analyze()
+    installed_target = installed_helper_target()
+    if args.target:
+        result = check_installed_target(args.target.resolve())
+    elif args.self_test and installed_target is not None:
+        result = check_installed_target(installed_target)
+        result["self_test_mode"] = "installed"
+        result["coverage"] = "installed-helper-contract"
+    else:
+        result = analyze()
     fixture_failures = run_fixture_tests() if args.self_test else []
     if fixture_failures:
         result["status"] = "FAIL"
