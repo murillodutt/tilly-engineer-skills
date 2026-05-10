@@ -87,6 +87,15 @@ INIT_ROUTER_TERMS = (
     "after helper-only",
 )
 
+REPORT_GOVERNANCE_TERMS = (
+    "Project quality gates",
+    "lint",
+    "typecheck",
+    "test",
+    "BLOCKED",
+    "NEEDS_REVIEW",
+)
+
 DOC_SOURCE_GROUPS = {
     "command_triggers_doc": ("docs/install/COMMAND-TRIGGERS.md",),
     "platform_differences_doc": ("docs/adapters/PLATFORM-DIFFERENCES.md",),
@@ -130,6 +139,14 @@ INIT_ROUTER_SOURCE_PATHS = (
     "src/adapters/claude/skills/tes-init/SKILL.md",
     "src/adapters/cursor/rules/tes-guidelines.mdc",
     "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",
+)
+
+REPORT_GOVERNANCE_SOURCE_PATHS = (
+    "docs/install/COMMAND-TRIGGERS.md",
+    "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
+    "docs/install/INSTALL.md",
+    "docs/install/AGENT-MANUAL.md",
+    "docs/install/MINI-PROMPT.md",
 )
 
 
@@ -214,6 +231,22 @@ def check_init_router(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
         normalized_text = normalized(text).casefold()
         missing = [term for term in INIT_ROUTER_TERMS if term.casefold() not in normalized_text]
         failures.extend(f"{relpath} missing init router term: {term}" for term in missing)
+        checked.append({"path": relpath, "status": "PASS" if not missing else "FAIL"})
+    return checked, failures
+
+
+def check_report_governance(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    checked: list[dict[str, Any]] = []
+    failures: list[str] = []
+    for relpath in REPORT_GOVERNANCE_SOURCE_PATHS:
+        path = root / relpath
+        if not path.exists():
+            failures.append(f"missing report governance source: {relpath}")
+            checked.append({"path": relpath, "status": "MISSING"})
+            continue
+        text = normalized(path.read_text(encoding="utf-8")).casefold()
+        missing = [term for term in REPORT_GOVERNANCE_TERMS if term.casefold() not in text]
+        failures.extend(f"{relpath} missing report governance term: {term}" for term in missing)
         checked.append({"path": relpath, "status": "PASS" if not missing else "FAIL"})
     return checked, failures
 
@@ -347,6 +380,17 @@ def analyze(root: Path = ROOT) -> dict[str, Any]:
             "paths": list(INIT_ROUTER_SOURCE_PATHS),
             "status": "PASS" if not init_router_failures else "FAIL",
             "files": init_router_checked,
+        }
+    )
+
+    report_governance_checked, report_governance_failures = check_report_governance(root)
+    failures.extend(report_governance_failures)
+    checked.append(
+        {
+            "group": "report_governance",
+            "paths": list(REPORT_GOVERNANCE_SOURCE_PATHS),
+            "status": "PASS" if not report_governance_failures else "FAIL",
+            "files": report_governance_checked,
         }
     )
 

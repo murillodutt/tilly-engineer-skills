@@ -48,21 +48,24 @@ Across Codex, Claude Code, and Cursor, prefer shared hyphen triggers such as
 alias as invalid, treat it as TES intent text and continue through the matching
 skill/rule/spec.
 Use the detected IDE as the default adapter. Ask me for a route command only
-where the spec requires one. Before runtime writes, create a central
+where the spec requires one. Stage the deterministic TES bundle under
+.tes/setup/<version>/ when update writes are needed, using the public ZIP and
+SHA-256 when available. Before runtime writes, create a central
 .tes/bk/<timestamp>/ backup, apply a clean TES runtime, recover durable local
 governance semantics into docs/agents/**, analyze the project in depth and
 write docs/agents/PROJECT-CONTEXT.md as the initial project map, create the
 first-pass Obsidian-compatible operating mesh when missing, create or update the
-compiled docs/agents/cortex/** Cortex layer, stage the deterministic TES bundle
-under .tes/setup/<version>/ when update writes are needed, using the public ZIP
-and SHA-256 when available, keep active AGENTS.md, CLAUDE.md, CURSOR.md and
-Cursor rules as thin TES bootloaders, install TES-owned runtime capabilities
+compiled docs/agents/cortex/** Cortex layer, keep active AGENTS.md, CLAUDE.md,
+CURSOR.md and Cursor rules as thin TES bootloaders, install TES-owned runtime capabilities
 such as /tes-align and /tes-open-obsidian, activate the
 read-only project-scoped Cortex MCP server for the selected runtime route, and
 finish with the certification report required by the spec. If package source is available,
 certify docs/agents/PROJECT-CONTEXT.md with project_context_oracle.py and the
 operating mesh with project_alignment_oracle.py before claiming Project context
 PASS; otherwise report those gates as BLOCKED or NEEDS_REVIEW with the reason.
+Run discovered safe project quality gates such as lint, typecheck, test, build
+or CI-equivalent commands before GO; unsafe or unavailable gates must be
+BLOCKED or NEEDS_REVIEW with reason, not buried in Limits.
 Treat tes_init.py as the deterministic scaffold and the active agent as the
 semantic refiner: for non-trivial projects, open strong anchors before claiming
 deep context, then refine the file or mark Project context NEEDS_REVIEW.
@@ -83,6 +86,7 @@ rollback summary.
 Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, tell me
 how to undo the installation with Git. Do not push, amend, tag, publish, install
-dependencies, overwrite files, or change remotes unless I explicitly ask after
-reviewing the certification report.
+dependencies, overwrite files outside the selected TES clean-runtime route,
+overwrite root runtime files before .tes/bk/<timestamp>/manifest.json exists, or
+change remotes unless I explicitly ask after reviewing the certification report.
 ```

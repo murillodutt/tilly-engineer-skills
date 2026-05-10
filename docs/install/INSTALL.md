@@ -77,12 +77,10 @@ Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, show the
 `.tes/bk/<timestamp>/` rollback id and tell me how to undo the installation with
 Git. Do not push, amend, tag, publish, install dependencies, or change remotes
-unless I explicitly ask after reviewing the certification report.
+unless I explicitly ask after reviewing the certification report. Do not
+overwrite files outside the selected TES clean-runtime route, and do not
+overwrite root runtime files before `.tes/bk/<timestamp>/manifest.json` exists.
 ```
-
-Short source: `docs/install/MINI-PROMPT.md`.
-
-Full raw spec: `docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md`.
 
 ## Install Semantics
 
@@ -307,12 +305,11 @@ Semantic Recovery: RECOVERED | NEEDS_REVIEW | SKIP, evidence path
 Root Context Gate: PASS | RECOVERED | NEEDS_REVIEW | SKIP
 Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py, tes_init.py, project_context_oracle.py, project_alignment_oracle.py, tes_open_obsidian.py
 Field Reports: PASS | BLOCKED | DISABLED | SKIP, with pending outbox count
-Certification: compact PASS/FAIL/SKIP bullets
+Certification: compact PASS/FAIL/SKIP bullets, including Project Quality Gates PASS/BLOCKED/NEEDS_REVIEW/NOT_APPLIED with lint/typecheck/test/build/CI details
 Evidence: ...
 User Manual: ...
 Rollback Summary: reset baseline plus clean installer-created files
 Limits: ...
-Next Step: ...
 ```
 
 The chat report is deliberately short. Detailed inventories, conflicts,
@@ -326,10 +323,12 @@ Because the pre-push hook drains silently, confirm created upstream reports by
 checking `field_reports.py status` or `.tes/field-reports/receipts/**` after
 push.
 
-GO requires canonical `docs/agents/**`, a created or explicitly deferred
-Cortex layer, selected-runtime Cortex MCP activation or a named blocker, thin
-runtime assets, central backup before overwrite, semantic recovery evidence, no
-secret mutation, and at least one relevant local oracle. `RECOVERED` is a
+GO requires canonical `docs/agents/**`, selected-runtime MCP activation or
+named blocker, central backup, semantic recovery evidence, safe discovered
+quality gates such as lint, typecheck, test, build or CI-equivalent checks run
+and passed, no secret mutation, and at least one local oracle.
+Unsafe or unavailable quality gates are explicit `BLOCKED` or `NEEDS_REVIEW`,
+never hidden under `Limits`. `RECOVERED` is a
 passing root-context state when the old bootloader content is safely represented
 in `.tes/bk/**` and a recovery report exists under `docs/agents/evidence/**`.
 
@@ -434,16 +433,17 @@ If a governance file exists and differs, installation first snapshots it under
 `.tes/bk/<timestamp>/`, then installs the canonical TES runtime. Old
 instructions are not active runtime after install; they are recovery evidence.
 
-Allowed responses: `--dry-run` to preview, `tes_bundle.py backup` to create the
+Allowed responses: `--dry-run` to preview, `tes_bundle.py backup` for the
 central snapshot, `tes_bundle.py apply --mode clean-runtime --yes` to install,
-`tes_bundle.py recover-plan --apply-safe --yes` to emit semantic recovery
-evidence, and `tes_bundle.py restore --backup-id <id> --yes` to restore the
-snapshot. `--mode preserve` exists only as a compatibility escape hatch.
+`tes_bundle.py recover-plan --apply-safe --yes` for recovery evidence, and
+`tes_bundle.py restore --backup-id <id> --yes` to restore. `--mode preserve`
+exists only as a compatibility escape hatch.
 
 ## LLM Retrofit
 
-Use retrofit when a target project already has `AGENTS.md`, `CLAUDE.md`, or
-Cursor rules that should be merged instead of replaced:
+Retrofit is a legacy compatibility escape hatch, not the normal install flow.
+Use it only when an operator explicitly keeps old bootloaders active while
+reviewing a migration plan:
 
 ```bash
 python3 scripts/install_adapter.py \
@@ -455,9 +455,11 @@ python3 scripts/install_adapter.py \
 The generated file lives under `/path/to/project/.tes/retrofit/`.
 
 The compatibility route preserves conflicting bootloaders and still installs
-non-conflicting TES-owned assets. The default route is now clean runtime:
+non-conflicting TES-owned assets. The default route is clean runtime:
 `INSTALLED_CLEAN_RUNTIME` with `clean_backup`, `semantic_recovery`,
-`layer_results`, and `installed_capabilities`.
+`layer_results`, and `installed_capabilities`. Normal merge work recovers
+durable semantics into `docs/agents/**`; active bootloaders are canonical TES
+runtime unless the operator explicitly uses compatibility preserve mode.
 
 Give that file to an LLM or reviewer. Merge Tilly discipline while
 preserving project-local commands, paths, tests, ownership, security
@@ -476,7 +478,6 @@ constraints, and existing agent rules.
 - No non-interactive writes without `--yes`.
 - Compatibility `.bak-*` files are secondary artifacts only; the clean route
   depends on the central backup manifest.
-
 ## Validation
 
 ```bash
@@ -496,5 +497,4 @@ npm run materialize:check
 npm run commit:check
 ```
 
-In a target project, run the target project's own smallest relevant oracle
-after installing or merging.
+In a target project, run the target project's own smallest relevant oracle after installing or merging.

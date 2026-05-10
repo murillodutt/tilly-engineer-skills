@@ -13,8 +13,10 @@ tver: 0.3.1
 This document governs the Claude Code derivation of Tilly Engineering
 Discipline.
 
-The Claude adapter is aligned behaviorally with Codex and Cursor, but it must
-use Claude Code surfaces instead of copying Codex packaging.
+The Claude adapter follows the same TES contract as Codex and Cursor, but it
+must use Claude Code surfaces instead of copying Codex packaging. Do not claim
+live behavior parity beyond the gates and evidence explicitly certified for
+each runtime.
 
 ## Official Surfaces
 

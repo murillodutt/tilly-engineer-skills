@@ -1201,7 +1201,8 @@
           <div class="chapter-head"><span class="chapter-num">10</span><h2>Final report</h2></div>
           <div class="chapter-body">
             <p>Every run ends with a short <strong>Convergence Report</strong> in chat. Read it before approving commit or push. It tells you what changed, which <code>.tes/bk/&lt;timestamp&gt;</code> backup was created, what was recovered, whether all gates passed, and which rollback is available.</p>
-            <p>The chat report covers status, source snapshot freshness, changed surfaces, root context gate, installed helper set, helper contract parity, Field Reports state, gates, limits, and a rollback summary. Backup files are rollback artifacts, not new TES surfaces.</p>
+            <p>The chat report covers status, source snapshot freshness, changed surfaces, root context gate, installed helper set, helper contract parity, project quality gates, Field Reports state, gates, limits, and a rollback summary. Backup files are rollback artifacts, not new TES surfaces.</p>
+            <p>If the project exposes safe lint, typecheck, test, build or CI-equivalent commands, the report must say which ran and passed. Unsafe or unavailable commands appear as <code>BLOCKED</code> or <code>NEEDS_REVIEW</code> with a reason, not as a hidden limit.</p>
             <p>A few signals worth recognizing:</p>
             <ul>
               <li><code>RECOVERED</code> — previous <code>AGENTS.md</code>, <code>CLAUDE.md</code> or Cursor rules were backed up and useful semantics were recovered into <code>docs/agents/**</code>.</li>
@@ -1347,6 +1348,7 @@ git revert &lt;install-commit&gt;</code></pre>
               <li><strong>El informe final es el contrato.</strong> Léelo antes de aprobar commit o push. Si el estado no es exitoso, pide al agente que explique o haga rollback.</li>
             </ol>
             <p>El inventario completo de oráculos — scripts Python, wrappers <code>npm run</code>, gates de validación, contratos de probe — vive en <a href="AGENT-MANUAL.md#9-cli-oracle-inventory"><code>AGENT-MANUAL.md</code> §9</a>. Recurre a él al revisar un run, depurar un oráculo bloqueado o auditar lo que el agente invocó.</p>
+            <p>En <code>/tes-update</code>, el agente repara primero los helpers del bundle — un pase Layer Zero solo de helpers — antes de tocar configuración de adapter o MCP. El update probe reconcilia versión instalada y versión cloud, y verifica paridad de contrato de helpers antes de cualquier decisión GO.</p>
           </div>
         </section>
 
@@ -1412,8 +1414,9 @@ git revert &lt;install-commit&gt;</code></pre>
 
         <section class="chapter" id="report-es">
           <div class="chapter-head"><span class="chapter-num">10</span><h2>Informe final</h2></div>
-          <div class="chapter-body">
+            <div class="chapter-body">
             <p>Cada ejecución termina con un <strong>Convergence Report</strong> corto en el chat. Léelo antes de aprobar commit o push. Te dice qué cambió, qué backup <code>.tes/bk/&lt;timestamp&gt;</code> fue creado, qué se recuperó, si todos los gates pasaron y qué rollback está disponible.</p>
+            <p>Si el proyecto expone comandos seguros de lint, typecheck, test, build o equivalentes de CI, el informe debe decir cuáles se ejecutaron y pasaron. Los comandos inseguros o no disponibles aparecen como <code>BLOCKED</code> o <code>NEEDS_REVIEW</code> con motivo, no como un límite oculto.</p>
             <p>Algunas señales que conviene reconocer:</p>
             <ul>
               <li><code>RECOVERED</code> — tus <code>AGENTS.md</code>, <code>CLAUDE.md</code> o reglas de Cursor anteriores fueron respaldados y la semántica útil fue recuperada en <code>docs/agents/**</code>.</li>
@@ -1559,6 +1562,7 @@ git revert &lt;install-commit&gt;</code></pre>
               <li><strong>O relatório final é o contrato.</strong> Leia antes de aprovar commit ou push. Se o status não for sucesso, peça ao agente para explicar ou fazer rollback.</li>
             </ol>
             <p>O inventário completo de oráculos — scripts Python, wrappers <code>npm run</code>, gates de validação, contratos de probe — vive em <a href="AGENT-MANUAL.md#9-cli-oracle-inventory"><code>AGENT-MANUAL.md</code> §9</a>. Recorra a ele ao revisar um run, depurar um oráculo bloqueado ou auditar o que o agente invocou.</p>
+            <p>Em <code>/tes-update</code>, o agente repara primeiro os helpers do bundle — uma passagem Layer Zero só de helpers — antes de tocar configuração de adapter ou MCP. O update probe reconcilia versão instalada e versão cloud, e verifica paridade de contrato dos helpers antes de qualquer decisão GO.</p>
           </div>
         </section>
 
@@ -1626,7 +1630,8 @@ git revert &lt;install-commit&gt;</code></pre>
           <div class="chapter-head"><span class="chapter-num">10</span><h2>Relatório final</h2></div>
           <div class="chapter-body">
             <p>Toda execução termina com um <strong>Convergence Report</strong> curto no chat. Leia antes de aprovar commit ou push. Ele diz o que mudou, qual backup <code>.tes/bk/&lt;timestamp&gt;</code> foi criado, o que foi recuperado, se todos os gates passaram e qual rollback está disponível.</p>
-            <p>O relatório no chat cobre status, frescor do snapshot fonte, superfícies alteradas, gate de contexto raiz, helper set instalado, paridade de contrato dos helpers, estado do Field Reports, gates, limites e resumo de rollback. Backups são artefatos de rollback, não novas superfícies TES.</p>
+            <p>O relatório no chat cobre status, frescor do snapshot fonte, superfícies alteradas, gate de contexto raiz, helper set instalado, paridade de contrato dos helpers, gates de qualidade do projeto, estado do Field Reports, gates, limites e resumo de rollback. Backups são artefatos de rollback, não novas superfícies TES.</p>
+            <p>Se o projeto expõe comandos seguros de lint, typecheck, test, build ou equivalentes de CI, o relatório deve dizer quais rodaram e passaram. Comandos inseguros ou indisponíveis aparecem como <code>BLOCKED</code> ou <code>NEEDS_REVIEW</code> com motivo, não como limite escondido.</p>
             <p>Alguns sinais que vale reconhecer:</p>
             <ul>
               <li><code>RECOVERED</code> — seus <code>AGENTS.md</code>, <code>CLAUDE.md</code> ou regras do Cursor anteriores foram salvos e a semântica útil foi recuperada em <code>docs/agents/**</code>.</li>

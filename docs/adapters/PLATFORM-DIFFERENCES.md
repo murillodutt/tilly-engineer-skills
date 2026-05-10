@@ -76,7 +76,7 @@ same contract.
 | Do not call `CURSOR.md` the primary Cursor operative surface. | Cursor's governed surface is `.cursor/rules/*.mdc`; `CURSOR.md` is a TES handoff note. |
 | Do not claim marketplace or plugin publication from local files. | Local plugin metadata is not proof of marketplace distribution or live IDE activation. |
 | Do not create false parity from copied prose. | Parity is a retained decision under the same behavioral gate, not matching markdown. |
-| Preserve project-owned bootloaders while refreshing package assets. | A conflict in `AGENTS.md`, `CLAUDE.md`, or Cursor handoff files must not block non-conflicting TES skills, rules, plugin metadata, or MCP helpers. |
+| Back up project-owned bootloaders before clean runtime refresh. | A conflict in `AGENTS.md`, `CLAUDE.md`, or Cursor handoff files must not block install. The clean route snapshots them under `.tes/bk/**`, applies canonical TES runtime, and recovers durable semantics into `docs/agents/**`; preserve mode is compatibility-only. |
 
 ## Maintainer Checklist
 

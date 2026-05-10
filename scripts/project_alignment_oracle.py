@@ -29,7 +29,7 @@ ALIGNMENT_FILES = {
 }
 FRONTMATTER_KEYS = ("tes_doc", "status", "updated", "confidence", "tags", "evidence")
 ROADMAP_TERMS = ("Done", "Active", "Next", "Later", "Deferred", "Blocked", "Unknown")
-GATE_TERMS = ("required", "focused", "advisory", "unavailable", "unsafe")
+GATE_TERMS = ("required", "focused", "needs_review", "unavailable", "unsafe")
 BOUNDARY_TERMS = ("secrets", "external", "destructive", "governance")
 LIFECYCLE_TERMS = ("validate", "refresh", "retire", "contradict")
 EXECUTION_TERMS = ("Build-Test-Fail-Fix", "Reentry", "Stop Condition", "gate")
@@ -283,8 +283,9 @@ def write_good_fixture(target: Path) -> None:
         fm("quality-gates")
         + "# Quality Gates\n\n| Gate | Class | Command |\n|------|-------|---------|\n"
         + "| Unit test | required | `npm test` |\n"
-        + "| Lint | focused | `npm run lint` |\n"
-        + "| Coverage | advisory | `npm run coverage` |\n"
+        + "| Lint | required | `npm run lint` |\n"
+        + "| Contract verify | focused | `npm run contract:verify` |\n"
+        + "| Coverage | needs_review | `npm run coverage` |\n"
         + "| Typecheck | unavailable | No TypeScript config in `package.json` |\n"
         + "| Deploy | unsafe | Requires external production credentials |\n",
     )

@@ -29,7 +29,7 @@ Official reference: <https://developers.openai.com/codex/concepts/customization>
 
 | Source | Target |
 |--------|--------|
-| `src/adapters/codex/AGENTS.md` | Target repo root `AGENTS.md` or merge into existing one |
+| `src/adapters/codex/AGENTS.md` | Target repo root `AGENTS.md` after `.tes/bk/**` backup; recover old semantics into `docs/agents/**` |
 | `src/adapters/codex/skills/tes-engineering-discipline/` | Target repo `.agents/skills/tes-engineering-discipline/` |
 | `src/adapters/codex/skills/tes-*/` | Target repo `.agents/skills/tes-*/` command-shortcut skills |
 | `src/adapters/codex/plugin/plugin.json` | Target repo `plugins/tilly-engineer-skills/.codex-plugin/plugin.json` |

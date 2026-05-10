@@ -1,7 +1,8 @@
 # CLAUDE.md
 
 Behavioral engineering discipline for reducing common LLM coding mistakes.
-Merge with project-specific instructions as needed.
+Project-specific instructions belong in `docs/agents/**`; clean install backs
+up older Claude governance before applying this bootloader.
 
 Tradeoff: this biases toward caution over speed. Use judgment for trivial
 one-line changes.

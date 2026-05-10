@@ -1,6 +1,6 @@
 ---
 name: tes-cortex
-description: Use when the user says /tes-cortex, /tes:cortex, /tes:recall, /tes:learn, /tes:reflect, /tes:curate, or asks to inspect, audit, rebuild, query, read, learn from, reflect into, semantically curate, or apply TES Cortex memory.
+description: Use when the user says /tes-cortex, /tes:cortex, /tes-curate, /tes:recall, /tes:learn, /tes:reflect, /tes:curate, or asks to inspect, audit, rebuild, query, read, learn from, reflect into, semantically curate, or apply TES Cortex memory.
 ---
 
 # TES Cortex

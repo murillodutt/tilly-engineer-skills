@@ -65,6 +65,8 @@ Use `npm run materialize:check` to verify this without writing to `dist/**`.
 
 `docs/dist/<version>/` is the exception to the ignored `dist/**` rule. It holds
 the public TES ZIP, `.sha256`, and `index.json` used by installer staging.
+Target installs extract that ZIP under local `.tes/setup/<version>/`, which is
+staging cache and must stay out of Git.
 
 `scripts/bootstrap/install.sh` and `scripts/bootstrap/install.ps1` are the
 canonical shell entrypoints for mechanical adapter installation. Root
@@ -78,6 +80,11 @@ the read-only Cortex MCP server in a target project by copying local helpers to
 `scripts/tes_update.py` plans low-friction updates by comparing installed and
 cloud package versions, detecting applied IDE surfaces, and recommending the
 route behind `/tes-update` and its `/tes:update` compatibility alias.
+
+`scripts/tes_bundle.py` orchestrates clean runtime install: stage the versioned
+bundle, create `.tes/bk/<timestamp>/manifest.json`, apply canonical runtime
+assets, recover useful old governance semantics into `docs/agents/**`, and
+restore backed-up root governance on request.
 
 `scripts/tes_init.py` initializes and recertifies a target project. It writes
 `docs/agents/PROJECT-REGISTER.md` and `docs/agents/PROJECT-CONTEXT.md` before
@@ -94,8 +101,9 @@ updates. It removes known old runtime assets, migrates Field Reports state,
 archives legacy retrofit records, and preserves project context.
 
 `scripts/root_context.py` scans root runtime files such as `AGENTS.md`,
-`CLAUDE.md`, and Cursor rules before overwrite. Project-owned instructions must
-be migrated into `docs/agents/**` or evidence first.
+`CLAUDE.md`, and Cursor rules before or from central backup evidence.
+Project-owned instructions must be backed up before overwrite and recovered into
+`docs/agents/**` or marked `NEEDS_REVIEW`.
 
 `scripts/field_reports.py` installs the local Field Reports `pre-push` drain
 and records sanitized operational facts under `.tes/field-reports/**`. That

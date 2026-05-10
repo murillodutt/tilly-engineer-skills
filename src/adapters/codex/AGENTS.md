@@ -115,8 +115,9 @@ Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
 `/tes:cortex`, `/tes-curate`, `/tes:curate`,
 `/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
 `/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`, `/tes-bench`,
-and `/tes:bench` as intent shortcuts. Load the matching skill
-and let the agent choose the smallest safe oracle. These are not shell commands.
+and `/tes:bench` as intent shortcuts. Load the matching TES skill when one
+exists, otherwise route through `docs/install/COMMAND-TRIGGERS.md` and the
+smallest safe oracle. These are not shell commands.
 
 </tes_init>
 
