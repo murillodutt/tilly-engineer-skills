@@ -91,7 +91,7 @@ version, cloud version, applied IDE surfaces, helper contract parity,
 recommended route, and
 `recommended_update_scope`. Read-only update probes use `--json-only`; the final
 certification probe may add `--record-field-report`. Detect the project state,
-run Step Zero before installer/update edits, preserve local governance,
+run Step Zero before installer/update edits, back up local governance centrally,
 initialize or update `docs/agents/**`, analyze the target project in depth,
 write or update `docs/agents/PROJECT-CONTEXT.md`, initialize Cortex, repair
 `recommended_update_scope=helpers-only` or `STALE_HELPERS` through the

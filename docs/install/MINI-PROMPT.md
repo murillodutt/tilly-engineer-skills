@@ -48,15 +48,16 @@ Across Codex, Claude Code, and Cursor, prefer shared hyphen triggers such as
 alias as invalid, treat it as TES intent text and continue through the matching
 skill/rule/spec.
 Use the detected IDE as the default adapter. Ask me for a route command only
-where the spec requires one. Preserve local project governance, move durable
-agent context into docs/agents/** when needed, analyze the project in depth and
+where the spec requires one. Before runtime writes, create a central
+.tes/bk/<timestamp>/ backup, apply a clean TES runtime, recover durable local
+governance semantics into docs/agents/**, analyze the project in depth and
 write docs/agents/PROJECT-CONTEXT.md as the initial project map, create the
 first-pass Obsidian-compatible operating mesh when missing, create or update the
 compiled docs/agents/cortex/** Cortex layer, stage the deterministic TES bundle
 under .tes/setup/<version>/ when update writes are needed, using the public ZIP
-and SHA-256 when available, keep AGENTS.md, CLAUDE.md, CURSOR.md and
-project-owned Cursor rules preserved for semantic review, install TES-owned
-runtime capabilities such as /tes-align and /tes-open-obsidian, activate the
+and SHA-256 when available, keep active AGENTS.md, CLAUDE.md, CURSOR.md and
+Cursor rules as thin TES bootloaders, install TES-owned runtime capabilities
+such as /tes-align and /tes-open-obsidian, activate the
 read-only project-scoped Cortex MCP server for the selected runtime route, and
 finish with the certification report required by the spec. If package source is available,
 certify docs/agents/PROJECT-CONTEXT.md with project_context_oracle.py and the

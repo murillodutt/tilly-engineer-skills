@@ -21,7 +21,7 @@ except Exception:  # pragma: no cover - installed helper may be inspected alone.
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.79"
+VERSION = "0.3.80"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -909,18 +909,18 @@ def context_governance_contract(target: Path) -> dict[str, Any]:
     if not existing:
         return {"status": "NOT_APPLIED", "roots": [], "failures": []}
     if root_context_helper is None:
-        return {"status": "PRESERVED", "roots": existing, "failures": []}
+        return {"status": "RECOVERED", "roots": existing, "failures": []}
     try:
         analysis = root_context_helper.analyze(target)
     except Exception as exc:  # pragma: no cover - defensive installed-helper path.
-        return {"status": "PRESERVED", "roots": existing, "failures": [str(exc)]}
+        return {"status": "NEEDS_REVIEW", "roots": existing, "failures": [str(exc)]}
     status = str(analysis.get("status") or "")
     if status == "NEEDS_REVIEW":
-        contract_status = "PRESERVED"
+        contract_status = "RECOVERED"
     elif status == "PASS":
         contract_status = "PASS"
     else:
-        contract_status = "PRESERVED"
+        contract_status = "NEEDS_REVIEW"
     return {
         "status": contract_status,
         "roots": existing,
@@ -960,9 +960,10 @@ def continuation_plan(
             "writes": [".tes/setup/**"] if final_required else [],
             "commands": [
                 f"python3 <tes-package>/scripts/tes_bundle.py stage --target {target}",
+                f"python3 <tes-package>/scripts/tes_bundle.py backup --target {target} --adapter {route} --yes",
                 f"python3 <tes-package>/scripts/tes_bundle.py plan --target {target}",
             ],
-            "goal": "stage a versioned TES bundle manifest before deterministic install/update writes",
+            "goal": "stage a versioned TES bundle and create central .tes/bk backup before clean runtime writes",
         },
         {
             "name": "layer_zero_helpers",
@@ -989,28 +990,21 @@ def continuation_plan(
                 ".agents/plugins/**",
             ] if adapter_required else [],
             "commands": [
-                f"python3 <tes-package>/scripts/install_adapter.py --target {target} --adapter {route} --dry-run --overwrite",
-                f"python3 <tes-package>/scripts/install_adapter.py --target {target} --adapter {route} --overwrite --yes",
+                f"python3 <tes-package>/scripts/tes_bundle.py apply --target {target} --adapter {route} --mode clean-runtime --yes",
                 "python3 .tes/bin/tes_update.py plan --target . --json-only",
             ],
-            "goal": "restore TES-owned runtime capabilities while preserving project-owned context governance",
+            "goal": "restore TES-owned runtime capabilities and active bootloaders from the canonical bundle after central backup",
         },
         {
-            "name": "context_governance_review",
+            "name": "semantic_recovery",
             "required": adapter_required,
             "approval_required": False,
-            "writes": [
-                "AGENTS.md",
-                "CLAUDE.md",
-                "CURSOR.md",
-                ".cursor/rules/**",
-                ".cursorrules",
-            ] if adapter_required else [],
+            "writes": ["docs/agents/evidence/**"] if adapter_required else [],
             "commands": [
-                "python3 .tes/bin/root_context.py --target .",
-                "review preserved context conflicts before any semantic merge",
+                "python3 .tes/bin/tes_bundle.py recover-plan --target . --backup-id <backup-id> --apply-safe --yes",
+                "python3 .tes/bin/tes_update.py plan --target . --json-only",
             ],
-            "goal": "leave project-owned governance preserved unless an LLM or reviewer performs semantic review",
+            "goal": "recover useful semantics from backup evidence and mark ambiguous legacy governance as NEEDS_REVIEW",
         },
         {
             "name": "project_start_alignment",
@@ -1149,7 +1143,7 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "context_governance_failures": governance["failures"],
         "adapter_refresh_required": update_scope in {"adapter-config", "full-convergence"},
         "runtime_capability_refresh_required": trigger_drift or update_scope in {"adapter-config", "full-convergence"},
-        "context_governance_review_required": governance["status"] == "PRESERVED" and trigger_drift,
+        "semantic_recovery_required": governance["status"] in {"RECOVERED", "NEEDS_REVIEW"} and trigger_drift,
         "next_probe_required": update_scope != "none",
         "helper_contract_status": helper["status"],
         "installed_helper_records": helper["records"],
@@ -1294,7 +1288,7 @@ def write_context_fixture(target: Path) -> None:
 
 | Zone | Evidence | Guidance |
 |---|---|---|
-| project-owned agent governance | AGENTS.md | preserve project-owned instructions and avoid blind overwrite |
+| agent governance | AGENTS.md | central backup, clean runtime overwrite, then semantic recovery |
 
 ## Workspace Boundaries
 
@@ -1653,8 +1647,8 @@ def self_test() -> dict[str, Any]:
         }
         if "runtime_capability_refresh" not in drift_phases:
             failures.append("runtime trigger drift continuation plan must require runtime capability refresh")
-        if "context_governance_review" not in drift_phases:
-            failures.append("runtime trigger drift continuation plan must include context governance review")
+        if "semantic_recovery" not in drift_phases:
+            failures.append("runtime trigger drift continuation plan must include semantic recovery")
         assert_project_start_gate(result, failures, "trigger drift fixture")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-old-meshed-") as tempdir:
@@ -1683,7 +1677,7 @@ def self_test() -> dict[str, Any]:
         if result["runtime_trigger_status"] != "DRIFT":
             failures.append("old meshed fixture must expose runtime trigger drift")
         if result["project_context_status"] != "PASS":
-            failures.append("old meshed fixture must preserve passing project context")
+            failures.append("old meshed fixture must keep passing project context")
         if result["project_alignment_status"] != "DRIFT":
             failures.append("old meshed fixture must expose missing alignment mesh")
         if result["recommended_update_scope"] != "helpers-only":
@@ -1700,7 +1694,7 @@ def self_test() -> dict[str, Any]:
             "bundle_staging",
             "layer_zero_helpers",
             "runtime_capability_refresh",
-            "context_governance_review",
+            "semantic_recovery",
             "project_start_alignment",
             "obsidian_open_preflight",
             "final_recorded_probe",

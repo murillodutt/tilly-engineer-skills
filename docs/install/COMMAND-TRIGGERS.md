@@ -115,22 +115,33 @@ context layers:
 
 - `bundle_staging`: download or use the versioned TES ZIP, verify SHA-256, and
   create `.tes/setup/<version>/` from the TES bundle manifest.
+- `clean_backup`: before any runtime overwrite, create `.tes/bk/<timestamp>/`
+  with `manifest.json`, file hashes, Git state, adapter route, and restore
+  policy. The backup captures previous root governance, runtime skills,
+  adapter/plugin surfaces, MCP config, and prior TES manifests.
 - `.tes/setup/**` is local staging cache. The bundle script must add a
   target-local Git exclude entry before extraction so adopter repositories do
   not accidentally commit the downloaded ZIP or extracted setup payload.
+- `.tes/bk/**` is local rollback and recovery history. The bundle script must
+  add a target-local Git exclude entry before backup so adopter repositories do
+  not commit legacy governance or sensitive local context.
 - If the ZIP is manually extracted only to reach `scripts/tes_bundle.py`, rerun
   that extracted script with `stage --target <project> --bundle <verified-zip>`
   before reporting certification. Manual unzip alone is not a certified stage.
 - `layer_zero_helpers`: refresh manifest-known `.tes/bin/**` helpers.
-- `runtime_capability_refresh`: install TES-owned routers such as
+- `runtime_capability_refresh`: apply the canonical clean runtime from the
+  staged bundle with `tes_bundle.py apply --mode clean-runtime`. This may
+  overwrite `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, Cursor rules, and TES-owned
+  routers only after the central backup exists. It also installs routers such as
   `.agents/skills/tes-*`, `.claude/skills/tes-*`, `skills/tes-*`, plugin
   metadata, and `.cursor/rules/tes-runtime-capabilities.mdc`.
-- `context_governance_review`: preserve `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`,
-  project-owned Cursor rules, and `.cursorrules` for LLM/reviewer semantic merge.
+- `semantic_recovery`: analyze `.tes/bk/<timestamp>/**` as evidence, migrate
+  safe local semantics into `docs/agents/**`, compress redundant legacy rules,
+  reject runtime noise, and mark ambiguous material as `NEEDS_REVIEW`.
 
-`runtime_trigger_status=PASS` may coexist with
-`context_governance_status=PRESERVED` when the runtime capability layer is
-active and project-owned governance remains intentionally untouched.
+`runtime_trigger_status=PASS` must not rely on root bootloaders left in a
+legacy state. The active runtime is clean; backup evidence is the recovery
+source for project-specific semantics.
 
 This keeps `/tes-init` simple for users: make this project usable by TES. If
 both gates pass, close with certification and recommend `/tes-doctor` only for a
@@ -158,17 +169,16 @@ full health check.
   and `recommended_update_scope=none`.
 - Do not claim `CURRENT` when `runtime_trigger_status=DRIFT`; run the adapter
   refresh route until installed trigger parity is PASS.
-- Do not let a project-owned bootloader conflict block non-conflicting TES
-  runtime assets. Preserve the bootloader and copy package-owned assets such as
-  `.claude/skills/**`, `.agents/skills/**`, and
-  `.cursor/rules/tes-runtime-capabilities.mdc`.
+- Do not let a project-owned bootloader conflict block clean runtime install.
+  Back it up centrally, apply the canonical runtime, and recover useful
+  semantics from the backup evidence.
 - Do not use MCP config activation to repair stale helpers; run the helper-only
   Layer Zero route first.
 - Do not call SQLite, MCP, or generated output memory.
 - Do not call `.tes/cortex/semantic.sqlite` memory; it is only derived
   curation cache.
-- Do not overwrite root runtime files before `root_context.py` has preserved or
-  rejected project-owned instructions.
+- Do not overwrite root runtime files before `.tes/bk/<timestamp>/manifest.json`
+  exists and can restore the previous files.
 - Do not copy new TES assets over old runtime surfaces while
   `tes_legacy_retirement.py audit` still reports active legacy.
 - Do not treat Field Reports, GitHub issues, outbox, or hooks as project truth.

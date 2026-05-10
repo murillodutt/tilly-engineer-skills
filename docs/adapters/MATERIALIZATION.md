@@ -48,8 +48,8 @@ check builds all adapters in a temporary directory and verifies:
   capability routing (`tes-runtime-capabilities.mdc`);
 - Claude project skills materialize under `.claude/skills/**` and plugin
   metadata points to the root-contained `./skills/` copy;
-- existing project-owned bootloaders may be preserved while non-conflicting
-  package-owned adapter assets are still copied;
+- existing project-owned bootloaders are backed up centrally, replaced by clean
+  runtime bootloaders, and recovered semantically while adapter assets install;
 - no `src/**` source tree leaks into an install output.
 
 `commit:check` also requires required package files to be staged or already
@@ -64,7 +64,7 @@ If a target tool changes packaging rules, update `src/adapters/<tool>/**`,
 | Adapter | Risk | Rule |
 |---------|------|------|
 | Codex | Editing installed user/runtime skill or plugin instead of source | Edit `src/adapters/codex/**` only; `plugins/tilly-engineer-skills/**` is generated output |
-| Claude | Plugin metadata depends on `../` outside the plugin root, project installs omit `.claude/skills/**`, or a `CLAUDE.md` conflict blocks skill copies | Skill paths must be root-relative, project skills must be present, and bootloader conflicts must be preserved without blocking non-conflicting assets |
+| Claude | Plugin metadata depends on `../` outside the plugin root, project installs omit `.claude/skills/**`, or a `CLAUDE.md` conflict blocks clean install | Skill paths must be root-relative, project skills must be present, and bootloader conflicts must be backed up, clean-applied, and recovered without blocking runtime assets |
 | Cursor | Legacy `.cursorrules` leaks back into the package or project-owned rules block TES commands | Validator blocks `.cursorrules`; runtime capabilities materialize as a separate TES-owned rule |
 | All | Generated output becomes perceived source | `dist/**` remains ignored and reproducible |
 

@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.79"
+VERSION = "0.3.80"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -27,9 +27,9 @@ REQUIRED_PATHS = (
     "docs/architecture/PROJECT-STRUCTURE.md",
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.79/index.json",
-    "docs/dist/0.3.79/tilly-engineer-skills-0.3.79.zip",
-    "docs/dist/0.3.79/tilly-engineer-skills-0.3.79.zip.sha256",
+    "docs/dist/0.3.80/index.json",
+    "docs/dist/0.3.80/tilly-engineer-skills-0.3.80.zip",
+    "docs/dist/0.3.80/tilly-engineer-skills-0.3.80.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -304,7 +304,7 @@ INSTALLER_REPORT_REQUIRED_TERMS = (
     "`source_freshness`",
     "`STALE_SOURCE`",
     "current public bundle",
-    ".tes/setup/**",
+    ".tes/setup/",
     "target-local Git exclude",
     "snapshot certification",
     "full changed-file inventory",
@@ -312,7 +312,7 @@ INSTALLER_REPORT_REQUIRED_TERMS = (
     "short factual prose",
     "Do not use Markdown tables unless",
     "Updated existing mesh files",
-    "Rollback backups",
+    "Clean backup",
     "Installed helper set",
     "Field Reports: PASS | BLOCKED | DISABLED | SKIP",
     "outbox pending count",
@@ -337,9 +337,10 @@ USER_MANUAL_REPORT_REQUIRED_TERMS = (
     "resumo de rollback",
     "root context gate",
     "gate de contexto raiz",
-    "PRESERVED",
-    "Backup files are rollback artifacts",
-    "Backups são artefatos de rollback",
+    "RECOVERED",
+    ".tes/bk/&lt;timestamp&gt;",
+    "backup",
+    "semântica útil",
 )
 
 UPDATE_ROUTINE_REQUIRED_TERMS = (
@@ -373,7 +374,7 @@ ROOT_CONTEXT_REQUIRED_TERMS = (
     "CLAUDE.md",
     ".cursor/rules/**",
     "docs/agents/**",
-    "PRESERVED",
+    "RECOVERED",
     "self_test_mode",
 )
 

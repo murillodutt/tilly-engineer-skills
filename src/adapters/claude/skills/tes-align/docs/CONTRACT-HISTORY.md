@@ -33,7 +33,7 @@ knowledge lifecycle, and evidence.
 - `/tes-align` is not an installer.
 - Markdown and Git remain source of truth.
 - Obsidian is visualization, not runtime authority.
-- Project-owned governance is preserved.
+- Project-owned governance is centrally backed up, clean-applied, and recovered semantically.
 
 ## Known Failure Modes Prevented
 

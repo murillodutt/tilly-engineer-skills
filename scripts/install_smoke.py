@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.79"
+VERSION = "0.3.80"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -335,8 +335,8 @@ def legacy_retirement_probe() -> dict[str, Any]:
         return {"route": "legacy-retirement", "status": "FAIL" if failures else "PASS", "failures": failures}
 
 
-def claude_preserved_bootloader_probe() -> dict[str, Any]:
-    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-claude-preserve-") as tempdir:
+def claude_clean_bootloader_probe() -> dict[str, Any]:
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-claude-clean-") as tempdir:
         target = Path(tempdir)
         failures: list[str] = []
         failures.extend(init_git(target))
@@ -354,21 +354,25 @@ def claude_preserved_bootloader_probe() -> dict[str, Any]:
             ]
         )
         if code != 0:
-            failures.extend(["claude preserve install failed", *stdout.splitlines(), *stderr.splitlines()])
-            return {"route": "claude-preserved-bootloader", "status": "FAIL", "failures": failures}
+            failures.extend(["claude clean install failed", *stdout.splitlines(), *stderr.splitlines()])
+            return {"route": "claude-clean-bootloader", "status": "FAIL", "failures": failures}
 
         try:
             payload = json.loads(stdout[stdout.index("{"):stdout.rindex("}") + 1])
         except (ValueError, json.JSONDecodeError) as exc:
-            failures.append(f"claude preserve install returned invalid JSON: {exc}")
+            failures.append(f"claude clean install returned invalid JSON: {exc}")
             payload = {}
-        if payload.get("status") != "INSTALLED_WITH_PRESERVED_CONTEXT":
-            failures.append("claude preserve install must report INSTALLED_WITH_PRESERVED_CONTEXT")
-        preserved = payload.get("preserved_conflicts") or []
-        if not any(str(item.get("relpath")) == "CLAUDE.md" for item in preserved):
-            failures.append("claude preserve install must preserve conflicting CLAUDE.md")
-        if (target / "CLAUDE.md").read_text(encoding="utf-8") != CLAUDE_LOCAL_BOOTLOADER:
-            failures.append("claude preserve install overwrote local CLAUDE.md")
+        if payload.get("status") != "INSTALLED_CLEAN_RUNTIME":
+            failures.append("claude clean install must report INSTALLED_CLEAN_RUNTIME")
+        backup = payload.get("clean_backup") or {}
+        backup_id = str(backup.get("backup_id") or "")
+        if not backup_id or not (target / ".tes/bk" / backup_id / "manifest.json").exists():
+            failures.append("claude clean install must create central backup")
+        if CLAUDE_LOCAL_BOOTLOADER in (target / "CLAUDE.md").read_text(encoding="utf-8"):
+            failures.append("claude clean install did not replace local CLAUDE.md")
+        recovery = payload.get("semantic_recovery") or {}
+        if recovery.get("status") not in {"RECOVERED", "NEEDS_REVIEW"}:
+            failures.append("claude clean install must emit semantic recovery")
         failures.extend(require_paths(target, (
             ".claude/skills/tes-guidelines/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
@@ -394,11 +398,11 @@ def claude_preserved_bootloader_probe() -> dict[str, Any]:
         if code != 0:
             failures.extend(["installed Claude trigger oracle failed", *stdout.splitlines(), *stderr.splitlines()])
 
-        return {"route": "claude-preserved-bootloader", "status": "FAIL" if failures else "PASS", "failures": failures}
+        return {"route": "claude-clean-bootloader", "status": "FAIL" if failures else "PASS", "failures": failures}
 
 
-def codex_preserved_bootloader_probe() -> dict[str, Any]:
-    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-codex-preserve-") as tempdir:
+def codex_clean_bootloader_probe() -> dict[str, Any]:
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-codex-clean-") as tempdir:
         target = Path(tempdir)
         failures: list[str] = []
         failures.extend(init_git(target))
@@ -421,24 +425,28 @@ def codex_preserved_bootloader_probe() -> dict[str, Any]:
             ]
         )
         if code != 0:
-            failures.extend(["codex preserve install failed", *stdout.splitlines(), *stderr.splitlines()])
-            return {"route": "codex-preserved-bootloader", "status": "FAIL", "failures": failures}
+            failures.extend(["codex clean install failed", *stdout.splitlines(), *stderr.splitlines()])
+            return {"route": "codex-clean-bootloader", "status": "FAIL", "failures": failures}
 
         try:
             payload = json.loads(stdout[stdout.index("{"):stdout.rindex("}") + 1])
         except (ValueError, json.JSONDecodeError) as exc:
-            failures.append(f"codex preserve install returned invalid JSON: {exc}")
+            failures.append(f"codex clean install returned invalid JSON: {exc}")
             payload = {}
-        if payload.get("status") != "INSTALLED_WITH_PRESERVED_CONTEXT":
-            failures.append("codex preserve install must report INSTALLED_WITH_PRESERVED_CONTEXT")
-        preserved = payload.get("preserved_conflicts") or []
-        if not any(str(item.get("relpath")) == "AGENTS.md" for item in preserved):
-            failures.append("codex preserve install must preserve conflicting AGENTS.md")
-        if (target / "AGENTS.md").read_text(encoding="utf-8") != CODEX_LOCAL_BOOTLOADER:
-            failures.append("codex preserve install overwrote local AGENTS.md")
+        if payload.get("status") != "INSTALLED_CLEAN_RUNTIME":
+            failures.append("codex clean install must report INSTALLED_CLEAN_RUNTIME")
+        backup = payload.get("clean_backup") or {}
+        backup_id = str(backup.get("backup_id") or "")
+        if not backup_id or not (target / ".tes/bk" / backup_id / "manifest.json").exists():
+            failures.append("codex clean install must create central backup")
+        if CODEX_LOCAL_BOOTLOADER in (target / "AGENTS.md").read_text(encoding="utf-8"):
+            failures.append("codex clean install did not replace local AGENTS.md")
+        recovery = payload.get("semantic_recovery") or {}
+        if recovery.get("status") not in {"RECOVERED", "NEEDS_REVIEW"}:
+            failures.append("codex clean install must emit semantic recovery")
         installed_init = (target / ".agents/skills/tes-init/SKILL.md").read_text(encoding="utf-8")
         if "Missing current trigger vocabulary" in installed_init:
-            failures.append("codex preserve install did not repair stale TES-owned skill")
+            failures.append("codex clean install did not repair stale TES-owned skill")
         if "/tes-field-reports" not in installed_init:
             failures.append("repaired Codex tes-init skill must include field reports trigger")
         failures.extend(require_paths(target, (
@@ -462,7 +470,7 @@ def codex_preserved_bootloader_probe() -> dict[str, Any]:
         if code != 0:
             failures.extend(["installed Codex trigger oracle failed", *stdout.splitlines(), *stderr.splitlines()])
 
-        return {"route": "codex-preserved-bootloader", "status": "FAIL" if failures else "PASS", "failures": failures}
+        return {"route": "codex-clean-bootloader", "status": "FAIL" if failures else "PASS", "failures": failures}
 
 
 def hostile_governance_conflict_probe() -> dict[str, Any]:
@@ -495,20 +503,18 @@ def hostile_governance_conflict_probe() -> dict[str, Any]:
         except (ValueError, json.JSONDecodeError) as exc:
             failures.append(f"hostile governance install returned invalid JSON: {exc}")
             payload = {}
-        preserved = payload.get("preserved_conflicts") or []
-        if payload.get("status") != "INSTALLED_WITH_PRESERVED_CONTEXT":
-            failures.append("hostile governance install must report INSTALLED_WITH_PRESERVED_CONTEXT")
-        for relpath in ("AGENTS.md", "CLAUDE.md", ".cursor/rules/tes-guidelines.mdc"):
-            if not any(str(item.get("relpath")) == relpath for item in preserved):
-                failures.append(f"hostile governance install must preserve conflict: {relpath}")
-        if any(str(item.get("relpath")) == "CURSOR.md" for item in preserved):
-            failures.append("hostile governance install must update TES-owned CURSOR.md")
-        if (target / "AGENTS.md").read_text(encoding="utf-8") != CODEX_LOCAL_BOOTLOADER:
-            failures.append("hostile governance install overwrote AGENTS.md")
-        if (target / "CLAUDE.md").read_text(encoding="utf-8") != CLAUDE_LOCAL_BOOTLOADER:
-            failures.append("hostile governance install overwrote CLAUDE.md")
-        if (target / ".cursor/rules/tes-guidelines.mdc").read_text(encoding="utf-8") != HOSTILE_CURSOR_RULE:
-            failures.append("hostile governance install overwrote Cursor rule")
+        if payload.get("status") != "INSTALLED_CLEAN_RUNTIME":
+            failures.append("hostile governance install must report INSTALLED_CLEAN_RUNTIME")
+        backup = payload.get("clean_backup") or {}
+        backup_id = str(backup.get("backup_id") or "")
+        if not backup_id or not (target / ".tes/bk" / backup_id / "files/AGENTS.md").exists():
+            failures.append("hostile governance install must backup AGENTS.md centrally")
+        if CODEX_LOCAL_BOOTLOADER in (target / "AGENTS.md").read_text(encoding="utf-8"):
+            failures.append("hostile governance install did not replace AGENTS.md")
+        if CLAUDE_LOCAL_BOOTLOADER in (target / "CLAUDE.md").read_text(encoding="utf-8"):
+            failures.append("hostile governance install did not replace CLAUDE.md")
+        if HOSTILE_CURSOR_RULE in (target / ".cursor/rules/tes-guidelines.mdc").read_text(encoding="utf-8"):
+            failures.append("hostile governance install did not replace Cursor rule")
         cursor_bootloader = (target / "CURSOR.md").read_text(encoding="utf-8")
         if cursor_bootloader == STALE_TES_CURSOR_BOOTLOADER or "/tes-init" not in cursor_bootloader:
             failures.append("hostile governance install did not refresh TES-owned CURSOR.md")
@@ -682,8 +688,8 @@ def main() -> int:
     results = [probe_route(route) for route in routes]
     if args.self_test:
         results.append(legacy_retirement_probe())
-        results.append(codex_preserved_bootloader_probe())
-        results.append(claude_preserved_bootloader_probe())
+        results.append(codex_clean_bootloader_probe())
+        results.append(claude_clean_bootloader_probe())
         results.append(hostile_governance_conflict_probe())
         results.extend(project_context_fixture_probe(name) for name in PROJECT_CONTEXT_FIXTURES)
     failures = [

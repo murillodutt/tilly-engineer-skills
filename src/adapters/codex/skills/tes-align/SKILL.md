@@ -79,7 +79,7 @@ Project alignment: PASS, with explicit limits.
 ## Locks
 
 - Do not run installer/update writes unless TES is missing or stale.
-- Do not overwrite project-owned governance.
+- Do not overwrite active governance before `.tes/bk/<timestamp>/manifest.json` exists.
 - Do not recreate docs that already exist under stronger project-owned paths.
 - Do not invent architecture, roadmap items, or decisions.
 - Do not call scaffold output deep alignment.

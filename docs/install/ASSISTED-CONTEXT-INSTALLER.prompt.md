@@ -346,15 +346,15 @@ Classify as `existing` when any local agent guidance, project rules, architectur
 For an existing project, treat all current instructions as project-owned until
 proven otherwise.
 
-Before rewriting root runtime files, run `python3 scripts/root_context.py analyze --target <target-root>` when available. If it reports `NEEDS_REVIEW`, migrate durable instructions from `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, `.cursor/rules/**`, or `.cursorrules` into `docs/agents/**` or evidence before overwrite; `--write-plan` may create the local structure plan.
+Before rewriting root runtime files, stage the bundle and create a central clean backup: `python3 scripts/tes_bundle.py stage --target <target-root>`, then `python3 scripts/tes_bundle.py backup --target <target-root> --adapter <route> --yes`. Use `python3 scripts/root_context.py analyze --target <target-root> --backup-id <backup-id>` or `tes_bundle.py recover-plan` to read previous governance from `.tes/bk/<timestamp>/**`, not from the active runtime after overwrite.
 
-When no root overwrite is attempted and project-owned bootloaders are intentionally left untouched, close the root-context gate as `PRESERVED`, not `FAIL`.
+The default installer route is clean runtime: `python3 scripts/tes_bundle.py apply --target <target-root> --adapter <route> --mode clean-runtime --backup-id <backup-id> --yes`, followed by `python3 scripts/tes_bundle.py recover-plan --target <target-root> --backup-id <backup-id> --apply-safe --yes`. Close the root-context gate as `RECOVERED` when backup evidence and the recovery report exist; use `NEEDS_REVIEW` for ambiguous legacy semantics.
 
-For a meshed project, treat the run as assisted update/convergence, not reinstall. Run read-only update probes when available: `python3 scripts/tes_update.py plan --target <target-root> --json-only`. It compares the installed and cloud versions, checks helper contract parity with installed helper fingerprints and required schema markers, detects applied IDE surfaces, checks runtime trigger surfaces, recommends `current`, `codex`, `claude`, `cursor`, or `all`, reports `recommended_update_scope`, and reports `legacy_retirement_required`. Read-only probes must not record Field Reports. If continuation is needed, stage the deterministic bundle first through the bundle script, not by treating a manual unzip as final staging: `python3 scripts/tes_bundle.py stage --target <target-root>`, then `python3 scripts/tes_bundle.py plan --target <target-root>`, then `python3 scripts/tes_bundle.py freshness --target <target-root>`. Prefer the public versioned ZIP when available (`https://murillodutt.github.io/tilly-engineer-skills/dist/<version>/tilly-engineer-skills-<version>.zip`) and verify its `.sha256` before apply. If you manually extract the public ZIP only to obtain its scripts, immediately re-stage with the extracted script (`python3 <extracted-or-.tes/setup>/<version>/scripts/tes_bundle.py stage --target <target-root> --bundle <verified-zip>`) before reporting certification. Only the bundle script is allowed to certify staging because it creates the target-local Git exclude for `.tes/setup/**`. The bundle index and manifest must expose source commit metadata so freshness can be certified from the ZIP path without rebuilding from source. Bundle staging is local cache: `.tes/setup/**` must be ignored through target-local Git exclude and must not be committed into adopter repositories or listed as a durable TES surface. The bundle manifest separates helper, runtime capability, MCP config, context governance, project alignment, evidence, and cache layers; purge/update may act only on known TES-owned paths from the previous or current manifest. If the probe reports `recommended_update_scope=helpers-only` or `STALE_HELPERS`, run Layer Zero before other updates: `python3 scripts/install_mcp.py --target <target-root> --adapter <route> --dry-run --overwrite --helpers-only --json-only`, then `python3 scripts/install_mcp.py --target <target-root> --adapter <route> --overwrite --helpers-only --yes`. Layer Zero may replace only TES-owned `.tes/bin/**` helpers with backups. Run `tes_update.py plan --json-only` again and require `helper_contract_status=PASS` before adapter/MCP config activation. If the probe reports `runtime_trigger_status=DRIFT` or `recommended_update_scope=adapter-config`, run the selected adapter route; project-owned bootloaders may remain `PRESERVED`, but non-conflicting TES-owned runtime capabilities such as `.claude/skills/**`, `.agents/skills/**`, plugin metadata, or `.cursor/rules/tes-runtime-capabilities.mdc` must still be copied. Context governance review remains an LLM/reviewer merge task and must not block safe runtime capabilities. After any helper overwrite or adapter refresh, a final recorded probe is mandatory before GO, evidence closeout, commit, or push: run `python3 .tes/bin/tes_update.py plan --target <target-root> --json-only --record-field-report` (or package `scripts/tes_update.py` when certifying from the package tree). The recorded event must show `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`. This does not authorize overwriting project-owned root bootloaders.
+For a meshed project, treat the run as assisted update/convergence, not reinstall. Run read-only update probes when available: `python3 scripts/tes_update.py plan --target <target-root> --json-only`. If continuation is needed, stage the deterministic bundle under `.tes/setup/`, create `.tes/bk/<timestamp>/`, certify freshness, apply the clean runtime, then run semantic recovery: `tes_bundle.py stage`, `tes_bundle.py backup`, `tes_bundle.py freshness`, `tes_bundle.py apply --mode clean-runtime`, and `tes_bundle.py recover-plan --apply-safe`. Bundle staging and clean backups are local cache/history and must be ignored through target-local Git exclude. If the probe reports `recommended_update_scope=helpers-only` or `STALE_HELPERS`, run Layer Zero first and require `helper_contract_status=PASS` before adapter/MCP config activation. If the probe reports `runtime_trigger_status=DRIFT` or `recommended_update_scope=adapter-config`, do not leave old bootloaders active; backup, clean-apply, recover. After any helper overwrite or adapter refresh, a final recorded probe is mandatory before GO, evidence closeout, commit, or push: run `python3 .tes/bin/tes_update.py plan --target <target-root> --json-only --record-field-report` (or package `scripts/tes_update.py` when certifying from the package tree). The recorded event must show `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`.
 
 If legacy retirement is required, run `python3 scripts/tes_legacy_retirement.py plan --target <target-root>` after the root context gate and before materializing new assets. The gate may remove only known old runtime assets, migrate `.tilly/field-reports/**` to `.tes/field-reports/**`, archive `.tilly/retrofit/**` under `.tes/legacy-retirement/retrofit/**`, and preserve project context. If it reports `NEEDS_REVIEW`, stop; do not copy new TES assets over old surfaces. When it is clean and the run is authorized, apply with `python3 scripts/tes_legacy_retirement.py apply --target <target-root> --yes`, then certify with `python3 scripts/tes_legacy_retirement.py audit --target <target-root>`.
 
-Preserve local governance, apply only surgical updates needed by the selected route, and certify the resulting state.
+Recover local governance from `.tes/bk/**`, apply only surgical updates needed by the selected route, and certify the resulting state.
 
 ## Phase 3 - Navigation Menu
 
@@ -615,7 +615,7 @@ skills/tes-*/**
 .claude-plugin/marketplace.json
 ```
 
-`CLAUDE.md` must stay short. It should route to `docs/agents/**`, mention `docs/agents/cortex/**` as the durable memory layer when relevant, preserve project-specific sentinels required by local validation, and list local oracles. Claude project skills live under `.claude/skills/**`; plugin-root skill copies live under `skills/**` only for explicit plugin testing/distribution. Claude skill and plugin files are package/runtime assets; do not put target-project governance inside them. If `CLAUDE.md` already differs, preserve it and still install non-conflicting `.claude/skills/**`, `skills/**`, and `.claude-plugin/**` assets. If the target already uses additional Claude-scoped rule files, preserve them and route them back to `docs/agents/**` instead of deleting or replacing them.
+`CLAUDE.md` must stay short. It should route to `docs/agents/**`, mention `docs/agents/cortex/**` as the durable memory layer when relevant, recover project-specific sentinels required by local validation, and list local oracles. Claude project skills live under `.claude/skills/**`; plugin-root skill copies live under `skills/**` only for explicit plugin testing/distribution. Claude skill and plugin files are package/runtime assets; do not put target-project governance inside them. If `CLAUDE.md` already differs, back it up in `.tes/bk/**`, apply the clean bootloader, and recover useful semantics into `docs/agents/**`. If the target already uses additional Claude-scoped rule files, back them up and route their durable semantics back to `docs/agents/**` instead of leaving them as active runtime.
 
 ### Cursor
 
@@ -739,11 +739,11 @@ Include:
 - source package URL, raw paths used, source package commit, remote `main` commit when available, and `source_freshness`;
 - files created;
 - files retrofitted or updated;
-- overwrite backups created, grouped as rollback artifacts, not as new TES surfaces;
-- root context gate result and any structure plan;
+- clean backup id and restore command;
+- root context gate result and semantic recovery evidence;
 - full changed-file inventory from `git status --short --untracked-files=all`, grouped as new TES surfaces, updated existing mesh files, generated evidence, local runtime config, and ignored local state;
 - conflicts discovered and how they were resolved;
-- local rules preserved;
+- local rules recovered from backup evidence or marked `NEEDS_REVIEW`;
 - Cortex files created, retrofitted, skipped, or deferred;
 - MCP files created, merged, skipped, or blocked;
 - oracles run and results;
@@ -917,8 +917,9 @@ Source Snapshot
 Changed Surfaces
 - New TES surfaces: <short list or none>
 - Updated existing mesh files: <short list or none>
-- Rollback backups: <short list or none; do not count .bak-* files as new surfaces>
-- Root context gate: PASS | PRESERVED | NEEDS_REVIEW | SKIP; plan/resolution: <path | preserve | none>
+- Clean backup: <.tes/bk/<timestamp>/manifest.json | none>; restore: <command>
+- Semantic recovery: RECOVERED | NEEDS_REVIEW | SKIP; evidence: <path | none>
+- Root context gate: PASS | RECOVERED | NEEDS_REVIEW | SKIP; plan/resolution: <path | backup recovery | none>
 - Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py, tes_init.py, project_context_oracle.py: PASS/BLOCKED/MISSING
 - Helper contract parity: PASS | STALE_HELPERS | BLOCKED | NOT_INSTALLED
 - Project context: docs/agents/PROJECT-CONTEXT.md PASS | NEEDS_REVIEW | SKIP
@@ -953,7 +954,7 @@ GO requires:
 - `docs/agents/**` exists and is the canonical source;
 - selected runtime assets route to that source;
 - Cortex exists or is explicitly skipped/deferred with a reason;
-- root runtime context was migrated, preserved, or explicitly cleared; `PRESERVED` is passing only when no root overwrite occurred;
+- root runtime context was backed up before clean overwrite and semantic recovery evidence exists, or root context was explicitly absent;
 - read-only Cortex MCP is activated for selected routes or explicitly blocked;
 - Field Reports state and installed helper set are explicit in the report;
 - helper contract parity is PASS or NOT_INSTALLED; `STALE_HELPERS` cannot close as GO;
@@ -962,6 +963,6 @@ GO requires:
 - if Layer Zero copied helpers, final `tes_update` evidence must be recorded after the overwrite and must show `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`;
 - when Field Reports drains through the silent pre-push hook, verify `field_reports.py status` or `.tes/field-reports/receipts/**` before claiming that no upstream issue was created;
 - if helper files were copied but hook/drain status is unknown, use `NEEDS_REVIEW`;
-- context was preserved, no secrets changed, and at least one oracle passed.
+- context was recovered or explicitly absent, no secrets changed, and at least one oracle passed.
 
 Use `NEEDS_REVIEW` when the integration is structurally sound but user review is required before overwrite/merge/commit. Use `NO-GO` when context would be lost, secrets are at risk, or local validation fails.

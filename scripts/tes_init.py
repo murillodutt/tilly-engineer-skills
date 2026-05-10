@@ -35,7 +35,7 @@ SOURCE_PACKAGE_MODE = (
 )
 BUNDLE_MODE = SOURCE_ROOT.name == "scripts" and not SOURCE_PACKAGE_MODE
 PACKAGE_MODE = SOURCE_PACKAGE_MODE
-VERSION = "0.3.79"
+VERSION = "0.3.80"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -58,7 +58,7 @@ TES_AGENT_MESH_RELPATHS = {
     KNOWLEDGE_LIFECYCLE.as_posix(),
     GLOSSARY.as_posix(),
 }
-PASSING_GATE_STATUSES = {"PASS", "PRESERVED"}
+PASSING_GATE_STATUSES = {"PASS", "CLEAN_APPLIED", "RECOVERED"}
 DEFAULT_COMMAND_TIMEOUT_SECONDS = 60.0
 DEFAULT_GIT_LIST_TIMEOUT_SECONDS = 15.0
 
@@ -316,8 +316,8 @@ def root_context_gate(target: Path) -> dict[str, Any]:
     status = result["status"]
     resolution = None
     if status == "NEEDS_REVIEW":
-        status = "PRESERVED"
-        resolution = "project-owned root context detected and preserved; overwrite remains blocked without review"
+        status = "RECOVERED"
+        resolution = "project-owned root context detected; clean install recovers durable semantics from backup evidence"
     return {
         "command": " ".join(command),
         "returncode": 2 if result["status"] == "NEEDS_REVIEW" else (0 if result["status"] == "PASS" else 1),
@@ -1129,8 +1129,8 @@ def semantic_boundary_for_territory(name: str, paths: list[str]) -> tuple[str, s
         )
     if lowered in {".agents", ".claude", ".cursor", ".codex"}:
         return (
-            "project-owned agent governance boundary; preserve local instructions by default",
-            "do not replace without explicit review",
+            "agent governance boundary; clean runtime replaces active bootloaders after central backup",
+            "recover durable local semantics from `.tes/bk/**` into docs/agents evidence",
         )
     if lowered in {".github"}:
         return (
@@ -1198,7 +1198,7 @@ def caution_zones(scan: dict[str, Any]) -> list[dict[str, str]]:
     files = [str(record["path"]) for record in scan["files"]]
     rows: list[dict[str, str]] = []
     checks = (
-        ("project-owned agent governance", ("AGENTS.md", "CLAUDE.md", "CURSOR.md"), "preserve by default; merge only after review"),
+        ("agent governance", ("AGENTS.md", "CLAUDE.md", "CURSOR.md"), "clean runtime after central backup; recover durable semantics from backup evidence"),
         ("migrations and schema history", ("/migrations/", "migrations/"), "do not edit casually; use project migration workflow"),
         ("self-hosted or environment config", ("self-hosted/", "devservices/", "devenv/", "config/"), "changes may affect boot/deploy/dev services"),
         ("dependency locks", ("pnpm-lock.yaml", "uv.lock", "Cargo.lock", "package-lock.json"), "update only through package manager workflow"),
@@ -1275,7 +1275,7 @@ def package_gates() -> list[dict[str, Any]]:
                 "returncode": 0,
                 "stdout": "",
                 "stderr": "maintainer-only source package gates are not bundled",
-                "status": "PRESERVED",
+                "status": "RECOVERED",
             }
         ]
     if not PACKAGE_MODE:
@@ -1288,7 +1288,7 @@ def package_gates() -> list[dict[str, Any]]:
                 "returncode": 0,
                 "stdout": "",
                 "stderr": "package-only gates unavailable in installed helper mode",
-                "status": "PRESERVED",
+                "status": "RECOVERED",
             }
         ]
     gates = [
@@ -1743,9 +1743,9 @@ replacement for Git history.
   lineage.
 - TES Field Reports are operational transport only; Git and local governed
   artifacts remain project truth.
-- Root context result `PRESERVED` means project-owned bootloader context was
-  detected and intentionally left untouched. It remains a blocker only for
-  overwrite attempts.
+- Root context result `RECOVERED` means project-owned bootloader context was
+  detected and should be recovered from `.tes/bk/**` after the clean runtime
+  is active.
 """
 
 
@@ -2073,8 +2073,8 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
     if root_context_result["status"] == "NEEDS_REVIEW":
         root_context_result = {
             **root_context_result,
-            "certification_status": "PRESERVED",
-            "resolution": "project-owned root context preserved; overwrite remains blocked without review",
+            "certification_status": "RECOVERED",
+            "resolution": "project-owned root context is recovery evidence after central clean backup",
         }
 
     scan = scan_project(target)
@@ -2229,8 +2229,8 @@ def self_test() -> dict[str, Any]:
             failures.append("project context deep reads must exclude TES helper internals")
         if result["status"] != "PASS":
             failures.append(f"expected PASS, got {result['status']}")
-        if not any(gate["status"] == "PRESERVED" for gate in result["gates"]):
-            failures.append("project-owned root context must close as PRESERVED during init")
+        if not any(gate["status"] == "RECOVERED" for gate in result["gates"]):
+            failures.append("project-owned root context must close as RECOVERED during init")
 
     with tempfile.TemporaryDirectory(prefix="tes-init-ignored-parent-") as tempdir:
         parent = Path(tempdir)

@@ -77,9 +77,10 @@ dedicated decision.
   `alinhar projeto`, and natural alignment prompts route to `tes-align`.
   `open Obsidian`, `open this project in Obsidian`, `abrir Obsidian`, and
   `abrir no Obsidian` route to `tes-open-obsidian`.
-- When installing into an existing project, preserve a divergent `CLAUDE.md`
-  and still install non-conflicting TES-owned assets under `.claude/skills/**`,
-  `skills/**`, and `.claude-plugin/**`.
+- When installing into an existing project, back up a divergent `CLAUDE.md`
+  under `.tes/bk/**`, apply the clean bootloader, recover useful semantics into
+  `docs/agents/**`, and still install TES-owned assets under
+  `.claude/skills/**`, `skills/**`, and `.claude-plugin/**`.
 - Hooks, write-capable MCP, and subagents must not be added to the default
   plugin.
 - Read-only Cortex MCP is activated by the assisted installer through

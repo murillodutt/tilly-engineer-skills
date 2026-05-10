@@ -219,15 +219,18 @@ def certify_public_bundle() -> dict[str, object]:
             failures.extend(plan.get("failures", ["public bundle plan failed"]))
 
         applied = tes_bundle.apply_staged_bundle(target, yes=True)
-        if applied.get("status") != "APPLIED":
+        if applied.get("status") != "CLEAN_APPLIED":
             failures.extend(applied.get("failures", ["public bundle apply failed"]))
         installed_manifest = tes_bundle.read_installed_manifest(target)
         installed_metadata = installed_manifest.get("metadata") if isinstance(installed_manifest.get("metadata"), dict) else {}
         if installed_metadata.get("source_commit") != metadata.get("source_commit"):
             failures.append("installed manifest source_commit must match public index")
 
-        if (target / "AGENTS.md").read_text(encoding="utf-8") != "project-owned\n":
-            failures.append("public bundle apply overwrote project-owned AGENTS.md")
+        backup_id = str(applied.get("backup_id") or "")
+        if not backup_id or not (target / ".tes/bk" / backup_id / "manifest.json").exists():
+            failures.append("public bundle apply did not create central clean backup")
+        if "project-owned" in (target / "AGENTS.md").read_text(encoding="utf-8"):
+            failures.append("public bundle apply did not replace project-owned AGENTS.md")
         for relpath in (
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",
             ".tes/bin/tes_open_obsidian.py",

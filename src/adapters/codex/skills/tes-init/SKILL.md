@@ -17,7 +17,8 @@ triggers and `/tes:*` forms are compatible TES intent aliases. Treat
 `/tes-cortex`, `/tes:curate`, `/tes-curate`, `/tes-mcp`, `/tes-field-reports`,
 `/tes:field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`,
 `/tes:check`, `/tes:certify`, `/tes:recall`, `/tes:learn`, and `/tes:reflect`
-as TES intents, even when the root `AGENTS.md` is project-owned and preserved.
+as TES intents, even when a previous root `AGENTS.md` must be recovered from
+`.tes/bk/**`.
 
 ## Mission
 
@@ -76,14 +77,15 @@ the user for package contents.
    `NEEDS_REVIEW` and include the plan's required phases, approvals, write
    surfaces, commands, and final recorded probe. Do not leave an old meshed
    project with a bare blocker that the next agent cannot resume.
-6. Before rewriting root bootloaders, run `root_context.py analyze` when
-   available and migrate durable root context into `docs/agents/**` first.
+6. Before rewriting root bootloaders, stage the bundle and create a central
+   `.tes/bk/<timestamp>/` backup. Analyze previous root context from that
+   backup and recover durable semantics into `docs/agents/**`.
 7. When `legacy_retirement_required=true`, run `tes_legacy_retirement.py plan`,
    apply only if the run is authorized, then require
    `tes_legacy_retirement.py audit` before copying new TES assets.
 8. Use the detected runtime as the default route. Ask for route only when the
    installer contract requires it.
-9. Preserve local governance, build or update `docs/agents/**`, analyze the
+9. Apply clean runtime after central backup, build or update `docs/agents/**`, analyze the
    target project in depth, write or update `docs/agents/PROJECT-CONTEXT.md`,
    create the initial Obsidian-compatible operating mesh when missing,
    initialize `docs/agents/cortex/**`, keep runtime bootloaders thin, and
@@ -105,7 +107,7 @@ the user for package contents.
 
 ## Locks
 
-- Do not overwrite project instructions blindly.
+- Do not overwrite project instructions before `.tes/bk/<timestamp>/manifest.json` exists.
 - Do not edit secrets, global MCP config, remotes, package locks, or CI secrets.
 - Do not push, amend, tag, publish, or install dependencies without explicit
   user approval after the final report.

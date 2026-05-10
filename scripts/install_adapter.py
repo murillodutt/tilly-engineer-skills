@@ -21,7 +21,7 @@ import tes_bundle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.79"
+VERSION = "0.3.80"
 RETROFIT_DIR = ".tes/retrofit"
 
 
@@ -104,10 +104,13 @@ def can_overwrite_conflict(
     target: Path,
     broad_overwrite: bool,
     root_context_reviewed: bool = False,
+    clean_runtime: bool = False,
 ) -> bool:
     if is_tes_runtime_conflict(relpath):
         return True
     if is_context_governance_path(relpath):
+        if clean_runtime:
+            return True
         if root_context_reviewed:
             return True
         return is_tes_owned_cursor_bootloader(relpath, target) or is_tes_owned_cursor_rule(relpath, target)
@@ -373,6 +376,19 @@ def install(args: argparse.Namespace) -> int:
         if not args.dry_run:
             field_reports.ensure_git_exclude(target_root)
 
+        clean_runtime = not args.preserve_context
+        clean_backup = None
+        if clean_runtime and not args.dry_run:
+            clean_backup = tes_bundle.clean_backup(
+                target_root,
+                adapter=args.adapter,
+                project_state="unknown",
+            )
+            if clean_backup.get("status") != "BACKED_UP":
+                print(json.dumps(clean_backup, indent=2))
+                capture_install_result(target_root, args.adapter, "BACKUP-FAIL", args.dry_run, 1)
+                return 1
+
         actions: list[dict[str, str]] = []
         preserved_conflicts: list[dict[str, str]] = []
         for adapter in selected_adapters(args.adapter):
@@ -398,6 +414,7 @@ def install(args: argparse.Namespace) -> int:
                     Path(item["target"]),
                     args.overwrite,
                     args.root_context_reviewed,
+                    clean_runtime,
                 )
             ]
             preserved_items = [
@@ -412,6 +429,7 @@ def install(args: argparse.Namespace) -> int:
                     Path(item["target"]),
                     args.overwrite,
                     args.root_context_reviewed,
+                    clean_runtime,
                 )
             ]
             preserved_conflicts.extend(preserved_items)
@@ -420,10 +438,12 @@ def install(args: argparse.Namespace) -> int:
                 overwrite_items,
                 preserved_items,
                 args.dry_run,
-                backup=not args.no_backup,
+                backup=(not args.no_backup and not clean_runtime),
             ))
 
         status = "DRY-RUN" if args.dry_run else "INSTALLED"
+        if clean_runtime and not args.dry_run:
+            status = "INSTALLED_CLEAN_RUNTIME"
         if preserved_conflicts:
             status = "DRY-RUN-WITH-PRESERVED-CONFLICTS" if args.dry_run else "INSTALLED_WITH_PRESERVED_CONFLICTS"
         safe_action_names = {
@@ -454,6 +474,13 @@ def install(args: argparse.Namespace) -> int:
             if action.get("layer") == "runtime_capability"
             and action.get("action") in {"copy", "overwrite", "skip-identical", "would-copy", "would-overwrite"}
         ]
+        recovery = None
+        if clean_runtime and clean_backup and not args.dry_run:
+            recovery = tes_bundle.recover_from_backup(
+                target_root,
+                str(clean_backup["backup_id"]),
+                apply_safe=True,
+            )
 
         result = {
             "version": VERSION,
@@ -462,6 +489,9 @@ def install(args: argparse.Namespace) -> int:
             "adapter": args.adapter,
             "planned": planned,
             "bundle_stage": bundle_stage,
+            "mode": "clean-runtime" if clean_runtime else "preserve",
+            "clean_backup": clean_backup,
+            "semantic_recovery": recovery,
             "root_context": root_context_result,
             "layer_results": layer_results,
             "actions": actions,
@@ -488,6 +518,7 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--yes", action="store_true", help="confirm writes without an interactive prompt")
     parser.add_argument("--overwrite", action="store_true", help="replace conflicting target files")
+    parser.add_argument("--preserve-context", action="store_true", help="legacy mode: preserve conflicting root governance")
     parser.add_argument("--root-context-reviewed", action="store_true", help="confirm root context was migrated or rejected before overwrite")
     parser.add_argument("--no-backup", action="store_true", help="do not create .bak-* files before overwrite")
     parser.add_argument("--retrofit-plan", action="store_true", help="write an LLM merge plan for conflicts")
