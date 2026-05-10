@@ -24,7 +24,7 @@ coherent for a new adopter and auditable for a maintainer.
 
 | Item | Value |
 |------|-------|
-| Package version | `0.3.74` |
+| Package version | `0.3.75` |
 | Latest certified line | Wave 6 release readiness plus `/tes-open-obsidian` gate |
 | Release action status | Not taken |
 | Release readiness claim | Candidate-ready only, pending user decision |
