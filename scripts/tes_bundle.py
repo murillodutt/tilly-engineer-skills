@@ -22,7 +22,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.77"
+VERSION = "0.3.78"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -186,9 +186,9 @@ def github_ancestor_check(repository: str, source_commit: str, remote_commit: st
     except (OSError, urllib.error.URLError, json.JSONDecodeError):
         return None, "github-compare-unavailable"
     status = payload.get("status")
-    if status in {"identical", "behind"}:
+    if status in {"identical", "ahead"}:
         return True, "github-compare"
-    if status in {"ahead", "diverged"}:
+    if status in {"behind", "diverged"}:
         return False, "github-compare"
     return None, "github-compare-unavailable"
 
