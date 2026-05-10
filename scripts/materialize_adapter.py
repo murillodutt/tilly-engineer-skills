@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "dist" / "adapters"
-VERSION = "0.3.72"
+VERSION = "0.3.73"
 CODEX_SKILLS = (
     "tes-engineering-discipline",
     "tes-init",

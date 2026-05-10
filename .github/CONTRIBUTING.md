@@ -45,9 +45,9 @@ python3 scripts/materialize_adapter.py all --check
 
 When a change alters delivered installer, helper, runtime capability, or public
 adoption behavior, advance the public bundle before closure: create the new
-`docs/dist/<version>/` ZIP, `.sha256`, and `index.json`, then record the bundle
-oracle evidence. This is not a tag, release, package publish, or marketplace
-submission.
+`docs/dist/<version>/` ZIP, `.sha256`, and `index.json`, keep the setup
+installer scripts inside the ZIP, then record the bundle oracle evidence. This
+is not a tag, release, package publish, or marketplace submission.
 
 ## Pull Requests
 
@@ -59,7 +59,7 @@ Pull requests should include:
 - whether any release, publishing, marketplace, or live transport behavior is
   intentionally deferred.
 - when delivered behavior changes, the public bundle path, SHA-256, index path,
-  and bundle oracle result.
+  setup-script presence, and bundle oracle result.
 
 Do not include secrets, private project code, local Field Reports payloads,
 or raw canary worktrees in a pull request.

@@ -144,5 +144,6 @@ drift.
 - Every push that changes delivered installer/helper/runtime behavior must
   advance the public bundle procedure: generate a new versioned ZIP under
   `docs/dist/<version>/`, write the matching `.sha256` sidecar and `index.json`,
-  expose source commit metadata, and retain evidence from the bundle oracle.
+  expose source commit metadata, keep the setup installer scripts inside the
+  ZIP, and retain evidence from the bundle oracle.
 - Do not add `CHANGELOG.md`; commit history is the changelog.
