@@ -118,6 +118,9 @@ context layers:
 - `.tes/setup/**` is local staging cache. The bundle script must add a
   target-local Git exclude entry before extraction so adopter repositories do
   not accidentally commit the downloaded ZIP or extracted setup payload.
+- If the ZIP is manually extracted only to reach `scripts/tes_bundle.py`, rerun
+  that extracted script with `stage --target <project> --bundle <verified-zip>`
+  before reporting certification. Manual unzip alone is not a certified stage.
 - `layer_zero_helpers`: refresh manifest-known `.tes/bin/**` helpers.
 - `runtime_capability_refresh`: install TES-owned routers such as
   `.agents/skills/tes-*`, `.claude/skills/tes-*`, `skills/tes-*`, plugin
@@ -143,6 +146,8 @@ full health check.
   `source_commit` differs from remote `main`. If that commit is an ancestor of
   the distribution commit that serves the same version/hash, freshness is
   `PASS` with meaning `current public bundle`.
+- Prefer `tes_bundle.py freshness --target <project>` over prose comparison
+  when bundle metadata is present.
 - Do not claim `/tes-update` or `/tes:update` is `CURRENT` while helper contract parity is
   `STALE_HELPERS` or `BLOCKED`.
 - Do not record Field Reports from exploratory `/tes-update` or `/tes:update` probes; use

@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import urllib.error
+import urllib.parse
 import urllib.request
 import zipfile
 from dataclasses import dataclass
@@ -21,7 +22,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.76"
+VERSION = "0.3.77"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -128,6 +129,75 @@ def git_value(args: list[str]) -> str | None:
         return None
     value = result.stdout.strip()
     return value or None
+
+
+def git_remote_head(repository: str, ref: str = "refs/heads/main") -> str | None:
+    result = subprocess.run(
+        ["git", "ls-remote", repository, ref],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    first = result.stdout.strip().split()
+    if not first:
+        return None
+    value = first[0].strip()
+    if len(value) != 40 or any(char not in "0123456789abcdef" for char in value.lower()):
+        return None
+    return value
+
+
+def local_ancestor_check(source_commit: str, remote_commit: str) -> tuple[bool | None, str]:
+    result = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", source_commit, remote_commit],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode == 0:
+        return True, "git-merge-base"
+    if result.returncode == 1:
+        return False, "git-merge-base"
+    return None, "git-merge-base-unavailable"
+
+
+def github_repo_slug(repository: str) -> str | None:
+    if repository.startswith("git@github.com:"):
+        slug = repository.removeprefix("git@github.com:").removesuffix(".git")
+        return slug if "/" in slug else None
+    parsed = urllib.parse.urlparse(repository)
+    if parsed.netloc not in {"github.com", "www.github.com"}:
+        return None
+    slug = parsed.path.strip("/").removesuffix(".git")
+    return slug if slug.count("/") == 1 else None
+
+
+def github_ancestor_check(repository: str, source_commit: str, remote_commit: str) -> tuple[bool | None, str]:
+    slug = github_repo_slug(repository)
+    if not slug:
+        return None, "github-compare-unavailable"
+    url = f"https://api.github.com/repos/{slug}/compare/{source_commit}...{remote_commit}"
+    try:
+        with urllib.request.urlopen(url, timeout=20) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (OSError, urllib.error.URLError, json.JSONDecodeError):
+        return None, "github-compare-unavailable"
+    status = payload.get("status")
+    if status in {"identical", "behind"}:
+        return True, "github-compare"
+    if status in {"ahead", "diverged"}:
+        return False, "github-compare"
+    return None, "github-compare-unavailable"
+
+
+def source_is_ancestor(repository: str, source_commit: str, remote_commit: str) -> tuple[bool | None, str]:
+    local, method = local_ancestor_check(source_commit, remote_commit)
+    if local is not None:
+        return local, method
+    return github_ancestor_check(repository, source_commit, remote_commit)
 
 
 def bundle_metadata() -> dict[str, Any]:
@@ -669,6 +739,114 @@ def read_installed_manifest(target: Path) -> dict[str, Any]:
     return read_json(target / INSTALLED_MANIFEST)
 
 
+def public_index_data(index: Path | None = None) -> dict[str, Any]:
+    if index is None:
+        return {}
+    return read_json(index)
+
+
+def manifest_metadata(manifest: dict[str, Any]) -> dict[str, Any]:
+    metadata = manifest.get("metadata")
+    return metadata if isinstance(metadata, dict) else {}
+
+
+def certify_source_freshness(
+    target: Path,
+    index: Path | None = None,
+    remote_head: str | None = None,
+) -> dict[str, Any]:
+    target = target.resolve()
+    manifest = read_staged_manifest(target)
+    index_data = public_index_data(index)
+    metadata = manifest_metadata(manifest) or manifest_metadata(index_data)
+    source_commit = str(
+        manifest.get("source_commit")
+        or metadata.get("source_commit")
+        or index_data.get("source_commit")
+        or ""
+    )
+    repository = str(
+        manifest.get("source_repository")
+        or metadata.get("source_repository")
+        or index_data.get("source_repository")
+        or "https://github.com/murillodutt/tilly-engineer-skills.git"
+    )
+    failures: list[str] = []
+    if not manifest:
+        failures.append("no staged bundle manifest")
+    if manifest.get("version") and manifest.get("version") != VERSION:
+        failures.append(f"staged bundle version must be {VERSION}")
+    if index_data:
+        if index_data.get("version") != VERSION:
+            failures.append(f"public bundle index version must be {VERSION}")
+        if source_commit and index_data.get("source_commit") and source_commit != index_data.get("source_commit"):
+            failures.append("staged manifest source_commit differs from public index")
+    if len(source_commit) != 40 or any(char not in "0123456789abcdef" for char in source_commit.lower()):
+        failures.append("source_commit is missing or invalid")
+    remote_main = remote_head or git_remote_head(repository)
+    if remote_main is None:
+        failures.append("remote main could not be resolved")
+    if failures:
+        return {
+            "version": VERSION,
+            "status": "BLOCKED",
+            "source_freshness": "BLOCKED",
+            "meaning": "unknown",
+            "source_package_commit": source_commit or "unknown",
+            "source_remote_head": remote_main or "unknown",
+            "source_repository": repository,
+            "failures": failures,
+        }
+    if source_commit == remote_main:
+        return {
+            "version": VERSION,
+            "status": "PASS",
+            "source_freshness": "PASS",
+            "meaning": "latest",
+            "source_package_commit": source_commit,
+            "source_remote_head": remote_main,
+            "source_repository": repository,
+            "comparison": "equal",
+            "failures": [],
+        }
+    ancestor, method = source_is_ancestor(repository, source_commit, remote_main)
+    if ancestor is True:
+        return {
+            "version": VERSION,
+            "status": "PASS",
+            "source_freshness": "PASS",
+            "meaning": "current public bundle",
+            "source_package_commit": source_commit,
+            "source_remote_head": remote_main,
+            "source_repository": repository,
+            "comparison": method,
+            "failures": [],
+        }
+    if ancestor is False:
+        return {
+            "version": VERSION,
+            "status": "STALE_SOURCE",
+            "source_freshness": "STALE_SOURCE",
+            "meaning": "snapshot-only",
+            "source_package_commit": source_commit,
+            "source_remote_head": remote_main,
+            "source_repository": repository,
+            "comparison": method,
+            "failures": ["source package commit is not an ancestor of remote main"],
+        }
+    return {
+        "version": VERSION,
+        "status": "BLOCKED",
+        "source_freshness": "BLOCKED",
+        "meaning": "unknown",
+        "source_package_commit": source_commit,
+        "source_remote_head": remote_main,
+        "source_repository": repository,
+        "comparison": method,
+        "failures": ["source ancestry could not be checked"],
+    }
+
+
 def plan_target(target: Path) -> dict[str, Any]:
     target = target.resolve()
     manifest = read_staged_manifest(target)
@@ -831,6 +1009,15 @@ def self_test() -> dict[str, Any]:
         )
         if ignored.returncode != 0:
             failures.append(".tes/setup staging cache is not ignored by target git")
+        status = subprocess.run(
+            ["git", "status", "--short", "--untracked-files=all"],
+            cwd=target,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if ".tes/setup/" in status.stdout:
+            failures.append(".tes/setup staging cache is visible in target git status")
         manifest = read_staged_manifest(target)
         metadata = manifest.get("metadata") if isinstance(manifest.get("metadata"), dict) else {}
         if not metadata.get("source_commit"):
@@ -869,6 +1056,9 @@ def self_test() -> dict[str, Any]:
         reapplied = apply_staged_bundle(target, yes=True)
         if reapplied.get("status") != "APPLIED":
             failures.append("idempotent reapply failed")
+        freshness = certify_source_freshness(target, remote_head=str(metadata.get("source_commit") or ""))
+        if freshness.get("source_freshness") != "PASS":
+            failures.append("source freshness helper did not certify equal staged source")
     return {
         "version": VERSION,
         "status": "PASS" if not failures else "FAIL",
@@ -906,6 +1096,11 @@ def main() -> int:
     apply_parser.add_argument("--dry-run", action="store_true")
     apply_parser.add_argument("--yes", action="store_true")
 
+    freshness_parser = subparsers.add_parser("freshness")
+    freshness_parser.add_argument("--target", type=Path, default=Path.cwd())
+    freshness_parser.add_argument("--index", type=Path)
+    freshness_parser.add_argument("--remote-head")
+
     args = parser.parse_args()
     if args.self_test:
         result = self_test()
@@ -924,12 +1119,14 @@ def main() -> int:
         result = plan_target(args.target)
     elif args.command == "apply":
         result = apply_staged_bundle(args.target, dry_run=args.dry_run, yes=args.yes)
+    elif args.command == "freshness":
+        result = certify_source_freshness(args.target, index=args.index, remote_head=args.remote_head)
     else:
         parser.print_help()
         return 2
 
     print(json.dumps(result, indent=2))
-    return 0 if result.get("status") in {"PASS", "BUILT", "PUBLISHED", "STAGED", "DRY-RUN", "APPLIED"} else 1
+    return 0 if result.get("status") in {"PASS", "BUILT", "PUBLISHED", "STAGED", "DRY-RUN", "APPLIED", "STALE_SOURCE", "BLOCKED"} else 1
 
 
 if __name__ == "__main__":

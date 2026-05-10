@@ -332,8 +332,10 @@ the product `source_commit`; the later ZIP/hash/index commit is a distribution
 commit and cannot be embedded without a circular hash. If the public bundle
 version/hash matches the staged manifest and `source_commit` is an ancestor of
 remote `main`, report `PASS` with meaning `current public bundle`, not `STALE_SOURCE`.
+Use `tes_bundle.py freshness --target <project>`; do not infer staleness from unequal commit strings alone.
 Bundle staging is local cache: ensure `.tes/setup/**` is ignored through
 target-local Git exclude and do not commit staged ZIPs or setup scripts.
+If a public ZIP is manually extracted only to reach its scripts, immediately rerun extracted `tes_bundle.py stage`; manual unzip is not certified staging.
 GO does not imply the integration was committed or pushed. The certification
 report must distinguish:
 
@@ -476,8 +478,6 @@ constraints, and existing agent rules.
 - Backups are created before overwrites unless `--no-backup` is set.
 
 ## Validation
-
-From this package:
 
 ```bash
 npm run install:dry-run
