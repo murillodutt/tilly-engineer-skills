@@ -21,7 +21,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.74"
+VERSION = "0.3.75"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -334,6 +334,53 @@ def build_bundle(out: Path, adapter: str = "all") -> dict[str, Any]:
         "sha256": sha256_file(out),
         "entries": len(entries),
         "metadata": manifest["metadata"],
+    }
+
+
+def source_package_available() -> bool:
+    return (ROOT / "src/adapters").is_dir() and (ROOT / "scripts/tes_bundle.py").exists()
+
+
+def extracted_public_bundle_available() -> bool:
+    return (ROOT / MANIFEST_NAME).is_file() and (ROOT / "scripts/tes_bundle.py").exists()
+
+
+def zip_extracted_public_bundle(out: Path) -> dict[str, Any]:
+    manifest_path = ROOT / MANIFEST_NAME
+    if not manifest_path.exists():
+        return {"version": VERSION, "status": "FAIL", "failures": ["missing extracted bundle manifest"]}
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    failures = validate_manifest(manifest)
+    if failures:
+        return {"version": VERSION, "status": "FAIL", "failures": failures}
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
+        bundle.write(manifest_path, MANIFEST_NAME)
+        metadata_path = ROOT / "tes-bundle-metadata.json"
+        if metadata_path.exists():
+            bundle.write(metadata_path, "tes-bundle-metadata.json")
+        for entry in manifest.get("entries", []):
+            archive_path = str(entry.get("archive_path") or "")
+            source = ROOT / archive_path
+            if not source.exists():
+                failures.append(f"missing extracted archive member: {archive_path}")
+                continue
+            digest = sha256_file(source)
+            if digest != entry.get("sha256"):
+                failures.append(f"{archive_path}: sha256 mismatch")
+                continue
+            bundle.write(source, archive_path)
+    if failures:
+        return {"version": VERSION, "status": "FAIL", "failures": failures}
+    return {
+        "version": VERSION,
+        "status": "BUILT",
+        "bundle": str(out),
+        "sha256": sha256_file(out),
+        "entries": len(manifest.get("entries", [])),
+        "metadata": manifest.get("metadata", {}),
+        "coverage": "public-extracted-bundle-contract",
     }
 
 
@@ -681,7 +728,18 @@ def self_test() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tes-bundle-self-test-") as tempdir:
         temp = Path(tempdir)
         bundle = temp / "tes.zip"
-        built = build_bundle(bundle)
+        if source_package_available():
+            built = build_bundle(bundle)
+            self_test_mode = "source-package"
+        elif extracted_public_bundle_available():
+            built = zip_extracted_public_bundle(bundle)
+            self_test_mode = "public-extracted-bundle"
+        else:
+            return {
+                "version": VERSION,
+                "status": "FAIL",
+                "failures": ["self-test requires source package or extracted public bundle"],
+            }
         if built.get("status") != "BUILT":
             return {"version": VERSION, "status": "FAIL", "failures": built.get("failures", ["build failed"])}
         target = temp / "target"
@@ -730,7 +788,13 @@ def self_test() -> dict[str, Any]:
         reapplied = apply_staged_bundle(target, yes=True)
         if reapplied.get("status") != "APPLIED":
             failures.append("idempotent reapply failed")
-    return {"version": VERSION, "status": "PASS" if not failures else "FAIL", "failures": failures}
+    return {
+        "version": VERSION,
+        "status": "PASS" if not failures else "FAIL",
+        "failures": failures,
+        "self_test_mode": self_test_mode,
+        "coverage": built.get("coverage", "source-package-contract"),
+    }
 
 
 def main() -> int:
