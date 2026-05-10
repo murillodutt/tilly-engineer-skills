@@ -326,12 +326,14 @@ were intentionally left untouched; it remains a blocker for overwrites.
 If the raw root context analyzer says `NEEDS_REVIEW` and the installer did not
 overwrite roots, the final report should say `PRESERVED`, not `FAIL`.
 
-Source freshness is part of certification metadata. If the package snapshot
-commit differs from the current `main` commit for
-`murillodutt/tilly-engineer-skills`, the install may still be `GO meshed` for
-that snapshot, but it must be labeled `STALE_SOURCE` and must not claim latest
-Tilly Engineer Skills certification.
-
+Source freshness is certification metadata: stale snapshots are `STALE_SOURCE`
+and cannot claim latest TES certification. For public bundles, the ZIP records
+the product `source_commit`; the later ZIP/hash/index commit is a distribution
+commit and cannot be embedded without a circular hash. If the public bundle
+version/hash matches the staged manifest and `source_commit` is an ancestor of
+remote `main`, report `PASS` with meaning `current public bundle`, not `STALE_SOURCE`.
+Bundle staging is local cache: ensure `.tes/setup/**` is ignored through
+target-local Git exclude and do not commit staged ZIPs or setup scripts.
 GO does not imply the integration was committed or pushed. The certification
 report must distinguish:
 

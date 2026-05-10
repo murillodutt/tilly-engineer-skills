@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.75"
+VERSION = "0.3.76"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -27,9 +27,9 @@ REQUIRED_PATHS = (
     "docs/architecture/PROJECT-STRUCTURE.md",
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.75/index.json",
-    "docs/dist/0.3.75/tilly-engineer-skills-0.3.75.zip",
-    "docs/dist/0.3.75/tilly-engineer-skills-0.3.75.zip.sha256",
+    "docs/dist/0.3.76/index.json",
+    "docs/dist/0.3.76/tilly-engineer-skills-0.3.76.zip",
+    "docs/dist/0.3.76/tilly-engineer-skills-0.3.76.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -303,6 +303,9 @@ INSTALLER_REPORT_REQUIRED_TERMS = (
     "`source_remote_head`",
     "`source_freshness`",
     "`STALE_SOURCE`",
+    "current public bundle",
+    ".tes/setup/**",
+    "target-local Git exclude",
     "snapshot certification",
     "full changed-file inventory",
     "`git status --short --untracked-files=all`",
@@ -321,6 +324,8 @@ INSTALLER_REPORT_REQUIRED_TERMS = (
 USER_MANUAL_REPORT_REQUIRED_TERMS = (
     "source snapshot freshness",
     "STALE_SOURCE",
+    "Current public bundles",
+    ".tes/setup/&lt;version&gt;/",
     "certified against the recorded snapshot",
     "frescor do snapshot fonte",
     "certificado contra o snapshot registrado",

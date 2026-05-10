@@ -21,13 +21,14 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.75"
+VERSION = "0.3.76"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
 PUBLIC_DIST_ROOT = ROOT / "docs" / "dist" / VERSION
 BUNDLE_FILENAME = f"tilly-engineer-skills-{VERSION}.zip"
 PUBLIC_BUNDLE_BASE_URL = "https://murillodutt.github.io/tilly-engineer-skills/dist"
+SETUP_IGNORE_COMMENT = "# TES installer staging cache"
 
 REQUIRED_LAYERS = {
     "helper",
@@ -431,6 +432,7 @@ def stage_bundle(bundle: Path, target: Path, dry_run: bool = False) -> dict[str,
     bundle = bundle.resolve()
     target = target.resolve()
     stage_dir = target / SETUP_ROOT / VERSION
+    local_exclude = ensure_setup_excluded(target, dry_run=dry_run)
     if dry_run:
         return {
             "version": VERSION,
@@ -438,6 +440,7 @@ def stage_bundle(bundle: Path, target: Path, dry_run: bool = False) -> dict[str,
             "action": "would-stage",
             "bundle": str(bundle),
             "stage_dir": rel(stage_dir, target),
+            "local_exclude": local_exclude,
         }
     if not bundle.exists():
         return {"version": VERSION, "status": "FAIL", "failures": [f"missing bundle: {bundle}"]}
@@ -458,6 +461,71 @@ def stage_bundle(bundle: Path, target: Path, dry_run: bool = False) -> dict[str,
         "manifest": rel(stage_dir / MANIFEST_NAME, target),
         "entries": len(manifest.get("entries", [])),
         "failures": failures,
+        "local_exclude": local_exclude,
+    }
+
+
+def git_repo_paths(target: Path) -> tuple[Path, Path] | None:
+    result = subprocess.run(
+        ["git", "-C", str(target), "rev-parse", "--show-toplevel", "--git-common-dir"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    if len(lines) < 2:
+        return None
+    repo_root = Path(lines[0]).resolve()
+    common_dir = Path(lines[1])
+    if not common_dir.is_absolute():
+        common_dir = (target / common_dir).resolve()
+    return repo_root, common_dir
+
+
+def setup_exclude_pattern(target: Path, repo_root: Path) -> str:
+    try:
+        relative_target = target.resolve().relative_to(repo_root.resolve())
+    except ValueError:
+        return ".tes/setup/"
+    if relative_target == Path("."):
+        return ".tes/setup/"
+    return f"{relative_target.as_posix()}/.tes/setup/"
+
+
+def ensure_setup_excluded(target: Path, dry_run: bool = False) -> dict[str, str]:
+    repo = git_repo_paths(target)
+    if repo is None:
+        return {"status": "NOT_APPLIED", "reason": "target is not inside a git worktree"}
+    repo_root, common_dir = repo
+    exclude = common_dir / "info" / "exclude"
+    pattern = setup_exclude_pattern(target, repo_root)
+    if dry_run:
+        return {
+            "status": "DRY-RUN",
+            "path": rel(exclude, target),
+            "pattern": pattern,
+            "action": "would-ensure-local-exclude",
+        }
+    existing = exclude.read_text(encoding="utf-8") if exclude.exists() else ""
+    if pattern in {line.strip() for line in existing.splitlines()}:
+        return {
+            "status": "PASS",
+            "path": rel(exclude, target),
+            "pattern": pattern,
+            "action": "already-ignored",
+        }
+    exclude.parent.mkdir(parents=True, exist_ok=True)
+    prefix = "" if not existing or existing.endswith("\n") else "\n"
+    comment = "" if SETUP_IGNORE_COMMENT in existing else f"{SETUP_IGNORE_COMMENT}\n"
+    with exclude.open("a", encoding="utf-8") as handle:
+        handle.write(f"{prefix}{comment}{pattern}\n")
+    return {
+        "status": "PASS",
+        "path": rel(exclude, target),
+        "pattern": pattern,
+        "action": "add-local-exclude",
     }
 
 
@@ -744,12 +812,25 @@ def self_test() -> dict[str, Any]:
             return {"version": VERSION, "status": "FAIL", "failures": built.get("failures", ["build failed"])}
         target = temp / "target"
         target.mkdir()
+        subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
         (target / "AGENTS.md").write_text("project-owned\n", encoding="utf-8")
         (target / ".tes/bin").mkdir(parents=True)
         (target / ".tes/bin/local-only.py").write_text("do not purge\n", encoding="utf-8")
         staged = stage_bundle(bundle, target)
         if staged.get("status") != "STAGED":
             failures.extend(staged.get("failures", ["stage failed"]))
+        local_exclude = staged.get("local_exclude") if isinstance(staged.get("local_exclude"), dict) else {}
+        if local_exclude.get("status") != "PASS":
+            failures.append("staging did not ensure local .tes/setup/ git exclusion")
+        ignored = subprocess.run(
+            ["git", "check-ignore", f".tes/setup/{VERSION}/{MANIFEST_NAME}"],
+            cwd=target,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if ignored.returncode != 0:
+            failures.append(".tes/setup staging cache is not ignored by target git")
         manifest = read_staged_manifest(target)
         metadata = manifest.get("metadata") if isinstance(manifest.get("metadata"), dict) else {}
         if not metadata.get("source_commit"):

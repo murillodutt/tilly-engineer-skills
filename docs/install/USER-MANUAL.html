@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.75</span>
+          <span class="brand-meta">User manual · v0.3.76</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1106,6 +1106,7 @@
             </ol>
             <p>The full oracle inventory — Python scripts, <code>npm run</code> wrappers, validation gates, probe contracts — lives in <a href="AGENT-MANUAL.md#9-cli-oracle-inventory"><code>AGENT-MANUAL.md</code> §9</a>. Reach for it when reviewing a run, debugging a blocked oracle, or auditing what the agent invoked.</p>
             <p>On <code>/tes-update</code>, the agent first repairs the bundled helpers — a helper-only Layer Zero pass — before touching adapter or MCP configuration. The update probe then reconciles installed and cloud versions and checks helper contract parity (the user manual notes the same step in Portuguese as <em>versão instalada e versão na nuvem</em> com <em>paridade de contrato dos helpers</em>) before any GO decision.</p>
+            <p>The downloaded installer bundle is staging cache. TES keeps it under <code>.tes/setup/&lt;version&gt;/</code>, ensures that path is ignored through the target repository's local Git exclude, and does not treat extracted ZIP payloads as project knowledge to commit.</p>
           </div>
         </section>
 
@@ -1177,7 +1178,7 @@
             <p>A few signals worth recognizing:</p>
             <ul>
               <li><code>PRESERVED</code> — your existing <code>AGENTS.md</code>, <code>CLAUDE.md</code> or Cursor rules were left intact.</li>
-              <li><code>STALE_SOURCE</code> — the package commit is behind the latest Tilly release; you were certified against the recorded snapshot, not the newest one.</li>
+              <li><code>STALE_SOURCE</code> — the package commit is behind or unrelated to the latest Tilly release; you were certified against the recorded snapshot. Current public bundles whose source commit is an ancestor of the distribution commit report <code>PASS</code>, not stale.</li>
               <li><code>NEEDS_REVIEW</code> — something blocked but the run preserved evidence; review before continuing.</li>
             </ul>
             <p>The full report-field contract is in <a href="AGENT-MANUAL.md#14-convergence-report-contract"><code>AGENT-MANUAL.md</code> §14</a>.</p>
@@ -1363,7 +1364,7 @@ git revert &lt;install-commit&gt;</code></pre>
             <p>Algunas señales que conviene reconocer:</p>
             <ul>
               <li><code>PRESERVED</code> — tus <code>AGENTS.md</code>, <code>CLAUDE.md</code> o reglas de Cursor existentes quedaron intactos.</li>
-              <li><code>STALE_SOURCE</code> — el commit del paquete está atrás del último release de Tilly; fuiste certificado contra el snapshot registrado, no contra el más reciente.</li>
+              <li><code>STALE_SOURCE</code> — el commit del paquete está atrás o no está relacionado con el último release de Tilly; los bundles públicos actuales cuyo commit fuente es ancestro del commit de distribución reportan <code>PASS</code>, no stale.</li>
               <li><code>NEEDS_REVIEW</code> — algo se bloqueó pero el run preservó evidencia; revisa antes de continuar.</li>
             </ul>
             <p>El contrato completo de campos del informe está en <a href="AGENT-MANUAL.md#14-convergence-report-contract"><code>AGENT-MANUAL.md</code> §14</a>.</p>
@@ -1550,7 +1551,7 @@ git revert &lt;install-commit&gt;</code></pre>
             <p>Alguns sinais que vale reconhecer:</p>
             <ul>
               <li><code>PRESERVED</code> — seus <code>AGENTS.md</code>, <code>CLAUDE.md</code> ou regras do Cursor existentes ficaram intactos.</li>
-              <li><code>STALE_SOURCE</code> — o commit do pacote está atrás do release mais recente da Tilly; você foi certificado contra o snapshot registrado, não contra o mais novo.</li>
+              <li><code>STALE_SOURCE</code> — o commit do pacote está atrás ou não se relaciona ao release mais recente da Tilly; você foi certificado contra o snapshot registrado. Bundles públicos atuais cujo commit fonte é ancestral do commit de distribuição reportam <code>PASS</code>, não stale.</li>
               <li><code>NEEDS_REVIEW</code> — algo bloqueou mas o run preservou evidência; revise antes de continuar.</li>
             </ul>
             <p>O contrato completo de campos do relatório está em <a href="AGENT-MANUAL.md#14-convergence-report-contract"><code>AGENT-MANUAL.md</code> §14</a>.</p>
@@ -1570,7 +1571,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.75</span>
+        <span>Tilly Engineer Skills · v0.3.76</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>
