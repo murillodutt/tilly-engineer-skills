@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import re
+import subprocess
 import sys
 
 
@@ -122,6 +123,30 @@ def has_evidence_marker(path: Path) -> bool:
     )
 
 
+def git_visible_doc_paths() -> set[Path]:
+    result = subprocess.run(
+        [
+            "git",
+            "ls-files",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+            "-z",
+            "docs",
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return {path.relative_to(ROOT) for path in DOCS.rglob("*.md")}
+    return {
+        Path(raw.decode("utf-8"))
+        for raw in result.stdout.split(b"\0")
+        if raw and Path(raw.decode("utf-8")).suffix == ".md"
+    }
+
+
 def validate_entry(entry: dict[str, str]) -> list[str]:
     failures: list[str] = []
     path = entry.get("path", "(missing path)")
@@ -163,10 +188,7 @@ def main() -> int:
                 failures.append(f"duplicate TDS id: {doc_id}")
             ids[doc_id] = relpath
 
-    expected_paths = {
-        path.relative_to(ROOT)
-        for path in DOCS.rglob("*.md")
-    }
+    expected_paths = git_visible_doc_paths()
     expected_paths.add(Path("docs/tds/DOCS-INDEX.yml"))
 
     indexed_paths = set(path_to_entry)

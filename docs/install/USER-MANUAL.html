@@ -978,7 +978,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.78</span>
+          <span class="brand-meta">User manual · v0.3.79</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -991,15 +991,16 @@
           <ol>
             <li><a href="#overview" data-nav="overview"><span class="toc-num">00</span><span class="toc-text">Overview</span></a></li>
             <li><a href="#install" data-nav="install"><span class="toc-num">01</span><span class="toc-text">Quick install</span></a></li>
-            <li><a href="#routes" data-nav="routes"><span class="toc-num">02</span><span class="toc-text">Routes</span></a></li>
-            <li><a href="#states" data-nav="states"><span class="toc-num">03</span><span class="toc-text">Project states</span></a></li>
-            <li><a href="#cortex" data-nav="cortex"><span class="toc-num">04</span><span class="toc-text">Cortex</span></a></li>
-            <li><a href="#cli" data-nav="cli"><span class="toc-num">05</span><span class="toc-text">What the agent runs</span></a></li>
-            <li><a href="#mcp" data-nav="mcp"><span class="toc-num">06</span><span class="toc-text">MCP</span></a></li>
-            <li><a href="#field-reports" data-nav="field-reports"><span class="toc-num">07</span><span class="toc-text">Field Reports</span></a></li>
-            <li><a href="#obsidian" data-nav="obsidian"><span class="toc-num">08</span><span class="toc-text">Obsidian</span></a></li>
-            <li><a href="#report" data-nav="report"><span class="toc-num">09</span><span class="toc-text">Final report</span></a></li>
-            <li><a href="#rollback" data-nav="rollback"><span class="toc-num">10</span><span class="toc-text">Rollback</span></a></li>
+            <li><a href="#triggers" data-nav="triggers"><span class="toc-num">02</span><span class="toc-text">Command triggers</span></a></li>
+            <li><a href="#routes" data-nav="routes"><span class="toc-num">03</span><span class="toc-text">Routes</span></a></li>
+            <li><a href="#states" data-nav="states"><span class="toc-num">04</span><span class="toc-text">Project states</span></a></li>
+            <li><a href="#cortex" data-nav="cortex"><span class="toc-num">05</span><span class="toc-text">Cortex</span></a></li>
+            <li><a href="#cli" data-nav="cli"><span class="toc-num">06</span><span class="toc-text">What the agent runs</span></a></li>
+            <li><a href="#mcp" data-nav="mcp"><span class="toc-num">07</span><span class="toc-text">MCP</span></a></li>
+            <li><a href="#field-reports" data-nav="field-reports"><span class="toc-num">08</span><span class="toc-text">Field Reports</span></a></li>
+            <li><a href="#obsidian" data-nav="obsidian"><span class="toc-num">09</span><span class="toc-text">Obsidian</span></a></li>
+            <li><a href="#report" data-nav="report"><span class="toc-num">10</span><span class="toc-text">Final report</span></a></li>
+            <li><a href="#rollback" data-nav="rollback"><span class="toc-num">11</span><span class="toc-text">Rollback</span></a></li>
           </ol>
         </nav>
       </div>
@@ -1050,8 +1051,34 @@
           </div>
         </section>
 
+        <section class="chapter" id="triggers">
+          <div class="chapter-head"><span class="chapter-num">02</span><h2>Command triggers</h2></div>
+          <div class="chapter-body">
+            <p>Type these intents in the agent window. They are not shell commands; the active agent routes them to the matching skill, rule or oracle and reports what it ran.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Type this</th><th>Use it for</th><th>Write behavior</th></tr></thead>
+                <tbody>
+                  <tr><td><code>/tes-init</code></td><td>Install, recertify or initialize project context.</td><td>May write TES runtime files and <code>docs/agents/**</code> after gates pass.</td></tr>
+                  <tr><td><code>/tes-update</code></td><td>Update an existing TES mesh with the lowest-friction route.</td><td>Writes only selected TES surfaces after Step Zero and legacy checks.</td></tr>
+                  <tr><td><code>/tes-align</code></td><td>Deepen project context into roadmap, state, gates, glossary and decisions.</td><td>Writes the operating mesh under <code>docs/agents/**</code>.</td></tr>
+                  <tr><td><code>/tes-open-obsidian</code></td><td>Open <code>docs/agents/</code> as an Obsidian vault after context and alignment pass.</td><td>No TES writes.</td></tr>
+                  <tr><td><code>/tes-cortex</code></td><td>Inspect, query, audit, rebuild, learn from or reflect into Cortex memory.</td><td>Cortex files change only after explicit authorization.</td></tr>
+                  <tr><td><code>/tes-curate</code></td><td>Classify Cortex memory quality risks.</td><td>No memory writes; derived semantic cache may refresh.</td></tr>
+                  <tr><td><code>/tes-mcp</code></td><td>Activate or verify read-only Cortex MCP for the detected runtime.</td><td>May write project-scoped MCP config and TES helpers.</td></tr>
+                  <tr><td><code>/tes-field-reports</code></td><td>Inspect, drain, disable or enable sanitized operational reports.</td><td>May update <code>.tes/field-reports/**</code> and the local pre-push hook.</td></tr>
+                  <tr><td><code>/tes-doctor</code></td><td>Health-check, certify or prepare a TES commit.</td><td>No writes unless evidence is explicitly requested.</td></tr>
+                  <tr><td><code>/tes-adapter</code></td><td>Materialize, dry-run, retrofit or certify adapter surfaces.</td><td>Writes adapter files only after review or approval.</td></tr>
+                  <tr><td><code>/tes-bench</code></td><td>Plan, run or converge context-mesh benchmark evidence.</td><td>May write benchmark evidence artifacts.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Colon aliases such as <code>/tes:init</code>, <code>/tes:update</code>, <code>/tes:align</code> and <code>/tes:cortex</code> are compatible TES intent text. If a host rejects one as an invalid slash command, keep going through the matching TES route. The full trigger contract lives in <a href="COMMAND-TRIGGERS.md"><code>docs/install/COMMAND-TRIGGERS.md</code></a>.</p>
+          </div>
+        </section>
+
         <section class="chapter" id="routes">
-          <div class="chapter-head"><span class="chapter-num">02</span><h2>Routes</h2></div>
+          <div class="chapter-head"><span class="chapter-num">03</span><h2>Routes</h2></div>
           <div class="chapter-body">
             <div class="table-wrap">
               <table>
@@ -1071,7 +1098,7 @@
         </section>
 
         <section class="chapter" id="states">
-          <div class="chapter-head"><span class="chapter-num">03</span><h2>Project states</h2></div>
+          <div class="chapter-head"><span class="chapter-num">04</span><h2>Project states</h2></div>
           <div class="chapter-body">
             <div class="table-wrap">
               <table>
@@ -1087,7 +1114,7 @@
         </section>
 
         <section class="chapter" id="cortex">
-          <div class="chapter-head"><span class="chapter-num">04</span><h2>Cortex</h2></div>
+          <div class="chapter-head"><span class="chapter-num">05</span><h2>Cortex</h2></div>
           <div class="chapter-body">
             <p>Cortex is the project's compiled memory, written in plain Markdown under <code>docs/agents/cortex/</code>. Every claim is backed by an evidence link to a source file. SQLite caches accelerate recall but never replace Markdown as the source of truth.</p>
             <p>You can read Cortex like any other repository document, review it in pull requests, and roll it back with Git. The agent never writes to memory without explicit authorization and an evidence link.</p>
@@ -1096,7 +1123,7 @@
         </section>
 
         <section class="chapter" id="cli">
-          <div class="chapter-head"><span class="chapter-num">05</span><h2>What the agent runs</h2></div>
+          <div class="chapter-head"><span class="chapter-num">06</span><h2>What the agent runs</h2></div>
           <div class="chapter-body">
             <p>Inside the agent window you do not type shell commands. You type intent — <code>/tes-init</code>, <code>/tes-update</code>, <code>/tes-align</code>, <code>/tes-open-obsidian</code> — and the agent translates that into a sequence of small, scoped oracles.</p>
             <p>You only need to know two things:</p>
@@ -1111,7 +1138,7 @@
         </section>
 
         <section class="chapter" id="mcp">
-          <div class="chapter-head"><span class="chapter-num">06</span><h2>MCP</h2></div>
+          <div class="chapter-head"><span class="chapter-num">07</span><h2>MCP</h2></div>
           <div class="chapter-body">
             <p>MCP is the read-only window the agent uses to consult Cortex memory. It cannot write to your project. Installation is opt-in per runtime and lives in project-scoped config files you can review and revert.</p>
             <div class="table-wrap">
@@ -1129,7 +1156,7 @@
         </section>
 
         <section class="chapter" id="field-reports">
-          <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
+          <div class="chapter-head"><span class="chapter-num">08</span><h2>Field Reports</h2></div>
           <div class="chapter-body">
             <p>Field Reports lets Tilly learn from real installations. It is active by default and only captures sanitized operational facts. It never sends your code, diffs, prompts, file contents, secrets, personal data, absolute paths, raw stack traces, branch names, or remote URLs.</p>
             <p>Reports drain only during <code>git push</code>, only when the GitHub CLI, authentication and network are all available. If any link is missing, nothing leaves your machine and the push proceeds normally.</p>
@@ -1147,7 +1174,7 @@
         </section>
 
         <section class="chapter" id="obsidian">
-          <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
+          <div class="chapter-head"><span class="chapter-num">09</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
             <p>Obsidian is an optional visual workbench for browsing the agent mesh and Cortex memory. It is not required, and Tilly never creates or edits <code>.obsidian/**</code>. Type <code>/tes-open-obsidian</code> in the agent window to open <code>docs/agents/</code> as a vault.</p>
             <ol>
@@ -1171,7 +1198,7 @@
         </section>
 
         <section class="chapter" id="report">
-          <div class="chapter-head"><span class="chapter-num">09</span><h2>Final report</h2></div>
+          <div class="chapter-head"><span class="chapter-num">10</span><h2>Final report</h2></div>
           <div class="chapter-body">
             <p>Every run ends with a short <strong>Convergence Report</strong> in chat. Read it before approving commit or push. It tells you what changed, what was preserved, whether all gates passed, and which rollback is available.</p>
             <p>The chat report covers status, source snapshot freshness, changed surfaces, root context gate, installed helper set, helper contract parity, Field Reports state, gates, limits, and a rollback summary. Backup files are rollback artifacts, not new TES surfaces.</p>
@@ -1186,7 +1213,7 @@
         </section>
 
         <section class="chapter" id="rollback">
-          <div class="chapter-head"><span class="chapter-num">10</span><h2>Rollback</h2></div>
+          <div class="chapter-head"><span class="chapter-num">11</span><h2>Rollback</h2></div>
           <div class="chapter-body">
             <p>Use the baseline recorded during Step Zero.</p>
             <div class="pre-wrap" data-label="shell">
@@ -1239,8 +1266,34 @@ git revert &lt;install-commit&gt;</code></pre>
           </div>
         </section>
 
+        <section class="chapter" id="triggers-es">
+          <div class="chapter-head"><span class="chapter-num">02</span><h2>Gatillos de comando</h2></div>
+          <div class="chapter-body">
+            <p>Escribe estas intenciones en la ventana del agente. No son comandos de shell; el agente activo las enruta a la skill, regla u oráculo correspondiente y reporta qué ejecutó.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Escribe esto</th><th>Úsalo para</th><th>Comportamiento de escritura</th></tr></thead>
+                <tbody>
+                  <tr><td><code>/tes-init</code></td><td>Instalar, recertificar o inicializar el contexto del proyecto.</td><td>Puede escribir archivos runtime de TES y <code>docs/agents/**</code> después de pasar los gates.</td></tr>
+                  <tr><td><code>/tes-update</code></td><td>Actualizar un mesh TES existente por la ruta de menor fricción.</td><td>Escribe solo superficies TES seleccionadas después de Step Zero y los checks legacy.</td></tr>
+                  <tr><td><code>/tes-align</code></td><td>Profundizar el contexto del proyecto en roadmap, estado, gates, glosario y decisiones.</td><td>Escribe el mesh operativo bajo <code>docs/agents/**</code>.</td></tr>
+                  <tr><td><code>/tes-open-obsidian</code></td><td>Abrir <code>docs/agents/</code> como vault de Obsidian después de pasar contexto y alineación.</td><td>Sin escrituras TES.</td></tr>
+                  <tr><td><code>/tes-cortex</code></td><td>Inspeccionar, consultar, auditar, reconstruir, aprender de o reflejar en Cortex.</td><td>Los archivos de Cortex cambian solo con autorización explícita.</td></tr>
+                  <tr><td><code>/tes-curate</code></td><td>Clasificar riesgos de calidad de memoria Cortex.</td><td>Sin escrituras de memoria; el cache semántico derivado puede actualizarse.</td></tr>
+                  <tr><td><code>/tes-mcp</code></td><td>Activar o verificar Cortex MCP de solo lectura para el runtime detectado.</td><td>Puede escribir config MCP con scope de proyecto y helpers TES.</td></tr>
+                  <tr><td><code>/tes-field-reports</code></td><td>Inspeccionar, drenar, desactivar o activar reportes operativos sanitizados.</td><td>Puede actualizar <code>.tes/field-reports/**</code> y el hook local pre-push.</td></tr>
+                  <tr><td><code>/tes-doctor</code></td><td>Hacer health-check, certificar o preparar un commit TES.</td><td>Sin escrituras salvo que se pida evidencia explícitamente.</td></tr>
+                  <tr><td><code>/tes-adapter</code></td><td>Materializar, simular, retrofitar o certificar superficies de adapter.</td><td>Escribe archivos de adapter solo después de revisión o aprobación.</td></tr>
+                  <tr><td><code>/tes-bench</code></td><td>Planear, ejecutar o converger evidencia de benchmarks context-mesh.</td><td>Puede escribir artefactos de evidencia de benchmark.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Aliases con dos puntos como <code>/tes:init</code>, <code>/tes:update</code>, <code>/tes:align</code> y <code>/tes:cortex</code> son texto de intención TES compatible. Si un host rechaza uno como slash inválido, continúa por la ruta TES correspondiente. El contrato completo vive en <a href="COMMAND-TRIGGERS.md"><code>docs/install/COMMAND-TRIGGERS.md</code></a>.</p>
+          </div>
+        </section>
+
         <section class="chapter" id="routes-es">
-          <div class="chapter-head"><span class="chapter-num">02</span><h2>Rutas</h2></div>
+          <div class="chapter-head"><span class="chapter-num">03</span><h2>Rutas</h2></div>
           <div class="chapter-body">
             <div class="table-wrap">
               <table>
@@ -1260,7 +1313,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="states-es">
-          <div class="chapter-head"><span class="chapter-num">03</span><h2>Estados del proyecto</h2></div>
+          <div class="chapter-head"><span class="chapter-num">04</span><h2>Estados del proyecto</h2></div>
           <div class="chapter-body">
             <div class="table-wrap">
               <table>
@@ -1276,7 +1329,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="cortex-es">
-          <div class="chapter-head"><span class="chapter-num">04</span><h2>Cortex</h2></div>
+          <div class="chapter-head"><span class="chapter-num">05</span><h2>Cortex</h2></div>
           <div class="chapter-body">
             <p>Cortex es la memoria compilada del proyecto, escrita en Markdown plano bajo <code>docs/agents/cortex/</code>. Cada claim está respaldado por un enlace de evidencia a un archivo fuente. Los caches SQLite aceleran el recall pero nunca reemplazan al Markdown como fuente de verdad.</p>
             <p>Puedes leer Cortex como cualquier otro documento del repositorio, revisarlo en pull requests y revertirlo con Git. El agente nunca escribe memoria sin autorización explícita y un enlace de evidencia.</p>
@@ -1285,7 +1338,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="cli-es">
-          <div class="chapter-head"><span class="chapter-num">05</span><h2>Lo que ejecuta el agente</h2></div>
+          <div class="chapter-head"><span class="chapter-num">06</span><h2>Lo que ejecuta el agente</h2></div>
           <div class="chapter-body">
             <p>Dentro de la ventana del agente no escribes comandos de shell. Escribes intención — <code>/tes-init</code>, <code>/tes-update</code>, <code>/tes-align</code>, <code>/tes-open-obsidian</code> — y el agente la traduce en una secuencia de oráculos pequeños y acotados.</p>
             <p>Solo necesitas saber dos cosas:</p>
@@ -1298,7 +1351,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="mcp-es">
-          <div class="chapter-head"><span class="chapter-num">06</span><h2>MCP</h2></div>
+          <div class="chapter-head"><span class="chapter-num">07</span><h2>MCP</h2></div>
           <div class="chapter-body">
             <p>MCP es la ventana de solo lectura que el agente usa para consultar la memoria Cortex. No puede escribir en tu proyecto. La instalación es opt-in por runtime y vive en archivos de configuración con scope de proyecto que puedes revisar y revertir.</p>
             <div class="table-wrap">
@@ -1316,7 +1369,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="field-reports-es">
-          <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
+          <div class="chapter-head"><span class="chapter-num">08</span><h2>Field Reports</h2></div>
           <div class="chapter-body">
             <p>Field Reports permite a Tilly aprender de instalaciones reales. Está activo por defecto y solo captura hechos operativos sanitizados. Nunca envía tu código, diffs, prompts, contenido de archivos, secretos, datos personales, paths absolutos, stack traces crudos, nombres de branch ni URLs de remote.</p>
             <p>Los reportes drenan solo durante <code>git push</code>, y solo cuando la CLI de GitHub, la autenticación y la red están todas disponibles. Si falta cualquier eslabón, nada sale de tu máquina y el push continúa con normalidad.</p>
@@ -1334,7 +1387,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="obsidian-es">
-          <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
+          <div class="chapter-head"><span class="chapter-num">09</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
             <p>Obsidian es una mesa de trabajo visual opcional para navegar la malla del agente y la memoria Cortex. No es obligatorio, y Tilly nunca crea ni edita <code>.obsidian/**</code>. Escribe <code>/tes-open-obsidian</code> en la ventana del agente para abrir <code>docs/agents/</code> como vault.</p>
             <ol>
@@ -1358,7 +1411,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="report-es">
-          <div class="chapter-head"><span class="chapter-num">09</span><h2>Informe final</h2></div>
+          <div class="chapter-head"><span class="chapter-num">10</span><h2>Informe final</h2></div>
           <div class="chapter-body">
             <p>Cada ejecución termina con un <strong>Convergence Report</strong> corto en el chat. Léelo antes de aprobar commit o push. Te dice qué cambió, qué se preservó, si todos los gates pasaron y qué rollback está disponible.</p>
             <p>Algunas señales que conviene reconocer:</p>
@@ -1372,7 +1425,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="rollback-es">
-          <div class="chapter-head"><span class="chapter-num">10</span><h2>Rollback</h2></div>
+          <div class="chapter-head"><span class="chapter-num">11</span><h2>Rollback</h2></div>
           <div class="chapter-body">
             <p>Usa el baseline registrado en Step Zero.</p>
             <div class="pre-wrap" data-label="shell">
@@ -1425,8 +1478,34 @@ git revert &lt;install-commit&gt;</code></pre>
           </div>
         </section>
 
+        <section class="chapter" id="triggers-pt">
+          <div class="chapter-head"><span class="chapter-num">02</span><h2>Gatilhos de comando</h2></div>
+          <div class="chapter-body">
+            <p>Digite estas intenções na janela do agente. Elas não são comandos de shell; o agente ativo roteia para a skill, regra ou oráculo correspondente e reporta o que executou.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Digite isto</th><th>Use para</th><th>Comportamento de escrita</th></tr></thead>
+                <tbody>
+                  <tr><td><code>/tes-init</code></td><td>Instalar, recertificar ou inicializar o contexto do projeto.</td><td>Pode escrever arquivos runtime da TES e <code>docs/agents/**</code> depois que os gates passarem.</td></tr>
+                  <tr><td><code>/tes-update</code></td><td>Atualizar um mesh TES existente pela rota de menor fricção.</td><td>Escreve apenas superfícies TES selecionadas depois do Step Zero e dos checks legacy.</td></tr>
+                  <tr><td><code>/tes-align</code></td><td>Aprofundar o contexto do projeto em roadmap, estado, gates, glossário e decisões.</td><td>Escreve o mesh operacional em <code>docs/agents/**</code>.</td></tr>
+                  <tr><td><code>/tes-open-obsidian</code></td><td>Abrir <code>docs/agents/</code> como vault do Obsidian depois que contexto e alinhamento passarem.</td><td>Sem escritas TES.</td></tr>
+                  <tr><td><code>/tes-cortex</code></td><td>Inspecionar, consultar, auditar, reconstruir, aprender com ou refletir no Cortex.</td><td>Arquivos do Cortex só mudam com autorização explícita.</td></tr>
+                  <tr><td><code>/tes-curate</code></td><td>Classificar riscos de qualidade da memória Cortex.</td><td>Sem escritas de memória; o cache semântico derivado pode ser atualizado.</td></tr>
+                  <tr><td><code>/tes-mcp</code></td><td>Ativar ou verificar Cortex MCP somente leitura para o runtime detectado.</td><td>Pode escrever config MCP com escopo de projeto e helpers TES.</td></tr>
+                  <tr><td><code>/tes-field-reports</code></td><td>Inspecionar, drenar, desativar ou ativar relatórios operacionais sanitizados.</td><td>Pode atualizar <code>.tes/field-reports/**</code> e o hook local pre-push.</td></tr>
+                  <tr><td><code>/tes-doctor</code></td><td>Fazer health-check, certificar ou preparar um commit TES.</td><td>Sem escritas, salvo quando evidência for explicitamente solicitada.</td></tr>
+                  <tr><td><code>/tes-adapter</code></td><td>Materializar, simular, retrofitar ou certificar superfícies de adapter.</td><td>Escreve arquivos de adapter apenas depois de revisão ou aprovação.</td></tr>
+                  <tr><td><code>/tes-bench</code></td><td>Planejar, executar ou convergir evidência de benchmarks context-mesh.</td><td>Pode escrever artefatos de evidência de benchmark.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Aliases com dois pontos como <code>/tes:init</code>, <code>/tes:update</code>, <code>/tes:align</code> e <code>/tes:cortex</code> são texto de intenção TES compatível. Se um host rejeitar um deles como slash inválido, continue pela rota TES correspondente. O contrato completo vive em <a href="COMMAND-TRIGGERS.md"><code>docs/install/COMMAND-TRIGGERS.md</code></a>.</p>
+          </div>
+        </section>
+
         <section class="chapter" id="routes-pt">
-          <div class="chapter-head"><span class="chapter-num">02</span><h2>Rotas</h2></div>
+          <div class="chapter-head"><span class="chapter-num">03</span><h2>Rotas</h2></div>
           <div class="chapter-body">
             <div class="table-wrap">
               <table>
@@ -1446,7 +1525,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="states-pt">
-          <div class="chapter-head"><span class="chapter-num">03</span><h2>Estados do projeto</h2></div>
+          <div class="chapter-head"><span class="chapter-num">04</span><h2>Estados do projeto</h2></div>
           <div class="chapter-body">
             <div class="table-wrap">
               <table>
@@ -1462,7 +1541,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="cortex-pt">
-          <div class="chapter-head"><span class="chapter-num">04</span><h2>Cortex</h2></div>
+          <div class="chapter-head"><span class="chapter-num">05</span><h2>Cortex</h2></div>
           <div class="chapter-body">
             <p>O Cortex é a memória compilada do projeto, escrita em Markdown puro sob <code>docs/agents/cortex/</code>. Cada claim é sustentado por um link de evidência para um arquivo fonte. Os caches SQLite aceleram o recall, mas nunca substituem o Markdown como fonte de verdade.</p>
             <p>Você lê o Cortex como qualquer outro documento do repositório, revisa em pull requests e reverte com Git. O agente nunca escreve memória sem autorização explícita e um link de evidência.</p>
@@ -1471,7 +1550,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="cli-pt">
-          <div class="chapter-head"><span class="chapter-num">05</span><h2>O que o agente executa</h2></div>
+          <div class="chapter-head"><span class="chapter-num">06</span><h2>O que o agente executa</h2></div>
           <div class="chapter-body">
             <p>Dentro da janela do agente você não digita comandos de shell. Você digita intenção — <code>/tes-init</code>, <code>/tes-update</code>, <code>/tes-align</code>, <code>/tes-open-obsidian</code> — e o agente traduz isso numa sequência de oráculos pequenos e escopados.</p>
             <p>Você só precisa saber duas coisas:</p>
@@ -1484,7 +1563,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="mcp-pt">
-          <div class="chapter-head"><span class="chapter-num">06</span><h2>MCP</h2></div>
+          <div class="chapter-head"><span class="chapter-num">07</span><h2>MCP</h2></div>
           <div class="chapter-body">
             <p>MCP é a janela somente leitura que o agente usa para consultar a memória Cortex. Ele não consegue escrever no seu projeto. A instalação é opt-in por runtime e vive em arquivos de configuração com escopo de projeto que você pode revisar e reverter.</p>
             <div class="table-wrap">
@@ -1502,7 +1581,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="field-reports-pt">
-          <div class="chapter-head"><span class="chapter-num">07</span><h2>Field Reports</h2></div>
+          <div class="chapter-head"><span class="chapter-num">08</span><h2>Field Reports</h2></div>
           <div class="chapter-body">
             <p>O Field Reports permite que a Tilly aprenda com instalações reais. Ele fica ativo por padrão e só captura fatos operacionais sanitizados. Nunca envia seu código, diffs, prompts, conteúdo de arquivos, segredos, dados pessoais, paths absolutos, stack traces crus, nomes de branch ou URLs de remote.</p>
             <p>Os relatórios drenam apenas durante <code>git push</code>, e somente quando a CLI do GitHub, autenticação e rede estão todas disponíveis. Se faltar qualquer elo, nada sai da sua máquina e o push continua normalmente.</p>
@@ -1520,7 +1599,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="obsidian-pt">
-          <div class="chapter-head"><span class="chapter-num">08</span><h2>Obsidian</h2></div>
+          <div class="chapter-head"><span class="chapter-num">09</span><h2>Obsidian</h2></div>
           <div class="chapter-body">
             <p>O Obsidian é uma bancada visual opcional para navegar a malha do agente e a memória Cortex. Ele não é obrigatório, e a Tilly nunca cria ou edita <code>.obsidian/**</code>. Digite <code>/tes-open-obsidian</code> na janela do agente para abrir <code>docs/agents/</code> como vault.</p>
             <ol>
@@ -1544,7 +1623,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="report-pt">
-          <div class="chapter-head"><span class="chapter-num">09</span><h2>Relatório final</h2></div>
+          <div class="chapter-head"><span class="chapter-num">10</span><h2>Relatório final</h2></div>
           <div class="chapter-body">
             <p>Toda execução termina com um <strong>Convergence Report</strong> curto no chat. Leia antes de aprovar commit ou push. Ele diz o que mudou, o que foi preservado, se todos os gates passaram e qual rollback está disponível.</p>
             <p>O relatório no chat cobre status, frescor do snapshot fonte, superfícies alteradas, gate de contexto raiz, helper set instalado, paridade de contrato dos helpers, estado do Field Reports, gates, limites e resumo de rollback. Backups são artefatos de rollback, não novas superfícies TES.</p>
@@ -1559,7 +1638,7 @@ git revert &lt;install-commit&gt;</code></pre>
         </section>
 
         <section class="chapter" id="rollback-pt">
-          <div class="chapter-head"><span class="chapter-num">10</span><h2>Rollback</h2></div>
+          <div class="chapter-head"><span class="chapter-num">11</span><h2>Rollback</h2></div>
           <div class="chapter-body">
             <p>Use o baseline registrado no Step Zero.</p>
             <div class="pre-wrap" data-label="shell">
@@ -1571,7 +1650,7 @@ git revert &lt;install-commit&gt;</code></pre>
       </section>
 
       <footer class="colophon">
-        <span>Tilly Engineer Skills · v0.3.78</span>
+        <span>Tilly Engineer Skills · v0.3.79</span>
         <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         <span class="colophon-lang" role="radiogroup" aria-label="Manual language">
           <button type="button" class="eyebrow-lang-btn" data-lang-pick="en">EN</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="es">ES</button><span class="eyebrow-sep">·</span><button type="button" class="eyebrow-lang-btn" data-lang-pick="pt">PT</button>
@@ -1594,9 +1673,9 @@ git revert &lt;install-commit&gt;</code></pre>
       const html = document.documentElement;
 
       const i18n = {
-        en: { contents: "Contents", overview: "Overview", install: "Quick install", routes: "Routes", states: "Project states", cortex: "Cortex", cli: "What the agent runs", mcp: "MCP", "field-reports": "Field Reports", obsidian: "Obsidian", report: "Final report", rollback: "Rollback" },
-        es: { contents: "Índice", overview: "Vista general", install: "Instalación rápida", routes: "Rutas", states: "Estados", cortex: "Cortex", cli: "Lo que ejecuta el agente", mcp: "MCP", "field-reports": "Field Reports", obsidian: "Obsidian", report: "Informe final", rollback: "Rollback" },
-        pt: { contents: "Sumário", overview: "Visão geral", install: "Instalação rápida", routes: "Rotas", states: "Estados", cortex: "Cortex", cli: "O que o agente executa", mcp: "MCP", "field-reports": "Field Reports", obsidian: "Obsidian", report: "Relatório final", rollback: "Rollback" },
+        en: { contents: "Contents", overview: "Overview", install: "Quick install", triggers: "Command triggers", routes: "Routes", states: "Project states", cortex: "Cortex", cli: "What the agent runs", mcp: "MCP", "field-reports": "Field Reports", obsidian: "Obsidian", report: "Final report", rollback: "Rollback" },
+        es: { contents: "Índice", overview: "Vista general", install: "Instalación rápida", triggers: "Gatillos de comando", routes: "Rutas", states: "Estados", cortex: "Cortex", cli: "Lo que ejecuta el agente", mcp: "MCP", "field-reports": "Field Reports", obsidian: "Obsidian", report: "Informe final", rollback: "Rollback" },
+        pt: { contents: "Sumário", overview: "Visão geral", install: "Instalação rápida", triggers: "Gatilhos de comando", routes: "Rotas", states: "Estados", cortex: "Cortex", cli: "O que o agente executa", mcp: "MCP", "field-reports": "Field Reports", obsidian: "Obsidian", report: "Relatório final", rollback: "Rollback" },
       };
 
       const sectionIdMap = (lang) => (key) =>
