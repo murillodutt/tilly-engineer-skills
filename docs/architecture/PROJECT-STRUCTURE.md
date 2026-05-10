@@ -141,4 +141,8 @@ drift.
 - Validation must fail if source leaks back into the root.
 - Generated `dist/**` output must be reproducible from `src/**`; versioned
   public bundles under `docs/dist/**` must pass `public_bundle_oracle.py`.
+- Every push that changes delivered installer/helper/runtime behavior must
+  advance the public bundle procedure: generate a new versioned ZIP under
+  `docs/dist/<version>/`, write the matching `.sha256` sidecar and `index.json`,
+  expose source commit metadata, and retain evidence from the bundle oracle.
 - Do not add `CHANGELOG.md`; commit history is the changelog.

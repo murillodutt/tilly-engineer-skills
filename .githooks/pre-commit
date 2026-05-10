@@ -1,6 +1,13 @@
 #!/bin/sh
 set -eu
 
+unset GIT_ALTERNATE_OBJECT_DIRECTORIES
+unset GIT_DIR
+unset GIT_INDEX_FILE
+unset GIT_OBJECT_DIRECTORY
+unset GIT_PREFIX
+unset GIT_WORK_TREE
+
 python3 scripts/validate_reference_package.py --staged-ready
 python3 scripts/validate_tds.py
 python3 scripts/validate_doc_size.py

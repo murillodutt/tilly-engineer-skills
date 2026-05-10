@@ -38,8 +38,16 @@ python3 scripts/github_readiness_oracle.py --self-test
 python3 scripts/install_smoke.py --self-test
 python3 scripts/tes_init.py --self-test
 python3 scripts/tes_update.py --self-test
+python3 scripts/tes_bundle.py publish
+python3 scripts/public_bundle_oracle.py
 python3 scripts/materialize_adapter.py all --check
 ```
+
+When a change alters delivered installer, helper, runtime capability, or public
+adoption behavior, advance the public bundle before closure: create the new
+`docs/dist/<version>/` ZIP, `.sha256`, and `index.json`, then record the bundle
+oracle evidence. This is not a tag, release, package publish, or marketplace
+submission.
 
 ## Pull Requests
 
@@ -50,6 +58,8 @@ Pull requests should include:
 - which oracle or evidence proves it;
 - whether any release, publishing, marketplace, or live transport behavior is
   intentionally deferred.
+- when delivered behavior changes, the public bundle path, SHA-256, index path,
+  and bundle oracle result.
 
 Do not include secrets, private project code, local Field Reports payloads,
 or raw canary worktrees in a pull request.

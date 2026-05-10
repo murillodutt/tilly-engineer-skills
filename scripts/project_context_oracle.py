@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.71"
+VERSION = "0.3.72"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 TES_AGENT_MESH_RELPATHS = {
     "docs/agents/PROJECT-CONTEXT.md",
