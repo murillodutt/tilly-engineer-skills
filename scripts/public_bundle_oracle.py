@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import tempfile
 from pathlib import Path
 import sys
+import zipfile
 
 import tes_bundle
 
@@ -64,6 +66,76 @@ def certify_public_bundle() -> dict[str, object]:
         failures.append("public bundle index source_commit must be a 40-character git SHA")
 
     with tempfile.TemporaryDirectory(prefix="tes-public-bundle-oracle-") as tempdir:
+        extracted = Path(tempdir) / "extracted"
+        with zipfile.ZipFile(bundle) as archive:
+            names = set(archive.namelist())
+            for relpath in (
+                "scripts/tes_bundle.py",
+                "scripts/materialize_adapter.py",
+                "scripts/tes_init.py",
+                "tes-bundle-manifest.json",
+                "tes-bundle-metadata.json",
+            ):
+                if relpath not in names:
+                    failures.append(f"public bundle missing self-apply member: {relpath}")
+            archive.extractall(extracted)
+
+        if not failures:
+            bundle_self_test = subprocess.run(
+                [sys.executable, str(extracted / "scripts/tes_init.py"), "--self-test"],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if bundle_self_test.returncode != 0:
+                failures.append("extracted public bundle tes_init.py --self-test failed")
+                failures.extend(bundle_self_test.stdout.splitlines())
+                failures.extend(bundle_self_test.stderr.splitlines())
+
+            extracted_target = Path(tempdir) / "extracted-target"
+            extracted_target.mkdir()
+            stage_result = subprocess.run(
+                [
+                    sys.executable,
+                    str(extracted / "scripts/tes_bundle.py"),
+                    "stage",
+                    "--target",
+                    str(extracted_target),
+                    "--bundle",
+                    str(bundle),
+                ],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if stage_result.returncode != 0:
+                failures.append("extracted public bundle tes_bundle.py stage failed")
+                failures.extend(stage_result.stdout.splitlines())
+                failures.extend(stage_result.stderr.splitlines())
+            apply_result = subprocess.run(
+                [
+                    sys.executable,
+                    str(extracted / "scripts/tes_bundle.py"),
+                    "apply",
+                    "--target",
+                    str(extracted_target),
+                    "--yes",
+                ],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if apply_result.returncode != 0:
+                failures.append("extracted public bundle tes_bundle.py apply failed")
+                failures.extend(apply_result.stdout.splitlines())
+                failures.extend(apply_result.stderr.splitlines())
+            for relpath in (
+                ".tes/bin/tes_bundle.py",
+                ".tes/bin/materialize_adapter.py",
+            ):
+                if not (extracted_target / relpath).exists():
+                    failures.append(f"extracted public bundle apply missing expected path: {relpath}")
+
         target = Path(tempdir) / "target"
         target.mkdir()
         (target / "AGENTS.md").write_text("project-owned\n", encoding="utf-8")
@@ -102,6 +174,8 @@ def certify_public_bundle() -> dict[str, object]:
         for relpath in (
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",
             ".tes/bin/tes_open_obsidian.py",
+            ".tes/bin/tes_bundle.py",
+            ".tes/bin/materialize_adapter.py",
             ".agents/skills/tes-open-obsidian/SKILL.md",
             ".claude/skills/tes-align/SKILL.md",
             ".cursor/rules/tes-runtime-capabilities.mdc",

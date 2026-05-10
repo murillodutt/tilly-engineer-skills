@@ -79,7 +79,8 @@ certification claim actually changed.
   `scripts/public_bundle_oracle.py`,
   `docs/dist/<version>/tilly-engineer-skills-<version>.zip`,
   the matching `.sha256` sidecar, `docs/dist/<version>/index.json`,
-  source commit metadata, GitHub Pages URL claims, and retained canary evidence.
+  source commit metadata, setup-script presence inside the ZIP, GitHub Pages
+  URL claims, and retained canary evidence.
 - User command or prompt routing: check `docs/install/COMMAND-TRIGGERS.md`,
   `docs/install/USER-MANUAL.html`, installer prompts, adapter skills/rules,
   platform surface oracle, package scripts, and README only when the public

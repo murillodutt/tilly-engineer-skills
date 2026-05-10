@@ -74,9 +74,11 @@ Before using copied or cloned package files, record the exact package snapshot:
 When installing from the public versioned ZIP, use the bundle `index.json` and
 staged `tes-bundle-manifest.json` as the package snapshot source. They must
 expose `source_commit`, `source_repository`, `created_at`, and SHA-256
-metadata. Treat `source_commit` as the source package commit that generated the
-bundle; the later Git commit that publishes the ZIP/hash may be a distribution
-commit and cannot be embedded in its own artifact without a circular hash.
+metadata. The ZIP must also contain its setup installer scripts so it can be
+staged and applied without a full source checkout. Treat `source_commit` as the
+source package commit that generated the bundle; the later Git commit that
+publishes the ZIP/hash may be a distribution commit and cannot be embedded in
+its own artifact without a circular hash.
 
 If `source_freshness` is `STALE_SOURCE`, continue only as a snapshot certification. The final report must say that the target was certified against the recorded snapshot, not against the latest Tilly Engineer Skills `main`. If `source_freshness` is `BLOCKED`, do not claim latest-source certification. This is not a target-project failure; it is certification metadata that protects the user from stale installer conclusions.
 
