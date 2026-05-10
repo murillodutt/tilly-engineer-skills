@@ -109,23 +109,23 @@ options:
   - command: current
     label: Current runtime
     recommended: true
-    description: Install the current runtime bootloader and read-only Cortex MCP.
+    description: Install or refresh the current runtime after central backup and activate read-only Cortex MCP.
   - command: codex
     label: Codex
     recommended: false
-    description: Create or retrofit AGENTS.md, .agents/skills/** and Codex MCP.
+    description: Apply clean AGENTS.md and .agents/skills/** after backup; recover local semantics into docs/agents/**.
   - command: claude
     label: Claude
     recommended: false
-    description: Create or retrofit CLAUDE.md, .claude/skills/**, plugin skills, and Claude MCP.
+    description: Apply clean CLAUDE.md and Claude skills after backup; recover local semantics into docs/agents/**.
   - command: cursor
     label: Cursor
     recommended: false
-    description: Create or retrofit .cursor/rules/*.mdc and Cursor MCP.
+    description: Apply clean Cursor rules after backup; recover local semantics into docs/agents/**.
   - command: all
     label: All runtimes
     recommended: false
-    description: Create the shared mesh, all bootloaders and all MCP configs.
+    description: Create the shared mesh, refresh all clean bootloaders, and configure read-only MCP after backup.
   - command: mcp
     label: Cortex MCP
     recommended: false

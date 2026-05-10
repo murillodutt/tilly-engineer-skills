@@ -43,10 +43,15 @@ User-facing intent typed in the agent window — never a shell command.
 |---------|---------|---------|
 | `/tes-init` | First setup on a target project | `/tes:init` (compat) |
 | `/tes-update` | Update an already-meshed project | `/tes:update` (compat) |
-| `/tes-align` | Re-run alignment after context drift | — |
-| `/tes-open-obsidian` | Open `docs/agents/` in Obsidian via CLI or macOS app fallback | — |
-| `/tes:field-reports:disable` | Opt out of field-report capture/drain | — |
-| `/tes:field-reports:enable` | Restore default field-report behavior | — |
+| `/tes-align` | Re-run alignment after context drift | `/tes:align` (compat) |
+| `/tes-open-obsidian` | Open `docs/agents/` in Obsidian via CLI or macOS app fallback | `/tes:open-obsidian` (compat) |
+| `/tes-cortex` | Inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `/tes:cortex`, `/tes:recall`, `/tes:learn`, `/tes:reflect` |
+| `/tes-curate` | Classify Cortex quality risks without writing memory | `/tes:curate` |
+| `/tes-mcp` | Activate or verify read-only Cortex MCP | `/tes:mcp` |
+| `/tes-field-reports` | Inspect, drain, disable, or enable sanitized Field Reports | `/tes:field-reports:disable`, `/tes:field-reports:enable` |
+| `/tes-doctor` | Health-check, certify, or prepare a commit | `/tes:doctor`, `/tes:check`, `/tes:certify` |
+| `/tes-adapter` | Materialize, dry-run, retrofit, or install adapter surfaces | `/tes:adapter` |
+| `/tes-bench` | Plan, run, or converge context-mesh benchmarks | `/tes:bench` |
 
 Invalid `/tes:*` slash text still signals TES intent. Agent selects the
 smallest safe oracle.
@@ -89,8 +94,9 @@ Determined during Step Zero scan.
 2. **Project Context Gate** — preflight context check; PASS does not
    replace project-start execution.
 3. **Project-Start Gate** — after helper-only repairs, execute
-   `tes_init.py --target . --yes` and the context + alignment oracles
-   before final report.
+   `tes_init.py --target . --yes`, the context + alignment oracles, and
+   required project quality gates from `docs/agents/QUALITY-GATES.md` before
+   final report.
 
 Step Zero must not block project-context initialization when TES is
 already current and only `PROJECT-CONTEXT.md` needs work.
@@ -116,6 +122,7 @@ surfaces, route, `recommended_update_scope`.
 |-------|----------------|
 | `helper_contract_status` | `PASS` |
 | `runtime_trigger_status` | `PASS` or `NOT_APPLIED` |
+| Project quality gates | `PASS`, or `BLOCKED` / `NEEDS_REVIEW` with reason |
 | `update_available` | `False` |
 | `recommended_update_scope` | `none` |
 
@@ -208,6 +215,11 @@ python3 scripts/tes_legacy_retirement.py audit --target /path/to/project
 python3 scripts/tes_legacy_retirement.py --self-test
 python3 scripts/root_context.py analyze --target /path/to/project
 python3 scripts/root_context.py --self-test
+python3 scripts/tes_bundle.py stage --target /path/to/project
+python3 scripts/tes_bundle.py backup --target /path/to/project --adapter all --yes
+python3 scripts/tes_bundle.py apply --target /path/to/project --mode clean-runtime --backup-id <backup-id> --yes
+python3 scripts/tes_bundle.py recover-plan --target /path/to/project --backup-id <backup-id> --apply-safe --yes
+python3 scripts/tes_bundle.py restore --target /path/to/project --backup-id <backup-id> --yes
 ```
 
 `tes_init.py` recertifies package health, scans the target project,
@@ -372,7 +384,8 @@ Write-capable MCP tools are intentionally outside this version.
 `cortex.py`, `cortex_mcp.py`, `cortex_embed.mjs`, `field_reports.py`,
 `tes_update.py`, `tes_legacy_retirement.py`, `root_context.py`,
 `tes_init.py`, `project_context_oracle.py`, `project_alignment_oracle.py`,
-`tes_open_obsidian.py`.
+`tes_open_obsidian.py`, `command_trigger_oracle.py`, `tes_bundle.py`,
+`materialize_adapter.py`.
 
 ---
 
@@ -464,7 +477,7 @@ chat. Required fields:
 | Installed helper set | Helper inventory (Section 10) |
 | Helper contract parity | `helper_contract_status=PASS` |
 | Field Reports state | `enabled` / `disabled` + outbox state |
-| Gates | Per-gate disposition |
+| Gates | Per-gate disposition, including project quality gates such as lint, typecheck, test, and CI-equivalent commands |
 | Limits | Capabilities not exercised |
 | Rollback summary | Baseline head + revert commands |
 

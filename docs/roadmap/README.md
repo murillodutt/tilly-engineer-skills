@@ -3,7 +3,7 @@ tds_id: roadmap.index
 tds_class: roadmap
 status: active
 consumer: maintainers, release reviewers, and next-loop operators
-source_of_truth: true
+source_of_truth: false
 evidence_level: L2
 tver: 0.1.0
 ---

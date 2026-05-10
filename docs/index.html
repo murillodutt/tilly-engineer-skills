@@ -1338,7 +1338,7 @@
       <header class="doc-topbar">
         <a class="doc-back" href="#" data-doc-back>
           <span class="doc-back-arrow" aria-hidden="true">←</span>
-          <span>Tilly Skills</span>
+          <span>Tilly Engineer Skills</span>
         </a>
         <div class="doc-meta" id="doc-meta"></div>
       </header>
@@ -1626,11 +1626,11 @@ https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/in
 
 Run in quiet installer mode: show compact progress, blockers and the final
 certification report only. Start by detecting the current IDE/runtime and
-classifying this project as new, existing, or meshed. Create a central
-.tes/bk/&lt;timestamp&gt;/ backup, apply a clean TES runtime, recover useful local
-governance semantics into docs/agents/**, stage the deterministic TES bundle
-under .tes/setup/&lt;version&gt;/ from the public ZIP when available, verify its
-SHA-256 before apply, keep active AGENTS.md, CLAUDE.md and Cursor rules as thin
+classifying this project as new, existing, or meshed. Stage the deterministic
+TES bundle under .tes/setup/&lt;version&gt;/ from the public ZIP when available,
+verify its SHA-256 before apply, create a central .tes/bk/&lt;timestamp&gt;/ backup,
+apply a clean TES runtime, recover useful local governance semantics into
+docs/agents/**, keep active AGENTS.md, CLAUDE.md, CURSOR.md and Cursor rules as thin
 TES bootloaders, install TES-owned runtime capabilities such as /tes-align and /tes-open-obsidian,
 create the docs/agents/cortex/** continuity layer when needed, activate the
 read-only project-scoped Cortex MCP server for the selected runtime route, and
@@ -1639,8 +1639,10 @@ finish with the certification report required by the spec.
 Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, tell
 me how to undo the installation with Git. Do not push, amend, tag, publish,
-install dependencies, overwrite files, or change remotes unless I explicitly
-ask after reviewing the certification report.</code></pre>
+install dependencies, overwrite files outside the selected TES clean-runtime
+route, overwrite root runtime files before .tes/bk/&lt;timestamp&gt;/manifest.json
+exists, or change remotes unless I explicitly ask after reviewing the
+certification report.</code></pre>
 
             <div class="install-aliases" aria-label="Short intent triggers">
               <span class="alias-chip">/tes-init</span>
@@ -1652,7 +1654,7 @@ ask after reviewing the certification report.</code></pre>
             <p class="copy-note">
               Public bundle:
               <a href="dist/0.3.80/tilly-engineer-skills-0.3.80.zip">tilly-engineer-skills-0.3.80.zip</a>
-              · SHA-256 <code>dc5d581623c7e754324ca1ae21b009ddafb235d247e956445c7fd374d9ac16c9</code>
+              · SHA-256 <code>3f36cfd8426c2301dd55edab3586359349f0f34bfb172782f05cdbf6dc97a186</code>
             </p>
           </div>
         </div>
@@ -1894,8 +1896,8 @@ ask after reviewing the certification report.</code></pre>
             </div>
             <div class="evidence-stat reveal">
               <div>
-                <p class="evidence-label">Adapters certified for behavior parity</p>
-                <p class="evidence-source"><code>adapter-parity-readiness-2026-05-05/</code> · Codex · Claude · Cursor</p>
+                <p class="evidence-label">Adapters certified for structural contract parity</p>
+                <p class="evidence-source"><code>adapter-parity-readiness-2026-05-05/</code> · no behavior-parity claim</p>
               </div>
               <span class="evidence-num" data-counter="3"></span>
             </div>
@@ -2110,7 +2112,7 @@ ask after reviewing the certification report.</code></pre>
             <a class="doc-card" href="#/doc/install/MINI-PROMPT" data-doc-link="install/MINI-PROMPT">
               <span class="doc-card-tag">Install · canonical</span>
               <h3 class="doc-card-title">Mini install prompt</h3>
-              <p class="doc-card-desc">Canonical paste-into-agent installer prompt — the source of the copy button above.</p>
+              <p class="doc-card-desc">Canonical paste-into-agent installer prompt; the copy card above is its short landing-page form.</p>
               <div class="doc-card-meta"><span>install/MINI-PROMPT.md</span><span class="doc-card-arrow" aria-hidden="true">→</span></div>
             </a>
             <a class="doc-card" href="#/doc/install/AGENT-MANUAL" data-doc-link="install/AGENT-MANUAL">
@@ -2576,10 +2578,10 @@ ask after reviewing the certification report.</code></pre>
 
           // Update document title and OG metadata for shareable deep links
           const docTitle = DOC_CONTENT.querySelector("h1")?.textContent?.trim() || slug;
-          document.title = docTitle + " — Tilly Skills";
+          document.title = docTitle + " — Tilly Engineer Skills";
           const ogSrc = DOC_CONTENT.querySelector(".doc-lede, p");
           const ogDesc = (ogSrc?.textContent || "").trim().slice(0, 200);
-          setOg(docTitle + " — Tilly Skills", ogDesc || "Document from Tilly Engineer Skills.");
+          setOg(docTitle + " — Tilly Engineer Skills", ogDesc || "Document from Tilly Engineer Skills.");
 
           hideSkeleton();
         } catch (err) {

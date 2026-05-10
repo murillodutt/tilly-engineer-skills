@@ -196,3 +196,7 @@ full health check.
   `python3 scripts/project_context_oracle.py --target <target-root>` passes or
   the installed package source is unavailable and the report explicitly marks
   the gate `BLOCKED` or `NEEDS_REVIEW`.
+- Do not claim `GO` when discovered safe project quality gates such as lint,
+  typecheck, test, build, validate, contract, or CI-equivalent commands were
+  skipped. Run them, or report the exact gate as `BLOCKED` or `NEEDS_REVIEW`
+  with the precondition.

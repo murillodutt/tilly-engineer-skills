@@ -10,11 +10,12 @@ Cursor loads `.cursor/rules/tes-guidelines.mdc` for governance and
 
 ## Use In Another Project
 
-Copy `.cursor/rules/tes-guidelines.mdc` and
+Back up existing Cursor rules under `.tes/bk/**`, then copy
+`.cursor/rules/tes-guidelines.mdc` and
 `.cursor/rules/tes-runtime-capabilities.mdc` into the target project's rule set.
 
-If the target project already has rules, merge the four gates rather than
-duplicating long prose:
+If the target project already has rules, recover useful local semantics into
+`docs/agents/**` rather than duplicating long runtime prose:
 
 - Think Before Coding
 - Simplicity First

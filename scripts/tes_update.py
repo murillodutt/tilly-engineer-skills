@@ -136,6 +136,7 @@ POST_LAYER_ZERO_FINAL_PROBE_CONTRACT = (
     "runtime_trigger_status=PASS|NOT_APPLIED",
     "project_context_status=PASS|NOT_APPLIED",
     "project_alignment_status=PASS|NOT_APPLIED",
+    "project_quality_gates=PASS|BLOCKED_WITH_REASON|NOT_APPLIED",
     "update_available=False",
     "recommended_update_scope=none",
 )
@@ -146,6 +147,7 @@ PROJECT_START_GATE_CONTRACT = (
     "init_command=tes_init.py --target . --yes",
     "oracle_command=project_context_oracle.py --target .",
     "alignment_oracle_command=project_alignment_oracle.py --target .",
+    "project_quality_command=run required gates from docs/agents/QUALITY-GATES.md",
 )
 VERSION_RE = re.compile(
     r"""(?x)
@@ -870,6 +872,7 @@ def project_start_gate(target: Path) -> dict[str, Any]:
             "python3 .tes/bin/tes_init.py --target . --yes",
             "python3 .tes/bin/project_context_oracle.py --target .",
             "python3 .tes/bin/project_alignment_oracle.py --target .",
+            "run required project quality gates from docs/agents/QUALITY-GATES.md or report BLOCKED_WITH_REASON",
             "python3 .tes/bin/tes_open_obsidian.py --target . --dry-run --open",
         ]
         if has_installed_helpers
@@ -891,6 +894,7 @@ def project_start_gate(target: Path) -> dict[str, Any]:
             "python3 scripts/tes_init.py --target <target> --yes",
             "python3 scripts/project_context_oracle.py --target <target>",
             "python3 scripts/project_alignment_oracle.py --target <target>",
+            "run required project quality gates from docs/agents/QUALITY-GATES.md or report BLOCKED_WITH_REASON",
             "python3 scripts/tes_open_obsidian.py --target <target> --dry-run --open",
         ],
         "contract": list(PROJECT_START_GATE_CONTRACT),
@@ -1015,6 +1019,7 @@ def continuation_plan(
                 "python3 .tes/bin/tes_init.py --target . --yes",
                 "python3 .tes/bin/project_context_oracle.py --target .",
                 "python3 .tes/bin/project_alignment_oracle.py --target .",
+                "run required project quality gates from docs/agents/QUALITY-GATES.md or report BLOCKED_WITH_REASON",
             ],
             "goal": "create or refresh PROJECT-CONTEXT plus the operating alignment mesh",
         },
@@ -1032,7 +1037,7 @@ def continuation_plan(
             "approval_required": False,
             "writes": [".tes/field-reports/outbox.jsonl"],
             "commands": ["python3 .tes/bin/tes_update.py plan --target . --json-only --record-field-report"],
-            "goal": "require helper PASS, runtime trigger PASS, context PASS, alignment PASS, update_available=false, scope=none",
+            "goal": "require helper PASS, runtime trigger PASS, context PASS, alignment PASS, project quality gate disposition, update_available=false, scope=none",
         },
     ]
     return {
@@ -1408,8 +1413,9 @@ def write_alignment_fixture(target: Path) -> None:
         alignment_frontmatter("quality-gates")
         + "# Quality Gates\n\n| Gate | Class | Command |\n|------|-------|---------|\n"
         + "| Unit test | required | `npm test` |\n"
-        + "| Lint | focused | `npm run lint` |\n"
-        + "| Coverage | advisory | `npm run coverage` |\n"
+        + "| Lint | required | `npm run lint` |\n"
+        + "| Contract verify | focused | `npm run contract:verify` |\n"
+        + "| Coverage | needs_review | `npm run coverage` |\n"
         + "| Typecheck | unavailable | No TypeScript config in `package.json` |\n"
         + "| Deploy | unsafe | Requires external credentials |\n",
     )
@@ -1452,6 +1458,7 @@ def write_alignment_fixture(target: Path) -> None:
         + "  contradictions: []\n"
         + "  quality_gates_discovered:\n"
         + "    - npm test\n"
+        + "    - npm run lint\n"
         + "  roadmap_changes:\n"
         + "    - created initial lanes\n"
         + "  obsidian_native_checks:\n"

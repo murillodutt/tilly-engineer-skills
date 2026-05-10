@@ -314,14 +314,14 @@ documents:
     class: roadmap
     status: active
     consumer: maintainers, release reviewers, and next-loop operators
-    source_of_truth: true
+    source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/RC1-READINESS-ROADMAP.md
     id: roadmap.rc1_readiness
     class: roadmap
     status: active
     consumer: maintainers, release reviewers, and documentation operators
-    source_of_truth: true
+    source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/SENIOR-MENTORSHIP-CONTEXT-2026-05-05.md
     id: roadmap.senior_mentorship_context_2026_05_05

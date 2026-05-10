@@ -1383,9 +1383,11 @@ def initial_alignment_texts(
     focused_gate = "python3 .tes/bin/project_alignment_oracle.py --target ."
     if quality:
         first_quality_name, first_quality_command = next(iter(quality.items()))
-        advisory_gate = f"{first_quality_name}: {first_quality_command}"
+        project_quality_class = "required"
+        project_quality_gate = f"{first_quality_name}: {first_quality_command}"
     else:
-        advisory_gate = f"Open `{primary}` and confirm the project-specific validation path."
+        project_quality_class = "needs_review"
+        project_quality_gate = f"Open `{primary}` and confirm the project-specific validation path."
     gate_failures = [gate for gate in gates if not gate_passed(gate)]
     gate_status = "PASS" if not gate_failures else "NEEDS_REVIEW"
     anchor_yaml = "\n".join(f"    - {anchor}" for anchor in anchors[:6])
@@ -1531,7 +1533,8 @@ artifacts.
 |------|-------|------------------|
 | Project context oracle | required | `{required_gate}` |
 | Project alignment oracle | focused | `{focused_gate}` |
-| Project-specific validation | advisory | `{advisory_gate}` |
+| Project quality gates | {project_quality_class} | `{project_quality_gate}` |
+| Unclassified quality gate | needs_review | Record the missing, unsafe, or ambiguous proof before claiming GO. |
 | Missing local toolchain | unavailable | Record the blocker before claiming coverage. |
 | Production or secret-backed action | unsafe | Requires explicit user approval. |
 

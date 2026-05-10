@@ -98,7 +98,7 @@ For `/tes-update` or `/tes:update`, `CURRENT` also requires helper contract pari
 - Never move target-project-specific rules into the external Tilly skill.
 - Never edit secrets, `.env`, credentials, production remotes, non-Tilly hooks, CI secrets, cloud settings, or package-manager lockfiles unless the user explicitly asks and a project oracle requires it.
 - Never edit global MCP configuration. Project-scoped TES Cortex MCP config may be created only by the selected install route and only for the read-only local `tes-cortex` server.
-- Never push, amend, tag, publish, install dependencies, overwrite files, or change remotes unless the user explicitly asks after reviewing the certification report.
+- Never push, amend, tag, publish, install dependencies, overwrite files outside the selected TES clean-runtime route, overwrite root runtime files before `.tes/bk/<timestamp>/manifest.json` exists, or change remotes unless the user explicitly asks after reviewing the certification report.
 - A local baseline commit before installation is allowed only through Step Zero below. Post-install commits still require explicit approval after the certification report.
 - Do not claim certification until you run the smallest relevant local oracles available in the target project.
 - If a file already exists, merge intent or turn it into a thin bootloader.
@@ -246,6 +246,8 @@ Required local excludes:
 - `.tes/bin/*.bak-*`
 - `.tes/bin/__pycache__/`
 - `*.pyc`
+- `.tes/bk/`
+- `.tes/setup/`
 - `.tes/field-reports/`
 - `.tes/cortex/*.sqlite`
 - `.tes/cortex/*.sqlite-*`
@@ -374,16 +376,16 @@ Project state: <new | existing | meshed | uncertain>
 Routes:
 
   current  (recommended)
-    Install only the runtime currently executing this conversation.
+    Install or refresh only the runtime currently executing this conversation after central backup.
 
   codex
-    Create or retrofit AGENTS.md and .agents/skills/**.
+    Apply clean AGENTS.md and .agents/skills/** after backup; recover local semantics into docs/agents/**.
 
   claude
-    Create or retrofit CLAUDE.md, .claude/skills/**, plugin skills, and Claude MCP.
+    Apply clean CLAUDE.md, .claude/skills/**, plugin skills, and Claude MCP after backup; recover local semantics into docs/agents/**.
 
   cursor
-    Create or retrofit .cursor/rules/*.mdc.
+    Apply clean .cursor/rules/*.mdc after backup; recover local semantics into docs/agents/**.
 
   all
     Create the shared docs/agents/** mesh, all three runtime bootloaders, and
@@ -402,7 +404,7 @@ If the user already gave a clear instruction, proceed with the matching option a
 
 ## Phase 4 - Create Canonical Mesh
 
-Create or retrofit this structure:
+Create or refresh this canonical mesh:
 
 ```text
 docs/agents/
@@ -506,7 +508,7 @@ work as a post-install next step.
 
 ## Phase 4.5 - Create Cortex
 
-Create or retrofit the compiled TES Cortex layer under:
+Create or refresh the compiled TES Cortex layer under:
 
 ```text
 docs/agents/cortex/**
@@ -584,7 +586,7 @@ Install only the selected adapter surfaces.
 
 ### Codex
 
-Create or retrofit:
+Apply clean runtime assets after central backup:
 
 ```text
 AGENTS.md
@@ -605,7 +607,7 @@ Copy `.agents/skills/tes-engineering-discipline/**` from the source package with
 
 ### Claude Code
 
-Create or retrofit:
+Apply clean runtime assets after central backup:
 
 ```text
 CLAUDE.md
@@ -619,7 +621,7 @@ skills/tes-*/**
 
 ### Cursor
 
-Create or retrofit:
+Apply clean runtime assets after central backup:
 
 ```text
 .cursor/rules/<project-agent-governance>.mdc
@@ -852,7 +854,13 @@ test
 build
 ```
 
-If a command needs database, Docker, secrets, network, or long runtime, name the precondition and ask before running unless the user already authorized it.
+Project quality gates are part of GO, not optional polish. If `package.json`,
+Makefile, CI config, or project docs expose safe `lint`, `typecheck`, `test`,
+`build`, `contract`, `validate`, or CI-equivalent gates, run the relevant local
+commands before final report. If a command needs database, Docker, secrets,
+network, destructive writes, or long runtime, name the precondition and report
+that gate as `BLOCKED` or `NEEDS_REVIEW` with the reason. Do not hide skipped
+quality gates under `Limits` while claiming `GO`.
 
 Do not run multiple build commands in parallel when they share caches.
 
@@ -928,6 +936,7 @@ Changed Surfaces
 
 Certification
 - Context, project register, project context, thin runtime assets, Cortex, MCP, platform surfaces, Obsidian boundary, secrets, and oracles: PASS/FAIL/SKIP
+- Project quality gates: PASS | BLOCKED | NEEDS_REVIEW | NOT_APPLIED; commands run or reason: <lint/typecheck/test/build/CI details>
 - Field Reports: PASS | BLOCKED | DISABLED | SKIP; hook/drain/sentinel/outbox pending count: <...>
 - `/tes-update` routine: PASS | BLOCKED | SKIP; route probe and post-Layer Zero final Field Reports `tes_update` event: <...>
 
@@ -959,6 +968,9 @@ GO requires:
 - Field Reports state and installed helper set are explicit in the report;
 - helper contract parity is PASS or NOT_INSTALLED; `STALE_HELPERS` cannot close as GO;
 - runtime trigger parity is PASS or NOT_APPLIED; `DRIFT` cannot close as GO;
+- discovered safe project quality gates such as lint, typecheck, test, build,
+  contract, validate, or CI-equivalent commands passed, or unsafe/unavailable
+  gates are explicitly `BLOCKED` or `NEEDS_REVIEW` with reasons;
 - final `tes_update` evidence is recorded when Field Reports is installed;
 - if Layer Zero copied helpers, final `tes_update` evidence must be recorded after the overwrite and must show `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`;
 - when Field Reports drains through the silent pre-push hook, verify `field_reports.py status` or `.tes/field-reports/receipts/**` before claiming that no upstream issue was created;

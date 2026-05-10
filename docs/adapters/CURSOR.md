@@ -64,7 +64,8 @@ manual rules instead of expanding the always-on rule.
 - Keep `.mdc` frontmatter with `description` and `alwaysApply: true`.
 - Do not materialize `AGENTS.md` for Cursor without an explicit decision,
   because it can duplicate `.cursor/rules/**`.
-- Preserve project-owned Cursor governance rules; refresh only manifest-known
+- Back up project-owned Cursor governance rules, apply clean TES rules, and
+  recover durable local semantics into `docs/agents/**`. Refresh manifest-known
   TES-owned runtime capability rules such as `tes-runtime-capabilities.mdc`.
 - Do not add hook config or environment files to the default package.
 - Read-only Cortex MCP may be activated by the assisted installer through

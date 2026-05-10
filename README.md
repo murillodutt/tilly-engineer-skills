@@ -44,12 +44,13 @@ https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/in
 
 Run in quiet installer mode: show compact progress, blockers and the final
 certification report only. Start by detecting the current IDE/runtime and
-classifying this project as new, existing, or meshed. Preserve local project
-governance, build or update docs/agents/** as the canonical context mesh, stage
-the deterministic TES bundle under .tes/setup/<version>/ from the public ZIP
-when available, verify its SHA-256 before apply, keep AGENTS.md, CLAUDE.md and
-project-owned Cursor rules preserved for semantic review, install TES-owned
-runtime capabilities such as /tes-align and /tes-open-obsidian,
+classifying this project as new, existing, or meshed. Stage the deterministic
+TES bundle under .tes/setup/<version>/ from the public ZIP when available,
+verify its SHA-256 before apply, create a central .tes/bk/<timestamp>/ backup,
+apply the clean TES runtime, recover durable local governance semantics into
+docs/agents/**, keep active AGENTS.md, CLAUDE.md, CURSOR.md and Cursor rules as
+thin TES bootloaders, install TES-owned runtime capabilities such as /tes-align
+and /tes-open-obsidian,
 create the docs/agents/cortex/** continuity layer when needed, activate the
 read-only project-scoped Cortex MCP server for the selected runtime route, and
 finish with the certification report required by the spec.
@@ -57,8 +58,10 @@ finish with the certification report required by the spec.
 Before installation edits, run Step Zero from the spec: inspect Git status and
 offer a local baseline commit if the working tree is dirty. At the end, tell
 me how to undo the installation with Git. Do not push, amend, tag, publish,
-install dependencies, overwrite files, or change remotes unless I explicitly
-ask after reviewing the certification report.
+install dependencies, overwrite files outside the selected TES clean-runtime
+route, overwrite root runtime files before .tes/bk/<timestamp>/manifest.json
+exists, or change remotes unless I explicitly ask after reviewing the
+certification report.
 ```
 
 Short intents also work after the route is available:
@@ -113,7 +116,7 @@ can inspect it, review it, open it in Obsidian, and roll it back.
 |-------|------|
 | Governance | Four engineering gates: assumptions, simplicity, surgical scope, verification. |
 | Adapter runtime | Thin Codex, Claude Code, and Cursor surfaces that route to one contract. |
-| Assisted installer | Detects runtime, classifies project state, preserves existing governance, and reports rollback. |
+| Assisted installer | Detects runtime, classifies project state, creates central backup, applies clean runtime, recovers governance semantics, and reports rollback. |
 | Obsidian-ready mesh | Markdown properties, wikilinks, state, roadmap, decisions, quality gates, and evidence under `docs/agents/**`. |
 | Local oracles | Validation, smoke, platform, materialization, MCP, Cortex, and Field Reports checks. |
 | Evidence loop | Certification reports, evals, parity gates, and sanitized operational feedback. |
@@ -122,8 +125,9 @@ can inspect it, review it, open it in Obsidian, and roll it back.
 ## 2. Trust And Audit
 
 TES does **not** push, publish, tag, amend commits, change remotes, install
-marketplace assets, send code telemetry, write `.obsidian/**`, or overwrite
-project-owned governance without explicit approval.
+marketplace assets, send code telemetry, write `.obsidian/**`, or discard
+project-owned governance. Clean install backs it up under `.tes/bk/**`, applies
+the canonical runtime, and recovers supported semantics into `docs/agents/**`.
 
 For this reference package, the full local closure gate is:
 

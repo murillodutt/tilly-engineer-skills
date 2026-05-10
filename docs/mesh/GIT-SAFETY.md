@@ -40,13 +40,16 @@ The local exclude must cover:
 - `.tes/bin/*.bak-*`
 - `.tes/bin/__pycache__/`
 - `*.pyc`
+- `.tes/bk/`
+- `.tes/setup/`
 - `.tes/field-reports/`
 - `.tes/legacy-retirement/`
 - `.tes/cortex/*.sqlite`
 - `.tes/cortex/*.sqlite-*`
 
-These paths are rollback, transport, bytecode, legacy-retirement, or derived
-cache artifacts. They are not project memory and not durable TES surfaces.
+These paths are rollback, staging, transport, bytecode, legacy-retirement, or
+derived cache artifacts. They are not project memory and not durable TES
+surfaces.
 
 The installer must not ignore `.tes/bin/*.py`. Those helper scripts are the
 project-scoped Tilly runtime surface and may be committed when the user chooses
@@ -57,6 +60,12 @@ to preserve the installed mesh.
 Every installation or update report must include the baseline commit and the
 safe rollback path. Tilly may show `git reset --hard <baseline-head>` or
 `git revert <install-commit>`, but it must not run either command automatically.
+
+Clean runtime installs must also report the `.tes/bk/<timestamp>/` backup id and
+the exact `tes_bundle.py restore --backup-id <id> --yes` command that restores
+previous root governance files. Backup restore does not remove sanitized
+`docs/agents/evidence/**` generated during recovery unless the user asks for
+that cleanup explicitly.
 
 If an earlier installation already committed ignored local artifacts, the next
 installer run should prevent new artifacts from being staged. Removing already
