@@ -70,11 +70,12 @@ def certify_public_bundle() -> dict[str, object]:
         with zipfile.ZipFile(bundle) as archive:
             names = set(archive.namelist())
             for relpath in (
-                "scripts/tes_bundle.py",
-                "scripts/materialize_adapter.py",
-                "scripts/tes_init.py",
-                "tes-bundle-manifest.json",
-                "tes-bundle-metadata.json",
+            "scripts/tes_bundle.py",
+            "scripts/materialize_adapter.py",
+            "scripts/tes_init.py",
+            "scripts/command_trigger_oracle.py",
+            "tes-bundle-manifest.json",
+            "tes-bundle-metadata.json",
             ):
                 if relpath not in names:
                     failures.append(f"public bundle missing self-apply member: {relpath}")
@@ -174,6 +175,7 @@ def certify_public_bundle() -> dict[str, object]:
         for relpath in (
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",
             ".tes/bin/tes_open_obsidian.py",
+            ".tes/bin/command_trigger_oracle.py",
             ".tes/bin/tes_bundle.py",
             ".tes/bin/materialize_adapter.py",
             ".agents/skills/tes-open-obsidian/SKILL.md",

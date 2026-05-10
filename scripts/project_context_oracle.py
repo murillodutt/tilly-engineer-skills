@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.73"
+VERSION = "0.3.74"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 TES_AGENT_MESH_RELPATHS = {
     "docs/agents/PROJECT-CONTEXT.md",
@@ -181,7 +181,7 @@ def git_files(target: Path) -> list[Path] | None:
 
 def iter_project_files(target: Path) -> list[Path]:
     from_git = git_files(target)
-    if from_git is not None:
+    if from_git:
         return sorted(path for path in from_git if path.is_file() and not is_excluded(path, target))
     return sorted(
         path
@@ -1061,6 +1061,17 @@ def self_test() -> dict[str, Any]:
                 failures.append(f"oracle must exclude generated TES anchor: {generated}")
         if "src" not in territories or "src/app.py" not in anchors:
             failures.append("oracle must keep real project territory while excluding TES runtime surfaces")
+
+    with tempfile.TemporaryDirectory(prefix="tes-project-context-ignored-parent-") as tempdir:
+        parent = Path(tempdir)
+        subprocess.run(["git", "init"], cwd=parent, text=True, capture_output=True, check=False)
+        write(parent / ".gitignore", "runs/\n")
+        target = parent / "runs" / "canary"
+        write(target / "AGENTS.md", "project-owned AGENTS\n")
+        write(target / "CLAUDE.md", "project-owned CLAUDE\n")
+        anchors = expected_anchors(target)
+        if "AGENTS.md" not in anchors or "CLAUDE.md" not in anchors:
+            failures.append("oracle must fall back to local anchors when parent Git ignores target")
 
     with tempfile.TemporaryDirectory(prefix="tes-project-context-monorepo-") as tempdir:
         target = Path(tempdir)

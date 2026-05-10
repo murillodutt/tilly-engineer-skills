@@ -35,7 +35,7 @@ SOURCE_PACKAGE_MODE = (
 )
 BUNDLE_MODE = SOURCE_ROOT.name == "scripts" and not SOURCE_PACKAGE_MODE
 PACKAGE_MODE = SOURCE_PACKAGE_MODE
-VERSION = "0.3.73"
+VERSION = "0.3.74"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -419,7 +419,7 @@ def git_files(target: Path) -> list[Path] | None:
 
 def all_files(target: Path) -> list[Path]:
     from_git = git_files(target)
-    if from_git is not None:
+    if from_git:
         return from_git
     files: list[Path] = []
     for path in target.rglob("*"):
@@ -2231,6 +2231,19 @@ def self_test() -> dict[str, Any]:
             failures.append(f"expected PASS, got {result['status']}")
         if not any(gate["status"] == "PRESERVED" for gate in result["gates"]):
             failures.append("project-owned root context must close as PRESERVED during init")
+
+    with tempfile.TemporaryDirectory(prefix="tes-init-ignored-parent-") as tempdir:
+        parent = Path(tempdir)
+        subprocess.run(["git", "init"], cwd=parent, text=True, capture_output=True, check=False, env=isolated_git_env())
+        (parent / ".gitignore").write_text("runs/\n", encoding="utf-8")
+        target = parent / "runs" / "canary"
+        target.mkdir(parents=True)
+        (target / "AGENTS.md").write_text("project-owned AGENTS\n", encoding="utf-8")
+        (target / "CLAUDE.md").write_text("project-owned CLAUDE\n", encoding="utf-8")
+        scan = scan_project(target)
+        paths = {str(record["path"]) for record in scan["files"]}
+        if not {"AGENTS.md", "CLAUDE.md"}.issubset(paths):
+            failures.append("project scan must fall back to local files when parent Git ignores target")
 
     with tempfile.TemporaryDirectory(prefix="tes-init-readme-identity-") as tempdir:
         target = Path(tempdir)
