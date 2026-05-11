@@ -9,8 +9,8 @@ operating mesh.
 
 Canary convergence showed that a valid `PROJECT-CONTEXT.md` can still be too
 shallow to guide future work. The missing layer is semantic alignment:
-roadmap, state, execution line, gates, boundaries, decisions, glossary,
-knowledge lifecycle, and evidence.
+System X-Ray, Convergence Line, state, execution line, gates, boundaries,
+decisions, glossary, knowledge lifecycle, and evidence.
 
 ## Origin Signals
 
@@ -40,6 +40,7 @@ knowledge lifecycle, and evidence.
 - Treating scaffold context as deep understanding.
 - Recreating existing roadmap or governance docs.
 - Writing ambition-theater roadmaps.
+- Falling back to a bullet roadmap when the user needs an operating X-Ray and a visual future map.
 - Hiding unknowns.
 - Polluting `.obsidian/**`.
 - Claiming alignment without retained evidence.
@@ -55,6 +56,8 @@ Fix loops prove product changes after alignment selects the lane.
 | Date | Change | Evidence | Confidence |
 |------|--------|----------|------------|
 | 2026-05-09 | Created `tes-align` contract. | TES Align source-of-truth document; `scripts/project_alignment_oracle.py --self-test`. | high |
+| 2026-05-11 | Made Mermaid roadmap visualization the default presentation. | TES Align source-of-truth document; `scripts/project_alignment_oracle.py --self-test`. | high |
+| 2026-05-11 | Added System X-Ray plus Convergence Line as the standard roadmap frame. | TES Align source-of-truth document; `scripts/project_alignment_oracle.py --self-test`. | high |
 
 ## Do Not Lose
 

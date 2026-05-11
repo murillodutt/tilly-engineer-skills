@@ -1,6 +1,6 @@
 ---
 name: tes-align
-description: Use when the user says /tes-align, /tes:align, tes align, align TES, align this project, alinhar TES, alinhar projeto, or asks TES to semantically align a project after /tes-init by creating or updating the project operating mesh, roadmap, execution line, quality gates, boundaries, glossary, decisions, and retained alignment evidence.
+description: Use when the user says /tes-align, /tes:align, tes align, align TES, align this project, alinhar TES, alinhar projeto, or asks TES to semantically align a project after /tes-init by creating or updating the project operating mesh, System X-Ray, Convergence Line, execution line, quality gates, boundaries, glossary, decisions, and retained alignment evidence.
 ---
 
 # TES Align
@@ -26,10 +26,12 @@ sources, update it if needed, and only then use it as construction truth.
 Turn initial context into an evidenced project operating mesh:
 
 ```text
-PROJECT-CONTEXT -> PROJECT-STATE -> PROJECT-ROADMAP -> EXECUTION-LINE
+PROJECT-CONTEXT -> PROJECT-STATE -> PROJECT-ROADMAP x-ray/convergence -> EXECUTION-LINE
 ```
 
 The goal is operational legibility, not prettier documentation.
+`PROJECT-ROADMAP.md` should present a System X-Ray and Convergence Line first
+so the project organism and future path are visible before the audit lanes.
 
 ## Workflow
 
@@ -50,13 +52,21 @@ The goal is operational legibility, not prettier documentation.
    - `GLOSSARY.md`
    - `DECISIONS/**` or a link to an existing decision system
    - `evidence/<timestamp>-project-alignment.md`
-5. Keep the mesh Obsidian-native and Git-portable:
+5. In `PROJECT-ROADMAP.md`, make the first human scan path two Mermaid
+   `flowchart TD` graphs:
+   - System X-Ray: Git state, delivered behavior, validation mesh, and release
+     boundary.
+   - Convergence Line: done/current/next/later/deferred/blocked/unknown/final
+     states.
+   Keep Done, Active, Next, Later, Deferred, Blocked, and Unknown as compact
+   audit lanes.
+6. Keep the mesh Obsidian-native and Git-portable:
    - use Markdown as authority;
    - use YAML frontmatter as Properties;
    - use wikilinks when they improve navigation;
    - never write `.obsidian/**`;
    - do not make `.base` or `.canvas` the only source of truth.
-6. Certify with:
+7. Certify with:
 
 ```bash
 python3 .tes/bin/project_alignment_oracle.py --target .
@@ -82,6 +92,7 @@ Project alignment: PASS, with explicit limits.
 - Do not overwrite active governance before `.tes/bk/<timestamp>/manifest.json` exists.
 - Do not recreate docs that already exist under stronger project-owned paths.
 - Do not invent architecture, roadmap items, or decisions.
+- Do not replace the System X-Ray and Convergence Line with only a textual roadmap.
 - Do not call scaffold output deep alignment.
 - Do not write `.obsidian/**`.
 - Do not claim PASS without retained evidence and a passing oracle.

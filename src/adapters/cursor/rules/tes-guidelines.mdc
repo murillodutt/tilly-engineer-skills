@@ -117,6 +117,9 @@ Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
 and `/tes:reflect`
 as intent shortcuts. Choose the smallest safe oracle behind
 the scenes and report skipped or blocked commands honestly.
+For `/tes-align`, make `docs/agents/PROJECT-ROADMAP.md` open with Mermaid
+`flowchart TD` System X-Ray and Convergence Line graphs before compact audit
+lanes, then certify with `project_alignment_oracle.py`.
 
 ## Cortex Reflection
 

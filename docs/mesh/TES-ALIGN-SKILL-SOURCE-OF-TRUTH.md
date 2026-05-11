@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and `/tes-align` skill authors
 source_of_truth: true
 evidence_level: L1
-tver: 0.2.1
+tver: 0.2.2
 sources_verified_on: 2026-05-09
 source_refresh_interval_days: 15
 source_refresh_policy: >-
@@ -50,12 +50,16 @@ can enter the project, understand what already exists, what is in motion, what
 must not be rebuilt, which gates prove quality, and which line of work should
 advance next.
 
+For humans, the project should be visible at two levels in one scan.
+`PROJECT-ROADMAP.md` therefore presents a System X-Ray and a Convergence Line
+first; compact text lanes remain the audit trail behind the pictures.
+
 ## Role Boundary
 
 | Surface | Role |
 |---------|------|
 | `/tes-init` | Install, update, create the initial `docs/agents/PROJECT-CONTEXT.md` project map, and create a first-pass operating mesh when missing. |
-| `/tes-align` | Refine the first-pass mesh into a deeper project operating system with roadmap, state, execution line, constraints, terms, decisions, and quality gates. |
+| `/tes-align` | Refine the first-pass mesh into a deeper project operating system with System X-Ray, Convergence Line, state, execution line, constraints, terms, decisions, and quality gates. |
 | `/tes-doctor` | Health-check and certify installed TES surfaces and project gates. |
 | `/tes-cortex` | Recall, curate, learn, and reflect from the continuity layer. |
 | `/tes-field-reports` | Capture sanitized operational feedback outside project truth. |
@@ -78,7 +82,7 @@ Default generated or updated surfaces:
 |---------|---------|
 | `docs/agents/PROJECT-CONTEXT.md` | Refined project identity, architecture, territories, anchors, scripts, gaps, and next-work guidance. |
 | `docs/agents/PROJECT-STATE.md` | Current state: done, active, blocked, deferred, and uncertain. |
-| `docs/agents/PROJECT-ROADMAP.md` | Evidence-based roadmap that emphasizes what remains to build, not what already exists. |
+| `docs/agents/PROJECT-ROADMAP.md` | Evidence-based System X-Ray plus Convergence Line that shows the operating system, current claim, and remaining work. |
 | `docs/agents/EXECUTION-LINE.md` | The agreed work lane: sequence, gates, handoff rules, and restart protocol. |
 | `docs/agents/QUALITY-GATES.md` | Project-specific commands, acceptance gates, risk gates, and certification semantics. |
 | `docs/agents/BOUNDARIES-AND-CONSTRAINTS.md` | Safety, ownership, no-go surfaces, protected files, and mutation limits. |
@@ -179,6 +183,14 @@ linkable, and Git-readable without binding TES to an Obsidian runtime.
 
 `PROJECT-ROADMAP.md` must reduce confusion, not create ambition theater.
 
+Its primary human view is two Mermaid `flowchart TD` graphs, not a plain bullet
+roadmap. The System X-Ray should make Git state, delivered behavior, validation
+mesh, and release boundary visible at a glance. The Convergence Line should make
+sequence, current position, blocked branches, unknowns, and final gate visible
+at a glance. Use visual classes such as `system`, `behavior`, `gate`, `release`,
+`done`, `current`, `next`, `later`, `deferred`, `blocked`, `unknown`, and
+`final` when those states exist.
+
 It must separate:
 
 | Category | Meaning |
@@ -194,6 +206,9 @@ It must separate:
 The roadmap must not ask agents to rebuild what already exists. If the project
 has a previous roadmap, `/tes-align` must compare against it and mark stale,
 done, superseded, or still-active items.
+
+The text lanes remain required because they preserve evidence and searchability.
+They are secondary to the two visual graphs for human presentation.
 
 ## Execution Line Semantics
 
@@ -270,6 +285,7 @@ Minimum checks:
 |-------|---------------------|
 | Required surface or linked equivalent exists | Empty alignment claims. |
 | Anchors are listed with paths | Context written from memory. |
+| System X-Ray and Convergence Line exist and classify system, execution, and release states | Roadmap becomes a list or a single graph that hides operating reality. |
 | Roadmap separates done, active, next, deferred, blocked, unknown | Rebuilding existing work or hiding uncertainty. |
 | Execution line names gates and stop conditions | Agents restart without direction. |
 | Quality gates are project-specific | Generic "run tests" filler. |
@@ -356,7 +372,7 @@ This contract is based on:
 
 1. A refined project context.
 2. A current state document.
-3. A roadmap that does not rebuild completed work.
+3. A System X-Ray and Convergence Line that do not rebuild completed work.
 4. An execution line that makes the next session obvious.
 5. Project-specific quality gates and boundaries.
 6. An Obsidian-native but Git-portable mesh.

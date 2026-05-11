@@ -35,9 +35,14 @@ Before writing, classify each expected surface:
 | `deferred` | Record future work with reason. |
 | `not_applicable` | Record why the surface does not fit. |
 
-## Roadmap Lanes
+## System X-Ray, Convergence Line, And Roadmap Lanes
 
-`PROJECT-ROADMAP.md` must separate:
+`PROJECT-ROADMAP.md` must open with two Mermaid `flowchart TD` graphs. The
+System X-Ray shows Git state, delivered behavior, validation mesh, and release
+boundary. The Convergence Line shows done/current/next work, later/deferred
+branches, blocked branches, unknowns, and the final gate when one exists.
+
+After the graphs, `PROJECT-ROADMAP.md` must separate:
 
 - Done
 - Active
@@ -47,7 +52,8 @@ Before writing, classify each expected surface:
 - Blocked
 - Unknown
 
-Do not ask future agents to rebuild what the project already has.
+Do not ask future agents to rebuild what the project already has. Do not
+replace the System X-Ray and Convergence Line with only a textual roadmap.
 
 ## Obsidian Hygiene
 
