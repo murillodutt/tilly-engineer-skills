@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.81"
+VERSION = "0.3.82"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -27,9 +27,9 @@ REQUIRED_PATHS = (
     "docs/architecture/PROJECT-STRUCTURE.md",
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.81/index.json",
-    "docs/dist/0.3.81/tilly-engineer-skills-0.3.81.zip",
-    "docs/dist/0.3.81/tilly-engineer-skills-0.3.81.zip.sha256",
+    "docs/dist/0.3.82/index.json",
+    "docs/dist/0.3.82/tilly-engineer-skills-0.3.82.zip",
+    "docs/dist/0.3.82/tilly-engineer-skills-0.3.82.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -87,6 +87,9 @@ REQUIRED_PATHS = (
     "src/adapters/codex/skills/tes-open-obsidian/docs/CONTRACT-HISTORY.md",
     "src/adapters/codex/skills/tes-cortex/SKILL.md",
     "src/adapters/codex/skills/tes-mcp/SKILL.md",
+    "src/adapters/codex/skills/tes-field-reports/SKILL.md",
+    "src/adapters/codex/skills/tes-field-reports/agents/openai.yaml",
+    "src/adapters/codex/skills/tes-field-reports/docs/CONTRACT-HISTORY.md",
     "src/adapters/codex/skills/tes-doctor/SKILL.md",
     "src/adapters/codex/skills/tes-adapter/SKILL.md",
     "src/adapters/codex/skills/tes-bench/SKILL.md",
@@ -104,6 +107,9 @@ REQUIRED_PATHS = (
     "src/adapters/claude/skills/tes-open-obsidian/docs/CONTRACT-HISTORY.md",
     "src/adapters/claude/skills/tes-cortex/SKILL.md",
     "src/adapters/claude/skills/tes-mcp/SKILL.md",
+    "src/adapters/claude/skills/tes-field-reports/SKILL.md",
+    "src/adapters/claude/skills/tes-field-reports/agents/openai.yaml",
+    "src/adapters/claude/skills/tes-field-reports/docs/CONTRACT-HISTORY.md",
     "src/adapters/claude/skills/tes-doctor/SKILL.md",
     "src/adapters/claude/skills/tes-adapter/SKILL.md",
     "src/adapters/claude/skills/tes-bench/SKILL.md",

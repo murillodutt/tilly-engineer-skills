@@ -13,7 +13,7 @@ tver: 0.5.0
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.81`.
+Project version: `0.3.82`.
 
 It follows the Codex customization order:
 
@@ -63,11 +63,10 @@ Codex uses progressive disclosure for skills:
 - `SKILL.md` loads only when the workflow is selected.
 - References and scripts load or run only when needed.
 
-The preferred TES shortcuts map to Codex skills. `/tes-init`, `/tes-update`,
-`/tes-align`, `/tes-open-obsidian`, `/tes:init`, `/tes:update`, `/tes:align`,
-`/tes:open-obsidian`, `tes init`, `tes align`, `open Obsidian`, and natural
-init/update/alignment/Obsidian command-prompts route to TES skills. They keep
-the user entrypoint short while delegating real work to deterministic oracles:
+The preferred TES shortcuts map to Codex skills. Primary independent commands
+have visible skills; grouped intents such as `/tes-update` and `/tes-curate`
+route through their owning skills. They keep the user entrypoint short while
+delegating real work to deterministic oracles:
 
 | Shortcut | Skill |
 |----------|-------|
@@ -76,7 +75,9 @@ the user entrypoint short while delegating real work to deterministic oracles:
 | `/tes-align`, `/tes:align` | `tes-align` |
 | `/tes-open-obsidian`, `/tes:open-obsidian` | `tes-open-obsidian` |
 | `/tes-cortex`, `/tes:cortex` | `tes-cortex` |
+| `/tes-curate`, `/tes:curate` | `tes-cortex` |
 | `/tes-mcp`, `/tes:mcp` | `tes-mcp` |
+| `/tes-field-reports`, `/tes:field-reports` | `tes-field-reports` |
 | `/tes-doctor`, `/tes:doctor` | `tes-doctor` |
 | `/tes-adapter`, `/tes:adapter` | `tes-adapter` |
 | `/tes-bench`, `/tes:bench` | `tes-bench` |

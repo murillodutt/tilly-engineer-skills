@@ -67,9 +67,10 @@ dedicated decision.
 - `/tes-*` is the preferred cross-tool TES trigger vocabulary across Codex,
   Claude Code, and Cursor. Claude project installs expose skill-backed direct
   slash names such as `/tes-init`, `/tes-align`, `/tes-open-obsidian`,
-  `/tes-cortex`, `/tes-mcp`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench`;
-  other shared triggers may be covered by
-  the bootloader or a loaded skill instead of a one-file-per-command package.
+  `/tes-cortex`, `/tes-mcp`, `/tes-field-reports`, `/tes-doctor`,
+  `/tes-adapter`, and `/tes-bench`; grouped triggers such as `/tes-update` and
+  `/tes-curate` route through their owning skills instead of a
+  one-file-per-command package.
   `/tes:*` forms remain compatible TES intent aliases. If Claude receives
   `/tes:init` or `/tes:update` as invalid slash text, treat it as the matching
   TES intent and continue through the TES skill or bootloader route instead of

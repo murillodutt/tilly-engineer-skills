@@ -26,6 +26,25 @@ The executable parity gate is `python3 scripts/command_trigger_oracle.py
 Installed target parity can be checked with
 `python3 scripts/command_trigger_oracle.py --target <target-root>`.
 
+## Visible Skill Surface
+
+Some triggers are primary visible skills. Some are supported command intents
+routed through a broader skill so TES does not create one skill per alias.
+
+| Trigger | Visible router | Surface contract |
+|---------|----------------|------------------|
+| `/tes-init` | `tes-init` | visible skill |
+| `/tes-update` | `tes-init` | grouped update intent |
+| `/tes-align` | `tes-align` | visible skill |
+| `/tes-open-obsidian` | `tes-open-obsidian` | visible skill |
+| `/tes-cortex` | `tes-cortex` | visible skill |
+| `/tes-curate` | `tes-cortex` | grouped Cortex curation intent |
+| `/tes-mcp` | `tes-mcp` | visible skill |
+| `/tes-field-reports` | `tes-field-reports` | visible skill |
+| `/tes-doctor` | `tes-doctor` | visible skill |
+| `/tes-adapter` | `tes-adapter` | visible skill |
+| `/tes-bench` | `tes-bench` | visible skill |
+
 ## Trigger Matrix
 
 | Trigger | User intent | Primary oracles | Writes |

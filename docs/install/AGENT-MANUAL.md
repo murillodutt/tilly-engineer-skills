@@ -48,7 +48,7 @@ User-facing intent typed in the agent window — never a shell command.
 | `/tes-cortex` | Inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `/tes:cortex`, `/tes:recall`, `/tes:learn`, `/tes:reflect` |
 | `/tes-curate` | Classify Cortex quality risks without writing memory | `/tes:curate` |
 | `/tes-mcp` | Activate or verify read-only Cortex MCP | `/tes:mcp` |
-| `/tes-field-reports` | Inspect, drain, disable, or enable sanitized Field Reports | `/tes:field-reports:disable`, `/tes:field-reports:enable` |
+| `/tes-field-reports` | Inspect, drain, disable, or enable sanitized Field Reports | `/tes:field-reports`, `/tes:field-reports:disable`, `/tes:field-reports:enable` |
 | `/tes-doctor` | Health-check, certify, or prepare a commit | `/tes:doctor`, `/tes:check`, `/tes:certify` |
 | `/tes-adapter` | Materialize, dry-run, retrofit, or install adapter surfaces | `/tes:adapter` |
 | `/tes-bench` | Plan, run, or converge context-mesh benchmarks | `/tes:bench` |
