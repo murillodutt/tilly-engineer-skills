@@ -484,10 +484,10 @@ deeply as the current context window and local tools permit:
   recommended deep reads;
 - write the synthesis to `docs/agents/PROJECT-CONTEXT.md`;
 - create the initial alignment mesh under `docs/agents/**` when missing:
-  `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`,
-  `QUALITY-GATES.md`, `BOUNDARIES-AND-CONSTRAINTS.md`,
-  `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`, `DECISIONS/**`, and retained
-  project-alignment evidence;
+  `PROJECT-STATE.md`, `PROJECT-ROADMAP.md` with Mermaid System X-Ray and
+  Convergence Line graphs, `EXECUTION-LINE.md`, `QUALITY-GATES.md`,
+  `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`,
+  `DECISIONS/**`, and retained project-alignment evidence;
 - write the deterministic inventory to `docs/agents/PROJECT-REGISTER.md`;
 - store full manifests and evidence under `docs/agents/evidence/**`.
 

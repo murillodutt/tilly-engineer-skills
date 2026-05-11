@@ -1,4 +1,4 @@
-version: 0.3.80
+version: 0.3.81
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -671,5 +671,12 @@ documents:
     class: evidence
     status: active
     consumer: certification reviewers and platform adapter maintainers
+    source_of_truth: false
+    evidence_level: L3
+  - path: docs/evidence/reports/system-analysis/system-analysis-TES-20260511-094240-0300.md
+    id: evidence.system_analysis_tes_20260511_094240_0300
+    class: evidence
+    status: active
+    consumer: TES maintainers, adapter authors, and certification reviewers
     source_of_truth: false
     evidence_level: L3

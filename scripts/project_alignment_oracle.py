@@ -13,7 +13,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.80"
+VERSION = "0.3.81"
 PACKAGE_MODE = (ROOT / "scripts").exists()
 AGENTS = Path("docs/agents")
 EVIDENCE = AGENTS / "evidence"
@@ -29,6 +29,24 @@ ALIGNMENT_FILES = {
 }
 FRONTMATTER_KEYS = ("tes_doc", "status", "updated", "confidence", "tags", "evidence")
 ROADMAP_TERMS = ("Done", "Active", "Next", "Later", "Deferred", "Blocked", "Unknown")
+ROADMAP_FRAME_TERMS = ("System X-Ray", "Convergence Line", "Current Claim", "Next Irreversible Step")
+SYSTEM_XRAY_TERMS = (
+    "Git state",
+    "Delivered behavior",
+    "Validation mesh",
+    "Release boundary",
+    "classDef system",
+)
+CONVERGENCE_LINE_TERMS = (
+    "```mermaid",
+    "flowchart TD",
+    "classDef done",
+    "classDef current",
+    "classDef next",
+    "classDef deferred",
+    "classDef blocked",
+    "classDef unknown",
+)
 GATE_TERMS = ("required", "focused", "needs_review", "unavailable", "unsafe")
 BOUNDARY_TERMS = ("secrets", "external", "destructive", "governance")
 LIFECYCLE_TERMS = ("validate", "refresh", "retire", "contradict")
@@ -161,6 +179,9 @@ def analyze(target: Path) -> dict[str, Any]:
 
     roadmap = read_text(target / ALIGNMENT_FILES["project_roadmap"])
     failures.extend(require_terms("PROJECT-ROADMAP.md", roadmap, tuple(f"## {term}" for term in ROADMAP_TERMS)))
+    failures.extend(require_terms("PROJECT-ROADMAP.md roadmap frame", roadmap, tuple(f"## {term}" for term in ROADMAP_FRAME_TERMS)))
+    failures.extend(require_terms("PROJECT-ROADMAP.md System X-Ray", roadmap, SYSTEM_XRAY_TERMS))
+    failures.extend(require_terms("PROJECT-ROADMAP.md Convergence Line", roadmap, CONVERGENCE_LINE_TERMS))
 
     execution = read_text(target / ALIGNMENT_FILES["execution_line"])
     failures.extend(require_terms("EXECUTION-LINE.md", execution, EXECUTION_TERMS))
@@ -238,6 +259,60 @@ related:
 """
 
 
+def fixture_system_xray() -> str:
+    return """```mermaid
+flowchart TD
+  A["Project system"] --> B["Git state"]
+  A --> C["Delivered behavior"]
+  A --> D["Validation mesh"]
+  A --> E["Release boundary"]
+  C --> C1["docs/agents/** mesh"]
+  D --> D1["Alignment oracle"]
+  E --> E1["Technical GO"]
+  E --> E2["Release claim pending"]
+
+  classDef system fill:#eef2f7,stroke:#475569,color:#0f172a;
+  classDef behavior fill:#e6f0ff,stroke:#2b6cb0,color:#102a43;
+  classDef gate fill:#d8f5df,stroke:#1b7f3a,color:#0b351a;
+  classDef pending fill:#ffe4e6,stroke:#be123c,color:#4c0519;
+
+  class A,B,C,D,E system;
+  class C1 behavior;
+  class D1,E1 gate;
+  class E2 pending;
+```
+"""
+
+
+def fixture_convergence_line() -> str:
+    return """```mermaid
+flowchart TD
+  A["Done: scaffold exists"] --> B["Current: stabilize quality gates"]
+  B --> C["Next: add CI evidence"]
+  C --> D["Final: alignment gate passes"]
+  C --> G["Deferred: release docs"]
+  B --> E["Blocked: deployment target unknown"]
+  B --> F["Unknown: runtime support matrix"]
+
+  classDef done fill:#d8f5df,stroke:#1b7f3a,color:#0b351a;
+  classDef current fill:#fff0bf,stroke:#b7791f,color:#4a2d00;
+  classDef next fill:#e6f0ff,stroke:#2b6cb0,color:#102a43;
+  classDef deferred fill:#fef9c3,stroke:#a16207,color:#422006;
+  classDef blocked fill:#ffe4e6,stroke:#be123c,color:#4c0519;
+  classDef unknown fill:#f5f5f4,stroke:#78716c,color:#1c1917;
+  classDef final fill:#f3e8ff,stroke:#7e22ce,color:#2e1065;
+
+  class A done;
+  class B current;
+  class C next;
+  class G deferred;
+  class D final;
+  class E blocked;
+  class F unknown;
+```
+"""
+
+
 def write_good_fixture(target: Path) -> None:
     def write(relpath: Path, text: str) -> None:
         path = target / relpath
@@ -263,6 +338,14 @@ def write_good_fixture(target: Path) -> None:
         ALIGNMENT_FILES["project_roadmap"],
         fm("project-roadmap")
         + "# Project Roadmap\n\n"
+        + "## System X-Ray\n\n"
+        + fixture_system_xray()
+        + "\n"
+        + "## Convergence Line\n\n"
+        + fixture_convergence_line()
+        + "\n"
+        + "## Current Claim\n- Technical GO for `docs/agents/PROJECT-ROADMAP.md` after gates pass.\n\n"
+        + "## Next Irreversible Step\n- Commit only after `npm test` passes.\n"
         + "## Done\n- Existing app scaffold in `src/app.ts`.\n"
         + "## Active\n- Stabilize quality gates from `package.json`.\n"
         + "## Next\n- Add CI evidence.\n"
@@ -318,7 +401,7 @@ def write_good_fixture(target: Path) -> None:
         "# Project Alignment Evidence\n\n"
         + "```yaml\nalignment_evidence:\n"
         + "  target: fixture\n"
-        + "  tes_version: 0.3.80\n"
+        + "  tes_version: 0.3.81\n"
         + "  anchors_read:\n"
         + "    - README.md\n"
         + "    - package.json\n"
@@ -331,6 +414,8 @@ def write_good_fixture(target: Path) -> None:
         + "  quality_gates_discovered:\n"
         + "    - npm test\n"
         + "  roadmap_changes:\n"
+        + "    - created System X-Ray graph\n"
+        + "    - created Convergence Line graph\n"
         + "    - created initial lanes\n"
         + "  obsidian_native_checks:\n"
         + "    wikilinks: PASS\n"
@@ -357,6 +442,24 @@ def self_test() -> dict[str, Any]:
         result = analyze(target)
         if result["status"] != "FAIL" or not any("Unknown" in item for item in result["failures"]):
             failures.append("roadmap fixture must fail without Unknown lane")
+
+    with tempfile.TemporaryDirectory(prefix="tes-align-bad-xray-") as tempdir:
+        target = Path(tempdir)
+        write_good_fixture(target)
+        path = target / ALIGNMENT_FILES["project_roadmap"]
+        path.write_text(read_text(path).replace(fixture_system_xray() + "\n", ""), encoding="utf-8")
+        result = analyze(target)
+        if result["status"] != "FAIL" or not any("System X-Ray" in item for item in result["failures"]):
+            failures.append("roadmap fixture must fail without System X-Ray")
+
+    with tempfile.TemporaryDirectory(prefix="tes-align-bad-convergence-") as tempdir:
+        target = Path(tempdir)
+        write_good_fixture(target)
+        path = target / ALIGNMENT_FILES["project_roadmap"]
+        path.write_text(read_text(path).replace(fixture_convergence_line() + "\n", ""), encoding="utf-8")
+        result = analyze(target)
+        if result["status"] != "FAIL" or not any("Convergence Line" in item for item in result["failures"]):
+            failures.append("roadmap fixture must fail without Convergence Line")
 
     with tempfile.TemporaryDirectory(prefix="tes-align-generic-") as tempdir:
         target = Path(tempdir)
