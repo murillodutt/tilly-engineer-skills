@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.81"
+VERSION = "0.3.82"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -109,6 +109,7 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/codex/skills/tes-open-obsidian/SKILL.md",
         "src/adapters/codex/skills/tes-cortex/SKILL.md",
         "src/adapters/codex/skills/tes-mcp/SKILL.md",
+        "src/adapters/codex/skills/tes-field-reports/SKILL.md",
         "src/adapters/codex/skills/tes-doctor/SKILL.md",
         "src/adapters/codex/skills/tes-adapter/SKILL.md",
         "src/adapters/codex/skills/tes-bench/SKILL.md",
@@ -120,6 +121,7 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/claude/skills/tes-open-obsidian/SKILL.md",
         "src/adapters/claude/skills/tes-cortex/SKILL.md",
         "src/adapters/claude/skills/tes-mcp/SKILL.md",
+        "src/adapters/claude/skills/tes-field-reports/SKILL.md",
         "src/adapters/claude/skills/tes-doctor/SKILL.md",
         "src/adapters/claude/skills/tes-adapter/SKILL.md",
         "src/adapters/claude/skills/tes-bench/SKILL.md",
@@ -157,6 +159,7 @@ CLAUDE_PROJECT_SKILLS = (
     "tes-open-obsidian",
     "tes-cortex",
     "tes-mcp",
+    "tes-field-reports",
     "tes-doctor",
     "tes-adapter",
     "tes-bench",
@@ -168,10 +171,31 @@ CODEX_PROJECT_SKILLS = (
     "tes-open-obsidian",
     "tes-cortex",
     "tes-mcp",
+    "tes-field-reports",
     "tes-doctor",
     "tes-adapter",
     "tes-bench",
 )
+
+VISIBLE_SKILL_ROUTES = {
+    "codex": {
+        "tes-field-reports": ("/tes-field-reports", "/tes:field-reports", "field_reports.py"),
+    },
+    "claude": {
+        "tes-field-reports": ("/tes-field-reports", "/tes:field-reports", "field_reports.py"),
+    },
+}
+
+GROUPED_INTENT_ROUTES = {
+    "codex": {
+        "tes-init": ("/tes-update", "/tes:update"),
+        "tes-cortex": ("/tes-curate", "/tes:curate"),
+    },
+    "claude": {
+        "tes-init": ("/tes-update", "/tes:update"),
+        "tes-cortex": ("/tes-curate", "/tes:curate"),
+    },
+}
 
 
 def read_group(root: Path, paths: tuple[str, ...]) -> tuple[str, list[str]]:
@@ -251,6 +275,39 @@ def check_report_governance(root: Path) -> tuple[list[dict[str, Any]], list[str]
     return checked, failures
 
 
+def check_skill_route_contracts(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    checked: list[dict[str, Any]] = []
+    failures: list[str] = []
+    for platform, skills in VISIBLE_SKILL_ROUTES.items():
+        skill_root = "src/adapters/codex/skills" if platform == "codex" else "src/adapters/claude/skills"
+        for skill, terms in skills.items():
+            relpath = f"{skill_root}/{skill}/SKILL.md"
+            path = root / relpath
+            if not path.exists():
+                failures.append(f"{platform} missing visible skill route: {relpath}")
+                checked.append({"platform": platform, "skill": skill, "path": relpath, "status": "MISSING"})
+                continue
+            text = path.read_text(encoding="utf-8")
+            missing = [term for term in terms if term not in text]
+            failures.extend(f"{relpath} missing visible route term: {term}" for term in missing)
+            checked.append({"platform": platform, "skill": skill, "path": relpath, "status": "PASS" if not missing else "FAIL"})
+
+    for platform, skills in GROUPED_INTENT_ROUTES.items():
+        skill_root = "src/adapters/codex/skills" if platform == "codex" else "src/adapters/claude/skills"
+        for skill, terms in skills.items():
+            relpath = f"{skill_root}/{skill}/SKILL.md"
+            path = root / relpath
+            if not path.exists():
+                failures.append(f"{platform} missing grouped intent router: {relpath}")
+                checked.append({"platform": platform, "skill": skill, "path": relpath, "status": "MISSING"})
+                continue
+            text = path.read_text(encoding="utf-8")
+            missing = [term for term in terms if term not in text]
+            failures.extend(f"{relpath} missing grouped route term: {term}" for term in missing)
+            checked.append({"platform": platform, "skill": skill, "path": relpath, "status": "PASS" if not missing else "FAIL"})
+    return checked, failures
+
+
 def installed_platform_paths(root: Path, platform: str) -> tuple[str, ...]:
     if platform == "codex":
         return (
@@ -294,12 +351,14 @@ def required_installed_files(platform: str) -> tuple[str, ...]:
             "AGENTS.md",
             ".agents/skills/tes-engineering-discipline/SKILL.md",
             ".agents/skills/tes-init/SKILL.md",
+            ".agents/skills/tes-field-reports/SKILL.md",
         )
     if platform == "claude":
         return (
             "CLAUDE.md",
             ".claude/skills/tes-guidelines/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
+            ".claude/skills/tes-field-reports/SKILL.md",
         )
     if platform == "cursor":
         return (".cursor/rules/*.mdc",)
@@ -394,6 +453,16 @@ def analyze(root: Path = ROOT) -> dict[str, Any]:
         }
     )
 
+    skill_route_checked, skill_route_failures = check_skill_route_contracts(root)
+    failures.extend(skill_route_failures)
+    checked.append(
+        {
+            "group": "skill_route_contracts",
+            "status": "PASS" if not skill_route_failures else "FAIL",
+            "files": skill_route_checked,
+        }
+    )
+
     return {
         "version": VERSION,
         "status": "PASS" if not failures else "FAIL",
@@ -436,9 +505,11 @@ def run_fixture_tests() -> list[str]:
         target = Path(tempdir)
         (target / ".claude/skills/tes-guidelines").mkdir(parents=True)
         (target / ".claude/skills/tes-init").mkdir(parents=True)
+        (target / ".claude/skills/tes-field-reports").mkdir(parents=True)
         (target / "CLAUDE.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-guidelines/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-init/SKILL.md").write_text(good_text, encoding="utf-8")
+        (target / ".claude/skills/tes-field-reports/SKILL.md").write_text(good_text, encoding="utf-8")
         if check_installed_target(target)["status"] != "PASS":
             failures.append("good installed Claude fixture must pass")
 

@@ -48,11 +48,12 @@ instruction migration work.
 Cursor does not receive a separate skill package. The rules treat
 `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, natural
 init/update command-prompts, `/tes-cortex`, `/tes:cortex`, `/tes-mcp`,
-`/tes:mcp`, `/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`,
-`/tes-bench`, `/tes:bench`, `/tes-align`, `/tes:align`, `tes align`,
-`align TES`, `align this project`, `alinhar TES`, `alinhar projeto`,
-`/tes-open-obsidian`, `/tes:open-obsidian`, `open Obsidian`,
-`open this project in Obsidian`, `abrir Obsidian`, and `abrir no Obsidian` as
+`/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`, `/tes-doctor`,
+`/tes:doctor`, `/tes-adapter`, `/tes:adapter`, `/tes-bench`, `/tes:bench`,
+`/tes-align`, `/tes:align`, `tes align`, `align TES`, `align this project`,
+`alinhar TES`, `alinhar projeto`, `/tes-open-obsidian`,
+`/tes:open-obsidian`, `open Obsidian`, `open this project in Obsidian`,
+`abrir Obsidian`, `abrir no Obsidian`, `/tes-curate`, and `/tes:curate` as
 intent shortcuts for the same deterministic oracles used by Codex and Claude.
 
 Future workflow-specific rules should be separate `Agent Requested` or

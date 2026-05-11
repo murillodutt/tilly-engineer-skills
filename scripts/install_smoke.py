@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.81"
+VERSION = "0.3.82"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -186,6 +186,7 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
             ".agents/skills/tes-engineering-discipline/SKILL.md",
             ".agents/skills/tes-align/SKILL.md",
             ".agents/skills/tes-open-obsidian/SKILL.md",
+            ".agents/skills/tes-field-reports/SKILL.md",
         )
     if adapter == "claude":
         return (
@@ -197,8 +198,10 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
             ".claude/skills/tes-init/SKILL.md",
             ".claude/skills/tes-align/SKILL.md",
             ".claude/skills/tes-open-obsidian/SKILL.md",
+            ".claude/skills/tes-field-reports/SKILL.md",
             "skills/tes-align/SKILL.md",
             "skills/tes-open-obsidian/SKILL.md",
+            "skills/tes-field-reports/SKILL.md",
         )
     if adapter == "cursor":
         return (
@@ -379,10 +382,12 @@ def claude_clean_bootloader_probe() -> dict[str, Any]:
             ".claude/skills/tes-align/SKILL.md",
             ".claude/skills/tes-open-obsidian/SKILL.md",
             ".claude/skills/tes-cortex/SKILL.md",
+            ".claude/skills/tes-field-reports/SKILL.md",
             "skills/tes-guidelines/SKILL.md",
             "skills/tes-init/SKILL.md",
             "skills/tes-align/SKILL.md",
             "skills/tes-open-obsidian/SKILL.md",
+            "skills/tes-field-reports/SKILL.md",
             ".claude-plugin/plugin.json",
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",
         )))
@@ -456,6 +461,7 @@ def codex_clean_bootloader_probe() -> dict[str, Any]:
             ".agents/skills/tes-open-obsidian/SKILL.md",
             ".agents/skills/tes-cortex/SKILL.md",
             ".agents/skills/tes-mcp/SKILL.md",
+            ".agents/skills/tes-field-reports/SKILL.md",
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",
         )))
 
@@ -522,12 +528,15 @@ def hostile_governance_conflict_probe() -> dict[str, Any]:
             ".agents/skills/tes-init/SKILL.md",
             ".agents/skills/tes-align/SKILL.md",
             ".agents/skills/tes-open-obsidian/SKILL.md",
+            ".agents/skills/tes-field-reports/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
             ".claude/skills/tes-align/SKILL.md",
             ".claude/skills/tes-open-obsidian/SKILL.md",
+            ".claude/skills/tes-field-reports/SKILL.md",
             "skills/tes-init/SKILL.md",
             "skills/tes-align/SKILL.md",
             "skills/tes-open-obsidian/SKILL.md",
+            "skills/tes-field-reports/SKILL.md",
             "CURSOR.md",
             ".cursor/rules/tes-runtime-capabilities.mdc",
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",

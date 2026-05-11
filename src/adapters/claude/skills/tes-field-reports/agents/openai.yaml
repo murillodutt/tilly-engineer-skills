@@ -1,0 +1,7 @@
+name: tes-field-reports
+description: Inspect, drain, disable, enable, or repair sanitized TES Field Reports.
+default_prompt: |
+  Use $tes-field-reports to handle /tes-field-reports. Inspect Field Reports
+  state first when helpful, run the smallest matching field_reports.py oracle,
+  preserve sanitized-only reporting, and name any transport or local precondition
+  blocker before closing.

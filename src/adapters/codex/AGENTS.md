@@ -65,6 +65,7 @@ requires exact syntax.
 | Obsidian open gate | `.agents/skills/tes-open-obsidian/SKILL.md` |
 | Cortex memory operations | `.agents/skills/tes-cortex/SKILL.md` |
 | MCP activation and checks | `.agents/skills/tes-mcp/SKILL.md` |
+| Field Reports operations | `.agents/skills/tes-field-reports/SKILL.md` |
 | Health and certification gates | `.agents/skills/tes-doctor/SKILL.md` |
 | Adapter materialization | `.agents/skills/tes-adapter/SKILL.md` |
 | Benchmark evidence | `.agents/skills/tes-bench/SKILL.md` |
