@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.6
+tver: 0.4.7
 ---
 
 # Tilly Engineer Skills Docs
@@ -22,6 +22,7 @@ turning the repository root into an inventory.
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
 | Agent manual | `install/AGENT-MANUAL.md` |
 | GitHub Pages landing | `index.html` |
+| Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
 | Public installer bundle | `dist/0.3.82/tilly-engineer-skills-0.3.82.zip` |
@@ -69,6 +70,13 @@ HTML and text surfaces such as `docs/index.html`,
 `docs/install/USER-MANUAL.html`, and `docs/llms.txt` remain public
 documentation entrypoints referenced here and in `README.md`, but they are not
 listed as TDS documents because they do not carry Markdown frontmatter.
+
+`docs/index.html` and `docs/install/USER-MANUAL.html` are rendered public
+surfaces. Their commercial, documentation, and user-facing text is sourced from
+`docs/i18n/tes-public.content.json` and structured by
+`docs/i18n/tes-public.structure.yml`. Use
+`python3 scripts/build_public_docs.py` to regenerate them and
+`python3 scripts/build_public_docs.py --check` before closure.
 
 Copyable adapter material lives in `src/adapters/**`:
 

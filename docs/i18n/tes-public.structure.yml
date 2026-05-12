@@ -1,0 +1,42 @@
+{
+  "version": "0.3.82",
+  "schema": "tes-public-docs@1",
+  "generated_outputs": [
+    "docs/index.html",
+    "docs/install/USER-MANUAL.html"
+  ],
+  "sources": {
+    "content": "docs/i18n/tes-public.content.json",
+    "structure": "docs/i18n/tes-public.structure.yml"
+  },
+  "languages": [
+    { "code": "en", "html_lang": "en", "label": "EN" },
+    { "code": "es", "html_lang": "es", "label": "ES" },
+    { "code": "pt", "html_lang": "pt-BR", "label": "PT" }
+  ],
+  "assets": {
+    "social_preview": "assets/social-preview.webp",
+    "social_preview_absolute": "https://murillodutt.github.io/tilly-engineer-skills/assets/social-preview.webp"
+  },
+  "evidence": {
+    "final_report": "evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md",
+    "bundle_index": "dist/0.3.82/index.json",
+    "bundle_sha256": "8598c167e9a70c744c7397c6880ce497da0b5416108dd797c191be0cbf9ec360"
+  },
+  "pages": {
+    "index": {
+      "output": "docs/index.html",
+      "body_class": "public-index",
+      "canonical": "https://murillodutt.github.io/tilly-engineer-skills/",
+      "asset_prefix": "",
+      "nav": ["promise", "flow", "proof", "start", "manual", "docs"]
+    },
+    "manual": {
+      "output": "docs/install/USER-MANUAL.html",
+      "body_class": "public-manual",
+      "canonical": "https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html",
+      "asset_prefix": "../",
+      "nav": ["overview", "install", "triggers", "routes", "safety", "cortex", "field_reports", "obsidian", "report", "rollback"]
+    }
+  }
+}

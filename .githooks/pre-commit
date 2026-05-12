@@ -9,6 +9,7 @@ unset GIT_PREFIX
 unset GIT_WORK_TREE
 
 python3 scripts/validate_reference_package.py --staged-ready
+python3 scripts/build_public_docs.py --check
 python3 scripts/validate_tds.py
 python3 scripts/validate_doc_size.py
 python3 scripts/context_mesh_plan.py
