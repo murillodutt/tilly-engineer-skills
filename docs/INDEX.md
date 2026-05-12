@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.5
+tver: 0.4.6
 ---
 
 # Tilly Engineer Skills Docs
@@ -23,6 +23,7 @@ turning the repository root into an inventory.
 | Agent manual | `install/AGENT-MANUAL.md` |
 | GitHub Pages landing | `index.html` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
+| Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
 | Public installer bundle | `dist/0.3.82/tilly-engineer-skills-0.3.82.zip` |
 | Adapter installation | `install/INSTALL.md` |
 | Assisted context installer mini prompt | `install/MINI-PROMPT.md` |
@@ -64,10 +65,10 @@ turning the repository root into an inventory.
 `docs/**` explains and audits behavior. It is not the installable source.
 
 `docs/tds/DOCS-INDEX.yml` governs Markdown files under `docs/**`. Rendered
-HTML surfaces such as `docs/index.html` and `docs/install/USER-MANUAL.html`
-remain public documentation entrypoints referenced here and in `README.md`, but
-they are not listed as TDS documents because they do not carry Markdown
-frontmatter.
+HTML and text surfaces such as `docs/index.html`,
+`docs/install/USER-MANUAL.html`, and `docs/llms.txt` remain public
+documentation entrypoints referenced here and in `README.md`, but they are not
+listed as TDS documents because they do not carry Markdown frontmatter.
 
 Copyable adapter material lives in `src/adapters/**`:
 

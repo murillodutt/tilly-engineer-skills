@@ -4,14 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Tilly Engineer Skills — Rules become evidence, not folklore</title>
-  <meta name="description" content="A measurable behavioral framework for governed coding agents. Codex, Claude Code, Cursor — one durable Markdown mesh, with deterministic gates, retained evidence, and read-only Cortex memory.">
+  <title>Tilly Engineer Skills — Coding-agent rules become local evidence</title>
+  <meta name="description" content="A local operating layer for governed coding agents. TES turns Codex, Claude Code, and Cursor rules into adapter-specific surfaces, versioned Markdown memory, deterministic gates, and retained evidence.">
   <link rel="canonical" href="https://murillodutt.github.io/tilly-engineer-skills/">
   <meta property="og:title" content="Tilly Engineer Skills">
-  <meta property="og:description" content="Rules become evidence, not folklore. A measurable behavioral framework for governed coding agents — versioned Markdown, deterministic gates, retained evidence.">
+  <meta property="og:description" content="Coding-agent rules become local evidence. A local operating layer for governed coding agents: adapter surfaces, versioned Markdown memory, deterministic gates, retained proof.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://murillodutt.github.io/tilly-engineer-skills/">
+  <meta property="og:image" content="https://murillodutt.github.io/tilly-engineer-skills/assets/social-preview.webp">
+  <meta property="og:image:type" content="image/webp">
+  <meta property="og:image:width" content="1731">
+  <meta property="og:image:height" content="909">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://murillodutt.github.io/tilly-engineer-skills/assets/social-preview.webp">
   <meta name="theme-color" content="#f0f7f4">
   <link rel="icon" href="./assets/logo-tesc-icon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -393,6 +398,51 @@
       }
       .hero-meta dt { color: var(--ink-faint); margin: 0 0 4px; }
       .hero-meta dd { color: var(--ink); font-family: var(--font-display); font-size: 16px; font-weight: 500; letter-spacing: -0.01em; margin: 0; text-transform: none; }
+
+      @media (max-width: 640px) {
+        .eyebrow {
+          display: block;
+          font-size: 10px;
+          letter-spacing: 0.1em;
+          line-height: 1.8;
+          margin-bottom: 24px;
+          overflow-wrap: anywhere;
+        }
+        .eyebrow::before {
+          display: block;
+          margin-bottom: 12px;
+          width: 40px;
+        }
+        .hero > .eyebrow,
+        .display-h1,
+        .lead,
+        .actions,
+        .hero-meta {
+          max-width: 350px;
+          width: 100%;
+        }
+        .display-h1 {
+          font-size: 42px;
+          letter-spacing: 0;
+          line-height: 1.04;
+          max-width: 10ch;
+        }
+        .lead {
+          font-size: 20px;
+          margin-bottom: 32px;
+          max-width: 350px;
+          overflow-wrap: break-word;
+        }
+        .actions {
+          align-items: stretch;
+          flex-direction: column;
+        }
+        .btn {
+          justify-content: space-between;
+          width: 100%;
+        }
+        .hero-meta { grid-template-columns: 1fr; }
+      }
 
       /* === Lede === */
       .lede {
@@ -1375,16 +1425,20 @@
       </div>
 
       <section class="hero" aria-labelledby="hero-title">
-        <p class="eyebrow">Agent operating layer · Codex · Claude Code · Cursor</p>
-        <h1 class="display-h1" id="hero-title">Rules become evidence,<br><em>not folklore.</em></h1>
-        <p class="lead">A measurable behavioral framework for governed coding agents. Every always-loaded instruction must change a real agent decision against a documented baseline — or it leaves.</p>
+        <p class="eyebrow">Local operating layer · Codex · Claude Code · Cursor</p>
+        <h1 class="display-h1" id="hero-title">Coding-agent rules become <em>local evidence.</em></h1>
+        <p class="lead">TES turns coding-agent rules into local, inspectable engineering evidence: adapter-specific surfaces, versioned Markdown memory with derived recall, deterministic gates, and retained proof.</p>
         <div class="actions">
           <button class="btn btn--primary" type="button" data-copy-trigger="install-prompt" data-copy-default="Copy install prompt">
             <span data-copy-label>Copy install prompt</span>
             <span class="btn-icon" aria-hidden="true">↗</span>
           </button>
-          <a class="btn" href="./install/USER-MANUAL.html">
-            <span>User manual</span>
+          <a class="btn" href="#evidence">
+            <span>Inspect evidence</span>
+            <span class="btn-icon" aria-hidden="true">↗</span>
+          </a>
+          <a class="btn" href="#boundaries">
+            <span>See boundaries</span>
             <span class="btn-icon" aria-hidden="true">↗</span>
           </a>
         </div>
@@ -1403,8 +1457,8 @@
             <dd>Obsidian-ready, optional</dd>
           </div>
           <div>
-            <dt>License</dt>
-            <dd>MIT · Local-first</dd>
+            <dt>Evidence</dt>
+            <dd>Scoped v1 · retained</dd>
           </div>
         </dl>
       </section>
@@ -1838,7 +1892,7 @@ certification report.</code></pre>
             </article>
             <article class="oracle">
               <h3 class="oracle-name">adapter_parity_readiness.py</h3>
-              <p>Cross-adapter behavior convergence — proves the four gates fire identically on all three runtimes.</p>
+              <p>Cross-adapter readiness — checks aligned gate order, trigger vocabulary, and contract surfaces across runtimes.</p>
             </article>
             <article class="oracle">
               <h3 class="oracle-name">context_mesh_run.py</h3>
@@ -1872,7 +1926,7 @@ certification report.</code></pre>
       <section class="chapter" id="evidence" aria-labelledby="evidence-title">
         <div class="chapter-head">
           <span class="chapter-num">§ 10</span>
-          <h2 id="evidence-title">Forty-six certified reports. Dated. Retained.</h2>
+          <h2 id="evidence-title">Retained v1 evidence. Dated. Auditable.</h2>
         </div>
         <div class="chapter-body">
           <p class="lede">
@@ -1882,7 +1936,7 @@ certification report.</code></pre>
           <div style="margin-top:48px;">
             <div class="evidence-stat reveal">
               <div>
-                <p class="evidence-label">Up to <strong>6×</strong> baseline disciplined behavior</p>
+                <p class="evidence-label">Retained v1 evidence shows up to 6x baseline disciplined behavior</p>
                 <p class="evidence-source">in scoped Claude CLI evals · <code>context-mesh-v1-final-certification-2026-05-05/</code></p>
               </div>
               <span class="evidence-num" data-counter="6"><em>×</em></span>
@@ -1903,7 +1957,7 @@ certification report.</code></pre>
             </div>
             <div class="evidence-stat reveal">
               <div>
-                <p class="evidence-label">Confirmed distractor leaks in certified scope</p>
+                <p class="evidence-label">Zero confirmed distractor leaks in certified scope</p>
                 <p class="evidence-source"><code>codex-distractor-prompt-repair-smoke-2026-05-05/</code></p>
               </div>
               <span class="evidence-num" data-counter="0"></span>
@@ -1936,6 +1990,11 @@ certification report.</code></pre>
             </thead>
             <tbody>
               <tr>
+                <td>Codex, Claude Code, Cursor</td>
+                <td><span class="chip" data-state="partial">Scoped</span></td>
+                <td>Governed through adapter-specific surfaces; no identical-behavior claim.</td>
+              </tr>
+              <tr>
                 <td>Assisted install</td>
                 <td><span class="chip" data-state="certified">Certified</span></td>
                 <td>Remote replay and local helper contract checks pass end-to-end.</td>
@@ -1943,7 +2002,7 @@ certification report.</code></pre>
               <tr>
                 <td>Cortex MCP</td>
                 <td><span class="chip" data-state="certified">Certified · read-only</span></td>
-                <td>No write-capable MCP tools are exposed in this version.</td>
+                <td>Read-only project-scoped Cortex MCP; no write-capable tools and no claim to arbitrary data sources.</td>
               </tr>
               <tr>
                 <td>Obsidian-ready mesh</td>
@@ -1953,7 +2012,7 @@ certification report.</code></pre>
               <tr>
                 <td>Field Reports</td>
                 <td><span class="chip" data-state="partial">Partial</span></td>
-                <td>Local capture, fake transport, receiver quarantine certified. Live publication requires explicit authorization.</td>
+                <td>Sanitized operational facts only; never code, diffs, prompts, file contents, secrets, or personal data. Live publication requires explicit authorization.</td>
               </tr>
               <tr>
                 <td>Marketplace · release actions</td>
@@ -2180,6 +2239,7 @@ certification report.</code></pre>
           <h4>Project</h4>
           <a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub repository</a>
           <a href="https://github.com/murillodutt/tilly-engineer-skills/blob/main/LICENSE">MIT license</a>
+          <a href="./llms.txt">llms.txt</a>
         </div>
         <div>
           <h4>Install</h4>
@@ -2348,7 +2408,7 @@ certification report.</code></pre>
           DOC_VIEW.hidden = true;
           document.title = ORIGINAL_TITLE;
           // Reset OG meta to landing defaults
-          setOg("Tilly Engineer Skills", "Rules become evidence, not folklore. A measurable behavioral framework for governed coding agents — versioned Markdown, deterministic gates, retained evidence.");
+          setOg("Tilly Engineer Skills", "Coding-agent rules become local evidence. A local operating layer for governed coding agents: adapter surfaces, versioned Markdown memory, deterministic gates, retained proof.");
           // Rebind landing animations when returning from a doc view
           if (!revealObserver) bindReveal();
           if (!counterObserver) bindCounters();

@@ -1,0 +1,45 @@
+# Tilly Engineer Skills (TES)
+
+> TES turns coding-agent rules into local, inspectable engineering evidence.
+
+TES is a local operating layer for governed coding agents. It governs Codex,
+Claude Code, and Cursor through adapter-specific surfaces, versioned Markdown
+memory with derived recall, deterministic gates, and retained evidence.
+
+This file is an optional machine-readable map to canonical public docs. It does
+not replace repository documentation and does not guarantee tool discovery or
+recommendation.
+
+## Primary
+
+- Landing: https://murillodutt.github.io/tilly-engineer-skills/
+- Repository: https://github.com/murillodutt/tilly-engineer-skills
+- README: https://github.com/murillodutt/tilly-engineer-skills/blob/main/README.md
+- Assisted installer mini prompt: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/install/MINI-PROMPT.md
+- User manual: https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html
+
+## Method
+
+- Context mesh method: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/mesh/CONTEXT-MESH-METHOD.md
+- Engineering principles: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/mesh/PRINCIPLES.md
+- Adoption scorecard: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/mesh/SCORECARD.md
+
+## Runtime Surfaces
+
+- Codex adapter: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/adapters/CODEX.md
+- Claude Code adapter: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/adapters/CLAUDE.md
+- Cursor adapter: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/adapters/CURSOR.md
+- Adapter capability matrix: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/adapters/ADAPTER-CAPABILITY-MATRIX.md
+
+## Memory, MCP, Feedback
+
+- Cortex continuity: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/mesh/CORTEX.md
+- Read-only Cortex MCP: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/mesh/CORTEX-MCP.md
+- Field Reports: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/mesh/FIELD-REPORTS.md
+
+## Evidence And Boundaries
+
+- Evidence report: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md
+- Eval design: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/evals/EVALS.md
+- Project structure: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/architecture/PROJECT-STRUCTURE.md
+- Governance boundary: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/governance/AGENTIC-ALIGNMENT-GOVERNANCE.md
