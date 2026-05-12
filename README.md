@@ -8,28 +8,46 @@
 [![Live Landing](https://img.shields.io/badge/live--landing-GitHub%20Pages-0969da)](https://murillodutt.github.io/tilly-engineer-skills/)
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/1e8f35f0-2d30-4a86-b6d4-1593a528d70d" alt="Tilly Engineer Skills: agent operating layer for LLM development across Codex, Claude Code, Cursor, and Obsidian-ready project knowledge" width="100%">
+  <img src="docs/assets/social-preview.webp" alt="Tilly Engineer Skills: use AI coding agents without losing the trail, with local rules, memory, checks, and evidence for real software projects" width="100%">
 </p>
 
 **Live landing:** [murillodutt.github.io/tilly-engineer-skills](https://murillodutt.github.io/tilly-engineer-skills/)
 
-**Turn AI coding agents into a governed, auditable engineering system.**
+**AI coding agents should leave local evidence your team can inspect.**
 
-TES is a local operating layer for LLM development. It governs Codex, Claude
-Code, and Cursor while compiling project knowledge into an Obsidian-ready
-Markdown mesh that survives agent windows, supports audits, and gives people a
-visual way to inspect context, evidence, decisions, and execution state.
+Tilly Engineer Skills (TES) is a local trust layer for working with AI inside
+software projects. It surrounds coding agents with rules, local memory, checks,
+safety limits, and operational evidence so teams can use AI with more control,
+traceability, and confidence.
 
-Codex, Claude Code, and Cursor are execution surfaces. Obsidian is the optional
-people-facing visualization layer over versioned Markdown. TES does not require
-Obsidian, install Obsidian plugins, or write `.obsidian/**`.
+When an agent works inside a real repository, the hard part is not only getting
+code. It is knowing which instructions governed the work, which project context
+was loaded, which gate checked the outcome, which safety boundary held, and how
+the next agent window can recover the trail.
 
-Retained v1 evidence shows up to **6x baseline disciplined behavior** in scoped
-Claude CLI evals, positive Codex lift, and zero confirmed distractor leaks in
-the certified scope.
+TES answers that with a project-scoped context mesh: thin runtime surfaces for
+Codex, Claude Code, and Cursor; versioned Markdown under `docs/agents/**`; local
+oracles; Cortex memory and recall; and retained certification reports. Obsidian
+is an optional view over the Markdown. TES does not require Obsidian, install
+Obsidian plugins, or write `.obsidian/**`.
+
+## What TES Can Safely Promise
+
+| What TES is | Safe promise | Not a claim |
+|-------------|--------------|-------------|
+| A local trust layer for AI work inside software projects. | Helps teams use coding agents with more control, traceability, and confidence. | Does not make all AI agents safe, autonomous, or equivalent. |
+| Adapter-aware runtime surfaces for Codex, Claude Code, and Cursor. | Routes each tool through a shared engineering contract in its native shape. | Does not claim universal cross-adapter behavior parity. |
+| Filesystem-first Markdown memory with Cortex recall. | Keeps project context, decisions, evidence, and continuity inspectable in Git. | SQLite and MCP are derived access paths, not the source of truth. |
+| Local gates, smoke tests, oracles, and retained reports. | Turns agent work into evidence that can be reviewed before closure. | Does not guarantee future model behavior, ROI, or statistical stability. |
+| A public v0.3.82 installer bundle and assisted install path. | Gives adopters a concrete, local, rollback-aware way to install TES. | Does not push, publish, tag, amend commits, change remotes, or perform marketplace actions. |
+
+Retained v1 evidence shows up to **6x baseline disciplined behavior in scoped
+Claude CLI evals**, scoped Codex lift, and zero confirmed distractor leaks in the
+retained certification scope. Cursor is included as structural/contract parity
+only; Cursor behavior certification is not claimed.
 [Evidence](docs/evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md)
 
-## 1. Install TES
+## 1. Start Safely
 
 Open your target project in Codex, Claude Code, or Cursor and paste this into
 the agent window:
@@ -85,7 +103,7 @@ Canonical mini prompt: [docs/install/MINI-PROMPT.md](docs/install/MINI-PROMPT.md
 
 | Without TES | With TES |
 |-------------|----------|
-| Each agent has separate prompt files and habits. | One context mesh governs Codex, Claude Code, Cursor, and an Obsidian-ready knowledge view. |
+| Each agent has separate prompt files and habits. | One context mesh routes Codex, Claude Code, Cursor, and optional Obsidian viewing. |
 | Installation can overwrite local agent rules. | Step Zero and root-context gates preserve project governance. |
 | Completion depends on model confidence. | Local oracles produce certification evidence. |
 | Context disappears after the chat window. | Durable docs, evidence, Cortex, and wikilinks preserve continuity. |
@@ -128,6 +146,15 @@ TES does **not** push, publish, tag, amend commits, change remotes, install
 marketplace assets, send code telemetry, write `.obsidian/**`, or discard
 project-owned governance. Clean install backs it up under `.tes/bk/**`, applies
 the canonical runtime, and recovers supported semantics into `docs/agents/**`.
+
+Cortex MCP is read-only and project-scoped. Field Reports, where used, carry
+sanitized operational facts; never code, diffs, prompts, file contents, secrets,
+or personal data. Live publication, release actions, marketplace actions, and
+remote mutation require explicit authorization outside the default TES path.
+
+The public v0.3.82 bundle is served from
+[`docs/dist/0.3.82/`](docs/dist/0.3.82/) with SHA-256
+`8598c167e9a70c744c7397c6880ce497da0b5416108dd797c191be0cbf9ec360`.
 
 For this reference package, the full local closure gate is:
 

@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and adapter authors
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.5
+tver: 0.2.6
 ---
 
 # Project Structure
@@ -19,6 +19,7 @@ Root files are only entrypoints and local project controls:
 | Path | Responsibility |
 |------|----------------|
 | `README.md` | User entrypoint |
+| `llms.txt` | Optional machine-readable map to canonical public docs |
 | `AGENTS.md` | Thin repository bootloader for agents working here |
 | `package.json` | Local validation commands |
 | `.githooks/**` | Local commit gates |
@@ -28,6 +29,7 @@ Root files are only entrypoints and local project controls:
 | `src/**` | Canonical copyable adapter source |
 | `dist/**` | Generated adapter output, ignored by Git |
 | `docs/dist/**` | Versioned public installer bundles served by GitHub Pages |
+| `docs/llms.txt` | GitHub Pages-served mirror of the public LLM map |
 | Git history | Versioning and changelog trail |
 
 `scripts/**` is classified by consumer, not by directory. Validator-only
