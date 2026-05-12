@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and adapter authors
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.6
+tver: 0.2.7
 ---
 
 # Project Structure
@@ -30,6 +30,7 @@ Root files are only entrypoints and local project controls:
 | `dist/**` | Generated adapter output, ignored by Git |
 | `docs/dist/**` | Versioned public installer bundles served by GitHub Pages |
 | `docs/llms.txt` | GitHub Pages-served mirror of the public LLM map |
+| `docs/i18n/**` | JSON and YAML source for rendered public docs |
 | Git history | Versioning and changelog trail |
 
 `scripts/**` is classified by consumer, not by directory. Validator-only
@@ -138,6 +139,14 @@ drift.
 | `docs/governance/MAINTAINER-CORRELATION-RULE.md` | Local maintainer map for package edits, not installed project context |
 | `docs/adapters/**` | User adapter guidance |
 | `docs/architecture/**` | Repository topology and boundaries |
+| `docs/i18n/**` | Modular text and structure source for public HTML |
+
+`docs/index.html` and `docs/install/USER-MANUAL.html` are generated static
+HTML surfaces. They stay checked in for GitHub Pages and `file://` use, while
+commercial, documentation, and user-facing copy lives in
+`docs/i18n/tes-public.content.json` and
+`docs/i18n/tes-public.structure.yml`. Regenerate and check them with
+`scripts/build_public_docs.py`.
 | `docs/tds/**` | Documentation contract and governed index |
 
 ## Structural Locks
