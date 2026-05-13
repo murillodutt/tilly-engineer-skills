@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, adapter authors, and installing agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.1
+tver: 0.1.2
 ---
 
 # Platform Differences Reference
@@ -33,6 +33,8 @@ TES entry vocabulary is shared across platforms:
 | Initialize or recertify | `/tes-init` | `/tes:init` | Load the assisted installer and classify the project. |
 | Update existing mesh | `/tes-update` | `/tes:update` | Run the update probe, Layer Zero if needed, then converge. |
 | Align project operating mesh | `/tes-align` | `/tes:align` | Deepen initial context into roadmap, state, execution line, gates, boundaries, glossary, decisions, and evidence. |
+| Prospect project stress | `/tes-prospect` | `/tes:prospect` | Explicitly invoke predictive pressure on a plan or design; no broad natural activation. |
+| Mine code and domain knowledge | `/tes-mine` | `/tes:mine` | Explicitly invoke code, terminology, context, and ADR mining with a cognitive brake. |
 | Open Obsidian | `/tes-open-obsidian` | `/tes:open-obsidian` | Preflight context/alignment and open `docs/agents` as the Obsidian vault without writing `.obsidian/**`. |
 | Cortex | `/tes-cortex` | `/tes:cortex`, `/tes:recall`, `/tes:learn`, `/tes:reflect` | Inspect or certify the continuity layer. |
 | Curate | `/tes-curate` | `/tes:curate` | Classify Cortex memory quality risks without writing memory. |
@@ -53,6 +55,10 @@ Natural intent text such as `tes init`, `tes update`, `tes align`,
 `initialize TES`, `install TES`, `recertify TES`, `inicializar TES`,
 `instalar TES`, and `recertificar TES` must route to the
 same contract.
+`/tes-prospect` and `/tes-mine` are intentionally excluded from broad natural
+intent routing. They activate only when named by trigger, alias, or explicit
+skill invocation, then operate proactively until the user pulls the cognitive
+brake.
 
 ## Surface Differences
 

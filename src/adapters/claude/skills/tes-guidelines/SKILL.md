@@ -14,11 +14,12 @@ Assumptions visible. Scope smaller. Edits surgical. Success falsifiable.
 
 ## TES Trigger Fallback
 
-Treat `/tes-init`, `/tes-update`, `/tes-align`, `/tes-open-obsidian`,
-`/tes-cortex`, `/tes-curate`, `/tes-mcp`, `/tes-field-reports`, `/tes-doctor`,
-`/tes-adapter`, and `/tes-bench` as the
+Treat `/tes-init`, `/tes-update`, `/tes-align`, `/tes-prospect`, `/tes-mine`,
+`/tes-open-obsidian`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
+`/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench` as the
 shared TES trigger vocabulary. Treat `/tes:init`, `/tes:update`,
-`/tes:align`, `/tes:open-obsidian`, `/tes:cortex`, `/tes:mcp`, `/tes:field-reports`, `/tes:doctor`,
+`/tes:align`, `/tes:prospect`, `/tes:mine`, `/tes:open-obsidian`,
+`/tes:cortex`, `/tes:mcp`, `/tes:field-reports`, `/tes:doctor`,
 `/tes:adapter`, `/tes:bench`, `/tes:check`, `/tes:certify`, `/tes:recall`,
 `/tes:learn`, `/tes:reflect`, and `/tes:curate` as compatible aliases.
 
@@ -28,6 +29,9 @@ Natural intents also route to TES: `tes init`, `tes update`, `Atualizar TES`,
 `open this project in Obsidian`, `abrir Obsidian`, `abrir no Obsidian`,
 `initialize TES`, `install TES`, `recertify TES`,
 `inicializar TES`, `instalar TES`, and `recertificar TES`.
+
+Do not activate `/tes-prospect` or `/tes-mine` from broad natural language.
+They require explicit invocation and must honor the cognitive brake.
 
 If Claude reports `/tes:*` text as an invalid slash, treat it as TES intent and
 do not stop to ask for a route when the intended TES action is clear.

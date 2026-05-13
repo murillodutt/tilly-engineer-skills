@@ -5,7 +5,7 @@ status: active
 consumer: adopters, installing agents, and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.5
+tver: 0.4.6
 ---
 
 # TES Command Triggers
@@ -15,12 +15,16 @@ the current agent window; scripts and npm aliases are deterministic oracles the
 agent invokes when the runtime exposes local tools.
 
 All adapters share the same preferred user triggers: `/tes-init`,
-`/tes-update`, `/tes-align`, `/tes-open-obsidian`, `/tes-cortex`,
-`/tes-curate`, `/tes-mcp`, `/tes-field-reports`, `/tes-doctor`,
-`/tes-adapter`, and `/tes-bench`. Treat `/tes:*` forms as compatible TES
-intent aliases; if a host reports one as an invalid slash, continue through the
-matching `tes-*` skill/rule/spec instead of asking the user to restate the
-route.
+`/tes-update`, `/tes-align`, `/tes-prospect`, `/tes-mine`,
+`/tes-open-obsidian`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
+`/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench`. Treat
+`/tes:*` forms as compatible TES intent aliases; if a host reports one as an
+invalid slash, continue through the matching `tes-*` skill/rule/spec instead of
+asking the user to restate the route.
+
+`/tes-prospect` and `/tes-mine` are explicit-invocation predictive skills. They
+do not have broad natural-language routing. They stay dormant until the user
+names the skill or trigger, then operate proactively with a cognitive brake.
 The executable parity gate is `python3 scripts/command_trigger_oracle.py
 --self-test`.
 Installed target parity can be checked with
@@ -36,6 +40,8 @@ routed through a broader skill so TES does not create one skill per alias.
 | `/tes-init` | `tes-init` | visible skill |
 | `/tes-update` | `tes-init` | grouped update intent |
 | `/tes-align` | `tes-align` | visible skill |
+| `/tes-prospect` | `tes-prospect` | visible predictive skill |
+| `/tes-mine` | `tes-mine` | visible predictive skill |
 | `/tes-open-obsidian` | `tes-open-obsidian` | visible skill |
 | `/tes-cortex` | `tes-cortex` | visible skill |
 | `/tes-curate` | `tes-cortex` | grouped Cortex curation intent |
@@ -52,6 +58,8 @@ routed through a broader skill so TES does not create one skill per alias.
 | `/tes-init` or `/tes:init` | install, update, audit, recertify, initialize project context, and create first-pass project alignment for TES in a project | `root_context.py`, `tes_init.py`, `project_context_oracle.py`, `project_alignment_oracle.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, `docs/agents/PROJECT-CONTEXT.md`, initial operating mesh with System X-Ray and Convergence Line, Cortex, runtime bootloaders, project MCP config |
 | `/tes-update` or `/tes:update` | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, `tes_legacy_retirement.py`, assisted installer, install smoke, MCP install | only selected TES surfaces after Step Zero and legacy retirement |
 | `/tes-align` or `/tes:align` | semantically align a TES-initialized project into an operating mesh with a System X-Ray and Convergence Line | `project_alignment_oracle.py`, `project_context_oracle.py`, project gates | `docs/agents/PROJECT-STATE.md`, `PROJECT-ROADMAP.md` Mermaid X-Ray and convergence graphs, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`, `DECISIONS/**`, evidence |
+| `/tes-prospect` or `/tes:prospect` | explicitly invoke project-stress prospecting to pressure a plan or design, expose hidden dependencies, and ask one question at a time | active agent codebase exploration; cognitive brake state snapshot when paused | no project writes |
+| `/tes-mine` or `/tes:mine` | explicitly invoke code and domain mining to extract terms, contradictions, decisions, context, and ADR candidates | active agent code/doc exploration; cognitive brake state snapshot when paused | `CONTEXT.md` and ADRs only when the mining contract resolves terms or decisions and the brake is not active |
 | `/tes-open-obsidian` or `/tes:open-obsidian` | open `docs/agents` as the Obsidian vault after context and alignment pass | `tes_open_obsidian.py`, `project_context_oracle.py`, `project_alignment_oracle.py` | no TES writes; Obsidian app may manage project-owned `.obsidian/**` after explicit launch |
 | `/tes-cortex` or `/tes:cortex` | inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `cortex.py`, read-only Cortex MCP | Cortex files only when authorized |
 | `/tes-curate` or `/tes:curate` | classify Cortex memory quality risks without writing memory | `cortex.py curate-plan`, read-only `cortex_curate_plan` | no memory writes; CLI may refresh `.tes/cortex/semantic.sqlite` |
@@ -67,6 +75,8 @@ Aliases:
 tes init  -> /tes-init
 tes update / update TES / Atualizar TES / atualizar TES -> /tes-update
 tes align / align TES / align this project / alinhar TES / alinhar projeto -> /tes-align
+/tes:prospect -> /tes-prospect
+/tes:mine     -> /tes-mine
 tes open obsidian / open Obsidian / open this project in Obsidian / abrir Obsidian / abrir no Obsidian -> /tes-open-obsidian
 initialize TES / install TES / recertify TES -> /tes-init
 inicializar TES / instalar TES / recertificar TES -> /tes-init
@@ -86,6 +96,7 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 | `npm run ...` | package-local alias for the same oracles |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
+| predictive skills | explicit-invocation project-stress and mining skills with cognitive brake |
 | rules | always-on intent routers where skills are not native |
 | hooks | Git-event gates for validation, no-write Cortex reflection/curation, and Field Reports drain |
 | command-trigger oracle | package gate that checks docs, Codex, Claude, and Cursor share the same trigger vocabulary |
@@ -169,6 +180,8 @@ full health check.
 ## No-Go
 
 - Do not create one slash command per script.
+- Do not give `/tes-prospect` or `/tes-mine` broad natural-language activation;
+  they require explicit invocation.
 - Do not certify a command that was skipped or blocked.
 - Do not claim latest-source certification when the installer reports
   `STALE_SOURCE` or `BLOCKED` source freshness.

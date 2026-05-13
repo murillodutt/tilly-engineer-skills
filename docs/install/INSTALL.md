@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.9.5
+tver: 0.9.6
 ---
 
 # Adapter Installation
@@ -133,10 +133,10 @@ also never memory, rebuilt by `curate-plan` from `cells/**`.
 no-capture reasons for weak generic inputs.
 
 Cortex is Obsidian-compatible plain Markdown. The installer does not create
-`.obsidian/**`, require community plugins, or depend on Obsidian state for
-certification. After `/tes-init` and `/tes-align`, `/tes-open-obsidian` may
-open the project through the registered Obsidian CLI or a macOS app fallback,
-but TES still does not write `.obsidian/**`.
+`.obsidian/**`, require community plugins, or depend on Obsidian state. After
+`/tes-init` and `/tes-align`, `/tes-open-obsidian` may open the project, while
+`/tes-prospect` and `/tes-mine` install as explicit predictive skills with a
+cognitive brake and no broad natural activation.
 
 Cortex MCP is activated by default for selected runtime routes. It remains
 read-only and project-scoped. The installer may write `.tes/bin/cortex.py`,

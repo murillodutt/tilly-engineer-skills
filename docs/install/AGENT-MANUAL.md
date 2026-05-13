@@ -5,7 +5,7 @@ status: active
 consumer: installing agents and runtime adapters
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.1
+tver: 0.1.2
 ---
 
 # Tilly Engineer Skills — Agent Manual
@@ -44,6 +44,8 @@ User-facing intent typed in the agent window — never a shell command.
 | `/tes-init` | First setup on a target project | `/tes:init` (compat) |
 | `/tes-update` | Update an already-meshed project | `/tes:update` (compat) |
 | `/tes-align` | Re-run alignment after context drift | `/tes:align` (compat) |
+| `/tes-prospect` | Stress-test a plan or design after explicit invocation | `/tes:prospect` (compat) |
+| `/tes-mine` | Mine code, terminology, context, and ADR candidates after explicit invocation | `/tes:mine` (compat) |
 | `/tes-open-obsidian` | Open `docs/agents/` in Obsidian via CLI or macOS app fallback | `/tes:open-obsidian` (compat) |
 | `/tes-cortex` | Inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `/tes:cortex`, `/tes:recall`, `/tes:learn`, `/tes:reflect` |
 | `/tes-curate` | Classify Cortex quality risks without writing memory | `/tes:curate` |
@@ -55,6 +57,16 @@ User-facing intent typed in the agent window — never a shell command.
 
 Invalid `/tes:*` slash text still signals TES intent. Agent selects the
 smallest safe oracle.
+
+`/tes-prospect` and `/tes-mine` are predictive skills, not broad natural
+intent routers. Do not activate them from phrases such as "stress-test this"
+unless the user explicitly names the skill or trigger. After invocation, they
+may drive the sequence proactively and must honor the cognitive brake:
+`pause`, `pausa`, `freia`, `segura`, `para`, `hold`, `step back`, or
+`resuma onde estamos` stops pressure immediately. Report where the session
+stopped, the current hypothesis, the open risk or unresolved term, and the next
+question/check. Resume only after explicit `continue`, `continua`, `retoma`,
+or `segue`.
 
 ---
 
