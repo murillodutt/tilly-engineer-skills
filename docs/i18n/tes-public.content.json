@@ -278,8 +278,8 @@
         "title": "Start safely",
         "lede": "Installation is not the dream; it is the controlled path to the dream. Start from the agent window and let Step Zero protect the repository first.",
         "blocks": [
-          {"type": "code", "label": "agent prompt", "text": "Install Tilly Engineer Skills as an assisted context mesh, not as blind file copying.\n\nRead and follow this raw installer spec:\nhttps://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md\n\nRun Step Zero before installation edits, preserve local governance, activate read-only Cortex MCP only for the selected runtime route, and finish with the certification report."},
-          {"type": "p", "text": "Canonical mini prompt: [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md). Current public bundles are served from `docs/dist/0.3.82/`; SHA-256 `8598c167e9a70c744c7397c6880ce497da0b5416108dd797c191be0cbf9ec360`."}
+          {"type": "prompt_copy", "label": "installation mini prompt", "copy_label": "Copy prompt", "copied_label": "Copied", "source": "docs/install/MINI-PROMPT.md", "fence": "text"},
+          {"type": "p", "text": "This is the same canonical mini prompt kept in [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), rendered here so the first safe action is one click. Current public bundles are served from `docs/dist/0.3.82/`; SHA-256 `8598c167e9a70c744c7397c6880ce497da0b5416108dd797c191be0cbf9ec360`."}
         ]
       },
       "es": {
@@ -287,8 +287,8 @@
         "title": "Empieza con seguridad",
         "lede": "La instalacion no es el sueno; es el camino controlado hacia el sueno. Empieza en la ventana del agente y deja que Step Zero proteja el repositorio.",
         "blocks": [
-          {"type": "code", "label": "prompt para agente", "text": "Install Tilly Engineer Skills as an assisted context mesh, not as blind file copying.\n\nRead and follow this raw installer spec:\nhttps://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md\n\nRun Step Zero before installation edits, preserve local governance, activate read-only Cortex MCP only for the selected runtime route, and finish with the certification report."},
-          {"type": "p", "text": "Mini prompt canonico: [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md). Current public bundles estan en `docs/dist/0.3.82/`; SHA-256 `8598c167e9a70c744c7397c6880ce497da0b5416108dd797c191be0cbf9ec360`."}
+          {"type": "prompt_copy", "label": "mini prompt de instalacion", "copy_label": "Copiar prompt", "copied_label": "Copiado", "source": "docs/install/MINI-PROMPT.md", "fence": "text"},
+          {"type": "p", "text": "Es el mismo mini prompt canonico mantenido en [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), renderizado aqui para que la primera accion segura sea un clic. Current public bundles estan en `docs/dist/0.3.82/`; SHA-256 `8598c167e9a70c744c7397c6880ce497da0b5416108dd797c191be0cbf9ec360`."}
         ]
       },
       "pt": {
@@ -296,8 +296,8 @@
         "title": "Comece com seguranca",
         "lede": "Instalacao nao e o sonho; e o caminho controlado ate o sonho. Comece na janela do agente e deixe o Step Zero proteger o repositorio primeiro.",
         "blocks": [
-          {"type": "code", "label": "prompt para agente", "text": "Install Tilly Engineer Skills as an assisted context mesh, not as blind file copying.\n\nRead and follow this raw installer spec:\nhttps://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md\n\nRun Step Zero before installation edits, preserve local governance, activate read-only Cortex MCP only for the selected runtime route, and finish with the certification report."},
-          {"type": "p", "text": "Mini prompt canonico: [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md). Current public bundles ficam em `docs/dist/0.3.82/`; SHA-256 `8598c167e9a70c744c7397c6880ce497da0b5416108dd797c191be0cbf9ec360`."}
+          {"type": "prompt_copy", "label": "mini prompt de instalacao", "copy_label": "Copiar prompt", "copied_label": "Copiado", "source": "docs/install/MINI-PROMPT.md", "fence": "text"},
+          {"type": "p", "text": "E o mesmo mini prompt canonico mantido em [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), renderizado aqui para que a primeira acao segura seja um clique. Current public bundles ficam em `docs/dist/0.3.82/`; SHA-256 `8598c167e9a70c744c7397c6880ce497da0b5416108dd797c191be0cbf9ec360`."}
         ]
       }
     },
@@ -369,6 +369,7 @@
               "title": "Install and safety",
               "body": "How TES enters a real repository without blind file copying or hidden remote mutation.",
               "items": [
+                {"label": "Installation mini prompt", "href": "install/MINI-PROMPT.md", "body": "The copy-ready adopter prompt projected into the landing start path."},
                 {"label": "Adapter installation", "href": "install/INSTALL.md", "body": "Assisted install flow, project states, certification output, and conflict policy."},
                 {"label": "Assisted installer spec", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "The raw contract the active agent follows during install, retrofit, update, or audit."},
                 {"label": "Git safety", "href": "mesh/GIT-SAFETY.md", "body": "Local baseline, backup, rollback, no push, no publish, and artifact hygiene."},
@@ -435,6 +436,7 @@
               "title": "Instalacion y seguridad",
               "body": "Como TES entra en un repositorio real sin copia ciega ni mutacion remota escondida.",
               "items": [
+                {"label": "Mini prompt de instalacion", "href": "install/MINI-PROMPT.md", "body": "Prompt de adopcion listo para copiar y proyectado en el inicio de la landing."},
                 {"label": "Instalacion de adapters", "href": "install/INSTALL.md", "body": "Flujo asistido, estados de proyecto, salida de certificacion y politica de conflictos."},
                 {"label": "Spec del instalador asistido", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "Contrato raw que sigue el agente activo durante install, retrofit, update o audit."},
                 {"label": "Seguridad Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sin push, sin publish e higiene de artefactos."},
@@ -501,6 +503,7 @@
               "title": "Instalacao e seguranca",
               "body": "Como TES entra em um repositorio real sem copia cega nem mutacao remota escondida.",
               "items": [
+                {"label": "Mini prompt de instalacao", "href": "install/MINI-PROMPT.md", "body": "Prompt de adocao pronto para copiar e projetado no inicio da landing."},
                 {"label": "Instalacao dos adapters", "href": "install/INSTALL.md", "body": "Fluxo assistido, estados do projeto, saida de certificacao e politica de conflito."},
                 {"label": "Spec do instalador assistido", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "Contrato raw seguido pelo agente ativo durante install, retrofit, update ou audit."},
                 {"label": "Seguranca Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sem push, sem publish e higiene de artefatos."},

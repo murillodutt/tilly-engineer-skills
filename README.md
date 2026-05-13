@@ -49,38 +49,18 @@ only; Cursor behavior certification is not claimed.
 
 ## 1. Start Safely
 
-Open your target project in Codex, Claude Code, or Cursor and paste this into
-the agent window:
+Open your target project in Codex, Claude Code, or Cursor and paste the
+canonical mini prompt into the agent window. The source of truth is
+[`docs/install/MINI-PROMPT.md`](docs/install/MINI-PROMPT.md), and the live
+landing renders the same prompt with a **Copy prompt** action:
+[murillodutt.github.io/tilly-engineer-skills/#start-en](https://murillodutt.github.io/tilly-engineer-skills/#start-en).
 
-```text
-Install Tilly Engineer Skills as an assisted context mesh, not as blind file
-copying.
-
-Read and follow this raw installer spec:
-
-https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
-
-Run in quiet installer mode: show compact progress, blockers and the final
-certification report only. Start by detecting the current IDE/runtime and
-classifying this project as new, existing, or meshed. Stage the deterministic
-TES bundle under .tes/setup/<version>/ from the public ZIP when available,
-verify its SHA-256 before apply, create a central .tes/bk/<timestamp>/ backup,
-apply the clean TES runtime, recover durable local governance semantics into
-docs/agents/**, keep active AGENTS.md, CLAUDE.md, CURSOR.md and Cursor rules as
-thin TES bootloaders, install TES-owned runtime capabilities such as /tes-align
-and /tes-open-obsidian,
-create the docs/agents/cortex/** continuity layer when needed, activate the
-read-only project-scoped Cortex MCP server for the selected runtime route, and
-finish with the certification report required by the spec.
-
-Before installation edits, run Step Zero from the spec: inspect Git status and
-offer a local baseline commit if the working tree is dirty. At the end, tell
-me how to undo the installation with Git. Do not push, amend, tag, publish,
-install dependencies, overwrite files outside the selected TES clean-runtime
-route, overwrite root runtime files before .tes/bk/<timestamp>/manifest.json
-exists, or change remotes unless I explicitly ask after reviewing the
-certification report.
-```
+That mini prompt loads the raw installer spec, runs in quiet installer mode,
+protects the repository through Step Zero, detects runtime and project state,
+stages/verifies the public TES bundle, preserves local governance, creates or
+updates `docs/agents/**`, activates read-only Cortex MCP for the selected
+route, runs available project gates, and finishes with certification plus
+rollback guidance.
 
 Short intents also work after the route is available:
 
@@ -96,8 +76,6 @@ Atualizar TES.
 `/tes-init`, `/tes-update`, and `/tes-open-obsidian` are the preferred
 cross-platform triggers. `/tes:init`, `/tes:update`, and
 `/tes:open-obsidian` remain compatible intent aliases.
-
-Canonical mini prompt: [docs/install/MINI-PROMPT.md](docs/install/MINI-PROMPT.md)
 
 ## Why Teams Use TES
 
