@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.0
+tver: 0.2.1
 ---
 
 # TDS Specification
@@ -110,6 +110,41 @@ Markdown file under `docs/**`, including this spec and roadmap documents.
 The index stores document path, id, class, status, consumer, source-of-truth
 flag, and evidence level. The validator checks that the index and frontmatter
 agree.
+
+## Generated Public Surfaces
+
+TDS also governs how public documentation surfaces are projected, even when the
+rendered output is HTML or another non-Markdown artifact.
+
+```text
+The source is the contract.
+The rendered document is evidence.
+The module graph is the memory.
+The generated surface must never become the hidden source.
+```
+
+Rules:
+
+- Structured sources own public copy, payloads, links, claims, and i18n text.
+- The module graph must name generated outputs and source files.
+- The renderer must be deterministic and support a check mode before closure.
+- Generated HTML is evidence and review surface, not the edit source.
+- Copy-ready payloads must remain canonical source files and be rendered into
+  public surfaces without payload drift.
+- Local preview must preserve the hosting base path and expose TDS health,
+  manifest, and check routes when source/render/output alignment is under
+  review.
+
+For TES public docs, the governed projection is:
+
+| Layer | Path |
+|-------|------|
+| Source | `docs/i18n/tes-public.content.json`, `docs/install/MINI-PROMPT.md` |
+| Module graph | `docs/i18n/tes-public.structure.yml` |
+| Renderer | `scripts/build_public_docs.py` |
+| Generated output | `docs/index.html`, `docs/install/USER-MANUAL.html` |
+| Drift oracle | `scripts/tds_surface_oracle.py` |
+| Runtime server | `scripts/tds_runtime_server.py` |
 
 ## Size And Modularity
 

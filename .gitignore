@@ -3,6 +3,7 @@
 __pycache__/
 node_modules/
 dist/
+tmp/
 !docs/dist/
 !docs/dist/**
 .tes/bin/*.bak-*
