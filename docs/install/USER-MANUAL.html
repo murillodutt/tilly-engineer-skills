@@ -602,6 +602,9 @@
       overflow: hidden;
       position: relative;
     }
+    .copy-wrap {
+      border: 1px solid rgba(240, 247, 244, .12);
+    }
     .pre-wrap::before {
       color: var(--accent-soft);
       content: attr(data-label);
@@ -611,6 +614,41 @@
       letter-spacing: .16em;
       padding: 14px 18px 0;
       text-transform: uppercase;
+    }
+    .copy-wrap::before { content: none; }
+    .copy-toolbar {
+      align-items: center;
+      border-bottom: 1px solid rgba(240, 247, 244, .12);
+      color: var(--accent-soft);
+      display: flex;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      justify-content: space-between;
+      letter-spacing: .16em;
+      padding: 14px 18px;
+      text-transform: uppercase;
+    }
+    .copy-btn {
+      border: 1px solid rgba(240, 247, 244, .34);
+      color: var(--mono-fg);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      padding: 7px 10px;
+      text-transform: uppercase;
+      transition: background var(--speed-fast) var(--ease), color var(--speed-fast) var(--ease);
+    }
+    .copy-btn:hover,
+    .copy-btn:focus-visible {
+      background: var(--mono-fg);
+      color: var(--mono-bg);
+      text-decoration: none;
+    }
+    .copy-wrap pre {
+      max-height: 440px;
+      overflow: auto;
+      padding-top: 16px;
     }
     pre {
       font-family: var(--font-mono);
@@ -1164,6 +1202,11 @@
       th { font-size: 11px; padding-right: 12px; }
       td { padding-right: 12px; }
       pre { font-size: 12px; }
+      .copy-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+      }
     }
 </style>
 </head>
@@ -1784,6 +1827,44 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
       }
 
       buttons.forEach((button) => button.addEventListener("click", () => setLang(button.dataset.langPick)));
+
+      function fallbackCopy(text) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.top = "-1000px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        let ok = false;
+        try { ok = document.execCommand("copy"); } catch (_) { ok = false; }
+        textarea.remove();
+        return ok;
+      }
+
+      async function copyText(text) {
+        if (navigator.clipboard?.writeText && window.isSecureContext) {
+          try {
+            await navigator.clipboard.writeText(text);
+            return true;
+          } catch (_) {}
+        }
+        return fallbackCopy(text);
+      }
+
+      document.querySelectorAll("[data-copy-button]").forEach((button) => {
+        const block = button.closest("[data-copy-block]");
+        const code = block?.querySelector("pre code");
+        if (!code) return;
+        const copyLabel = button.dataset.copyLabel || button.textContent || "Copy";
+        const copiedLabel = button.dataset.copiedLabel || "Copied";
+        button.addEventListener("click", async () => {
+          const ok = await copyText(code.textContent || "");
+          if (!ok) return;
+          button.textContent = copiedLabel;
+          window.setTimeout(() => { button.textContent = copyLabel; }, 1800);
+        });
+      });
 
       function openNav() {
         if (!navToggle || !railInner || !scrim) return;

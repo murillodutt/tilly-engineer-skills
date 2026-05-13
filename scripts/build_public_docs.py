@@ -56,6 +56,20 @@ def clean_html(text: str) -> str:
     return "\n".join(line.rstrip() for line in text.splitlines()) + "\n"
 
 
+def read_fenced_block(source: str, fence: str = "text") -> str:
+    path = (ROOT / source).resolve()
+    try:
+        path.relative_to(ROOT)
+    except ValueError as exc:
+        raise ValueError(f"source outside repository: {source}") from exc
+    text = path.read_text(encoding="utf-8")
+    pattern = rf"```{re.escape(fence)}\n(.*?)\n```"
+    match = re.search(pattern, text, re.S)
+    if not match:
+        raise ValueError(f"missing ```{fence}``` block in {source}")
+    return match.group(1)
+
+
 def lang_meta(structure: dict, lang: str) -> dict:
     for item in structure["languages"]:
         if item["code"] == lang:
@@ -115,6 +129,20 @@ def render_block(block: dict, page: dict) -> str:
         return (
             f'<div class="pre-wrap" data-label="{esc(block.get("label", "code"))}">'
             f"<pre><code>{esc(block['text'])}</code></pre></div>"
+        )
+    if kind == "prompt_copy":
+        text = read_fenced_block(block["source"], block.get("fence", "text"))
+        label = esc(block.get("label", "prompt"))
+        copy_label = esc(block.get("copy_label", "Copy"))
+        copied_label = esc(block.get("copied_label", "Copied"))
+        return (
+            f'<div class="pre-wrap copy-wrap" data-label="{label}" data-copy-block>'
+            '<div class="copy-toolbar">'
+            f'<span>{label}</span>'
+            f'<button type="button" class="copy-btn" data-copy-button data-copy-label="{copy_label}" '
+            f'data-copied-label="{copied_label}">{copy_label}</button>'
+            '</div>'
+            f'<pre><code>{esc(text)}</code></pre></div>'
         )
     if kind == "table":
         headers = "".join(f"<th>{inline(head)}</th>" for head in block["headers"])
@@ -850,6 +878,9 @@ CSS = r"""
       overflow: hidden;
       position: relative;
     }
+    .copy-wrap {
+      border: 1px solid rgba(240, 247, 244, .12);
+    }
     .pre-wrap::before {
       color: var(--accent-soft);
       content: attr(data-label);
@@ -859,6 +890,41 @@ CSS = r"""
       letter-spacing: .16em;
       padding: 14px 18px 0;
       text-transform: uppercase;
+    }
+    .copy-wrap::before { content: none; }
+    .copy-toolbar {
+      align-items: center;
+      border-bottom: 1px solid rgba(240, 247, 244, .12);
+      color: var(--accent-soft);
+      display: flex;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      justify-content: space-between;
+      letter-spacing: .16em;
+      padding: 14px 18px;
+      text-transform: uppercase;
+    }
+    .copy-btn {
+      border: 1px solid rgba(240, 247, 244, .34);
+      color: var(--mono-fg);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      padding: 7px 10px;
+      text-transform: uppercase;
+      transition: background var(--speed-fast) var(--ease), color var(--speed-fast) var(--ease);
+    }
+    .copy-btn:hover,
+    .copy-btn:focus-visible {
+      background: var(--mono-fg);
+      color: var(--mono-bg);
+      text-decoration: none;
+    }
+    .copy-wrap pre {
+      max-height: 440px;
+      overflow: auto;
+      padding-top: 16px;
     }
     pre {
       font-family: var(--font-mono);
@@ -1412,6 +1478,11 @@ CSS = r"""
       th { font-size: 11px; padding-right: 12px; }
       td { padding-right: 12px; }
       pre { font-size: 12px; }
+      .copy-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+      }
     }
 """
 
@@ -1467,6 +1538,44 @@ JS = r"""
       }
 
       buttons.forEach((button) => button.addEventListener("click", () => setLang(button.dataset.langPick)));
+
+      function fallbackCopy(text) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.top = "-1000px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        let ok = false;
+        try { ok = document.execCommand("copy"); } catch (_) { ok = false; }
+        textarea.remove();
+        return ok;
+      }
+
+      async function copyText(text) {
+        if (navigator.clipboard?.writeText && window.isSecureContext) {
+          try {
+            await navigator.clipboard.writeText(text);
+            return true;
+          } catch (_) {}
+        }
+        return fallbackCopy(text);
+      }
+
+      document.querySelectorAll("[data-copy-button]").forEach((button) => {
+        const block = button.closest("[data-copy-block]");
+        const code = block?.querySelector("pre code");
+        if (!code) return;
+        const copyLabel = button.dataset.copyLabel || button.textContent || "Copy";
+        const copiedLabel = button.dataset.copiedLabel || "Copied";
+        button.addEventListener("click", async () => {
+          const ok = await copyText(code.textContent || "");
+          if (!ok) return;
+          button.textContent = copiedLabel;
+          window.setTimeout(() => { button.textContent = copyLabel; }, 1800);
+        });
+      });
 
       function openNav() {
         if (!navToggle || !railInner || !scrim) return;
