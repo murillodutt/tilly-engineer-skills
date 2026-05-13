@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.7
+tver: 0.4.8
 ---
 
 # Tilly Engineer Skills Docs
@@ -77,6 +77,21 @@ surfaces. Their commercial, documentation, and user-facing text is sourced from
 `docs/i18n/tes-public.structure.yml`. Use
 `python3 scripts/build_public_docs.py` to regenerate them and
 `python3 scripts/build_public_docs.py --check` before closure.
+
+Public surface review follows a source/render/output contract:
+
+```text
+The source is the contract.
+The rendered document is evidence.
+The module graph is the memory.
+The generated surface must never become the hidden source.
+```
+
+Use `python3 scripts/tds_surface_oracle.py` to check rendered public docs
+against their structured sources, copy-ready payloads, generated markers, TDS
+labels, and public source map. Use `python3 scripts/tds_runtime_server.py` for
+a local GitHub Pages-like runtime with `/_tds/health`, `/_tds/manifest`, and
+`/_tds/check` endpoints.
 
 Copyable adapter material lives in `src/adapters/**`:
 
