@@ -332,10 +332,10 @@ def render_lang_section(page_key: str, structure: dict, content: dict, lang: str
           </div>
           <p class="eyebrow">{inline(hero["eyebrow"])}</p>
           <h1 class="display-h1">{inline(hero["title"])}</h1>
+          {hero_image}
           <p class="lead">{inline(hero["lead"])}</p>
           {hero_actions}
           {hero_facts}
-          {hero_image}
         </header>
         {sections}
       </section>"""
@@ -691,11 +691,12 @@ CSS = r"""
     }
     .hero-fact strong { font-size: 18px; font-weight: 600; }
     .hero-visual {
-      background: var(--mono-bg);
-      border: 1px solid rgba(22,18,21,.2);
-      margin: 42px 0 0;
+      margin: 34px 0 36px;
     }
-    .hero-visual img { width: 100%; }
+    .hero-visual img {
+      display: block;
+      width: 100%;
+    }
 
     .chapter {
       margin: 0 0 64px;
