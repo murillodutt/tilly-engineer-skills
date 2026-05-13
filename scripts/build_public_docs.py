@@ -70,6 +70,37 @@ def read_fenced_block(source: str, fence: str = "text") -> str:
     return match.group(1)
 
 
+def prompt_paragraph(text: str) -> str:
+    compact = " ".join(line.strip() for line in text.splitlines())
+    parts = re.split(r"(`[^`]+`)", compact)
+    rendered: list[str] = []
+    for part in parts:
+        if part.startswith("`") and part.endswith("`"):
+            rendered.append(f"<code>{esc(part[1:-1])}</code>")
+            continue
+        safe = esc(part)
+        safe = re.sub(
+            r"(https://[^\s<]+)",
+            lambda m: f'<a href="{esc(m.group(1))}">{esc(m.group(1))}</a>',
+            safe,
+        )
+        rendered.append(safe)
+    return "".join(rendered)
+
+
+def render_prompt_steps(text: str) -> str:
+    chunks = [chunk.strip() for chunk in re.split(r"\n\s*\n", text.strip()) if chunk.strip()]
+    steps = []
+    for index, chunk in enumerate(chunks, 1):
+        steps.append(
+            '<article class="prompt-step">'
+            f'<span class="prompt-step-num">{index:02d}</span>'
+            f'<p>{prompt_paragraph(chunk)}</p>'
+            '</article>'
+        )
+    return "".join(steps)
+
+
 def lang_meta(structure: dict, lang: str) -> dict:
     for item in structure["languages"]:
         if item["code"] == lang:
@@ -133,16 +164,26 @@ def render_block(block: dict, page: dict) -> str:
     if kind == "prompt_copy":
         text = read_fenced_block(block["source"], block.get("fence", "text"))
         label = esc(block.get("label", "prompt"))
+        title = inline(block.get("title", block.get("label", "prompt")))
+        summary = inline(block.get("summary", "Copy the complete canonical prompt into the active agent window."))
+        source_label = inline(block.get("source_label", f"Canonical source: `{block['source']}`"))
         copy_label = esc(block.get("copy_label", "Copy"))
         copied_label = esc(block.get("copied_label", "Copied"))
         return (
-            f'<div class="pre-wrap copy-wrap" data-label="{label}" data-copy-block>'
-            '<div class="copy-toolbar">'
-            f'<span>{label}</span>'
-            f'<button type="button" class="copy-btn" data-copy-button data-copy-label="{copy_label}" '
-            f'data-copied-label="{copied_label}">{copy_label}</button>'
+            f'<div class="prompt-card" data-label="{label}" data-copy-block>'
+            '<div class="prompt-card-top">'
+            '<div>'
+            f'<p class="prompt-eyebrow">{label}</p>'
+            f'<h3>{title}</h3>'
+            f'<p>{summary}</p>'
             '</div>'
-            f'<pre><code>{esc(text)}</code></pre></div>'
+            f'<button type="button" class="copy-btn prompt-copy-btn" data-copy-button '
+            f'data-copy-label="{copy_label}" data-copied-label="{copied_label}">{copy_label}</button>'
+            '</div>'
+            f'<p class="prompt-source">{source_label}</p>'
+            f'<div class="prompt-body">{render_prompt_steps(text)}</div>'
+            f'<textarea class="copy-source" data-copy-source readonly aria-hidden="true" tabindex="-1">{esc(text)}</textarea>'
+            '</div>'
         )
     if kind == "table":
         headers = "".join(f"<th>{inline(head)}</th>" for head in block["headers"])
@@ -878,9 +919,6 @@ CSS = r"""
       overflow: hidden;
       position: relative;
     }
-    .copy-wrap {
-      border: 1px solid rgba(240, 247, 244, .12);
-    }
     .pre-wrap::before {
       color: var(--accent-soft);
       content: attr(data-label);
@@ -889,19 +927,6 @@ CSS = r"""
       font-size: 10px;
       letter-spacing: .16em;
       padding: 14px 18px 0;
-      text-transform: uppercase;
-    }
-    .copy-wrap::before { content: none; }
-    .copy-toolbar {
-      align-items: center;
-      border-bottom: 1px solid rgba(240, 247, 244, .12);
-      color: var(--accent-soft);
-      display: flex;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      justify-content: space-between;
-      letter-spacing: .16em;
-      padding: 14px 18px;
       text-transform: uppercase;
     }
     .copy-btn {
@@ -921,11 +946,22 @@ CSS = r"""
       color: var(--mono-bg);
       text-decoration: none;
     }
-    .copy-wrap pre {
-      max-height: 440px;
-      overflow: auto;
-      padding-top: 16px;
-    }
+    .prompt-card { background: linear-gradient(135deg, rgba(28, 45, 42, .98), rgba(22, 18, 21, .99)); border: 1px solid rgba(47, 127, 132, .34); box-shadow: 0 26px 70px rgba(17, 24, 21, .16); color: var(--mono-fg); margin: 0 0 28px; max-width: calc(var(--col-content) + var(--col-aside)); overflow: hidden; position: relative; }
+    .prompt-card-top { align-items: start; border-bottom: 1px solid rgba(240, 247, 244, .12); display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr) auto; padding: 22px 24px 20px; }
+    .prompt-eyebrow, .prompt-source { color: var(--accent-soft); font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; margin: 0 0 10px; text-transform: uppercase; }
+    .prompt-card h3 { color: var(--mono-fg); font-family: var(--font-display); font-size: clamp(28px, 3vw, 42px); font-weight: 500; letter-spacing: -.01em; line-height: 1.02; margin: 0 0 10px; }
+    .prompt-card-top p:not(.prompt-eyebrow) { color: rgba(240, 247, 244, .78); font-size: 17px; line-height: 1.55; margin: 0; max-width: 620px; }
+    .prompt-copy-btn { align-self: start; margin-top: 4px; padding: 12px 14px; }
+    .prompt-source { border-bottom: 1px solid rgba(240, 247, 244, .1); color: rgba(240, 247, 244, .62); margin: 0; padding: 12px 24px; text-transform: none; }
+    .prompt-source code, .prompt-step code { background: rgba(240, 247, 244, .08); border-color: rgba(153, 225, 217, .2); color: var(--mono-fg); }
+    .prompt-body { max-height: 620px; overflow: auto; padding: 18px 24px 24px; scrollbar-color: rgba(153, 225, 217, .45) transparent; }
+    .prompt-step { border-bottom: 1px solid rgba(240, 247, 244, .1); display: grid; gap: 16px; grid-template-columns: 42px minmax(0, 1fr); padding: 16px 0; }
+    .prompt-step:first-child { padding-top: 0; }
+    .prompt-step:last-child { border-bottom: 0; padding-bottom: 0; }
+    .prompt-step-num { color: var(--accent-soft); font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; padding-top: 3px; }
+    .prompt-step p { color: rgba(240, 247, 244, .86); font-family: var(--font-mono); font-size: 12.5px; line-height: 1.75; margin: 0; }
+    .prompt-step a { color: var(--accent-soft); overflow-wrap: anywhere; }
+    .copy-source { height: 1px; left: -9999px; opacity: 0; pointer-events: none; position: absolute; width: 1px; }
     pre {
       font-family: var(--font-mono);
       font-size: 13px;
@@ -1478,11 +1514,12 @@ CSS = r"""
       th { font-size: 11px; padding-right: 12px; }
       td { padding-right: 12px; }
       pre { font-size: 12px; }
-      .copy-toolbar {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 10px;
-      }
+      .prompt-card-top { grid-template-columns: 1fr; padding: 20px; }
+      .prompt-copy-btn { width: 100%; }
+      .prompt-source { padding: 12px 20px; }
+      .prompt-body { max-height: 560px; padding: 16px 20px 20px; }
+      .prompt-step { grid-template-columns: 34px minmax(0, 1fr); }
+      .prompt-step p { font-size: 12px; }
     }
 """
 
@@ -1565,12 +1602,14 @@ JS = r"""
 
       document.querySelectorAll("[data-copy-button]").forEach((button) => {
         const block = button.closest("[data-copy-block]");
+        const source = block?.querySelector("[data-copy-source]");
         const code = block?.querySelector("pre code");
-        if (!code) return;
+        if (!source && !code) return;
         const copyLabel = button.dataset.copyLabel || button.textContent || "Copy";
         const copiedLabel = button.dataset.copiedLabel || "Copied";
         button.addEventListener("click", async () => {
-          const ok = await copyText(code.textContent || "");
+          const text = source ? (source.value || source.textContent || "") : (code.textContent || "");
+          const ok = await copyText(text);
           if (!ok) return;
           button.textContent = copiedLabel;
           window.setTimeout(() => { button.textContent = copyLabel; }, 1800);
