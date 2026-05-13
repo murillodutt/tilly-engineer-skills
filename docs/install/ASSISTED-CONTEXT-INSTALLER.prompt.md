@@ -874,7 +874,7 @@ The final report must always expose the PT/EN/ES user manual. Prefer a clickable
 
 ```text
 User Manual
-- Web: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/install/USER-MANUAL.html
+- Web: https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html
 - Local package path: docs/install/USER-MANUAL.html  # when this package is available locally
 ```
 
@@ -945,7 +945,7 @@ Evidence
 - <journal when created>
 
 User Manual
-- Web: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/install/USER-MANUAL.html
+- Web: https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html
 - Local package path: docs/install/USER-MANUAL.html  # when available
 
 Rollback

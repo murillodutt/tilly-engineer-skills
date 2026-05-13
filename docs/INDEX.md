@@ -25,7 +25,7 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.82/tilly-engineer-skills-0.3.82.zip` |
+| Public installer bundle | `dist/0.3.83/tilly-engineer-skills-0.3.83.zip` |
 | Adapter installation | `install/INSTALL.md` |
 | Assisted context installer mini prompt | `install/MINI-PROMPT.md` |
 | Assisted context installer raw spec | `install/ASSISTED-CONTEXT-INSTALLER.prompt.md` |
