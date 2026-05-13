@@ -16,6 +16,8 @@ Use these exact TES intents when the user asks for Tilly Engineering Skills:
 - `/tes-init`
 - `/tes-update`
 - `/tes-align`
+- `/tes-prospect`
+- `/tes-mine`
 - `/tes-open-obsidian`
 - `/tes-cortex`
 - `/tes-curate`
@@ -30,6 +32,8 @@ Compatible aliases:
 - `/tes:init`
 - `/tes:update`
 - `/tes:align`
+- `/tes:prospect`
+- `/tes:mine`
 - `/tes:open-obsidian`
 - `/tes:cortex`
 - `/tes:mcp`
@@ -49,6 +53,11 @@ align TES, align this project, open Obsidian, open this project in Obsidian,
 Atualizar TES, atualizar TES, alinhar TES, alinhar projeto, abrir Obsidian,
 abrir no Obsidian, initialize TES, install TES, recertify TES, inicializar TES,
 instalar TES, and recertificar TES.
+
+Do not activate `/tes-prospect` or `/tes-mine` from broad natural language.
+They require explicit invocation by trigger, alias, or skill name. After
+invocation, they may operate proactively and must honor the cognitive brake:
+pause, pausa, freia, segura, para, hold, step back, or resuma onde estamos.
 
 Route `/tes-init` through the Install/Update Gate, Project Context Gate, and
 Project-Start Gate. Step Zero protects installer/update writes and must not

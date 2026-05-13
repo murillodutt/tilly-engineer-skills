@@ -62,6 +62,8 @@ requires exact syntax.
 | Reusable workflow | `.agents/skills/tes-engineering-discipline/SKILL.md` |
 | Tilly initialization shortcut | `.agents/skills/tes-init/SKILL.md` |
 | Project semantic alignment | `.agents/skills/tes-align/SKILL.md` |
+| Project-stress prospecting | `.agents/skills/tes-prospect/SKILL.md` |
+| Code and domain mining | `.agents/skills/tes-mine/SKILL.md` |
 | Obsidian open gate | `.agents/skills/tes-open-obsidian/SKILL.md` |
 | Cortex memory operations | `.agents/skills/tes-cortex/SKILL.md` |
 | MCP activation and checks | `.agents/skills/tes-mcp/SKILL.md` |
@@ -110,6 +112,7 @@ push and must show `helper_contract_status=PASS`, `runtime_trigger_status=PASS`
 or `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`.
 Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
 `align this project`, `alinhar TES`, `alinhar projeto`,
+`/tes-prospect`, `/tes:prospect`, `/tes-mine`, `/tes:mine`,
 `/tes-open-obsidian`, `/tes:open-obsidian`, `open Obsidian`,
 `open this project in Obsidian`, `abrir Obsidian`, `abrir no Obsidian`,
 `/tes-cortex`,
@@ -119,6 +122,8 @@ Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
 and `/tes:bench` as intent shortcuts. Load the matching TES skill when one
 exists, otherwise route through `docs/install/COMMAND-TRIGGERS.md` and the
 smallest safe oracle. These are not shell commands.
+Do not activate `/tes-prospect` or `/tes-mine` from broad natural language.
+They require explicit invocation and must honor the cognitive brake.
 
 </tes_init>
 

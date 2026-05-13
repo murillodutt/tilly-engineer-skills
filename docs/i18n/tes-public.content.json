@@ -607,6 +607,8 @@
             ["`/tes-init`", "Install, recertify, or initialize project context.", "May write TES runtime files and `docs/agents/**` after gates pass."],
             ["`/tes-update` / `/tes:update`", "Update an existing mesh through `tes_update.py`.", "Starts with helper-only Layer Zero, then adapter-config only if gates pass."],
             ["`/tes-align`", "Deepen project context into state, gates, glossary, and decisions.", "Writes operating mesh files under `docs/agents/**`."],
+            ["`/tes-prospect`", "Explicitly stress-test a plan or design with predictive project pressure.", "No project writes; cognitive brake pauses the pressure."],
+            ["`/tes-mine`", "Explicitly mine code, terminology, context, and ADR candidates.", "May write `CONTEXT.md` or ADRs only when resolved and not braked."],
             ["`/tes-cortex`", "Inspect, recall, audit, learn from, or reflect into Cortex.", "Memory writes require explicit authorization and evidence."],
             ["`/tes-mcp`", "Activate or verify read-only Cortex MCP.", "May write project-scoped MCP config and TES helpers."],
             ["`/tes-field-reports`", "Inspect, drain, disable, or enable sanitized reports.", "May update `.tes/field-reports/**` and the local pre-push hook."]
@@ -623,6 +625,8 @@
             ["`/tes-init`", "Instalar, recertificar o inicializar contexto.", "Puede escribir runtime TES y `docs/agents/**` despues de gates."],
             ["`/tes-update` / `/tes:update`", "Actualizar un mesh existente mediante `tes_update.py`.", "Empieza con helper-only Layer Zero y luego adapter-config si pasan gates."],
             ["`/tes-align`", "Profundizar estado, gates, glosario y decisiones.", "Escribe el mesh operativo en `docs/agents/**`."],
+            ["`/tes-prospect`", "Estresar explicitamente un plan o diseno con presion predictiva de proyecto.", "No escribe archivos; el freno cognitivo pausa la presion."],
+            ["`/tes-mine`", "Minar explicitamente codigo, terminologia, contexto y candidatos ADR.", "Puede escribir `CONTEXT.md` o ADRs solo cuando esten resueltos y sin freno activo."],
             ["`/tes-cortex`", "Inspeccionar, recordar, auditar, aprender o reflexionar en Cortex.", "Escrituras de memoria requieren autorizacion y evidencia."],
             ["`/tes-mcp`", "Activar o verificar Cortex MCP read-only.", "Puede escribir config MCP con escopo de proyecto y helpers TES."],
             ["`/tes-field-reports`", "Inspeccionar, drenar, desactivar o activar reportes sanitizados.", "Puede actualizar `.tes/field-reports/**` y el hook pre-push local."]
@@ -639,6 +643,8 @@
             ["`/tes-init`", "Instalar, recertificar ou inicializar contexto.", "Pode escrever runtime TES e `docs/agents/**` depois dos gates."],
             ["`/tes-update` / `/tes:update`", "Atualizar um mesh existente por `tes_update.py`.", "Comeca com helper-only Layer Zero e depois adapter-config se gates passarem."],
             ["`/tes-align`", "Aprofundar estado, gates, glossario e decisoes.", "Escreve a malha operacional em `docs/agents/**`."],
+            ["`/tes-prospect`", "Estressar explicitamente um plano ou design com pressao preditiva de projeto.", "Nao escreve arquivos; o freio cognitivo pausa a pressao."],
+            ["`/tes-mine`", "Minerar explicitamente codigo, terminologia, contexto e candidatos ADR.", "Pode escrever `CONTEXT.md` ou ADRs apenas quando resolvidos e sem freio ativo."],
             ["`/tes-cortex`", "Inspecionar, lembrar, auditar, aprender ou refletir no Cortex.", "Escritas de memoria exigem autorizacao explicita e evidencia."],
             ["`/tes-mcp`", "Ativar ou verificar Cortex MCP somente leitura.", "Pode escrever config MCP com escopo de projeto e helpers TES."],
             ["`/tes-field-reports`", "Inspecionar, drenar, desativar ou ativar relatorios sanitizados.", "Pode atualizar `.tes/field-reports/**` e o hook pre-push local."]

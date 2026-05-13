@@ -6,7 +6,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.10.6
+tver: 0.10.7
 ---
 
 # Tilly Assisted Context Installer
@@ -35,9 +35,9 @@ The executor is the active LLM coding agent inside the current IDE/runtime conte
 
 Treat Python scripts and `npm run ...` entries as deterministic oracles and portable helper tools. Treat skills, rules, bootloaders, and adapter files as routing/governance surfaces that tell the agent when and how to act. Treat hooks as local Git gates for validation, Field Reports drain, and no-write Cortex reflection/curation. Treat MCP as a read-only Cortex access surface for agents, not as memory and not as the installer.
 
-`/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, and direct command/prompts such as `TES, initialize this project` or `Atualizar TES` are preferred entries. Treat them as intents that load this installer contract, not as raw shell commands. Across Codex, Claude Code, and Cursor, prefer shared hyphen triggers such as `/tes-init`, `/tes-update`, and `/tes-cortex`; if a host reports a `/tes:*` alias as invalid, continue as TES intent text through the matching `tes-*` skill/rule/spec instead of asking the user to choose a route.
+`/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, and direct command/prompts such as `TES, initialize this project` or `Atualizar TES` are preferred entries. Treat them as intents that load this installer contract, not as raw shell commands. Across Codex, Claude Code, and Cursor, prefer shared hyphen triggers such as `/tes-init`, `/tes-update`, `/tes-prospect`, `/tes-mine`, and `/tes-cortex`; if a host reports a `/tes:*` alias as invalid, continue as TES intent text through the matching `tes-*` skill/rule/spec instead of asking the user to choose a route.
 
-Other shortcuts are routed by `docs/install/COMMAND-TRIGGERS.md`: `/tes-cortex`, `/tes-curate`, `/tes-mcp`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, and their `/tes:*` compatibility aliases.
+Other shortcuts are routed by `docs/install/COMMAND-TRIGGERS.md`: `/tes-prospect`, `/tes-mine`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, and their `/tes:*` compatibility aliases. `/tes-prospect` and `/tes-mine` require explicit invocation and must honor their cognitive brake.
 
 If the current runtime cannot execute a command, do not claim it passed. Finish safe file work where possible, mark the oracle `BLOCKED` or `SKIP` with the reason in evidence and the final report, and ask for the smallest native equivalent or user-run command only when certification depends on it.
 

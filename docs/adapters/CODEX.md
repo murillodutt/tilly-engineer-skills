@@ -5,7 +5,7 @@ status: active
 consumer: codex adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.5.0
+tver: 0.5.1
 ---
 
 # Codex Derivation
@@ -65,14 +65,18 @@ Codex uses progressive disclosure for skills:
 
 The preferred TES shortcuts map to Codex skills. Primary independent commands
 have visible skills; grouped intents such as `/tes-update` and `/tes-curate`
-route through their owning skills. They keep the user entrypoint short while
-delegating real work to deterministic oracles:
+route through their owning skills. Predictive skills such as `/tes-prospect`
+and `/tes-mine` require explicit invocation and use a cognitive brake. They
+keep the user entrypoint short while delegating real work to deterministic
+oracles or agent-led codebase exploration:
 
 | Shortcut | Skill |
 |----------|-------|
 | `/tes-init`, `/tes:init` | `tes-init` |
 | `/tes-update`, `/tes:update` | `tes-init` |
 | `/tes-align`, `/tes:align` | `tes-align` |
+| `/tes-prospect`, `/tes:prospect` | `tes-prospect` |
+| `/tes-mine`, `/tes:mine` | `tes-mine` |
 | `/tes-open-obsidian`, `/tes:open-obsidian` | `tes-open-obsidian` |
 | `/tes-cortex`, `/tes:cortex` | `tes-cortex` |
 | `/tes-curate`, `/tes:curate` | `tes-cortex` |

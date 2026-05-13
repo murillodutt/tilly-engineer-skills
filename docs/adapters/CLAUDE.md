@@ -5,7 +5,7 @@ status: active
 consumer: claude code adopters and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.3.1
+tver: 0.3.2
 ---
 
 # Claude Adapter
@@ -67,9 +67,10 @@ dedicated decision.
 - `/tes-*` is the preferred cross-tool TES trigger vocabulary across Codex,
   Claude Code, and Cursor. Claude project installs expose skill-backed direct
   slash names such as `/tes-init`, `/tes-align`, `/tes-open-obsidian`,
-  `/tes-cortex`, `/tes-mcp`, `/tes-field-reports`, `/tes-doctor`,
-  `/tes-adapter`, and `/tes-bench`; grouped triggers such as `/tes-update` and
-  `/tes-curate` route through their owning skills instead of a
+  `/tes-prospect`, `/tes-mine`, `/tes-cortex`, `/tes-mcp`,
+  `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench`;
+  grouped triggers such as `/tes-update` and `/tes-curate` route through their
+  owning skills instead of a
   one-file-per-command package.
   `/tes:*` forms remain compatible TES intent aliases. If Claude receives
   `/tes:init` or `/tes:update` as invalid slash text, treat it as the matching
@@ -80,6 +81,11 @@ dedicated decision.
   `alinhar projeto`, and natural alignment prompts route to `tes-align`.
   `open Obsidian`, `open this project in Obsidian`, `abrir Obsidian`, and
   `abrir no Obsidian` route to `tes-open-obsidian`.
+- `/tes-prospect` and `/tes-mine` are direct explicit-invocation predictive
+  skills. Their `/tes:prospect` and `/tes:mine` aliases are compatible intent
+  text, but broad natural-language descriptions must not activate them. Once
+  invoked, each skill may operate proactively and must honor its cognitive
+  brake.
 - When installing into an existing project, back up a divergent `CLAUDE.md`
   under `.tes/bk/**`, apply the clean bootloader, recover useful semantics into
   `docs/agents/**`, and still install TES-owned assets under
