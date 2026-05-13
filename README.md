@@ -22,9 +22,9 @@ Paste the assisted prompt into Codex, Claude Code, or Cursor from inside the
 target repository. TES starts by protecting the repo, then installs with local
 evidence and rollback guidance.
 
-No one buys the wiring diagram first. You buy the car that starts, brakes,
-shows diagnostics, and can be serviced. TES brings that dashboard and service
-history feeling to Codex, Claude Code, and Cursor work.
+TES does not replace Codex, Claude Code, or Cursor. It gives their work an
+operating trail: what context was loaded, which rules applied, which gates
+passed, what evidence remains, and where rollback starts.
 
 **What you get**
 
