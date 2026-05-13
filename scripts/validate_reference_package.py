@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.82"
+VERSION = "0.3.83"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -27,9 +27,9 @@ REQUIRED_PATHS = (
     "docs/architecture/PROJECT-STRUCTURE.md",
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.82/index.json",
-    "docs/dist/0.3.82/tilly-engineer-skills-0.3.82.zip",
-    "docs/dist/0.3.82/tilly-engineer-skills-0.3.82.zip.sha256",
+    "docs/dist/0.3.83/index.json",
+    "docs/dist/0.3.83/tilly-engineer-skills-0.3.83.zip",
+    "docs/dist/0.3.83/tilly-engineer-skills-0.3.83.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -418,6 +418,9 @@ GIT_SAFETY_REQUIRED_TERMS = (
     "must not ignore `.tes/bin/*.py`",
 )
 
+CANONICAL_USER_MANUAL_WEB_URL = "https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html"
+FORBIDDEN_USER_MANUAL_WEB_URL = "https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/install/USER-MANUAL.html"
+
 VERSION_LOCKED_SURFACES = (
     "README.md",
     "docs/adapters/CODEX.md",
@@ -543,6 +546,15 @@ def installer_report_contract_failures() -> list[str]:
     for term in INSTALLER_REPORT_REQUIRED_TERMS:
         if term not in installer_text:
             failures.append(f"assisted installer missing report-hardening term: {term}")
+    manual_link_sources = {
+        "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md": installer_text,
+        "docs/install/INSTALL.md": (ROOT / "docs/install/INSTALL.md").read_text(encoding="utf-8"),
+    }
+    for relpath, text in manual_link_sources.items():
+        if FORBIDDEN_USER_MANUAL_WEB_URL in text:
+            failures.append(f"{relpath} points user manual web link at GitHub blob URL")
+        if CANONICAL_USER_MANUAL_WEB_URL not in text:
+            failures.append(f"{relpath} missing canonical GitHub Pages user manual URL")
 
     manual = ROOT / "docs/install/USER-MANUAL.html"
     if not manual.exists():

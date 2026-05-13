@@ -355,7 +355,7 @@ Every report must expose the user manual:
 
 ```text
 User Manual
-- Web: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/install/USER-MANUAL.html
+- Web: https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html
 - Local package path: docs/install/USER-MANUAL.html
 ```
 
