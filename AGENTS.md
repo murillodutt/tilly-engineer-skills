@@ -107,6 +107,31 @@ them into `src/adapters/**`, target bootloaders, user manuals, or
 
 </maintainer_boundary>
 
+<release_identity>
+
+Delivered behavior changes require a release identity decision before closure.
+If a change adds, removes, or changes adopter-visible skills, triggers,
+installer behavior, helper/runtime scripts, plugin metadata, public docs, MCP,
+Field Reports, Cortex behavior, or adapter materialization, check whether the
+package version and public bundle must advance.
+
+Reference case: adding `/tes-prospect` and `/tes-mine` as explicit-invocation
+predictive skills is delivered behavior, even when their execution remains
+opt-in and their behavior is otherwise preserved. That class of change needs a
+version/bundle decision before closeout.
+
+Default rule: bump the patch version and update correlated release surfaces
+when delivered behavior changes. Check `package.json`, script `VERSION`
+constants, plugin manifests, `docs/dist/<version>/**`, `.sha256` sidecars,
+`index.json`, public docs, validators, and the maintainer correlation rule.
+
+Exception rule: if Murillo explicitly decides to keep the current version for a
+delivered behavior change, state that exception in the closeout and do not call
+the package sealed by version identity. The behavior may be committed, but the
+next release/bundle cycle must know the version bump was intentionally deferred.
+
+</release_identity>
+
 <locks>
 
 - Do not put full source packages back in the repository root.
