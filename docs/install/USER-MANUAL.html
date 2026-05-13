@@ -20,6 +20,10 @@
   <meta name="twitter:image" content="https://murillodutt.github.io/tilly-engineer-skills/assets/social-preview.webp">
   <meta name="theme-color" content="#f0f7f4">
   <link rel="icon" href="../assets/logo-tesc-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,30..100&family=Newsreader:opsz,wght@6..72,300..700&family=JetBrains+Mono:wght@400;500;700&display=swap">
   <style>
     :root {
       color-scheme: light;
@@ -27,19 +31,29 @@
       --paper-deep: #dcebea;
       --ink: #161215;
       --ink-soft: #3a302c;
-      --ink-faint: #776c68;
+      --ink-faint: #8b7d78;
       --rule: #b8cfca;
       --rule-soft: #d2e3df;
       --accent: #2f7f84;
+      --accent-deep: #235f63;
       --accent-soft: #99e1d9;
       --warn: #b86a3a;
       --mono-bg: #161215;
       --mono-fg: #f0f7f4;
-      --font-display: ui-serif, Georgia, "Times New Roman", serif;
-      --font-body: ui-serif, Georgia, "Times New Roman", serif;
-      --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      --mono-muted: #b7c9c5;
+      --font-display: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+      --font-body: "Newsreader", ui-serif, Georgia, "Times New Roman", serif;
+      --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+      --col-margin: 220px;
+      --col-content: 760px;
+      --col-aside: 280px;
+      --gap: 32px;
+      --speed-fast: 180ms;
+      --speed-base: 320ms;
+      --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
     }
-    * { box-sizing: border-box; }
+
+    *, *::before, *::after { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
@@ -47,22 +61,41 @@
       color: var(--ink);
       font-family: var(--font-body);
       font-size: 17px;
+      font-weight: 400;
       line-height: 1.65;
       text-rendering: optimizeLegibility;
       -webkit-font-smoothing: antialiased;
     }
     body::before {
       background:
-        radial-gradient(1000px 500px at 100% 0%, rgba(47,127,132,.08), transparent 60%),
-        radial-gradient(760px 420px at 0% 30%, rgba(184,106,58,.05), transparent 60%);
+        radial-gradient(1200px 600px at 100% -10%, rgba(194, 65, 12, 0.06), transparent 60%),
+        radial-gradient(800px 400px at -10% 30%, rgba(154, 52, 18, 0.04), transparent 60%);
       content: "";
       inset: 0;
       pointer-events: none;
       position: fixed;
       z-index: 0;
     }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    body.nav-open { overflow: hidden; }
+    img, picture, svg { display: block; max-width: 100%; }
+    button {
+      background: none;
+      border: 0;
+      color: inherit;
+      cursor: pointer;
+      font: inherit;
+      padding: 0;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      text-decoration-color: transparent;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+      transition: text-decoration-color var(--speed-fast) var(--ease);
+    }
+    a:hover { text-decoration: underline; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
     code {
       background: var(--paper-deep);
       border: 1px solid var(--rule-soft);
@@ -72,131 +105,248 @@
       padding: 1px 5px;
       white-space: nowrap;
     }
+
     .skip {
       background: var(--ink);
       color: var(--paper);
+      font-family: var(--font-mono);
+      font-size: 12px;
       left: 12px;
       padding: 8px 12px;
       position: absolute;
       top: -100px;
-      z-index: 10;
+      z-index: 100;
     }
     .skip:focus { top: 12px; }
-    .layout {
+    .layout, .page {
       display: grid;
-      grid-template-columns: 260px minmax(0, 1fr);
+      grid-template-columns: var(--col-margin) minmax(0, 1fr);
       min-height: 100vh;
       position: relative;
       z-index: 1;
     }
     .rail {
       border-right: 1px solid var(--rule-soft);
+      display: flex;
+      flex-direction: column;
       height: 100vh;
-      padding: 28px 24px;
       position: sticky;
       top: 0;
     }
-    .brand {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .12em;
-      margin-bottom: 32px;
-      text-transform: uppercase;
+    .nav-bar {
+      align-items: center;
+      border-bottom: 1px solid var(--rule-soft);
+      display: flex;
+      flex-shrink: 0;
+      gap: 16px;
+      justify-content: space-between;
+      padding: 24px 24px 20px;
     }
+    .nav-toggle { display: none; }
+    .rail-inner {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 24px 32px;
+    }
+    .rail-inner::-webkit-scrollbar { width: 6px; }
+    .rail-inner::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+    .scrim {
+      background: rgba(26, 24, 20, .32);
+      inset: 64px 0 0;
+      opacity: 0;
+      pointer-events: none;
+      position: fixed;
+      transition: opacity var(--speed-base) var(--ease);
+      z-index: 50;
+    }
+    .scrim.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .stage {
+      max-width: calc(var(--col-content) + var(--col-aside) + var(--gap));
+      padding: 56px 64px 96px;
+      position: relative;
+      width: 100%;
+    }
+
+    .brand { flex: 1; min-width: 0; }
+    .brand-mark {
+      align-items: baseline;
+      color: var(--ink);
+      display: inline-flex;
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 500;
+      gap: 6px;
+      letter-spacing: -.01em;
+      line-height: 1;
+    }
+    .brand-mark em { color: var(--accent); font-style: normal; }
+    .brand-meta {
+      color: var(--ink-faint);
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      margin-top: 6px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .toc { padding-top: 8px; }
     .toc-title {
       color: var(--ink-faint);
       font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: .1em;
-      margin: 0 0 12px;
+      font-size: 10px;
+      letter-spacing: .14em;
+      margin: 0 0 16px;
       text-transform: uppercase;
     }
     .toc ul { list-style: none; margin: 0; padding: 0; }
+    .toc li { position: relative; }
     .toc a {
-      border-left: 2px solid transparent;
+      align-items: baseline;
       color: var(--ink-soft);
-      display: grid;
-      font-size: 15px;
-      gap: 10px;
-      grid-template-columns: 30px 1fr;
-      margin: 2px 0;
-      padding: 7px 0 7px 10px;
+      display: flex;
+      font-family: var(--font-body);
+      font-size: 14px;
+      gap: 12px;
+      line-height: 1.4;
+      padding: 7px 0 7px 16px;
+      position: relative;
+      transition: color var(--speed-fast) var(--ease), padding-left var(--speed-fast) var(--ease);
+    }
+    .toc a::before {
+      background: var(--accent);
+      content: "";
+      height: 0;
+      left: 0;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      transition: height var(--speed-fast) var(--ease);
+      width: 2px;
+    }
+    .toc a:hover {
+      color: var(--ink);
+      padding-left: 22px;
+      text-decoration: none;
     }
     .toc a[aria-current="true"] {
-      border-left-color: var(--accent);
       color: var(--ink);
+      font-weight: 500;
     }
-    .toc-num { color: var(--accent); font-family: var(--font-mono); font-size: 12px; }
+    .toc a[aria-current="true"]::before { height: 18px; }
+    .toc-num {
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .04em;
+      min-width: 22px;
+    }
+    .toc a[aria-current="true"] .toc-num { color: var(--accent); }
     .toc-text { color: inherit; font-family: inherit; font-size: inherit; }
-    .stage {
-      margin: 0 auto;
-      max-width: 1120px;
-      padding: 56px clamp(24px, 6vw, 72px) 96px;
-      width: 100%;
-    }
+
     .lang-section { display: none; }
     .lang-section.is-active { display: block; }
-    .language-row { display: flex; gap: 8px; margin-bottom: 28px; }
+    .language-row {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 34px;
+    }
+    .language-row::before {
+      background: var(--accent);
+      content: "";
+      height: 1px;
+      width: 46px;
+    }
     .lang-btn {
-      background: transparent;
-      border: 1px solid var(--rule);
-      border-radius: 999px;
-      color: var(--ink-soft);
-      cursor: pointer;
+      color: var(--ink-faint);
       font-family: var(--font-mono);
-      font-size: 12px;
-      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .16em;
+      text-transform: uppercase;
     }
-    .lang-btn[aria-pressed="true"] {
-      background: var(--ink);
-      border-color: var(--ink);
-      color: var(--paper);
+    .lang-btn[aria-pressed="true"] { color: var(--accent); }
+    .lang-btn + .lang-btn::before {
+      color: var(--ink-faint);
+      content: "·";
+      margin-right: 15px;
     }
-    .masthead { padding-bottom: 40px; }
+    .language-mark {
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    .masthead {
+      border-bottom: 1px solid var(--rule);
+      margin: 0 0 56px;
+      padding: 0 0 40px;
+    }
     .eyebrow {
       color: var(--accent);
       font-family: var(--font-mono);
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .12em;
-      margin: 0 0 18px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .2em;
+      margin: 0 0 30px;
       text-transform: uppercase;
     }
-    h1, h2, h3 {
+    .display-h1 {
       font-family: var(--font-display);
-      font-weight: 500;
-      letter-spacing: 0;
-      line-height: 1.06;
-      margin: 0;
+      font-size: clamp(48px, 6vw, 84px);
+      font-variation-settings: "opsz" 144, "wght" 400, "SOFT" 50;
+      letter-spacing: -.025em;
+      line-height: .96;
+      margin: 0 0 24px;
+      max-width: 940px;
     }
-    h1 {
-      font-size: clamp(48px, 8vw, 96px);
-      max-width: 900px;
+    .display-h1 em {
+      color: var(--accent);
+      font-style: italic;
+      font-variation-settings: "opsz" 144, "wght" 350, "SOFT" 80;
     }
     .lead {
       color: var(--ink-soft);
-      font-size: clamp(21px, 2.4vw, 30px);
-      line-height: 1.38;
-      margin: 24px 0 0;
-      max-width: 820px;
+      font-family: var(--font-body);
+      font-size: 21px;
+      font-weight: 300;
+      line-height: 1.5;
+      margin: 0;
+      max-width: 640px;
     }
+    h2, h3 {
+      font-family: var(--font-display);
+      font-weight: 450;
+      letter-spacing: -.015em;
+      line-height: 1.1;
+      margin: 0;
+    }
+
     .hero-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      margin-top: 28px;
+      margin-top: 34px;
     }
     .btn {
-      border: 1px solid var(--rule);
+      border: 1px solid var(--ink);
       color: var(--ink);
       display: inline-flex;
       font-family: var(--font-mono);
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 700;
       justify-content: center;
-      min-width: 156px;
-      padding: 11px 14px;
+      letter-spacing: .16em;
+      min-width: 150px;
+      padding: 13px 18px;
       text-transform: uppercase;
     }
     .btn-primary {
@@ -204,47 +354,149 @@
       border-color: var(--ink);
       color: var(--paper);
     }
+    .hero-facts {
+      border-bottom: 1px solid var(--rule-soft);
+      border-top: 1px solid var(--rule-soft);
+      display: grid;
+      gap: 24px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-top: 48px;
+      padding: 24px 0;
+    }
+    .hero-fact span {
+      color: var(--ink-faint);
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .14em;
+      margin-bottom: 7px;
+      text-transform: uppercase;
+    }
+    .hero-fact strong { font-size: 18px; font-weight: 600; }
     .hero-visual {
       background: var(--mono-bg);
       border: 1px solid rgba(22,18,21,.2);
-      margin: 36px 0 0;
+      margin: 42px 0 0;
     }
-    .hero-visual img { display: block; width: 100%; }
+    .hero-visual img { width: 100%; }
+
     .chapter {
-      border-top: 1px solid var(--rule-soft);
-      padding: 44px 0 8px;
+      margin: 0 0 64px;
+      position: relative;
+      scroll-margin-top: 92px;
     }
     .chapter-head {
+      align-items: baseline;
+      border-top: 1px solid var(--rule);
       display: grid;
-      gap: 20px;
-      grid-template-columns: 64px minmax(0, 1fr);
-      margin-bottom: 22px;
+      gap: 24px;
+      grid-template-columns: 60px minmax(0, 1fr);
+      margin: 0 0 24px;
+      padding-top: 28px;
     }
     .chapter-num {
       color: var(--accent);
       font-family: var(--font-mono);
       font-size: 13px;
-      font-weight: 700;
-      padding-top: 8px;
+      font-weight: 500;
+      letter-spacing: .04em;
     }
-    h2 { font-size: clamp(32px, 4vw, 54px); }
-    .chapter-body { margin-left: 84px; max-width: 900px; }
+    .chapter h2 {
+      font-size: clamp(28px, 3vw, 38px);
+      font-variation-settings: "opsz" 96, "wght" 450;
+    }
+    .chapter-body {
+      display: grid;
+      gap: var(--gap);
+      grid-template-columns: minmax(0, 1fr);
+      padding-left: 84px;
+    }
     .chapter-body > p,
-    .chapter-body > ul,
     .chapter-body > ol,
-    .note { max-width: 780px; }
-    .chapter-body .lede {
-      color: var(--ink-soft);
-      font-size: 22px;
-      margin: 0 0 24px;
+    .chapter-body > ul,
+    .chapter-body > .note,
+    .chapter-body > .side-note {
+      max-width: var(--col-content);
     }
-    ul, ol { padding-left: 22px; }
-    li { margin: 0 0 8px; }
+    .chapter-body .lede {
+      color: var(--ink);
+      font-size: 17px;
+      margin: 0;
+    }
+    .public-manual .chapter:first-of-type .lede::first-letter {
+      color: var(--accent);
+      float: left;
+      font-family: var(--font-display);
+      font-size: 64px;
+      font-variation-settings: "opsz" 144, "wght" 500;
+      line-height: .85;
+      margin: 6px 10px -2px 0;
+    }
+    .chapter-body ol,
+    .chapter-body ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .chapter-body ol { counter-reset: step; }
+    .chapter-body ol li {
+      counter-increment: step;
+      margin: 0 0 14px;
+      padding-left: 38px;
+      position: relative;
+    }
+    .chapter-body ol li::before {
+      color: var(--accent);
+      content: counter(step, decimal-leading-zero);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      left: 0;
+      letter-spacing: .04em;
+      position: absolute;
+      top: 4px;
+    }
+    .chapter-body ul li {
+      margin: 0 0 8px;
+      padding-left: 22px;
+      position: relative;
+    }
+    .chapter-body ul li::before {
+      background: var(--accent);
+      content: "";
+      height: 1px;
+      left: 0;
+      position: absolute;
+      top: .85em;
+      width: 12px;
+    }
+    .note {
+      border-left: 3px solid var(--warn);
+      color: var(--ink-soft);
+      margin: 0 0 24px;
+      padding: 8px 0 8px 18px;
+    }
+    .side-note {
+      border-left: 3px solid var(--accent);
+      margin: 4px 0 24px;
+      padding: 14px 0 14px 22px;
+    }
+    .side-note-title {
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .16em;
+      margin: 0 0 6px;
+      text-transform: uppercase;
+    }
+    .side-note p { margin: 0; }
     .card-grid {
       display: grid;
-      gap: 14px;
+      gap: 18px;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      margin: 24px 0;
+      margin: 0 0 24px;
+      max-width: calc(var(--col-content) + 120px);
     }
     .info-card {
       border-top: 3px solid var(--accent);
@@ -252,7 +504,80 @@
     }
     .info-card h3 { font-size: 22px; margin-bottom: 8px; }
     .info-card p { color: var(--ink-soft); margin: 0; }
-    .table-wrap { margin: 24px 0; overflow-x: auto; }
+    .source-map {
+      display: grid;
+      gap: 28px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin: 0 0 28px;
+      max-width: calc(var(--col-content) + var(--col-aside));
+    }
+    .source-group {
+      border-top: 1px solid var(--rule);
+      padding-top: 18px;
+    }
+    .source-group h3 {
+      font-size: 24px;
+      margin: 0 0 8px;
+    }
+    .source-group > p {
+      color: var(--ink-soft);
+      font-size: 17px;
+      line-height: 1.45;
+      margin: 0 0 16px;
+    }
+    .source-group ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .source-group li {
+      border-bottom: 1px solid var(--rule-soft);
+      margin: 0;
+      padding: 12px 0;
+    }
+    .chapter-body .source-group li {
+      padding-left: 0;
+    }
+    .chapter-body .source-group li::before {
+      content: none;
+    }
+    .source-link {
+      color: var(--ink);
+      display: inline-block;
+      font-weight: 650;
+      text-decoration: none;
+    }
+    .source-link::after {
+      color: var(--accent);
+      content: " ->";
+      font-family: var(--font-mono);
+      font-size: .72em;
+      white-space: nowrap;
+    }
+    .source-link:hover {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .source-link-body,
+    .source-link-meta {
+      color: var(--ink-soft);
+      display: block;
+      font-size: 15px;
+      line-height: 1.42;
+      margin-top: 3px;
+    }
+    .source-link-meta {
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .table-wrap {
+      margin: 0 0 24px;
+      max-width: calc(var(--col-content) + var(--col-aside));
+      overflow-x: auto;
+    }
     table { border-collapse: collapse; width: 100%; }
     th {
       border-bottom: 2px solid var(--ink);
@@ -263,21 +588,27 @@
       text-align: left;
       text-transform: uppercase;
     }
-    td { border-bottom: 1px solid var(--rule-soft); padding: 14px 16px 14px 0; vertical-align: top; }
+    td {
+      border-bottom: 1px solid var(--rule-soft);
+      padding: 14px 16px 14px 0;
+      vertical-align: top;
+    }
+    td:first-child { white-space: nowrap; width: 1%; }
     .pre-wrap {
       background: var(--mono-bg);
-      border-radius: 6px;
       color: var(--mono-fg);
-      margin: 24px 0;
+      margin: 0 0 24px;
+      max-width: calc(var(--col-content) + var(--col-aside));
       overflow: hidden;
+      position: relative;
     }
     .pre-wrap::before {
       color: var(--accent-soft);
       content: attr(data-label);
       display: block;
       font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: .08em;
+      font-size: 10px;
+      letter-spacing: .16em;
       padding: 14px 18px 0;
       text-transform: uppercase;
     }
@@ -291,17 +622,12 @@
       white-space: pre-wrap;
     }
     pre code { background: transparent; border: 0; color: inherit; padding: 0; white-space: inherit; }
-    .note {
-      border-left: 3px solid var(--warn);
-      color: var(--ink-soft);
-      margin: 24px 0;
-      padding: 8px 0 8px 18px;
-    }
     .link-grid {
       display: grid;
       gap: 10px;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      margin: 24px 0;
+      margin: 0 0 24px;
+      max-width: calc(var(--col-content) + 120px);
     }
     .doc-link {
       border: 1px solid var(--rule-soft);
@@ -309,81 +635,601 @@
       display: block;
       padding: 14px 16px;
     }
-    .footer {
-      border-top: 1px solid var(--rule-soft);
+    .doc-link::after {
+      color: var(--accent);
+      content: " ->";
+      font-family: var(--font-mono);
+      font-size: .78em;
+      white-space: nowrap;
+    }
+    body[data-view="landing"] #doc-view,
+    #doc-view[hidden] {
+      display: none;
+    }
+    body[data-view="doc"] .lang-section,
+    body[data-view="doc"] .footer {
+      display: none;
+    }
+    #doc-view {
+      margin: 0 auto;
+      max-width: calc(var(--col-content) + var(--col-aside) + var(--gap));
+    }
+    .doc-topbar {
+      align-items: center;
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      gap: 24px;
+      justify-content: space-between;
+      margin-bottom: 46px;
+      padding-bottom: 20px;
+    }
+    .doc-back {
+      align-items: center;
+      color: var(--ink);
+      display: inline-flex;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      gap: 8px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .doc-back:hover {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .doc-meta {
       color: var(--ink-faint);
       display: flex;
       flex-wrap: wrap;
       font-family: var(--font-mono);
-      font-size: 12px;
-      gap: 12px;
-      justify-content: space-between;
-      margin-top: 56px;
-      padding-top: 22px;
+      font-size: 11px;
+      gap: 10px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
     }
-    @media (max-width: 860px) {
-      .layout { display: block; }
-      .rail {
-        background: rgba(240,247,244,.96);
+    .doc-source {
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .16em;
+      margin: 0 0 28px;
+      text-transform: uppercase;
+    }
+    #doc-content {
+      counter-reset: doc-h2;
+    }
+    #doc-content h1 {
+      font-family: var(--font-display);
+      font-size: clamp(48px, 6vw, 72px);
+      font-weight: 400;
+      letter-spacing: -.025em;
+      line-height: .98;
+      margin: 0 0 22px;
+      max-width: 880px;
+    }
+    #doc-content > .doc-lede {
+      color: var(--ink-soft);
+      font-size: 22px;
+      font-weight: 300;
+      line-height: 1.5;
+      margin: 0 0 48px;
+      max-width: 760px;
+    }
+    #doc-content h2 {
+      border-top: 1px solid var(--rule);
+      counter-increment: doc-h2;
+      font-family: var(--font-display);
+      font-size: clamp(30px, 3.2vw, 42px);
+      font-weight: 450;
+      letter-spacing: -.015em;
+      line-height: 1.1;
+      margin: 52px 0 20px;
+      padding-top: 28px;
+    }
+    #doc-content h2::before {
+      color: var(--accent);
+      content: "§ " counter(doc-h2, decimal-leading-zero) "  ";
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: .08em;
+    }
+    #doc-content h3 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 500;
+      margin: 32px 0 10px;
+    }
+    #doc-content h4 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 500;
+      margin: 28px 0 8px;
+    }
+    #doc-content p {
+      font-size: 17px;
+      line-height: 1.7;
+      margin: 0 0 16px;
+      max-width: 64ch;
+    }
+    #doc-content ul,
+    #doc-content ol {
+      list-style: revert;
+      margin: 0 0 18px;
+      max-width: 64ch;
+      padding-left: 28px;
+    }
+    #doc-content li {
+      font-size: 17px;
+      line-height: 1.7;
+      margin: 0 0 6px;
+    }
+    #doc-content blockquote {
+      border-left: 3px solid var(--accent);
+      color: var(--ink-soft);
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-style: italic;
+      line-height: 1.45;
+      margin: 24px 0;
+      max-width: 760px;
+      padding: 4px 0 4px 24px;
+    }
+    #doc-content table {
+      margin: 24px 0;
+    }
+    #doc-content code { font-size: 14px; }
+    #doc-content pre {
+      margin: 24px 0;
+      max-width: calc(var(--col-content) + var(--col-aside));
+    }
+    #doc-content hr {
+      border: 0;
+      border-top: 1px solid var(--rule);
+      margin: 56px 0;
+    }
+    .doc-toc {
+      background: var(--paper-soft, var(--paper-deep));
+      border: 1px solid var(--rule);
+      margin: 0 0 48px;
+      max-width: 760px;
+      padding: 22px 28px;
+    }
+    .doc-toc-head {
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .14em;
+      margin: 0 0 12px;
+      text-transform: uppercase;
+    }
+    .doc-toc ol {
+      counter-reset: toc;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .doc-toc li {
+      counter-increment: toc;
+      font-size: 15px;
+      line-height: 1.5;
+      padding: 4px 0 4px 36px;
+      position: relative;
+    }
+    .doc-toc li::before {
+      color: var(--accent);
+      content: counter(toc, decimal-leading-zero);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      left: 0;
+      letter-spacing: .04em;
+      position: absolute;
+      top: 6px;
+    }
+    .doc-toc a { color: var(--ink-soft); }
+    .doc-toc a:hover { color: var(--ink); }
+    #doc-skeleton {
+      padding: 32px 0;
+    }
+    .skeleton-line {
+      background: linear-gradient(90deg, var(--paper-deep) 0%, var(--paper) 50%, var(--paper-deep) 100%);
+      background-size: 200% 100%;
+      height: 24px;
+      margin-bottom: 16px;
+    }
+    .skeleton-line.title {
+      height: 56px;
+      margin-bottom: 32px;
+      max-width: 70%;
+    }
+    .skeleton-line.short { max-width: 40%; }
+    .skeleton-line.medium { max-width: 80%; }
+    @keyframes skeleton-shine {
+      from { background-position: 200% 0; }
+      to { background-position: -200% 0; }
+    }
+    .skeleton-line { animation: skeleton-shine 1.6s linear infinite; }
+    .doc-error {
+      background: var(--paper-deep);
+      border: 1px solid var(--warn);
+      border-left-width: 4px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 32px 0;
+      max-width: 760px;
+      padding: 24px 28px;
+    }
+    .footer {
+      border-top: 1px solid var(--rule);
+      color: var(--ink-faint);
+      margin: 64px 0 0;
+      padding-top: 18px;
+    }
+    .footer-copy {
+      color: var(--ink-soft);
+      font-family: var(--font-body);
+      font-size: 21px;
+      font-weight: 300;
+      letter-spacing: 0;
+      line-height: 1.5;
+      margin: 0 0 24px;
+      max-width: var(--col-content);
+      text-transform: none;
+    }
+    .footer-meta {
+      display: flex;
+      flex-wrap: wrap;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      gap: 16px;
+      justify-content: space-between;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .public-index .layout {
+      display: block;
+    }
+    .public-index .rail {
+      background: var(--paper);
+      border-bottom: 0;
+      border-right: 0;
+      display: block;
+      height: 72px;
+      margin: 0;
+      max-width: none;
+      padding: 0;
+      position: sticky;
+      top: 0;
+      width: 100%;
+      z-index: 60;
+    }
+    .public-index .nav-bar {
+      align-items: center;
+      background: var(--paper);
+      border-bottom: 1px solid var(--rule-soft);
+      display: flex;
+      height: 72px;
+      justify-content: space-between;
+      margin: 0 auto;
+      max-width: calc(var(--col-content) + var(--col-aside) + var(--gap));
+      padding: 0 64px;
+      position: relative;
+      z-index: 70;
+      width: 100%;
+    }
+    .public-index .rail-inner {
+      background: var(--paper);
+      border-bottom: 1px solid var(--rule);
+      inset: 72px 0 auto;
+      max-height: calc(100vh - 72px);
+      overflow-y: auto;
+      padding: 34px max(28px, calc((100vw - 1072px) / 2)) 38px;
+      position: fixed;
+      transform: translateY(-110%);
+      transition: transform var(--speed-base) var(--ease);
+      z-index: 55;
+    }
+    .public-index .rail-inner.is-open { transform: translateY(0); }
+    .public-index .scrim { inset: 72px 0 0; }
+    .public-index .toc { padding-top: 8px; }
+    .public-index .toc-title { display: block; }
+    .public-index .toc-num { display: inline-block; }
+    .public-index .toc ul {
+      display: grid;
+      gap: 10px 34px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .public-index .toc a {
+      display: flex;
+      font-family: var(--font-body);
+      font-size: 15px;
+      letter-spacing: 0;
+      padding: 7px 0 7px 16px;
+      text-transform: none;
+    }
+    .public-index .toc a::before { display: block; }
+    .public-index .toc a:hover { padding-left: 22px; }
+    .public-index .nav-toggle {
+      align-items: center;
+      background: var(--paper);
+      border: 1px solid var(--ink);
+      border-radius: 0;
+      color: var(--ink);
+      display: inline-flex;
+      height: 40px;
+      justify-content: center;
+      padding: 0;
+      transition: background var(--speed-fast) var(--ease), color var(--speed-fast) var(--ease);
+      width: 56px;
+    }
+    .public-index .nav-toggle:hover,
+    .public-index .nav-toggle[aria-expanded="true"] {
+      background: var(--ink);
+      color: var(--paper);
+    }
+    .public-index .nav-toggle span {
+      background: currentColor;
+      display: block;
+      height: 1.5px;
+      position: relative;
+      transition: transform var(--speed-base) var(--ease), opacity var(--speed-fast) var(--ease);
+      width: 22px;
+    }
+    .public-index .nav-toggle span::before,
+    .public-index .nav-toggle span::after {
+      background: currentColor;
+      content: "";
+      display: block;
+      height: 1.5px;
+      left: 0;
+      position: absolute;
+      transition: transform var(--speed-base) var(--ease);
+      width: 22px;
+    }
+    .public-index .nav-toggle span::before { top: -7px; }
+    .public-index .nav-toggle span::after { top: 7px; }
+    .public-index .nav-toggle[aria-expanded="true"] span { background: transparent; }
+    .public-index .nav-toggle[aria-expanded="true"] span::before { transform: translateY(7px) rotate(45deg); }
+    .public-index .nav-toggle[aria-expanded="true"] span::after { transform: translateY(-7px) rotate(-45deg); }
+    .public-index .stage {
+      margin: 0 auto;
+      max-width: calc(var(--col-content) + var(--col-aside) + var(--gap));
+      padding-top: 72px;
+      width: calc(100% - 128px);
+    }
+    .public-index .masthead { padding-bottom: 84px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+    @media (max-width: 1180px) {
+      :root { --col-margin: 200px; }
+      .stage { padding: 48px 48px 80px; }
+      .chapter-body { padding-left: 0; }
+      .chapter-head { grid-template-columns: 48px minmax(0, 1fr); }
+      .public-index .stage { width: calc(100% - 96px); }
+      .public-index .nav-bar { padding: 0 48px; }
+    }
+    @media (max-width: 960px) {
+      .layout, .page {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .rail,
+      .public-index .rail {
+        background: var(--paper);
         border-bottom: 1px solid var(--rule-soft);
         border-right: 0;
+        display: block;
         height: auto;
-        position: relative;
+        margin: 0;
+        max-width: none;
+        padding: 0;
+        position: sticky;
+        top: 0;
+        width: 100%;
+        z-index: 60;
       }
-      .toc ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-      .stage { padding-top: 36px; }
-      .chapter-head { grid-template-columns: 1fr; gap: 8px; }
-      .chapter-body { margin-left: 0; }
+      .nav-bar,
+      .public-index .nav-bar {
+        align-items: center;
+        background: var(--paper);
+        border-bottom: 0;
+        display: flex;
+        height: 64px;
+        padding: 0 20px;
+        position: relative;
+        z-index: 70;
+      }
+      .nav-bar .brand-meta { display: none; }
+      .rail-inner,
+      .public-index .rail-inner {
+        background: var(--paper);
+        border-bottom: 1px solid var(--rule);
+        inset: 64px 0 auto;
+        max-height: calc(100vh - 64px);
+        overflow-y: auto;
+        padding: 28px 28px 32px;
+        position: fixed;
+        transform: translateY(-110%);
+        transition: transform var(--speed-base) var(--ease);
+        z-index: 55;
+      }
+      .public-index .scrim { inset: 64px 0 0; }
+      .rail-inner.is-open { transform: translateY(0); }
+      .public-index .toc,
+      .toc { padding-top: 8px; }
+      .public-index .toc-title,
+      .public-index .toc-num { display: inline-block; }
+      .public-index .toc-title { display: block; }
+      .public-index .toc ul {
+        display: block;
+      }
+      .public-index .toc a {
+        display: flex;
+        font-family: var(--font-body);
+        font-size: 15px;
+        letter-spacing: 0;
+        padding: 7px 0 7px 16px;
+        text-transform: none;
+      }
+      .public-index .toc a::before { display: block; }
+      .public-index .toc a:hover { padding-left: 22px; }
+      .nav-toggle {
+        align-items: center;
+        background: var(--paper);
+        border: 1px solid var(--ink);
+        border-radius: 0;
+        color: var(--ink);
+        display: inline-flex;
+        height: 40px;
+        justify-content: center;
+        padding: 0;
+        transition: background var(--speed-fast) var(--ease), color var(--speed-fast) var(--ease);
+        width: 56px;
+      }
+      .nav-toggle:hover,
+      .nav-toggle[aria-expanded="true"] {
+        background: var(--ink);
+        color: var(--paper);
+      }
+      .nav-toggle span {
+        background: currentColor;
+        display: block;
+        height: 1.5px;
+        position: relative;
+        transition: transform var(--speed-base) var(--ease), opacity var(--speed-fast) var(--ease);
+        width: 22px;
+      }
+      .nav-toggle span::before,
+      .nav-toggle span::after {
+        background: currentColor;
+        content: "";
+        display: block;
+        height: 1.5px;
+        left: 0;
+        position: absolute;
+        transition: transform var(--speed-base) var(--ease);
+        width: 22px;
+      }
+      .nav-toggle span::before { top: -7px; }
+      .nav-toggle span::after { top: 7px; }
+      .nav-toggle[aria-expanded="true"] span { background: transparent; }
+      .nav-toggle[aria-expanded="true"] span::before { transform: translateY(7px) rotate(45deg); }
+      .nav-toggle[aria-expanded="true"] span::after { transform: translateY(-7px) rotate(-45deg); }
+      .stage,
+      .public-index .stage {
+        padding: 32px 24px 64px;
+        width: 100%;
+      }
+      .masthead {
+        margin-bottom: 40px;
+        padding-bottom: 28px;
+      }
+      .chapter { margin-bottom: 48px; }
+      .chapter-head {
+        gap: 16px;
+        grid-template-columns: 36px minmax(0, 1fr);
+        padding-top: 22px;
+      }
+      .hero-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .source-map { grid-template-columns: 1fr; }
       code { white-space: normal; }
+    }
+    @media (max-width: 560px) {
+      .stage,
+      .public-index .stage {
+        padding: 24px 18px 56px;
+      }
+      .display-h1 {
+        font-size: 44px;
+        line-height: .98;
+      }
+      .lead { font-size: 18px; }
+      .chapter h2 { font-size: 26px; }
+      .chapter-body ol li { padding-left: 32px; }
+      .language-mark {
+        display: block;
+        flex-basis: 100%;
+        margin-top: 8px;
+      }
+      .hero-facts { grid-template-columns: 1fr; }
+      th { font-size: 11px; padding-right: 12px; }
+      td { padding-right: 12px; }
+      pre { font-size: 12px; }
     }
 </style>
 </head>
-<body class="public-manual">
+<body class="public-manual" data-view="landing">
   <a class="skip" href="#content">Skip to content</a>
-  <div class="layout">
+  <div class="layout page">
     <aside class="rail">
-      <div class="brand" data-ui="brand">TES - Tilly Engineer Skills</div>
-      <nav class="toc" aria-label="Contents">
-        <p class="toc-title" data-ui="contents">Contents</p>
-        <ul><li><a href="#overview" data-nav="overview" data-label-en="Overview" data-label-es="Vista general" data-label-pt="Visao geral"><span class="toc-num">00</span><span class="toc-text">Overview</span></a></li>
-<li><a href="#install" data-nav="install" data-label-en="Quick install" data-label-es="Instalacion rapida" data-label-pt="Instalacao rapida"><span class="toc-num">01</span><span class="toc-text">Quick install</span></a></li>
-<li><a href="#triggers" data-nav="triggers" data-label-en="Command triggers" data-label-es="Gatillos de comando" data-label-pt="Gatilhos de comando"><span class="toc-num">02</span><span class="toc-text">Command triggers</span></a></li>
-<li><a href="#routes" data-nav="routes" data-label-en="Routes and project states" data-label-es="Rutas y estados del proyecto" data-label-pt="Rotas e estados do projeto"><span class="toc-num">03</span><span class="toc-text">Routes and project states</span></a></li>
-<li><a href="#safety" data-nav="safety" data-label-en="Safety boundaries" data-label-es="Limites de seguridad" data-label-pt="Limites de seguranca"><span class="toc-num">04</span><span class="toc-text">Safety boundaries</span></a></li>
-<li><a href="#cortex" data-nav="cortex" data-label-en="Cortex and MCP" data-label-es="Cortex y MCP" data-label-pt="Cortex e MCP"><span class="toc-num">05</span><span class="toc-text">Cortex and MCP</span></a></li>
-<li><a href="#field_reports" data-nav="field_reports" data-label-en="Field Reports" data-label-es="Field Reports" data-label-pt="Field Reports"><span class="toc-num">06</span><span class="toc-text">Field Reports</span></a></li>
-<li><a href="#obsidian" data-nav="obsidian" data-label-en="Obsidian" data-label-es="Obsidian" data-label-pt="Obsidian"><span class="toc-num">07</span><span class="toc-text">Obsidian</span></a></li>
-<li><a href="#report" data-nav="report" data-label-en="Final report" data-label-es="Reporte final" data-label-pt="Relatorio final"><span class="toc-num">08</span><span class="toc-text">Final report</span></a></li>
-<li><a href="#rollback" data-nav="rollback" data-label-en="Rollback" data-label-es="Rollback" data-label-pt="Rollback"><span class="toc-num">09</span><span class="toc-text">Rollback</span></a></li></ul>
-      </nav>
+      <header class="nav-bar">
+        <div class="brand">
+          <span class="brand-mark" data-ui="brand">Tilly<em>·</em>Skills</span>
+          <span class="brand-meta">User manual · v0.3.82</span>
+        </div>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
+          <span></span>
+        </button>
+      </header>
+      <div class="rail-inner" id="rail-inner">
+        <nav class="toc" aria-label="Contents">
+          <p class="toc-title" data-ui="contents">Contents</p>
+          <ul><li><a href="#overview-en" data-nav="overview" data-label-en="Overview" data-label-es="Vista general" data-label-pt="Visao geral" data-href-en="#overview-en" data-href-es="#overview-es" data-href-pt="#overview-pt"><span class="toc-num">00</span><span class="toc-text">Overview</span></a></li>
+<li><a href="#install-en" data-nav="install" data-label-en="Quick install" data-label-es="Instalacion rapida" data-label-pt="Instalacao rapida" data-href-en="#install-en" data-href-es="#install-es" data-href-pt="#install-pt"><span class="toc-num">01</span><span class="toc-text">Quick install</span></a></li>
+<li><a href="#triggers-en" data-nav="triggers" data-label-en="Command triggers" data-label-es="Gatillos de comando" data-label-pt="Gatilhos de comando" data-href-en="#triggers-en" data-href-es="#triggers-es" data-href-pt="#triggers-pt"><span class="toc-num">02</span><span class="toc-text">Command triggers</span></a></li>
+<li><a href="#routes-en" data-nav="routes" data-label-en="Routes" data-label-es="Rutas" data-label-pt="Rotas" data-href-en="#routes-en" data-href-es="#routes-es" data-href-pt="#routes-pt"><span class="toc-num">03</span><span class="toc-text">Routes</span></a></li>
+<li><a href="#states-en" data-nav="states" data-label-en="Project states" data-label-es="Estados del proyecto" data-label-pt="Estados do projeto" data-href-en="#states-en" data-href-es="#states-es" data-href-pt="#states-pt"><span class="toc-num">04</span><span class="toc-text">Project states</span></a></li>
+<li><a href="#cortex-en" data-nav="cortex" data-label-en="Cortex" data-label-es="Cortex" data-label-pt="Cortex" data-href-en="#cortex-en" data-href-es="#cortex-es" data-href-pt="#cortex-pt"><span class="toc-num">05</span><span class="toc-text">Cortex</span></a></li>
+<li><a href="#cli-en" data-nav="cli" data-label-en="What the agent runs" data-label-es="Lo que ejecuta el agente" data-label-pt="O que o agente executa" data-href-en="#cli-en" data-href-es="#cli-es" data-href-pt="#cli-pt"><span class="toc-num">06</span><span class="toc-text">What the agent runs</span></a></li>
+<li><a href="#mcp-en" data-nav="mcp" data-label-en="MCP" data-label-es="MCP" data-label-pt="MCP" data-href-en="#mcp-en" data-href-es="#mcp-es" data-href-pt="#mcp-pt"><span class="toc-num">07</span><span class="toc-text">MCP</span></a></li>
+<li><a href="#field_reports-en" data-nav="field_reports" data-label-en="Field Reports" data-label-es="Field Reports" data-label-pt="Field Reports" data-href-en="#field_reports-en" data-href-es="#field_reports-es" data-href-pt="#field_reports-pt"><span class="toc-num">08</span><span class="toc-text">Field Reports</span></a></li>
+<li><a href="#obsidian-en" data-nav="obsidian" data-label-en="Obsidian" data-label-es="Obsidian" data-label-pt="Obsidian" data-href-en="#obsidian-en" data-href-es="#obsidian-es" data-href-pt="#obsidian-pt"><span class="toc-num">09</span><span class="toc-text">Obsidian</span></a></li>
+<li><a href="#report-en" data-nav="report" data-label-en="Final report" data-label-es="Reporte final" data-label-pt="Relatorio final" data-href-en="#report-en" data-href-es="#report-es" data-href-pt="#report-pt"><span class="toc-num">10</span><span class="toc-text">Final report</span></a></li>
+<li><a href="#rollback-en" data-nav="rollback" data-label-en="Rollback" data-label-es="Rollback" data-label-pt="Rollback" data-href-en="#rollback-en" data-href-es="#rollback-es" data-href-pt="#rollback-pt"><span class="toc-num">11</span><span class="toc-text">Rollback</span></a></li></ul>
+        </nav>
+      </div>
     </aside>
+    <div class="scrim" id="scrim" aria-hidden="true"></div>
     <main class="stage" id="content">
+
 
       <section class="lang-section is-active" data-lang="en" lang="en">
         <header class="masthead">
           <div class="language-row" role="radiogroup" aria-label="Language">
             <button type="button" class="lang-btn" data-lang-pick="en" aria-pressed="true">EN</button><button type="button" class="lang-btn" data-lang-pick="es" aria-pressed="false">ES</button><button type="button" class="lang-btn" data-lang-pick="pt" aria-pressed="false">PT</button>
+            <span class="language-mark">— Tilly Engineer Skills</span>
           </div>
           <p class="eyebrow">User manual</p>
-          <h1>Install, audit, update, and roll back TES without losing project control.</h1>
-          <p class="lead">This manual is for users who already care about local evidence. It explains the safe path, the expected reports, the write boundaries, and the recovery path.</p>
+          <h1 class="display-h1">A field manual for <em>governed</em> coding agents.</h1>
+          <p class="lead">A practical guide for installing, updating, and auditing Tilly Engineer Skills in real projects without blind file copying.</p>
+
 
 
         </header>
 
-        <section class="chapter" id="overview">
+        <section class="chapter" id="overview-en" data-section-key="overview">
           <div class="chapter-head">
             <span class="chapter-num">00</span>
             <h2>Overview</h2>
           </div>
           <div class="chapter-body">
             <p class="lede">Tilly Engineer Skills installs a governance mesh for coding agents. Codex, Claude Code, and Cursor route through adapter-specific surfaces while project truth lives in versioned Markdown.</p>
-            <p>The normal user interface is an intent typed in the agent window, not a shell command. Type <code>/tes-init</code> to install, <code>/tes-update</code> to update, or <code>/tes-open-obsidian</code> to open the optional Markdown workbench.</p>
-<p>Existing <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code>, and Cursor rules are first backed up under <code>.tes/bk/&lt;timestamp&gt;/</code>. TES then applies a clean runtime and recovers useful local semantics into <code>docs/agents/**</code>.</p>
+            <aside class="side-note"><p class="side-note-title">How you use it</p><p>The normal user interface is an intent typed in the agent window, not a shell command. Type <code>/tes-init</code> to install or <code>/tes-update</code> to update; the active agent selects and runs the smallest safe oracle.</p></aside>
+<aside class="side-note"><p class="side-note-title">What stays yours</p><p>Existing <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code>, and Cursor rules are first backed up in <code>.tes/bk/&lt;timestamp&gt;/</code>. TES then installs a clean runtime and recovers useful local semantics into <code>docs/agents/**</code>.</p></aside>
+<aside class="side-note"><p class="side-note-title">Operator contract</p><p>This manual is for users installing, auditing, and rolling back TES. The agent-side contract lives in <code>docs/install/AGENT-MANUAL.md</code>.</p></aside>
           </div>
         </section>
 
-        <section class="chapter" id="install">
+        <section class="chapter" id="install-en" data-section-key="install">
           <div class="chapter-head">
             <span class="chapter-num">01</span>
             <h2>Quick install</h2>
@@ -401,7 +1247,7 @@
           </div>
         </section>
 
-        <section class="chapter" id="triggers">
+        <section class="chapter" id="triggers-en" data-section-key="triggers">
           <div class="chapter-head">
             <span class="chapter-num">02</span>
             <h2>Command triggers</h2>
@@ -413,50 +1259,72 @@
           </div>
         </section>
 
-        <section class="chapter" id="routes">
+        <section class="chapter" id="routes-en" data-section-key="routes">
           <div class="chapter-head">
             <span class="chapter-num">03</span>
-            <h2>Routes and project states</h2>
+            <h2>Routes</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">The route decides which runtime surfaces move. The project state decides whether the run installs, updates, audits, or recovers.</p>
+            <p class="lede">The route decides which runtime surfaces move.</p>
             <div class="table-wrap"><table><thead><tr><th>Route</th><th>When to use it</th></tr></thead><tbody><tr><td><code>current</code></td><td>Update the detected runtime and its read-only Cortex MCP config.</td></tr><tr><td><code>codex</code></td><td>Prepare <code>AGENTS.md</code>, Codex skills, plugin metadata, and <code>.codex/config.toml</code>.</td></tr><tr><td><code>claude</code></td><td>Prepare <code>CLAUDE.md</code>, <code>.claude/skills/**</code>, plugin skills, and <code>.mcp.json</code>.</td></tr><tr><td><code>cursor</code></td><td>Prepare <code>.cursor/rules/**</code> and <code>.cursor/mcp.json</code>.</td></tr><tr><td><code>all</code></td><td>Prepare all supported runtime surfaces.</td></tr><tr><td><code>audit</code></td><td>Inspect without modifying files.</td></tr></tbody></table></div>
-<p>Project states are <code>new</code>, <code>existing</code>, and <code>meshed</code>. Existing instructions are backed up and useful semantics are recovered instead of discarded.</p>
           </div>
         </section>
 
-        <section class="chapter" id="safety">
+        <section class="chapter" id="states-en" data-section-key="states">
           <div class="chapter-head">
             <span class="chapter-num">04</span>
-            <h2>Safety boundaries</h2>
+            <h2>Project states</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">TES is local and inspectable by default. It refuses broad release, remote, and marketplace behavior unless explicitly authorized.</p>
-            <ul class="list">
-<li>No push, publish, tag, amend, remote change, dependency install, or marketplace action by default.</li>
-<li>No <code>.obsidian/**</code> writes. Obsidian is optional viewing over Markdown.</li>
-<li>No code, diffs, prompts, file contents, secrets, personal data, absolute paths, raw stack traces, branch names, or remote URLs in Field Reports.</li>
-<li>The Root context gate uses <code>root_context.py</code> to inspect <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>.cursor/rules/**</code>, and <code>docs/agents/**</code> before overwrite or recovery.</li>
-</ul>
-<p>Update checks compare installed and cloud versions, helper contract parity, <code>runtime_trigger_status</code>, <code>recommended_route</code>, <code>recommended_update_scope</code>, <code>legacy_retirement_required</code>, and <code>self_test_mode</code>. A clean no-op reports <code>update_available=False</code>, <code>recommended_update_scope=none</code>, <code>helper_contract_status=PASS</code>, and a final Field Reports <code>tes_update</code> event when reporting is enabled. <code>STALE_HELPERS</code> blocks adapter-config until helper repair is complete.</p>
+            <p class="lede">The state decides whether the run installs, updates, audits, or recovers.</p>
+            <div class="table-wrap"><table><thead><tr><th>State</th><th>Meaning</th></tr></thead><tbody><tr><td><code>new</code></td><td>No relevant agent instructions exist. TES creates the minimum mesh.</td></tr><tr><td><code>existing</code></td><td>Local rules already exist. TES creates backup, installs clean runtime, and recovers useful semantics.</td></tr><tr><td><code>meshed</code></td><td>TES already exists. The run becomes update or convergence.</td></tr></tbody></table></div>
+<p>Existing instructions are backed up and useful semantics are recovered instead of discarded.</p>
           </div>
         </section>
 
-        <section class="chapter" id="cortex">
+        <section class="chapter" id="cortex-en" data-section-key="cortex">
           <div class="chapter-head">
             <span class="chapter-num">05</span>
-            <h2>Cortex and MCP</h2>
+            <h2>Cortex</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Cortex is filesystem-first memory. Markdown is the contract; SQLite recall and MCP tools are derived access paths.</p>
+            <p class="lede">Cortex is filesystem-first memory. Markdown is the contract; SQLite recall is a derived access path.</p>
             <p>Cortex lives under <code>docs/agents/cortex/**</code>. Every durable claim needs evidence. Agents may propose memory, but writes require explicit authorization.</p>
-<p>Cortex MCP is read-only and project-scoped. It can verify, audit, recall, read cells, plan absorbs, plan curation, and reflect. It cannot write to memory.</p>
+<p>You can read Cortex like any repository document, review it in pull requests, and revert it with Git.</p>
           </div>
         </section>
 
-        <section class="chapter" id="field_reports">
+        <section class="chapter" id="cli-en" data-section-key="cli">
           <div class="chapter-head">
             <span class="chapter-num">06</span>
+            <h2>What the agent runs</h2>
+          </div>
+          <div class="chapter-body">
+            <p class="lede">The user asks in natural language; the agent executes the smallest safe oracle and reports the result.</p>
+            <ul class="list">
+<li>Step Zero runs first and records the baseline before any write.</li>
+<li>Unsafe or unavailable commands are reported as <code>BLOCKED</code> or <code>NEEDS_REVIEW</code>, not hidden.</li>
+<li>The final report is the contract. Read it before approving commit or push.</li>
+</ul>
+<p><code>/tes-update</code> repairs bundle helpers first, then touches adapter-config only after post-Layer Zero checks pass.</p>
+          </div>
+        </section>
+
+        <section class="chapter" id="mcp-en" data-section-key="mcp">
+          <div class="chapter-head">
+            <span class="chapter-num">07</span>
+            <h2>MCP</h2>
+          </div>
+          <div class="chapter-body">
+            <p class="lede">Cortex MCP is read-only and project-scoped. It gives the agent recall without write authority.</p>
+            <div class="table-wrap"><table><thead><tr><th>Runtime</th><th>Config file</th></tr></thead><tbody><tr><td>Codex</td><td><code>.codex/config.toml</code></td></tr><tr><td>Claude Code</td><td><code>.mcp.json</code></td></tr><tr><td>Cursor</td><td><code>.cursor/mcp.json</code></td></tr></tbody></table></div>
+<p>The MCP surface can verify, audit, recall, read cells, plan absorbs, plan curation, and reflect. It cannot write memory.</p>
+          </div>
+        </section>
+
+        <section class="chapter" id="field_reports-en" data-section-key="field_reports">
+          <div class="chapter-head">
+            <span class="chapter-num">08</span>
             <h2>Field Reports</h2>
           </div>
           <div class="chapter-body">
@@ -467,9 +1335,9 @@
           </div>
         </section>
 
-        <section class="chapter" id="obsidian">
+        <section class="chapter" id="obsidian-en" data-section-key="obsidian">
           <div class="chapter-head">
-            <span class="chapter-num">07</span>
+            <span class="chapter-num">09</span>
             <h2>Obsidian</h2>
           </div>
           <div class="chapter-body">
@@ -482,9 +1350,9 @@
           </div>
         </section>
 
-        <section class="chapter" id="report">
+        <section class="chapter" id="report-en" data-section-key="report">
           <div class="chapter-head">
-            <span class="chapter-num">08</span>
+            <span class="chapter-num">10</span>
             <h2>Final report</h2>
           </div>
           <div class="chapter-body">
@@ -494,9 +1362,9 @@
           </div>
         </section>
 
-        <section class="chapter" id="rollback">
+        <section class="chapter" id="rollback-en" data-section-key="rollback">
           <div class="chapter-head">
-            <span class="chapter-num">09</span>
+            <span class="chapter-num">11</span>
             <h2>Rollback</h2>
           </div>
           <div class="chapter-body">
@@ -512,27 +1380,30 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
         <header class="masthead">
           <div class="language-row" role="radiogroup" aria-label="Idioma">
             <button type="button" class="lang-btn" data-lang-pick="en" aria-pressed="false">EN</button><button type="button" class="lang-btn" data-lang-pick="es" aria-pressed="true">ES</button><button type="button" class="lang-btn" data-lang-pick="pt" aria-pressed="false">PT</button>
+            <span class="language-mark">— Tilly Engineer Skills</span>
           </div>
           <p class="eyebrow">Manual de usuario</p>
-          <h1>Instala, audita, actualiza y revierte TES sin perder control del proyecto.</h1>
-          <p class="lead">Este manual es para usuarios que ya valoran la evidencia local. Explica el camino seguro, los informes esperados, los limites de escritura y la recuperacion.</p>
+          <h1 class="display-h1">Un manual de campo para agentes de codigo <em>gobernados</em>.</h1>
+          <p class="lead">Una guia practica para instalar, actualizar y auditar Tilly Engineer Skills en proyectos reales sin copia ciega de archivos.</p>
+
 
 
         </header>
 
-        <section class="chapter" id="overview">
+        <section class="chapter" id="overview-es" data-section-key="overview">
           <div class="chapter-head">
             <span class="chapter-num">00</span>
             <h2>Vista general</h2>
           </div>
           <div class="chapter-body">
             <p class="lede">Tilly Engineer Skills instala un mesh de gobernanza para agentes de codigo. Codex, Claude Code y Cursor pasan por superficies especificas mientras la verdad del proyecto vive en Markdown versionado.</p>
-            <p>La interfaz normal es una intencion escrita en la ventana del agente, no un comando de shell. Usa <code>/tes-init</code> para instalar, <code>/tes-update</code> para actualizar o <code>/tes-open-obsidian</code> para abrir el workbench Markdown opcional.</p>
-<p>Los archivos <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> y reglas de Cursor existentes se respaldan primero en <code>.tes/bk/&lt;timestamp&gt;/</code>. TES aplica un runtime limpio y recupera semantica local util en <code>docs/agents/**</code>.</p>
+            <aside class="side-note"><p class="side-note-title">Como se usa</p><p>La interfaz normal es una intencion escrita en la ventana del agente, no un comando de shell. Usa <code>/tes-init</code> para instalar o <code>/tes-update</code> para actualizar; el agente activo elige y ejecuta el menor oraculo seguro.</p></aside>
+<aside class="side-note"><p class="side-note-title">Lo que sigue siendo tuyo</p><p>Los archivos <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> y reglas de Cursor existentes se respaldan primero en <code>.tes/bk/&lt;timestamp&gt;/</code>. TES instala un runtime limpio y recupera semantica local util en <code>docs/agents/**</code>.</p></aside>
+<aside class="side-note"><p class="side-note-title">Contrato del operador</p><p>Este manual es para usuarios que instalan, auditan y revierten TES. El contrato del agente vive en <code>docs/install/AGENT-MANUAL.md</code>.</p></aside>
           </div>
         </section>
 
-        <section class="chapter" id="install">
+        <section class="chapter" id="install-es" data-section-key="install">
           <div class="chapter-head">
             <span class="chapter-num">01</span>
             <h2>Instalacion rapida</h2>
@@ -550,7 +1421,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
         </section>
 
-        <section class="chapter" id="triggers">
+        <section class="chapter" id="triggers-es" data-section-key="triggers">
           <div class="chapter-head">
             <span class="chapter-num">02</span>
             <h2>Gatillos de comando</h2>
@@ -562,50 +1433,72 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
         </section>
 
-        <section class="chapter" id="routes">
+        <section class="chapter" id="routes-es" data-section-key="routes">
           <div class="chapter-head">
             <span class="chapter-num">03</span>
-            <h2>Rutas y estados del proyecto</h2>
+            <h2>Rutas</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">La ruta decide que superficies se mueven. El estado decide si el run instala, actualiza, audita o recupera.</p>
+            <p class="lede">La ruta decide que superficies se mueven.</p>
             <div class="table-wrap"><table><thead><tr><th>Ruta</th><th>Cuando usarla</th></tr></thead><tbody><tr><td><code>current</code></td><td>Actualizar el runtime detectado y su config Cortex MCP read-only.</td></tr><tr><td><code>codex</code></td><td>Preparar <code>AGENTS.md</code>, skills Codex, plugin metadata y <code>.codex/config.toml</code>.</td></tr><tr><td><code>claude</code></td><td>Preparar <code>CLAUDE.md</code>, <code>.claude/skills/**</code>, plugin skills y <code>.mcp.json</code>.</td></tr><tr><td><code>cursor</code></td><td>Preparar <code>.cursor/rules/**</code> y <code>.cursor/mcp.json</code>.</td></tr><tr><td><code>all</code></td><td>Preparar todas las superficies soportadas.</td></tr><tr><td><code>audit</code></td><td>Inspeccionar sin modificar archivos.</td></tr></tbody></table></div>
-<p>Los estados son <code>new</code>, <code>existing</code> y <code>meshed</code>. Instrucciones existentes se respaldan y la semantica util se recupera, no se descarta.</p>
           </div>
         </section>
 
-        <section class="chapter" id="safety">
+        <section class="chapter" id="states-es" data-section-key="states">
           <div class="chapter-head">
             <span class="chapter-num">04</span>
-            <h2>Limites de seguridad</h2>
+            <h2>Estados del proyecto</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">TES es local e inspeccionable por defecto. Rechaza release, remotes y marketplace salvo autorizacion explicita.</p>
-            <ul class="list">
-<li>Sin push, publish, tag, amend, cambio de remote, instalacion de dependencias o marketplace por defecto.</li>
-<li>Sin escrituras en <code>.obsidian/**</code>. Obsidian es vista opcional sobre Markdown.</li>
-<li>Sin codigo, diffs, prompts, contenido de archivos, secretos, datos personales, paths absolutos, stack traces crudos, ramas o remotes en Field Reports.</li>
-<li>El Root context gate usa <code>root_context.py</code> para inspeccionar <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>.cursor/rules/**</code> y <code>docs/agents/**</code> antes de sobrescribir o recuperar.</li>
-</ul>
-<p>El update compara installed and cloud versions, helper contract parity, <code>runtime_trigger_status</code>, <code>recommended_route</code>, <code>recommended_update_scope</code>, <code>legacy_retirement_required</code> y <code>self_test_mode</code>. Un no-op limpio reporta <code>update_available=False</code>, <code>recommended_update_scope=none</code>, <code>helper_contract_status=PASS</code> y el evento final Field Reports <code>tes_update</code> si esta habilitado. <code>STALE_HELPERS</code> bloquea adapter-config hasta reparar helpers.</p>
+            <p class="lede">El estado decide si el run instala, actualiza, audita o recupera.</p>
+            <div class="table-wrap"><table><thead><tr><th>Estado</th><th>Significado</th></tr></thead><tbody><tr><td><code>new</code></td><td>No hay instrucciones relevantes de agente. TES crea el mesh minimo.</td></tr><tr><td><code>existing</code></td><td>Ya existen reglas locales. TES crea backup, instala runtime limpio y recupera semantica util.</td></tr><tr><td><code>meshed</code></td><td>TES ya existe. La ejecucion pasa a update o convergence.</td></tr></tbody></table></div>
+<p>Instrucciones existentes se respaldan y la semantica util se recupera, no se descarta.</p>
           </div>
         </section>
 
-        <section class="chapter" id="cortex">
+        <section class="chapter" id="cortex-es" data-section-key="cortex">
           <div class="chapter-head">
             <span class="chapter-num">05</span>
-            <h2>Cortex y MCP</h2>
+            <h2>Cortex</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Cortex es memoria filesystem-first. Markdown es el contrato; recall SQLite y tools MCP son accesos derivados.</p>
+            <p class="lede">Cortex es memoria filesystem-first. Markdown es el contrato; recall SQLite es un acceso derivado.</p>
             <p>Cortex vive en <code>docs/agents/cortex/**</code>. Todo claim durable necesita evidencia. Los agentes pueden proponer memoria, pero las escrituras requieren autorizacion explicita.</p>
-<p>Cortex MCP es read-only y con escopo de proyecto. Puede verificar, auditar, recordar, leer cells, planear absorbs, planear curation y reflect. No puede escribir memoria.</p>
+<p>Puedes leer Cortex como cualquier documento del repositorio, revisarlo en pull requests y revertirlo con Git.</p>
           </div>
         </section>
 
-        <section class="chapter" id="field_reports">
+        <section class="chapter" id="cli-es" data-section-key="cli">
           <div class="chapter-head">
             <span class="chapter-num">06</span>
+            <h2>Lo que ejecuta el agente</h2>
+          </div>
+          <div class="chapter-body">
+            <p class="lede">El usuario pide en lenguaje natural; el agente ejecuta el menor oraculo seguro y reporta el resultado.</p>
+            <ul class="list">
+<li>Step Zero corre primero y registra el baseline antes de cualquier escritura.</li>
+<li>Comandos inseguros o no disponibles se reportan como <code>BLOCKED</code> o <code>NEEDS_REVIEW</code>, no se esconden.</li>
+<li>El reporte final es el contrato. Leelo antes de aprobar commit o push.</li>
+</ul>
+<p><code>/tes-update</code> repara primero los helpers del bundle y luego toca adapter-config solo si pasan los checks post-Layer Zero.</p>
+          </div>
+        </section>
+
+        <section class="chapter" id="mcp-es" data-section-key="mcp">
+          <div class="chapter-head">
+            <span class="chapter-num">07</span>
+            <h2>MCP</h2>
+          </div>
+          <div class="chapter-body">
+            <p class="lede">Cortex MCP es read-only y con escopo de proyecto. Da recall al agente sin autoridad de escritura.</p>
+            <div class="table-wrap"><table><thead><tr><th>Runtime</th><th>Config</th></tr></thead><tbody><tr><td>Codex</td><td><code>.codex/config.toml</code></td></tr><tr><td>Claude Code</td><td><code>.mcp.json</code></td></tr><tr><td>Cursor</td><td><code>.cursor/mcp.json</code></td></tr></tbody></table></div>
+<p>La superficie MCP puede verificar, auditar, recordar, leer cells, planear absorbs, planear curadoria y reflect. No puede escribir memoria.</p>
+          </div>
+        </section>
+
+        <section class="chapter" id="field_reports-es" data-section-key="field_reports">
+          <div class="chapter-head">
+            <span class="chapter-num">08</span>
             <h2>Field Reports</h2>
           </div>
           <div class="chapter-body">
@@ -616,9 +1509,9 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
         </section>
 
-        <section class="chapter" id="obsidian">
+        <section class="chapter" id="obsidian-es" data-section-key="obsidian">
           <div class="chapter-head">
-            <span class="chapter-num">07</span>
+            <span class="chapter-num">09</span>
             <h2>Obsidian</h2>
           </div>
           <div class="chapter-body">
@@ -631,9 +1524,9 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
         </section>
 
-        <section class="chapter" id="report">
+        <section class="chapter" id="report-es" data-section-key="report">
           <div class="chapter-head">
-            <span class="chapter-num">08</span>
+            <span class="chapter-num">10</span>
             <h2>Reporte final</h2>
           </div>
           <div class="chapter-body">
@@ -643,9 +1536,9 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
         </section>
 
-        <section class="chapter" id="rollback">
+        <section class="chapter" id="rollback-es" data-section-key="rollback">
           <div class="chapter-head">
-            <span class="chapter-num">09</span>
+            <span class="chapter-num">11</span>
             <h2>Rollback</h2>
           </div>
           <div class="chapter-body">
@@ -661,27 +1554,30 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
         <header class="masthead">
           <div class="language-row" role="radiogroup" aria-label="Idioma">
             <button type="button" class="lang-btn" data-lang-pick="en" aria-pressed="false">EN</button><button type="button" class="lang-btn" data-lang-pick="es" aria-pressed="false">ES</button><button type="button" class="lang-btn" data-lang-pick="pt" aria-pressed="true">PT</button>
+            <span class="language-mark">— Tilly Engineer Skills</span>
           </div>
           <p class="eyebrow">Manual do usuario</p>
-          <h1>Instale, audite, atualize e reverta TES sem perder controle do projeto.</h1>
-          <p class="lead">Este manual e para usuarios que ja valorizam evidencia local. Ele explica o caminho seguro, os relatorios esperados, os limites de escrita e a recuperacao.</p>
+          <h1 class="display-h1">Um manual de campo para agentes de codigo <em>governados</em>.</h1>
+          <p class="lead">Um guia pratico para instalar, atualizar e auditar Tilly Engineer Skills em projetos reais sem copia cega de arquivos.</p>
+
 
 
         </header>
 
-        <section class="chapter" id="overview">
+        <section class="chapter" id="overview-pt" data-section-key="overview">
           <div class="chapter-head">
             <span class="chapter-num">00</span>
             <h2>Visao geral</h2>
           </div>
           <div class="chapter-body">
             <p class="lede">Tilly Engineer Skills instala uma malha de governanca para agentes de codigo. Codex, Claude Code e Cursor passam por superficies especificas enquanto a verdade do projeto vive em Markdown versionado.</p>
-            <p>A interface normal e uma intencao digitada na janela do agente, nao um comando de shell. Use <code>/tes-init</code> para instalar, <code>/tes-update</code> para atualizar ou <code>/tes-open-obsidian</code> para abrir a bancada Markdown opcional.</p>
-<p>Arquivos existentes como <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> e regras do Cursor sao primeiro salvos em <code>.tes/bk/&lt;timestamp&gt;/</code>. TES aplica um runtime limpo e recupera semântica útil em <code>docs/agents/**</code>.</p>
+            <aside class="side-note"><p class="side-note-title">Como voce usa</p><p>A interface normal e uma intencao digitada na janela do agente, nao um comando de shell. Use <code>/tes-init</code> para instalar ou <code>/tes-update</code> para atualizar; o agente ativo escolhe e executa o menor oraculo seguro.</p></aside>
+<aside class="side-note"><p class="side-note-title">O que continua sendo seu</p><p>Arquivos existentes como <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> e regras do Cursor sao primeiro salvos em <code>.tes/bk/&lt;timestamp&gt;/</code>. TES instala um runtime limpo e recupera semântica útil em <code>docs/agents/**</code>.</p></aside>
+<aside class="side-note"><p class="side-note-title">Contrato do operador</p><p>Este manual e para usuarios que instalam, auditam e revertem TES. O contrato do agente vive em <code>docs/install/AGENT-MANUAL.md</code>.</p></aside>
           </div>
         </section>
 
-        <section class="chapter" id="install">
+        <section class="chapter" id="install-pt" data-section-key="install">
           <div class="chapter-head">
             <span class="chapter-num">01</span>
             <h2>Instalacao rapida</h2>
@@ -699,7 +1595,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
         </section>
 
-        <section class="chapter" id="triggers">
+        <section class="chapter" id="triggers-pt" data-section-key="triggers">
           <div class="chapter-head">
             <span class="chapter-num">02</span>
             <h2>Gatilhos de comando</h2>
@@ -711,50 +1607,72 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
         </section>
 
-        <section class="chapter" id="routes">
+        <section class="chapter" id="routes-pt" data-section-key="routes">
           <div class="chapter-head">
             <span class="chapter-num">03</span>
-            <h2>Rotas e estados do projeto</h2>
+            <h2>Rotas</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">A rota decide quais superficies se movem. O estado decide se o run instala, atualiza, audita ou recupera.</p>
+            <p class="lede">A rota decide quais superficies se movem.</p>
             <div class="table-wrap"><table><thead><tr><th>Rota</th><th>Quando usar</th></tr></thead><tbody><tr><td><code>current</code></td><td>Atualizar o runtime detectado e sua config Cortex MCP somente leitura.</td></tr><tr><td><code>codex</code></td><td>Preparar <code>AGENTS.md</code>, skills Codex, plugin metadata e <code>.codex/config.toml</code>.</td></tr><tr><td><code>claude</code></td><td>Preparar <code>CLAUDE.md</code>, <code>.claude/skills/**</code>, plugin skills e <code>.mcp.json</code>.</td></tr><tr><td><code>cursor</code></td><td>Preparar <code>.cursor/rules/**</code> e <code>.cursor/mcp.json</code>.</td></tr><tr><td><code>all</code></td><td>Preparar todas as superficies suportadas.</td></tr><tr><td><code>audit</code></td><td>Inspecionar sem modificar arquivos.</td></tr></tbody></table></div>
-<p>Os estados sao <code>new</code>, <code>existing</code> e <code>meshed</code>. Instrucoes existentes sao salvas em backup e a semântica útil e recuperada, nao descartada.</p>
           </div>
         </section>
 
-        <section class="chapter" id="safety">
+        <section class="chapter" id="states-pt" data-section-key="states">
           <div class="chapter-head">
             <span class="chapter-num">04</span>
-            <h2>Limites de seguranca</h2>
+            <h2>Estados do projeto</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">TES e local e inspecionavel por padrao. Ela recusa release, remotes e marketplace sem autorizacao explicita.</p>
-            <ul class="list">
-<li>Sem push, publish, tag, amend, mudanca de remote, instalacao de dependencias ou marketplace por padrao.</li>
-<li>Sem escritas em <code>.obsidian/**</code>. Obsidian e visualizacao opcional sobre Markdown.</li>
-<li>Sem codigo, diffs, prompts, conteudo de arquivos, segredos, dados pessoais, paths absolutos, stack traces crus, nomes de branch ou remotes em Field Reports.</li>
-<li>O gate de contexto raiz usa <code>root_context.py</code> para inspecionar <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>.cursor/rules/**</code> e <code>docs/agents/**</code> antes de sobrescrever ou recuperar.</li>
-</ul>
-<p>O update compara versão instalada e versão na nuvem, paridade de contrato dos helpers, <code>runtime_trigger_status</code>, <code>recommended_route</code>, <code>recommended_update_scope</code>, <code>legacy_retirement_required</code> e <code>self_test_mode</code>. Um no-op limpo reporta <code>update_available=False</code>, <code>recommended_update_scope=none</code>, <code>helper_contract_status=PASS</code> e o evento final Field Reports <code>tes_update</code> se reports estiverem ativos. <code>STALE_HELPERS</code> bloqueia adapter-config ate reparar helpers.</p>
+            <p class="lede">O estado decide se o run instala, atualiza, audita ou recupera.</p>
+            <div class="table-wrap"><table><thead><tr><th>Estado</th><th>Significado</th></tr></thead><tbody><tr><td><code>new</code></td><td>Sem instrucoes relevantes de agente. TES cria a malha minima.</td></tr><tr><td><code>existing</code></td><td>Ja existem regras locais. TES cria backup, instala runtime limpo e recupera semântica útil.</td></tr><tr><td><code>meshed</code></td><td>TES ja existe. A execucao vira update ou convergence.</td></tr></tbody></table></div>
+<p>Instrucoes existentes sao salvas em backup e a semântica útil e recuperada, nao descartada.</p>
           </div>
         </section>
 
-        <section class="chapter" id="cortex">
+        <section class="chapter" id="cortex-pt" data-section-key="cortex">
           <div class="chapter-head">
             <span class="chapter-num">05</span>
-            <h2>Cortex e MCP</h2>
+            <h2>Cortex</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Cortex e memoria filesystem-first. Markdown e o contrato; recall SQLite e tools MCP sao acessos derivados.</p>
+            <p class="lede">Cortex e memoria filesystem-first. Markdown e o contrato; recall SQLite e um acesso derivado.</p>
             <p>Cortex vive em <code>docs/agents/cortex/**</code>. Todo claim duravel precisa de evidencia. Agentes podem propor memoria, mas escritas exigem autorizacao explicita.</p>
-<p>Cortex MCP e somente leitura e com escopo de projeto. Pode verificar, auditar, lembrar, ler cells, planejar absorbs, planejar curadoria e refletir. Nao pode escrever memoria.</p>
+<p>Voce le o Cortex como qualquer documento do repositorio, revisa em pull requests e reverte com Git.</p>
           </div>
         </section>
 
-        <section class="chapter" id="field_reports">
+        <section class="chapter" id="cli-pt" data-section-key="cli">
           <div class="chapter-head">
             <span class="chapter-num">06</span>
+            <h2>O que o agente executa</h2>
+          </div>
+          <div class="chapter-body">
+            <p class="lede">O usuario pede em linguagem natural; o agente executa o menor oraculo seguro e reporta o resultado.</p>
+            <ul class="list">
+<li>Step Zero roda primeiro e registra o baseline antes de qualquer escrita.</li>
+<li>Comandos inseguros ou indisponiveis aparecem como <code>BLOCKED</code> ou <code>NEEDS_REVIEW</code>, nao ficam escondidos.</li>
+<li>O relatorio final e o contrato. Leia antes de aprovar commit ou push.</li>
+</ul>
+<p><code>/tes-update</code> repara primeiro os helpers do bundle e depois toca adapter-config apenas se os checks post-Layer Zero passarem. O probe compara versão instalada e versão na nuvem, paridade de contrato dos helpers, <code>runtime_trigger_status</code>, <code>recommended_route</code>, <code>recommended_update_scope</code>, <code>legacy_retirement_required</code> e <code>self_test_mode</code> antes de qualquer GO.</p>
+          </div>
+        </section>
+
+        <section class="chapter" id="mcp-pt" data-section-key="mcp">
+          <div class="chapter-head">
+            <span class="chapter-num">07</span>
+            <h2>MCP</h2>
+          </div>
+          <div class="chapter-body">
+            <p class="lede">Cortex MCP e somente leitura e com escopo de projeto. Ele da recall ao agente sem autoridade de escrita.</p>
+            <div class="table-wrap"><table><thead><tr><th>Runtime</th><th>Config</th></tr></thead><tbody><tr><td>Codex</td><td><code>.codex/config.toml</code></td></tr><tr><td>Claude Code</td><td><code>.mcp.json</code></td></tr><tr><td>Cursor</td><td><code>.cursor/mcp.json</code></td></tr></tbody></table></div>
+<p>A superficie MCP pode verificar, auditar, lembrar, ler cells, planejar absorbs, planejar curadoria e refletir. Nao pode escrever memoria.</p>
+          </div>
+        </section>
+
+        <section class="chapter" id="field_reports-pt" data-section-key="field_reports">
+          <div class="chapter-head">
+            <span class="chapter-num">08</span>
             <h2>Field Reports</h2>
           </div>
           <div class="chapter-body">
@@ -765,9 +1683,9 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
         </section>
 
-        <section class="chapter" id="obsidian">
+        <section class="chapter" id="obsidian-pt" data-section-key="obsidian">
           <div class="chapter-head">
-            <span class="chapter-num">07</span>
+            <span class="chapter-num">09</span>
             <h2>Obsidian</h2>
           </div>
           <div class="chapter-body">
@@ -780,9 +1698,9 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
         </section>
 
-        <section class="chapter" id="report">
+        <section class="chapter" id="report-pt" data-section-key="report">
           <div class="chapter-head">
-            <span class="chapter-num">08</span>
+            <span class="chapter-num">10</span>
             <h2>Relatorio final</h2>
           </div>
           <div class="chapter-body">
@@ -792,9 +1710,9 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
         </section>
 
-        <section class="chapter" id="rollback">
+        <section class="chapter" id="rollback-pt" data-section-key="rollback">
           <div class="chapter-head">
-            <span class="chapter-num">09</span>
+            <span class="chapter-num">11</span>
             <h2>Rollback</h2>
           </div>
           <div class="chapter-body">
@@ -806,21 +1724,38 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
         </section>
       </section>
       <footer class="footer">
-        <span>v0.3.82 - Generated from JSON + YAML i18n sources.</span>
-        <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
+
+        <div class="footer-meta">
+          <span>v0.3.82 - Generated from TDS.</span>
+          <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
+        </div>
       </footer>
     </main>
   </div>
+
   <script>
     (() => {
       const supported = ["en", "es", "pt"];
-      const uiLabels = {"en": {"brand": "TES - Tilly Engineer Skills", "contents": "Contents"}, "es": {"brand": "TES - Tilly Engineer Skills", "contents": "Indice"}, "pt": {"brand": "TES - Tilly Engineer Skills", "contents": "Sumario"}};
+      const uiLabels = {"en": {"brand": "Tilly · Skills", "contents": "Contents", "footerCopy": ""}, "es": {"brand": "Tilly · Skills", "contents": "Indice", "footerCopy": ""}, "pt": {"brand": "Tilly · Skills", "contents": "Sumario", "footerCopy": ""}};
       const storageKey = "tes-public-lang";
+      const pageHomeTitle = document.title;
+      const pageHomeDescription = document.querySelector("meta[name='description']")?.getAttribute("content") || "";
+      const ogTitle = document.querySelector("meta[property='og:title']");
+      const ogDescription = document.querySelector("meta[property='og:description']");
+      const docView = document.getElementById("doc-view");
+      const docContent = document.getElementById("doc-content");
+      const docToc = document.getElementById("doc-toc");
+      const docSource = document.getElementById("doc-source");
+      const docMeta = document.getElementById("doc-meta");
+      const docBack = document.querySelector("[data-doc-back]");
       const sections = document.querySelectorAll(".lang-section");
       const buttons = document.querySelectorAll("[data-lang-pick]");
       const navLinks = document.querySelectorAll("[data-nav]");
       const tocTitle = document.querySelector("[data-ui='contents']");
-      const brand = document.querySelector("[data-ui='brand']");
+      const navToggle = document.querySelector(".nav-toggle");
+      const railInner = document.getElementById("rail-inner");
+      const scrim = document.getElementById("scrim");
+      const mobileQuery = window.matchMedia("(max-width: 960px)");
       const html = document.documentElement;
 
       function datasetKey(lang) {
@@ -835,33 +1770,324 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           const label = link.dataset[datasetKey(lang)] || link.dataset.labelEn;
           const target = link.querySelector(".toc-text");
           if (label && target) target.textContent = label;
+          link.setAttribute("href", link.dataset[`href${lang.charAt(0).toUpperCase()}${lang.slice(1)}`] || link.dataset.hrefEn);
         });
         if (tocTitle) tocTitle.textContent = (uiLabels[lang] || uiLabels.en).contents;
-        if (brand) brand.textContent = (uiLabels[lang] || uiLabels.en).brand;
+        const footerCopy = document.querySelector("[data-ui='footer-copy']");
+        if (footerCopy && (uiLabels[lang] || uiLabels.en).footerCopy) {
+          footerCopy.textContent = (uiLabels[lang] || uiLabels.en).footerCopy;
+        }
         html.lang = lang === "pt" ? "pt-BR" : lang;
         try { localStorage.setItem(storageKey, lang); } catch (_) {}
-        if (scrollTop) window.scrollTo({ top: 0, behavior: "smooth" });
-        bindScrollSpy();
+        if (scrollTop && document.body.dataset.view !== "doc") window.scrollTo({ top: 0, behavior: "smooth" });
+        if (document.body.dataset.view !== "doc") bindScrollSpy();
       }
 
       buttons.forEach((button) => button.addEventListener("click", () => setLang(button.dataset.langPick)));
 
-      let observer;
-      function bindScrollSpy() {
-        if (observer) observer.disconnect();
+      function openNav() {
+        if (!navToggle || !railInner || !scrim) return;
+        navToggle.setAttribute("aria-expanded", "true");
+        railInner.classList.add("is-open");
+        scrim.classList.add("is-open");
+        document.body.classList.add("nav-open");
+      }
+
+      function closeNav() {
+        if (!navToggle || !railInner || !scrim) return;
+        navToggle.setAttribute("aria-expanded", "false");
+        railInner.classList.remove("is-open");
+        scrim.classList.remove("is-open");
+        document.body.classList.remove("nav-open");
+      }
+
+      if (navToggle && railInner && scrim) {
+        navToggle.addEventListener("click", () => {
+          if (navToggle.getAttribute("aria-expanded") === "true") closeNav();
+          else openNav();
+        });
+        scrim.addEventListener("click", closeNav);
+        navLinks.forEach((link) => link.addEventListener("click", () => {
+          setActiveNav(link.dataset.nav);
+          closeNav();
+          window.setTimeout(scheduleScrollSpy, 180);
+        }));
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") closeNav();
+        });
+        mobileQuery.addEventListener("change", (event) => {
+          if (!event.matches) closeNav();
+        });
+      }
+
+      let activeSectionKey = "";
+      let scrollSpyPending = false;
+      let activeDocSlug = "";
+
+      function setActiveNav(sectionKey) {
+        if (!sectionKey || sectionKey === activeSectionKey) return;
+        activeSectionKey = sectionKey;
+        navLinks.forEach((link) => {
+          if (link.dataset.nav === sectionKey) {
+            link.setAttribute("aria-current", "true");
+          } else {
+            link.removeAttribute("aria-current");
+          }
+        });
+      }
+
+      function updateScrollSpy() {
+        if (document.body.dataset.view === "doc") return;
         const active = document.querySelector(".lang-section.is-active");
         if (!active) return;
-        observer = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            navLinks.forEach((link) => {
-              const activeLink = link.dataset.nav === entry.target.id;
-              link.toggleAttribute("aria-current", activeLink);
-            });
-          });
-        }, { rootMargin: "-28% 0px -62% 0px", threshold: 0 });
-        active.querySelectorAll(".chapter").forEach((chapter) => observer.observe(chapter));
+        const chapters = Array.from(active.querySelectorAll(".chapter"));
+        if (!chapters.length) return;
+        const marker = Math.min(window.innerHeight * 0.36, 260);
+        let current = chapters[0];
+        chapters.forEach((chapter) => {
+          if (chapter.getBoundingClientRect().top <= marker) current = chapter;
+        });
+        setActiveNav(current.dataset.sectionKey);
       }
+
+      function scheduleScrollSpy() {
+        if (scrollSpyPending) return;
+        scrollSpyPending = true;
+        window.requestAnimationFrame(() => {
+          scrollSpyPending = false;
+          updateScrollSpy();
+        });
+      }
+
+      function bindScrollSpy() {
+        activeSectionKey = "";
+        scheduleScrollSpy();
+      }
+
+      function setView(view) {
+        document.body.dataset.view = view;
+        if (docView) docView.hidden = view !== "doc";
+        if (view === "landing") {
+          activeDocSlug = "";
+          document.title = pageHomeTitle;
+          if (ogTitle) ogTitle.setAttribute("content", pageHomeTitle);
+          if (ogDescription) ogDescription.setAttribute("content", pageHomeDescription);
+          bindScrollSpy();
+        } else {
+          closeNav();
+          navLinks.forEach((link) => link.removeAttribute("aria-current"));
+        }
+      }
+
+      function cleanDocSlug(slug) {
+        if (!slug) return "";
+        const decoded = decodeURIComponent(String(slug)).replace(/^\.\//, "").replace(/\.md$/, "");
+        if (!decoded || decoded.startsWith("/") || decoded.includes("//") || decoded.includes("..")) return "";
+        if (!/^[A-Za-z0-9_./-]+$/.test(decoded)) return "";
+        return decoded;
+      }
+
+      function docSlugFromHref(rawHref, baseSlug = "") {
+        if (!docView || !rawHref) return "";
+        if (/^(https?:|mailto:|#|\/)/.test(rawHref)) return "";
+        const hrefPath = rawHref.split("#")[0].split("?")[0];
+        if (!hrefPath.endsWith(".md")) return "";
+        const baseParts = baseSlug ? baseSlug.split("/").slice(0, -1) : [];
+        const parts = hrefPath.split("/");
+        const resolved = [];
+        [...baseParts, ...parts].forEach((part) => {
+          if (!part || part === ".") return;
+          if (part === "..") resolved.pop();
+          else resolved.push(part);
+        });
+        return cleanDocSlug(resolved.join("/"));
+      }
+
+      function docSlugFromHash() {
+        const match = window.location.hash.match(/^#\/doc\/(.+)$/);
+        return match ? cleanDocSlug(match[1]) : "";
+      }
+
+      function normalizeDocLinks(root = document) {
+        if (!docView) return;
+        root.querySelectorAll("a[href]").forEach((link) => {
+          const raw = link.getAttribute("href") || "";
+          const slug = docSlugFromHref(raw, activeDocSlug);
+          if (!slug) return;
+          link.setAttribute("href", `#/doc/${slug}`);
+          link.dataset.docLink = slug;
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function parseFrontmatter(markdown) {
+        if (!markdown.startsWith("---\n")) return { attrs: {}, body: markdown };
+        const end = markdown.indexOf("\n---", 4);
+        if (end === -1) return { attrs: {}, body: markdown };
+        const attrs = {};
+        markdown.slice(4, end).split("\n").forEach((line) => {
+          const match = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+          if (match) attrs[match[1]] = match[2].replace(/^['"]|['"]$/g, "");
+        });
+        return { attrs, body: markdown.slice(end + 4).trimStart() };
+      }
+
+      function renderMarkdown(markdown) {
+        if (window.marked?.parse) {
+          window.marked.setOptions({ breaks: false, gfm: true });
+          return window.marked.parse(markdown);
+        }
+        return `<pre><code>${escapeHtml(markdown)}</code></pre>`;
+      }
+
+      function sanitizeHtml(unsafe) {
+        if (window.DOMPurify?.sanitize) {
+          return window.DOMPurify.sanitize(unsafe, {
+            ADD_ATTR: ["target", "rel"],
+          });
+        }
+        const template = document.createElement("template");
+        template.innerHTML = unsafe;
+        template.content.querySelectorAll("script, iframe, object, embed, link, style").forEach((node) => node.remove());
+        template.content.querySelectorAll("*").forEach((node) => {
+          [...node.attributes].forEach((attr) => {
+            if (/^on/i.test(attr.name) || /^javascript:/i.test(attr.value)) node.removeAttribute(attr.name);
+          });
+        });
+        return template.innerHTML;
+      }
+
+      function slugifyHeading(text, fallback) {
+        const slug = text.toLowerCase().trim()
+          .replace(/<[^>]+>/g, "")
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+        return slug || fallback;
+      }
+
+      function buildDocToc() {
+        if (!docToc || !docContent) return;
+        const headings = Array.from(docContent.querySelectorAll("h2"));
+        if (!headings.length) {
+          docToc.hidden = true;
+          docToc.innerHTML = "";
+          return;
+        }
+        const items = headings.map((heading, index) => {
+          if (!heading.id) heading.id = slugifyHeading(heading.textContent || "", `section-${index + 1}`);
+          return `<li><a href="#${heading.id}">${escapeHtml(heading.textContent || "")}</a></li>`;
+        }).join("");
+        docToc.hidden = false;
+        docToc.innerHTML = `<p class="doc-toc-head">On this page</p><ol>${items}</ol>`;
+      }
+
+      function prepareDocArticle() {
+        if (!docContent) return;
+        const firstParagraph = docContent.querySelector("h1 + p");
+        if (firstParagraph) firstParagraph.classList.add("doc-lede");
+        normalizeDocLinks(docContent);
+        docContent.querySelectorAll("a[href^='http']").forEach((link) => {
+          link.setAttribute("target", "_blank");
+          link.setAttribute("rel", "noreferrer");
+        });
+        buildDocToc();
+      }
+
+      function setDocMeta(attrs, slug) {
+        if (!docMeta) return;
+        const parts = [attrs.status, attrs.evidence_level, attrs.tver].filter(Boolean);
+        docMeta.innerHTML = parts.length ? parts.map((part) => `<span>${escapeHtml(part)}</span>`).join("") : `<span>${escapeHtml(slug)}.md</span>`;
+      }
+
+      function setSourceLink(slug) {
+        if (!docSource) return;
+        docSource.innerHTML = `Source: <a href="${escapeHtml(slug)}.md">${escapeHtml(slug)}.md</a>`;
+      }
+
+      function renderDocError(slug, message) {
+        if (docContent) {
+          docContent.innerHTML = `<div class="doc-error"><h1>Document unavailable</h1><p>${escapeHtml(message)}</p></div>`;
+        }
+        if (docToc) docToc.hidden = true;
+        setSourceLink(slug);
+        setDocMeta({}, slug);
+      }
+
+      function renderDocSkeleton(slug) {
+        if (docContent) {
+          docContent.innerHTML = `<div class="doc-skeleton" aria-label="Loading document">
+            <span></span><span></span><span></span><span></span>
+          </div>`;
+        }
+        if (docToc) docToc.hidden = true;
+        setSourceLink(slug);
+        setDocMeta({}, slug);
+      }
+
+      async function loadDoc(slug) {
+        if (!docView || !docContent) return;
+        if (!slug) {
+          setView("landing");
+          return;
+        }
+        setView("doc");
+        activeDocSlug = slug;
+        renderDocSkeleton(slug);
+        try {
+          const response = await fetch(`${slug}.md`, { cache: "no-cache" });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const markdown = await response.text();
+          const parsed = parseFrontmatter(markdown);
+          const rendered = sanitizeHtml(renderMarkdown(parsed.body));
+          docContent.innerHTML = rendered;
+          prepareDocArticle();
+          const title = docContent.querySelector("h1")?.textContent?.trim() || `${slug}.md`;
+          const lead = docContent.querySelector(".doc-lede")?.textContent?.trim() || pageHomeDescription;
+          document.title = `${title} - Tilly Engineer Skills`;
+          if (ogTitle) ogTitle.setAttribute("content", document.title);
+          if (ogDescription) ogDescription.setAttribute("content", lead);
+          setSourceLink(slug);
+          setDocMeta(parsed.attrs, slug);
+          window.scrollTo({ top: 0, behavior: "auto" });
+        } catch (error) {
+          renderDocError(slug, `Could not render ${slug}.md in this local view.`);
+        }
+      }
+
+      function handleDocRoute() {
+        if (!docView) return false;
+        const slug = docSlugFromHash();
+        if (!slug) {
+          setView("landing");
+          return false;
+        }
+        loadDoc(slug);
+        return true;
+      }
+
+      if (docBack) {
+        docBack.addEventListener("click", (event) => {
+          event.preventDefault();
+          history.pushState("", "", `${window.location.pathname}${window.location.search}`);
+          setView("landing");
+        });
+      }
+
+      window.addEventListener("scroll", scheduleScrollSpy, { passive: true });
+      window.addEventListener("resize", scheduleScrollSpy);
+      window.addEventListener("hashchange", () => {
+        handleDocRoute();
+        window.setTimeout(scheduleScrollSpy, 80);
+      });
 
       let initial = "en";
       try {
@@ -870,6 +2096,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
       } catch (_) {}
       if (!supported.includes(initial)) initial = (navigator.language || "en").slice(0, 2).toLowerCase();
       setLang(initial, false);
+      normalizeDocLinks();
+      handleDocRoute();
     })();
 </script>
 </body>

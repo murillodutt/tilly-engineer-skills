@@ -40,9 +40,12 @@
       "skip": "Skip to content",
       "language": "Language",
       "contents": "Contents",
-      "brand": "TES - Tilly Engineer Skills",
+      "brand": "Tilly · Skills",
+      "language_mark": "Tilly Engineer Skills",
+      "release_meta": "v0.3.82 · release candidate",
+      "manual_meta": "User manual · v0.3.82",
       "version": "v0.3.82",
-      "source_note": "Generated from JSON + YAML i18n sources.",
+      "source_note": "Generated from TDS.",
       "github": "GitHub",
       "read_manual": "Read the manual",
       "start": "Start safely"
@@ -51,9 +54,12 @@
       "skip": "Saltar al contenido",
       "language": "Idioma",
       "contents": "Indice",
-      "brand": "TES - Tilly Engineer Skills",
+      "brand": "Tilly · Skills",
+      "language_mark": "Tilly Engineer Skills",
+      "release_meta": "v0.3.82 · release candidate",
+      "manual_meta": "Manual de usuario · v0.3.82",
       "version": "v0.3.82",
-      "source_note": "Generado desde fuentes i18n en JSON + YAML.",
+      "source_note": "Generado desde TDS.",
       "github": "GitHub",
       "read_manual": "Leer el manual",
       "start": "Empezar con seguridad"
@@ -62,9 +68,12 @@
       "skip": "Pular para o conteudo",
       "language": "Idioma",
       "contents": "Sumario",
-      "brand": "TES - Tilly Engineer Skills",
+      "brand": "Tilly · Skills",
+      "language_mark": "Tilly Engineer Skills",
+      "release_meta": "v0.3.82 · release candidate",
+      "manual_meta": "Manual do usuario · v0.3.82",
       "version": "v0.3.82",
-      "source_note": "Gerado a partir de fontes i18n em JSON + YAML.",
+      "source_note": "Gerado a partir do TDS.",
       "github": "GitHub",
       "read_manual": "Ler o manual",
       "start": "Comecar com seguranca"
@@ -74,41 +83,59 @@
     "index": {
       "en": {
         "eyebrow": "Local trust layer for AI work inside software projects",
-        "title": "Use AI coding agents without losing the trail.",
+        "title": "Use AI coding agents without losing *the trail*.",
         "lead": "TES surrounds coding agents with local rules, versioned memory, deterministic checks, safety limits, and retained evidence so teams can use AI with more control, traceability, and confidence.",
         "primary": "Start safely",
-        "secondary": "Read the user manual"
+        "secondary": "Read the user manual",
+        "facts": [
+          {"label": "Surface", "value": "Codex · Claude Code · Cursor"},
+          {"label": "Memory", "value": "Versioned Markdown"},
+          {"label": "Evidence", "value": "Retained reports"},
+          {"label": "License", "value": "MIT · Local-first"}
+        ]
       },
       "es": {
         "eyebrow": "Capa local de confianza para IA dentro de proyectos de software",
-        "title": "Usa agentes de codigo con IA sin perder el rastro.",
+        "title": "Usa agentes de codigo con IA sin perder *el rastro*.",
         "lead": "TES rodea a los agentes con reglas locales, memoria versionada, checks deterministas, limites de seguridad y evidencia retenida para que los equipos usen IA con mas control, trazabilidad y confianza.",
         "primary": "Empezar con seguridad",
-        "secondary": "Leer el manual"
+        "secondary": "Leer el manual",
+        "facts": [
+          {"label": "Superficie", "value": "Codex · Claude Code · Cursor"},
+          {"label": "Memoria", "value": "Markdown versionado"},
+          {"label": "Evidencia", "value": "Reportes retenidos"},
+          {"label": "Licencia", "value": "MIT · Local-first"}
+        ]
       },
       "pt": {
         "eyebrow": "Camada local de confianca para IA dentro de projetos de software",
-        "title": "Use agentes de codigo com IA sem perder o rastro.",
+        "title": "Use agentes de codigo com IA sem perder *o rastro*.",
         "lead": "TES cerca agentes com regras locais, memoria versionada, checks deterministicos, limites de seguranca e evidencia retida para que equipes usem IA com mais controle, rastreabilidade e confianca.",
         "primary": "Comecar com seguranca",
-        "secondary": "Ler o manual"
+        "secondary": "Ler o manual",
+        "facts": [
+          {"label": "Superficie", "value": "Codex · Claude Code · Cursor"},
+          {"label": "Memoria", "value": "Markdown versionado"},
+          {"label": "Evidencia", "value": "Relatorios retidos"},
+          {"label": "Licenca", "value": "MIT · Local-first"}
+        ]
       }
     },
     "manual": {
       "en": {
         "eyebrow": "User manual",
-        "title": "Install, audit, update, and roll back TES without losing project control.",
-        "lead": "This manual is for users who already care about local evidence. It explains the safe path, the expected reports, the write boundaries, and the recovery path."
+        "title": "A field manual for *governed* coding agents.",
+        "lead": "A practical guide for installing, updating, and auditing Tilly Engineer Skills in real projects without blind file copying."
       },
       "es": {
         "eyebrow": "Manual de usuario",
-        "title": "Instala, audita, actualiza y revierte TES sin perder control del proyecto.",
-        "lead": "Este manual es para usuarios que ya valoran la evidencia local. Explica el camino seguro, los informes esperados, los limites de escritura y la recuperacion."
+        "title": "Un manual de campo para agentes de codigo *gobernados*.",
+        "lead": "Una guia practica para instalar, actualizar y auditar Tilly Engineer Skills en proyectos reales sin copia ciega de archivos."
       },
       "pt": {
         "eyebrow": "Manual do usuario",
-        "title": "Instale, audite, atualize e reverta TES sem perder controle do projeto.",
-        "lead": "Este manual e para usuarios que ja valorizam evidencia local. Ele explica o caminho seguro, os relatorios esperados, os limites de escrita e a recuperacao."
+        "title": "Um manual de campo para agentes de codigo *governados*.",
+        "lead": "Um guia pratico para instalar, atualizar e auditar Tilly Engineer Skills em projetos reais sem copia cega de arquivos."
       }
     }
   },
@@ -315,49 +342,199 @@
     "docs": {
       "en": {
         "num": "06",
-        "title": "Canonical docs",
-        "lede": "Use the rendered page for orientation and the governed Markdown docs for source-of-truth detail.",
+        "title": "Canonical source map",
+        "lede": "The user manual is the top CTA. This map traces each public TES promise to the governed source that proves, scopes, or operates it.",
         "blocks": [
-          {"type": "links", "items": [
-            {"label": "User manual", "href": "install/USER-MANUAL.html"},
-            {"label": "Agent manual", "href": "install/AGENT-MANUAL.md"},
-            {"label": "Command triggers", "href": "install/COMMAND-TRIGGERS.md"},
-            {"label": "Context mesh method", "href": "mesh/CONTEXT-MESH-METHOD.md"},
-            {"label": "Cortex MCP", "href": "mesh/CORTEX-MCP.md"},
-            {"label": "Evidence report", "href": "evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md"},
-            {"label": "llms.txt", "href": "llms.txt"}
+          {"type": "source_map", "groups": [
+            {
+              "title": "Method",
+              "body": "Why agent rules become measurable engineering behavior instead of prompt folklore.",
+              "items": [
+                {"label": "Engineering principles", "href": "mesh/PRINCIPLES.md", "body": "Four gates, evidence-converged context, and `E = A * S * C * V`."},
+                {"label": "Context mesh method", "href": "mesh/CONTEXT-MESH-METHOD.md", "body": "Narrative, instruction, execution, verification, and return layers."},
+                {"label": "Adoption scorecard", "href": "mesh/SCORECARD.md", "body": "How a copied rule becomes behavior, oracle, governance, and reentry stability."}
+              ]
+            },
+            {
+              "title": "Runtime surfaces",
+              "body": "How Codex, Claude Code, and Cursor share one contract without pretending to be identical.",
+              "items": [
+                {"label": "Adapter capability matrix", "href": "adapters/ADAPTER-CAPABILITY-MATRIX.md", "body": "Certified surfaces, structural parity, and behavior scope by adapter."},
+                {"label": "Platform differences", "href": "adapters/PLATFORM-DIFFERENCES.md", "body": "Native files, skills, rules, plugins, hooks, and MCP boundaries."},
+                {"label": "Command triggers", "href": "install/COMMAND-TRIGGERS.md", "body": "Shared `/tes-*` vocabulary, aliases, routers, and write behavior."},
+                {"label": "Agent manual", "href": "install/AGENT-MANUAL.md", "body": "Agent-side execution model, gates, return states, and rollback contract."}
+              ]
+            },
+            {
+              "title": "Install and safety",
+              "body": "How TES enters a real repository without blind file copying or hidden remote mutation.",
+              "items": [
+                {"label": "Adapter installation", "href": "install/INSTALL.md", "body": "Assisted install flow, project states, certification output, and conflict policy."},
+                {"label": "Assisted installer spec", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "The raw contract the active agent follows during install, retrofit, update, or audit."},
+                {"label": "Git safety", "href": "mesh/GIT-SAFETY.md", "body": "Local baseline, backup, rollback, no push, no publish, and artifact hygiene."},
+                {"label": "Local quality recipe", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Staged-file routing, local hooks, and `commit:check` as closure gate."},
+                {"label": "Public bundle manifest", "href": "dist/0.3.82/index.json", "body": "Versioned ZIP, source commit, SHA-256, and GitHub Pages distribution URLs.", "meta": "artifact"}
+              ]
+            },
+            {
+              "title": "Memory and feedback",
+              "body": "How the trail survives beyond one chat window and returns as inspectable project context.",
+              "items": [
+                {"label": "Cortex continuity", "href": "mesh/CORTEX.md", "body": "Filesystem-first Markdown memory; SQLite, MCP, and Obsidian are derived access surfaces."},
+                {"label": "Read-only Cortex MCP", "href": "mesh/CORTEX-MCP.md", "body": "Project-scoped recall and inspection without write-capable memory tools."},
+                {"label": "Field Reports", "href": "mesh/FIELD-REPORTS.md", "body": "Sanitized local operational feedback, optional GitHub drain, and quarantine rules."}
+              ]
+            },
+            {
+              "title": "Proof and boundaries",
+              "body": "Where TES states what passed, what is scoped, and what must not be claimed.",
+              "items": [
+                {"label": "Eval and ablation method", "href": "evals/EVALS.md", "body": "Full, none, drop, distractor, raw evidence, and certification classes."},
+                {"label": "Final certification report", "href": "evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md", "body": "Claude and Codex retained behavior scope, Cursor structural scope, and explicit non-claims."},
+                {"label": "Parity gate", "href": "evals/PARITY-GATE.md", "body": "How cross-adapter parity is checked without manufacturing false symmetry."}
+              ]
+            },
+            {
+              "title": "Source governance",
+              "body": "How the public page, machine map, and governed docs stay traceable.",
+              "items": [
+                {"label": "Docs index", "href": "INDEX.md", "body": "Human map of active docs, public surfaces, distribution artifacts, and source boundaries."},
+                {"label": "TDS spec", "href": "tds/TDS-SPEC.md", "body": "Document classes, evidence levels, source-of-truth rules, and validation contract."},
+                {"label": "Machine-readable map", "href": "llms.txt", "body": "Optional public navigation map for tools and answer engines.", "meta": "machine map"}
+              ]
+            }
           ]}
         ]
       },
       "es": {
         "num": "06",
-        "title": "Documentos canonicos",
-        "lede": "Usa la pagina renderizada para orientarte y los Markdown gobernados para el detalle fuente de verdad.",
+        "title": "Mapa de fuentes canonicas",
+        "lede": "El manual de usuario ya es el CTA principal. Este mapa conecta cada promesa publica de TES con la fuente gobernada que la prueba, delimita u opera.",
         "blocks": [
-          {"type": "links", "items": [
-            {"label": "Manual de usuario", "href": "install/USER-MANUAL.html"},
-            {"label": "Manual del agente", "href": "install/AGENT-MANUAL.md"},
-            {"label": "Gatillos de comando", "href": "install/COMMAND-TRIGGERS.md"},
-            {"label": "Metodo context mesh", "href": "mesh/CONTEXT-MESH-METHOD.md"},
-            {"label": "Cortex MCP", "href": "mesh/CORTEX-MCP.md"},
-            {"label": "Reporte de evidencia", "href": "evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md"},
-            {"label": "llms.txt", "href": "llms.txt"}
+          {"type": "source_map", "groups": [
+            {
+              "title": "Metodo",
+              "body": "Por que las reglas de agentes se vuelven comportamiento medible, no folklore de prompts.",
+              "items": [
+                {"label": "Principios de ingenieria", "href": "mesh/PRINCIPLES.md", "body": "Cuatro gates, contexto convergido por evidencia y `E = A * S * C * V`."},
+                {"label": "Metodo context mesh", "href": "mesh/CONTEXT-MESH-METHOD.md", "body": "Capas de narrativa, instruccion, ejecucion, verificacion y retorno."},
+                {"label": "Scorecard de adopcion", "href": "mesh/SCORECARD.md", "body": "Como una regla copiada se vuelve comportamiento, oraculo, gobernanza y reentrada estable."}
+              ]
+            },
+            {
+              "title": "Superficies runtime",
+              "body": "Como Codex, Claude Code y Cursor comparten un contrato sin fingir que son identicos.",
+              "items": [
+                {"label": "Matriz de capacidades de adapters", "href": "adapters/ADAPTER-CAPABILITY-MATRIX.md", "body": "Superficies certificadas, paridad estructural y alcance de comportamiento por adapter."},
+                {"label": "Diferencias de plataforma", "href": "adapters/PLATFORM-DIFFERENCES.md", "body": "Archivos nativos, skills, rules, plugins, hooks y limites MCP."},
+                {"label": "Gatillos de comando", "href": "install/COMMAND-TRIGGERS.md", "body": "Vocabulario `/tes-*`, aliases, routers y comportamiento de escritura."},
+                {"label": "Manual del agente", "href": "install/AGENT-MANUAL.md", "body": "Modelo de ejecucion del agente, gates, estados de retorno y contrato de rollback."}
+              ]
+            },
+            {
+              "title": "Instalacion y seguridad",
+              "body": "Como TES entra en un repositorio real sin copia ciega ni mutacion remota escondida.",
+              "items": [
+                {"label": "Instalacion de adapters", "href": "install/INSTALL.md", "body": "Flujo asistido, estados de proyecto, salida de certificacion y politica de conflictos."},
+                {"label": "Spec del instalador asistido", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "Contrato raw que sigue el agente activo durante install, retrofit, update o audit."},
+                {"label": "Seguridad Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sin push, sin publish e higiene de artefactos."},
+                {"label": "Receta de calidad local", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Ruteo por staged files, hooks locales y `commit:check` como gate de cierre."},
+                {"label": "Manifest del bundle publico", "href": "dist/0.3.82/index.json", "body": "ZIP versionado, source commit, SHA-256 y URLs de distribucion GitHub Pages.", "meta": "artefacto"}
+              ]
+            },
+            {
+              "title": "Memoria y feedback",
+              "body": "Como el rastro sobrevive a una ventana de chat y vuelve como contexto inspeccionable.",
+              "items": [
+                {"label": "Continuidad Cortex", "href": "mesh/CORTEX.md", "body": "Memoria Markdown filesystem-first; SQLite, MCP y Obsidian son superficies derivadas."},
+                {"label": "Cortex MCP read-only", "href": "mesh/CORTEX-MCP.md", "body": "Recall e inspeccion con escopo de proyecto, sin herramientas de escritura de memoria."},
+                {"label": "Field Reports", "href": "mesh/FIELD-REPORTS.md", "body": "Feedback operacional local sanitizado, drain GitHub opcional y reglas de cuarentena."}
+              ]
+            },
+            {
+              "title": "Prueba y limites",
+              "body": "Donde TES declara que paso, que es escopado y que no debe afirmarse.",
+              "items": [
+                {"label": "Metodo de eval y ablation", "href": "evals/EVALS.md", "body": "Full, none, drop, distractor, evidencia raw y clases de certificacion."},
+                {"label": "Reporte final de certificacion", "href": "evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md", "body": "Alcance de comportamiento Claude y Codex, alcance estructural Cursor y non-claims explicitos."},
+                {"label": "Gate de paridad", "href": "evals/PARITY-GATE.md", "body": "Como se revisa paridad cross-adapter sin fabricar falsa simetria."}
+              ]
+            },
+            {
+              "title": "Gobernanza de fuente",
+              "body": "Como la pagina publica, el mapa machine-readable y los docs gobernados permanecen trazables.",
+              "items": [
+                {"label": "Indice de docs", "href": "INDEX.md", "body": "Mapa humano de docs activos, superficies publicas, artefactos de distribucion y limites de fuente."},
+                {"label": "Spec TDS", "href": "tds/TDS-SPEC.md", "body": "Clases documentales, niveles de evidencia, reglas source-of-truth y contrato de validacion."},
+                {"label": "Mapa machine-readable", "href": "llms.txt", "body": "Mapa publico opcional para herramientas y answer engines.", "meta": "machine map"}
+              ]
+            }
           ]}
         ]
       },
       "pt": {
         "num": "06",
-        "title": "Docs canonicos",
-        "lede": "Use a pagina renderizada para orientacao e os Markdown governados para detalhe de fonte de verdade.",
+        "title": "Mapa de fontes canonicas",
+        "lede": "O manual do usuario ja e o CTA principal. Este mapa liga cada promessa publica de TES a fonte governada que prova, delimita ou opera aquela promessa.",
         "blocks": [
-          {"type": "links", "items": [
-            {"label": "Manual do usuario", "href": "install/USER-MANUAL.html"},
-            {"label": "Manual do agente", "href": "install/AGENT-MANUAL.md"},
-            {"label": "Gatilhos de comando", "href": "install/COMMAND-TRIGGERS.md"},
-            {"label": "Metodo context mesh", "href": "mesh/CONTEXT-MESH-METHOD.md"},
-            {"label": "Cortex MCP", "href": "mesh/CORTEX-MCP.md"},
-            {"label": "Relatorio de evidencia", "href": "evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md"},
-            {"label": "llms.txt", "href": "llms.txt"}
+          {"type": "source_map", "groups": [
+            {
+              "title": "Metodo",
+              "body": "Por que regras de agentes viram comportamento de engenharia mensuravel, nao folklore de prompt.",
+              "items": [
+                {"label": "Principios de engenharia", "href": "mesh/PRINCIPLES.md", "body": "Quatro gates, contexto convergido por evidencia e `E = A * S * C * V`."},
+                {"label": "Metodo context mesh", "href": "mesh/CONTEXT-MESH-METHOD.md", "body": "Camadas de narrativa, instrucao, execucao, verificacao e retorno."},
+                {"label": "Scorecard de adocao", "href": "mesh/SCORECARD.md", "body": "Como uma regra copiada vira comportamento, oraculo, governanca e reentrada estavel."}
+              ]
+            },
+            {
+              "title": "Superficies runtime",
+              "body": "Como Codex, Claude Code e Cursor compartilham um contrato sem fingir que sao identicos.",
+              "items": [
+                {"label": "Matriz de capacidades dos adapters", "href": "adapters/ADAPTER-CAPABILITY-MATRIX.md", "body": "Superficies certificadas, paridade estrutural e escopo comportamental por adapter."},
+                {"label": "Diferencas de plataforma", "href": "adapters/PLATFORM-DIFFERENCES.md", "body": "Arquivos nativos, skills, rules, plugins, hooks e limites MCP."},
+                {"label": "Gatilhos de comando", "href": "install/COMMAND-TRIGGERS.md", "body": "Vocabulario `/tes-*`, aliases, routers e comportamento de escrita."},
+                {"label": "Manual do agente", "href": "install/AGENT-MANUAL.md", "body": "Modelo de execucao do agente, gates, estados de retorno e contrato de rollback."}
+              ]
+            },
+            {
+              "title": "Instalacao e seguranca",
+              "body": "Como TES entra em um repositorio real sem copia cega nem mutacao remota escondida.",
+              "items": [
+                {"label": "Instalacao dos adapters", "href": "install/INSTALL.md", "body": "Fluxo assistido, estados do projeto, saida de certificacao e politica de conflito."},
+                {"label": "Spec do instalador assistido", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "Contrato raw seguido pelo agente ativo durante install, retrofit, update ou audit."},
+                {"label": "Seguranca Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sem push, sem publish e higiene de artefatos."},
+                {"label": "Receita de qualidade local", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Roteamento por staged files, hooks locais e `commit:check` como gate de fechamento."},
+                {"label": "Manifest do bundle publico", "href": "dist/0.3.82/index.json", "body": "ZIP versionado, source commit, SHA-256 e URLs de distribuicao GitHub Pages.", "meta": "artefato"}
+              ]
+            },
+            {
+              "title": "Memoria e feedback",
+              "body": "Como o rastro sobrevive a uma janela de chat e retorna como contexto inspecionavel.",
+              "items": [
+                {"label": "Continuidade Cortex", "href": "mesh/CORTEX.md", "body": "Memoria Markdown filesystem-first; SQLite, MCP e Obsidian sao superficies derivadas."},
+                {"label": "Cortex MCP read-only", "href": "mesh/CORTEX-MCP.md", "body": "Recall e inspecao com escopo de projeto, sem ferramentas de escrita de memoria."},
+                {"label": "Field Reports", "href": "mesh/FIELD-REPORTS.md", "body": "Feedback operacional local sanitizado, drain GitHub opcional e regras de quarentena."}
+              ]
+            },
+            {
+              "title": "Prova e limites",
+              "body": "Onde TES declara o que passou, o que e escopado e o que nao deve ser afirmado.",
+              "items": [
+                {"label": "Metodo de eval e ablation", "href": "evals/EVALS.md", "body": "Full, none, drop, distractor, evidencia raw e classes de certificacao."},
+                {"label": "Relatorio final de certificacao", "href": "evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md", "body": "Escopo comportamental Claude e Codex, escopo estrutural Cursor e non-claims explicitos."},
+                {"label": "Gate de paridade", "href": "evals/PARITY-GATE.md", "body": "Como a paridade cross-adapter e verificada sem fabricar falsa simetria."}
+              ]
+            },
+            {
+              "title": "Governanca de fonte",
+              "body": "Como a pagina publica, o mapa machine-readable e os docs governados seguem rastreaveis.",
+              "items": [
+                {"label": "Indice de docs", "href": "INDEX.md", "body": "Mapa humano de docs ativos, superficies publicas, artefatos de distribuicao e limites de fonte."},
+                {"label": "Spec TDS", "href": "tds/TDS-SPEC.md", "body": "Classes documentais, niveis de evidencia, regras source-of-truth e contrato de validacao."},
+                {"label": "Mapa machine-readable", "href": "llms.txt", "body": "Mapa publico opcional para ferramentas e answer engines.", "meta": "machine map"}
+              ]
+            }
           ]}
         ]
       }
@@ -368,8 +545,9 @@
         "title": "Overview",
         "lede": "Tilly Engineer Skills installs a governance mesh for coding agents. Codex, Claude Code, and Cursor route through adapter-specific surfaces while project truth lives in versioned Markdown.",
         "blocks": [
-          {"type": "p", "text": "The normal user interface is an intent typed in the agent window, not a shell command. Type `/tes-init` to install, `/tes-update` to update, or `/tes-open-obsidian` to open the optional Markdown workbench."},
-          {"type": "p", "text": "Existing `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, and Cursor rules are first backed up under `.tes/bk/<timestamp>/`. TES then applies a clean runtime and recovers useful local semantics into `docs/agents/**`."}
+          {"type": "aside", "title": "How you use it", "text": "The normal user interface is an intent typed in the agent window, not a shell command. Type `/tes-init` to install or `/tes-update` to update; the active agent selects and runs the smallest safe oracle."},
+          {"type": "aside", "title": "What stays yours", "text": "Existing `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, and Cursor rules are first backed up in `.tes/bk/<timestamp>/`. TES then installs a clean runtime and recovers useful local semantics into `docs/agents/**`."},
+          {"type": "aside", "title": "Operator contract", "text": "This manual is for users installing, auditing, and rolling back TES. The agent-side contract lives in `docs/install/AGENT-MANUAL.md`."}
         ]
       },
       "es": {
@@ -377,8 +555,9 @@
         "title": "Vista general",
         "lede": "Tilly Engineer Skills instala un mesh de gobernanza para agentes de codigo. Codex, Claude Code y Cursor pasan por superficies especificas mientras la verdad del proyecto vive en Markdown versionado.",
         "blocks": [
-          {"type": "p", "text": "La interfaz normal es una intencion escrita en la ventana del agente, no un comando de shell. Usa `/tes-init` para instalar, `/tes-update` para actualizar o `/tes-open-obsidian` para abrir el workbench Markdown opcional."},
-          {"type": "p", "text": "Los archivos `AGENTS.md`, `CLAUDE.md`, `CURSOR.md` y reglas de Cursor existentes se respaldan primero en `.tes/bk/<timestamp>/`. TES aplica un runtime limpio y recupera semantica local util en `docs/agents/**`."}
+          {"type": "aside", "title": "Como se usa", "text": "La interfaz normal es una intencion escrita en la ventana del agente, no un comando de shell. Usa `/tes-init` para instalar o `/tes-update` para actualizar; el agente activo elige y ejecuta el menor oraculo seguro."},
+          {"type": "aside", "title": "Lo que sigue siendo tuyo", "text": "Los archivos `AGENTS.md`, `CLAUDE.md`, `CURSOR.md` y reglas de Cursor existentes se respaldan primero en `.tes/bk/<timestamp>/`. TES instala un runtime limpio y recupera semantica local util en `docs/agents/**`."},
+          {"type": "aside", "title": "Contrato del operador", "text": "Este manual es para usuarios que instalan, auditan y revierten TES. El contrato del agente vive en `docs/install/AGENT-MANUAL.md`."}
         ]
       },
       "pt": {
@@ -386,8 +565,9 @@
         "title": "Visao geral",
         "lede": "Tilly Engineer Skills instala uma malha de governanca para agentes de codigo. Codex, Claude Code e Cursor passam por superficies especificas enquanto a verdade do projeto vive em Markdown versionado.",
         "blocks": [
-          {"type": "p", "text": "A interface normal e uma intencao digitada na janela do agente, nao um comando de shell. Use `/tes-init` para instalar, `/tes-update` para atualizar ou `/tes-open-obsidian` para abrir a bancada Markdown opcional."},
-          {"type": "p", "text": "Arquivos existentes como `AGENTS.md`, `CLAUDE.md`, `CURSOR.md` e regras do Cursor sao primeiro salvos em `.tes/bk/<timestamp>/`. TES aplica um runtime limpo e recupera semântica útil em `docs/agents/**`."}
+          {"type": "aside", "title": "Como voce usa", "text": "A interface normal e uma intencao digitada na janela do agente, nao um comando de shell. Use `/tes-init` para instalar ou `/tes-update` para atualizar; o agente ativo escolhe e executa o menor oraculo seguro."},
+          {"type": "aside", "title": "O que continua sendo seu", "text": "Arquivos existentes como `AGENTS.md`, `CLAUDE.md`, `CURSOR.md` e regras do Cursor sao primeiro salvos em `.tes/bk/<timestamp>/`. TES instala um runtime limpo e recupera semântica útil em `docs/agents/**`."},
+          {"type": "aside", "title": "Contrato do operador", "text": "Este manual e para usuarios que instalam, auditam e revertem TES. O contrato do agente vive em `docs/install/AGENT-MANUAL.md`."}
         ]
       }
     },
@@ -473,8 +653,8 @@
     "routes": {
       "en": {
         "num": "03",
-        "title": "Routes and project states",
-        "lede": "The route decides which runtime surfaces move. The project state decides whether the run installs, updates, audits, or recovers.",
+        "title": "Routes",
+        "lede": "The route decides which runtime surfaces move.",
         "blocks": [
           {"type": "table", "headers": ["Route", "When to use it"], "rows": [
             ["`current`", "Update the detected runtime and its read-only Cortex MCP config."],
@@ -483,14 +663,13 @@
             ["`cursor`", "Prepare `.cursor/rules/**` and `.cursor/mcp.json`."],
             ["`all`", "Prepare all supported runtime surfaces."],
             ["`audit`", "Inspect without modifying files."]
-          ]},
-          {"type": "p", "text": "Project states are `new`, `existing`, and `meshed`. Existing instructions are backed up and useful semantics are recovered instead of discarded."}
+          ]}
         ]
       },
       "es": {
         "num": "03",
-        "title": "Rutas y estados del proyecto",
-        "lede": "La ruta decide que superficies se mueven. El estado decide si el run instala, actualiza, audita o recupera.",
+        "title": "Rutas",
+        "lede": "La ruta decide que superficies se mueven.",
         "blocks": [
           {"type": "table", "headers": ["Ruta", "Cuando usarla"], "rows": [
             ["`current`", "Actualizar el runtime detectado y su config Cortex MCP read-only."],
@@ -499,14 +678,13 @@
             ["`cursor`", "Preparar `.cursor/rules/**` y `.cursor/mcp.json`."],
             ["`all`", "Preparar todas las superficies soportadas."],
             ["`audit`", "Inspeccionar sin modificar archivos."]
-          ]},
-          {"type": "p", "text": "Los estados son `new`, `existing` y `meshed`. Instrucciones existentes se respaldan y la semantica util se recupera, no se descarta."}
+          ]}
         ]
       },
       "pt": {
         "num": "03",
-        "title": "Rotas e estados do projeto",
-        "lede": "A rota decide quais superficies se movem. O estado decide se o run instala, atualiza, audita ou recupera.",
+        "title": "Rotas",
+        "lede": "A rota decide quais superficies se movem.",
         "blocks": [
           {"type": "table", "headers": ["Rota", "Quando usar"], "rows": [
             ["`current`", "Atualizar o runtime detectado e sua config Cortex MCP somente leitura."],
@@ -515,8 +693,48 @@
             ["`cursor`", "Preparar `.cursor/rules/**` e `.cursor/mcp.json`."],
             ["`all`", "Preparar todas as superficies suportadas."],
             ["`audit`", "Inspecionar sem modificar arquivos."]
+          ]}
+        ]
+      }
+    },
+    "states": {
+      "en": {
+        "num": "04",
+        "title": "Project states",
+        "lede": "The state decides whether the run installs, updates, audits, or recovers.",
+        "blocks": [
+          {"type": "table", "headers": ["State", "Meaning"], "rows": [
+            ["`new`", "No relevant agent instructions exist. TES creates the minimum mesh."],
+            ["`existing`", "Local rules already exist. TES creates backup, installs clean runtime, and recovers useful semantics."],
+            ["`meshed`", "TES already exists. The run becomes update or convergence."]
           ]},
-          {"type": "p", "text": "Os estados sao `new`, `existing` e `meshed`. Instrucoes existentes sao salvas em backup e a semântica útil e recuperada, nao descartada."}
+          {"type": "p", "text": "Existing instructions are backed up and useful semantics are recovered instead of discarded."}
+        ]
+      },
+      "es": {
+        "num": "04",
+        "title": "Estados del proyecto",
+        "lede": "El estado decide si el run instala, actualiza, audita o recupera.",
+        "blocks": [
+          {"type": "table", "headers": ["Estado", "Significado"], "rows": [
+            ["`new`", "No hay instrucciones relevantes de agente. TES crea el mesh minimo."],
+            ["`existing`", "Ya existen reglas locales. TES crea backup, instala runtime limpio y recupera semantica util."],
+            ["`meshed`", "TES ya existe. La ejecucion pasa a update o convergence."]
+          ]},
+          {"type": "p", "text": "Instrucciones existentes se respaldan y la semantica util se recupera, no se descarta."}
+        ]
+      },
+      "pt": {
+        "num": "04",
+        "title": "Estados do projeto",
+        "lede": "O estado decide se o run instala, atualiza, audita ou recupera.",
+        "blocks": [
+          {"type": "table", "headers": ["Estado", "Significado"], "rows": [
+            ["`new`", "Sem instrucoes relevantes de agente. TES cria a malha minima."],
+            ["`existing`", "Ja existem regras locais. TES cria backup, instala runtime limpo e recupera semântica útil."],
+            ["`meshed`", "TES ja existe. A execucao vira update ou convergence."]
+          ]},
+          {"type": "p", "text": "Instrucoes existentes sao salvas em backup e a semântica útil e recuperada, nao descartada."}
         ]
       }
     },
@@ -552,35 +770,93 @@
     "cortex": {
       "en": {
         "num": "05",
-        "title": "Cortex and MCP",
-        "lede": "Cortex is filesystem-first memory. Markdown is the contract; SQLite recall and MCP tools are derived access paths.",
+        "title": "Cortex",
+        "lede": "Cortex is filesystem-first memory. Markdown is the contract; SQLite recall is a derived access path.",
         "blocks": [
           {"type": "p", "text": "Cortex lives under `docs/agents/cortex/**`. Every durable claim needs evidence. Agents may propose memory, but writes require explicit authorization."},
-          {"type": "p", "text": "Cortex MCP is read-only and project-scoped. It can verify, audit, recall, read cells, plan absorbs, plan curation, and reflect. It cannot write to memory."}
+          {"type": "p", "text": "You can read Cortex like any repository document, review it in pull requests, and revert it with Git."}
         ]
       },
       "es": {
         "num": "05",
-        "title": "Cortex y MCP",
-        "lede": "Cortex es memoria filesystem-first. Markdown es el contrato; recall SQLite y tools MCP son accesos derivados.",
+        "title": "Cortex",
+        "lede": "Cortex es memoria filesystem-first. Markdown es el contrato; recall SQLite es un acceso derivado.",
         "blocks": [
           {"type": "p", "text": "Cortex vive en `docs/agents/cortex/**`. Todo claim durable necesita evidencia. Los agentes pueden proponer memoria, pero las escrituras requieren autorizacion explicita."},
-          {"type": "p", "text": "Cortex MCP es read-only y con escopo de proyecto. Puede verificar, auditar, recordar, leer cells, planear absorbs, planear curation y reflect. No puede escribir memoria."}
+          {"type": "p", "text": "Puedes leer Cortex como cualquier documento del repositorio, revisarlo en pull requests y revertirlo con Git."}
         ]
       },
       "pt": {
         "num": "05",
-        "title": "Cortex e MCP",
-        "lede": "Cortex e memoria filesystem-first. Markdown e o contrato; recall SQLite e tools MCP sao acessos derivados.",
+        "title": "Cortex",
+        "lede": "Cortex e memoria filesystem-first. Markdown e o contrato; recall SQLite e um acesso derivado.",
         "blocks": [
           {"type": "p", "text": "Cortex vive em `docs/agents/cortex/**`. Todo claim duravel precisa de evidencia. Agentes podem propor memoria, mas escritas exigem autorizacao explicita."},
-          {"type": "p", "text": "Cortex MCP e somente leitura e com escopo de projeto. Pode verificar, auditar, lembrar, ler cells, planejar absorbs, planejar curadoria e refletir. Nao pode escrever memoria."}
+          {"type": "p", "text": "Voce le o Cortex como qualquer documento do repositorio, revisa em pull requests e reverte com Git."}
+        ]
+      }
+    },
+    "cli": {
+      "en": {
+        "num": "06",
+        "title": "What the agent runs",
+        "lede": "The user asks in natural language; the agent executes the smallest safe oracle and reports the result.",
+        "blocks": [
+          {"type": "list", "items": ["Step Zero runs first and records the baseline before any write.", "Unsafe or unavailable commands are reported as `BLOCKED` or `NEEDS_REVIEW`, not hidden.", "The final report is the contract. Read it before approving commit or push."]},
+          {"type": "p", "text": "`/tes-update` repairs bundle helpers first, then touches adapter-config only after post-Layer Zero checks pass."}
+        ]
+      },
+      "es": {
+        "num": "06",
+        "title": "Lo que ejecuta el agente",
+        "lede": "El usuario pide en lenguaje natural; el agente ejecuta el menor oraculo seguro y reporta el resultado.",
+        "blocks": [
+          {"type": "list", "items": ["Step Zero corre primero y registra el baseline antes de cualquier escritura.", "Comandos inseguros o no disponibles se reportan como `BLOCKED` o `NEEDS_REVIEW`, no se esconden.", "El reporte final es el contrato. Leelo antes de aprobar commit o push."]},
+          {"type": "p", "text": "`/tes-update` repara primero los helpers del bundle y luego toca adapter-config solo si pasan los checks post-Layer Zero."}
+        ]
+      },
+      "pt": {
+        "num": "06",
+        "title": "O que o agente executa",
+        "lede": "O usuario pede em linguagem natural; o agente executa o menor oraculo seguro e reporta o resultado.",
+        "blocks": [
+          {"type": "list", "items": ["Step Zero roda primeiro e registra o baseline antes de qualquer escrita.", "Comandos inseguros ou indisponiveis aparecem como `BLOCKED` ou `NEEDS_REVIEW`, nao ficam escondidos.", "O relatorio final e o contrato. Leia antes de aprovar commit ou push."]},
+          {"type": "p", "text": "`/tes-update` repara primeiro os helpers do bundle e depois toca adapter-config apenas se os checks post-Layer Zero passarem. O probe compara versão instalada e versão na nuvem, paridade de contrato dos helpers, `runtime_trigger_status`, `recommended_route`, `recommended_update_scope`, `legacy_retirement_required` e `self_test_mode` antes de qualquer GO."}
+        ]
+      }
+    },
+    "mcp": {
+      "en": {
+        "num": "07",
+        "title": "MCP",
+        "lede": "Cortex MCP is read-only and project-scoped. It gives the agent recall without write authority.",
+        "blocks": [
+          {"type": "table", "headers": ["Runtime", "Config file"], "rows": [["Codex", "`.codex/config.toml`"], ["Claude Code", "`.mcp.json`"], ["Cursor", "`.cursor/mcp.json`"]]},
+          {"type": "p", "text": "The MCP surface can verify, audit, recall, read cells, plan absorbs, plan curation, and reflect. It cannot write memory."}
+        ]
+      },
+      "es": {
+        "num": "07",
+        "title": "MCP",
+        "lede": "Cortex MCP es read-only y con escopo de proyecto. Da recall al agente sin autoridad de escritura.",
+        "blocks": [
+          {"type": "table", "headers": ["Runtime", "Config"], "rows": [["Codex", "`.codex/config.toml`"], ["Claude Code", "`.mcp.json`"], ["Cursor", "`.cursor/mcp.json`"]]},
+          {"type": "p", "text": "La superficie MCP puede verificar, auditar, recordar, leer cells, planear absorbs, planear curadoria y reflect. No puede escribir memoria."}
+        ]
+      },
+      "pt": {
+        "num": "07",
+        "title": "MCP",
+        "lede": "Cortex MCP e somente leitura e com escopo de projeto. Ele da recall ao agente sem autoridade de escrita.",
+        "blocks": [
+          {"type": "table", "headers": ["Runtime", "Config"], "rows": [["Codex", "`.codex/config.toml`"], ["Claude Code", "`.mcp.json`"], ["Cursor", "`.cursor/mcp.json`"]]},
+          {"type": "p", "text": "A superficie MCP pode verificar, auditar, lembrar, ler cells, planejar absorbs, planejar curadoria e refletir. Nao pode escrever memoria."}
         ]
       }
     },
     "field_reports": {
       "en": {
-        "num": "06",
+        "num": "08",
         "title": "Field Reports",
         "lede": "Field Reports help TES learn from real installations without exporting project content.",
         "blocks": [
@@ -590,7 +866,7 @@
         ]
       },
       "es": {
-        "num": "06",
+        "num": "08",
         "title": "Field Reports",
         "lede": "Field Reports ayuda a TES a aprender de instalaciones reales sin exportar contenido del proyecto.",
         "blocks": [
@@ -600,7 +876,7 @@
         ]
       },
       "pt": {
-        "num": "06",
+        "num": "08",
         "title": "Field Reports",
         "lede": "Field Reports ajuda TES a aprender com instalacoes reais sem exportar conteudo do projeto.",
         "blocks": [
@@ -612,7 +888,7 @@
     },
     "obsidian": {
       "en": {
-        "num": "07",
+        "num": "09",
         "title": "Obsidian",
         "lede": "Obsidian is an optional visual workbench over Markdown. It is not a runtime dependency and not proof by itself.",
         "blocks": [
@@ -620,7 +896,7 @@
         ]
       },
       "es": {
-        "num": "07",
+        "num": "09",
         "title": "Obsidian",
         "lede": "Obsidian es un workbench visual opcional sobre Markdown. No es dependencia de runtime ni prueba por si mismo.",
         "blocks": [
@@ -628,7 +904,7 @@
         ]
       },
       "pt": {
-        "num": "07",
+        "num": "09",
         "title": "Obsidian",
         "lede": "Obsidian e uma bancada visual opcional sobre Markdown. Nao e dependencia de runtime nem prova por si so.",
         "blocks": [
@@ -638,7 +914,7 @@
     },
     "report": {
       "en": {
-        "num": "08",
+        "num": "10",
         "title": "Final report",
         "lede": "The final report is the user-facing contract. Read it before approving commit or push.",
         "blocks": [
@@ -647,7 +923,7 @@
         ]
       },
       "es": {
-        "num": "08",
+        "num": "10",
         "title": "Reporte final",
         "lede": "El reporte final es el contrato visible para el usuario. Leelo antes de aprobar commit o push.",
         "blocks": [
@@ -656,7 +932,7 @@
         ]
       },
       "pt": {
-        "num": "08",
+        "num": "10",
         "title": "Relatorio final",
         "lede": "O relatorio final e o contrato visivel para o usuario. Leia antes de aprovar commit ou push.",
         "blocks": [
@@ -667,7 +943,7 @@
     },
     "rollback": {
       "en": {
-        "num": "09",
+        "num": "11",
         "title": "Rollback",
         "lede": "Rollback should be boring. TES tells you the baseline and the installer-created files so you can undo the run with Git.",
         "blocks": [
@@ -676,7 +952,7 @@
         ]
       },
       "es": {
-        "num": "09",
+        "num": "11",
         "title": "Rollback",
         "lede": "Rollback debe ser aburrido. TES informa el baseline y los archivos creados por el instalador para que puedas deshacer con Git.",
         "blocks": [
@@ -685,7 +961,7 @@
         ]
       },
       "pt": {
-        "num": "09",
+        "num": "11",
         "title": "Rollback",
         "lede": "Rollback deve ser entediante. TES informa o baseline e os arquivos criados pelo instalador para voce desfazer com Git.",
         "blocks": [
