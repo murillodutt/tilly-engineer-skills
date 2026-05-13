@@ -613,6 +613,7 @@
             ["`/tes-mcp`", "Activate or verify read-only Cortex MCP.", "May write project-scoped MCP config and TES helpers."],
             ["`/tes-field-reports`", "Inspect, drain, disable, or enable sanitized reports.", "May update `.tes/field-reports/**` and the local pre-push hook."]
           ]},
+          {"type": "p", "text": "`/tes-prospect` and `/tes-mine` are explicit predictive skills. They stay dormant until named, then may drive project-stress prospecting or code mining proactively. Use the cognitive brake (`pause`, `hold`, `resuma onde estamos`) to stop pressure and receive the current state before resuming."},
           {"type": "p", "text": "Full trigger contract: [COMMAND-TRIGGERS.md](COMMAND-TRIGGERS.md)."}
         ]
       },
@@ -631,6 +632,7 @@
             ["`/tes-mcp`", "Activar o verificar Cortex MCP read-only.", "Puede escribir config MCP con escopo de proyecto y helpers TES."],
             ["`/tes-field-reports`", "Inspeccionar, drenar, desactivar o activar reportes sanitizados.", "Puede actualizar `.tes/field-reports/**` y el hook pre-push local."]
           ]},
+          {"type": "p", "text": "`/tes-prospect` y `/tes-mine` son skills predictivas de invocacion explicita. Permanecen dormidas hasta ser nombradas, luego pueden conducir proactivamente la prospeccion de estres de proyecto o la mineria de codigo. Usa el freno cognitivo (`pausa`, `hold`, `resuma onde estamos`) para detener la presion y recibir el estado actual antes de retomar."},
           {"type": "p", "text": "Contrato completo: [COMMAND-TRIGGERS.md](COMMAND-TRIGGERS.md)."}
         ]
       },
@@ -649,6 +651,7 @@
             ["`/tes-mcp`", "Ativar ou verificar Cortex MCP somente leitura.", "Pode escrever config MCP com escopo de projeto e helpers TES."],
             ["`/tes-field-reports`", "Inspecionar, drenar, desativar ou ativar relatorios sanitizados.", "Pode atualizar `.tes/field-reports/**` e o hook pre-push local."]
           ]},
+          {"type": "p", "text": "`/tes-prospect` e `/tes-mine` sao skills preditivas de invocacao explicita. Ficam dormentes ate serem nomeadas, depois podem conduzir proativamente prospeccao de estresse de projeto ou mineracao de codigo. Use o freio cognitivo (`pausa`, `freia`, `resuma onde estamos`) para parar a pressao e receber o estado atual antes de retomar."},
           {"type": "p", "text": "Contrato completo: [COMMAND-TRIGGERS.md](COMMAND-TRIGGERS.md)."}
         ]
       }
