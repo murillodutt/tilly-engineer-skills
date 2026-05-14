@@ -28,13 +28,13 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 Node/npm path:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.91 tilly-engineer-skills add
 ```
 
 Bun path:
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.91 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -46,7 +46,7 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.91 tilly-engineer-skills add --agent all --yes
 ```
 
 For the moving GitHub branch:
@@ -55,7 +55,7 @@ For the moving GitHub branch:
 npx --loglevel=error -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.90` is the fixed release ref. `#latest` follows the repository's moving
+`#v0.3.91` is the fixed release ref. `#latest` follows the repository's moving
 GitHub branch. Release operators must verify refs with `git ls-remote` before
 certification.
 
@@ -89,7 +89,7 @@ Release certification gates:
 ```bash
 python3 scripts/tes_npx_oracle.py --self-test
 python3 scripts/tes_npx_oracle.py --runtime-matrix
-TES_GITHUB_NPX_REF=v0.3.90 python3 scripts/tes_npx_oracle.py --github-self-test
+TES_GITHUB_NPX_REF=v0.3.91 python3 scripts/tes_npx_oracle.py --github-self-test
 ```
 
 ## Compatibility Basis

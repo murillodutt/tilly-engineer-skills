@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.90"
+VERSION = "0.3.91"
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
 POSTINSTALL_RUN_ROOT = Path(".tes/postinstall-runs")
