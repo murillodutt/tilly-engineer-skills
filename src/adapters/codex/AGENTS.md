@@ -98,6 +98,11 @@ Then run the **Project-Start Gate** before the final `/tes-init` report:
 execute the installed `tes_init.py --target . --yes`, open strong anchors, and
 run `project_context_oracle.py --target .`. A preflight context PASS does not
 replace project-start execution; after helper-only repairs, rerun this gate.
+If `.tes/postinstall.json` is already `complete` from the first-session hook
+and the user asks plain `/tes-init` or `/tes-setup`, read the sentinel and
+`last_run`, summarize the completed run, and do not rerun Project-Start unless
+the user explicitly asks to recertify/update, the sentinel is not `complete`,
+the planner reports drift, or evidence is missing.
 `tes_init.py` creates the scaffold; the active agent must open strong anchors
 before claiming deep project understanding and refine the context or report
 `Project context: NEEDS_REVIEW`.

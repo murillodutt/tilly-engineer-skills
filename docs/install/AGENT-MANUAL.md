@@ -110,6 +110,13 @@ Determined during Step Zero scan.
    required project quality gates from `docs/agents/QUALITY-GATES.md` before
    final report.
 
+When `.tes/postinstall.json` is already `complete` from the first-session hook,
+a plain `/tes-init` or `/tes-setup` immediately after opening the agent is a
+status/report request. Read the sentinel and its `last_run`, summarize the
+completed setup, and rerun Project-Start only when the user asks to recertify or
+update, the sentinel is not `complete`, the planner reports drift, or evidence
+is missing.
+
 Step Zero must not block project-context initialization when TES is
 already current and only `PROJECT-CONTEXT.md` needs work.
 
