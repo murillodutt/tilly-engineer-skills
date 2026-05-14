@@ -118,6 +118,7 @@
       z-index: 100;
     }
     .skip:focus { top: 12px; }
+    .visually-hidden { clip: rect(0 0 0 0); clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px; }
     .layout, .page {
       display: grid;
       grid-template-columns: var(--col-margin) minmax(0, 1fr);
@@ -610,7 +611,7 @@
       font-family: var(--font-mono);
       font-size: 10px;
       letter-spacing: .16em;
-      padding: 14px 18px 0;
+      padding: 14px 64px 0 18px;
       text-transform: uppercase;
     }
     .copy-btn {
@@ -630,13 +631,16 @@
       color: var(--mono-bg);
       text-decoration: none;
     }
+    .code-copy-btn { align-items: center; border-color: rgba(240, 247, 244, .26); display: inline-flex; height: 34px; justify-content: center; padding: 0; position: absolute; right: 14px; top: 12px; width: 34px; z-index: 2; }
+    .code-copy-btn svg { fill: none; height: 17px; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; width: 17px; }
+    .code-copy-btn.is-copied { background: var(--mono-fg); color: var(--mono-bg); }
     pre {
       font-family: var(--font-mono);
       font-size: 13px;
       line-height: 1.65;
       margin: 0;
       overflow-x: auto;
-      padding: 14px 18px 18px;
+      padding: 14px 64px 18px 18px;
       white-space: pre-wrap;
     }
     pre code { background: transparent; border: 0; color: inherit; padding: 0; white-space: inherit; }
@@ -1254,8 +1258,8 @@
           </div>
           <div class="chapter-body">
             <p class="lede">Start from the target repository with GitHub npx. The command installs TES locally, prepares selected agent hooks, and records the first-session setup path.</p>
-            <div class="pre-wrap" data-label="fixed release"><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.87 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="moving branch"><pre><code>npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="fixed release" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.87 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="moving branch" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Run the command from the target repository.</li>
 <li>Use <code>#v0.3.87</code> for reproducible installs and <code>#latest</code> only when you want the moving Git branch.</li>
@@ -1352,8 +1356,8 @@
           <div class="chapter-body">
             <p class="lede">Field Reports help TES learn from real installations without exporting project content.</p>
             <p>Reports capture sanitized operational facts and drain only during <code>git push</code> when GitHub CLI, authentication, and network are available. If any link is missing, nothing leaves the machine and push proceeds normally.</p>
-<div class="pre-wrap" data-label="disable"><pre><code>/tes:field-reports:disable</code></pre></div>
-<div class="pre-wrap" data-label="enable"><pre><code>/tes:field-reports:enable</code></pre></div>
+<div class="pre-wrap" data-label="disable" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>/tes:field-reports:disable</code></pre></div>
+<div class="pre-wrap" data-label="enable" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>/tes:field-reports:enable</code></pre></div>
           </div>
         </section>
 
@@ -1391,7 +1395,7 @@
           </div>
           <div class="chapter-body">
             <p class="lede">Rollback should be boring. TES tells you the baseline and the installer-created files so you can undo the run with Git.</p>
-            <div class="pre-wrap" data-label="rollback"><pre><code>git reset --hard &lt;baseline-head&gt;
+            <div class="pre-wrap" data-label="rollback" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>git reset --hard &lt;baseline-head&gt;
 git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 <p>Do not reset blindly if unrelated user work exists. Ask the agent to explain the changed-file inventory and the clean backup first.</p>
           </div>
@@ -1432,8 +1436,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Empieza desde el repositorio objetivo con npx desde GitHub. El comando instala TES localmente, prepara los hooks de agentes seleccionados y registra el camino de setup de primera sesion.</p>
-            <div class="pre-wrap" data-label="release fija"><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.87 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="branch movil"><pre><code>npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="release fija" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.87 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="branch movil" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Ejecuta el comando desde el repositorio objetivo.</li>
 <li>Usa <code>#v0.3.87</code> para instalaciones reproducibles y <code>#latest</code> solo cuando quieras la branch Git movil.</li>
@@ -1530,8 +1534,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           <div class="chapter-body">
             <p class="lede">Field Reports ayuda a TES a aprender de instalaciones reales sin exportar contenido del proyecto.</p>
             <p>Los reportes capturan hechos operativos sanitizados y drenan solo durante <code>git push</code> cuando GitHub CLI, autenticacion y red estan disponibles. Si falta algo, nada sale de la maquina y el push continua.</p>
-<div class="pre-wrap" data-label="desactivar"><pre><code>/tes:field-reports:disable</code></pre></div>
-<div class="pre-wrap" data-label="activar"><pre><code>/tes:field-reports:enable</code></pre></div>
+<div class="pre-wrap" data-label="desactivar" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>/tes:field-reports:disable</code></pre></div>
+<div class="pre-wrap" data-label="activar" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>/tes:field-reports:enable</code></pre></div>
           </div>
         </section>
 
@@ -1569,7 +1573,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Rollback debe ser aburrido. TES informa el baseline y los archivos creados por el instalador para que puedas deshacer con Git.</p>
-            <div class="pre-wrap" data-label="rollback"><pre><code>git reset --hard &lt;baseline-head&gt;
+            <div class="pre-wrap" data-label="rollback" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>git reset --hard &lt;baseline-head&gt;
 git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 <p>No hagas reset a ciegas si existe trabajo no relacionado. Pide al agente el inventario de cambios y el clean backup primero.</p>
           </div>
@@ -1610,8 +1614,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Comece pelo repositorio alvo com npx direto do GitHub. O comando instala TES localmente, prepara os hooks dos agentes escolhidos e registra o caminho de setup da primeira sessao.</p>
-            <div class="pre-wrap" data-label="release fixa"><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.87 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="branch movel"><pre><code>npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="release fixa" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.87 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="branch movel" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Rode o comando a partir do repositorio alvo.</li>
 <li>Use <code>#v0.3.87</code> para instalacoes reprodutiveis e <code>#latest</code> apenas quando quiser a branch Git movel.</li>
@@ -1708,8 +1712,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           <div class="chapter-body">
             <p class="lede">Field Reports ajuda TES a aprender com instalacoes reais sem exportar conteudo do projeto.</p>
             <p>Os relatorios capturam fatos operacionais sanitizados e drenam apenas durante <code>git push</code> quando GitHub CLI, autenticacao e rede estao disponiveis. Se faltar qualquer elo, nada sai da maquina e o push continua.</p>
-<div class="pre-wrap" data-label="desativar"><pre><code>/tes:field-reports:disable</code></pre></div>
-<div class="pre-wrap" data-label="ativar"><pre><code>/tes:field-reports:enable</code></pre></div>
+<div class="pre-wrap" data-label="desativar" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>/tes:field-reports:disable</code></pre></div>
+<div class="pre-wrap" data-label="ativar" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>/tes:field-reports:enable</code></pre></div>
           </div>
         </section>
 
@@ -1747,7 +1751,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Rollback deve ser entediante. TES informa o baseline e os arquivos criados pelo instalador para voce desfazer com Git.</p>
-            <div class="pre-wrap" data-label="rollback"><pre><code>git reset --hard &lt;baseline-head&gt;
+            <div class="pre-wrap" data-label="rollback" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>git reset --hard &lt;baseline-head&gt;
 git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 <p>Nao faca reset as cegas se houver trabalho de usuario nao relacionado. Peca ao agente o inventario de arquivos alterados e o clean backup primeiro.</p>
           </div>
@@ -1846,12 +1850,24 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
         if (!source && !code) return;
         const copyLabel = button.dataset.copyLabel || button.textContent || "Copy";
         const copiedLabel = button.dataset.copiedLabel || "Copied";
+        const isIconButton = button.dataset.copyIcon === "true";
         button.addEventListener("click", async () => {
           const text = source ? (source.value || source.textContent || "") : (code.textContent || "");
           const ok = await copyText(text);
           if (!ok) return;
-          button.textContent = copiedLabel;
-          window.setTimeout(() => { button.textContent = copyLabel; }, 1800);
+          if (isIconButton) {
+            button.classList.add("is-copied");
+            button.setAttribute("aria-label", copiedLabel);
+            button.setAttribute("title", copiedLabel);
+            window.setTimeout(() => {
+              button.classList.remove("is-copied");
+              button.setAttribute("aria-label", copyLabel);
+              button.setAttribute("title", copyLabel);
+            }, 1800);
+          } else {
+            button.textContent = copiedLabel;
+            window.setTimeout(() => { button.textContent = copyLabel; }, 1800);
+          }
         });
       });
 

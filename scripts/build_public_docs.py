@@ -139,6 +139,15 @@ def render_doc_anchor(page: dict, item: dict, class_name: str) -> str:
     return f'<a class="{class_name}" href="{href_for(page, item["href"])}">{inline(item["label"])}</a>'
 
 
+def copy_icon() -> str:
+    return (
+        '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">'
+        '<rect x="9" y="9" width="10" height="10" rx="1.8"></rect>'
+        '<path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path>'
+        '</svg>'
+    )
+
+
 def render_block(block: dict, page: dict) -> str:
     kind = block["type"]
     if kind == "p":
@@ -157,8 +166,15 @@ def render_block(block: dict, page: dict) -> str:
         items = "\n".join(f"<li>{inline(item)}</li>" for item in block["items"])
         return f'<{tag} class="{kind}">\n{items}\n</{tag}>'
     if kind == "code":
+        label = esc(block.get("label", "code"))
+        copy_label = esc(block.get("copy_label", "Copy"))
+        copied_label = esc(block.get("copied_label", "Copied"))
         return (
-            f'<div class="pre-wrap" data-label="{esc(block.get("label", "code"))}">'
+            f'<div class="pre-wrap" data-label="{label}" data-copy-block>'
+            f'<button type="button" class="copy-btn code-copy-btn" data-copy-button '
+            f'data-copy-icon="true" data-copy-label="{copy_label}" '
+            f'data-copied-label="{copied_label}" aria-label="{copy_label}" '
+            f'title="{copy_label}">{copy_icon()}<span class="visually-hidden">{copy_label}</span></button>'
             f"<pre><code>{esc(block['text'])}</code></pre></div>"
         )
     if kind == "prompt_copy":
@@ -435,6 +451,7 @@ CSS = r"""
       z-index: 100;
     }
     .skip:focus { top: 12px; }
+    .visually-hidden { clip: rect(0 0 0 0); clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px; }
     .layout, .page {
       display: grid;
       grid-template-columns: var(--col-margin) minmax(0, 1fr);
@@ -927,7 +944,7 @@ CSS = r"""
       font-family: var(--font-mono);
       font-size: 10px;
       letter-spacing: .16em;
-      padding: 14px 18px 0;
+      padding: 14px 64px 0 18px;
       text-transform: uppercase;
     }
     .copy-btn {
@@ -947,13 +964,16 @@ CSS = r"""
       color: var(--mono-bg);
       text-decoration: none;
     }
+    .code-copy-btn { align-items: center; border-color: rgba(240, 247, 244, .26); display: inline-flex; height: 34px; justify-content: center; padding: 0; position: absolute; right: 14px; top: 12px; width: 34px; z-index: 2; }
+    .code-copy-btn svg { fill: none; height: 17px; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; width: 17px; }
+    .code-copy-btn.is-copied { background: var(--mono-fg); color: var(--mono-bg); }
     pre {
       font-family: var(--font-mono);
       font-size: 13px;
       line-height: 1.65;
       margin: 0;
       overflow-x: auto;
-      padding: 14px 18px 18px;
+      padding: 14px 64px 18px 18px;
       white-space: pre-wrap;
     }
     pre code { background: transparent; border: 0; color: inherit; padding: 0; white-space: inherit; }
@@ -1586,12 +1606,24 @@ JS = r"""
         if (!source && !code) return;
         const copyLabel = button.dataset.copyLabel || button.textContent || "Copy";
         const copiedLabel = button.dataset.copiedLabel || "Copied";
+        const isIconButton = button.dataset.copyIcon === "true";
         button.addEventListener("click", async () => {
           const text = source ? (source.value || source.textContent || "") : (code.textContent || "");
           const ok = await copyText(text);
           if (!ok) return;
-          button.textContent = copiedLabel;
-          window.setTimeout(() => { button.textContent = copyLabel; }, 1800);
+          if (isIconButton) {
+            button.classList.add("is-copied");
+            button.setAttribute("aria-label", copiedLabel);
+            button.setAttribute("title", copiedLabel);
+            window.setTimeout(() => {
+              button.classList.remove("is-copied");
+              button.setAttribute("aria-label", copyLabel);
+              button.setAttribute("title", copyLabel);
+            }, 1800);
+          } else {
+            button.textContent = copiedLabel;
+            window.setTimeout(() => { button.textContent = copyLabel; }, 1800);
+          }
         });
       });
 
