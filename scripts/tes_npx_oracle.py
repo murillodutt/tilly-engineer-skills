@@ -23,7 +23,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.90"
+VERSION = "0.3.91"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -111,8 +111,8 @@ def run_pty_cancel(command: list[str], cwd: Path, timeout: float = 30.0) -> tupl
         cwd,
         [
             ("Target project [", "\n"),
-            ("Agent hooks", "\n"),
-            ("Install mode", "\n"),
+            ("Choose agents", "\n"),
+            ("Installation style", "\n"),
             ("Install TES with these settings? [Y/n]", "n\n"),
         ],
         timeout=timeout,
@@ -125,8 +125,8 @@ def run_pty_accept(command: list[str], cwd: Path, timeout: float = 60.0) -> tupl
         cwd,
         [
             ("Target project [", "\n"),
-            ("Agent hooks", "\n"),
-            ("Install mode", "\n"),
+            ("Choose agents", "\n"),
+            ("Installation style", "\n"),
             ("Install TES with these settings? [Y/n]", "\n"),
         ],
         timeout=timeout,
@@ -409,7 +409,7 @@ def self_test() -> int:
         if "EAGAIN" in cancel_output or "node:fs" in cancel_output or "readSync" in cancel_output:
             failures.append("interactive prompt must not leak Node fd read errors")
             failures.extend(cancel_output.splitlines())
-        for expected in ("Agent hooks", "Install mode", "Ready to install"):
+        for expected in ("Choose agents", "Installation style", "Review"):
             if expected not in cancel_output:
                 failures.append(f"interactive prompt must show {expected!r}")
         if (cancel_target / ".tes").exists():
@@ -504,7 +504,7 @@ def self_test() -> int:
                 failures.extend(exec_result.stderr.splitlines())
             else:
                 failures.extend(commercial_output_failures("npm exec package add", exec_result.stdout))
-                if "TES is installed locally." not in exec_result.stdout:
+                if "TES is ready for this project." not in exec_result.stdout:
                     failures.append("npm exec package add must finish with a human success message")
             for relpath in (
                 ".tes/bin/tes_install.py",
@@ -716,7 +716,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.90 or latest.",
+        help="Git ref to test, e.g. v0.3.91 or latest.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()
