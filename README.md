@@ -1,6 +1,6 @@
 # Tilly Engineer Skills (TES)
 
-[![Version](https://img.shields.io/badge/version-0.3.83-1f6feb)](package.json)
+[![Version](https://img.shields.io/badge/version-0.3.86-1f6feb)](package.json)
 [![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE)
 [![Live Landing](https://img.shields.io/badge/live--landing-GitHub%20Pages-0969da)](https://murillodutt.github.io/tilly-engineer-skills/)
 
@@ -34,12 +34,37 @@ passed, what evidence remains, and where rollback starts.
 - Retained evidence your team can inspect.
 - Read-only Cortex MCP for project recall.
 
-**Assisted install**
+**Quickstart (30-second setup)**
 
 TES is not active in a project until you install it there. Run the assisted
 prompt from inside the target repository; it starts with repo inspection, local
 governance preservation, staged installation, verification, and rollback
 guidance before closure.
+
+For the commercial npx path, run this from the target repository:
+
+```bash
+npx tilly-engineer-skills@latest add
+```
+
+For non-interactive installs, pass the agent selection explicitly:
+
+```bash
+npx tilly-engineer-skills@latest add --agent all --yes
+```
+
+That command is a thin Node wrapper around the certified Python engine. It
+delivers the package mechanically, writes a lock and pending post-install
+sentinel, and installs first-session hooks. When Codex, Claude Code, or Cursor
+opens the project, the hook runs the idempotent post-install routine that
+prepares `docs/agents/**` and certifies the initial mesh. You can also run
+`/tes-setup` or `/tes-init` in the agent to finish setup.
+
+Maintainers can still call the Python engine directly:
+
+```bash
+python3 scripts/tes_install.py install --target /path/to/project --agent all --yes
+```
 
 After installation, TES is local-first by default: no push, publish, tags,
 remote changes, marketplace action, or write-capable MCP without explicit

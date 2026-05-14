@@ -69,8 +69,8 @@ requires exact syntax.
 
 ## TES Shortcuts
 
-When the user says `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`,
-`tes init`, `tes update`, "initialize TES", "install TES", "update TES",
+When the user says `/tes-init`, `/tes-setup`, `/tes-update`, `/tes:init`,
+`/tes:update`, `tes init`, `tes setup`, `tes update`, "initialize TES", "install TES", "update TES",
 "recertify TES", "inicializar TES", "instalar TES", "recertificar TES",
 "Atualizar TES", "atualizar TES", or a natural command/prompt such as
 "TES, inicialize este projeto",

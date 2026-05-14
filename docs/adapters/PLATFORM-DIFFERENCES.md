@@ -30,7 +30,7 @@ TES entry vocabulary is shared across platforms:
 
 | Intent | Preferred trigger | Compatible alias | Meaning |
 |--------|-------------------|------------------|---------|
-| Initialize or recertify | `/tes-init` | `/tes:init` | Load the assisted installer and classify the project. |
+| Initialize or recertify | `/tes-init` | `/tes-setup`, `/tes:init` | Load the assisted installer and classify the project. |
 | Update existing mesh | `/tes-update` | `/tes:update` | Run the update probe, Layer Zero if needed, then converge. |
 | Align project operating mesh | `/tes-align` | `/tes:align` | Deepen initial context into roadmap, state, execution line, gates, boundaries, glossary, decisions, and evidence. |
 | Prospect project stress | `/tes-prospect` | `/tes:prospect` | Explicitly invoke predictive pressure on a plan or design; no broad natural activation. |
@@ -48,7 +48,7 @@ The hyphen form is the preferred cross-platform trigger. The colon form is a
 compatibility alias and may be rejected by a host slash-command parser. If a
 host says a `/tes:*` slash command is invalid, the agent must treat the text as
 TES intent and route to the matching `tes-*` skill, rule, or installer spec.
-Natural intent text such as `tes init`, `tes update`, `tes align`,
+Natural intent text such as `tes init`, `tes setup`, `tes update`, `tes align`,
 `tes open obsidian`, `align TES`, `align this project`, `open Obsidian`,
 `open this project in Obsidian`, `Atualizar TES`, `atualizar TES`,
 `alinhar TES`, `alinhar projeto`, `abrir Obsidian`, `abrir no Obsidian`,

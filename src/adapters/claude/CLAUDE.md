@@ -91,8 +91,8 @@ requires exact syntax.
 
 ## TES Shortcuts
 
-Treat `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`,
-`tes update`, `initialize TES`, `install TES`, `recertify TES`,
+Treat `/tes-init`, `/tes-setup`, `/tes-update`, `/tes:init`, `/tes:update`,
+`tes init`, `tes setup`, `tes update`, `initialize TES`, `install TES`, `recertify TES`,
 `inicializar TES`, `instalar TES`, `recertificar TES`, and natural
 command/prompts such as `TES, initialize this project`,
 `TES, inicialize este projeto`, `Atualizar TES`, or `atualizar TES` as

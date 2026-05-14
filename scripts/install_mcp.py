@@ -19,7 +19,7 @@ import tes_bundle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.83"
+VERSION = "0.3.86"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (
@@ -27,6 +27,7 @@ SERVER_FILES = (
     "cortex_mcp.py",
     "cortex_embed.mjs",
     "field_reports.py",
+    "tes_install.py",
     "tes_update.py",
     "tes_legacy_retirement.py",
     "root_context.py",
@@ -383,6 +384,7 @@ def self_test() -> int:
             ".tes/bin/cortex_mcp.py",
             ".tes/bin/cortex_embed.mjs",
             ".tes/bin/field_reports.py",
+            ".tes/bin/tes_install.py",
             ".tes/bin/tes_update.py",
             ".tes/bin/tes_legacy_retirement.py",
             ".tes/bin/root_context.py",

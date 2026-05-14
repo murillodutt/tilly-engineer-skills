@@ -21,7 +21,7 @@ except Exception:  # pragma: no cover - installed helper may be inspected alone.
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.83"
+VERSION = "0.3.86"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -34,6 +34,7 @@ HELPER_FILES = (
     "cortex_mcp.py",
     "cortex_embed.mjs",
     "field_reports.py",
+    "tes_install.py",
     "tes_update.py",
     "tes_legacy_retirement.py",
     "root_context.py",

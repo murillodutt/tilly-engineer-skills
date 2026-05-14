@@ -12,12 +12,13 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.83"
+VERSION = "0.3.86"
 
 REQUIRED_PATHS = (
     "README.md",
     "AGENTS.md",
     "package.json",
+    "bin/tes.js",
     "LICENSE",
     "NOTICE.md",
     ".github/CODE_OF_CONDUCT.md",
@@ -27,9 +28,9 @@ REQUIRED_PATHS = (
     "docs/architecture/PROJECT-STRUCTURE.md",
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.83/index.json",
-    "docs/dist/0.3.83/tilly-engineer-skills-0.3.83.zip",
-    "docs/dist/0.3.83/tilly-engineer-skills-0.3.83.zip.sha256",
+    "docs/dist/0.3.86/index.json",
+    "docs/dist/0.3.86/tilly-engineer-skills-0.3.86.zip",
+    "docs/dist/0.3.86/tilly-engineer-skills-0.3.86.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -143,6 +144,8 @@ REQUIRED_PATHS = (
     "scripts/field_reports_github_oracle.py",
     "scripts/field_reports_quality_oracle.py",
     "scripts/github_readiness_oracle.py",
+    "scripts/tes_install.py",
+    "scripts/tes_npx_oracle.py",
     "scripts/tes_bundle.py",
     "scripts/public_bundle_oracle.py",
     "scripts/install_smoke.py",
@@ -218,6 +221,9 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "tes:bundle:public-oracle",
     "tes:init",
     "tes:init:self-test",
+    "tes:install",
+    "tes:install:self-test",
+    "tes:npx:self-test",
     "project-context:self-test",
     "project-alignment:self-test",
     "tes-open-obsidian:self-test",
@@ -681,6 +687,11 @@ def main() -> int:
         package = json.loads(package_json.read_text(encoding="utf-8"))
         if package.get("version") != VERSION:
             failures.append(f"package.json version must be {VERSION}")
+        bin_field = package.get("bin")
+        if not isinstance(bin_field, dict):
+            failures.append("package.json must declare bin object")
+        elif bin_field.get("tilly-engineer-skills") != "./bin/tes.js":
+            failures.append("package.json bin.tilly-engineer-skills must be ./bin/tes.js")
         scripts = package.get("scripts", {})
         for script in REQUIRED_PACKAGE_SCRIPTS:
             if script not in scripts:

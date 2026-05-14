@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.83"
+VERSION = "0.3.86"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -31,6 +31,7 @@ PREFERRED_TRIGGERS = (
 )
 
 COMPATIBLE_ALIASES = (
+    "/tes-setup",
     "/tes:init",
     "/tes:update",
     "/tes:align",
@@ -53,6 +54,7 @@ COMPATIBLE_ALIASES = (
 
 NATURAL_INTENTS = (
     "tes init",
+    "tes setup",
     "tes update",
     "tes align",
     "tes open obsidian",

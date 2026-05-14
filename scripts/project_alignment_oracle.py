@@ -13,7 +13,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.83"
+VERSION = "0.3.86"
 PACKAGE_MODE = (ROOT / "scripts").exists()
 AGENTS = Path("docs/agents")
 EVIDENCE = AGENTS / "evidence"
@@ -67,8 +67,30 @@ GENERIC_FAILURE_TERMS = (
     "run tests",
     "to be determined",
 )
+GENERIC_FAILURE_PATTERNS = {
+    "tbd": re.compile(r"(?<![A-Za-z0-9_])tbd(?![A-Za-z0-9_])", re.IGNORECASE),
+    "todo": re.compile(r"(?<![A-Za-z0-9_])todo(?![A-Za-z0-9_])", re.IGNORECASE),
+    "lorem ipsum": re.compile(r"(?<![A-Za-z0-9_])lorem\s+ipsum(?![A-Za-z0-9_])", re.IGNORECASE),
+    "fill this in": re.compile(r"(?<![A-Za-z0-9_])fill\s+this\s+in(?![A-Za-z0-9_])", re.IGNORECASE),
+    "generic project": re.compile(r"(?<![A-Za-z0-9_])generic\s+project(?![A-Za-z0-9_])", re.IGNORECASE),
+    "run tests": re.compile(r"(?<![A-Za-z0-9_])run\s+tests(?![A-Za-z0-9_/])", re.IGNORECASE),
+    "to be determined": re.compile(r"(?<![A-Za-z0-9_])to\s+be\s+determined(?![A-Za-z0-9_])", re.IGNORECASE),
+}
 PATH_RE = re.compile(
     r"(?:^|[`\s])([A-Za-z0-9_./-]+\.(?:md|mdc|json|toml|ya?ml|py|js|ts|tsx|go|rs|tf|sh|ps1|lock|txt))"
+)
+PATH_LITERAL_RE = re.compile(
+    r"(?<![A-Za-z0-9_./-])"
+    r"[A-Za-z0-9_./-]+\.(?:md|mdc|json|toml|ya?ml|py|js|ts|tsx|go|rs|tf|sh|ps1|lock|txt)"
+    r"(?![A-Za-z0-9_./-])"
+)
+INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
+COMMAND_CELL_RE = re.compile(
+    r"^(?:"
+    r"\./|bun|cargo|deno|docker(?:\s+compose)?|eslint|git|go|make|markdownlint(?:-cli2)?|"
+    r"node|npm|npx|pnpm|python3?|pytest|ruff|sh|bash|tsc|ts-node|tsx|uv|vitest|yarn"
+    r")\b",
+    re.IGNORECASE,
 )
 WIKILINK_RE = re.compile(r"\[\[[^\]]+\]\]")
 
@@ -120,9 +142,46 @@ def frontmatter_failures(label: str, text: str) -> list[str]:
     return failures
 
 
+def command_like_cell(cell: str) -> bool:
+    stripped = cell.strip().strip("`").strip()
+    if not stripped:
+        return False
+    return bool(COMMAND_CELL_RE.match(stripped))
+
+
+def mask_table_command_cells(line: str) -> str:
+    stripped = line.strip()
+    if not stripped.startswith("|") or "|" not in stripped[1:]:
+        return line
+    cells = stripped.strip("|").split("|")
+    return " | ".join(" " if command_like_cell(cell) else cell for cell in cells)
+
+
+def generic_search_text(text: str) -> str:
+    lines: list[str] = []
+    in_fence = False
+    for line in text.splitlines():
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            lines.append("")
+            continue
+        if in_fence:
+            lines.append("")
+            continue
+        searchable = mask_table_command_cells(line)
+        searchable = INLINE_CODE_RE.sub(" ", searchable)
+        searchable = PATH_LITERAL_RE.sub(" ", searchable)
+        lines.append(searchable)
+    return "\n".join(lines)
+
+
 def generic_failures(label: str, text: str) -> list[str]:
-    folded = text.casefold()
-    return [f"{label} contains generic placeholder term: {term}" for term in GENERIC_FAILURE_TERMS if term in folded]
+    searchable = generic_search_text(text)
+    return [
+        f"{label} contains generic placeholder term: {term}"
+        for term in GENERIC_FAILURE_TERMS
+        if GENERIC_FAILURE_PATTERNS[term].search(searchable)
+    ]
 
 
 def require_terms(label: str, text: str, terms: tuple[str, ...]) -> list[str]:
@@ -401,7 +460,7 @@ def write_good_fixture(target: Path) -> None:
         "# Project Alignment Evidence\n\n"
         + "```yaml\nalignment_evidence:\n"
         + "  target: fixture\n"
-        + "  tes_version: 0.3.83\n"
+        + "  tes_version: 0.3.86\n"
         + "  anchors_read:\n"
         + "    - README.md\n"
         + "    - package.json\n"
@@ -434,6 +493,28 @@ def self_test() -> dict[str, Any]:
         if result["status"] != "PASS":
             failures.extend([f"good fixture must pass: {item}" for item in result["failures"]])
 
+    with tempfile.TemporaryDirectory(prefix="tes-align-literal-placeholders-") as tempdir:
+        target = Path(tempdir)
+        write_good_fixture(target)
+        path = target / ALIGNMENT_FILES["project_context"]
+        path.write_text(
+            read_text(path)
+            + "\n## Literal Inventory\n\n"
+            + "| Territory | Sample anchors |\n"
+            + "| --- | --- |\n"
+            + "| docs-archive | `docs-archive/MCP-TESTS-TODO.md` |\n\n"
+            + "| Script | Command |\n"
+            + "| --- | --- |\n"
+            + "| test:integration | vitest run tests/integration |\n"
+            + "| test:validation | vitest run tests/validation |\n",
+            encoding="utf-8",
+        )
+        result = analyze(target)
+        if result["status"] != "PASS":
+            failures.extend(
+                [f"literal placeholder fixture must pass: {item}" for item in result["failures"]]
+            )
+
     with tempfile.TemporaryDirectory(prefix="tes-align-bad-roadmap-") as tempdir:
         target = Path(tempdir)
         write_good_fixture(target)
@@ -465,7 +546,10 @@ def self_test() -> dict[str, Any]:
         target = Path(tempdir)
         write_good_fixture(target)
         path = target / ALIGNMENT_FILES["project_state"]
-        path.write_text(read_text(path) + "\nTBD: generic project run tests.\n", encoding="utf-8")
+        path.write_text(
+            read_text(path) + "\nTODO: fill this in. TBD: generic project run tests.\n",
+            encoding="utf-8",
+        )
         result = analyze(target)
         if result["status"] != "FAIL" or not any("generic placeholder" in item for item in result["failures"]):
             failures.append("generic fixture must fail placeholder language")
