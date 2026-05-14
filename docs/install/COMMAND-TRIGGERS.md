@@ -95,7 +95,7 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-local alias for the same oracles |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.99 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.100 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
@@ -126,7 +126,7 @@ once. Repeated hook executions must be idempotent and fast after the sentinel is
 
 Claude Code `SessionStart` hooks pass this result as hook context rather than a
 normal chat message. TES installs a fast synchronous start notice before the
-background runner: `TES first-session setup is running [|/-\]. Please wait.`
+background runner: `IMPORTANT: TES setup is running. Please wait; do not start project work.`
 The second handler uses Claude Code's native `asyncRewake` hook mode, runs
 post-install in the background, and wakes the session when setup finishes. The
 completion instruction is: `Please, run /tes-setup for the report.` If

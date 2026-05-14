@@ -119,7 +119,7 @@ update, the sentinel is not `complete`, the planner reports drift, or evidence
 is missing. When the sentinel is `running`, tell the user to wait for
 first-session setup to finish and run `/tes-setup` again; do not launch duplicate
 setup commands. In Claude Code, TES first emits a synchronous start notice:
-`TES first-session setup is running [|/-\]. Please wait.` It then uses native
+`IMPORTANT: TES setup is running. Please wait; do not start project work.` It then uses native
 `asyncRewake` so setup runs in the background and wakes the session with:
 `Please, run /tes-setup for the report.` Repeated complete hooks stay quiet.
 
