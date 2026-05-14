@@ -37,15 +37,24 @@ Installation details live on the public surface where users need them:
 - The user manual covers options, first-session setup, rollback, and audit.
 - This repository keeps the source, contracts, gates, and evidence.
 
-Important: do not start project work immediately after install. The first run
-must complete the agent path:
+**Important: agent follow-up is host-specific**
+
+Do not start project work immediately after install. The first run completes
+differently by host:
+
+- Codex: open Settings > Hooks for this project, then Trust and enable the
+  Session Start hook if it is marked needs review.
+- Claude Code: open or reopen Claude Code, wait for the TES completion notice,
+  then run `/tes-setup`.
+- Cursor: reopen the workspace, let first-session setup complete, then run
+  `/tes-setup` for the report.
 
 ```text
 install -> hook -> /tes-setup -> /tes-align
 ```
 
-Use `/tes-update` for updates, `/tes-doctor` for repair, and `/tes-align` when
-the project Markdown operating mesh needs to be refreshed.
+Only after `/tes-setup` reports complete, run `/tes-align` before project work.
+Use `/tes-update` for updates and `/tes-doctor` for repair.
 
 Source maintainers verify this package with `npm run commit:check`.
 
