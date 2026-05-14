@@ -24,13 +24,18 @@ docs/install/USER-MANUAL.html
 For the agent-side contract behind runtime commands, gates, schemas, and
 closure vocabulary, open `docs/install/AGENT-MANUAL.md`.
 
-The script installer remains as a maintainer tool for materialization smoke
-tests and mechanical copying. It is not the recommended path for projects that
-already have agent instructions.
+Commercial quickstart:
 
-Mechanical shell entrypoints live in `scripts/bootstrap/**`; the repository root
-does not carry install script wrappers. The recommended path remains the
-assisted installer prompt above.
+```bash
+npx tilly-engineer-skills@latest add
+```
+
+For CI-style installs, use `npx tilly-engineer-skills@latest add --agent all
+--yes`. The Node CLI is only the user-facing shell over
+`scripts/tes_install.py install`: it stages TES, writes lock/sentinel state, and
+installs first-session hooks. Reopen Codex, Claude Code, or Cursor, or run
+`/tes-setup` or `/tes-init`, to finish setup. Mechanical shell entrypoints still
+live in `scripts/bootstrap/**`; the repository root stays thin.
 
 ## Primary Flow
 
@@ -84,30 +89,24 @@ overwrite root runtime files before `.tes/bk/<timestamp>/manifest.json` exists.
 
 ## Install Semantics
 
-The context installer is not a blind file copier. The mechanical installer
-downloads or uses the versioned TES ZIP, verifies SHA-256, stages it under
-`.tes/setup/<version>/`, creates a mandatory central backup under
-`.tes/bk/<timestamp>/`, then applies the canonical clean TES runtime. The active
-LLM owns semantic project analysis and recovery from backup evidence.
+The npx wrapper and direct Python form both stage a source or versioned ZIP,
+apply runtime capabilities, write `.tes/tes-install-lock.json` and
+`.tes/postinstall.json`, then install first-session hooks:
 
-It performs:
-
-```text
-environment detection
-  -> new, existing, or meshed project classification
-  -> deterministic bundle staging
-  -> central .tes/bk/<timestamp>/ backup
-  -> clean runtime application
-  -> semantic recovery into docs/agents/**
-  -> runtime navigation library
-  -> adapter menu
-  -> docs/agents/** canonical mesh
-  -> docs/agents/cortex/** memory layer
-  -> thin runtime assets
-  -> project-scoped Cortex MCP activation
-  -> evidence journal
-  -> certification report
+```bash
+npx tilly-engineer-skills@latest add --agent all --yes
+python3 scripts/tes_install.py install --target /path/to/project --agent all --yes
+python3 scripts/tes_npx_oracle.py --self-test
 ```
+
+Hooks call `python3 .tes/bin/tes_install.py hook --agent <agent> --target .`.
+When the sentinel is `pending`, post-install runs `tes_init.py`,
+`project_context_oracle.py`, and `project_alignment_oracle.py`, then marks the
+sentinel `complete` or `needs_review`. Repeated hooks exit quickly.
+
+The older clean-runtime assisted path still creates a mandatory central backup
+under `.tes/bk/<timestamp>/`, applies the canonical clean TES runtime, and lets
+the active LLM own semantic project analysis and recovery from backup evidence.
 
 ## Compatibility Basis
 

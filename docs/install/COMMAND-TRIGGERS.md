@@ -55,7 +55,7 @@ routed through a broader skill so TES does not create one skill per alias.
 
 | Trigger | User intent | Primary oracles | Writes |
 |---------|-------------|-----------------|--------|
-| `/tes-init` or `/tes:init` | install, update, audit, recertify, initialize project context, and create first-pass project alignment for TES in a project | `root_context.py`, `tes_init.py`, `project_context_oracle.py`, `project_alignment_oracle.py`, assisted installer, install smoke, MCP install | `docs/agents/**`, `docs/agents/PROJECT-CONTEXT.md`, initial operating mesh with System X-Ray and Convergence Line, Cortex, runtime bootloaders, project MCP config |
+| `/tes-init`, `/tes-setup`, or `/tes:init` | install, update, audit, recertify, initialize project context, and create first-pass project alignment for TES in a project | `tes_install.py`, `root_context.py`, `tes_init.py`, `project_context_oracle.py`, `project_alignment_oracle.py`, assisted installer, install smoke, MCP install | `.tes/tes-install-lock.json`, `.tes/postinstall.json`, first-session hooks, `docs/agents/**`, `docs/agents/PROJECT-CONTEXT.md`, initial operating mesh with System X-Ray and Convergence Line, Cortex, runtime bootloaders, project MCP config |
 | `/tes-update` or `/tes:update` | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, `tes_legacy_retirement.py`, assisted installer, install smoke, MCP install | only selected TES surfaces after Step Zero and legacy retirement |
 | `/tes-align` or `/tes:align` | semantically align a TES-initialized project into an operating mesh with a System X-Ray and Convergence Line | `project_alignment_oracle.py`, `project_context_oracle.py`, project gates | `docs/agents/PROJECT-STATE.md`, `PROJECT-ROADMAP.md` Mermaid X-Ray and convergence graphs, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`, `DECISIONS/**`, evidence |
 | `/tes-prospect` or `/tes:prospect` | explicitly invoke project-stress prospecting to pressure a plan or design, expose hidden dependencies, and ask one question at a time | active agent codebase exploration; cognitive brake state snapshot when paused | no project writes |
@@ -78,7 +78,7 @@ tes align / align TES / align this project / alinhar TES / alinhar projeto -> /t
 /tes:prospect -> /tes-prospect
 /tes:mine     -> /tes-mine
 tes open obsidian / open Obsidian / open this project in Obsidian / abrir Obsidian / abrir no Obsidian -> /tes-open-obsidian
-initialize TES / install TES / recertify TES -> /tes-init
+tes setup / initialize TES / install TES / recertify TES -> /tes-init
 inicializar TES / instalar TES / recertificar TES -> /tes-init
 /tes:recall  -> /tes-cortex recall
 /tes:learn   -> /tes-cortex learn
@@ -94,6 +94,8 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-local alias for the same oracles |
+| `npx tilly-engineer-skills@latest add` | commercial mechanical installer entrypoint; thin Node shell over `tes_install.py` |
+| thin installer | mechanical package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
 | predictive skills | explicit-invocation project-stress and mining skills with cognitive brake |
@@ -106,9 +108,19 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 
 ## `/tes-init` Router Contract
 
-`/tes-init` is the single user-facing initialization entrypoint. It must not
-split into user-visible parameters or a second context command. The active agent
-routes internally through two read-only gates before choosing writes:
+`/tes-init` is the canonical user-facing initialization entrypoint. `/tes-setup`
+is a commercial setup alias for the same route after npx installation. Neither
+form should split into user-visible parameters or a second context command. The
+active agent routes internally through two read-only gates before choosing
+writes:
+
+The thin mechanical route may install runtime capabilities first with
+`tes_install.py install`. That route deliberately does not perform semantic
+project analysis in the installer. It leaves `.tes/postinstall.json` pending and
+lets the first-session hook call `tes_install.py hook`, which runs
+`tes_init.py`, `project_context_oracle.py`, and `project_alignment_oracle.py`
+once. Repeated hook executions must be idempotent and fast after the sentinel is
+`complete`.
 
 1. **Install/Update Gate**: detect whether TES is missing, stale, helper-drifted,
    adapter-drifted, or legacy-blocked. When this gate requires installer/update

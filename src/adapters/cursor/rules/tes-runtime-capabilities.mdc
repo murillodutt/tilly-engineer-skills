@@ -14,6 +14,7 @@ be refreshed by the deterministic installer while `AGENTS.md`, `CLAUDE.md`,
 Use these exact TES intents when the user asks for Tilly Engineering Skills:
 
 - `/tes-init`
+- `/tes-setup`
 - `/tes-update`
 - `/tes-align`
 - `/tes-prospect`
@@ -48,7 +49,7 @@ Compatible aliases:
 - `/tes:reflect`
 - `/tes:curate`
 
-Natural intents include: tes init, tes update, tes align, tes open obsidian,
+Natural intents include: tes init, tes setup, tes update, tes align, tes open obsidian,
 align TES, align this project, open Obsidian, open this project in Obsidian,
 Atualizar TES, atualizar TES, alinhar TES, alinhar projeto, abrir Obsidian,
 abrir no Obsidian, initialize TES, install TES, recertify TES, inicializar TES,

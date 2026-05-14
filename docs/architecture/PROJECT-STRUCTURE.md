@@ -76,6 +76,15 @@ canonical shell entrypoints for mechanical adapter installation. Root
 `install.sh` and `install.ps1` are intentionally absent so the root remains
 user-facing rather than a script surface.
 
+`scripts/tes_install.py` is the thin mechanical package installer. It stages a
+TES bundle, applies runtime capabilities, writes `.tes/tes-install-lock.json`
+and `.tes/postinstall.json`, installs first-session hooks for selected agents,
+and leaves semantic project preparation to the idempotent post-install routine.
+
+`bin/tes.js` is the commercial npx entrypoint. It accepts `add` and `install`
+as user-facing aliases, resolves Python, then delegates to
+`scripts/tes_install.py install` without reimplementing installer logic.
+
 `scripts/install_mcp.py` is separate from adapter materialization. It activates
 the read-only Cortex MCP server in a target project by copying local helpers to
 `.tes/bin/**` and writing project-scoped runtime config.

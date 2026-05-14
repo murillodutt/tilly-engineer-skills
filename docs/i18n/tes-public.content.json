@@ -42,9 +42,9 @@
       "contents": "Contents",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.83 · release candidate",
-      "manual_meta": "User manual · v0.3.83",
-      "version": "v0.3.83",
+      "release_meta": "v0.3.86 · release candidate",
+      "manual_meta": "User manual · v0.3.86",
+      "version": "v0.3.86",
       "source_note": "Generated from TDS.",
       "github": "GitHub",
       "read_manual": "Read the manual",
@@ -56,9 +56,9 @@
       "contents": "Indice",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.83 · release candidate",
-      "manual_meta": "Manual de usuario · v0.3.83",
-      "version": "v0.3.83",
+      "release_meta": "v0.3.86 · release candidate",
+      "manual_meta": "Manual de usuario · v0.3.86",
+      "version": "v0.3.86",
       "source_note": "Generado desde TDS.",
       "github": "GitHub",
       "read_manual": "Leer el manual",
@@ -70,9 +70,9 @@
       "contents": "Sumario",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.83 · release candidate",
-      "manual_meta": "Manual do usuario · v0.3.83",
-      "version": "v0.3.83",
+      "release_meta": "v0.3.86 · release candidate",
+      "manual_meta": "Manual do usuario · v0.3.86",
+      "version": "v0.3.86",
       "source_note": "Gerado a partir do TDS.",
       "github": "GitHub",
       "read_manual": "Ler o manual",
@@ -273,7 +273,7 @@
         "lede": "Installation is not the dream; it is the controlled path to the dream. Start from the agent window and let Step Zero protect the repository first.",
         "blocks": [
           {"type": "prompt_copy", "label": "installation mini prompt", "title": "Assisted installer prompt", "summary": "Copy once from the target repository. It loads the installer spec, protects Git state, applies TES locally, and returns certification plus rollback guidance.", "source_label": "Canonical source: `docs/install/MINI-PROMPT.md`", "copy_label": "Copy prompt", "copied_label": "Copied", "source": "docs/install/MINI-PROMPT.md", "fence": "text"},
-          {"type": "p", "text": "This is the same canonical mini prompt kept in [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), rendered here so the first safe action is one click. Current public bundles are served from `docs/dist/0.3.83/`; SHA-256 `e6b2ba1a5dff7961529104f66321cb37169394e61b56769015a8dc29ee9334ca`."}
+          {"type": "p", "text": "This is the same canonical mini prompt kept in [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), rendered here so the first safe action is one click. Current public bundles are served from `docs/dist/0.3.86/`; SHA-256 `472e0a99fcebd0099180b1604f1a2f4f0b7ded5804d4c7c42ec9beded3bccc00`."}
         ]
       },
       "es": {
@@ -282,7 +282,7 @@
         "lede": "La instalacion no es el sueno; es el camino controlado hacia el sueno. Empieza en la ventana del agente y deja que Step Zero proteja el repositorio.",
         "blocks": [
           {"type": "prompt_copy", "label": "mini prompt de instalacion", "title": "Prompt de instalacion asistida", "summary": "Copia una vez desde el repositorio objetivo. Carga el spec del instalador, protege el estado Git, aplica TES localmente y devuelve certificacion con rollback.", "source_label": "Fuente canonica: `docs/install/MINI-PROMPT.md`", "copy_label": "Copiar prompt", "copied_label": "Copiado", "source": "docs/install/MINI-PROMPT.md", "fence": "text"},
-          {"type": "p", "text": "Es el mismo mini prompt canonico mantenido en [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), renderizado aqui para que la primera accion segura sea un clic. Current public bundles estan en `docs/dist/0.3.83/`; SHA-256 `e6b2ba1a5dff7961529104f66321cb37169394e61b56769015a8dc29ee9334ca`."}
+          {"type": "p", "text": "Es el mismo mini prompt canonico mantenido en [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), renderizado aqui para que la primera accion segura sea un clic. Current public bundles estan en `docs/dist/0.3.86/`; SHA-256 `472e0a99fcebd0099180b1604f1a2f4f0b7ded5804d4c7c42ec9beded3bccc00`."}
         ]
       },
       "pt": {
@@ -291,7 +291,7 @@
         "lede": "Instalacao nao e o sonho; e o caminho controlado ate o sonho. Comece na janela do agente e deixe o Step Zero proteger o repositorio primeiro.",
         "blocks": [
           {"type": "prompt_copy", "label": "mini prompt de instalacao", "title": "Prompt de instalacao assistida", "summary": "Copie uma vez a partir do repositorio alvo. Ele carrega a spec do instalador, protege o estado Git, aplica TES localmente e devolve certificacao com rollback.", "source_label": "Fonte canonica: `docs/install/MINI-PROMPT.md`", "copy_label": "Copiar prompt", "copied_label": "Copiado", "source": "docs/install/MINI-PROMPT.md", "fence": "text"},
-          {"type": "p", "text": "E o mesmo mini prompt canonico mantido em [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), renderizado aqui para que a primeira acao segura seja um clique. Current public bundles ficam em `docs/dist/0.3.83/`; SHA-256 `e6b2ba1a5dff7961529104f66321cb37169394e61b56769015a8dc29ee9334ca`."}
+          {"type": "p", "text": "E o mesmo mini prompt canonico mantido em [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), renderizado aqui para que a primeira acao segura seja um clique. Current public bundles ficam em `docs/dist/0.3.86/`; SHA-256 `472e0a99fcebd0099180b1604f1a2f4f0b7ded5804d4c7c42ec9beded3bccc00`."}
         ]
       }
     },
@@ -368,7 +368,7 @@
                 {"label": "Assisted installer spec", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "The raw contract the active agent follows during install, retrofit, update, or audit."},
                 {"label": "Git safety", "href": "mesh/GIT-SAFETY.md", "body": "Local baseline, backup, rollback, no push, no publish, and artifact hygiene."},
                 {"label": "Local quality recipe", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Staged-file routing, local hooks, and `commit:check` as closure gate."},
-                {"label": "Public bundle manifest", "href": "dist/0.3.83/index.json", "body": "Versioned ZIP, source commit, SHA-256, and GitHub Pages distribution URLs.", "meta": "artifact"}
+                {"label": "Public bundle manifest", "href": "dist/0.3.86/index.json", "body": "Versioned ZIP, source commit, SHA-256, and GitHub Pages distribution URLs.", "meta": "artifact"}
               ]
             },
             {
@@ -435,7 +435,7 @@
                 {"label": "Spec del instalador asistido", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "Contrato raw que sigue el agente activo durante install, retrofit, update o audit."},
                 {"label": "Seguridad Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sin push, sin publish e higiene de artefactos."},
                 {"label": "Receta de calidad local", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Ruteo por staged files, hooks locales y `commit:check` como gate de cierre."},
-                {"label": "Manifest del bundle publico", "href": "dist/0.3.83/index.json", "body": "ZIP versionado, source commit, SHA-256 y URLs de distribucion GitHub Pages.", "meta": "artefacto"}
+                {"label": "Manifest del bundle publico", "href": "dist/0.3.86/index.json", "body": "ZIP versionado, source commit, SHA-256 y URLs de distribucion GitHub Pages.", "meta": "artefacto"}
               ]
             },
             {
@@ -502,7 +502,7 @@
                 {"label": "Spec do instalador assistido", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "Contrato raw seguido pelo agente ativo durante install, retrofit, update ou audit."},
                 {"label": "Seguranca Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sem push, sem publish e higiene de artefatos."},
                 {"label": "Receita de qualidade local", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Roteamento por staged files, hooks locais e `commit:check` como gate de fechamento."},
-                {"label": "Manifest do bundle publico", "href": "dist/0.3.83/index.json", "body": "ZIP versionado, source commit, SHA-256 e URLs de distribuicao GitHub Pages.", "meta": "artefato"}
+                {"label": "Manifest do bundle publico", "href": "dist/0.3.86/index.json", "body": "ZIP versionado, source commit, SHA-256 e URLs de distribuicao GitHub Pages.", "meta": "artefato"}
               ]
             },
             {
