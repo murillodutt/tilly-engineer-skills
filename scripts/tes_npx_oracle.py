@@ -10,8 +10,16 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 from typing import Any
+
+try:
+    import pty
+    import select
+except ImportError:  # pragma: no cover - Windows fallback
+    pty = None  # type: ignore[assignment]
+    select = None  # type: ignore[assignment]
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,6 +38,63 @@ def run(command: list[str], cwd: Path, timeout: float = 180.0) -> subprocess.Com
         check=False,
         timeout=timeout,
     )
+
+
+def run_pty_cancel(command: list[str], cwd: Path, timeout: float = 30.0) -> tuple[int | None, str]:
+    if pty is None or select is None:
+        return None, "pty unavailable"
+
+    master_fd, slave_fd = pty.openpty()
+    output: list[str] = []
+    process = subprocess.Popen(
+        command,
+        cwd=cwd,
+        stdin=slave_fd,
+        stdout=slave_fd,
+        stderr=slave_fd,
+        close_fds=True,
+    )
+    os.close(slave_fd)
+    sent = False
+    deadline = time.monotonic() + timeout
+    try:
+        while True:
+            if time.monotonic() > deadline:
+                process.kill()
+                return process.wait(timeout=5), "".join(output) + "\n[TES oracle timeout]"
+
+            readable, _, _ = select.select([master_fd], [], [], 0.1)
+            if readable:
+                try:
+                    chunk = os.read(master_fd, 4096)
+                except OSError:
+                    chunk = b""
+                if chunk:
+                    text = chunk.decode("utf-8", errors="replace")
+                    output.append(text)
+                    if not sent and "Continue? [y/N]" in "".join(output):
+                        os.write(master_fd, b"n\n")
+                        sent = True
+
+            code = process.poll()
+            if code is not None:
+                while True:
+                    readable, _, _ = select.select([master_fd], [], [], 0)
+                    if not readable:
+                        break
+                    try:
+                        chunk = os.read(master_fd, 4096)
+                    except OSError:
+                        break
+                    if not chunk:
+                        break
+                    output.append(chunk.decode("utf-8", errors="replace"))
+                return code, "".join(output)
+    finally:
+        try:
+            os.close(master_fd)
+        except OSError:
+            pass
 
 
 def fixture(root: Path, name: str) -> Path:
@@ -86,6 +151,9 @@ def package_contract_failures() -> list[str]:
         first_line = bin_path.read_text(encoding="utf-8").splitlines()[0]
         if first_line != "#!/usr/bin/env node":
             failures.append("bin/tes.js must start with #!/usr/bin/env node")
+        bin_text = bin_path.read_text(encoding="utf-8")
+        if "readSync" in bin_text or "readLineSync" in bin_text:
+            failures.append("bin/tes.js must not use synchronous fd reads for interactive prompts")
     scripts = package.get("scripts") if isinstance(package.get("scripts"), dict) else {}
     if "tes:npx:self-test" not in scripts:
         failures.append("package.json missing script: tes:npx:self-test")
@@ -252,6 +320,22 @@ def self_test() -> int:
         if (dry_target / ".tes").exists():
             failures.append("dry-run must not create .tes")
 
+        cancel_target = fixture(work, "interactive-cancel-target")
+        cancel_code, cancel_output = run_pty_cancel(
+            ["node", "bin/tes.js", "add", "--target", str(cancel_target), "--agent", "all"],
+            ROOT,
+        )
+        if cancel_code is None:
+            failures.append("interactive cancel prompt pty test could not run")
+        elif cancel_code != 130:
+            failures.append(f"interactive cancel prompt must exit 130, got {cancel_code}")
+            failures.extend(cancel_output.splitlines())
+        if "EAGAIN" in cancel_output or "node:fs" in cancel_output or "readSync" in cancel_output:
+            failures.append("interactive prompt must not leak Node fd read errors")
+            failures.extend(cancel_output.splitlines())
+        if (cancel_target / ".tes").exists():
+            failures.append("interactive cancellation must not create .tes")
+
         pack_result = run(["npm", "pack", "--pack-destination", str(pack_dir)], ROOT, timeout=240.0)
         if pack_result.returncode != 0:
             failures.append("npm pack failed")
@@ -335,6 +419,7 @@ def self_test() -> int:
         "commands": [
             "node bin/tes.js --help",
             "node bin/tes.js add --dry-run --target <fixture> --agent all --yes",
+            "node bin/tes.js add --target <fixture> --agent all # interactive cancel via pty",
             f"npm exec --yes --package <tarball> -- {BIN_NAME} add --target <fixture> --agent all --yes",
             "python3 <fixture>/.tes/bin/tes_install.py hook --agent codex --target <fixture>",
             "commercial installer screen without raw Python JSON",
