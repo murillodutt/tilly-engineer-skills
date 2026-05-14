@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.86"
+VERSION = "0.3.87"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 TES_AGENT_MESH_RELPATHS = {
     "docs/agents/PROJECT-CONTEXT.md",
@@ -121,6 +121,12 @@ ANCHOR_NAMES = (
     "README.txt",
     "README.TXT",
     "README",
+    "INDEX.md",
+    "index.md",
+    "INDEX.rst",
+    "index.rst",
+    "INDEX.txt",
+    "index.txt",
     "package.json",
     "pyproject.toml",
     "Cargo.toml",
@@ -739,10 +745,18 @@ def analyze(target: Path) -> dict[str, Any]:
                 failures.append(f"large PROJECT-CONTEXT.md missing anti-generic section: {section}")
         missing_semantic = [term for term in expected_semantic_terms(target) if term not in text]
         if missing_semantic:
-            failures.append(f"large PROJECT-CONTEXT.md missing semantic territory guidance: {', '.join(missing_semantic[:6])}")
+            failures.append(
+                "large PROJECT-CONTEXT.md missing semantic territory guidance in ## Semantic Territory Guide: "
+                f"{', '.join(missing_semantic[:6])}; suggested row text includes "
+                "`project-owned agent governance boundary` when AGENTS.md or CLAUDE.md exists"
+            )
         missing_cautions = [term for term in expected_caution_terms(target) if term not in text]
         if missing_cautions:
-            failures.append(f"large PROJECT-CONTEXT.md missing caution zones: {', '.join(missing_cautions[:6])}")
+            failures.append(
+                "large PROJECT-CONTEXT.md missing caution zones in ## Caution Zones: "
+                f"{', '.join(missing_cautions[:6])}; suggested zone text includes "
+                "`project-owned agent governance` when AGENTS.md or CLAUDE.md exists"
+            )
         if "unclassified territory" not in text and "likely " not in text:
             failures.append("large PROJECT-CONTEXT.md must separate deterministic interpretation from raw inventory")
         if "fixtures" in territories and "good for repros, weak evidence for product architecture" not in text:

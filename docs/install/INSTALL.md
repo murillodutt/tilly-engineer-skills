@@ -25,13 +25,13 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 ## Commercial Quickstart
 
 ```bash
-npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add
+npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.87 tilly-engineer-skills add
 ```
 
 For non-interactive installs:
 
 ```bash
-npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes
+npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.87 tilly-engineer-skills add --agent all --yes
 ```
 
 For the moving GitHub branch:
@@ -40,7 +40,7 @@ For the moving GitHub branch:
 npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.86` is the fixed release ref. `#latest` is allowed only when GitHub has a
+`#v0.3.87` is the fixed release ref. `#latest` is allowed only when GitHub has a
 branch or tag named `latest`; it is not the npm registry dist-tag. Release
 operators must verify refs with `git ls-remote` before certification.
 
@@ -63,7 +63,7 @@ Maintainers can still call the engine directly when certifying package source:
 ```bash
 python3 scripts/tes_install.py install --target /path/to/project --agent all --yes
 python3 scripts/tes_npx_oracle.py --self-test
-TES_GITHUB_NPX_REF=v0.3.86 python3 scripts/tes_npx_oracle.py --github-self-test
+TES_GITHUB_NPX_REF=v0.3.87 python3 scripts/tes_npx_oracle.py --github-self-test
 ```
 
 ## Compatibility Basis
