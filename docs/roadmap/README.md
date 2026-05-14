@@ -26,9 +26,9 @@ readiness baseline.
 
 ## Baseline
 
-The current release-readiness baseline is TES `0.3.86`, after Wave 6 certified
-remote adoption replay, `/tes-init` project alignment bootstrap, and the
-Obsidian open gate.
+The current release-readiness baseline is TES `0.3.92`, after the GitHub-only
+npx installer line, interactive installer screen, Node/Bun runtime matrix,
+first-session hooks, and fixed release documentation alignment.
 
 The next work is not to create a release. The next work is to remove obvious
 pre-RC1 friction:

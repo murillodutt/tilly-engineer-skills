@@ -11,9 +11,9 @@ tver: 0.9.6
 # Adapter Installation
 
 The commercial installer is the GitHub package-spec command through npx or
-Bun. It resolves a fixed or moving Git ref, installs TES locally into the
-target repository, prepares the selected agent hooks, and records the
-first-session setup path.
+Bun. It resolves a fixed release ref, installs TES locally into the target
+repository, prepares the selected agent hooks, and records the first-session
+setup path.
 
 User-facing walkthrough:
 
@@ -28,13 +28,13 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 Node/npm path:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.91 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.92 tilly-engineer-skills add
 ```
 
 Bun path:
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.91 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.92 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -46,18 +46,12 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.91 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.92 tilly-engineer-skills add --agent all --yes
 ```
 
-For the moving GitHub branch:
-
-```bash
-npx --loglevel=error -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes
-```
-
-`#v0.3.91` is the fixed release ref. `#latest` follows the repository's moving
-GitHub branch. Release operators must verify refs with `git ls-remote` before
-certification.
+`#v0.3.92` is the fixed release ref and the supported commercial install path.
+Do not document or certify mutable release refs unless the Git ref exists and
+has its own canary evidence.
 
 ## Runtime Support
 
@@ -89,7 +83,7 @@ Release certification gates:
 ```bash
 python3 scripts/tes_npx_oracle.py --self-test
 python3 scripts/tes_npx_oracle.py --runtime-matrix
-TES_GITHUB_NPX_REF=v0.3.91 python3 scripts/tes_npx_oracle.py --github-self-test
+TES_GITHUB_NPX_REF=v0.3.92 python3 scripts/tes_npx_oracle.py --github-self-test
 ```
 
 ## Compatibility Basis
