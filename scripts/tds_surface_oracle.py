@@ -34,6 +34,26 @@ PRINCIPLE_LINES = (
     "The module graph is the memory.",
     "The generated surface must never become the hidden source.",
 )
+PUBLIC_INSTALLER_INTERNAL_SNIPPETS = (
+    "npm account",
+    "conta npm",
+    "cuenta npm",
+    "npm registry",
+    "npm dist-tag",
+    "private:true",
+    "thin wrapper",
+    "wrapper fino",
+    "wrapper node",
+    "node cli",
+    "python installer",
+    "instalador python",
+    "motor python",
+    "certified python",
+    "python certificado",
+    "direct python form",
+    "thin node",
+    "tes_install.py install",
+)
 
 
 @dataclass
@@ -165,6 +185,15 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def forbidden_public_installer_terms(text: str) -> list[str]:
+    lowered = text.casefold()
+    return [
+        snippet
+        for snippet in PUBLIC_INSTALLER_INTERNAL_SNIPPETS
+        if snippet.casefold() in lowered
+    ]
+
+
 def textareas_for_prompt(output_text: str) -> list[str]:
     return [
         html.unescape(match.group(1))
@@ -226,6 +255,27 @@ def audit(root: Path, run_render_check: bool = True) -> tuple[str, dict[str, Any
     content = load_jsonish(root / CONTENT)
     current_manifest = manifest(root)
 
+    content_text = (root / CONTENT).read_text(encoding="utf-8", errors="replace")
+    content_offenders = forbidden_public_installer_terms(content_text)
+    if content_offenders:
+        findings.append(
+            Finding(
+                "BLOCKER",
+                "public_installer_internal_detail",
+                f"Public installer copy exposes maintainer/distribution detail: {', '.join(content_offenders)}.",
+                CONTENT.as_posix(),
+            )
+        )
+    else:
+        findings.append(
+            Finding(
+                "PASS",
+                "public_installer_contract_sanitized",
+                "Public installer copy states user-visible contract instead of maintainer internals.",
+                CONTENT.as_posix(),
+            )
+        )
+
     declared_structure = structure.get("sources", {}).get("structure")
     declared_content = structure.get("sources", {}).get("content")
     if declared_structure == STRUCTURE.as_posix() and declared_content == CONTENT.as_posix():
@@ -245,6 +295,25 @@ def audit(root: Path, run_render_check: bool = True) -> tuple[str, dict[str, Any
             findings.append(Finding("BLOCKER", "generated_output_missing", "Generated output is missing.", output.as_posix()))
             continue
         text = path.read_text(encoding="utf-8", errors="replace")
+        output_offenders = forbidden_public_installer_terms(html.unescape(text))
+        if output_offenders:
+            findings.append(
+                Finding(
+                    "BLOCKER",
+                    "public_installer_internal_detail",
+                    f"Generated public surface exposes maintainer/distribution detail: {', '.join(output_offenders)}.",
+                    output.as_posix(),
+                )
+            )
+        else:
+            findings.append(
+                Finding(
+                    "PASS",
+                    "public_installer_contract_rendered",
+                    "Generated public surface keeps installer copy at the user-visible contract layer.",
+                    output.as_posix(),
+                )
+            )
         if GENERATED_MARKER not in text[:512]:
             findings.append(Finding("BLOCKER", "generated_marker_missing", "Generated output lacks the canonical source marker.", output.as_posix()))
         else:
@@ -453,6 +522,35 @@ def self_test() -> None:
         status, _, findings = audit(root, run_render_check=False)
         codes = {finding.code for finding in findings}
         if status != "FAIL" or "generated_marker_missing" not in codes or "copy_payload_hard_wrapped" not in codes:
+            raise AssertionError(render_text(status, manifest(root), findings))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        for path in ("docs/i18n", "docs/install", "docs/tds", "scripts"):
+            (root / path).mkdir(parents=True, exist_ok=True)
+        (root / STRUCTURE).write_text(
+            json.dumps(
+                {
+                    "sources": {"content": CONTENT.as_posix(), "structure": STRUCTURE.as_posix()},
+                    "generated_outputs": ["docs/index.html"],
+                    "pages": {},
+                }
+            ),
+            encoding="utf-8",
+        )
+        (root / CONTENT).write_text(
+            json.dumps({"copy": "No npm account is required because the Node CLI is a thin wrapper."}),
+            encoding="utf-8",
+        )
+        (root / MINI_PROMPT).write_text("```text\nInstall safely.\n```\n", encoding="utf-8")
+        for doc in (DOCS_INDEX, TDS_INDEX):
+            (root / doc).write_text("", encoding="utf-8")
+        (root / TDS_SPEC).write_text("", encoding="utf-8")
+        (root / "docs/index.html").write_text(GENERATED_MARKER + "\nGenerated from TDS.", encoding="utf-8")
+        (root / RENDERER).write_text("#!/usr/bin/env python3\nimport sys\nsys.exit(0)\n", encoding="utf-8")
+        status, _, findings = audit(root, run_render_check=False)
+        codes = {finding.code for finding in findings}
+        if status != "FAIL" or "public_installer_internal_detail" not in codes:
             raise AssertionError(render_text(status, manifest(root), findings))
 
 

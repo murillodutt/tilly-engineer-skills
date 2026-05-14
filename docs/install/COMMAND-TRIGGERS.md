@@ -94,9 +94,9 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-local alias for the same oracles |
-| `npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.87 tilly-engineer-skills add` | commercial GitHub-only mechanical installer entrypoint; thin Node shell over `tes_install.py` |
-| `npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add` | moving GitHub branch/tag channel; `latest` is a Git ref, not an npm dist-tag |
-| thin installer | mechanical package delivery, lock/sentinel creation, and first-session post-install hook setup |
+| `npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.87 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add` | moving GitHub branch channel; use `--prefer-online` when following `latest` |
+| installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
 | predictive skills | explicit-invocation project-stress and mining skills with cognitive brake |
@@ -115,9 +115,9 @@ form should split into user-visible parameters or a second context command. The
 active agent routes internally through two read-only gates before choosing
 writes:
 
-The thin mechanical route may install runtime capabilities first with
-`tes_install.py install`. That route deliberately does not perform semantic
-project analysis in the installer. It leaves `.tes/postinstall.json` pending and
+The mechanical install route may install runtime capabilities first. That route
+deliberately does not perform semantic project analysis in the installer. It
+leaves `.tes/postinstall.json` pending and
 lets the first-session hook call `tes_install.py hook`, which runs
 `tes_init.py`, `project_context_oracle.py`, and `project_alignment_oracle.py`
 once. Repeated hook executions must be idempotent and fast after the sentinel is
