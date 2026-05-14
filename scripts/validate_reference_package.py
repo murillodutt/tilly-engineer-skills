@@ -224,6 +224,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "tes:install",
     "tes:install:self-test",
     "tes:npx:self-test",
+    "tes:npx:github-self-test",
     "project-context:self-test",
     "project-alignment:self-test",
     "tes-open-obsidian:self-test",

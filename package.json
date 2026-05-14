@@ -21,6 +21,7 @@
     "tes:install": "python3 scripts/tes_install.py install",
     "tes:install:self-test": "python3 scripts/tes_install.py --self-test",
     "tes:npx:self-test": "python3 scripts/tes_npx_oracle.py --self-test",
+    "tes:npx:github-self-test": "python3 scripts/tes_npx_oracle.py --github-self-test",
     "project-context:self-test": "python3 scripts/project_context_oracle.py --self-test",
     "project-alignment:self-test": "python3 scripts/project_alignment_oracle.py --self-test",
     "tes-open-obsidian:self-test": "python3 scripts/tes_open_obsidian.py --self-test",
