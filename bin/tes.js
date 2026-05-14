@@ -11,6 +11,7 @@ const VALUE_OPTIONS = new Set(["--target", "--agent", "--mode", "--bundle", "--u
 const BOOL_OPTIONS = new Set(["--yes", "--dry-run", "--no-hooks", "--no-postinstall"]);
 const MIN_NODE_MAJOR = 18;
 const MIN_BUN_VERSION = [1, 0, 0];
+const MIN_PYTHON_VERSION = [3, 11, 0];
 const AGENT_CHOICES = [
   { key: "1", value: "all", label: "All agents", detail: "Codex, Claude Code, Cursor" },
   { key: "2", value: "codex", label: "Codex", detail: ".codex/config.toml" },
@@ -48,11 +49,12 @@ Options:
 
 Runtime:
   Node.js 18+ with npm/npx, or Bun 1.0+ with bunx --bun.
+  Python 3.11+ for the local TES engine and first-session oracles.
 
 Examples:
-  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add
-  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add --agent all --yes
-  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add --agent all --yes
+  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add
 `);
 }
 
@@ -121,9 +123,55 @@ function runtimeFailure(runtime) {
   console.error("  Bun: https://bun.sh/docs/installation");
   console.error("");
   console.error("Commands:");
-  console.error("  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add");
-  console.error("  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add");
+  console.error("  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add");
+  console.error("  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add");
   return 1;
+}
+
+function inspectPython(candidate) {
+  const result = spawnSync(candidate, [
+    "-c",
+    [
+      "import json, sys",
+      "payload = {\"executable\": sys.executable, \"version\": \".\".join(str(part) for part in sys.version_info[:3])}",
+      "try:",
+      "    import tomllib",
+      "    payload[\"tomllib\"] = True",
+      "except Exception:",
+      "    payload[\"tomllib\"] = False",
+      "print(json.dumps(payload))",
+    ].join("\n"),
+  ], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (result.status !== 0) {
+    return {
+      candidate,
+      found: false,
+      supported: false,
+      detail: String(result.stderr || result.stdout || "").trim(),
+    };
+  }
+  try {
+    const payload = JSON.parse(String(result.stdout || "").trim());
+    const supported = versionAtLeast(payload.version, MIN_PYTHON_VERSION) && payload.tomllib === true;
+    return {
+      candidate,
+      found: true,
+      supported,
+      executable: payload.executable || candidate,
+      version: payload.version || "unknown",
+      detail: supported ? "ok" : "Python 3.11+ with tomllib is required",
+    };
+  } catch (error) {
+    return {
+      candidate,
+      found: true,
+      supported: false,
+      detail: `could not inspect Python runtime: ${error.message}`,
+    };
+  }
 }
 
 function resolvePython() {
@@ -133,16 +181,38 @@ function resolvePython() {
   }
   candidates.push("python3", "python");
 
-  for (const candidate of candidates) {
-    const result = spawnSync(candidate, ["--version"], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    if (result.status === 0) {
-      return candidate;
+  const seen = [];
+  const uniqueCandidates = [...new Set(candidates.filter(Boolean))];
+  for (const candidate of uniqueCandidates) {
+    const inspected = inspectPython(candidate);
+    seen.push(inspected);
+    if (inspected.supported) {
+      return {
+        command: candidate,
+        executable: inspected.executable,
+        version: inspected.version,
+        seen,
+      };
     }
   }
-  return null;
+  return { command: null, executable: null, version: null, seen };
+}
+
+function pythonFailure(resolution) {
+  console.error("TES installer: Python 3.11+ is required for TES local oracles.");
+  const seen = Array.isArray(resolution?.seen) ? resolution.seen : [];
+  const inspected = seen.filter((item) => item.found);
+  if (inspected.length > 0) {
+    console.error("Detected:");
+    for (const item of inspected) {
+      console.error(`  ${item.candidate}: Python ${item.version || "unknown"} (${item.detail})`);
+    }
+  } else {
+    console.error("Detected: no Python runtime on PATH.");
+  }
+  console.error("");
+  console.error("Install Python 3.11+ or set PYTHON=/path/to/python3.11, then rerun TES.");
+  return 1;
 }
 
 function parse(argv) {
@@ -480,8 +550,8 @@ async function main() {
   }
 
   const python = resolvePython();
-  if (!python) {
-    return fail("Python 3 is required. Install Python 3 or set PYTHON=/path/to/python3.");
+  if (!python.command) {
+    return pythonFailure(python);
   }
 
   const configured = await configureInteractively(parsed);
@@ -508,9 +578,13 @@ async function main() {
   ];
 
   console.log("Installing TES...");
-  const result = spawnSync(python, args, {
+  const result = spawnSync(python.command, args, {
     cwd: process.cwd(),
     encoding: "utf8",
+    env: {
+      ...process.env,
+      TES_PYTHON: python.executable || python.command,
+    },
     stdio: ["ignore", "pipe", "pipe"],
   });
 

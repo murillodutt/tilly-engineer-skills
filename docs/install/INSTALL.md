@@ -28,13 +28,13 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 Node/npm path:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add
 ```
 
 Bun path:
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -46,10 +46,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.95` is the fixed release ref and the supported commercial install path.
+`#v0.3.96` is the fixed release ref and the supported commercial install path.
 Do not document or certify mutable release refs unless the Git ref exists and
 has its own canary evidence.
 
@@ -59,13 +59,14 @@ TES supports Node.js 18, 20, 22, and newer Node releases through npx. It also
 supports Bun 1.0 or newer through `bunx --bun`.
 
 If neither `node`/`npm` nor `bun`/`bunx` is available, install one runtime
-first:
+first. TES also requires Python 3.11+ for the local setup engine and oracles:
 
 - Node.js LTS: https://nodejs.org/en/download
 - Bun: https://bun.sh/docs/installation
+- Python: https://www.python.org/downloads/
 
 After the CLI starts, it checks the active runtime and exits with those install
-links when the version is unsupported or unknown.
+links when the JavaScript runtime or Python runtime is unsupported or unknown.
 
 ## Install Semantics
 
@@ -73,7 +74,8 @@ The installer stages a versioned TES bundle, applies runtime capabilities,
 writes `.tes/tes-install-lock.json` and `.tes/postinstall.json`, then installs
 first-session hooks.
 
-Hooks call `python3 .tes/bin/tes_install.py hook --agent <agent> --target .`.
+Hooks call `.tes/bin/tes_install.py hook --agent <agent> --target .` through the
+Python 3.11+ executable validated by the installer.
 When the sentinel is `pending`, post-install runs `tes_init.py`,
 `project_context_oracle.py`, and `project_alignment_oracle.py`, then marks the
 sentinel `complete` or `needs_review`. Repeated hooks exit quickly.
@@ -89,7 +91,7 @@ Release certification gates:
 ```bash
 python3 scripts/tes_npx_oracle.py --self-test
 python3 scripts/tes_npx_oracle.py --runtime-matrix
-TES_GITHUB_NPX_REF=v0.3.95 python3 scripts/tes_npx_oracle.py --github-self-test
+TES_GITHUB_NPX_REF=v0.3.96 python3 scripts/tes_npx_oracle.py --github-self-test
 ```
 
 ## Compatibility Basis
