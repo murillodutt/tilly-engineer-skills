@@ -24,10 +24,10 @@ coherent for a new adopter and auditable for a maintainer.
 
 | Item | Value |
 |------|-------|
-| Package version | `0.3.86` |
-| Latest certified line | Wave 6 release readiness plus `/tes-open-obsidian` gate |
-| Release action status | Not taken |
-| Release readiness claim | Candidate-ready only, pending user decision |
+| Package version | `0.3.92` |
+| Latest certified line | GitHub-only npx installer, interactive screen, Node/Bun runtime matrix, first-session hooks, and fixed release docs alignment |
+| Release action status | GitHub ref release only; no npm publish or marketplace action |
+| Release readiness claim | Candidate-ready for fixed GitHub package-spec adoption |
 
 ## Stage 1: Documentation Freshness
 
@@ -75,7 +75,7 @@ Acceptance:
 
 - `docs/index.html` is a GitHub Pages-ready landing page.
 - The live landing at `https://murillodutt.github.io/tilly-engineer-skills/`
-  exposes the current package version, install prompt, user manual, agent
+  exposes the current package version, install command, user manual, agent
   manual, certified/partial/deferred boundaries, and RC1 status.
 - The landing page links to install, docs, roadmap, evidence, and safety
   boundaries.
