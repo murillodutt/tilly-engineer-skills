@@ -3,35 +3,35 @@
     "index": {
       "en": {
         "title": "Tilly Engineer Skills - Local trust layer for AI coding agents",
-        "description": "AI changed your repo. Can your team prove why? TES gives AI coding work a local service record your team can inspect.",
+        "description": "Install TES with GitHub-only npx and turn AI coding work into a local service record your team can inspect.",
         "og_description": "A service record for AI coding work: rules, context, checks, evidence, and rollback kept inside the repository."
       },
       "es": {
         "title": "Tilly Engineer Skills - Capa local de confianza para agentes de codigo",
-        "description": "La IA cambio tu repo. Tu equipo puede probar por que? TES da al trabajo de agentes un registro local inspeccionable.",
+        "description": "Instala TES con npx solo desde GitHub y convierte el trabajo de agentes en un registro local inspeccionable.",
         "og_description": "Un registro de servicio para trabajo de agentes: reglas, contexto, checks, evidencia y rollback dentro del repo."
       },
       "pt": {
         "title": "Tilly Engineer Skills - Camada local de confianca para agentes de codigo",
-        "description": "A IA alterou seu repo. Sua equipe consegue provar por que? TES da ao trabalho de agentes um registro local inspecionavel.",
+        "description": "Instale TES com npx direto do GitHub e transforme o trabalho de agentes em um registro local inspecionavel.",
         "og_description": "Um registro de servico para trabalho de agentes: regras, contexto, checks, evidencia e rollback dentro do repo."
       }
     },
     "manual": {
       "en": {
         "title": "Tilly Engineer Skills - User Manual",
-        "description": "Trilingual user manual for installing, updating, auditing, and rolling back Tilly Engineer Skills.",
-        "og_description": "Install, update, audit, and roll back TES with local evidence and clear safety boundaries."
+        "description": "Trilingual user manual for installing TES with GitHub-only npx, updating, auditing, and rolling back.",
+        "og_description": "Install TES from GitHub with npx, then update, audit, and roll back with local evidence."
       },
       "es": {
         "title": "Tilly Engineer Skills - Manual de usuario",
-        "description": "Manual trilingue para instalar, actualizar, auditar y revertir Tilly Engineer Skills.",
-        "og_description": "Instala, actualiza, audita y revierte TES con evidencia local y limites claros."
+        "description": "Manual trilingue para instalar TES con npx desde GitHub, actualizar, auditar y revertir.",
+        "og_description": "Instala TES desde GitHub con npx, luego actualiza, audita y revierte con evidencia local."
       },
       "pt": {
         "title": "Tilly Engineer Skills - Manual do usuario",
-        "description": "Manual trilingue para instalar, atualizar, auditar e reverter Tilly Engineer Skills.",
-        "og_description": "Instale, atualize, audite e reverta TES com evidencia local e limites claros."
+        "description": "Manual trilingue para instalar TES com npx direto do GitHub, atualizar, auditar e reverter.",
+        "og_description": "Instale TES do GitHub com npx, depois atualize, audite e reverta com evidencia local."
       }
     }
   },
@@ -42,7 +42,7 @@
       "contents": "Contents",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.86 · release candidate",
+      "release_meta": "v0.3.86 · GitHub npx certified",
       "manual_meta": "User manual · v0.3.86",
       "version": "v0.3.86",
       "source_note": "Generated from TDS.",
@@ -56,7 +56,7 @@
       "contents": "Indice",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.86 · release candidate",
+      "release_meta": "v0.3.86 · GitHub npx certificado",
       "manual_meta": "Manual de usuario · v0.3.86",
       "version": "v0.3.86",
       "source_note": "Generado desde TDS.",
@@ -70,7 +70,7 @@
       "contents": "Sumario",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.86 · release candidate",
+      "release_meta": "v0.3.86 · GitHub npx certificado",
       "manual_meta": "Manual do usuario · v0.3.86",
       "version": "v0.3.86",
       "source_note": "Gerado a partir do TDS.",
@@ -85,39 +85,39 @@
         "eyebrow": "A service record for AI coding work",
         "title": "Your agent changed the repo. Can your team prove *why*?",
         "lead": "TES turns AI coding sessions into inspectable local records: the rules used, context loaded, checks run, evidence kept, and rollback path stay inside the repository.",
-        "primary": "Copy the safe start prompt",
+        "primary": "Install with GitHub npx",
         "secondary": "Read the user manual",
         "facts": [
           {"label": "Service record", "value": "Retained evidence"},
           {"label": "Dashboard", "value": "Gate results"},
           {"label": "Memory", "value": "Versioned Markdown"},
-          {"label": "Routes", "value": "Codex · Claude Code · Cursor"}
+          {"label": "Install", "value": "GitHub npx"}
         ]
       },
       "es": {
         "eyebrow": "Un registro de servicio para trabajo con IA",
         "title": "Tu agente cambio el repo. Tu equipo puede probar *por que*?",
         "lead": "TES convierte sesiones de agentes en registros locales inspeccionables: reglas usadas, contexto cargado, checks ejecutados, evidencia retenida y ruta de rollback quedan dentro del repositorio.",
-        "primary": "Copiar prompt seguro",
+        "primary": "Instalar con GitHub npx",
         "secondary": "Leer el manual",
         "facts": [
           {"label": "Registro", "value": "Evidencia retenida"},
           {"label": "Panel", "value": "Resultados de gates"},
           {"label": "Memoria", "value": "Markdown versionado"},
-          {"label": "Rutas", "value": "Codex · Claude Code · Cursor"}
+          {"label": "Instalar", "value": "GitHub npx"}
         ]
       },
       "pt": {
         "eyebrow": "Um registro de servico para trabalho de IA",
         "title": "Seu agente alterou o repo. Sua equipe consegue provar *por que*?",
         "lead": "TES transforma sessoes de agentes em registros locais inspecionaveis: regras usadas, contexto carregado, checks executados, evidencia retida e rota de rollback ficam dentro do repositorio.",
-        "primary": "Copiar prompt seguro",
+        "primary": "Instalar com GitHub npx",
         "secondary": "Ler o manual",
         "facts": [
           {"label": "Registro", "value": "Evidencia retida"},
           {"label": "Painel", "value": "Resultado dos gates"},
           {"label": "Memoria", "value": "Markdown versionado"},
-          {"label": "Rotas", "value": "Codex · Claude Code · Cursor"}
+          {"label": "Instalar", "value": "GitHub npx"}
         ]
       }
     },
@@ -269,29 +269,35 @@
     "start": {
       "en": {
         "num": "04",
-        "title": "Start safely",
-        "lede": "Installation is not the dream; it is the controlled path to the dream. Start from the agent window and let Step Zero protect the repository first.",
+        "title": "GitHub npx quickstart",
+        "lede": "Installation is not the dream; it is the controlled path to the dream. Start with one GitHub package-spec command, then let the first agent session finish setup with evidence.",
         "blocks": [
-          {"type": "prompt_copy", "label": "installation mini prompt", "title": "Assisted installer prompt", "summary": "Copy once from the target repository. It loads the installer spec, protects Git state, applies TES locally, and returns certification plus rollback guidance.", "source_label": "Canonical source: `docs/install/MINI-PROMPT.md`", "copy_label": "Copy prompt", "copied_label": "Copied", "source": "docs/install/MINI-PROMPT.md", "fence": "text"},
-          {"type": "p", "text": "This is the same canonical mini prompt kept in [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), rendered here so the first safe action is one click. Current public bundles are served from `docs/dist/0.3.86/`; SHA-256 `d79e93f9aa13430859c0ae4a687c9d22ced1c998841c74c478e379ba4d476da1`."}
+          {"type": "code", "label": "fixed release", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add"},
+          {"type": "steps", "items": ["Run the command from the target repository.", "Use `--agent all --yes` for non-interactive installs.", "Open or reopen Codex, Claude Code, or Cursor; the installed first-session hook prepares `docs/agents/**`.", "Run `/tes-setup` or `/tes-init` if you want to finish setup explicitly."]},
+          {"type": "p", "text": "`#v0.3.86` is the fixed reproducible Git ref. For the moving channel, use `npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add`; `latest` is a Git branch, not an npm dist-tag."},
+          {"type": "prompt_copy", "label": "assisted fallback", "title": "Fallback: assisted installer prompt", "summary": "Use this only when you want the active agent to walk the install, update, audit, or recovery route step by step.", "source_label": "Fallback source: `docs/install/MINI-PROMPT.md`", "copy_label": "Copy fallback", "copied_label": "Copied", "source": "docs/install/MINI-PROMPT.md", "fence": "text"}
         ]
       },
       "es": {
         "num": "04",
-        "title": "Empieza con seguridad",
-        "lede": "La instalacion no es el sueno; es el camino controlado hacia el sueno. Empieza en la ventana del agente y deja que Step Zero proteja el repositorio.",
+        "title": "Quickstart con GitHub npx",
+        "lede": "La instalacion no es el sueno; es el camino controlado hacia el sueno. Empieza con un comando GitHub package-spec y deja que la primera sesion del agente termine el setup con evidencia.",
         "blocks": [
-          {"type": "prompt_copy", "label": "mini prompt de instalacion", "title": "Prompt de instalacion asistida", "summary": "Copia una vez desde el repositorio objetivo. Carga el spec del instalador, protege el estado Git, aplica TES localmente y devuelve certificacion con rollback.", "source_label": "Fuente canonica: `docs/install/MINI-PROMPT.md`", "copy_label": "Copiar prompt", "copied_label": "Copiado", "source": "docs/install/MINI-PROMPT.md", "fence": "text"},
-          {"type": "p", "text": "Es el mismo mini prompt canonico mantenido en [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), renderizado aqui para que la primera accion segura sea un clic. Current public bundles estan en `docs/dist/0.3.86/`; SHA-256 `d79e93f9aa13430859c0ae4a687c9d22ced1c998841c74c478e379ba4d476da1`."}
+          {"type": "code", "label": "release fija", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add"},
+          {"type": "steps", "items": ["Ejecuta el comando desde el repositorio objetivo.", "Usa `--agent all --yes` para instalaciones no interactivas.", "Abre o reabre Codex, Claude Code o Cursor; el hook de primera sesion prepara `docs/agents/**`.", "Ejecuta `/tes-setup` o `/tes-init` si quieres terminar el setup explicitamente."]},
+          {"type": "p", "text": "`#v0.3.86` es el Git ref fijo y reproducible. Para el canal movil, usa `npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add`; `latest` es una branch Git, no un dist-tag npm."},
+          {"type": "prompt_copy", "label": "fallback asistido", "title": "Fallback: prompt de instalacion asistida", "summary": "Usalo solo cuando quieras que el agente activo guie install, update, audit o recovery paso a paso.", "source_label": "Fuente fallback: `docs/install/MINI-PROMPT.md`", "copy_label": "Copiar fallback", "copied_label": "Copiado", "source": "docs/install/MINI-PROMPT.md", "fence": "text"}
         ]
       },
       "pt": {
         "num": "04",
-        "title": "Comece com seguranca",
-        "lede": "Instalacao nao e o sonho; e o caminho controlado ate o sonho. Comece na janela do agente e deixe o Step Zero proteger o repositorio primeiro.",
+        "title": "Quickstart com GitHub npx",
+        "lede": "Instalacao nao e o sonho; e o caminho controlado ate o sonho. Comece com um comando GitHub package-spec e deixe a primeira sessao do agente terminar o setup com evidencia.",
         "blocks": [
-          {"type": "prompt_copy", "label": "mini prompt de instalacao", "title": "Prompt de instalacao assistida", "summary": "Copie uma vez a partir do repositorio alvo. Ele carrega a spec do instalador, protege o estado Git, aplica TES localmente e devolve certificacao com rollback.", "source_label": "Fonte canonica: `docs/install/MINI-PROMPT.md`", "copy_label": "Copiar prompt", "copied_label": "Copiado", "source": "docs/install/MINI-PROMPT.md", "fence": "text"},
-          {"type": "p", "text": "E o mesmo mini prompt canonico mantido em [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), renderizado aqui para que a primeira acao segura seja um clique. Current public bundles ficam em `docs/dist/0.3.86/`; SHA-256 `d79e93f9aa13430859c0ae4a687c9d22ced1c998841c74c478e379ba4d476da1`."}
+          {"type": "code", "label": "release fixa", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add"},
+          {"type": "steps", "items": ["Rode o comando a partir do repositorio alvo.", "Use `--agent all --yes` para instalacoes nao interativas.", "Abra ou reabra Codex, Claude Code ou Cursor; o hook de primeira sessao prepara `docs/agents/**`.", "Execute `/tes-setup` ou `/tes-init` se quiser finalizar o setup explicitamente."]},
+          {"type": "p", "text": "`#v0.3.86` e o Git ref fixo e reprodutivel. Para o canal movel, use `npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add`; `latest` e uma branch Git, nao um dist-tag npm."},
+          {"type": "prompt_copy", "label": "fallback assistido", "title": "Fallback: prompt de instalacao assistida", "summary": "Use apenas quando quiser que o agente ativo conduza install, update, audit ou recovery passo a passo.", "source_label": "Fonte fallback: `docs/install/MINI-PROMPT.md`", "copy_label": "Copiar fallback", "copied_label": "Copiado", "source": "docs/install/MINI-PROMPT.md", "fence": "text"}
         ]
       }
     },
@@ -302,7 +308,7 @@
         "lede": "The landing makes the case. The manual gives the operating path: install, update, audit, report review, and rollback without blind file copying.",
         "blocks": [
           {"type": "cards", "items": [
-            {"title": "Try", "body": "Copy the safe start prompt from this page and run it inside the target repository."},
+            {"title": "Try", "body": "Run the GitHub npx command from the target repository, then open your agent to finish first-session setup."},
             {"title": "Operate", "body": "Use the manual when you need routes, states, rollback, MCP, Field Reports, or Obsidian viewing."},
             {"title": "Audit", "body": "Use the source map when a claim needs evidence, scope, or a governed document."}
           ]}
@@ -314,7 +320,7 @@
         "lede": "La landing convence. El manual da la ruta operativa: instalacion, update, auditoria, revision de reportes y rollback sin copia ciega.",
         "blocks": [
           {"type": "cards", "items": [
-            {"title": "Probar", "body": "Copia el prompt seguro de esta pagina y ejecutalo dentro del repositorio objetivo."},
+            {"title": "Probar", "body": "Ejecuta el comando GitHub npx desde el repositorio objetivo y abre tu agente para terminar el setup de primera sesion."},
             {"title": "Operar", "body": "Usa el manual para rutas, estados, rollback, MCP, Field Reports u Obsidian."},
             {"title": "Auditar", "body": "Usa el mapa de fuentes cuando un claim necesita evidencia, alcance o documento gobernado."}
           ]}
@@ -326,7 +332,7 @@
         "lede": "A landing convence. O manual entrega o caminho operacional: instalacao, update, auditoria, revisao de relatorios e rollback sem copia cega.",
         "blocks": [
           {"type": "cards", "items": [
-            {"title": "Testar", "body": "Copie o prompt seguro desta pagina e rode dentro do repositorio alvo."},
+            {"title": "Testar", "body": "Rode o comando GitHub npx a partir do repositorio alvo e abra seu agente para finalizar o setup de primeira sessao."},
             {"title": "Operar", "body": "Use o manual para rotas, estados, rollback, MCP, Field Reports ou Obsidian."},
             {"title": "Auditar", "body": "Use o mapa de fontes quando um claim precisar de evidencia, escopo ou documento governado."}
           ]}
@@ -361,10 +367,10 @@
             },
             {
               "title": "Install and safety",
-              "body": "How TES enters a real repository without blind file copying or hidden remote mutation.",
+              "body": "How TES enters a real repository through GitHub-only npx without npm registry publishing or blind file copying.",
               "items": [
-                {"label": "Installation mini prompt", "href": "install/MINI-PROMPT.md", "body": "The copy-ready adopter prompt projected into the landing start path."},
-                {"label": "Adapter installation", "href": "install/INSTALL.md", "body": "Assisted install flow, project states, certification output, and conflict policy."},
+                {"label": "GitHub npx installation", "href": "install/INSTALL.md", "body": "Fixed `#v0.3.86` command, moving `#latest` branch channel, first-session hooks, and certification output."},
+                {"label": "Assisted prompt fallback", "href": "install/MINI-PROMPT.md", "body": "The copy-ready agent prompt kept for assisted install, update, audit, and recovery flows."},
                 {"label": "Assisted installer spec", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "The raw contract the active agent follows during install, retrofit, update, or audit."},
                 {"label": "Git safety", "href": "mesh/GIT-SAFETY.md", "body": "Local baseline, backup, rollback, no push, no publish, and artifact hygiene."},
                 {"label": "Local quality recipe", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Staged-file routing, local hooks, and `commit:check` as closure gate."},
@@ -428,10 +434,10 @@
             },
             {
               "title": "Instalacion y seguridad",
-              "body": "Como TES entra en un repositorio real sin copia ciega ni mutacion remota escondida.",
+              "body": "Como TES entra en un repositorio real por npx desde GitHub, sin npm registry publish ni copia ciega.",
               "items": [
-                {"label": "Mini prompt de instalacion", "href": "install/MINI-PROMPT.md", "body": "Prompt de adopcion listo para copiar y proyectado en el inicio de la landing."},
-                {"label": "Instalacion de adapters", "href": "install/INSTALL.md", "body": "Flujo asistido, estados de proyecto, salida de certificacion y politica de conflictos."},
+                {"label": "Instalacion GitHub npx", "href": "install/INSTALL.md", "body": "Comando fijo `#v0.3.86`, canal movil branch `#latest`, hooks de primera sesion y salida de certificacion."},
+                {"label": "Prompt asistido fallback", "href": "install/MINI-PROMPT.md", "body": "Prompt de agente listo para copiar y conservado para install asistido, update, audit y recovery."},
                 {"label": "Spec del instalador asistido", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "Contrato raw que sigue el agente activo durante install, retrofit, update o audit."},
                 {"label": "Seguridad Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sin push, sin publish e higiene de artefactos."},
                 {"label": "Receta de calidad local", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Ruteo por staged files, hooks locales y `commit:check` como gate de cierre."},
@@ -495,10 +501,10 @@
             },
             {
               "title": "Instalacao e seguranca",
-              "body": "Como TES entra em um repositorio real sem copia cega nem mutacao remota escondida.",
+              "body": "Como TES entra em um repositorio real por npx direto do GitHub, sem npm registry publish nem copia cega.",
               "items": [
-                {"label": "Mini prompt de instalacao", "href": "install/MINI-PROMPT.md", "body": "Prompt de adocao pronto para copiar e projetado no inicio da landing."},
-                {"label": "Instalacao dos adapters", "href": "install/INSTALL.md", "body": "Fluxo assistido, estados do projeto, saida de certificacao e politica de conflito."},
+                {"label": "Instalacao GitHub npx", "href": "install/INSTALL.md", "body": "Comando fixo `#v0.3.86`, canal movel branch `#latest`, hooks de primeira sessao e saida de certificacao."},
+                {"label": "Prompt assistido fallback", "href": "install/MINI-PROMPT.md", "body": "Prompt de agente pronto para copiar e mantido para install assistido, update, audit e recovery."},
                 {"label": "Spec do instalador assistido", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "Contrato raw seguido pelo agente ativo durante install, retrofit, update ou audit."},
                 {"label": "Seguranca Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sem push, sem publish e higiene de artefatos."},
                 {"label": "Receita de qualidade local", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Roteamento por staged files, hooks locais e `commit:check` como gate de fechamento."},
@@ -572,28 +578,31 @@
       "en": {
         "num": "01",
         "title": "Quick install",
-        "lede": "Start in the agent window. The installer should inspect Git state, create rollback evidence, and report before you approve commit or push.",
+        "lede": "Start from the target repository with GitHub-only npx. The Node wrapper stays thin and delegates installation to the certified Python engine.",
         "blocks": [
-          {"type": "steps", "items": ["Open the target project in Codex, Claude Code, or Cursor.", "Type `/tes-init` for first setup, or `/tes-update` if TES is already installed.", "Let Step Zero finish before approving edits. It records the baseline and checks required capabilities.", "Choose a route when prompted: `current`, `codex`, `claude`, `cursor`, `all`, `mcp`, or `audit`.", "Read the final report before asking for commit or push."]},
-          {"type": "p", "text": "The installer stages bundles under `.tes/setup/<version>/`. Those files are staging cache, not project knowledge to commit."}
+          {"type": "code", "label": "fixed release", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes"},
+          {"type": "steps", "items": ["Run the command from the target repository.", "Open or reopen Codex, Claude Code, or Cursor.", "The installed first-session hook runs `/tes-init` style preparation, project context, and alignment gates.", "Read the final report before asking for commit or push."]},
+          {"type": "p", "text": "The package is `private:true`; no npm account, npm registry publish, or npm dist-tag is required. The moving channel is `#latest`, but only because GitHub has a branch named `latest`. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit."}
         ]
       },
       "es": {
         "num": "01",
         "title": "Instalacion rapida",
-        "lede": "Empieza en la ventana del agente. El instalador debe inspeccionar Git, crear evidencia de rollback y reportar antes de que apruebes commit o push.",
+        "lede": "Empieza desde el repositorio objetivo con npx solo desde GitHub. El wrapper Node es fino y delega la instalacion al motor Python certificado.",
         "blocks": [
-          {"type": "steps", "items": ["Abre el proyecto en Codex, Claude Code o Cursor.", "Escribe `/tes-init` para la primera instalacion, o `/tes-update` si TES ya esta instalado.", "Deja que Step Zero termine antes de aprobar ediciones. Registra el baseline y verifica capacidades.", "Elige ruta cuando se pida: `current`, `codex`, `claude`, `cursor`, `all`, `mcp` o `audit`.", "Lee el reporte final antes de pedir commit o push."]},
-          {"type": "p", "text": "El instalador prepara bundles en `.tes/setup/<version>/`. Esos archivos son cache de staging, no conocimiento del proyecto para commitear."}
+          {"type": "code", "label": "release fija", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes"},
+          {"type": "steps", "items": ["Ejecuta el comando desde el repositorio objetivo.", "Abre o reabre Codex, Claude Code o Cursor.", "El hook de primera sesion ejecuta preparacion estilo `/tes-init`, contexto de proyecto y gates de alineacion.", "Lee el reporte final antes de pedir commit o push."]},
+          {"type": "p", "text": "El package es `private:true`; no requiere cuenta npm, npm registry publish ni npm dist-tag. El canal movil es `#latest`, pero solo porque GitHub tiene una branch llamada `latest`. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear."}
         ]
       },
       "pt": {
         "num": "01",
         "title": "Instalacao rapida",
-        "lede": "Comece na janela do agente. O instalador deve inspecionar Git, criar evidencia de rollback e reportar antes de voce aprovar commit ou push.",
+        "lede": "Comece pelo repositorio alvo com npx direto do GitHub. O wrapper Node e fino e delega a instalacao ao motor Python certificado.",
         "blocks": [
-          {"type": "steps", "items": ["Abra o projeto alvo no Codex, Claude Code ou Cursor.", "Digite `/tes-init` para a primeira instalacao, ou `/tes-update` se TES ja estiver instalado.", "Deixe o Step Zero terminar antes de aprovar edicoes. Ele registra baseline e verifica capacidades.", "Escolha uma rota quando solicitado: `current`, `codex`, `claude`, `cursor`, `all`, `mcp` ou `audit`.", "Leia o relatorio final antes de pedir commit ou push."]},
-          {"type": "p", "text": "O instalador prepara bundles em `.tes/setup/<version>/`. Esses arquivos sao cache de staging, nao conhecimento do projeto para commit."}
+          {"type": "code", "label": "release fixa", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes"},
+          {"type": "steps", "items": ["Rode o comando a partir do repositorio alvo.", "Abra ou reabra Codex, Claude Code ou Cursor.", "O hook de primeira sessao executa preparacao estilo `/tes-init`, contexto do projeto e gates de alinhamento.", "Leia o relatorio final antes de pedir commit ou push."]},
+          {"type": "p", "text": "O pacote e `private:true`; nao exige conta npm, npm registry publish nem npm dist-tag. O canal movel e `#latest`, mas apenas porque o GitHub tem uma branch chamada `latest`. Bundles runtime sao preparados em `.tes/setup/<version>/`; esse diretorio e cache local, nao conhecimento do projeto para commit."}
         ]
       }
     },
