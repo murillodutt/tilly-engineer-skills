@@ -23,7 +23,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.100"
+VERSION = "0.3.101"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -625,8 +625,19 @@ def self_test() -> int:
                 failures.extend(commercial_output_failures("npm exec package add", exec_result.stdout))
                 if "TES is ready for this project." not in exec_result.stdout:
                     failures.append("npm exec package add must finish with a human success message")
-                if "IMPORTANT" not in exec_result.stdout or "wait" not in exec_result.stdout or "/tes-setup" not in exec_result.stdout:
-                    failures.append("npm exec package add must give clear first-session wait and /tes-setup guidance")
+                required_followup_terms = (
+                    "Agent follow-up is host-specific",
+                    "Codex: open Settings > Hooks",
+                    "Trust and enable the Session Start hook",
+                    "Claude Code: open or reopen Claude Code",
+                    "wait for the TES completion notice",
+                    "Cursor: reopen the workspace",
+                    "let first-session setup complete",
+                    "Please, run /tes-setup for the report before starting project work.",
+                )
+                for term in required_followup_terms:
+                    if term not in exec_result.stdout:
+                        failures.append(f"npm exec package add missing platform follow-up term: {term}")
             for relpath in (
                 ".tes/bin/tes_install.py",
                 ".tes/tes-install-lock.json",
@@ -1020,7 +1031,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.100 or main.",
+        help="Git ref to test, e.g. v0.3.101 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()

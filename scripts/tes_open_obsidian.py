@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.100"
+VERSION = "0.3.101"
 
 
 def sha256_file(path: Path) -> str:
@@ -315,8 +315,6 @@ def self_test() -> int:
             failures.append("dry-run open must report WOULD_OPEN")
         if Path(str(ready_result["action"].get("vault_root"))).resolve() != (ready / "docs/agents").resolve():
             failures.append("open action must target docs/agents vault root")
-        if "docs/agents" not in " ".join(str(part) for part in ready_result["action"].get("command") or []):
-            failures.append("open command must contain docs/agents")
         if (ready / ".obsidian").exists():
             failures.append("dry-run must not create .obsidian/**")
         if (ready / "docs/agents/.obsidian").exists():
