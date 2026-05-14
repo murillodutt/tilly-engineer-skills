@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.99"
+VERSION = "0.3.100"
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -206,7 +206,7 @@ def install_codex_hook(target: Path, dry_run: bool) -> dict[str, str]:
     return write_text_if_changed(path, updated, target, dry_run)
 
 
-CLAUDE_SETUP_RUNNING_MESSAGE = "TES first-session setup is running [|/-\\]. Please wait."
+CLAUDE_SETUP_RUNNING_MESSAGE = "IMPORTANT: TES setup is running. Please wait; do not start project work."
 CLAUDE_SETUP_COMPLETED_MESSAGE = "TES setup completed. Please, run /tes-setup for the report."
 
 
