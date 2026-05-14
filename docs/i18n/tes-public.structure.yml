@@ -21,7 +21,7 @@
   "evidence": {
     "final_report": "evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md",
     "bundle_index": "dist/0.3.95/index.json",
-    "bundle_sha256": "5eb0d37da25a0f2e352b61b84a5876236b6acea9e2a39236d73af23efc95055d"
+    "bundle_sha256": "e866465131aeb0ea9978d2c6df8043cfd27bd671f7d5fa6c2fedd9cdf350beba"
   },
   "pages": {
     "index": {
