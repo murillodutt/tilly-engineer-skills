@@ -25,22 +25,27 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 ## Commercial Quickstart
 
 ```bash
-npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.88 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.89 tilly-engineer-skills add
 ```
+
+The interactive installer asks for the target project, agent hooks, install
+mode, and final confirmation before writing files. `--loglevel=error` keeps
+package-runner warnings out of the first-run screen while preserving real
+command failures.
 
 For non-interactive installs:
 
 ```bash
-npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.88 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.89 tilly-engineer-skills add --agent all --yes
 ```
 
 For the moving GitHub branch:
 
 ```bash
-npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.88` is the fixed release ref. `#latest` follows the repository's moving
+`#v0.3.89` is the fixed release ref. `#latest` follows the repository's moving
 GitHub branch. Release operators must verify refs with `git ls-remote` before
 certification.
 
@@ -59,7 +64,7 @@ Release certification gates:
 
 ```bash
 python3 scripts/tes_npx_oracle.py --self-test
-TES_GITHUB_NPX_REF=v0.3.88 python3 scripts/tes_npx_oracle.py --github-self-test
+TES_GITHUB_NPX_REF=v0.3.89 python3 scripts/tes_npx_oracle.py --github-self-test
 ```
 
 ## Compatibility Basis
