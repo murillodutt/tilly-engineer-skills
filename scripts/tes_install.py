@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.93"
+VERSION = "0.3.94"
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
 POSTINSTALL_RUN_ROOT = Path(".tes/postinstall-runs")
@@ -615,7 +615,9 @@ def claude_hook_output(result: dict[str, Any], hook_input: dict[str, Any]) -> di
             "additionalContext": claude_postinstall_context(result, hook_input),
         }
     }
-    if result.get("status") not in {"PASS", "SKIP", "DRY-RUN"}:
+    if result.get("status") == "PASS":
+        output["systemMessage"] = "TES first-session setup completed. Run /tes-setup for the report."
+    elif result.get("status") not in {"SKIP", "DRY-RUN"}:
         output["systemMessage"] = "TES first-session setup needs review. Run /tes-init for recovery."
     return output
 
@@ -832,6 +834,62 @@ def self_test() -> int:
                 failures.append("Claude hook output must pass concise additionalContext")
             if isinstance(context, str) and '"commands"' in context:
                 failures.append("Claude hook additionalContext must not leak raw postinstall JSON")
+        if "systemMessage" in claude_hook_payload:
+            failures.append("Claude idempotent hook retry must stay quiet after postinstall is complete")
+
+        with tempfile.TemporaryDirectory(prefix="tes-thin-install-claude-") as claude_tempdir:
+            claude_target = Path(claude_tempdir)
+            (claude_target / "README.md").write_text("# Claude Hook Fixture\n", encoding="utf-8")
+            (claude_target / "package.json").write_text('{"name":"tes-claude-hook-fixture"}\n', encoding="utf-8")
+            claude_install = subprocess.run(
+                [
+                    sys.executable,
+                    str(Path(__file__).resolve()),
+                    "install",
+                    "--target",
+                    str(claude_target),
+                    "--agent",
+                    "claude",
+                    "--yes",
+                ],
+                cwd=source_root(),
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if claude_install.returncode != 0:
+                failures.append("Claude-only install failed")
+                failures.extend(claude_install.stdout.splitlines())
+                failures.extend(claude_install.stderr.splitlines())
+            claude_first_hook = subprocess.run(
+                [
+                    sys.executable,
+                    str(claude_target / ".tes/bin/tes_install.py"),
+                    "hook",
+                    "--agent",
+                    "claude",
+                    "--target",
+                    str(claude_target),
+                ],
+                cwd=claude_target,
+                input=json.dumps({"hook_event_name": "SessionStart", "source": "startup", "cwd": str(claude_target)}),
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if claude_first_hook.returncode != 0:
+                failures.append("Claude first SessionStart hook failed")
+                failures.extend(claude_first_hook.stdout.splitlines())
+                failures.extend(claude_first_hook.stderr.splitlines())
+            try:
+                claude_first_payload = json.loads(claude_first_hook.stdout)
+            except json.JSONDecodeError:
+                claude_first_payload = {}
+                failures.append("Claude first SessionStart hook must return structured JSON")
+            if claude_first_payload.get("systemMessage") != (
+                "TES first-session setup completed. Run /tes-setup for the report."
+            ):
+                failures.append("Claude first SessionStart PASS must show a concise visible completion message")
 
     with tempfile.TemporaryDirectory(prefix="tes-thin-install-dry-") as tempdir:
         target = Path(tempdir)

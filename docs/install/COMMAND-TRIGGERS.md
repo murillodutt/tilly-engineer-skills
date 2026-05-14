@@ -94,7 +94,7 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-local alias for the same oracles |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.93 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.94 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
@@ -123,7 +123,8 @@ once. Repeated hook executions must be idempotent and fast after the sentinel is
 `complete`.
 
 Claude Code `SessionStart` hooks pass this result as hook context rather than a
-normal chat message. If `.tes/postinstall.json` is already `complete`, a plain
+normal chat message. TES emits a concise visible completion notice only on the
+first successful run. If `.tes/postinstall.json` is already `complete`, a plain
 `/tes-init` or `/tes-setup` should summarize the sentinel and `last_run` instead
 of rerunning Project-Start, unless the user explicitly asks to recertify/update
 or the planner reports drift.

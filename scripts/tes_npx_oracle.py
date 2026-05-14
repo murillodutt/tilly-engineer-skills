@@ -23,7 +23,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.93"
+VERSION = "0.3.94"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -610,6 +610,58 @@ def self_test() -> int:
                         failures.append("installed Claude hook output must provide TES additionalContext")
                     if isinstance(context, str) and '"commands"' in context:
                         failures.append("installed Claude hook context must not leak raw command JSON")
+                if "systemMessage" in claude_payload:
+                    failures.append("installed Claude idempotent retry must stay quiet after postinstall is complete")
+
+            first_claude_target = fixture(work, "claude-first-hook-target")
+            first_claude_install = run(
+                [
+                    "npm",
+                    "exec",
+                    "--yes",
+                    "--package",
+                    str(tarball),
+                    "--",
+                    BIN_NAME,
+                    "add",
+                    "--target",
+                    str(first_claude_target),
+                    "--agent",
+                    "claude",
+                    "--yes",
+                ],
+                work,
+                timeout=300.0,
+            )
+            if first_claude_install.returncode != 0:
+                failures.append("npm exec Claude-only package add failed")
+                failures.extend(first_claude_install.stdout.splitlines())
+                failures.extend(first_claude_install.stderr.splitlines())
+            first_claude_hook = run(
+                [
+                    sys.executable,
+                    str(first_claude_target / ".tes/bin/tes_install.py"),
+                    "hook",
+                    "--agent",
+                    "claude",
+                    "--target",
+                    str(first_claude_target),
+                ],
+                work,
+                timeout=300.0,
+            )
+            if first_claude_hook.returncode != 0:
+                failures.append("installed Claude first-session hook failed")
+                failures.extend(first_claude_hook.stdout.splitlines())
+                failures.extend(first_claude_hook.stderr.splitlines())
+            else:
+                try:
+                    first_payload = json.loads(first_claude_hook.stdout)
+                except json.JSONDecodeError:
+                    first_payload = {}
+                    failures.append("installed Claude first-session hook must emit structured hook JSON")
+                if first_payload.get("systemMessage") != "TES first-session setup completed. Run /tes-setup for the report.":
+                    failures.append("installed Claude first-session PASS must emit visible completion systemMessage")
 
     result = {
         "version": VERSION,
@@ -786,7 +838,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.93 or main.",
+        help="Git ref to test, e.g. v0.3.94 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()
