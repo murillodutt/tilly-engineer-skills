@@ -65,6 +65,29 @@ learning that survives canary replay and maintainer gates.
 
 </real_project_learning_standard>
 
+<target_source_boundary>
+
+Installed projects such as <project-A>, <project-b>-private, or canary clones are evidence
+targets, not the source of truth for TES behavior.
+
+When a target-project run exposes a TES skill, installer, hook, oracle, or docs
+bug:
+
+1. Classify whether the finding is portable TES product evidence or a
+   target-owned issue.
+2. If portable, patch the TES package source here: `src/**`, `scripts/**`,
+   `docs/**`, and the correlated release surfaces.
+3. Do not fix only the installed mirrors inside the target project, such as
+   `.agents/skills/**`, `.claude/skills/**`, `skills/**`, or
+   `plugins/tilly-engineer-skills/**`.
+4. Use the target again only to certify that the packaged TES fix installs and
+   behaves correctly.
+5. Do not generalize one target project's npm, pnpm, bun, or gate scripts as
+   universal TES commands. Delivered skills must distinguish installed-target
+   gates from package-source gates before certifying anything.
+
+</target_source_boundary>
+
 <routing>
 
 | Need | Source |
