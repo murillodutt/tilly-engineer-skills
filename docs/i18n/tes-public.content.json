@@ -243,7 +243,7 @@
         "title": "Proof without theater",
         "lede": "A good seller shows the inspection report. TES keeps claims narrow enough to be trusted and explicit enough to be checked.",
         "blocks": [
-          {"type": "list", "items": ["Retained v1 evidence shows up to **6x baseline disciplined behavior in scoped Claude CLI evals**.", "Codex has scoped retained behavior evidence for the named run, backend, model, and prompt contract.", "Cursor is structural/contract parity only. Cursor behavior certification is not claimed.", "The repository currently keeps retained evidence reports under `docs/evidence/reports/**`; the page avoids fixed report counts that drift."]},
+          {"type": "list", "items": ["Retained v1 evidence shows up to **6x baseline disciplined behavior in scoped Claude CLI evals**.", "Codex has scoped retained behavior evidence for the named run, backend, model, and instruction contract.", "Cursor is structural/contract parity only. Cursor behavior certification is not claimed.", "The repository currently keeps retained evidence reports under `docs/evidence/reports/**`; the page avoids fixed report counts that drift."]},
           {"type": "note", "text": "No universal model behavior, universal adapter parity, guaranteed ROI, risk-free autonomy, marketplace availability, live UI, or write-capable MCP is claimed."}
         ]
       },
@@ -252,7 +252,7 @@
         "title": "Prueba sin teatro",
         "lede": "Un buen vendedor muestra el reporte de inspeccion. TES mantiene claims estrechos para que puedan confiarse y revisarse.",
         "blocks": [
-          {"type": "list", "items": ["La evidencia v1 retenida muestra hasta **6x baseline disciplined behavior en evaluaciones Claude CLI acotadas**.", "Codex tiene evidencia retenida acotada para el run, backend, modelo y contrato de prompt nombrados.", "Cursor es solo paridad estructural/contractual. No se afirma certificacion de comportamiento de Cursor.", "El repositorio conserva reportes bajo `docs/evidence/reports/**`; la pagina evita conteos fijos que se desactualizan."]},
+          {"type": "list", "items": ["La evidencia v1 retenida muestra hasta **6x baseline disciplined behavior en evaluaciones Claude CLI acotadas**.", "Codex tiene evidencia retenida acotada para el run, backend, modelo y contrato de instruccion nombrados.", "Cursor es solo paridad estructural/contractual. No se afirma certificacion de comportamiento de Cursor.", "El repositorio conserva reportes bajo `docs/evidence/reports/**`; la pagina evita conteos fijos que se desactualizan."]},
           {"type": "note", "text": "No se afirma comportamiento universal de modelos, paridad universal entre adapters, ROI garantizado, autonomia sin riesgo, marketplace, live UI o MCP con escritura."}
         ]
       },
@@ -261,7 +261,7 @@
         "title": "Prova sem teatro",
         "lede": "Um bom vendedor mostra o relatorio de inspecao. TES mantem claims estreitos o bastante para serem confiaveis e verificaveis.",
         "blocks": [
-          {"type": "list", "items": ["A evidencia v1 retida mostra ate **6x baseline disciplined behavior em evals Claude CLI escopados**.", "Codex tem evidencia comportamental retida e escopada para o run, backend, modelo e contrato de prompt nomeados.", "Cursor e apenas paridade estrutural/contratual. Certificacao de comportamento do Cursor nao e afirmada.", "O repositorio mantem relatorios retidos em `docs/evidence/reports/**`; a pagina evita contagens fixas que derivam."]},
+          {"type": "list", "items": ["A evidencia v1 retida mostra ate **6x baseline disciplined behavior em evals Claude CLI escopados**.", "Codex tem evidencia comportamental retida e escopada para o run, backend, modelo e contrato de instrucao nomeados.", "Cursor e apenas paridade estrutural/contratual. Certificacao de comportamento do Cursor nao e afirmada.", "O repositorio mantem relatorios retidos em `docs/evidence/reports/**`; a pagina evita contagens fixas que derivam."]},
           {"type": "note", "text": "Nao ha claim de comportamento universal de modelos, paridade universal entre adapters, ROI garantido, autonomia sem risco, marketplace, live UI ou MCP com escrita."}
         ]
       }
@@ -273,9 +273,10 @@
         "lede": "Installation is not the dream; it is the controlled path to the dream. Start with one GitHub package-spec command, then let the first agent session finish setup with evidence.",
         "blocks": [
           {"type": "code", "label": "fixed release", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add"},
-          {"type": "steps", "items": ["Run the command from the target repository.", "Use `--agent all --yes` for non-interactive installs.", "Open or reopen Codex, Claude Code, or Cursor; the installed first-session hook prepares `docs/agents/**`.", "Run `/tes-setup` or `/tes-init` if you want to finish setup explicitly."]},
+          {"type": "code", "label": "non-interactive", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes"},
+          {"type": "steps", "items": ["Run from the target repository.", "Use `--agent all --yes` when you want all Codex, Claude Code, and Cursor hooks prepared non-interactively.", "Open or reopen the agent; the first-session hook prepares `docs/agents/**` and runs local context/alignment gates.", "Read the final report before approving commit, push, or rollout."]},
           {"type": "p", "text": "`#v0.3.86` is the fixed reproducible Git ref. For the moving channel, use `npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add`; `latest` is a Git branch, not an npm dist-tag."},
-          {"type": "prompt_copy", "label": "assisted fallback", "title": "Fallback: assisted installer prompt", "summary": "Use this only when you want the active agent to walk the install, update, audit, or recovery route step by step.", "source_label": "Fallback source: `docs/install/MINI-PROMPT.md`", "copy_label": "Copy fallback", "copied_label": "Copied", "source": "docs/install/MINI-PROMPT.md", "fence": "text"}
+          {"type": "p", "text": "No npm account, npm publish, or npm registry package is required. The Node CLI is a thin wrapper around the certified Python installer."}
         ]
       },
       "es": {
@@ -284,9 +285,10 @@
         "lede": "La instalacion no es el sueno; es el camino controlado hacia el sueno. Empieza con un comando GitHub package-spec y deja que la primera sesion del agente termine el setup con evidencia.",
         "blocks": [
           {"type": "code", "label": "release fija", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add"},
-          {"type": "steps", "items": ["Ejecuta el comando desde el repositorio objetivo.", "Usa `--agent all --yes` para instalaciones no interactivas.", "Abre o reabre Codex, Claude Code o Cursor; el hook de primera sesion prepara `docs/agents/**`.", "Ejecuta `/tes-setup` o `/tes-init` si quieres terminar el setup explicitamente."]},
+          {"type": "code", "label": "no interactivo", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes"},
+          {"type": "steps", "items": ["Ejecuta desde el repositorio objetivo.", "Usa `--agent all --yes` cuando quieras preparar hooks para Codex, Claude Code y Cursor de forma no interactiva.", "Abre o reabre el agente; el hook de primera sesion prepara `docs/agents/**` y ejecuta gates locales de contexto/alineacion.", "Lee el reporte final antes de aprobar commit, push o rollout."]},
           {"type": "p", "text": "`#v0.3.86` es el Git ref fijo y reproducible. Para el canal movil, usa `npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add`; `latest` es una branch Git, no un dist-tag npm."},
-          {"type": "prompt_copy", "label": "fallback asistido", "title": "Fallback: prompt de instalacion asistida", "summary": "Usalo solo cuando quieras que el agente activo guie install, update, audit o recovery paso a paso.", "source_label": "Fuente fallback: `docs/install/MINI-PROMPT.md`", "copy_label": "Copiar fallback", "copied_label": "Copiado", "source": "docs/install/MINI-PROMPT.md", "fence": "text"}
+          {"type": "p", "text": "No se requiere cuenta npm, npm publish ni paquete en npm registry. El CLI Node es un wrapper fino sobre el instalador Python certificado."}
         ]
       },
       "pt": {
@@ -295,9 +297,10 @@
         "lede": "Instalacao nao e o sonho; e o caminho controlado ate o sonho. Comece com um comando GitHub package-spec e deixe a primeira sessao do agente terminar o setup com evidencia.",
         "blocks": [
           {"type": "code", "label": "release fixa", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add"},
-          {"type": "steps", "items": ["Rode o comando a partir do repositorio alvo.", "Use `--agent all --yes` para instalacoes nao interativas.", "Abra ou reabra Codex, Claude Code ou Cursor; o hook de primeira sessao prepara `docs/agents/**`.", "Execute `/tes-setup` ou `/tes-init` se quiser finalizar o setup explicitamente."]},
+          {"type": "code", "label": "nao interativo", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes"},
+          {"type": "steps", "items": ["Rode a partir do repositorio alvo.", "Use `--agent all --yes` quando quiser preparar hooks para Codex, Claude Code e Cursor de forma nao interativa.", "Abra ou reabra o agente; o hook de primeira sessao prepara `docs/agents/**` e executa gates locais de contexto/alinhamento.", "Leia o relatorio final antes de aprovar commit, push ou rollout."]},
           {"type": "p", "text": "`#v0.3.86` e o Git ref fixo e reprodutivel. Para o canal movel, use `npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add`; `latest` e uma branch Git, nao um dist-tag npm."},
-          {"type": "prompt_copy", "label": "fallback assistido", "title": "Fallback: prompt de instalacao assistida", "summary": "Use apenas quando quiser que o agente ativo conduza install, update, audit ou recovery passo a passo.", "source_label": "Fonte fallback: `docs/install/MINI-PROMPT.md`", "copy_label": "Copiar fallback", "copied_label": "Copiado", "source": "docs/install/MINI-PROMPT.md", "fence": "text"}
+          {"type": "p", "text": "Nao exige conta npm, npm publish nem pacote no npm registry. O CLI Node e um wrapper fino sobre o instalador Python certificado."}
         ]
       }
     },
@@ -348,7 +351,7 @@
           {"type": "source_map", "groups": [
             {
               "title": "Method",
-              "body": "Why agent rules become measurable engineering behavior instead of prompt folklore.",
+              "body": "Why agent rules become measurable engineering behavior instead of rule folklore.",
               "items": [
                 {"label": "Engineering principles", "href": "mesh/PRINCIPLES.md", "body": "Four gates, evidence-converged context, and `E = A * S * C * V`."},
                 {"label": "Context mesh method", "href": "mesh/CONTEXT-MESH-METHOD.md", "body": "Narrative, instruction, execution, verification, and return layers."},
@@ -370,8 +373,7 @@
               "body": "How TES enters a real repository through GitHub-only npx without npm registry publishing or blind file copying.",
               "items": [
                 {"label": "GitHub npx installation", "href": "install/INSTALL.md", "body": "Fixed `#v0.3.86` command, moving `#latest` branch channel, first-session hooks, and certification output."},
-                {"label": "Assisted prompt fallback", "href": "install/MINI-PROMPT.md", "body": "The copy-ready agent prompt kept for assisted install, update, audit, and recovery flows."},
-                {"label": "Assisted installer spec", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "The raw contract the active agent follows during install, retrofit, update, or audit."},
+                {"label": "Command triggers", "href": "install/COMMAND-TRIGGERS.md", "body": "Post-install `/tes-*` vocabulary, aliases, routers, and write behavior."},
                 {"label": "Git safety", "href": "mesh/GIT-SAFETY.md", "body": "Local baseline, backup, rollback, no push, no publish, and artifact hygiene."},
                 {"label": "Local quality recipe", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Staged-file routing, local hooks, and `commit:check` as closure gate."},
                 {"label": "Public bundle manifest", "href": "dist/0.3.86/index.json", "body": "Versioned ZIP, source commit, SHA-256, and GitHub Pages distribution URLs.", "meta": "artifact"}
@@ -415,7 +417,7 @@
           {"type": "source_map", "groups": [
             {
               "title": "Metodo",
-              "body": "Por que las reglas de agentes se vuelven comportamiento medible, no folklore de prompts.",
+              "body": "Por que las reglas de agentes se vuelven comportamiento medible, no folklore de reglas.",
               "items": [
                 {"label": "Principios de ingenieria", "href": "mesh/PRINCIPLES.md", "body": "Cuatro gates, contexto convergido por evidencia y `E = A * S * C * V`."},
                 {"label": "Metodo context mesh", "href": "mesh/CONTEXT-MESH-METHOD.md", "body": "Capas de narrativa, instruccion, ejecucion, verificacion y retorno."},
@@ -437,8 +439,7 @@
               "body": "Como TES entra en un repositorio real por npx desde GitHub, sin npm registry publish ni copia ciega.",
               "items": [
                 {"label": "Instalacion GitHub npx", "href": "install/INSTALL.md", "body": "Comando fijo `#v0.3.86`, canal movil branch `#latest`, hooks de primera sesion y salida de certificacion."},
-                {"label": "Prompt asistido fallback", "href": "install/MINI-PROMPT.md", "body": "Prompt de agente listo para copiar y conservado para install asistido, update, audit y recovery."},
-                {"label": "Spec del instalador asistido", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "Contrato raw que sigue el agente activo durante install, retrofit, update o audit."},
+                {"label": "Gatillos de comando", "href": "install/COMMAND-TRIGGERS.md", "body": "Vocabulario post-install `/tes-*`, aliases, routers y comportamiento de escritura."},
                 {"label": "Seguridad Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sin push, sin publish e higiene de artefactos."},
                 {"label": "Receta de calidad local", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Ruteo por staged files, hooks locales y `commit:check` como gate de cierre."},
                 {"label": "Manifest del bundle publico", "href": "dist/0.3.86/index.json", "body": "ZIP versionado, source commit, SHA-256 y URLs de distribucion GitHub Pages.", "meta": "artefacto"}
@@ -482,7 +483,7 @@
           {"type": "source_map", "groups": [
             {
               "title": "Metodo",
-              "body": "Por que regras de agentes viram comportamento de engenharia mensuravel, nao folklore de prompt.",
+              "body": "Por que regras de agentes viram comportamento de engenharia mensuravel, nao folklore de regras.",
               "items": [
                 {"label": "Principios de engenharia", "href": "mesh/PRINCIPLES.md", "body": "Quatro gates, contexto convergido por evidencia e `E = A * S * C * V`."},
                 {"label": "Metodo context mesh", "href": "mesh/CONTEXT-MESH-METHOD.md", "body": "Camadas de narrativa, instrucao, execucao, verificacao e retorno."},
@@ -504,8 +505,7 @@
               "body": "Como TES entra em um repositorio real por npx direto do GitHub, sem npm registry publish nem copia cega.",
               "items": [
                 {"label": "Instalacao GitHub npx", "href": "install/INSTALL.md", "body": "Comando fixo `#v0.3.86`, canal movel branch `#latest`, hooks de primeira sessao e saida de certificacao."},
-                {"label": "Prompt assistido fallback", "href": "install/MINI-PROMPT.md", "body": "Prompt de agente pronto para copiar e mantido para install assistido, update, audit e recovery."},
-                {"label": "Spec do instalador assistido", "href": "install/ASSISTED-CONTEXT-INSTALLER.prompt.md", "body": "Contrato raw seguido pelo agente ativo durante install, retrofit, update ou audit."},
+                {"label": "Gatilhos de comando", "href": "install/COMMAND-TRIGGERS.md", "body": "Vocabulario post-install `/tes-*`, aliases, routers e comportamento de escrita."},
                 {"label": "Seguranca Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sem push, sem publish e higiene de artefatos."},
                 {"label": "Receita de qualidade local", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Roteamento por staged files, hooks locais e `commit:check` como gate de fechamento."},
                 {"label": "Manifest do bundle publico", "href": "dist/0.3.86/index.json", "body": "ZIP versionado, source commit, SHA-256 e URLs de distribuicao GitHub Pages.", "meta": "artefato"}
@@ -548,7 +548,7 @@
         "title": "Overview",
         "lede": "Tilly Engineer Skills installs a governance mesh for coding agents. Codex, Claude Code, and Cursor route through adapter-specific surfaces while project truth lives in versioned Markdown.",
         "blocks": [
-          {"type": "aside", "title": "How you use it", "text": "The normal user interface is an intent typed in the agent window, not a shell command. Type `/tes-init` to install or `/tes-update` to update; the active agent selects and runs the smallest safe oracle."},
+          {"type": "aside", "title": "How you start", "text": "Install from the target repository with GitHub-only npx. After TES is present, use `/tes-setup`, `/tes-init`, or `/tes-update` in the agent window to finish setup, recertify, or update."},
           {"type": "aside", "title": "What stays yours", "text": "Existing `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, and Cursor rules are first backed up in `.tes/bk/<timestamp>/`. TES then installs a clean runtime and recovers useful local semantics into `docs/agents/**`."},
           {"type": "aside", "title": "Operator contract", "text": "This manual is for users installing, auditing, and rolling back TES. The agent-side contract lives in `docs/install/AGENT-MANUAL.md`."}
         ]
@@ -558,7 +558,7 @@
         "title": "Vista general",
         "lede": "Tilly Engineer Skills instala un mesh de gobernanza para agentes de codigo. Codex, Claude Code y Cursor pasan por superficies especificas mientras la verdad del proyecto vive en Markdown versionado.",
         "blocks": [
-          {"type": "aside", "title": "Como se usa", "text": "La interfaz normal es una intencion escrita en la ventana del agente, no un comando de shell. Usa `/tes-init` para instalar o `/tes-update` para actualizar; el agente activo elige y ejecuta el menor oraculo seguro."},
+          {"type": "aside", "title": "Como empezar", "text": "Instala desde el repositorio objetivo con npx directo de GitHub. Despues de que TES exista, usa `/tes-setup`, `/tes-init` o `/tes-update` en la ventana del agente para terminar setup, recertificar o actualizar."},
           {"type": "aside", "title": "Lo que sigue siendo tuyo", "text": "Los archivos `AGENTS.md`, `CLAUDE.md`, `CURSOR.md` y reglas de Cursor existentes se respaldan primero en `.tes/bk/<timestamp>/`. TES instala un runtime limpio y recupera semantica local util en `docs/agents/**`."},
           {"type": "aside", "title": "Contrato del operador", "text": "Este manual es para usuarios que instalan, auditan y revierten TES. El contrato del agente vive en `docs/install/AGENT-MANUAL.md`."}
         ]
@@ -568,7 +568,7 @@
         "title": "Visao geral",
         "lede": "Tilly Engineer Skills instala uma malha de governanca para agentes de codigo. Codex, Claude Code e Cursor passam por superficies especificas enquanto a verdade do projeto vive em Markdown versionado.",
         "blocks": [
-          {"type": "aside", "title": "Como voce usa", "text": "A interface normal e uma intencao digitada na janela do agente, nao um comando de shell. Use `/tes-init` para instalar ou `/tes-update` para atualizar; o agente ativo escolhe e executa o menor oraculo seguro."},
+          {"type": "aside", "title": "Como comecar", "text": "Instale a partir do repositorio alvo com npx direto do GitHub. Depois que o TES estiver presente, use `/tes-setup`, `/tes-init` ou `/tes-update` na janela do agente para finalizar setup, recertificar ou atualizar."},
           {"type": "aside", "title": "O que continua sendo seu", "text": "Arquivos existentes como `AGENTS.md`, `CLAUDE.md`, `CURSOR.md` e regras do Cursor sao primeiro salvos em `.tes/bk/<timestamp>/`. TES instala um runtime limpo e recupera semântica útil em `docs/agents/**`."},
           {"type": "aside", "title": "Contrato do operador", "text": "Este manual e para usuarios que instalam, auditam e revertem TES. O contrato do agente vive em `docs/install/AGENT-MANUAL.md`."}
         ]
@@ -581,8 +581,10 @@
         "lede": "Start from the target repository with GitHub-only npx. The Node wrapper stays thin and delegates installation to the certified Python engine.",
         "blocks": [
           {"type": "code", "label": "fixed release", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes"},
-          {"type": "steps", "items": ["Run the command from the target repository.", "Open or reopen Codex, Claude Code, or Cursor.", "The installed first-session hook runs `/tes-init` style preparation, project context, and alignment gates.", "Read the final report before asking for commit or push."]},
-          {"type": "p", "text": "The package is `private:true`; no npm account, npm registry publish, or npm dist-tag is required. The moving channel is `#latest`, but only because GitHub has a branch named `latest`. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit."}
+          {"type": "code", "label": "moving branch", "text": "npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes"},
+          {"type": "steps", "items": ["Run the command from the target repository.", "Use `#v0.3.86` for reproducible installs and `#latest` only when you want the moving Git branch.", "Open or reopen Codex, Claude Code, or Cursor.", "The first-session hook runs setup, project context, and alignment gates once; repeated hooks exit quickly.", "Read the final report before asking for commit or push."]},
+          {"type": "p", "text": "Useful options: `--target <path>` installs outside the current directory; `--agent codex|claude|cursor|all` chooses hooks; `--dry-run` prints planned writes; `--mode preserve` is the default."},
+          {"type": "p", "text": "The package is `private:true`; no npm account, npm registry publish, or npm dist-tag is required. `#latest` is a GitHub branch, not the npm `latest` dist-tag. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit."}
         ]
       },
       "es": {
@@ -591,8 +593,10 @@
         "lede": "Empieza desde el repositorio objetivo con npx solo desde GitHub. El wrapper Node es fino y delega la instalacion al motor Python certificado.",
         "blocks": [
           {"type": "code", "label": "release fija", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes"},
-          {"type": "steps", "items": ["Ejecuta el comando desde el repositorio objetivo.", "Abre o reabre Codex, Claude Code o Cursor.", "El hook de primera sesion ejecuta preparacion estilo `/tes-init`, contexto de proyecto y gates de alineacion.", "Lee el reporte final antes de pedir commit o push."]},
-          {"type": "p", "text": "El package es `private:true`; no requiere cuenta npm, npm registry publish ni npm dist-tag. El canal movil es `#latest`, pero solo porque GitHub tiene una branch llamada `latest`. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear."}
+          {"type": "code", "label": "branch movil", "text": "npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes"},
+          {"type": "steps", "items": ["Ejecuta el comando desde el repositorio objetivo.", "Usa `#v0.3.86` para instalaciones reproducibles y `#latest` solo cuando quieras la branch Git movil.", "Abre o reabre Codex, Claude Code o Cursor.", "El hook de primera sesion ejecuta setup, contexto de proyecto y gates de alineacion una vez; los hooks repetidos salen rapido.", "Lee el reporte final antes de pedir commit o push."]},
+          {"type": "p", "text": "Opciones utiles: `--target <path>` instala fuera del directorio actual; `--agent codex|claude|cursor|all` elige hooks; `--dry-run` muestra escrituras planificadas; `--mode preserve` es el default."},
+          {"type": "p", "text": "El package es `private:true`; no requiere cuenta npm, npm registry publish ni npm dist-tag. `#latest` es una branch GitHub, no el dist-tag npm `latest`. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear."}
         ]
       },
       "pt": {
@@ -601,8 +605,10 @@
         "lede": "Comece pelo repositorio alvo com npx direto do GitHub. O wrapper Node e fino e delega a instalacao ao motor Python certificado.",
         "blocks": [
           {"type": "code", "label": "release fixa", "text": "npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes"},
-          {"type": "steps", "items": ["Rode o comando a partir do repositorio alvo.", "Abra ou reabra Codex, Claude Code ou Cursor.", "O hook de primeira sessao executa preparacao estilo `/tes-init`, contexto do projeto e gates de alinhamento.", "Leia o relatorio final antes de pedir commit ou push."]},
-          {"type": "p", "text": "O pacote e `private:true`; nao exige conta npm, npm registry publish nem npm dist-tag. O canal movel e `#latest`, mas apenas porque o GitHub tem uma branch chamada `latest`. Bundles runtime sao preparados em `.tes/setup/<version>/`; esse diretorio e cache local, nao conhecimento do projeto para commit."}
+          {"type": "code", "label": "branch movel", "text": "npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes"},
+          {"type": "steps", "items": ["Rode o comando a partir do repositorio alvo.", "Use `#v0.3.86` para instalacoes reprodutiveis e `#latest` apenas quando quiser a branch Git movel.", "Abra ou reabra Codex, Claude Code ou Cursor.", "O hook de primeira sessao executa setup, contexto do projeto e gates de alinhamento uma vez; hooks repetidos saem rapido.", "Leia o relatorio final antes de pedir commit ou push."]},
+          {"type": "p", "text": "Opcoes uteis: `--target <path>` instala fora do diretorio atual; `--agent codex|claude|cursor|all` escolhe hooks; `--dry-run` mostra escritas planejadas; `--mode preserve` e o default."},
+          {"type": "p", "text": "O pacote e `private:true`; nao exige conta npm, npm registry publish nem npm dist-tag. `#latest` e uma branch GitHub, nao o dist-tag npm `latest`. Bundles runtime sao preparados em `.tes/setup/<version>/`; esse diretorio e cache local, nao conhecimento do projeto para commit."}
         ]
       }
     },
@@ -759,7 +765,7 @@
         "title": "Safety boundaries",
         "lede": "TES is local and inspectable by default. It refuses broad release, remote, and marketplace behavior unless explicitly authorized.",
         "blocks": [
-          {"type": "list", "items": ["No push, publish, tag, amend, remote change, dependency install, or marketplace action by default.", "No `.obsidian/**` writes. Obsidian is optional viewing over Markdown.", "No code, diffs, prompts, file contents, secrets, personal data, absolute paths, raw stack traces, branch names, or remote URLs in Field Reports.", "The Root context gate uses `root_context.py` to inspect `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/**`, and `docs/agents/**` before overwrite or recovery."]},
+          {"type": "list", "items": ["No push, publish, tag, amend, remote change, dependency install, or marketplace action by default.", "No `.obsidian/**` writes. Obsidian is optional viewing over Markdown.", "No code, diffs, agent inputs, file contents, secrets, personal data, absolute paths, raw stack traces, branch names, or remote URLs in Field Reports.", "The Root context gate uses `root_context.py` to inspect `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/**`, and `docs/agents/**` before overwrite or recovery."]},
           {"type": "p", "text": "Update checks compare installed and cloud versions, helper contract parity, `runtime_trigger_status`, `recommended_route`, `recommended_update_scope`, `legacy_retirement_required`, and `self_test_mode`. A clean no-op reports `update_available=False`, `recommended_update_scope=none`, `helper_contract_status=PASS`, and a final Field Reports `tes_update` event when reporting is enabled. `STALE_HELPERS` blocks adapter-config until helper repair is complete."}
         ]
       },
@@ -768,7 +774,7 @@
         "title": "Limites de seguridad",
         "lede": "TES es local e inspeccionable por defecto. Rechaza release, remotes y marketplace salvo autorizacion explicita.",
         "blocks": [
-          {"type": "list", "items": ["Sin push, publish, tag, amend, cambio de remote, instalacion de dependencias o marketplace por defecto.", "Sin escrituras en `.obsidian/**`. Obsidian es vista opcional sobre Markdown.", "Sin codigo, diffs, prompts, contenido de archivos, secretos, datos personales, paths absolutos, stack traces crudos, ramas o remotes en Field Reports.", "El Root context gate usa `root_context.py` para inspeccionar `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/**` y `docs/agents/**` antes de sobrescribir o recuperar."]},
+          {"type": "list", "items": ["Sin push, publish, tag, amend, cambio de remote, instalacion de dependencias o marketplace por defecto.", "Sin escrituras en `.obsidian/**`. Obsidian es vista opcional sobre Markdown.", "Sin codigo, diffs, entradas del agente, contenido de archivos, secretos, datos personales, paths absolutos, stack traces crudos, ramas o remotes en Field Reports.", "El Root context gate usa `root_context.py` para inspeccionar `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/**` y `docs/agents/**` antes de sobrescribir o recuperar."]},
           {"type": "p", "text": "El update compara installed and cloud versions, helper contract parity, `runtime_trigger_status`, `recommended_route`, `recommended_update_scope`, `legacy_retirement_required` y `self_test_mode`. Un no-op limpio reporta `update_available=False`, `recommended_update_scope=none`, `helper_contract_status=PASS` y el evento final Field Reports `tes_update` si esta habilitado. `STALE_HELPERS` bloquea adapter-config hasta reparar helpers."}
         ]
       },
@@ -777,7 +783,7 @@
         "title": "Limites de seguranca",
         "lede": "TES e local e inspecionavel por padrao. Ela recusa release, remotes e marketplace sem autorizacao explicita.",
         "blocks": [
-          {"type": "list", "items": ["Sem push, publish, tag, amend, mudanca de remote, instalacao de dependencias ou marketplace por padrao.", "Sem escritas em `.obsidian/**`. Obsidian e visualizacao opcional sobre Markdown.", "Sem codigo, diffs, prompts, conteudo de arquivos, segredos, dados pessoais, paths absolutos, stack traces crus, nomes de branch ou remotes em Field Reports.", "O gate de contexto raiz usa `root_context.py` para inspecionar `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/**` e `docs/agents/**` antes de sobrescrever ou recuperar."]},
+          {"type": "list", "items": ["Sem push, publish, tag, amend, mudanca de remote, instalacao de dependencias ou marketplace por padrao.", "Sem escritas em `.obsidian/**`. Obsidian e visualizacao opcional sobre Markdown.", "Sem codigo, diffs, entradas do agente, conteudo de arquivos, segredos, dados pessoais, paths absolutos, stack traces crus, nomes de branch ou remotes em Field Reports.", "O gate de contexto raiz usa `root_context.py` para inspecionar `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/**` e `docs/agents/**` antes de sobrescrever ou recuperar."]},
           {"type": "p", "text": "O update compara versão instalada e versão na nuvem, paridade de contrato dos helpers, `runtime_trigger_status`, `recommended_route`, `recommended_update_scope`, `legacy_retirement_required` e `self_test_mode`. Um no-op limpo reporta `update_available=False`, `recommended_update_scope=none`, `helper_contract_status=PASS` e o evento final Field Reports `tes_update` se reports estiverem ativos. `STALE_HELPERS` bloqueia adapter-config ate reparar helpers."}
         ]
       }

@@ -10,9 +10,9 @@ tver: 0.4.6
 
 # TES Command Triggers
 
-TES commands are not the user interface. The user interface is an intent in
-the current agent window; scripts and npm aliases are deterministic oracles the
-agent invokes when the runtime exposes local tools.
+After installation, TES commands are intent text in the current agent window.
+Scripts and npm aliases are deterministic oracles the agent invokes when the
+runtime exposes local tools.
 
 All adapters share the same preferred user triggers: `/tes-init`,
 `/tes-update`, `/tes-align`, `/tes-prospect`, `/tes-mine`,
@@ -55,8 +55,8 @@ routed through a broader skill so TES does not create one skill per alias.
 
 | Trigger | User intent | Primary oracles | Writes |
 |---------|-------------|-----------------|--------|
-| `/tes-init`, `/tes-setup`, or `/tes:init` | install, update, audit, recertify, initialize project context, and create first-pass project alignment for TES in a project | `tes_install.py`, `root_context.py`, `tes_init.py`, `project_context_oracle.py`, `project_alignment_oracle.py`, assisted installer, install smoke, MCP install | `.tes/tes-install-lock.json`, `.tes/postinstall.json`, first-session hooks, `docs/agents/**`, `docs/agents/PROJECT-CONTEXT.md`, initial operating mesh with System X-Ray and Convergence Line, Cortex, runtime bootloaders, project MCP config |
-| `/tes-update` or `/tes:update` | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, `tes_legacy_retirement.py`, assisted installer, install smoke, MCP install | only selected TES surfaces after Step Zero and legacy retirement |
+| `/tes-init`, `/tes-setup`, or `/tes:init` | finish setup, recertify, initialize project context, and create first-pass project alignment for TES in a project | `tes_install.py`, `root_context.py`, `tes_init.py`, `project_context_oracle.py`, `project_alignment_oracle.py`, install smoke, MCP install | `.tes/tes-install-lock.json`, `.tes/postinstall.json`, first-session hooks, `docs/agents/**`, `docs/agents/PROJECT-CONTEXT.md`, initial operating mesh with System X-Ray and Convergence Line, Cortex, runtime bootloaders, project MCP config |
+| `/tes-update` or `/tes:update` | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, `tes_legacy_retirement.py`, install smoke, MCP install | only selected TES surfaces after Step Zero and legacy retirement |
 | `/tes-align` or `/tes:align` | semantically align a TES-initialized project into an operating mesh with a System X-Ray and Convergence Line | `project_alignment_oracle.py`, `project_context_oracle.py`, project gates | `docs/agents/PROJECT-STATE.md`, `PROJECT-ROADMAP.md` Mermaid X-Ray and convergence graphs, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`, `DECISIONS/**`, evidence |
 | `/tes-prospect` or `/tes:prospect` | explicitly invoke project-stress prospecting to pressure a plan or design, expose hidden dependencies, and ask one question at a time | active agent codebase exploration; cognitive brake state snapshot when paused | no project writes |
 | `/tes-mine` or `/tes:mine` | explicitly invoke code and domain mining to extract terms, contradictions, decisions, context, and ADR candidates | active agent code/doc exploration; cognitive brake state snapshot when paused | `CONTEXT.md` and ADRs only when the mining contract resolves terms or decisions and the brake is not active |
