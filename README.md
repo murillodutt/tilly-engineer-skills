@@ -33,7 +33,7 @@ operating trail your team can inspect after the chat is gone.
 
 Installation details live on the public surface where users need them:
 
-- The landing page gives the 30-second GitHub npx path.
+- The landing page gives the 30-second GitHub path for npx and Bun.
 - The user manual covers options, first-session setup, rollback, and audit.
 - This repository keeps the source, contracts, gates, and evidence.
 

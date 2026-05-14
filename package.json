@@ -5,6 +5,10 @@
   "description": "Portable engineering discipline and context-mesh method for coding agents.",
   "license": "MIT",
   "type": "module",
+  "engines": {
+    "node": ">=18",
+    "bun": ">=1.0.0"
+  },
   "bin": {
     "tilly-engineer-skills": "./bin/tes.js"
   },
@@ -21,6 +25,7 @@
     "tes:install": "python3 scripts/tes_install.py install",
     "tes:install:self-test": "python3 scripts/tes_install.py --self-test",
     "tes:npx:self-test": "python3 scripts/tes_npx_oracle.py --self-test",
+    "tes:npx:runtime-matrix": "python3 scripts/tes_npx_oracle.py --runtime-matrix",
     "tes:npx:github-self-test": "python3 scripts/tes_npx_oracle.py --github-self-test",
     "project-context:self-test": "python3 scripts/project_context_oracle.py --self-test",
     "project-alignment:self-test": "python3 scripts/project_alignment_oracle.py --self-test",

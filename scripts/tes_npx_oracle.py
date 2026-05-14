@@ -175,6 +175,11 @@ def package_contract_failures() -> list[str]:
     package = load_json(ROOT / "package.json")
     if package.get("private") is not True:
         failures.append("package.json must keep private:true for GitHub-only distribution")
+    engines = package.get("engines") if isinstance(package.get("engines"), dict) else {}
+    if engines.get("node") != ">=18":
+        failures.append("package.json engines.node must be >=18")
+    if engines.get("bun") != ">=1.0.0":
+        failures.append("package.json engines.bun must be >=1.0.0")
     bin_field = package.get("bin")
     if not isinstance(bin_field, dict):
         failures.append("package.json must declare bin object")
@@ -190,9 +195,14 @@ def package_contract_failures() -> list[str]:
         bin_text = bin_path.read_text(encoding="utf-8")
         if "readSync" in bin_text or "readLineSync" in bin_text:
             failures.append("bin/tes.js must not use synchronous fd reads for interactive prompts")
+        for expected in ("detectRuntime", "Node.js 18+", "Bun 1.0+", "bunx --silent --bun"):
+            if expected not in bin_text:
+                failures.append(f"bin/tes.js missing runtime compatibility contract: {expected}")
     scripts = package.get("scripts") if isinstance(package.get("scripts"), dict) else {}
     if "tes:npx:self-test" not in scripts:
         failures.append("package.json missing script: tes:npx:self-test")
+    if "tes:npx:runtime-matrix" not in scripts:
+        failures.append("package.json missing script: tes:npx:runtime-matrix")
     if "tes:npx:github-self-test" not in scripts:
         failures.append("package.json missing script: tes:npx:github-self-test")
     return failures
@@ -310,6 +320,10 @@ def self_test() -> int:
         failures.append("node executable is required")
     if not shutil.which("npm"):
         failures.append("npm executable is required")
+    if not shutil.which("bun"):
+        failures.append("bun executable is required for Bun compatibility certification")
+    if not shutil.which("bunx"):
+        failures.append("bunx executable is required for Bun package execution certification")
     if failures:
         result = {"version": VERSION, "status": "FAIL", "failures": failures}
         print(json.dumps(result, indent=2, sort_keys=True))
@@ -355,6 +369,32 @@ def self_test() -> int:
                 failures.append("node dry-run must clearly state that no files were written")
         if (dry_target / ".tes").exists():
             failures.append("dry-run must not create .tes")
+
+        bun_target = fixture(work, "bun-dry-target")
+        bun_result = run(
+            [
+                "bun",
+                "bin/tes.js",
+                "add",
+                "--dry-run",
+                "--target",
+                str(bun_target),
+                "--agent",
+                "all",
+                "--yes",
+            ],
+            ROOT,
+        )
+        if bun_result.returncode != 0:
+            failures.append("bun bin/tes.js add --dry-run failed")
+            failures.extend(bun_result.stdout.splitlines())
+            failures.extend(bun_result.stderr.splitlines())
+        else:
+            failures.extend(commercial_output_failures("bun dry-run", bun_result.stdout))
+            if "Dry run complete. No files were written." not in bun_result.stdout:
+                failures.append("bun dry-run must clearly state that no files were written")
+        if (bun_target / ".tes").exists():
+            failures.append("bun dry-run must not create .tes")
 
         cancel_target = fixture(work, "interactive-cancel-target")
         cancel_code, cancel_output = run_pty_cancel(
@@ -410,6 +450,35 @@ def self_test() -> int:
 
         if not failures and tarballs:
             tarball = tarballs[-1]
+            bunx_target = fixture(work, "bunx-install-target")
+            bunx_result = run(
+                [
+                    "bunx",
+                    "--silent",
+                    "--bun",
+                    "--package",
+                    str(tarball),
+                    BIN_NAME,
+                    "add",
+                    "--dry-run",
+                    "--target",
+                    str(bunx_target),
+                    "--agent",
+                    "all",
+                    "--yes",
+                ],
+                work,
+                timeout=300.0,
+            )
+            if bunx_result.returncode != 0:
+                failures.append("bunx --bun package dry-run failed")
+                failures.extend(bunx_result.stdout.splitlines())
+                failures.extend(bunx_result.stderr.splitlines())
+            else:
+                failures.extend(commercial_output_failures("bunx --bun package dry-run", bunx_result.stdout))
+            if (bunx_target / ".tes").exists():
+                failures.append("bunx --bun dry-run must not create .tes")
+
             exec_result = run(
                 [
                     "npm",
@@ -480,9 +549,11 @@ def self_test() -> int:
         "commands": [
             "node bin/tes.js --help",
             "node bin/tes.js add --dry-run --target <fixture> --agent all --yes",
+            "bun bin/tes.js add --dry-run --target <fixture> --agent all --yes",
             "node bin/tes.js add --target <fixture> --agent all # interactive cancel via pty",
             "node bin/tes.js add --target <fixture> --agent all # interactive accept via pty",
             f"npm exec --yes --package <tarball> -- {BIN_NAME} add --target <fixture> --agent all --yes",
+            f"bunx --silent --bun --package <tarball> {BIN_NAME} add --dry-run --target <fixture> --agent all --yes",
             "python3 <fixture>/.tes/bin/tes_install.py hook --agent codex --target <fixture>",
             "commercial installer screen without raw Python JSON",
         ],
@@ -493,9 +564,144 @@ def self_test() -> int:
     return 0 if not failures else 1
 
 
+def runtime_matrix() -> int:
+    failures = package_contract_failures()
+    required = ["npx", "node", "npm", "bun", "bunx"]
+    for executable in required:
+        if not shutil.which(executable):
+            failures.append(f"{executable} executable is required for runtime matrix certification")
+
+    with tempfile.TemporaryDirectory(prefix="tes-npx-runtime-matrix-") as tempdir:
+        work = Path(tempdir)
+        targets = {
+            "node-current": fixture(work, "node-current-target"),
+            "bun-current": fixture(work, "bun-current-target"),
+            "bunx-package": fixture(work, "bunx-package-target"),
+        }
+        node_versions = ["18", "20", "22"]
+        for version in node_versions:
+            target = fixture(work, f"node-{version}-target")
+            result = run(
+                [
+                    "npx",
+                    "-y",
+                    f"node@{version}",
+                    "bin/tes.js",
+                    "add",
+                    "--dry-run",
+                    "--target",
+                    str(target),
+                    "--agent",
+                    "all",
+                    "--yes",
+                ],
+                ROOT,
+                timeout=240.0,
+            )
+            if result.returncode != 0:
+                failures.append(f"Node.js {version} dry-run failed")
+                failures.extend(result.stdout.splitlines())
+                failures.extend(result.stderr.splitlines())
+            else:
+                failures.extend(commercial_output_failures(f"Node.js {version} dry-run", result.stdout))
+            if (target / ".tes").exists():
+                failures.append(f"Node.js {version} dry-run must not create .tes")
+
+        current_node = run(
+            [
+                "node",
+                "bin/tes.js",
+                "add",
+                "--dry-run",
+                "--target",
+                str(targets["node-current"]),
+                "--agent",
+                "all",
+                "--yes",
+            ],
+            ROOT,
+        )
+        if current_node.returncode != 0:
+            failures.append("current Node.js dry-run failed")
+            failures.extend(current_node.stdout.splitlines())
+            failures.extend(current_node.stderr.splitlines())
+        else:
+            failures.extend(commercial_output_failures("current Node.js dry-run", current_node.stdout))
+
+        current_bun = run(
+            [
+                "bun",
+                "bin/tes.js",
+                "add",
+                "--dry-run",
+                "--target",
+                str(targets["bun-current"]),
+                "--agent",
+                "all",
+                "--yes",
+            ],
+            ROOT,
+        )
+        if current_bun.returncode != 0:
+            failures.append("current Bun dry-run failed")
+            failures.extend(current_bun.stdout.splitlines())
+            failures.extend(current_bun.stderr.splitlines())
+        else:
+            failures.extend(commercial_output_failures("current Bun dry-run", current_bun.stdout))
+
+        pack_dir = work / "pack"
+        pack_dir.mkdir()
+        pack_result = run(["npm", "pack", "--pack-destination", str(pack_dir)], ROOT, timeout=240.0)
+        tarballs = sorted(pack_dir.glob("*.tgz")) if pack_result.returncode == 0 else []
+        if pack_result.returncode != 0 or not tarballs:
+            failures.append("runtime matrix npm pack failed")
+            failures.extend(pack_result.stdout.splitlines())
+            failures.extend(pack_result.stderr.splitlines())
+        else:
+            bunx_package = run(
+                [
+                    "bunx",
+                    "--silent",
+                    "--bun",
+                    "--package",
+                    str(tarballs[-1]),
+                    BIN_NAME,
+                    "add",
+                    "--dry-run",
+                    "--target",
+                    str(targets["bunx-package"]),
+                    "--agent",
+                    "all",
+                    "--yes",
+                ],
+                work,
+                timeout=300.0,
+            )
+            if bunx_package.returncode != 0:
+                failures.append("bunx --bun packaged dry-run failed")
+                failures.extend(bunx_package.stdout.splitlines())
+                failures.extend(bunx_package.stderr.splitlines())
+            else:
+                failures.extend(commercial_output_failures("bunx --bun packaged dry-run", bunx_package.stdout))
+
+    result = {
+        "version": VERSION,
+        "status": "PASS" if not failures else "FAIL",
+        "coverage": "node18-node20-node22-current-node-bun-bunx",
+        "bin": BIN_NAME,
+        "node_versions": ["18", "20", "22", "current"],
+        "bun": "current",
+        "failures": failures,
+    }
+    print(json.dumps(result, indent=2, sort_keys=True))
+    print("[tes-npx:runtime-matrix] " + result["status"])
+    return 0 if not failures else 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--runtime-matrix", action="store_true")
     parser.add_argument("--github-self-test", action="store_true")
     parser.add_argument(
         "--github-spec",
@@ -516,6 +722,8 @@ def main() -> int:
     args = parser.parse_args()
     if args.self_test:
         return self_test()
+    if args.runtime_matrix:
+        return runtime_matrix()
     if args.github_self_test:
         return github_package_self_test(
             github_spec=args.github_spec,
