@@ -40,7 +40,12 @@ def run(command: list[str], cwd: Path, timeout: float = 180.0) -> subprocess.Com
     )
 
 
-def run_pty_cancel(command: list[str], cwd: Path, timeout: float = 30.0) -> tuple[int | None, str]:
+def run_pty_script(
+    command: list[str],
+    cwd: Path,
+    script: list[tuple[str, str]],
+    timeout: float = 30.0,
+) -> tuple[int | None, str]:
     if pty is None or select is None:
         return None, "pty unavailable"
 
@@ -55,7 +60,7 @@ def run_pty_cancel(command: list[str], cwd: Path, timeout: float = 30.0) -> tupl
         close_fds=True,
     )
     os.close(slave_fd)
-    sent = False
+    next_response = 0
     deadline = time.monotonic() + timeout
     try:
         while True:
@@ -72,9 +77,12 @@ def run_pty_cancel(command: list[str], cwd: Path, timeout: float = 30.0) -> tupl
                 if chunk:
                     text = chunk.decode("utf-8", errors="replace")
                     output.append(text)
-                    if not sent and "Continue? [y/N]" in "".join(output):
-                        os.write(master_fd, b"n\n")
-                        sent = True
+                    joined = "".join(output)
+                    if next_response < len(script):
+                        pattern, response = script[next_response]
+                        if pattern in joined:
+                            os.write(master_fd, response.encode("utf-8"))
+                            next_response += 1
 
             code = process.poll()
             if code is not None:
@@ -95,6 +103,34 @@ def run_pty_cancel(command: list[str], cwd: Path, timeout: float = 30.0) -> tupl
             os.close(master_fd)
         except OSError:
             pass
+
+
+def run_pty_cancel(command: list[str], cwd: Path, timeout: float = 30.0) -> tuple[int | None, str]:
+    return run_pty_script(
+        command,
+        cwd,
+        [
+            ("Target project [", "\n"),
+            ("Agent hooks", "\n"),
+            ("Install mode", "\n"),
+            ("Install TES with these settings? [Y/n]", "n\n"),
+        ],
+        timeout=timeout,
+    )
+
+
+def run_pty_accept(command: list[str], cwd: Path, timeout: float = 60.0) -> tuple[int | None, str]:
+    return run_pty_script(
+        command,
+        cwd,
+        [
+            ("Target project [", "\n"),
+            ("Agent hooks", "\n"),
+            ("Install mode", "\n"),
+            ("Install TES with these settings? [Y/n]", "\n"),
+        ],
+        timeout=timeout,
+    )
 
 
 def fixture(root: Path, name: str) -> Path:
@@ -333,8 +369,33 @@ def self_test() -> int:
         if "EAGAIN" in cancel_output or "node:fs" in cancel_output or "readSync" in cancel_output:
             failures.append("interactive prompt must not leak Node fd read errors")
             failures.extend(cancel_output.splitlines())
+        for expected in ("Agent hooks", "Install mode", "Ready to install"):
+            if expected not in cancel_output:
+                failures.append(f"interactive prompt must show {expected!r}")
         if (cancel_target / ".tes").exists():
             failures.append("interactive cancellation must not create .tes")
+
+        accept_target = fixture(work, "interactive-accept-target")
+        accept_code, accept_output = run_pty_accept(
+            ["node", "bin/tes.js", "add", "--target", str(accept_target), "--agent", "all"],
+            ROOT,
+        )
+        if accept_code is None:
+            failures.append("interactive accept prompt pty test could not run")
+        elif accept_code != 0:
+            failures.append(f"interactive accept prompt must exit 0, got {accept_code}")
+            failures.extend(accept_output.splitlines())
+        else:
+            failures.extend(commercial_output_failures("interactive accept", accept_output))
+        for relpath in (
+            ".tes/bin/tes_install.py",
+            ".tes/postinstall.json",
+            ".codex/config.toml",
+            ".claude/settings.json",
+            ".cursor/hooks.json",
+        ):
+            if not (accept_target / relpath).exists():
+                failures.append(f"interactive accept install missing path: {relpath}")
 
         pack_result = run(["npm", "pack", "--pack-destination", str(pack_dir)], ROOT, timeout=240.0)
         if pack_result.returncode != 0:
@@ -420,6 +481,7 @@ def self_test() -> int:
             "node bin/tes.js --help",
             "node bin/tes.js add --dry-run --target <fixture> --agent all --yes",
             "node bin/tes.js add --target <fixture> --agent all # interactive cancel via pty",
+            "node bin/tes.js add --target <fixture> --agent all # interactive accept via pty",
             f"npm exec --yes --package <tarball> -- {BIN_NAME} add --target <fixture> --agent all --yes",
             "python3 <fixture>/.tes/bin/tes_install.py hook --agent codex --target <fixture>",
             "commercial installer screen without raw Python JSON",

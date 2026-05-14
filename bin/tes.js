@@ -9,6 +9,16 @@ const AGENTS = new Set(["codex", "claude", "cursor", "all"]);
 const MODES = new Set(["preserve", "clean-runtime"]);
 const VALUE_OPTIONS = new Set(["--target", "--agent", "--mode", "--bundle", "--url", "--sha256", "--timeout"]);
 const BOOL_OPTIONS = new Set(["--yes", "--dry-run", "--no-hooks", "--no-postinstall"]);
+const AGENT_CHOICES = [
+  { key: "1", value: "all", label: "All agents", detail: "Codex, Claude Code, Cursor" },
+  { key: "2", value: "codex", label: "Codex", detail: ".codex/config.toml" },
+  { key: "3", value: "claude", label: "Claude Code", detail: ".claude/settings.json" },
+  { key: "4", value: "cursor", label: "Cursor", detail: ".cursor/hooks.json" },
+];
+const MODE_CHOICES = [
+  { key: "1", value: "preserve", label: "Preserve", detail: "keep project-owned files and update TES runtime" },
+  { key: "2", value: "clean-runtime", label: "Clean runtime", detail: "replace known TES-owned runtime files" },
+];
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const enginePath = resolve(packageRoot, "scripts", "tes_install.py");
@@ -35,8 +45,8 @@ Options:
   --help                      Show this help.
 
 Examples:
-  npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.88 tilly-engineer-skills add
-  npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.88 tilly-engineer-skills add
+  npx --loglevel=error -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes
 `);
 }
 
@@ -81,6 +91,8 @@ function parse(argv) {
     mode: "preserve",
     yes: false,
     dryRun: false,
+    noHooks: false,
+    noPostinstall: false,
     passthrough: [],
   };
 
@@ -92,6 +104,12 @@ function parse(argv) {
       }
       if (item === "--dry-run") {
         options.dryRun = true;
+      }
+      if (item === "--no-hooks") {
+        options.noHooks = true;
+      }
+      if (item === "--no-postinstall") {
+        options.noPostinstall = true;
       }
       options.passthrough.push(item);
       continue;
@@ -124,23 +142,72 @@ function parse(argv) {
   return options;
 }
 
-async function confirmInstall(parsed) {
+function findChoice(choices, value) {
+  return choices.find((choice) => choice.value === value) || choices[0];
+}
+
+function normalizeAnswer(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+async function askLine(rl, prompt, fallback) {
+  const answer = await rl.question(prompt);
+  const normalized = answer.trim();
+  return normalized ? normalized : fallback;
+}
+
+async function askChoice(rl, title, choices, currentValue) {
+  const current = findChoice(choices, currentValue);
+  console.log(title);
+  for (const choice of choices) {
+    const marker = choice.value === current.value ? "*" : " ";
+    console.log(`  ${choice.key}. ${choice.label.padEnd(14)} ${choice.detail} ${marker}`);
+  }
+  while (true) {
+    const answer = normalizeAnswer(await rl.question(`Select [${current.key}]: `)) || current.key;
+    const selected = choices.find(
+      (choice) => answer === choice.key || answer === choice.value || answer === choice.label.toLowerCase(),
+    );
+    if (selected) {
+      return selected.value;
+    }
+    console.log("Please choose one of the listed options.");
+  }
+}
+
+function printPlan(parsed) {
+  console.log("\nReady to install\n");
+  console.log(`Target   ${resolve(parsed.target)}`);
+  console.log(`Mode     ${parsed.mode}`);
+  console.log(`Agents   ${agentLabel(parsed.agent)}`);
+  console.log(`Hooks    ${parsed.noHooks ? "disabled" : "prepared on first install"}`);
+  console.log(`Setup    ${parsed.noPostinstall ? "first-session setup disabled" : "first-session setup sentinel"}`);
+}
+
+async function configureInteractively(parsed) {
   if (parsed.yes || parsed.dryRun) {
-    return true;
+    return { ok: true, parsed };
   }
   if (!process.stdin.isTTY) {
     console.error("TES installer: non-interactive installs require --yes.");
-    return false;
+    return { ok: false, parsed };
   }
 
-  const prompt = `TES will install local files in ${resolve(parsed.target)} for ${agentLabel(parsed.agent)}. Continue? [y/N] `;
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   try {
-    const answer = (await rl.question(prompt)).trim().toLowerCase();
-    return answer === "y" || answer === "yes";
+    console.log("\nTES Installer\n");
+    console.log("Configure the local TES runtime for this project.\n");
+    parsed.target = await askLine(rl, `Target project [${resolve(parsed.target)}]: `, parsed.target);
+    console.log("");
+    parsed.agent = await askChoice(rl, "Agent hooks", AGENT_CHOICES, parsed.agent);
+    console.log("");
+    parsed.mode = await askChoice(rl, "Install mode", MODE_CHOICES, parsed.mode);
+    printPlan(parsed);
+    const answer = normalizeAnswer(await rl.question("\nInstall TES with these settings? [Y/n] "));
+    return { ok: answer === "" || answer === "y" || answer === "yes", parsed };
   } catch {
     console.error("TES installer: could not read interactive confirmation. Rerun with --yes for non-interactive installs.");
-    return false;
+    return { ok: false, parsed };
   } finally {
     rl.close();
   }
@@ -341,12 +408,14 @@ async function main() {
     return fail("Python 3 is required. Install Python 3 or set PYTHON=/path/to/python3.");
   }
 
-  if (!(await confirmInstall(parsed))) {
+  const configured = await configureInteractively(parsed);
+  if (!configured.ok) {
     return fail("installation cancelled.", 130);
   }
+  const installOptions = configured.parsed;
 
-  const passthrough = [...parsed.passthrough];
-  if (!parsed.yes && !parsed.dryRun) {
+  const passthrough = [...installOptions.passthrough];
+  if (!installOptions.yes && !installOptions.dryRun) {
     passthrough.push("--yes");
   }
 
@@ -354,11 +423,11 @@ async function main() {
     enginePath,
     "install",
     "--target",
-    parsed.target,
+    installOptions.target,
     "--agent",
-    parsed.agent,
+    installOptions.agent,
     "--mode",
-    parsed.mode,
+    installOptions.mode,
     ...passthrough,
   ];
 
@@ -382,7 +451,7 @@ async function main() {
     console.log("TES finished, but the installer summary was not returned by the Python engine.");
     return 0;
   }
-  renderInstallSummary(summary, parsed);
+  renderInstallSummary(summary, installOptions);
   return 0;
 }
 
