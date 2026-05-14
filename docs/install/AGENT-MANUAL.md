@@ -123,6 +123,17 @@ setup commands. In Claude Code, TES first emits a synchronous start notice:
 `asyncRewake` so setup runs in the background and wakes the session with:
 `Please, run /tes-setup for the report.` Repeated complete hooks stay quiet.
 
+After install, platform-specific host review still matters:
+
+- Codex can show the Session Start hook as `needs review` in Settings > Hooks.
+  The user must inspect, Trust, and enable the hook before Codex will run it.
+- Claude Code should be opened or reopened, then left idle until the TES
+  completion notice appears; `/tes-setup` is the report route after completion.
+- Cursor should be reopened so it reloads `.cursor/hooks.json`; when
+  first-session setup completes, `/tes-setup` is the report route. A dry
+  `/tes-init` after a `complete` sentinel should report current evidence, not
+  run Project-Start again, unless the user explicitly asks to recertify.
+
 Step Zero must not block project-context initialization when TES is
 already current and only `PROJECT-CONTEXT.md` needs work.
 

@@ -85,9 +85,9 @@ Runtime:
   Python 3.11+ for the local TES engine and first-session oracles.
 
 Examples:
-  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.100 tilly-engineer-skills add
-  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.100 tilly-engineer-skills add --agent all --yes
-  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.100 tilly-engineer-skills add
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.101 tilly-engineer-skills add
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.101 tilly-engineer-skills add --agent all --yes
+  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.101 tilly-engineer-skills add
 `);
 }
 
@@ -156,8 +156,8 @@ function runtimeFailure(runtime) {
   console.error("  Bun: https://bun.sh/docs/installation");
   console.error("");
   console.error("Commands:");
-  console.error("  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.100 tilly-engineer-skills add");
-  console.error("  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.100 tilly-engineer-skills add");
+  console.error("  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.101 tilly-engineer-skills add");
+  console.error("  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.101 tilly-engineer-skills add");
   return 1;
 }
 
@@ -588,9 +588,11 @@ function printCompletionNotice(parsed, dryRun) {
     return;
   }
   console.log(`\n${color("IMPORTANT", ANSI.bold, ANSI.yellow)}`);
-  console.log("1. Open or reopen your agent now.");
-  console.log("2. Wait for the TES first-session completion notice before starting project work.");
-  console.log(`3. ${color("Please, run /tes-setup for the report.", ANSI.bold, ANSI.cyan)}`);
+  console.log("Agent follow-up is host-specific:");
+  console.log("1. Codex: open Settings > Hooks for this project, then Trust and enable the Session Start hook if it is marked needs review.");
+  console.log("2. Claude Code: open or reopen Claude Code, wait for the TES completion notice, then continue.");
+  console.log("3. Cursor: reopen the workspace, let first-session setup complete, then run /tes-setup for the report.");
+  console.log(`4. ${color("Please, run /tes-setup for the report before starting project work.", ANSI.bold, ANSI.cyan)}`);
 }
 
 function renderInstallSummary(summary, parsed) {
@@ -614,7 +616,7 @@ function renderInstallSummary(summary, parsed) {
     5,
     "Next step",
     dryRun ? "REVIEW" : "ACTION",
-    dryRun ? "Rerun without --dry-run to install" : "Open agent; wait for completion notice",
+    dryRun ? "Rerun without --dry-run to install" : "Follow platform-specific host steps",
   );
   console.log("");
   printCompletionNotice(parsed, dryRun);
