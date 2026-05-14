@@ -12,12 +12,13 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.96"
+VERSION = "0.3.97"
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -543,6 +544,18 @@ def append_run_record(target: Path, payload: dict[str, Any], dry_run: bool) -> d
     return write_json(path, payload, dry_run=dry_run)
 
 
+def wait_for_postinstall_state(target: Path, expected: str, timeout: float = 30.0) -> dict[str, Any]:
+    deadline = time.monotonic() + timeout
+    sentinel_path = target / POSTINSTALL_PATH
+    sentinel = read_json(sentinel_path)
+    while time.monotonic() < deadline:
+        sentinel = read_json(sentinel_path)
+        if sentinel.get("state") == expected:
+            return sentinel
+        time.sleep(0.2)
+    return sentinel
+
+
 def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = None) -> tuple[int, dict[str, Any]]:
     target = target_root(args.target)
     sentinel_path = target / POSTINSTALL_PATH
@@ -556,6 +569,9 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         return 0, result
     if state == "needs_review" and not args.force:
         result = {"version": VERSION, "status": "NEEDS_REVIEW", "reason": "previous postinstall needs review", "target": str(target)}
+        return 0, result
+    if state == "running" and not args.force:
+        result = {"version": VERSION, "status": "RUNNING", "reason": "postinstall already running", "target": str(target)}
         return 0, result
     if args.dry_run:
         result = {"version": VERSION, "status": "DRY-RUN", "target": str(target), "actions": ["would-run-postinstall"]}
@@ -615,6 +631,93 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
     return (0 if not failed else 1), result
 
 
+def start_background_postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = None) -> tuple[int, dict[str, Any]]:
+    target = target_root(args.target)
+    sentinel_path = target / POSTINSTALL_PATH
+    sentinel = read_json(sentinel_path)
+    state = str(sentinel.get("state") or "")
+    if state not in POSTINSTALL_STATES and not args.force:
+        return 0, {"version": VERSION, "status": "SKIP", "reason": "no postinstall sentinel", "target": str(target)}
+    if state == "complete" and not args.force:
+        return 0, {"version": VERSION, "status": "SKIP", "reason": "postinstall already complete", "target": str(target)}
+    if state == "needs_review" and not args.force:
+        return 0, {
+            "version": VERSION,
+            "status": "NEEDS_REVIEW",
+            "reason": "previous postinstall needs review",
+            "target": str(target),
+        }
+    if state == "running" and not args.force:
+        return 0, {"version": VERSION, "status": "RUNNING", "reason": "postinstall already running", "target": str(target)}
+    if args.dry_run:
+        return 0, {"version": VERSION, "status": "DRY-RUN", "target": str(target), "actions": ["would-start-postinstall"]}
+
+    agents = selected_agents(args.agent) if args.agent != "all" else list(AGENTS)
+    running = {
+        **sentinel_payload(args.agent, agents, args.mode, sentinel),
+        "state": "running",
+        "updated_at": utc_stamp(),
+        "async_started_at": utc_stamp(),
+        "last_status": "RUNNING",
+    }
+    write_json(sentinel_path, running)
+    log_dir = target / POSTINSTALL_RUN_ROOT
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path = log_dir / f"{file_stamp()}-{args.agent}-background.log"
+    command = [
+        python_executable(),
+        str(Path(__file__).resolve()),
+        "postinstall",
+        "--target",
+        str(target),
+        "--agent",
+        args.agent,
+        "--mode",
+        args.mode,
+        "--timeout",
+        f"{args.timeout:g}",
+        "--force",
+    ]
+    if args.skip_project_init:
+        command.append("--skip-project-init")
+    try:
+        with log_path.open("a", encoding="utf-8") as log:
+            subprocess.Popen(
+                command,
+                cwd=target,
+                stdin=subprocess.DEVNULL,
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                close_fds=True,
+                start_new_session=True,
+            )
+    except OSError as exc:
+        failed = {
+            **running,
+            "state": "needs_review",
+            "updated_at": utc_stamp(),
+            "last_status": "NEEDS_REVIEW",
+            "failures": [{"command": " ".join(command), "returncode": 1, "stderr": str(exc)}],
+        }
+        write_json(sentinel_path, failed)
+        return 1, {
+            "version": VERSION,
+            "status": "NEEDS_REVIEW",
+            "reason": f"could not start postinstall background process: {exc}",
+            "target": str(target),
+            "state": "needs_review",
+        }
+    return 0, {
+        "version": VERSION,
+        "status": "STARTED",
+        "target": str(target),
+        "agent": args.agent,
+        "state": "running",
+        "log": rel(log_path, target),
+        "hook_input_keys": sorted((hook_input or {}).keys()),
+    }
+
+
 def claude_postinstall_context(result: dict[str, Any], hook_input: dict[str, Any]) -> str:
     status = str(result.get("status") or "UNKNOWN")
     target = str(result.get("target") or "unknown target")
@@ -645,6 +748,16 @@ def claude_postinstall_context(result: dict[str, Any], hook_input: dict[str, Any
             "If the user immediately asks `/tes-init`, summarize this completed run from "
             "`.tes/postinstall.json` and the run record unless they explicitly request recertification."
         )
+    elif status == "STARTED":
+        log = result.get("log")
+        if log:
+            lines.append(f"Background log: {log}")
+        lines.append("TES setup is running in the background now.")
+        lines.append("Ask the user to wait for completion, then run `/tes-setup` for the setup report.")
+        lines.append("Do not begin project work until `.tes/postinstall.json` is complete or reviewed.")
+    elif status == "RUNNING":
+        lines.append("TES setup was already running before this hook returned.")
+        lines.append("Ask the user to wait a moment, then run `/tes-setup` for the setup report.")
     elif status == "SKIP":
         lines.append("Postinstall did not run again because no pending work was required.")
     else:
@@ -662,6 +775,10 @@ def claude_hook_output(result: dict[str, Any], hook_input: dict[str, Any]) -> di
     }
     if result.get("status") == "PASS":
         output["systemMessage"] = "TES first-session setup completed. Run /tes-setup for the report."
+    elif result.get("status") == "STARTED":
+        output["systemMessage"] = "TES first-session setup is running. Please wait, then run /tes-setup for the report."
+    elif result.get("status") == "RUNNING":
+        output["systemMessage"] = "TES first-session setup is still running. Please wait, then run /tes-setup."
     elif result.get("status") not in {"SKIP", "DRY-RUN"}:
         output["systemMessage"] = "TES first-session setup needs review. Run /tes-init for recovery."
     return output
@@ -673,7 +790,10 @@ def hook(args: argparse.Namespace) -> int:
         inferred = hook_input.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR")
         if inferred:
             args.target = Path(str(inferred))
-    code, result = postinstall(args, hook_input=hook_input)
+    if args.agent == "claude" and not args.force:
+        code, result = start_background_postinstall(args, hook_input=hook_input)
+    else:
+        code, result = postinstall(args, hook_input=hook_input)
     if args.agent == "claude":
         print(json.dumps(claude_hook_output(result, hook_input), sort_keys=True))
         return 0
@@ -935,9 +1055,19 @@ def self_test() -> int:
                 claude_first_payload = {}
                 failures.append("Claude first SessionStart hook must return structured JSON")
             if claude_first_payload.get("systemMessage") != (
-                "TES first-session setup completed. Run /tes-setup for the report."
+                "TES first-session setup is running. Please wait, then run /tes-setup for the report."
             ):
-                failures.append("Claude first SessionStart PASS must show a concise visible completion message")
+                failures.append("Claude first SessionStart must show an immediate wait-and-report message")
+            claude_first_context = (
+                claude_first_payload.get("hookSpecificOutput", {}).get("additionalContext")
+                if isinstance(claude_first_payload, dict)
+                else None
+            )
+            if not isinstance(claude_first_context, str) or "running in the background" not in claude_first_context:
+                failures.append("Claude first SessionStart must explain background setup context")
+            claude_sentinel = wait_for_postinstall_state(claude_target, "complete", timeout=45.0)
+            if claude_sentinel.get("state") != "complete":
+                failures.append("Claude background postinstall must complete after immediate hook return")
 
     with tempfile.TemporaryDirectory(prefix="tes-thin-install-dry-") as tempdir:
         target = Path(tempdir)

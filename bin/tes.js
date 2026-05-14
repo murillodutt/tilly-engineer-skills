@@ -52,9 +52,9 @@ Runtime:
   Python 3.11+ for the local TES engine and first-session oracles.
 
 Examples:
-  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add
-  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add --agent all --yes
-  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.97 tilly-engineer-skills add
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.97 tilly-engineer-skills add --agent all --yes
+  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.97 tilly-engineer-skills add
 `);
 }
 
@@ -123,8 +123,8 @@ function runtimeFailure(runtime) {
   console.error("  Bun: https://bun.sh/docs/installation");
   console.error("");
   console.error("Commands:");
-  console.error("  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add");
-  console.error("  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add");
+  console.error("  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.97 tilly-engineer-skills add");
+  console.error("  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.97 tilly-engineer-skills add");
   return 1;
 }
 
@@ -322,7 +322,7 @@ function printPlan(parsed) {
   console.log(`Installation  ${parsed.mode === "clean-runtime" ? "refresh TES files" : "standard update"}`);
   console.log(`Agents        ${agentLabel(parsed.agent)}`);
   console.log(`Startup       ${parsed.noHooks ? "agent startup disabled" : "agent startup prepared"}`);
-  console.log(`Finish        ${parsed.noPostinstall ? "manual setup only" : "first agent run completes setup"}`);
+  console.log(`Finish        ${parsed.noPostinstall ? "manual setup only" : "wait, then run /tes-setup"}`);
 }
 
 async function configureInteractively(parsed) {
@@ -461,13 +461,13 @@ function formatState(summary) {
   if (summary?.status === "DRY-RUN") {
     return {
       status: "DRY-RUN",
-      detail: "install record and first-run setup planned",
+      detail: "install record and first-run setup trigger planned",
     };
   }
   if (lock || postinstall) {
     return {
       status: "READY",
-      detail: "install record + first-run setup",
+      detail: "install record + first-run setup trigger",
     };
   }
   return {
@@ -478,6 +478,23 @@ function formatState(summary) {
 
 function printStep(number, label, status, detail) {
   console.log(`[${number}/5] ${label.padEnd(18)} ${String(status).padEnd(9)} ${detail}`);
+}
+
+function printCompletionNotice(parsed, dryRun) {
+  if (dryRun) {
+    console.log("Dry run complete. No files were written.");
+    return;
+  }
+  console.log("TES is ready for this project.");
+  if (parsed.noHooks || parsed.noPostinstall) {
+    console.log("\nIMPORTANT");
+    console.log("Agent startup was not fully prepared. Run /tes-init or /tes-setup inside your agent to finish setup.");
+    return;
+  }
+  console.log("\nIMPORTANT");
+  console.log("1. Open or reopen your agent now.");
+  console.log("2. Wait for the TES first-session setup notice before starting project work.");
+  console.log("3. Run /tes-setup in the agent to read the setup report.");
 }
 
 function renderInstallSummary(summary, parsed) {
@@ -501,10 +518,10 @@ function renderInstallSummary(summary, parsed) {
     5,
     "Next step",
     dryRun ? "REVIEW" : "ACTION",
-    dryRun ? "Rerun without --dry-run to install" : "Reopen your agent or run /tes-setup",
+    dryRun ? "Rerun without --dry-run to install" : "Open agent, wait, then run /tes-setup",
   );
   console.log("");
-  console.log(dryRun ? "Dry run complete. No files were written." : "TES is ready for this project.");
+  printCompletionNotice(parsed, dryRun);
 }
 
 function renderFailure(summary, output) {

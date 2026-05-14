@@ -24,7 +24,7 @@ coherent for a new adopter and auditable for a maintainer.
 
 | Item | Value |
 |------|-------|
-| Package version | `0.3.96` |
+| Package version | `0.3.97` |
 | Latest certified line | GitHub-only npx installer, interactive screen, Node/Bun runtime matrix, first-session hooks, and fixed release docs alignment |
 | Release action status | GitHub ref release only; no npm publish or marketplace action |
 | Release readiness claim | Candidate-ready for fixed GitHub package-spec adoption |
