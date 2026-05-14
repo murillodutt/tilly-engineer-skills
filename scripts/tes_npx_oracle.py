@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.86"
+VERSION = "0.3.87"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -48,6 +48,25 @@ def fixture(root: Path, name: str) -> Path:
 
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def raw_engine_output_leaked(text: str) -> bool:
+    lines = [line.strip() for line in text.splitlines()]
+    if "[tes-install]" in text:
+        return True
+    if "{" in lines or "}" in lines:
+        return True
+    raw_json_keys = {"\"agent\":", "\"apply\":", "\"hooks\":", "\"stage\":", "\"postinstall\":"}
+    return any(any(line.startswith(key) for key in raw_json_keys) for line in lines)
+
+
+def commercial_output_failures(label: str, stdout: str) -> list[str]:
+    failures: list[str] = []
+    if "TES Installer" not in stdout:
+        failures.append(f"{label} must render the commercial installer screen")
+    if raw_engine_output_leaked(stdout):
+        failures.append(f"{label} must not leak raw Python engine JSON or [tes-install] sentinels")
+    return failures
 
 
 def package_contract_failures() -> list[str]:
@@ -144,6 +163,8 @@ def github_package_self_test(
                 failures.append("GitHub package spec npm exec failed")
                 failures.extend(exec_result.stdout.splitlines())
                 failures.extend(exec_result.stderr.splitlines())
+            else:
+                failures.extend(commercial_output_failures("GitHub package spec dry-run", exec_result.stdout))
             if (dry_target / ".tes").exists():
                 failures.append("GitHub npx dry-run must not create .tes")
 
@@ -224,6 +245,10 @@ def self_test() -> int:
             failures.append("node bin/tes.js add --dry-run failed")
             failures.extend(dry_result.stdout.splitlines())
             failures.extend(dry_result.stderr.splitlines())
+        else:
+            failures.extend(commercial_output_failures("node dry-run", dry_result.stdout))
+            if "Dry run complete. No files were written." not in dry_result.stdout:
+                failures.append("node dry-run must clearly state that no files were written")
         if (dry_target / ".tes").exists():
             failures.append("dry-run must not create .tes")
 
@@ -263,6 +288,10 @@ def self_test() -> int:
                 failures.append("npm exec package add failed")
                 failures.extend(exec_result.stdout.splitlines())
                 failures.extend(exec_result.stderr.splitlines())
+            else:
+                failures.extend(commercial_output_failures("npm exec package add", exec_result.stdout))
+                if "TES is installed locally." not in exec_result.stdout:
+                    failures.append("npm exec package add must finish with a human success message")
             for relpath in (
                 ".tes/bin/tes_install.py",
                 ".tes/tes-install-lock.json",
@@ -308,6 +337,7 @@ def self_test() -> int:
             "node bin/tes.js add --dry-run --target <fixture> --agent all --yes",
             f"npm exec --yes --package <tarball> -- {BIN_NAME} add --target <fixture> --agent all --yes",
             "python3 <fixture>/.tes/bin/tes_install.py hook --agent codex --target <fixture>",
+            "commercial installer screen without raw Python JSON",
         ],
         "failures": failures,
     }
@@ -333,7 +363,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.86 or latest.",
+        help="Git ref to test, e.g. v0.3.87 or latest.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()
