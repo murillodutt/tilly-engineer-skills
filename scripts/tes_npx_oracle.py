@@ -23,7 +23,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.97"
+VERSION = "0.3.98"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -152,19 +152,6 @@ def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def wait_for_postinstall_state(target: Path, expected: str, timeout: float = 45.0) -> dict[str, Any]:
-    sentinel_path = target / ".tes/postinstall.json"
-    deadline = time.monotonic() + timeout
-    sentinel: dict[str, Any] = {}
-    while time.monotonic() < deadline:
-        if sentinel_path.exists():
-            sentinel = load_json(sentinel_path)
-            if sentinel.get("state") == expected:
-                return sentinel
-        time.sleep(0.2)
-    return sentinel
-
-
 def raw_engine_output_leaked(text: str) -> bool:
     lines = [line.strip() for line in text.splitlines()]
     if "[tes-install]" in text:
@@ -220,9 +207,16 @@ def claude_hook_contract_failures(target: Path) -> list[str]:
             "--agent claude",
             "--target",
             "${CLAUDE_PROJECT_DIR}",
+            "--rewake-on-complete",
         ):
             if term not in command:
                 failures.append(f"Claude SessionStart hook command missing term: {term}")
+        if tes_handlers[0].get("async") is not True:
+            failures.append("Claude SessionStart hook must run asynchronously")
+        if tes_handlers[0].get("asyncRewake") is not True:
+            failures.append("Claude SessionStart hook must use native asyncRewake completion")
+        if "TES first-session setup is running" not in str(tes_handlers[0].get("statusMessage", "")):
+            failures.append("Claude SessionStart hook must display setup status while running")
     setup_skill = target / ".claude/skills/tes-setup/SKILL.md"
     if not setup_skill.exists():
         failures.append("Claude install must deliver /tes-setup as a project skill")
@@ -719,34 +713,28 @@ def self_test() -> int:
                     "claude",
                     "--target",
                     str(first_claude_target),
+                    "--rewake-on-complete",
                 ],
                 work,
                 timeout=300.0,
             )
-            if first_claude_hook.returncode != 0:
-                failures.append("installed Claude first-session hook failed")
+            if first_claude_hook.returncode != 2:
+                failures.append("installed Claude first-session asyncRewake hook failed")
                 failures.extend(first_claude_hook.stdout.splitlines())
                 failures.extend(first_claude_hook.stderr.splitlines())
             else:
-                try:
-                    first_payload = json.loads(first_claude_hook.stdout)
-                except json.JSONDecodeError:
-                    first_payload = {}
-                    failures.append("installed Claude first-session hook must emit structured hook JSON")
-                if first_payload.get("systemMessage") != (
-                    "TES first-session setup is running. Please wait, then run /tes-setup for the report."
+                if first_claude_hook.stdout.strip():
+                    failures.append("installed Claude asyncRewake must not emit JSON stdout on exit 2")
+                if (
+                    "TES first-session setup completed." not in first_claude_hook.stderr
+                    or "Please, run /tes-setup for the report." not in first_claude_hook.stderr
                 ):
-                    failures.append("installed Claude first-session hook must emit immediate wait-and-report systemMessage")
-                context = (
-                    first_payload.get("hookSpecificOutput", {}).get("additionalContext")
-                    if isinstance(first_payload, dict)
-                    else None
-                )
-                if not isinstance(context, str) or "running in the background" not in context:
-                    failures.append("installed Claude first-session hook must explain background setup context")
-                first_sentinel = wait_for_postinstall_state(first_claude_target, "complete", timeout=60.0)
+                    failures.append("installed Claude first-session asyncRewake must wake with /tes-setup guidance")
+                first_sentinel = load_json(first_claude_target / ".tes/postinstall.json")
                 if first_sentinel.get("state") != "complete":
-                    failures.append("installed Claude background postinstall must complete after immediate hook")
+                    failures.append("installed Claude asyncRewake postinstall must complete before completion message")
+                if first_sentinel.get("last_status") != "PASS":
+                    failures.append("installed Claude asyncRewake postinstall must record PASS before completion message")
 
     result = {
         "version": VERSION,
@@ -924,7 +912,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.97 or main.",
+        help="Git ref to test, e.g. v0.3.98 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()

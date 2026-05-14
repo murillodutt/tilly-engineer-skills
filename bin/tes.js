@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
 
@@ -12,6 +12,14 @@ const BOOL_OPTIONS = new Set(["--yes", "--dry-run", "--no-hooks", "--no-postinst
 const MIN_NODE_MAJOR = 18;
 const MIN_BUN_VERSION = [1, 0, 0];
 const MIN_PYTHON_VERSION = [3, 11, 0];
+const ANSI = {
+  reset: "\x1b[0m",
+  bold: "\x1b[1m",
+  red: "\x1b[31m",
+  green: "\x1b[32m",
+  yellow: "\x1b[33m",
+  cyan: "\x1b[36m",
+};
 const AGENT_CHOICES = [
   { key: "1", value: "all", label: "All agents", detail: "Codex, Claude Code, Cursor" },
   { key: "2", value: "codex", label: "Codex", detail: ".codex/config.toml" },
@@ -25,6 +33,31 @@ const MODE_CHOICES = [
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const enginePath = resolve(packageRoot, "scripts", "tes_install.py");
+
+function supportsColor() {
+  return Boolean(process.stdout.isTTY) && !process.env.NO_COLOR && process.env.TERM !== "dumb";
+}
+
+function color(text, ...codes) {
+  if (!supportsColor()) {
+    return text;
+  }
+  return `${codes.join("")}${text}${ANSI.reset}`;
+}
+
+function statusColor(status, text) {
+  const value = String(status || "");
+  if (["STAGED", "APPLIED", "CLEAN_APPLIED", "READY", "PASS"].includes(value)) {
+    return color(text, ANSI.green);
+  }
+  if (["ACTION", "REVIEW", "DRY-RUN"].includes(value)) {
+    return color(text, ANSI.cyan);
+  }
+  if (["NEEDS_REVIEW", "FAIL", "FAILED"].includes(value)) {
+    return color(text, ANSI.red);
+  }
+  return text;
+}
 
 function printHelp() {
   console.log(`Tilly Engineer Skills installer
@@ -52,9 +85,9 @@ Runtime:
   Python 3.11+ for the local TES engine and first-session oracles.
 
 Examples:
-  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.97 tilly-engineer-skills add
-  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.97 tilly-engineer-skills add --agent all --yes
-  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.97 tilly-engineer-skills add
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.98 tilly-engineer-skills add
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.98 tilly-engineer-skills add --agent all --yes
+  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.98 tilly-engineer-skills add
 `);
 }
 
@@ -123,8 +156,8 @@ function runtimeFailure(runtime) {
   console.error("  Bun: https://bun.sh/docs/installation");
   console.error("");
   console.error("Commands:");
-  console.error("  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.97 tilly-engineer-skills add");
-  console.error("  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.97 tilly-engineer-skills add");
+  console.error("  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.98 tilly-engineer-skills add");
+  console.error("  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.98 tilly-engineer-skills add");
   return 1;
 }
 
@@ -322,7 +355,7 @@ function printPlan(parsed) {
   console.log(`Installation  ${parsed.mode === "clean-runtime" ? "refresh TES files" : "standard update"}`);
   console.log(`Agents        ${agentLabel(parsed.agent)}`);
   console.log(`Startup       ${parsed.noHooks ? "agent startup disabled" : "agent startup prepared"}`);
-  console.log(`Finish        ${parsed.noPostinstall ? "manual setup only" : "wait, then run /tes-setup"}`);
+  console.log(`Finish        ${parsed.noPostinstall ? "manual setup only" : "wait for completion notice"}`);
 }
 
 async function configureInteractively(parsed) {
@@ -477,7 +510,70 @@ function formatState(summary) {
 }
 
 function printStep(number, label, status, detail) {
-  console.log(`[${number}/5] ${label.padEnd(18)} ${String(status).padEnd(9)} ${detail}`);
+  const paddedStatus = String(status).padEnd(9);
+  console.log(`[${number}/5] ${label.padEnd(18)} ${statusColor(status, paddedStatus)} ${detail}`);
+}
+
+function startSpinner(message) {
+  if (!process.stdout.isTTY) {
+    console.log(`${message}...`);
+    return () => {};
+  }
+  const frames = ["|", "/", "-", "\\"];
+  let index = 0;
+  process.stdout.write(`${color(message, ANSI.bold, ANSI.cyan)} ${color(`[${frames[index]}]`, ANSI.cyan)}`);
+  const timer = setInterval(() => {
+    index = (index + 1) % frames.length;
+    process.stdout.write(`\r${color(message, ANSI.bold, ANSI.cyan)} ${color(`[${frames[index]}]`, ANSI.cyan)}`);
+  }, 120);
+  return (result) => {
+    clearInterval(timer);
+    const suffix = result === "done" ? "done" : "failed";
+    const suffixColor = result === "done" ? ANSI.green : ANSI.red;
+    process.stdout.write(`\r${color(message, ANSI.bold, ANSI.cyan)} ${color(suffix, suffixColor)}${" ".repeat(8)}\n`);
+  };
+}
+
+function runPythonInstaller(python, args) {
+  return new Promise((resolveResult) => {
+    const stopSpinner = startSpinner("Installing TES");
+    let stdout = "";
+    let stderr = "";
+    let settled = false;
+    const child = spawn(python.command, args, {
+      cwd: process.cwd(),
+      env: {
+        ...process.env,
+        TES_PYTHON: python.executable || python.command,
+      },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    child.stdout.setEncoding("utf8");
+    child.stderr.setEncoding("utf8");
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk;
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk;
+    });
+    child.on("error", (error) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      stopSpinner("failed");
+      resolveResult({ status: 1, stdout, stderr: `${stderr}${String(error.message || error)}` });
+    });
+    child.on("close", (code) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      const status = code === null ? 1 : code;
+      stopSpinner(status === 0 ? "done" : "failed");
+      resolveResult({ status, stdout, stderr });
+    });
+  });
 }
 
 function printCompletionNotice(parsed, dryRun) {
@@ -485,16 +581,16 @@ function printCompletionNotice(parsed, dryRun) {
     console.log("Dry run complete. No files were written.");
     return;
   }
-  console.log("TES is ready for this project.");
+  console.log(color("TES is ready for this project.", ANSI.bold, ANSI.green));
   if (parsed.noHooks || parsed.noPostinstall) {
-    console.log("\nIMPORTANT");
+    console.log(`\n${color("IMPORTANT", ANSI.bold, ANSI.yellow)}`);
     console.log("Agent startup was not fully prepared. Run /tes-init or /tes-setup inside your agent to finish setup.");
     return;
   }
-  console.log("\nIMPORTANT");
+  console.log(`\n${color("IMPORTANT", ANSI.bold, ANSI.yellow)}`);
   console.log("1. Open or reopen your agent now.");
-  console.log("2. Wait for the TES first-session setup notice before starting project work.");
-  console.log("3. Run /tes-setup in the agent to read the setup report.");
+  console.log("2. Wait for the TES first-session completion notice before starting project work.");
+  console.log(`3. ${color("Please, run /tes-setup for the report.", ANSI.bold, ANSI.cyan)}`);
 }
 
 function renderInstallSummary(summary, parsed) {
@@ -506,7 +602,7 @@ function renderInstallSummary(summary, parsed) {
   const dryRun = summary?.status === "DRY-RUN" || parsed.dryRun;
   const hooksStatus = dryRun ? "DRY-RUN" : "READY";
 
-  console.log(`\nTES Installer ${version}\n`);
+  console.log(`\n${color(`TES Installer ${version}`, ANSI.bold, ANSI.cyan)}\n`);
   console.log(`Target   ${target}`);
   console.log(`Mode     ${summary?.mode || parsed.mode}`);
   console.log(`Agents   ${agentLabel(summary?.agent || parsed.agent)}\n`);
@@ -518,14 +614,14 @@ function renderInstallSummary(summary, parsed) {
     5,
     "Next step",
     dryRun ? "REVIEW" : "ACTION",
-    dryRun ? "Rerun without --dry-run to install" : "Open agent, wait, then run /tes-setup",
+    dryRun ? "Rerun without --dry-run to install" : "Open agent; wait for completion notice",
   );
   console.log("");
   printCompletionNotice(parsed, dryRun);
 }
 
 function renderFailure(summary, output) {
-  console.error("\nTES Installer failed\n");
+  console.error(`\n${color("TES Installer failed", ANSI.bold, ANSI.red)}\n`);
   const failures = summary?.failures || summary?.stage?.failures || summary?.apply?.failures || [];
   if (Array.isArray(failures) && failures.length > 0) {
     for (const item of failures.slice(0, 8)) {
@@ -594,17 +690,7 @@ async function main() {
     ...passthrough,
   ];
 
-  console.log("Installing TES...");
-  const result = spawnSync(python.command, args, {
-    cwd: process.cwd(),
-    encoding: "utf8",
-    env: {
-      ...process.env,
-      TES_PYTHON: python.executable || python.command,
-    },
-    stdio: ["ignore", "pipe", "pipe"],
-  });
-
+  const result = await runPythonInstaller(python, args);
   const status = result.status === null ? 1 : result.status;
   const combinedOutput = `${result.stdout || ""}\n${result.stderr || ""}`;
   const summary = extractJson(combinedOutput);

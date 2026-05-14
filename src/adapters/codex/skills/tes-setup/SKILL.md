@@ -21,9 +21,9 @@ instead of treating it as unknown text.
    explicitly asks to recertify/update, the sentinel is not `complete`, the
    planner reports drift, or evidence is missing.
 4. When `.tes/postinstall.json` is `running`, report that first-session setup is
-   still in progress, ask the user to wait, and do not start project work or run
-   duplicate setup commands. Tell the user to run `/tes-setup` again after the
-   setup notice or after `.tes/postinstall.json` becomes `complete`.
+   still in progress, ask the user to wait for the completion notice, and do not
+   start project work or run duplicate setup commands. Tell the user to run
+   `/tes-setup` again after `.tes/postinstall.json` becomes `complete`.
 5. If the init skill is unavailable but installed helpers exist, run the
    installed Project-Start Gate:
    - `python3 .tes/bin/tes_init.py --target . --yes`

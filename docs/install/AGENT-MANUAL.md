@@ -118,9 +118,9 @@ completed setup, and rerun Project-Start only when the user asks to recertify or
 update, the sentinel is not `complete`, the planner reports drift, or evidence
 is missing. When the sentinel is `running`, tell the user to wait for
 first-session setup to finish and run `/tes-setup` again; do not launch duplicate
-setup commands. In Claude Code, the first hook emits an immediate visible wait
-notice while the setup runs in the background; repeated complete hooks stay
-quiet.
+setup commands. In Claude Code, TES uses native `asyncRewake` so the first hook
+runs in the background, displays a running status, and wakes the session with:
+`Please, run /tes-setup for the report.` Repeated complete hooks stay quiet.
 
 Step Zero must not block project-context initialization when TES is
 already current and only `PROJECT-CONTEXT.md` needs work.
