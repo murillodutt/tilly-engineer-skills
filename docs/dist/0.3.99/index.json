@@ -1,21 +1,21 @@
 {
   "bundle": "tilly-engineer-skills-0.3.99.zip",
-  "created_at": "2026-05-14T15:30:47-03:00",
+  "created_at": "2026-05-14T15:51:47-03:00",
   "manifest": "tes-bundle-manifest.json",
   "metadata": {
-    "created_at": "2026-05-14T15:30:47-03:00",
+    "created_at": "2026-05-14T15:51:47-03:00",
     "schema": "tes-bundle-metadata@1",
     "source_branch": "main",
-    "source_commit": "0feca46b592d7c250b497b9e75fb9556afa7f6ba",
+    "source_commit": "f038b433a1accc80de3461e745ac0158245e6710",
     "source_ref": "HEAD",
     "source_repository": "https://github.com/murillodutt/tilly-engineer-skills.git",
-    "source_tree_state": "dirty",
+    "source_tree_state": "clean",
     "version": "0.3.99"
   },
   "schema": "tes-public-bundle-index@1",
-  "sha256": "c2398f1e6f71d0f7303ef515367e810223d45394170f759b1e85f2f8d4767660",
+  "sha256": "61b5ea00877d00da585105231ab69364ac1ad0e799030976d664119101bccb71",
   "sha256_file": "tilly-engineer-skills-0.3.99.zip.sha256",
-  "source_commit": "0feca46b592d7c250b497b9e75fb9556afa7f6ba",
+  "source_commit": "f038b433a1accc80de3461e745ac0158245e6710",
   "source_repository": "https://github.com/murillodutt/tilly-engineer-skills.git",
   "stage_dir": ".tes/setup/0.3.99",
   "urls": {
