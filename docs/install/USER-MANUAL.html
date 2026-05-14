@@ -6,10 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>Tilly Engineer Skills - User Manual</title>
-  <meta name="description" content="Trilingual user manual for installing, updating, auditing, and rolling back Tilly Engineer Skills.">
+  <meta name="description" content="Trilingual user manual for installing TES with GitHub-only npx, updating, auditing, and rolling back.">
   <link rel="canonical" href="https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html">
   <meta property="og:title" content="Tilly Engineer Skills - User Manual">
-  <meta property="og:description" content="Install, update, audit, and roll back TES with local evidence and clear safety boundaries.">
+  <meta property="og:description" content="Install TES from GitHub with npx, then update, audit, and roll back with local evidence.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html">
   <meta property="og:image" content="https://murillodutt.github.io/tilly-engineer-skills/assets/social-preview.webp">
@@ -1275,15 +1275,15 @@
             <h2>Quick install</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Start in the agent window. The installer should inspect Git state, create rollback evidence, and report before you approve commit or push.</p>
-            <ol class="steps">
-<li>Open the target project in Codex, Claude Code, or Cursor.</li>
-<li>Type <code>/tes-init</code> for first setup, or <code>/tes-update</code> if TES is already installed.</li>
-<li>Let Step Zero finish before approving edits. It records the baseline and checks required capabilities.</li>
-<li>Choose a route when prompted: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code>, or <code>audit</code>.</li>
+            <p class="lede">Start from the target repository with GitHub-only npx. The Node wrapper stays thin and delegates installation to the certified Python engine.</p>
+            <div class="pre-wrap" data-label="fixed release"><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<ol class="steps">
+<li>Run the command from the target repository.</li>
+<li>Open or reopen Codex, Claude Code, or Cursor.</li>
+<li>The installed first-session hook runs <code>/tes-init</code> style preparation, project context, and alignment gates.</li>
 <li>Read the final report before asking for commit or push.</li>
 </ol>
-<p>The installer stages bundles under <code>.tes/setup/&lt;version&gt;/</code>. Those files are staging cache, not project knowledge to commit.</p>
+<p>The package is <code>private:true</code>; no npm account, npm registry publish, or npm dist-tag is required. The moving channel is <code>#latest</code>, but only because GitHub has a branch named <code>latest</code>. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit.</p>
           </div>
         </section>
 
@@ -1450,15 +1450,15 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <h2>Instalacion rapida</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Empieza en la ventana del agente. El instalador debe inspeccionar Git, crear evidencia de rollback y reportar antes de que apruebes commit o push.</p>
-            <ol class="steps">
-<li>Abre el proyecto en Codex, Claude Code o Cursor.</li>
-<li>Escribe <code>/tes-init</code> para la primera instalacion, o <code>/tes-update</code> si TES ya esta instalado.</li>
-<li>Deja que Step Zero termine antes de aprobar ediciones. Registra el baseline y verifica capacidades.</li>
-<li>Elige ruta cuando se pida: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code> o <code>audit</code>.</li>
+            <p class="lede">Empieza desde el repositorio objetivo con npx solo desde GitHub. El wrapper Node es fino y delega la instalacion al motor Python certificado.</p>
+            <div class="pre-wrap" data-label="release fija"><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<ol class="steps">
+<li>Ejecuta el comando desde el repositorio objetivo.</li>
+<li>Abre o reabre Codex, Claude Code o Cursor.</li>
+<li>El hook de primera sesion ejecuta preparacion estilo <code>/tes-init</code>, contexto de proyecto y gates de alineacion.</li>
 <li>Lee el reporte final antes de pedir commit o push.</li>
 </ol>
-<p>El instalador prepara bundles en <code>.tes/setup/&lt;version&gt;/</code>. Esos archivos son cache de staging, no conocimiento del proyecto para commitear.</p>
+<p>El package es <code>private:true</code>; no requiere cuenta npm, npm registry publish ni npm dist-tag. El canal movil es <code>#latest</code>, pero solo porque GitHub tiene una branch llamada <code>latest</code>. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; ese directorio es cache local, no conocimiento del proyecto para commitear.</p>
           </div>
         </section>
 
@@ -1625,15 +1625,15 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <h2>Instalacao rapida</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Comece na janela do agente. O instalador deve inspecionar Git, criar evidencia de rollback e reportar antes de voce aprovar commit ou push.</p>
-            <ol class="steps">
-<li>Abra o projeto alvo no Codex, Claude Code ou Cursor.</li>
-<li>Digite <code>/tes-init</code> para a primeira instalacao, ou <code>/tes-update</code> se TES ja estiver instalado.</li>
-<li>Deixe o Step Zero terminar antes de aprovar edicoes. Ele registra baseline e verifica capacidades.</li>
-<li>Escolha uma rota quando solicitado: <code>current</code>, <code>codex</code>, <code>claude</code>, <code>cursor</code>, <code>all</code>, <code>mcp</code> ou <code>audit</code>.</li>
+            <p class="lede">Comece pelo repositorio alvo com npx direto do GitHub. O wrapper Node e fino e delega a instalacao ao motor Python certificado.</p>
+            <div class="pre-wrap" data-label="release fixa"><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<ol class="steps">
+<li>Rode o comando a partir do repositorio alvo.</li>
+<li>Abra ou reabra Codex, Claude Code ou Cursor.</li>
+<li>O hook de primeira sessao executa preparacao estilo <code>/tes-init</code>, contexto do projeto e gates de alinhamento.</li>
 <li>Leia o relatorio final antes de pedir commit ou push.</li>
 </ol>
-<p>O instalador prepara bundles em <code>.tes/setup/&lt;version&gt;/</code>. Esses arquivos sao cache de staging, nao conhecimento do projeto para commit.</p>
+<p>O pacote e <code>private:true</code>; nao exige conta npm, npm registry publish nem npm dist-tag. O canal movel e <code>#latest</code>, mas apenas porque o GitHub tem uma branch chamada <code>latest</code>. Bundles runtime sao preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretorio e cache local, nao conhecimento do projeto para commit.</p>
           </div>
         </section>
 

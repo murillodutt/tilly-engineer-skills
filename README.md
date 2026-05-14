@@ -14,13 +14,13 @@ TES gives AI coding work a local service record: the rules used, context
 loaded, checks run, evidence kept, and rollback path stay inside the
 repository.
 
-[Install with the assisted prompt](https://murillodutt.github.io/tilly-engineer-skills/#start-en)
+[Install with GitHub npx](https://murillodutt.github.io/tilly-engineer-skills/#start-en)
 · [See the landing](https://murillodutt.github.io/tilly-engineer-skills/)
 · [Read the manual](https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html)
 
-Paste the assisted prompt into Codex, Claude Code, or Cursor from inside the
-target repository. TES starts by protecting the repo, then installs with local
-evidence and rollback guidance.
+Run the GitHub-only npx command from inside the target repository. TES installs
+locally, prepares Codex, Claude Code, and Cursor hooks, then finishes first
+session setup with local evidence and rollback guidance.
 
 TES does not replace Codex, Claude Code, or Cursor. It gives their work an
 operating trail: what context was loaded, which rules applied, which gates
@@ -81,6 +81,6 @@ python3 scripts/tes_install.py install --target /path/to/project --agent all --y
 After installation, TES is local-first by default: no push, publish, tags,
 remote changes, marketplace action, or write-capable MCP without explicit
 authorization. Source maintainers verify this package with `npm run
-commit:check`; adopters start from the assisted prompt.
+commit:check`; adopters start from GitHub-only npx.
 
 MIT. See [LICENSE](LICENSE).
