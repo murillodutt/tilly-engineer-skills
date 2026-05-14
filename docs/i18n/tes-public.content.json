@@ -273,7 +273,7 @@
         "lede": "Installation is not the dream; it is the controlled path to the dream. Start from the agent window and let Step Zero protect the repository first.",
         "blocks": [
           {"type": "prompt_copy", "label": "installation mini prompt", "title": "Assisted installer prompt", "summary": "Copy once from the target repository. It loads the installer spec, protects Git state, applies TES locally, and returns certification plus rollback guidance.", "source_label": "Canonical source: `docs/install/MINI-PROMPT.md`", "copy_label": "Copy prompt", "copied_label": "Copied", "source": "docs/install/MINI-PROMPT.md", "fence": "text"},
-          {"type": "p", "text": "This is the same canonical mini prompt kept in [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), rendered here so the first safe action is one click. Current public bundles are served from `docs/dist/0.3.86/`; SHA-256 `472e0a99fcebd0099180b1604f1a2f4f0b7ded5804d4c7c42ec9beded3bccc00`."}
+          {"type": "p", "text": "This is the same canonical mini prompt kept in [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), rendered here so the first safe action is one click. Current public bundles are served from `docs/dist/0.3.86/`; SHA-256 `d79e93f9aa13430859c0ae4a687c9d22ced1c998841c74c478e379ba4d476da1`."}
         ]
       },
       "es": {
@@ -282,7 +282,7 @@
         "lede": "La instalacion no es el sueno; es el camino controlado hacia el sueno. Empieza en la ventana del agente y deja que Step Zero proteja el repositorio.",
         "blocks": [
           {"type": "prompt_copy", "label": "mini prompt de instalacion", "title": "Prompt de instalacion asistida", "summary": "Copia una vez desde el repositorio objetivo. Carga el spec del instalador, protege el estado Git, aplica TES localmente y devuelve certificacion con rollback.", "source_label": "Fuente canonica: `docs/install/MINI-PROMPT.md`", "copy_label": "Copiar prompt", "copied_label": "Copiado", "source": "docs/install/MINI-PROMPT.md", "fence": "text"},
-          {"type": "p", "text": "Es el mismo mini prompt canonico mantenido en [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), renderizado aqui para que la primera accion segura sea un clic. Current public bundles estan en `docs/dist/0.3.86/`; SHA-256 `472e0a99fcebd0099180b1604f1a2f4f0b7ded5804d4c7c42ec9beded3bccc00`."}
+          {"type": "p", "text": "Es el mismo mini prompt canonico mantenido en [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), renderizado aqui para que la primera accion segura sea un clic. Current public bundles estan en `docs/dist/0.3.86/`; SHA-256 `d79e93f9aa13430859c0ae4a687c9d22ced1c998841c74c478e379ba4d476da1`."}
         ]
       },
       "pt": {
@@ -291,7 +291,7 @@
         "lede": "Instalacao nao e o sonho; e o caminho controlado ate o sonho. Comece na janela do agente e deixe o Step Zero proteger o repositorio primeiro.",
         "blocks": [
           {"type": "prompt_copy", "label": "mini prompt de instalacao", "title": "Prompt de instalacao assistida", "summary": "Copie uma vez a partir do repositorio alvo. Ele carrega a spec do instalador, protege o estado Git, aplica TES localmente e devolve certificacao com rollback.", "source_label": "Fonte canonica: `docs/install/MINI-PROMPT.md`", "copy_label": "Copiar prompt", "copied_label": "Copiado", "source": "docs/install/MINI-PROMPT.md", "fence": "text"},
-          {"type": "p", "text": "E o mesmo mini prompt canonico mantido em [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), renderizado aqui para que a primeira acao segura seja um clique. Current public bundles ficam em `docs/dist/0.3.86/`; SHA-256 `472e0a99fcebd0099180b1604f1a2f4f0b7ded5804d4c7c42ec9beded3bccc00`."}
+          {"type": "p", "text": "E o mesmo mini prompt canonico mantido em [docs/install/MINI-PROMPT.md](install/MINI-PROMPT.md), renderizado aqui para que a primeira acao segura seja um clique. Current public bundles ficam em `docs/dist/0.3.86/`; SHA-256 `d79e93f9aa13430859c0ae4a687c9d22ced1c998841c74c478e379ba4d476da1`."}
         ]
       }
     },
