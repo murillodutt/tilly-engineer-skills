@@ -10,9 +10,9 @@ tver: 0.9.6
 
 # Adapter Installation
 
-The commercial installer is GitHub-only npx. It resolves this repository
-through npm's Git package spec, runs the thin Node CLI, and delegates the real
-work to `scripts/tes_install.py`.
+The commercial installer is the GitHub npx command. It resolves a fixed or
+moving Git ref, installs TES locally into the target repository, prepares the
+selected agent hooks, and records the first-session setup path.
 
 User-facing walkthrough:
 
@@ -40,28 +40,24 @@ For the moving GitHub branch:
 npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.87` is the fixed release ref. `#latest` is allowed only when GitHub has a
-branch or tag named `latest`; it is not the npm registry dist-tag. Release
-operators must verify refs with `git ls-remote` before certification.
-
-No npm registry account, npm publish, or npm dist-tag is required. The package is
-`private:true` to prevent accidental registry publishing.
+`#v0.3.87` is the fixed release ref. `#latest` follows the repository's moving
+GitHub branch. Release operators must verify refs with `git ls-remote` before
+certification.
 
 ## Install Semantics
 
-The npx wrapper and direct Python form both stage a source or versioned ZIP,
-apply runtime capabilities, write `.tes/tes-install-lock.json` and
-`.tes/postinstall.json`, then install first-session hooks.
+The installer stages a versioned TES bundle, applies runtime capabilities,
+writes `.tes/tes-install-lock.json` and `.tes/postinstall.json`, then installs
+first-session hooks.
 
 Hooks call `python3 .tes/bin/tes_install.py hook --agent <agent> --target .`.
 When the sentinel is `pending`, post-install runs `tes_init.py`,
 `project_context_oracle.py`, and `project_alignment_oracle.py`, then marks the
 sentinel `complete` or `needs_review`. Repeated hooks exit quickly.
 
-Maintainers can still call the engine directly when certifying package source:
+Release certification gates:
 
 ```bash
-python3 scripts/tes_install.py install --target /path/to/project --agent all --yes
 python3 scripts/tes_npx_oracle.py --self-test
 TES_GITHUB_NPX_REF=v0.3.87 python3 scripts/tes_npx_oracle.py --github-self-test
 ```

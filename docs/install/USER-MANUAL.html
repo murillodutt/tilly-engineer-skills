@@ -1253,7 +1253,7 @@
             <h2>Quick install</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Start from the target repository with GitHub-only npx. The Node wrapper stays thin and delegates installation to the certified Python engine.</p>
+            <p class="lede">Start from the target repository with GitHub npx. The command installs TES locally, prepares selected agent hooks, and records the first-session setup path.</p>
             <div class="pre-wrap" data-label="fixed release"><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.87 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <div class="pre-wrap" data-label="moving branch"><pre><code>npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
@@ -1264,7 +1264,7 @@
 <li>Read the final report before asking for commit or push.</li>
 </ol>
 <p>Useful options: <code>--target &lt;path&gt;</code> installs outside the current directory; <code>--agent codex|claude|cursor|all</code> chooses hooks; <code>--dry-run</code> prints planned writes; <code>--mode preserve</code> is the default.</p>
-<p>The package is <code>private:true</code>; no npm account, npm registry publish, or npm dist-tag is required. <code>#latest</code> is a GitHub branch, not the npm <code>latest</code> dist-tag. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit.</p>
+<p><code>#latest</code> follows this repository&#x27;s GitHub branch; use <code>#v0.3.87</code> when you need a fixed release. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit.</p>
           </div>
         </section>
 
@@ -1431,7 +1431,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <h2>Instalacion rapida</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Empieza desde el repositorio objetivo con npx solo desde GitHub. El wrapper Node es fino y delega la instalacion al motor Python certificado.</p>
+            <p class="lede">Empieza desde el repositorio objetivo con npx desde GitHub. El comando instala TES localmente, prepara los hooks de agentes seleccionados y registra el camino de setup de primera sesion.</p>
             <div class="pre-wrap" data-label="release fija"><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.87 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <div class="pre-wrap" data-label="branch movil"><pre><code>npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
@@ -1442,7 +1442,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 <li>Lee el reporte final antes de pedir commit o push.</li>
 </ol>
 <p>Opciones utiles: <code>--target &lt;path&gt;</code> instala fuera del directorio actual; <code>--agent codex|claude|cursor|all</code> elige hooks; <code>--dry-run</code> muestra escrituras planificadas; <code>--mode preserve</code> es el default.</p>
-<p>El package es <code>private:true</code>; no requiere cuenta npm, npm registry publish ni npm dist-tag. <code>#latest</code> es una branch GitHub, no el dist-tag npm <code>latest</code>. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; ese directorio es cache local, no conocimiento del proyecto para commitear.</p>
+<p><code>#latest</code> sigue la branch GitHub de este repositorio; usa <code>#v0.3.87</code> cuando necesites una release fija. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; ese directorio es cache local, no conocimiento del proyecto para commitear.</p>
           </div>
         </section>
 
@@ -1609,7 +1609,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <h2>Instalacao rapida</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Comece pelo repositorio alvo com npx direto do GitHub. O wrapper Node e fino e delega a instalacao ao motor Python certificado.</p>
+            <p class="lede">Comece pelo repositorio alvo com npx direto do GitHub. O comando instala TES localmente, prepara os hooks dos agentes escolhidos e registra o caminho de setup da primeira sessao.</p>
             <div class="pre-wrap" data-label="release fixa"><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.87 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <div class="pre-wrap" data-label="branch movel"><pre><code>npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
@@ -1620,7 +1620,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 <li>Leia o relatorio final antes de pedir commit ou push.</li>
 </ol>
 <p>Opcoes uteis: <code>--target &lt;path&gt;</code> instala fora do diretorio atual; <code>--agent codex|claude|cursor|all</code> escolhe hooks; <code>--dry-run</code> mostra escritas planejadas; <code>--mode preserve</code> e o default.</p>
-<p>O pacote e <code>private:true</code>; nao exige conta npm, npm registry publish nem npm dist-tag. <code>#latest</code> e uma branch GitHub, nao o dist-tag npm <code>latest</code>. Bundles runtime sao preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretorio e cache local, nao conhecimento do projeto para commit.</p>
+<p><code>#latest</code> acompanha a branch GitHub deste repositorio; use <code>#v0.3.87</code> quando precisar de uma release fixa. Bundles runtime sao preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretorio e cache local, nao conhecimento do projeto para commit.</p>
           </div>
         </section>
 
