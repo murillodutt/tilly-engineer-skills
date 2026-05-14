@@ -65,5 +65,10 @@ Project-Start Gate. Step Zero protects installer/update writes and must not
 block project-context initialization when TES is already installed/current and
 only the Project Context Gate fails. A preflight context PASS does not replace
 project-start execution; after helper-only or adapter repairs, rerun this gate.
+If `.tes/postinstall.json` is already `complete` from the first-session hook
+and the user asks plain `/tes-init` or `/tes-setup`, read the sentinel and
+`last_run`, summarize the completed run, and do not rerun Project-Start unless
+the user explicitly asks to recertify/update, the sentinel is not `complete`,
+the planner reports drift, or evidence is missing.
 The target `docs/agents/PROJECT-CONTEXT.md` must analyze source anchors before
 TES claims durable project understanding.

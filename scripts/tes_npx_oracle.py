@@ -23,10 +23,11 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.92"
+VERSION = "0.3.93"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
+CLAUDE_SESSIONSTART_MATCHER = "startup|resume|clear|compact"
 
 
 def run(command: list[str], cwd: Path, timeout: float = 180.0) -> subprocess.CompletedProcess[str]:
@@ -167,6 +168,39 @@ def commercial_output_failures(label: str, stdout: str) -> list[str]:
         failures.append(f"{label} must render the commercial installer screen")
     if raw_engine_output_leaked(stdout):
         failures.append(f"{label} must not leak raw Python engine JSON or [tes-install] sentinels")
+    return failures
+
+
+def claude_hook_contract_failures(target: Path) -> list[str]:
+    failures: list[str] = []
+    settings_path = target / ".claude/settings.json"
+    if not settings_path.exists():
+        return ["Claude settings missing after install"]
+    settings = load_json(settings_path)
+    groups = settings.get("hooks", {}).get("SessionStart", [])
+    if not isinstance(groups, list):
+        return ["Claude SessionStart hooks must be a list"]
+    matching_groups = [
+        group
+        for group in groups
+        if isinstance(group, dict) and group.get("matcher") == CLAUDE_SESSIONSTART_MATCHER
+    ]
+    handlers = []
+    for group in matching_groups:
+        hooks = group.get("hooks")
+        if isinstance(hooks, list):
+            handlers.extend(hook for hook in hooks if isinstance(hook, dict))
+    tes_handlers = [
+        hook
+        for hook in handlers
+        if ".tes/bin/tes_install.py" in json.dumps(hook, sort_keys=True) and "--agent claude" in json.dumps(hook, sort_keys=True)
+    ]
+    if len(tes_handlers) != 1:
+        failures.append("Claude SessionStart hook must install exactly one TES handler")
+    elif "args" in tes_handlers[0] or tes_handlers[0].get("command") != (
+        'python3 "${CLAUDE_PROJECT_DIR}/.tes/bin/tes_install.py" hook --agent claude --target "${CLAUDE_PROJECT_DIR}"'
+    ):
+        failures.append("Claude SessionStart hook must use the official single command field")
     return failures
 
 
@@ -519,6 +553,8 @@ def self_test() -> int:
             sentinel = load_json(install_target / ".tes/postinstall.json") if (install_target / ".tes/postinstall.json").exists() else {}
             if sentinel.get("state") != "pending":
                 failures.append("npm exec install must leave pending postinstall sentinel")
+            if (install_target / ".claude/settings.json").exists():
+                failures.extend(claude_hook_contract_failures(install_target))
 
             hook_result = run(
                 [
@@ -540,6 +576,40 @@ def self_test() -> int:
             sentinel = load_json(install_target / ".tes/postinstall.json") if (install_target / ".tes/postinstall.json").exists() else {}
             if sentinel.get("state") != "complete":
                 failures.append("installed hook must complete postinstall sentinel")
+            claude_hook_result = run(
+                [
+                    sys.executable,
+                    str(install_target / ".tes/bin/tes_install.py"),
+                    "hook",
+                    "--agent",
+                    "claude",
+                    "--target",
+                    str(install_target),
+                ],
+                work,
+                timeout=300.0,
+            )
+            if claude_hook_result.returncode != 0:
+                failures.append("installed Claude hook retry failed")
+                failures.extend(claude_hook_result.stdout.splitlines())
+                failures.extend(claude_hook_result.stderr.splitlines())
+            else:
+                try:
+                    claude_payload = json.loads(claude_hook_result.stdout)
+                except json.JSONDecodeError:
+                    claude_payload = {}
+                    failures.append("installed Claude hook must emit structured hook JSON")
+                hook_output = claude_payload.get("hookSpecificOutput") if isinstance(claude_payload, dict) else None
+                if not isinstance(hook_output, dict):
+                    failures.append("installed Claude hook output missing hookSpecificOutput")
+                elif hook_output.get("hookEventName") != "SessionStart":
+                    failures.append("installed Claude hook output must target SessionStart")
+                else:
+                    context = hook_output.get("additionalContext")
+                    if not isinstance(context, str) or "TES SessionStart hook ran" not in context:
+                        failures.append("installed Claude hook output must provide TES additionalContext")
+                    if isinstance(context, str) and '"commands"' in context:
+                        failures.append("installed Claude hook context must not leak raw command JSON")
 
     result = {
         "version": VERSION,
@@ -716,7 +786,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.92 or main.",
+        help="Git ref to test, e.g. v0.3.93 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()

@@ -59,6 +59,12 @@ the user for package contents.
    . --yes` in an installed target, or package `scripts/tes_init.py --target
    <target> --yes`, then run `project_context_oracle.py --target <target>` and
    `project_alignment_oracle.py --target <target>`.
+   When `.tes/postinstall.json` is already `complete` from the first-session
+   hook and the user asks plain `/tes-init` or `/tes-setup`, treat it as a
+   status/report request: read `.tes/postinstall.json` and its `last_run`,
+   summarize the completed run, and do not rerun Project-Start unless the user
+   explicitly asks to recertify/update, the sentinel is not `complete`, the
+   planner reports drift, or evidence is missing.
 4. Run Step Zero before installer/update edits: inspect Git status and offer a
    local baseline commit when the tree is dirty and install/update writes are
    required.

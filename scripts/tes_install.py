@@ -16,12 +16,13 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.92"
+VERSION = "0.3.93"
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
 POSTINSTALL_RUN_ROOT = Path(".tes/postinstall-runs")
 AGENTS = ("codex", "claude", "cursor")
 POSTINSTALL_STATES = {"pending", "running", "complete", "needs_review"}
+CLAUDE_SESSIONSTART_MATCHER = "startup|resume|clear|compact"
 DEFAULT_POSTINSTALL_COMMANDS = (
     ("tes_init.py", ("--target", "{target}", "--yes")),
     ("project_context_oracle.py", ("--target", "{target}")),
@@ -164,15 +165,10 @@ def hook_entry(agent: str) -> dict[str, Any]:
     if agent == "claude":
         return {
             "type": "command",
-            "command": "python3",
-            "args": [
-                "${CLAUDE_PROJECT_DIR}/.tes/bin/tes_install.py",
-                "hook",
-                "--agent",
-                "claude",
-                "--target",
-                "${CLAUDE_PROJECT_DIR}",
-            ],
+            "command": (
+                'python3 "${CLAUDE_PROJECT_DIR}/.tes/bin/tes_install.py" '
+                'hook --agent claude --target "${CLAUDE_PROJECT_DIR}"'
+            ),
             "timeout": 120,
         }
     if agent == "cursor":
@@ -206,10 +202,43 @@ def ensure_hook_group(data: dict[str, Any], event: str, matcher: str, entry: dic
     groups.append({"matcher": matcher, "hooks": [entry]})
 
 
+def is_tes_claude_hook_entry(entry: Any) -> bool:
+    if not isinstance(entry, dict):
+        return False
+    marker = json.dumps(entry, sort_keys=True)
+    return ".tes/bin/tes_install.py" in marker and "--agent" in marker and "claude" in marker
+
+
+def remove_tes_claude_sessionstart_hooks(data: dict[str, Any]) -> None:
+    hooks = data.get("hooks")
+    if not isinstance(hooks, dict):
+        return
+    groups = hooks.get("SessionStart")
+    if not isinstance(groups, list):
+        return
+    retained_groups: list[Any] = []
+    for group in groups:
+        if not isinstance(group, dict):
+            retained_groups.append(group)
+            continue
+        handlers = group.get("hooks")
+        if not isinstance(handlers, list):
+            retained_groups.append(group)
+            continue
+        retained_handlers = [handler for handler in handlers if not is_tes_claude_hook_entry(handler)]
+        if retained_handlers:
+            group["hooks"] = retained_handlers
+            retained_groups.append(group)
+        elif len(retained_handlers) == len(handlers):
+            retained_groups.append(group)
+    hooks["SessionStart"] = retained_groups
+
+
 def install_claude_hook(target: Path, dry_run: bool) -> dict[str, str]:
     path = target / ".claude/settings.json"
     data = read_json(path)
-    ensure_hook_group(data, "SessionStart", "startup|resume", hook_entry("claude"))
+    remove_tes_claude_sessionstart_hooks(data)
+    ensure_hook_group(data, "SessionStart", CLAUDE_SESSIONSTART_MATCHER, hook_entry("claude"))
     text = json.dumps(data, indent=2, sort_keys=True) + "\n"
     return write_text_if_changed(path, text, target, dry_run)
 
@@ -541,6 +570,56 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
     return (0 if not failed else 1), result
 
 
+def claude_postinstall_context(result: dict[str, Any], hook_input: dict[str, Any]) -> str:
+    status = str(result.get("status") or "UNKNOWN")
+    target = str(result.get("target") or "unknown target")
+    source = str(hook_input.get("source") or "manual")
+    version = str(result.get("version") or VERSION)
+    lines = [
+        f"TES SessionStart hook ran for source `{source}`.",
+        f"Target: {target}",
+        f"TES version: {version}",
+        f"Status: {status}",
+    ]
+    reason = result.get("reason")
+    if reason:
+        lines.append(f"Reason: {reason}")
+    state = result.get("state")
+    if state:
+        lines.append(f"Postinstall state: {state}")
+    run_record = result.get("run_record")
+    if run_record:
+        lines.append(f"Run record: {run_record}")
+    commands = result.get("commands")
+    if isinstance(commands, list) and commands:
+        passed = sum(1 for item in commands if isinstance(item, dict) and item.get("status") == "PASS")
+        lines.append(f"Postinstall gates: {passed}/{len(commands)} PASS")
+    if status == "PASS":
+        lines.append("Project context and alignment setup completed before the first prompt.")
+        lines.append(
+            "If the user immediately asks `/tes-init`, summarize this completed run from "
+            "`.tes/postinstall.json` and the run record unless they explicitly request recertification."
+        )
+    elif status == "SKIP":
+        lines.append("Postinstall did not run again because no pending work was required.")
+    else:
+        lines.append("TES postinstall needs review. Use `/tes-init` to inspect and recover before claiming GO.")
+    return "\n".join(lines)
+
+
+def claude_hook_output(result: dict[str, Any], hook_input: dict[str, Any]) -> dict[str, Any]:
+    event_name = str(hook_input.get("hook_event_name") or "SessionStart")
+    output: dict[str, Any] = {
+        "hookSpecificOutput": {
+            "hookEventName": event_name,
+            "additionalContext": claude_postinstall_context(result, hook_input),
+        }
+    }
+    if result.get("status") not in {"PASS", "SKIP", "DRY-RUN"}:
+        output["systemMessage"] = "TES first-session setup needs review. Run /tes-init for recovery."
+    return output
+
+
 def hook(args: argparse.Namespace) -> int:
     hook_input = parse_hook_input()
     if args.target == Path("."):
@@ -548,6 +627,9 @@ def hook(args: argparse.Namespace) -> int:
         if inferred:
             args.target = Path(str(inferred))
     code, result = postinstall(args, hook_input=hook_input)
+    if args.agent == "claude":
+        print(json.dumps(claude_hook_output(result, hook_input), sort_keys=True))
+        return 0
     if args.agent == "cursor":
         print("{}")
     elif result.get("status") not in {"SKIP"}:
@@ -580,6 +662,42 @@ def self_test() -> int:
         )
         (target / "src").mkdir()
         (target / "src/app.py").write_text("print('thin')\n", encoding="utf-8")
+        (target / ".claude").mkdir()
+        (target / ".claude/settings.json").write_text(
+            json.dumps(
+                {
+                    "hooks": {
+                        "SessionStart": [
+                            {
+                                "matcher": "startup|resume",
+                                "hooks": [
+                                    {
+                                        "type": "command",
+                                        "command": "python3",
+                                        "args": [
+                                            "${CLAUDE_PROJECT_DIR}/.tes/bin/tes_install.py",
+                                            "hook",
+                                            "--agent",
+                                            "claude",
+                                            "--target",
+                                            "${CLAUDE_PROJECT_DIR}",
+                                        ],
+                                        "timeout": 120,
+                                    }
+                                ],
+                            },
+                            {
+                                "matcher": "compact",
+                                "hooks": [{"type": "command", "command": "echo keep"}],
+                            },
+                        ]
+                    }
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
         install_result = subprocess.run(
             [
@@ -615,6 +733,41 @@ def self_test() -> int:
         sentinel = read_json(target / POSTINSTALL_PATH)
         if sentinel.get("state") != "pending":
             failures.append("postinstall sentinel must be pending after install")
+        claude_settings = read_json(target / ".claude/settings.json")
+        session_groups = claude_settings.get("hooks", {}).get("SessionStart", [])
+        if not isinstance(session_groups, list):
+            failures.append("Claude SessionStart hooks must be a list")
+            session_groups = []
+        matching_groups = [
+            group
+            for group in session_groups
+            if isinstance(group, dict) and group.get("matcher") == CLAUDE_SESSIONSTART_MATCHER
+        ]
+        if len(matching_groups) != 1:
+            failures.append("Claude hook must use the official SessionStart matcher sources")
+        claude_handlers = []
+        for group in matching_groups:
+            handlers = group.get("hooks")
+            if isinstance(handlers, list):
+                claude_handlers.extend(handler for handler in handlers if isinstance(handler, dict))
+        if len(claude_handlers) != 1:
+            failures.append("Claude hook must install exactly one TES handler")
+        elif claude_handlers[0] != hook_entry("claude"):
+            failures.append("Claude hook must use a single shell command entry without args")
+        if any(
+            is_tes_claude_hook_entry(handler)
+            for group in session_groups
+            if isinstance(group, dict) and group.get("matcher") == "startup|resume"
+            for handler in (group.get("hooks") if isinstance(group.get("hooks"), list) else [])
+        ):
+            failures.append("Claude hook migration must remove legacy startup|resume TES entries")
+        if not any(
+            isinstance(handler, dict) and handler.get("command") == "echo keep"
+            for group in session_groups
+            if isinstance(group, dict)
+            for handler in (group.get("hooks") if isinstance(group.get("hooks"), list) else [])
+        ):
+            failures.append("Claude hook migration must preserve unrelated SessionStart hooks")
         hook_result = subprocess.run(
             [
                 sys.executable,
@@ -663,6 +816,22 @@ def self_test() -> int:
             failures.append("idempotent hook retry failed")
             failures.extend(second_hook.stdout.splitlines())
             failures.extend(second_hook.stderr.splitlines())
+        try:
+            claude_hook_payload = json.loads(second_hook.stdout)
+        except json.JSONDecodeError:
+            claude_hook_payload = {}
+            failures.append("Claude hook retry must return structured hook JSON")
+        hook_specific = claude_hook_payload.get("hookSpecificOutput") if isinstance(claude_hook_payload, dict) else None
+        if not isinstance(hook_specific, dict):
+            failures.append("Claude hook output must include hookSpecificOutput")
+        else:
+            if hook_specific.get("hookEventName") != "SessionStart":
+                failures.append("Claude hook output must name SessionStart")
+            context = hook_specific.get("additionalContext")
+            if not isinstance(context, str) or "TES SessionStart hook ran" not in context:
+                failures.append("Claude hook output must pass concise additionalContext")
+            if isinstance(context, str) and '"commands"' in context:
+                failures.append("Claude hook additionalContext must not leak raw postinstall JSON")
 
     with tempfile.TemporaryDirectory(prefix="tes-thin-install-dry-") as tempdir:
         target = Path(tempdir)

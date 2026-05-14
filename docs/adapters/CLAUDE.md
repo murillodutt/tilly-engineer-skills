@@ -27,7 +27,7 @@ each runtime.
 | `skills/**` | Plugin-root reusable workflows for explicit plugin testing/distribution | Included |
 | `.claude-plugin/**` | Distribution metadata | Included as source, not published |
 | Settings | Enforcement and permission policy | Documented only |
-| Hooks | Operational enforcement scripts | Blocked by default |
+| Hooks | First-session setup context and operational scripts | Installer first-session hook only; plugin default stays blocked |
 | MCP | Project-scoped Cortex access | Installer route only |
 | Subagents | Independent specialist contexts | Blocked by default |
 | Commands | Runtime command shortcuts | Not materialized; skills are preferred |
@@ -92,6 +92,9 @@ dedicated decision.
   `.claude/skills/**`, `skills/**`, and `.claude-plugin/**`.
 - Hooks, write-capable MCP, and subagents must not be added to the default
   plugin.
+- The installer may add a project `SessionStart` hook that runs the local TES
+  post-install routine and returns concise `additionalContext`; this hook is
+  separate from plugin packaging and must stay idempotent.
 - Read-only Cortex MCP is activated by the assisted installer through
   project-scoped `.mcp.json`, not plugin metadata.
 - Local target plugin shape is certified by
