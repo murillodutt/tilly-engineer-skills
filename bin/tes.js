@@ -35,7 +35,7 @@ Options:
   --help                      Show this help.
 
 Examples:
-  npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.87 tilly-engineer-skills add
+  npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.88 tilly-engineer-skills add
   npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes
 `);
 }
