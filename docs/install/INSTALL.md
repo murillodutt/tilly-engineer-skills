@@ -97,7 +97,9 @@ enable it before expecting setup to run; Claude Code runs setup through
 `/tes-setup`; Cursor reloads `.cursor/hooks.json` on workspace open, so reopen
 the workspace, let first-session setup complete, then run `/tes-setup`. If the
 sentinel is already `complete`, `/tes-init` should report current evidence
-unless the user explicitly asks to recertify.
+unless the user explicitly asks to recertify. Do not start project work until
+`install -> hook -> /tes-setup -> /tes-align` has completed; use `/tes-update`
+for updates, `/tes-doctor` for repair, and `/tes-align` for Markdown mesh refresh.
 
 Release certification gates:
 

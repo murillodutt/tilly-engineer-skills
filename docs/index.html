@@ -1298,8 +1298,10 @@
 <li>Codex: open Settings &gt; Hooks, then Trust and enable the Session Start hook if it is marked needs review.</li>
 <li>Claude Code: open or reopen Claude Code, wait for the TES completion notice, then run <code>/tes-setup</code>.</li>
 <li>Cursor: reopen the workspace, let first-session setup complete, then run <code>/tes-setup</code> for the report.</li>
+<li>After <code>/tes-setup</code> reports complete, run <code>/tes-align</code> before starting project work.</li>
 <li>Read the final report before approving commit, push, or rollout.</li>
 </ol>
+<aside class="side-note"><p class="side-note-title">Important: agent follow-up is host-specific</p><p>The required first-run path is <code>install -&gt; hook -&gt; /tes-setup -&gt; /tes-align</code>. Use <code>/tes-update</code> for updates, <code>/tes-doctor</code> for repair, and <code>/tes-align</code> when the project Markdown operating mesh needs to be refreshed.</p></aside>
 <p><code>#v0.3.101</code> is the fixed reproducible Git ref and the supported install channel for this release. Use the versioned command when you need the same installer behavior across machines and time.</p>
 <p><code>--loglevel=error</code> keeps package-runner warnings out of the first-run screen while preserving real command failures. For Bun-only machines, use the <code>bunx --silent --bun</code> command. If neither runtime is installed, install Node.js LTS or Bun before running TES.</p>
           </div>
@@ -1312,7 +1314,7 @@
           </div>
           <div class="chapter-body">
             <p class="lede">The landing makes the case. The manual gives the operating path: install, update, audit, report review, and rollback without blind file copying.</p>
-            <div class="card-grid"><article class="info-card"><h3>Try</h3><p>Run the GitHub npx command from the target repository, then open your agent, wait for the completion notice, and run <code>/tes-setup</code> for the report.</p></article><article class="info-card"><h3>Operate</h3><p>Use the manual when you need routes, states, rollback, MCP, Field Reports, or Obsidian viewing.</p></article><article class="info-card"><h3>Audit</h3><p>Use the source map when a claim needs evidence, scope, or a governed document.</p></article></div>
+            <div class="card-grid"><article class="info-card"><h3>Try</h3><p>Run the GitHub npx command from the target repository, open your agent, wait for the hook, run <code>/tes-setup</code>, then run <code>/tes-align</code> before project work.</p></article><article class="info-card"><h3>Operate</h3><p>Use the manual when you need routes, states, rollback, MCP, Field Reports, or Obsidian viewing.</p></article><article class="info-card"><h3>Audit</h3><p>Use the source map when a claim needs evidence, scope, or a governed document.</p></article></div>
           </div>
         </section>
 
@@ -1398,8 +1400,10 @@
 <li>Codex: abre Settings &gt; Hooks, luego usa Trust y activa el hook Session Start si aparece como needs review.</li>
 <li>Claude Code: abre o reabre Claude Code, espera el aviso de finalizacion de TES y ejecuta <code>/tes-setup</code>.</li>
 <li>Cursor: reabre el workspace, deja que el setup de primera sesion termine y ejecuta <code>/tes-setup</code> para el reporte.</li>
+<li>Despues de que <code>/tes-setup</code> reporte complete, ejecuta <code>/tes-align</code> antes de empezar trabajo de proyecto.</li>
 <li>Lee el reporte final antes de aprobar commit, push o rollout.</li>
 </ol>
+<aside class="side-note"><p class="side-note-title">Importante: el seguimiento del agente depende del host</p><p>La ruta obligatoria de primera ejecucion es <code>install -&gt; hook -&gt; /tes-setup -&gt; /tes-align</code>. Usa <code>/tes-update</code> para actualizar, <code>/tes-doctor</code> para reparar y <code>/tes-align</code> cuando el mesh operativo Markdown del proyecto necesite refrescarse.</p></aside>
 <p><code>#v0.3.101</code> es el Git ref fijo y reproducible y el canal de instalacion soportado para esta release. Usa el comando versionado cuando necesites el mismo comportamiento del instalador entre maquinas y momentos.</p>
 <p><code>--loglevel=error</code> mantiene los avisos del package runner fuera de la primera pantalla sin ocultar fallas reales del comando. En maquinas solo con Bun, usa <code>bunx --silent --bun</code>. Si no hay runtime instalado, instala Node.js LTS o Bun antes de ejecutar TES.</p>
           </div>
@@ -1412,7 +1416,7 @@
           </div>
           <div class="chapter-body">
             <p class="lede">La landing convence. El manual da la ruta operativa: instalacion, update, auditoria, revision de reportes y rollback sin copia ciega.</p>
-            <div class="card-grid"><article class="info-card"><h3>Probar</h3><p>Ejecuta el comando GitHub npx desde el repositorio objetivo y abre tu agente para terminar el setup de primera sesion.</p></article><article class="info-card"><h3>Operar</h3><p>Usa el manual para rutas, estados, rollback, MCP, Field Reports u Obsidian.</p></article><article class="info-card"><h3>Auditar</h3><p>Usa el mapa de fuentes cuando un claim necesita evidencia, alcance o documento gobernado.</p></article></div>
+            <div class="card-grid"><article class="info-card"><h3>Probar</h3><p>Ejecuta el comando GitHub npx desde el repositorio objetivo, abre tu agente, espera el hook, ejecuta <code>/tes-setup</code> y luego <code>/tes-align</code> antes del trabajo de proyecto.</p></article><article class="info-card"><h3>Operar</h3><p>Usa el manual para rutas, estados, rollback, MCP, Field Reports u Obsidian.</p></article><article class="info-card"><h3>Auditar</h3><p>Usa el mapa de fuentes cuando un claim necesita evidencia, alcance o documento gobernado.</p></article></div>
           </div>
         </section>
 
@@ -1498,8 +1502,10 @@
 <li>Codex: abra Settings &gt; Hooks, depois use Trust e ative o hook Session Start se ele aparecer como needs review.</li>
 <li>Claude Code: abra ou reabra o Claude Code, aguarde o aviso de conclusao do TES e rode <code>/tes-setup</code>.</li>
 <li>Cursor: reabra o workspace, deixe o setup de primeira sessao terminar e rode <code>/tes-setup</code> para o relatorio.</li>
+<li>Depois que <code>/tes-setup</code> reportar complete, rode <code>/tes-align</code> antes de iniciar trabalho no projeto.</li>
 <li>Leia o relatorio final antes de aprovar commit, push ou rollout.</li>
 </ol>
+<aside class="side-note"><p class="side-note-title">Importante: o follow-up do agente depende do host</p><p>O caminho obrigatorio da primeira execucao e <code>install -&gt; hook -&gt; /tes-setup -&gt; /tes-align</code>. Use <code>/tes-update</code> para atualizar, <code>/tes-doctor</code> para reparar e <code>/tes-align</code> quando a malha operacional Markdown do projeto precisar ser atualizada.</p></aside>
 <p><code>#v0.3.101</code> e o Git ref fixo e reprodutivel e o canal de instalacao suportado para esta release. Use o comando versionado quando precisar do mesmo comportamento do instalador entre maquinas e momentos.</p>
 <p><code>--loglevel=error</code> mantem avisos do package runner fora da primeira tela sem esconder falhas reais do comando. Em maquinas somente com Bun, use <code>bunx --silent --bun</code>. Se nenhum runtime estiver instalado, instale Node.js LTS ou Bun antes de executar o TES.</p>
           </div>
@@ -1512,7 +1518,7 @@
           </div>
           <div class="chapter-body">
             <p class="lede">A landing convence. O manual entrega o caminho operacional: instalacao, update, auditoria, revisao de relatorios e rollback sem copia cega.</p>
-            <div class="card-grid"><article class="info-card"><h3>Testar</h3><p>Rode o comando GitHub npx a partir do repositorio alvo e abra seu agente para finalizar o setup de primeira sessao.</p></article><article class="info-card"><h3>Operar</h3><p>Use o manual para rotas, estados, rollback, MCP, Field Reports ou Obsidian.</p></article><article class="info-card"><h3>Auditar</h3><p>Use o mapa de fontes quando um claim precisar de evidencia, escopo ou documento governado.</p></article></div>
+            <div class="card-grid"><article class="info-card"><h3>Testar</h3><p>Rode o comando GitHub npx a partir do repositorio alvo, abra seu agente, aguarde o hook, rode <code>/tes-setup</code> e depois <code>/tes-align</code> antes do trabalho no projeto.</p></article><article class="info-card"><h3>Operar</h3><p>Use o manual para rotas, estados, rollback, MCP, Field Reports ou Obsidian.</p></article><article class="info-card"><h3>Auditar</h3><p>Use o mapa de fontes quando um claim precisar de evidencia, escopo ou documento governado.</p></article></div>
           </div>
         </section>
 

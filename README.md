@@ -37,6 +37,16 @@ Installation details live on the public surface where users need them:
 - The user manual covers options, first-session setup, rollback, and audit.
 - This repository keeps the source, contracts, gates, and evidence.
 
+Important: do not start project work immediately after install. The first run
+must complete the agent path:
+
+```text
+install -> hook -> /tes-setup -> /tes-align
+```
+
+Use `/tes-update` for updates, `/tes-doctor` for repair, and `/tes-align` when
+the project Markdown operating mesh needs to be refreshed.
+
 Source maintainers verify this package with `npm run commit:check`.
 
 MIT. See [LICENSE](LICENSE).
