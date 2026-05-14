@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -16,7 +17,8 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.95"
+VERSION = "0.3.96"
+MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
 POSTINSTALL_RUN_ROOT = Path(".tes/postinstall-runs")
@@ -28,6 +30,45 @@ DEFAULT_POSTINSTALL_COMMANDS = (
     ("project_context_oracle.py", ("--target", "{target}")),
     ("project_alignment_oracle.py", ("--target", "{target}")),
 )
+
+
+def python_executable() -> str:
+    return os.environ.get("TES_PYTHON") or sys.executable or "python3"
+
+
+def python_command_token() -> str:
+    return shlex.quote(python_executable())
+
+
+def command_literal(command: str) -> str:
+    return json.dumps(command)
+
+
+def python_runtime_block(command: Any) -> int:
+    message = (
+        "TES requires Python 3.11+ for local setup oracles. "
+        f"Detected Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}. "
+        "Install Python 3.11+ or set PYTHON=/path/to/python3.11, then rerun TES."
+    )
+    if command == "hook":
+        print(
+            json.dumps(
+                {
+                    "systemMessage": message,
+                    "hookSpecificOutput": {
+                        "hookEventName": "SessionStart",
+                        "permissionDecision": "allow",
+                        "additionalContext": message,
+                    },
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 1
+    print(json.dumps({"version": VERSION, "status": "FAIL", "failures": [message]}, indent=2, sort_keys=True))
+    print("[tes-install] FAIL")
+    return 1
 
 
 def utc_stamp() -> str:
@@ -139,13 +180,17 @@ def write_text_if_changed(path: Path, text: str, target: Path, dry_run: bool, ba
 
 
 def codex_hook_snippet() -> str:
-    return """# TES first-session post-install hook.
+    command = (
+        f'{python_command_token()} "$(git rev-parse --show-toplevel)/.tes/bin/tes_install.py" '
+        'hook --agent codex --target "$(git rev-parse --show-toplevel)"'
+    )
+    return f"""# TES first-session post-install hook.
 [[hooks.SessionStart]]
 matcher = "startup|resume"
 
 [[hooks.SessionStart.hooks]]
 type = "command"
-command = 'python3 "$(git rev-parse --show-toplevel)/.tes/bin/tes_install.py" hook --agent codex --target "$(git rev-parse --show-toplevel)"'
+command = {command_literal(command)}
 timeout = 120
 statusMessage = "Checking TES post-install"
 """
@@ -166,14 +211,14 @@ def hook_entry(agent: str) -> dict[str, Any]:
         return {
             "type": "command",
             "command": (
-                'python3 "${CLAUDE_PROJECT_DIR}/.tes/bin/tes_install.py" '
+                f'{python_command_token()} "${{CLAUDE_PROJECT_DIR}}/.tes/bin/tes_install.py" '
                 'hook --agent claude --target "${CLAUDE_PROJECT_DIR}"'
             ),
             "timeout": 120,
         }
     if agent == "cursor":
         return {
-            "command": "python3 .tes/bin/tes_install.py hook --agent cursor --target .",
+            "command": f"{python_command_token()} .tes/bin/tes_install.py hook --agent cursor --target .",
             "timeout": 120,
         }
     raise ValueError(f"unsupported hook entry agent: {agent}")
@@ -969,6 +1014,8 @@ def main() -> int:
     status_parser.add_argument("--target", type=Path, default=Path.cwd())
 
     args = parser.parse_args()
+    if sys.version_info < MIN_PYTHON:
+        return python_runtime_block(args.command)
     if args.self_test:
         return self_test()
     if args.command == "install":

@@ -1196,7 +1196,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark" data-ui="brand">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.95</span>
+          <span class="brand-meta">User manual · v0.3.96</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1258,19 +1258,19 @@
           </div>
           <div class="chapter-body">
             <p class="lede">Start from the target repository with GitHub npx. The command installs TES locally, prepares selected agent hooks, and records the first-session setup path.</p>
-            <div class="pre-wrap" data-label="fixed release" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="bun runtime" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="fixed release" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="bun runtime" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
-<li>Run the command from the target repository with Node.js 18+ or Bun 1.0+.</li>
+<li>Run the command from the target repository with Node.js 18+ or Bun 1.0+, plus Python 3.11+.</li>
 <li>Interactive mode asks for target, agents, install mode, and final confirmation.</li>
-<li>Use <code>#v0.3.95</code> for reproducible installs.</li>
+<li>Use <code>#v0.3.96</code> for reproducible installs.</li>
 <li>Open or reopen Codex, Claude Code, or Cursor.</li>
 <li>The first-session hook runs setup, project context, and alignment gates once; repeated hooks exit quickly.</li>
 <li>In Claude Code, the first successful run shows a short completion notice and also enters the session as context.</li>
 <li>Read the final report before asking for commit or push.</li>
 </ol>
 <p>Useful options: <code>--target &lt;path&gt;</code> installs outside the current directory; <code>--agent codex|claude|cursor|all</code> chooses hooks; <code>--yes</code> skips the wizard; <code>--dry-run</code> prints planned writes; <code>--mode preserve</code> is the default.</p>
-<p><code>#v0.3.95</code> is the supported fixed release ref. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit. If neither Node/npm nor Bun is installed, install Node.js LTS or Bun first.</p>
+<p><code>#v0.3.96</code> is the supported fixed release ref. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit. If neither Node/npm nor Bun is installed, install Node.js LTS or Bun first.</p>
           </div>
         </section>
 
@@ -1438,19 +1438,19 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Empieza desde el repositorio objetivo con npx desde GitHub. El comando instala TES localmente, prepara los hooks de agentes seleccionados y registra el camino de setup de primera sesion.</p>
-            <div class="pre-wrap" data-label="release fija" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="release fija" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
-<li>Ejecuta el comando desde el repositorio objetivo con Node.js 18+ o Bun 1.0+.</li>
+<li>Ejecuta el comando desde el repositorio objetivo con Node.js 18+ o Bun 1.0+, mas Python 3.11+.</li>
 <li>El modo interactivo pregunta target, agentes, modo de instalacion y confirmacion final.</li>
-<li>Usa <code>#v0.3.95</code> para instalaciones reproducibles.</li>
+<li>Usa <code>#v0.3.96</code> para instalaciones reproducibles.</li>
 <li>Abre o reabre Codex, Claude Code o Cursor.</li>
 <li>El hook de primera sesion ejecuta setup, contexto de proyecto y gates de alineacion una vez; los hooks repetidos salen rapido.</li>
 <li>En Claude Code, la primera ejecucion exitosa muestra un aviso corto y tambien entra como contexto de sesion.</li>
 <li>Lee el reporte final antes de pedir commit o push.</li>
 </ol>
 <p>Opciones utiles: <code>--target &lt;path&gt;</code> instala fuera del directorio actual; <code>--agent codex|claude|cursor|all</code> elige hooks; <code>--yes</code> salta el wizard; <code>--dry-run</code> muestra escrituras planificadas; <code>--mode preserve</code> es el default.</p>
-<p><code>#v0.3.95</code> es el release ref fijo soportado. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; ese directorio es cache local, no conocimiento del proyecto para commitear. Si no hay Node/npm ni Bun instalado, instala Node.js LTS o Bun primero.</p>
+<p><code>#v0.3.96</code> es el release ref fijo soportado. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; ese directorio es cache local, no conocimiento del proyecto para commitear. Si no hay Node/npm ni Bun instalado, instala Node.js LTS o Bun primero.</p>
           </div>
         </section>
 
@@ -1618,19 +1618,19 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Comece pelo repositorio alvo com npx direto do GitHub. O comando instala TES localmente, prepara os hooks dos agentes escolhidos e registra o caminho de setup da primeira sessao.</p>
-            <div class="pre-wrap" data-label="release fixa" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="release fixa" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.96 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
-<li>Rode o comando a partir do repositorio alvo com Node.js 18+ ou Bun 1.0+.</li>
+<li>Rode o comando a partir do repositorio alvo com Node.js 18+ ou Bun 1.0+, mais Python 3.11+.</li>
 <li>O modo interativo pergunta target, agentes, modo de instalacao e confirmacao final.</li>
-<li>Use <code>#v0.3.95</code> para instalacoes reprodutiveis.</li>
+<li>Use <code>#v0.3.96</code> para instalacoes reprodutiveis.</li>
 <li>Abra ou reabra Codex, Claude Code ou Cursor.</li>
 <li>O hook de primeira sessao executa setup, contexto do projeto e gates de alinhamento uma vez; hooks repetidos saem rapido.</li>
 <li>No Claude Code, a primeira execucao bem-sucedida mostra um aviso curto e tambem entra como contexto da sessao.</li>
 <li>Leia o relatorio final antes de pedir commit ou push.</li>
 </ol>
 <p>Opcoes uteis: <code>--target &lt;path&gt;</code> instala fora do diretorio atual; <code>--agent codex|claude|cursor|all</code> escolhe hooks; <code>--yes</code> pula o wizard; <code>--dry-run</code> mostra escritas planejadas; <code>--mode preserve</code> e o default.</p>
-<p><code>#v0.3.95</code> e o release ref fixo suportado. Bundles runtime sao preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretorio e cache local, nao conhecimento do projeto para commit. Se nao houver Node/npm nem Bun instalado, instale Node.js LTS ou Bun primeiro.</p>
+<p><code>#v0.3.96</code> e o release ref fixo suportado. Bundles runtime sao preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretorio e cache local, nao conhecimento do projeto para commit. Se nao houver Node/npm nem Bun instalado, instale Node.js LTS ou Bun primeiro.</p>
           </div>
         </section>
 
@@ -1766,7 +1766,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
       <footer class="footer">
 
         <div class="footer-meta">
-          <span>v0.3.95 - Generated from TDS.</span>
+          <span>v0.3.96 - Generated from TDS.</span>
           <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         </div>
       </footer>

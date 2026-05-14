@@ -23,7 +23,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.95"
+VERSION = "0.3.96"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -197,10 +197,19 @@ def claude_hook_contract_failures(target: Path) -> list[str]:
     ]
     if len(tes_handlers) != 1:
         failures.append("Claude SessionStart hook must install exactly one TES handler")
-    elif "args" in tes_handlers[0] or tes_handlers[0].get("command") != (
-        'python3 "${CLAUDE_PROJECT_DIR}/.tes/bin/tes_install.py" hook --agent claude --target "${CLAUDE_PROJECT_DIR}"'
-    ):
+    elif "args" in tes_handlers[0]:
         failures.append("Claude SessionStart hook must use the official single command field")
+    else:
+        command = str(tes_handlers[0].get("command", ""))
+        for term in (
+            ".tes/bin/tes_install.py",
+            "hook",
+            "--agent claude",
+            "--target",
+            "${CLAUDE_PROJECT_DIR}",
+        ):
+            if term not in command:
+                failures.append(f"Claude SessionStart hook command missing term: {term}")
     setup_skill = target / ".claude/skills/tes-setup/SKILL.md"
     if not setup_skill.exists():
         failures.append("Claude install must deliver /tes-setup as a project skill")
@@ -386,6 +395,44 @@ def self_test() -> int:
             failures.extend(help_result.stderr.splitlines())
         elif f"github:murillodutt/{BIN_NAME}#v{VERSION}" not in help_result.stdout:
             failures.append("help output must advertise GitHub npx add")
+
+        fake_bin = work / "fake-python-bin"
+        fake_bin.mkdir()
+        fake_python = fake_bin / "python3"
+        fake_python.write_text(
+            "#!/bin/sh\n"
+            "printf '%s\\n' '{\"executable\":\"/fake/python3\",\"version\":\"3.9.6\",\"tomllib\":false}'\n",
+            encoding="utf-8",
+        )
+        fake_python.chmod(0o755)
+        python_failure_env = {**os.environ, "PATH": str(fake_bin)}
+        python_failure_env.pop("PYTHON", None)
+        python_failure = subprocess.run(
+            [
+                shutil.which("node") or "node",
+                "bin/tes.js",
+                "add",
+                "--dry-run",
+                "--target",
+                str(work / "old-python-target"),
+                "--agent",
+                "claude",
+                "--yes",
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=180.0,
+            env=python_failure_env,
+        )
+        python_failure_output = f"{python_failure.stdout}\n{python_failure.stderr}"
+        if python_failure.returncode == 0:
+            failures.append("old Python fixture must fail before install")
+        if "Python 3.11+ is required" not in python_failure_output:
+            failures.append("old Python fixture must print actionable Python 3.11+ guidance")
+        if "Python 3.9.6" not in python_failure_output:
+            failures.append("old Python fixture must report the detected Python version")
 
         dry_result = run(
             [
@@ -688,6 +735,7 @@ def self_test() -> int:
             f"npm exec --yes --package <tarball> -- {BIN_NAME} add --target <fixture> --agent all --yes",
             f"bunx --silent --bun --package <tarball> {BIN_NAME} add --dry-run --target <fixture> --agent all --yes",
             "python3 <fixture>/.tes/bin/tes_install.py hook --agent codex --target <fixture>",
+            "old Python fixture fails with Python 3.11+ guidance",
             "commercial installer screen without raw Python JSON",
         ],
         "failures": failures,
@@ -849,7 +897,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.95 or main.",
+        help="Git ref to test, e.g. v0.3.96 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()
