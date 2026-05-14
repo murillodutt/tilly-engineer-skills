@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.94"
+VERSION = "0.3.95"
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
 POSTINSTALL_RUN_ROOT = Path(".tes/postinstall-runs")
@@ -727,6 +727,7 @@ def self_test() -> int:
             ".tes/postinstall.json",
             ".codex/config.toml",
             ".claude/settings.json",
+            ".claude/skills/tes-setup/SKILL.md",
             ".cursor/hooks.json",
             ".tes/manifest.json",
         ):
@@ -861,6 +862,8 @@ def self_test() -> int:
                 failures.append("Claude-only install failed")
                 failures.extend(claude_install.stdout.splitlines())
                 failures.extend(claude_install.stderr.splitlines())
+            if not (claude_target / ".claude/skills/tes-setup/SKILL.md").exists():
+                failures.append("Claude-only install must deliver /tes-setup as a project skill")
             claude_first_hook = subprocess.run(
                 [
                     sys.executable,

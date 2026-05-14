@@ -50,9 +50,9 @@ Runtime:
   Node.js 18+ with npm/npx, or Bun 1.0+ with bunx --bun.
 
 Examples:
-  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.94 tilly-engineer-skills add
-  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.94 tilly-engineer-skills add --agent all --yes
-  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.94 tilly-engineer-skills add
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add --agent all --yes
+  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add
 `);
 }
 
@@ -121,8 +121,8 @@ function runtimeFailure(runtime) {
   console.error("  Bun: https://bun.sh/docs/installation");
   console.error("");
   console.error("Commands:");
-  console.error("  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.94 tilly-engineer-skills add");
-  console.error("  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.94 tilly-engineer-skills add");
+  console.error("  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add");
+  console.error("  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add");
   return 1;
 }
 

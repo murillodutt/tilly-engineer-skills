@@ -38,6 +38,7 @@ routed through a broader skill so TES does not create one skill per alias.
 | Trigger | Visible router | Surface contract |
 |---------|----------------|------------------|
 | `/tes-init` | `tes-init` | visible skill |
+| `/tes-setup` | `tes-setup` | visible skill alias for `/tes-init` |
 | `/tes-update` | `tes-init` | grouped update intent |
 | `/tes-align` | `tes-align` | visible skill |
 | `/tes-prospect` | `tes-prospect` | visible predictive skill |
@@ -94,7 +95,7 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-local alias for the same oracles |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.94 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
@@ -109,10 +110,11 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 ## `/tes-init` Router Contract
 
 `/tes-init` is the canonical user-facing initialization entrypoint. `/tes-setup`
-is a commercial setup alias for the same route after npx installation. Neither
-form should split into user-visible parameters or a second context command. The
-active agent routes internally through two read-only gates before choosing
-writes:
+is a commercial setup alias for the same route after npx installation, and is
+installed as a direct skill/slash command where the host resolves slash commands
+by skill name. Neither form should split into user-visible parameters or a
+second context command. The active agent routes internally through two read-only
+gates before choosing writes:
 
 The mechanical install route may install runtime capabilities first. That route
 deliberately does not perform semantic project analysis in the installer. It

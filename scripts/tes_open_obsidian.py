@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.94"
+VERSION = "0.3.95"
 
 
 def sha256_file(path: Path) -> str:

@@ -28,13 +28,13 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 Node/npm path:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.94 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add
 ```
 
 Bun path:
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.94 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -46,10 +46,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.94 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.95 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.94` is the fixed release ref and the supported commercial install path.
+`#v0.3.95` is the fixed release ref and the supported commercial install path.
 Do not document or certify mutable release refs unless the Git ref exists and
 has its own canary evidence.
 
@@ -82,14 +82,14 @@ Claude Code receives first-session results as `SessionStart` hook context, not
 as a normal chat message. On the first successful run, TES also emits a concise
 visible completion notice. The hook returns `additionalContext` so Claude can
 report the completed setup from `.tes/postinstall.json` and `last_run` when the
-user asks `/tes-init` immediately after opening the agent.
+user asks `/tes-setup` or `/tes-init` immediately after opening the agent.
 
 Release certification gates:
 
 ```bash
 python3 scripts/tes_npx_oracle.py --self-test
 python3 scripts/tes_npx_oracle.py --runtime-matrix
-TES_GITHUB_NPX_REF=v0.3.94 python3 scripts/tes_npx_oracle.py --github-self-test
+TES_GITHUB_NPX_REF=v0.3.95 python3 scripts/tes_npx_oracle.py --github-self-test
 ```
 
 ## Compatibility Basis
@@ -156,7 +156,8 @@ the target project, writes `docs/agents/PROJECT-REGISTER.md`, writes
 creates the first-pass Obsidian-compatible operating mesh when missing, stores
 a full manifest under `docs/agents/evidence/**`, and can be certified with
 `project_context_oracle.py` plus `project_alignment_oracle.py`. Cortex can be
-initialized directly. The user-facing `/tes-init` intent is a router, not a separate command family.
+initialized directly. The user-facing `/tes-init` intent is a router, and
+`/tes-setup` is a direct setup alias for the same route.
 It first runs an Install/Update Gate and a Project Context Gate. Installer or
 update writes still require Step Zero protection. If TES is already
 installed/current and only the project context is missing or weak, Step Zero

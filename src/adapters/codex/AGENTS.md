@@ -61,6 +61,7 @@ requires exact syntax.
 |------|--------|
 | Reusable workflow | `.agents/skills/tes-engineering-discipline/SKILL.md` |
 | Tilly initialization shortcut | `.agents/skills/tes-init/SKILL.md` |
+| Tilly setup alias | `.agents/skills/tes-setup/SKILL.md` |
 | Project semantic alignment | `.agents/skills/tes-align/SKILL.md` |
 | Project-stress prospecting | `.agents/skills/tes-prospect/SKILL.md` |
 | Code and domain mining | `.agents/skills/tes-mine/SKILL.md` |

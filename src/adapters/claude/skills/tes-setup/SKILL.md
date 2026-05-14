@@ -1,0 +1,35 @@
+---
+name: tes-setup
+description: Use when the user says /tes-setup, tes setup, setup TES, finish TES setup, or asks for the TES first-session report. Direct setup alias for /tes-init in Claude Code.
+license: MIT
+---
+
+# TES Setup
+
+`/tes-setup` is the direct setup alias for `/tes-init`. It exists so Claude
+Code recognizes the slash command that the first-session hook recommends.
+
+## Workflow
+
+1. Prefer the installed TES Init contract:
+   - Project skill: `.claude/skills/tes-init/SKILL.md`
+   - Plugin fallback: `skills/tes-init/SKILL.md`
+2. Read that skill when available and follow it exactly.
+3. When `.tes/postinstall.json` is already `complete`, treat `/tes-setup` as a
+   status/report request: read `.tes/postinstall.json` and its `last_run`,
+   summarize the completed run, and do not rerun Project-Start unless the user
+   explicitly asks to recertify/update, the sentinel is not `complete`, the
+   planner reports drift, or evidence is missing.
+4. If the init skill is unavailable but installed helpers exist, run the
+   installed Project-Start Gate:
+   - `python3 .tes/bin/tes_init.py --target . --yes`
+   - `python3 .tes/bin/project_context_oracle.py --target .`
+   - `python3 .tes/bin/project_alignment_oracle.py --target .`
+5. If helpers are missing, report `BLOCKED` and ask the user to rerun the TES
+   GitHub npx installer.
+
+## Locks
+
+- Do not treat `/tes-setup` as a shell command.
+- Do not push, publish, tag, or edit remotes from this skill.
+- Keep the final response short and report the TES status, evidence, and limits.

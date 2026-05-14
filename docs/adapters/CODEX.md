@@ -13,7 +13,7 @@ tver: 0.5.1
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.94`.
+Project version: `0.3.95`.
 
 It follows the Codex customization order:
 
@@ -73,6 +73,7 @@ oracles or agent-led codebase exploration:
 | Shortcut | Skill |
 |----------|-------|
 | `/tes-init`, `/tes:init` | `tes-init` |
+| `/tes-setup` | `tes-setup` |
 | `/tes-update`, `/tes:update` | `tes-init` |
 | `/tes-align`, `/tes:align` | `tes-align` |
 | `/tes-prospect`, `/tes:prospect` | `tes-prospect` |
