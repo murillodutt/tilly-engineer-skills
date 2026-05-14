@@ -116,8 +116,11 @@ a plain `/tes-init` or `/tes-setup` immediately after opening the agent is a
 status/report request. Read the sentinel and its `last_run`, summarize the
 completed setup, and rerun Project-Start only when the user asks to recertify or
 update, the sentinel is not `complete`, the planner reports drift, or evidence
-is missing. In Claude Code, the first successful hook also emits a concise
-visible completion notice; repeated complete hooks stay quiet.
+is missing. When the sentinel is `running`, tell the user to wait for
+first-session setup to finish and run `/tes-setup` again; do not launch duplicate
+setup commands. In Claude Code, the first hook emits an immediate visible wait
+notice while the setup runs in the background; repeated complete hooks stay
+quiet.
 
 Step Zero must not block project-context initialization when TES is
 already current and only `PROJECT-CONTEXT.md` needs work.

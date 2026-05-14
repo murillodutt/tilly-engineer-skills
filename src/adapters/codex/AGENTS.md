@@ -104,6 +104,10 @@ and the user asks plain `/tes-init` or `/tes-setup`, read the sentinel and
 `last_run`, summarize the completed run, and do not rerun Project-Start unless
 the user explicitly asks to recertify/update, the sentinel is not `complete`,
 the planner reports drift, or evidence is missing.
+If `.tes/postinstall.json` is `running`, report that first-session setup is
+still in progress, ask the user to wait, and do not start project work or run
+duplicate setup commands; the next `/tes-setup` should summarize the run after
+the sentinel becomes `complete`.
 `tes_init.py` creates the scaffold; the active agent must open strong anchors
 before claiming deep project understanding and refine the context or report
 `Project context: NEEDS_REVIEW`.

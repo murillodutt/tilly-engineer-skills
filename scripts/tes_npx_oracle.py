@@ -23,7 +23,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.96"
+VERSION = "0.3.97"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -150,6 +150,19 @@ def fixture(root: Path, name: str) -> Path:
 
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def wait_for_postinstall_state(target: Path, expected: str, timeout: float = 45.0) -> dict[str, Any]:
+    sentinel_path = target / ".tes/postinstall.json"
+    deadline = time.monotonic() + timeout
+    sentinel: dict[str, Any] = {}
+    while time.monotonic() < deadline:
+        if sentinel_path.exists():
+            sentinel = load_json(sentinel_path)
+            if sentinel.get("state") == expected:
+                return sentinel
+        time.sleep(0.2)
+    return sentinel
 
 
 def raw_engine_output_leaked(text: str) -> bool:
@@ -595,6 +608,8 @@ def self_test() -> int:
                 failures.extend(commercial_output_failures("npm exec package add", exec_result.stdout))
                 if "TES is ready for this project." not in exec_result.stdout:
                     failures.append("npm exec package add must finish with a human success message")
+                if "IMPORTANT" not in exec_result.stdout or "wait" not in exec_result.stdout or "/tes-setup" not in exec_result.stdout:
+                    failures.append("npm exec package add must give clear first-session wait and /tes-setup guidance")
             for relpath in (
                 ".tes/bin/tes_install.py",
                 ".tes/tes-install-lock.json",
@@ -718,8 +733,20 @@ def self_test() -> int:
                 except json.JSONDecodeError:
                     first_payload = {}
                     failures.append("installed Claude first-session hook must emit structured hook JSON")
-                if first_payload.get("systemMessage") != "TES first-session setup completed. Run /tes-setup for the report.":
-                    failures.append("installed Claude first-session PASS must emit visible completion systemMessage")
+                if first_payload.get("systemMessage") != (
+                    "TES first-session setup is running. Please wait, then run /tes-setup for the report."
+                ):
+                    failures.append("installed Claude first-session hook must emit immediate wait-and-report systemMessage")
+                context = (
+                    first_payload.get("hookSpecificOutput", {}).get("additionalContext")
+                    if isinstance(first_payload, dict)
+                    else None
+                )
+                if not isinstance(context, str) or "running in the background" not in context:
+                    failures.append("installed Claude first-session hook must explain background setup context")
+                first_sentinel = wait_for_postinstall_state(first_claude_target, "complete", timeout=60.0)
+                if first_sentinel.get("state") != "complete":
+                    failures.append("installed Claude background postinstall must complete after immediate hook")
 
     result = {
         "version": VERSION,
@@ -897,7 +924,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.96 or main.",
+        help="Git ref to test, e.g. v0.3.97 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()
