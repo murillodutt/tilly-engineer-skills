@@ -28,13 +28,13 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 Node/npm path:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.98 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.99 tilly-engineer-skills add
 ```
 
 Bun path:
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.98 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.99 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -46,10 +46,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.98 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.99 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.98` is the fixed release ref and the supported commercial install path.
+`#v0.3.99` is the fixed release ref and the supported commercial install path.
 Do not document or certify mutable release refs unless the Git ref exists and
 has its own canary evidence.
 
@@ -81,10 +81,11 @@ When the sentinel is `pending`, post-install runs `tes_init.py`,
 sentinel `complete` or `needs_review`. Repeated hooks exit quickly.
 
 Claude Code receives first-session results as `SessionStart` hook context, not
-as a normal chat message. TES uses Claude Code's native `asyncRewake` hook mode
-so setup can run without blocking startup and still wake the session when the
-post-install routine finishes. While setup runs, Claude shows a short
-`TES first-session setup is running` status. When it completes, Claude should
+as a normal chat message. TES installs two Claude `SessionStart` handlers: a
+fast synchronous notice that shows
+`TES first-session setup is running [|/-\]. Please wait.`, then a native
+`asyncRewake` handler that runs setup without blocking startup and wakes the
+session when the post-install routine finishes. When it completes, Claude should
 tell the user: `Please, run /tes-setup for the report.` Claude reads
 `.tes/postinstall.json` and the latest run record to report `complete`,
 `running`, or `needs_review`.
@@ -94,7 +95,7 @@ Release certification gates:
 ```bash
 python3 scripts/tes_npx_oracle.py --self-test
 python3 scripts/tes_npx_oracle.py --runtime-matrix
-TES_GITHUB_NPX_REF=v0.3.98 python3 scripts/tes_npx_oracle.py --github-self-test
+TES_GITHUB_NPX_REF=v0.3.99 python3 scripts/tes_npx_oracle.py --github-self-test
 ```
 
 ## Compatibility Basis

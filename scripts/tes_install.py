@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.98"
+VERSION = "0.3.99"
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -206,25 +206,50 @@ def install_codex_hook(target: Path, dry_run: bool) -> dict[str, str]:
     return write_text_if_changed(path, updated, target, dry_run)
 
 
+CLAUDE_SETUP_RUNNING_MESSAGE = "TES first-session setup is running [|/-\\]. Please wait."
+CLAUDE_SETUP_COMPLETED_MESSAGE = "TES setup completed. Please, run /tes-setup for the report."
+
+
+def claude_notice_hook_entry() -> dict[str, Any]:
+    return {
+        "type": "command",
+        "command": (
+            f'{python_command_token()} "${{CLAUDE_PROJECT_DIR}}/.tes/bin/tes_install.py" '
+            'hook --agent claude --target "${CLAUDE_PROJECT_DIR}" --announce-start'
+        ),
+        "timeout": 5,
+    }
+
+
+def claude_setup_hook_entry() -> dict[str, Any]:
+    return {
+        "type": "command",
+        "command": (
+            f'{python_command_token()} "${{CLAUDE_PROJECT_DIR}}/.tes/bin/tes_install.py" '
+            'hook --agent claude --target "${CLAUDE_PROJECT_DIR}" --rewake-on-complete'
+        ),
+        "async": True,
+        "asyncRewake": True,
+        "statusMessage": CLAUDE_SETUP_RUNNING_MESSAGE,
+        "timeout": 120,
+    }
+
+
 def hook_entry(agent: str) -> dict[str, Any]:
     if agent == "claude":
-        return {
-            "type": "command",
-            "command": (
-                f'{python_command_token()} "${{CLAUDE_PROJECT_DIR}}/.tes/bin/tes_install.py" '
-                'hook --agent claude --target "${CLAUDE_PROJECT_DIR}" --rewake-on-complete'
-            ),
-            "async": True,
-            "asyncRewake": True,
-            "statusMessage": "TES first-session setup is running [|/-\\]. Please wait.",
-            "timeout": 120,
-        }
+        return claude_setup_hook_entry()
     if agent == "cursor":
         return {
             "command": f"{python_command_token()} .tes/bin/tes_install.py hook --agent cursor --target .",
             "timeout": 120,
         }
     raise ValueError(f"unsupported hook entry agent: {agent}")
+
+
+def hook_entries(agent: str) -> list[dict[str, Any]]:
+    if agent == "claude":
+        return [claude_notice_hook_entry(), claude_setup_hook_entry()]
+    return [hook_entry(agent)]
 
 
 def ensure_hook_group(data: dict[str, Any], event: str, matcher: str, entry: dict[str, Any]) -> None:
@@ -237,6 +262,7 @@ def ensure_hook_group(data: dict[str, Any], event: str, matcher: str, entry: dic
         hooks[event] = []
         groups = hooks[event]
     marker = json.dumps(entry, sort_keys=True)
+    candidate_group: dict[str, Any] | None = None
     for group in groups:
         if not isinstance(group, dict):
             continue
@@ -245,8 +271,17 @@ def ensure_hook_group(data: dict[str, Any], event: str, matcher: str, entry: dic
         handlers = group.get("hooks", [])
         if not isinstance(handlers, list):
             continue
+        if candidate_group is None:
+            candidate_group = group
         if any(json.dumps(handler, sort_keys=True) == marker for handler in handlers if isinstance(handler, dict)):
             return
+    if candidate_group is not None:
+        handlers = candidate_group.get("hooks")
+        if not isinstance(handlers, list):
+            candidate_group["hooks"] = []
+            handlers = candidate_group["hooks"]
+        handlers.append(entry)
+        return
     groups.append({"matcher": matcher, "hooks": [entry]})
 
 
@@ -286,7 +321,8 @@ def install_claude_hook(target: Path, dry_run: bool) -> dict[str, str]:
     path = target / ".claude/settings.json"
     data = read_json(path)
     remove_tes_claude_sessionstart_hooks(data)
-    ensure_hook_group(data, "SessionStart", CLAUDE_SESSIONSTART_MATCHER, hook_entry("claude"))
+    for entry in hook_entries("claude"):
+        ensure_hook_group(data, "SessionStart", CLAUDE_SESSIONSTART_MATCHER, entry)
     text = json.dumps(data, indent=2, sort_keys=True) + "\n"
     return write_text_if_changed(path, text, target, dry_run)
 
@@ -678,13 +714,36 @@ def claude_hook_output(result: dict[str, Any], hook_input: dict[str, Any]) -> di
     return output
 
 
+def claude_start_notice_output(target: Path, hook_input: dict[str, Any]) -> dict[str, Any]:
+    event_name = str(hook_input.get("hook_event_name") or "SessionStart")
+    sentinel = read_json(target / POSTINSTALL_PATH)
+    state = str(sentinel.get("state") or "")
+    if state in {"pending", "running"}:
+        return {
+            "systemMessage": CLAUDE_SETUP_RUNNING_MESSAGE,
+            "hookSpecificOutput": {
+                "hookEventName": event_name,
+                "additionalContext": (
+                    "TES first-session setup is starting. Do not begin project work or "
+                    "run duplicate setup while the completion notice is pending."
+                ),
+            },
+        }
+    if state == "needs_review":
+        return {
+            "systemMessage": "TES first-session setup needs review. Run /tes-init for recovery.",
+            "hookSpecificOutput": {
+                "hookEventName": event_name,
+                "additionalContext": "TES postinstall is marked needs_review. Inspect `.tes/postinstall.json` before project work.",
+            },
+        }
+    return {}
+
+
 def claude_rewake_message(result: dict[str, Any]) -> str:
     status = str(result.get("status") or "UNKNOWN")
     if status == "PASS":
-        return (
-            "TES first-session setup completed.\n"
-            "Tell the user: TES setup completed. Please, run /tes-setup for the report."
-        )
+        return "TES first-session setup completed.\nTell the user: " + CLAUDE_SETUP_COMPLETED_MESSAGE
     if status == "NEEDS_REVIEW":
         return (
             "TES first-session setup needs review.\n"
@@ -705,6 +764,9 @@ def hook(args: argparse.Namespace) -> int:
         inferred = hook_input.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR")
         if inferred:
             args.target = Path(str(inferred))
+    if args.agent == "claude" and args.announce_start:
+        print(json.dumps(claude_start_notice_output(target_root(args.target), hook_input), sort_keys=True))
+        return 0
     code, result = postinstall(args, hook_input=hook_input)
     if args.agent == "claude":
         if args.rewake_on_complete:
@@ -836,10 +898,11 @@ def self_test() -> int:
             handlers = group.get("hooks")
             if isinstance(handlers, list):
                 claude_handlers.extend(handler for handler in handlers if isinstance(handler, dict))
-        if len(claude_handlers) != 1:
-            failures.append("Claude hook must install exactly one TES handler")
-        elif claude_handlers[0] != hook_entry("claude"):
-            failures.append("Claude hook must use a single shell command entry without args")
+        claude_tes_handlers = [handler for handler in claude_handlers if is_tes_claude_hook_entry(handler)]
+        if len(claude_tes_handlers) != 2:
+            failures.append("Claude hook must install notice + asyncRewake TES handlers")
+        elif claude_tes_handlers != hook_entries("claude"):
+            failures.append("Claude hook must use notice + asyncRewake shell command entries without args")
         if any(
             is_tes_claude_hook_entry(handler)
             for group in session_groups
@@ -854,6 +917,40 @@ def self_test() -> int:
             for handler in (group.get("hooks") if isinstance(group.get("hooks"), list) else [])
         ):
             failures.append("Claude hook migration must preserve unrelated SessionStart hooks")
+        start_notice = subprocess.run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/tes_install.py"),
+                "hook",
+                "--agent",
+                "claude",
+                "--target",
+                str(target),
+                "--announce-start",
+            ],
+            cwd=target,
+            input=json.dumps({"hook_event_name": "SessionStart", "source": "startup", "cwd": str(target)}),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if start_notice.returncode != 0:
+            failures.append("Claude start notice hook failed")
+            failures.extend(start_notice.stdout.splitlines())
+            failures.extend(start_notice.stderr.splitlines())
+        try:
+            start_payload = json.loads(start_notice.stdout)
+        except json.JSONDecodeError:
+            start_payload = {}
+            failures.append("Claude start notice hook must return structured JSON")
+        if start_payload.get("systemMessage") != CLAUDE_SETUP_RUNNING_MESSAGE:
+            failures.append("Claude start notice must show the visible running message")
+        start_context = start_payload.get("hookSpecificOutput") if isinstance(start_payload, dict) else None
+        if not isinstance(start_context, dict) or start_context.get("hookEventName") != "SessionStart":
+            failures.append("Claude start notice must include SessionStart hook context")
+        sentinel = read_json(target / POSTINSTALL_PATH)
+        if sentinel.get("state") != "pending":
+            failures.append("Claude start notice must not run postinstall")
         hook_result = subprocess.run(
             [
                 sys.executable,
@@ -947,6 +1044,34 @@ def self_test() -> int:
                 failures.extend(claude_install.stderr.splitlines())
             if not (claude_target / ".claude/skills/tes-setup/SKILL.md").exists():
                 failures.append("Claude-only install must deliver /tes-setup as a project skill")
+            claude_start_notice = subprocess.run(
+                [
+                    sys.executable,
+                    str(claude_target / ".tes/bin/tes_install.py"),
+                    "hook",
+                    "--agent",
+                    "claude",
+                    "--target",
+                    str(claude_target),
+                    "--announce-start",
+                ],
+                cwd=claude_target,
+                input=json.dumps({"hook_event_name": "SessionStart", "source": "startup", "cwd": str(claude_target)}),
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if claude_start_notice.returncode != 0:
+                failures.append("Claude-only start notice hook failed")
+                failures.extend(claude_start_notice.stdout.splitlines())
+                failures.extend(claude_start_notice.stderr.splitlines())
+            try:
+                claude_start_payload = json.loads(claude_start_notice.stdout)
+            except json.JSONDecodeError:
+                claude_start_payload = {}
+                failures.append("Claude-only start notice hook must return structured JSON")
+            if claude_start_payload.get("systemMessage") != CLAUDE_SETUP_RUNNING_MESSAGE:
+                failures.append("Claude-only start notice must show the visible running message")
             claude_first_hook = subprocess.run(
                 [
                     sys.executable,
@@ -980,6 +1105,32 @@ def self_test() -> int:
                 failures.append("Claude asyncRewake postinstall must complete before completion message")
             if claude_sentinel.get("last_status") != "PASS":
                 failures.append("Claude asyncRewake postinstall must record PASS before completion message")
+            claude_complete_notice = subprocess.run(
+                [
+                    sys.executable,
+                    str(claude_target / ".tes/bin/tes_install.py"),
+                    "hook",
+                    "--agent",
+                    "claude",
+                    "--target",
+                    str(claude_target),
+                    "--announce-start",
+                ],
+                cwd=claude_target,
+                input=json.dumps({"hook_event_name": "SessionStart", "source": "startup", "cwd": str(claude_target)}),
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if claude_complete_notice.returncode != 0:
+                failures.append("Claude complete start notice hook failed")
+            try:
+                claude_complete_payload = json.loads(claude_complete_notice.stdout)
+            except json.JSONDecodeError:
+                claude_complete_payload = {}
+                failures.append("Claude complete start notice hook must return structured JSON")
+            if "systemMessage" in claude_complete_payload:
+                failures.append("Claude start notice must stay quiet after postinstall is complete")
 
     with tempfile.TemporaryDirectory(prefix="tes-thin-install-dry-") as tempdir:
         target = Path(tempdir)
@@ -1051,6 +1202,7 @@ def main() -> int:
     hook_parser.add_argument("--dry-run", action="store_true")
     hook_parser.add_argument("--force", action="store_true")
     hook_parser.add_argument("--skip-project-init", action="store_true")
+    hook_parser.add_argument("--announce-start", action="store_true")
     hook_parser.add_argument("--rewake-on-complete", action="store_true")
 
     status_parser = subparsers.add_parser("status")

@@ -23,11 +23,12 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.98"
+VERSION = "0.3.99"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
 CLAUDE_SESSIONSTART_MATCHER = "startup|resume|clear|compact"
+CLAUDE_SETUP_RUNNING_MESSAGE = "TES first-session setup is running [|/-\\]. Please wait."
 
 
 def run(command: list[str], cwd: Path, timeout: float = 180.0) -> subprocess.CompletedProcess[str]:
@@ -195,12 +196,34 @@ def claude_hook_contract_failures(target: Path) -> list[str]:
         for hook in handlers
         if ".tes/bin/tes_install.py" in json.dumps(hook, sort_keys=True) and "--agent claude" in json.dumps(hook, sort_keys=True)
     ]
-    if len(tes_handlers) != 1:
-        failures.append("Claude SessionStart hook must install exactly one TES handler")
-    elif "args" in tes_handlers[0]:
-        failures.append("Claude SessionStart hook must use the official single command field")
+    if len(tes_handlers) != 2:
+        failures.append("Claude SessionStart hook must install notice + asyncRewake TES handlers")
     else:
-        command = str(tes_handlers[0].get("command", ""))
+        if any("args" in handler for handler in tes_handlers):
+            failures.append("Claude SessionStart hooks must use the official single command field")
+        notice_handlers = [handler for handler in tes_handlers if "--announce-start" in str(handler.get("command", ""))]
+        setup_handlers = [handler for handler in tes_handlers if "--rewake-on-complete" in str(handler.get("command", ""))]
+        if len(notice_handlers) != 1:
+            failures.append("Claude SessionStart hook must install one synchronous start notice handler")
+        if len(setup_handlers) != 1:
+            failures.append("Claude SessionStart hook must install one asyncRewake setup handler")
+    if len(tes_handlers) == 2:
+        notice = next((handler for handler in tes_handlers if "--announce-start" in str(handler.get("command", ""))), {})
+        setup = next((handler for handler in tes_handlers if "--rewake-on-complete" in str(handler.get("command", ""))), {})
+        notice_command = str(notice.get("command", ""))
+        for term in (
+            ".tes/bin/tes_install.py",
+            "hook",
+            "--agent claude",
+            "--target",
+            "${CLAUDE_PROJECT_DIR}",
+            "--announce-start",
+        ):
+            if term not in notice_command:
+                failures.append(f"Claude start notice hook command missing term: {term}")
+        if notice.get("async") is True or notice.get("asyncRewake") is True:
+            failures.append("Claude start notice hook must be synchronous so the running message is visible immediately")
+        command = str(setup.get("command", ""))
         for term in (
             ".tes/bin/tes_install.py",
             "hook",
@@ -211,11 +234,11 @@ def claude_hook_contract_failures(target: Path) -> list[str]:
         ):
             if term not in command:
                 failures.append(f"Claude SessionStart hook command missing term: {term}")
-        if tes_handlers[0].get("async") is not True:
+        if setup.get("async") is not True:
             failures.append("Claude SessionStart hook must run asynchronously")
-        if tes_handlers[0].get("asyncRewake") is not True:
+        if setup.get("asyncRewake") is not True:
             failures.append("Claude SessionStart hook must use native asyncRewake completion")
-        if "TES first-session setup is running" not in str(tes_handlers[0].get("statusMessage", "")):
+        if CLAUDE_SETUP_RUNNING_MESSAGE not in str(setup.get("statusMessage", "")):
             failures.append("Claude SessionStart hook must display setup status while running")
     setup_skill = target / ".claude/skills/tes-setup/SKILL.md"
     if not setup_skill.exists():
@@ -620,6 +643,38 @@ def self_test() -> int:
                 failures.append("npm exec install must leave pending postinstall sentinel")
             if (install_target / ".claude/settings.json").exists():
                 failures.extend(claude_hook_contract_failures(install_target))
+            claude_start_result = run(
+                [
+                    sys.executable,
+                    str(install_target / ".tes/bin/tes_install.py"),
+                    "hook",
+                    "--agent",
+                    "claude",
+                    "--target",
+                    str(install_target),
+                    "--announce-start",
+                ],
+                work,
+                timeout=60.0,
+            )
+            if claude_start_result.returncode != 0:
+                failures.append("installed Claude start notice hook failed")
+                failures.extend(claude_start_result.stdout.splitlines())
+                failures.extend(claude_start_result.stderr.splitlines())
+            else:
+                try:
+                    start_payload = json.loads(claude_start_result.stdout)
+                except json.JSONDecodeError:
+                    start_payload = {}
+                    failures.append("installed Claude start notice hook must emit structured JSON")
+                if start_payload.get("systemMessage") != CLAUDE_SETUP_RUNNING_MESSAGE:
+                    failures.append("installed Claude start notice must show the visible running message")
+                hook_output = start_payload.get("hookSpecificOutput") if isinstance(start_payload, dict) else None
+                if not isinstance(hook_output, dict) or hook_output.get("hookEventName") != "SessionStart":
+                    failures.append("installed Claude start notice must include SessionStart hook context")
+            sentinel = load_json(install_target / ".tes/postinstall.json") if (install_target / ".tes/postinstall.json").exists() else {}
+            if sentinel.get("state") != "pending":
+                failures.append("installed Claude start notice must not run postinstall")
 
             hook_result = run(
                 [
@@ -704,6 +759,34 @@ def self_test() -> int:
                 failures.extend(first_claude_install.stderr.splitlines())
             if not (first_claude_target / ".claude/skills/tes-setup/SKILL.md").exists():
                 failures.append("npm exec Claude-only package add must install /tes-setup skill")
+            if (first_claude_target / ".claude/settings.json").exists():
+                failures.extend(claude_hook_contract_failures(first_claude_target))
+            first_start_notice = run(
+                [
+                    sys.executable,
+                    str(first_claude_target / ".tes/bin/tes_install.py"),
+                    "hook",
+                    "--agent",
+                    "claude",
+                    "--target",
+                    str(first_claude_target),
+                    "--announce-start",
+                ],
+                work,
+                timeout=60.0,
+            )
+            if first_start_notice.returncode != 0:
+                failures.append("installed Claude first-session start notice failed")
+                failures.extend(first_start_notice.stdout.splitlines())
+                failures.extend(first_start_notice.stderr.splitlines())
+            else:
+                try:
+                    first_start_payload = json.loads(first_start_notice.stdout)
+                except json.JSONDecodeError:
+                    first_start_payload = {}
+                    failures.append("installed Claude first-session start notice must emit structured JSON")
+                if first_start_payload.get("systemMessage") != CLAUDE_SETUP_RUNNING_MESSAGE:
+                    failures.append("installed Claude first-session start notice must show the visible running message")
             first_claude_hook = run(
                 [
                     sys.executable,
@@ -735,6 +818,30 @@ def self_test() -> int:
                     failures.append("installed Claude asyncRewake postinstall must complete before completion message")
                 if first_sentinel.get("last_status") != "PASS":
                     failures.append("installed Claude asyncRewake postinstall must record PASS before completion message")
+            first_complete_notice = run(
+                [
+                    sys.executable,
+                    str(first_claude_target / ".tes/bin/tes_install.py"),
+                    "hook",
+                    "--agent",
+                    "claude",
+                    "--target",
+                    str(first_claude_target),
+                    "--announce-start",
+                ],
+                work,
+                timeout=60.0,
+            )
+            if first_complete_notice.returncode != 0:
+                failures.append("installed Claude complete start notice failed")
+            else:
+                try:
+                    first_complete_payload = json.loads(first_complete_notice.stdout)
+                except json.JSONDecodeError:
+                    first_complete_payload = {}
+                    failures.append("installed Claude complete start notice must emit structured JSON")
+                if "systemMessage" in first_complete_payload:
+                    failures.append("installed Claude start notice must stay quiet after postinstall is complete")
 
     result = {
         "version": VERSION,
@@ -750,6 +857,7 @@ def self_test() -> int:
             f"npm exec --yes --package <tarball> -- {BIN_NAME} add --target <fixture> --agent all --yes",
             f"bunx --silent --bun --package <tarball> {BIN_NAME} add --dry-run --target <fixture> --agent all --yes",
             "python3 <fixture>/.tes/bin/tes_install.py hook --agent codex --target <fixture>",
+            "python3 <fixture>/.tes/bin/tes_install.py hook --agent claude --announce-start --target <fixture>",
             "old Python fixture fails with Python 3.11+ guidance",
             "commercial installer screen without raw Python JSON",
         ],
@@ -912,7 +1020,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.98 or main.",
+        help="Git ref to test, e.g. v0.3.99 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()
