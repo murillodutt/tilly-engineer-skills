@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-import { existsSync, readSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
+import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
 
 const AGENTS = new Set(["codex", "claude", "cursor", "all"]);
@@ -123,24 +124,7 @@ function parse(argv) {
   return options;
 }
 
-function readLineSync() {
-  const buffer = Buffer.alloc(1);
-  const chunks = [];
-  while (true) {
-    const bytes = readSync(0, buffer, 0, 1, null);
-    if (bytes === 0) {
-      break;
-    }
-    const char = buffer.toString("utf8", 0, bytes);
-    if (char === "\n" || char === "\r") {
-      break;
-    }
-    chunks.push(char);
-  }
-  return chunks.join("");
-}
-
-function confirmInstall(parsed) {
+async function confirmInstall(parsed) {
   if (parsed.yes || parsed.dryRun) {
     return true;
   }
@@ -149,11 +133,17 @@ function confirmInstall(parsed) {
     return false;
   }
 
-  process.stdout.write(
-    `TES will install local files in ${resolve(parsed.target)} for ${agentLabel(parsed.agent)}. Continue? [y/N] `,
-  );
-  const answer = readLineSync().trim().toLowerCase();
-  return answer === "y" || answer === "yes";
+  const prompt = `TES will install local files in ${resolve(parsed.target)} for ${agentLabel(parsed.agent)}. Continue? [y/N] `;
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    const answer = (await rl.question(prompt)).trim().toLowerCase();
+    return answer === "y" || answer === "yes";
+  } catch {
+    console.error("TES installer: could not read interactive confirmation. Rerun with --yes for non-interactive installs.");
+    return false;
+  } finally {
+    rl.close();
+  }
 }
 
 function extractJson(text) {
@@ -331,7 +321,7 @@ function renderFailure(summary, output) {
   }
 }
 
-function main() {
+async function main() {
   const parsed = parse(process.argv.slice(2));
   if (parsed.help) {
     printHelp();
@@ -351,7 +341,7 @@ function main() {
     return fail("Python 3 is required. Install Python 3 or set PYTHON=/path/to/python3.");
   }
 
-  if (!confirmInstall(parsed)) {
+  if (!(await confirmInstall(parsed))) {
     return fail("installation cancelled.", 130);
   }
 
@@ -396,4 +386,4 @@ function main() {
   return 0;
 }
 
-process.exitCode = main();
+process.exitCode = await main();
