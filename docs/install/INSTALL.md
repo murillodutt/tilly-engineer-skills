@@ -27,15 +27,16 @@ closure vocabulary, open `docs/install/AGENT-MANUAL.md`.
 Commercial quickstart:
 
 ```bash
-npx tilly-engineer-skills@latest add
+npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add
 ```
 
-For CI-style installs, use `npx tilly-engineer-skills@latest add --agent all
---yes`. The Node CLI is only the user-facing shell over
-`scripts/tes_install.py install`: it stages TES, writes lock/sentinel state, and
-installs first-session hooks. Reopen Codex, Claude Code, or Cursor, or run
-`/tes-setup` or `/tes-init`, to finish setup. Mechanical shell entrypoints still
-live in `scripts/bootstrap/**`; the repository root stays thin.
+For CI-style installs, add `--agent all --yes` to the same command. This is
+GitHub-only npx: no npm registry account, npm publish, or npm dist-tag.
+`#v0.3.86` is the fixed release ref. `#latest` is allowed only when GitHub has a
+branch or tag named `latest`; it is not the npm registry dist-tag. For that moving branch, use `npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes`. Release operators must verify refs with `git ls-remote` before certification.
+The Node CLI only shells over `scripts/tes_install.py install`: it stages TES,
+writes lock/sentinel state, and installs first-session hooks. Reopen Codex,
+Claude Code, or Cursor, or run `/tes-setup` or `/tes-init`, to finish setup.
 
 ## Primary Flow
 
@@ -94,9 +95,10 @@ apply runtime capabilities, write `.tes/tes-install-lock.json` and
 `.tes/postinstall.json`, then install first-session hooks:
 
 ```bash
-npx tilly-engineer-skills@latest add --agent all --yes
+npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes
 python3 scripts/tes_install.py install --target /path/to/project --agent all --yes
 python3 scripts/tes_npx_oracle.py --self-test
+TES_GITHUB_NPX_REF=v0.3.86 python3 scripts/tes_npx_oracle.py --github-self-test
 ```
 
 Hooks call `python3 .tes/bin/tes_install.py hook --agent <agent> --target .`.
@@ -171,10 +173,8 @@ the target project, writes `docs/agents/PROJECT-REGISTER.md`, writes
 `docs/agents/PROJECT-CONTEXT.md` as the initial project map for future agents,
 creates the first-pass Obsidian-compatible operating mesh when missing, stores
 a full manifest under `docs/agents/evidence/**`, and can be certified with
-`project_context_oracle.py` plus `project_alignment_oracle.py`. Cortex can also
-be initialized and checked directly:
-
-The user-facing `/tes-init` intent is a router, not a separate command family.
+`project_context_oracle.py` plus `project_alignment_oracle.py`. Cortex can be
+initialized directly. The user-facing `/tes-init` intent is a router, not a separate command family.
 It first runs an Install/Update Gate and a Project Context Gate. Installer or
 update writes still require Step Zero protection. If TES is already
 installed/current and only the project context is missing or weak, Step Zero

@@ -94,7 +94,8 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-local alias for the same oracles |
-| `npx tilly-engineer-skills@latest add` | commercial mechanical installer entrypoint; thin Node shell over `tes_install.py` |
+| `npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add` | commercial GitHub-only mechanical installer entrypoint; thin Node shell over `tes_install.py` |
+| `npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add` | moving GitHub branch/tag channel; `latest` is a Git ref, not an npm dist-tag |
 | thin installer | mechanical package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |

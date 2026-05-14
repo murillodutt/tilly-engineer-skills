@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import shutil
 import subprocess
@@ -16,6 +17,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = "0.3.86"
 BIN_NAME = "tilly-engineer-skills"
+DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
+DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
 
 
 def run(command: list[str], cwd: Path, timeout: float = 180.0) -> subprocess.CompletedProcess[str]:
@@ -50,15 +53,130 @@ def load_json(path: Path) -> dict[str, Any]:
 def package_contract_failures() -> list[str]:
     failures: list[str] = []
     package = load_json(ROOT / "package.json")
+    if package.get("private") is not True:
+        failures.append("package.json must keep private:true for GitHub-only distribution")
     bin_field = package.get("bin")
     if not isinstance(bin_field, dict):
         failures.append("package.json must declare bin object")
     elif bin_field.get(BIN_NAME) != "./bin/tes.js":
         failures.append(f"package.json bin.{BIN_NAME} must be ./bin/tes.js")
+    bin_path = ROOT / "bin/tes.js"
+    if not bin_path.exists():
+        failures.append("bin/tes.js must exist")
+    else:
+        first_line = bin_path.read_text(encoding="utf-8").splitlines()[0]
+        if first_line != "#!/usr/bin/env node":
+            failures.append("bin/tes.js must start with #!/usr/bin/env node")
     scripts = package.get("scripts") if isinstance(package.get("scripts"), dict) else {}
     if "tes:npx:self-test" not in scripts:
         failures.append("package.json missing script: tes:npx:self-test")
+    if "tes:npx:github-self-test" not in scripts:
+        failures.append("package.json missing script: tes:npx:github-self-test")
     return failures
+
+
+def github_ref_specs(ref: str) -> list[str]:
+    if ref.startswith("refs/"):
+        return [ref]
+    return [f"refs/heads/{ref}", f"refs/tags/{ref}"]
+
+
+def git_ls_remote(repo_url: str, ref: str) -> tuple[list[str], list[str]]:
+    command = ["git", "ls-remote", repo_url, *github_ref_specs(ref)]
+    result = run(command, ROOT, timeout=120.0)
+    lines = [line for line in result.stdout.splitlines() if line.strip()]
+    errors = []
+    if result.returncode != 0:
+        errors.append("git ls-remote failed")
+        errors.extend(result.stderr.splitlines())
+    return lines, errors
+
+
+def github_package_self_test(
+    *,
+    github_spec: str,
+    repo_url: str,
+    ref: str,
+    target: Path | None,
+) -> int:
+    failures = package_contract_failures()
+    blockers: list[str] = []
+    if not shutil.which("node"):
+        failures.append("node executable is required")
+    if not shutil.which("npm"):
+        failures.append("npm executable is required")
+    if not shutil.which("git"):
+        failures.append("git executable is required")
+
+    resolved_refs: list[str] = []
+    if not failures:
+        resolved_refs, ref_errors = git_ls_remote(repo_url, ref)
+        if ref_errors:
+            blockers.extend(ref_errors)
+        elif not resolved_refs:
+            blockers.append(
+                f"missing GitHub ref {ref!r}; create refs/heads/{ref} or refs/tags/{ref} before certification"
+            )
+
+    command = [
+        "npm",
+        "exec",
+        "--yes",
+        "--prefer-online",
+        "--package",
+        f"{github_spec}#{ref}",
+        "--",
+        BIN_NAME,
+        "add",
+        "--dry-run",
+        "--agent",
+        "all",
+        "--yes",
+    ]
+
+    with tempfile.TemporaryDirectory(prefix="tes-github-npx-oracle-") as tempdir:
+        work = Path(tempdir)
+        dry_target = target or fixture(work, "github-npx-target")
+        command.extend(["--target", str(dry_target)])
+        if not failures and not blockers:
+            exec_result = run(command, work, timeout=360.0)
+            if exec_result.returncode != 0:
+                failures.append("GitHub package spec npm exec failed")
+                failures.extend(exec_result.stdout.splitlines())
+                failures.extend(exec_result.stderr.splitlines())
+            if (dry_target / ".tes").exists():
+                failures.append("GitHub npx dry-run must not create .tes")
+
+    if failures:
+        status = "FAIL"
+        classification = "product_bug"
+        exit_code = 1
+    elif blockers:
+        status = "BLOCKED"
+        classification = "blocked_external"
+        exit_code = 2
+    else:
+        status = "PASS"
+        classification = "certified_local"
+        exit_code = 0
+
+    result = {
+        "version": VERSION,
+        "status": status,
+        "classification": classification,
+        "coverage": "github-npx-installer",
+        "bin": BIN_NAME,
+        "package_spec": f"{github_spec}#{ref}",
+        "repo_url": repo_url,
+        "ref": ref,
+        "resolved_refs": resolved_refs,
+        "command": " ".join(command),
+        "failures": failures,
+        "blockers": blockers,
+    }
+    print(json.dumps(result, indent=2, sort_keys=True))
+    print("[tes-npx:github-self-test] " + status)
+    return exit_code
 
 
 def self_test() -> int:
@@ -85,8 +203,8 @@ def self_test() -> int:
             failures.append("node bin/tes.js --help failed")
             failures.extend(help_result.stdout.splitlines())
             failures.extend(help_result.stderr.splitlines())
-        elif f"npx {BIN_NAME}@latest add" not in help_result.stdout:
-            failures.append("help output must advertise npx add")
+        elif f"github:murillodutt/{BIN_NAME}#v{VERSION}" not in help_result.stdout:
+            failures.append("help output must advertise GitHub npx add")
 
         dry_result = run(
             [
@@ -201,9 +319,33 @@ def self_test() -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--github-self-test", action="store_true")
+    parser.add_argument(
+        "--github-spec",
+        default=os.environ.get("TES_GITHUB_NPX_SPEC", DEFAULT_GITHUB_SPEC),
+        help="GitHub npm package spec without #ref.",
+    )
+    parser.add_argument(
+        "--github-repo-url",
+        default=os.environ.get("TES_GITHUB_REPO_URL", DEFAULT_GITHUB_REPO_URL),
+        help="Git remote used for ref preflight.",
+    )
+    parser.add_argument(
+        "--github-ref",
+        default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
+        help="Git ref to test, e.g. v0.3.86 or latest.",
+    )
+    parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()
     if args.self_test:
         return self_test()
+    if args.github_self_test:
+        return github_package_self_test(
+            github_spec=args.github_spec,
+            repo_url=args.github_repo_url,
+            ref=args.github_ref,
+            target=args.target,
+        )
     parser.print_help()
     return 0
 
