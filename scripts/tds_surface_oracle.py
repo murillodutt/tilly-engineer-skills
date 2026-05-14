@@ -194,6 +194,27 @@ def forbidden_public_installer_terms(text: str) -> list[str]:
     ]
 
 
+def code_copy_button_failures(text: str) -> list[str]:
+    failures: list[str] = []
+    for index, match in enumerate(
+        re.finditer(r'<div class="pre-wrap"(?P<attrs>[^>]*)>(?P<body>.*?)</div>', text, re.S),
+        start=1,
+    ):
+        attrs = match.group("attrs")
+        body = match.group("body")
+        label_match = re.search(r'data-label="([^"]+)"', attrs)
+        label = html.unescape(label_match.group(1)) if label_match else f"code card {index}"
+        if "data-copy-block" not in attrs:
+            failures.append(f"{label}: missing data-copy-block")
+            continue
+        if "data-copy-button" not in body:
+            failures.append(f"{label}: missing copy button")
+            continue
+        if 'data-copy-icon="true"' not in body or "<svg" not in body:
+            failures.append(f"{label}: missing SVG copy button")
+    return failures
+
+
 def textareas_for_prompt(output_text: str) -> list[str]:
     return [
         html.unescape(match.group(1))
@@ -311,6 +332,26 @@ def audit(root: Path, run_render_check: bool = True) -> tuple[str, dict[str, Any
                     "PASS",
                     "public_installer_contract_rendered",
                     "Generated public surface keeps installer copy at the user-visible contract layer.",
+                    output.as_posix(),
+                )
+            )
+        copy_failures = code_copy_button_failures(text)
+        if copy_failures:
+            findings.append(
+                Finding(
+                    "BLOCKER",
+                    "public_code_copy_button_missing",
+                    f"Generated code cards need SVG copy buttons: {copy_failures[0]}.",
+                    output.as_posix(),
+                )
+            )
+        else:
+            code_cards = len(re.findall(r'<div class="pre-wrap"', text))
+            findings.append(
+                Finding(
+                    "PASS",
+                    "public_code_copy_buttons_present",
+                    f"Generated code cards carry SVG copy buttons ({code_cards} found).",
                     output.as_posix(),
                 )
             )
@@ -495,9 +536,14 @@ def self_test() -> None:
         (root / TDS_SPEC).write_text("\n".join(PRINCIPLE_LINES), encoding="utf-8")
         marker = GENERATED_MARKER + "\n"
         textarea = f'<textarea class="copy-source" data-copy-source readonly aria-hidden="true" tabindex="-1">{html.escape(payload)}</textarea>'
+        code_card = (
+            '<div class="pre-wrap" data-label="fixed" data-copy-block>'
+            '<button data-copy-button data-copy-icon="true"><svg></svg></button>'
+            "<pre><code>tes command</code></pre></div>"
+        )
         for output in ("docs/index.html", "docs/install/USER-MANUAL.html"):
             (root / output).parent.mkdir(parents=True, exist_ok=True)
-            (root / output).write_text(marker + "Generated from TDS." + textarea, encoding="utf-8")
+            (root / output).write_text(marker + "Generated from TDS." + textarea + code_card, encoding="utf-8")
         (root / RENDERER).write_text("#!/usr/bin/env python3\nimport sys\nsys.exit(0)\n", encoding="utf-8")
         status, current_manifest, findings = audit(root)
         if status != "PASS":
@@ -551,6 +597,36 @@ def self_test() -> None:
         status, _, findings = audit(root, run_render_check=False)
         codes = {finding.code for finding in findings}
         if status != "FAIL" or "public_installer_internal_detail" not in codes:
+            raise AssertionError(render_text(status, manifest(root), findings))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        for path in ("docs/i18n", "docs/install", "docs/tds", "scripts"):
+            (root / path).mkdir(parents=True, exist_ok=True)
+        (root / STRUCTURE).write_text(
+            json.dumps(
+                {
+                    "sources": {"content": CONTENT.as_posix(), "structure": STRUCTURE.as_posix()},
+                    "generated_outputs": ["docs/index.html"],
+                    "pages": {},
+                }
+            ),
+            encoding="utf-8",
+        )
+        (root / CONTENT).write_text(json.dumps({"copy": "Run the installer."}), encoding="utf-8")
+        (root / MINI_PROMPT).write_text("```text\nInstall safely.\n```\n", encoding="utf-8")
+        for doc in (DOCS_INDEX, TDS_INDEX):
+            (root / doc).write_text("", encoding="utf-8")
+        (root / TDS_SPEC).write_text("", encoding="utf-8")
+        (root / "docs/index.html").write_text(
+            GENERATED_MARKER
+            + '\nGenerated from TDS.<div class="pre-wrap" data-label="fixed"><pre><code>tes command</code></pre></div>',
+            encoding="utf-8",
+        )
+        (root / RENDERER).write_text("#!/usr/bin/env python3\nimport sys\nsys.exit(0)\n", encoding="utf-8")
+        status, _, findings = audit(root, run_render_check=False)
+        codes = {finding.code for finding in findings}
+        if status != "FAIL" or "public_code_copy_button_missing" not in codes:
             raise AssertionError(render_text(status, manifest(root), findings))
 
 
