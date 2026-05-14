@@ -1263,13 +1263,13 @@
 <ol class="steps">
 <li>Run the command from the target repository with Node.js 18+ or Bun 1.0+, plus Python 3.11+.</li>
 <li>Interactive mode asks for target, agents, install mode, and final confirmation.</li>
-<li>Use <code>#v0.3.101</code> for reproducible installs.</li>
 <li>Codex: open Settings &gt; Hooks, then Trust and enable the Session Start hook if it is marked needs review.</li>
 <li>Claude Code: open or reopen Claude Code, wait for the TES completion notice, then run <code>/tes-setup</code>.</li>
 <li>Cursor: reopen the workspace, let first-session setup complete, then run <code>/tes-setup</code> for the report.</li>
 <li>The first-session hook starts setup, project context, and alignment gates once; repeated complete hooks exit quickly.</li>
 <li>Please, run <code>/tes-setup</code> for the report before asking for commit or push.</li>
 </ol>
+<aside class="side-note"><p class="side-note-title">Important: agent follow-up is host-specific</p><p>Do not start project work immediately after install. Codex needs hook review in Settings &gt; Hooks when marked needs review; Claude Code needs the TES completion notice; Cursor needs a workspace reopen and <code>/tes-setup</code> report. Only after <code>/tes-setup</code> reports complete, run <code>/tes-align</code> before project work.</p></aside>
 <p>Useful options: <code>--target &lt;path&gt;</code> installs outside the current directory; <code>--agent codex|claude|cursor|all</code> chooses hooks; <code>--yes</code> skips the wizard; <code>--dry-run</code> prints planned writes; <code>--mode preserve</code> is the default.</p>
 <p><code>#v0.3.101</code> is the supported fixed release ref. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit. If neither Node/npm nor Bun is installed, install Node.js LTS or Bun first.</p>
           </div>
@@ -1444,13 +1444,13 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 <ol class="steps">
 <li>Ejecuta el comando desde el repositorio objetivo con Node.js 18+ o Bun 1.0+, mas Python 3.11+.</li>
 <li>El modo interactivo pregunta target, agentes, modo de instalacion y confirmacion final.</li>
-<li>Usa <code>#v0.3.101</code> para instalaciones reproducibles.</li>
 <li>Codex: abre Settings &gt; Hooks, luego usa Trust y activa el hook Session Start si aparece como needs review.</li>
 <li>Claude Code: abre o reabre Claude Code, espera el aviso de finalizacion de TES y ejecuta <code>/tes-setup</code>.</li>
 <li>Cursor: reabre el workspace, deja que el setup de primera sesion termine y ejecuta <code>/tes-setup</code> para el reporte.</li>
 <li>El hook de primera sesion inicia setup, contexto de proyecto y gates de alineacion una vez; los hooks completos repetidos salen rapido.</li>
 <li>Lee el reporte final antes de pedir commit o push.</li>
 </ol>
+<aside class="side-note"><p class="side-note-title">Importante: el seguimiento del agente depende del host</p><p>No empieces trabajo de proyecto inmediatamente despues de instalar. Codex necesita revisar el hook en Settings &gt; Hooks cuando aparezca needs review; Claude Code necesita el aviso de finalizacion de TES; Cursor necesita reabrir el workspace y el reporte de <code>/tes-setup</code>. Solo despues de que <code>/tes-setup</code> reporte complete, ejecuta <code>/tes-align</code> antes del trabajo de proyecto.</p></aside>
 <p>Opciones utiles: <code>--target &lt;path&gt;</code> instala fuera del directorio actual; <code>--agent codex|claude|cursor|all</code> elige hooks; <code>--yes</code> salta el wizard; <code>--dry-run</code> muestra escrituras planificadas; <code>--mode preserve</code> es el default.</p>
 <p><code>#v0.3.101</code> es el release ref fijo soportado. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; ese directorio es cache local, no conocimiento del proyecto para commitear. Si no hay Node/npm ni Bun instalado, instala Node.js LTS o Bun primero.</p>
           </div>
@@ -1625,13 +1625,13 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 <ol class="steps">
 <li>Rode o comando a partir do repositorio alvo com Node.js 18+ ou Bun 1.0+, mais Python 3.11+.</li>
 <li>O modo interativo pergunta target, agentes, modo de instalacao e confirmacao final.</li>
-<li>Use <code>#v0.3.101</code> para instalacoes reprodutiveis.</li>
 <li>Codex: abra Settings &gt; Hooks, depois use Trust e ative o hook Session Start se ele aparecer como needs review.</li>
 <li>Claude Code: abra ou reabra o Claude Code, aguarde o aviso de conclusao do TES e rode <code>/tes-setup</code>.</li>
 <li>Cursor: reabra o workspace, deixe o setup de primeira sessao terminar e rode <code>/tes-setup</code> para o relatorio.</li>
 <li>O hook de primeira sessao inicia setup, contexto do projeto e gates de alinhamento uma vez; hooks completos repetidos saem rapido.</li>
 <li>Leia o relatorio final antes de pedir commit ou push.</li>
 </ol>
+<aside class="side-note"><p class="side-note-title">Importante: o follow-up do agente depende do host</p><p>Nao inicie trabalho no projeto imediatamente depois de instalar. Codex precisa revisar o hook em Settings &gt; Hooks quando aparecer needs review; Claude Code precisa do aviso de conclusao do TES; Cursor precisa reabrir o workspace e ver o relatorio de <code>/tes-setup</code>. So depois que <code>/tes-setup</code> reportar complete, rode <code>/tes-align</code> antes do trabalho no projeto.</p></aside>
 <p>Opcoes uteis: <code>--target &lt;path&gt;</code> instala fora do diretorio atual; <code>--agent codex|claude|cursor|all</code> escolhe hooks; <code>--yes</code> pula o wizard; <code>--dry-run</code> mostra escritas planejadas; <code>--mode preserve</code> e o default.</p>
 <p><code>#v0.3.101</code> e o release ref fixo suportado. Bundles runtime sao preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretorio e cache local, nao conhecimento do projeto para commit. Se nao houver Node/npm nem Bun instalado, instale Node.js LTS ou Bun primeiro.</p>
           </div>

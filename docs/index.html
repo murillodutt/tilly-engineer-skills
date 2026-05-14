@@ -1301,7 +1301,7 @@
 <li>After <code>/tes-setup</code> reports complete, run <code>/tes-align</code> before starting project work.</li>
 <li>Read the final report before approving commit, push, or rollout.</li>
 </ol>
-<aside class="side-note"><p class="side-note-title">Important: agent follow-up is host-specific</p><p>The required first-run path is <code>install -&gt; hook -&gt; /tes-setup -&gt; /tes-align</code>. Use <code>/tes-update</code> for updates, <code>/tes-doctor</code> for repair, and <code>/tes-align</code> when the project Markdown operating mesh needs to be refreshed.</p></aside>
+<aside class="side-note"><p class="side-note-title">Important: agent follow-up is host-specific</p><p>The first run is not the same in every host. Codex: open Settings &gt; Hooks, then Trust and enable Session Start if it is marked needs review. Claude Code: reopen Claude Code, wait for the TES completion notice, then run <code>/tes-setup</code>. Cursor: reopen the workspace, let first-session setup complete, then run <code>/tes-setup</code>. Only after the report is complete, run <code>/tes-align</code> before project work.</p></aside>
 <p><code>#v0.3.101</code> is the fixed reproducible Git ref and the supported install channel for this release. Use the versioned command when you need the same installer behavior across machines and time.</p>
 <p><code>--loglevel=error</code> keeps package-runner warnings out of the first-run screen while preserving real command failures. For Bun-only machines, use the <code>bunx --silent --bun</code> command. If neither runtime is installed, install Node.js LTS or Bun before running TES.</p>
           </div>
@@ -1403,7 +1403,7 @@
 <li>Despues de que <code>/tes-setup</code> reporte complete, ejecuta <code>/tes-align</code> antes de empezar trabajo de proyecto.</li>
 <li>Lee el reporte final antes de aprobar commit, push o rollout.</li>
 </ol>
-<aside class="side-note"><p class="side-note-title">Importante: el seguimiento del agente depende del host</p><p>La ruta obligatoria de primera ejecucion es <code>install -&gt; hook -&gt; /tes-setup -&gt; /tes-align</code>. Usa <code>/tes-update</code> para actualizar, <code>/tes-doctor</code> para reparar y <code>/tes-align</code> cuando el mesh operativo Markdown del proyecto necesite refrescarse.</p></aside>
+<aside class="side-note"><p class="side-note-title">Importante: el seguimiento del agente depende del host</p><p>La primera ejecucion no es igual en todos los hosts. Codex: abre Settings &gt; Hooks, luego usa Trust y activa Session Start si aparece como needs review. Claude Code: reabre Claude Code, espera el aviso de finalizacion de TES y ejecuta <code>/tes-setup</code>. Cursor: reabre el workspace, deja que el setup termine y ejecuta <code>/tes-setup</code>. Solo despues del reporte completo, ejecuta <code>/tes-align</code> antes del trabajo de proyecto.</p></aside>
 <p><code>#v0.3.101</code> es el Git ref fijo y reproducible y el canal de instalacion soportado para esta release. Usa el comando versionado cuando necesites el mismo comportamiento del instalador entre maquinas y momentos.</p>
 <p><code>--loglevel=error</code> mantiene los avisos del package runner fuera de la primera pantalla sin ocultar fallas reales del comando. En maquinas solo con Bun, usa <code>bunx --silent --bun</code>. Si no hay runtime instalado, instala Node.js LTS o Bun antes de ejecutar TES.</p>
           </div>
@@ -1505,7 +1505,7 @@
 <li>Depois que <code>/tes-setup</code> reportar complete, rode <code>/tes-align</code> antes de iniciar trabalho no projeto.</li>
 <li>Leia o relatorio final antes de aprovar commit, push ou rollout.</li>
 </ol>
-<aside class="side-note"><p class="side-note-title">Importante: o follow-up do agente depende do host</p><p>O caminho obrigatorio da primeira execucao e <code>install -&gt; hook -&gt; /tes-setup -&gt; /tes-align</code>. Use <code>/tes-update</code> para atualizar, <code>/tes-doctor</code> para reparar e <code>/tes-align</code> quando a malha operacional Markdown do projeto precisar ser atualizada.</p></aside>
+<aside class="side-note"><p class="side-note-title">Importante: o follow-up do agente depende do host</p><p>A primeira execucao nao e igual em todos os hosts. Codex: abra Settings &gt; Hooks, depois use Trust e ative Session Start se aparecer como needs review. Claude Code: reabra o Claude Code, aguarde o aviso de conclusao do TES e rode <code>/tes-setup</code>. Cursor: reabra o workspace, deixe o setup terminar e rode <code>/tes-setup</code>. So depois do relatorio completo, rode <code>/tes-align</code> antes do trabalho no projeto.</p></aside>
 <p><code>#v0.3.101</code> e o Git ref fixo e reprodutivel e o canal de instalacao suportado para esta release. Use o comando versionado quando precisar do mesmo comportamento do instalador entre maquinas e momentos.</p>
 <p><code>--loglevel=error</code> mantem avisos do package runner fora da primeira tela sem esconder falhas reais do comando. Em maquinas somente com Bun, use <code>bunx --silent --bun</code>. Se nenhum runtime estiver instalado, instale Node.js LTS ou Bun antes de executar o TES.</p>
           </div>
