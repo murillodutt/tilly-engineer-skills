@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.101"
+VERSION = "0.3.102"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -102,6 +102,31 @@ REPORT_GOVERNANCE_TERMS = (
     "NEEDS_REVIEW",
 )
 
+TARGET_SOURCE_GATE_TERMS = {
+    "doctor": (
+        "installed-target",
+        "package-source",
+        "Read `package.json`",
+        "python3 .tes/bin/tes_install.py status --target .",
+        "python3 .tes/bin/project_context_oracle.py --target .",
+        "python3 .tes/bin/project_alignment_oracle.py --target .",
+        "gate:doctor",
+        "gate:staged",
+        "gate:push",
+        "Do not certify unavailable commands",
+    ),
+    "bench": (
+        "package-source evidence",
+        "current workspace exposes",
+        "benchmark:plan",
+        "benchmark:run",
+        "benchmark:converge",
+        "NEEDS_SOURCE",
+        "Do not invent benchmark scripts",
+        "Do not certify installed-target health",
+    ),
+}
+
 DOC_SOURCE_GROUPS = {
     "command_triggers_doc": ("docs/install/COMMAND-TRIGGERS.md",),
     "platform_differences_doc": ("docs/adapters/PLATFORM-DIFFERENCES.md",),
@@ -162,6 +187,21 @@ REPORT_GOVERNANCE_SOURCE_PATHS = (
     "docs/install/AGENT-MANUAL.md",
     "docs/install/MINI-PROMPT.md",
 )
+
+TARGET_SOURCE_GATE_SOURCE_PATHS = {
+    "doctor": (
+        "src/adapters/codex/skills/tes-doctor/SKILL.md",
+        "src/adapters/claude/skills/tes-doctor/SKILL.md",
+    ),
+    "bench": (
+        "src/adapters/codex/skills/tes-bench/SKILL.md",
+        "src/adapters/claude/skills/tes-bench/SKILL.md",
+    ),
+    "docs": (
+        "docs/install/AGENT-MANUAL.md",
+        "docs/install/COMMAND-TRIGGERS.md",
+    ),
+}
 
 
 CLAUDE_PROJECT_SKILLS = (
@@ -294,6 +334,49 @@ def check_report_governance(root: Path) -> tuple[list[dict[str, Any]], list[str]
         missing = [term for term in REPORT_GOVERNANCE_TERMS if term.casefold() not in text]
         failures.extend(f"{relpath} missing report governance term: {term}" for term in missing)
         checked.append({"path": relpath, "status": "PASS" if not missing else "FAIL"})
+    return checked, failures
+
+
+def check_target_source_gate_contract(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    checked: list[dict[str, Any]] = []
+    failures: list[str] = []
+
+    for group in ("doctor", "bench"):
+        terms = TARGET_SOURCE_GATE_TERMS[group]
+        for relpath in TARGET_SOURCE_GATE_SOURCE_PATHS[group]:
+            path = root / relpath
+            if not path.exists():
+                failures.append(f"missing target/source gate source: {relpath}")
+                checked.append({"group": group, "path": relpath, "status": "MISSING"})
+                continue
+            text = normalized(path.read_text(encoding="utf-8"))
+            missing = [term for term in terms if term not in text]
+            failures.extend(f"{relpath} missing target/source gate term: {term}" for term in missing)
+            checked.append({"group": group, "path": relpath, "status": "PASS" if not missing else "FAIL"})
+
+    docs_expectations = {
+        "docs/install/AGENT-MANUAL.md": (
+            "package-source conveniences",
+            "not target-project guarantees",
+            "Do not certify an",
+            "unless that command exists",
+        ),
+        "docs/install/COMMAND-TRIGGERS.md": (
+            "package-source alias",
+            "not a target-project guarantee",
+        ),
+    }
+    for relpath in TARGET_SOURCE_GATE_SOURCE_PATHS["docs"]:
+        path = root / relpath
+        if not path.exists():
+            failures.append(f"missing target/source gate doc: {relpath}")
+            checked.append({"group": "docs", "path": relpath, "status": "MISSING"})
+            continue
+        text = normalized(path.read_text(encoding="utf-8"))
+        missing = [term for term in docs_expectations[relpath] if term not in text]
+        failures.extend(f"{relpath} missing target/source gate doc term: {term}" for term in missing)
+        checked.append({"group": "docs", "path": relpath, "status": "PASS" if not missing else "FAIL"})
+
     return checked, failures
 
 
@@ -481,6 +564,16 @@ def analyze(root: Path = ROOT) -> dict[str, Any]:
         }
     )
 
+    target_source_checked, target_source_failures = check_target_source_gate_contract(root)
+    failures.extend(target_source_failures)
+    checked.append(
+        {
+            "group": "target_source_gate_contracts",
+            "status": "PASS" if not target_source_failures else "FAIL",
+            "files": target_source_checked,
+        }
+    )
+
     skill_route_checked, skill_route_failures = check_skill_route_contracts(root)
     failures.extend(skill_route_failures)
     checked.append(
@@ -503,6 +596,8 @@ def analyze(root: Path = ROOT) -> dict[str, Any]:
 
 
 def run_fixture_tests() -> list[str]:
+    import tempfile
+
     failures: list[str] = []
     good_text = "\n".join(
         [
@@ -527,7 +622,21 @@ def run_fixture_tests() -> list[str]:
     if not any("recertificar TES" in item for item in check_text("fixture_bad_natural", bad_natural)):
         failures.append("bad natural fixture must fail when a natural intent is absent")
 
-    import tempfile
+    with tempfile.TemporaryDirectory(prefix="tes-trigger-oracle-target-source-") as tempdir:
+        target = Path(tempdir)
+        for paths in TARGET_SOURCE_GATE_SOURCE_PATHS.values():
+            for relpath in paths:
+                (target / relpath).parent.mkdir(parents=True, exist_ok=True)
+                (target / relpath).write_text("", encoding="utf-8")
+        checked, gate_failures = check_target_source_gate_contract(target)
+        if not gate_failures or not any("tes-doctor" in item for item in gate_failures):
+            failures.append("empty target/source gate fixture must fail doctor contract")
+        if not any("tes-bench" in item for item in gate_failures):
+            failures.append("empty target/source gate fixture must fail bench contract")
+        if not any("AGENT-MANUAL" in item for item in gate_failures):
+            failures.append("empty target/source gate fixture must fail docs contract")
+        if not checked:
+            failures.append("target/source gate fixture must report checked files")
 
     with tempfile.TemporaryDirectory(prefix="tes-trigger-oracle-good-") as tempdir:
         target = Path(tempdir)

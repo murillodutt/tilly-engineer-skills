@@ -330,6 +330,12 @@ python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_
 
 ### npm wrappers
 
+These wrappers are package-source conveniences for the
+`tilly-engineer-skills` repository. They are not target-project guarantees. In
+an installed target, first use the installed helpers under `.tes/bin/**` and
+the target's own discovered `package.json` scripts. Do not certify an
+`npm run ...` command unless that command exists in the current workspace.
+
 ```bash
 npm run validate
 npm run install:dry-run
