@@ -10,105 +10,61 @@ tver: 0.9.6
 
 # Adapter Installation
 
-The primary installer is an assisted context prompt. It uses the target
-project's active LLM window to inspect local governance, create or retrofit
-`docs/agents/**`, keep runtime files thin, and certify the integration.
+The commercial installer is GitHub-only npx. It resolves this repository
+through npm's Git package spec, runs the thin Node CLI, and delegates the real
+work to `scripts/tes_install.py`.
 
-For a practical user-facing walkthrough in Portuguese, English, and Spanish,
-open:
+User-facing walkthrough:
 
-```text
-docs/install/USER-MANUAL.html
-```
+- Web: https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html
+- Local package path: `docs/install/USER-MANUAL.html`
 
 For the agent-side contract behind runtime commands, gates, schemas, and
-closure vocabulary, open `docs/install/AGENT-MANUAL.md`.
+closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 
-Commercial quickstart:
+## Commercial Quickstart
 
 ```bash
 npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add
 ```
 
-For CI-style installs, add `--agent all --yes` to the same command. This is
-GitHub-only npx: no npm registry account, npm publish, or npm dist-tag.
-`#v0.3.86` is the fixed release ref. `#latest` is allowed only when GitHub has a
-branch or tag named `latest`; it is not the npm registry dist-tag. For that moving branch, use `npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes`. Release operators must verify refs with `git ls-remote` before certification.
-The Node CLI only shells over `scripts/tes_install.py install`: it stages TES,
-writes lock/sentinel state, and installs first-session hooks. Reopen Codex,
-Claude Code, or Cursor, or run `/tes-setup` or `/tes-init`, to finish setup.
+For non-interactive installs:
 
-## Primary Flow
-
-Open the target project in Codex, Claude Code, or Cursor and paste:
-
-```text
-Install Tilly Engineer Skills as an assisted context mesh, not as blind file
-copying.
-
-Read and follow this raw installer spec:
-
-https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
-
-Start by detecting the current IDE/runtime and classifying this project as new,
-existing, or meshed. If Tilly is already meshed, treat this as an assisted
-update/convergence run, not a reinstall. `/tes-update`, `/tes:update`, and
-"Atualizar TES" should run the update probe before route selection. Run in quiet
-installer mode: show
-compact progress, blockers and the final certification report only. When
-navigation is required, load the runtime navigation library from the spec, use
-native structured cards only when the current runtime safely supports them,
-otherwise render command navigation. Ask for a route command such as current,
-codex, claude, cursor, all, mcp, or audit. Use the detected IDE as the default
-adapter. Ask me for a route command only where the spec requires one.
-Create a central `.tes/bk/<timestamp>/` backup before runtime writes, install a
-clean TES runtime from the staged bundle, recover durable local governance
-semantics into `docs/agents/**`, keep active AGENTS.md, CLAUDE.md and Cursor
-rules as thin TES bootloaders, activate the read-only project-scoped Cortex MCP
-server for the selected runtime route, and finish with the certification report
-required by the spec.
-The update probe must be read-only by default, verify installed/cloud versions,
-helper contract parity, and `recommended_update_scope`; `STALE_HELPERS` is
-update-required, not `CURRENT`. For `recommended_update_scope=helpers-only`,
-replace only TES-owned `.tes/bin/**` helpers with backups on the selected Layer
-Zero route, rerun the update probe, then continue only after parity is PASS.
-Use `--record-field-report` only on the final certification probe. After any
-helper overwrite, that final recorded probe is mandatory before GO, evidence
-closeout, commit, or push, and it must show `helper_contract_status=PASS`,
-`runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and
-`recommended_update_scope=none`.
-The final report must expose the user manual link/path.
-
-Before installation edits, run Step Zero from the spec: inspect Git status and
-offer a local baseline commit if the working tree is dirty. At the end, show the
-`.tes/bk/<timestamp>/` rollback id and tell me how to undo the installation with
-Git. Do not push, amend, tag, publish, install dependencies, or change remotes
-unless I explicitly ask after reviewing the certification report. Do not
-overwrite files outside the selected TES clean-runtime route, and do not
-overwrite root runtime files before `.tes/bk/<timestamp>/manifest.json` exists.
+```bash
+npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes
 ```
+
+For the moving GitHub branch:
+
+```bash
+npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes
+```
+
+`#v0.3.86` is the fixed release ref. `#latest` is allowed only when GitHub has a
+branch or tag named `latest`; it is not the npm registry dist-tag. Release
+operators must verify refs with `git ls-remote` before certification.
+
+No npm registry account, npm publish, or npm dist-tag is required. The package is
+`private:true` to prevent accidental registry publishing.
 
 ## Install Semantics
 
 The npx wrapper and direct Python form both stage a source or versioned ZIP,
 apply runtime capabilities, write `.tes/tes-install-lock.json` and
-`.tes/postinstall.json`, then install first-session hooks:
-
-```bash
-npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes
-python3 scripts/tes_install.py install --target /path/to/project --agent all --yes
-python3 scripts/tes_npx_oracle.py --self-test
-TES_GITHUB_NPX_REF=v0.3.86 python3 scripts/tes_npx_oracle.py --github-self-test
-```
+`.tes/postinstall.json`, then install first-session hooks.
 
 Hooks call `python3 .tes/bin/tes_install.py hook --agent <agent> --target .`.
 When the sentinel is `pending`, post-install runs `tes_init.py`,
 `project_context_oracle.py`, and `project_alignment_oracle.py`, then marks the
 sentinel `complete` or `needs_review`. Repeated hooks exit quickly.
 
-The older clean-runtime assisted path still creates a mandatory central backup
-under `.tes/bk/<timestamp>/`, applies the canonical clean TES runtime, and lets
-the active LLM own semantic project analysis and recovery from backup evidence.
+Maintainers can still call the engine directly when certifying package source:
+
+```bash
+python3 scripts/tes_install.py install --target /path/to/project --agent all --yes
+python3 scripts/tes_npx_oracle.py --self-test
+TES_GITHUB_NPX_REF=v0.3.86 python3 scripts/tes_npx_oracle.py --github-self-test
+```
 
 ## Compatibility Basis
 
@@ -154,7 +110,7 @@ The MCP self-test covers negative malformed and write-like calls, and
 TES Field Reports is active by default. The initializer installs a local
 `pre-push` drain for sanitized operational facts, stores pending state under
 `.tes/field-reports/**`, never sends project code or private paths, and
-documents opt-out and reactivation prompts in the user manual. Certification
+documents opt-out and reactivation commands in the user manual. Certification
 covers local capture/drain, fake `gh` transport, and receiver quarantine. Real
 GitHub issue publication depends on local `gh`, authentication, and network and
 remains a partial surface until explicitly authorized and replayed against the
@@ -239,10 +195,10 @@ After Layer Zero, record the final proof with
 Self-tests run from `scripts/**` certify the package source contract; self-tests
 run from `.tes/bin/**` certify the installed helper contract.
 
-Navigation is runtime-aware. The installer declares menus as intent, loads
-`docs/install/navigation/common.prompt.md`, then loads the renderer for Codex,
-Claude Code, or Cursor. Native cards are used only when the active runtime
-supports them safely; command navigation remains the certified fallback.
+Navigation is runtime-aware. The installer declares menus as intent, loads the
+shared navigation library, then loads the renderer for Codex, Claude Code, or
+Cursor. Native cards are used only when the active runtime supports them safely;
+command navigation remains the certified fallback.
 
 ## New vs Existing Projects
 
@@ -281,7 +237,7 @@ the resulting state.
 
 ## Certification Output
 
-Every assisted install, retrofit, update, or audit run ends with:
+Every install, retrofit, update, or audit run ends with:
 
 ```text
 TES Context Mesh Convergence Report

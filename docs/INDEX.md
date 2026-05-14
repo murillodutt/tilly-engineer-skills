@@ -26,11 +26,9 @@ turning the repository root into an inventory.
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
 | Public installer bundle | `dist/0.3.86/tilly-engineer-skills-0.3.86.zip` |
-| Adapter installation | `install/INSTALL.md` |
-| Assisted context installer mini prompt | `install/MINI-PROMPT.md` |
-| Assisted context installer raw spec | `install/ASSISTED-CONTEXT-INSTALLER.prompt.md` |
+| GitHub-only npx installation | `install/INSTALL.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
-| Assisted installer navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
+| Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
 | Tool-neutral engineering principles | `mesh/PRINCIPLES.md` |
 | Neutral behavioral contract manifest | `mesh/CONTRACT-MANIFEST.yml` |
 | Context mesh method | `mesh/CONTEXT-MESH-METHOD.md` |

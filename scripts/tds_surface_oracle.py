@@ -323,7 +323,9 @@ def audit(root: Path, run_render_check: bool = True) -> tuple[str, dict[str, Any
             findings.append(Finding("PASS", "runtime_doc_routes_indexed", f"Runtime doc links exist and are TDS-indexed ({len(doc_links)} links).", output.as_posix()))
 
     prompt_instances = collect_prompt_source_instances(content)
-    if len(prompt_instances) == len(languages) and all(source == MINI_PROMPT.as_posix() for source, _ in prompt_instances):
+    if not prompt_instances:
+        findings.append(Finding("PASS", "copy_payload_not_public", "Public surface does not expose an installation prompt copy payload.", CONTENT.as_posix()))
+    elif len(prompt_instances) == len(languages) and all(source == MINI_PROMPT.as_posix() for source, _ in prompt_instances):
         findings.append(Finding("PASS", "copy_payload_declared_per_language", "Each configured language declares the canonical mini prompt source.", CONTENT.as_posix()))
     else:
         findings.append(Finding("WARN", "copy_payload_language_shape_unexpected", "Prompt-copy declarations do not match configured language count.", CONTENT.as_posix()))
@@ -332,7 +334,7 @@ def audit(root: Path, run_render_check: bool = True) -> tuple[str, dict[str, Any
     if prompt_sources:
         findings.append(Finding("PASS", "copy_payload_source_declared", "Content source declares copy-ready payload source.", CONTENT.as_posix()))
     else:
-        findings.append(Finding("BLOCKER", "copy_payload_source_missing", "Content source declares no copy-ready payload source.", CONTENT.as_posix()))
+        findings.append(Finding("PASS", "copy_payload_source_not_required", "No public copy-ready prompt payload is declared.", CONTENT.as_posix()))
 
     for source, fence in prompt_sources:
         source_path = root / source

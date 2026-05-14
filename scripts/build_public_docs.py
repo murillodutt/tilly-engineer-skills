@@ -947,22 +947,6 @@ CSS = r"""
       color: var(--mono-bg);
       text-decoration: none;
     }
-    .prompt-card { background: linear-gradient(135deg, rgba(28, 45, 42, .98), rgba(22, 18, 21, .99)); border: 1px solid rgba(47, 127, 132, .34); box-shadow: 0 26px 70px rgba(17, 24, 21, .16); color: var(--mono-fg); margin: 0 0 28px; max-width: calc(var(--col-content) + var(--col-aside)); overflow: hidden; position: relative; }
-    .prompt-card-top { align-items: start; border-bottom: 1px solid rgba(240, 247, 244, .12); display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr) auto; padding: 22px 24px 20px; }
-    .prompt-eyebrow, .prompt-source { color: var(--accent-soft); font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; margin: 0 0 10px; text-transform: uppercase; }
-    .prompt-card h3 { color: var(--mono-fg); font-family: var(--font-display); font-size: clamp(28px, 3vw, 42px); font-weight: 500; letter-spacing: -.01em; line-height: 1.02; margin: 0 0 10px; }
-    .prompt-card-top p:not(.prompt-eyebrow) { color: rgba(240, 247, 244, .78); font-size: 17px; line-height: 1.55; margin: 0; max-width: 620px; }
-    .prompt-copy-btn { align-self: start; margin-top: 4px; padding: 12px 14px; }
-    .prompt-source { border-bottom: 1px solid rgba(240, 247, 244, .1); color: rgba(240, 247, 244, .62); margin: 0; padding: 12px 24px; text-transform: none; }
-    .prompt-source code, .prompt-step code { background: rgba(240, 247, 244, .08); border-color: rgba(153, 225, 217, .2); color: var(--mono-fg); }
-    .prompt-body { max-height: 620px; overflow: auto; padding: 18px 24px 24px; scrollbar-color: rgba(153, 225, 217, .45) transparent; }
-    .prompt-step { border-bottom: 1px solid rgba(240, 247, 244, .1); display: grid; gap: 16px; grid-template-columns: 42px minmax(0, 1fr); padding: 16px 0; }
-    .prompt-step:first-child { padding-top: 0; }
-    .prompt-step:last-child { border-bottom: 0; padding-bottom: 0; }
-    .prompt-step-num { color: var(--accent-soft); font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; padding-top: 3px; }
-    .prompt-step p { color: rgba(240, 247, 244, .86); font-family: var(--font-mono); font-size: 12.5px; line-height: 1.75; margin: 0; }
-    .prompt-step a { color: var(--accent-soft); overflow-wrap: anywhere; }
-    .copy-source { height: 1px; left: -9999px; opacity: 0; pointer-events: none; position: absolute; width: 1px; }
     pre {
       font-family: var(--font-mono);
       font-size: 13px;
@@ -1515,12 +1499,6 @@ CSS = r"""
       th { font-size: 11px; padding-right: 12px; }
       td { padding-right: 12px; }
       pre { font-size: 12px; }
-      .prompt-card-top { grid-template-columns: 1fr; padding: 20px; }
-      .prompt-copy-btn { width: 100%; }
-      .prompt-source { padding: 12px 20px; }
-      .prompt-body { max-height: 560px; padding: 16px 20px 20px; }
-      .prompt-step { grid-template-columns: 34px minmax(0, 1fr); }
-      .prompt-step p { font-size: 12px; }
     }
 """
 

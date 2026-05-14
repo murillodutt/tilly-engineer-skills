@@ -630,22 +630,6 @@
       color: var(--mono-bg);
       text-decoration: none;
     }
-    .prompt-card { background: linear-gradient(135deg, rgba(28, 45, 42, .98), rgba(22, 18, 21, .99)); border: 1px solid rgba(47, 127, 132, .34); box-shadow: 0 26px 70px rgba(17, 24, 21, .16); color: var(--mono-fg); margin: 0 0 28px; max-width: calc(var(--col-content) + var(--col-aside)); overflow: hidden; position: relative; }
-    .prompt-card-top { align-items: start; border-bottom: 1px solid rgba(240, 247, 244, .12); display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr) auto; padding: 22px 24px 20px; }
-    .prompt-eyebrow, .prompt-source { color: var(--accent-soft); font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; margin: 0 0 10px; text-transform: uppercase; }
-    .prompt-card h3 { color: var(--mono-fg); font-family: var(--font-display); font-size: clamp(28px, 3vw, 42px); font-weight: 500; letter-spacing: -.01em; line-height: 1.02; margin: 0 0 10px; }
-    .prompt-card-top p:not(.prompt-eyebrow) { color: rgba(240, 247, 244, .78); font-size: 17px; line-height: 1.55; margin: 0; max-width: 620px; }
-    .prompt-copy-btn { align-self: start; margin-top: 4px; padding: 12px 14px; }
-    .prompt-source { border-bottom: 1px solid rgba(240, 247, 244, .1); color: rgba(240, 247, 244, .62); margin: 0; padding: 12px 24px; text-transform: none; }
-    .prompt-source code, .prompt-step code { background: rgba(240, 247, 244, .08); border-color: rgba(153, 225, 217, .2); color: var(--mono-fg); }
-    .prompt-body { max-height: 620px; overflow: auto; padding: 18px 24px 24px; scrollbar-color: rgba(153, 225, 217, .45) transparent; }
-    .prompt-step { border-bottom: 1px solid rgba(240, 247, 244, .1); display: grid; gap: 16px; grid-template-columns: 42px minmax(0, 1fr); padding: 16px 0; }
-    .prompt-step:first-child { padding-top: 0; }
-    .prompt-step:last-child { border-bottom: 0; padding-bottom: 0; }
-    .prompt-step-num { color: var(--accent-soft); font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; padding-top: 3px; }
-    .prompt-step p { color: rgba(240, 247, 244, .86); font-family: var(--font-mono); font-size: 12.5px; line-height: 1.75; margin: 0; }
-    .prompt-step a { color: var(--accent-soft); overflow-wrap: anywhere; }
-    .copy-source { height: 1px; left: -9999px; opacity: 0; pointer-events: none; position: absolute; width: 1px; }
     pre {
       font-family: var(--font-mono);
       font-size: 13px;
@@ -1198,12 +1182,6 @@
       th { font-size: 11px; padding-right: 12px; }
       td { padding-right: 12px; }
       pre { font-size: 12px; }
-      .prompt-card-top { grid-template-columns: 1fr; padding: 20px; }
-      .prompt-copy-btn { width: 100%; }
-      .prompt-source { padding: 12px 20px; }
-      .prompt-body { max-height: 560px; padding: 16px 20px 20px; }
-      .prompt-step { grid-template-columns: 34px minmax(0, 1fr); }
-      .prompt-step p { font-size: 12px; }
     }
 </style>
 </head>
@@ -1263,7 +1241,7 @@
           </div>
           <div class="chapter-body">
             <p class="lede">Tilly Engineer Skills installs a governance mesh for coding agents. Codex, Claude Code, and Cursor route through adapter-specific surfaces while project truth lives in versioned Markdown.</p>
-            <aside class="side-note"><p class="side-note-title">How you use it</p><p>The normal user interface is an intent typed in the agent window, not a shell command. Type <code>/tes-init</code> to install or <code>/tes-update</code> to update; the active agent selects and runs the smallest safe oracle.</p></aside>
+            <aside class="side-note"><p class="side-note-title">How you start</p><p>Install from the target repository with GitHub-only npx. After TES is present, use <code>/tes-setup</code>, <code>/tes-init</code>, or <code>/tes-update</code> in the agent window to finish setup, recertify, or update.</p></aside>
 <aside class="side-note"><p class="side-note-title">What stays yours</p><p>Existing <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code>, and Cursor rules are first backed up in <code>.tes/bk/&lt;timestamp&gt;/</code>. TES then installs a clean runtime and recovers useful local semantics into <code>docs/agents/**</code>.</p></aside>
 <aside class="side-note"><p class="side-note-title">Operator contract</p><p>This manual is for users installing, auditing, and rolling back TES. The agent-side contract lives in <code>docs/install/AGENT-MANUAL.md</code>.</p></aside>
           </div>
@@ -1277,13 +1255,16 @@
           <div class="chapter-body">
             <p class="lede">Start from the target repository with GitHub-only npx. The Node wrapper stays thin and delegates installation to the certified Python engine.</p>
             <div class="pre-wrap" data-label="fixed release"><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="moving branch"><pre><code>npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Run the command from the target repository.</li>
+<li>Use <code>#v0.3.86</code> for reproducible installs and <code>#latest</code> only when you want the moving Git branch.</li>
 <li>Open or reopen Codex, Claude Code, or Cursor.</li>
-<li>The installed first-session hook runs <code>/tes-init</code> style preparation, project context, and alignment gates.</li>
+<li>The first-session hook runs setup, project context, and alignment gates once; repeated hooks exit quickly.</li>
 <li>Read the final report before asking for commit or push.</li>
 </ol>
-<p>The package is <code>private:true</code>; no npm account, npm registry publish, or npm dist-tag is required. The moving channel is <code>#latest</code>, but only because GitHub has a branch named <code>latest</code>. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit.</p>
+<p>Useful options: <code>--target &lt;path&gt;</code> installs outside the current directory; <code>--agent codex|claude|cursor|all</code> chooses hooks; <code>--dry-run</code> prints planned writes; <code>--mode preserve</code> is the default.</p>
+<p>The package is <code>private:true</code>; no npm account, npm registry publish, or npm dist-tag is required. <code>#latest</code> is a GitHub branch, not the npm <code>latest</code> dist-tag. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit.</p>
           </div>
         </section>
 
@@ -1438,7 +1419,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Tilly Engineer Skills instala un mesh de gobernanza para agentes de codigo. Codex, Claude Code y Cursor pasan por superficies especificas mientras la verdad del proyecto vive en Markdown versionado.</p>
-            <aside class="side-note"><p class="side-note-title">Como se usa</p><p>La interfaz normal es una intencion escrita en la ventana del agente, no un comando de shell. Usa <code>/tes-init</code> para instalar o <code>/tes-update</code> para actualizar; el agente activo elige y ejecuta el menor oraculo seguro.</p></aside>
+            <aside class="side-note"><p class="side-note-title">Como empezar</p><p>Instala desde el repositorio objetivo con npx directo de GitHub. Despues de que TES exista, usa <code>/tes-setup</code>, <code>/tes-init</code> o <code>/tes-update</code> en la ventana del agente para terminar setup, recertificar o actualizar.</p></aside>
 <aside class="side-note"><p class="side-note-title">Lo que sigue siendo tuyo</p><p>Los archivos <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> y reglas de Cursor existentes se respaldan primero en <code>.tes/bk/&lt;timestamp&gt;/</code>. TES instala un runtime limpio y recupera semantica local util en <code>docs/agents/**</code>.</p></aside>
 <aside class="side-note"><p class="side-note-title">Contrato del operador</p><p>Este manual es para usuarios que instalan, auditan y revierten TES. El contrato del agente vive en <code>docs/install/AGENT-MANUAL.md</code>.</p></aside>
           </div>
@@ -1452,13 +1433,16 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           <div class="chapter-body">
             <p class="lede">Empieza desde el repositorio objetivo con npx solo desde GitHub. El wrapper Node es fino y delega la instalacion al motor Python certificado.</p>
             <div class="pre-wrap" data-label="release fija"><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="branch movil"><pre><code>npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Ejecuta el comando desde el repositorio objetivo.</li>
+<li>Usa <code>#v0.3.86</code> para instalaciones reproducibles y <code>#latest</code> solo cuando quieras la branch Git movil.</li>
 <li>Abre o reabre Codex, Claude Code o Cursor.</li>
-<li>El hook de primera sesion ejecuta preparacion estilo <code>/tes-init</code>, contexto de proyecto y gates de alineacion.</li>
+<li>El hook de primera sesion ejecuta setup, contexto de proyecto y gates de alineacion una vez; los hooks repetidos salen rapido.</li>
 <li>Lee el reporte final antes de pedir commit o push.</li>
 </ol>
-<p>El package es <code>private:true</code>; no requiere cuenta npm, npm registry publish ni npm dist-tag. El canal movil es <code>#latest</code>, pero solo porque GitHub tiene una branch llamada <code>latest</code>. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; ese directorio es cache local, no conocimiento del proyecto para commitear.</p>
+<p>Opciones utiles: <code>--target &lt;path&gt;</code> instala fuera del directorio actual; <code>--agent codex|claude|cursor|all</code> elige hooks; <code>--dry-run</code> muestra escrituras planificadas; <code>--mode preserve</code> es el default.</p>
+<p>El package es <code>private:true</code>; no requiere cuenta npm, npm registry publish ni npm dist-tag. <code>#latest</code> es una branch GitHub, no el dist-tag npm <code>latest</code>. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; ese directorio es cache local, no conocimiento del proyecto para commitear.</p>
           </div>
         </section>
 
@@ -1613,7 +1597,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Tilly Engineer Skills instala uma malha de governanca para agentes de codigo. Codex, Claude Code e Cursor passam por superficies especificas enquanto a verdade do projeto vive em Markdown versionado.</p>
-            <aside class="side-note"><p class="side-note-title">Como voce usa</p><p>A interface normal e uma intencao digitada na janela do agente, nao um comando de shell. Use <code>/tes-init</code> para instalar ou <code>/tes-update</code> para atualizar; o agente ativo escolhe e executa o menor oraculo seguro.</p></aside>
+            <aside class="side-note"><p class="side-note-title">Como comecar</p><p>Instale a partir do repositorio alvo com npx direto do GitHub. Depois que o TES estiver presente, use <code>/tes-setup</code>, <code>/tes-init</code> ou <code>/tes-update</code> na janela do agente para finalizar setup, recertificar ou atualizar.</p></aside>
 <aside class="side-note"><p class="side-note-title">O que continua sendo seu</p><p>Arquivos existentes como <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> e regras do Cursor sao primeiro salvos em <code>.tes/bk/&lt;timestamp&gt;/</code>. TES instala um runtime limpo e recupera semântica útil em <code>docs/agents/**</code>.</p></aside>
 <aside class="side-note"><p class="side-note-title">Contrato do operador</p><p>Este manual e para usuarios que instalam, auditam e revertem TES. O contrato do agente vive em <code>docs/install/AGENT-MANUAL.md</code>.</p></aside>
           </div>
@@ -1627,13 +1611,16 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           <div class="chapter-body">
             <p class="lede">Comece pelo repositorio alvo com npx direto do GitHub. O wrapper Node e fino e delega a instalacao ao motor Python certificado.</p>
             <div class="pre-wrap" data-label="release fixa"><pre><code>npx -y --package github:murillodutt/tilly-engineer-skills#v0.3.86 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="branch movel"><pre><code>npx -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Rode o comando a partir do repositorio alvo.</li>
+<li>Use <code>#v0.3.86</code> para instalacoes reprodutiveis e <code>#latest</code> apenas quando quiser a branch Git movel.</li>
 <li>Abra ou reabra Codex, Claude Code ou Cursor.</li>
-<li>O hook de primeira sessao executa preparacao estilo <code>/tes-init</code>, contexto do projeto e gates de alinhamento.</li>
+<li>O hook de primeira sessao executa setup, contexto do projeto e gates de alinhamento uma vez; hooks repetidos saem rapido.</li>
 <li>Leia o relatorio final antes de pedir commit ou push.</li>
 </ol>
-<p>O pacote e <code>private:true</code>; nao exige conta npm, npm registry publish nem npm dist-tag. O canal movel e <code>#latest</code>, mas apenas porque o GitHub tem uma branch chamada <code>latest</code>. Bundles runtime sao preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretorio e cache local, nao conhecimento do projeto para commit.</p>
+<p>Opcoes uteis: <code>--target &lt;path&gt;</code> instala fora do diretorio atual; <code>--agent codex|claude|cursor|all</code> escolhe hooks; <code>--dry-run</code> mostra escritas planejadas; <code>--mode preserve</code> e o default.</p>
+<p>O pacote e <code>private:true</code>; nao exige conta npm, npm registry publish nem npm dist-tag. <code>#latest</code> e uma branch GitHub, nao o dist-tag npm <code>latest</code>. Bundles runtime sao preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretorio e cache local, nao conhecimento do projeto para commit.</p>
           </div>
         </section>
 
