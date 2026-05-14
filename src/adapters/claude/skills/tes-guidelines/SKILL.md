@@ -14,7 +14,7 @@ Assumptions visible. Scope smaller. Edits surgical. Success falsifiable.
 
 ## TES Trigger Fallback
 
-Treat `/tes-init`, `/tes-update`, `/tes-align`, `/tes-prospect`, `/tes-mine`,
+Treat `/tes-init`, `/tes-setup`, `/tes-update`, `/tes-align`, `/tes-prospect`, `/tes-mine`,
 `/tes-open-obsidian`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
 `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench` as the
 shared TES trigger vocabulary. Treat `/tes:init`, `/tes:update`,
@@ -23,7 +23,7 @@ shared TES trigger vocabulary. Treat `/tes:init`, `/tes:update`,
 `/tes:adapter`, `/tes:bench`, `/tes:check`, `/tes:certify`, `/tes:recall`,
 `/tes:learn`, `/tes:reflect`, and `/tes:curate` as compatible aliases.
 
-Natural intents also route to TES: `tes init`, `tes update`, `Atualizar TES`,
+Natural intents also route to TES: `tes init`, `tes setup`, `tes update`, `Atualizar TES`,
 `atualizar TES`, `tes align`, `align TES`, `align this project`,
 `alinhar TES`, `alinhar projeto`, `open Obsidian`,
 `open this project in Obsidian`, `abrir Obsidian`, `abrir no Obsidian`,

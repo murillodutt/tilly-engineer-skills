@@ -23,7 +23,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.94"
+VERSION = "0.3.95"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -201,6 +201,14 @@ def claude_hook_contract_failures(target: Path) -> list[str]:
         'python3 "${CLAUDE_PROJECT_DIR}/.tes/bin/tes_install.py" hook --agent claude --target "${CLAUDE_PROJECT_DIR}"'
     ):
         failures.append("Claude SessionStart hook must use the official single command field")
+    setup_skill = target / ".claude/skills/tes-setup/SKILL.md"
+    if not setup_skill.exists():
+        failures.append("Claude install must deliver /tes-setup as a project skill")
+    else:
+        setup_text = setup_skill.read_text(encoding="utf-8")
+        for term in ("name: tes-setup", "/tes-init", ".tes/postinstall.json"):
+            if term not in setup_text:
+                failures.append(f"Claude /tes-setup skill missing contract term: {term}")
     return failures
 
 
@@ -546,6 +554,7 @@ def self_test() -> int:
                 ".tes/postinstall.json",
                 ".codex/config.toml",
                 ".claude/settings.json",
+                ".claude/skills/tes-setup/SKILL.md",
                 ".cursor/hooks.json",
             ):
                 if not (install_target / relpath).exists():
@@ -637,6 +646,8 @@ def self_test() -> int:
                 failures.append("npm exec Claude-only package add failed")
                 failures.extend(first_claude_install.stdout.splitlines())
                 failures.extend(first_claude_install.stderr.splitlines())
+            if not (first_claude_target / ".claude/skills/tes-setup/SKILL.md").exists():
+                failures.append("npm exec Claude-only package add must install /tes-setup skill")
             first_claude_hook = run(
                 [
                     sys.executable,
@@ -838,7 +849,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.94 or main.",
+        help="Git ref to test, e.g. v0.3.95 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()

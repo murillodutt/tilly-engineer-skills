@@ -42,6 +42,7 @@ User-facing intent typed in the agent window — never a shell command.
 | Trigger | Purpose | Aliases |
 |---------|---------|---------|
 | `/tes-init` | First setup on a target project | `/tes:init` (compat) |
+| `/tes-setup` | First-session report or setup alias | direct alias for `/tes-init` |
 | `/tes-update` | Update an already-meshed project | `/tes:update` (compat) |
 | `/tes-align` | Re-run alignment after context drift | `/tes:align` (compat) |
 | `/tes-prospect` | Stress-test a plan or design after explicit invocation | `/tes:prospect` (compat) |

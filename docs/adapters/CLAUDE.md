@@ -59,14 +59,14 @@ dedicated decision.
 - The materialized target root is `dist/adapters/claude/**`.
 - Project installs must include `.claude/skills/tes-*/SKILL.md`; Claude Code
   discovers these as project skills and exposes direct slash names such as
-  `/tes-init` and `/tes-cortex`.
+  `/tes-init`, `/tes-setup`, and `/tes-cortex`.
 - `.claude-plugin/plugin.json` must not depend on files outside the plugin
   root.
 - Skill paths in plugin metadata must be root-relative, such as
   `./skills/`, not `../skills/tes-guidelines`.
 - `/tes-*` is the preferred cross-tool TES trigger vocabulary across Codex,
   Claude Code, and Cursor. Claude project installs expose skill-backed direct
-  slash names such as `/tes-init`, `/tes-align`, `/tes-open-obsidian`,
+  slash names such as `/tes-init`, `/tes-setup`, `/tes-align`, `/tes-open-obsidian`,
   `/tes-prospect`, `/tes-mine`, `/tes-cortex`, `/tes-mcp`,
   `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench`;
   grouped triggers such as `/tes-update` and `/tes-curate` route through their
