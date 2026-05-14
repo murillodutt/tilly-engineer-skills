@@ -35,7 +35,7 @@ SOURCE_PACKAGE_MODE = (
 )
 BUNDLE_MODE = SOURCE_ROOT.name == "scripts" and not SOURCE_PACKAGE_MODE
 PACKAGE_MODE = SOURCE_PACKAGE_MODE
-VERSION = "0.3.89"
+VERSION = "0.3.90"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -58,7 +58,7 @@ TES_AGENT_MESH_RELPATHS = {
     KNOWLEDGE_LIFECYCLE.as_posix(),
     GLOSSARY.as_posix(),
 }
-PASSING_GATE_STATUSES = {"PASS", "CLEAN_APPLIED", "RECOVERED"}
+PASSING_GATE_STATUSES = {"PASS", "CLEAN_APPLIED", "RECOVERED", "NOT_AVAILABLE"}
 DEFAULT_COMMAND_TIMEOUT_SECONDS = 60.0
 DEFAULT_GIT_LIST_TIMEOUT_SECONDS = 15.0
 
@@ -343,6 +343,23 @@ def git_head(target: Path) -> str:
 def git_status(target: Path) -> str:
     result = run(["git", "status", "--short", "--branch", "--untracked-files=all"], target)
     return result["stdout"] if result["returncode"] == 0 else "not-a-git-repo"
+
+
+def is_git_worktree(target: Path) -> bool:
+    result = run(["git", "rev-parse", "--is-inside-work-tree"], target)
+    return result["returncode"] == 0 and result["stdout"].strip() == "true"
+
+
+def git_diff_check_gate(target: Path) -> dict[str, Any]:
+    if is_git_worktree(target):
+        return run(["git", "diff", "--check"], target)
+    return {
+        "command": "git diff --check",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "target is not a Git repository; git whitespace diff gate is not available",
+        "status": "NOT_AVAILABLE",
+    }
 
 
 def is_tes_runtime_relpath(relpath: Path) -> bool:
@@ -1309,7 +1326,7 @@ def package_gates() -> list[dict[str, Any]]:
 
 
 def target_gates(target: Path) -> list[dict[str, Any]]:
-    gates: list[dict[str, Any]] = [run(["git", "diff", "--check"], target)]
+    gates: list[dict[str, Any]] = [git_diff_check_gate(target)]
     gates.append(root_context_gate(target))
     gate_cwd = ROOT if PACKAGE_MODE else HELPER_ROOT
     gates.append(run([sys.executable, str(helper_script("field_reports.py")), "status", "--target", str(target)], gate_cwd))
@@ -2347,6 +2364,16 @@ def self_test() -> dict[str, Any]:
         paths = {str(record["path"]) for record in scan["files"]}
         if not {"AGENTS.md", "CLAUDE.md"}.issubset(paths):
             failures.append("project scan must fall back to local files when parent Git ignores target")
+
+    with tempfile.TemporaryDirectory(prefix="tes-init-gitless-target-") as tempdir:
+        target = Path(tempdir)
+        (target / "README.md").write_text("# Gitless fixture\n\nA restored project without a .git directory.\n", encoding="utf-8")
+        result = initialize(target, yes=True, ensure_cortex=True)
+        git_gate = next((gate for gate in result["gates"] if gate["command"] == "git diff --check"), None)
+        if result["status"] != "PASS":
+            failures.append(f"gitless target must initialize without NEEDS_REVIEW, got {result['status']}")
+        if not git_gate or git_gate["status"] != "NOT_AVAILABLE":
+            failures.append("gitless target must mark git diff gate as NOT_AVAILABLE")
 
     with tempfile.TemporaryDirectory(prefix="tes-init-readme-identity-") as tempdir:
         target = Path(tempdir)
