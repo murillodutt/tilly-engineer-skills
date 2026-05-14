@@ -6,29 +6,53 @@ license: MIT
 
 # TES Doctor
 
-`/tes-doctor` is the preferred shared TES trigger for package and mesh health
-checks. `/tes:doctor`, `/tes:check`, and `/tes:certify` are compatible TES
-intent aliases if the host reports them as invalid slashes.
+`/tes-doctor` is the preferred shared TES trigger for installed-target and
+package-source health checks. `/tes:doctor`, `/tes:check`, and `/tes:certify`
+are compatible TES intent aliases if the host reports them as invalid slashes.
+
+## Context Gate
+
+Before choosing a command, classify the current workspace:
+
+- **Installed target**: `.tes/bin/**` exists, or TES bootloaders/skills are
+  installed into a project that is not the `tilly-engineer-skills` source
+  package.
+- **Package source**: `package.json` names `tilly-engineer-skills`, and the
+  maintainer scripts plus adapter source tree are present.
+
+Read `package.json` before recommending project scripts. A command is usable
+only when the current workspace exposes it or the installed helper exists.
 
 ## Gate Selection
 
 Run the smallest gate that proves the claim:
 
-| Claim | Typical oracle |
-|-------|----------------|
-| package shape is valid | `npm run validate` |
-| docs stay modular | `npm run docs:size` |
-| TDS is aligned | `npm run tds:validate` |
-| Cortex core works | `npm run cortex:self-test` |
-| MCP helper works | `npm run mcp:self-test` and `npm run cortex:mcp:self-test` |
-| Field Reports works | `npm run field-reports:self-test` |
-| adapters materialize | `npm run materialize:check` |
-| platform surfaces align | `npm run platform:surface:check` |
-| final local closure | `npm run commit:check` |
+| Context | Claim | Typical oracle |
+|---------|-------|----------------|
+| installed target | TES runtime is installed | `python3 .tes/bin/tes_install.py status --target .` |
+| installed target | project context is healthy | `python3 .tes/bin/project_context_oracle.py --target .` |
+| installed target | project alignment is healthy | `python3 .tes/bin/project_alignment_oracle.py --target .` |
+| installed target | target exposes a health gate | run the discovered script, for example `pnpm run gate:doctor` or `npm run gate:doctor` |
+| installed target | staged changes are commit-ready | run discovered `gate:staged`; otherwise use available project gates and `git diff --check` |
+| installed target | push readiness | run discovered `gate:push`; otherwise report `NOT_AVAILABLE` instead of inventing one |
+| package-source | package shape is valid | `npm run validate` |
+| package-source | docs stay modular | `npm run docs:size` |
+| package-source | TDS is aligned | `npm run tds:validate` |
+| package-source | Cortex core works | `npm run cortex:self-test` |
+| package-source | MCP helper works | `npm run mcp:self-test` and `npm run cortex:mcp:self-test` |
+| package-source | Field Reports works | `npm run field-reports:self-test` |
+| package-source | adapters materialize | `npm run materialize:check` |
+| package-source | platform surfaces align | `npm run platform:surface:check` |
+| package-source | final local closure | `npm run commit:check` |
 
 ## Rules
 
 - Do not run heavy gates when a narrow oracle proves the claim.
 - Do not certify skipped commands as passing.
-- Before commit, prefer `npm run commit:check`.
+- Do not certify unavailable commands. Report `NOT_AVAILABLE`, `BLOCKED`, or
+  `NEEDS_REVIEW` with the missing script/helper named.
+- In an installed target, prefer project-owned gates discovered from
+  `package.json` before generic package-source commands.
+- Before commit in an installed target, prefer discovered `gate:staged`; in the
+  TES package source, prefer `npm run commit:check`.
 - After commit, rerun the principal gate when the user asks for sealed closure.
