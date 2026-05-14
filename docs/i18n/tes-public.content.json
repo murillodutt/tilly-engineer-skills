@@ -273,10 +273,11 @@
         "lede": "Installation is not the dream; it is the controlled path to the dream. Start with one GitHub package-spec command, then let the first agent session finish setup with evidence.",
         "blocks": [
           {"type": "code", "label": "fixed release", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add"},
+          {"type": "code", "label": "bun runtime", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add"},
           {"type": "code", "label": "non-interactive", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add --agent all --yes"},
-          {"type": "steps", "items": ["Run from the target repository.", "Interactive mode lets you confirm target, agent hooks, and install mode before TES writes files.", "Use `--agent all --yes` when you want all Codex, Claude Code, and Cursor hooks prepared non-interactively.", "Open or reopen the agent; the first-session hook prepares `docs/agents/**` and runs local context/alignment gates.", "Read the final report before approving commit, push, or rollout."]},
+          {"type": "steps", "items": ["Run from the target repository with Node.js 18+ and npx, or Bun 1.0+ and bunx.", "Interactive mode lets you confirm target, agent hooks, and install mode before TES writes files.", "Use `--agent all --yes` when you want all Codex, Claude Code, and Cursor hooks prepared non-interactively.", "Open or reopen the agent; the first-session hook prepares `docs/agents/**` and runs local context/alignment gates.", "Read the final report before approving commit, push, or rollout."]},
           {"type": "p", "text": "`#v0.3.90` is the fixed reproducible Git ref. For the moving channel, use `npx --loglevel=error -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add`; `latest` follows this repository's GitHub branch."},
-          {"type": "p", "text": "`--loglevel=error` keeps package-runner warnings out of the first-run screen while preserving real command failures."}
+          {"type": "p", "text": "`--loglevel=error` keeps package-runner warnings out of the first-run screen while preserving real command failures. For Bun-only machines, use the `bunx --silent --bun` command. If neither runtime is installed, install Node.js LTS or Bun before running TES."}
         ]
       },
       "es": {
@@ -285,10 +286,11 @@
         "lede": "La instalacion no es el sueno; es el camino controlado hacia el sueno. Empieza con un comando GitHub package-spec y deja que la primera sesion del agente termine el setup con evidencia.",
         "blocks": [
           {"type": "code", "label": "release fija", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add"},
+          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add"},
           {"type": "code", "label": "no interactivo", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add --agent all --yes"},
-          {"type": "steps", "items": ["Ejecuta desde el repositorio objetivo.", "El modo interactivo te deja confirmar target, hooks de agentes y modo de instalacion antes de escribir archivos.", "Usa `--agent all --yes` cuando quieras preparar hooks para Codex, Claude Code y Cursor de forma no interactiva.", "Abre o reabre el agente; el hook de primera sesion prepara `docs/agents/**` y ejecuta gates locales de contexto/alineacion.", "Lee el reporte final antes de aprobar commit, push o rollout."]},
+          {"type": "steps", "items": ["Ejecuta desde el repositorio objetivo con Node.js 18+ y npx, o Bun 1.0+ y bunx.", "El modo interactivo te deja confirmar target, hooks de agentes y modo de instalacion antes de escribir archivos.", "Usa `--agent all --yes` cuando quieras preparar hooks para Codex, Claude Code y Cursor de forma no interactiva.", "Abre o reabre el agente; el hook de primera sesion prepara `docs/agents/**` y ejecuta gates locales de contexto/alineacion.", "Lee el reporte final antes de aprobar commit, push o rollout."]},
           {"type": "p", "text": "`#v0.3.90` es el Git ref fijo y reproducible. Para el canal movil, usa `npx --loglevel=error -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add`; `latest` sigue la branch GitHub de este repositorio."},
-          {"type": "p", "text": "`--loglevel=error` mantiene los avisos del package runner fuera de la primera pantalla sin ocultar fallas reales del comando."}
+          {"type": "p", "text": "`--loglevel=error` mantiene los avisos del package runner fuera de la primera pantalla sin ocultar fallas reales del comando. En maquinas solo con Bun, usa `bunx --silent --bun`. Si no hay runtime instalado, instala Node.js LTS o Bun antes de ejecutar TES."}
         ]
       },
       "pt": {
@@ -297,10 +299,11 @@
         "lede": "Instalacao nao e o sonho; e o caminho controlado ate o sonho. Comece com um comando GitHub package-spec e deixe a primeira sessao do agente terminar o setup com evidencia.",
         "blocks": [
           {"type": "code", "label": "release fixa", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add"},
+          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add"},
           {"type": "code", "label": "nao interativo", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add --agent all --yes"},
-          {"type": "steps", "items": ["Rode a partir do repositorio alvo.", "O modo interativo deixa confirmar target, hooks de agentes e modo de instalacao antes de escrever arquivos.", "Use `--agent all --yes` quando quiser preparar hooks para Codex, Claude Code e Cursor de forma nao interativa.", "Abra ou reabra o agente; o hook de primeira sessao prepara `docs/agents/**` e executa gates locais de contexto/alinhamento.", "Leia o relatorio final antes de aprovar commit, push ou rollout."]},
+          {"type": "steps", "items": ["Rode a partir do repositorio alvo com Node.js 18+ e npx, ou Bun 1.0+ e bunx.", "O modo interativo deixa confirmar target, hooks de agentes e modo de instalacao antes de escrever arquivos.", "Use `--agent all --yes` quando quiser preparar hooks para Codex, Claude Code e Cursor de forma nao interativa.", "Abra ou reabra o agente; o hook de primeira sessao prepara `docs/agents/**` e executa gates locais de contexto/alinhamento.", "Leia o relatorio final antes de aprovar commit, push ou rollout."]},
           {"type": "p", "text": "`#v0.3.90` e o Git ref fixo e reprodutivel. Para o canal movel, use `npx --loglevel=error -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add`; `latest` acompanha a branch GitHub deste repositorio."},
-          {"type": "p", "text": "`--loglevel=error` mantem avisos do package runner fora da primeira tela sem esconder falhas reais do comando."}
+          {"type": "p", "text": "`--loglevel=error` mantem avisos do package runner fora da primeira tela sem esconder falhas reais do comando. Em maquinas somente com Bun, use `bunx --silent --bun`. Se nenhum runtime estiver instalado, instale Node.js LTS ou Bun antes de executar o TES."}
         ]
       }
     },
@@ -581,10 +584,11 @@
         "lede": "Start from the target repository with GitHub npx. The command installs TES locally, prepares selected agent hooks, and records the first-session setup path.",
         "blocks": [
           {"type": "code", "label": "fixed release", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "bun runtime", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add --agent all --yes"},
           {"type": "code", "label": "moving branch", "text": "npx --loglevel=error -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes"},
-          {"type": "steps", "items": ["Run the command from the target repository.", "Interactive mode asks for target, agents, install mode, and final confirmation.", "Use `#v0.3.90` for reproducible installs and `#latest` only when you want the moving Git branch.", "Open or reopen Codex, Claude Code, or Cursor.", "The first-session hook runs setup, project context, and alignment gates once; repeated hooks exit quickly.", "Read the final report before asking for commit or push."]},
+          {"type": "steps", "items": ["Run the command from the target repository with Node.js 18+ or Bun 1.0+.", "Interactive mode asks for target, agents, install mode, and final confirmation.", "Use `#v0.3.90` for reproducible installs and `#latest` only when you want the moving Git branch.", "Open or reopen Codex, Claude Code, or Cursor.", "The first-session hook runs setup, project context, and alignment gates once; repeated hooks exit quickly.", "Read the final report before asking for commit or push."]},
           {"type": "p", "text": "Useful options: `--target <path>` installs outside the current directory; `--agent codex|claude|cursor|all` chooses hooks; `--yes` skips the wizard; `--dry-run` prints planned writes; `--mode preserve` is the default."},
-          {"type": "p", "text": "`#latest` follows this repository's GitHub branch; use `#v0.3.90` when you need a fixed release. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit."}
+          {"type": "p", "text": "`#latest` follows this repository's GitHub branch; use `#v0.3.90` when you need a fixed release. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit. If neither Node/npm nor Bun is installed, install Node.js LTS or Bun first."}
         ]
       },
       "es": {
@@ -593,10 +597,11 @@
         "lede": "Empieza desde el repositorio objetivo con npx desde GitHub. El comando instala TES localmente, prepara los hooks de agentes seleccionados y registra el camino de setup de primera sesion.",
         "blocks": [
           {"type": "code", "label": "release fija", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add --agent all --yes"},
           {"type": "code", "label": "branch movil", "text": "npx --loglevel=error -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes"},
-          {"type": "steps", "items": ["Ejecuta el comando desde el repositorio objetivo.", "El modo interactivo pregunta target, agentes, modo de instalacion y confirmacion final.", "Usa `#v0.3.90` para instalaciones reproducibles y `#latest` solo cuando quieras la branch Git movil.", "Abre o reabre Codex, Claude Code o Cursor.", "El hook de primera sesion ejecuta setup, contexto de proyecto y gates de alineacion una vez; los hooks repetidos salen rapido.", "Lee el reporte final antes de pedir commit o push."]},
+          {"type": "steps", "items": ["Ejecuta el comando desde el repositorio objetivo con Node.js 18+ o Bun 1.0+.", "El modo interactivo pregunta target, agentes, modo de instalacion y confirmacion final.", "Usa `#v0.3.90` para instalaciones reproducibles y `#latest` solo cuando quieras la branch Git movil.", "Abre o reabre Codex, Claude Code o Cursor.", "El hook de primera sesion ejecuta setup, contexto de proyecto y gates de alineacion una vez; los hooks repetidos salen rapido.", "Lee el reporte final antes de pedir commit o push."]},
           {"type": "p", "text": "Opciones utiles: `--target <path>` instala fuera del directorio actual; `--agent codex|claude|cursor|all` elige hooks; `--yes` salta el wizard; `--dry-run` muestra escrituras planificadas; `--mode preserve` es el default."},
-          {"type": "p", "text": "`#latest` sigue la branch GitHub de este repositorio; usa `#v0.3.90` cuando necesites una release fija. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear."}
+          {"type": "p", "text": "`#latest` sigue la branch GitHub de este repositorio; usa `#v0.3.90` cuando necesites una release fija. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear. Si no hay Node/npm ni Bun instalado, instala Node.js LTS o Bun primero."}
         ]
       },
       "pt": {
@@ -605,10 +610,11 @@
         "lede": "Comece pelo repositorio alvo com npx direto do GitHub. O comando instala TES localmente, prepara os hooks dos agentes escolhidos e registra o caminho de setup da primeira sessao.",
         "blocks": [
           {"type": "code", "label": "release fixa", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add --agent all --yes"},
           {"type": "code", "label": "branch movel", "text": "npx --loglevel=error -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes"},
-          {"type": "steps", "items": ["Rode o comando a partir do repositorio alvo.", "O modo interativo pergunta target, agentes, modo de instalacao e confirmacao final.", "Use `#v0.3.90` para instalacoes reprodutiveis e `#latest` apenas quando quiser a branch Git movel.", "Abra ou reabra Codex, Claude Code ou Cursor.", "O hook de primeira sessao executa setup, contexto do projeto e gates de alinhamento uma vez; hooks repetidos saem rapido.", "Leia o relatorio final antes de pedir commit ou push."]},
+          {"type": "steps", "items": ["Rode o comando a partir do repositorio alvo com Node.js 18+ ou Bun 1.0+.", "O modo interativo pergunta target, agentes, modo de instalacao e confirmacao final.", "Use `#v0.3.90` para instalacoes reprodutiveis e `#latest` apenas quando quiser a branch Git movel.", "Abra ou reabra Codex, Claude Code ou Cursor.", "O hook de primeira sessao executa setup, contexto do projeto e gates de alinhamento uma vez; hooks repetidos saem rapido.", "Leia o relatorio final antes de pedir commit ou push."]},
           {"type": "p", "text": "Opcoes uteis: `--target <path>` instala fora do diretorio atual; `--agent codex|claude|cursor|all` escolhe hooks; `--yes` pula o wizard; `--dry-run` mostra escritas planejadas; `--mode preserve` e o default."},
-          {"type": "p", "text": "`#latest` acompanha a branch GitHub deste repositorio; use `#v0.3.90` quando precisar de uma release fixa. Bundles runtime sao preparados em `.tes/setup/<version>/`; esse diretorio e cache local, nao conhecimento do projeto para commit."}
+          {"type": "p", "text": "`#latest` acompanha a branch GitHub deste repositorio; use `#v0.3.90` quando precisar de uma release fixa. Bundles runtime sao preparados em `.tes/setup/<version>/`; esse diretorio e cache local, nao conhecimento do projeto para commit. Se nao houver Node/npm nem Bun instalado, instale Node.js LTS ou Bun primeiro."}
         ]
       }
     },

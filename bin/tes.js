@@ -9,6 +9,8 @@ const AGENTS = new Set(["codex", "claude", "cursor", "all"]);
 const MODES = new Set(["preserve", "clean-runtime"]);
 const VALUE_OPTIONS = new Set(["--target", "--agent", "--mode", "--bundle", "--url", "--sha256", "--timeout"]);
 const BOOL_OPTIONS = new Set(["--yes", "--dry-run", "--no-hooks", "--no-postinstall"]);
+const MIN_NODE_MAJOR = 18;
+const MIN_BUN_VERSION = [1, 0, 0];
 const AGENT_CHOICES = [
   { key: "1", value: "all", label: "All agents", detail: "Codex, Claude Code, Cursor" },
   { key: "2", value: "codex", label: "Codex", detail: ".codex/config.toml" },
@@ -44,15 +46,84 @@ Options:
   --timeout <seconds>         Bundle download or postinstall timeout.
   --help                      Show this help.
 
+Runtime:
+  Node.js 18+ with npm/npx, or Bun 1.0+ with bunx --bun.
+
 Examples:
   npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add
   npx --loglevel=error -y --prefer-online --package github:murillodutt/tilly-engineer-skills#latest tilly-engineer-skills add --agent all --yes
+  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add
 `);
 }
 
 function fail(message, code = 1) {
   console.error(`TES installer: ${message}`);
   return code;
+}
+
+function parseVersionParts(version) {
+  return String(version || "")
+    .replace(/^v/, "")
+    .split(".")
+    .map((part) => Number.parseInt(part, 10))
+    .map((part) => (Number.isFinite(part) ? part : 0));
+}
+
+function versionAtLeast(version, minimum) {
+  const current = parseVersionParts(version);
+  for (let index = 0; index < minimum.length; index += 1) {
+    const value = current[index] || 0;
+    if (value > minimum[index]) {
+      return true;
+    }
+    if (value < minimum[index]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function detectRuntime() {
+  const bunVersion = process.versions?.bun || globalThis.Bun?.version || null;
+  if (bunVersion) {
+    return {
+      name: "Bun",
+      version: bunVersion,
+      supported: versionAtLeast(bunVersion, MIN_BUN_VERSION),
+      minimum: "1.0.0",
+    };
+  }
+  const nodeVersion = process.versions?.node || null;
+  if (nodeVersion) {
+    const major = parseVersionParts(nodeVersion)[0] || 0;
+    return {
+      name: "Node.js",
+      version: nodeVersion,
+      supported: major >= MIN_NODE_MAJOR,
+      minimum: `${MIN_NODE_MAJOR}.0.0`,
+    };
+  }
+  return {
+    name: "unknown JavaScript runtime",
+    version: null,
+    supported: false,
+    minimum: `Node.js ${MIN_NODE_MAJOR}+ or Bun ${MIN_BUN_VERSION.join(".")}+`,
+  };
+}
+
+function runtimeFailure(runtime) {
+  console.error("TES installer: unsupported JavaScript runtime.");
+  console.error(`Detected: ${runtime.version ? `${runtime.name} ${runtime.version}` : runtime.name}.`);
+  console.error(`Required: Node.js ${MIN_NODE_MAJOR}+ or Bun ${MIN_BUN_VERSION.join(".")}+.`);
+  console.error("");
+  console.error("Install one runtime, then rerun the installer:");
+  console.error("  Node.js LTS: https://nodejs.org/en/download");
+  console.error("  Bun: https://bun.sh/docs/installation");
+  console.error("");
+  console.error("Commands:");
+  console.error("  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add");
+  console.error("  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.90 tilly-engineer-skills add");
+  return 1;
 }
 
 function resolvePython() {
@@ -389,6 +460,11 @@ function renderFailure(summary, output) {
 }
 
 async function main() {
+  const runtime = detectRuntime();
+  if (!runtime.supported) {
+    return runtimeFailure(runtime);
+  }
+
   const parsed = parse(process.argv.slice(2));
   if (parsed.help) {
     printHelp();
