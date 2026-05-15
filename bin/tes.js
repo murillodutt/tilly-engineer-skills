@@ -85,9 +85,9 @@ Runtime:
   Python 3.11+ for the local TES engine and first-session oracles.
 
 Examples:
-  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.104 tilly-engineer-skills add
-  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.104 tilly-engineer-skills add --agent all --yes
-  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.104 tilly-engineer-skills add
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.105 tilly-engineer-skills add
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.105 tilly-engineer-skills add --agent all --yes
+  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.105 tilly-engineer-skills add
 `);
 }
 
@@ -156,8 +156,8 @@ function runtimeFailure(runtime) {
   console.error("  Bun: https://bun.sh/docs/installation");
   console.error("");
   console.error("Commands:");
-  console.error("  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.104 tilly-engineer-skills add");
-  console.error("  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.104 tilly-engineer-skills add");
+  console.error("  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.105 tilly-engineer-skills add");
+  console.error("  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.105 tilly-engineer-skills add");
   return 1;
 }
 

@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.104"
+VERSION = "0.3.105"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -28,9 +28,9 @@ REQUIRED_PATHS = (
     "docs/architecture/PROJECT-STRUCTURE.md",
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.104/index.json",
-    "docs/dist/0.3.104/tilly-engineer-skills-0.3.104.zip",
-    "docs/dist/0.3.104/tilly-engineer-skills-0.3.104.zip.sha256",
+    "docs/dist/0.3.105/index.json",
+    "docs/dist/0.3.105/tilly-engineer-skills-0.3.105.zip",
+    "docs/dist/0.3.105/tilly-engineer-skills-0.3.105.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -648,6 +648,27 @@ def version_drift_failures() -> list[str]:
     return failures
 
 
+def yaml_surface_failures() -> list[str]:
+    try:
+        import yaml  # type: ignore[import-untyped]
+    except Exception as exc:  # pragma: no cover - depends on maintainer env
+        return [f"PyYAML is required to validate delivered YAML surfaces: {exc}"]
+
+    failures: list[str] = []
+    yaml_paths = sorted(
+        path for path in package_paths()
+        if path.suffix in {".yaml", ".yml"}
+        and "docs/evidence" not in path.parts
+    )
+    for relpath in yaml_paths:
+        path = ROOT / relpath
+        try:
+            yaml.safe_load(path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            failures.append(f"invalid YAML surface: {relpath}: {type(exc).__name__}: {exc}")
+    return failures
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--staged-ready", action="store_true")
@@ -679,6 +700,7 @@ def main() -> int:
     failures.extend(project_structure_failures())
     failures.extend(installer_report_contract_failures())
     failures.extend(version_drift_failures())
+    failures.extend(yaml_surface_failures())
 
     for relpath in SYNCED_FILES:
         path = ROOT / relpath
