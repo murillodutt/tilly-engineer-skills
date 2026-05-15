@@ -1,6 +1,6 @@
 ---
 name: tes-map
-description: Use when the user says /tes-map, /tes:gps, tes map, project GPS, mapa TES, or asks for a visual current-position map of the project after TES setup/alignment.
+description: Use when the user says /tes-map, /tes:gps, tes map, project GPS, mapa TES, map this project, mapear TES, mapear projeto, or asks for a visual current-position map of the project after TES setup/alignment.
 ---
 
 # TES Map

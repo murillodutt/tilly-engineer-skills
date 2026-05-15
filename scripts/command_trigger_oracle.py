@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.103"
+VERSION = "0.3.104"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -251,13 +251,27 @@ VISIBLE_SKILL_ROUTES = {
     "codex": {
         "tes-prospect": ("/tes-prospect", "/tes:prospect", "cognitive brake"),
         "tes-mine": ("/tes-mine", "/tes:mine", "cognitive brake"),
-        "tes-map": ("/tes-map", "/tes:gps", "tes_map.py"),
+        "tes-map": (
+            "/tes-map",
+            "/tes:gps",
+            "tes_map.py",
+            "map this project",
+            "mapear TES",
+            "mapear projeto",
+        ),
         "tes-field-reports": ("/tes-field-reports", "/tes:field-reports", "field_reports.py"),
     },
     "claude": {
         "tes-prospect": ("/tes-prospect", "/tes:prospect", "cognitive brake"),
         "tes-mine": ("/tes-mine", "/tes:mine", "cognitive brake"),
-        "tes-map": ("/tes-map", "/tes:gps", "tes_map.py"),
+        "tes-map": (
+            "/tes-map",
+            "/tes:gps",
+            "tes_map.py",
+            "map this project",
+            "mapear TES",
+            "mapear projeto",
+        ),
         "tes-field-reports": ("/tes-field-reports", "/tes:field-reports", "field_reports.py"),
     },
 }
