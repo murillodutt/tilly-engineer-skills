@@ -63,6 +63,7 @@ requires exact syntax.
 | Tilly initialization shortcut | `.agents/skills/tes-init/SKILL.md` |
 | Tilly setup alias | `.agents/skills/tes-setup/SKILL.md` |
 | Project semantic alignment | `.agents/skills/tes-align/SKILL.md` |
+| Project GPS map | `.agents/skills/tes-map/SKILL.md` |
 | Project-stress prospecting | `.agents/skills/tes-prospect/SKILL.md` |
 | Code and domain mining | `.agents/skills/tes-mine/SKILL.md` |
 | Obsidian open gate | `.agents/skills/tes-open-obsidian/SKILL.md` |
@@ -121,7 +122,9 @@ helper overwrite, the final recorded probe is required before GO, commit, or
 push and must show `helper_contract_status=PASS`, `runtime_trigger_status=PASS`
 or `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`.
 Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
-`align this project`, `alinhar TES`, `alinhar projeto`,
+`align this project`, `alinhar TES`, `alinhar projeto`, `/tes-map`,
+`/tes:gps`, `tes map`, `project GPS`, `mapa TES`, `map this project`,
+`mapear TES`, `mapear projeto`,
 `/tes-prospect`, `/tes:prospect`, `/tes-mine`, `/tes:mine`,
 `/tes-open-obsidian`, `/tes:open-obsidian`, `open Obsidian`,
 `open this project in Obsidian`, `abrir Obsidian`, `abrir no Obsidian`,

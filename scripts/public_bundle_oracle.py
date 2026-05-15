@@ -74,6 +74,8 @@ def certify_public_bundle() -> dict[str, object]:
                 "scripts/tes_install.py",
                 "scripts/materialize_adapter.py",
                 "scripts/tes_init.py",
+                "scripts/tes_map.py",
+                "scripts/tes_map_oracle.py",
                 "scripts/command_trigger_oracle.py",
                 "tes-bundle-manifest.json",
                 "tes-bundle-metadata.json",
@@ -235,6 +237,8 @@ def certify_public_bundle() -> dict[str, object]:
             failures.append("public bundle apply did not replace project-owned AGENTS.md")
         for relpath in (
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",
+            ".tes/bin/tes_map.py",
+            ".tes/bin/tes_map_oracle.py",
             ".tes/bin/tes_open_obsidian.py",
             ".tes/bin/command_trigger_oracle.py",
             ".tes/bin/tes_bundle.py",

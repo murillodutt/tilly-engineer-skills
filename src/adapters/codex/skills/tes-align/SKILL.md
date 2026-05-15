@@ -32,6 +32,8 @@ PROJECT-CONTEXT -> PROJECT-STATE -> PROJECT-ROADMAP x-ray/convergence -> EXECUTI
 The goal is operational legibility, not prettier documentation.
 `PROJECT-ROADMAP.md` should present a System X-Ray and Convergence Line first
 so the project organism and future path are visible before the audit lanes.
+`tes-align` owns the map. `/tes-map` only updates the current GPS position
+inside the managed `TES-MAP` block after this roadmap exists.
 
 ## Workflow
 

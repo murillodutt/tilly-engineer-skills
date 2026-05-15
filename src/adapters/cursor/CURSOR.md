@@ -30,6 +30,7 @@ owned by the target project:
 - `/tes-init`
 - `/tes-update`
 - `/tes-align`
+- `/tes-map`
 - `/tes-open-obsidian`
 - `/tes-cortex`
 - `/tes-curate`
@@ -44,6 +45,7 @@ Compatible aliases:
 - `/tes:init`
 - `/tes:update`
 - `/tes:align`
+- `/tes:gps`
 - `/tes:open-obsidian`
 - `/tes:cortex`
 - `/tes:mcp`
@@ -58,9 +60,10 @@ Compatible aliases:
 - `/tes:reflect`
 - `/tes:curate`
 
-Natural intents include: tes init, tes update, tes align, tes open obsidian,
-align TES, align this project, open Obsidian, open this project in Obsidian,
-Atualizar TES, atualizar TES, alinhar TES, alinhar projeto, abrir Obsidian,
+Natural intents include: tes init, tes update, tes align, tes map, project GPS,
+mapa TES, tes open obsidian, align TES, align this project, map this project,
+open Obsidian, open this project in Obsidian, Atualizar TES, atualizar TES,
+alinhar TES, alinhar projeto, mapear TES, mapear projeto, abrir Obsidian,
 abrir no Obsidian, initialize TES, install TES, recertify TES, inicializar TES,
 instalar TES, and recertificar TES.
 

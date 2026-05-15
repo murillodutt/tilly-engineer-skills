@@ -12,13 +12,14 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.102"
+VERSION = "0.3.103"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
     "/tes-setup",
     "/tes-update",
     "/tes-align",
+    "/tes-map",
     "/tes-prospect",
     "/tes-mine",
     "/tes-open-obsidian",
@@ -35,6 +36,7 @@ COMPATIBLE_ALIASES = (
     "/tes:init",
     "/tes:update",
     "/tes:align",
+    "/tes:gps",
     "/tes:prospect",
     "/tes:mine",
     "/tes:open-obsidian",
@@ -57,15 +59,21 @@ NATURAL_INTENTS = (
     "tes setup",
     "tes update",
     "tes align",
+    "tes map",
+    "project GPS",
+    "mapa TES",
     "tes open obsidian",
     "align TES",
     "align this project",
+    "map this project",
     "open Obsidian",
     "open this project in Obsidian",
     "Atualizar TES",
     "atualizar TES",
     "alinhar TES",
     "alinhar projeto",
+    "mapear TES",
+    "mapear projeto",
     "abrir Obsidian",
     "abrir no Obsidian",
     "initialize TES",
@@ -138,6 +146,7 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/codex/skills/tes-init/SKILL.md",
         "src/adapters/codex/skills/tes-setup/SKILL.md",
         "src/adapters/codex/skills/tes-align/SKILL.md",
+        "src/adapters/codex/skills/tes-map/SKILL.md",
         "src/adapters/codex/skills/tes-prospect/SKILL.md",
         "src/adapters/codex/skills/tes-mine/SKILL.md",
         "src/adapters/codex/skills/tes-open-obsidian/SKILL.md",
@@ -153,6 +162,7 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/claude/skills/tes-init/SKILL.md",
         "src/adapters/claude/skills/tes-setup/SKILL.md",
         "src/adapters/claude/skills/tes-align/SKILL.md",
+        "src/adapters/claude/skills/tes-map/SKILL.md",
         "src/adapters/claude/skills/tes-prospect/SKILL.md",
         "src/adapters/claude/skills/tes-mine/SKILL.md",
         "src/adapters/claude/skills/tes-open-obsidian/SKILL.md",
@@ -209,6 +219,7 @@ CLAUDE_PROJECT_SKILLS = (
     "tes-init",
     "tes-setup",
     "tes-align",
+    "tes-map",
     "tes-prospect",
     "tes-mine",
     "tes-open-obsidian",
@@ -224,6 +235,7 @@ CODEX_PROJECT_SKILLS = (
     "tes-init",
     "tes-setup",
     "tes-align",
+    "tes-map",
     "tes-prospect",
     "tes-mine",
     "tes-open-obsidian",
@@ -239,11 +251,13 @@ VISIBLE_SKILL_ROUTES = {
     "codex": {
         "tes-prospect": ("/tes-prospect", "/tes:prospect", "cognitive brake"),
         "tes-mine": ("/tes-mine", "/tes:mine", "cognitive brake"),
+        "tes-map": ("/tes-map", "/tes:gps", "tes_map.py"),
         "tes-field-reports": ("/tes-field-reports", "/tes:field-reports", "field_reports.py"),
     },
     "claude": {
         "tes-prospect": ("/tes-prospect", "/tes:prospect", "cognitive brake"),
         "tes-mine": ("/tes-mine", "/tes:mine", "cognitive brake"),
+        "tes-map": ("/tes-map", "/tes:gps", "tes_map.py"),
         "tes-field-reports": ("/tes-field-reports", "/tes:field-reports", "field_reports.py"),
     },
 }

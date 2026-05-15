@@ -1,6 +1,6 @@
 # Tilly Engineer Skills (TES)
 
-[![Version](https://img.shields.io/badge/version-0.3.102-1f6feb)](package.json)
+[![Version](https://img.shields.io/badge/version-0.3.103-1f6feb)](package.json)
 [![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE)
 [![Live Landing](https://img.shields.io/badge/live--landing-GitHub%20Pages-0969da)](https://murillodutt.github.io/tilly-engineer-skills/)
 
@@ -25,6 +25,7 @@ operating trail your team can inspect after the chat is gone.
 
 - A trail after the chat is gone.
 - Versioned Markdown memory in the repo.
+- Project GPS with `/tes-map` for the current phase, blockers, proof, and next move.
 - Deterministic gates before closure.
 - Retained evidence your team can inspect.
 - Read-only Cortex MCP for project recall.
@@ -50,11 +51,12 @@ differently by host:
   `/tes-setup` for the report.
 
 ```text
-install -> hook -> /tes-setup -> /tes-align
+install -> hook -> /tes-setup -> /tes-align -> /tes-map
 ```
 
 Only after `/tes-setup` reports complete, run `/tes-align` before project work.
-Use `/tes-update` for updates and `/tes-doctor` for repair.
+Use `/tes-map` when you need the current GPS view, `/tes-update` for updates,
+and `/tes-doctor` for repair.
 
 Source maintainers verify this package with `npm run commit:check`.
 

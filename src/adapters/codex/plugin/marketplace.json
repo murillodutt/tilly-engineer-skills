@@ -4,12 +4,12 @@
     "displayName": "Tilly Engineer Skills"
   },
   "metadata": {
-    "version": "0.3.102"
+    "version": "0.3.103"
   },
   "plugins": [
     {
       "name": "tilly-engineer-skills",
-      "version": "0.3.102",
+      "version": "0.3.103",
       "source": {
         "source": "local",
         "path": "./plugins/tilly-engineer-skills"
