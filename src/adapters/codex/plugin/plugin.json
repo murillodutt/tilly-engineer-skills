@@ -1,6 +1,6 @@
 {
   "name": "tilly-engineer-skills",
-  "version": "0.3.102",
+  "version": "0.3.103",
   "description": "Portable engineering discipline to reduce ambiguity, overcomplication, drive-by edits, and false completion in coding agents",
   "author": {
     "name": "forrestchang"
@@ -17,7 +17,7 @@
   "interface": {
     "displayName": "Tilly Engineer Skills",
     "shortDescription": "Engineering discipline workflows for Codex",
-    "longDescription": "Reusable TES skills for Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution, initialization, semantic project alignment, explicit-invocation project stress prospecting, code and domain knowledge mining, Obsidian opening preflight, update checks, MCP inspection, Field Reports, doctor checks, adapter materialization, and benchmark planning.",
+    "longDescription": "Reusable TES skills for Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution, initialization, semantic project alignment, Project GPS mapping, explicit-invocation project stress prospecting, code and domain knowledge mining, Obsidian opening preflight, update checks, MCP inspection, Field Reports, doctor checks, adapter materialization, and benchmark planning.",
     "developerName": "forrestchang",
     "category": "Developer Tools",
     "capabilities": [
@@ -27,6 +27,7 @@
     "defaultPrompt": [
       "Use Tilly Engineer Skills to run /tes-init against this repository.",
       "Use Tilly Engineer Skills to run /tes-align and produce an evidenced project operating mesh.",
+      "Use Tilly Engineer Skills to run /tes-map and refresh the current Project GPS position.",
       "Use Tilly Engineer Skills to run /tes-open-obsidian after project context and alignment pass.",
       "Use Tilly Engineer Skills to run /tes-update and report whether local TES helpers are current.",
       "Use Tilly Engineer Skills to inspect adapter parity without claiming unsupported native surfaces."

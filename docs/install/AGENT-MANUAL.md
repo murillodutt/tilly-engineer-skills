@@ -45,6 +45,7 @@ User-facing intent typed in the agent window — never a shell command.
 | `/tes-setup` | First-session report or setup alias | direct alias for `/tes-init` |
 | `/tes-update` | Update an already-meshed project | `/tes:update` (compat) |
 | `/tes-align` | Re-run alignment after context drift | `/tes:align` (compat) |
+| `/tes-map` | Refresh the Project GPS position in the roadmap | `/tes:gps` (compat) |
 | `/tes-prospect` | Stress-test a plan or design after explicit invocation | `/tes:prospect` (compat) |
 | `/tes-mine` | Mine code, terminology, context, and ADR candidates after explicit invocation | `/tes:mine` (compat) |
 | `/tes-open-obsidian` | Open `docs/agents/` in Obsidian via CLI or macOS app fallback | `/tes:open-obsidian` (compat) |
@@ -68,6 +69,13 @@ may drive the sequence proactively and must honor the cognitive brake:
 stopped, the current hypothesis, the open risk or unresolved term, and the next
 question/check. Resume only after explicit `continue`, `continua`, `retoma`,
 or `segue`.
+
+`/tes-map` is the Project GPS route. `tes-align` owns the map; `tes-map`
+updates only the managed `TES-MAP` block inside
+`docs/agents/PROJECT-ROADMAP.md`. If the roadmap is missing, return
+`NEEDS_ALIGN`; if project context is missing, return `NEEDS_CONTEXT`. The
+answer should be short and visual: `You are here`, `Next safe move`,
+`Blocked by`, and `Proof`.
 
 ---
 
@@ -484,7 +492,7 @@ python3 scripts/field_reports.py enable --target /path/to/project
 | LLM layer | Project understanding, semantic governance review | Active agent in IDE window |
 | Root runtime files | `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, Cursor rules — backed up before clean overwrite | Markdown bootloaders |
 
-`/tes-align` and `/tes-open-obsidian` become active through safe runtime
+`/tes-align`, `/tes-map`, and `/tes-open-obsidian` become active through safe runtime
 surfaces.
 
 ---

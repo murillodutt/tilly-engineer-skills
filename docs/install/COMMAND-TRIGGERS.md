@@ -15,7 +15,7 @@ Scripts and npm aliases are deterministic oracles the agent invokes when the
 runtime exposes local tools.
 
 All adapters share the same preferred user triggers: `/tes-init`,
-`/tes-update`, `/tes-align`, `/tes-prospect`, `/tes-mine`,
+`/tes-update`, `/tes-align`, `/tes-map`, `/tes-prospect`, `/tes-mine`,
 `/tes-open-obsidian`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
 `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench`. Treat
 `/tes:*` forms as compatible TES intent aliases; if a host reports one as an
@@ -41,6 +41,7 @@ routed through a broader skill so TES does not create one skill per alias.
 | `/tes-setup` | `tes-setup` | visible skill alias for `/tes-init` |
 | `/tes-update` | `tes-init` | grouped update intent |
 | `/tes-align` | `tes-align` | visible skill |
+| `/tes-map` | `tes-map` | visible Project GPS skill |
 | `/tes-prospect` | `tes-prospect` | visible predictive skill |
 | `/tes-mine` | `tes-mine` | visible predictive skill |
 | `/tes-open-obsidian` | `tes-open-obsidian` | visible skill |
@@ -59,6 +60,7 @@ routed through a broader skill so TES does not create one skill per alias.
 | `/tes-init`, `/tes-setup`, or `/tes:init` | finish setup, recertify, initialize project context, and create first-pass project alignment for TES in a project | `tes_install.py`, `root_context.py`, `tes_init.py`, `project_context_oracle.py`, `project_alignment_oracle.py`, install smoke, MCP install | `.tes/tes-install-lock.json`, `.tes/postinstall.json`, first-session hooks, `docs/agents/**`, `docs/agents/PROJECT-CONTEXT.md`, initial operating mesh with System X-Ray and Convergence Line, Cortex, runtime bootloaders, project MCP config |
 | `/tes-update` or `/tes:update` | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, `tes_legacy_retirement.py`, install smoke, MCP install | only selected TES surfaces after Step Zero and legacy retirement |
 | `/tes-align` or `/tes:align` | semantically align a TES-initialized project into an operating mesh with a System X-Ray and Convergence Line | `project_alignment_oracle.py`, `project_context_oracle.py`, project gates | `docs/agents/PROJECT-STATE.md`, `PROJECT-ROADMAP.md` Mermaid X-Ray and convergence graphs, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`, `DECISIONS/**`, evidence |
+| `/tes-map` or `/tes:gps` | refresh the Project GPS position inside the existing roadmap | `tes_map.py`, `tes_map_oracle.py`, `project_alignment_oracle.py` when needed | only the managed `TES-MAP` block inside `docs/agents/PROJECT-ROADMAP.md` |
 | `/tes-prospect` or `/tes:prospect` | explicitly invoke project-stress prospecting to pressure a plan or design, expose hidden dependencies, and ask one question at a time | active agent codebase exploration; cognitive brake state snapshot when paused | no project writes |
 | `/tes-mine` or `/tes:mine` | explicitly invoke code and domain mining to extract terms, contradictions, decisions, context, and ADR candidates | active agent code/doc exploration; cognitive brake state snapshot when paused | `CONTEXT.md` and ADRs only when the mining contract resolves terms or decisions and the brake is not active |
 | `/tes-open-obsidian` or `/tes:open-obsidian` | open `docs/agents` as the Obsidian vault after context and alignment pass | `tes_open_obsidian.py`, `project_context_oracle.py`, `project_alignment_oracle.py` | no TES writes; Obsidian app may manage project-owned `.obsidian/**` after explicit launch |
@@ -76,6 +78,7 @@ Aliases:
 tes init  -> /tes-init
 tes update / update TES / Atualizar TES / atualizar TES -> /tes-update
 tes align / align TES / align this project / alinhar TES / alinhar projeto -> /tes-align
+tes map / project GPS / mapa TES / map this project / mapear TES / mapear projeto -> /tes-map
 /tes:prospect -> /tes-prospect
 /tes:mine     -> /tes-mine
 tes open obsidian / open Obsidian / open this project in Obsidian / abrir Obsidian / abrir no Obsidian -> /tes-open-obsidian
@@ -95,7 +98,7 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-source alias for the same oracles; not a target-project guarantee |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.102 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.103 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
@@ -202,6 +205,29 @@ source for project-specific semantics.
 This keeps `/tes-init` simple for users: make this project usable by TES. If
 both gates pass, close with certification and recommend `/tes-doctor` only for a
 full health check.
+
+## `/tes-map` Project GPS Contract
+
+`/tes-align` owns the project map. `/tes-map` updates the current position.
+
+`/tes-map` reads the existing mesh and refreshes only this managed block in
+`docs/agents/PROJECT-ROADMAP.md`:
+
+```md
+## TES Map
+
+<!-- TES-MAP:START -->
+...
+<!-- TES-MAP:END -->
+```
+
+The helper is `tes_map.py`; the oracle is `tes_map_oracle.py`. If
+`PROJECT-CONTEXT.md` is missing, return `NEEDS_CONTEXT` and route the user to
+`/tes-init`. If `PROJECT-ROADMAP.md` is missing, return `NEEDS_ALIGN` and route
+the user to `/tes-align`. Do not write `.obsidian/**`, do not rewrite the whole
+roadmap, and do not invent phases, blockers, or proof gates. The user-facing
+report should stay short: `You are here`, `Next safe move`, `Blocked by`, and
+`Proof`.
 
 ## No-Go
 

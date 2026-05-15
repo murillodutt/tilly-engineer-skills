@@ -17,6 +17,7 @@ Use these exact TES intents when the user asks for Tilly Engineering Skills:
 - `/tes-setup`
 - `/tes-update`
 - `/tes-align`
+- `/tes-map`
 - `/tes-prospect`
 - `/tes-mine`
 - `/tes-open-obsidian`
@@ -33,6 +34,7 @@ Compatible aliases:
 - `/tes:init`
 - `/tes:update`
 - `/tes:align`
+- `/tes:gps`
 - `/tes:prospect`
 - `/tes:mine`
 - `/tes:open-obsidian`
@@ -49,11 +51,12 @@ Compatible aliases:
 - `/tes:reflect`
 - `/tes:curate`
 
-Natural intents include: tes init, tes setup, tes update, tes align, tes open obsidian,
-align TES, align this project, open Obsidian, open this project in Obsidian,
-Atualizar TES, atualizar TES, alinhar TES, alinhar projeto, abrir Obsidian,
-abrir no Obsidian, initialize TES, install TES, recertify TES, inicializar TES,
-instalar TES, and recertificar TES.
+Natural intents include: tes init, tes setup, tes update, tes align, tes map,
+project GPS, mapa TES, tes open obsidian, align TES, align this project,
+map this project, open Obsidian, open this project in Obsidian, Atualizar TES,
+atualizar TES, alinhar TES, alinhar projeto, mapear TES, mapear projeto,
+abrir Obsidian, abrir no Obsidian, initialize TES, install TES, recertify TES,
+inicializar TES, instalar TES, and recertificar TES.
 
 Do not activate `/tes-prospect` or `/tes-mine` from broad natural language.
 They require explicit invocation by trigger, alias, or skill name. After

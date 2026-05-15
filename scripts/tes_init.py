@@ -35,7 +35,7 @@ SOURCE_PACKAGE_MODE = (
 )
 BUNDLE_MODE = SOURCE_ROOT.name == "scripts" and not SOURCE_PACKAGE_MODE
 PACKAGE_MODE = SOURCE_PACKAGE_MODE
-VERSION = "0.3.102"
+VERSION = "0.3.103"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -499,6 +499,7 @@ def surface_inventory(target: Path) -> dict[str, Any]:
         "tes_update_helper": ".tes/bin/tes_update.py",
         "tes_legacy_retirement_helper": ".tes/bin/tes_legacy_retirement.py",
         "tes_root_context_helper": ".tes/bin/root_context.py",
+        "tes_map_helper": ".tes/bin/tes_map.py",
         "tes_field_reports_outbox": ".tes/field-reports/outbox.jsonl",
         "tes_field_reports_disabled": ".tes/field-reports/DISABLED",
         "tes_field_reports_pre_push": ".git/hooks/pre-push",
