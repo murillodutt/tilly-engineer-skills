@@ -46,6 +46,19 @@ Every recorded Mantra Gate uses this schema:
 | `RESOLVE` | Issue found and resolved, or `none found` |
 | `STATUS` | `PROCEED`, `BLOCKED`, or `NEEDS_REVIEW` |
 
+## Risk Classes
+
+Mantra Gate classifies action risk deterministically:
+
+| Risk | Meaning |
+|------|---------|
+| `routine` | Read-only or low-impact local work |
+| `material` | Local writes, generated artifacts, staging, or commits |
+| `high-risk` | Remotes/push, secrets/env, DB/schema, auth/RBAC, real customer data, production, compliance/legal, public API/surface, destructive Git, or generated runtime packaging |
+| `forbidden` | Destructive Git, secret disclosure, or production action without an explicit contract |
+
+`high-risk` work requires a visible full gate. `forbidden` work blocks.
+
 ## Activation
 
 Required before:
@@ -89,10 +102,32 @@ file contents.
 - Missing `ORACLE` when closure is claimed: `BLOCKED`.
 - Non-empty unresolved `RESOLVE`: `BLOCKED`.
 - High-risk `PROCEED` with only compact display: `NEEDS_REVIEW`.
+- State-changing evidence without a nearby gate record: `BYPASS_SUSPECTED`.
 
 Never allow `PROCEED` by prose alone when a concrete oracle exists.
 
-## Helper
+## Adoption Oracle
+
+The adoption oracle is read-only. It checks whether Mantra Gate is actually
+being used when local state changes occur. It correlates Git diff, staged
+files, the recent commit, Field Reports, local gate JSONL records, action
+intent, risk class, and closure claims.
+
+Statuses:
+
+| Status | Recovery |
+|--------|----------|
+| `OK` | Continue; compact marker is enough when the full record exists |
+| `DEGRADED` | Repair the gate record or rerun with a complete gate |
+| `BYPASS_SUSPECTED` | Stop closure; reconstruct evidence and record a gate |
+| `NEEDS_REVIEW` | Show the full gate, resolve ambiguity, or request approval |
+| `BLOCKED` | Resolve the blocker before acting |
+
+The oracle also emits local sanitized metrics: compact/full counts, status
+counts, missing fields, bypass suspicion, and actions without a closure oracle.
+It does not collect secrets, raw prompts, private content, or remote telemetry.
+
+## Helpers
 
 The deterministic helper is:
 
@@ -100,6 +135,10 @@ The deterministic helper is:
 python3 .tes/bin/mantra_gate.py --self-test
 python3 .tes/bin/mantra_gate.py emit-marker
 python3 .tes/bin/mantra_gate.py validate --gate gate.json --state-changing --closure-claim --record --target .
+python3 .tes/bin/mantra_gate.py classify-risk --action "git push to origin"
+python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --action "commit" --state-changing
+python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --commit-push
 ```
 
-From the source package, use `scripts/mantra_gate.py`.
+From the source package, use `scripts/mantra_gate.py` and
+`scripts/mantra_gate_adoption_oracle.py`.

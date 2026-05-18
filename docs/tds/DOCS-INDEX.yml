@@ -1,4 +1,4 @@
-version: 0.3.109
+version: 0.3.110
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -370,6 +370,13 @@ documents:
     class: evidence
     status: active
     consumer: benchmark reviewers
+    source_of_truth: false
+    evidence_level: L4
+  - path: docs/evidence/reports/context-mesh/mantra-gate-adoption-hardening-2026-05-18/REPORT.md
+    id: evidence.context_mesh.mantra_gate_adoption_hardening_2026_05_18
+    class: evidence
+    status: active
+    consumer: TES maintainers
     source_of_truth: false
     evidence_level: L4
   - path: docs/evidence/reports/context-mesh/behavior-v1-rc-claude-2026-05-05/REPORT.md

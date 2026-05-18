@@ -30,15 +30,17 @@ Run the smallest gate that proves the claim:
 | installed target | TES runtime is installed | `python3 .tes/bin/tes_install.py status --target .` |
 | installed target | project context is healthy | `python3 .tes/bin/project_context_oracle.py --target .` |
 | installed target | project alignment is healthy | `python3 .tes/bin/project_alignment_oracle.py --target .` |
+| installed target | Mantra Gate adoption is healthy | `python3 .tes/bin/mantra_gate_adoption_oracle.py --target .` |
 | installed target | target exposes a health gate | run the discovered script, for example `pnpm run gate:doctor` or `npm run gate:doctor` |
 | installed target | staged changes are commit-ready | run discovered `gate:staged`; otherwise use available project gates and `git diff --check` |
-| installed target | push readiness | run discovered `gate:push`; otherwise report `NOT_AVAILABLE` instead of inventing one |
+| installed target | push readiness | run discovered `gate:push` plus `python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --commit-push`; otherwise report `NOT_AVAILABLE` instead of inventing one |
 | package-source | package shape is valid | `npm run validate` |
 | package-source | docs stay modular | `npm run docs:size` |
 | package-source | TDS is aligned | `npm run tds:validate` |
 | package-source | Cortex core works | `npm run cortex:self-test` |
 | package-source | MCP helper works | `npm run mcp:self-test` and `npm run cortex:mcp:self-test` |
 | package-source | Field Reports works | `npm run field-reports:self-test` |
+| package-source | Mantra Gate adoption works | `npm run mantra-gate:adoption:self-test` |
 | package-source | adapters materialize | `npm run materialize:check` |
 | package-source | platform surfaces align | `npm run platform:surface:check` |
 | package-source | final local closure | `npm run commit:check` |
@@ -53,4 +55,6 @@ Run the smallest gate that proves the claim:
   `package.json` before generic package-source commands.
 - Before commit in an installed target, prefer discovered `gate:staged`; in the
   TES package source, prefer `npm run commit:check`.
+- For closure, commit, or push claims, treat Mantra Gate adoption statuses
+  `BYPASS_SUSPECTED`, `NEEDS_REVIEW`, and `BLOCKED` as stop conditions.
 - After commit, rerun the principal gate when the user asks for sealed closure.

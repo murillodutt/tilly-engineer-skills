@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.109"
+VERSION = "0.3.110"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -118,6 +118,8 @@ TARGET_SOURCE_GATE_TERMS = {
         "python3 .tes/bin/tes_install.py status --target .",
         "python3 .tes/bin/project_context_oracle.py --target .",
         "python3 .tes/bin/project_alignment_oracle.py --target .",
+        "python3 .tes/bin/mantra_gate_adoption_oracle.py --target .",
+        "BYPASS_SUSPECTED",
         "gate:doctor",
         "gate:staged",
         "gate:push",

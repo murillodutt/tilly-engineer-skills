@@ -71,6 +71,10 @@ risk is high, ambiguity exists, user approval is required, or secrets, data,
 databases, remotes, production, authentication, compliance, or public surfaces
 could be affected.
 
+For closure, commit, or push claims, the adoption oracle may check that a gate
+record exists near the state change. If it reports `BYPASS_SUSPECTED`,
+`NEEDS_REVIEW`, or `BLOCKED`, stop and recover before claiming progress.
+
 ## Workflow
 
 1. Classify the task.

@@ -56,6 +56,10 @@ approval is needed, or secrets, data, remotes, production, authentication,
 compliance, public surface, architecture, migration, or destructive behavior
 could be affected.
 
+For closure, commit, or push claims, use the Mantra Gate adoption oracle when
+available. Treat `BYPASS_SUSPECTED`, `NEEDS_REVIEW`, or `BLOCKED` as a stop
+condition until the gate record, scope, risk, and closure oracle are repaired.
+
 </mantra_gate>
 
 <real_project_learning_standard>
