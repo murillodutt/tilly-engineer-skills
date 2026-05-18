@@ -4,6 +4,13 @@ purpose: >
   Provide one tool-neutral behavioral contract for adapter materialization,
   execution, evidence, and parity certification.
 gates:
+  - id: mantra-gate
+    name: Mantra Gate
+    invariant: State-changing action is preceded by evidence, scope, path, record, oracle, resolve status, and stop rule.
+    blocks:
+      - writes without verified evidence
+      - closure by prose when an oracle exists
+      - compact UX hiding risky decisions
   - id: think-before-coding
     name: Think Before Coding
     invariant: Assumptions and ambiguity are visible before action.

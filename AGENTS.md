@@ -44,6 +44,20 @@ gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 
 </diamond_build_test_fail_fix>
 
+<mantra_gate>
+
+Before state-changing actions, use the TES Mantra Gate. Routine writes may show
+only `[🍳 TES - mg]` to the user, but the full gate must still record `VERIFY`,
+`SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, and `STATUS` in the
+appropriate evidence surface.
+
+Show the full gate, or stop with `BLOCKED` / `NEEDS_REVIEW`, when risk is high,
+approval is needed, or secrets, data, remotes, production, authentication,
+compliance, public surface, architecture, migration, or destructive behavior
+could be affected.
+
+</mantra_gate>
+
 <real_project_learning_standard>
 
 Real project executions are learning loops, not one-off support runs. After each

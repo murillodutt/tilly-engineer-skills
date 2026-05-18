@@ -55,6 +55,7 @@ INTERNAL_MATRIX_LABELS = (
     "condition: none",
     "condition: drop:",
     "matrix condition",
+    "drop:Mantra Gate",
     "drop:Think Before Coding",
     "drop:Simplicity First",
     "drop:Surgical Changes",
@@ -194,6 +195,7 @@ def analyze() -> dict[str, Any]:
     failures: list[str] = []
 
     if gates != [
+        "Mantra Gate",
         "Think Before Coding",
         "Simplicity First",
         "Surgical Changes",

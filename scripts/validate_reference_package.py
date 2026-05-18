@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.105"
+VERSION = "0.3.106"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -28,9 +28,9 @@ REQUIRED_PATHS = (
     "docs/architecture/PROJECT-STRUCTURE.md",
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.105/index.json",
-    "docs/dist/0.3.105/tilly-engineer-skills-0.3.105.zip",
-    "docs/dist/0.3.105/tilly-engineer-skills-0.3.105.zip.sha256",
+    "docs/dist/0.3.106/index.json",
+    "docs/dist/0.3.106/tilly-engineer-skills-0.3.106.zip",
+    "docs/dist/0.3.106/tilly-engineer-skills-0.3.106.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -53,6 +53,7 @@ REQUIRED_PATHS = (
     "docs/mesh/CORTEX.md",
     "docs/mesh/CORTEX-MCP.md",
     "docs/mesh/FIELD-REPORTS.md",
+    "docs/mesh/MANTRA-GATE.md",
     "docs/mesh/GIT-SAFETY.md",
     "docs/mesh/SCORECARD.md",
     "docs/roadmap/README.md",
@@ -147,6 +148,7 @@ REQUIRED_PATHS = (
     "scripts/field_reports.py",
     "scripts/field_reports_github_oracle.py",
     "scripts/field_reports_quality_oracle.py",
+    "scripts/mantra_gate.py",
     "scripts/github_readiness_oracle.py",
     "scripts/tes_install.py",
     "scripts/tes_npx_oracle.py",
@@ -252,6 +254,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "field-reports:self-test",
     "field-reports:quality:self-test",
     "field-reports:github-oracle",
+    "mantra-gate:self-test",
     "github:readiness:self-test",
     "field-reports:status",
     "field-reports:drain",
@@ -845,6 +848,20 @@ def main() -> int:
         )
         if result.returncode != 0:
             failures.append("field_reports_github_oracle.py --self-test failed")
+            failures.extend(result.stdout.splitlines())
+            failures.extend(result.stderr.splitlines())
+
+    mantra_gate = ROOT / "scripts/mantra_gate.py"
+    if mantra_gate.exists():
+        result = subprocess.run(
+            [sys.executable, str(mantra_gate), "--self-test"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            failures.append("mantra_gate.py --self-test failed")
             failures.extend(result.stdout.splitlines())
             failures.extend(result.stderr.splitlines())
 

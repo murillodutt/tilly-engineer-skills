@@ -5,7 +5,7 @@ status: active
 consumer: installing agents and runtime adapters
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.2
+tver: 0.1.3
 ---
 
 # Tilly Engineer Skills — Agent Manual
@@ -151,7 +151,37 @@ new TES assets. Legacy retrofit records archive under
 
 ---
 
-## 6. Update probe contract
+## 6. Mantra Gate
+
+Mantra Gate is the TES pre-action micro-gate for state-changing work:
+evidence, scope, path, record, oracle, and stop rule.
+
+For routine writes, commits, generated artifacts, spec execution, and
+project-state updates, the user may see only:
+
+```text
+[🍳 TES - mg]
+```
+
+That marker is UX compression, not evidence deletion. The full internal gate
+uses `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, and
+`STATUS`, and must be recorded in the active evidence/report surface, Field
+Reports/Cortex when appropriate, or local `.tes/mantra-gates/` fallback.
+
+Show the full gate instead of the compact marker when risk is high, ambiguity
+exists, user approval is required, or the action could affect secrets, data,
+databases, remotes, production, authentication, compliance, or public surfaces.
+
+The helper is:
+
+```bash
+python3 .tes/bin/mantra_gate.py --self-test
+python3 .tes/bin/mantra_gate.py emit-marker
+```
+
+---
+
+## 7. Update probe contract
 
 Compares: installed version vs cloud version, helper parity, IDE
 surfaces, route, `recommended_update_scope`.
@@ -175,7 +205,7 @@ helper-only Layer Zero before activating MCP configs.
 
 ---
 
-## 7. Return state vocabulary
+## 8. Return state vocabulary
 
 Use these literal tokens. Never substitute synonyms.
 
@@ -195,7 +225,7 @@ Do not call certified behavior `experimental`. Use the vocabulary above.
 
 ---
 
-## 8. Cortex contract
+## 9. Cortex contract
 
 ### Layout
 
@@ -238,7 +268,7 @@ curation cache only. Never treat SQLite, MCP, or LLM as memory.
 
 ---
 
-## 9. CLI oracle inventory
+## 10. CLI oracle inventory
 
 Agent-callable oracles. Use the TES package root for package checks, or
 `--target` when operating on another project or vault.
@@ -401,7 +431,7 @@ Routing matrix: `docs/install/COMMAND-TRIGGERS.md`.
 
 ---
 
-## 10. MCP contract
+## 11. MCP contract
 
 Read-only. Activation writes only `.tes/bin/**` and project-scoped
 runtime config. Must not touch global MCP config, secrets, hooks, or
@@ -439,7 +469,7 @@ Write-capable MCP tools are intentionally outside this version.
 
 ---
 
-## 11. Field Reports pipeline
+## 12. Field Reports pipeline
 
 Active by default. Captures sanitized operational facts locally; drains
 through `gh` during `git push` only when local CLI, authentication, and
@@ -484,7 +514,7 @@ python3 scripts/field_reports.py enable --target /path/to/project
 
 ---
 
-## 12. Layer split
+## 13. Layer split
 
 | Layer | Responsibility | Surface |
 |-------|----------------|---------|
@@ -497,7 +527,7 @@ surfaces.
 
 ---
 
-## 13. Git safety
+## 14. Git safety
 
 Tilly protects local rollback and cache artifacts via
 `.git/info/exclude`:
@@ -513,7 +543,7 @@ installed runtime surface.
 
 ---
 
-## 14. Convergence Report contract
+## 15. Convergence Report contract
 
 Every run ends with a short **TES Context Mesh Convergence Report** in
 chat. Required fields:
@@ -536,7 +566,7 @@ files are rollback artifacts, never new TES surfaces.
 
 ---
 
-## 15. Rollback
+## 16. Rollback
 
 Use the baseline recorded during Step Zero.
 
@@ -547,7 +577,7 @@ git revert <install-commit>
 
 ---
 
-## 16. Cross-references
+## 17. Cross-references
 
 | Need | Source |
 |------|--------|

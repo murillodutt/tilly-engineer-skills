@@ -14,6 +14,9 @@ REQUIRED_TERMS = (
     "Edits surgical",
     "Success falsifiable",
     "E = A * S * C * V",
+    "Mantra Gate",
+    "[🍳 TES - mg]",
+    "VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS",
 )
 
 PLAN_FIELDS = (

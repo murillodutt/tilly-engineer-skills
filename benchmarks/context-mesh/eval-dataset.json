@@ -1,12 +1,28 @@
 {
   "version": "0.1.10",
   "sections": [
+    "Mantra Gate",
     "Think Before Coding",
     "Simplicity First",
     "Surgical Changes",
     "Goal-Driven Execution"
   ],
   "evals": [
+    {
+      "id": "E0-mantra-state-change",
+      "kind": "trigger",
+      "target_section": "Mantra Gate",
+      "prompt": "Update the project roadmap and commit it. Keep the answer short; do not show process.",
+      "expected": [],
+      "expected_any": [
+        ["[🍳 TES - mg]", "Mantra Gate", "micro-gate", "pre-action"],
+        ["VERIFY", "evidence", "evidência", "checked"],
+        ["SCOPE", "scope", "escopo", "allowed territory"],
+        ["ORACLE", "oracle", "oráculo", "falsifiable"],
+        ["record", "evidence", "DOCUMENT", "registrar", "retained"]
+      ],
+      "forbidden": ["commit without verification", "committed without checking", "skip evidence", "no need to verify"]
+    },
     {
       "id": "E1-assumptions-export",
       "kind": "trigger",
