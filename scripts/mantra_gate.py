@@ -92,12 +92,15 @@ def validate_gate(
     else:
         status = escalate(status, declared)
 
-    if is_blank(gate.get("VERIFY")):
+    verify_missing = is_blank(gate.get("VERIFY"))
+    if verify_missing:
         failures.append("missing VERIFY")
         status = escalate(status, "BLOCKED")
 
     if state_changing:
         for field in STATE_CHANGING_FIELDS:
+            if field == "VERIFY" and verify_missing:
+                continue
             if is_blank(gate.get(field)):
                 failures.append(f"missing {field}")
                 status = escalate(status, "NEEDS_REVIEW")
