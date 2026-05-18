@@ -327,8 +327,10 @@ def render_lang_section(page_key: str, structure: dict, content: dict, lang: str
         hero_facts = f'<div class="hero-facts">{facts}</div>'
     hero_actions = ""
     if hero.get("primary") or hero.get("secondary"):
+        primary_target = "start" if page_key == "index" else "install"
+        primary_href = f"#{primary_target}-{lang}"
         primary = (
-            f'<a class="btn btn-primary" href="#start">{inline(hero["primary"])}</a>'
+            f'<a class="btn btn-primary" href="{esc(primary_href)}">{inline(hero["primary"])}</a>'
             if hero.get("primary")
             else ""
         )
