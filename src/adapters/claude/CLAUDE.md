@@ -104,8 +104,8 @@ requires exact syntax.
 
 ## TES Shortcuts
 
-Treat `/tes-init`, `/tes-setup`, `/tes-update`, `/tes:init`, `/tes:update`,
-`tes init`, `tes setup`, `tes update`, `initialize TES`, `install TES`, `recertify TES`,
+Treat `/tes-init`, `/tes-setup`, `/tes:init`,
+`tes init`, `tes setup`, `initialize TES`, `install TES`, `recertify TES`,
 `inicializar TES`, `instalar TES`, `recertificar TES`, and natural
 command/prompts such as `TES, initialize this project`,
 `TES, inicialize este projeto`, `Atualizar TES`, or `atualizar TES` as
@@ -135,10 +135,12 @@ Across Codex, Claude Code, and Cursor, `/tes-*` forms are the preferred shared
 triggers and `/tes:*` forms are compatible TES intent aliases. If Claude Code
 says `/tes:init` or another `/tes:*` form is an invalid slash command, continue
 as TES intent text; do not stop to ask which TES route the user meant when the
-intent is clear. `/tes-update` first checks installed version, cloud version,
-helper contract parity, applied IDE surfaces, recommended route, and
-`recommended_update_scope`. Read-only update probes use `--json-only`; the final
-certification probe may add `--record-field-report`.
+intent is clear. Route `/tes-update`, `/tes:update`, `tes update`,
+`Atualizar TES`, and `atualizar TES` to `.claude/skills/tes-update/SKILL.md`.
+`/tes-update` first checks installed version, cloud version, helper contract
+parity, applied IDE surfaces, recommended route, and
+`recommended_update_scope`. Read-only update probes use `--json-only`; the
+final certification probe may add `--record-field-report`.
 `recommended_update_scope=helpers-only` or `STALE_HELPERS` is repaired first
 through the helper-only Layer Zero route before MCP config activation. After any
 helper overwrite, the final recorded probe is required before GO, commit, or

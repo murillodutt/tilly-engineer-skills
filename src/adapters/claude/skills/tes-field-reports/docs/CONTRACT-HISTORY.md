@@ -9,7 +9,7 @@
 `/tes-field-reports` was already documented as a preferred TES command trigger,
 but the skill surface exposed no standalone Field Reports route. The visible
 runtime surface needed to match the documented primary command without splitting
-routed aliases such as `/tes-update` and `/tes-curate` into unnecessary skills.
+every routed alias into an unnecessary skill.
 
 ## Origin Signals
 
@@ -28,7 +28,8 @@ routed aliases such as `/tes-update` and `/tes-curate` into unnecessary skills.
 
 ## Contracts Preserved
 
-- `/tes-update` remains routed through `tes-init`.
+- `/tes-update` now has its own visible `tes-update` skill; Field Reports
+  still records only final update certification probes.
 - `/tes-curate` remains routed through `tes-cortex`.
 - Field Reports remains sanitized operational feedback, not project truth.
 - Draining remains explicit user intent or pre-push hook behavior.

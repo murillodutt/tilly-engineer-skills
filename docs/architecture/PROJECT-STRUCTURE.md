@@ -91,7 +91,8 @@ the read-only Cortex MCP server in a target project by copying local helpers to
 
 `scripts/tes_update.py` plans low-friction updates by comparing installed and
 cloud package versions, detecting applied IDE surfaces, and recommending the
-route behind `/tes-update` and its `/tes:update` compatibility alias.
+route behind the visible `/tes-update` skill and its `/tes:update`
+compatibility alias.
 
 `scripts/tes_bundle.py` orchestrates clean runtime install: stage the versioned
 bundle, create `.tes/bk/<timestamp>/manifest.json`, apply canonical runtime

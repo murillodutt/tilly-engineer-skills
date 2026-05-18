@@ -33,13 +33,15 @@ Installed target parity can be checked with
 ## Visible Skill Surface
 
 Some triggers are primary visible skills. Some are supported command intents
-routed through a broader skill so TES does not create one skill per alias.
+routed through a broader skill only when the user-facing surface is genuinely a
+sub-mode of that skill. `/tes-update` is a visible update command, not a hidden
+mode of `/tes-init`.
 
 | Trigger | Visible router | Surface contract |
 |---------|----------------|------------------|
 | `/tes-init` | `tes-init` | visible skill |
 | `/tes-setup` | `tes-setup` | visible skill alias for `/tes-init` |
-| `/tes-update` | `tes-init` | grouped update intent |
+| `/tes-update` | `tes-update` | visible update skill |
 | `/tes-align` | `tes-align` | visible skill |
 | `/tes-map` | `tes-map` | visible Project GPS skill |
 | `/tes-prospect` | `tes-prospect` | visible predictive skill |
@@ -98,7 +100,7 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-source alias for the same oracles; not a target-project guarantee |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.108 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.109 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
@@ -206,6 +208,47 @@ This keeps `/tes-init` simple for users: make this project usable by TES. If
 both gates pass, close with certification and recommend `/tes-doctor` only for a
 full health check.
 
+## `/tes-update` Update Contract
+
+`/tes-update` is the canonical user-facing update entrypoint for an installed
+TES mesh. `/tes:update` is a compatibility alias; when a host rejects the colon
+form as invalid slash text, route it to the visible `tes-update` skill.
+
+The active agent must start with a read-only planner call, not with Project
+Start and not with raw JSON to the user:
+
+```bash
+python3 .tes/bin/tes_update.py plan --target . --json-only
+```
+
+When certifying from package source or a canary, use:
+
+```bash
+python3 scripts/tes_update.py plan --target <target> --json-only
+```
+
+The report should be short and product-shaped: current version, available
+version, scope, route, action, and proof. If the first call is read-only, state
+`No project work started`.
+
+`/tes-update` does not rerun `/tes-init` by default. Route to `/tes-init` only
+when the planner declares Project-Start, missing context, evidence drift, or
+the user explicitly asks to recertify/reinitialize. If the planner reports
+`STALE_HELPERS` or `recommended_update_scope=helpers-only`, repair only
+TES-owned `.tes/bin/**` helpers first, then rerun the planner before adapter or
+MCP work. If adapter/runtime drift remains, refresh runtime capability only
+after helper parity is `PASS`.
+
+After any write, the final recorded probe is mandatory:
+
+```bash
+python3 .tes/bin/tes_update.py plan --target . --json-only --record-field-report
+```
+
+The final probe must show `helper_contract_status=PASS`,
+`runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and
+`recommended_update_scope=none`.
+
 ## `/tes-map` Project GPS Contract
 
 `/tes-align` owns the project map. `/tes-map` updates the current position.
@@ -231,7 +274,9 @@ report should stay short: `You are here`, `Next safe move`, `Blocked by`, and
 
 ## No-Go
 
-- Do not create one slash command per script.
+- Do not create a slash command merely because a script exists. Visible commands
+  must be product entrypoints; `/tes-update` is visible because update is a
+  commercial user workflow.
 - Do not give `/tes-prospect` or `/tes-mine` broad natural-language activation;
   they require explicit invocation.
 - Do not certify a command that was skipped or blocked.

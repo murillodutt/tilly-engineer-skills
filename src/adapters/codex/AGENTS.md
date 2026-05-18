@@ -77,6 +77,7 @@ requires exact syntax.
 | Reusable workflow | `.agents/skills/tes-engineering-discipline/SKILL.md` |
 | Tilly initialization shortcut | `.agents/skills/tes-init/SKILL.md` |
 | Tilly setup alias | `.agents/skills/tes-setup/SKILL.md` |
+| Tilly update shortcut | `.agents/skills/tes-update/SKILL.md` |
 | Project semantic alignment | `.agents/skills/tes-align/SKILL.md` |
 | Project GPS map | `.agents/skills/tes-map/SKILL.md` |
 | Project-stress prospecting | `.agents/skills/tes-prospect/SKILL.md` |
@@ -96,8 +97,8 @@ requires exact syntax.
 
 <tes_init>
 
-Treat `/tes-init`, `/tes-setup`, `/tes-update`, `/tes:init`, `/tes:update`,
-`tes init`, `tes setup`, `tes update`, `initialize TES`, `install TES`, `recertify TES`,
+Treat `/tes-init`, `/tes-setup`, `/tes:init`,
+`tes init`, `tes setup`, `initialize TES`, `install TES`, `recertify TES`,
 `inicializar TES`, `instalar TES`, `recertificar TES`, and natural
 command/prompts such as `TES, initialize this project`,
 `TES, inicialize este projeto`, `Atualizar TES`, or `atualizar TES` as
@@ -127,15 +128,17 @@ summarize the run after the sentinel becomes `complete`.
 `tes_init.py` creates the scaffold; the active agent must open strong anchors
 before claiming deep project understanding and refine the context or report
 `Project context: NEEDS_REVIEW`.
-`/tes-update` first checks installed
-version, cloud version, helper contract parity, applied IDE surfaces,
-recommended route, and `recommended_update_scope`. Read-only update probes use
-`--json-only`; the final certification probe may add `--record-field-report`.
-`recommended_update_scope=helpers-only` or `STALE_HELPERS` is repaired first
-through the helper-only Layer Zero route before MCP config activation. After any
-helper overwrite, the final recorded probe is required before GO, commit, or
-push and must show `helper_contract_status=PASS`, `runtime_trigger_status=PASS`
-or `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`.
+Route `/tes-update`, `/tes:update`, `tes update`, `Atualizar TES`, and
+`atualizar TES` to `.agents/skills/tes-update/SKILL.md`. `/tes-update` first
+checks installed version, cloud version, helper contract parity, applied IDE
+surfaces, recommended route, and `recommended_update_scope`. Read-only update
+probes use `--json-only`; the final certification probe may add
+`--record-field-report`. `recommended_update_scope=helpers-only` or
+`STALE_HELPERS` is repaired first through the helper-only Layer Zero route
+before MCP config activation. After any helper overwrite, the final recorded
+probe is required before GO, commit, or push and must show
+`helper_contract_status=PASS`, `runtime_trigger_status=PASS` or `NOT_APPLIED`,
+`update_available=False`, and `recommended_update_scope=none`.
 Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
 `align this project`, `alinhar TES`, `alinhar projeto`, `/tes-map`,
 `/tes:gps`, `tes map`, `project GPS`, `mapa TES`, `map this project`,

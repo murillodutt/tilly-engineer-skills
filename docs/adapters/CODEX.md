@@ -13,7 +13,7 @@ tver: 0.5.1
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.108`.
+Project version: `0.3.109`.
 
 It follows the Codex customization order:
 
@@ -64,17 +64,18 @@ Codex uses progressive disclosure for skills:
 - References and scripts load or run only when needed.
 
 The preferred TES shortcuts map to Codex skills. Primary independent commands
-have visible skills; grouped intents such as `/tes-update` and `/tes-curate`
-route through their owning skills. Predictive skills such as `/tes-prospect`
-and `/tes-mine` require explicit invocation and use a cognitive brake. They
-keep the user entrypoint short while delegating real work to deterministic
-oracles or agent-led codebase exploration:
+have visible skills; grouped intents such as `/tes-curate` route through their
+owning skills. `/tes-update` is a visible skill because update is a commercial
+user workflow, not a hidden mode of initialization. Predictive skills such as
+`/tes-prospect` and `/tes-mine` require explicit invocation and use a cognitive
+brake. They keep the user entrypoint short while delegating real work to
+deterministic oracles or agent-led codebase exploration:
 
 | Shortcut | Skill |
 |----------|-------|
 | `/tes-init`, `/tes:init` | `tes-init` |
 | `/tes-setup` | `tes-setup` |
-| `/tes-update`, `/tes:update` | `tes-init` |
+| `/tes-update`, `/tes:update` | `tes-update` |
 | `/tes-align`, `/tes:align` | `tes-align` |
 | `/tes-prospect`, `/tes:prospect` | `tes-prospect` |
 | `/tes-mine`, `/tes:mine` | `tes-mine` |

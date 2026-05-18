@@ -1,20 +1,22 @@
 ---
 name: tes-init
-description: Use when the user says /tes-init, /tes-setup, /tes-update, /tes:init, /tes:update, tes init, tes setup, Atualizar TES, a natural init command/prompt, a natural update command/prompt, or asks to initialize, install, retrofit, update, audit, or recertify TES in the current project. Runs the assisted context installer contract through the active agent.
+description: Use when the user says /tes-init, /tes-setup, /tes:init, tes init, tes setup, a natural init/setup command, or asks to initialize, install, retrofit, audit, or recertify TES in the current project. Runs the assisted context installer contract through the active agent.
 ---
 
 # TES Init
 
-`/tes-init`, `/tes-setup`, `/tes-update`, `/tes:init`, `/tes:update`,
-`tes init`, `tes setup`, `tes update`, `initialize TES`, `install TES`, `recertify TES`,
+`/tes-init`, `/tes-setup`, `/tes:init`,
+`tes init`, `tes setup`, `initialize TES`, `install TES`, `recertify TES`,
 `inicializar TES`, `instalar TES`, `recertificar TES`, and direct
 command/prompts such as `TES, initialize this project`,
-`TES, inicialize este projeto`, `Atualizar TES`, or `atualizar TES` are
+`TES, inicialize este projeto` are
 user-facing installer intents. They are not blind shell commands and not
 background daemons. The active agent remains the executor.
 Across Codex, Claude Code, and Cursor, `/tes-*` forms are the preferred shared
 triggers, `/tes-setup` is a setup alias for `/tes-init`, and `/tes:*` forms are
-compatible TES intent aliases. Treat
+compatible TES intent aliases. `/tes-update` has its own visible
+`tes-update` skill; route update requests there instead of treating update as a
+hidden init mode. Treat
 `/tes-cortex`, `/tes:curate`, `/tes-curate`, `/tes-mcp`, `/tes-field-reports`,
 `/tes:field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`,
 `/tes:check`, `/tes:certify`, `/tes:recall`, `/tes:learn`, and `/tes:reflect`
@@ -68,31 +70,24 @@ the user for package contents.
 4. Run Step Zero before installer/update edits: inspect Git status and offer a
    local baseline commit when the tree is dirty and install/update writes are
    required.
-5. For `/tes-update` or `/tes:update`, run `tes_update.py plan --json-only`
-   when available to compare installed/cloud versions, verify helper contract
-   parity, detect applied IDE surfaces, and recommend route plus
-   `recommended_update_scope`.
-   Use `--record-field-report` only on the final certification probe. Treat
-   `recommended_update_scope=helpers-only` or `STALE_HELPERS` as
-   update-required and replace only TES-owned
-   `.tes/bin/**` helpers with backups through the helper-only Layer Zero route,
-   then rerun the update probe before activating MCP configs. After any helper
-   overwrite, record the final probe before GO, commit, or push; it must show
-   `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or
-   `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`.
-   If the planner returns `continuation_plan.status=PENDING_APPROVAL`, stop with
-   `NEEDS_REVIEW` and include the plan's required phases, approvals, write
-   surfaces, commands, and final recorded probe. Do not leave an old meshed
-   project with a bare blocker that the next agent cannot resume.
-6. Before rewriting root bootloaders, stage the bundle and create a central
+5. If an install/init preflight planner reports helper or runtime drift, use the
+   visible `tes-update` skill for update convergence unless the user explicitly
+   asked for full recertification. Do not rerun Project-Start merely because an
+   update plan was requested.
+6. If the update planner returns `continuation_plan.status=PENDING_APPROVAL`
+   during an init/recertification run, stop with `NEEDS_REVIEW` and include the
+   plan's required phases, approvals, write surfaces, commands, and final
+   recorded probe. Do not leave an old meshed project with a bare blocker that
+   the next agent cannot resume.
+7. Before rewriting root bootloaders, stage the bundle and create a central
    `.tes/bk/<timestamp>/` backup. Analyze previous root context from that
    backup and recover durable semantics into `docs/agents/**`.
-7. When `legacy_retirement_required=true`, run `tes_legacy_retirement.py plan`,
+8. When `legacy_retirement_required=true`, run `tes_legacy_retirement.py plan`,
    apply only if the run is authorized, then require
    `tes_legacy_retirement.py audit` before copying new TES assets.
-8. Use the detected runtime as the default route. Ask for route only when the
+9. Use the detected runtime as the default route. Ask for route only when the
    installer contract requires it.
-9. Apply clean runtime after central backup, build or update `docs/agents/**`, analyze the
+10. Apply clean runtime after central backup, build or update `docs/agents/**`, analyze the
    target project in depth, write or update `docs/agents/PROJECT-CONTEXT.md`,
    create the initial Obsidian-compatible operating mesh when missing,
    initialize `docs/agents/cortex/**`, keep runtime bootloaders thin, and
@@ -102,13 +97,13 @@ the user for package contents.
    claiming deep project understanding, refine `PROJECT-CONTEXT.md` when
    supported by evidence, or report `Project context: NEEDS_REVIEW` with the
    blocker. `/tes-align` remains the deeper semantic refinement path.
-10. Invoke package oracles such as `tes_init.py`, `tes_update.py`,
+11. Invoke package oracles such as `tes_init.py`, `tes_update.py`,
    `tes_legacy_retirement.py`, `root_context.py`, `install_smoke.py`,
    `install_mcp.py`, and Cortex checks.
    If local execution is unavailable, mark it `BLOCKED` or `SKIP`.
-11. Install or report the Field Reports `pre-push` drain. It is active by
+12. Install or report the Field Reports `pre-push` drain. It is active by
    default and controlled by the user manual prompts.
-12. Finish with a short certification report, source snapshot freshness, changed
+13. Finish with a short certification report, source snapshot freshness, changed
    surfaces, installed helper set, Field Reports state, evidence path, limits,
    project context path, rollback summary, and Git rollback instructions.
 
