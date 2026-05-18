@@ -724,6 +724,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--target", type=Path, help="validate installed trigger surfaces in a target project")
+    parser.add_argument("--json-only", action="store_true", help="emit only the JSON result without the status trailer")
     args = parser.parse_args()
 
     installed_target = installed_helper_target()
@@ -742,7 +743,8 @@ def main() -> int:
         result["failures"] = [*result["failures"], *fixture_failures]
 
     print(json.dumps(result, indent=2, sort_keys=True))
-    print("[command-triggers] " + result["status"])
+    if not args.json_only:
+        print("[command-triggers] " + result["status"])
     return 0 if result["status"] == "PASS" else 1
 
 
