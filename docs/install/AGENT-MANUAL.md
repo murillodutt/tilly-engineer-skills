@@ -167,10 +167,13 @@ must be recorded in the active evidence/report surface, Field Reports/Cortex,
 or `.tes/mantra-gates/` fallback. Risk is `routine`, `material`, `high-risk`,
 or `forbidden`: high-risk work needs a visible full gate, forbidden work stops,
 and state-changing evidence without a nearby record reports `BYPASS_SUSPECTED`.
+The default adoption check is health/read-only: dirty trees and historical
+compact high-risk records are contextual findings, not current-action blockers.
 
 Helpers: `python3 .tes/bin/mantra_gate.py --self-test`,
 `python3 .tes/bin/mantra_gate.py emit-marker`,
 `python3 .tes/bin/mantra_gate.py classify-risk --action "git push to origin"`,
+`python3 .tes/bin/mantra_gate_adoption_oracle.py --target .`,
 `python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --action "commit" --state-changing`,
 and `python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --commit-push`.
 Recover by recording the missing gate, showing the full gate, adding the
