@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>Tilly Engineer Skills - User Manual</title>
-  <meta name="description" content="Trilingual user manual for installing TES with GitHub-only npx, updating, auditing, and rolling back.">
+  <meta name="description" content="Trilingual user manual for installing TES with GitHub-only npx, using Mantra Gate, updating, auditing, and rolling back.">
   <link rel="canonical" href="https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html">
   <meta property="og:title" content="Tilly Engineer Skills - User Manual">
   <meta property="og:description" content="Install TES from GitHub with npx, then update, audit, and roll back with local evidence.">
@@ -1246,6 +1246,7 @@
           <div class="chapter-body">
             <p class="lede">Tilly Engineer Skills installs a governance mesh for coding agents. Codex, Claude Code, and Cursor route through adapter-specific surfaces while project truth lives in versioned Markdown.</p>
             <aside class="side-note"><p class="side-note-title">How you start</p><p>Required first-run path: <code>install -&gt; hook -&gt; /tes-setup -&gt; /tes-align -&gt; /tes-map</code>. Install from the target repository, open the agent, wait for the hook, run <code>/tes-setup</code>, run <code>/tes-align</code>, then use <code>/tes-map</code> for the current GPS view before project work. Use <code>/tes-update</code> for updates and <code>/tes-doctor</code> for repair.</p></aside>
+<aside class="side-note"><p class="side-note-title">Mantra Gate</p><p>When an agent is about to change state, TES uses Mantra Gate. Routine actions may show <code>[🍳 TES - mg]</code>; the full gate stays recorded as evidence.</p></aside>
 <aside class="side-note"><p class="side-note-title">What stays yours</p><p>Existing <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code>, and Cursor rules are first backed up in <code>.tes/bk/&lt;timestamp&gt;/</code>. TES then installs a clean runtime and recovers useful local semantics into <code>docs/agents/**</code>.</p></aside>
 <aside class="side-note"><p class="side-note-title">Operator contract</p><p>This manual is for users installing, auditing, and rolling back TES. The agent-side contract lives in <code>docs/install/AGENT-MANUAL.md</code>.</p></aside>
           </div>
@@ -1427,6 +1428,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           <div class="chapter-body">
             <p class="lede">Tilly Engineer Skills instala un mesh de gobernanza para agentes de codigo. Codex, Claude Code y Cursor pasan por superficies especificas mientras la verdad del proyecto vive en Markdown versionado.</p>
             <aside class="side-note"><p class="side-note-title">Como empezar</p><p>Ruta obligatoria de primera ejecucion: <code>install -&gt; hook -&gt; /tes-setup -&gt; /tes-align -&gt; /tes-map</code>. Instala desde el repositorio objetivo, abre el agente, espera el hook, ejecuta <code>/tes-setup</code>, luego <code>/tes-align</code> y usa <code>/tes-map</code> para la vista GPS actual antes del trabajo de proyecto. Usa <code>/tes-update</code> para actualizar y <code>/tes-doctor</code> para reparar.</p></aside>
+<aside class="side-note"><p class="side-note-title">Mantra Gate</p><p>Cuando un agente esta por cambiar estado, TES usa Mantra Gate. Acciones rutinarias pueden mostrar <code>[🍳 TES - mg]</code>; el gate completo queda registrado como evidencia.</p></aside>
 <aside class="side-note"><p class="side-note-title">Lo que sigue siendo tuyo</p><p>Los archivos <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> y reglas de Cursor existentes se respaldan primero en <code>.tes/bk/&lt;timestamp&gt;/</code>. TES instala un runtime limpio y recupera semantica local util en <code>docs/agents/**</code>.</p></aside>
 <aside class="side-note"><p class="side-note-title">Contrato del operador</p><p>Este manual es para usuarios que instalan, auditan y revierten TES. El contrato del agente vive en <code>docs/install/AGENT-MANUAL.md</code>.</p></aside>
           </div>
@@ -1608,6 +1610,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           <div class="chapter-body">
             <p class="lede">Tilly Engineer Skills instala uma malha de governanca para agentes de codigo. Codex, Claude Code e Cursor passam por superficies especificas enquanto a verdade do projeto vive em Markdown versionado.</p>
             <aside class="side-note"><p class="side-note-title">Como comecar</p><p>Caminho obrigatorio da primeira execucao: <code>install -&gt; hook -&gt; /tes-setup -&gt; /tes-align -&gt; /tes-map</code>. Instale a partir do repositorio alvo, abra o agente, aguarde o hook, rode <code>/tes-setup</code>, depois <code>/tes-align</code> e use <code>/tes-map</code> para a visao GPS atual antes do trabalho no projeto. Use <code>/tes-update</code> para atualizar e <code>/tes-doctor</code> para reparar.</p></aside>
+<aside class="side-note"><p class="side-note-title">Mantra Gate</p><p>Quando um agente esta prestes a mudar estado, o TES usa Mantra Gate. Acoes rotineiras podem mostrar <code>[🍳 TES - mg]</code>; o gate completo fica registrado como evidencia.</p></aside>
 <aside class="side-note"><p class="side-note-title">O que continua sendo seu</p><p>Arquivos existentes como <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CURSOR.md</code> e regras do Cursor sao primeiro salvos em <code>.tes/bk/&lt;timestamp&gt;/</code>. TES instala um runtime limpo e recupera semântica útil em <code>docs/agents/**</code>.</p></aside>
 <aside class="side-note"><p class="side-note-title">Contrato do operador</p><p>Este manual e para usuarios que instalam, auditam e revertem TES. O contrato do agente vive em <code>docs/install/AGENT-MANUAL.md</code>.</p></aside>
           </div>
