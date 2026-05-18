@@ -51,7 +51,7 @@ VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS
 ```
 
 For routine writes, commits, generated artifacts, spec execution, or
-project-state updates, the visible user marker may be only `[🍳 TES - mg]`.
+project-state updates, the visible user marker may be only `[🍳 Flash-Fry]`.
 That marker is UX compression, not evidence deletion: the full gate must be
 recorded in the current evidence/report surface, Field Reports/Cortex when
 appropriate, or the local `.tes/mantra-gates/` fallback.

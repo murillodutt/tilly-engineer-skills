@@ -102,7 +102,7 @@ intention and action:
 VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS
 ```
 
-The normal user-facing marker is `[🍳 TES - mg]`. It compresses the gate for
+The normal user-facing marker is `[🍳 Flash-Fry]`. It compresses the gate for
 readability; it does not delete evidence. A full gate record must exist for
 material writes, commits, spec execution, generated artifacts, migrations,
 external calls, architectural changes, or project-state updates.

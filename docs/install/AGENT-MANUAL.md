@@ -161,7 +161,7 @@ new TES assets. Legacy retrofit records archive under
 Mantra Gate is the TES pre-action micro-gate for state-changing work:
 evidence, scope, path, record, oracle, and stop rule.
 
-Routine writes may show only `[🍳 TES - mg]`, but the full gate
+Routine writes may show only `[🍳 Flash-Fry]`, but the full gate
 (`VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, `STATUS`)
 must be recorded in the active evidence/report surface, Field Reports/Cortex,
 or `.tes/mantra-gates/` fallback. Risk is `routine`, `material`, `high-risk`,
