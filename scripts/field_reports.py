@@ -19,7 +19,7 @@ import uuid
 from typing import Any
 
 
-VERSION = "0.3.106"
+VERSION = "0.3.107"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 LEGACY_SCHEMAS = ("tes-field-report@1", "tilly-field-report@1")
@@ -917,6 +917,21 @@ fi
 """
 
 
+def has_gate_pre_git_push(text: str) -> bool:
+    return "gate-pre-git" in text and re.search(r"(^|[^A-Za-z0-9_-])push([^A-Za-z0-9_-]|$)", text) is not None
+
+
+def gate_pre_git_push_shell(backup_name: str | None = None) -> str:
+    backup_note = ""
+    if backup_name:
+        backup_note = f'# BACKUP_HOOK=".git/hooks/{backup_name}" preserved for audit; gate-pre-git is composed explicitly.\n'
+    return f"""
+{backup_note}repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+push_base="$(git rev-parse --abbrev-ref --symbolic-full-name @{{u}} 2>/dev/null || printf '%s' origin/main)"
+"$repo_root/.gate-pre-git/bin/gate-pre-git" push --target "$repo_root" --base "$push_base"
+"""
+
+
 def existing_backup_name(current_hook: str) -> str | None:
     match = BACKUP_HOOK_RE.search(current_hook)
     if not match:
@@ -939,24 +954,33 @@ def install_hook(target: Path) -> dict[str, object]:
     hook = hooks / "pre-push"
     backup_rel: str | None = None
     backup_shell = ""
+    gate_pre_git_shell = ""
     if hook.exists():
         current = hook.read_text(encoding="utf-8", errors="replace")
         if HOOK_MARKER in current:
             backup_name = existing_backup_name(current)
             if backup_name and (hooks / backup_name).exists():
                 backup_rel = rel(hooks / backup_name, target)
-                backup_shell = backup_hook_shell(backup_name)
+                backup_text = (hooks / backup_name).read_text(encoding="utf-8", errors="replace")
+                if has_gate_pre_git_push(current) or has_gate_pre_git_push(backup_text):
+                    gate_pre_git_shell = gate_pre_git_push_shell(backup_name)
+                else:
+                    backup_shell = backup_hook_shell(backup_name)
         else:
             backup = hook.with_name(f"pre-push.before-tes-{file_stamp()}")
             shutil.copy2(hook, backup)
             backup.chmod(0o755)
             backup_rel = rel(backup, target)
-            backup_shell = backup_hook_shell(backup.name)
+            if has_gate_pre_git_push(current):
+                gate_pre_git_shell = gate_pre_git_push_shell(backup.name)
+            else:
+                backup_shell = backup_hook_shell(backup.name)
 
     hook_text = f"""#!/bin/sh
 # {HOOK_MARKER}
-set -u
+set -eu
 {backup_shell}
+{gate_pre_git_shell}
 if [ -f ".tes/bin/field_reports.py" ]; then
   python3 ".tes/bin/field_reports.py" drain --target . --trigger pre-push >/dev/null 2>&1 || true
 elif [ -f "scripts/field_reports.py" ]; then
@@ -1070,6 +1094,15 @@ repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
             encoding="utf-8",
         )
         chained_hook.chmod(0o755)
+        gate_pre_git_bin = chained_target / ".gate-pre-git/bin/gate-pre-git"
+        gate_pre_git_bin.parent.mkdir(parents=True)
+        gate_pre_git_bin.write_text(
+            """#!/usr/bin/env sh
+printf '%s\\n' "$*" > gate-pre-git.log
+""",
+            encoding="utf-8",
+        )
+        gate_pre_git_bin.chmod(0o755)
         first_chain_result = install_hook(chained_target)
         first_chain_text = chained_hook.read_text(encoding="utf-8")
         second_chain_result = install_hook(chained_target)
@@ -1081,12 +1114,30 @@ repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
             failures.append("pre-existing pre-push hook must be backed up exactly once")
         elif "gate-pre-git" not in backups[0].read_text(encoding="utf-8", errors="replace"):
             failures.append("pre-existing pre-push backup must preserve gate-pre-git")
-        if "BACKUP_HOOK=" not in first_chain_text:
-            failures.append("pre-existing pre-push hook must be chained on first install")
-        if "BACKUP_HOOK=" not in second_chain_text:
-            failures.append("second install-hook must preserve the existing backup chain")
+        if "gate-pre-git" not in first_chain_text or " push " not in first_chain_text:
+            failures.append("active pre-push hook must expose gate-pre-git push for target doctor")
+        if "gate-pre-git" not in second_chain_text or " push " not in second_chain_text:
+            failures.append("second install-hook must preserve active gate-pre-git push composition")
+        if '"$BACKUP_HOOK" "$@"' in first_chain_text or 'sh "$BACKUP_HOOK" "$@"' in first_chain_text:
+            failures.append("gate-pre-git composition must not execute backup hook recursively")
+        if "field_reports.py\" drain" not in first_chain_text:
+            failures.append("active pre-push hook must retain Field Reports drain")
+        elif first_chain_text.find("gate-pre-git") > first_chain_text.find("field_reports.py\" drain"):
+            failures.append("active pre-push hook must run gate-pre-git before Field Reports drain")
         if first_chain_text != second_chain_text:
             failures.append("second install-hook must not drop or rewrite the pre-existing hook chain")
+        chained_hook_run = subprocess.run(
+            [str(chained_hook)],
+            cwd=chained_target,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        gate_log = chained_target / "gate-pre-git.log"
+        if chained_hook_run.returncode != 0:
+            failures.append("composed gate-pre-git pre-push hook must pass with a passing project gate")
+        if not gate_log.exists() or "push --target" not in gate_log.read_text(encoding="utf-8", errors="replace"):
+            failures.append("composed pre-push hook must execute gate-pre-git push explicitly")
         exclude_text = (target / ".git/info/exclude").read_text(encoding="utf-8")
         for line in GIT_EXCLUDE_LINES:
             if line not in exclude_text.splitlines():
