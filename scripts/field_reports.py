@@ -19,7 +19,7 @@ import uuid
 from typing import Any
 
 
-VERSION = "0.3.105"
+VERSION = "0.3.106"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 LEGACY_SCHEMAS = ("tes-field-report@1", "tilly-field-report@1")
@@ -62,6 +62,7 @@ GIT_EXCLUDE_LINES = (
     ".tes/bin/__pycache__/",
     "*.pyc",
     ".tes/field-reports/",
+    ".tes/mantra-gates/",
     ".tes/legacy-retirement/",
     ".tes/cortex/*.sqlite",
     ".tes/cortex/*.sqlite-*",
@@ -1101,6 +1102,7 @@ repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
             ".tes/bin/cortex.py.bak-20260507T000000Z",
             ".tes/bin/__pycache__/field_reports.cpython-314.pyc",
             ".tes/field-reports/probe.jsonl",
+            ".tes/mantra-gates/records.jsonl",
             ".tes/legacy-retirement/backup.json",
             ".tes/cortex/recall.sqlite",
             ".tes/cortex/semantic.sqlite-wal",

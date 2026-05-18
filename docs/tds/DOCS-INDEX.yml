@@ -1,4 +1,4 @@
-version: 0.3.105
+version: 0.3.106
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -272,6 +272,13 @@ documents:
     class: mesh
     status: active
     consumer: installer authors, adopters, and agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/mesh/MANTRA-GATE.md
+    id: mesh.mantra_gate
+    class: mesh
+    status: active
+    consumer: adapter authors, TES agents, and adopters
     source_of_truth: true
     evidence_level: L2
   - path: docs/mesh/GIT-SAFETY.md

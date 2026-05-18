@@ -5,7 +5,7 @@ status: active
 consumer: adopters, installing agents, and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.1
+tver: 0.1.2
 ---
 
 # Tilly Git Safety
@@ -43,6 +43,7 @@ The local exclude must cover:
 - `.tes/bk/`
 - `.tes/setup/`
 - `.tes/field-reports/`
+- `.tes/mantra-gates/`
 - `.tes/legacy-retirement/`
 - `.tes/cortex/*.sqlite`
 - `.tes/cortex/*.sqlite-*`

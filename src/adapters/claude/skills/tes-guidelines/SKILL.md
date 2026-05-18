@@ -58,6 +58,19 @@ until it passes.
 Do not call certified behavior experimental. Use `blocked`, `degraded`,
 `not available`, `certified`, or `fail`.
 
+## Mantra Gate
+
+Before state-changing actions, use the TES Mantra Gate. For routine writes,
+commits, generated artifacts, spec execution, or project-state updates, the
+visible marker may be `[🍳 TES - mg]`; the full gate is still retained as
+evidence.
+
+Full gate fields are `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`,
+`RESOLVE`, and `STATUS`. Show the full gate, not just the compact marker, when
+risk is high, ambiguity exists, user approval is required, or secrets, data,
+databases, remotes, production, authentication, compliance, or public surfaces
+could be affected.
+
 ## Workflow
 
 1. Classify the task.

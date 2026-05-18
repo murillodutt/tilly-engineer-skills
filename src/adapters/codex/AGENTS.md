@@ -47,6 +47,21 @@ gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 
 </diamond_build_test_fail_fix>
 
+<mantra_gate>
+
+Before state-changing actions, use the TES Mantra Gate. For routine writes,
+commits, generated artifacts, spec execution, or project-state updates, the
+visible marker may be `[🍳 TES - mg]`; the full gate is still retained as
+evidence.
+
+Full gate fields are `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`,
+`RESOLVE`, and `STATUS`. Show the full gate, not just the compact marker, when
+risk is high, ambiguity exists, user approval is required, or secrets, data,
+databases, remotes, production, authentication, compliance, or public surfaces
+could be affected.
+
+</mantra_gate>
+
 <feedback_voice>
 
 Default to short, frank prose. Avoid tables, code blocks, YAML/property dumps,

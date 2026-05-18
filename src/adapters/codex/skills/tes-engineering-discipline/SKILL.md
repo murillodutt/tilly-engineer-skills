@@ -42,6 +42,26 @@ engineering_discipline:
 Keep it in conversation or working notes unless the target project requires a
 retained artifact.
 
+## Mantra Gate
+
+Before state-changing work, use the TES Mantra Gate:
+
+```text
+VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS
+```
+
+For routine writes, commits, generated artifacts, spec execution, or
+project-state updates, the visible user marker may be only `[🍳 TES - mg]`.
+That marker is UX compression, not evidence deletion: the full gate must be
+recorded in the current evidence/report surface, Field Reports/Cortex when
+appropriate, or the local `.tes/mantra-gates/` fallback.
+
+Show the full gate instead of the compact marker when risk is high, ambiguity
+exists, user approval is required, or the action could affect secrets, data,
+databases, remotes, production, authentication, compliance, or public surfaces.
+If `VERIFY` or the required `ORACLE` is missing, stop as `BLOCKED`. If `SCOPE`
+or `DOCUMENT` is ambiguous for material work, stop as `NEEDS_REVIEW`.
+
 ## Diamond Build-Test-Fail-Fix
 
 For critical capabilities, build from the finished contract down:
@@ -99,6 +119,7 @@ Do not call certified behavior experimental. Use `blocked`, `degraded`,
 
 | Need | Load |
 |------|------|
+| Mantra Gate helper | `.tes/bin/mantra_gate.py --self-test` when installed, or `scripts/mantra_gate.py --self-test` in the package source |
 | Common failure patterns | `references/failure-patterns.md` |
 | Port this discipline across tools | `references/source-portability.md` |
 | Deterministic self-test or plan check | `scripts/discipline_oracle.py` |

@@ -23,7 +23,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.105"
+VERSION = "0.3.106"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -51,6 +51,7 @@ HELPER_FILES = (
     "cortex_mcp.py",
     "cortex_embed.mjs",
     "field_reports.py",
+    "mantra_gate.py",
     "tes_install.py",
     "tes_update.py",
     "tes_legacy_retirement.py",

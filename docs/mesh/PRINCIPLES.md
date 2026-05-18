@@ -5,7 +5,7 @@ status: active
 consumer: adapter authors and agents
 source_of_truth: true
 evidence_level: L1
-tver: 0.2.0
+tver: 0.2.1
 ---
 
 # Tilly Engineering Discipline Principles
@@ -92,6 +92,25 @@ Define success before implementation closes.
 - Run broader gates before claiming convergence.
 
 Failure blocked: false completion.
+
+## Mantra Gate
+
+Before state-changing work, use the TES Mantra Gate as the micro-gate between
+intention and action:
+
+```text
+VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS
+```
+
+The normal user-facing marker is `[🍳 TES - mg]`. It compresses the gate for
+readability; it does not delete evidence. A full gate record must exist for
+material writes, commits, spec execution, generated artifacts, migrations,
+external calls, architectural changes, or project-state updates.
+
+Show the full gate instead of the compact marker when risk, ambiguity, user
+approval, secrets, data, remotes, production, authentication, compliance, or
+public surfaces are involved. Use `BLOCKED` when evidence or oracle is missing,
+and `NEEDS_REVIEW` when scope or approval is ambiguous.
 
 ## Portable Formula
 
