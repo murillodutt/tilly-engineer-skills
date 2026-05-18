@@ -215,6 +215,20 @@ def code_copy_button_failures(text: str) -> list[str]:
     return failures
 
 
+def same_page_anchor_failures(text: str) -> list[str]:
+    static_text = re.sub(r"<script\b[^>]*>.*?</script>", "", text, flags=re.S | re.I)
+    ids = {html.unescape(match.group(1)) for match in re.finditer(r'\bid="([^"]+)"', static_text)}
+    failures: list[str] = []
+    for match in re.finditer(r'<a\b[^>]*\bhref="(#[^"]*)"', static_text):
+        href = html.unescape(match.group(1)).split("?", 1)[0]
+        if not href or href == "#" or href.startswith("#/"):
+            continue
+        anchor = href[1:]
+        if anchor and anchor not in ids and href not in failures:
+            failures.append(href)
+    return failures
+
+
 def textareas_for_prompt(output_text: str) -> list[str]:
     return [
         html.unescape(match.group(1))
@@ -352,6 +366,25 @@ def audit(root: Path, run_render_check: bool = True) -> tuple[str, dict[str, Any
                     "PASS",
                     "public_code_copy_buttons_present",
                     f"Generated code cards carry SVG copy buttons ({code_cards} found).",
+                    output.as_posix(),
+                )
+            )
+        anchor_failures = same_page_anchor_failures(text)
+        if anchor_failures:
+            findings.append(
+                Finding(
+                    "BLOCKER",
+                    "same_page_anchor_missing",
+                    f"Generated same-page links point to missing anchors: {', '.join(anchor_failures[:5])}.",
+                    output.as_posix(),
+                )
+            )
+        else:
+            findings.append(
+                Finding(
+                    "PASS",
+                    "same_page_anchors_resolve",
+                    "Generated same-page links resolve to existing anchors.",
                     output.as_posix(),
                 )
             )
@@ -627,6 +660,36 @@ def self_test() -> None:
         status, _, findings = audit(root, run_render_check=False)
         codes = {finding.code for finding in findings}
         if status != "FAIL" or "public_code_copy_button_missing" not in codes:
+            raise AssertionError(render_text(status, manifest(root), findings))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        for path in ("docs/i18n", "docs/install", "docs/tds", "scripts"):
+            (root / path).mkdir(parents=True, exist_ok=True)
+        (root / STRUCTURE).write_text(
+            json.dumps(
+                {
+                    "sources": {"content": CONTENT.as_posix(), "structure": STRUCTURE.as_posix()},
+                    "generated_outputs": ["docs/index.html"],
+                    "pages": {},
+                }
+            ),
+            encoding="utf-8",
+        )
+        (root / CONTENT).write_text(json.dumps({"copy": "Run the installer."}), encoding="utf-8")
+        (root / MINI_PROMPT).write_text("```text\nInstall safely.\n```\n", encoding="utf-8")
+        for doc in (DOCS_INDEX, TDS_INDEX):
+            (root / doc).write_text("", encoding="utf-8")
+        (root / TDS_SPEC).write_text("", encoding="utf-8")
+        (root / "docs/index.html").write_text(
+            GENERATED_MARKER
+            + '\nGenerated from TDS.<main id="content"><a class="btn btn-primary" href="#start">Install</a></main>',
+            encoding="utf-8",
+        )
+        (root / RENDERER).write_text("#!/usr/bin/env python3\nimport sys\nsys.exit(0)\n", encoding="utf-8")
+        status, _, findings = audit(root, run_render_check=False)
+        codes = {finding.code for finding in findings}
+        if status != "FAIL" or "same_page_anchor_missing" not in codes:
             raise AssertionError(render_text(status, manifest(root), findings))
 
 
