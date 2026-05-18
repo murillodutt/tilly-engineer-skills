@@ -20,7 +20,7 @@
     "manual": {
       "en": {
         "title": "Tilly Engineer Skills - User Manual",
-        "description": "Trilingual user manual for installing TES with GitHub-only npx, updating, auditing, and rolling back.",
+        "description": "Trilingual user manual for installing TES with GitHub-only npx, using Mantra Gate, updating, auditing, and rolling back.",
         "og_description": "Install TES from GitHub with npx, then update, audit, and roll back with local evidence."
       },
       "es": {
@@ -199,6 +199,7 @@
               {"title": "Service record", "body": "Retained evidence, changed-file inventory, gate results, and rollback guidance."},
               {"title": "Dashboard", "body": "Statuses such as PASS, BLOCKED, DEGRADED, NEEDS_REVIEW, and recovered context."},
               {"title": "Memory", "body": "Versioned Markdown under `docs/agents/**`, with Cortex recall as a derived access path."},
+              {"title": "Mantra Gate", "body": "Before routine state-changing work, `[🍳 TES - mg]` marks a verified pre-action gate while full evidence stays recorded."},
               {"title": "Safety lane", "body": "No default push, publish, remote mutation, marketplace action, or write-capable MCP."}
             ]
           }
@@ -215,6 +216,7 @@
               {"title": "Registro de servicio", "body": "Evidencia retenida, inventario de archivos, resultados de gates y rollback."},
               {"title": "Panel", "body": "Estados como PASS, BLOCKED, DEGRADED, NEEDS_REVIEW y contexto recuperado."},
               {"title": "Memoria", "body": "Markdown versionado en `docs/agents/**`, con Cortex recall como acceso derivado."},
+              {"title": "Mantra Gate", "body": "Antes de trabajo rutinario que cambia estado, `[🍳 TES - mg]` marca un gate previo verificado mientras la evidencia completa queda registrada."},
               {"title": "Carril seguro", "body": "Sin push, publish, mutacion remota, marketplace o MCP con escritura por defecto."}
             ]
           }
@@ -231,6 +233,7 @@
               {"title": "Registro de servico", "body": "Evidencia retida, inventario de arquivos alterados, resultado dos gates e rollback."},
               {"title": "Painel", "body": "Estados como PASS, BLOCKED, DEGRADED, NEEDS_REVIEW e contexto recuperado."},
               {"title": "Memoria", "body": "Markdown versionado em `docs/agents/**`, com Cortex recall como acesso derivado."},
+              {"title": "Mantra Gate", "body": "Antes de trabalho rotineiro que muda estado, `[🍳 TES - mg]` marca um gate previo verificado enquanto a evidencia completa fica registrada."},
               {"title": "Faixa segura", "body": "Sem push, publish, mutacao remota, marketplace ou MCP com escrita por padrao."}
             ]
           }
@@ -318,7 +321,7 @@
         "blocks": [
           {"type": "cards", "items": [
             {"title": "Try", "body": "Run the GitHub npx command from the target repository, open your agent, wait for the hook, run `/tes-setup`, run `/tes-align`, then use `/tes-map` for the current GPS view before project work."},
-            {"title": "Operate", "body": "Use the manual when you need routes, states, rollback, MCP, Field Reports, or Obsidian viewing."},
+            {"title": "Operate", "body": "Use the manual when you need routes, states, Mantra Gate, rollback, MCP, Field Reports, or Obsidian viewing."},
             {"title": "Audit", "body": "Use the source map when a claim needs evidence, scope, or a governed document."}
           ]}
         ]
@@ -330,7 +333,7 @@
         "blocks": [
           {"type": "cards", "items": [
             {"title": "Probar", "body": "Ejecuta el comando GitHub npx desde el repositorio objetivo, abre tu agente, espera el hook, ejecuta `/tes-setup`, luego `/tes-align` y usa `/tes-map` para la vista GPS actual antes del trabajo de proyecto."},
-            {"title": "Operar", "body": "Usa el manual para rutas, estados, rollback, MCP, Field Reports u Obsidian."},
+            {"title": "Operar", "body": "Usa el manual para rutas, estados, Mantra Gate, rollback, MCP, Field Reports u Obsidian."},
             {"title": "Auditar", "body": "Usa el mapa de fuentes cuando un claim necesita evidencia, alcance o documento gobernado."}
           ]}
         ]
@@ -342,7 +345,7 @@
         "blocks": [
           {"type": "cards", "items": [
             {"title": "Testar", "body": "Rode o comando GitHub npx a partir do repositorio alvo, abra seu agente, aguarde o hook, rode `/tes-setup`, depois `/tes-align` e use `/tes-map` para a visao GPS atual antes do trabalho no projeto."},
-            {"title": "Operar", "body": "Use o manual para rotas, estados, rollback, MCP, Field Reports ou Obsidian."},
+            {"title": "Operar", "body": "Use o manual para rotas, estados, Mantra Gate, rollback, MCP, Field Reports ou Obsidian."},
             {"title": "Auditar", "body": "Use o mapa de fontes quando um claim precisar de evidencia, escopo ou documento governado."}
           ]}
         ]
@@ -360,6 +363,7 @@
               "body": "Why agent rules become measurable engineering behavior instead of rule folklore.",
               "items": [
                 {"label": "Engineering principles", "href": "mesh/PRINCIPLES.md", "body": "Four gates, evidence-converged context, and `E = A * S * C * V`."},
+                {"label": "Mantra Gate", "href": "mesh/MANTRA-GATE.md", "body": "Pre-action micro-gate: `[🍳 TES - mg]` in compact mode, full evidence retained for state-changing work."},
                 {"label": "Context mesh method", "href": "mesh/CONTEXT-MESH-METHOD.md", "body": "Narrative, instruction, execution, verification, and return layers."},
                 {"label": "Adoption scorecard", "href": "mesh/SCORECARD.md", "body": "How a copied rule becomes behavior, oracle, governance, and reentry stability."}
               ]
@@ -426,6 +430,7 @@
               "body": "Por que las reglas de agentes se vuelven comportamiento medible, no folklore de reglas.",
               "items": [
                 {"label": "Principios de ingenieria", "href": "mesh/PRINCIPLES.md", "body": "Cuatro gates, contexto convergido por evidencia y `E = A * S * C * V`."},
+                {"label": "Mantra Gate", "href": "mesh/MANTRA-GATE.md", "body": "Micro-gate previo a la accion: `[🍳 TES - mg]` en modo compacto, evidencia completa retenida para trabajo que cambia estado."},
                 {"label": "Metodo context mesh", "href": "mesh/CONTEXT-MESH-METHOD.md", "body": "Capas de narrativa, instruccion, ejecucion, verificacion y retorno."},
                 {"label": "Scorecard de adopcion", "href": "mesh/SCORECARD.md", "body": "Como una regla copiada se vuelve comportamiento, oraculo, gobernanza y reentrada estable."}
               ]
@@ -492,6 +497,7 @@
               "body": "Por que regras de agentes viram comportamento de engenharia mensuravel, nao folklore de regras.",
               "items": [
                 {"label": "Principios de engenharia", "href": "mesh/PRINCIPLES.md", "body": "Quatro gates, contexto convergido por evidencia e `E = A * S * C * V`."},
+                {"label": "Mantra Gate", "href": "mesh/MANTRA-GATE.md", "body": "Micro-gate antes da acao: `[🍳 TES - mg]` no modo compacto, evidencia completa retida para trabalho que muda estado."},
                 {"label": "Metodo context mesh", "href": "mesh/CONTEXT-MESH-METHOD.md", "body": "Camadas de narrativa, instrucao, execucao, verificacao e retorno."},
                 {"label": "Scorecard de adocao", "href": "mesh/SCORECARD.md", "body": "Como uma regra copiada vira comportamento, oraculo, governanca e reentrada estavel."}
               ]
@@ -555,6 +561,7 @@
         "lede": "Tilly Engineer Skills installs a governance mesh for coding agents. Codex, Claude Code, and Cursor route through adapter-specific surfaces while project truth lives in versioned Markdown.",
         "blocks": [
           {"type": "aside", "title": "How you start", "text": "Required first-run path: `install -> hook -> /tes-setup -> /tes-align -> /tes-map`. Install from the target repository, open the agent, wait for the hook, run `/tes-setup`, run `/tes-align`, then use `/tes-map` for the current GPS view before project work. Use `/tes-update` for updates and `/tes-doctor` for repair."},
+          {"type": "aside", "title": "Mantra Gate", "text": "When an agent is about to change state, TES uses Mantra Gate. Routine actions may show `[🍳 TES - mg]`; the full gate stays recorded as evidence."},
           {"type": "aside", "title": "What stays yours", "text": "Existing `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, and Cursor rules are first backed up in `.tes/bk/<timestamp>/`. TES then installs a clean runtime and recovers useful local semantics into `docs/agents/**`."},
           {"type": "aside", "title": "Operator contract", "text": "This manual is for users installing, auditing, and rolling back TES. The agent-side contract lives in `docs/install/AGENT-MANUAL.md`."}
         ]
@@ -565,6 +572,7 @@
         "lede": "Tilly Engineer Skills instala un mesh de gobernanza para agentes de codigo. Codex, Claude Code y Cursor pasan por superficies especificas mientras la verdad del proyecto vive en Markdown versionado.",
         "blocks": [
           {"type": "aside", "title": "Como empezar", "text": "Ruta obligatoria de primera ejecucion: `install -> hook -> /tes-setup -> /tes-align -> /tes-map`. Instala desde el repositorio objetivo, abre el agente, espera el hook, ejecuta `/tes-setup`, luego `/tes-align` y usa `/tes-map` para la vista GPS actual antes del trabajo de proyecto. Usa `/tes-update` para actualizar y `/tes-doctor` para reparar."},
+          {"type": "aside", "title": "Mantra Gate", "text": "Cuando un agente esta por cambiar estado, TES usa Mantra Gate. Acciones rutinarias pueden mostrar `[🍳 TES - mg]`; el gate completo queda registrado como evidencia."},
           {"type": "aside", "title": "Lo que sigue siendo tuyo", "text": "Los archivos `AGENTS.md`, `CLAUDE.md`, `CURSOR.md` y reglas de Cursor existentes se respaldan primero en `.tes/bk/<timestamp>/`. TES instala un runtime limpio y recupera semantica local util en `docs/agents/**`."},
           {"type": "aside", "title": "Contrato del operador", "text": "Este manual es para usuarios que instalan, auditan y revierten TES. El contrato del agente vive en `docs/install/AGENT-MANUAL.md`."}
         ]
@@ -575,6 +583,7 @@
         "lede": "Tilly Engineer Skills instala uma malha de governanca para agentes de codigo. Codex, Claude Code e Cursor passam por superficies especificas enquanto a verdade do projeto vive em Markdown versionado.",
         "blocks": [
           {"type": "aside", "title": "Como comecar", "text": "Caminho obrigatorio da primeira execucao: `install -> hook -> /tes-setup -> /tes-align -> /tes-map`. Instale a partir do repositorio alvo, abra o agente, aguarde o hook, rode `/tes-setup`, depois `/tes-align` e use `/tes-map` para a visao GPS atual antes do trabalho no projeto. Use `/tes-update` para atualizar e `/tes-doctor` para reparar."},
+          {"type": "aside", "title": "Mantra Gate", "text": "Quando um agente esta prestes a mudar estado, o TES usa Mantra Gate. Acoes rotineiras podem mostrar `[🍳 TES - mg]`; o gate completo fica registrado como evidencia."},
           {"type": "aside", "title": "O que continua sendo seu", "text": "Arquivos existentes como `AGENTS.md`, `CLAUDE.md`, `CURSOR.md` e regras do Cursor sao primeiro salvos em `.tes/bk/<timestamp>/`. TES instala um runtime limpo e recupera semântica útil em `docs/agents/**`."},
           {"type": "aside", "title": "Contrato do operador", "text": "Este manual e para usuarios que instalam, auditam e revertem TES. O contrato do agente vive em `docs/install/AGENT-MANUAL.md`."}
         ]

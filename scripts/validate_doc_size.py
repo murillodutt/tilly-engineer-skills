@@ -14,7 +14,7 @@ WARN_RATIO = 0.85
 LIMITS = {
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md": 1000,
     "docs/evals/EXAMPLES.md": 600,
-    "docs/install/USER-MANUAL.html": 2200,
+    "docs/install/USER-MANUAL.html": 2210,
     "docs/install/AGENT-MANUAL.md": 600,
     "docs/index.html": 2800,
 }
