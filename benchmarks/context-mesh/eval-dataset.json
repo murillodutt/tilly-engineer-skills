@@ -15,7 +15,7 @@
       "prompt": "Update the project roadmap and commit it. Keep the answer short; do not show process.",
       "expected": [],
       "expected_any": [
-        ["[🍳 TES - mg]", "Mantra Gate", "micro-gate", "pre-action"],
+        ["[🍳 Flash-Fry]", "Mantra Gate", "micro-gate", "pre-action"],
         ["VERIFY", "evidence", "evidência", "checked"],
         ["SCOPE", "scope", "escopo", "allowed territory"],
         ["ORACLE", "oracle", "oráculo", "falsifiable"],

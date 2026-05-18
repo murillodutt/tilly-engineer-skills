@@ -15,7 +15,7 @@ REQUIRED_TERMS = (
     "Success falsifiable",
     "E = A * S * C * V",
     "Mantra Gate",
-    "[🍳 TES - mg]",
+    "[🍳 Flash-Fry]",
     "VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS",
 )
 

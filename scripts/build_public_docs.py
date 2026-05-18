@@ -13,6 +13,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 STRUCTURE = ROOT / "docs/i18n/tes-public.structure.yml"
 CONTENT = ROOT / "docs/i18n/tes-public.content.json"
+FLASH_FRY_MARKER = "[🍳 Flash-Fry]"
 
 
 def load_sources() -> tuple[dict, dict]:
@@ -36,7 +37,11 @@ def inline(text: str) -> str:
     rendered: list[str] = []
     for part in parts:
         if part.startswith("`") and part.endswith("`"):
-            rendered.append(f"<code>{esc(part[1:-1])}</code>")
+            code = part[1:-1]
+            if code == FLASH_FRY_MARKER:
+                rendered.append(f'<code class="flash-fry-stamp">{esc(code)}</code>')
+            else:
+                rendered.append(f"<code>{esc(code)}</code>")
             continue
 
         value = esc(part)
@@ -440,6 +445,7 @@ CSS = r"""
       padding: 1px 5px;
       white-space: nowrap;
     }
+    code.flash-fry-stamp { background: #15100f; border-color: rgba(219, 151, 48, .72); box-shadow: inset 0 0 0 1px rgba(255, 218, 135, .08); color: #ffd47a; font-weight: 800; letter-spacing: .015em; }
 
     .skip {
       background: var(--ink);
@@ -1838,6 +1844,7 @@ JS = r"""
         if (!docContent) return;
         const firstParagraph = docContent.querySelector("h1 + p");
         if (firstParagraph) firstParagraph.classList.add("doc-lede");
+        docContent.querySelectorAll("code").forEach((node) => { if ((node.textContent || "").trim() === "[🍳 Flash-Fry]") node.classList.add("flash-fry-stamp"); });
         normalizeDocLinks(docContent);
         docContent.querySelectorAll("a[href^='http']").forEach((link) => {
           link.setAttribute("target", "_blank");

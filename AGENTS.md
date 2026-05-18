@@ -47,7 +47,7 @@ gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 <mantra_gate>
 
 Before state-changing actions, use the TES Mantra Gate. Routine writes may show
-only `[🍳 TES - mg]` to the user, but the full gate must still record `VERIFY`,
+only `[🍳 Flash-Fry]` to the user, but the full gate must still record `VERIFY`,
 `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, and `STATUS` in the
 appropriate evidence surface.
 

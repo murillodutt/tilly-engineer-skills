@@ -12,10 +12,11 @@ evidence_level: L4
 ## Summary
 
 TES `0.3.110` strengthens Mantra Gate from a validatable micro-gate into a
-local adoption-health layer. The compact marker remains `[🍳 TES - mg]`, but
-state-changing work now has a read-only oracle that can detect missing records,
-high-risk compact-only gates, missing closure oracles, forbidden risk classes,
-and sanitized local metrics.
+local adoption-health layer. The compact marker was later renamed to
+`[🍳 Flash-Fry]` without changing the `tes-mantra-gate@1` schema; state-changing
+work now has a read-only oracle that can detect missing records, high-risk
+compact-only gates, missing closure oracles, forbidden risk classes, and
+sanitized local metrics.
 
 ## Changed Behavior
 

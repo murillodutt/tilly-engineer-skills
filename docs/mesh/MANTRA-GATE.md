@@ -21,7 +21,7 @@ for state-changing work.
 The default visible marker is:
 
 ```text
-[🍳 TES - mg]
+[🍳 Flash-Fry]
 ```
 
 Agents may show only this marker before routine state-changing actions when a
