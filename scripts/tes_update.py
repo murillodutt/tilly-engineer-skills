@@ -21,7 +21,7 @@ except Exception:  # pragma: no cover - installed helper may be inspected alone.
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.109"
+VERSION = "0.3.110"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -35,6 +35,7 @@ HELPER_FILES = (
     "cortex_embed.mjs",
     "field_reports.py",
     "mantra_gate.py",
+    "mantra_gate_adoption_oracle.py",
     "tes_install.py",
     "tes_update.py",
     "tes_legacy_retirement.py",
@@ -51,6 +52,7 @@ HELPER_FILES = (
 )
 HELPER_CONTRACT_MARKERS = {
     "field_reports.py": ('SCHEMA = "tes-field-report@2"',),
+    "mantra_gate_adoption_oracle.py": ('SCHEMA = "tes-mantra-gate-adoption@1"',),
 }
 UPDATE_SCOPES = ("none", "helpers-only", "adapter-config", "project-context", "full-convergence")
 PREFERRED_INTENT_TRIGGERS = (

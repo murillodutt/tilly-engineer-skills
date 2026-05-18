@@ -13,11 +13,12 @@ import tempfile
 from typing import Any
 
 
-VERSION = "0.3.109"
+VERSION = "0.3.110"
 SCHEMA = "tes-mantra-gate@1"
 MARKER = "[🍳 TES - mg]"
 STATUSES = ("PROCEED", "BLOCKED", "NEEDS_REVIEW")
 STATUS_WEIGHT = {"PROCEED": 0, "NEEDS_REVIEW": 1, "BLOCKED": 2}
+RISK_LEVELS = ("routine", "material", "high-risk", "forbidden")
 START_MARKER = "<!-- TES-MANTRA-GATE:START -->"
 END_MARKER = "<!-- TES-MANTRA-GATE:END -->"
 
@@ -31,6 +32,30 @@ SECRET_RE = re.compile(
 )
 ABSOLUTE_PATH_RE = re.compile(r"(/Users|/home|/private|/var/folders|[A-Za-z]:\\)[^\s`\"')]+")
 EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+
+HIGH_RISK_PATTERNS: tuple[tuple[str, str], ...] = (
+    ("remote or push", r"\b(git\s+push|push|remote|origin/|upstream)\b"),
+    ("secrets or env", r"\b(secret|token|credential|password|api[_-]?key|authorization|bearer|\.env)\b"),
+    ("database or migration", r"\b(database|db|schema|migration|persistent|persistence|drizzle|prisma|sql)\b"),
+    ("auth or rbac", r"\b(auth|oauth|rbac|permission|role|session|jwt)\b"),
+    ("customer data", r"\b(customer|tenant|personal data|pii|real data)\b"),
+    ("production", r"\b(production|prod|deploy|release|cutover)\b"),
+    ("compliance or legal", r"\b(compliance|legal|privacy|gdpr|hipaa|soc2|sox)\b"),
+    ("public surface", r"\b(public api|api surface|breaking change|sdk|cli|npm|package|published)\b"),
+    ("destructive git", r"\b(reset --hard|git clean|force push|--force|checkout --|restore --staged)\b"),
+    ("generated runtime packaging", r"\b(bundle|runtime package|generated runtime|dist/|docs/dist|packaging)\b"),
+)
+
+FORBIDDEN_PATTERNS: tuple[tuple[str, str], ...] = (
+    ("destructive git without explicit contract", r"\b(reset --hard|git clean -fd|git clean -xdf|push --force|--force-with-lease)\b"),
+    ("secret disclosure", r"\b(print|echo|log|paste|expose|leak)\b.*\b(secret|token|password|api[_-]?key|authorization|bearer)\b"),
+    ("production without contract", r"\b(production|prod)\b.*\b(without contract|without approval|no approval|skip approval)\b"),
+)
+MATERIAL_PATTERNS: tuple[tuple[str, str], ...] = (
+    ("write or edit", r"\b(write|edit|patch|modify|create|delete|remove|rename|move)\b"),
+    ("commit", r"\b(commit|stage|staged)\b"),
+    ("generated artifact", r"\b(generate|generated|materialize|build)\b"),
+)
 
 
 def utc_now() -> str:
@@ -70,17 +95,85 @@ def resolve_is_clear(value: Any) -> bool:
     return text == "none found" or text.startswith("resolved")
 
 
+def _risk_text(action: str = "", scope: Any = None, paths: list[str] | None = None, changed_files: list[str] | None = None) -> str:
+    chunks: list[str] = [action]
+    if scope is not None:
+        chunks.append(json.dumps(scope, ensure_ascii=False, sort_keys=True, default=str))
+    chunks.extend(paths or [])
+    chunks.extend(changed_files or [])
+    return " ".join(chunk for chunk in chunks if chunk).lower()
+
+
+def _matches(patterns: tuple[tuple[str, str], ...], text: str) -> list[str]:
+    return [label for label, pattern in patterns if re.search(pattern, text, flags=re.IGNORECASE)]
+
+
+def classify_risk(
+    action: str = "",
+    *,
+    scope: Any = None,
+    paths: list[str] | None = None,
+    changed_files: list[str] | None = None,
+    explicit: str | None = None,
+) -> dict[str, Any]:
+    """Classify Mantra Gate operational risk without reading sensitive content."""
+    normalized = (explicit or "").strip().lower()
+    if normalized in RISK_LEVELS:
+        return {
+            "schema": SCHEMA,
+            "version": VERSION,
+            "risk": normalized,
+            "reasons": ["explicit"],
+            "matched_terms": [],
+        }
+
+    text = _risk_text(action, scope=scope, paths=paths, changed_files=changed_files)
+    forbidden = _matches(FORBIDDEN_PATTERNS, text)
+    high = _matches(HIGH_RISK_PATTERNS, text)
+    material = _matches(MATERIAL_PATTERNS, text)
+
+    if forbidden:
+        risk = "forbidden"
+        reasons = forbidden
+    elif high:
+        risk = "high-risk"
+        reasons = high
+    elif material:
+        risk = "material"
+        reasons = material
+    else:
+        risk = "routine"
+        reasons = ["no state-changing risk terms detected"]
+
+    return sanitize(
+        {
+            "schema": SCHEMA,
+            "version": VERSION,
+            "risk": risk,
+            "reasons": sorted(set(reasons)),
+            "matched_terms": sorted(set(forbidden + high + material)),
+        }
+    )
+
+
 def validate_gate(
     raw_gate: dict[str, Any],
     *,
     state_changing: bool = False,
     closure_claim: bool = False,
     high_risk: bool = False,
+    risk: str | None = None,
     visible_full: bool = False,
 ) -> dict[str, Any]:
     gate = normalize_gate(raw_gate)
     failures: list[str] = []
     status = "PROCEED"
+    declared_risk = str(gate.get("RISK") or risk or "").strip().lower()
+    if high_risk and declared_risk not in {"forbidden", "high-risk"}:
+        declared_risk = "high-risk"
+    if declared_risk and declared_risk not in RISK_LEVELS:
+        failures.append(f"invalid RISK: {declared_risk}")
+        status = escalate(status, "NEEDS_REVIEW")
 
     declared = str(gate.get("STATUS") or "").strip().upper()
     if not declared:
@@ -120,7 +213,11 @@ def validate_gate(
         status = escalate(status, "BLOCKED")
 
     mode = visible_mode(gate, visible_full)
-    if high_risk and declared == "PROCEED" and mode != "full":
+    if declared_risk == "forbidden":
+        failures.append("forbidden risk class requires stop")
+        status = escalate(status, "BLOCKED")
+
+    if declared_risk == "high-risk" and declared == "PROCEED" and mode != "full":
         failures.append("high-risk PROCEED requires visible full gate")
         status = escalate(status, "NEEDS_REVIEW")
 
@@ -134,6 +231,7 @@ def validate_gate(
         "marker": MARKER,
         "status": status,
         "declared_status": declared or "MISSING",
+        "risk": declared_risk or "unclassified",
         "valid": valid,
         "visible": mode,
         "failures": failures,
@@ -232,6 +330,22 @@ def self_test() -> dict[str, Any]:
     if high_risk_full["status"] != "PROCEED" or high_risk_full["visible"] != "full":
         failures.append("high-risk full gate must proceed when otherwise complete")
 
+    routine = classify_risk("read docs and report")
+    if routine["risk"] != "routine":
+        failures.append("read-only analysis must classify as routine")
+
+    push = classify_risk("commit and git push to origin")
+    if push["risk"] != "high-risk":
+        failures.append("push must classify as high-risk")
+
+    forbidden = classify_risk("git reset --hard and echo token=abc123")
+    if forbidden["risk"] != "forbidden":
+        failures.append("destructive git or secret disclosure must classify as forbidden")
+
+    forbidden_gate = validate_gate(sample_gate(RISK="forbidden", VISIBLE="full"), state_changing=True)
+    if forbidden_gate["status"] != "BLOCKED":
+        failures.append("forbidden risk class must block")
+
     with tempfile.TemporaryDirectory(prefix="tes-mantra-gate-") as tmp:
         target = Path(tmp)
         (target / ".tes/field-reports").mkdir(parents=True)
@@ -246,6 +360,8 @@ def self_test() -> dict[str, Any]:
             failures.append("compact marker record must retain full gate evidence")
         if "/Users/example/project" in text or "token=abc123" in text:
             failures.append("record must sanitize paths and secrets")
+        if "owner@example.com" in json.dumps(sanitize({"email": "owner@example.com"})):
+            failures.append("record must sanitize emails")
 
     return {
         "schema": SCHEMA,
@@ -282,8 +398,17 @@ def main(argv: list[str] | None = None) -> int:
     validate.add_argument("--state-changing", action="store_true")
     validate.add_argument("--closure-claim", action="store_true")
     validate.add_argument("--high-risk", action="store_true")
+    validate.add_argument("--risk", choices=RISK_LEVELS)
     validate.add_argument("--visible-full", action="store_true")
     validate.set_defaults(command="validate")
+
+    classify = subparsers.add_parser("classify-risk")
+    classify.add_argument("--action", default="")
+    classify.add_argument("--scope", default="")
+    classify.add_argument("--path", action="append", default=[])
+    classify.add_argument("--changed-file", action="append", default=[])
+    classify.add_argument("--explicit", choices=RISK_LEVELS)
+    classify.set_defaults(command="classify-risk")
 
     args = parser.parse_args(argv)
 
@@ -302,6 +427,7 @@ def main(argv: list[str] | None = None) -> int:
             state_changing=args.state_changing,
             closure_claim=args.closure_claim,
             high_risk=args.high_risk,
+            risk=args.risk,
             visible_full=args.visible_full,
         )
         if args.record:
@@ -312,6 +438,22 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print(json.dumps(sanitize(result), indent=2, sort_keys=True))
         return exit_code(result["status"], bool(result["valid"]))
+
+    if args.command == "classify-risk":
+        print(
+            json.dumps(
+                classify_risk(
+                    args.action,
+                    scope=args.scope,
+                    paths=args.path,
+                    changed_files=args.changed_file,
+                    explicit=args.explicit,
+                ),
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
 
     parser.print_help()
     return 2

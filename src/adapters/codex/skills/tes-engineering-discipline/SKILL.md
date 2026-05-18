@@ -120,6 +120,7 @@ Do not call certified behavior experimental. Use `blocked`, `degraded`,
 | Need | Load |
 |------|------|
 | Mantra Gate helper | `.tes/bin/mantra_gate.py --self-test` when installed, or `scripts/mantra_gate.py --self-test` in the package source |
+| Mantra Gate adoption health | `.tes/bin/mantra_gate_adoption_oracle.py --target .` when installed, or `scripts/mantra_gate_adoption_oracle.py --target .` in the package source |
 | Common failure patterns | `references/failure-patterns.md` |
 | Port this discipline across tools | `references/source-portability.md` |
 | Deterministic self-test or plan check | `scripts/discipline_oracle.py` |

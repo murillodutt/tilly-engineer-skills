@@ -161,28 +161,21 @@ new TES assets. Legacy retrofit records archive under
 Mantra Gate is the TES pre-action micro-gate for state-changing work:
 evidence, scope, path, record, oracle, and stop rule.
 
-For routine writes, commits, generated artifacts, spec execution, and
-project-state updates, the user may see only:
+Routine writes may show only `[🍳 TES - mg]`, but the full gate
+(`VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, `STATUS`)
+must be recorded in the active evidence/report surface, Field Reports/Cortex,
+or `.tes/mantra-gates/` fallback. Risk is `routine`, `material`, `high-risk`,
+or `forbidden`: high-risk work needs a visible full gate, forbidden work stops,
+and state-changing evidence without a nearby record reports `BYPASS_SUSPECTED`.
 
-```text
-[🍳 TES - mg]
-```
-
-That marker is UX compression, not evidence deletion. The full internal gate
-uses `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, and
-`STATUS`, and must be recorded in the active evidence/report surface, Field
-Reports/Cortex when appropriate, or local `.tes/mantra-gates/` fallback.
-
-Show the full gate instead of the compact marker when risk is high, ambiguity
-exists, user approval is required, or the action could affect secrets, data,
-databases, remotes, production, authentication, compliance, or public surfaces.
-
-The helper is:
-
-```bash
-python3 .tes/bin/mantra_gate.py --self-test
-python3 .tes/bin/mantra_gate.py emit-marker
-```
+Helpers: `python3 .tes/bin/mantra_gate.py --self-test`,
+`python3 .tes/bin/mantra_gate.py emit-marker`,
+`python3 .tes/bin/mantra_gate.py classify-risk --action "git push to origin"`,
+`python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --action "commit" --state-changing`,
+and `python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --commit-push`.
+Recover by recording the missing gate, showing the full gate, adding the
+closure `ORACLE`, or stopping forbidden work. Read-only inspection is not
+blocked.
 
 ---
 
