@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.108"
+VERSION = "0.3.109"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -184,6 +184,7 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
             "AGENTS.md",
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",
             ".agents/skills/tes-engineering-discipline/SKILL.md",
+            ".agents/skills/tes-update/SKILL.md",
             ".agents/skills/tes-align/SKILL.md",
             ".agents/skills/tes-map/SKILL.md",
             ".agents/skills/tes-open-obsidian/SKILL.md",
@@ -197,6 +198,7 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
             "skills/tes-guidelines/SKILL.md",
             ".claude/skills/tes-guidelines/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
+            ".claude/skills/tes-update/SKILL.md",
             ".claude/skills/tes-align/SKILL.md",
             ".claude/skills/tes-map/SKILL.md",
             ".claude/skills/tes-open-obsidian/SKILL.md",
@@ -385,12 +387,14 @@ def claude_clean_bootloader_probe() -> dict[str, Any]:
         failures.extend(require_paths(target, (
             ".claude/skills/tes-guidelines/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
+            ".claude/skills/tes-update/SKILL.md",
             ".claude/skills/tes-align/SKILL.md",
             ".claude/skills/tes-open-obsidian/SKILL.md",
             ".claude/skills/tes-cortex/SKILL.md",
             ".claude/skills/tes-field-reports/SKILL.md",
             "skills/tes-guidelines/SKILL.md",
             "skills/tes-init/SKILL.md",
+            "skills/tes-update/SKILL.md",
             "skills/tes-align/SKILL.md",
             "skills/tes-open-obsidian/SKILL.md",
             "skills/tes-field-reports/SKILL.md",
@@ -463,6 +467,7 @@ def codex_clean_bootloader_probe() -> dict[str, Any]:
         failures.extend(require_paths(target, (
             ".agents/skills/tes-engineering-discipline/SKILL.md",
             ".agents/skills/tes-init/SKILL.md",
+            ".agents/skills/tes-update/SKILL.md",
             ".agents/skills/tes-align/SKILL.md",
             ".agents/skills/tes-open-obsidian/SKILL.md",
             ".agents/skills/tes-cortex/SKILL.md",
@@ -532,14 +537,17 @@ def hostile_governance_conflict_probe() -> dict[str, Any]:
             failures.append("hostile governance install did not refresh TES-owned CURSOR.md")
         failures.extend(require_paths(target, (
             ".agents/skills/tes-init/SKILL.md",
+            ".agents/skills/tes-update/SKILL.md",
             ".agents/skills/tes-align/SKILL.md",
             ".agents/skills/tes-open-obsidian/SKILL.md",
             ".agents/skills/tes-field-reports/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
+            ".claude/skills/tes-update/SKILL.md",
             ".claude/skills/tes-align/SKILL.md",
             ".claude/skills/tes-open-obsidian/SKILL.md",
             ".claude/skills/tes-field-reports/SKILL.md",
             "skills/tes-init/SKILL.md",
+            "skills/tes-update/SKILL.md",
             "skills/tes-align/SKILL.md",
             "skills/tes-open-obsidian/SKILL.md",
             "skills/tes-field-reports/SKILL.md",

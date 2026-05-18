@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.108"
+VERSION = "0.3.109"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -28,9 +28,9 @@ REQUIRED_PATHS = (
     "docs/architecture/PROJECT-STRUCTURE.md",
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.108/index.json",
-    "docs/dist/0.3.108/tilly-engineer-skills-0.3.108.zip",
-    "docs/dist/0.3.108/tilly-engineer-skills-0.3.108.zip.sha256",
+    "docs/dist/0.3.109/index.json",
+    "docs/dist/0.3.109/tilly-engineer-skills-0.3.109.zip",
+    "docs/dist/0.3.109/tilly-engineer-skills-0.3.109.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -81,6 +81,7 @@ REQUIRED_PATHS = (
     "src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py",
     "src/adapters/codex/skills/tes-init/SKILL.md",
     "src/adapters/codex/skills/tes-setup/SKILL.md",
+    "src/adapters/codex/skills/tes-update/SKILL.md",
     "src/adapters/codex/skills/tes-align/SKILL.md",
     "src/adapters/codex/skills/tes-align/agents/openai.yaml",
     "src/adapters/codex/skills/tes-align/references/alignment-procedure.md",
@@ -111,6 +112,7 @@ REQUIRED_PATHS = (
     "src/adapters/claude/skills/tes-guidelines/SKILL.md",
     "src/adapters/claude/skills/tes-init/SKILL.md",
     "src/adapters/claude/skills/tes-setup/SKILL.md",
+    "src/adapters/claude/skills/tes-update/SKILL.md",
     "src/adapters/claude/skills/tes-align/SKILL.md",
     "src/adapters/claude/skills/tes-align/agents/openai.yaml",
     "src/adapters/claude/skills/tes-align/references/alignment-procedure.md",

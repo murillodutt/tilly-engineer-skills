@@ -1,6 +1,6 @@
 # Tilly Engineer Skills (TES)
 
-[![Version](https://img.shields.io/badge/version-0.3.108-1f6feb)](package.json)
+[![Version](https://img.shields.io/badge/version-0.3.109-1f6feb)](package.json)
 [![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE)
 [![Live Landing](https://img.shields.io/badge/live--landing-GitHub%20Pages-0969da)](https://murillodutt.github.io/tilly-engineer-skills/)
 
@@ -56,8 +56,9 @@ install -> hook -> /tes-setup -> /tes-align -> /tes-map
 ```
 
 Only after `/tes-setup` reports complete, run `/tes-align` before project work.
-Use `/tes-map` when you need the current GPS view, `/tes-update` for updates,
-and `/tes-doctor` for repair.
+Use `/tes-map` when you need the current GPS view. `/tes-update` is a direct
+visible update skill for already installed meshes, and `/tes-doctor` is for
+repair.
 
 Source maintainers verify this package with `npm run commit:check`.
 

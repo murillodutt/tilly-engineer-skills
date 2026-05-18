@@ -15,11 +15,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "dist" / "adapters"
-VERSION = "0.3.108"
+VERSION = "0.3.109"
 CODEX_SKILLS = (
     "tes-engineering-discipline",
     "tes-init",
     "tes-setup",
+    "tes-update",
     "tes-align",
     "tes-map",
     "tes-prospect",
@@ -36,6 +37,7 @@ CLAUDE_SKILLS = (
     "tes-guidelines",
     "tes-init",
     "tes-setup",
+    "tes-update",
     "tes-align",
     "tes-map",
     "tes-prospect",

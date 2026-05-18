@@ -66,18 +66,19 @@ dedicated decision.
   `./skills/`, not `../skills/tes-guidelines`.
 - `/tes-*` is the preferred cross-tool TES trigger vocabulary across Codex,
   Claude Code, and Cursor. Claude project installs expose skill-backed direct
-  slash names such as `/tes-init`, `/tes-setup`, `/tes-align`, `/tes-open-obsidian`,
+  slash names such as `/tes-init`, `/tes-setup`, `/tes-update`,
+  `/tes-align`, `/tes-open-obsidian`,
   `/tes-prospect`, `/tes-mine`, `/tes-cortex`, `/tes-mcp`,
   `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench`;
-  grouped triggers such as `/tes-update` and `/tes-curate` route through their
-  owning skills instead of a
-  one-file-per-command package.
+  grouped triggers such as `/tes-curate` route through their owning skills
+  instead of a one-file-per-command package.
   `/tes:*` forms remain compatible TES intent aliases. If Claude receives
   `/tes:init` or `/tes:update` as invalid slash text, treat it as the matching
   TES intent and continue through the TES skill or bootloader route instead of
   asking the user to choose a hypothesis.
-- `tes init`, `Atualizar TES`, and natural init/update command-prompts route
-  to `tes-init`. `tes align`, `align TES`, `align this project`, `alinhar TES`,
+- `tes init` and natural init command-prompts route to `tes-init`.
+  `Atualizar TES`, `atualizar TES`, `tes update`, and natural update prompts
+  route to `tes-update`. `tes align`, `align TES`, `align this project`, `alinhar TES`,
   `alinhar projeto`, and natural alignment prompts route to `tes-align`.
   `open Obsidian`, `open this project in Obsidian`, `abrir Obsidian`, and
   `abrir no Obsidian` route to `tes-open-obsidian`.

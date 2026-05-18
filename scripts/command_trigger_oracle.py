@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.108"
+VERSION = "0.3.109"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -145,6 +145,7 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/codex/AGENTS.md",
         "src/adapters/codex/skills/tes-init/SKILL.md",
         "src/adapters/codex/skills/tes-setup/SKILL.md",
+        "src/adapters/codex/skills/tes-update/SKILL.md",
         "src/adapters/codex/skills/tes-align/SKILL.md",
         "src/adapters/codex/skills/tes-map/SKILL.md",
         "src/adapters/codex/skills/tes-prospect/SKILL.md",
@@ -161,6 +162,7 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/claude/CLAUDE.md",
         "src/adapters/claude/skills/tes-init/SKILL.md",
         "src/adapters/claude/skills/tes-setup/SKILL.md",
+        "src/adapters/claude/skills/tes-update/SKILL.md",
         "src/adapters/claude/skills/tes-align/SKILL.md",
         "src/adapters/claude/skills/tes-map/SKILL.md",
         "src/adapters/claude/skills/tes-prospect/SKILL.md",
@@ -218,6 +220,7 @@ CLAUDE_PROJECT_SKILLS = (
     "tes-guidelines",
     "tes-init",
     "tes-setup",
+    "tes-update",
     "tes-align",
     "tes-map",
     "tes-prospect",
@@ -234,6 +237,7 @@ CODEX_PROJECT_SKILLS = (
     "tes-engineering-discipline",
     "tes-init",
     "tes-setup",
+    "tes-update",
     "tes-align",
     "tes-map",
     "tes-prospect",
@@ -259,6 +263,13 @@ VISIBLE_SKILL_ROUTES = {
             "mapear TES",
             "mapear projeto",
         ),
+        "tes-update": (
+            "/tes-update",
+            "/tes:update",
+            "tes_update.py",
+            "No project work started",
+            "recommended_update_scope",
+        ),
         "tes-field-reports": ("/tes-field-reports", "/tes:field-reports", "field_reports.py"),
     },
     "claude": {
@@ -272,17 +283,22 @@ VISIBLE_SKILL_ROUTES = {
             "mapear TES",
             "mapear projeto",
         ),
+        "tes-update": (
+            "/tes-update",
+            "/tes:update",
+            "tes_update.py",
+            "No project work started",
+            "recommended_update_scope",
+        ),
         "tes-field-reports": ("/tes-field-reports", "/tes:field-reports", "field_reports.py"),
     },
 }
 
 GROUPED_INTENT_ROUTES = {
     "codex": {
-        "tes-init": ("/tes-update", "/tes:update"),
         "tes-cortex": ("/tes-curate", "/tes:curate"),
     },
     "claude": {
-        "tes-init": ("/tes-update", "/tes:update"),
         "tes-cortex": ("/tes-curate", "/tes:curate"),
     },
 }
@@ -485,6 +501,7 @@ def required_installed_files(platform: str) -> tuple[str, ...]:
             ".agents/skills/tes-engineering-discipline/SKILL.md",
             ".agents/skills/tes-init/SKILL.md",
             ".agents/skills/tes-setup/SKILL.md",
+            ".agents/skills/tes-update/SKILL.md",
             ".agents/skills/tes-prospect/SKILL.md",
             ".agents/skills/tes-mine/SKILL.md",
             ".agents/skills/tes-field-reports/SKILL.md",
@@ -495,6 +512,7 @@ def required_installed_files(platform: str) -> tuple[str, ...]:
             ".claude/skills/tes-guidelines/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
             ".claude/skills/tes-setup/SKILL.md",
+            ".claude/skills/tes-update/SKILL.md",
             ".claude/skills/tes-prospect/SKILL.md",
             ".claude/skills/tes-mine/SKILL.md",
             ".claude/skills/tes-field-reports/SKILL.md",
@@ -671,6 +689,7 @@ def run_fixture_tests() -> list[str]:
         (target / ".claude/skills/tes-guidelines").mkdir(parents=True)
         (target / ".claude/skills/tes-init").mkdir(parents=True)
         (target / ".claude/skills/tes-setup").mkdir(parents=True)
+        (target / ".claude/skills/tes-update").mkdir(parents=True)
         (target / ".claude/skills/tes-prospect").mkdir(parents=True)
         (target / ".claude/skills/tes-mine").mkdir(parents=True)
         (target / ".claude/skills/tes-field-reports").mkdir(parents=True)
@@ -678,6 +697,7 @@ def run_fixture_tests() -> list[str]:
         (target / ".claude/skills/tes-guidelines/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-init/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-setup/SKILL.md").write_text(good_text, encoding="utf-8")
+        (target / ".claude/skills/tes-update/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-prospect/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-mine/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-field-reports/SKILL.md").write_text(good_text, encoding="utf-8")
