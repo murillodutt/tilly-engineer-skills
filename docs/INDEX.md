@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.9
+tver: 0.4.10
 ---
 
 # Tilly Engineer Skills Docs
@@ -21,6 +21,7 @@ turning the repository root into an inventory.
 | TES namespace migration catalog | `architecture/TES-NAMING-MIGRATION-CATALOG.md` |
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
 | Agent manual | `install/AGENT-MANUAL.md` |
+| Agent oracle inventory | `install/AGENT-ORACLE-INVENTORY.md` |
 | GitHub Pages landing | `index.html` |
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |

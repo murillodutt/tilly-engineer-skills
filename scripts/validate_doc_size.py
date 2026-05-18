@@ -15,7 +15,6 @@ LIMITS = {
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md": 1000,
     "docs/evals/EXAMPLES.md": 600,
     "docs/install/USER-MANUAL.html": 2210,
-    "docs/install/AGENT-MANUAL.md": 600,
     "docs/index.html": 2800,
 }
 SCAN_PATTERNS = (
