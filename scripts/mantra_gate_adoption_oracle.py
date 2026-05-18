@@ -116,6 +116,22 @@ def visible_from_record(record: dict[str, Any], gate: dict[str, Any]) -> str:
     return "full" if visible in {"full", "visible_full", "visible-full"} else "compact"
 
 
+def operation_mode(*, state_changing: bool, closure_claim: bool, commit_push: bool, audit_history: bool) -> str:
+    if commit_push:
+        return "commit-push"
+    if closure_claim:
+        return "closure-claim"
+    if state_changing:
+        return "state-changing"
+    if audit_history:
+        return "audit-history"
+    return "health"
+
+
+def current_action_changes_state(mode: str) -> bool:
+    return mode in {"state-changing", "closure-claim", "commit-push"}
+
+
 def is_state_changing(action: str, explicit: bool, commit_push: bool, state: dict[str, Any], risk: str) -> bool:
     if explicit or commit_push:
         return True
@@ -124,6 +140,21 @@ def is_state_changing(action: str, explicit: bool, commit_push: bool, state: dic
     if action and risk != "routine":
         return True
     return False
+
+
+def historical_risk(record: dict[str, Any], gate: dict[str, Any]) -> dict[str, Any]:
+    raw = mantra_gate.normalize_gate(gate)
+    return mantra_gate.classify_risk(
+        str(record.get("action") or ""),
+        scope=raw.get("SCOPE"),
+        changed_files=[
+            str(raw.get("VERIFY") or ""),
+            str(raw.get("BEST_PATH") or ""),
+            str(raw.get("DOCUMENT") or ""),
+            str(raw.get("ORACLE") or ""),
+        ],
+        explicit=str(raw.get("RISK") or "").lower() or None,
+    )
 
 
 def summarize_metrics(records: list[dict[str, Any]], validations: list[dict[str, Any]], status: str) -> dict[str, Any]:
@@ -182,18 +213,27 @@ def evaluate(
     state_changing: bool = False,
     closure_claim: bool = False,
     commit_push: bool = False,
+    audit_history: bool = False,
 ) -> dict[str, Any]:
     target = target.resolve()
     state = git_state(target)
     changed_files = list(dict.fromkeys(state["diff_files"] + state["staged_files"] + state["last_commit_files"]))
     effective_action = f"{action} git push" if commit_push else action
-    risk_info = mantra_gate.classify_risk(effective_action, changed_files=changed_files)
+    mode = operation_mode(
+        state_changing=state_changing,
+        closure_claim=closure_claim,
+        commit_push=commit_push,
+        audit_history=audit_history,
+    )
+    risk_files = changed_files if current_action_changes_state(mode) else []
+    risk_info = mantra_gate.classify_risk(effective_action, changed_files=risk_files)
     risk = str(risk_info["risk"])
-    action_changes_state = is_state_changing(effective_action, state_changing, commit_push, state, risk)
+    action_changes_state = current_action_changes_state(mode)
     records = load_records(target)
 
     status = "OK"
     findings: list[dict[str, Any]] = []
+    history_findings: list[dict[str, Any]] = []
     validations: list[dict[str, Any]] = []
 
     if risk == "forbidden":
@@ -204,14 +244,56 @@ def evaluate(
         status = escalate(status, "BYPASS_SUSPECTED")
         findings.append({"type": "missing_gate_record", "detail": "state-changing signal has no nearby Mantra Gate record"})
 
+    historical_compact_high_risk_records = 0
     for record in records:
         gate = gate_from_record(record)
         visible = visible_from_record(record, gate)
+        record_risk = historical_risk(record, gate)
+        if record_risk.get("risk") == "high-risk" and visible != "full":
+            historical_compact_high_risk_records += 1
+            history_findings.append(
+                {
+                    "type": "historical_compact_high_risk_record",
+                    "path": record.get("path"),
+                    "line": record.get("line"),
+                    "detail": "historical compact high-risk gate record found",
+                }
+            )
+
+        if mode == "health":
+            health_gate = dict(gate)
+            health_gate.pop("RISK", None)
+            health_gate.pop("risk", None)
+            result = mantra_gate.validate_gate(
+                health_gate,
+                state_changing=False,
+                closure_claim=False,
+                risk=None,
+                visible_full=visible == "full",
+            )
+            validations.append(
+                {
+                    "path": record.get("path"),
+                    "line": record.get("line"),
+                    "status": result["status"],
+                    "visible": result["visible"],
+                    "valid": result["valid"],
+                    "failures": result["failures"],
+                    "historical_risk": record_risk.get("risk"),
+                }
+            )
+            if result["status"] == "BLOCKED":
+                status = escalate(status, "BLOCKED")
+            elif not result["valid"]:
+                status = escalate(status, "DEGRADED")
+            continue
+
+        active_risk = str(record_risk.get("risk") or "routine") if mode == "audit-history" else risk
         result = mantra_gate.validate_gate(
             gate,
-            state_changing=action_changes_state,
+            state_changing=action_changes_state or mode == "audit-history",
             closure_claim=closure_claim,
-            risk=risk,
+            risk=active_risk,
             visible_full=visible == "full",
         )
         validations.append(
@@ -222,6 +304,7 @@ def evaluate(
                 "visible": result["visible"],
                 "valid": result["valid"],
                 "failures": result["failures"],
+                "historical_risk": record_risk.get("risk"),
             }
         )
         if result["status"] == "BLOCKED":
@@ -239,12 +322,13 @@ def evaluate(
 
     if risk == "high-risk" and records:
         latest_visible = visible_from_record(records[-1], gate_from_record(records[-1]))
-        if latest_visible != "full":
+        if latest_visible != "full" and current_action_changes_state(mode):
             status = escalate(status, "NEEDS_REVIEW")
             findings.append({"type": "compact_high_risk", "detail": "high-risk action requires visible full gate"})
 
     metrics = summarize_metrics(records, validations, status)
     metrics["time_between_gate_and_action_seconds"] = gate_action_delta_seconds(records, state)
+    metrics["historical_compact_high_risk_records"] = historical_compact_high_risk_records
     field_report_outbox = target / ".tes/field-reports/outbox.jsonl"
 
     return mantra_gate.sanitize(
@@ -253,10 +337,13 @@ def evaluate(
             "version": VERSION,
             "status": status,
             "target": str(target),
+            "mode": mode,
             "action": effective_action or "read-only analysis",
             "state_changing": action_changes_state,
+            "dirty_worktree_present": bool(state["diff_files"] or state["staged_files"]),
             "closure_claim": closure_claim,
             "commit_push": commit_push,
+            "audit_history": audit_history,
             "risk": risk_info,
             "git": state,
             "records": {
@@ -266,7 +353,9 @@ def evaluate(
             },
             "validations": validations,
             "findings": findings,
+            "history_findings": history_findings,
             "metrics": metrics,
+            "next_high_risk_action_requires_full_gate": historical_compact_high_risk_records > 0,
             "recovery": recovery(status),
         }
     )
@@ -284,12 +373,12 @@ def recovery(status: str) -> str:
     return "stop; resolve the blocker or forbidden risk before acting"
 
 
-def write_record(target: Path, gate: dict[str, Any], *, visible: str = "compact") -> None:
+def write_record(target: Path, gate: dict[str, Any], *, visible: str = "compact", action: str = "self-test") -> None:
     result = mantra_gate.validate_gate(gate, state_changing=True, visible_full=visible == "full")
     if visible == "full":
         result["gate"]["VISIBLE"] = "full"
         result["visible"] = "full"
-    mantra_gate.record_gate(target, "self-test", result)
+    mantra_gate.record_gate(target, action, result)
 
 
 def self_test() -> dict[str, Any]:
@@ -368,6 +457,32 @@ def self_test() -> dict[str, Any]:
         if readonly["status"] != "OK" or readonly["state_changing"]:
             failures.append("read-only analysis must not produce a bypass false positive")
 
+    with tempfile.TemporaryDirectory(prefix="tes-mg-adoption-") as tmp:
+        target = Path(tmp)
+        subprocess.run(["git", "init"], cwd=target, capture_output=True, text=True, check=False)
+        subprocess.run(["git", "config", "user.email", "tes@example.invalid"], cwd=target, check=False)
+        subprocess.run(["git", "config", "user.name", "TES"], cwd=target, check=False)
+        (target / "package.json").write_text('{"name":"fixture"}\n', encoding="utf-8")
+        subprocess.run(["git", "add", "package.json"], cwd=target, check=False)
+        subprocess.run(["git", "commit", "-m", "fixture"], cwd=target, capture_output=True, text=True, check=False)
+        (target / "package.json").write_text('{"name":"fixture","version":"0.0.1"}\n', encoding="utf-8")
+        (target / ".tes/field-reports").mkdir(parents=True)
+        write_record(
+            target,
+            mantra_gate.sample_gate(RISK="high-risk"),
+            visible="compact",
+            action="generated runtime packaging historical record",
+        )
+        doctor_health = evaluate(target)
+        if doctor_health["status"] == "NEEDS_REVIEW" or doctor_health["state_changing"]:
+            failures.append("read-only doctor health must not need review for dirty tree plus historical compact high-risk record")
+        if doctor_health["metrics"]["historical_compact_high_risk_records"] != 1:
+            failures.append("health mode must report historical compact high-risk records as metrics")
+
+        audit = evaluate(target, audit_history=True)
+        if audit["status"] != "NEEDS_REVIEW":
+            failures.append("audit-history must need review for compact high-risk historical records")
+
     return {
         "schema": SCHEMA,
         "version": VERSION,
@@ -384,6 +499,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--state-changing", action="store_true")
     parser.add_argument("--closure-claim", action="store_true")
     parser.add_argument("--commit-push", action="store_true")
+    parser.add_argument("--audit-history", action="store_true")
     parser.add_argument("--json-only", action="store_true")
     args = parser.parse_args(argv)
 
@@ -398,6 +514,7 @@ def main(argv: list[str] | None = None) -> int:
         state_changing=args.state_changing,
         closure_claim=args.closure_claim,
         commit_push=args.commit_push,
+        audit_history=args.audit_history,
     )
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0 if result["status"] in {"OK", "DEGRADED"} else 1

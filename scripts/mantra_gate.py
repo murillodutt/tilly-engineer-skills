@@ -13,7 +13,7 @@ import tempfile
 from typing import Any
 
 
-VERSION = "0.3.110"
+VERSION = "0.3.111"
 SCHEMA = "tes-mantra-gate@1"
 MARKER = "[🍳 TES - mg]"
 STATUSES = ("PROCEED", "BLOCKED", "NEEDS_REVIEW")

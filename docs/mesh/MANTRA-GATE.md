@@ -108,10 +108,15 @@ Never allow `PROCEED` by prose alone when a concrete oracle exists.
 
 ## Adoption Oracle
 
-The adoption oracle is read-only. It checks whether Mantra Gate is actually
-being used when local state changes occur. It correlates Git diff, staged
-files, the recent commit, Field Reports, local gate JSONL records, action
-intent, risk class, and closure claims.
+The adoption oracle is read-only. By default, it runs in `health` mode for
+doctor-style checks: dirty files, staged files, recent commits, and historical
+records are reported as context and metrics, not treated as the current action.
+
+When invoked with `--state-changing`, `--commit-push`, `--closure-claim`, or
+`--audit-history`, it checks whether Mantra Gate is actually being used for that
+current action or explicit history audit. It correlates Git diff, staged files,
+the recent commit, Field Reports, local gate JSONL records, action intent, risk
+class, and closure claims.
 
 Statuses:
 
@@ -124,8 +129,11 @@ Statuses:
 | `BLOCKED` | Resolve the blocker before acting |
 
 The oracle also emits local sanitized metrics: compact/full counts, status
-counts, missing fields, bypass suspicion, and actions without a closure oracle.
-It does not collect secrets, raw prompts, private content, or remote telemetry.
+counts, missing fields, bypass suspicion, historical compact high-risk records,
+and actions without a closure oracle. Historical compact high-risk records are
+shown as `history_findings` in health mode; they become `NEEDS_REVIEW` only
+under `--audit-history` or an active high-risk action. It does not collect
+secrets, raw prompts, private content, or remote telemetry.
 
 ## Helpers
 
@@ -136,8 +144,10 @@ python3 .tes/bin/mantra_gate.py --self-test
 python3 .tes/bin/mantra_gate.py emit-marker
 python3 .tes/bin/mantra_gate.py validate --gate gate.json --state-changing --closure-claim --record --target .
 python3 .tes/bin/mantra_gate.py classify-risk --action "git push to origin"
+python3 .tes/bin/mantra_gate_adoption_oracle.py --target .
 python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --action "commit" --state-changing
 python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --commit-push
+python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --audit-history
 ```
 
 From the source package, use `scripts/mantra_gate.py` and
