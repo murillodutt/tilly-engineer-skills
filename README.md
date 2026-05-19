@@ -18,8 +18,9 @@ repository.
 · [Read the manual](https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html)
 · [Browse the docs](docs/INDEX.md)
 
-TES does not replace Codex, Claude Code, or Cursor. It surrounds them with an
-operating trail your team can inspect after the chat is gone.
+> [!NOTE]
+> TES does not replace Codex, Claude Code, or Cursor. It surrounds them with an
+> operating trail your team can inspect after the chat is gone.
 
 **What you get**
 
@@ -39,7 +40,8 @@ Installation details live on the public surface where users need them:
 - The user manual covers options, first-session setup, rollback, and audit.
 - This repository keeps the source, contracts, gates, and evidence.
 
-**Important: agent follow-up is host-specific**
+> [!IMPORTANT]
+> **Agent follow-up is host-specific**
 
 Do not start project work immediately after install. The first run completes
 differently by host:
@@ -55,10 +57,11 @@ differently by host:
 install -> hook -> /tes-setup -> /tes-align -> /tes-map
 ```
 
-Only after `/tes-setup` reports complete, run `/tes-align` before project work.
-Use `/tes-map` when you need the current GPS view. `/tes-update` is a direct
-visible update skill for already installed meshes, and `/tes-doctor` is for
-repair.
+> [!TIP]
+> Only after `/tes-setup` reports complete, run `/tes-align` before project work.
+> Use `/tes-map` when you need the current GPS view. `/tes-update` is a direct
+> visible update skill for already installed meshes, and `/tes-doctor` is for
+> repair.
 
 Source maintainers verify this package with `npm run commit:check`.
 
