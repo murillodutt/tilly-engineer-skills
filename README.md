@@ -1,6 +1,6 @@
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/f5ca3e73-eec9-453a-bb97-a09bdd304c31" alt="Tilly Engineer Skills: agent operating layer for LLM development across Codex, Claude Code, Cursor, and Obsidian-ready project knowledge" width="100%">
-</p>
+[Start from the landing](https://murillodutt.github.io/tilly-engineer-skills/#start-en)
+· [Read the manual](https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html)
+· [Browse the docs](docs/INDEX.md)
 
 # Tilly Engineer Skills (TES)
 
@@ -8,15 +8,15 @@
 [![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE)
 [![Live Landing](https://img.shields.io/badge/live--landing-GitHub%20Pages-0969da)](https://murillodutt.github.io/tilly-engineer-skills/)
 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f5ca3e73-eec9-453a-bb97-a09bdd304c31" alt="Tilly Engineer Skills: agent operating layer for LLM development across Codex, Claude Code, Cursor, and Obsidian-ready project knowledge" width="100%">
+</p>
+
 ## AI changed your repo. Can your team prove why?
 
 TES is a local trust layer for AI coding work. It keeps the rules used,
 context loaded, checks run, evidence kept, and rollback path inside the
 repository.
-
-[Start from the landing](https://murillodutt.github.io/tilly-engineer-skills/#start-en)
-· [Read the manual](https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html)
-· [Browse the docs](docs/INDEX.md)
 
 > [!NOTE]
 > TES does not replace Codex, Claude Code, or Cursor. It surrounds them with an
