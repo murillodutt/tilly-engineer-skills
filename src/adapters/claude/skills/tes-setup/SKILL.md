@@ -13,7 +13,6 @@ Code recognizes the slash command that the first-session hook recommends.
 
 1. Prefer the installed TES Init contract:
    - Project skill: `.claude/skills/tes-init/SKILL.md`
-   - Plugin fallback: `skills/tes-init/SKILL.md`
 2. Read that skill when available and follow it exactly.
 3. When `.tes/postinstall.json` is already `complete`, treat `/tes-setup` as a
    status/report request: read `.tes/postinstall.json` and its `last_run`,

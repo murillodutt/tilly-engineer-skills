@@ -75,7 +75,7 @@ visible assumptions, smaller scope, surgical edits, and falsifiable closure.
 ## Codex And Claude
 
 - Codex: use `AGENTS.md` plus `.agents/skills/tes-engineering-discipline/`.
-- Claude Code: use `CLAUDE.md` or tool-native plugin metadata.
+- Claude Code: use `CLAUDE.md` plus `.claude/skills/**`.
 
 Do not copy `.cursor/**` into Codex or Claude runtime as authoritative context.
 Natural alignment prompts such as `tes align`, `align TES`, `align this project`,

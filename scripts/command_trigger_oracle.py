@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.112"
+VERSION = "0.3.114"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -469,7 +469,6 @@ def installed_platform_paths(root: Path, platform: str) -> tuple[str, ...]:
         return (
             "CLAUDE.md",
             *(f".claude/skills/{skill}/SKILL.md" for skill in CLAUDE_PROJECT_SKILLS),
-            *(f"skills/{skill}/SKILL.md" for skill in CLAUDE_PROJECT_SKILLS),
         )
     if platform == "cursor":
         cursor_rules = tuple(
@@ -488,8 +487,6 @@ def installed_platform_detected(root: Path, platform: str) -> bool:
         return (
             (root / "CLAUDE.md").exists()
             or (root / ".claude/skills").exists()
-            or (root / "skills").exists()
-            or (root / ".claude-plugin/plugin.json").exists()
         )
     if platform == "cursor":
         return (root / "CURSOR.md").exists() or (root / ".cursor/rules").exists()

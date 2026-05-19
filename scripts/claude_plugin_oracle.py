@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Certify the local Claude adapter/plugin installation shape."""
+"""Certify that Claude plugin metadata is source-only, not target-installed."""
 
 from __future__ import annotations
 
@@ -15,8 +15,13 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.112"
+VERSION = "0.3.114"
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
+PLUGIN_SOURCE_ROOT = ROOT / "src/adapters/claude/plugin"
+TARGET_PLUGIN_PATHS = (
+    ".claude-plugin",
+    "skills",
+)
 
 
 def run(command: list[str]) -> tuple[int, str, str]:
@@ -42,69 +47,61 @@ def read_json(path: Path, failures: list[str]) -> dict[str, Any]:
     return data
 
 
-def validate_plugin(target: Path) -> list[str]:
-    target = target.resolve()
+def validate_source_plugin() -> list[str]:
     failures: list[str] = []
-    required = (
-        "CLAUDE.md",
-        ".claude-plugin/plugin.json",
-        ".claude-plugin/marketplace.json",
-        *(f"skills/{skill}/SKILL.md" for skill in CLAUDE_SKILLS),
-        *(f".claude/skills/{skill}/SKILL.md" for skill in CLAUDE_SKILLS),
-    )
-    for relpath in required:
-        if not (target / relpath).exists():
-            failures.append(f"missing installed path: {relpath}")
+    plugin = read_json(PLUGIN_SOURCE_ROOT / "plugin.json", failures)
+    marketplace = read_json(PLUGIN_SOURCE_ROOT / "marketplace.json", failures)
 
-    plugin = read_json(target / ".claude-plugin/plugin.json", failures)
-    marketplace = read_json(target / ".claude-plugin/marketplace.json", failures)
     if plugin.get("version") != VERSION:
-        failures.append(f"plugin.json version must be {VERSION}")
+        failures.append(f"source plugin.json version must be {VERSION}")
     if plugin.get("name") != "tilly-engineer-skills":
-        failures.append("plugin.json name must be tilly-engineer-skills")
-
+        failures.append("source plugin.json name must be tilly-engineer-skills")
     skills = plugin.get("skills", [])
-    if not isinstance(skills, list) or not skills:
-        failures.append("plugin.json must declare at least one skill")
-    if isinstance(skills, list):
-        declared_skills = {str(item.get("path", "")) if isinstance(item, dict) else str(item) for item in skills}
-        if "./skills/" not in declared_skills:
-            failures.append("plugin.json must declare ./skills/")
-    for item in skills if isinstance(skills, list) else []:
-        path = str(item.get("path", "")) if isinstance(item, dict) else str(item)
-        if not path or path.startswith("/") or ".." in Path(path).parts:
-            failures.append(f"plugin skill path must be relative and contained: {path}")
-        elif not path.startswith("./"):
-            failures.append(f"plugin skill path must start with ./: {path}")
-        elif not (target / path).exists():
-            failures.append(f"plugin skill path does not exist: {path}")
-    for skill in CLAUDE_SKILLS:
-        if not (target / f"skills/{skill}/SKILL.md").exists():
-            failures.append(f"missing plugin skill: skills/{skill}/SKILL.md")
-        if not (target / f".claude/skills/{skill}/SKILL.md").exists():
-            failures.append(f"missing Claude project skill: .claude/skills/{skill}/SKILL.md")
+    if not isinstance(skills, list) or "./skills/" not in {str(item) for item in skills}:
+        failures.append("source plugin.json must retain package-template ./skills/ path")
 
     plugins = marketplace.get("plugins", [])
     if not isinstance(plugins, list) or not plugins:
-        failures.append("marketplace.json must declare plugins")
+        failures.append("source marketplace.json must declare template plugins")
     else:
         package = plugins[0] if isinstance(plugins[0], dict) else {}
         if package.get("version") != VERSION:
-            failures.append(f"marketplace package version must be {VERSION}")
-        source = str(package.get("source", ""))
-        resolved = (target / ".claude-plugin" / source).resolve()
-        try:
-            resolved.relative_to(target)
-        except ValueError:
-            failures.append(f"marketplace source must resolve inside target: {source}")
-        if not (resolved / ".claude-plugin/plugin.json").exists():
-            failures.append(f"marketplace source does not resolve to plugin root: {source}")
+            failures.append(f"source marketplace package version must be {VERSION}")
 
+    for skill in CLAUDE_SKILLS:
+        if not (ROOT / f"src/adapters/claude/skills/{skill}/SKILL.md").exists():
+            failures.append(f"missing Claude source skill: {skill}")
     return failures
 
 
-def self_test() -> int:
-    with tempfile.TemporaryDirectory(prefix="tes-claude-plugin-oracle-") as tempdir:
+def validate_target_omits_plugin(target: Path) -> list[str]:
+    failures: list[str] = []
+    target = target.resolve()
+    for relpath in (
+        "CLAUDE.md",
+        ".claude/skills/tes-guidelines/SKILL.md",
+        ".claude/skills/tes-init/SKILL.md",
+    ):
+        if not (target / relpath).exists():
+            failures.append(f"missing Claude runtime path: {relpath}")
+    for relpath in TARGET_PLUGIN_PATHS:
+        if (target / relpath).exists():
+            failures.append(f"Claude plugin artifact must not be target-installed: {relpath}")
+    return failures
+
+
+def self_test_result() -> dict[str, Any]:
+    failures = validate_source_plugin()
+    with tempfile.TemporaryDirectory(prefix="tes-claude-materialize-source-only-") as tempdir:
+        out_root = Path(tempdir) / "adapters"
+        result = materialize_adapter.materialize("claude", out_root)
+        failures.extend(str(item) for item in result["failures"])
+        root = Path(str(result["root"]))
+        for relpath in TARGET_PLUGIN_PATHS:
+            if (root / relpath).exists():
+                failures.append(f"Claude plugin artifact materialized: {relpath}")
+
+    with tempfile.TemporaryDirectory(prefix="tes-claude-plugin-source-only-") as tempdir:
         target = Path(tempdir)
         code, stdout, stderr = run(
             [
@@ -117,17 +114,24 @@ def self_test() -> int:
                 "--yes",
             ]
         )
-        failures: list[str] = []
         if code != 0:
             failures.extend(["claude adapter install failed", *stdout.splitlines(), *stderr.splitlines()])
-        failures.extend(validate_plugin(target))
+        else:
+            failures.extend(validate_target_omits_plugin(target))
 
-    print(json.dumps({"version": VERSION, "status": "FAIL" if failures else "PASS", "failures": failures}, indent=2))
-    if failures:
-        print("[claude-plugin-oracle] FAIL")
-        return 1
-    print("[claude-plugin-oracle] PASS")
-    return 0
+    return {
+        "version": VERSION,
+        "status": "FAIL" if failures else "PASS",
+        "scope": "source-only-plugin",
+        "failures": failures,
+    }
+
+
+def self_test() -> int:
+    result = self_test_result()
+    print(json.dumps(result, indent=2))
+    print("[claude-plugin-oracle] " + result["status"])
+    return 0 if result["status"] == "PASS" else 1
 
 
 def main() -> int:
@@ -139,13 +143,18 @@ def main() -> int:
     if args.self_test or not args.target:
         return self_test()
 
-    failures = validate_plugin(args.target.resolve())
-    print(json.dumps({"version": VERSION, "status": "FAIL" if failures else "PASS", "target": str(args.target), "failures": failures}, indent=2))
-    if failures:
-        print("[claude-plugin-oracle] FAIL")
-        return 1
-    print("[claude-plugin-oracle] PASS")
-    return 0
+    failures = validate_source_plugin()
+    failures.extend(validate_target_omits_plugin(args.target.resolve()))
+    result = {
+        "version": VERSION,
+        "status": "FAIL" if failures else "PASS",
+        "target": str(args.target),
+        "scope": "source-only-plugin",
+        "failures": failures,
+    }
+    print(json.dumps(result, indent=2))
+    print("[claude-plugin-oracle] " + result["status"])
+    return 0 if not failures else 1
 
 
 if __name__ == "__main__":

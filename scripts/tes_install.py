@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.112"
+VERSION = "0.3.114"
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -388,6 +388,24 @@ def write_pending_sentinel(target: Path, agent: str, agents: list[str], mode: st
     return write_json(target / POSTINSTALL_PATH, payload, dry_run=dry_run)
 
 
+def write_review_sentinel(
+    target: Path,
+    agent: str,
+    agents: list[str],
+    mode: str,
+    apply_result: dict[str, Any],
+    dry_run: bool,
+) -> dict[str, str]:
+    existing = read_json(target / POSTINSTALL_PATH)
+    payload = {
+        **sentinel_payload(agent, agents, mode, existing),
+        "state": "needs_review",
+        "reason": "obsolete runtime artifacts need review",
+        "apply": summarize_result(apply_result),
+    }
+    return write_json(target / POSTINSTALL_PATH, payload, dry_run=dry_run)
+
+
 def write_install_lock(
     target: Path,
     agent: str,
@@ -422,6 +440,13 @@ def summarize_result(result: dict[str, Any]) -> dict[str, Any]:
     for key in ("version", "status", "source", "stage_dir", "manifest", "entries", "mode", "backup_id", "installed_manifest"):
         if key in result:
             summary[key] = result[key]
+    if isinstance(result.get("obsolete_cleanup"), dict):
+        cleanup = result["obsolete_cleanup"]
+        summary["obsolete_cleanup"] = {
+            "status": cleanup.get("status"),
+            "review_items": cleanup.get("review_items", []),
+            "review_backup": cleanup.get("review_backup"),
+        }
     if result.get("failures"):
         summary["failures"] = result["failures"]
     return summary
@@ -486,7 +511,7 @@ def install(args: argparse.Namespace) -> int:
             mode=args.mode,
             adapter=args.agent,
         )
-        if apply_result.get("status") not in {"APPLIED", "CLEAN_APPLIED", "DRY-RUN"}:
+        if apply_result.get("status") not in {"APPLIED", "CLEAN_APPLIED", "DRY-RUN", "NEEDS_REVIEW"}:
             result = {
                 "version": VERSION,
                 "status": "FAIL",
@@ -502,12 +527,19 @@ def install(args: argparse.Namespace) -> int:
     sentinel_action = (
         {"path": rel(target / POSTINSTALL_PATH, target), "action": "skip-disabled"}
         if args.no_postinstall
-        else write_pending_sentinel(target, args.agent, agents, args.postinstall_mode, args.dry_run)
+        else (
+            write_review_sentinel(target, args.agent, agents, args.postinstall_mode, apply_result, args.dry_run)
+            if apply_result.get("status") == "NEEDS_REVIEW"
+            else write_pending_sentinel(target, args.agent, agents, args.postinstall_mode, args.dry_run)
+        )
     )
     lock_action = write_install_lock(target, args.agent, agents, args.mode, stage, apply_result, hook_actions, args.dry_run)
+    status = "DRY-RUN" if args.dry_run else "INSTALLED"
+    if apply_result.get("status") == "NEEDS_REVIEW":
+        status = "NEEDS_REVIEW"
     result = {
         "version": VERSION,
-        "status": "DRY-RUN" if args.dry_run else "INSTALLED",
+        "status": status,
         "target": str(target),
         "agent": args.agent,
         "agents": agents,

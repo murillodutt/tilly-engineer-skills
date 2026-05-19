@@ -22,7 +22,7 @@ maintainable agent context and an initial project contextualization:
 docs/agents/** is source. Runtime assets route and execute.
 ```
 
-Runtime assets include `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, `.agents/**`, `.claude/skills/**`, `skills/**`, `.cursor/**`, `.claude-plugin/**`, `.codex/config.toml`, `.mcp.json`, `.tes/bin/**`, and future agent plugin/hook/MCP files. They must stay thin. Durable project governance belongs in `docs/agents/**`.
+Runtime assets include `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, `.agents/**`, `.claude/skills/**`, `.cursor/**`, `.codex/config.toml`, `.mcp.json`, `.tes/bin/**`, and future explicitly approved agent plugin/hook/MCP files. They must stay thin. Durable project governance belongs in `docs/agents/**`.
 
 `/tes-init` must also initialize the project for future agent work. It should
 analyze the target root, read the strongest project anchors available, write
@@ -382,7 +382,7 @@ Routes:
     Apply clean AGENTS.md and .agents/skills/** after backup; recover local semantics into docs/agents/**.
 
   claude
-    Apply clean CLAUDE.md, .claude/skills/**, plugin skills, and Claude MCP after backup; recover local semantics into docs/agents/**.
+    Apply clean CLAUDE.md, .claude/skills/**, and Claude MCP after backup; recover local semantics into docs/agents/**.
 
   cursor
     Apply clean .cursor/rules/*.mdc after backup; recover local semantics into docs/agents/**.
@@ -612,12 +612,16 @@ Apply clean runtime assets after central backup:
 ```text
 CLAUDE.md
 .claude/skills/tes-*/**
-skills/tes-*/**
-.claude-plugin/plugin.json
-.claude-plugin/marketplace.json
 ```
 
-`CLAUDE.md` must stay short. It should route to `docs/agents/**`, mention `docs/agents/cortex/**` as the durable memory layer when relevant, recover project-specific sentinels required by local validation, and list local oracles. Claude project skills live under `.claude/skills/**`; plugin-root skill copies live under `skills/**` only for explicit plugin testing/distribution. Claude skill and plugin files are package/runtime assets; do not put target-project governance inside them. If `CLAUDE.md` already differs, back it up in `.tes/bk/**`, apply the clean bootloader, and recover useful semantics into `docs/agents/**`. If the target already uses additional Claude-scoped rule files, back them up and route their durable semantics back to `docs/agents/**` instead of leaving them as active runtime.
+`CLAUDE.md` must stay short. It should route to `docs/agents/**`, mention `docs/agents/cortex/**` as the durable memory layer when relevant, recover project-specific sentinels required by local validation, and list local oracles. Claude project skills live under `.claude/skills/**`; plugin metadata and plugin-root skill copies remain source-only in the TES Git package unless a separate plugin packaging decision is made. Claude runtime files are package assets; do not put target-project governance inside them. If `CLAUDE.md` already differs, back it up in `.tes/bk/**`, apply the clean bootloader, and recover useful semantics into `docs/agents/**`. If the target already uses additional Claude-scoped rule files, back them up and route their durable semantics back to `docs/agents/**` instead of leaving them as active runtime.
+
+Before reporting install/update success, scan for obsolete TES plugin/root-skill
+runtime surfaces: `skills/**`, `.claude-plugin/**`, `.agents/plugins/**`, and
+`plugins/tilly-engineer-skills/**`. Remove them only when they are TES-owned,
+generated, or empty. If any path is ambiguous, modified, non-TES, or
+secret-like, preserve it, back it up under `.tes/bk/**`, write review evidence,
+and return `NEEDS_REVIEW`.
 
 ### Cursor
 

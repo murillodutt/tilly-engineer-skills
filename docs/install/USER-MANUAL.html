@@ -1197,7 +1197,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark" data-ui="brand">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.112</span>
+          <span class="brand-meta">User manual · v0.3.114</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1260,8 +1260,8 @@
           </div>
           <div class="chapter-body">
             <p class="lede">Start from the target repository with GitHub npx. The command installs TES locally, prepares selected agent hooks, and records the first-session setup path.</p>
-            <div class="pre-wrap" data-label="fixed release" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.112 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="bun runtime" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.112 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="fixed release" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.114 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="bun runtime" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.114 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Run the command from the target repository with Node.js 18+ or Bun 1.0+, plus Python 3.11+.</li>
 <li>Interactive mode asks for target, agents, install mode, and final confirmation.</li>
@@ -1273,7 +1273,8 @@
 </ol>
 <aside class="side-note"><p class="side-note-title">Important: agent follow-up is host-specific</p><p>Do not start project work immediately after install. Codex needs hook review in Settings &gt; Hooks when marked needs review; Claude Code needs the TES completion notice; Cursor needs a workspace reopen and <code>/tes-setup</code> report. Only after <code>/tes-setup</code> reports complete, run <code>/tes-align</code>, then use <code>/tes-map</code> for the current GPS view before project work.</p></aside>
 <p>Useful options: <code>--target &lt;path&gt;</code> installs outside the current directory; <code>--agent codex|claude|cursor|all</code> chooses hooks; <code>--yes</code> skips the wizard; <code>--dry-run</code> prints planned writes; <code>--mode preserve</code> is the default.</p>
-<p><code>#v0.3.112</code> is the supported fixed release ref. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit. If neither Node/npm nor Bun is installed, install Node.js LTS or Bun first.</p>
+<p><code>#v0.3.114</code> is the supported fixed release ref. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit. If neither Node/npm nor Bun is installed, install Node.js LTS or Bun first.</p>
+<p>Older plugin/root-skill surfaces (<code>skills/**</code>, <code>.claude-plugin/**</code>, <code>.agents/plugins/**</code>, and <code>plugins/tilly-engineer-skills/**</code>) are cleaned only when TES-owned, generated, or empty. Ambiguous or secret-like content is preserved, backed up in <code>.tes/bk/**</code>, and returned as <code>NEEDS_REVIEW</code>.</p>
           </div>
         </section>
 
@@ -1298,7 +1299,7 @@
           </div>
           <div class="chapter-body">
             <p class="lede">The route decides which runtime surfaces move.</p>
-            <div class="table-wrap"><table><thead><tr><th>Route</th><th>When to use it</th></tr></thead><tbody><tr><td><code>current</code></td><td>Update the detected runtime and its read-only Cortex MCP config.</td></tr><tr><td><code>codex</code></td><td>Prepare <code>AGENTS.md</code>, Codex skills, plugin metadata, and <code>.codex/config.toml</code>.</td></tr><tr><td><code>claude</code></td><td>Prepare <code>CLAUDE.md</code>, <code>.claude/skills/**</code>, plugin skills, and <code>.mcp.json</code>.</td></tr><tr><td><code>cursor</code></td><td>Prepare <code>.cursor/rules/**</code> and <code>.cursor/mcp.json</code>.</td></tr><tr><td><code>all</code></td><td>Prepare all supported runtime surfaces.</td></tr><tr><td><code>audit</code></td><td>Inspect without modifying files.</td></tr></tbody></table></div>
+            <div class="table-wrap"><table><thead><tr><th>Route</th><th>When to use it</th></tr></thead><tbody><tr><td><code>current</code></td><td>Update the detected runtime and its read-only Cortex MCP config.</td></tr><tr><td><code>codex</code></td><td>Prepare <code>AGENTS.md</code>, Codex skills, and <code>.codex/config.toml</code>.</td></tr><tr><td><code>claude</code></td><td>Prepare <code>CLAUDE.md</code>, <code>.claude/skills/**</code>, and <code>.mcp.json</code>.</td></tr><tr><td><code>cursor</code></td><td>Prepare <code>.cursor/rules/**</code> and <code>.cursor/mcp.json</code>.</td></tr><tr><td><code>all</code></td><td>Prepare all supported runtime surfaces.</td></tr><tr><td><code>audit</code></td><td>Inspect without modifying files.</td></tr></tbody></table></div>
           </div>
         </section>
 
@@ -1443,8 +1444,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Empieza desde el repositorio objetivo con npx desde GitHub. El comando instala TES localmente, prepara los hooks de agentes seleccionados y registra el camino de setup de primera sesion.</p>
-            <div class="pre-wrap" data-label="release fija" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.112 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.112 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="release fija" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.114 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.114 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Ejecuta el comando desde el repositorio objetivo con Node.js 18+ o Bun 1.0+, mas Python 3.11+.</li>
 <li>El modo interactivo pregunta target, agentes, modo de instalacion y confirmacion final.</li>
@@ -1456,7 +1457,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 </ol>
 <aside class="side-note"><p class="side-note-title">Importante: el seguimiento del agente depende del host</p><p>No empieces trabajo de proyecto inmediatamente despues de instalar. Codex necesita revisar el hook en Settings &gt; Hooks cuando aparezca needs review; Claude Code necesita el aviso de finalizacion de TES; Cursor necesita reabrir el workspace y el reporte de <code>/tes-setup</code>. Solo despues de que <code>/tes-setup</code> reporte complete, ejecuta <code>/tes-align</code> y usa <code>/tes-map</code> para la vista GPS actual antes del trabajo de proyecto.</p></aside>
 <p>Opciones utiles: <code>--target &lt;path&gt;</code> instala fuera del directorio actual; <code>--agent codex|claude|cursor|all</code> elige hooks; <code>--yes</code> salta el wizard; <code>--dry-run</code> muestra escrituras planificadas; <code>--mode preserve</code> es el default.</p>
-<p><code>#v0.3.112</code> es el release ref fijo soportado. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; ese directorio es cache local, no conocimiento del proyecto para commitear. Si no hay Node/npm ni Bun instalado, instala Node.js LTS o Bun primero.</p>
+<p><code>#v0.3.114</code> es el release ref fijo soportado. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; ese directorio es cache local, no conocimiento del proyecto para commitear. Si no hay Node/npm ni Bun instalado, instala Node.js LTS o Bun primero.</p>
+<p>Las superficies antiguas de plugin/root skills (<code>skills/**</code>, <code>.claude-plugin/**</code>, <code>.agents/plugins/**</code> y <code>plugins/tilly-engineer-skills/**</code>) se limpian solo cuando son TES-owned, generadas o vacias. El contenido ambiguo o parecido a secreto se preserva, se respalda en <code>.tes/bk/**</code> y retorna <code>NEEDS_REVIEW</code>.</p>
           </div>
         </section>
 
@@ -1481,7 +1483,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">La ruta decide que superficies se mueven.</p>
-            <div class="table-wrap"><table><thead><tr><th>Ruta</th><th>Cuando usarla</th></tr></thead><tbody><tr><td><code>current</code></td><td>Actualizar el runtime detectado y su config Cortex MCP read-only.</td></tr><tr><td><code>codex</code></td><td>Preparar <code>AGENTS.md</code>, skills Codex, plugin metadata y <code>.codex/config.toml</code>.</td></tr><tr><td><code>claude</code></td><td>Preparar <code>CLAUDE.md</code>, <code>.claude/skills/**</code>, plugin skills y <code>.mcp.json</code>.</td></tr><tr><td><code>cursor</code></td><td>Preparar <code>.cursor/rules/**</code> y <code>.cursor/mcp.json</code>.</td></tr><tr><td><code>all</code></td><td>Preparar todas las superficies soportadas.</td></tr><tr><td><code>audit</code></td><td>Inspeccionar sin modificar archivos.</td></tr></tbody></table></div>
+            <div class="table-wrap"><table><thead><tr><th>Ruta</th><th>Cuando usarla</th></tr></thead><tbody><tr><td><code>current</code></td><td>Actualizar el runtime detectado y su config Cortex MCP read-only.</td></tr><tr><td><code>codex</code></td><td>Preparar <code>AGENTS.md</code>, skills Codex y <code>.codex/config.toml</code>.</td></tr><tr><td><code>claude</code></td><td>Preparar <code>CLAUDE.md</code>, <code>.claude/skills/**</code> y <code>.mcp.json</code>.</td></tr><tr><td><code>cursor</code></td><td>Preparar <code>.cursor/rules/**</code> y <code>.cursor/mcp.json</code>.</td></tr><tr><td><code>all</code></td><td>Preparar todas las superficies soportadas.</td></tr><tr><td><code>audit</code></td><td>Inspeccionar sin modificar archivos.</td></tr></tbody></table></div>
           </div>
         </section>
 
@@ -1626,8 +1628,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Comece pelo repositorio alvo com npx direto do GitHub. O comando instala TES localmente, prepara os hooks dos agentes escolhidos e registra o caminho de setup da primeira sessao.</p>
-            <div class="pre-wrap" data-label="release fixa" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.112 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.112 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="release fixa" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.114 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.114 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Rode o comando a partir do repositorio alvo com Node.js 18+ ou Bun 1.0+, mais Python 3.11+.</li>
 <li>O modo interativo pergunta target, agentes, modo de instalacao e confirmacao final.</li>
@@ -1639,7 +1641,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 </ol>
 <aside class="side-note"><p class="side-note-title">Importante: o follow-up do agente depende do host</p><p>Nao inicie trabalho no projeto imediatamente depois de instalar. Codex precisa revisar o hook em Settings &gt; Hooks quando aparecer needs review; Claude Code precisa do aviso de conclusao do TES; Cursor precisa reabrir o workspace e ver o relatorio de <code>/tes-setup</code>. So depois que <code>/tes-setup</code> reportar complete, rode <code>/tes-align</code> e use <code>/tes-map</code> para a visao GPS atual antes do trabalho no projeto.</p></aside>
 <p>Opcoes uteis: <code>--target &lt;path&gt;</code> instala fora do diretorio atual; <code>--agent codex|claude|cursor|all</code> escolhe hooks; <code>--yes</code> pula o wizard; <code>--dry-run</code> mostra escritas planejadas; <code>--mode preserve</code> e o default.</p>
-<p><code>#v0.3.112</code> e o release ref fixo suportado. Bundles runtime sao preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretorio e cache local, nao conhecimento do projeto para commit. Se nao houver Node/npm nem Bun instalado, instale Node.js LTS ou Bun primeiro.</p>
+<p><code>#v0.3.114</code> e o release ref fixo suportado. Bundles runtime sao preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretorio e cache local, nao conhecimento do projeto para commit. Se nao houver Node/npm nem Bun instalado, instale Node.js LTS ou Bun primeiro.</p>
+<p>Superficies antigas de plugin/root skills (<code>skills/**</code>, <code>.claude-plugin/**</code>, <code>.agents/plugins/**</code> e <code>plugins/tilly-engineer-skills/**</code>) sao limpas somente quando sao TES-owned, geradas ou vazias. Conteudo ambiguo ou com sinal de segredo e preservado, salvo em <code>.tes/bk/**</code> e retorna <code>NEEDS_REVIEW</code>.</p>
           </div>
         </section>
 
@@ -1664,7 +1667,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">A rota decide quais superficies se movem.</p>
-            <div class="table-wrap"><table><thead><tr><th>Rota</th><th>Quando usar</th></tr></thead><tbody><tr><td><code>current</code></td><td>Atualizar o runtime detectado e sua config Cortex MCP somente leitura.</td></tr><tr><td><code>codex</code></td><td>Preparar <code>AGENTS.md</code>, skills Codex, plugin metadata e <code>.codex/config.toml</code>.</td></tr><tr><td><code>claude</code></td><td>Preparar <code>CLAUDE.md</code>, <code>.claude/skills/**</code>, plugin skills e <code>.mcp.json</code>.</td></tr><tr><td><code>cursor</code></td><td>Preparar <code>.cursor/rules/**</code> e <code>.cursor/mcp.json</code>.</td></tr><tr><td><code>all</code></td><td>Preparar todas as superficies suportadas.</td></tr><tr><td><code>audit</code></td><td>Inspecionar sem modificar arquivos.</td></tr></tbody></table></div>
+            <div class="table-wrap"><table><thead><tr><th>Rota</th><th>Quando usar</th></tr></thead><tbody><tr><td><code>current</code></td><td>Atualizar o runtime detectado e sua config Cortex MCP somente leitura.</td></tr><tr><td><code>codex</code></td><td>Preparar <code>AGENTS.md</code>, skills Codex e <code>.codex/config.toml</code>.</td></tr><tr><td><code>claude</code></td><td>Preparar <code>CLAUDE.md</code>, <code>.claude/skills/**</code> e <code>.mcp.json</code>.</td></tr><tr><td><code>cursor</code></td><td>Preparar <code>.cursor/rules/**</code> e <code>.cursor/mcp.json</code>.</td></tr><tr><td><code>all</code></td><td>Preparar todas as superficies suportadas.</td></tr><tr><td><code>audit</code></td><td>Inspecionar sem modificar arquivos.</td></tr></tbody></table></div>
           </div>
         </section>
 
@@ -1776,7 +1779,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
       <footer class="footer">
 
         <div class="footer-meta">
-          <span>v0.3.112 - Generated from TDS.</span>
+          <span>v0.3.114 - Generated from TDS.</span>
           <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         </div>
       </footer>

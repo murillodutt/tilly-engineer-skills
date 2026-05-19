@@ -13,7 +13,7 @@ tver: 0.5.1
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.112`.
+Project version: `0.3.114`.
 
 It follows the Codex customization order:
 
@@ -21,7 +21,7 @@ It follows the Codex customization order:
 2. Skills for reusable workflows and domain expertise.
 3. Scripts and references for progressive disclosure.
 4. Read-only Cortex MCP through project-scoped `.codex/config.toml`.
-5. A local Codex plugin package only for distribution/materialization proof.
+5. Source-only Codex plugin metadata retained in Git for future packaging proof.
 
 Official reference: <https://developers.openai.com/codex/concepts/customization>
 
@@ -32,8 +32,6 @@ Official reference: <https://developers.openai.com/codex/concepts/customization>
 | `src/adapters/codex/AGENTS.md` | Target repo root `AGENTS.md` after `.tes/bk/**` backup; recover old semantics into `docs/agents/**` |
 | `src/adapters/codex/skills/tes-engineering-discipline/` | Target repo `.agents/skills/tes-engineering-discipline/` |
 | `src/adapters/codex/skills/tes-*/` | Target repo `.agents/skills/tes-*/` command-shortcut skills |
-| `src/adapters/codex/plugin/plugin.json` | Target repo `plugins/tilly-engineer-skills/.codex-plugin/plugin.json` |
-| `src/adapters/codex/plugin/marketplace.json` | Target repo `.agents/plugins/marketplace.json` |
 | `scripts/install_mcp.py` | Optional project-scoped Cortex MCP activation |
 | `scripts/validate_reference_package.py` | Optional package validation script |
 
@@ -43,17 +41,21 @@ For a global personal skill, copy the skill directory to
 Do not treat local Codex runtime caches or tool-specific user directories as
 canonical package source. They are installed/runtime surfaces.
 
-## Local Plugin Package
+## Source-Only Plugin Metadata
 
-TES materializes a local Codex plugin package under
-`plugins/tilly-engineer-skills/**`. The package contains
-`.codex-plugin/plugin.json` and plugin-root `skills/**` generated from the same
-canonical skill sources used for project `.agents/skills/**`.
+TES keeps Codex plugin metadata under `src/adapters/codex/plugin/**` as a
+source-only template. The default installer does not write `.agents/plugins/**`
+or `plugins/tilly-engineer-skills/**` into target projects.
 
-The package is certified as a local materialized artifact only. It does not
-claim marketplace publication, live Codex UI installation, native hooks, or
-plugin-bundled MCP servers. Those surfaces require separate official-source
-proof, safety contract, smoke, and negative tests.
+If a target already contains those paths from an older TES install, the bundle
+apply step removes them only when they are TES-owned/generated or empty.
+Ambiguous or modified content is preserved, backed up under `.tes/bk/**`, and
+reported as `NEEDS_REVIEW`.
+
+The retained metadata does not claim marketplace publication, live Codex UI
+installation, native hooks, plugin skills, or plugin-bundled MCP servers. Those
+surfaces require a separate explicit packaging decision, official-source proof,
+safety contract, smoke, and negative tests.
 
 ## Why This Shape
 

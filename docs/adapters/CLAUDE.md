@@ -24,8 +24,7 @@ each runtime.
 |---------|------|----------------|
 | `CLAUDE.md` | Persistent project guidance loaded as memory | Included |
 | `.claude/skills/**` | Project-native reusable workflows and direct `/tes-*` slash commands | Included |
-| `skills/**` | Plugin-root reusable workflows for explicit plugin testing/distribution | Included |
-| `.claude-plugin/**` | Distribution metadata | Included as source, not published |
+| `src/adapters/claude/plugin/**` | Plugin metadata template | Source-only; not installed into targets |
 | Settings | Enforcement and permission policy | Documented only |
 | Hooks | First-session setup context and operational scripts | Installer first-session hook only; plugin default stays blocked |
 | MCP | Project-scoped Cortex access | Installer route only |
@@ -46,7 +45,7 @@ Official references: [Memory](https://code.claude.com/docs/en/memory),
 |--------|---------|
 | `src/adapters/claude/CLAUDE.md` | Short target root instruction file |
 | `src/adapters/claude/skills/tes-guidelines/SKILL.md` | Claude skill source |
-| `src/adapters/claude/skills/tes-*/SKILL.md` | Project skill and plugin skill source |
+| `src/adapters/claude/skills/tes-*/SKILL.md` | Project skill source |
 | `src/adapters/claude/plugin/plugin.json` | Plugin metadata source |
 | `src/adapters/claude/plugin/marketplace.json` | Local marketplace metadata source |
 
@@ -60,10 +59,13 @@ dedicated decision.
 - Project installs must include `.claude/skills/tes-*/SKILL.md`; Claude Code
   discovers these as project skills and exposes direct slash names such as
   `/tes-init`, `/tes-setup`, and `/tes-cortex`.
-- `.claude-plugin/plugin.json` must not depend on files outside the plugin
-  root.
-- Skill paths in plugin metadata must be root-relative, such as
-  `./skills/`, not `../skills/tes-guidelines`.
+- Plugin metadata stays in `src/adapters/claude/plugin/**` as a source-only
+  template; default project installs must not write `.claude-plugin/**` or root
+  `skills/**`.
+- If an older target still has `.claude-plugin/**` or root `skills/**`, TES
+  removes the paths only when they are TES-owned/generated or empty. Ambiguous,
+  modified, non-TES, or secret-like content is preserved, backed up under
+  `.tes/bk/**`, and returned as `NEEDS_REVIEW`.
 - `/tes-*` is the preferred cross-tool TES trigger vocabulary across Codex,
   Claude Code, and Cursor. Claude project installs expose skill-backed direct
   slash names such as `/tes-init`, `/tes-setup`, `/tes-update`,
@@ -90,7 +92,7 @@ dedicated decision.
 - When installing into an existing project, back up a divergent `CLAUDE.md`
   under `.tes/bk/**`, apply the clean bootloader, recover useful semantics into
   `docs/agents/**`, and still install TES-owned assets under
-  `.claude/skills/**`, `skills/**`, and `.claude-plugin/**`.
+  `.claude/skills/**`.
 - Hooks, write-capable MCP, and subagents must not be added to the default
   plugin.
 - The installer may add a project `SessionStart` hook that runs the local TES
@@ -98,7 +100,7 @@ dedicated decision.
   separate from plugin packaging and must stay idempotent.
 - Read-only Cortex MCP is activated by the assisted installer through
   project-scoped `.mcp.json`, not plugin metadata.
-- Local target plugin shape is certified by
+- Source-only plugin retention and target-install omission are certified by
   `python3 scripts/claude_plugin_oracle.py --self-test`.
 - A publishable Claude marketplace package still requires a separate
   distribution oracle before certification.
@@ -124,6 +126,7 @@ python3 scripts/claude_plugin_oracle.py --self-test
 npm run commit:check
 ```
 
-Claude local adapter alignment is complete when the generated tree is
-root-contained and the local plugin oracle passes. Marketplace publication and
-global desktop registration remain explicit non-claims.
+Claude local adapter alignment is complete when the generated tree installs
+only project runtime surfaces and the source-only plugin oracle passes.
+Marketplace publication and global desktop registration remain explicit
+non-claims.

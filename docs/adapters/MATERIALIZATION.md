@@ -30,9 +30,9 @@ that source and are not edited by hand.
 
 | Adapter | Generated install tree |
 |---------|------------------------|
-| Codex | `AGENTS.md`, `.agents/skills/**`, `.agents/plugins/marketplace.json`, and `plugins/tilly-engineer-skills/**` |
+| Codex | `AGENTS.md` and `.agents/skills/**` |
 | Cursor | `CURSOR.md`, `.cursor/rules/tes-guidelines.mdc`, and `.cursor/rules/tes-runtime-capabilities.mdc` |
-| Claude | `CLAUDE.md`, `.claude/skills/**`, `.claude-plugin/**`, and `skills/**` |
+| Claude | `CLAUDE.md` and `.claude/skills/**` |
 
 ## Gate
 
@@ -41,13 +41,15 @@ check builds all adapters in a temporary directory and verifies:
 
 - each expected target path exists;
 - Codex skill self-test passes after materialization;
-- Codex plugin metadata points to the generated root-contained `./skills/`
-  copy and the repo marketplace resolves to `plugins/tilly-engineer-skills`;
 - Cursor keeps `.mdc` frontmatter with `description` and `alwaysApply: true`;
 - Cursor separates governance (`tes-guidelines.mdc`) from TES-owned command
   capability routing (`tes-runtime-capabilities.mdc`);
-- Claude project skills materialize under `.claude/skills/**` and plugin
-  metadata points to the root-contained `./skills/` copy;
+- Claude project skills materialize under `.claude/skills/**`;
+- plugin metadata under `src/adapters/**/plugin/**` remains source-only and is
+  not materialized into target projects;
+- installs and updates remove obsolete plugin/root-skill runtime paths only when
+  they are TES-owned/generated or empty, while ambiguous paths are backed up and
+  reported as `NEEDS_REVIEW`;
 - existing project-owned bootloaders are backed up centrally, replaced by clean
   runtime bootloaders, and recovered semantically while adapter assets install;
 - no `src/**` source tree leaks into an install output.
@@ -63,8 +65,8 @@ If a target tool changes packaging rules, update `src/adapters/<tool>/**`,
 
 | Adapter | Risk | Rule |
 |---------|------|------|
-| Codex | Editing installed user/runtime skill or plugin instead of source | Edit `src/adapters/codex/**` only; `plugins/tilly-engineer-skills/**` is generated output |
-| Claude | Plugin metadata depends on `../` outside the plugin root, project installs omit `.claude/skills/**`, or a `CLAUDE.md` conflict blocks clean install | Skill paths must be root-relative, project skills must be present, and bootloader conflicts must be backed up, clean-applied, and recovered without blocking runtime assets |
+| Codex | Editing installed user/runtime skill instead of source | Edit `src/adapters/codex/**` only; target `.agents/skills/**` is generated output |
+| Claude | Project installs omit `.claude/skills/**`, or a `CLAUDE.md` conflict blocks clean install | Project skills must be present, and bootloader conflicts must be backed up, clean-applied, and recovered without blocking runtime assets |
 | Cursor | Legacy `.cursorrules` leaks back into the package or project-owned rules block TES commands | Validator blocks `.cursorrules`; runtime capabilities materialize as a separate TES-owned rule |
 | All | Generated output becomes perceived source | `dist/**` remains ignored and reproducible |
 

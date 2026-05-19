@@ -25,7 +25,7 @@ evidence for the declared `claude-cli` backend.
 | Area | Declaration |
 |------|-------------|
 | Source files | `src/adapters/claude/**` |
-| Materialized files | `dist/adapters/claude/CLAUDE.md`, `dist/adapters/claude/.claude/skills/**`, `dist/adapters/claude/.claude-plugin/**`, `dist/adapters/claude/skills/**` |
+| Materialized files | `dist/adapters/claude/CLAUDE.md`, `dist/adapters/claude/.claude/skills/**` |
 | Validation command | `npm run materialize:check` |
 | Execution backend | `python3 scripts/context_mesh_run.py --backend claude-cli` |
 | Evidence class | structural plus retained v1 behavior evidence |
@@ -37,8 +37,8 @@ evidence for the declared `claude-cli` backend.
   by the runner.
 - Behavior certification applies only to the dataset hash, git head, backend,
   model, grader version, and run id declared in evidence.
-- Local plugin package shape is checked by
-  `python3 scripts/claude_plugin_oracle.py --self-test`; marketplace
+- Source-only plugin metadata retention and target-install omission are checked
+  by `python3 scripts/claude_plugin_oracle.py --self-test`; marketplace
   distribution remains outside the certified scope.
 
 ## NO-GO
