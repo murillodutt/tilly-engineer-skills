@@ -21,7 +21,7 @@ import tes_bundle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.112"
+VERSION = "0.3.114"
 RETROFIT_DIR = ".tes/retrofit"
 
 
@@ -378,6 +378,7 @@ def install(args: argparse.Namespace) -> int:
 
         clean_runtime = not args.preserve_context
         clean_backup = None
+        obsolete_cleanup = None
         if clean_runtime and not args.dry_run:
             clean_backup = tes_bundle.clean_backup(
                 target_root,
@@ -388,6 +389,8 @@ def install(args: argparse.Namespace) -> int:
                 print(json.dumps(clean_backup, indent=2))
                 capture_install_result(target_root, args.adapter, "BACKUP-FAIL", args.dry_run, 1)
                 return 1
+            staged_manifest = tes_bundle.read_staged_manifest(target_root)
+            obsolete_cleanup = tes_bundle.cleanup_obsolete_runtime(target_root, staged_manifest, dry_run=False)
 
         actions: list[dict[str, str]] = []
         preserved_conflicts: list[dict[str, str]] = []
@@ -462,6 +465,8 @@ def install(args: argparse.Namespace) -> int:
             status = "DRY-RUN-CONFLICT" if args.dry_run else "CONFLICT"
         elif preserved_context:
             status = "DRY-RUN-WITH-PRESERVED-CONTEXT" if args.dry_run else "INSTALLED_WITH_PRESERVED_CONTEXT"
+        if obsolete_cleanup and obsolete_cleanup.get("status") == "NEEDS_REVIEW" and status != "CONFLICT":
+            status = "NEEDS_REVIEW"
 
         layer_results: dict[str, dict[str, int]] = {}
         for action in actions:
@@ -491,6 +496,7 @@ def install(args: argparse.Namespace) -> int:
             "bundle_stage": bundle_stage,
             "mode": "clean-runtime" if clean_runtime else "preserve",
             "clean_backup": clean_backup,
+            "obsolete_cleanup": obsolete_cleanup,
             "semantic_recovery": recovery,
             "root_context": root_context_result,
             "layer_results": layer_results,
@@ -498,7 +504,10 @@ def install(args: argparse.Namespace) -> int:
             "preserved_conflicts": preserved_conflicts,
             "preserved_context": preserved_context,
             "installed_capabilities": installed_capabilities,
-            "obsolete_removed": [],
+            "obsolete_removed": [
+                action for action in (obsolete_cleanup or {}).get("actions", [])
+                if str(action.get("action", "")).startswith("remove-")
+            ],
             "retrofit_plan": str(retrofit_plan) if retrofit_plan else None,
         }
         print(json.dumps(result, indent=2))

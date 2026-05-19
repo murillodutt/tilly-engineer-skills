@@ -46,9 +46,10 @@ wrappers do not belong in the repository root.
 | Path | Responsibility |
 |------|----------------|
 | `src/adapters/codex/AGENTS.md` | Codex target bootloader source |
+| `src/adapters/codex/plugin/**` | Codex plugin metadata source-only template |
 | `src/adapters/codex/skills/**` | Codex-native skill source |
 | `src/adapters/claude/CLAUDE.md` | Claude Code instruction source |
-| `src/adapters/claude/plugin/**` | Claude plugin metadata source |
+| `src/adapters/claude/plugin/**` | Claude plugin metadata source-only template |
 | `src/adapters/claude/skills/**` | Claude Code skill source |
 | `src/adapters/cursor/CURSOR.md` | Cursor adapter note |
 | `src/adapters/cursor/rules/**` | Cursor project rule source |
@@ -61,7 +62,7 @@ trees under `dist/adapters/**`:
 | Adapter | Materialized shape |
 |---------|--------------------|
 | Codex | `AGENTS.md` plus `.agents/skills/**` |
-| Claude | `CLAUDE.md`, `.claude/skills/**`, `.claude-plugin/**`, and `skills/**` |
+| Claude | `CLAUDE.md` and `.claude/skills/**` |
 | Cursor | `CURSOR.md` plus `.cursor/rules/**` |
 
 Use `npm run materialize:check` to verify this without writing to `dist/**`.
@@ -162,7 +163,8 @@ commercial, documentation, and user-facing copy lives in
 ## Structural Locks
 
 - Root hidden tool folders such as `.agents`, `.cursor`, and `.claude-plugin`
-  are not canonical source in this repository.
+  are not canonical source in this repository; root `skills/**` and plugin
+  folders are treated as obsolete target runtime surfaces, not package source.
 - Target projects may receive hidden adapter folders during installation, but
   this reference package keeps source in `src/**`.
 - A new adapter must create one source directory under `src/adapters/<tool>/`

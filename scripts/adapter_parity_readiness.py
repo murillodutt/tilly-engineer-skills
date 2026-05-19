@@ -36,7 +36,6 @@ ADAPTER_MATERIALIZED_PATHS = {
     "claude": (
         "CLAUDE.md",
         ".claude/skills/tes-guidelines/SKILL.md",
-        "skills/tes-guidelines/SKILL.md",
     ),
     "codex": (
         "AGENTS.md",

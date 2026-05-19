@@ -66,8 +66,8 @@ without making any single runtime adapter the design center.
 |---------|-------|--------|--------|
 | Agent bootloader | `AGENTS.md` | `CLAUDE.md` | `.cursor/rules/*.mdc`; `CURSOR.md` as user handoff |
 | Always-on rules | `AGENTS.md` project guidance | `CLAUDE.md` project guidance | `.cursor/rules/*.mdc` |
-| Skill | `.agents/skills/**` | `.claude/skills/**` project skills plus `skills/**` plugin copy | Cursor plugin `skills/**` exists officially; TES v1 uses rules only |
-| Plugin | local `plugins/tilly-engineer-skills/.codex-plugin/plugin.json` certified by oracle | `.claude-plugin/**` certified locally | `.cursor-plugin/**` exists officially; TES v1 does not claim it |
+| Skill | `.agents/skills/**` | `.claude/skills/**` project skills | Cursor plugin `skills/**` exists officially; TES v1 uses rules only |
+| Plugin | source-only `src/adapters/codex/plugin/**` retained by oracle | source-only `src/adapters/claude/plugin/**` retained by oracle | `.cursor-plugin/**` exists officially; TES v1 does not claim it |
 | Hooks | native platform support; Tilly uses Git hook only | native platform support; Tilly plugin hook deferred | native plugin hooks exist; Tilly uses Git hook only |
 | MCP | project `.codex/config.toml` | project `.mcp.json` | project `.cursor/mcp.json` |
 | Behavior backend | `codex-cli` retained v1 scope | `claude-cli` retained v1 scope | deferred; no clean non-interactive route certified |
@@ -97,9 +97,9 @@ npm run platform:surface:check
 
 This certifies local package shape against the platform-surface contract:
 
-- Codex agent, skill, local plugin package, MCP install config, and
+- Codex agent, skill, source-only plugin metadata, MCP install config, and
   Git-governed hook surface.
-- Claude bootloader, skill, plugin manifests, MCP install config, and plugin
+- Claude bootloader, skill, source-only plugin manifests, MCP install config, and plugin
   non-claims.
 - Cursor bootloader, `.cursor/rules/*.mdc`, MCP install config, and legacy
   `.cursorrules` exclusion through materialization. Cursor plugin skills are a
@@ -113,7 +113,7 @@ or platform hooks that are intentionally not packaged.
 
 | Adapter | Current certifiable level | Reason |
 |---------|---------------------------|--------|
-| Codex | structural plus local plugin package plus retained behavior evidence | Materialization, `codex_plugin_oracle.py`, platform-surface oracle, and `codex-cli` v1 evidence exist for the retained run/hash/backend/prompt contract. |
+| Codex | structural plus retained behavior evidence | Materialization, `codex_plugin_oracle.py`, platform-surface oracle, and `codex-cli` v1 evidence exist for the retained run/hash/backend/prompt contract. |
 | Claude | structural plus retained behavior evidence | Materialization and `claude-cli` v1 evidence exist for the retained run/hash/backend/model. |
 | Cursor | structural | Materialization and installer smoke can be checked; behavior remains explicitly deferred until a non-interactive backend exists. |
 

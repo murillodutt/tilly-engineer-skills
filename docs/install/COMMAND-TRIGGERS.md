@@ -100,7 +100,7 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-source alias for the same oracles; not a target-project guarantee |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.112 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.114 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
@@ -194,8 +194,13 @@ context layers:
   staged bundle with `tes_bundle.py apply --mode clean-runtime`. This may
   overwrite `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, Cursor rules, and TES-owned
   routers only after the central backup exists. It also installs routers such as
-  `.agents/skills/tes-*`, `.claude/skills/tes-*`, `skills/tes-*`, plugin
-  metadata, and `.cursor/rules/tes-runtime-capabilities.mdc`.
+  `.agents/skills/tes-*`, `.claude/skills/tes-*`, and
+  `.cursor/rules/tes-runtime-capabilities.mdc`. Plugin templates remain
+  source-only in the TES Git package. Obsolete runtime plugin/root-skill
+  surfaces (`skills/**`, `.claude-plugin/**`, `.agents/plugins/**`, and
+  `plugins/tilly-engineer-skills/**`) are removed only when they are
+  TES-owned/generated or empty; ambiguous content is preserved, backed up, and
+  returned as `NEEDS_REVIEW`.
 - `semantic_recovery`: analyze `.tes/bk/<timestamp>/**` as evidence, migrate
   safe local semantics into `docs/agents/**`, compress redundant legacy rules,
   reject runtime noise, and mark ambiguous material as `NEEDS_REVIEW`.
