@@ -1,6 +1,6 @@
 [Start from the landing](https://murillodutt.github.io/tilly-engineer-skills/#start-en)
 · [Read the manual](https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html)
-· [Browse the docs](docs/INDEX.md)
+· [Browse the docs](https://murillodutt.github.io/tilly-engineer-skills/#/doc/INDEX)
 
 # Tilly Engineer Skills (TES)
 
