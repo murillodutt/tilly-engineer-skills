@@ -21,7 +21,7 @@ except Exception:  # pragma: no cover - installed helper may be inspected alone.
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.112"
+VERSION = "0.3.114"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -231,7 +231,6 @@ def version_records(target: Path) -> list[dict[str, str]]:
         ".tilly/bin/cortex_mcp.py",
         ".tilly/bin/cortex.py",
         ".tilly/bin/field_reports.py",
-        ".claude-plugin/plugin.json",
         "docs/agents/PROJECT-REGISTER.md",
         "README.md",
     ]
@@ -263,9 +262,7 @@ def surfaces(target: Path) -> dict[str, bool]:
         "codex": (target / "AGENTS.md").exists()
         or (target / ".agents/skills/tes-engineering-discipline/SKILL.md").exists(),
         "claude": (target / "CLAUDE.md").exists()
-        or (target / ".claude-plugin/plugin.json").exists()
-        or (target / ".claude/skills/tes-guidelines/SKILL.md").exists()
-        or (target / "skills/tes-guidelines/SKILL.md").exists(),
+        or (target / ".claude/skills/tes-guidelines/SKILL.md").exists(),
         "cursor": (target / ".cursor/rules").exists() or (target / "CURSOR.md").exists(),
         "mcp_codex": (target / ".codex/config.toml").exists(),
         "mcp_claude": (target / ".mcp.json").exists(),
@@ -295,10 +292,7 @@ def runtime_trigger_paths(target: Path, runtime: str) -> tuple[str, ...]:
     if runtime == "claude":
         return (
             "CLAUDE.md",
-            ".claude-plugin/plugin.json",
-            ".claude-plugin/marketplace.json",
             *(f".claude/skills/{skill}/SKILL.md" for skill in CLAUDE_TRIGGER_SKILLS),
-            *(f"skills/{skill}/SKILL.md" for skill in CLAUDE_TRIGGER_SKILLS),
         )
     if runtime == "cursor":
         cursor_rules = tuple(
@@ -998,10 +992,6 @@ def continuation_plan(
             "writes": [
                 ".agents/skills/**",
                 ".claude/skills/**",
-                "skills/**",
-                ".claude-plugin/**",
-                "plugins/tilly-engineer-skills/**",
-                ".agents/plugins/**",
             ] if adapter_required else [],
             "commands": [
                 f"python3 <tes-package>/scripts/tes_bundle.py apply --target {target} --adapter {route} --mode clean-runtime --yes",

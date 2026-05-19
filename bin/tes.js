@@ -12,6 +12,7 @@ const BOOL_OPTIONS = new Set(["--yes", "--dry-run", "--no-hooks", "--no-postinst
 const MIN_NODE_MAJOR = 18;
 const MIN_BUN_VERSION = [1, 0, 0];
 const MIN_PYTHON_VERSION = [3, 11, 0];
+const TES_VERSION = "0.3.114";
 const ANSI = {
   reset: "\x1b[0m",
   bold: "\x1b[1m",
@@ -85,9 +86,9 @@ Runtime:
   Python 3.11+ for the local TES engine and first-session oracles.
 
 Examples:
-  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.112 tilly-engineer-skills add
-  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.112 tilly-engineer-skills add --agent all --yes
-  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.112 tilly-engineer-skills add
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v${TES_VERSION} tilly-engineer-skills add
+  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v${TES_VERSION} tilly-engineer-skills add --agent all --yes
+  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v${TES_VERSION} tilly-engineer-skills add
 `);
 }
 
@@ -156,8 +157,8 @@ function runtimeFailure(runtime) {
   console.error("  Bun: https://bun.sh/docs/installation");
   console.error("");
   console.error("Commands:");
-  console.error("  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.112 tilly-engineer-skills add");
-  console.error("  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.112 tilly-engineer-skills add");
+  console.error(`  npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v${TES_VERSION} tilly-engineer-skills add`);
+  console.error(`  bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v${TES_VERSION} tilly-engineer-skills add`);
   return 1;
 }
 
@@ -576,9 +577,15 @@ function runPythonInstaller(python, args) {
   });
 }
 
-function printCompletionNotice(parsed, dryRun) {
+function printCompletionNotice(parsed, summary, dryRun) {
   if (dryRun) {
     console.log("Dry run complete. No files were written.");
+    return;
+  }
+  if (summary?.status === "NEEDS_REVIEW") {
+    console.log(color("TES needs review before project work.", ANSI.bold, ANSI.yellow));
+    console.log("Obsolete plugin/root skill artifacts were preserved and backed up under .tes/bk/.");
+    console.log("Run /tes-setup or inspect the listed review paths before continuing.");
     return;
   }
   console.log(color("TES is ready for this project.", ANSI.bold, ANSI.green));
@@ -619,7 +626,7 @@ function renderInstallSummary(summary, parsed) {
     dryRun ? "Rerun without --dry-run to install" : "Follow platform-specific host steps",
   );
   console.log("");
-  printCompletionNotice(parsed, dryRun);
+  printCompletionNotice(parsed, summary, dryRun);
 }
 
 function renderFailure(summary, output) {

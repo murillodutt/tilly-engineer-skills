@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.112"
+VERSION = "0.3.114"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -87,6 +87,13 @@ def init_git(target: Path) -> list[str]:
 def write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
+
+
+def parse_json_stdout(stdout: str) -> dict[str, Any]:
+    try:
+        return json.loads(stdout[stdout.index("{"):stdout.rindex("}") + 1])
+    except (ValueError, json.JSONDecodeError):
+        return {}
 
 
 def init_cortex(target: Path) -> list[str]:
@@ -194,8 +201,6 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
         return (
             "CLAUDE.md",
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",
-            ".claude-plugin/plugin.json",
-            "skills/tes-guidelines/SKILL.md",
             ".claude/skills/tes-guidelines/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
             ".claude/skills/tes-update/SKILL.md",
@@ -203,9 +208,6 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
             ".claude/skills/tes-map/SKILL.md",
             ".claude/skills/tes-open-obsidian/SKILL.md",
             ".claude/skills/tes-field-reports/SKILL.md",
-            "skills/tes-align/SKILL.md",
-            "skills/tes-open-obsidian/SKILL.md",
-            "skills/tes-field-reports/SKILL.md",
         )
     if adapter == "cursor":
         return (
@@ -393,15 +395,11 @@ def claude_clean_bootloader_probe() -> dict[str, Any]:
             ".claude/skills/tes-open-obsidian/SKILL.md",
             ".claude/skills/tes-cortex/SKILL.md",
             ".claude/skills/tes-field-reports/SKILL.md",
-            "skills/tes-guidelines/SKILL.md",
-            "skills/tes-init/SKILL.md",
-            "skills/tes-update/SKILL.md",
-            "skills/tes-align/SKILL.md",
-            "skills/tes-open-obsidian/SKILL.md",
-            "skills/tes-field-reports/SKILL.md",
-            ".claude-plugin/plugin.json",
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",
         )))
+        for relpath in ("skills", ".claude-plugin"):
+            if (target / relpath).exists():
+                failures.append(f"claude clean install wrote source-only plugin artifact: {relpath}")
 
         code, stdout, stderr = run(
             [
@@ -547,16 +545,104 @@ def hostile_governance_conflict_probe() -> dict[str, Any]:
             ".claude/skills/tes-align/SKILL.md",
             ".claude/skills/tes-open-obsidian/SKILL.md",
             ".claude/skills/tes-field-reports/SKILL.md",
-            "skills/tes-init/SKILL.md",
-            "skills/tes-update/SKILL.md",
-            "skills/tes-align/SKILL.md",
-            "skills/tes-open-obsidian/SKILL.md",
-            "skills/tes-field-reports/SKILL.md",
             "CURSOR.md",
             ".cursor/rules/tes-runtime-capabilities.mdc",
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",
         )))
+        for relpath in ("skills", ".claude-plugin", ".agents/plugins", "plugins/tilly-engineer-skills"):
+            if (target / relpath).exists():
+                failures.append(f"all install wrote source-only plugin artifact: {relpath}")
         return {"route": "hostile-governance-conflict", "status": "FAIL" if failures else "PASS", "failures": failures}
+
+
+def legacy_obsolete_cleanup_probe() -> dict[str, Any]:
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-obsolete-clean-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        write(target / "README.md", "# Legacy TES Install\n")
+        write(target / "skills/tes-init/SKILL.md", "# TES Init\n\nTilly Engineering /tes-init legacy root skill.\n")
+        write(target / ".claude-plugin/plugin.json", '{"name":"tilly-engineer-skills","version":"0.3.112","skills":["./skills/"]}\n')
+        write(target / ".agents/plugins/marketplace.json", '{"plugins":[{"id":"tilly-engineer-skills","version":"0.3.112"}]}\n')
+        write(target / "plugins/tilly-engineer-skills/.codex-plugin/plugin.json", '{"name":"tilly-engineer-skills","version":"0.3.112","skills":"./skills/"}\n')
+
+        code, stdout, stderr = run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/tes_install.py"),
+                "install",
+                "--target",
+                str(target),
+                "--agent",
+                "all",
+                "--yes",
+            ]
+        )
+        if code != 0:
+            failures.extend(["legacy obsolete cleanup install failed", *stdout.splitlines(), *stderr.splitlines()])
+            return {"route": "legacy-obsolete-cleanup", "status": "FAIL", "failures": failures}
+        payload = parse_json_stdout(stdout)
+        if payload.get("status") != "INSTALLED":
+            failures.append(f"legacy obsolete cleanup expected INSTALLED, got {payload.get('status')}")
+        cleanup = ((payload.get("apply") or {}).get("obsolete_cleanup") or {})
+        if cleanup.get("status") not in {"PASS", "DRY-RUN"}:
+            failures.append(f"legacy obsolete cleanup expected PASS cleanup, got {cleanup.get('status')}")
+        for relpath in ("skills", ".claude-plugin", ".agents/plugins", "plugins/tilly-engineer-skills"):
+            if (target / relpath).exists():
+                failures.append(f"legacy TES-owned obsolete path was not removed: {relpath}")
+        failures.extend(require_paths(target, (
+            ".agents/skills/tes-init/SKILL.md",
+            ".claude/skills/tes-init/SKILL.md",
+            ".cursor/rules/tes-runtime-capabilities.mdc",
+            ".tes/manifest.json",
+        )))
+        return {"route": "legacy-obsolete-cleanup", "status": "FAIL" if failures else "PASS", "failures": failures}
+
+
+def ambiguous_obsolete_review_probe() -> dict[str, Any]:
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-obsolete-review-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        write(target / "README.md", "# Ambiguous Legacy TES Install\n")
+        write(target / "skills/custom/SKILL.md", "# Custom Skill\n\nUSER_TOKEN=keep-me\n")
+
+        code, stdout, stderr = run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/tes_install.py"),
+                "install",
+                "--target",
+                str(target),
+                "--agent",
+                "all",
+                "--yes",
+            ]
+        )
+        if code != 0:
+            failures.extend(["ambiguous obsolete review install failed", *stdout.splitlines(), *stderr.splitlines()])
+            return {"route": "ambiguous-obsolete-review", "status": "FAIL", "failures": failures}
+        payload = parse_json_stdout(stdout)
+        if payload.get("status") != "NEEDS_REVIEW":
+            failures.append(f"ambiguous obsolete cleanup expected NEEDS_REVIEW, got {payload.get('status')}")
+        if not (target / "skills/custom/SKILL.md").exists():
+            failures.append("ambiguous root skills content was deleted")
+        sentinel = json.loads((target / ".tes/postinstall.json").read_text(encoding="utf-8"))
+        if sentinel.get("state") != "needs_review":
+            failures.append("ambiguous obsolete cleanup must mark postinstall needs_review")
+        cleanup = ((payload.get("apply") or {}).get("obsolete_cleanup") or {})
+        backup = cleanup.get("review_backup") if isinstance(cleanup.get("review_backup"), dict) else {}
+        backup_id = str(backup.get("backup_id") or "")
+        if not backup_id or not (target / ".tes/bk" / backup_id / "manifest.json").exists():
+            failures.append("ambiguous obsolete cleanup did not create review backup")
+        if backup_id and not (target / f".tes/bk/{backup_id}/files/skills/custom/SKILL.md").exists():
+            failures.append("ambiguous obsolete cleanup backup missing custom skill")
+        failures.extend(require_paths(target, (
+            ".agents/skills/tes-init/SKILL.md",
+            ".claude/skills/tes-init/SKILL.md",
+            ".tes/manifest.json",
+        )))
+        return {"route": "ambiguous-obsolete-review", "status": "FAIL" if failures else "PASS", "failures": failures}
 
 
 def minimal_fixture(target: Path) -> None:
@@ -715,6 +801,8 @@ def main() -> int:
         results.append(codex_clean_bootloader_probe())
         results.append(claude_clean_bootloader_probe())
         results.append(hostile_governance_conflict_probe())
+        results.append(legacy_obsolete_cleanup_probe())
+        results.append(ambiguous_obsolete_review_probe())
         results.extend(project_context_fixture_probe(name) for name in PROJECT_CONTEXT_FIXTURES)
     failures = [
         failure

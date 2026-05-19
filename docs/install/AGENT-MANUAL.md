@@ -92,7 +92,7 @@ Selected during install/update. Default: `current`.
 |-------|--------|
 | `current` | Updates current runtime + its read-only Cortex MCP config |
 | `codex` | Prepares `AGENTS.md`, Codex skill, `.codex/config.toml` |
-| `claude` | Prepares `CLAUDE.md`, `.claude/skills/**`, plugin skills, `.mcp.json` |
+| `claude` | Prepares `CLAUDE.md`, `.claude/skills/**`, `.mcp.json` |
 | `cursor` | Prepares rules in `.cursor/rules/**`, `.cursor/mcp.json` |
 | `all` | Prepares Codex, Claude, Cursor + all project MCP configs |
 | `mcp` | Activates only read-only Cortex MCP layer for detected runtime |

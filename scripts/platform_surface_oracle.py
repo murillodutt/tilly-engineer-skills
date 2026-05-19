@@ -19,7 +19,7 @@ import project_context_oracle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.112"
+VERSION = "0.3.114"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -110,17 +110,11 @@ def materialized_results() -> tuple[dict[str, Any], list[str]]:
         required = {
             "codex": (
                 "AGENTS.md",
-                ".agents/plugins/marketplace.json",
-                "plugins/tilly-engineer-skills/.codex-plugin/plugin.json",
                 ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py",
                 *(f".agents/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS),
-                *(f"plugins/tilly-engineer-skills/skills/{skill}/SKILL.md" for skill in CODEX_SKILLS),
             ),
             "claude": (
                 "CLAUDE.md",
-                ".claude-plugin/plugin.json",
-                ".claude-plugin/marketplace.json",
-                *(f"skills/{skill}/SKILL.md" for skill in CLAUDE_SKILLS),
                 *(f".claude/skills/{skill}/SKILL.md" for skill in CLAUDE_SKILLS),
             ),
             "cursor": (
@@ -134,6 +128,15 @@ def materialized_results() -> tuple[dict[str, Any], list[str]]:
             for path in paths:
                 if not (root / path).exists():
                     failures.append(f"{adapter}: missing materialized {path}")
+        forbidden = {
+            "codex": (".agents/plugins", "plugins/tilly-engineer-skills"),
+            "claude": (".claude-plugin", "skills"),
+        }
+        for adapter, paths in forbidden.items():
+            root = Path(str(by_adapter[adapter]["root"]))
+            for path in paths:
+                if (root / path).exists():
+                    failures.append(f"{adapter}: source-only plugin artifact was materialized: {path}")
 
     return {"adapters": sorted(materialize_adapter.ADAPTERS)}, failures
 
@@ -188,8 +191,8 @@ def analyze() -> dict[str, Any]:
     surface(
         "codex",
         "plugin",
-        "certified" if codex_plugin_result["status"] == "PASS" else "fail",
-        "src/adapters/codex/plugin/plugin.json; scripts/codex_plugin_oracle.py",
+        "source-only" if codex_plugin_result["status"] == "PASS" else "fail",
+        "src/adapters/codex/plugin/plugin.json is retained in Git but omitted from target installs",
     )
     surface("codex", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
@@ -215,8 +218,8 @@ def analyze() -> dict[str, Any]:
         elif VERSION not in read(relpath):
             failures.append(f"{relpath} must declare {VERSION}")
     surface("claude", "agent", "certified", claude_agent)
-    surface("claude", "skill", "certified", ".claude/skills/** project skills and skills/** plugin copies sourced from src/adapters/claude/skills/**")
-    surface("claude", "plugin", "certified", "src/adapters/claude/plugin/plugin.json")
+    surface("claude", "skill", "certified", ".claude/skills/** project skills sourced from src/adapters/claude/skills/**")
+    surface("claude", "plugin", "source-only", "src/adapters/claude/plugin/plugin.json is retained in Git but omitted from target installs")
     surface("claude", "hook", "deferred", "Claude plugin hooks are native, but not claimed by this package.")
     surface("claude", "rules", "not-native", "Claude uses CLAUDE.md, permissions, hooks, skills, plugins, and MCP.")
     surface("claude", "mcp", "certified", "scripts/install_mcp.py writes .mcp.json")

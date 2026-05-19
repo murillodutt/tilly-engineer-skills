@@ -23,7 +23,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.112"
+VERSION = "0.3.114"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -93,6 +93,23 @@ BACKUP_EXTRA_DIRS = (
     ".claude-plugin",
     "plugins/tilly-engineer-skills",
     ".tes/bin",
+)
+OBSOLETE_RUNTIME_DIRS = (
+    ".agents/plugins",
+    ".claude-plugin",
+    "plugins/tilly-engineer-skills",
+    "skills",
+)
+OBSOLETE_RUNTIME_FILE_PATHS = (
+    ".agents/plugins/marketplace.json",
+)
+OBSOLETE_TES_MARKERS = (
+    "tilly-engineer-skills",
+    "Tilly Engineering",
+    "TES",
+    "Mantra Gate",
+    "Context Mesh",
+    "/tes-",
 )
 SECRET_RE = (
     "secret",
@@ -1304,6 +1321,237 @@ def copy_from_staged(target: Path, entry: dict[str, Any], dry_run: bool, backup_
     return result
 
 
+def has_secret_signal(path: Path, text: str) -> bool:
+    haystack = f"{path.as_posix()}\n{text}".lower()
+    return any(marker in haystack for marker in SECRET_RE)
+
+
+def read_small_text(path: Path) -> tuple[str | None, str | None]:
+    try:
+        if path.stat().st_size > 1_000_000:
+            return None, "large-file"
+        return path.read_text(encoding="utf-8", errors="ignore"), None
+    except OSError as exc:
+        return None, f"read-failed:{exc}"
+
+
+def has_tes_marker(text: str) -> bool:
+    return any(marker in text for marker in OBSOLETE_TES_MARKERS)
+
+
+def marketplace_json_is_tes_only(path: Path) -> bool:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    plugins = data.get("plugins")
+    if not isinstance(plugins, list) or not plugins:
+        return False
+    for item in plugins:
+        if not isinstance(item, dict):
+            return False
+        plugin_identities = {str(item.get("name") or ""), str(item.get("id") or "")}
+        if "tilly-engineer-skills" not in plugin_identities:
+            return False
+    return True
+
+
+def classify_obsolete_file(target: Path, file_path: Path) -> tuple[bool, str]:
+    relpath = rel(file_path, target)
+    text, problem = read_small_text(file_path)
+    if problem:
+        return False, problem
+    text = text or ""
+    if has_secret_signal(file_path, text):
+        return False, "secret-signal"
+
+    parts = Path(relpath).parts
+    if relpath == ".agents/plugins/marketplace.json":
+        return (True, "tes-only-marketplace") if marketplace_json_is_tes_only(file_path) else (False, "ambiguous-marketplace")
+    if parts[:1] == (".claude-plugin",):
+        if file_path.name in {"plugin.json", "marketplace.json"} and "tilly-engineer-skills" in text:
+            return True, "tes-claude-plugin-template"
+        return False, "ambiguous-claude-plugin-file"
+    if parts[:2] == ("plugins", "tilly-engineer-skills"):
+        if has_tes_marker(text) or ".codex-plugin" in parts or (len(parts) >= 4 and parts[2] == "skills" and parts[3].startswith("tes-")):
+            return True, "tes-codex-plugin-template"
+        return False, "ambiguous-codex-plugin-file"
+    if parts[:1] == ("skills",):
+        if len(parts) >= 2 and parts[1].startswith("tes-") and has_tes_marker(text):
+            return True, "tes-root-skill"
+        return False, "ambiguous-root-skill"
+    return False, "unknown-obsolete-path"
+
+
+def backup_obsolete_review_items(
+    target: Path,
+    review_items: list[dict[str, str]],
+    *,
+    dry_run: bool,
+) -> dict[str, Any] | None:
+    if not review_items:
+        return None
+    backup_id = f"obsolete-runtime-{utc_stamp()}"
+    backup_dir = target / BACKUP_ROOT / backup_id
+    local_exclude = ensure_backup_excluded(target, dry_run=dry_run)
+    entries: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for item in review_items:
+        relpath = item["path"]
+        path = target / relpath
+        paths = [path] if path.is_file() else [candidate for candidate in path.rglob("*") if candidate.is_file()]
+        for file_path in paths:
+            file_rel = rel(file_path, target)
+            if file_rel in seen or not is_backupable_path(file_rel):
+                continue
+            seen.add(file_rel)
+            entry = {
+                "path": file_rel,
+                "backup_path": f"files/{file_rel}",
+                "sha256": sha256_file(file_path),
+                "layer": layer_for_path(file_rel),
+                "owner_guess": "project-owned",
+                "reason": "obsolete-runtime-needs-review",
+                "restore_policy": "copy-back",
+            }
+            entries.append(entry)
+            if not dry_run:
+                dest = backup_dir / entry["backup_path"]
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(file_path, dest)
+
+    payload = {
+        "schema": BACKUP_SCHEMA,
+        "version": VERSION,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "backup_id": backup_id,
+        "target": str(target),
+        "adapter": "obsolete-runtime-cleanup",
+        "route": "obsolete-runtime-cleanup",
+        "project_state": "needs_review",
+        "source_tes_version": "unknown",
+        "git_head": target_git_value(target, ["rev-parse", "HEAD"]) or "unknown",
+        "git_status": target_git_status(target),
+        "entries": entries,
+        "review_items": review_items,
+    }
+    manifest_path = backup_dir / "manifest.json"
+    if not dry_run:
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        manifest_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        report_rel = f"docs/agents/evidence/{backup_id}-obsolete-runtime-review.md"
+        report_path = target / report_rel
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        lines = [
+            "# Obsolete Runtime Review",
+            "",
+            f"Backup: `{backup_id}`",
+            f"Status: `NEEDS_REVIEW`",
+            "",
+            "TES preserved obsolete plugin/root skill artifacts because at least one path was ambiguous, non-TES, modified, or secret-like.",
+            "",
+            "## Paths",
+            "",
+        ]
+        for item in review_items:
+            lines.append(f"- `{item['path']}`: {item['reason']}")
+        lines.append("")
+        report_path.write_text("\n".join(lines), encoding="utf-8")
+    return {
+        "version": VERSION,
+        "schema": BACKUP_SCHEMA,
+        "status": "DRY-RUN" if dry_run else "BACKED_UP",
+        "backup_id": backup_id,
+        "backup_dir": rel(backup_dir, target),
+        "manifest": rel(manifest_path, target),
+        "entry_count": len(entries),
+        "entries": entries,
+        "local_exclude": local_exclude,
+        "evidence_report": f"docs/agents/evidence/{backup_id}-obsolete-runtime-review.md",
+    }
+
+
+def cleanup_obsolete_runtime(target: Path, manifest: dict[str, Any], dry_run: bool) -> dict[str, Any]:
+    previous = read_installed_manifest(target)
+    current_paths = {entry["path"] for entry in manifest.get("entries", []) if isinstance(entry, dict)}
+    actions: list[dict[str, str]] = []
+    review_items: list[dict[str, str]] = []
+    handled_roots: set[str] = set()
+
+    for entry in previous.get("entries", []):
+        if not isinstance(entry, dict):
+            continue
+        path = str(entry.get("path", ""))
+        if not (
+            path
+            and path not in current_paths
+            and entry.get("owner") == "tes-owned"
+            and entry.get("obsolete_policy") == "remove-if-previously-manifested"
+        ):
+            continue
+        target_path = target / path
+        if not target_path.exists():
+            continue
+        root = next((root for root in OBSOLETE_RUNTIME_DIRS if path == root or path.startswith(f"{root}/")), None)
+        if root:
+            handled_roots.add(root)
+        expected = str(entry.get("sha256") or "")
+        if target_path.is_file() and expected and sha256_file(target_path) != expected:
+            review_items.append({"path": path, "action": "preserve-obsolete-runtime-needs-review", "reason": "manifest-sha256-mismatch"})
+            continue
+        actions.append({"path": path, "action": "would-remove-obsolete" if dry_run else "remove-obsolete", "reason": "previous-tes-manifest"})
+        if not dry_run:
+            if target_path.is_dir():
+                shutil.rmtree(target_path)
+            else:
+                target_path.unlink()
+
+    for relpath in (*OBSOLETE_RUNTIME_DIRS, *OBSOLETE_RUNTIME_FILE_PATHS):
+        path = target / relpath
+        if not path.exists():
+            continue
+        if relpath in handled_roots and not path.exists():
+            continue
+        if path.is_file():
+            safe, reason = classify_obsolete_file(target, path)
+            if safe:
+                actions.append({"path": relpath, "action": "would-remove-obsolete-runtime" if dry_run else "remove-obsolete-runtime", "reason": reason})
+                if not dry_run:
+                    path.unlink()
+                continue
+            review_items.append({"path": relpath, "action": "preserve-obsolete-runtime-needs-review", "reason": reason})
+            continue
+
+        files = [candidate for candidate in path.rglob("*") if candidate.is_file()]
+        if not files:
+            actions.append({"path": relpath, "action": "would-remove-empty-obsolete-dir" if dry_run else "remove-empty-obsolete-dir", "reason": "empty"})
+            if not dry_run:
+                shutil.rmtree(path)
+            continue
+        unsafe = []
+        for file_path in files:
+            safe, reason = classify_obsolete_file(target, file_path)
+            if not safe:
+                unsafe.append({"path": rel(file_path, target), "reason": reason})
+        if unsafe:
+            reason = "; ".join(f"{item['path']}={item['reason']}" for item in unsafe[:5])
+            review_items.append({"path": relpath, "action": "preserve-obsolete-runtime-needs-review", "reason": reason})
+            continue
+        actions.append({"path": relpath, "action": "would-remove-obsolete-runtime-dir" if dry_run else "remove-obsolete-runtime-dir", "reason": "tes-owned-generated"})
+        if not dry_run:
+            shutil.rmtree(path)
+
+    backup = backup_obsolete_review_items(target, review_items, dry_run=dry_run)
+    return {
+        "version": VERSION,
+        "status": "NEEDS_REVIEW" if review_items else ("DRY-RUN" if dry_run else "PASS"),
+        "actions": [*actions, *review_items],
+        "review_items": review_items,
+        "review_backup": backup,
+        "failures": [f"{item['path']}: {item['reason']}" for item in review_items],
+    }
+
+
 def purge_obsolete(target: Path, manifest: dict[str, Any], dry_run: bool) -> list[dict[str, str]]:
     previous = read_installed_manifest(target)
     current_paths = {entry["path"] for entry in manifest.get("entries", []) if isinstance(entry, dict)}
@@ -1326,6 +1574,21 @@ def purge_obsolete(target: Path, manifest: dict[str, Any], dry_run: bool) -> lis
                         shutil.rmtree(target_path)
                     else:
                         target_path.unlink()
+    return actions
+
+
+def remove_empty_obsolete_dirs(target: Path, dry_run: bool) -> list[dict[str, str]]:
+    actions: list[dict[str, str]] = []
+    for relpath in OBSOLETE_RUNTIME_DIRS:
+        path = target / relpath
+        if not path.exists() or not path.is_dir():
+            continue
+        if any(item.is_file() for item in path.rglob("*")):
+            actions.append({"path": relpath, "action": "preserve-nonempty-obsolete-dir"})
+            continue
+        actions.append({"path": relpath, "action": "would-remove-empty-obsolete-dir" if dry_run else "remove-empty-obsolete-dir"})
+        if not dry_run:
+            shutil.rmtree(path)
     return actions
 
 
@@ -1358,7 +1621,8 @@ def apply_staged_bundle(
         elif not read_backup_manifest(target, backup_id):
             return {"version": VERSION, "status": "FAIL", "failures": [f"missing backup-id: {backup_id}"]}
 
-    actions = purge_obsolete(target, manifest, dry_run)
+    obsolete_cleanup = cleanup_obsolete_runtime(target, manifest, dry_run)
+    actions = list(obsolete_cleanup.get("actions", []))
     for entry in manifest.get("entries", []):
         layer = entry["layer"]
         policy = entry["install_policy"]
@@ -1382,14 +1646,20 @@ def apply_staged_bundle(
         installed_path.parent.mkdir(parents=True, exist_ok=True)
         installed_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
+    status = "DRY-RUN" if dry_run else ("CLEAN_APPLIED" if mode == "clean-runtime" else "APPLIED")
+    if obsolete_cleanup.get("status") == "NEEDS_REVIEW":
+        status = "NEEDS_REVIEW"
+
     return {
         "version": VERSION,
-        "status": "DRY-RUN" if dry_run else ("CLEAN_APPLIED" if mode == "clean-runtime" else "APPLIED"),
+        "status": status,
         "mode": mode,
         "backup_id": backup_id,
         "clean_backup": clean_backup_result,
+        "obsolete_cleanup": obsolete_cleanup,
         "actions": actions,
         "installed_manifest": rel(target / INSTALLED_MANIFEST, target),
+        "failures": obsolete_cleanup.get("failures", []),
     }
 
 
@@ -1424,6 +1694,14 @@ def self_test() -> dict[str, Any]:
         (target / ".tes/cortex/records.jsonl").write_text('{"durable":true}\n', encoding="utf-8")
         (target / ".tes/field-reports").mkdir(parents=True)
         (target / ".tes/field-reports/outbox.jsonl").write_text('{"event":"keep"}\n', encoding="utf-8")
+        (target / "skills/tes-init").mkdir(parents=True)
+        (target / "skills/tes-init/SKILL.md").write_text("# TES Init\n\nTilly Engineering /tes-init legacy root skill.\n", encoding="utf-8")
+        (target / ".claude-plugin").mkdir(parents=True)
+        (target / ".claude-plugin/plugin.json").write_text('{"name":"tilly-engineer-skills","version":"0.3.112","skills":["./skills/"]}\n', encoding="utf-8")
+        (target / ".agents/plugins").mkdir(parents=True)
+        (target / ".agents/plugins/marketplace.json").write_text('{"plugins":[{"id":"tilly-engineer-skills","version":"0.3.112"}]}\n', encoding="utf-8")
+        (target / "plugins/tilly-engineer-skills/.codex-plugin").mkdir(parents=True)
+        (target / "plugins/tilly-engineer-skills/.codex-plugin/plugin.json").write_text('{"name":"tilly-engineer-skills","version":"0.3.112","skills":"./skills/"}\n', encoding="utf-8")
         staged = stage_bundle(bundle, target)
         if staged.get("status") != "STAGED":
             failures.extend(staged.get("failures", ["stage failed"]))
@@ -1507,6 +1785,9 @@ def self_test() -> dict[str, Any]:
             failures.append("helper tes_open_obsidian.py missing after apply")
         if not (target / ".agents/skills/tes-open-obsidian/SKILL.md").exists():
             failures.append("runtime tes-open-obsidian skill missing after apply")
+        for relpath in (".agents/plugins", ".claude-plugin", "plugins/tilly-engineer-skills", "skills"):
+            if (target / relpath).exists():
+                failures.append(f"source-only plugin artifact was installed: {relpath}")
         if not (target / ".tes/bin/local-only.py").exists():
             failures.append("unknown local helper was purged")
         if not (target / ".tes/cortex/records.jsonl").exists():
@@ -1516,6 +1797,24 @@ def self_test() -> dict[str, Any]:
         reapplied = apply_staged_bundle(target, yes=True)
         if reapplied.get("status") != "CLEAN_APPLIED":
             failures.append("idempotent reapply failed")
+        review_target = temp / "obsolete-review-target"
+        review_target.mkdir()
+        subprocess.run(["git", "init"], cwd=review_target, text=True, capture_output=True, check=False)
+        review_stage = stage_bundle(bundle, review_target)
+        if review_stage.get("status") != "STAGED":
+            failures.extend(review_stage.get("failures", ["review target stage failed"]))
+        (review_target / "skills/custom").mkdir(parents=True)
+        (review_target / "skills/custom/SKILL.md").write_text("# Custom Skill\n\nUSER_TOKEN=keep-me\n", encoding="utf-8")
+        review_apply = apply_staged_bundle(review_target, yes=True, mode="preserve")
+        if review_apply.get("status") != "NEEDS_REVIEW":
+            failures.append("ambiguous obsolete runtime must return NEEDS_REVIEW")
+        if not (review_target / "skills/custom/SKILL.md").exists():
+            failures.append("ambiguous obsolete runtime content was deleted")
+        review_cleanup = review_apply.get("obsolete_cleanup") if isinstance(review_apply.get("obsolete_cleanup"), dict) else {}
+        review_backup = review_cleanup.get("review_backup") if isinstance(review_cleanup.get("review_backup"), dict) else {}
+        review_backup_id = str(review_backup.get("backup_id") or "")
+        if not review_backup_id or not (review_target / ".tes/bk" / review_backup_id / "manifest.json").exists():
+            failures.append("ambiguous obsolete runtime must be backed up for review")
         freshness = certify_source_freshness(target, remote_head=str(metadata.get("source_commit") or ""))
         if freshness.get("source_freshness") != "PASS":
             failures.append("source freshness helper did not certify equal staged source")

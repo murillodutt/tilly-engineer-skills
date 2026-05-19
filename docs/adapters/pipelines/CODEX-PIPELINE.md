@@ -25,7 +25,7 @@ declared `codex-cli` backend and prompt contract.
 | Area | Declaration |
 |------|-------------|
 | Source files | `src/adapters/codex/**` |
-| Materialized files | `dist/adapters/codex/AGENTS.md`, `dist/adapters/codex/.agents/skills/**`, `.agents/plugins/marketplace.json`, `plugins/tilly-engineer-skills/**` |
+| Materialized files | `dist/adapters/codex/AGENTS.md`, `dist/adapters/codex/.agents/skills/**` |
 | Validation command | `npm run materialize:check` |
 | Execution backend | `python3 scripts/context_mesh_run.py --backend codex-cli` |
 | Evidence class | structural plus retained v1 behavior evidence |
