@@ -109,11 +109,11 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-source alias for the same oracles; not a target-project guarantee |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.118 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.119 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
-| goal materialization skill | explicit mature-artifact-to-`/goal` prompt materialization with artifact maturity, execution-unit fidelity, internal tree, material-diff, and sync-status gates |
+| goal materialization skill | explicit mature-artifact-to-`/goal` prompt materialization with artifact maturity, execution-unit fidelity, internal tree, material-diff, material-continuation, semantic negative-grep, sequential ownership, and sync-status gates |
 | predictive skills | explicit-invocation project-stress and mining skills with cognitive brake |
 | rules | always-on intent routers where skills are not native |
 | hooks | Git-event gates for validation, no-write Cortex reflection/curation, and Field Reports drain |

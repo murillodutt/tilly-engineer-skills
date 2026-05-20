@@ -63,7 +63,7 @@ do not activate them from broad natural-language planning text.
 `tes-goal-maestro` may also route from a direct request to generate a maestral
 `/goal` prompt from a mature SPEC, Super SPEC, PRD, relational project plan, or
 accepted execution tree. It must preserve declared execution units, validate
-the tree internally, require material-diff and sync-status evidence, and
+the tree internally, require material-diff, material-continuation, semantic negative-grep, sequential ownership and sync-status evidence, and
 generate the final `/goal` when gates pass.
 
 Future workflow-specific rules should be separate `Agent Requested` or

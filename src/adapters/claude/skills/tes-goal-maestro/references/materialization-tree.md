@@ -132,6 +132,34 @@ Use these sync statuses:
 Remote push or remote state changes must not be required by a generated prompt
 unless the user explicitly requests remote sync.
 
+## Material Continuation Gate
+
+When the worktree or history already contains prior implementation, closeout
+reports or partial execution, the tree must distinguish baseline context from
+new material execution.
+
+Default rule:
+
+1. Prior commits and closeouts are context, not execution credit.
+2. A new materialization run must produce a new additive material trail.
+3. Material units require non-empty commits unless the source artifact
+   explicitly marks the unit as no-material-change or no-commit.
+4. Do not rewrite, rebase, squash, delete or mask historical evidence.
+5. Do not create empty certification commits to simulate per-unit execution.
+6. If an earlier closeout records `NEEDS_EXECUTION_UNIT_FIDELITY`, preserve it
+   as historical evidence and repair with new material commits unless the owner
+   explicitly changes the execution contract.
+
+Generated prompts should include a short explicit rule when prior work may
+exist:
+
+```text
+Even if an implementation, closeout or commits already exist, this execution
+must produce a new additive material trail with non-empty commits per material
+unit. Prior commits are baseline-only unless explicitly accepted as execution
+credit by the source artifact or owner.
+```
+
 ## Preflight Requirements
 
 `SPEC-000` must require:
@@ -193,6 +221,37 @@ The tree must include negative grep for:
 7. phase violations such as storage in a semantic contract phase.
 
 Use domain-specific patterns from the SPEC, not from this reference.
+
+Negative grep must be semantic rather than purely lexical when a term can be
+valid vocabulary. A blocked-state enum, safety reason code or policy field is
+allowed when it records a prohibition; the forbidden target is the executable
+behavior or unsafe configuration.
+
+Example:
+
+1. Allowed vocabulary: `BLOCKED_BYPASS_REQUIRED`, `requiresBypass`,
+   `bypassRequired`.
+2. Forbidden behavior: CAPTCHA solving, bypass attempts, fake credentials,
+   proxy evasion, hidden network access or leaked secret usage.
+
+If the same word is both valid policy vocabulary and forbidden behavior, write
+the prompt with separate allow/deny patterns instead of a broad lexical grep.
+
+## Sequential Ownership Gate
+
+When the materialization queue requires strict commit-per-unit execution,
+prefer centralized material edits with reviewer/oracle subagents unless write
+scopes are genuinely disjoint.
+
+The tree should not imply parallel implementation if:
+
+1. the next unit depends on the current unit's committed contract;
+2. staging must include only one unit's files;
+3. each unit must be reviewed and committed before the next starts;
+4. write scopes would overlap.
+
+Use write subagents only when the tree names disjoint files and a serialized
+integration point. Otherwise, keep subagents read-only or evidence-focused.
 
 ## Commit Strategy
 

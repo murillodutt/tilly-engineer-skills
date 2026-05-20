@@ -13,7 +13,7 @@ tver: 0.5.2
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.118`.
+Project version: `0.3.119`.
 
 It follows the Codex customization order:
 
@@ -71,7 +71,7 @@ owning skills. `/tes-update` is a visible skill because update is a commercial
 user workflow, not a hidden mode of initialization. `tes-goal-maestro`
 materializes mature SPECs, Super SPECs, PRDs, relational project plans, or
 accepted execution trees into maestral `/goal` prompts after internal tree,
-material-diff, sync-status, and execution-unit fidelity checks. Predictive skills such as
+material-diff, material-continuation, semantic negative-grep, sequential ownership, sync-status, and execution-unit fidelity checks. Predictive skills such as
 `/tes-prospect` and `/tes-mine` require explicit invocation and use a cognitive
 brake. They keep the user entrypoint short while delegating real work to
 deterministic oracles or agent-led codebase exploration:

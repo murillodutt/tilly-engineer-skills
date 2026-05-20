@@ -6,7 +6,7 @@ license: MIT
 
 # TES Goal Maestro
 
-Operational contract: `tes.goal_maestro@0.3.0`.
+Operational contract: `tes.goal_maestro@0.3.1`.
 
 ## Invocation Contract
 
@@ -82,19 +82,48 @@ skill invocation.
    - Require one commit or explicit no-commit decision per declared unit.
    - If fidelity cannot be preserved, stop with
      `NEEDS_EXECUTION_UNIT_FIDELITY`.
-4. Load the relevant references:
+4. Run the Material Continuation Gate:
+   - Distinguish contextual continuity from material execution.
+   - Prior commits, closeouts or existing implementations may be used as
+     baseline and context, but they do not satisfy a new materialization run by
+     default.
+   - When a new `/goal` asks for execution, require an additive material trail:
+     non-empty commits per material unit, no rewrite, no rebase, no squash and
+     no historical masking with empty certification commits.
+   - If the input artifact explicitly marks a unit as no-material-change or
+     no-commit, preserve and report that rationale.
+   - If an earlier closeout records `NEEDS_EXECUTION_UNIT_FIDELITY`, preserve
+     it as historical evidence and require new material commits to repair it
+     unless the owner explicitly changes the execution contract.
+5. Run the Negative Grep Semantics Gate:
+   - Separate allowed vocabulary from forbidden behavior.
+   - Do not make a prompt fail merely because a contract names a blocked state,
+     reason code or safety enum.
+   - Negative checks must target executable or behavioral violations when a
+     term is also valid as policy vocabulary. For example, a blocked bypass
+     enum can be allowed while CAPTCHA solving, proxy bypass, fake credentials
+     or bypass-attempt flags remain forbidden.
+6. Run the Sequential Ownership Gate:
+   - When a queue requires commit-per-unit sequencing, prefer centralized
+     material edits and use subagents mainly for read-only review, oracle
+     tracking or bounded disjoint write scopes.
+   - Do not imply parallel write execution when commits must be certified in a
+     strict order unless the write scopes are genuinely independent and the
+     prompt names how integration will be serialized.
+7. Load the relevant references:
    - `references/materialization-tree.md` for tree construction.
    - `references/maestral-goal-prompt.md` for final prompt construction.
    - `references/subagents-and-oracles.md` when roles or verification are weak.
    - `references/quality-gates.md` when maturity, prompt strength or closeout
      needs hardening.
-5. Produce the fixed `Materialization Tree` schema.
-6. Validate the tree against maturity, execution-unit fidelity, ownership,
-   oracle, negative-grep, material-diff, sync-commit and stop-state gates.
-7. Produce the `Ready /goal Prompt` in the same response when the tree passes.
+8. Produce the fixed `Materialization Tree` schema.
+9. Validate the tree against maturity, execution-unit fidelity, material
+   continuation, ownership, oracle, negative-grep semantics, material-diff,
+   sync-commit and stop-state gates.
+10. Produce the `Ready /goal Prompt` in the same response when the tree passes.
    Stop only for maturity gaps, execution-unit fidelity failure, tree repair,
    owner decisions, or an explicitly requested two-step review workflow.
-8. Keep output chat-first. Save to files only when the user explicitly asks.
+11. Keep output chat-first. Save to files only when the user explicitly asks.
 
 The fixed tree schema is:
 
@@ -139,6 +168,14 @@ focused oracle passed, its diff was reviewed, and its commit evidence maps to
 exactly one declared unit. Empty commits are forbidden for implementation,
 contract, fixture, runtime, test and export units unless the source artifact
 explicitly marks the unit as no-material-change or no-commit.
+
+When a previous implementation or closeout already exists, continuity is
+contextual by default, not execution credit. Generated prompts must say whether
+prior commits are baseline-only or explicitly satisfy a unit. For a new
+materialization run, prior commits do not satisfy material units unless the
+source artifact or owner explicitly says so. The generated prompt must require
+a new additive material trail with non-empty commits per material unit, without
+rewrite, rebase, squash or deletion of historical evidence.
 
 Each generated `/goal` prompt must require a per-unit evidence block:
 
@@ -203,6 +240,16 @@ Default output:
 - Do not allow empty commits to satisfy material execution units.
 - Do not allow `GO` when declared units were implemented in compacted commits
   and later masked with empty certification commits.
+- Do not let prior commits or closeouts satisfy a new materialization run by
+  default; require explicit baseline-only versus execution-credit treatment.
+- Do not overwrite an earlier failed or partial closeout as if it never
+  happened; preserve it as historical evidence and repair with additive
+  material commits unless the owner explicitly authorizes a different contract.
+- Do not write lexical negative greps that reject valid blocked-state,
+  reason-code or safety vocabulary when the actual forbidden issue is runtime
+  behavior.
+- Do not imply parallel write subagents for a strict commit-per-unit queue
+  unless the prompt defines disjoint write scopes and serialized integration.
 - Do not require or imply remote sync unless the user explicitly authorized
   remote actions.
 - Do not let the generated prompt authorize live execution, persistence,

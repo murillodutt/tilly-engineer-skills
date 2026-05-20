@@ -42,7 +42,8 @@ Explicit skill invocation is enough to produce both the tree and the final
 Use when the source artifact declares materialization units and the proposed
 tree or prompt would omit, merge, rename, reorder or otherwise compress them.
 Also use it when the prompt would treat empty commits, compacted broad commits,
-or broad-only oracles as proof that individual material units executed.
+prior commits, old closeouts or broad-only oracles as proof that individual
+material units executed in a new materialization run.
 
 Return the declared unit list and the proposed correction. Do not produce
 `READY_GOAL_PROMPT` until the tree preserves the declared list or the user
@@ -54,7 +55,8 @@ new skill output should prefer `NEEDS_EXECUTION_UNIT_FIDELITY`.
 ### NEEDS_TREE_REPAIR
 
 Use when the generated tree fails fixed schema, ownership, oracle,
-execution-unit fidelity, negative-grep, commit-rhythm or closeout checks.
+execution-unit fidelity, material-continuation, negative-grep semantics,
+commit-rhythm or closeout checks.
 
 ### DRAFT_MATERIALIZATION_TREE
 
@@ -77,6 +79,8 @@ Stop if the SPEC says:
 6. "generate report" when the artifact is actually a machine contract.
 7. "execute these slices" but the prompt collapses them into fewer commits.
 8. "commit per slice" but there is no material-diff or sync evidence gate.
+9. "continue from history" without saying whether prior commits are
+   baseline-only or execution credit.
 
 ## Weak Prompt Rejection
 
@@ -94,6 +98,8 @@ Reject a prompt if it lacks:
 10. stop states;
 11. final closeout.
 12. exact preservation of any slice list declared by the SPEC.
+13. treatment of prior commits or closeouts when they may exist.
+14. semantic negative-grep separation for valid blocked-state vocabulary.
 
 ## Boundary Leakage Checks
 
@@ -130,7 +136,11 @@ A valid prompt must require:
 8. no force push;
 9. worktree status inspection after each commit and before final closeout;
 10. one visible commit per declared unit unless explicitly no-commit;
-11. sync status per unit.
+11. sync status per unit;
+12. prior commits are baseline-only by default unless explicitly accepted as
+    execution credit;
+13. no rewrite, rebase, squash or deletion of historical evidence to repair
+    materialization fidelity.
 
 ## Material Execution Checks
 
@@ -142,7 +152,11 @@ Before `GO`, verify:
 3. each material unit has focused oracle evidence;
 4. broad regression did not replace missing per-unit oracles;
 5. compacted implementation commits were not masked by later empty commits;
-6. remote sync is reported only when explicitly authorized.
+6. prior commits or closeouts were not counted as new material execution by
+   default;
+7. earlier failed or partial closeouts were preserved as historical evidence
+   and repaired through additive material commits when applicable;
+8. remote sync is reported only when explicitly authorized.
 
 If any check fails, use `NEEDS_EXECUTION_UNIT_FIDELITY`.
 
@@ -161,6 +175,9 @@ Final delivery must report:
 9. declared unit count versus executed unit count.
 10. material units with non-empty diff versus empty/no-diff units.
 11. sync status for each unit.
+12. whether prior commits/closeouts were baseline-only or explicitly credited.
+13. whether negative grep allowed valid blocked-state vocabulary while
+    forbidding unsafe behavior.
 
 ## Stop-State Mapping
 
@@ -203,3 +220,22 @@ reviewer result, git show --stat output, post-commit status and sync status?
 ```
 
 If the answer is no, return `NEEDS_EXECUTION_UNIT_FIDELITY`.
+
+Then ask:
+
+```text
+If prior commits or closeouts exist, does the prompt explicitly say whether
+they are baseline-only or execution credit, and does new execution require an
+additive material trail?
+```
+
+If the answer is no, return `NEEDS_TREE_REPAIR`.
+
+Then ask:
+
+```text
+Do negative greps target forbidden behavior without rejecting valid policy
+vocabulary such as blocked-state enums or reason codes?
+```
+
+If the answer is no, return `NEEDS_TREE_REPAIR`.

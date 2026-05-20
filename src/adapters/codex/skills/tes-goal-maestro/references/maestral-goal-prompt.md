@@ -49,6 +49,10 @@ The final prompt must include:
 16. Final delivery contract.
 17. Execution unit fidelity statement when the input artifact declares units.
 18. Per-unit material-diff and sync-commit evidence requirements.
+19. Material continuation rule when prior commits, closeouts or partial
+    implementations may exist.
+20. Semantic negative-grep rules when blocked-state vocabulary is valid inside
+    the contract.
 
 ## Prompt Template
 
@@ -114,6 +118,12 @@ Mission:
 Work mode:
 - Execute small SPECs.
 - Do not accumulate multiple SPECs without commit.
+- If prior commits, closeouts or partial implementations exist, treat them as
+  baseline context by default, not execution credit for this run.
+- Produce a new additive material trail with non-empty commits per material
+  unit unless the source artifact explicitly marks a unit no-material-change or
+  no-commit.
+- Do not rewrite, rebase, squash, delete or mask historical evidence.
 - Preserve every materialization unit declared by the input artifact.
 - Do not merge declared units unless the user explicitly changes the
   execution contract before implementation.
@@ -125,6 +135,15 @@ Work mode:
 - Run focused oracle before broader oracle.
 - Fix until green or stop honestly.
 - No force push, destructive git, hidden live execution or public-surface drift.
+
+Negative grep semantics:
+- Separate valid blocked-state or policy vocabulary from forbidden executable
+  behavior.
+- Allow enums, reason codes and fields that record a technical block when they
+  are part of the contract.
+- Forbid behavior such as solving CAPTCHA, proxy evasion, fake credentials,
+  leaked secret use, hidden network calls, unauthorized storage or runtime
+  boundary violations.
 
 First mandatory act:
 1. Run `git status --short --branch --untracked-files=all`.
@@ -151,6 +170,12 @@ Execution unit fidelity:
 - Execute each declared unit in order.
 - Commit after each declared unit unless the unit is explicitly no-commit.
 - Empty commits do not satisfy material execution units.
+- Prior commits or closeouts do not satisfy this run's material units by
+  default; they are baseline-only unless explicitly accepted by the source
+  artifact or owner.
+- Earlier failed or partial closeouts must be preserved as historical evidence
+  and repaired through additive material commits, not overwritten as if they
+  never happened.
 - A SPEC is complete only after focused oracle, reviewer diff check, semantic
   commit, captured commit hash, `git show --stat`, post-commit status and sync
   status.
@@ -258,11 +283,14 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
 9. preserves every declared execution unit without silent merge;
 10. forbids empty commits as proof of material execution;
 11. requires `git show --stat` evidence per material unit;
-12. requires sync status per unit;
-13. preserves unrelated worktree changes;
-14. includes reviewer and evidence/oracle roles when complexity warrants them;
-15. defines stop criteria;
-16. defines final delivery.
+12. states how prior commits or closeouts are treated when they exist;
+13. distinguishes allowed policy vocabulary from forbidden behavior in negative
+    grep;
+14. requires sync status per unit;
+15. preserves unrelated worktree changes;
+16. includes reviewer and evidence/oracle roles when complexity warrants them;
+17. defines stop criteria;
+18. defines final delivery.
 
 ## Stop If Missing
 
@@ -297,4 +325,7 @@ Reject prompts that:
 11. end with prose instead of evidence;
 12. hide owner decisions;
 13. authorize actions not present in the SPEC;
-14. compress a declared multi-SPEC queue into fewer commits.
+14. compress a declared multi-SPEC queue into fewer commits;
+15. let prior commits satisfy a new materialization run by default;
+16. use broad lexical greps that fail valid blocked-state vocabulary instead of
+    targeting forbidden behavior.

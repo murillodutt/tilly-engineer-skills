@@ -166,7 +166,7 @@ natural language. They require explicit invocation; `tes-goal-maestro` may also
 route from a direct request for a maestral `/goal` prompt from a mature SPEC,
 Super SPEC, PRD, relational project plan, or accepted execution tree. It must
 preserve declared execution units, validate the tree internally, require
-material-diff and sync-status evidence, and emit `/goal` when gates pass.
+material-diff, material-continuation, semantic negative-grep, sequential ownership and sync-status evidence, and emit `/goal` when gates pass.
 `/tes-prospect` and `/tes-mine` must honor the cognitive brake.
 
 </tes_init>
