@@ -4,7 +4,11 @@ Use this reference only after:
 
 1. the SPEC passes the Maturity Gate;
 2. the materialization tree has been produced;
-3. the user has accepted that tree.
+3. the tree passes the skill's internal fidelity and quality gates.
+
+Do not ask the user for an extra acceptance step before producing `/goal`
+unless the user explicitly requested staged review or the tree would change the
+declared execution contract.
 
 ## Core Rule
 
@@ -18,6 +22,10 @@ boundaries, owners, tests, commit rhythm or stop states.
 If the source artifact declares a materialization queue, the prompt must
 preserve that queue. The prompt is not allowed to compress declared execution
 units into fewer execution commits.
+
+A commit message is not execution evidence. The prompt must require material
+diff proof, focused oracles, reviewer result, post-commit status and sync
+status for every material unit.
 
 ## Required Output Shape
 
@@ -40,6 +48,7 @@ The final prompt must include:
 15. Stop criteria.
 16. Final delivery contract.
 17. Execution unit fidelity statement when the input artifact declares units.
+18. Per-unit material-diff and sync-commit evidence requirements.
 
 ## Prompt Template
 
@@ -110,6 +119,7 @@ Work mode:
   execution contract before implementation.
 - A declared no-commit preflight must still be reported as executed.
 - Stage only files for the current SPEC.
+- Commit and certify the current SPEC before starting the next SPEC.
 - Do not revert user changes.
 - Preserve unrelated worktree changes.
 - Run focused oracle before broader oracle.
@@ -140,6 +150,12 @@ Execution unit fidelity:
 - Preserve the source-declared queue exactly.
 - Execute each declared unit in order.
 - Commit after each declared unit unless the unit is explicitly no-commit.
+- Empty commits do not satisfy material execution units.
+- A SPEC is complete only after focused oracle, reviewer diff check, semantic
+  commit, captured commit hash, `git show --stat`, post-commit status and sync
+  status.
+- Default sync is local commit certification. Remote sync or push requires
+  explicit user authorization.
 - Stop with `NEEDS_EXECUTION_UNIT_FIDELITY` if the prompt cannot preserve this
   queue.
 
@@ -158,6 +174,18 @@ Negative checks:
 - <rg commands or assertions>
 Commit:
 <semantic commit>
+Completion evidence:
+- Changed files:
+- `git show --stat --oneline <commit>`:
+- Oracles:
+- Negative checks:
+- Reviewer result:
+- Post-commit status:
+- Sync status:
+  - `LOCAL_COMMITTED`
+  - `REMOTE_SYNCED`
+  - `REMOTE_SYNC_NOT_REQUESTED`
+  - `SYNC_BLOCKED`
 
 SPEC-002 <Small Slice>
 Objective:
@@ -172,6 +200,14 @@ Oracles:
 - <focused commands>
 Commit:
 <semantic commit>
+Completion evidence:
+- Changed files:
+- `git show --stat --oneline <commit>`:
+- Oracles:
+- Negative checks:
+- Reviewer result:
+- Post-commit status:
+- Sync status:
 
 Full Oracle And Closeout
 Run:
@@ -198,6 +234,8 @@ Final delivery:
 - SPECs executed;
 - subagents used;
 - commits;
+- per-SPEC material-diff evidence;
+- sync status per SPEC;
 - files changed;
 - oracles run;
 - boundaries preserved;
@@ -218,22 +256,29 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
 7. includes negative grep;
 8. requires commit per SPEC;
 9. preserves every declared execution unit without silent merge;
-10. preserves unrelated worktree changes;
-11. includes reviewer and evidence/oracle roles when complexity warrants them;
-12. defines stop criteria;
-13. defines final delivery.
+10. forbids empty commits as proof of material execution;
+11. requires `git show --stat` evidence per material unit;
+12. requires sync status per unit;
+13. preserves unrelated worktree changes;
+14. includes reviewer and evidence/oracle roles when complexity warrants them;
+15. defines stop criteria;
+16. defines final delivery.
 
 ## Stop If Missing
 
-Stop with `NEEDS_SPEC_MATURITY` or `NEEDS_TREE_ACCEPTANCE` when:
+Stop with `NEEDS_SPEC_MATURITY`, `NEEDS_TREE_REPAIR`,
+`NEEDS_EXECUTION_UNIT_FIDELITY` or `NEEDS_TREE_ACCEPTANCE` when:
 
 1. the canonical artifact is unclear;
 2. the execution phase is unclear;
 3. forbidden moves are missing;
 4. oracles are missing;
-5. the materialization tree is not accepted;
+5. the materialization tree fails internal gates;
 6. the prompt would need to invent file ownership or stop states;
 7. the prompt would need to merge or drop declared execution units.
+
+Use `NEEDS_TREE_ACCEPTANCE` only when changing the declared execution contract
+requires owner acceptance or the user explicitly asked for staged review.
 
 ## Anti-Patterns
 
@@ -244,9 +289,12 @@ Reject prompts that:
 3. mix contract, runtime, storage and live execution accidentally;
 4. omit `git status` preflight;
 5. omit per-SPEC commit;
-6. omit negative grep;
-7. treat reviewer as optional for high-risk work;
-8. end with prose instead of evidence;
-9. hide owner decisions;
-10. authorize actions not present in the SPEC;
-11. compress a declared multi-SPEC queue into fewer commits.
+6. allow empty commits to satisfy material execution;
+7. omit `git show --stat` material-diff proof;
+8. omit sync status;
+9. omit negative grep;
+10. treat reviewer as optional for high-risk work;
+11. end with prose instead of evidence;
+12. hide owner decisions;
+13. authorize actions not present in the SPEC;
+14. compress a declared multi-SPEC queue into fewer commits.

@@ -7,10 +7,13 @@ a final `/goal` prompt.
 ## Purpose
 
 The tree converts a mature input artifact into an auditable execution plan. It
-is not the final prompt. It is the acceptance gate before the final prompt.
+is included with the final prompt so the executor can audit the prompt's
+structure.
 
-If the user has not explicitly accepted the tree, stop with
-`NEEDS_TREE_ACCEPTANCE`.
+Tree acceptance is an internal quality gate by default. Do not stop merely to
+ask for permission to continue from tree to `/goal` after explicit skill
+invocation. Stop only when the tree fails a required gate, changes the declared
+execution contract, or the user explicitly requested staged review.
 
 ## Fixed Schema
 
@@ -47,7 +50,8 @@ Each unit must name:
 4. responsible owner or subagent role;
 5. focused oracles;
 6. negative checks when relevant;
-7. semantic commit message.
+7. semantic commit message;
+8. completion evidence requirements.
 
 Split any unit that has more than one behavioral objective, more than one
 ownership boundary, or mixed contract/runtime/storage/live work.
@@ -86,6 +90,47 @@ Forbidden refinement:
 If preserving declared units appears inefficient or technically awkward, stop
 with `NEEDS_EXECUTION_UNIT_FIDELITY` or `NEEDS_OWNER_DECISION`. Do not optimize
 away the input artifact's execution rhythm.
+
+## Material Diff Gate
+
+Commit rhythm is not enough. Each material unit must prove execution with
+material evidence:
+
+1. `git show --stat --oneline <unit-commit>` shows changed files;
+2. changed files are inside the unit's allowed file matrix;
+3. focused oracles for that unit passed after the diff;
+4. reviewer inspected the unit diff;
+5. the commit maps to exactly one declared unit.
+
+Empty commits are forbidden for implementation, contract, fixture, runtime,
+test, export, migration, storage, live-lane and documentation units unless the
+source artifact explicitly marks that unit as no-commit or no-material-change.
+
+If a compacted implementation already exists, do not create empty commits to
+simulate the declared execution rhythm. Record the mismatch and stop with
+`NEEDS_EXECUTION_UNIT_FIDELITY`, unless the owner explicitly accepts history
+normalization or compacted execution.
+
+## Sync Commit Gate
+
+A unit is complete only after its commit is certified:
+
+1. allowed files staged;
+2. semantic commit created or explicit no-commit rationale recorded;
+3. commit hash captured;
+4. `git show --stat --oneline <commit>` captured;
+5. post-commit `git status --short --branch --untracked-files=all` inspected;
+6. sync status recorded.
+
+Use these sync statuses:
+
+1. `LOCAL_COMMITTED`: committed locally and certified.
+2. `REMOTE_SYNCED`: pushed only when remote sync was explicitly authorized.
+3. `REMOTE_SYNC_NOT_REQUESTED`: local-only sync is complete.
+4. `SYNC_BLOCKED`: sync could not be certified.
+
+Remote push or remote state changes must not be required by a generated prompt
+unless the user explicitly requests remote sync.
 
 ## Preflight Requirements
 
@@ -169,6 +214,20 @@ When an input artifact declares N units, the final prompt must make N unit
 entries visible and must require N corresponding commits, except units
 explicitly marked as no-commit preflight by the artifact.
 
+Every material unit must also require a unit evidence block:
+
+```text
+Unit:
+Commit:
+Changed files:
+git show --stat:
+Oracles:
+Negative checks:
+Reviewer result:
+Post-commit status:
+Sync status:
+```
+
 ## Review Loop
 
 The tree must include a review loop:
@@ -180,7 +239,9 @@ The tree must include a review loop:
 5. fix until green;
 6. stage only unit files;
 7. commit;
-8. continue to the next slice.
+8. capture unit evidence block;
+9. inspect post-commit status;
+10. continue to the next slice only after sync status is certified.
 
 ## Weak Tree Rejection
 
@@ -192,10 +253,11 @@ Stop and revise the tree if it lacks:
 4. forbidden moves;
 5. per-SPEC oracles;
 6. negative grep;
-7. commit strategy;
-8. reviewer loop;
-9. stop states;
-10. final delivery contract.
+7. material-diff evidence;
+8. commit strategy;
+9. reviewer loop;
+10. stop states;
+11. final delivery contract.
 
 Also stop and revise the tree if it compresses, skips or renames a unit
 declared by the source artifact.
@@ -221,5 +283,6 @@ The tree must require a final report with:
 4. files changed;
 5. oracles run;
 6. boundaries preserved;
-7. decisions pending;
-8. final status.
+7. unit evidence blocks;
+8. decisions pending;
+9. final status.

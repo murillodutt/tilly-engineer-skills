@@ -1,12 +1,16 @@
 name: tes-goal-maestro
-description: Generate maestral /goal prompts from mature artifacts and accepted materialization trees.
+description: Generate maestral /goal prompts from mature input artifacts and internally validated materialization trees.
 default_prompt: |
   Use $tes-goal-maestro because it has been explicitly invoked or because the
   user directly asked for a maestral /goal prompt. Verify SPEC maturity first.
   If the input artifact is immature, stop with NEEDS_SPEC_MATURITY. If declared
   execution units are not preserved exactly, stop with
   NEEDS_EXECUTION_UNIT_FIDELITY. If the artifact is mature but the
-  materialization tree is not explicit and accepted, produce
-  DRAFT_MATERIALIZATION_TREE or NEEDS_TREE_ACCEPTANCE and wait for acceptance.
-  Only then produce a READY_GOAL_PROMPT. Keep output chat-first and save only
-  on explicit request.
+  materialization tree fails internal gates, stop with NEEDS_TREE_REPAIR.
+  Otherwise produce both the materialization tree and READY_GOAL_PROMPT in the
+  same response. Ask for tree acceptance only when the user explicitly requests
+  staged review or when changing the declared execution contract requires owner
+  acceptance. Require material-diff proof, per-unit focused oracles, reviewer
+  result, post-commit status, and sync status for every material unit; empty
+  commits do not satisfy material execution. Keep output chat-first and save
+  only on explicit request.

@@ -24,16 +24,25 @@ Use when the SPEC lacks any required foundation:
 
 Return only the smallest missing set.
 
-### DRAFT_MATERIALIZATION_TREE
+### READY_GOAL_PROMPT
 
-Use when the SPEC is mature, but the execution tree has not been accepted.
+Use when:
 
-Produce the fixed tree and ask for acceptance. Do not produce `/goal`.
+1. SPEC is mature;
+2. tree is explicit and passes internal gates;
+3. file ownership is clear;
+4. oracles are falsifiable;
+5. stop states are explicit.
+
+Explicit skill invocation is enough to produce both the tree and the final
+`/goal` prompt in one response when these conditions are true.
 
 ### NEEDS_EXECUTION_UNIT_FIDELITY
 
 Use when the source artifact declares materialization units and the proposed
 tree or prompt would omit, merge, rename, reorder or otherwise compress them.
+Also use it when the prompt would treat empty commits, compacted broad commits,
+or broad-only oracles as proof that individual material units executed.
 
 Return the declared unit list and the proposed correction. Do not produce
 `READY_GOAL_PROMPT` until the tree preserves the declared list or the user
@@ -42,19 +51,19 @@ explicitly accepts a changed execution contract.
 `NEEDS_SLICE_FIDELITY` is a backward-compatible alias for older prompts, but
 new skill output should prefer `NEEDS_EXECUTION_UNIT_FIDELITY`.
 
+### NEEDS_TREE_REPAIR
+
+Use when the generated tree fails fixed schema, ownership, oracle,
+execution-unit fidelity, negative-grep, commit-rhythm or closeout checks.
+
+### DRAFT_MATERIALIZATION_TREE
+
+Use only when the user explicitly asks for staged review before `/goal`.
+
 ### NEEDS_TREE_ACCEPTANCE
 
-Use when a tree already exists but user acceptance is missing or ambiguous.
-
-### READY_GOAL_PROMPT
-
-Use only when:
-
-1. SPEC is mature;
-2. tree is explicit and accepted;
-3. file ownership is clear;
-4. oracles are falsifiable;
-5. stop states are explicit.
+Use only when changing the declared execution contract requires owner
+acceptance, or when a user-requested staged review tree has not been accepted.
 
 ## Maturity Failure Examples
 
@@ -67,6 +76,7 @@ Stop if the SPEC says:
 5. "integrate with storage/live/API" while saying the phase is contract-only;
 6. "generate report" when the artifact is actually a machine contract.
 7. "execute these slices" but the prompt collapses them into fewer commits.
+8. "commit per slice" but there is no material-diff or sync evidence gate.
 
 ## Weak Prompt Rejection
 
@@ -76,12 +86,14 @@ Reject a prompt if it lacks:
 2. allowed files per slice;
 3. forbidden files or actions;
 4. commit per SPEC;
-5. focused oracles;
-6. negative grep;
-7. reviewer loop;
-8. stop states;
-9. final closeout.
-10. exact preservation of any slice list declared by the SPEC.
+5. material-diff proof per material SPEC;
+6. focused oracles;
+7. negative grep;
+8. reviewer loop;
+9. sync status per SPEC;
+10. stop states;
+11. final closeout.
+12. exact preservation of any slice list declared by the SPEC.
 
 ## Boundary Leakage Checks
 
@@ -98,6 +110,12 @@ Ask whether the prompt accidentally permits:
 
 If yes, revise before returning the prompt.
 
+## Interaction Checks
+
+A valid skill response must not stop to ask permission between a valid tree and
+the `/goal` prompt after explicit invocation. The tree gate is technical:
+generate, validate, then emit `READY_GOAL_PROMPT`.
+
 ## Commit Rhythm Checks
 
 A valid prompt must require:
@@ -105,10 +123,28 @@ A valid prompt must require:
 1. no accumulated multi-slice commits;
 2. stage only current-unit files;
 3. semantic commit messages;
-4. no unrelated revert;
-5. no force push;
-6. worktree status inspection before final closeout;
-7. one visible commit per declared unit unless explicitly no-commit.
+4. no empty commits for material units;
+5. `git show --stat --oneline <commit>` evidence for each material unit;
+6. changed files inside the unit's allowed file matrix;
+7. no unrelated revert;
+8. no force push;
+9. worktree status inspection after each commit and before final closeout;
+10. one visible commit per declared unit unless explicitly no-commit;
+11. sync status per unit.
+
+## Material Execution Checks
+
+Before `GO`, verify:
+
+1. declared unit count matches executed unit count;
+2. each material unit has a non-empty diff or explicit no-material-change
+   rationale accepted by the source artifact;
+3. each material unit has focused oracle evidence;
+4. broad regression did not replace missing per-unit oracles;
+5. compacted implementation commits were not masked by later empty commits;
+6. remote sync is reported only when explicitly authorized.
+
+If any check fails, use `NEEDS_EXECUTION_UNIT_FIDELITY`.
 
 ## Closeout Checks
 
@@ -123,6 +159,8 @@ Final delivery must report:
 7. boundaries preserved;
 8. pending owner decisions.
 9. declared unit count versus executed unit count.
+10. material units with non-empty diff versus empty/no-diff units.
+11. sync status for each unit.
 
 ## Stop-State Mapping
 
@@ -153,6 +191,15 @@ Then ask:
 ```text
 If the SPEC declared N slices, does this prompt preserve N visible slices and
 N matching commit decisions?
+```
+
+If the answer is no, return `NEEDS_EXECUTION_UNIT_FIDELITY`.
+
+Then ask:
+
+```text
+Does every material unit have changed files, focused oracle evidence,
+reviewer result, git show --stat output, post-commit status and sync status?
 ```
 
 If the answer is no, return `NEEDS_EXECUTION_UNIT_FIDELITY`.

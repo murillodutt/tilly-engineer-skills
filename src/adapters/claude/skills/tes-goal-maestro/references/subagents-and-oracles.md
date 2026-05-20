@@ -51,7 +51,10 @@ Reviews:
 4. public surface drift;
 5. storage or runtime entering the wrong phase;
 6. hidden external access;
-7. uncommitted multi-slice accumulation.
+7. uncommitted multi-slice accumulation;
+8. empty commits used as material execution evidence;
+9. broad commits that hide multiple declared units;
+10. missing per-unit sync status.
 
 ### Evidence/Oracle Senior
 
@@ -108,7 +111,9 @@ Common oracles:
 7. migration or DB harness only when storage is in phase;
 8. `git diff --check`;
 9. negative grep for forbidden patterns;
-10. final status report.
+10. `git show --stat --oneline <commit>` for material-diff proof;
+11. post-commit `git status --short --branch --untracked-files=all`;
+12. final status report.
 
 ## Negative Grep Patterns
 
@@ -138,12 +143,14 @@ For complex goals, require closeout with:
 1. execution units executed;
 2. subagents used;
 3. commits;
-4. files changed;
-5. oracles run;
-6. failures found and fixed;
-7. boundaries preserved;
-8. pending owner decisions;
-9. final status.
+4. material-diff evidence for each material unit;
+5. sync status for each unit;
+6. files changed;
+7. oracles run;
+8. failures found and fixed;
+9. boundaries preserved;
+10. pending owner decisions;
+11. final status.
 
 ## When Not To Use Subagents
 

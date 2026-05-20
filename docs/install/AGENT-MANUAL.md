@@ -71,7 +71,8 @@ skills, not broad natural intent routers. Do not activate them from vague goal,
 stress-test, or mining language unless the user explicitly names the skill or
 trigger. `tes-goal-maestro` may also route from a direct request to generate a
 maestral `/goal` prompt from a mature artifact; it preserves declared execution
-units, stops for tree acceptance, and only then emits `/goal`. After
+units, validates the tree internally, requires material-diff and sync-status
+evidence, and emits `/goal` when gates pass. After
 prospecting or mining invocation, they may drive the sequence proactively and
 must honor the cognitive brake:
 `pause`, `pausa`, `freia`, `segura`, `para`, `hold`, `step back`, or

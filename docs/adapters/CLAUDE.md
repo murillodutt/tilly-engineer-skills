@@ -88,8 +88,9 @@ dedicated decision.
   materialization skill for SPECs, Super SPECs, PRDs, relational project plans,
   or accepted execution trees. Its `/tes:goal-maestro` alias is compatible
   intent text, and direct requests to generate a maestral `/goal` prompt may
-  route to it. It produces a draft materialization tree first, preserves
-  declared execution units, and emits `/goal` only after tree acceptance.
+  route to it. It produces and validates the materialization tree, preserves
+  declared execution units, requires material-diff and sync-status evidence,
+  and emits `/goal` in the same response when gates pass.
 - `/tes-prospect` and `/tes-mine` are direct explicit-invocation predictive
   skills. Their `/tes:prospect` and `/tes:mine` aliases are compatible intent
   text, but broad natural-language descriptions must not activate them. Once

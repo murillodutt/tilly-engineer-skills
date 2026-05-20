@@ -2,8 +2,8 @@
 
 ## Purpose
 
-`tes-goal-maestro` materializes a mature SPEC, Super SPEC, PRD, relational
-project plan, or accepted execution tree into a ready maestral `/goal` prompt.
+`tes-goal-maestro` materializes a mature input artifact and internally
+validated materialization tree into a ready maestral `/goal` prompt.
 
 ## Why This Skill Exists
 
@@ -22,6 +22,7 @@ examples or origins.
 | Maintainer-provided maestral materialization recipe, 2026-05-20 | `/goal` prompts work best as execution contracts after SPEC maturity. | high |
 | Maintainer directive, 2026-05-20 | The skill must be neutral and must not mention project-specific origin stories. | high |
 | Maintainer directive, 2026-05-20 | Output is chat-first and saved only on explicit request. | high |
+| Maintainer corrective audit, 2026-05-20 | Commit messages and empty commits are not execution evidence; each unit needs material-diff proof and sync certification. | high |
 
 ## Source Search Ledger
 
@@ -35,20 +36,18 @@ examples or origins.
 - Activate only after explicit invocation or a direct request for a maestral
   `/goal` prompt.
 - Refuse immature SPECs with `NEEDS_SPEC_MATURITY`.
-- Refuse prompts that omit, merge, rename, reorder, or compress declared
-  execution units with `NEEDS_EXECUTION_UNIT_FIDELITY`.
-- Produce `DRAFT_MATERIALIZATION_TREE` when the SPEC is mature but the tree is
-  not explicit and accepted.
-- Return `NEEDS_TREE_ACCEPTANCE` when a draft tree exists but has not been
-  explicitly accepted.
-- Produce `READY_GOAL_PROMPT` only after SPEC maturity and tree acceptance.
-- Assign a readiness score before final prompt generation.
+- Produce `READY_GOAL_PROMPT` in the same response when the input artifact is
+  mature and the generated tree passes internal gates.
+- Stop with `NEEDS_TREE_REPAIR` when the tree fails schema, ownership, oracle,
+  fidelity, negative-grep, commit-rhythm or closeout gates.
+- Require material-diff proof, focused oracles, reviewer result, post-commit
+  status and sync status for each material execution unit.
+- Treat local commit certification as default sync. Remote sync requires
+  explicit authorization.
+- Ask for tree acceptance only when the user explicitly requests staged review
+  or a change to the declared execution contract requires owner acceptance.
 - Keep output chat-first and save only on request.
 - Always include `SPEC-000 Preflight And Baseline`.
-- Require every SPEC slice to name objective, files, owner, oracles, negative
-  checks when relevant, and semantic commit.
-- Preserve every source-declared execution unit visibly in the tree and prompt,
-  with one commit or explicit no-commit decision per unit.
 - Keep the skill neutral and free of project-specific origin stories,
   absolute paths, or domain examples.
 
@@ -59,13 +58,9 @@ examples or origins.
 - Mixing semantic meaning with physical mechanics too early.
 - Assigning subagents without file ownership.
 - Running broad implementation without per-SPEC oracles.
-- Emitting weak materialization trees without file ownership, negative grep,
-  review loop, stop states, or commit rhythm.
-- Generating prompts that accidentally authorize live execution, persistence,
-  public-surface drift, destructive operations, external access, secrets, or
-  private data without SPEC authority.
 - Accumulating many SPECs before commit.
-- Collapsing a declared execution queue into fewer implementation units.
+- Treating empty commits or compacted broad commits as proof of per-unit
+  execution.
 - Ending with prose instead of evidence and stop states.
 
 ## Relationship To Other Skills
@@ -80,12 +75,13 @@ discipline once execution begins.
 | Date | Change | Evidence | Confidence |
 |------|--------|----------|------------|
 | 2026-05-20 | Created `tes-goal-maestro` as a neutral SPEC-to-`/goal` materialization skill. | Maintainer alignment in current session; maestral materialization recipe. | high |
-| 2026-05-20 | Promoted the <project-A>-hardened `0.2.0` contract: readiness scoring, tree acceptance state, modular materialization-tree, subagent/oracle, and quality-gate references. | `/Users/murillo/Dev/<project-a>/.agents/skills/tes-goal-maestro/**`; maintainer directive to bring improvements back to TES. | high |
-| 2026-05-20 | Added mature-artifact breadth and execution-unit fidelity gate: SPEC, Super SPEC, PRD, relational project plan, or accepted execution tree may feed the skill, but declared units must be preserved exactly. | `/Users/murillo/Dev/<project-a>/.agents/skills/tes-goal-maestro/**`; maintainer directive to bring all evolved improvements into TES. | high |
+| 2026-05-20 | Changed tree acceptance from conversational permission to internal quality gate. | Maintainer bug report after skill stopped at tree acceptance despite explicit invocation. | high |
+| 2026-05-20 | Added material-diff and sync-commit gates so empty commits cannot certify material units. | Corrective audit after execution-unit fidelity mismatch. | high |
 
 ## Do Not Lose
 
-The skill is not an implementation runner. Its job is to force artifact
-maturity, execution-grade tree acceptance, readiness scoring, declared-unit
-fidelity, and prompt hardening before producing the `/goal` contract. Do not
-weaken that gate for convenience, and do not add project-specific examples.
+The skill is not an implementation runner by default. Its job is to force input
+artifact maturity and internal tree validation before producing the `/goal`
+contract. Do not turn the tree gate into an unnecessary permission prompt, do
+not weaken fidelity for convenience, do not allow empty commits to mask
+compacted implementation, and do not add project-specific examples.
