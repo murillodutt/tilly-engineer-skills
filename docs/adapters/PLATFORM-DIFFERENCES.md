@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, adapter authors, and installing agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.2
+tver: 0.1.3
 ---
 
 # Platform Differences Reference
@@ -34,6 +34,7 @@ TES entry vocabulary is shared across platforms:
 | Update existing mesh | `/tes-update` | `/tes:update` | Run the update probe, Layer Zero if needed, then converge. |
 | Align project operating mesh | `/tes-align` | `/tes:align` | Deepen initial context into roadmap, state, execution line, gates, boundaries, glossary, decisions, and evidence. |
 | Project GPS | `/tes-map` | `/tes:gps` | Refresh only the managed `TES-MAP` block in `PROJECT-ROADMAP.md` with current position, blockers, proof, and next move. |
+| Materialize maestral goal | `/tes-goal-maestro` | `/tes:goal-maestro` | Generate a maestral `/goal` prompt from a mature SPEC and accepted materialization tree. |
 | Prospect project stress | `/tes-prospect` | `/tes:prospect` | Explicitly invoke predictive pressure on a plan or design; no broad natural activation. |
 | Mine code and domain knowledge | `/tes-mine` | `/tes:mine` | Explicitly invoke code, terminology, context, and ADR mining with a cognitive brake. |
 | Open Obsidian | `/tes-open-obsidian` | `/tes:open-obsidian` | Preflight context/alignment and open `docs/agents` as the Obsidian vault without writing `.obsidian/**`. |
@@ -50,17 +51,19 @@ compatibility alias and may be rejected by a host slash-command parser. If a
 host says a `/tes:*` slash command is invalid, the agent must treat the text as
 TES intent and route to the matching `tes-*` skill, rule, or installer spec.
 Natural intent text such as `tes init`, `tes setup`, `tes update`, `tes align`,
-`tes map`, `project GPS`, `mapa TES`, `tes open obsidian`, `align TES`,
+`tes map`, `generate a maestral /goal prompt`, `gerar um /goal maestral`,
+`project GPS`, `mapa TES`, `tes open obsidian`, `align TES`,
 `align this project`, `map this project`, `open Obsidian`,
 `open this project in Obsidian`, `Atualizar TES`, `atualizar TES`,
 `alinhar TES`, `alinhar projeto`, `mapear TES`, `mapear projeto`,
 `abrir Obsidian`, `abrir no Obsidian`, `initialize TES`, `install TES`,
 `recertify TES`, `inicializar TES`, `instalar TES`, and `recertificar TES` must route to the
 same contract.
-`/tes-prospect` and `/tes-mine` are intentionally excluded from broad natural
-intent routing. They activate only when named by trigger, alias, or explicit
-skill invocation, then operate proactively until the user pulls the cognitive
-brake.
+`/tes-prospect`, `/tes-mine`, and `/tes-goal-maestro` are intentionally
+excluded from broad natural intent routing. `tes-goal-maestro` may also route
+from a direct request to generate a maestral `/goal` prompt. Prospecting and
+mining activate only when named by trigger, alias, or explicit skill
+invocation, then operate proactively until the user pulls the cognitive brake.
 
 ## Surface Differences
 

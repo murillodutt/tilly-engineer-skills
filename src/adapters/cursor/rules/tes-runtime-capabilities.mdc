@@ -18,6 +18,7 @@ Use these exact TES intents when the user asks for Tilly Engineering Skills:
 - `/tes-update`
 - `/tes-align`
 - `/tes-map`
+- `/tes-goal-maestro`
 - `/tes-prospect`
 - `/tes-mine`
 - `/tes-open-obsidian`
@@ -35,6 +36,7 @@ Compatible aliases:
 - `/tes:update`
 - `/tes:align`
 - `/tes:gps`
+- `/tes:goal-maestro`
 - `/tes:prospect`
 - `/tes:mine`
 - `/tes:open-obsidian`
@@ -52,16 +54,19 @@ Compatible aliases:
 - `/tes:curate`
 
 Natural intents include: tes init, tes setup, tes update, tes align, tes map,
-project GPS, mapa TES, tes open obsidian, align TES, align this project,
-map this project, open Obsidian, open this project in Obsidian, Atualizar TES,
-atualizar TES, alinhar TES, alinhar projeto, mapear TES, mapear projeto,
-abrir Obsidian, abrir no Obsidian, initialize TES, install TES, recertify TES,
-inicializar TES, instalar TES, and recertificar TES.
+generate a maestral /goal prompt, gerar um /goal maestral, project GPS, mapa
+TES, tes open obsidian, align TES, align this project, map this project, open
+Obsidian, open this project in Obsidian, Atualizar TES, atualizar TES, alinhar
+TES, alinhar projeto, mapear TES, mapear projeto, abrir Obsidian, abrir no
+Obsidian, initialize TES, install TES, recertify TES, inicializar TES, instalar
+TES, and recertificar TES.
 
-Do not activate `/tes-prospect` or `/tes-mine` from broad natural language.
-They require explicit invocation by trigger, alias, or skill name. After
-invocation, they may operate proactively and must honor the cognitive brake:
-pause, pausa, freia, segura, para, hold, step back, or resuma onde estamos.
+Do not activate `/tes-prospect`, `/tes-mine`, or `/tes-goal-maestro` from broad
+natural language. They require explicit invocation by trigger, alias, or skill
+name; `tes-goal-maestro` may also route from a direct request to generate a
+maestral `/goal` prompt. After prospecting or mining invocation, they may
+operate proactively and must honor the cognitive brake: pause, pausa, freia,
+segura, para, hold, step back, or resuma onde estamos.
 
 Route `/tes-init` through the Install/Update Gate, Project Context Gate, and
 Project-Start Gate. Step Zero protects installer/update writes and must not
