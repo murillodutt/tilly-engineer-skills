@@ -34,7 +34,7 @@ TES entry vocabulary is shared across platforms:
 | Update existing mesh | `/tes-update` | `/tes:update` | Run the update probe, Layer Zero if needed, then converge. |
 | Align project operating mesh | `/tes-align` | `/tes:align` | Deepen initial context into roadmap, state, execution line, gates, boundaries, glossary, decisions, and evidence. |
 | Project GPS | `/tes-map` | `/tes:gps` | Refresh only the managed `TES-MAP` block in `PROJECT-ROADMAP.md` with current position, blockers, proof, and next move. |
-| Materialize maestral goal | `/tes-goal-maestro` | `/tes:goal-maestro` | Generate a maestral `/goal` prompt from a mature SPEC and accepted materialization tree. |
+| Materialize maestral goal | `/tes-goal-maestro` | `/tes:goal-maestro` | Generate an execution-grade materialization tree and, after acceptance, a maestral `/goal` prompt from a mature SPEC, Super SPEC, PRD, relational project plan, or accepted execution tree. |
 | Prospect project stress | `/tes-prospect` | `/tes:prospect` | Explicitly invoke predictive pressure on a plan or design; no broad natural activation. |
 | Mine code and domain knowledge | `/tes-mine` | `/tes:mine` | Explicitly invoke code, terminology, context, and ADR mining with a cognitive brake. |
 | Open Obsidian | `/tes-open-obsidian` | `/tes:open-obsidian` | Preflight context/alignment and open `docs/agents` as the Obsidian vault without writing `.obsidian/**`. |
@@ -61,9 +61,11 @@ Natural intent text such as `tes init`, `tes setup`, `tes update`, `tes align`,
 same contract.
 `/tes-prospect`, `/tes-mine`, and `/tes-goal-maestro` are intentionally
 excluded from broad natural intent routing. `tes-goal-maestro` may also route
-from a direct request to generate a maestral `/goal` prompt. Prospecting and
-mining activate only when named by trigger, alias, or explicit skill
-invocation, then operate proactively until the user pulls the cognitive brake.
+from a direct request to generate a maestral `/goal` prompt from a mature SPEC,
+Super SPEC, PRD, relational project plan, or accepted execution tree.
+Prospecting and mining activate only when named by trigger, alias, or explicit
+skill invocation, then operate proactively until the user pulls the cognitive
+brake.
 
 ## Surface Differences
 

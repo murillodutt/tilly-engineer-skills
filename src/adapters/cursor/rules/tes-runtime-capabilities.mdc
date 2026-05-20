@@ -54,7 +54,8 @@ Compatible aliases:
 - `/tes:curate`
 
 Natural intents include: tes init, tes setup, tes update, tes align, tes map,
-generate a maestral /goal prompt, gerar um /goal maestral, project GPS, mapa
+generate a maestral /goal prompt, generate a /goal from a PRD, gerar um /goal
+maestral, gerar /goal de um PRD, project GPS, mapa
 TES, tes open obsidian, align TES, align this project, map this project, open
 Obsidian, open this project in Obsidian, Atualizar TES, atualizar TES, alinhar
 TES, alinhar projeto, mapear TES, mapear projeto, abrir Obsidian, abrir no
@@ -64,8 +65,11 @@ TES, and recertificar TES.
 Do not activate `/tes-prospect`, `/tes-mine`, or `/tes-goal-maestro` from broad
 natural language. They require explicit invocation by trigger, alias, or skill
 name; `tes-goal-maestro` may also route from a direct request to generate a
-maestral `/goal` prompt. After prospecting or mining invocation, they may
-operate proactively and must honor the cognitive brake: pause, pausa, freia,
+maestral `/goal` prompt from a mature SPEC, Super SPEC, PRD, relational project
+plan, or accepted execution tree. It must preserve declared execution units,
+stop for tree acceptance, and only then emit `/goal`. After prospecting or
+mining invocation, they may operate proactively and must honor the cognitive
+brake: pause, pausa, freia,
 segura, para, hold, step back, or resuma onde estamos.
 
 Route `/tes-init` through the Install/Update Gate, Project Context Gate, and

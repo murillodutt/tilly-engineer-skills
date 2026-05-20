@@ -13,7 +13,7 @@ from typing import Any
 import tes_map
 
 
-VERSION = "0.3.115"
+VERSION = "0.3.117"
 SCRIPT_PATH = Path(__file__).resolve()
 PACKAGE_MODE = (SCRIPT_PATH.parents[1] / "package.json").exists() and SCRIPT_PATH.parent.name == "scripts"
 REQUIRED_BLOCK_TERMS = (

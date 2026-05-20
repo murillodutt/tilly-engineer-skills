@@ -84,10 +84,12 @@ dedicated decision.
   `alinhar projeto`, and natural alignment prompts route to `tes-align`.
   `open Obsidian`, `open this project in Obsidian`, `abrir Obsidian`, and
   `abrir no Obsidian` route to `tes-open-obsidian`.
-- `/tes-goal-maestro` is a direct explicit-invocation SPEC-to-`/goal`
-  materialization skill. Its `/tes:goal-maestro` alias is compatible intent
-  text, and direct requests to generate a maestral `/goal` prompt may route to
-  it.
+- `/tes-goal-maestro` is a direct explicit-invocation mature-artifact-to-`/goal`
+  materialization skill for SPECs, Super SPECs, PRDs, relational project plans,
+  or accepted execution trees. Its `/tes:goal-maestro` alias is compatible
+  intent text, and direct requests to generate a maestral `/goal` prompt may
+  route to it. It produces a draft materialization tree first, preserves
+  declared execution units, and emits `/goal` only after tree acceptance.
 - `/tes-prospect` and `/tes-mine` are direct explicit-invocation predictive
   skills. Their `/tes:prospect` and `/tes:mine` aliases are compatible intent
   text, but broad natural-language descriptions must not activate them. Once
