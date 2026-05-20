@@ -67,7 +67,7 @@ mode of `/tes-init`.
 | `/tes-update` or `/tes:update` | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, `tes_legacy_retirement.py`, install smoke, MCP install | only selected TES surfaces after Step Zero and legacy retirement |
 | `/tes-align` or `/tes:align` | semantically align a TES-initialized project into an operating mesh with a System X-Ray and Convergence Line | `project_alignment_oracle.py`, `project_context_oracle.py`, project gates | `docs/agents/PROJECT-STATE.md`, `PROJECT-ROADMAP.md` Mermaid X-Ray and convergence graphs, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`, `DECISIONS/**`, evidence |
 | `/tes-map` or `/tes:gps` | refresh the Project GPS position inside the existing roadmap | `tes_map.py`, `tes_map_oracle.py`, `project_alignment_oracle.py` when needed | only the managed `TES-MAP` block inside `docs/agents/PROJECT-ROADMAP.md` |
-| `/tes-goal-maestro` or `/tes:goal-maestro` | materialize a mature SPEC and accepted tree into a ready maestral `/goal` prompt | active agent SPEC review; `NEEDS_SPEC_MATURITY`, `DRAFT_MATERIALIZATION_TREE`, or `READY_GOAL_PROMPT` status | chat-first; files only when the user explicitly asks to save |
+| `/tes-goal-maestro` or `/tes:goal-maestro` | materialize a mature SPEC into an execution-grade tree and, after acceptance, a ready maestral `/goal` prompt | active agent SPEC review; `NEEDS_SPEC_MATURITY`, `DRAFT_MATERIALIZATION_TREE`, `NEEDS_TREE_ACCEPTANCE`, or `READY_GOAL_PROMPT` status | chat-first; files only when the user explicitly asks to save |
 | `/tes-prospect` or `/tes:prospect` | explicitly invoke project-stress prospecting to pressure a plan or design, expose hidden dependencies, and ask one question at a time | active agent codebase exploration; cognitive brake state snapshot when paused | no project writes |
 | `/tes-mine` or `/tes:mine` | explicitly invoke code and domain mining to extract terms, contradictions, decisions, context, and ADR candidates | active agent code/doc exploration; cognitive brake state snapshot when paused | `CONTEXT.md` and ADRs only when the mining contract resolves terms or decisions and the brake is not active |
 | `/tes-open-obsidian` or `/tes:open-obsidian` | open `docs/agents` as the Obsidian vault after context and alignment pass | `tes_open_obsidian.py`, `project_context_oracle.py`, `project_alignment_oracle.py` | no TES writes; Obsidian app may manage project-owned `.obsidian/**` after explicit launch |
@@ -107,7 +107,7 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-source alias for the same oracles; not a target-project guarantee |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.115 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.116 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |

@@ -46,7 +46,7 @@ User-facing intent typed in the agent window — never a shell command.
 | `/tes-update` | Update an already-meshed project | `/tes:update` (compat) |
 | `/tes-align` | Re-run alignment after context drift | `/tes:align` (compat) |
 | `/tes-map` | Refresh the Project GPS position in the roadmap | `/tes:gps` (compat) |
-| `/tes-goal-maestro` | Generate a maestral `/goal` prompt from a mature SPEC and accepted tree | `/tes:goal-maestro` (compat) |
+| `/tes-goal-maestro` | Generate an execution-grade tree and maestral `/goal` prompt from a mature SPEC and accepted tree | `/tes:goal-maestro` (compat) |
 | `/tes-prospect` | Stress-test a plan or design after explicit invocation | `/tes:prospect` (compat) |
 | `/tes-mine` | Mine code, terminology, context, and ADR candidates after explicit invocation | `/tes:mine` (compat) |
 | `/tes-open-obsidian` | Open `docs/agents/` in Obsidian via CLI or macOS app fallback | `/tes:open-obsidian` (compat) |

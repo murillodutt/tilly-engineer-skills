@@ -1,7 +1,10 @@
 # Maestral Goal Prompt
 
-Use this reference only after `tes-goal-maestro` passes the Maturity Gate or
-needs to draft the explicit materialization tree.
+Use this reference only after:
+
+1. the SPEC passes the Maturity Gate;
+2. the materialization tree has been produced;
+3. the user has accepted that tree.
 
 ## Core Rule
 
@@ -9,120 +12,120 @@ needs to draft the explicit materialization tree.
 A maestral /goal prompt is an execution contract, not a long request.
 ```
 
-It names the artifact, protects boundaries, decomposes work, assigns ownership,
-defines oracles, preserves review, requires commit discipline, and declares
-honest stop states before implementation begins.
+It must let a future agent execute without inventing artifact, scope,
+boundaries, owners, tests, commit rhythm or stop states.
 
-## Materialization Tree Schema
+## Required Output Shape
 
-Always produce this schema before the final prompt:
+The final prompt must include:
 
-```text
-Canonical Artifact:
-Certified Context:
-Phase Boundary:
-Non-Objectives:
-Central Rule:
-Forbidden Moves:
-SPEC Slices:
-Subagent Ownership:
-Per-SPEC Oracles:
-Negative Grep:
-Commit Strategy:
-Review Loop:
-Stop States:
-Final Delivery Contract:
-```
+1. `/goal` opening line.
+2. Mission.
+3. Main SPEC path.
+4. Certified context.
+5. Phase boundary.
+6. Central rule.
+7. Non-objectives and forbidden moves.
+8. Specialized subagents with ownership.
+9. Work mode.
+10. First mandatory act.
+11. `SPEC-000 Preflight And Baseline`.
+12. Narrow SPEC slices.
+13. Full oracle.
+14. Negative grep.
+15. Stop criteria.
+16. Final delivery contract.
 
-If the tree is inferred from the SPEC rather than supplied by the user, label it
-`DRAFT_MATERIALIZATION_TREE` and ask for acceptance.
-
-## Readiness Checklist
-
-The final `/goal` prompt is ready only when a future agent can execute it
-without inventing:
-
-1. artifact;
-2. scope;
-3. boundaries;
-4. sequencing;
-5. subagent ownership;
-6. tests and oracles;
-7. commit rhythm;
-8. stop states.
-
-## Prompt Skeleton
+## Prompt Template
 
 ```text
 /goal
-Materialize <CanonicalArtifact> as <capability>, in incremental, auditable,
-fixture-first execution with commit per SPEC.
+Materialize <CanonicalArtifact> as <capability/purpose>, in incremental,
+auditable, fixture-first execution with commit per SPEC.
 
-Do not restart from zero. Use the real worktree and Git state as source of
+Do not restart from zero. Use the real worktree and Git state as the source of
 truth.
 
 Main SPEC:
 <path/to/spec.md>
 
-Mandatory context:
-- <already certified dependency>
-- <boundary to preserve>
-- <phase separation>
+Certified context:
+- <certified dependency or prior closeout>
+- <existing contract/module that must be reused>
+- <phase boundary already decided>
 - <known deferred work>
 
 Mission:
-<one or two paragraphs describing the artifact and why it matters>
+<short mission explaining the artifact, capability and value>
+
+Phase boundary:
+<what this phase may do>
+<what later phases must do instead>
 
 Central rule:
-<single spine rule>
+<single rule that prevents semantic drift>
 
 Do not allow:
 - <forbidden move 1>
 - <forbidden move 2>
 - <forbidden move 3>
+- <forbidden move N>
 
-Specialized subagents:
+Subagents:
 
-1. <Role>
+1. <Role Senior>
 Ownership:
-- <paths>
+- <allowed path or responsibility>
 Mission:
-- <bounded responsibility>
+- <bounded mission>
 
-2. Reviewer Senior
+2. Tests Senior
+Ownership:
+- <test paths>
+Mission:
+- Build focused, adversarial and regression tests for this phase.
+
+3. Reviewer Senior
 Read-only per SPEC.
 Mission:
-- Review scope, boundary, oracles and false closure.
+- Review scope inflation, boundary drift, forbidden moves, missing oracles and
+  false closure.
 
-3. Evidence/Oracle Senior
+4. Evidence/Oracle Senior
 Ownership:
-- reports/checklists
+- <reports/checklists if any>
 Mission:
-- Record commands, results, gaps and closeout.
+- Track commands, outputs, gaps, closeout and final status.
 
 Work mode:
 - Execute small SPECs.
-- Commit per SPEC.
-- Do not stage unrelated files.
+- Do not accumulate multiple SPECs without commit.
+- Stage only files for the current SPEC.
 - Do not revert user changes.
-- Stop only for real owner decisions, critical blockers or safety blockers.
+- Preserve unrelated worktree changes.
+- Run focused oracle before broader oracle.
+- Fix until green or stop honestly.
+- No force push, destructive git, hidden live execution or public-surface drift.
 
 First mandatory act:
-1. git status --short --branch --untracked-files=all
-2. git log --oneline -12
-3. Identify pending changes.
-4. Run read-only oracles.
-5. Commit baseline docs if green.
+1. Run `git status --short --branch --untracked-files=all`.
+2. Run `git log --oneline -12` when lineage matters.
+3. Identify unrelated pending changes.
+4. Read the main SPEC and existing dependencies.
+5. Run read-only baseline oracles.
+6. Declare the file matrix before editing.
 
 SPEC-000 Preflight And Baseline
 Objective:
 <baseline objective>
 Allowed files:
 - <paths>
+Forbidden:
+- <paths/actions>
 Oracles:
 - <commands>
 Commit:
-<semantic commit>
+<none or semantic commit when baseline docs are in scope>
 
 SPEC-001 <Small Slice>
 Objective:
@@ -131,71 +134,100 @@ Allowed files:
 - <paths>
 Forbidden:
 - <paths/actions>
+Owner:
+<role>
 Oracles:
-- <commands>
+- <focused commands>
+Negative checks:
+- <rg commands or assertions>
 Commit:
 <semantic commit>
 
-Full Oracle:
-- <focused tests>
-- <regression tests>
-- git diff --check
-- negative rg checks
+SPEC-002 <Small Slice>
+Objective:
+<one narrow goal>
+Allowed files:
+- <paths>
+Forbidden:
+- <paths/actions>
+Owner:
+<role>
+Oracles:
+- <focused commands>
+Commit:
+<semantic commit>
+
+Full Oracle And Closeout
+Run:
+- <focused test suite>
+- <regression suite>
+- <lint/typecheck/contract/doc checks>
+- `git diff --check`
+Negative grep:
+- <forbidden runtime or provider pattern>
+- <unsafe export pattern>
+- <phase leakage pattern>
+Closeout artifact:
+- <report path, if any>
+Commit:
+<semantic certification commit>
 
 Stop criteria:
-- GO
-- NEEDS_OWNER_DECISION
-- BLOCKED
-- SAFETY_BLOCKED
+- `GO`: <green condition>
+- `NEEDS_OWNER_DECISION`: <decision condition>
+- `BLOCKED`: <critical external blocker>
+- `SAFETY_BLOCKED`: <unsafe condition>
 
 Final delivery:
-- SPECs executed
-- subagents used
-- commits
-- files changed
-- oracles run
-- boundaries preserved
-- pending decisions
-- final status
+- SPECs executed;
+- subagents used;
+- commits;
+- files changed;
+- oracles run;
+- boundaries preserved;
+- blockers or decisions pending;
+- final status.
 ```
 
-## Slice Rules
+## Prompt Hardening Checklist
 
-Each SPEC slice should remove one ambiguity or certify one layer. Split any
-slice that cannot be explained in one short objective.
+Before returning `READY_GOAL_PROMPT`, verify the prompt:
 
-Every slice needs:
+1. starts from a real SPEC;
+2. includes `SPEC-000`;
+3. names allowed files per slice;
+4. names forbidden moves;
+5. assigns ownership;
+6. includes per-slice oracles;
+7. includes negative grep;
+8. requires commit per SPEC;
+9. preserves unrelated worktree changes;
+10. includes reviewer and evidence/oracle roles when complexity warrants them;
+11. defines stop criteria;
+12. defines final delivery.
 
-1. objective;
-2. allowed files;
-3. forbidden files or actions when risk exists;
-4. falsifiable oracles;
-5. semantic commit message.
+## Stop If Missing
 
-## Negative Grep
+Stop with `NEEDS_SPEC_MATURITY` or `NEEDS_TREE_ACCEPTANCE` when:
 
-Add negative grep for phase violations, hidden runtime execution, forbidden
-fallbacks, unsafe exports, or boundary drift.
-
-Examples:
-
-```text
-rg -n "fetch|getFetcher|service.run" <contract-files>
-rg -n "rawPayloadExported: true|finalInterpretationExported: true" <scope>
-rg -n "ForbiddenProvider|legacyFallback" <scope>
-```
+1. the canonical artifact is unclear;
+2. the execution phase is unclear;
+3. forbidden moves are missing;
+4. oracles are missing;
+5. the materialization tree is not accepted;
+6. the prompt would need to invent file ownership or stop states.
 
 ## Anti-Patterns
 
-Avoid:
+Reject prompts that:
 
-1. starting implementation before naming the canonical artifact;
-2. mixing semantic contract and physical storage in one phase;
-3. asking for broad best effort;
-4. assigning subagents without file ownership;
-5. letting runtime code enter a contract-only phase;
-6. treating projections, reports, or generated hypotheses as source of truth;
-7. running broad regressions without focused oracles;
-8. ending with prose instead of evidence;
-9. accumulating multiple SPECs before commit;
-10. treating review as optional.
+1. say "implement everything" without slices;
+2. allow broad best effort;
+3. mix contract, runtime, storage and live execution accidentally;
+4. omit `git status` preflight;
+5. omit per-SPEC commit;
+6. omit negative grep;
+7. treat reviewer as optional for high-risk work;
+8. end with prose instead of evidence;
+9. hide owner decisions;
+10. authorize actions not present in the SPEC.

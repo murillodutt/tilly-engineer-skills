@@ -37,9 +37,14 @@ examples or origins.
 - Refuse immature SPECs with `NEEDS_SPEC_MATURITY`.
 - Produce `DRAFT_MATERIALIZATION_TREE` when the SPEC is mature but the tree is
   not explicit and accepted.
+- Return `NEEDS_TREE_ACCEPTANCE` when a draft tree exists but has not been
+  explicitly accepted.
 - Produce `READY_GOAL_PROMPT` only after SPEC maturity and tree acceptance.
+- Assign a readiness score before final prompt generation.
 - Keep output chat-first and save only on request.
 - Always include `SPEC-000 Preflight And Baseline`.
+- Require every SPEC slice to name objective, files, owner, oracles, negative
+  checks when relevant, and semantic commit.
 - Keep the skill neutral and free of project-specific origin stories,
   absolute paths, or domain examples.
 
@@ -50,6 +55,11 @@ examples or origins.
 - Mixing semantic meaning with physical mechanics too early.
 - Assigning subagents without file ownership.
 - Running broad implementation without per-SPEC oracles.
+- Emitting weak materialization trees without file ownership, negative grep,
+  review loop, stop states, or commit rhythm.
+- Generating prompts that accidentally authorize live execution, persistence,
+  public-surface drift, destructive operations, external access, secrets, or
+  private data without SPEC authority.
 - Accumulating many SPECs before commit.
 - Ending with prose instead of evidence and stop states.
 
@@ -65,9 +75,11 @@ discipline once execution begins.
 | Date | Change | Evidence | Confidence |
 |------|--------|----------|------------|
 | 2026-05-20 | Created `tes-goal-maestro` as a neutral SPEC-to-`/goal` materialization skill. | Maintainer alignment in current session; maestral materialization recipe. | high |
+| 2026-05-20 | Promoted the <project-A>-hardened `0.2.0` contract: readiness scoring, tree acceptance state, modular materialization-tree, subagent/oracle, and quality-gate references. | `/Users/murillo/Dev/<project-a>/.agents/skills/tes-goal-maestro/**`; maintainer directive to bring improvements back to TES. | high |
 
 ## Do Not Lose
 
-The skill is not an implementation runner by default. Its job is to force
-SPEC maturity and tree acceptance before producing the `/goal` contract. Do not
-weaken that gate for convenience, and do not add project-specific examples.
+The skill is not an implementation runner. Its job is to force SPEC maturity,
+execution-grade tree acceptance, readiness scoring, and prompt hardening before
+producing the `/goal` contract. Do not weaken that gate for convenience, and do
+not add project-specific examples.
