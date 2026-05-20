@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.114"
+VERSION = "0.3.115"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -20,6 +20,7 @@ PREFERRED_TRIGGERS = (
     "/tes-update",
     "/tes-align",
     "/tes-map",
+    "/tes-goal-maestro",
     "/tes-prospect",
     "/tes-mine",
     "/tes-open-obsidian",
@@ -37,6 +38,7 @@ COMPATIBLE_ALIASES = (
     "/tes:update",
     "/tes:align",
     "/tes:gps",
+    "/tes:goal-maestro",
     "/tes:prospect",
     "/tes:mine",
     "/tes:open-obsidian",
@@ -60,6 +62,8 @@ NATURAL_INTENTS = (
     "tes update",
     "tes align",
     "tes map",
+    "generate a maestral /goal prompt",
+    "gerar um /goal maestral",
     "project GPS",
     "mapa TES",
     "tes open obsidian",
@@ -150,6 +154,7 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/codex/skills/tes-update/SKILL.md",
         "src/adapters/codex/skills/tes-align/SKILL.md",
         "src/adapters/codex/skills/tes-map/SKILL.md",
+        "src/adapters/codex/skills/tes-goal-maestro/SKILL.md",
         "src/adapters/codex/skills/tes-prospect/SKILL.md",
         "src/adapters/codex/skills/tes-mine/SKILL.md",
         "src/adapters/codex/skills/tes-open-obsidian/SKILL.md",
@@ -167,6 +172,7 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/claude/skills/tes-update/SKILL.md",
         "src/adapters/claude/skills/tes-align/SKILL.md",
         "src/adapters/claude/skills/tes-map/SKILL.md",
+        "src/adapters/claude/skills/tes-goal-maestro/SKILL.md",
         "src/adapters/claude/skills/tes-prospect/SKILL.md",
         "src/adapters/claude/skills/tes-mine/SKILL.md",
         "src/adapters/claude/skills/tes-open-obsidian/SKILL.md",
@@ -225,6 +231,7 @@ CLAUDE_PROJECT_SKILLS = (
     "tes-update",
     "tes-align",
     "tes-map",
+    "tes-goal-maestro",
     "tes-prospect",
     "tes-mine",
     "tes-open-obsidian",
@@ -242,6 +249,7 @@ CODEX_PROJECT_SKILLS = (
     "tes-update",
     "tes-align",
     "tes-map",
+    "tes-goal-maestro",
     "tes-prospect",
     "tes-mine",
     "tes-open-obsidian",
@@ -256,6 +264,13 @@ CODEX_PROJECT_SKILLS = (
 VISIBLE_SKILL_ROUTES = {
     "codex": {
         "tes-prospect": ("/tes-prospect", "/tes:prospect", "cognitive brake"),
+        "tes-goal-maestro": (
+            "/tes-goal-maestro",
+            "/tes:goal-maestro",
+            "NEEDS_SPEC_MATURITY",
+            "DRAFT_MATERIALIZATION_TREE",
+            "READY_GOAL_PROMPT",
+        ),
         "tes-mine": ("/tes-mine", "/tes:mine", "cognitive brake"),
         "tes-map": (
             "/tes-map",
@@ -276,6 +291,13 @@ VISIBLE_SKILL_ROUTES = {
     },
     "claude": {
         "tes-prospect": ("/tes-prospect", "/tes:prospect", "cognitive brake"),
+        "tes-goal-maestro": (
+            "/tes-goal-maestro",
+            "/tes:goal-maestro",
+            "NEEDS_SPEC_MATURITY",
+            "DRAFT_MATERIALIZATION_TREE",
+            "READY_GOAL_PROMPT",
+        ),
         "tes-mine": ("/tes-mine", "/tes:mine", "cognitive brake"),
         "tes-map": (
             "/tes-map",
@@ -501,6 +523,7 @@ def required_installed_files(platform: str) -> tuple[str, ...]:
             ".agents/skills/tes-init/SKILL.md",
             ".agents/skills/tes-setup/SKILL.md",
             ".agents/skills/tes-update/SKILL.md",
+            ".agents/skills/tes-goal-maestro/SKILL.md",
             ".agents/skills/tes-prospect/SKILL.md",
             ".agents/skills/tes-mine/SKILL.md",
             ".agents/skills/tes-field-reports/SKILL.md",
@@ -512,6 +535,7 @@ def required_installed_files(platform: str) -> tuple[str, ...]:
             ".claude/skills/tes-init/SKILL.md",
             ".claude/skills/tes-setup/SKILL.md",
             ".claude/skills/tes-update/SKILL.md",
+            ".claude/skills/tes-goal-maestro/SKILL.md",
             ".claude/skills/tes-prospect/SKILL.md",
             ".claude/skills/tes-mine/SKILL.md",
             ".claude/skills/tes-field-reports/SKILL.md",
@@ -689,6 +713,7 @@ def run_fixture_tests() -> list[str]:
         (target / ".claude/skills/tes-init").mkdir(parents=True)
         (target / ".claude/skills/tes-setup").mkdir(parents=True)
         (target / ".claude/skills/tes-update").mkdir(parents=True)
+        (target / ".claude/skills/tes-goal-maestro").mkdir(parents=True)
         (target / ".claude/skills/tes-prospect").mkdir(parents=True)
         (target / ".claude/skills/tes-mine").mkdir(parents=True)
         (target / ".claude/skills/tes-field-reports").mkdir(parents=True)
@@ -697,6 +722,7 @@ def run_fixture_tests() -> list[str]:
         (target / ".claude/skills/tes-init/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-setup/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-update/SKILL.md").write_text(good_text, encoding="utf-8")
+        (target / ".claude/skills/tes-goal-maestro/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-prospect/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-mine/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-field-reports/SKILL.md").write_text(good_text, encoding="utf-8")

@@ -51,13 +51,17 @@ init/update command-prompts, `/tes-cortex`, `/tes:cortex`, `/tes-mcp`,
 `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`, `/tes-doctor`,
 `/tes:doctor`, `/tes-adapter`, `/tes:adapter`, `/tes-bench`, `/tes:bench`,
 `/tes-align`, `/tes:align`, `tes align`, `align TES`, `align this project`,
-`alinhar TES`, `alinhar projeto`, `/tes-prospect`, `/tes:prospect`,
+`alinhar TES`, `alinhar projeto`, `/tes-goal-maestro`,
+`/tes:goal-maestro`, `generate a maestral /goal prompt`,
+`gerar um /goal maestral`, `/tes-prospect`, `/tes:prospect`,
 `/tes-mine`, `/tes:mine`, `/tes-open-obsidian`,
 `/tes:open-obsidian`, `open Obsidian`, `open this project in Obsidian`,
 `abrir Obsidian`, `abrir no Obsidian`, `/tes-curate`, and `/tes:curate` as
 intent shortcuts for the same deterministic oracles used by Codex and Claude.
-`/tes-prospect` and `/tes-mine` remain explicit-invocation predictive routes:
+`/tes-goal-maestro`, `/tes-prospect`, and `/tes-mine` remain explicit routes:
 do not activate them from broad natural-language planning text.
+`tes-goal-maestro` may also route from a direct request to generate a maestral
+`/goal` prompt from a mature SPEC.
 
 Future workflow-specific rules should be separate `Agent Requested` or
 manual rules instead of expanding the always-on rule.

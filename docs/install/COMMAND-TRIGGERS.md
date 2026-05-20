@@ -5,7 +5,7 @@ status: active
 consumer: adopters, installing agents, and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.6
+tver: 0.4.7
 ---
 
 # TES Command Triggers
@@ -15,16 +15,19 @@ Scripts and npm aliases are deterministic oracles the agent invokes when the
 runtime exposes local tools.
 
 All adapters share the same preferred user triggers: `/tes-init`,
-`/tes-update`, `/tes-align`, `/tes-map`, `/tes-prospect`, `/tes-mine`,
+`/tes-update`, `/tes-align`, `/tes-map`, `/tes-goal-maestro`,
+`/tes-prospect`, `/tes-mine`,
 `/tes-open-obsidian`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
 `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench`. Treat
 `/tes:*` forms as compatible TES intent aliases; if a host reports one as an
 invalid slash, continue through the matching `tes-*` skill/rule/spec instead of
 asking the user to restate the route.
 
-`/tes-prospect` and `/tes-mine` are explicit-invocation predictive skills. They
-do not have broad natural-language routing. They stay dormant until the user
-names the skill or trigger, then operate proactively with a cognitive brake.
+`/tes-prospect`, `/tes-mine`, and `/tes-goal-maestro` are explicit-invocation
+skills. They do not have broad natural-language routing. Prospecting and mining
+stay dormant until the user names the skill or trigger, then operate
+proactively with a cognitive brake. Goal maestro may also route from a direct
+request to generate a maestral `/goal` prompt from a mature SPEC.
 The executable parity gate is `python3 scripts/command_trigger_oracle.py
 --self-test`.
 Installed target parity can be checked with
@@ -44,6 +47,7 @@ mode of `/tes-init`.
 | `/tes-update` | `tes-update` | visible update skill |
 | `/tes-align` | `tes-align` | visible skill |
 | `/tes-map` | `tes-map` | visible Project GPS skill |
+| `/tes-goal-maestro` | `tes-goal-maestro` | visible SPEC-to-goal materialization skill |
 | `/tes-prospect` | `tes-prospect` | visible predictive skill |
 | `/tes-mine` | `tes-mine` | visible predictive skill |
 | `/tes-open-obsidian` | `tes-open-obsidian` | visible skill |
@@ -63,6 +67,7 @@ mode of `/tes-init`.
 | `/tes-update` or `/tes:update` | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, `tes_legacy_retirement.py`, install smoke, MCP install | only selected TES surfaces after Step Zero and legacy retirement |
 | `/tes-align` or `/tes:align` | semantically align a TES-initialized project into an operating mesh with a System X-Ray and Convergence Line | `project_alignment_oracle.py`, `project_context_oracle.py`, project gates | `docs/agents/PROJECT-STATE.md`, `PROJECT-ROADMAP.md` Mermaid X-Ray and convergence graphs, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`, `DECISIONS/**`, evidence |
 | `/tes-map` or `/tes:gps` | refresh the Project GPS position inside the existing roadmap | `tes_map.py`, `tes_map_oracle.py`, `project_alignment_oracle.py` when needed | only the managed `TES-MAP` block inside `docs/agents/PROJECT-ROADMAP.md` |
+| `/tes-goal-maestro` or `/tes:goal-maestro` | materialize a mature SPEC and accepted tree into a ready maestral `/goal` prompt | active agent SPEC review; `NEEDS_SPEC_MATURITY`, `DRAFT_MATERIALIZATION_TREE`, or `READY_GOAL_PROMPT` status | chat-first; files only when the user explicitly asks to save |
 | `/tes-prospect` or `/tes:prospect` | explicitly invoke project-stress prospecting to pressure a plan or design, expose hidden dependencies, and ask one question at a time | active agent codebase exploration; cognitive brake state snapshot when paused | no project writes |
 | `/tes-mine` or `/tes:mine` | explicitly invoke code and domain mining to extract terms, contradictions, decisions, context, and ADR candidates | active agent code/doc exploration; cognitive brake state snapshot when paused | `CONTEXT.md` and ADRs only when the mining contract resolves terms or decisions and the brake is not active |
 | `/tes-open-obsidian` or `/tes:open-obsidian` | open `docs/agents` as the Obsidian vault after context and alignment pass | `tes_open_obsidian.py`, `project_context_oracle.py`, `project_alignment_oracle.py` | no TES writes; Obsidian app may manage project-owned `.obsidian/**` after explicit launch |
@@ -81,6 +86,8 @@ tes init  -> /tes-init
 tes update / update TES / Atualizar TES / atualizar TES -> /tes-update
 tes align / align TES / align this project / alinhar TES / alinhar projeto -> /tes-align
 tes map / project GPS / mapa TES / map this project / mapear TES / mapear projeto -> /tes-map
+/tes:goal-maestro -> /tes-goal-maestro
+generate a maestral /goal prompt / gerar um /goal maestral -> /tes-goal-maestro
 /tes:prospect -> /tes-prospect
 /tes:mine     -> /tes-mine
 tes open obsidian / open Obsidian / open this project in Obsidian / abrir Obsidian / abrir no Obsidian -> /tes-open-obsidian
@@ -100,10 +107,11 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-source alias for the same oracles; not a target-project guarantee |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.114 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.115 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
+| goal materialization skill | explicit SPEC-to-`/goal` prompt materialization with SPEC maturity and tree acceptance gates |
 | predictive skills | explicit-invocation project-stress and mining skills with cognitive brake |
 | rules | always-on intent routers where skills are not native |
 | hooks | Git-event gates for validation, no-write Cortex reflection/curation, and Field Reports drain |
@@ -282,8 +290,9 @@ report should stay short: `You are here`, `Next safe move`, `Blocked by`, and
 - Do not create a slash command merely because a script exists. Visible commands
   must be product entrypoints; `/tes-update` is visible because update is a
   commercial user workflow.
-- Do not give `/tes-prospect` or `/tes-mine` broad natural-language activation;
-  they require explicit invocation.
+- Do not give `/tes-prospect`, `/tes-mine`, or `/tes-goal-maestro` broad
+  natural-language activation; they require explicit invocation or, for
+  `tes-goal-maestro`, a direct request for a maestral `/goal` prompt.
 - Do not certify a command that was skipped or blocked.
 - Do not claim latest-source certification when the installer reports
   `STALE_SOURCE` or `BLOCKED` source freshness.

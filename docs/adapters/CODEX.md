@@ -5,7 +5,7 @@ status: active
 consumer: codex adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.5.1
+tver: 0.5.2
 ---
 
 # Codex Derivation
@@ -13,7 +13,7 @@ tver: 0.5.1
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.114`.
+Project version: `0.3.115`.
 
 It follows the Codex customization order:
 
@@ -68,9 +68,11 @@ Codex uses progressive disclosure for skills:
 The preferred TES shortcuts map to Codex skills. Primary independent commands
 have visible skills; grouped intents such as `/tes-curate` route through their
 owning skills. `/tes-update` is a visible skill because update is a commercial
-user workflow, not a hidden mode of initialization. Predictive skills such as
-`/tes-prospect` and `/tes-mine` require explicit invocation and use a cognitive
-brake. They keep the user entrypoint short while delegating real work to
+user workflow, not a hidden mode of initialization. `tes-goal-maestro`
+materializes mature SPECs into maestral `/goal` prompts after tree acceptance.
+Predictive skills such as `/tes-prospect` and `/tes-mine` require explicit
+invocation and use a cognitive brake. They keep the user entrypoint short while
+delegating real work to
 deterministic oracles or agent-led codebase exploration:
 
 | Shortcut | Skill |
@@ -79,6 +81,7 @@ deterministic oracles or agent-led codebase exploration:
 | `/tes-setup` | `tes-setup` |
 | `/tes-update`, `/tes:update` | `tes-update` |
 | `/tes-align`, `/tes:align` | `tes-align` |
+| `/tes-goal-maestro`, `/tes:goal-maestro` | `tes-goal-maestro` |
 | `/tes-prospect`, `/tes:prospect` | `tes-prospect` |
 | `/tes-mine`, `/tes:mine` | `tes-mine` |
 | `/tes-open-obsidian`, `/tes:open-obsidian` | `tes-open-obsidian` |
