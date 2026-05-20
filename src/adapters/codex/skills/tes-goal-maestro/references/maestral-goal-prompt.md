@@ -15,6 +15,10 @@ A maestral /goal prompt is an execution contract, not a long request.
 It must let a future agent execute without inventing artifact, scope,
 boundaries, owners, tests, commit rhythm or stop states.
 
+If the source artifact declares a materialization queue, the prompt must
+preserve that queue. The prompt is not allowed to compress declared execution
+units into fewer execution commits.
+
 ## Required Output Shape
 
 The final prompt must include:
@@ -30,11 +34,12 @@ The final prompt must include:
 9. Work mode.
 10. First mandatory act.
 11. `SPEC-000 Preflight And Baseline`.
-12. Narrow SPEC slices.
+12. Narrow execution units.
 13. Full oracle.
 14. Negative grep.
 15. Stop criteria.
 16. Final delivery contract.
+17. Execution unit fidelity statement when the input artifact declares units.
 
 ## Prompt Template
 
@@ -100,6 +105,10 @@ Mission:
 Work mode:
 - Execute small SPECs.
 - Do not accumulate multiple SPECs without commit.
+- Preserve every materialization unit declared by the input artifact.
+- Do not merge declared units unless the user explicitly changes the
+  execution contract before implementation.
+- A declared no-commit preflight must still be reported as executed.
 - Stage only files for the current SPEC.
 - Do not revert user changes.
 - Preserve unrelated worktree changes.
@@ -126,6 +135,13 @@ Oracles:
 - <commands>
 Commit:
 <none or semantic commit when baseline docs are in scope>
+
+Execution unit fidelity:
+- Preserve the source-declared queue exactly.
+- Execute each declared unit in order.
+- Commit after each declared unit unless the unit is explicitly no-commit.
+- Stop with `NEEDS_EXECUTION_UNIT_FIDELITY` if the prompt cannot preserve this
+  queue.
 
 SPEC-001 <Small Slice>
 Objective:
@@ -201,10 +217,11 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
 6. includes per-slice oracles;
 7. includes negative grep;
 8. requires commit per SPEC;
-9. preserves unrelated worktree changes;
-10. includes reviewer and evidence/oracle roles when complexity warrants them;
-11. defines stop criteria;
-12. defines final delivery.
+9. preserves every declared execution unit without silent merge;
+10. preserves unrelated worktree changes;
+11. includes reviewer and evidence/oracle roles when complexity warrants them;
+12. defines stop criteria;
+13. defines final delivery.
 
 ## Stop If Missing
 
@@ -215,7 +232,8 @@ Stop with `NEEDS_SPEC_MATURITY` or `NEEDS_TREE_ACCEPTANCE` when:
 3. forbidden moves are missing;
 4. oracles are missing;
 5. the materialization tree is not accepted;
-6. the prompt would need to invent file ownership or stop states.
+6. the prompt would need to invent file ownership or stop states;
+7. the prompt would need to merge or drop declared execution units.
 
 ## Anti-Patterns
 
@@ -230,4 +248,5 @@ Reject prompts that:
 7. treat reviewer as optional for high-risk work;
 8. end with prose instead of evidence;
 9. hide owner decisions;
-10. authorize actions not present in the SPEC.
+10. authorize actions not present in the SPEC;
+11. compress a declared multi-SPEC queue into fewer commits.

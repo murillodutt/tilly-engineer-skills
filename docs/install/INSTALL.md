@@ -28,13 +28,13 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 Node/npm path:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.116 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.117 tilly-engineer-skills add
 ```
 
 Bun path:
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.116 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.117 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -46,10 +46,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.116 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.117 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.116` is the fixed release ref and supported commercial install path; do not certify mutable release refs without their own canary evidence.
+`#v0.3.117` is the fixed release ref and supported commercial install path; do not certify mutable release refs without their own canary evidence.
 
 During install, update, and clean-runtime refresh, obsolete plugin/root-skill surfaces are removed only when TES-owned/generated/empty; ambiguous content is preserved, backed up under `.tes/bk/**`, and reported as `NEEDS_REVIEW`.
 
@@ -106,7 +106,7 @@ Release certification gates:
 ```bash
 python3 scripts/tes_npx_oracle.py --self-test
 python3 scripts/tes_npx_oracle.py --runtime-matrix
-TES_GITHUB_NPX_REF=v0.3.116 python3 scripts/tes_npx_oracle.py --github-self-test
+TES_GITHUB_NPX_REF=v0.3.117 python3 scripts/tes_npx_oracle.py --github-self-test
 ```
 
 ## Compatibility Basis
@@ -134,10 +134,10 @@ no-capture reasons for weak generic inputs.
 
 Cortex is Obsidian-compatible plain Markdown. The installer does not create
 `.obsidian/**`, require community plugins, or depend on Obsidian state. After
-`/tes-init` and `/tes-align`, `/tes-open-obsidian` may open the project, while
+`/tes-init` and `/tes-align`, `/tes-open-obsidian` may open the project.
 `/tes-goal-maestro`, `/tes-prospect`, and `/tes-mine` install as explicit
-skills. Goal maestro emits ready `/goal` prompts from mature SPECs and accepted
-trees; prospecting and mining keep the cognitive brake.
+skills; Goal maestro emits `/goal` only after mature-artifact fidelity and tree
+acceptance, while prospecting and mining keep the cognitive brake.
 
 Cortex MCP is activated by default for selected runtime routes. It remains
 read-only and project-scoped. The installer may write `.tes/bin/cortex.py`,

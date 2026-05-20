@@ -1,12 +1,13 @@
 # Materialization Tree
 
-Use this reference when a mature SPEC needs an execution-grade materialization
-tree before a final `/goal` prompt.
+Use this reference when a mature SPEC, Super SPEC, PRD, relational project plan
+or accepted execution tree needs an execution-grade materialization tree before
+a final `/goal` prompt.
 
 ## Purpose
 
-The tree converts a mature SPEC into an auditable execution plan. It is not the
-final prompt. It is the acceptance gate before the final prompt.
+The tree converts a mature input artifact into an auditable execution plan. It
+is not the final prompt. It is the acceptance gate before the final prompt.
 
 If the user has not explicitly accepted the tree, stop with
 `NEEDS_TREE_ACCEPTANCE`.
@@ -21,7 +22,7 @@ Always emit the tree with these sections, in this order:
 4. `Non-Objectives`
 5. `Central Rule`
 6. `Forbidden Moves`
-7. `SPEC Slices`
+7. `Execution Units`
 8. `Subagent Ownership`
 9. `Per-SPEC Oracles`
 10. `Negative Grep`
@@ -30,15 +31,15 @@ Always emit the tree with these sections, in this order:
 13. `Stop States`
 14. `Final Delivery Contract`
 
-## Required SPEC Slices
+## Required Execution Units
 
 Every materialization tree must include:
 
-1. `SPEC-000 Preflight And Baseline`.
-2. One or more narrow implementation slices.
-3. One final oracle/closeout slice.
+1. `000 Preflight And Baseline` using the input artifact's naming convention.
+2. One or more narrow implementation units.
+3. One final oracle/closeout unit.
 
-Each slice must name:
+Each unit must name:
 
 1. objective;
 2. allowed files;
@@ -48,8 +49,43 @@ Each slice must name:
 6. negative checks when relevant;
 7. semantic commit message.
 
-Split any slice that has more than one behavioral objective, more than one
+Split any unit that has more than one behavioral objective, more than one
 ownership boundary, or mixed contract/runtime/storage/live work.
+
+## Execution Unit Fidelity Gate
+
+If the source artifact declares materialization units, the tree must preserve
+that declared list exactly:
+
+1. same unit identifiers;
+2. same order;
+3. same visible unit count;
+4. one commit per declared unit unless the artifact explicitly says no commit;
+5. no silent merging of adjacent units;
+6. no silent renaming of units;
+7. no silent deletion of units.
+
+Execution units may be called slices, stages, milestones, PRD phases, work
+packages, roadmap steps, graph nodes, branches or another project-specific
+name. Preserve the source artifact's vocabulary in the generated tree and
+prompt.
+
+Allowed refinement:
+
+1. Add sub-steps inside a declared unit.
+2. Add stricter oracles inside a declared unit.
+3. Split implementation notes beneath a declared unit.
+
+Forbidden refinement:
+
+1. Collapse declared units into a broader implementation unit.
+2. Move closeout work into an earlier unit.
+3. Treat a passing broad oracle as a replacement for missing unit commits.
+4. Replace a declared queue with a new agent-invented list.
+
+If preserving declared units appears inefficient or technically awkward, stop
+with `NEEDS_EXECUTION_UNIT_FIDELITY` or `NEEDS_OWNER_DECISION`. Do not optimize
+away the input artifact's execution rhythm.
 
 ## Preflight Requirements
 
@@ -63,7 +99,7 @@ ownership boundary, or mixed contract/runtime/storage/live work.
 
 ## Files
 
-For every slice, the tree must define:
+For every unit, the tree must define:
 
 1. files allowed to change;
 2. files or directories forbidden;
@@ -126,19 +162,23 @@ chore(scope): expose internal boundary
 docs(scope): define baseline
 ```
 
-Never accumulate multiple slices before commit unless the user explicitly
+Never accumulate multiple units before commit unless the user explicitly
 changes the execution contract.
+
+When an input artifact declares N units, the final prompt must make N unit
+entries visible and must require N corresponding commits, except units
+explicitly marked as no-commit preflight by the artifact.
 
 ## Review Loop
 
 The tree must include a review loop:
 
-1. inspect diff for the current slice;
+1. inspect diff for the current unit;
 2. verify no unrelated files were touched;
 3. verify forbidden moves are absent;
 4. run focused oracles;
 5. fix until green;
-6. stage only slice files;
+6. stage only unit files;
 7. commit;
 8. continue to the next slice.
 
@@ -157,6 +197,9 @@ Stop and revise the tree if it lacks:
 9. stop states;
 10. final delivery contract.
 
+Also stop and revise the tree if it compresses, skips or renames a unit
+declared by the source artifact.
+
 ## Stop States
 
 Use the SPEC's stop states when available. Otherwise include:
@@ -172,7 +215,7 @@ Use the SPEC's stop states when available. Otherwise include:
 
 The tree must require a final report with:
 
-1. slices executed;
+1. units executed;
 2. subagents used, if any;
 3. commits;
 4. files changed;

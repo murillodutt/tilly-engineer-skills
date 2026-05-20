@@ -135,7 +135,7 @@ rg -n "password|token|secret|privateKey" <scope>
 
 For complex goals, require closeout with:
 
-1. slices executed;
+1. execution units executed;
 2. subagents used;
 3. commits;
 4. files changed;

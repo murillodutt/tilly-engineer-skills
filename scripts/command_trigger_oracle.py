@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.116"
+VERSION = "0.3.117"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -268,6 +268,7 @@ VISIBLE_SKILL_ROUTES = {
             "/tes-goal-maestro",
             "/tes:goal-maestro",
             "NEEDS_SPEC_MATURITY",
+            "NEEDS_EXECUTION_UNIT_FIDELITY",
             "DRAFT_MATERIALIZATION_TREE",
             "NEEDS_TREE_ACCEPTANCE",
             "READY_GOAL_PROMPT",
@@ -296,6 +297,7 @@ VISIBLE_SKILL_ROUTES = {
             "/tes-goal-maestro",
             "/tes:goal-maestro",
             "NEEDS_SPEC_MATURITY",
+            "NEEDS_EXECUTION_UNIT_FIDELITY",
             "DRAFT_MATERIALIZATION_TREE",
             "NEEDS_TREE_ACCEPTANCE",
             "READY_GOAL_PROMPT",

@@ -30,6 +30,18 @@ Use when the SPEC is mature, but the execution tree has not been accepted.
 
 Produce the fixed tree and ask for acceptance. Do not produce `/goal`.
 
+### NEEDS_EXECUTION_UNIT_FIDELITY
+
+Use when the source artifact declares materialization units and the proposed
+tree or prompt would omit, merge, rename, reorder or otherwise compress them.
+
+Return the declared unit list and the proposed correction. Do not produce
+`READY_GOAL_PROMPT` until the tree preserves the declared list or the user
+explicitly accepts a changed execution contract.
+
+`NEEDS_SLICE_FIDELITY` is a backward-compatible alias for older prompts, but
+new skill output should prefer `NEEDS_EXECUTION_UNIT_FIDELITY`.
+
 ### NEEDS_TREE_ACCEPTANCE
 
 Use when a tree already exists but user acceptance is missing or ambiguous.
@@ -54,6 +66,7 @@ Stop if the SPEC says:
 4. "add tests" without oracle candidates;
 5. "integrate with storage/live/API" while saying the phase is contract-only;
 6. "generate report" when the artifact is actually a machine contract.
+7. "execute these slices" but the prompt collapses them into fewer commits.
 
 ## Weak Prompt Rejection
 
@@ -68,6 +81,7 @@ Reject a prompt if it lacks:
 7. reviewer loop;
 8. stop states;
 9. final closeout.
+10. exact preservation of any slice list declared by the SPEC.
 
 ## Boundary Leakage Checks
 
@@ -89,24 +103,26 @@ If yes, revise before returning the prompt.
 A valid prompt must require:
 
 1. no accumulated multi-slice commits;
-2. stage only current-slice files;
+2. stage only current-unit files;
 3. semantic commit messages;
 4. no unrelated revert;
 5. no force push;
-6. worktree status inspection before final closeout.
+6. worktree status inspection before final closeout;
+7. one visible commit per declared unit unless explicitly no-commit.
 
 ## Closeout Checks
 
 Final delivery must report:
 
 1. status: `GO`, `NEEDS_OWNER_DECISION`, `BLOCKED` or `SAFETY_BLOCKED`;
-2. slices executed;
+2. execution units executed;
 3. commits;
 4. files changed;
 5. tests and oracles run;
 6. failures fixed;
 7. boundaries preserved;
 8. pending owner decisions.
+9. declared unit count versus executed unit count.
 
 ## Stop-State Mapping
 
@@ -131,3 +147,12 @@ files to touch, how to verify, when to commit, or when to stop?
 ```
 
 If the answer is no, the prompt is not ready.
+
+Then ask:
+
+```text
+If the SPEC declared N slices, does this prompt preserve N visible slices and
+N matching commit decisions?
+```
+
+If the answer is no, return `NEEDS_EXECUTION_UNIT_FIDELITY`.

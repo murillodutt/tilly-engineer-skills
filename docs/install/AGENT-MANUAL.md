@@ -46,7 +46,7 @@ User-facing intent typed in the agent window — never a shell command.
 | `/tes-update` | Update an already-meshed project | `/tes:update` (compat) |
 | `/tes-align` | Re-run alignment after context drift | `/tes:align` (compat) |
 | `/tes-map` | Refresh the Project GPS position in the roadmap | `/tes:gps` (compat) |
-| `/tes-goal-maestro` | Generate an execution-grade tree and maestral `/goal` prompt from a mature SPEC and accepted tree | `/tes:goal-maestro` (compat) |
+| `/tes-goal-maestro` | Generate an execution-grade tree and maestral `/goal` prompt from a mature SPEC, Super SPEC, PRD, relational project plan, or accepted execution tree | `/tes:goal-maestro` (compat) |
 | `/tes-prospect` | Stress-test a plan or design after explicit invocation | `/tes:prospect` (compat) |
 | `/tes-mine` | Mine code, terminology, context, and ADR candidates after explicit invocation | `/tes:mine` (compat) |
 | `/tes-open-obsidian` | Open `docs/agents/` in Obsidian via CLI or macOS app fallback | `/tes:open-obsidian` (compat) |
@@ -70,8 +70,10 @@ smallest safe oracle.
 skills, not broad natural intent routers. Do not activate them from vague goal,
 stress-test, or mining language unless the user explicitly names the skill or
 trigger. `tes-goal-maestro` may also route from a direct request to generate a
-maestral `/goal` prompt. After prospecting or mining invocation, they may drive
-the sequence proactively and must honor the cognitive brake:
+maestral `/goal` prompt from a mature artifact; it preserves declared execution
+units, stops for tree acceptance, and only then emits `/goal`. After
+prospecting or mining invocation, they may drive the sequence proactively and
+must honor the cognitive brake:
 `pause`, `pausa`, `freia`, `segura`, `para`, `hold`, `step back`, or
 `resuma onde estamos` stops pressure immediately. Report where the session
 stopped, the current hypothesis, the open risk or unresolved term, and the next

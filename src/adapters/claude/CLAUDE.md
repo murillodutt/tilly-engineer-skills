@@ -156,7 +156,8 @@ treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
 `/tes:gps`, `tes map`, `project GPS`, `mapa TES`, `map this project`,
 `mapear TES`, `mapear projeto`,
 `/tes-goal-maestro`, `/tes:goal-maestro`,
-`generate a maestral /goal prompt`, `gerar um /goal maestral`,
+`generate a maestral /goal prompt`, `generate a /goal from a PRD`,
+`gerar um /goal maestral`, `gerar /goal de um PRD`,
 `/tes-prospect`, `/tes:prospect`, `/tes-mine`, `/tes:mine`,
 `/tes-open-obsidian`, `/tes:open-obsidian`, `open Obsidian`,
 `open this project in Obsidian`, `abrir Obsidian`, `abrir no Obsidian`,
@@ -168,8 +169,12 @@ and `/tes:bench` as intent shortcuts. Use the matching `.claude/skills/tes-*`
 skill when present; otherwise follow the local installer or helper spec
 directly and choose the smallest safe oracle. These are not shell commands.
 Do not activate `/tes-prospect`, `/tes-mine`, or `/tes-goal-maestro` from broad
-natural language. They require explicit invocation; `/tes-prospect` and
-`/tes-mine` must honor the cognitive brake.
+natural language. They require explicit invocation; `tes-goal-maestro` may also
+route from a direct request for a maestral `/goal` prompt from a mature SPEC,
+Super SPEC, PRD, relational project plan, or accepted execution tree. It must
+produce a draft materialization tree first when acceptance is missing, preserve
+declared execution units, and emit `/goal` only after tree acceptance.
+`/tes-prospect` and `/tes-mine` must honor the cognitive brake.
 
 ## Cortex Reflection
 

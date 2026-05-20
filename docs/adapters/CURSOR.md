@@ -61,7 +61,9 @@ intent shortcuts for the same deterministic oracles used by Codex and Claude.
 `/tes-goal-maestro`, `/tes-prospect`, and `/tes-mine` remain explicit routes:
 do not activate them from broad natural-language planning text.
 `tes-goal-maestro` may also route from a direct request to generate a maestral
-`/goal` prompt from a mature SPEC.
+`/goal` prompt from a mature SPEC, Super SPEC, PRD, relational project plan, or
+accepted execution tree. It must preserve declared execution units and generate
+the final `/goal` only after tree acceptance.
 
 Future workflow-specific rules should be separate `Agent Requested` or
 manual rules instead of expanding the always-on rule.
