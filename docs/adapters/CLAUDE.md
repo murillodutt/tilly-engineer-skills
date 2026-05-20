@@ -5,7 +5,7 @@ status: active
 consumer: claude code adopters and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.3.2
+tver: 0.3.3
 ---
 
 # Claude Adapter
@@ -70,7 +70,7 @@ dedicated decision.
   Claude Code, and Cursor. Claude project installs expose skill-backed direct
   slash names such as `/tes-init`, `/tes-setup`, `/tes-update`,
   `/tes-align`, `/tes-open-obsidian`,
-  `/tes-prospect`, `/tes-mine`, `/tes-cortex`, `/tes-mcp`,
+  `/tes-goal-maestro`, `/tes-prospect`, `/tes-mine`, `/tes-cortex`, `/tes-mcp`,
   `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench`;
   grouped triggers such as `/tes-curate` route through their owning skills
   instead of a one-file-per-command package.
@@ -84,6 +84,10 @@ dedicated decision.
   `alinhar projeto`, and natural alignment prompts route to `tes-align`.
   `open Obsidian`, `open this project in Obsidian`, `abrir Obsidian`, and
   `abrir no Obsidian` route to `tes-open-obsidian`.
+- `/tes-goal-maestro` is a direct explicit-invocation SPEC-to-`/goal`
+  materialization skill. Its `/tes:goal-maestro` alias is compatible intent
+  text, and direct requests to generate a maestral `/goal` prompt may route to
+  it.
 - `/tes-prospect` and `/tes-mine` are direct explicit-invocation predictive
   skills. Their `/tes:prospect` and `/tes:mine` aliases are compatible intent
   text, but broad natural-language descriptions must not activate them. Once

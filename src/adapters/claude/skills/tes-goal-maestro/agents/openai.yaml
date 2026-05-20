@@ -1,0 +1,9 @@
+name: tes-goal-maestro
+description: Generate maestral /goal prompts from mature SPECs and accepted materialization trees.
+default_prompt: |
+  Use $tes-goal-maestro because it has been explicitly invoked or because the
+  user directly asked for a maestral /goal prompt. Verify SPEC maturity first.
+  If the SPEC is immature, stop with NEEDS_SPEC_MATURITY. If the SPEC is mature
+  but the materialization tree is not explicit and accepted, produce
+  DRAFT_MATERIALIZATION_TREE and wait for acceptance. Only then produce a
+  READY_GOAL_PROMPT. Keep output chat-first and save only on explicit request.

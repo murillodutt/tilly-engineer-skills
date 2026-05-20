@@ -84,6 +84,7 @@ requires exact syntax.
 | Tilly update shortcut | `.agents/skills/tes-update/SKILL.md` |
 | Project semantic alignment | `.agents/skills/tes-align/SKILL.md` |
 | Project GPS map | `.agents/skills/tes-map/SKILL.md` |
+| Maestral goal materialization | `.agents/skills/tes-goal-maestro/SKILL.md` |
 | Project-stress prospecting | `.agents/skills/tes-prospect/SKILL.md` |
 | Code and domain mining | `.agents/skills/tes-mine/SKILL.md` |
 | Obsidian open gate | `.agents/skills/tes-open-obsidian/SKILL.md` |
@@ -147,6 +148,8 @@ Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
 `align this project`, `alinhar TES`, `alinhar projeto`, `/tes-map`,
 `/tes:gps`, `tes map`, `project GPS`, `mapa TES`, `map this project`,
 `mapear TES`, `mapear projeto`,
+`/tes-goal-maestro`, `/tes:goal-maestro`,
+`generate a maestral /goal prompt`, `gerar um /goal maestral`,
 `/tes-prospect`, `/tes:prospect`, `/tes-mine`, `/tes:mine`,
 `/tes-open-obsidian`, `/tes:open-obsidian`, `open Obsidian`,
 `open this project in Obsidian`, `abrir Obsidian`, `abrir no Obsidian`,
@@ -157,8 +160,9 @@ Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
 and `/tes:bench` as intent shortcuts. Load the matching TES skill when one
 exists, otherwise route through `docs/install/COMMAND-TRIGGERS.md` and the
 smallest safe oracle. These are not shell commands.
-Do not activate `/tes-prospect` or `/tes-mine` from broad natural language.
-They require explicit invocation and must honor the cognitive brake.
+Do not activate `/tes-prospect`, `/tes-mine`, or `/tes-goal-maestro` from broad
+natural language. They require explicit invocation; `/tes-prospect` and
+`/tes-mine` must honor the cognitive brake.
 
 </tes_init>
 

@@ -1,6 +1,6 @@
 {
   "name": "tilly-engineer-skills",
-  "version": "0.3.114",
+  "version": "0.3.115",
   "description": "Portable engineering discipline to reduce ambiguity, overcomplication, drive-by edits, and false completion in coding agents",
   "author": {
     "name": "forrestchang"
@@ -17,7 +17,7 @@
   "interface": {
     "displayName": "Tilly Engineer Skills",
     "shortDescription": "Engineering discipline workflows for Codex",
-    "longDescription": "Reusable TES skills for Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution, initialization, semantic project alignment, Project GPS mapping, explicit-invocation project stress prospecting, code and domain knowledge mining, Obsidian opening preflight, update checks, MCP inspection, Field Reports, doctor checks, adapter materialization, and benchmark planning.",
+    "longDescription": "Reusable TES skills for Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution, initialization, semantic project alignment, Project GPS mapping, maestral goal prompt materialization, explicit-invocation project stress prospecting, code and domain knowledge mining, Obsidian opening preflight, update checks, MCP inspection, Field Reports, doctor checks, adapter materialization, and benchmark planning.",
     "developerName": "forrestchang",
     "category": "Developer Tools",
     "capabilities": [

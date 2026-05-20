@@ -35,9 +35,9 @@ The executor is the active LLM coding agent inside the current IDE/runtime conte
 
 Treat Python scripts and `npm run ...` entries as deterministic oracles and portable helper tools. Treat skills, rules, bootloaders, and adapter files as routing/governance surfaces that tell the agent when and how to act. Treat hooks as local Git gates for validation, Field Reports drain, and no-write Cortex reflection/curation. Treat MCP as a read-only Cortex access surface for agents, not as memory and not as the installer.
 
-`/tes-init`, `/tes-setup`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, `tes setup`, and direct command/prompts such as `TES, initialize this project` or `Atualizar TES` are preferred entries. Treat them as intents that load this installer contract, not as raw shell commands. Across Codex, Claude Code, and Cursor, prefer shared hyphen triggers such as `/tes-init`, `/tes-setup`, `/tes-update`, `/tes-prospect`, `/tes-mine`, and `/tes-cortex`; if a host reports a `/tes:*` alias as invalid, continue as TES intent text through the matching `tes-*` skill/rule/spec instead of asking the user to choose a route. `/tes-setup` is the direct setup alias for `/tes-init`.
+`/tes-init`, `/tes-setup`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, `tes setup`, and direct command/prompts such as `TES, initialize this project` or `Atualizar TES` are preferred entries. Treat them as intents that load this installer contract, not as raw shell commands. Across Codex, Claude Code, and Cursor, prefer shared hyphen triggers such as `/tes-init`, `/tes-setup`, `/tes-update`, `/tes-goal-maestro`, `/tes-prospect`, `/tes-mine`, and `/tes-cortex`; if a host reports a `/tes:*` alias as invalid, continue as TES intent text through the matching `tes-*` skill/rule/spec instead of asking the user to choose a route. `/tes-setup` is the direct setup alias for `/tes-init`.
 
-Other shortcuts are routed by `docs/install/COMMAND-TRIGGERS.md`: `/tes-prospect`, `/tes-mine`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, and their `/tes:*` compatibility aliases. `/tes-prospect` and `/tes-mine` require explicit invocation and must honor their cognitive brake.
+Other shortcuts are routed by `docs/install/COMMAND-TRIGGERS.md`: `/tes-goal-maestro`, `/tes-prospect`, `/tes-mine`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, and their `/tes:*` compatibility aliases. `/tes-goal-maestro`, `/tes-prospect`, and `/tes-mine` require explicit invocation; `tes-goal-maestro` may also route from a direct request to generate a maestral `/goal` prompt from a mature SPEC.
 
 If the current runtime cannot execute a command, do not claim it passed. Finish safe file work where possible, mark the oracle `BLOCKED` or `SKIP` with the reason in evidence and the final report, and ask for the smallest native equivalent or user-run command only when certification depends on it.
 
@@ -58,7 +58,7 @@ docs/install/{USER-MANUAL.html,COMMAND-TRIGGERS.md}
 docs/mesh/{CORTEX.md,CORTEX-MCP.md}
 scripts/{cortex.py,cortex_embed.mjs,cortex_mcp.py,tes_init.py,tes_update.py,tes_legacy_retirement.py,root_context.py,install_adapter.py,install_mcp.py,field_reports.py,install_smoke.py,materialize_adapter.py,platform_surface_oracle.py}
 src/adapters/codex/AGENTS.md
-src/adapters/codex/skills/tes-engineering-discipline/{SKILL.md,agents/openai.yaml,references/failure-patterns.md,references/source-portability.md,scripts/discipline_oracle.py}
+src/adapters/codex/skills/{tes-engineering-discipline,tes-goal-maestro}/
 src/adapters/claude/{CLAUDE.md,plugin/plugin.json,plugin/marketplace.json,skills/tes-*/SKILL.md}
 src/adapters/cursor/rules/tes-guidelines.mdc
 ```
