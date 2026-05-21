@@ -57,6 +57,7 @@ User-facing intent typed in the agent window — never a shell command.
 | `/tes-doctor` | Health-check, certify, or prepare a commit | `/tes:doctor`, `/tes:check`, `/tes:certify` |
 | `/tes-adapter` | Materialize, dry-run, retrofit, or install adapter surfaces | `/tes:adapter` |
 | `/tes-bench` | Plan, run, or converge context-mesh benchmarks | `/tes:bench` |
+| `/tes-bump` | Govern, plan, and apply bounded project version bumps | `/tes:bump` |
 
 `/tes-update` is a direct visible skill in Codex and Claude Code. It starts
 with the read-only `tes_update.py plan --json-only` probe and must not rerun
@@ -69,11 +70,17 @@ smallest safe oracle.
 `/tes-goal-maestro`, `/tes-prospect`, and `/tes-mine` are explicit-invocation
 skills, not broad natural intent routers. Do not activate them from vague goal,
 stress-test, or mining language unless the user explicitly names the skill or
-trigger. `tes-goal-maestro` may also route from a direct request to generate a
-maestral `/goal` prompt from a mature artifact; it preserves declared execution
-units, validates the tree internally, requires material-diff,
-material-continuation, semantic negative-grep, sequential ownership and
-sync-status evidence, and emits `/goal` when gates pass. After
+direct action. `tes-goal-maestro` may also route from a direct request to
+generate a maestral `/goal` prompt from a mature artifact; it preserves
+declared execution units, validates the tree internally, requires
+material-diff, material-continuation, semantic negative-grep, sequential
+ownership and sync-status evidence, and emits `/goal` when gates pass.
+`tes-bump` is different: it is the version governance guard. It routes from
+direct bump/sync requests and auto-activates read-only when commit, release,
+delivered behavior, or another TES gate reports a version-decision condition.
+It must run `tes_bump.py --governance-check` before inferred closure decisions,
+dry-run target discovery before writes, and must not commit, tag, push, publish,
+or edit remotes. After
 prospecting or mining invocation, they may drive the sequence proactively and
 must honor the cognitive brake:
 `pause`, `pausa`, `freia`, `segura`, `para`, `hold`, `step back`, or

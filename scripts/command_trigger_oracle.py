@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.120"
+VERSION = "0.3.121"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -31,6 +31,7 @@ PREFERRED_TRIGGERS = (
     "/tes-doctor",
     "/tes-adapter",
     "/tes-bench",
+    "/tes-bump",
 )
 
 COMPATIBLE_ALIASES = (
@@ -48,6 +49,7 @@ COMPATIBLE_ALIASES = (
     "/tes:doctor",
     "/tes:adapter",
     "/tes:bench",
+    "/tes:bump",
     "/tes:check",
     "/tes:certify",
     "/tes:recall",
@@ -67,6 +69,7 @@ NATURAL_INTENTS = (
     "project GPS",
     "mapa TES",
     "tes open obsidian",
+    "tes bump",
     "align TES",
     "align this project",
     "map this project",
@@ -164,6 +167,7 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/codex/skills/tes-doctor/SKILL.md",
         "src/adapters/codex/skills/tes-adapter/SKILL.md",
         "src/adapters/codex/skills/tes-bench/SKILL.md",
+        "src/adapters/codex/skills/tes-bump/SKILL.md",
     ),
     "claude": (
         "src/adapters/claude/CLAUDE.md",
@@ -182,6 +186,7 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/claude/skills/tes-doctor/SKILL.md",
         "src/adapters/claude/skills/tes-adapter/SKILL.md",
         "src/adapters/claude/skills/tes-bench/SKILL.md",
+        "src/adapters/claude/skills/tes-bump/SKILL.md",
     ),
     "cursor": (
         "src/adapters/cursor/rules/tes-guidelines.mdc",
@@ -241,6 +246,7 @@ CLAUDE_PROJECT_SKILLS = (
     "tes-doctor",
     "tes-adapter",
     "tes-bench",
+    "tes-bump",
 )
 CODEX_PROJECT_SKILLS = (
     "tes-engineering-discipline",
@@ -259,6 +265,7 @@ CODEX_PROJECT_SKILLS = (
     "tes-doctor",
     "tes-adapter",
     "tes-bench",
+    "tes-bump",
 )
 
 VISIBLE_SKILL_ROUTES = {
@@ -290,6 +297,7 @@ VISIBLE_SKILL_ROUTES = {
             "recommended_update_scope",
         ),
         "tes-field-reports": ("/tes-field-reports", "/tes:field-reports", "field_reports.py"),
+        "tes-bump": ("/tes-bump", "/tes:bump", "tes_bump.py", "governance-check", "NEEDS_VERSION_DECISION"),
     },
     "claude": {
         "tes-prospect": ("/tes-prospect", "/tes:prospect", "cognitive brake"),
@@ -319,6 +327,7 @@ VISIBLE_SKILL_ROUTES = {
             "recommended_update_scope",
         ),
         "tes-field-reports": ("/tes-field-reports", "/tes:field-reports", "field_reports.py"),
+        "tes-bump": ("/tes-bump", "/tes:bump", "tes_bump.py", "governance-check", "NEEDS_VERSION_DECISION"),
     },
 }
 
@@ -531,6 +540,7 @@ def required_installed_files(platform: str) -> tuple[str, ...]:
             ".agents/skills/tes-prospect/SKILL.md",
             ".agents/skills/tes-mine/SKILL.md",
             ".agents/skills/tes-field-reports/SKILL.md",
+            ".agents/skills/tes-bump/SKILL.md",
         )
     if platform == "claude":
         return (
@@ -543,6 +553,7 @@ def required_installed_files(platform: str) -> tuple[str, ...]:
             ".claude/skills/tes-prospect/SKILL.md",
             ".claude/skills/tes-mine/SKILL.md",
             ".claude/skills/tes-field-reports/SKILL.md",
+            ".claude/skills/tes-bump/SKILL.md",
         )
     if platform == "cursor":
         return (".cursor/rules/*.mdc",)
@@ -721,6 +732,7 @@ def run_fixture_tests() -> list[str]:
         (target / ".claude/skills/tes-prospect").mkdir(parents=True)
         (target / ".claude/skills/tes-mine").mkdir(parents=True)
         (target / ".claude/skills/tes-field-reports").mkdir(parents=True)
+        (target / ".claude/skills/tes-bump").mkdir(parents=True)
         (target / "CLAUDE.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-guidelines/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-init/SKILL.md").write_text(good_text, encoding="utf-8")
@@ -730,6 +742,7 @@ def run_fixture_tests() -> list[str]:
         (target / ".claude/skills/tes-prospect/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-mine/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-field-reports/SKILL.md").write_text(good_text, encoding="utf-8")
+        (target / ".claude/skills/tes-bump/SKILL.md").write_text(good_text, encoding="utf-8")
         if check_installed_target(target)["status"] != "PASS":
             failures.append("good installed Claude fixture must pass")
 

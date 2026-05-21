@@ -74,7 +74,9 @@ certification claim actually changed.
 - Version or release identity: check `package.json`, `README.md`,
   `docs/tds/DOCS-INDEX.yml`, user-visible version labels, script `VERSION`
   constants, Claude plugin manifests, GitHub issue placeholders, and
-  `scripts/validate_reference_package.py`.
+  `scripts/validate_reference_package.py`. After an authorized release tag is
+  pushed, run `npm run release:check` before claiming the fixed GitHub npx ref
+  is certified.
 - Public installer bundle: check `scripts/tes_bundle.py`,
   `scripts/public_bundle_oracle.py`,
   `docs/dist/<version>/tilly-engineer-skills-<version>.zip`,

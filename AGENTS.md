@@ -165,6 +165,8 @@ Default rule: bump the patch version and update correlated release surfaces
 when delivered behavior changes. Check `package.json`, script `VERSION`
 constants, plugin manifests, `docs/dist/<version>/**`, `.sha256` sidecars,
 `index.json`, public docs, validators, and the maintainer correlation rule.
+After an authorized release tag is pushed, run `npm run release:check` before
+claiming the fixed GitHub npx or Bun installer ref is certified.
 
 Exception rule: if Murillo explicitly decides to keep the current version for a
 delivered behavior change, state that exception in the closeout and do not call

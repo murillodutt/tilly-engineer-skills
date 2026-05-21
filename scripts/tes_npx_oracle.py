@@ -23,7 +23,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.120"
+VERSION = "0.3.121"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -286,13 +286,18 @@ def package_contract_failures() -> list[str]:
         failures.append("package.json missing script: tes:npx:runtime-matrix")
     if "tes:npx:github-self-test" not in scripts:
         failures.append("package.json missing script: tes:npx:github-self-test")
+    if scripts.get("release:check") != "python3 scripts/tes_npx_oracle.py --release-check":
+        failures.append("package.json release:check must run tes_npx_oracle.py --release-check")
     return failures
 
 
 def github_ref_specs(ref: str) -> list[str]:
     if ref.startswith("refs/"):
-        return [ref]
-    return [f"refs/heads/{ref}", f"refs/tags/{ref}"]
+        refs = [ref]
+        if ref.startswith("refs/tags/"):
+            refs.append(f"{ref}^{{}}")
+        return refs
+    return [f"refs/heads/{ref}", f"refs/tags/{ref}", f"refs/tags/{ref}^{{}}"]
 
 
 def git_ls_remote(repo_url: str, ref: str) -> tuple[list[str], list[str]]:
@@ -306,12 +311,67 @@ def git_ls_remote(repo_url: str, ref: str) -> tuple[list[str], list[str]]:
     return lines, errors
 
 
+def ls_remote_ref_map(lines: list[str]) -> dict[str, str]:
+    refs: dict[str, str] = {}
+    for line in lines:
+        parts = line.split()
+        if len(parts) >= 2:
+            refs[parts[1]] = parts[0]
+    return refs
+
+
+def resolved_ref_commit(lines: list[str], ref: str) -> str:
+    refs = ls_remote_ref_map(lines)
+    for candidate in github_ref_specs(ref):
+        peeled = f"{candidate}^{{}}" if not candidate.endswith("^{}") else candidate
+        if peeled in refs:
+            return refs[peeled]
+    for candidate in github_ref_specs(ref):
+        if candidate in refs:
+            return refs[candidate]
+    return ""
+
+
+def git_rev_parse(ref: str) -> tuple[str, list[str]]:
+    result = run(["git", "rev-parse", "--verify", ref], ROOT, timeout=30.0)
+    if result.returncode != 0:
+        return "", ["git rev-parse failed", *result.stderr.splitlines()]
+    return result.stdout.strip(), []
+
+
+def git_is_ancestor(ancestor: str, descendant: str) -> tuple[bool, list[str]]:
+    result = run(["git", "merge-base", "--is-ancestor", ancestor, descendant], ROOT, timeout=30.0)
+    if result.returncode == 0:
+        return True, []
+    if result.returncode == 1:
+        return False, []
+    return False, ["git merge-base --is-ancestor failed", *result.stderr.splitlines()]
+
+
+def public_release_source_commit() -> tuple[str, list[str]]:
+    index_path = ROOT / "docs" / "dist" / VERSION / "index.json"
+    if not index_path.exists():
+        return "", [f"missing public bundle index: {index_path.relative_to(ROOT)}"]
+    try:
+        index = load_json(index_path)
+    except json.JSONDecodeError as exc:
+        return "", [f"invalid public bundle index: {exc}"]
+    metadata = index.get("metadata") if isinstance(index.get("metadata"), dict) else {}
+    source_commit = str(index.get("source_commit") or metadata.get("source_commit") or "")
+    if len(source_commit) != 40 or any(char not in "0123456789abcdef" for char in source_commit.lower()):
+        return "", ["public bundle index source_commit must be a 40-character git SHA"]
+    return source_commit, []
+
+
 def github_package_self_test(
     *,
     github_spec: str,
     repo_url: str,
     ref: str,
     target: Path | None,
+    require_current_head: bool = False,
+    require_public_bundle_source: bool = False,
+    include_bunx: bool = False,
 ) -> int:
     failures = package_contract_failures()
     blockers: list[str] = []
@@ -321,18 +381,47 @@ def github_package_self_test(
         failures.append("npm executable is required")
     if not shutil.which("git"):
         failures.append("git executable is required")
+    if include_bunx and not shutil.which("bunx"):
+        failures.append("bunx executable is required for release GitHub package certification")
+    if include_bunx and not shutil.which("bun"):
+        failures.append("bun executable is required for release GitHub package certification")
 
     resolved_refs: list[str] = []
+    resolved_commit = ""
     if not failures:
         resolved_refs, ref_errors = git_ls_remote(repo_url, ref)
+        resolved_commit = resolved_ref_commit(resolved_refs, ref)
         if ref_errors:
             blockers.extend(ref_errors)
         elif not resolved_refs:
             blockers.append(
                 f"missing GitHub ref {ref!r}; create refs/heads/{ref} or refs/tags/{ref} before certification"
             )
+        elif require_public_bundle_source:
+            expected_commit, expected_errors = public_release_source_commit()
+            if expected_errors:
+                blockers.extend(expected_errors)
+            else:
+                is_ancestor, ancestor_errors = git_is_ancestor(expected_commit, resolved_commit)
+                if ancestor_errors:
+                    blockers.extend(ancestor_errors)
+                elif not is_ancestor:
+                    blockers.append(
+                        f"GitHub ref {ref!r} resolves to {resolved_commit or 'unknown'}, "
+                        f"but public bundle source_commit {expected_commit} is not an ancestor; "
+                        "tag the release lineage before certification"
+                    )
+        elif require_current_head:
+            head, head_errors = git_rev_parse("HEAD")
+            if head_errors:
+                blockers.extend(head_errors)
+            elif resolved_commit != head:
+                blockers.append(
+                    f"GitHub ref {ref!r} resolves to {resolved_commit or 'unknown'}, "
+                    f"but local HEAD is {head}; tag the release commit before certification"
+                )
 
-    command = [
+    npm_command = [
         "npm",
         "exec",
         "--yes",
@@ -347,13 +436,26 @@ def github_package_self_test(
         "all",
         "--yes",
     ]
+    bunx_command = [
+        "bunx",
+        "--silent",
+        "--bun",
+        "--package",
+        f"{github_spec}#{ref}",
+        BIN_NAME,
+        "add",
+        "--dry-run",
+        "--agent",
+        "all",
+        "--yes",
+    ]
 
     with tempfile.TemporaryDirectory(prefix="tes-github-npx-oracle-") as tempdir:
         work = Path(tempdir)
         dry_target = target or fixture(work, "github-npx-target")
-        command.extend(["--target", str(dry_target)])
+        npm_command.extend(["--target", str(dry_target)])
         if not failures and not blockers:
-            exec_result = run(command, work, timeout=360.0)
+            exec_result = run(npm_command, work, timeout=360.0)
             if exec_result.returncode != 0:
                 failures.append("GitHub package spec npm exec failed")
                 failures.extend(exec_result.stdout.splitlines())
@@ -362,6 +464,19 @@ def github_package_self_test(
                 failures.extend(commercial_output_failures("GitHub package spec dry-run", exec_result.stdout))
             if (dry_target / ".tes").exists():
                 failures.append("GitHub npx dry-run must not create .tes")
+
+            if include_bunx:
+                bunx_target = fixture(work, "github-bunx-target")
+                bunx_command.extend(["--target", str(bunx_target)])
+                bunx_result = run(bunx_command, work, timeout=360.0)
+                if bunx_result.returncode != 0:
+                    failures.append("GitHub package spec bunx dry-run failed")
+                    failures.extend(bunx_result.stdout.splitlines())
+                    failures.extend(bunx_result.stderr.splitlines())
+                else:
+                    failures.extend(commercial_output_failures("GitHub package spec bunx dry-run", bunx_result.stdout))
+                if (bunx_target / ".tes").exists():
+                    failures.append("GitHub bunx dry-run must not create .tes")
 
     if failures:
         status = "FAIL"
@@ -386,7 +501,14 @@ def github_package_self_test(
         "repo_url": repo_url,
         "ref": ref,
         "resolved_refs": resolved_refs,
-        "command": " ".join(command),
+        "resolved_commit": resolved_commit,
+        "require_current_head": require_current_head,
+        "require_public_bundle_source": require_public_bundle_source,
+        "include_bunx": include_bunx,
+        "commands": [
+            " ".join(npm_command),
+            *([" ".join(bunx_command)] if include_bunx else []),
+        ],
         "failures": failures,
         "blockers": blockers,
     }
@@ -1019,6 +1141,21 @@ def main() -> int:
     parser.add_argument("--runtime-matrix", action="store_true")
     parser.add_argument("--github-self-test", action="store_true")
     parser.add_argument(
+        "--release-check",
+        action="store_true",
+        help="Certify the fixed GitHub release ref against the public bundle source commit, npm exec, and bunx.",
+    )
+    parser.add_argument(
+        "--require-current-head",
+        action="store_true",
+        help="Require the remote ref to resolve to local HEAD.",
+    )
+    parser.add_argument(
+        "--include-bunx",
+        action="store_true",
+        help="Also dry-run the GitHub package spec through bunx --bun.",
+    )
+    parser.add_argument(
         "--github-spec",
         default=os.environ.get("TES_GITHUB_NPX_SPEC", DEFAULT_GITHUB_SPEC),
         help="GitHub npm package spec without #ref.",
@@ -1031,7 +1168,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.120 or main.",
+        help="Git ref to test, e.g. v0.3.121 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()
@@ -1039,12 +1176,15 @@ def main() -> int:
         return self_test()
     if args.runtime_matrix:
         return runtime_matrix()
-    if args.github_self_test:
+    if args.github_self_test or args.release_check:
         return github_package_self_test(
             github_spec=args.github_spec,
             repo_url=args.github_repo_url,
             ref=args.github_ref,
             target=args.target,
+            require_current_head=args.require_current_head,
+            require_public_bundle_source=args.release_check,
+            include_bunx=args.include_bunx or args.release_check,
         )
     parser.print_help()
     return 0

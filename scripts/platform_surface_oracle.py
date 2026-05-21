@@ -19,7 +19,7 @@ import project_context_oracle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.120"
+VERSION = "0.3.121"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 

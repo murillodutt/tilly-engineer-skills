@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.120"
+VERSION = "0.3.121"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -28,9 +28,9 @@ REQUIRED_PATHS = (
     "docs/architecture/PROJECT-STRUCTURE.md",
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.120/index.json",
-    "docs/dist/0.3.120/tilly-engineer-skills-0.3.120.zip",
-    "docs/dist/0.3.120/tilly-engineer-skills-0.3.120.zip.sha256",
+    "docs/dist/0.3.121/index.json",
+    "docs/dist/0.3.121/tilly-engineer-skills-0.3.121.zip",
+    "docs/dist/0.3.121/tilly-engineer-skills-0.3.121.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -120,6 +120,9 @@ REQUIRED_PATHS = (
     "src/adapters/codex/skills/tes-bench/SKILL.md",
     "src/adapters/codex/skills/tes-bench/agents/openai.yaml",
     "src/adapters/codex/skills/tes-bench/docs/CONTRACT-HISTORY.md",
+    "src/adapters/codex/skills/tes-bump/SKILL.md",
+    "src/adapters/codex/skills/tes-bump/agents/openai.yaml",
+    "src/adapters/codex/skills/tes-bump/docs/CONTRACT-HISTORY.md",
     "src/adapters/claude/CLAUDE.md",
     "src/adapters/claude/plugin/plugin.json",
     "src/adapters/claude/plugin/marketplace.json",
@@ -160,6 +163,9 @@ REQUIRED_PATHS = (
     "src/adapters/claude/skills/tes-bench/SKILL.md",
     "src/adapters/claude/skills/tes-bench/agents/openai.yaml",
     "src/adapters/claude/skills/tes-bench/docs/CONTRACT-HISTORY.md",
+    "src/adapters/claude/skills/tes-bump/SKILL.md",
+    "src/adapters/claude/skills/tes-bump/agents/openai.yaml",
+    "src/adapters/claude/skills/tes-bump/docs/CONTRACT-HISTORY.md",
     "src/adapters/cursor/CURSOR.md",
     "src/adapters/cursor/rules/tes-guidelines.mdc",
     "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",
@@ -189,6 +195,7 @@ REQUIRED_PATHS = (
     "scripts/tes_map.py",
     "scripts/tes_map_oracle.py",
     "scripts/tes_open_obsidian.py",
+    "scripts/tes_bump.py",
     "scripts/tes_update.py",
     "scripts/tes_legacy_retirement.py",
     "scripts/tes_namespace.py",

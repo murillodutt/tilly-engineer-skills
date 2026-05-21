@@ -135,8 +135,8 @@ Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
 `/tes:cortex`, `/tes-curate`, `/tes:curate`,
 `/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
 `/tes-doctor`, `/tes:doctor`, `/tes:check`, `/tes:certify`, `/tes-adapter`,
-`/tes:adapter`, `/tes-bench`, `/tes:bench`, `/tes:recall`, `/tes:learn`,
-and `/tes:reflect`
+`/tes:adapter`, `/tes-bench`, `/tes:bench`, `/tes-bump`, `/tes:bump`,
+`/tes:recall`, `/tes:learn`, and `/tes:reflect`
 as intent shortcuts. Choose the smallest safe oracle behind
 the scenes and report skipped or blocked commands honestly.
 For `/tes-align`, make `docs/agents/PROJECT-ROADMAP.md` open with Mermaid
@@ -148,6 +148,11 @@ For `/tes-bench`, treat benchmark commands as package-source evidence. New
 context-mesh runs default to `docs/evidence/reports/YYYY/MM/DD/context-mesh/`;
 legacy `docs/evidence/reports/context-mesh/` remains readable retained proof,
 and current benchmark claims belong in `docs/evidence/current/**`.
+For `/tes-bump`, run `tes_bump.py --governance-check` first when commit,
+release, delivered-behavior, or gate-reported bump conditions are present.
+Run `tes_bump.py --dry-run` before actual version writes, inspect the discovered
+targets, and apply only with write authorization. It must not commit, tag, push,
+publish, or edit remotes.
 
 ## Cortex Reflection
 

@@ -16,12 +16,14 @@ Assumptions visible. Scope smaller. Edits surgical. Success falsifiable.
 
 Treat `/tes-init`, `/tes-setup`, `/tes-update`, `/tes-align`, `/tes-prospect`, `/tes-mine`,
 `/tes-open-obsidian`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
-`/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench` as the
+`/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, and
+`/tes-bump` as the
 shared TES trigger vocabulary. Treat `/tes:init`, `/tes:update`,
 `/tes:align`, `/tes:prospect`, `/tes:mine`, `/tes:open-obsidian`,
 `/tes:cortex`, `/tes:mcp`, `/tes:field-reports`, `/tes:doctor`,
-`/tes:adapter`, `/tes:bench`, `/tes:check`, `/tes:certify`, `/tes:recall`,
-`/tes:learn`, `/tes:reflect`, and `/tes:curate` as compatible aliases.
+`/tes:adapter`, `/tes:bench`, `/tes:bump`, `/tes:check`, `/tes:certify`,
+`/tes:recall`, `/tes:learn`, `/tes:reflect`, and `/tes:curate` as compatible
+aliases.
 
 Natural intents also route to TES: `tes init`, `tes setup`, `tes update`, `Atualizar TES`,
 `atualizar TES`, `tes align`, `align TES`, `align this project`,
@@ -32,6 +34,9 @@ Natural intents also route to TES: `tes init`, `tes setup`, `tes update`, `Atual
 
 Do not activate `/tes-prospect` or `/tes-mine` from broad natural language.
 They require explicit invocation and must honor the cognitive brake.
+`tes-bump` is a version governance guard: direct bump/sync requests route to
+it, and commit, release, delivered-behavior, or gate-reported bump conditions
+auto-activate its read-only governance check.
 
 If Claude reports `/tes:*` text as an invalid slash, treat it as TES intent and
 do not stop to ask for a route when the intended TES action is clear.

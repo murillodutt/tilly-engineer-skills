@@ -18,17 +18,21 @@ All adapters share the same preferred user triggers: `/tes-init`,
 `/tes-update`, `/tes-align`, `/tes-map`, `/tes-goal-maestro`,
 `/tes-prospect`, `/tes-mine`,
 `/tes-open-obsidian`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
-`/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench`. Treat
+`/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, and
+`/tes-bump`. Treat
 `/tes:*` forms as compatible TES intent aliases; if a host reports one as an
 invalid slash, continue through the matching `tes-*` skill/rule/spec instead of
 asking the user to restate the route.
 
-`/tes-prospect`, `/tes-mine`, and `/tes-goal-maestro` are explicit-invocation
-skills. They do not have broad natural-language routing. Prospecting and mining
-stay dormant until the user names the skill or trigger, then operate
-proactively with a cognitive brake. Goal maestro may also route from a direct
-request to generate a maestral `/goal` prompt from a mature SPEC, Super SPEC,
-PRD, relational project plan, or accepted execution tree.
+`/tes-prospect`, `/tes-mine`, and `/tes-goal-maestro` are
+explicit-invocation skills. They do not have broad natural-language routing.
+Prospecting and mining stay dormant until the user names the skill or trigger,
+then operate proactively with a cognitive brake. Goal maestro may also route
+from a direct request to generate a maestral `/goal` prompt from a mature SPEC,
+Super SPEC, PRD, relational project plan, or accepted execution tree.
+`/tes-bump` is the version governance guard: it routes from direct bump/sync
+requests and auto-activates read-only when commit, release, delivered behavior,
+or another TES gate reports a version-decision condition.
 The executable parity gate is `python3 scripts/command_trigger_oracle.py
 --self-test`.
 Installed target parity can be checked with
@@ -59,6 +63,7 @@ mode of `/tes-init`.
 | `/tes-doctor` | `tes-doctor` | visible skill |
 | `/tes-adapter` | `tes-adapter` | visible skill |
 | `/tes-bench` | `tes-bench` | visible skill |
+| `/tes-bump` | `tes-bump` | visible version-governance guard |
 
 ## Trigger Matrix
 
@@ -79,6 +84,7 @@ mode of `/tes-init`.
 | `/tes-doctor` or `/tes:doctor` | health-check, certify, or prepare a commit | validation, TDS, doc-size, platform, materialization, commit gates | none unless evidence is explicitly requested |
 | `/tes-adapter` or `/tes:adapter` | materialize, dry-run, retrofit, or install adapter surfaces | `materialize_adapter.py`, `install_adapter.py`, adapter oracles | adapter files only after review or approval |
 | `/tes-bench` or `/tes:bench` | plan, run, or converge context-mesh benchmarks | benchmark plan/run/converge scripts | temporal benchmark evidence artifacts under `docs/evidence/reports/YYYY/MM/DD/**` |
+| `/tes-bump` or `/tes:bump` | govern, plan, and apply bounded project version bumps | `tes_bump.py --governance-check`; `tes_bump.py --dry-run`, then `tes_bump.py --yes` after write authorization | governance check is read-only; writes only discovered version targets; no commits, tags, pushes, remotes, package locks, or publishing |
 
 Aliases:
 
@@ -101,6 +107,8 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 /tes:curate  -> /tes-cortex curate-plan
 /tes:check   -> /tes-doctor
 /tes:certify -> /tes-doctor
+/tes:bump    -> /tes-bump
+tes bump     -> /tes-bump
 ```
 
 ## Classification
@@ -109,12 +117,13 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-source alias for the same oracles; not a target-project guarantee |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.120 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.121 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
 | goal materialization skill | explicit mature-artifact-to-`/goal` prompt materialization with artifact maturity, execution-unit fidelity, internal tree, material-diff, material-continuation, semantic negative-grep, sequential ownership, and sync-status gates |
 | predictive skills | explicit-invocation project-stress and mining skills with cognitive brake |
+| version governance guard | auto-read-only bump decision guard with dry-run-first target discovery and no Git or publishing side effects |
 | rules | always-on intent routers where skills are not native |
 | hooks | Git-event gates for validation, no-write Cortex reflection/curation, and Field Reports drain |
 | command-trigger oracle | package gate that checks docs, Codex, Claude, and Cursor share the same trigger vocabulary |

@@ -29,6 +29,7 @@ Use these exact TES intents when the user asks for Tilly Engineering Skills:
 - `/tes-doctor`
 - `/tes-adapter`
 - `/tes-bench`
+- `/tes-bump`
 
 Compatible aliases:
 
@@ -46,6 +47,7 @@ Compatible aliases:
 - `/tes:doctor`
 - `/tes:adapter`
 - `/tes:bench`
+- `/tes:bump`
 - `/tes:check`
 - `/tes:certify`
 - `/tes:recall`
@@ -56,7 +58,7 @@ Compatible aliases:
 Natural intents include: tes init, tes setup, tes update, tes align, tes map,
 generate a maestral /goal prompt, generate a /goal from a PRD, gerar um /goal
 maestral, gerar /goal de um PRD, project GPS, mapa
-TES, tes open obsidian, align TES, align this project, map this project, open
+TES, tes open obsidian, tes bump, align TES, align this project, map this project, open
 Obsidian, open this project in Obsidian, Atualizar TES, atualizar TES, alinhar
 TES, alinhar projeto, mapear TES, mapear projeto, abrir Obsidian, abrir no
 Obsidian, initialize TES, install TES, recertify TES, inicializar TES, instalar
@@ -67,8 +69,13 @@ natural language. They require explicit invocation by trigger, alias, or skill
 name; `tes-goal-maestro` may also route from a direct request to generate a
 maestral `/goal` prompt from a mature SPEC, Super SPEC, PRD, relational project
 plan, or accepted execution tree. It must preserve declared execution units,
-validate the tree internally, require material-diff, material-continuation, semantic negative-grep, sequential ownership and sync-status evidence,
-and emit `/goal` when gates pass. After prospecting or
+validate the tree internally, require material-diff, material-continuation,
+semantic negative-grep, sequential ownership and sync-status evidence, and emit
+`/goal` when gates pass. `tes-bump` is a version governance guard: direct
+bump/sync requests route to it, and commit, release, delivered-behavior, or
+gate-reported bump conditions auto-activate its read-only `--governance-check`.
+It must dry-run target discovery before any write and must not commit, tag,
+push, publish, or edit remotes. After prospecting or
 mining invocation, they may operate proactively and must honor the cognitive
 brake: pause, pausa, freia,
 segura, para, hold, step back, or resuma onde estamos.

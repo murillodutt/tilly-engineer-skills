@@ -1,0 +1,9 @@
+name: tes-bump
+description: Version governance guard for correct project bumps.
+default_prompt: |
+  Use $tes-bump for explicit version bump intent and as the read-only
+  governance guard when commit, release, or delivered behavior changes may
+  require a version decision. Run --governance-check first for inferred bump
+  conditions, dry-run before writes, apply only with authorization, and report
+  PASS, NEEDS_VERSION_DECISION, or NEEDS_REVIEW with evidence. Do not commit,
+  tag, push, publish, or import <project-B> changelog or Oracle behavior.

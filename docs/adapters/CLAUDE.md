@@ -71,7 +71,8 @@ dedicated decision.
   slash names such as `/tes-init`, `/tes-setup`, `/tes-update`,
   `/tes-align`, `/tes-open-obsidian`,
   `/tes-goal-maestro`, `/tes-prospect`, `/tes-mine`, `/tes-cortex`, `/tes-mcp`,
-  `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, and `/tes-bench`;
+  `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, and
+  `/tes-bump`;
   grouped triggers such as `/tes-curate` route through their owning skills
   instead of a one-file-per-command package.
   `/tes:*` forms remain compatible TES intent aliases. If Claude receives
@@ -96,6 +97,11 @@ dedicated decision.
   text, but broad natural-language descriptions must not activate them. Once
   invoked, each skill may operate proactively and must honor its cognitive
   brake.
+- `/tes-bump` is the version governance guard. Its `/tes:bump` alias is
+  compatible intent text, direct requests to bump or sync a project version may
+  route to it, and commit/release/delivered-behavior conditions auto-activate
+  its read-only governance check. It dry-runs target discovery before writes
+  and never commits, tags, pushes, publishes, or edits remotes.
 - When installing into an existing project, back up a divergent `CLAUDE.md`
   under `.tes/bk/**`, apply the clean bootloader, recover useful semantics into
   `docs/agents/**`, and still install TES-owned assets under

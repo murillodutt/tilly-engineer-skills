@@ -23,7 +23,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.120"
+VERSION = "0.3.121"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -63,6 +63,7 @@ HELPER_FILES = (
     "tes_map.py",
     "tes_map_oracle.py",
     "tes_open_obsidian.py",
+    "tes_bump.py",
     "command_trigger_oracle.py",
     "tes_bundle.py",
     "materialize_adapter.py",

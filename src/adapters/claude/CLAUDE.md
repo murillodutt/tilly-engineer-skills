@@ -157,15 +157,22 @@ treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
 `/tes:cortex`, `/tes-curate`, `/tes:curate`,
 `/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
 `/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`, `/tes-bench`,
-and `/tes:bench` as intent shortcuts. Use the matching `.claude/skills/tes-*`
-skill when present; otherwise follow the local installer or helper spec
-directly and choose the smallest safe oracle. These are not shell commands.
+`/tes:bench`, `/tes-bump`, and `/tes:bump` as intent shortcuts. Use the
+matching `.claude/skills/tes-*` skill when present; otherwise follow the local
+installer or helper spec directly and choose the smallest safe oracle. These
+are not shell commands.
 Do not activate `/tes-prospect`, `/tes-mine`, or `/tes-goal-maestro` from broad
-natural language. They require explicit invocation; `tes-goal-maestro` may also
-route from a direct request for a maestral `/goal` prompt from a mature SPEC,
-Super SPEC, PRD, relational project plan, or accepted execution tree. It must
-preserve declared execution units, validate the tree internally, require
-material-diff, material-continuation, semantic negative-grep, sequential ownership and sync-status evidence, and emit `/goal` when gates pass.
+natural language. They require explicit invocation;
+`tes-goal-maestro` may also route from a direct request for a maestral `/goal`
+prompt from a mature SPEC, Super SPEC, PRD, relational project plan, or
+accepted execution tree. It must preserve declared execution units, validate
+the tree internally, require material-diff, material-continuation, semantic
+negative-grep, sequential ownership and sync-status evidence, and emit `/goal`
+when gates pass. `tes-bump` is a version governance guard: direct bump/sync
+requests route to it, and commit, release, delivered-behavior, or gate-reported
+bump conditions auto-activate its read-only `--governance-check`. It must
+dry-run target discovery before any write and must not commit, tag, push,
+publish, or edit remotes.
 `/tes-prospect` and `/tes-mine` must honor the cognitive brake.
 
 ## Cortex Reflection

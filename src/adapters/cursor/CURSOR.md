@@ -39,6 +39,7 @@ owned by the target project:
 - `/tes-doctor`
 - `/tes-adapter`
 - `/tes-bench`
+- `/tes-bump`
 
 Compatible aliases:
 
@@ -53,6 +54,7 @@ Compatible aliases:
 - `/tes:doctor`
 - `/tes:adapter`
 - `/tes:bench`
+- `/tes:bump`
 - `/tes:check`
 - `/tes:certify`
 - `/tes:recall`
@@ -61,7 +63,7 @@ Compatible aliases:
 - `/tes:curate`
 
 Natural intents include: tes init, tes update, tes align, tes map, project GPS,
-mapa TES, tes open obsidian, align TES, align this project, map this project,
+mapa TES, tes open obsidian, tes bump, align TES, align this project, map this project,
 open Obsidian, open this project in Obsidian, Atualizar TES, atualizar TES,
 alinhar TES, alinhar projeto, mapear TES, mapear projeto, abrir Obsidian,
 abrir no Obsidian, initialize TES, install TES, recertify TES, inicializar TES,

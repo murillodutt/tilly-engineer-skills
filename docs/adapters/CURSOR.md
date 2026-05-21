@@ -56,15 +56,21 @@ init/update command-prompts, `/tes-cortex`, `/tes:cortex`, `/tes-mcp`,
 `gerar um /goal maestral`, `/tes-prospect`, `/tes:prospect`,
 `/tes-mine`, `/tes:mine`, `/tes-open-obsidian`,
 `/tes:open-obsidian`, `open Obsidian`, `open this project in Obsidian`,
-`abrir Obsidian`, `abrir no Obsidian`, `/tes-curate`, and `/tes:curate` as
+`abrir Obsidian`, `abrir no Obsidian`, `/tes-curate`, `/tes:curate`,
+`/tes-bump`, `/tes:bump`, and `tes bump` as
 intent shortcuts for the same deterministic oracles used by Codex and Claude.
 `/tes-goal-maestro`, `/tes-prospect`, and `/tes-mine` remain explicit routes:
-do not activate them from broad natural-language planning text.
+do not activate them from broad natural-language planning text. `/tes-bump`
+is a version governance guard: direct bump/sync requests route to it, and
+commit, release, delivered-behavior, or gate-reported bump conditions
+auto-activate its read-only governance check.
 `tes-goal-maestro` may also route from a direct request to generate a maestral
 `/goal` prompt from a mature SPEC, Super SPEC, PRD, relational project plan, or
 accepted execution tree. It must preserve declared execution units, validate
 the tree internally, require material-diff, material-continuation, semantic negative-grep, sequential ownership and sync-status evidence, and
 generate the final `/goal` when gates pass.
+`tes-bump` must dry-run target discovery before writes and never commit, tag,
+push, publish, or edit remotes.
 
 Future workflow-specific rules should be separate `Agent Requested` or
 manual rules instead of expanding the always-on rule.

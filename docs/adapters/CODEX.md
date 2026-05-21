@@ -13,7 +13,7 @@ tver: 0.5.2
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.120`.
+Project version: `0.3.121`.
 
 It follows the Codex customization order:
 
@@ -73,7 +73,10 @@ materializes mature SPECs, Super SPECs, PRDs, relational project plans, or
 accepted execution trees into maestral `/goal` prompts after internal tree,
 material-diff, material-continuation, semantic negative-grep, sequential ownership, sync-status, and execution-unit fidelity checks. Predictive skills such as
 `/tes-prospect` and `/tes-mine` require explicit invocation and use a cognitive
-brake. They keep the user entrypoint short while delegating real work to
+brake. `/tes-bump` is the version governance guard: it auto-activates
+read-only for commit, release, delivered-behavior, or gate-reported bump
+conditions, dry-runs target discovery before writing version surfaces, and
+never commits, tags, pushes, or publishes. They keep the user entrypoint short while delegating real work to
 deterministic oracles or agent-led codebase exploration:
 
 | Shortcut | Skill |
@@ -93,6 +96,7 @@ deterministic oracles or agent-led codebase exploration:
 | `/tes-doctor`, `/tes:doctor` | `tes-doctor` |
 | `/tes-adapter`, `/tes:adapter` | `tes-adapter` |
 | `/tes-bench`, `/tes:bench` | `tes-bench` |
+| `/tes-bump`, `/tes:bump` | `tes-bump` |
 
 This keeps the four gates available without bloating every context window.
 

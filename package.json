@@ -1,6 +1,6 @@
 {
   "name": "tilly-engineer-skills",
-  "version": "0.3.120",
+  "version": "0.3.121",
   "private": true,
   "description": "Portable engineering discipline and context-mesh method for coding agents.",
   "license": "MIT",
@@ -27,6 +27,7 @@
     "tes:npx:self-test": "python3 scripts/tes_npx_oracle.py --self-test",
     "tes:npx:runtime-matrix": "python3 scripts/tes_npx_oracle.py --runtime-matrix",
     "tes:npx:github-self-test": "python3 scripts/tes_npx_oracle.py --github-self-test",
+    "release:check": "python3 scripts/tes_npx_oracle.py --release-check",
     "project-context:self-test": "python3 scripts/project_context_oracle.py --self-test",
     "project-alignment:self-test": "python3 scripts/project_alignment_oracle.py --self-test",
     "tes-map:self-test": "python3 scripts/tes_map.py --self-test",

@@ -25,16 +25,12 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 
 ## Commercial Quickstart
 
-Node/npm path:
-
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.120 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.121 tilly-engineer-skills add
 ```
 
-Bun path:
-
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.120 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.121 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -46,10 +42,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.120 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.121 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.120` is the fixed release ref and supported commercial install path; do not certify mutable release refs without their own canary evidence.
+`#v0.3.121` is the fixed release ref and supported commercial install path; do not certify mutable release refs without their own canary evidence.
 
 During install, update, and clean-runtime refresh, obsolete plugin/root-skill surfaces are removed only when TES-owned/generated/empty; ambiguous content is preserved, backed up under `.tes/bk/**`, and reported as `NEEDS_REVIEW`.
 
@@ -106,8 +102,11 @@ Release certification gates:
 ```bash
 python3 scripts/tes_npx_oracle.py --self-test
 python3 scripts/tes_npx_oracle.py --runtime-matrix
-TES_GITHUB_NPX_REF=v0.3.120 python3 scripts/tes_npx_oracle.py --github-self-test
+npm run release:check
 ```
+
+`release:check` is the post-tag remote gate: the fixed GitHub ref must exist,
+include the public bundle `source_commit`, and dry-run through npm/npx and Bun.
 
 ## Compatibility Basis
 
