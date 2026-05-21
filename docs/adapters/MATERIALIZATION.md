@@ -58,6 +58,19 @@ check builds all adapters in a temporary directory and verifies:
 tracked, so the pre-commit hook cannot pass by reading untracked files that
 would be absent from the commit.
 
+## Mantra Gate Ownership
+
+Mantra Gate behavior is skill-owned, not bootloader-owned:
+
+- Codex `AGENTS.md` routes to `.agents/skills/tes-engineering-discipline/SKILL.md`.
+- Claude `CLAUDE.md` routes to `.claude/skills/tes-guidelines/SKILL.md`.
+- Cursor `.cursor/rules/tes-guidelines.mdc` carries the active rule directly.
+
+Materialization checks reject active bootloaders or rules that reintroduce
+retired project-local gate markers or duplicate the gate protocol in the
+bootloader. Historical evidence may preserve retired text; active runtime
+surfaces may not.
+
 If a target tool changes packaging rules, update `src/adapters/<tool>/**`,
 `scripts/materialize_adapter.py`, and this document in the same patch.
 

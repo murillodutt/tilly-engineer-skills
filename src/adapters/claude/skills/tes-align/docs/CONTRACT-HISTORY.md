@@ -44,6 +44,8 @@ decisions, glossary, knowledge lifecycle, and evidence.
 - Hiding unknowns.
 - Polluting `.obsidian/**`.
 - Claiming alignment without retained evidence.
+- Mixing target-project `docs/agents/evidence/**` with TES source-package
+  benchmark evidence under `docs/evidence/**`.
 
 ## Relationship To Other Skills
 
@@ -58,6 +60,7 @@ Fix loops prove product changes after alignment selects the lane.
 | 2026-05-09 | Created `tes-align` contract. | TES Align source-of-truth document; `scripts/project_alignment_oracle.py --self-test`. | high |
 | 2026-05-11 | Made Mermaid roadmap visualization the default presentation. | TES Align source-of-truth document; `scripts/project_alignment_oracle.py --self-test`. | high |
 | 2026-05-11 | Added System X-Ray plus Convergence Line as the standard roadmap frame. | TES Align source-of-truth document; `scripts/project_alignment_oracle.py --self-test`. | high |
+| 2026-05-21 | Clarified target-project alignment evidence boundary after source-package temporal evidence retention policy. | TES evidence retention policy; TES Align source-of-truth contract; project alignment oracle self-test. | high |
 
 ## Do Not Lose
 

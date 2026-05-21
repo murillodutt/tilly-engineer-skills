@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and `/tes-align` skill authors
 source_of_truth: true
 evidence_level: L1
-tver: 0.2.2
+tver: 0.2.3
 sources_verified_on: 2026-05-09
 source_refresh_interval_days: 15
 source_refresh_policy: >-
@@ -14,6 +14,7 @@ source_refresh_policy: >-
   the sources changed, and only then use it as construction truth.
 sources:
   - "docs/install/COMMAND-TRIGGERS.md"
+  - "docs/evidence/INDEX.md"
   - "docs/mesh/CONTEXT-MESH-METHOD.md"
   - "docs/mesh/CONTEXT-MESH-CONVERGENCE.md"
   - "https://github.com/obsidianmd/obsidian-help"
@@ -94,6 +95,12 @@ Default generated or updated surfaces:
 These are canonical names for TES-generated target-project meshes, not a blind
 creation requirement. If equivalent project-owned docs already exist, the skill
 must link and align them instead of duplicating them.
+
+The `docs/agents/evidence/**` packet is target-project alignment evidence.
+TES source-package benchmark evidence uses `docs/evidence/current/**`,
+`docs/evidence/reports/YYYY/MM/DD/**`, and `docs/evidence/archive/**`.
+`/tes-align` must not copy those source-package retention layers into target
+projects or treat historical benchmark reports as current target truth.
 
 ## Existing-Doc Classification
 
@@ -271,6 +278,7 @@ alignment_evidence:
   roadmap_changes:
   obsidian_native_checks:
   oracle_result:
+  retention_status: retained
   limits:
 ```
 

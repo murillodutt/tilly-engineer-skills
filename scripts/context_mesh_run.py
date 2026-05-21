@@ -32,7 +32,9 @@ CERTIFICATION_PROFILE = "v1-rc"
 PIPELINE_CERTIFICATION_CLASS = "pipeline-v1-rc"
 BEHAVIOR_CERTIFICATION_CLASS = "behavior-v1-rc"
 GRADER_VERSION = "deterministic-substring@0.1.6"
-DEFAULT_OUT_ROOT = ROOT / "docs/evidence/reports/context-mesh"
+EVIDENCE_REPORTS_ROOT = ROOT / "docs/evidence/reports"
+DEFAULT_EVIDENCE_DOMAIN = "context-mesh"
+LEGACY_OUT_ROOT = EVIDENCE_REPORTS_ROOT / DEFAULT_EVIDENCE_DOMAIN
 SECRET_PATTERNS = (
     re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
     re.compile(r"gh[pousr]_[A-Za-z0-9_]{20,}"),
@@ -160,6 +162,21 @@ def sha256_path_tree(path: Path) -> str:
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def default_out_root(now: datetime | None = None) -> Path:
+    stamp = now or datetime.now(timezone.utc)
+    return (
+        EVIDENCE_REPORTS_ROOT
+        / f"{stamp:%Y}"
+        / f"{stamp:%m}"
+        / f"{stamp:%d}"
+        / DEFAULT_EVIDENCE_DOMAIN
+    )
+
+
+def resolve_out_root(out_root: Path | None) -> Path:
+    return out_root if out_root is not None else default_out_root()
 
 
 def git_head() -> str:
@@ -1070,6 +1087,7 @@ Run ID: `{manifest['run_id']}`
 | Grader SHA | `{manifest['grader_sha']}` |
 | Dataset SHA | `{manifest['dataset_sha']}` |
 | Git HEAD | `{manifest['git_head']}` |
+| Retention status | `{manifest.get('retention_status', 'retained')}` |
 | Planned calls | `{manifest['planned_calls']}` |
 | Executed calls | `{summary['executed_calls']}` |
 | Pass rate | `{summary['pass_rate']:.2%}` |
@@ -1319,6 +1337,7 @@ def merge_shard_records(
         "grader_version": first["grader_version"],
         "grader_sha": first["grader_sha"],
         "planned_calls": len(samples),
+        "retention_status": "retained",
         "merge_contract_version": "context-mesh-merge@0.1.0",
         "merge_sources": [
             {
@@ -1353,7 +1372,7 @@ def merge_shards(args: argparse.Namespace) -> int:
             print(f"- {failure}")
         return 1
 
-    run_dir = args.out_root / run_id
+    run_dir = resolve_out_root(args.out_root) / run_id
     try:
         paths = write_evidence(run_dir, manifest, records, update_index=not args.no_tds_index)
     except FileExistsError as exc:
@@ -1467,6 +1486,7 @@ def run(args: argparse.Namespace) -> int:
             return 1
         selected_samples = selected_samples[:args.sample_cap]
     is_shard = args.shard_index is not None
+    out_root = resolve_out_root(args.out_root)
 
     if args.dry_run:
         print("[context-mesh-run] DRY-RUN")
@@ -1476,6 +1496,9 @@ def run(args: argparse.Namespace) -> int:
             "selected_calls": len(selected_samples),
             "shard_index": args.shard_index,
             "shard_count": args.shard_count,
+            "out_root": str(out_root),
+            "legacy_out_root": str(LEGACY_OUT_ROOT),
+            "evidence_path_schema": "tes-evidence-temporal@1",
             "plan_parity": True,
         }, indent=2))
         return 0
@@ -1517,6 +1540,7 @@ def run(args: argparse.Namespace) -> int:
         "grader_version": grader["grader_version"],
         "grader_sha": grader["grader_sha"],
         "planned_calls": plan["planned_calls"],
+        "retention_status": "retained",
     }
     if args.sample_cap is not None:
         manifest["sample_cap"] = args.sample_cap
@@ -1533,7 +1557,6 @@ def run(args: argparse.Namespace) -> int:
 
     records = execute_samples(selected_samples, backend, manifest)
 
-    out_root = args.out_root
     run_dir = out_root / run_id
     if is_shard:
         try:
@@ -1595,7 +1618,15 @@ def main() -> int:
     parser.add_argument("--max-budget-usd")
     parser.add_argument("--timeout-seconds", type=int, default=180)
     parser.add_argument("--run-id")
-    parser.add_argument("--out-root", type=Path, default=DEFAULT_OUT_ROOT)
+    parser.add_argument(
+        "--out-root",
+        type=Path,
+        help=(
+            "Evidence output root. Defaults to "
+            "docs/evidence/reports/YYYY/MM/DD/context-mesh. "
+            "Use docs/evidence/reports/context-mesh to write the legacy layout."
+        ),
+    )
     parser.add_argument("--shard-count", type=int)
     parser.add_argument("--shard-index", type=int)
     parser.add_argument("--sample-cap", type=int)

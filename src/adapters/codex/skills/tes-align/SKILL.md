@@ -1,12 +1,14 @@
 ---
 name: tes-align
 description: Use when the user says /tes-align, /tes:align, tes align, align TES, align this project, alinhar TES, alinhar projeto, or asks TES to semantically align a project after /tes-init by creating or updating the project operating mesh, System X-Ray, Convergence Line, execution line, quality gates, boundaries, glossary, decisions, and retained alignment evidence.
+license: MIT
 ---
 
 # TES Align
 
 `/tes-align` is the preferred shared TES trigger for semantic project
-alignment after `/tes-init`. `/tes:align` is a compatible TES intent alias.
+alignment after `/tes-init`. `/tes:align` is a compatible TES intent alias if
+the host reports it as invalid slash text.
 
 Use this skill when initial project context exists but the project still needs
 an operating mesh that tells the next agent what is done, what is active, what
@@ -44,16 +46,11 @@ inside the managed `TES-MAP` block after this roadmap exists.
 3. Read strong anchors before claiming depth: identity, structure, build and
    gates, architecture, governance, history, and risk.
 4. Create or update the project operating mesh under `docs/agents/**`:
-   - `PROJECT-CONTEXT.md`
-   - `PROJECT-STATE.md`
-   - `PROJECT-ROADMAP.md`
-   - `EXECUTION-LINE.md`
-   - `QUALITY-GATES.md`
-   - `BOUNDARIES-AND-CONSTRAINTS.md`
-   - `KNOWLEDGE-LIFECYCLE.md`
-   - `GLOSSARY.md`
-   - `DECISIONS/**` or a link to an existing decision system
-   - `evidence/<timestamp>-project-alignment.md`
+   `PROJECT-CONTEXT.md`, `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`,
+   `EXECUTION-LINE.md`, `QUALITY-GATES.md`,
+   `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`,
+   `GLOSSARY.md`, `DECISIONS/**` or a link to an existing decision system,
+   and `evidence/<timestamp>-project-alignment.md`.
 5. In `PROJECT-ROADMAP.md`, make the first human scan path two Mermaid
    `flowchart TD` graphs:
    - System X-Ray: Git state, delivered behavior, validation mesh, and release
@@ -62,13 +59,14 @@ inside the managed `TES-MAP` block after this roadmap exists.
      states.
    Keep Done, Active, Next, Later, Deferred, Blocked, and Unknown as compact
    audit lanes.
-6. Keep the mesh Obsidian-native and Git-portable:
-   - use Markdown as authority;
-   - use YAML frontmatter as Properties;
-   - use wikilinks when they improve navigation;
-   - never write `.obsidian/**`;
-   - do not make `.base` or `.canvas` the only source of truth.
-7. Certify with:
+6. Keep the mesh Obsidian-native and Git-portable: use Markdown, YAML
+   frontmatter, and useful wikilinks; never write `.obsidian/**`; do not make
+   `.base` or `.canvas` the only source of truth.
+7. Keep target-project alignment evidence under `docs/agents/evidence/**`.
+   Package benchmark evidence uses `docs/evidence/current/**`,
+   `docs/evidence/reports/YYYY/MM/DD/**`, and `docs/evidence/archive/**`;
+   do not mix those source-package retention layers into target projects.
+8. Certify with:
 
 ```bash
 python3 .tes/bin/project_alignment_oracle.py --target .

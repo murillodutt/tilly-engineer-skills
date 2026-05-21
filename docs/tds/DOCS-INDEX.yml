@@ -1,4 +1,4 @@
-version: 0.3.119
+version: 0.3.120
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -370,6 +370,41 @@ documents:
     class: tds
     status: active
     consumer: maintainers and agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/evidence/INDEX.md
+    id: evidence.index
+    class: evidence
+    status: active
+    consumer: maintainers, evidence producers, and agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/evidence/current/INDEX.md
+    id: evidence.current.index
+    class: evidence
+    status: active
+    consumer: agents and maintainers
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/evidence/current/CLAIMS.md
+    id: evidence.current.claims
+    class: evidence
+    status: active
+    consumer: agents, maintainers, and certification reviewers
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/evidence/current/RISKS.md
+    id: evidence.current.risks
+    class: evidence
+    status: active
+    consumer: agents, maintainers, and evidence auditors
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/evidence/archive/INDEX.md
+    id: evidence.archive.index
+    class: evidence
+    status: active
+    consumer: maintainers and evidence auditors
     source_of_truth: true
     evidence_level: L2
   - path: docs/evidence/reports/context-mesh/pipeline-v1-rc-fixture-2026-05-05/REPORT.md

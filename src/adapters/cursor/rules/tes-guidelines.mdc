@@ -144,6 +144,10 @@ For `/tes-align`, make `docs/agents/PROJECT-ROADMAP.md` open with Mermaid
 lanes, then certify with `project_alignment_oracle.py`.
 For `/tes-map`, run `tes_map.py --target . --write` and update only the managed
 `TES-MAP` block in `PROJECT-ROADMAP.md`; certify with `tes_map_oracle.py`.
+For `/tes-bench`, treat benchmark commands as package-source evidence. New
+context-mesh runs default to `docs/evidence/reports/YYYY/MM/DD/context-mesh/`;
+legacy `docs/evidence/reports/context-mesh/` remains readable retained proof,
+and current benchmark claims belong in `docs/evidence/current/**`.
 
 ## Cortex Reflection
 

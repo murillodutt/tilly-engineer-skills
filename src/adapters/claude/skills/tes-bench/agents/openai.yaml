@@ -1,0 +1,8 @@
+name: tes-bench
+description: Plan, run, inspect, and certify TES context-mesh benchmark evidence.
+default_prompt: |
+  Use $tes-bench to work with TES benchmark evidence. Confirm the package
+  source has benchmark scripts, prefer fixture runs unless live backends are
+  explicitly authorized, keep generated reports under the temporal evidence
+  retention contract, preserve raw evidence, and state the claim class and
+  limits before certification.

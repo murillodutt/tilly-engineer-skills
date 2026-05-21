@@ -49,20 +49,12 @@ gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 
 <mantra_gate>
 
-Before state-changing actions, use the TES Mantra Gate. For routine writes,
-commits, generated artifacts, spec execution, or project-state updates, the
-visible marker may be `[🍳 Flash-Fry]`; the full gate is still retained as
-evidence.
+For state-changing actions, route to the TES Mantra Gate defined in
+`.agents/skills/tes-engineering-discipline/SKILL.md`. The skill owns the gate
+schema, compact marker, escalation rule, and adoption-oracle stop states.
 
-Full gate fields are `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`,
-`RESOLVE`, and `STATUS`. Show the full gate, not just the compact marker, when
-risk is high, ambiguity exists, user approval is required, or secrets, data,
-databases, remotes, production, authentication, compliance, or public surfaces
-could be affected.
-
-For closure, commit, or push claims, the adoption oracle may check that a gate
-record exists near the state change. If it reports `BYPASS_SUSPECTED`,
-`NEEDS_REVIEW`, or `BLOCKED`, stop and recover before claiming progress.
+Keep this bootloader as routing only. Do not reintroduce a project-local or
+duplicated Mantra Gate protocol block here.
 
 </mantra_gate>
 

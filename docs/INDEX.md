@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.10
+tver: 0.4.11
 ---
 
 # Tilly Engineer Skills Docs
@@ -26,7 +26,7 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.119/tilly-engineer-skills-0.3.119.zip` |
+| Public installer bundle | `dist/0.3.120/tilly-engineer-skills-0.3.120.zip` |
 | GitHub-only npx installation | `install/INSTALL.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
 | Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
@@ -44,6 +44,8 @@ turning the repository root into an inventory.
 | Eval and ablation design | `evals/EVALS.md` |
 | Detailed examples | `evals/EXAMPLES.md` |
 | Cross-adapter parity gate | `evals/PARITY-GATE.md` |
+| Evidence retention policy | `evidence/INDEX.md` |
+| Current evidence claims | `evidence/current/CLAIMS.md` |
 | Cross-tool agentic governance | `governance/AGENTIC-ALIGNMENT-GOVERNANCE.md` |
 | Maintainer correlation rule | `governance/MAINTAINER-CORRELATION-RULE.md` |
 | Adapter capability matrix | `adapters/ADAPTER-CAPABILITY-MATRIX.md` |

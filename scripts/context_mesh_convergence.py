@@ -11,7 +11,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_REPORT_ROOT = ROOT / "docs/evidence/reports/context-mesh"
+DEFAULT_REPORT_ROOT = ROOT / "docs/evidence/reports"
 
 GATE_FIX_HINTS = {
     "Think Before Coding": "add adversarial prompts where acting before naming ambiguity is clearly wrong",
@@ -23,7 +23,7 @@ GATE_FIX_HINTS = {
 
 def latest_summary(root: Path) -> Path:
     summaries = sorted(
-        root.glob("*/summary.json"),
+        root.rglob("summary.json"),
         key=lambda path: path.stat().st_mtime,
         reverse=True,
     )

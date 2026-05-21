@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and adapter authors
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.7
+tver: 0.2.8
 ---
 
 # Project Structure
@@ -148,9 +148,11 @@ drift.
 | `docs/evals/**` | Eval design and examples |
 | `docs/governance/**` | Cross-tool authority and alignment rules |
 | `docs/governance/MAINTAINER-CORRELATION-RULE.md` | Local maintainer map for package edits, not installed project context |
+| `docs/evidence/**` | Current evidence claims, temporal run reports, and archive indexes |
 | `docs/adapters/**` | User adapter guidance |
 | `docs/architecture/**` | Repository topology and boundaries |
 | `docs/i18n/**` | Modular text and structure source for public HTML |
+| `docs/tds/**` | Documentation contract and governed index |
 
 `docs/index.html` and `docs/install/USER-MANUAL.html` are generated static
 HTML surfaces. They stay checked in for GitHub Pages and `file://` use, while
@@ -158,7 +160,6 @@ commercial, documentation, and user-facing copy lives in
 `docs/i18n/tes-public.content.json` and
 `docs/i18n/tes-public.structure.yml`. Regenerate and check them with
 `scripts/build_public_docs.py`.
-| `docs/tds/**` | Documentation contract and governed index |
 
 ## Structural Locks
 

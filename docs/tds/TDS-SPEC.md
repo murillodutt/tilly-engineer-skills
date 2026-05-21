@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.1
+tver: 0.2.2
 ---
 
 # TDS Specification
@@ -73,6 +73,25 @@ not define active package behavior or authority.
 - Roadmap and proposal documents must use `source_of_truth: false`.
 - A document with `status: archived` must remain indexed.
 - A new documentation class requires a TDS spec update in the same patch.
+
+## Evidence Retention Semantics
+
+TDS status is intentionally small: `active`, `proposed`, or `archived`.
+Evidence needs a separate retention meaning so historical proof does not become
+current truth merely because it is indexed.
+
+The governed policy lives in `docs/evidence/INDEX.md`.
+
+Rules:
+
+- Raw evidence reports and generated traces should use `source_of_truth: false`.
+- Current evidence interpretation lives in `docs/evidence/current/**`.
+- New generated evidence should default to
+  `docs/evidence/reports/YYYY/MM/DD/<domain>/<run-id>/`.
+- Legacy paths such as `docs/evidence/reports/context-mesh/<run-id>/` remain
+  readable retained proof.
+- Retention status may be `current`, `retained`, `superseded`, `archived`, or
+  `expired`; map it onto TDS `status` without widening the TDS frontmatter enum.
 
 ## Versioning And TVer
 

@@ -5,7 +5,7 @@ status: active
 consumer: benchmark authors
 source_of_truth: true
 evidence_level: L1
-tver: 0.2.0
+tver: 0.2.1
 ---
 
 # Eval And Ablation Method
@@ -205,13 +205,18 @@ behavior can be followed up without changing historical retained reports.
 Default evidence shape:
 
 ```text
-docs/evidence/reports/context-mesh/<run-id>/
+docs/evidence/reports/YYYY/MM/DD/context-mesh/<run-id>/
   manifest.json
   raw.ndjson
   summary.json
   REPORT.md
   graders-sha.json
 ```
+
+The legacy shape `docs/evidence/reports/context-mesh/<run-id>/` remains
+readable retained proof and may still be used with an explicit `--out-root`.
+New default runs use the temporal path so old reports do not compete with the
+current evidence claim panel.
 
 The raw file is append-only NDJSON with one line per sample. Each line keeps
 the dataset hash, Git HEAD, backend, model, condition, eval id, sample id,
@@ -276,6 +281,12 @@ After retained behavior evidence exists, run the local convergence gate:
 
 ```bash
 npm run benchmark:converge -- --summary docs/evidence/reports/context-mesh/<run-id>/summary.json
+```
+
+For new temporal reports, pass the temporal summary path:
+
+```bash
+npm run benchmark:converge -- --summary docs/evidence/reports/YYYY/MM/DD/context-mesh/<run-id>/summary.json
 ```
 
 The loop is:

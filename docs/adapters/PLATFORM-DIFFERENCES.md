@@ -44,7 +44,7 @@ TES entry vocabulary is shared across platforms:
 | Field Reports | `/tes-field-reports` | `/tes:field-reports` | Inspect or drain sanitized local feedback. |
 | Doctor / health check | `/tes-doctor` | `/tes:doctor`, `/tes:check`, `/tes:certify` | Inspect local TES health and blockers. |
 | Adapter | `/tes-adapter` | `/tes:adapter` | Materialize, dry-run, retrofit, or certify adapter surfaces. |
-| Bench | `/tes-bench` | `/tes:bench` | Plan, run, or inspect context-mesh benchmark evidence. |
+| Bench | `/tes-bench` | `/tes:bench` | Plan, run, or inspect context-mesh benchmark evidence under the temporal evidence contract. |
 
 The hyphen form is the preferred cross-platform trigger. The colon form is a
 compatibility alias and may be rejected by a host slash-command parser. If a

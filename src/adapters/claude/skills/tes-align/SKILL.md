@@ -62,7 +62,11 @@ inside the managed `TES-MAP` block after this roadmap exists.
 6. Keep the mesh Obsidian-native and Git-portable: use Markdown, YAML
    frontmatter, and useful wikilinks; never write `.obsidian/**`; do not make
    `.base` or `.canvas` the only source of truth.
-7. Certify with:
+7. Keep target-project alignment evidence under `docs/agents/evidence/**`.
+   Package benchmark evidence uses `docs/evidence/current/**`,
+   `docs/evidence/reports/YYYY/MM/DD/**`, and `docs/evidence/archive/**`;
+   do not mix those source-package retention layers into target projects.
+8. Certify with:
 
 ```bash
 python3 .tes/bin/project_alignment_oracle.py --target .

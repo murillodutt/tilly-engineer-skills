@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "dist" / "adapters"
-VERSION = "0.3.119"
+VERSION = "0.3.120"
 CODEX_SKILLS = (
     "tes-engineering-discipline",
     "tes-init",
@@ -60,6 +60,24 @@ FORBIDDEN_OUTPUT_REFS = (
     "docs/mesh/",
     "scripts/materialize_adapter.py",
     "scripts/validate_reference_package.py",
+)
+RETIRED_LOCAL_GATE_MARKERS = (
+    "retired local gate",
+    "legacy local gate",
+    "local pre-action gate",
+    "project-local pre-action gate",
+    "retired Claude marker",
+)
+BOOTLOADER_DUPLICATED_MANTRA_GATE_FRAGMENTS = (
+    "Full gate fields are",
+    "VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS",
+    "Show the full gate, not just the compact marker",
+    "the full gate is still retained as evidence",
+)
+MANTRA_GATE_SKILL_TERMS = (
+    "## Mantra Gate",
+    "TES Mantra Gate",
+    "[🍳 Flash-Fry]",
 )
 
 
@@ -144,6 +162,58 @@ def run_oracle(adapter_root: Path, relpath: str) -> str | None:
     return "\n".join([result.stdout.strip(), result.stderr.strip()]).strip()
 
 
+def read_output_text(adapter_root: Path, relpath: str) -> str:
+    path = adapter_root / relpath
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf-8")
+
+
+def forbidden_gate_marker_failures(adapter: str, adapter_root: Path) -> list[str]:
+    failures: list[str] = []
+    active_surface_globs = ("AGENTS.md", "CLAUDE.md", "CURSOR.md", ".cursor/rules/*.mdc")
+    for pattern in active_surface_globs:
+        for path in sorted(adapter_root.glob(pattern)):
+            if not path.is_file():
+                continue
+            text = path.read_text(encoding="utf-8")
+            for marker in RETIRED_LOCAL_GATE_MARKERS:
+                if marker.lower() in text.lower():
+                    relpath = path.relative_to(adapter_root)
+                    failures.append(f"{adapter}: active surface {relpath} contains retired local gate marker: {marker}")
+    return failures
+
+
+def thin_bootloader_failures(
+    adapter: str,
+    adapter_root: Path,
+    relpath: str,
+    route: str,
+) -> list[str]:
+    text = read_output_text(adapter_root, relpath)
+    failures: list[str] = []
+    if not text:
+        return [f"{adapter}: missing bootloader {relpath}"]
+    for term in ("TES Mantra Gate", route, "Do not reintroduce"):
+        if term not in text:
+            failures.append(f"{adapter}: {relpath} must route Mantra Gate ownership through {route}")
+    for fragment in BOOTLOADER_DUPLICATED_MANTRA_GATE_FRAGMENTS:
+        if fragment in text:
+            failures.append(f"{adapter}: {relpath} duplicates Mantra Gate protocol instead of routing to the skill")
+    return failures
+
+
+def mantra_gate_skill_failures(adapter: str, adapter_root: Path, relpath: str) -> list[str]:
+    text = read_output_text(adapter_root, relpath)
+    failures: list[str] = []
+    if not text:
+        return [f"{adapter}: missing Mantra Gate owner surface {relpath}"]
+    for term in MANTRA_GATE_SKILL_TERMS:
+        if term not in text:
+            failures.append(f"{adapter}: {relpath} missing Mantra Gate term: {term}")
+    return failures
+
+
 def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
     failures: list[str] = []
 
@@ -166,7 +236,20 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
                 relpath = path.relative_to(adapter_root)
                 failures.append(f"{adapter}: materialized {relpath} references source-only path {forbidden}")
 
+    failures.extend(forbidden_gate_marker_failures(adapter, adapter_root))
+
     if adapter == "codex":
+        failures.extend(thin_bootloader_failures(
+            adapter,
+            adapter_root,
+            "AGENTS.md",
+            ".agents/skills/tes-engineering-discipline/SKILL.md",
+        ))
+        failures.extend(mantra_gate_skill_failures(
+            adapter,
+            adapter_root,
+            ".agents/skills/tes-engineering-discipline/SKILL.md",
+        ))
         oracle = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
         if not (adapter_root / oracle).exists():
             failures.append(f"codex: missing oracle {oracle}")
@@ -186,6 +269,11 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
                 failures.append(f"codex: plugin artifact must remain source-only, not materialized: {relpath}")
 
     if adapter == "cursor":
+        failures.extend(mantra_gate_skill_failures(
+            adapter,
+            adapter_root,
+            ".cursor/rules/tes-guidelines.mdc",
+        ))
         for relpath in (
             ".cursor/rules/tes-guidelines.mdc",
             ".cursor/rules/tes-runtime-capabilities.mdc",
@@ -201,6 +289,17 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
                 failures.append(f"cursor: {relpath} must keep alwaysApply: true")
 
     if adapter == "claude":
+        failures.extend(thin_bootloader_failures(
+            adapter,
+            adapter_root,
+            "CLAUDE.md",
+            ".claude/skills/tes-guidelines/SKILL.md",
+        ))
+        failures.extend(mantra_gate_skill_failures(
+            adapter,
+            adapter_root,
+            ".claude/skills/tes-guidelines/SKILL.md",
+        ))
         for skill in CLAUDE_SKILLS:
             if not (adapter_root / f"{CLAUDE_PROJECT_SKILL_ROOT}/{skill}/SKILL.md").exists():
                 failures.append(f"claude: missing project skill {skill}")

@@ -135,6 +135,13 @@ shown as `history_findings` in health mode; they become `NEEDS_REVIEW` only
 under `--audit-history` or an active high-risk action. It does not collect
 secrets, raw prompts, private content, or remote telemetry.
 
+The oracle also reports adapter surface health. It distinguishes whether the
+skill-owned behavior is present, whether bootloaders route to that behavior
+instead of duplicating it, whether local hook config is present or not applied,
+and whether retired project-local gate markers appear in active runtime
+surfaces. Historical docs and evidence may preserve retired text; active
+bootloaders and rules may not.
+
 ## Helpers
 
 The deterministic helper is:

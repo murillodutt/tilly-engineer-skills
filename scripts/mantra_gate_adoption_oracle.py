@@ -21,6 +21,20 @@ SCHEMA = "tes-mantra-gate-adoption@1"
 STATUSES = ("OK", "DEGRADED", "BYPASS_SUSPECTED", "BLOCKED", "NEEDS_REVIEW")
 STATUS_WEIGHT = {"OK": 0, "DEGRADED": 1, "BYPASS_SUSPECTED": 2, "NEEDS_REVIEW": 3, "BLOCKED": 4}
 GATE_FIELDS = ("VERIFY", "SCOPE", "BEST_PATH", "DOCUMENT", "ORACLE", "RESOLVE", "STATUS")
+MANTRA_GATE_OWNER_TERMS = ("## Mantra Gate", "TES Mantra Gate", "[🍳 Flash-Fry]")
+RETIRED_LOCAL_GATE_MARKERS = (
+    "retired local gate",
+    "legacy local gate",
+    "local pre-action gate",
+    "project-local pre-action gate",
+    "retired Claude marker",
+)
+BOOTLOADER_DUPLICATED_MANTRA_GATE_FRAGMENTS = (
+    "Full gate fields are",
+    "VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS",
+    "Show the full gate, not just the compact marker",
+    "the full gate is still retained as evidence",
+)
 
 
 def escalate(current: str, candidate: str) -> str:
@@ -66,6 +80,170 @@ def git_state(target: Path) -> dict[str, Any]:
         "status_short": status_short,
         "last_commit": last_commit.stdout.strip() if last_commit.returncode == 0 else None,
         "last_commit_time": last_commit_time.stdout.strip() if last_commit_time.returncode == 0 else None,
+    }
+
+
+def read_text(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return ""
+
+
+def surface_candidates(target: Path) -> list[dict[str, str]]:
+    source_root = target / "src/adapters"
+    if source_root.exists():
+        return [
+            {
+                "adapter": "codex",
+                "kind": "bootloader",
+                "path": "src/adapters/codex/AGENTS.md",
+                "route": ".agents/skills/tes-engineering-discipline/SKILL.md",
+            },
+            {
+                "adapter": "codex",
+                "kind": "owner",
+                "path": "src/adapters/codex/skills/tes-engineering-discipline/SKILL.md",
+            },
+            {
+                "adapter": "claude",
+                "kind": "bootloader",
+                "path": "src/adapters/claude/CLAUDE.md",
+                "route": ".claude/skills/tes-guidelines/SKILL.md",
+            },
+            {
+                "adapter": "claude",
+                "kind": "owner",
+                "path": "src/adapters/claude/skills/tes-guidelines/SKILL.md",
+            },
+            {
+                "adapter": "cursor",
+                "kind": "owner",
+                "path": "src/adapters/cursor/rules/tes-guidelines.mdc",
+            },
+        ]
+    return [
+        {
+            "adapter": "codex",
+            "kind": "bootloader",
+            "path": "AGENTS.md",
+            "route": ".agents/skills/tes-engineering-discipline/SKILL.md",
+        },
+        {
+            "adapter": "codex",
+            "kind": "owner",
+            "path": ".agents/skills/tes-engineering-discipline/SKILL.md",
+        },
+        {
+            "adapter": "claude",
+            "kind": "bootloader",
+            "path": "CLAUDE.md",
+            "route": ".claude/skills/tes-guidelines/SKILL.md",
+        },
+        {
+            "adapter": "claude",
+            "kind": "owner",
+            "path": ".claude/skills/tes-guidelines/SKILL.md",
+        },
+        {
+            "adapter": "cursor",
+            "kind": "owner",
+            "path": ".cursor/rules/tes-guidelines.mdc",
+        },
+    ]
+
+
+def hook_health(target: Path) -> dict[str, Any]:
+    hooks = []
+    checks = (
+        ("codex", ".codex/config.toml", ("TES first-session post-install hook", ".tes/bin/tes_install.py")),
+        ("claude", ".claude/settings.json", (".tes/bin/tes_install.py", "--agent claude")),
+        ("cursor", ".cursor/hooks.json", (".tes/bin/tes_install.py", "--agent cursor")),
+    )
+    for adapter, relpath, terms in checks:
+        path = target / relpath
+        text = read_text(path)
+        if not path.exists():
+            status = "NOT_APPLIED"
+        elif all(term in text for term in terms):
+            status = "PRESENT"
+        else:
+            status = "DEGRADED"
+        hooks.append({"adapter": adapter, "path": relpath, "status": status})
+    return {
+        "status": "DEGRADED" if any(item["status"] == "DEGRADED" for item in hooks) else "OK",
+        "hooks": hooks,
+    }
+
+
+def surface_health(target: Path) -> dict[str, Any]:
+    surfaces = []
+    findings: list[dict[str, Any]] = []
+    existing = 0
+
+    for item in surface_candidates(target):
+        path = target / item["path"]
+        text = read_text(path)
+        present = path.exists()
+        if present:
+            existing += 1
+        surface = {
+            "adapter": item["adapter"],
+            "kind": item["kind"],
+            "path": item["path"],
+            "present": present,
+            "status": "OK" if present else "NOT_APPLIED",
+        }
+
+        if not present:
+            surfaces.append(surface)
+            continue
+
+        if item["kind"] == "owner":
+            missing = [term for term in MANTRA_GATE_OWNER_TERMS if term not in text]
+            if missing:
+                surface["status"] = "DEGRADED"
+                findings.append(
+                    {
+                        "type": "mantra_gate_owner_missing_terms",
+                        "path": item["path"],
+                        "missing": missing,
+                    }
+                )
+        elif item["kind"] == "bootloader":
+            route = str(item.get("route") or "")
+            missing = [term for term in ("TES Mantra Gate", route) if term not in text]
+            duplicated = [fragment for fragment in BOOTLOADER_DUPLICATED_MANTRA_GATE_FRAGMENTS if fragment in text]
+            if missing or duplicated:
+                surface["status"] = "DEGRADED"
+                findings.append(
+                    {
+                        "type": "bootloader_must_route_to_skill",
+                        "path": item["path"],
+                        "missing": missing,
+                        "duplicated_fragments": duplicated,
+                    }
+                )
+
+        retired = [marker for marker in RETIRED_LOCAL_GATE_MARKERS if marker.lower() in text.lower()]
+        if retired:
+            surface["status"] = "DEGRADED"
+            findings.append(
+                {
+                    "type": "retired_local_gate_marker_active",
+                    "path": item["path"],
+                    "markers": retired,
+                }
+            )
+        surfaces.append(surface)
+
+    status = "NOT_APPLIED" if existing == 0 else ("DEGRADED" if findings else "OK")
+    return {
+        "status": status,
+        "surfaces": surfaces,
+        "findings": findings,
+        "historical_evidence_policy": "retired text is allowed in docs/evidence and archived records, not active bootloaders/rules",
+        "hooks": hook_health(target),
     }
 
 
@@ -235,6 +413,10 @@ def evaluate(
     findings: list[dict[str, Any]] = []
     history_findings: list[dict[str, Any]] = []
     validations: list[dict[str, Any]] = []
+    surfaces = surface_health(target)
+    if surfaces["status"] == "DEGRADED":
+        status = escalate(status, "DEGRADED")
+        findings.append({"type": "mantra_gate_surface_health", "detail": "active Mantra Gate runtime surfaces need repair"})
 
     if risk == "forbidden":
         status = escalate(status, "BLOCKED")
@@ -354,6 +536,7 @@ def evaluate(
             "validations": validations,
             "findings": findings,
             "history_findings": history_findings,
+            "surface_health": surfaces,
             "metrics": metrics,
             "next_high_risk_action_requires_full_gate": historical_compact_high_risk_records > 0,
             "recovery": recovery(status),
@@ -456,6 +639,42 @@ def self_test() -> dict[str, Any]:
         readonly = evaluate(target, action="read docs and report")
         if readonly["status"] != "OK" or readonly["state_changing"]:
             failures.append("read-only analysis must not produce a bypass false positive")
+
+    with tempfile.TemporaryDirectory(prefix="tes-mg-adoption-") as tmp:
+        target = Path(tmp)
+        (target / ".agents/skills/tes-engineering-discipline").mkdir(parents=True)
+        (target / "AGENTS.md").write_text(
+            "For state-changing actions, route to the TES Mantra Gate defined in "
+            "`.agents/skills/tes-engineering-discipline/SKILL.md`. Do not reintroduce.\n",
+            encoding="utf-8",
+        )
+        (target / ".agents/skills/tes-engineering-discipline/SKILL.md").write_text(
+            "## Mantra Gate\n\nUse the TES Mantra Gate. [🍳 Flash-Fry]\n",
+            encoding="utf-8",
+        )
+        (target / "docs/evidence").mkdir(parents=True)
+        (target / "docs/evidence/retired.md").write_text(
+            "Historical note: retired local gate text is preserved here.\n",
+            encoding="utf-8",
+        )
+        healthy_surface = evaluate(target)
+        if healthy_surface["status"] != "OK":
+            failures.append("active surface health must ignore historical retired text")
+
+    with tempfile.TemporaryDirectory(prefix="tes-mg-adoption-") as tmp:
+        target = Path(tmp)
+        (target / ".agents/skills/tes-engineering-discipline").mkdir(parents=True)
+        (target / "AGENTS.md").write_text(
+            "TES Mantra Gate\n\nFull gate fields are VERIFY, SCOPE, BEST_PATH.\n",
+            encoding="utf-8",
+        )
+        (target / ".agents/skills/tes-engineering-discipline/SKILL.md").write_text(
+            "## Mantra Gate\n\nUse the TES Mantra Gate. [🍳 Flash-Fry]\n",
+            encoding="utf-8",
+        )
+        degraded_surface = evaluate(target)
+        if degraded_surface["status"] != "DEGRADED":
+            failures.append("bootloader duplicated Mantra Gate protocol must degrade surface health")
 
     with tempfile.TemporaryDirectory(prefix="tes-mg-adoption-") as tmp:
         target = Path(tmp)

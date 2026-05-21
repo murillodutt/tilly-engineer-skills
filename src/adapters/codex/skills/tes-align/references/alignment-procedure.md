@@ -18,8 +18,13 @@ alignment_evidence:
   roadmap_changes:
   obsidian_native_checks:
   oracle_result:
+  retention_status: retained
   limits:
 ```
+
+This packet is target-project alignment evidence and stays under
+`docs/agents/evidence/**`. Do not redirect it to the TES source-package
+benchmark evidence layers under `docs/evidence/**`.
 
 ## Document Classification
 
