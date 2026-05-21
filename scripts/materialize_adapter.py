@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "dist" / "adapters"
-VERSION = "0.3.121"
+VERSION = "0.3.122"
 CODEX_SKILLS = (
     "tes-engineering-discipline",
     "tes-init",
@@ -73,7 +73,6 @@ RETIRED_LOCAL_GATE_MARKERS = (
 BOOTLOADER_DUPLICATED_MANTRA_GATE_FRAGMENTS = (
     "Full gate fields are",
     "VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS",
-    "Show the full gate, not just the compact marker",
     "the full gate is still retained as evidence",
 )
 MANTRA_GATE_SKILL_TERMS = (

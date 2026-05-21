@@ -1,4 +1,4 @@
-version: 0.3.121
+version: 0.3.122
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -417,14 +417,14 @@ documents:
   - path: docs/evidence/reports/context-mesh/mantra-gate-adoption-hardening-2026-05-18/REPORT.md
     id: evidence.context_mesh.mantra_gate_adoption_hardening_2026_05_18
     class: evidence
-    status: active
+    status: archived
     consumer: TES maintainers
     source_of_truth: false
     evidence_level: L4
   - path: docs/evidence/reports/context-mesh/mantra-gate-adoption-health-false-positive-2026-05-18/REPORT.md
     id: evidence.context_mesh.mantra_gate_adoption_health_false_positive_2026_05_18
     class: evidence
-    status: active
+    status: archived
     consumer: TES maintainers
     source_of_truth: false
     evidence_level: L4

@@ -13,7 +13,7 @@ import tempfile
 from typing import Any
 
 
-VERSION = "0.3.121"
+VERSION = "0.3.122"
 SCHEMA = "tes-mantra-gate@1"
 MARKER = "[🍳 Flash-Fry]"
 STATUSES = ("PROCEED", "BLOCKED", "NEEDS_REVIEW")
@@ -217,10 +217,6 @@ def validate_gate(
         failures.append("forbidden risk class requires stop")
         status = escalate(status, "BLOCKED")
 
-    if declared_risk == "high-risk" and declared == "PROCEED" and mode != "full":
-        failures.append("high-risk PROCEED requires visible full gate")
-        status = escalate(status, "NEEDS_REVIEW")
-
     valid = not failures and status == declared
     if failures and declared == "PROCEED":
         valid = False
@@ -323,8 +319,8 @@ def self_test() -> dict[str, Any]:
         failures.append("missing ORACLE on closure claim must block")
 
     high_risk_compact = validate_gate(sample_gate(), state_changing=True, high_risk=True)
-    if high_risk_compact["status"] != "NEEDS_REVIEW":
-        failures.append("high-risk compact PROCEED must need review")
+    if high_risk_compact["status"] != "PROCEED" or high_risk_compact["visible"] != "compact":
+        failures.append("compact display with a complete high-risk gate must pass")
 
     high_risk_full = validate_gate(sample_gate(VISIBLE="full"), state_changing=True, high_risk=True)
     if high_risk_full["status"] != "PROCEED" or high_risk_full["visible"] != "full":

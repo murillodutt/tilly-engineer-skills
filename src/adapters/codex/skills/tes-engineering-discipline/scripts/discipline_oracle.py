@@ -17,11 +17,16 @@ REQUIRED_TERMS = (
     "Mantra Gate",
     "[🍳 Flash-Fry]",
     "VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS",
+    "Infrastructure Decision Gate",
+    "Stack Surface Scan",
+    "Context7 or official documentation",
+    "runtime-bound dependencies",
 )
 
 PLAN_FIELDS = (
     "assumptions",
     "ambiguity",
+    "stack_surface",
     "simplest_path",
     "deleted_scope",
     "oracle",

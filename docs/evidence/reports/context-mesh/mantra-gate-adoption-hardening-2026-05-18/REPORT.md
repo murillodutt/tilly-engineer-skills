@@ -1,7 +1,7 @@
 ---
 tds_id: evidence.context_mesh.mantra_gate_adoption_hardening_2026_05_18
 tds_class: evidence
-status: active
+status: archived
 consumer: TES maintainers
 source_of_truth: false
 evidence_level: L4
@@ -49,7 +49,12 @@ A local full Mantra Gate record was written to
 `.tes/field-reports/mantra-gates.jsonl` for this package change. The adoption
 oracle classified the working change as `high-risk` because it touches generated
 runtime packaging and public package surfaces, then returned `OK` because a
-visible full gate record existed.
+complete gate record existed.
+
+This report is retained only as historical evidence. The current operating
+contract is governed by `docs/mesh/MANTRA-GATE.md` and permits compact
+`[🍳 Flash-Fry]` display when the internal record is complete and the gate
+returns `PROCEED`.
 
 ## Limits
 

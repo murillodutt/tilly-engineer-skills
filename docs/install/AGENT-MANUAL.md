@@ -175,14 +175,14 @@ new TES assets. Legacy retrofit records archive under
 Mantra Gate is the TES pre-action micro-gate for state-changing work:
 evidence, scope, path, record, oracle, and stop rule.
 
-Routine writes may show only `[🍳 Flash-Fry]`, but the full gate
+Permitted writes show only `[🍳 Flash-Fry]`, but the full gate
 (`VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, `STATUS`)
 must be recorded in the active evidence/report surface, Field Reports/Cortex,
 or `.tes/mantra-gates/` fallback. Risk is `routine`, `material`, `high-risk`,
-or `forbidden`: high-risk work needs a visible full gate, forbidden work stops,
-and state-changing evidence without a nearby record reports `BYPASS_SUSPECTED`.
-The default adoption check is health/read-only: dirty trees and historical
-compact high-risk records are contextual findings, not current-action blockers.
+or `forbidden`: high-risk work needs a complete internal record and oracle,
+forbidden work stops, and state-changing evidence without a nearby record
+reports `BYPASS_SUSPECTED`. The default adoption check is health/read-only:
+dirty trees are context, not current-action blockers.
 
 Helpers: `python3 .tes/bin/mantra_gate.py --self-test`,
 `python3 .tes/bin/mantra_gate.py emit-marker`,
@@ -190,9 +190,8 @@ Helpers: `python3 .tes/bin/mantra_gate.py --self-test`,
 `python3 .tes/bin/mantra_gate_adoption_oracle.py --target .`,
 `python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --action "commit" --state-changing`,
 and `python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --commit-push`.
-Recover by recording the missing gate, showing the full gate, adding the
-closure `ORACLE`, or stopping forbidden work. Read-only inspection is not
-blocked.
+Recover by recording the missing gate, adding the closure `ORACLE`, resolving
+review detail, or stopping forbidden work. Read-only inspection is not blocked.
 
 ---
 

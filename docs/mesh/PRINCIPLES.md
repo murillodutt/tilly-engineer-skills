@@ -107,10 +107,35 @@ readability; it does not delete evidence. A full gate record must exist for
 material writes, commits, spec execution, generated artifacts, migrations,
 external calls, architectural changes, or project-state updates.
 
-Show the full gate instead of the compact marker when risk, ambiguity, user
-approval, secrets, data, remotes, production, authentication, compliance, or
-public surfaces are involved. Use `BLOCKED` when evidence or oracle is missing,
-and `NEEDS_REVIEW` when scope or approval is ambiguous.
+Show only the compact marker when the gate permits proceeding. Report the full
+gate detail when the gate returns `BLOCKED` or `NEEDS_REVIEW`, approval is
+needed, or the user explicitly asks for audit detail. Use `BLOCKED` when
+evidence or oracle is missing, and `NEEDS_REVIEW` when scope or approval is
+ambiguous.
+
+## Infrastructure Decision Gate
+
+Infrastructure decisions require a Stack Surface Scan before implementation.
+Do not choose native wrappers, deployment targets, database clients, queues,
+crypto primitives, build tools, hosting assumptions, or runtime-bound
+dependencies from memory or generic ecosystem habit.
+
+Before deciding, inspect the target project's actual stack evidence:
+`package.json`, lockfiles, framework and runtime config, deployment presets,
+existing adapters, generated output contracts, and project governance. Then
+check Context7 or official documentation for the framework, runtime, or cloud
+surface that owns the behavior. If those sources are missing, stale, or
+conflicting, stop as `NEEDS_REVIEW`.
+
+For Nuxt or Nitro projects, Nitro changes the decision surface. Inspect the
+Nitro preset, `node` target, and deployment runtime before choosing a native
+OpenSSL wrapper, a pure Node DER builder, Web Crypto, or any other
+runtime-bound implementation. A Node-looking codebase can still target edge,
+worker, serverless, or compatibility layers.
+
+The decision is valid only after the agent states the stack evidence,
+documentation source, rejected alternatives, chosen path, and smallest oracle
+that proves the choice in that runtime.
 
 ## Portable Formula
 
@@ -135,6 +160,7 @@ Use this compact packet when a tool supports structured instructions:
 engineering_discipline:
   assumptions:
   ambiguity:
+  stack_surface:
   simplest_path:
   deleted_scope:
   no_touch_paths:

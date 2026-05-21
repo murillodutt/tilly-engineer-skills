@@ -32,6 +32,7 @@ Use this compact packet when the task is material:
 engineering_discipline:
   assumptions:
   ambiguity:
+  stack_surface:
   simplest_path:
   deleted_scope:
   no_touch_paths:
@@ -50,17 +51,38 @@ Before state-changing work, use the TES Mantra Gate:
 VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS
 ```
 
-For routine writes, commits, generated artifacts, spec execution, or
-project-state updates, the visible user marker may be only `[🍳 Flash-Fry]`.
-That marker is UX compression, not evidence deletion: the full gate must be
-recorded in the current evidence/report surface, Field Reports/Cortex when
-appropriate, or the local `.tes/mantra-gates/` fallback.
+For routine writes, commits, generated artifacts, spec execution, high-risk
+work, or project-state updates, show only `[🍳 Flash-Fry]` to the user when the
+gate permits proceeding. That marker is UX compression, not evidence deletion:
+the full gate must be recorded in the current evidence/report surface, Field
+Reports/Cortex when appropriate, or the local `.tes/mantra-gates/` fallback.
 
-Show the full gate instead of the compact marker when risk is high, ambiguity
-exists, user approval is required, or the action could affect secrets, data,
-databases, remotes, production, authentication, compliance, or public surfaces.
-If `VERIFY` or the required `ORACLE` is missing, stop as `BLOCKED`. If `SCOPE`
-or `DOCUMENT` is ambiguous for material work, stop as `NEEDS_REVIEW`.
+Report gate detail only when the gate returns `BLOCKED` or `NEEDS_REVIEW`,
+approval is required, or the user explicitly asks for audit detail. If `VERIFY`
+or the required `ORACLE` is missing, stop as `BLOCKED`. If `SCOPE` or
+`DOCUMENT` is ambiguous for material work, stop as `NEEDS_REVIEW`.
+
+## Infrastructure Decision Gate
+
+Before any infrastructure decision, run a Stack Surface Scan. This applies to
+native wrappers, deployment targets, database clients, queues, crypto
+primitives, build tools, hosting assumptions, and runtime-bound dependencies.
+
+Inspect the target project's actual stack evidence before choosing: package and
+lock files, framework config, runtime config, deployment preset, existing
+adapters, generated output contracts, and project governance. Then check
+Context7 or official documentation for the framework, runtime, or cloud surface
+that owns the behavior. If evidence is missing, stale, or contradictory, stop
+as `NEEDS_REVIEW` instead of guessing.
+
+For Nuxt or Nitro projects, Nitro changes the runtime surface. Inspect the
+Nitro preset, `node` target, and deployment runtime before choosing a native
+OpenSSL wrapper, a pure Node DER builder, Web Crypto, or another runtime-bound
+implementation. A Node-looking repository can still target edge, worker,
+serverless, or compatibility layers.
+
+The decision must name the stack evidence, documentation source, rejected
+alternatives, chosen path, and smallest runtime oracle before implementation.
 
 ## Diamond Build-Test-Fail-Fix
 

@@ -32,7 +32,6 @@ RETIRED_LOCAL_GATE_MARKERS = (
 BOOTLOADER_DUPLICATED_MANTRA_GATE_FRAGMENTS = (
     "Full gate fields are",
     "VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS",
-    "Show the full gate, not just the compact marker",
     "the full gate is still retained as evidence",
 )
 
@@ -411,7 +410,6 @@ def evaluate(
 
     status = "OK"
     findings: list[dict[str, Any]] = []
-    history_findings: list[dict[str, Any]] = []
     validations: list[dict[str, Any]] = []
     surfaces = surface_health(target)
     if surfaces["status"] == "DEGRADED":
@@ -426,21 +424,10 @@ def evaluate(
         status = escalate(status, "BYPASS_SUSPECTED")
         findings.append({"type": "missing_gate_record", "detail": "state-changing signal has no nearby Mantra Gate record"})
 
-    historical_compact_high_risk_records = 0
     for record in records:
         gate = gate_from_record(record)
         visible = visible_from_record(record, gate)
         record_risk = historical_risk(record, gate)
-        if record_risk.get("risk") == "high-risk" and visible != "full":
-            historical_compact_high_risk_records += 1
-            history_findings.append(
-                {
-                    "type": "historical_compact_high_risk_record",
-                    "path": record.get("path"),
-                    "line": record.get("line"),
-                    "detail": "historical compact high-risk gate record found",
-                }
-            )
 
         if mode == "health":
             health_gate = dict(gate)
@@ -502,15 +489,8 @@ def evaluate(
             status = escalate(status, "BLOCKED")
             findings.append({"type": "missing_closure_oracle", "detail": "closure claim requires ORACLE"})
 
-    if risk == "high-risk" and records:
-        latest_visible = visible_from_record(records[-1], gate_from_record(records[-1]))
-        if latest_visible != "full" and current_action_changes_state(mode):
-            status = escalate(status, "NEEDS_REVIEW")
-            findings.append({"type": "compact_high_risk", "detail": "high-risk action requires visible full gate"})
-
     metrics = summarize_metrics(records, validations, status)
     metrics["time_between_gate_and_action_seconds"] = gate_action_delta_seconds(records, state)
-    metrics["historical_compact_high_risk_records"] = historical_compact_high_risk_records
     field_report_outbox = target / ".tes/field-reports/outbox.jsonl"
 
     return mantra_gate.sanitize(
@@ -535,10 +515,8 @@ def evaluate(
             },
             "validations": validations,
             "findings": findings,
-            "history_findings": history_findings,
             "surface_health": surfaces,
             "metrics": metrics,
-            "next_high_risk_action_requires_full_gate": historical_compact_high_risk_records > 0,
             "recovery": recovery(status),
         }
     )
@@ -552,7 +530,7 @@ def recovery(status: str) -> str:
     if status == "BYPASS_SUSPECTED":
         return "stop closure; reconstruct evidence and record a Mantra Gate before claiming progress"
     if status == "NEEDS_REVIEW":
-        return "show the full gate, resolve ambiguity, or request approval"
+        return "resolve ambiguity, request approval, or report audit detail when explicitly needed"
     return "stop; resolve the blocker or forbidden risk before acting"
 
 
@@ -580,8 +558,8 @@ def self_test() -> dict[str, Any]:
         (target / ".tes/field-reports").mkdir(parents=True)
         write_record(target, mantra_gate.sample_gate(), visible="compact")
         high_compact = evaluate(target, action="git push to origin", state_changing=True)
-        if high_compact["status"] != "NEEDS_REVIEW":
-            failures.append("high-risk compact gate must need review")
+        if high_compact["status"] != "OK" or high_compact["metrics"]["compact"] != 1:
+            failures.append("compact display with a complete high-risk gate record must pass")
 
     with tempfile.TemporaryDirectory(prefix="tes-mg-adoption-") as tmp:
         target = Path(tmp)
@@ -694,13 +672,11 @@ def self_test() -> dict[str, Any]:
         )
         doctor_health = evaluate(target)
         if doctor_health["status"] == "NEEDS_REVIEW" or doctor_health["state_changing"]:
-            failures.append("read-only doctor health must not need review for dirty tree plus historical compact high-risk record")
-        if doctor_health["metrics"]["historical_compact_high_risk_records"] != 1:
-            failures.append("health mode must report historical compact high-risk records as metrics")
+            failures.append("read-only doctor health must not need review for dirty tree plus completed compact gate record")
 
         audit = evaluate(target, audit_history=True)
-        if audit["status"] != "NEEDS_REVIEW":
-            failures.append("audit-history must need review for compact high-risk historical records")
+        if audit["status"] != "OK":
+            failures.append("audit-history must pass when compact display has a complete gate record")
 
     return {
         "schema": SCHEMA,

@@ -46,15 +46,14 @@ gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 
 <mantra_gate>
 
-Before state-changing actions, use the TES Mantra Gate. Routine writes may show
-only `[🍳 Flash-Fry]` to the user, but the full gate must still record `VERIFY`,
-`SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, and `STATUS` in the
-appropriate evidence surface.
+Before state-changing actions, use the TES Mantra Gate. When the gate permits
+proceeding, show only `[🍳 Flash-Fry]` to the user, but the full gate must still
+record `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, and
+`STATUS` in the appropriate evidence surface.
 
-Show the full gate, or stop with `BLOCKED` / `NEEDS_REVIEW`, when risk is high,
-approval is needed, or secrets, data, remotes, production, authentication,
-compliance, public surface, architecture, migration, or destructive behavior
-could be affected.
+Report gate detail only when the gate returns `BLOCKED` or `NEEDS_REVIEW`, when
+approval is needed, or when the user explicitly asks for audit detail. High-risk
+work requires a complete internal record and oracle; forbidden work still stops.
 
 For closure, commit, or push claims, use the Mantra Gate adoption oracle when
 available. Treat `BYPASS_SUSPECTED`, `NEEDS_REVIEW`, or `BLOCKED` as a stop

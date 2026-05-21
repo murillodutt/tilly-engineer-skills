@@ -64,19 +64,40 @@ gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 ## Mantra Gate
 
 Before state-changing actions, use the TES Mantra Gate. For routine writes,
-commits, generated artifacts, spec execution, or project-state updates, the
-visible marker may be `[🍳 Flash-Fry]`; the full gate is still retained as
-evidence.
+commits, generated artifacts, spec execution, high-risk work, or project-state
+updates, show only `[🍳 Flash-Fry]` to the user when the gate permits
+proceeding; the full gate is still retained as evidence.
 
 Full gate fields are `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`,
-`RESOLVE`, and `STATUS`. Show the full gate, not just the compact marker, when
-risk is high, ambiguity exists, user approval is required, or secrets, data,
-databases, remotes, production, authentication, compliance, or public surfaces
-could be affected.
+`RESOLVE`, and `STATUS`. Report gate detail only when the gate returns
+`BLOCKED` or `NEEDS_REVIEW`, approval is required, or the user explicitly asks
+for audit detail.
 
 For closure, commit, or push claims, the adoption oracle may check that a gate
 record exists near the state change. If it reports `BYPASS_SUSPECTED`,
 `NEEDS_REVIEW`, or `BLOCKED`, stop and recover before claiming progress.
+
+## Infrastructure Decision Gate
+
+Before any infrastructure decision, run a Stack Surface Scan. This applies to
+native wrappers, deployment targets, database clients, queues, crypto
+primitives, build tools, hosting assumptions, and runtime-bound dependencies.
+
+Inspect the target project's actual stack evidence before choosing: package and
+lock files, framework config, runtime config, deployment preset, existing
+adapters, generated output contracts, and project governance. Then check
+Context7 or official documentation for the framework, runtime, or cloud surface
+that owns the behavior. If evidence is missing, stale, or contradictory, stop
+as `NEEDS_REVIEW` instead of guessing.
+
+For Nuxt or Nitro projects, Nitro changes the runtime surface. Inspect the
+Nitro preset, `node` target, and deployment runtime before choosing a native
+OpenSSL wrapper, a pure Node DER builder, Web Crypto, or another runtime-bound
+implementation. A Node-looking repository can still target edge, worker,
+serverless, or compatibility layers.
+
+The decision must name the stack evidence, documentation source, rejected
+alternatives, chosen path, and smallest runtime oracle before implementation.
 
 ## Feedback Voice
 

@@ -32,7 +32,7 @@ Run the smallest gate that proves the claim:
 | installed target | TES runtime is installed | `python3 .tes/bin/tes_install.py status --target .` |
 | installed target | project context is healthy | `python3 .tes/bin/project_context_oracle.py --target .` |
 | installed target | project alignment is healthy | `python3 .tes/bin/project_alignment_oracle.py --target .` |
-| installed target | Mantra Gate adoption is healthy | `python3 .tes/bin/mantra_gate_adoption_oracle.py --target .` (health/read-only; historical compact high-risk records are metrics) |
+| installed target | Mantra Gate adoption is healthy | `python3 .tes/bin/mantra_gate_adoption_oracle.py --target .` (health/read-only) |
 | installed target | target exposes a health gate | run the discovered script, for example `pnpm run gate:doctor` or `npm run gate:doctor` |
 | installed target | staged changes are commit-ready | run discovered `gate:staged`; otherwise use available project gates and `git diff --check` |
 | installed target | push readiness | run discovered `gate:push` plus `python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --commit-push`; otherwise report `NOT_AVAILABLE` instead of inventing one |
@@ -60,7 +60,7 @@ Run the smallest gate that proves the claim:
   TES package source, prefer `npm run commit:check`.
 - For closure, commit, or push claims, treat Mantra Gate adoption statuses
   `BYPASS_SUSPECTED`, `NEEDS_REVIEW`, and `BLOCKED` as stop conditions.
-- For read-only `/tes-doctor`, do not promote historical compact high-risk
-  records to a current blocker; report them as history findings unless
-  `--audit-history` is requested.
+- For read-only `/tes-doctor`, do not promote historical gate records to a
+  current blocker; use `--audit-history` only when the user asks for explicit
+  history audit.
 - After commit, rerun the principal gate when the user asks for sealed closure.

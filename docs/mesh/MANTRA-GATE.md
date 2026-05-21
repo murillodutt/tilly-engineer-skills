@@ -24,13 +24,12 @@ The default visible marker is:
 [🍳 Flash-Fry]
 ```
 
-Agents may show only this marker before routine state-changing actions when a
-full block would add noise. Compact display is UX compression, not evidence
-deletion.
+Agents should show only this marker when the gate permits proceeding. Compact
+display is UX compression, not evidence deletion.
 
-The compact marker must not hide blockers, failures, unresolved decisions, user
-approval needs, or high-risk choices. In those cases, show the full gate or stop
-with `BLOCKED` / `NEEDS_REVIEW`.
+The compact marker must not hide blockers, failures, unresolved decisions, or
+user approval needs. In those cases, report the gate detail with `BLOCKED` /
+`NEEDS_REVIEW`, or provide audit detail when the user explicitly asks for it.
 
 ## Full Internal Schema
 
@@ -57,7 +56,8 @@ Mantra Gate classifies action risk deterministically:
 | `high-risk` | Remotes/push, secrets/env, DB/schema, auth/RBAC, real customer data, production, compliance/legal, public API/surface, destructive Git, or generated runtime packaging |
 | `forbidden` | Destructive Git, secret disclosure, or production action without an explicit contract |
 
-`high-risk` work requires a visible full gate. `forbidden` work blocks.
+`high-risk` work requires a complete internal record and oracle. `forbidden`
+work blocks.
 
 ## Activation
 
@@ -75,9 +75,9 @@ Required before:
 
 Optional or implicit for pure read-only exploration.
 
-Escalate from compact marker to visible full gate when risk is high, ambiguity
-exists, user approval is required, or the action could affect secrets, data,
-databases, remotes, production, authentication, compliance, or public surfaces.
+Escalate from compact marker to gate detail when ambiguity exists, user approval
+is required, the gate returns `BLOCKED` / `NEEDS_REVIEW`, or the user explicitly
+asks for audit detail.
 
 ## Storage
 
@@ -101,7 +101,6 @@ file contents.
 - Missing `DOCUMENT` for material work: `NEEDS_REVIEW`.
 - Missing `ORACLE` when closure is claimed: `BLOCKED`.
 - Non-empty unresolved `RESOLVE`: `BLOCKED`.
-- High-risk `PROCEED` with only compact display: `NEEDS_REVIEW`.
 - State-changing evidence without a nearby gate record: `BYPASS_SUSPECTED`.
 
 Never allow `PROCEED` by prose alone when a concrete oracle exists.
@@ -125,15 +124,14 @@ Statuses:
 | `OK` | Continue; compact marker is enough when the full record exists |
 | `DEGRADED` | Repair the gate record or rerun with a complete gate |
 | `BYPASS_SUSPECTED` | Stop closure; reconstruct evidence and record a gate |
-| `NEEDS_REVIEW` | Show the full gate, resolve ambiguity, or request approval |
+| `NEEDS_REVIEW` | Resolve ambiguity, request approval, or report audit detail |
 | `BLOCKED` | Resolve the blocker before acting |
 
 The oracle also emits local sanitized metrics: compact/full counts, status
-counts, missing fields, bypass suspicion, historical compact high-risk records,
-and actions without a closure oracle. Historical compact high-risk records are
-shown as `history_findings` in health mode; they become `NEEDS_REVIEW` only
-under `--audit-history` or an active high-risk action. It does not collect
-secrets, raw prompts, private content, or remote telemetry.
+counts, missing fields, bypass suspicion, and actions without a closure oracle.
+Compact display is normal when the full internal gate is complete and the gate
+returns `PROCEED`. The oracle does not collect secrets, raw prompts, private
+content, or remote telemetry.
 
 The oracle also reports adapter surface health. It distinguishes whether the
 skill-owned behavior is present, whether bootloaders route to that behavior
