@@ -235,7 +235,6 @@ SYNCED_FILES = (
 )
 
 FORBIDDEN_ROOT_PATHS = (
-    ".agents",
     ".claude-plugin",
     ".cursor",
     "skills",
