@@ -26,6 +26,7 @@ changing those reference skills or promoting the pattern into distributable TES.
 | 2026-05-22 | Added local skill-packaging reinforcement from external `write-a-skill` guidance. | Maintainer-provided external skill excerpt; absorbed as local principles, not copied as product surface. | high |
 | 2026-05-22 | Slimmed `SKILL.md` to a local routing contract and moved detail into `references/**`. | Maintainer requested extreme progressive disclosure. | high |
 | 2026-05-22 | Changed activation posture from user-invoked to self-consumed local guidance. | Maintainer clarified these skills should be autoconsumed, not invoked. | high |
+| 2026-05-22 | Added local Operating Temperament guidance for sniper, miner, prospector, builder, gate, and curator skill design. | Maintainer clarified that the development layer should learn how to create powerful skills with different verbosity and question profiles. | high |
 
 ## Do Not Lose
 

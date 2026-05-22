@@ -26,6 +26,8 @@ Use the smallest reasoning mode:
 Load references only when needed:
 
 - `references/predictive-operations.md` for mode details.
+- `references/operating-temperament.md` when deciding whether the next skill
+  should behave like a sniper, miner, prospector, builder, gate, or curator.
 - `references/skill-packaging.md` for packaging checks.
 
 ## Brake

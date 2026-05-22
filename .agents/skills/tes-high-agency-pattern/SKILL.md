@@ -22,6 +22,8 @@ time, recommended answer, cognitive brake, and no artifact until resolution.
 Load references only when needed:
 
 - `references/high-agency-pattern.md` for pattern details.
+- `references/operating-temperament.md` for matching a skill's agency,
+  verbosity, question budget, and write posture to its job.
 - `references/skill-packaging.md` for description, disclosure, scripts, and
   adoption checks.
 
