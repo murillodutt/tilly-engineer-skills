@@ -55,7 +55,8 @@ dedicated decision.
 
 ## Packaging Rules
 
-- The materialized target root is `dist/adapters/claude/**`.
+- Write-mode materialization may create `dist/adapters/claude/**` for
+  temporary inspection; purge it after use.
 - Project installs must include `.claude/skills/tes-*/SKILL.md`; Claude Code
   discovers these as project skills and exposes direct slash names such as
   `/tes-init`, `/tes-setup`, and `/tes-cortex`.

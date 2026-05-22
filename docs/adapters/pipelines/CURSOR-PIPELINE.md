@@ -25,7 +25,7 @@ behavior-deferred until a clean non-interactive execution backend is declared.
 | Area | Declaration |
 |------|-------------|
 | Source files | `src/adapters/cursor/**` |
-| Materialized files | `dist/adapters/cursor/CURSOR.md`, `dist/adapters/cursor/.cursor/rules/*.mdc` |
+| Temporary materialized files | `dist/adapters/cursor/CURSOR.md`, `dist/adapters/cursor/.cursor/rules/*.mdc`; purge after inspection |
 | Validation command | `npm run materialize:check` |
 | Execution backend | deferred; no clean non-interactive route certified |
 | Evidence class | structural plus installer smoke |

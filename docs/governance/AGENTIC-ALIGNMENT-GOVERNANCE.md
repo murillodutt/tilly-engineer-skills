@@ -45,7 +45,7 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 | Cross-tool governance | This document | Defines alignment, boundaries, and no-go rules |
 | Adapter guidance | `docs/adapters/**` | Explains tool-specific installation and risks |
 | Canonical source | `src/adapters/**` | Only source for installable adapter files |
-| Generated output | `dist/adapters/**` | Reproducible output, ignored by Git |
+| Temporary generated output | `dist/adapters/**` | Reproducible inspection output, ignored by Git and purged after use |
 | Installed runtime | Target repo or user cache | Never edited as package truth |
 
 ## Alignment Matrix
@@ -65,9 +65,10 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 1. `docs/mesh/PRINCIPLES.md` is the tool-neutral behavioral source of truth.
 2. Context becomes project truth only through retained convergence evidence,
    not by matching wording across adapters.
-3. `src/adapters/**` is the only installable source tree.
-4. Tool-specific files in `dist/**`, target repos, or user caches are
-   materialized outputs, not canonical package sources.
+3. `src/adapters/**` is the only local canonical adapter source tree.
+4. Tool-specific files in `dist/adapters/**`, target repos, or user caches are
+   temporary materialized outputs, not package sources. Local validation fails
+   when `dist/adapters/**` remains after inspection.
 5. `AGENTS.md`, `CLAUDE.md`, and Cursor rules are guidance layers. Enforcement
    belongs to deterministic validators, repository hooks, settings, or
    tool-native hook systems when explicitly adopted.

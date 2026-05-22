@@ -252,6 +252,8 @@ FORBIDDEN_ROOT_PATHS = (
     "CHANGELOG.md",
 )
 
+GENERATED_ADAPTER_OUTPUT = ROOT / "dist" / "adapters"
+
 REQUIRED_PACKAGE_SCRIPTS = (
     "validate",
     "install:adapter",
@@ -539,6 +541,16 @@ def staged_ready_failures() -> list[str]:
     return failures
 
 
+def generated_adapter_output_failures() -> list[str]:
+    if not GENERATED_ADAPTER_OUTPUT.exists():
+        return []
+    return [
+        "generated adapter output must not remain in the source package: "
+        "purge dist/adapters after inspection; src/adapters is the only "
+        "local canonical adapter source"
+    ]
+
+
 def maintainer_correlation_failures() -> list[str]:
     path = ROOT / "docs/governance/MAINTAINER-CORRELATION-RULE.md"
     if not path.exists():
@@ -738,6 +750,7 @@ def main() -> int:
     failures.extend(installer_report_contract_failures())
     failures.extend(version_drift_failures())
     failures.extend(yaml_surface_failures())
+    failures.extend(generated_adapter_output_failures())
 
     for relpath in SYNCED_FILES:
         path = ROOT / relpath

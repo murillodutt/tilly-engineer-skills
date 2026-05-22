@@ -25,7 +25,7 @@ evidence for the declared `claude-cli` backend.
 | Area | Declaration |
 |------|-------------|
 | Source files | `src/adapters/claude/**` |
-| Materialized files | `dist/adapters/claude/CLAUDE.md`, `dist/adapters/claude/.claude/skills/**` |
+| Temporary materialized files | `dist/adapters/claude/CLAUDE.md`, `dist/adapters/claude/.claude/skills/**`; purge after inspection |
 | Validation command | `npm run materialize:check` |
 | Execution backend | `python3 scripts/context_mesh_run.py --backend claude-cli` |
 | Evidence class | structural plus retained v1 behavior evidence |

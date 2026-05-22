@@ -10,21 +10,23 @@ tver: 0.2.0
 
 # Adapter Materialization
 
-`src/**` is the canonical source. Generated install trees are materialized from
-that source and are not edited by hand.
+`src/adapters/**` is the only local canonical adapter source. Generated install
+trees are materialized from that source, are not edited by hand, and are purged
+after inspection.
 
 ## Commands
 
 | Command | Output |
 |---------|--------|
-| `npm run materialize:codex` | `dist/adapters/codex/**` |
-| `npm run materialize:cursor` | `dist/adapters/cursor/**` |
-| `npm run materialize:claude` | `dist/adapters/claude/**` |
-| `npm run materialize:all` | All adapter outputs |
+| `npm run materialize:codex` | Temporary inspection output at `dist/adapters/codex/**`; purge after use |
+| `npm run materialize:cursor` | Temporary inspection output at `dist/adapters/cursor/**`; purge after use |
+| `npm run materialize:claude` | Temporary inspection output at `dist/adapters/claude/**`; purge after use |
+| `npm run materialize:all` | Temporary inspection output for all adapters; purge after use |
 | `npm run materialize:check` | Temporary materialization with validation |
 
 `dist/**` is ignored because it is generated. The committed source remains in
-`src/**`.
+`src/adapters/**`. Local package validation fails if `dist/adapters/**` remains
+after an inspection run.
 
 ## Output Contracts
 
@@ -53,6 +55,8 @@ check builds all adapters in a temporary directory and verifies:
 - existing project-owned bootloaders are backed up centrally, replaced by clean
   runtime bootloaders, and recovered semantically while adapter assets install;
 - no `src/**` source tree leaks into an install output.
+- no generated `dist/adapters/**` inspection output remains in the local source
+  package after tests or inspection.
 
 `commit:check` also requires required package files to be staged or already
 tracked, so the pre-commit hook cannot pass by reading untracked files that
@@ -81,7 +85,7 @@ If a target tool changes packaging rules, update `src/adapters/<tool>/**`,
 | Codex | Editing installed user/runtime skill instead of source | Edit `src/adapters/codex/**` only; target `.agents/skills/**` is generated output |
 | Claude | Project installs omit `.claude/skills/**`, or a `CLAUDE.md` conflict blocks clean install | Project skills must be present, and bootloader conflicts must be backed up, clean-applied, and recovered without blocking runtime assets |
 | Cursor | Legacy `.cursorrules` leaks back into the package or project-owned rules block TES commands | Validator blocks `.cursorrules`; runtime capabilities materialize as a separate TES-owned rule |
-| All | Generated output becomes perceived source | `dist/**` remains ignored and reproducible |
+| All | Generated output becomes perceived source | `dist/adapters/**` is temporary inspection output and validation requires purging it after use |
 
 Hooks, write-capable MCP servers, agent definitions, cloud/background
 execution, and marketplace publishing are excluded from the default materialized

@@ -27,7 +27,7 @@ Root files are only entrypoints and local project controls:
 | `benchmarks/**` | Portable eval data |
 | `docs/**` | Method, architecture, and eval explanation |
 | `src/**` | Canonical copyable adapter source |
-| `dist/**` | Generated adapter output, ignored by Git |
+| `dist/**` | Temporary generated adapter inspection output, ignored by Git |
 | `docs/dist/**` | Versioned public installer bundles served by GitHub Pages |
 | `docs/llms.txt` | GitHub Pages-served mirror of the public LLM map |
 | `docs/i18n/**` | JSON and YAML source for rendered public docs |
@@ -57,7 +57,9 @@ wrappers do not belong in the repository root.
 ## Materialization
 
 `scripts/materialize_adapter.py` turns canonical source into installable target
-trees under `dist/adapters/**`:
+trees. `npm run materialize:check` does this in a temporary directory. Direct
+write-mode materialization may create `dist/adapters/**` for inspection only,
+and package validation requires that output to be purged afterward:
 
 | Adapter | Materialized shape |
 |---------|--------------------|
@@ -66,6 +68,7 @@ trees under `dist/adapters/**`:
 | Cursor | `CURSOR.md` plus `.cursor/rules/**` |
 
 Use `npm run materialize:check` to verify this without writing to `dist/**`.
+`src/adapters/**` remains the only local canonical adapter source.
 
 `docs/dist/<version>/` is the exception to the ignored `dist/**` rule. It holds
 the public TES ZIP, `.sha256`, and `index.json` used by installer staging.
