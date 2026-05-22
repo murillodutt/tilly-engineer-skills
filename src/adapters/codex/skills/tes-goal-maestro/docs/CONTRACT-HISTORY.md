@@ -23,6 +23,7 @@ examples or origins.
 | Maintainer directive, 2026-05-20 | The skill must be neutral and must not mention project-specific origin stories. | high |
 | Maintainer directive, 2026-05-20 | Output is chat-first and saved only on explicit request. | high |
 | Maintainer corrective audit, 2026-05-20 | Commit messages and empty commits are not execution evidence; each unit needs material-diff proof and sync certification. | high |
+| Maintainer directive, 2026-05-22 | Generated Super SPEC content must leave the context window and be materialized as `GOAL-SUPER-SPEC-**.md`. | high |
 
 ## Source Search Ledger
 
@@ -53,7 +54,9 @@ examples or origins.
   explicit authorization.
 - Ask for tree acceptance only when the user explicitly requests staged review
   or a change to the declared execution contract requires owner acceptance.
-- Keep output chat-first and save only on request.
+- Keep output chat-first and save only on request, except generated Super SPEC
+  artifacts, which must be written as `GOAL-SUPER-SPEC-<slug-or-timestamp>.md`
+  and summarized in chat.
 - Always include `SPEC-000 Preflight And Baseline`.
 - Keep the skill neutral and free of project-specific origin stories,
   absolute paths, or domain examples.
@@ -62,6 +65,8 @@ examples or origins.
 
 - Generating execution prompts from immature SPECs.
 - Hiding architectural decisions inside a long `/goal` prompt.
+- Pasting generated Super SPEC bodies into the context window instead of
+  linking to a durable Markdown artifact.
 - Mixing semantic meaning with physical mechanics too early.
 - Assigning subagents without file ownership.
 - Running broad implementation without per-SPEC oracles.
@@ -89,6 +94,7 @@ discipline once execution begins.
 | 2026-05-20 | Changed tree acceptance from conversational permission to internal quality gate. | Maintainer bug report after skill stopped at tree acceptance despite explicit invocation. | high |
 | 2026-05-20 | Added material-diff and sync-commit gates so empty commits cannot certify material units. | Corrective audit after execution-unit fidelity mismatch. | high |
 | 2026-05-20 | Added material-continuation, semantic negative-grep and sequential ownership gates. | Maintainer-evolved canary skill in `~/Dev/<project-a>/.agents/skills/tes-goal-maestro/**`. | high |
+| 2026-05-22 | Added default Super SPEC artifact materialization as `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` and forbade pasting the full generated Super SPEC in chat. | Maintainer requested smaller context-window footprint for Goal Maestro. | high |
 
 ## Do Not Lose
 
@@ -97,4 +103,5 @@ artifact maturity and internal tree validation before producing the `/goal`
 contract. Do not turn the tree gate into an unnecessary permission prompt, do
 not weaken fidelity for convenience, do not let prior commits or empty commits
 mask missing material execution, do not collapse semantic negative grep into
-broad vocabulary bans, and do not add project-specific examples.
+broad vocabulary bans, do not paste generated Super SPEC bodies into chat, and
+do not add project-specific examples.

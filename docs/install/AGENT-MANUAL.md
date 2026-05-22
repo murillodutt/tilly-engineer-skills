@@ -74,7 +74,10 @@ direct action. `tes-goal-maestro` may also route from a direct request to
 generate a maestral `/goal` prompt from a mature artifact; it preserves
 declared execution units, validates the tree internally, requires
 material-diff, material-continuation, semantic negative-grep, sequential
-ownership and sync-status evidence, and emits `/goal` when gates pass.
+ownership and sync-status evidence, and emits `/goal` when gates pass. When
+it generates or expands a Super SPEC, the full content is written to
+`GOAL-SUPER-SPEC-*.md` and chat shows only the artifact path plus a short
+summary.
 `tes-bump` is different: it is the version governance guard. It routes from
 direct bump/sync requests and auto-activates read-only when commit, release,
 delivered behavior, or another TES gate reports a version-decision condition.

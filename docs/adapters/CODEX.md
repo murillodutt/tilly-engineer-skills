@@ -71,7 +71,9 @@ owning skills. `/tes-update` is a visible skill because update is a commercial
 user workflow, not a hidden mode of initialization. `tes-goal-maestro`
 materializes mature SPECs, Super SPECs, PRDs, relational project plans, or
 accepted execution trees into maestral `/goal` prompts after internal tree,
-material-diff, material-continuation, semantic negative-grep, sequential ownership, sync-status, and execution-unit fidelity checks. Predictive skills such as
+material-diff, material-continuation, semantic negative-grep, sequential ownership, sync-status, and execution-unit fidelity checks. Generated Super SPEC
+content is written to `GOAL-SUPER-SPEC-*.md` and summarized instead of pasted
+into chat. Predictive skills such as
 `/tes-prospect` and `/tes-mine` require explicit invocation and use a cognitive
 brake. `/tes-bump` is the version governance guard: it auto-activates
 read-only for commit, release, delivered-behavior, or gate-reported bump

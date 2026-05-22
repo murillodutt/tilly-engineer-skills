@@ -19,6 +19,12 @@ A maestral /goal prompt is an execution contract, not a long request.
 It must let a future agent execute without inventing artifact, scope,
 boundaries, owners, tests, commit rhythm or stop states.
 
+If the source flow created a Super SPEC, the prompt must name the
+`GOAL-SUPER-SPEC-<slug-or-timestamp>.md` artifact path as the canonical Super
+SPEC reference. Do not embed the full Super SPEC body inside the `/goal`
+prompt unless the user explicitly requests a self-contained prompt and accepts
+the larger context footprint.
+
 If the source artifact declares a materialization queue, the prompt must
 preserve that queue. The prompt is not allowed to compress declared execution
 units into fewer execution commits.
@@ -34,24 +40,25 @@ The final prompt must include:
 1. `/goal` opening line.
 2. Mission.
 3. Main SPEC path.
-4. Certified context.
-5. Phase boundary.
-6. Central rule.
-7. Non-objectives and forbidden moves.
-8. Specialized subagents with ownership.
-9. Work mode.
-10. First mandatory act.
-11. `SPEC-000 Preflight And Baseline`.
-12. Narrow execution units.
-13. Full oracle.
-14. Negative grep.
-15. Stop criteria.
-16. Final delivery contract.
-17. Execution unit fidelity statement when the input artifact declares units.
-18. Per-unit material-diff and sync-commit evidence requirements.
-19. Material continuation rule when prior commits, closeouts or partial
+4. Super SPEC artifact path when one was created.
+5. Certified context.
+6. Phase boundary.
+7. Central rule.
+8. Non-objectives and forbidden moves.
+9. Specialized subagents with ownership.
+10. Work mode.
+11. First mandatory act.
+12. `SPEC-000 Preflight And Baseline`.
+13. Narrow execution units.
+14. Full oracle.
+15. Negative grep.
+16. Stop criteria.
+17. Final delivery contract.
+18. Execution unit fidelity statement when the input artifact declares units.
+19. Per-unit material-diff and sync-commit evidence requirements.
+20. Material continuation rule when prior commits, closeouts or partial
     implementations may exist.
-20. Semantic negative-grep rules when blocked-state vocabulary is valid inside
+21. Semantic negative-grep rules when blocked-state vocabulary is valid inside
     the contract.
 
 ## Prompt Template

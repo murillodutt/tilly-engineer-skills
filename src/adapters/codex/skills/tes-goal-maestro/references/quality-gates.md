@@ -37,6 +37,10 @@ Use when:
 Explicit skill invocation is enough to produce both the tree and the final
 `/goal` prompt in one response when these conditions are true.
 
+When a Super SPEC is generated in the flow, readiness also requires that the
+full Super SPEC is written to `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` and that
+chat output contains only the artifact path and a short summary.
+
 ### NEEDS_EXECUTION_UNIT_FIDELITY
 
 Use when the source artifact declares materialization units and the proposed
@@ -121,6 +125,10 @@ If yes, revise before returning the prompt.
 A valid skill response must not stop to ask permission between a valid tree and
 the `/goal` prompt after explicit invocation. The tree gate is technical:
 generate, validate, then emit `READY_GOAL_PROMPT`.
+
+A valid response must not paste a generated Super SPEC into the context window.
+Use the `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` artifact instead, then continue
+to the tree and `/goal` prompt when the remaining gates pass.
 
 ## Commit Rhythm Checks
 

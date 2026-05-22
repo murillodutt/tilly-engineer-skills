@@ -70,8 +70,10 @@ name; `tes-goal-maestro` may also route from a direct request to generate a
 maestral `/goal` prompt from a mature SPEC, Super SPEC, PRD, relational project
 plan, or accepted execution tree. It must preserve declared execution units,
 validate the tree internally, require material-diff, material-continuation,
-semantic negative-grep, sequential ownership and sync-status evidence, and emit
-`/goal` when gates pass. `tes-bump` is a version governance guard: direct
+semantic negative-grep, sequential ownership and sync-status evidence, write
+generated Super SPEC content to `GOAL-SUPER-SPEC-*.md` instead of pasting it
+into chat, and emit `/goal` when gates pass. `tes-bump` is a version
+governance guard: direct
 bump/sync requests route to it, and commit, release, delivered-behavior, or
 gate-reported bump conditions auto-activate its read-only `--governance-check`.
 It must dry-run target discovery before any write and must not commit, tag,

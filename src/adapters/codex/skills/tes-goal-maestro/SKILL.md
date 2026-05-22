@@ -6,7 +6,7 @@ license: MIT
 
 # TES Goal Maestro
 
-Operational contract: `tes.goal_maestro@0.3.1`.
+Operational contract: `tes.goal_maestro@0.3.2`.
 
 ## Invocation Contract
 
@@ -19,6 +19,13 @@ language, or early design discussion.
 execution-grade materialization tree and, when the tree passes the skill's
 internal gates, emits a ready `/goal` prompt from a mature input artifact in
 the same response.
+
+When the workflow needs to create or carry a Super SPEC, do not paste the full
+Super SPEC into the context window. Materialize it as a Markdown artifact named
+`GOAL-SUPER-SPEC-<slug-or-timestamp>.md`, then reference only its path and a
+short summary in chat. This Super SPEC artifact is the only default file write
+allowed by this skill; prompt and tree files still require an explicit save
+request.
 
 The skill optimizes for certifiable execution, not enthusiasm. A generated
 prompt must be harder to break than an ad hoc manual prompt.
@@ -120,10 +127,16 @@ skill invocation.
 9. Validate the tree against maturity, execution-unit fidelity, material
    continuation, ownership, oracle, negative-grep semantics, material-diff,
    sync-commit and stop-state gates.
-10. Produce the `Ready /goal Prompt` in the same response when the tree passes.
+10. If a Super SPEC must be produced or expanded, write it to
+   `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` in the current target workspace or
+   in the explicitly requested output directory. Use a filesystem-safe slug
+   from the artifact title when available; otherwise use a timestamp. Do not
+   display the full Super SPEC body in chat.
+11. Produce the `Ready /goal Prompt` in the same response when the tree passes.
    Stop only for maturity gaps, execution-unit fidelity failure, tree repair,
    owner decisions, or an explicitly requested two-step review workflow.
-11. Keep output chat-first. Save to files only when the user explicitly asks.
+12. Keep output chat-first except for the required Super SPEC artifact. Save
+   prompt or tree files only when the user explicitly asks.
 
 The fixed tree schema is:
 
@@ -211,14 +224,18 @@ Use these statuses:
   the declared execution contract.
 - `READY_GOAL_PROMPT`: input artifact is mature, tree passes gates, and `/goal`
   is ready.
+- `SUPER_SPEC_MATERIALIZED`: a Super SPEC was written to
+  `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` and summarized instead of pasted in
+  chat.
 - `SAVE_REQUESTED`: user explicitly asked to write the prompt or tree to disk.
 
 Default output:
 
 1. `Maturity/Stop Status`
-2. `Materialization Tree`
-3. `Readiness Score`
-4. `Ready /goal Prompt` when gates pass
+2. `Super SPEC Artifact` path and summary when one was created
+3. `Materialization Tree`
+4. `Readiness Score`
+5. `Ready /goal Prompt` when gates pass
 
 ## Locks
 
@@ -230,7 +247,10 @@ Default output:
 - Do not treat an implicit or weak tree as passing internal gates.
 - Do not execute the implementation unless the user explicitly asks in a
   separate instruction.
-- Do not write files unless the user asks to save the output.
+- Do not write files unless the user asks to save the output, except for the
+  required `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` artifact when a Super SPEC
+  must be produced or expanded.
+- Do not paste the full Super SPEC into the context window.
 - Do not hide forbidden moves, missing oracles, or owner-decision points inside
   prose.
 - Do not emit a prompt that lacks `SPEC-000`, commit-per-SPEC discipline,

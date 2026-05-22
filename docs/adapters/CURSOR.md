@@ -67,8 +67,9 @@ auto-activate its read-only governance check.
 `tes-goal-maestro` may also route from a direct request to generate a maestral
 `/goal` prompt from a mature SPEC, Super SPEC, PRD, relational project plan, or
 accepted execution tree. It must preserve declared execution units, validate
-the tree internally, require material-diff, material-continuation, semantic negative-grep, sequential ownership and sync-status evidence, and
-generate the final `/goal` when gates pass.
+the tree internally, require material-diff, material-continuation, semantic negative-grep, sequential ownership and sync-status evidence, write generated
+Super SPEC content to `GOAL-SUPER-SPEC-*.md` instead of pasting it into chat,
+and generate the final `/goal` when gates pass.
 `tes-bump` must dry-run target discovery before writes and never commit, tag,
 push, publish, or edit remotes.
 

@@ -27,3 +27,10 @@ tmp/
 /.canaries/
 .tes/runs/
 .tes/canaries/
+
+# Local-only agent skill surfaces. `.claude/` stays tracked; `.agents/` and
+# `.agents-local/` are redundant mirrors that collide with or shadow
+# FORBIDDEN_ROOT_PATHS in scripts/validate_reference_package.py and must not
+# leak into source.
+.agents/
+.agents-local/

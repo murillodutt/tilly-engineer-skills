@@ -10,6 +10,11 @@ The tree converts a mature input artifact into an auditable execution plan. It
 is included with the final prompt so the executor can audit the prompt's
 structure.
 
+When a Super SPEC must be produced or expanded as part of this flow, write it
+to `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` and reference only the artifact path
+and a short summary in chat. Do not paste the full Super SPEC into the context
+window.
+
 Tree acceptance is an internal quality gate by default. Do not stop merely to
 ask for permission to continue from tree to `/goal` after explicit skill
 invocation. Stop only when the tree fails a required gate, changes the declared
@@ -33,6 +38,9 @@ Always emit the tree with these sections, in this order:
 12. `Review Loop`
 13. `Stop States`
 14. `Final Delivery Contract`
+
+When a Super SPEC artifact is created, include its path and summary in the
+`Canonical Artifact` section.
 
 ## Required Execution Units
 

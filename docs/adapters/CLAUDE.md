@@ -92,7 +92,8 @@ dedicated decision.
   intent text, and direct requests to generate a maestral `/goal` prompt may
   route to it. It produces and validates the materialization tree, preserves
   declared execution units, requires material-diff, material-continuation, semantic negative-grep, sequential ownership and sync-status evidence,
-  and emits `/goal` in the same response when gates pass.
+  writes generated Super SPEC content to `GOAL-SUPER-SPEC-*.md` instead of
+  pasting it into chat, and emits `/goal` in the same response when gates pass.
 - `/tes-prospect` and `/tes-mine` are direct explicit-invocation predictive
   skills. Their `/tes:prospect` and `/tes:mine` aliases are compatible intent
   text, but broad natural-language descriptions must not activate them. Once
