@@ -26,7 +26,7 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.122/tilly-engineer-skills-0.3.122.zip` |
+| Public installer bundle | `dist/0.3.123/tilly-engineer-skills-0.3.123.zip` |
 | GitHub-only npx installation | `install/INSTALL.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
 | Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
@@ -59,6 +59,7 @@ turning the repository root into an inventory.
 | Cursor adapter pipeline | `adapters/pipelines/CURSOR-PIPELINE.md` |
 | Current roadmap index | `roadmap/README.md` |
 | RC1 readiness roadmap | `roadmap/RC1-READINESS-ROADMAP.md` |
+| Flash-Fry skill gap spec | `roadmap/FLASH-FRY-SKILL-SPEC.md` |
 | Historical next-session continuity | `roadmap/NEXT-STEPS-LETTER-2026-05-05.md` |
 | TDS specification | `tds/TDS-SPEC.md` |
 | TDS document index | `tds/DOCS-INDEX.yml` |

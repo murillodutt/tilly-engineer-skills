@@ -19,6 +19,7 @@ readiness baseline.
 | Line | Status | Document |
 |------|--------|----------|
 | RC1 readiness cleanup | Active | `RC1-READINESS-ROADMAP.md` |
+| Flash-Fry skill gap | Proposed | `FLASH-FRY-SKILL-SPEC.md` |
 | V1 convergence lineage | Historical | `V1-CONVERGENCE-LOOP.md` |
 | V1 goal checklist | Historical | `V1-GOAL-CHECKLIST.md` |
 | 2026-05-05 continuity letter | Historical | `NEXT-STEPS-LETTER-2026-05-05.md` |
@@ -26,7 +27,7 @@ readiness baseline.
 
 ## Baseline
 
-The current release-readiness baseline is TES `0.3.122`, after the GitHub-only
+The current release-readiness baseline is TES `0.3.123`, after the GitHub-only
 npx installer line, interactive installer screen, Node/Bun runtime matrix,
 first-session hooks, and fixed release documentation alignment.
 

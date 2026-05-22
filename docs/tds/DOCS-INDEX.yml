@@ -1,4 +1,4 @@
-version: 0.3.122
+version: 0.3.123
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -335,6 +335,13 @@ documents:
     class: roadmap
     status: active
     consumer: maintainers, release reviewers, and documentation operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/FLASH-FRY-SKILL-SPEC.md
+    id: roadmap.flash_fry_skill_spec
+    class: roadmap
+    status: proposed
+    consumer: maintainers, adapter authors, and runtime installer reviewers
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/SENIOR-MENTORSHIP-CONTEXT-2026-05-05.md
