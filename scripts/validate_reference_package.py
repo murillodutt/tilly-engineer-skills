@@ -253,6 +253,38 @@ FORBIDDEN_ROOT_PATHS = (
 
 GENERATED_ADAPTER_OUTPUT = ROOT / "dist" / "adapters"
 
+LOCAL_DEVELOPMENT_SKILL_PARITY = (
+    "tes-high-agency-pattern",
+    "tes-predictive-operations",
+)
+
+LOCAL_DEVELOPMENT_SKILL_DESCRIPTION_TERMS = {
+    "tes-high-agency-pattern": (
+        "Local-only self-consumed",
+        "one local development-layer skill/workflow operating pattern",
+        "agency",
+        "question budget",
+        "verbosity",
+        "evidence posture",
+        "output shape",
+        "packaging discipline",
+        "Prefer tes-predictive-operations",
+        "prospect/mine/alternate/package modes",
+        "Do not present as user-invoked",
+    ),
+    "tes-predictive-operations": (
+        "Local-only self-consumed",
+        "next reasoning mode during active project work",
+        "prospect, mine, alternate, or package",
+        "planning pressure",
+        "evidence mining",
+        "packaging timing",
+        "Prefer tes-high-agency-pattern",
+        "one local development-layer skill/workflow operating pattern",
+        "Do not present as user-invoked",
+    ),
+}
+
 REQUIRED_PACKAGE_SCRIPTS = (
     "validate",
     "install:adapter",
@@ -550,6 +582,72 @@ def generated_adapter_output_failures() -> list[str]:
     ]
 
 
+def local_development_skill_parity_failures() -> list[str]:
+    failures: list[str] = []
+    for skill in LOCAL_DEVELOPMENT_SKILL_PARITY:
+        codex_root = ROOT / ".agents" / "skills" / skill
+        claude_root = ROOT / ".claude" / "skills" / skill
+        if not codex_root.is_dir():
+            failures.append(f"missing Codex development skill: {codex_root.relative_to(ROOT)}")
+            continue
+        if not claude_root.is_dir():
+            failures.append(f"missing Claude development skill: {claude_root.relative_to(ROOT)}")
+            continue
+
+        codex_files = {
+            path.relative_to(codex_root): path
+            for path in codex_root.rglob("*")
+            if path.is_file() and path.name != ".DS_Store"
+        }
+        claude_files = {
+            path.relative_to(claude_root): path
+            for path in claude_root.rglob("*")
+            if path.is_file() and path.name != ".DS_Store"
+        }
+
+        for relpath in sorted(codex_files.keys() - claude_files.keys()):
+            failures.append(f"{skill}: missing Claude parity file: {relpath}")
+        for relpath in sorted(claude_files.keys() - codex_files.keys()):
+            failures.append(f"{skill}: missing Codex parity file: {relpath}")
+        for relpath in sorted(codex_files.keys() & claude_files.keys()):
+            if codex_files[relpath].read_bytes() != claude_files[relpath].read_bytes():
+                failures.append(f"{skill}: Codex/Claude development skill drift: {relpath}")
+
+    return failures
+
+
+def skill_frontmatter_description(path: Path) -> str | None:
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---\n"):
+        return None
+    frontmatter = text.split("---\n", 2)[1]
+    for line in frontmatter.splitlines():
+        if line.startswith("description: "):
+            return line.removeprefix("description: ").strip()
+    return None
+
+
+def local_development_skill_description_failures() -> list[str]:
+    failures: list[str] = []
+    roots = (
+        ("Codex", ROOT / ".agents" / "skills"),
+        ("Claude", ROOT / ".claude" / "skills"),
+    )
+    for label, skills_root in roots:
+        for skill, required_terms in LOCAL_DEVELOPMENT_SKILL_DESCRIPTION_TERMS.items():
+            path = skills_root / skill / "SKILL.md"
+            if not path.exists():
+                continue
+            description = skill_frontmatter_description(path)
+            if description is None:
+                failures.append(f"{label} {skill}: missing frontmatter description")
+                continue
+            for term in required_terms:
+                if term not in description:
+                    failures.append(f"{label} {skill}: description missing trigger term: {term}")
+    return failures
+
+
 def maintainer_correlation_failures() -> list[str]:
     path = ROOT / "docs/governance/MAINTAINER-CORRELATION-RULE.md"
     if not path.exists():
@@ -750,6 +848,8 @@ def main() -> int:
     failures.extend(version_drift_failures())
     failures.extend(yaml_surface_failures())
     failures.extend(generated_adapter_output_failures())
+    failures.extend(local_development_skill_parity_failures())
+    failures.extend(local_development_skill_description_failures())
 
     for relpath in SYNCED_FILES:
         path = ROOT / relpath

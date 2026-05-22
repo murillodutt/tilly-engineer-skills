@@ -1,6 +1,6 @@
 ---
 name: tes-predictive-operations
-description: Local-only self-consumed guidance for choosing how to operate tes-prospect and tes-mine together during project reasoning. Do not present as a user-invoked skill; auto-consume when already balancing planning pressure, evidence mining, or local skill packaging.
+description: Local-only self-consumed guidance for choosing the next reasoning mode during active project work: prospect, mine, alternate, or package. Use when balancing planning pressure, evidence mining, and packaging timing across project reasoning. Prefer tes-high-agency-pattern for designing or reviewing one local development-layer skill/workflow operating pattern. Do not present as user-invoked.
 license: MIT
 ---
 
@@ -12,6 +12,9 @@ as distributable TES.
 Self-consume only while already balancing planning pressure, evidence mining,
 or local skill packaging. Do not ask the user to invoke this skill.
 `tes-prospect` and `tes-mine` are reference skills; do not edit them.
+
+Prefer `tes-high-agency-pattern` when the active decision is how to design or
+review the operating pattern of one local development-layer skill.
 
 ## Contract
 
@@ -26,7 +29,7 @@ Use the smallest reasoning mode:
 Load references only when needed:
 
 - `references/predictive-operations.md` for mode details.
-- `references/operating-temperament.md` when deciding whether the next skill
+- `references/temperament-mode-selection.md` when deciding whether the next skill
   should behave like a sniper, miner, prospector, builder, gate, or curator.
 - `references/skill-packaging.md` for packaging checks.
 

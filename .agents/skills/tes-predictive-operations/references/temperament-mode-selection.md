@@ -1,4 +1,4 @@
-# Operating Temperament
+# Temperament Mode Selection
 
 Use this reference when choosing the smallest useful reasoning mode for a
 development-layer skill.

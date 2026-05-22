@@ -28,10 +28,14 @@ project reasoning.
 | 2026-05-22 | Slimmed `SKILL.md` to the smallest mode-selection contract and moved details into `references/**`. | Maintainer requested extreme progressive disclosure. | high |
 | 2026-05-22 | Changed activation posture from user-invoked to self-consumed local guidance. | Maintainer clarified these skills should be autoconsumed, not invoked. | high |
 | 2026-05-22 | Added Operating Temperament mode selection so local skill construction can choose sniper, miner, prospector, builder, gate, or curator behavior. | Maintainer clarified that some skills need questions and verbosity while others must be objective and precise. | high |
+| 2026-05-22 | Renamed `operating-temperament.md` to `temperament-mode-selection.md` and added cross-routing to `tes-high-agency-pattern`. | Maintainer senior analysis identified false same-name drift between complementary temperament references. | high |
+| 2026-05-22 | Tightened frontmatter description to route active project prospect/mine/alternate/package decisions away from one-skill operating-pattern design. | Maintainer approved P4 trigger-alignment pass after senior review. | high |
 
 ## Do Not Lose
 
 This guidance helps the agent decide the smallest useful reasoning mode. It
 must not be exposed as a command, must not edit `tes-mine` or `tes-prospect`,
 must not become a commercial skill, and must not apply packaging work before
-behavior is clear. Keep `SKILL.md` lean; use references for depth.
+behavior is clear. Keep `SKILL.md` lean; use references for depth. Its
+temperament reference chooses the mode; `tes-high-agency-pattern` owns profile
+design for one local development-layer skill.

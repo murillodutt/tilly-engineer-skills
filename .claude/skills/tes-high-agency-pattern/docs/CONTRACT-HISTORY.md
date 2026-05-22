@@ -27,6 +27,8 @@ changing those reference skills or promoting the pattern into distributable TES.
 | 2026-05-22 | Slimmed `SKILL.md` to a local routing contract and moved detail into `references/**`. | Maintainer requested extreme progressive disclosure. | high |
 | 2026-05-22 | Changed activation posture from user-invoked to self-consumed local guidance. | Maintainer clarified these skills should be autoconsumed, not invoked. | high |
 | 2026-05-22 | Added local Operating Temperament guidance for sniper, miner, prospector, builder, gate, and curator skill design. | Maintainer clarified that the development layer should learn how to create powerful skills with different verbosity and question profiles. | high |
+| 2026-05-22 | Renamed `operating-temperament.md` to `temperament-profiles.md` and added cross-routing to `tes-predictive-operations`. | Maintainer senior analysis identified false same-name drift between complementary temperament references. | high |
+| 2026-05-22 | Tightened frontmatter description to route one-skill operating-pattern design away from active project mode selection. | Maintainer approved P4 trigger-alignment pass after senior review. | high |
 
 ## Do Not Lose
 
@@ -34,4 +36,6 @@ This skill is a local learning lens for the agent to self-consume. It must not
 be exposed as a command, must not become a commercial skill, must not weaken or
 edit `tes-mine` or `tes-prospect`, and must not promote external guidance
 before repeated local evidence shows it improves precision without increasing
-contextual noise. Keep `SKILL.md` lean; use references for depth.
+contextual noise. Keep `SKILL.md` lean; use references for depth. Its
+temperament reference defines profiles; `tes-predictive-operations` owns mode
+selection during active reasoning.

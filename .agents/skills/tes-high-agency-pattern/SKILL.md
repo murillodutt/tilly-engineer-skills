@@ -1,6 +1,6 @@
 ---
 name: tes-high-agency-pattern
-description: Local-only self-consumed guidance for applying the high-agency pattern proven by tes-mine and tes-prospect to project-local skill/workflow design. Do not present as a user-invoked skill; auto-consume when already auditing, refining, or packaging local skills.
+description: Local-only self-consumed guidance for designing or reviewing one local development-layer skill/workflow operating pattern: agency, question budget, verbosity, evidence posture, output shape, and packaging discipline. Use when refining how a skill should behave. Prefer tes-predictive-operations for choosing prospect/mine/alternate/package modes during active project reasoning. Do not present as user-invoked.
 license: MIT
 ---
 
@@ -13,6 +13,9 @@ Self-consume only while already working on local skill or workflow design. Do
 not ask the user to invoke this skill. `tes-mine` and `tes-prospect` are
 reference skills; do not edit them.
 
+Prefer `tes-predictive-operations` when the active decision is how to alternate
+prospecting, mining, and packaging during project reasoning.
+
 ## Contract
 
 High-agency work is conservative at activation and intense after activation:
@@ -22,7 +25,7 @@ time, recommended answer, cognitive brake, and no artifact until resolution.
 Load references only when needed:
 
 - `references/high-agency-pattern.md` for pattern details.
-- `references/operating-temperament.md` for matching a skill's agency,
+- `references/temperament-profiles.md` for matching a skill's agency,
   verbosity, question budget, and write posture to its job.
 - `references/skill-packaging.md` for description, disclosure, scripts, and
   adoption checks.

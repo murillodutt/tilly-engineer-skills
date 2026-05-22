@@ -1,4 +1,4 @@
-# Operating Temperament
+# Temperament Profiles
 
 Use this reference when designing or reviewing a development-layer skill. The
 goal is not to make every skill verbose or high pressure. The goal is to match
