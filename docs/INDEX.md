@@ -49,6 +49,7 @@ turning the repository root into an inventory.
 | Current evidence claims | `evidence/current/CLAIMS.md` |
 | Cross-tool agentic governance | `governance/AGENTIC-ALIGNMENT-GOVERNANCE.md` |
 | Maintainer correlation rule | `governance/MAINTAINER-CORRELATION-RULE.md` |
+| Sync audit checklist | `governance/SYNC-AUDIT-CHECKLIST.md` |
 | Adapter capability matrix | `adapters/ADAPTER-CAPABILITY-MATRIX.md` |
 | Platform differences reference | `adapters/PLATFORM-DIFFERENCES.md` |
 | Codex adapter guide | `adapters/CODEX.md` |

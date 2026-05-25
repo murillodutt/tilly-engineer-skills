@@ -47,6 +47,7 @@ REQUIRED_PATHS = (
     "docs/install/navigation/generic.prompt.md",
     "docs/governance/AGENTIC-ALIGNMENT-GOVERNANCE.md",
     "docs/governance/MAINTAINER-CORRELATION-RULE.md",
+    "docs/governance/SYNC-AUDIT-CHECKLIST.md",
     "docs/mesh/PRINCIPLES.md",
     "docs/mesh/CONTEXT-MESH-METHOD.md",
     "docs/mesh/TES-ALIGN-SKILL-SOURCE-OF-TRUTH.md",

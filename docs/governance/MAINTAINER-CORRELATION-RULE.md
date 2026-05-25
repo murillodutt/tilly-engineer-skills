@@ -129,3 +129,10 @@ A package change closes only when the agent can say which correlation group was
 checked, which files changed, which files were intentionally untouched, and
 which oracle proved the cut. If that cannot be stated cleanly, the correct
 status is `NEEDS_REVIEW`, not `PASS`.
+
+## Operational Sequence
+
+This rule states which files correlate. The operational sequence for a
+delivered-behavior change with version bump, public bundle, tag, and push is
+captured in `docs/governance/SYNC-AUDIT-CHECKLIST.md`. Use the checklist as
+the audit path; this document remains the correlation reference.

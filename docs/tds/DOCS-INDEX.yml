@@ -218,6 +218,13 @@ documents:
     consumer: maintainers and repository agents
     source_of_truth: true
     evidence_level: L2
+  - path: docs/governance/SYNC-AUDIT-CHECKLIST.md
+    id: governance.sync_audit_checklist
+    class: governance
+    status: active
+    consumer: maintainers running a delivered-behavior change with bump + commit + push
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/evals/EVALS.md
     id: evals.design
     class: eval
