@@ -41,7 +41,7 @@ retired?
 | Does the mesh tell the current project truth? | No portable gate. False greens possible. | Portable Semantic Residue Gate runs when a project contract is declared. |
 | Are newer accepted ADRs read before PASS? | Not enforced. | Freshness reconciliation lowers status to `NEEDS_REVIEW` when newer ADRs introduce successor vocabulary absent from the active mesh. |
 | Can historical evidence keep retired terms? | Would falsely fail under naive substring scans. | `allowed_paths` allowlist in the contract preserves history without breaking the gate. |
-| Does `term: "<storage-backend>"` match `do<storage-backend>`? | Naive substring scans would. | Oracle uses explicit word boundaries; `term: "<storage-backend>"` does not match `do<storage-backend>`. |
+| Does a short literal term falsely match a longer unrelated word? | Naive substring scans would. | Oracle uses explicit word boundaries; short literals only match whole tokens. |
 | Is failure output machine-readable? | Prose only. | Structured findings with `code`, `severity`, `entry_id`, `path`, `line`, `match`, `reason`, `successor`. `--json` and `--strict` available. |
 
 ## Files Changed
@@ -95,7 +95,7 @@ The self-test now exercises:
 | Obsidian runtime pollution | FAIL |
 | **Stale current claim in active doc under residue contract** | **FAIL with structured finding citing `entry_id`, `path`, `line`, and `match`** |
 | **Same retired term retained under `allowed_paths` historical evidence** | **PASS** |
-| **Word-boundary regression `term: "<storage-backend>"` vs `do<storage-backend>`** | **PASS — no false positive** |
+| **Word-boundary regression: short literal vs longer unrelated word** | **PASS — no false positive** |
 | **Malformed contract entry declaring both `term` and `pattern`** | **FAIL with `residue.entry_conflict` code** |
 
 ## Acceptance Gates

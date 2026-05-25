@@ -193,6 +193,7 @@ REQUIRED_PATHS = (
     "scripts/install_adapter.py",
     "scripts/tes_init.py",
     "scripts/project_context_oracle.py",
+    "scripts/private_vocabulary_oracle.py",
     "scripts/project_alignment_oracle.py",
     "scripts/tes_map.py",
     "scripts/tes_map_oracle.py",
@@ -370,6 +371,8 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "retention:check",
     "reference:graph",
     "docs:size",
+    "private-vocabulary:self-test",
+    "private-vocabulary:check",
 )
 
 MAINTAINER_CORRELATION_REQUIRED_TERMS = (

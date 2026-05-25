@@ -89,7 +89,8 @@ Optional entry fields: `severity`, `reason`, `successor`, `scope`,
 `allowed_paths`, `exclude`, `expires_on`, `tags`.
 
 When `term` is used, the oracle matches the literal with explicit word
-boundaries so `term: "<storage-backend>"` does not match `do<storage-backend>`. When `pattern` is
+boundaries so a short literal does not falsely match a longer unrelated word
+that contains it as a substring. When `pattern` is
 used, the project owns the regex boundaries; the oracle compiles the pattern
 as given.
 
@@ -126,8 +127,10 @@ silently fall off the gate.
 ## What The Gate Does Not Do
 
 - It does not invent retired terms. Only the target project may declare them.
-- It does not embed <project-A>, Intel, <storage-backend>, S3, <archive-format>, or any other project-specific
-  vocabulary into TES generic code.
+- It does not embed any real project name or any other project-specific
+  vocabulary into TES generic code. Real names of users' projects, products,
+  storage backends, archive formats, or internal services are private context
+  and stay out of the TES source.
 - It does not require Obsidian or any runtime state.
 - It does not replace `/tes-doctor`.
 - It does not delete historical evidence; it only refuses to call active docs
@@ -218,7 +221,7 @@ to detect the broken contract.
 
 ## Locks
 
-- Do not hard-code <project-A>, Intel, <storage-backend>, S3, <archive-format>, or any other project-specific
+- Do not hard-code any real project name or any other project-specific
   vocabulary into generic TES code. The Semantic Residue Gate mechanism is
   TES; the vocabulary is target-owned.
 - Do not delete historical evidence merely because it contains retired

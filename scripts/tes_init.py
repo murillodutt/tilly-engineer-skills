@@ -2432,8 +2432,8 @@ def self_test() -> dict[str, Any]:
         (target / "docs").mkdir()
         (target / "docs/INDEX.md").write_text("# Documentation Index\n", encoding="utf-8")
         (target / "docs/README.rst").write_text("Docs\n====\n", encoding="utf-8")
-        (target / "docs/strategy/<project-b>-memory-program/WAVE-01").mkdir(parents=True)
-        (target / "docs/strategy/<project-b>-memory-program/WAVE-01/README.md").write_text("# Wave README\n", encoding="utf-8")
+        (target / "docs/strategy/memory-program/WAVE-01").mkdir(parents=True)
+        (target / "docs/strategy/memory-program/WAVE-01/README.md").write_text("# Wave README\n", encoding="utf-8")
         (target / "tests/fixtures/data").mkdir(parents=True)
         (target / "tests/README.rst").write_text("Tests\n=====\n", encoding="utf-8")
         (target / "tests/fixtures/data/README.md").write_text("# Fixture data\n", encoding="utf-8")
@@ -2453,19 +2453,19 @@ def self_test() -> dict[str, Any]:
             failures.append("empty nested README must not outrank real test anchors")
         if "docs/INDEX.md" not in anchors:
             failures.append("docs/INDEX.md must be eligible as a canonical documentation anchor")
-        elif anchors.index("docs/strategy/<project-b>-memory-program/WAVE-01/README.md") < anchors.index("docs/INDEX.md"):
+        elif anchors.index("docs/strategy/memory-program/WAVE-01/README.md") < anchors.index("docs/INDEX.md"):
             failures.append("deep wave README must not outrank docs/INDEX.md")
 
     with tempfile.TemporaryDirectory(prefix="tes-init-plugin-territory-") as tempdir:
         target = Path(tempdir)
         (target / "README.md").write_text("# Plugin fixture\n", encoding="utf-8")
-        (target / "<project-b>-plugin/src").mkdir(parents=True)
-        (target / "<project-b>-plugin/src/index.ts").write_text("export const plugin = true;\n", encoding="utf-8")
-        (target / "<project-b>-plugin/tests").mkdir(parents=True)
-        (target / "<project-b>-plugin/tests/plugin.test.ts").write_text("export const ok = true;\n", encoding="utf-8")
+        (target / "sample-plugin/src").mkdir(parents=True)
+        (target / "sample-plugin/src/index.ts").write_text("export const plugin = true;\n", encoding="utf-8")
+        (target / "sample-plugin/tests").mkdir(parents=True)
+        (target / "sample-plugin/tests/plugin.test.ts").write_text("export const ok = true;\n", encoding="utf-8")
         context = project_context(scan_project(target), target, "docs/agents/evidence/fixture-tes-project-manifest.json")
         roles = {territory["name"]: territory["role"] for territory in context["territories"]}
-        if roles.get("<project-b>-plugin") != "plugin or extension product surface":
+        if roles.get("sample-plugin") != "plugin or extension product surface":
             failures.append("plugin territory with tests must remain classified as product surface")
 
     with tempfile.TemporaryDirectory(prefix="tes-init-ky-readme-") as tempdir:

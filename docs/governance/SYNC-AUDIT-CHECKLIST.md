@@ -33,8 +33,9 @@ audit path that wraps that gate.
 ## Source change
 
 - [ ] Edits are surgical and trace to the stated change.
-- [ ] No project-specific vocabulary (<project-A>, Intel, <storage-backend>, S3, <archive-format>, ...) was
-  embedded into generic TES code. Mechanism in TES, vocabulary in target.
+- [ ] No real project name or project-specific vocabulary was embedded into
+  generic TES code, docs, evidence, commit messages, or tag annotations.
+  Mechanism in TES, vocabulary in target.
 - [ ] If you added a new governed doc, it lives under `docs/mesh/**` or
   `docs/governance/**`, not scattered across adapters.
 - [ ] If you split a doc to satisfy `validate_doc_size.py`, the parent and
@@ -53,7 +54,7 @@ audit path that wraps that gate.
 - [ ] Allowlist / historical-evidence fixture proves the gate does not
   over-fire on retained timelines.
 - [ ] Word-boundary regression covered when literal-match was added (the
-  `<storage-backend>` vs `do<storage-backend>` trap).
+  short-literal-vs-longer-word trap).
 - [ ] Malformed-input fixture surfaces a clear `code` rather than a stack
   trace.
 

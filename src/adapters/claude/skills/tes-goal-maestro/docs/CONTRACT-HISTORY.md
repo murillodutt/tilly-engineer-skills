@@ -93,7 +93,7 @@ discipline once execution begins.
 | 2026-05-20 | Created `tes-goal-maestro` as a neutral SPEC-to-`/goal` materialization skill. | Maintainer alignment in current session; maestral materialization recipe. | high |
 | 2026-05-20 | Changed tree acceptance from conversational permission to internal quality gate. | Maintainer bug report after skill stopped at tree acceptance despite explicit invocation. | high |
 | 2026-05-20 | Added material-diff and sync-commit gates so empty commits cannot certify material units. | Corrective audit after execution-unit fidelity mismatch. | high |
-| 2026-05-20 | Added material-continuation, semantic negative-grep and sequential ownership gates. | Maintainer-evolved canary skill in `~/Dev/<project-a>/.agents/skills/tes-goal-maestro/**`. | high |
+| 2026-05-20 | Added material-continuation, semantic negative-grep and sequential ownership gates. | Maintainer-evolved canary skill in a private canary project (source-of-record kept off TES repository per project-confidentiality lock). | high |
 | 2026-05-22 | Added default Super SPEC artifact materialization as `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` and forbade pasting the full generated Super SPEC in chat. | Maintainer requested smaller context-window footprint for Goal Maestro. | high |
 
 ## Do Not Lose

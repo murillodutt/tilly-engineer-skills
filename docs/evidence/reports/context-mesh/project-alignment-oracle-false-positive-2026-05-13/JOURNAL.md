@@ -13,23 +13,23 @@ tver: 0.1.0
 ## Ledger
 
 - 2026-05-13T00:00:00Z `FRAMED`: Target canary
-  `/Users/murillo/Dev/<project-b>-private`; TES baseline
+  `<private-canary-path>`; TES baseline
   `b221805fb21a725cbf55848b4c52e355036534b5`; canary baseline
   `fe2230ace58dae3ccbe571ba60e3231dd7c8ced1`.
 - Hypothesis: `project_alignment_oracle.py` should ignore placeholder-like
   terms inside literal filenames and shell commands while still catching real
   placeholder prose.
 - Acceptance criteria: source self-test includes the adversarial fixture;
-  original CELLM oracle run no longer fails on `docs-archive/MCP-TESTS-TODO.md`
+  original <canary-project> oracle run no longer fails on `docs-archive/MCP-TESTS-TODO.md`
   or `vitest run tests/integration`; related package gates pass or blockers are
   named.
 - False-green risk: deleting placeholder detection entirely would make the
   oracle pass without proving the claim.
 - First failure observed: `python3 scripts/project_alignment_oracle.py --target
-  /Users/murillo/Dev/<project-b>-private` failed with `todo` and `run tests` in
+  <private-canary-path>` failed with `todo` and `run tests` in
   `docs/agents/PROJECT-CONTEXT.md`.
 - Failure classification: `oracle_gap`.
-- Canary integrity: CELLM is read-only for this loop; no canary files, remotes,
+- Canary integrity: <canary-project> is read-only for this loop; no canary files, remotes,
   secrets, hooks, or commits will be changed.
 - 2026-05-13T00:00:00Z `BUILT`: Added an adversarial self-test fixture with
   `docs-archive/MCP-TESTS-TODO.md`, `vitest run tests/integration`, and
@@ -44,7 +44,7 @@ tver: 0.1.0
   literals, and command-like Markdown table cells, while preserving prose
   placeholder detection through explicit term regexes.
 - 2026-05-13T00:00:00Z `ORIGINAL_RETESTED`: `python3
-  scripts/project_alignment_oracle.py --target /Users/murillo/Dev/<project-b>-private`
+  scripts/project_alignment_oracle.py --target <private-canary-path>`
   returned `PASS` without changing the canary.
 - 2026-05-13T00:00:00Z `RELATED_GATES_RUN`: `python3
   scripts/project_alignment_oracle.py --self-test`, `python3
@@ -74,7 +74,7 @@ four_d_scan:
   verification: >
     python3 scripts/project_alignment_oracle.py --self-test;
     python3 scripts/project_alignment_oracle.py --target
-    /Users/murillo/Dev/<project-b>-private; npm run commit:check
+    <private-canary-path>; npm run commit:check
   decay: >
     Keep this as an oracle-local scanner rule. Do not move it into broad TES
     governance unless a second oracle shows the same literal-context failure.
@@ -86,7 +86,7 @@ four_d_scan:
 build_test_fail_fix:
   mode: persistent_e2e
   final_state: CERTIFIED
-  target: /Users/murillo/Dev/<project-b>-private
+  target: <private-canary-path>
   baseline:
     tes: b221805fb21a725cbf55848b4c52e355036534b5
     canary: fe2230ace58dae3ccbe571ba60e3231dd7c8ced1
@@ -96,7 +96,7 @@ build_test_fail_fix:
   acceptance_criteria:
     - adversarial fixture fails before scanner repair
     - source self-test passes after repair
-    - original CELLM canary retest passes without target edits
+    - original <canary-project> canary retest passes without target edits
     - release identity and correlated gates pass
   first_failure_or_falsifiability: >
     Old scanner failed on docs-archive/MCP-TESTS-TODO.md and vitest run
@@ -107,7 +107,7 @@ build_test_fail_fix:
     bumped local package identity to 0.3.86.
   exact_retest: >
     python3 scripts/project_alignment_oracle.py --target
-    /Users/murillo/Dev/<project-b>-private -> PASS
+    <private-canary-path> -> PASS
   related_gates:
     - python3 scripts/project_alignment_oracle.py --self-test -> PASS
     - python3 scripts/public_bundle_oracle.py -> PASS
@@ -119,7 +119,7 @@ build_test_fail_fix:
     - python3 scripts/adapter_parity_readiness.py -> GO
     - npm run commit:check -> PASS
   canary_integrity: >
-    CELLM was only read and tested. No canary files, secrets, hooks, remotes,
+    <canary-project> was only read and tested. No canary files, secrets, hooks, remotes,
     commits, or runtime settings were changed by this loop.
   portable_promotions:
     - literal-aware scanner behavior
@@ -142,14 +142,14 @@ literal project evidence, and the failure is protected by a self-test plus real
 canary replay.
 
 What still feels weak: the update path still required manual helper overwrite in
-the CELLM report, and Cursor trigger edits still rely on human surgical care
+the <canary-project> report, and Cursor trigger edits still rely on human surgical care
 when a project owns custom rule prose.
 
 Portable improvement candidates: add a helper-only apply/self-update route to
 `tes_update.py`; add a managed trigger block for Cursor rules; consider a shared
 literal-aware scanner helper only after another oracle repeats this failure.
 
-Local-only deferred observations: CELLM has valid inventory paths and script
+Local-only deferred observations: <canary-project> has valid inventory paths and script
 tables that should not be rewritten merely to satisfy a scanner.
 
 Next highest-leverage loop: repair `tes_update.py` so stale helper updates can

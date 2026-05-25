@@ -1140,22 +1140,23 @@ def self_test() -> dict[str, Any]:
             )
 
     # Semantic residue: word boundary must not flag unrelated longer words.
-    # "<storage-backend>" must not match "do<storage-backend>". This is the regression for the
-    # naive-substring class that produced the original false fail.
+    # A short retired literal must not match a longer unrelated word that
+    # contains it as a substring. This is the regression for the naive
+    # substring class that produced the original false fail.
     with tempfile.TemporaryDirectory(prefix="tes-align-residue-boundary-") as tempdir:
         target = Path(tempdir)
         write_good_fixture(target)
-        write_residue_contract(target, severity="fail", term_override="<storage-backend>")
+        write_residue_contract(target, severity="fail", term_override="port")
         state_path = target / ALIGNMENT_FILES["project_state"]
         state_path.write_text(
             read_text(state_path)
-            + "\nThe project do<storage-backend> covers nothing related to the retired term.\n",
+            + "\nThis report covers nothing related to the retired term.\n",
             encoding="utf-8",
         )
         result = analyze(target)
         if result["status"] != "PASS":
             failures.append(
-                "residue boundary fixture must pass; '<storage-backend>' must not match 'do<storage-backend>'"
+                "residue boundary fixture must pass; short literal must not match a longer unrelated word"
             )
 
     # Semantic residue: malformed entry must surface a clear failure code.

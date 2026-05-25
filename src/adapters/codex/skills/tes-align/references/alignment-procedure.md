@@ -96,7 +96,8 @@ entries:
 
 Use `term` for literal vocabulary and `pattern` for regex-driven claim
 detection. The oracle matches literals with explicit word boundaries so
-`term: <storage-backend>` does not flag `do<storage-backend>`. Historical evidence keeps retired
+a short literal does not falsely flag an unrelated longer word that contains
+it as a substring. Historical evidence keeps retired
 language only when listed under `allowed_paths`. Severity `fail` lowers the
 overall oracle status to `FAIL`; `needs_review` lowers it to `NEEDS_REVIEW`;
 `warn` records the finding without lowering status.

@@ -300,8 +300,8 @@ responsibility summary so the role boundary stays auditable:
    the oracle scans active documentation for retired terms or stale claim
    patterns. Matches lower the oracle status to `FAIL` or `NEEDS_REVIEW`
    according to per-entry severity.
-2. Word-boundary matching is mandatory for literal terms so `term: <storage-backend>`
-   does not flag `do<storage-backend>`.
+2. Word-boundary matching is mandatory for literal terms so a short literal
+   does not flag an unrelated longer word that contains it as a substring.
 3. Historical evidence may retain retired vocabulary only when listed under
    the entry's `allowed_paths`.
 4. Before PASS, the skill reads the newest accepted ADRs and the newest
@@ -309,8 +309,8 @@ responsibility summary so the role boundary stays auditable:
    vocabulary absent from `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`,
    `EXECUTION-LINE.md`, or `PROJECT-CONTEXT.md` lowers status to
    `NEEDS_REVIEW`.
-5. TES generic code must not hard-code <project-A>, Intel, <storage-backend>, S3, <archive-format>, or any
-   other project-specific vocabulary. The mechanism is TES; the vocabulary is
+5. TES generic code must not hard-code any real project name or any other
+   project-specific vocabulary. The mechanism is TES; the vocabulary is
    target-owned.
 
 ## Oracle Requirements
@@ -413,7 +413,7 @@ This contract is based on:
 - Do not overwrite project-owned governance.
 - Do not claim certification without a deterministic oracle and retained
   evidence.
-- Do not hard-code <project-A>, Intel, <storage-backend>, S3, <archive-format>, or any other project-specific
+- Do not hard-code any real project name or any other project-specific
   vocabulary into generic TES code. The Semantic Residue Gate mechanism is TES;
   the vocabulary is target-owned.
 - Do not delete historical evidence merely because it contains retired

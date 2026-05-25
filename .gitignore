@@ -12,6 +12,7 @@ tmp/
 .tes/legacy-retirement/
 .tes/cortex/*.sqlite
 .tes/cortex/*.sqlite-*
+.tes/private-vocabulary.txt
 .env
 .env.*
 

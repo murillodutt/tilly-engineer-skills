@@ -131,7 +131,7 @@ Required outcomes:
 - [ ] Allowlist / historical-evidence fixture proves the new gate does not
       over-fire on retained timelines.
 - [ ] If the gate uses literal matching, a word-boundary regression fixture
-      is present (the `<storage-backend>` vs `do<storage-backend>` trap).
+      is present (the `<short-literal>` vs `do<short-literal>` trap).
 - [ ] A malformed-input fixture returns a clear `code` rather than a stack
       trace.
 

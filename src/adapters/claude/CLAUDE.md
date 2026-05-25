@@ -98,6 +98,18 @@ Default to short, frank prose. Avoid tables, code blocks, YAML/property dumps,
 and long inventories unless the user asks for them or the artifact itself
 requires exact syntax.
 
+## Private Project Confidentiality
+
+TES is a generic engineering discipline package. Worked examples in
+source files, docs, evidence packets, fixtures, commit messages, and
+tag annotations must use neutral placeholder vocabulary
+(`target-project`, `canary-project`, `<project-A>`,
+`<storage-backend>`, etc.). Real project names, product names,
+internal-service names, and filesystem paths inside `~/Dev/<name>`
+belong in the maintainer's local notes, not in TES tracked content.
+
+When in doubt, prefer the placeholder.
+
 ## TES Shortcuts
 
 Treat `/tes-init`, `/tes-setup`, `/tes:init`,

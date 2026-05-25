@@ -34,7 +34,7 @@ fixtures only.
 
 ### Origin
 
-A <project-A> certification loop exposed this class of false PASS:
+A real-project certification loop exposed this class of false PASS:
 
 - `docs/agents/**` had the expected operating mesh shape.
 - The alignment oracle passed because required files, frontmatter, roadmap
@@ -73,7 +73,7 @@ Implement a portable Semantic Residue Gate for `/tes-align`.
 
 The gate must let each target project define stale terms, retired claims,
 forbidden vocabulary, obsolete architecture names, and required freshness
-signals without hard-coding <project-A>-specific Intel language into TES itself.
+signals without hard-coding project-specific language into TES itself.
 
 The result must be:
 
@@ -153,8 +153,8 @@ current-state claims remain in active docs.
    and fail or warn based on severity.
 
    The implementation must avoid naive substring bugs. Use explicit regex
-   boundaries or configured patterns so a term like `<storage-backend>` does not match an
-   unrelated word such as `do<storage-backend>`.
+   boundaries or configured patterns so a short literal does not falsely
+   match an unrelated longer word that contains it as a substring.
 
    The oracle must:
 
@@ -185,8 +185,8 @@ current-state claims remain in active docs.
 
 7. Keep target projects out of TES source.
 
-   <project-A>, Intel, and any other project may be used as real canary context, but
-   their domain-specific terms must not be hard-coded into TES package logic.
+   Any real project may be used as real canary context, but their
+   domain-specific terms must not be hard-coded into TES package logic.
 
    A target project may define:
 
@@ -203,7 +203,7 @@ current-state claims remain in active docs.
 - Do not add LLM/RAG requirements.
 - Do not require Obsidian runtime state.
 - Do not mutate installed target mirrors as source behavior.
-- Do not hard-code <project-A>, Intel, <storage-backend>, S3, <archive-format>, or any other project-specific
+- Do not hard-code any real project name or any other project-specific
   vocabulary into generic TES code.
 - Do not delete historical evidence merely because it contains old language.
 - Do not publish, push, tag, or release remotely unless the maintainer asks.

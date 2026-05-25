@@ -8,8 +8,9 @@ license: MIT
 
 Operational contract: `tes.bump@0.1.1`.
 
-`tes-bump` migrates the portable version-sync logic from the <project-B> bump skill
-into TES. It is the version governance guard for TES-managed targets.
+`tes-bump` carries the portable version-sync logic for TES-managed targets.
+It is the version governance guard for source detection, SemVer computation,
+bounded target discovery, ordered writes, and dry-run planning.
 
 ## Activation Contract
 
@@ -102,16 +103,16 @@ Config paths must be relative, stay inside the target, and contain no `..`.
 Regex custom targets must include a `{{VERSION}}` placeholder. JSON custom
 targets update only a top-level `version` field.
 
-## Migrated And Not Migrated
+## Scope
 
-Migrated from <project-B>: source detection, SemVer computation, bounded target
-discovery, ordered writes, config path safety, dry-run planning, self-validation
-and concise reporting.
+In scope: source detection, SemVer computation, bounded target discovery,
+ordered writes, config path safety, dry-run planning, self-validation and
+concise reporting.
 
-Not migrated: <project-B> changelog MCP submission, <project-B>OS spec lookup, Oracle
-release-notes synthesis, <project-B> port discovery, and <project-B>-specific config paths.
-TES release notes, public bundle identity, tags, pushes, and publishing remain
-owned by the caller's release workflow.
+Out of scope: changelog publishing pipelines, external spec lookups,
+release-notes synthesis, service port discovery, and any caller-specific
+config paths. TES release notes, public bundle identity, tags, pushes, and
+publishing remain owned by the caller's release workflow.
 
 When the target is the `tilly-engineer-skills` package source, do not allow a
 generic bump that only updates `package.json`. Use the package release workflow

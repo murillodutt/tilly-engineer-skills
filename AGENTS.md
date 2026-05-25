@@ -84,8 +84,10 @@ learning that survives canary replay and maintainer gates.
 
 <target_source_boundary>
 
-Installed projects such as <project-A>, <project-b>-private, or canary clones are evidence
-targets, not the source of truth for TES behavior.
+Installed target projects and canary clones are evidence targets, not the
+source of truth for TES behavior. Real project names stay out of TES generic
+source, docs, commits, and evidence — they are private context, not public
+contract material.
 
 When a target-project run exposes a TES skill, installer, hook, oracle, or docs
 bug:
@@ -104,6 +106,36 @@ bug:
    gates from package-source gates before certifying anything.
 
 </target_source_boundary>
+
+<private_project_confidentiality>
+
+TES is a generic engineering discipline package. Worked examples in source,
+docs, evidence, fixtures, commit messages, and tag annotations must use
+neutral placeholder vocabulary only: `target-project`, `canary-project`,
+`real-project`, `<project-A>`, `<storage-backend>`, `<archive-format>`,
+and similar.
+
+Anything that would identify a specific real project, product,
+internal-service, repository path under `~/Dev/<name>`, or private
+codebase vocabulary belongs in the maintainer's local notes, not in
+TES tracked content.
+
+When citing a private canary for traceability, use a generic form such as
+"a private canary project (source-of-record kept off TES repository)"
+and keep the actual identifier in local notes.
+
+The `docs/agents/contracts/SEMANTIC-RESIDUE.yml` mechanism gives target
+projects the right place to declare and enforce their own vocabulary
+without that vocabulary being known to TES.
+
+A package gate runs on every `npm run commit:check` against a local,
+gitignored allowlist of names to exclude from tracked content. The
+allowlist file itself is never committed.
+
+When in doubt, prefer the placeholder. Placeholders are always
+reversible in private notes.
+
+</private_project_confidentiality>
 
 <routing>
 
@@ -181,5 +213,10 @@ next release/bundle cycle must know the version bump was intentionally deferred.
 - Do not claim the package is sealed without `npm run commit:check`.
 - Do not add remote, push, publish, cloud, or marketplace actions without an
   explicit private decision.
+- Keep TES generic. Real project names, product names, internal-service
+  names, storage backends, archive formats, private filesystem paths, and
+  other private vocabulary stay out of TES source, docs, evidence,
+  fixtures, commit messages, and tag annotations. See
+  `<private_project_confidentiality>`.
 
 </locks>

@@ -6,4 +6,4 @@ default_prompt: |
   require a version decision. Run --governance-check first for inferred bump
   conditions, dry-run before writes, apply only with authorization, and report
   PASS, NEEDS_VERSION_DECISION, or NEEDS_REVIEW with evidence. Do not commit,
-  tag, push, publish, or import <project-B> changelog or Oracle behavior.
+  tag, push, publish, or import external changelog or release-notes behavior.
