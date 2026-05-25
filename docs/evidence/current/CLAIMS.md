@@ -53,15 +53,40 @@ Retention status: `current`.
 `/tes-align` runs a portable Semantic Residue Gate and freshness
 reconciliation before reporting PASS. TES owns the mechanism; the target
 project owns the vocabulary via
-`docs/agents/contracts/SEMANTIC-RESIDUE.yml`.
+`docs/agents/contracts/SEMANTIC-RESIDUE.yml`. Malformed contract files
+surface as a structured `residue.malformed_contract` finding inside
+`semantic_residue.findings`, not only as a prose `failures[]` line.
+Freshness reconciliation filters generic ADR section headings through an
+internal stopword list to avoid noise on documentary scaffolding.
 
 Proof: `docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md`,
-`scripts/project_alignment_oracle.py` self-test fixtures, and the certification
-report at
-`docs/evidence/reports/2026/05/25/tes-align/semantic-drift-hardening/REPORT.md`.
+`scripts/project_alignment_oracle.py` self-test fixtures (13 total), the
+initial certification report at
+`docs/evidence/reports/2026/05/25/tes-align/semantic-drift-hardening/REPORT.md`,
+and the external-review follow-up packet at
+`docs/evidence/reports/2026/05/25/tes-align/external-review-followup/REPORT.md`.
 
 Boundary: certified at the package-source contract level. The originating
 target-project canary still owes a real-project rerun against the hardened
 oracle.
+
+Retention status: `current`.
+
+## Single-Current-Dist Claim
+
+The TES repository keeps exactly one `docs/dist/<version>/` directory at
+any time. `scripts/tes_bundle.py::publish_public_bundle` runs
+`prune_historical_dist` after each publish to enforce the policy.
+Historical bundles remain reachable via Git tags
+(`git checkout v<X> -- docs/dist/<X>`) and via previously published
+GitHub Pages release URLs.
+
+Proof: `scripts/tes_bundle.py` (`prune_historical_dist` plus self-test
+fixture), `docs/governance/SYNC-AUDIT-CHECKLIST.md` retention step and
+matching lock, and the external-review follow-up packet.
+
+Boundary: the policy is enforced on publish. Hand-created
+`docs/dist/<other>/` outside the publish flow is pruned on the next
+publish; the checklist lock blocks the inverse path.
 
 Retention status: `current`.

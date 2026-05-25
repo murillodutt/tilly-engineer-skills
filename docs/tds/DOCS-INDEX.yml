@@ -1,4 +1,4 @@
-version: 0.3.124
+version: 0.3.125
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -780,6 +780,13 @@ documents:
     evidence_level: L3
   - path: docs/evidence/reports/2026/05/25/tes-align/semantic-drift-hardening/REPORT.md
     id: evidence.tes_align_semantic_drift_hardening_20260525
+    class: evidence
+    status: active
+    consumer: TES maintainers, adapter authors, and certification reviewers
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/05/25/tes-align/external-review-followup/REPORT.md
+    id: evidence.tes_align_external_review_followup_20260525
     class: evidence
     status: active
     consumer: TES maintainers, adapter authors, and certification reviewers

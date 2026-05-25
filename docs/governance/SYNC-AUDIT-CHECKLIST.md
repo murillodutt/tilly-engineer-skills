@@ -153,6 +153,12 @@ Only when the bump scope is **source + public refs + bundle**:
   and `docs/install/USER-MANUAL.html` against the refreshed i18n.
 - [ ] `grep -c "0\.3\.<old>" docs/index.html docs/install/USER-MANUAL.html`
   returns `0` for both files.
+- [ ] **Single-current-dist policy**: `docs/dist/` contains exactly one
+  directory after publish: `docs/dist/<new>/`. Any prior `docs/dist/<old>/`
+  is pruned automatically by `tes_bundle.py publish`; if it is not, the
+  policy regressed. Historical bundles remain reachable through Git tags
+  and the GitHub release surface. The TES repository keeps only the
+  current public distribution.
 
 ## Final gate
 
@@ -256,3 +262,8 @@ Record in the session closeout:
   Modularize instead.
 - Do not embed project-specific vocabulary in TES generic code. Mechanism
   in TES, vocabulary in target.
+- Do not keep more than one `docs/dist/<version>/` directory in the
+  repository. The publish step prunes peers automatically. If you need a
+  historical bundle, fetch it via the Git tag (`git checkout v<X> -- docs/dist/<X>`)
+  or download the published release artifact; do not re-add it to the
+  working tree on `main`.

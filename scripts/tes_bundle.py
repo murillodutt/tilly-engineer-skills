@@ -23,7 +23,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.124"
+VERSION = "0.3.125"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -546,6 +546,32 @@ def zip_extracted_public_bundle(out: Path) -> dict[str, Any]:
     }
 
 
+def prune_historical_dist(public_dist_root: Path = PUBLIC_DIST_ROOT) -> list[str]:
+    """Enforce the single-current-dist policy.
+
+    `docs/dist/` keeps exactly one directory: the current version. Older
+    bundles are reachable via Git tags and the GitHub release surface;
+    keeping every historical bundle inside the working tree inflates the
+    repository without adding auditable value.
+
+    Returns the list of removed version directory names (relative posix
+    paths) so callers can report or test the action deterministically.
+    """
+    parent = public_dist_root.parent
+    if not parent.is_dir():
+        return []
+    current_name = public_dist_root.name
+    removed: list[str] = []
+    for child in sorted(parent.iterdir()):
+        if not child.is_dir():
+            continue
+        if child.name == current_name:
+            continue
+        shutil.rmtree(child)
+        removed.append(child.name)
+    return removed
+
+
 def publish_public_bundle(out_dir: Path = PUBLIC_DIST_ROOT, adapter: str = "all") -> dict[str, Any]:
     out_dir = out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -576,6 +602,7 @@ def publish_public_bundle(out_dir: Path = PUBLIC_DIST_ROOT, adapter: str = "all"
     }
     index_path = out_dir / "index.json"
     index_path.write_text(json.dumps(index, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    pruned = prune_historical_dist(out_dir)
     return {
         "version": VERSION,
         "status": "PUBLISHED",
@@ -586,6 +613,7 @@ def publish_public_bundle(out_dir: Path = PUBLIC_DIST_ROOT, adapter: str = "all"
         "entries": built.get("entries"),
         "metadata": metadata,
         "url": public_bundle_url(VERSION),
+        "pruned_versions": pruned,
     }
 
 
@@ -1819,6 +1847,30 @@ def self_test() -> dict[str, Any]:
         freshness = certify_source_freshness(target, remote_head=str(metadata.get("source_commit") or ""))
         if freshness.get("source_freshness") != "PASS":
             failures.append("source freshness helper did not certify equal staged source")
+
+    # Single-current-dist policy: prune_historical_dist must keep only the
+    # current version directory and remove every other docs/dist/<x>/ peer.
+    # This regression-checks the policy added on 2026-05-25 in response to
+    # the canary review that flagged stale dist artifacts in the repo.
+    with tempfile.TemporaryDirectory(prefix="tes-bundle-prune-") as prune_temp:
+        dist_root = Path(prune_temp) / "dist"
+        for name in ("0.3.71", "0.3.99", "0.3.123", VERSION, "0.4.0-rc1"):
+            (dist_root / name).mkdir(parents=True, exist_ok=True)
+            (dist_root / name / "index.json").write_text("{}\n", encoding="utf-8")
+        current = dist_root / VERSION
+        pruned = prune_historical_dist(current)
+        remaining = sorted(child.name for child in dist_root.iterdir() if child.is_dir())
+        if remaining != [VERSION]:
+            failures.append(
+                f"single-current-dist policy must leave only {VERSION}, "
+                f"found: {remaining}"
+            )
+        expected_pruned = {"0.3.71", "0.3.99", "0.3.123", "0.4.0-rc1"}
+        if set(pruned) != expected_pruned:
+            failures.append(
+                f"prune_historical_dist must report removed peers exactly; "
+                f"expected {sorted(expected_pruned)}, got {sorted(pruned)}"
+            )
     return {
         "version": VERSION,
         "status": "PASS" if not failures else "FAIL",

@@ -28,7 +28,7 @@ readiness baseline.
 
 ## Baseline
 
-The current release-readiness baseline is TES `0.3.124`, after the GitHub-only
+The current release-readiness baseline is TES `0.3.125`, after the GitHub-only
 npx installer line, interactive installer screen, Node/Bun runtime matrix,
 first-session hooks, and fixed release documentation alignment.
 

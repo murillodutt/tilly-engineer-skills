@@ -180,6 +180,15 @@ The oracle applies a deterministic reconciliation heuristic:
 Targets may opt in to richer heuristics through the residue contract by
 declaring `pattern` entries that capture stale current-state phrasing.
 
+The freshness token diff filters out a small set of generic ADR section
+headings (`Status`, `Context`, `Decision`, `Consequences`, `Rationale`,
+`Alternatives`, `Background`, `Summary`, `Outcome`, `References`,
+`Accepted`, `Proposed`, `Rejected`, `Superseded`, `Notes`, `Deeper`,
+`Section`, `Overview`, `Details`, `Updated`, `Evidence`) so they are not
+reported as new vocabulary. This stopword list is internal and small by
+design — it removes documentary scaffolding without silencing genuine
+successor terms.
+
 ## Oracle Output Shape
 
 The oracle emits structured findings in JSON. Each finding includes:
@@ -198,6 +207,14 @@ The oracle emits structured findings in JSON. Each finding includes:
 Use `python3 scripts/project_alignment_oracle.py --target <target> --json`
 to consume the structured shape from automation. Use `--strict` to make
 `NEEDS_REVIEW` exit non-zero in CI.
+
+When a contract file exists but cannot be parsed (invalid YAML, wrong
+top-level type, missing PyYAML), the oracle emits
+`residue.malformed_contract` as a structured finding inside
+`semantic_residue.findings` with `severity: fail`, the contract `path`,
+and a `reason` string. The same condition also appears as a human-readable
+line in `failures`, but consumers parsing JSON do not have to read prose
+to detect the broken contract.
 
 ## Locks
 

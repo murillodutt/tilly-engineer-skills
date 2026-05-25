@@ -29,7 +29,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.124"
+VERSION = "0.3.125"
 PACKAGE_MODE = (ROOT / "scripts").exists()
 AGENTS = Path("docs/agents")
 EVIDENCE = AGENTS / "evidence"
@@ -51,6 +51,36 @@ FRESHNESS_MESH_FILES = (
     "project_roadmap",
     "execution_line",
     "project_context",
+)
+# Generic ADR/decision-record section headings and documentary scaffolding
+# tokens that should not be reported as "new vocabulary introduced by the ADR".
+# Keep this list small and limited to genuinely documentary words — the
+# intent is to drop noise, not to silence real successor terms.
+FRESHNESS_STOPWORDS = frozenset(
+    {
+        "accepted",
+        "alternatives",
+        "background",
+        "consequences",
+        "context",
+        "decision",
+        "decided",
+        "deeper",
+        "details",
+        "evidence",
+        "notes",
+        "outcome",
+        "overview",
+        "proposed",
+        "rationale",
+        "references",
+        "rejected",
+        "section",
+        "status",
+        "summary",
+        "superseded",
+        "updated",
+    }
 )
 ALIGNMENT_FILES = {
     "project_context": AGENTS / "PROJECT-CONTEXT.md",
@@ -245,37 +275,55 @@ def obsidian_pollution(target: Path) -> list[str]:
     return failures
 
 
+class ResidueContractError(ValueError):
+    """Raised when a Semantic Residue contract file exists but is malformed.
+
+    Carries the contract path so downstream code can emit a structured
+    `residue.malformed_contract` finding with `severity`, `path`, and
+    `reason` populated instead of relying on free-text failure lines.
+    """
+
+    def __init__(self, message: str, path: str | None = None) -> None:
+        super().__init__(message)
+        self.path = path
+
+
 def load_residue_contract(target: Path) -> dict[str, Any] | None:
     """Load the project-local Semantic Residue contract.
 
     Returns the parsed mapping when a contract file is present and valid.
-    Returns None when no contract is declared. Raises ValueError when a
-    contract file is present but malformed so the oracle records a clear
-    structural failure instead of silently skipping the gate.
+    Returns None when no contract is declared. Raises
+    :class:`ResidueContractError` when a contract file is present but
+    malformed so the oracle records a clear structured failure instead of
+    silently skipping the gate.
     """
     for relpath in RESIDUE_CONTRACT_PATHS:
         path = target / relpath
         if not path.is_file():
             continue
+        contract_path = relpath.as_posix()
         try:
             import yaml  # type: ignore[import-untyped]
         except Exception as exc:  # pragma: no cover - depends on env
-            raise ValueError(
-                f"Semantic Residue contract {relpath.as_posix()} requires PyYAML: {exc}"
+            raise ResidueContractError(
+                f"Semantic Residue contract {contract_path} requires PyYAML: {exc}",
+                path=contract_path,
             ) from exc
         try:
             data = yaml.safe_load(path.read_text(encoding="utf-8"))
         except Exception as exc:
-            raise ValueError(
-                f"Semantic Residue contract {relpath.as_posix()} is not valid YAML: {exc}"
+            raise ResidueContractError(
+                f"Semantic Residue contract {contract_path} is not valid YAML: {exc}",
+                path=contract_path,
             ) from exc
         if data is None:
-            return {"version": 1, "entries": [], "_path": relpath.as_posix()}
+            return {"version": 1, "entries": [], "_path": contract_path}
         if not isinstance(data, dict):
-            raise ValueError(
-                f"Semantic Residue contract {relpath.as_posix()} must be a mapping"
+            raise ResidueContractError(
+                f"Semantic Residue contract {contract_path} must be a mapping",
+                path=contract_path,
             )
-        data["_path"] = relpath.as_posix()
+        data["_path"] = contract_path
         return data
     return None
 
@@ -585,7 +633,7 @@ def freshness_reconciliation(target: Path) -> dict[str, Any]:
         absent = sorted(
             token for token in adr_tokens
             if token.casefold() not in mesh_casefold
-            and token.lower() not in {"updated", "accepted", "decision", "context"}
+            and token.lower() not in FRESHNESS_STOPWORDS
         )
         if absent:
             notes.append(
@@ -678,15 +726,30 @@ def analyze(target: Path) -> dict[str, Any]:
     failures.extend(obsidian_pollution(target))
 
     today = _dt.date.today()
-    contract_error: str | None = None
+    contract_error: ResidueContractError | None = None
     contract: dict[str, Any] | None = None
     try:
         contract = load_residue_contract(target)
-    except ValueError as exc:
-        contract_error = str(exc)
-        failures.append(contract_error)
+    except ResidueContractError as exc:
+        contract_error = exc
+        failures.append(str(exc))
 
     residue = semantic_residue_gate(target, contract, today)
+    if contract_error is not None:
+        residue["status"] = "FAIL"
+        residue["applied"] = True
+        residue["contract_path"] = contract_error.path
+        residue.setdefault("findings", []).append(
+            {
+                "code": "residue.malformed_contract",
+                "severity": "fail",
+                "entry_id": None,
+                "path": contract_error.path,
+                "line": 0,
+                "match": None,
+                "reason": str(contract_error),
+            }
+        )
     semantic_failures = [
         f"{item['path']}:{item['line']} stale residue [{item['entry_id']}] {item['match']!r}"
         for item in residue["findings"]
@@ -894,7 +957,7 @@ def write_good_fixture(target: Path) -> None:
         "# Project Alignment Evidence\n\n"
         + "```yaml\nalignment_evidence:\n"
         + "  target: fixture\n"
-        + "  tes_version: 0.3.124\n"
+        + "  tes_version: 0.3.125\n"
         + "  anchors_read:\n"
         + "    - README.md\n"
         + "    - package.json\n"
@@ -1112,6 +1175,73 @@ def self_test() -> dict[str, Any]:
         ):
             failures.append(
                 "residue malformed entry fixture must fail with explicit code"
+            )
+
+    # Semantic residue: malformed contract YAML (top-level) must surface a
+    # structured finding in semantic_residue.findings, not only as a
+    # free-text failure line. This regression was reported by the canary
+    # review on 2026-05-25.
+    with tempfile.TemporaryDirectory(prefix="tes-align-residue-broken-yaml-") as tempdir:
+        target = Path(tempdir)
+        write_good_fixture(target)
+        contract_path = target / RESIDUE_CONTRACT_PATHS[0]
+        contract_path.parent.mkdir(parents=True, exist_ok=True)
+        contract_path.write_text(
+            "version: 1\nentries: [this is: not valid yaml at all\n",
+            encoding="utf-8",
+        )
+        result = analyze(target)
+        residue = result.get("semantic_residue") or {}
+        malformed_findings = [
+            item
+            for item in residue.get("findings", [])
+            if item.get("code") == "residue.malformed_contract"
+        ]
+        if (
+            result["status"] != "FAIL"
+            or residue.get("status") != "FAIL"
+            or not residue.get("applied")
+            or residue.get("contract_path") != RESIDUE_CONTRACT_PATHS[0].as_posix()
+            or not malformed_findings
+            or malformed_findings[0].get("severity") != "fail"
+            or malformed_findings[0].get("path") != RESIDUE_CONTRACT_PATHS[0].as_posix()
+            or not malformed_findings[0].get("reason")
+        ):
+            failures.append(
+                "broken YAML contract fixture must emit a structured "
+                "residue.malformed_contract finding with severity, path, "
+                "and reason populated"
+            )
+
+    # Freshness reconciliation: an ADR that only uses generic documentary
+    # headings (Consequences, Decision, Status, Context, Rationale, ...)
+    # must not generate a freshness note. Without the stopword filter the
+    # canary review reported false positives on Consequences and Deeper.
+    with tempfile.TemporaryDirectory(prefix="tes-align-freshness-stopwords-") as tempdir:
+        target = Path(tempdir)
+        write_good_fixture(target)
+        adr_path = target / DECISIONS / "002-doc-only-adr.md"
+        adr_path.parent.mkdir(parents=True, exist_ok=True)
+        adr_path.write_text(
+            "# ADR 002\n\n## Status\nAccepted\n\n## Context\nBackground notes.\n\n"
+            "## Decision\nNo change.\n\n## Consequences\nNone material.\n\n"
+            "## Rationale\nDeeper explanation here.\n\n## Alternatives\nNone.\n",
+            encoding="utf-8",
+        )
+        result = analyze(target)
+        freshness_notes = (result.get("freshness") or {}).get("notes") or []
+        offenders = [
+            note
+            for note in freshness_notes
+            if any(
+                word in note
+                for word in ("Consequences", "Deeper", "Rationale", "Alternatives", "Background")
+            )
+        ]
+        if offenders:
+            failures.append(
+                "freshness stopword fixture must not flag generic ADR headings: "
+                + "; ".join(offenders)
             )
 
     return {
