@@ -1,0 +1,26 @@
+{
+  "skill_name": "tes-sync",
+  "evals": [
+    {
+      "id": 1,
+      "name": "delivered-behavior-bundle-scope",
+      "prompt": "Estou no repo tilly-engineer-skills em main, branch limpa, e acabei de fechar uma evidência que adicionou um novo gate ao project_alignment_oracle. O git diff mostra mudanças em scripts/project_alignment_oracle.py, src/adapters/codex/skills/tes-align/SKILL.md, src/adapters/claude/skills/tes-align/SKILL.md, docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md, e docs/evidence/reports/2026/05/26/tes-align/<...>/REPORT.md. python3 scripts/tes_bump.py --governance-check retorna NEEDS_VERSION_DECISION. Faça sync completo, bump + commit + push e me devolva o plano detalhado antes de executar qualquer comando de escrita. Não rode bump real — quero ver o plano.",
+      "expected_output": "A complete, ordered sync plan that identifies bundle scope (delivered behavior + installer refs affected), lists the canonical identity files, addresses bundle_sha256 trap, addresses the validate_reference_package.py scoped sed trap, includes commit:check and release:check at the right places, and waits before any write.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "source-only-vs-bundle-discrimination",
+      "prompt": "Mudei apenas docs/governance/SYNC-AUDIT-CHECKLIST.md (adicionei uma seção sobre rollback) e docs/INDEX.md (entrada nova). tes_bump.py --governance-check retorna PASS. Quero subir isso pro origin/main. Qual é o escopo certo de sync e o que devo fazer? Não rode comandos de escrita, só me explica o plano.",
+      "expected_output": "Identifies that this is a no-bump scope (governance check PASS, only docs governance changed). Plan should be: pre-flight, validation via npm run commit:check, commit, push. Should explicitly skip identity bump, public refs, bundle publish, tag, release:check. Should note that an unintentional bundle publish here would prune the current dist needlessly.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "stale-tag-trap-discovery",
+      "prompt": "Acabei de fazer commit do bump 0.3.126 -> 0.3.127. npm run commit:check verde, push para main OK. Agora vou criar a tag v0.3.127. Antes de prosseguir, o que devo fazer para garantir que a tag não vai sobrescrever silenciosamente algum artefato público? Quero o procedimento completo, incluindo o cenário onde a tag já existe apontando para um commit órfão.",
+      "expected_output": "Inspection-first procedure: git tag -l, git ls-remote --tags, git rev-list -n 1 v<new>, git rev-parse HEAD, compare. Decision tree covering: tag doesn't exist (safe create), tag matches HEAD (already done), tag exists but points to old commit (STOP, quote conflict to user, require explicit authorization before destructive move). Specific commands for authorized move: git tag -d, git push origin :refs/tags/, recreate annotated, verify, push, release:check.",
+      "files": []
+    }
+  ]
+}

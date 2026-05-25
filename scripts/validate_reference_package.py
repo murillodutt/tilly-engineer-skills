@@ -258,6 +258,7 @@ GENERATED_ADAPTER_OUTPUT = ROOT / "dist" / "adapters"
 LOCAL_DEVELOPMENT_SKILL_PARITY = (
     "tes-high-agency-pattern",
     "tes-predictive-operations",
+    "tes-sync",
 )
 
 LOCAL_DEVELOPMENT_SKILL_DESCRIPTION_TERMS = {
@@ -284,6 +285,16 @@ LOCAL_DEVELOPMENT_SKILL_DESCRIPTION_TERMS = {
         "Prefer tes-high-agency-pattern",
         "one local development-layer skill/workflow operating pattern",
         "Do not present as user-invoked",
+    ),
+    "tes-sync": (
+        "Local-only self-consumed",
+        "complete sync routine on the TES source package",
+        "identity bump",
+        "public bundle",
+        "validate, commit, push, tag, release certification",
+        "sync completo",
+        "/tes-sync",
+        "Do not present as a user-facing TES product skill",
     ),
 }
 

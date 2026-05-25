@@ -1,0 +1,13 @@
+{
+  "eval_id": 2,
+  "eval_name": "source-only-vs-bundle-discrimination",
+  "prompt": "Mudei apenas docs/governance/SYNC-AUDIT-CHECKLIST.md (adicionei uma seção sobre rollback) e docs/INDEX.md (entrada nova). tes_bump.py --governance-check retorna PASS. Quero subir isso pro origin/main. Qual é o escopo certo de sync e o que devo fazer? Não rode comandos de escrita, só me explica o plano.",
+  "assertions": [
+    {"text": "Plano identifica o scope como no-bump (governance check PASS, sem delivered behavior)"},
+    {"text": "Plano explicitamente skipa identity bump, public refs, bundle publish, tag, release:check"},
+    {"text": "Plano inclui npm run commit:check antes do commit"},
+    {"text": "Plano inclui git add explícito (não git add -A indiscriminado)"},
+    {"text": "Plano alerta sobre o risco de tes_bundle.py publish acidental podar dist atual desnecessariamente"},
+    {"text": "Plano não bumpa versão por inércia (resiste à tentação de bumpar 'já que está aqui')"}
+  ]
+}

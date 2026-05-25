@@ -1,0 +1,48 @@
+{
+  "eval_id": 1,
+  "config": "with_skill",
+  "expectations": [
+    {
+      "text": "Plano identifica o scope como bundle (source + public refs + bundle), n\u00e3o no-bump nem source-only",
+      "passed": true,
+      "evidence": "Section 1: 'Bundle (Bump + bundle + public refs) \u2014 default.' with explicit justification."
+    },
+    {
+      "text": "Plano lista os arquivos can\u00f4nicos de identity bump: package.json, bin/tes.js, README.md badge, docs/tds/DOCS-INDEX.yml, plugin/marketplace manifests, scripts VERSION constants",
+      "passed": true,
+      "evidence": "Phase 3 has a complete table with all 16 surfaces."
+    },
+    {
+      "text": "Plano cita explicitamente o trap de bundle_sha256 hand-maintained em docs/i18n/tes-public.structure.yml",
+      "passed": true,
+      "evidence": "Phase 5 + Trap watch #2 cite the bundle_sha256 trap explicitly."
+    },
+    {
+      "text": "Plano cita o trap de scoped sed em validate_reference_package.py (zip filename embarcado na vers\u00e3o)",
+      "passed": true,
+      "evidence": "Trap watch #1: validate_reference_package.py REQUIRED_PATHS scoped-sed trap."
+    },
+    {
+      "text": "Plano inclui npm run commit:check antes do commit e tes_bump.py --governance-check como verifica\u00e7\u00e3o final",
+      "passed": true,
+      "evidence": "Phase 7 runs both."
+    },
+    {
+      "text": "Plano inclui phase de tag annotated + npm run release:check ap\u00f3s push",
+      "passed": true,
+      "evidence": "Phase 10 + 11."
+    },
+    {
+      "text": "Plano explicitamente n\u00e3o executa comandos de escrita (read-only conforme requisitado)",
+      "passed": true,
+      "evidence": "'No writes have been performed. Awaiting explicit go...'"
+    }
+  ],
+  "passed": 7,
+  "total": 7,
+  "summary": {
+    "passed": 7,
+    "total": 7,
+    "pass_rate": 1.0
+  }
+}

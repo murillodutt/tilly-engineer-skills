@@ -1,0 +1,43 @@
+{
+  "eval_id": 3,
+  "config": "without_skill",
+  "expectations": [
+    {
+      "text": "Plano inclui inspection-first: git tag -l, git ls-remote --tags origin, git rev-list -n 1, git rev-parse HEAD",
+      "passed": true,
+      "evidence": "Phase 0/1: read-only state snapshot with all required inspections."
+    },
+    {
+      "text": "Plano cont\u00e9m decision tree expl\u00edcita: tag n\u00e3o existe / tag local OK / tag aponta para commit antigo / tag remota desalinhada",
+      "passed": true,
+      "evidence": "Phase 1: 4-state matrix (A, B, C, D)."
+    },
+    {
+      "text": "Plano exige autoriza\u00e7\u00e3o expl\u00edcita do usu\u00e1rio antes de qualquer move destructive de tag p\u00fablica",
+      "passed": true,
+      "evidence": "Phase 3 'tag already public: never rewrite; prefer bumping to 0.3.128; rewrite only as documented exception when no consumer has fetched.'"
+    },
+    {
+      "text": "Plano cita procedimento de move autorizado: git tag -d local, git push origin :refs/tags/<X>, recreate annotated, verify, push",
+      "passed": true,
+      "evidence": "Phase 4: orphan-commit scenario procedure."
+    },
+    {
+      "text": "Plano inclui npm run release:check ap\u00f3s tag push como certifica\u00e7\u00e3o final",
+      "passed": false,
+      "evidence": "Mentions 'CI/release pipeline' generically but does not name npm run release:check specifically."
+    },
+    {
+      "text": "Plano n\u00e3o recomenda git tag -f ou git push --force como atalho",
+      "passed": true,
+      "evidence": "Explicit anti-patterns: git push --tags, git push --force, git tag -f."
+    }
+  ],
+  "passed": 5,
+  "total": 6,
+  "summary": {
+    "passed": 5,
+    "total": 6,
+    "pass_rate": 0.8333333333333334
+  }
+}

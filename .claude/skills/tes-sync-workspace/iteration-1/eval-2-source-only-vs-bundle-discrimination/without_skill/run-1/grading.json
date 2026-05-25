@@ -1,0 +1,43 @@
+{
+  "eval_id": 2,
+  "config": "without_skill",
+  "expectations": [
+    {
+      "text": "Plano identifica o scope como no-bump (governance check PASS, sem delivered behavior)",
+      "passed": false,
+      "evidence": "Baseline plan calls it 'source-only sync' which is semantically wrong \u2014 source-only still bumps version. Governance PASS = no bump. The baseline conflates the two scopes."
+    },
+    {
+      "text": "Plano explicitamente skipa identity bump, public refs, bundle publish, tag, release:check",
+      "passed": true,
+      "evidence": "Section TL;DR + body skip bundle, tag, release:check explicitly. (Mostly correct even with the scope misnomer.)"
+    },
+    {
+      "text": "Plano inclui npm run commit:check antes do commit",
+      "passed": true,
+      "evidence": "Section on the porteira mentions npm run commit:check."
+    },
+    {
+      "text": "Plano inclui git add expl\u00edcito (n\u00e3o git add -A indiscriminado)",
+      "passed": true,
+      "evidence": "Plan stages explicit files."
+    },
+    {
+      "text": "Plano alerta sobre o risco de tes_bundle.py publish acidental podar dist atual desnecessariamente",
+      "passed": false,
+      "evidence": "No explicit warning about prune side-effects of accidental publish."
+    },
+    {
+      "text": "Plano n\u00e3o bumpa vers\u00e3o por in\u00e9rcia (resiste \u00e0 tenta\u00e7\u00e3o de bumpar 'j\u00e1 que est\u00e1 aqui')",
+      "passed": true,
+      "evidence": "Explicitly recommends not bumping."
+    }
+  ],
+  "passed": 4,
+  "total": 6,
+  "summary": {
+    "passed": 4,
+    "total": 6,
+    "pass_rate": 0.6666666666666666
+  }
+}

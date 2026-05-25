@@ -1,0 +1,13 @@
+{
+  "eval_id": 3,
+  "eval_name": "stale-tag-trap-discovery",
+  "prompt": "Acabei de fazer commit do bump 0.3.126 -> 0.3.127. npm run commit:check verde, push para main OK. Agora vou criar a tag v0.3.127. Antes de prosseguir, o que devo fazer para garantir que a tag não vai sobrescrever silenciosamente algum artefato público? Quero o procedimento completo, incluindo o cenário onde a tag já existe apontando para um commit órfão.",
+  "assertions": [
+    {"text": "Plano inclui inspection-first: git tag -l, git ls-remote --tags origin, git rev-list -n 1, git rev-parse HEAD"},
+    {"text": "Plano contém decision tree explícita: tag não existe / tag local OK / tag aponta para commit antigo / tag remota desalinhada"},
+    {"text": "Plano exige autorização explícita do usuário antes de qualquer move destructive de tag pública"},
+    {"text": "Plano cita procedimento de move autorizado: git tag -d local, git push origin :refs/tags/<X>, recreate annotated, verify, push"},
+    {"text": "Plano inclui npm run release:check após tag push como certificação final"},
+    {"text": "Plano não recomenda git tag -f ou git push --force como atalho"}
+  ]
+}

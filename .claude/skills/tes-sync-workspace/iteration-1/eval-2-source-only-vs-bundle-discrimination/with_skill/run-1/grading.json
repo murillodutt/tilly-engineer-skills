@@ -1,0 +1,43 @@
+{
+  "eval_id": 2,
+  "config": "with_skill",
+  "expectations": [
+    {
+      "text": "Plano identifica o scope como no-bump (governance check PASS, sem delivered behavior)",
+      "passed": true,
+      "evidence": "'Scope: No bump.' with explicit justification."
+    },
+    {
+      "text": "Plano explicitamente skipa identity bump, public refs, bundle publish, tag, release:check",
+      "passed": true,
+      "evidence": "Table maps fases 3,4,5,6,10,11 as 'Pular \u2014 declarar skip explicitamente'."
+    },
+    {
+      "text": "Plano inclui npm run commit:check antes do commit",
+      "passed": true,
+      "evidence": "Phase 7: validation com commit:check + governance-check."
+    },
+    {
+      "text": "Plano inclui git add expl\u00edcito (n\u00e3o git add -A indiscriminado)",
+      "passed": true,
+      "evidence": "'git add por path expl\u00edcito; nada de baixar budget'."
+    },
+    {
+      "text": "Plano alerta sobre o risco de tes_bundle.py publish acidental podar dist atual desnecessariamente",
+      "passed": true,
+      "evidence": "Anti-tenta\u00e7\u00e3o registrada explicitamente: 'n\u00e3o bumpar j\u00e1 que est\u00e1 aqui \u2014 governance retornou PASS, bumpar criaria release vazia'."
+    },
+    {
+      "text": "Plano n\u00e3o bumpa vers\u00e3o por in\u00e9rcia (resiste \u00e0 tenta\u00e7\u00e3o de bumpar 'j\u00e1 que est\u00e1 aqui')",
+      "passed": true,
+      "evidence": "Same anti-tenta\u00e7\u00e3o line."
+    }
+  ],
+  "passed": 6,
+  "total": 6,
+  "summary": {
+    "passed": 6,
+    "total": 6,
+    "pass_rate": 1.0
+  }
+}

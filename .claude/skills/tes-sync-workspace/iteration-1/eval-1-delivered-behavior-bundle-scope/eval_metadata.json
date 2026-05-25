@@ -1,0 +1,14 @@
+{
+  "eval_id": 1,
+  "eval_name": "delivered-behavior-bundle-scope",
+  "prompt": "Estou no repo tilly-engineer-skills em main, branch limpa, e acabei de fechar uma evidência que adicionou um novo gate ao project_alignment_oracle. O git diff mostra mudanças em scripts/project_alignment_oracle.py, src/adapters/codex/skills/tes-align/SKILL.md, src/adapters/claude/skills/tes-align/SKILL.md, docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md, e docs/evidence/reports/2026/05/26/tes-align/<...>/REPORT.md. python3 scripts/tes_bump.py --governance-check retorna NEEDS_VERSION_DECISION. Faça sync completo, bump + commit + push e me devolva o plano detalhado antes de executar qualquer comando de escrita. Não rode bump real — quero ver o plano.",
+  "assertions": [
+    {"text": "Plano identifica o scope como bundle (source + public refs + bundle), não no-bump nem source-only"},
+    {"text": "Plano lista os arquivos canônicos de identity bump: package.json, bin/tes.js, README.md badge, docs/tds/DOCS-INDEX.yml, plugin/marketplace manifests, scripts VERSION constants"},
+    {"text": "Plano cita explicitamente o trap de bundle_sha256 hand-maintained em docs/i18n/tes-public.structure.yml"},
+    {"text": "Plano cita o trap de scoped sed em validate_reference_package.py (zip filename embarcado na versão)"},
+    {"text": "Plano inclui npm run commit:check antes do commit e tes_bump.py --governance-check como verificação final"},
+    {"text": "Plano inclui phase de tag annotated + npm run release:check após push"},
+    {"text": "Plano explicitamente não executa comandos de escrita (read-only conforme requisitado)"}
+  ]
+}
