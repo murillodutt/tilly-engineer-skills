@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.123"
+VERSION = "0.3.124"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -28,9 +28,9 @@ REQUIRED_PATHS = (
     "docs/architecture/PROJECT-STRUCTURE.md",
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.123/index.json",
-    "docs/dist/0.3.123/tilly-engineer-skills-0.3.123.zip",
-    "docs/dist/0.3.123/tilly-engineer-skills-0.3.123.zip.sha256",
+    "docs/dist/0.3.124/index.json",
+    "docs/dist/0.3.124/tilly-engineer-skills-0.3.124.zip",
+    "docs/dist/0.3.124/tilly-engineer-skills-0.3.124.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -50,6 +50,7 @@ REQUIRED_PATHS = (
     "docs/mesh/PRINCIPLES.md",
     "docs/mesh/CONTEXT-MESH-METHOD.md",
     "docs/mesh/TES-ALIGN-SKILL-SOURCE-OF-TRUTH.md",
+    "docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md",
     "docs/mesh/CORTEX.md",
     "docs/mesh/CORTEX-MCP.md",
     "docs/mesh/FIELD-REPORTS.md",

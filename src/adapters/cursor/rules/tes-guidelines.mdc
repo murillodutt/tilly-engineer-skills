@@ -162,7 +162,12 @@ as intent shortcuts. Choose the smallest safe oracle behind
 the scenes and report skipped or blocked commands honestly.
 For `/tes-align`, make `docs/agents/PROJECT-ROADMAP.md` open with Mermaid
 `flowchart TD` System X-Ray and Convergence Line graphs before compact audit
-lanes, then certify with `project_alignment_oracle.py`.
+lanes, then certify with `project_alignment_oracle.py`. Before claiming PASS,
+read the newest accepted ADRs under `docs/agents/DECISIONS/**` and the newest
+retained alignment evidence under `docs/agents/evidence/**`, and run the
+Semantic Residue Gate when the project declares
+`docs/agents/contracts/SEMANTIC-RESIDUE.yml`. TES owns the mechanism; the
+target project owns the retired vocabulary.
 For `/tes-map`, run `tes_map.py --target . --write` and update only the managed
 `TES-MAP` block in `PROJECT-ROADMAP.md`; certify with `tes_map_oracle.py`.
 For `/tes-bench`, treat benchmark commands as package-source evidence. New

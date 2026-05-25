@@ -1,9 +1,25 @@
 #!/usr/bin/env python3
-"""Validate TES project alignment mesh quality for installed targets."""
+"""Validate TES project alignment mesh quality for installed targets.
+
+The oracle enforces two layers:
+
+1. Structural reconciliation: required mesh files, frontmatter, roadmap frame,
+   evidence packet shape, Obsidian hygiene, and Glossary/Decisions presence.
+2. Semantic reconciliation: a Semantic Residue Gate that loads a project-local
+   contract under `docs/agents/contracts/SEMANTIC-RESIDUE.yml`, together with
+   freshness reconciliation against the latest ADRs and retained evidence.
+
+The semantic layer exists because a structural pass can still ship a false
+green when active documentation asserts retired claims or implementation
+vocabulary the project already moved past. TES owns the gate mechanism; the
+target project owns the vocabulary.
+"""
 
 from __future__ import annotations
 
 import argparse
+import datetime as _dt
+import fnmatch
 import json
 import re
 import sys
@@ -13,10 +29,29 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.123"
+VERSION = "0.3.124"
 PACKAGE_MODE = (ROOT / "scripts").exists()
 AGENTS = Path("docs/agents")
 EVIDENCE = AGENTS / "evidence"
+DECISIONS = AGENTS / "DECISIONS"
+RESIDUE_CONTRACT_PATHS = (
+    AGENTS / "contracts/SEMANTIC-RESIDUE.yml",
+    AGENTS / "contracts/semantic-residue.yml",
+    AGENTS / "SEMANTIC-RESIDUE.yml",
+)
+RESIDUE_DEFAULT_SCOPE = (f"{AGENTS.as_posix()}/**",)
+RESIDUE_DEFAULT_EXCLUDE = (
+    f"{EVIDENCE.as_posix()}/**",
+    f"{DECISIONS.as_posix()}/archive/**",
+    f"{AGENTS.as_posix()}/contracts/**",
+)
+RESIDUE_SEVERITY_VALUES = {"fail", "needs_review", "warn"}
+FRESHNESS_MESH_FILES = (
+    "project_state",
+    "project_roadmap",
+    "execution_line",
+    "project_context",
+)
 ALIGNMENT_FILES = {
     "project_context": AGENTS / "PROJECT-CONTEXT.md",
     "project_state": AGENTS / "PROJECT-STATE.md",
@@ -210,6 +245,362 @@ def obsidian_pollution(target: Path) -> list[str]:
     return failures
 
 
+def load_residue_contract(target: Path) -> dict[str, Any] | None:
+    """Load the project-local Semantic Residue contract.
+
+    Returns the parsed mapping when a contract file is present and valid.
+    Returns None when no contract is declared. Raises ValueError when a
+    contract file is present but malformed so the oracle records a clear
+    structural failure instead of silently skipping the gate.
+    """
+    for relpath in RESIDUE_CONTRACT_PATHS:
+        path = target / relpath
+        if not path.is_file():
+            continue
+        try:
+            import yaml  # type: ignore[import-untyped]
+        except Exception as exc:  # pragma: no cover - depends on env
+            raise ValueError(
+                f"Semantic Residue contract {relpath.as_posix()} requires PyYAML: {exc}"
+            ) from exc
+        try:
+            data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            raise ValueError(
+                f"Semantic Residue contract {relpath.as_posix()} is not valid YAML: {exc}"
+            ) from exc
+        if data is None:
+            return {"version": 1, "entries": [], "_path": relpath.as_posix()}
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Semantic Residue contract {relpath.as_posix()} must be a mapping"
+            )
+        data["_path"] = relpath.as_posix()
+        return data
+    return None
+
+
+def _normalize_scope(values: Any, fallback: tuple[str, ...]) -> tuple[str, ...]:
+    if values is None:
+        return tuple(fallback)
+    if isinstance(values, str):
+        return (values,)
+    if isinstance(values, (list, tuple)):
+        return tuple(str(item) for item in values if str(item).strip())
+    return tuple(fallback)
+
+
+def _glob_matches(relpath: str, patterns: tuple[str, ...]) -> bool:
+    posix = relpath.replace("\\", "/")
+    for pattern in patterns:
+        if fnmatch.fnmatch(posix, pattern):
+            return True
+        # also support "docs/agents/**" matching "docs/agents/foo.md"
+        if pattern.endswith("/**") and fnmatch.fnmatch(posix, pattern[:-3] + "/*"):
+            return True
+        if pattern.endswith("/**"):
+            base = pattern[:-3]
+            if posix == base or posix.startswith(base + "/"):
+                return True
+    return False
+
+
+def _iter_scope_files(target: Path, scope: tuple[str, ...], exclude: tuple[str, ...]) -> list[Path]:
+    seen: dict[str, Path] = {}
+    for pattern in scope:
+        # fnmatch globs over the whole tree; resolve via Path.rglob with a
+        # filesystem-friendly base when the pattern is a tree pattern.
+        if pattern.endswith("/**"):
+            base = target / pattern[:-3]
+            if base.is_dir():
+                for path in base.rglob("*"):
+                    if path.is_file():
+                        seen[rel(path, target)] = path
+            continue
+        if pattern.endswith("/*"):
+            base = target / pattern[:-2]
+            if base.is_dir():
+                for path in base.iterdir():
+                    if path.is_file():
+                        seen[rel(path, target)] = path
+            continue
+        for path in target.rglob(pattern.split("/")[-1]):
+            if path.is_file() and _glob_matches(rel(path, target), (pattern,)):
+                seen[rel(path, target)] = path
+    return [path for relpath, path in sorted(seen.items()) if not _glob_matches(relpath, exclude)]
+
+
+def _compile_term(term: str) -> re.Pattern[str]:
+    escaped = re.escape(term)
+    return re.compile(rf"(?<![A-Za-z0-9_]){escaped}(?![A-Za-z0-9_])", re.IGNORECASE)
+
+
+def _parse_date(value: Any) -> _dt.date | None:
+    if value is None:
+        return None
+    if isinstance(value, _dt.date):
+        return value
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        return _dt.date.fromisoformat(text[:10])
+    except ValueError:
+        return None
+
+
+def _match_lines(text: str, pattern: re.Pattern[str]) -> list[tuple[int, str]]:
+    matches: list[tuple[int, str]] = []
+    for lineno, line in enumerate(text.splitlines(), start=1):
+        match = pattern.search(line)
+        if match:
+            matches.append((lineno, match.group(0)))
+    return matches
+
+
+def semantic_residue_gate(
+    target: Path,
+    contract: dict[str, Any] | None,
+    today: _dt.date,
+) -> dict[str, Any]:
+    """Apply the Semantic Residue Gate.
+
+    Returns a structured result with `status`, `findings`, and `warnings`. The
+    overall status escalates to `FAIL` on any `fail` severity match, to
+    `NEEDS_REVIEW` on any `needs_review` match, and otherwise stays `PASS`.
+    """
+    if contract is None:
+        return {
+            "status": "PASS",
+            "applied": False,
+            "contract_path": None,
+            "findings": [],
+            "warnings": [
+                "no Semantic Residue contract declared under docs/agents/contracts/SEMANTIC-RESIDUE.yml"
+            ],
+        }
+
+    defaults = contract.get("defaults") or {}
+    default_severity = str(defaults.get("severity", "needs_review")).lower()
+    if default_severity not in RESIDUE_SEVERITY_VALUES:
+        default_severity = "needs_review"
+    default_scope = _normalize_scope(defaults.get("scope"), RESIDUE_DEFAULT_SCOPE)
+    user_exclude = _normalize_scope(defaults.get("exclude"), RESIDUE_DEFAULT_EXCLUDE)
+    # Always exclude the contract file itself so the residue gate cannot
+    # self-trigger from declared vocabulary inside the contract YAML.
+    contract_path = contract.get("_path")
+    forced_exclude: tuple[str, ...] = ()
+    if contract_path:
+        forced_exclude = (contract_path,)
+    default_exclude = tuple(dict.fromkeys(user_exclude + forced_exclude))
+
+    entries_raw = contract.get("entries") or []
+    if not isinstance(entries_raw, list):
+        return {
+            "status": "FAIL",
+            "applied": True,
+            "contract_path": contract.get("_path"),
+            "findings": [
+                {
+                    "code": "residue.malformed_contract",
+                    "severity": "fail",
+                    "entry_id": None,
+                    "path": contract.get("_path"),
+                    "line": 0,
+                    "match": None,
+                    "reason": "entries must be a list",
+                }
+            ],
+            "warnings": [],
+        }
+
+    findings: list[dict[str, Any]] = []
+    warnings: list[str] = []
+    status_rank = {"PASS": 0, "NEEDS_REVIEW": 1, "FAIL": 2}
+    overall = "PASS"
+
+    for index, raw in enumerate(entries_raw):
+        if not isinstance(raw, dict):
+            findings.append(
+                {
+                    "code": "residue.malformed_entry",
+                    "severity": "fail",
+                    "entry_id": None,
+                    "path": contract.get("_path"),
+                    "line": 0,
+                    "match": None,
+                    "reason": f"entries[{index}] must be a mapping",
+                }
+            )
+            overall = "FAIL"
+            continue
+        entry_id = str(raw.get("id") or f"entry-{index}")
+        term = raw.get("term")
+        pattern_src = raw.get("pattern")
+        if term and pattern_src:
+            findings.append(
+                {
+                    "code": "residue.entry_conflict",
+                    "severity": "fail",
+                    "entry_id": entry_id,
+                    "path": contract.get("_path"),
+                    "line": 0,
+                    "match": None,
+                    "reason": "entry must declare exactly one of term or pattern",
+                }
+            )
+            overall = "FAIL"
+            continue
+        if not term and not pattern_src:
+            findings.append(
+                {
+                    "code": "residue.entry_missing_match",
+                    "severity": "fail",
+                    "entry_id": entry_id,
+                    "path": contract.get("_path"),
+                    "line": 0,
+                    "match": None,
+                    "reason": "entry must declare term or pattern",
+                }
+            )
+            overall = "FAIL"
+            continue
+
+        try:
+            pattern = _compile_term(str(term)) if term else re.compile(str(pattern_src))
+        except re.error as exc:
+            findings.append(
+                {
+                    "code": "residue.invalid_pattern",
+                    "severity": "fail",
+                    "entry_id": entry_id,
+                    "path": contract.get("_path"),
+                    "line": 0,
+                    "match": None,
+                    "reason": f"invalid regex pattern: {exc}",
+                }
+            )
+            overall = "FAIL"
+            continue
+
+        severity = str(raw.get("severity", default_severity)).lower()
+        if severity not in RESIDUE_SEVERITY_VALUES:
+            severity = default_severity
+        scope = _normalize_scope(raw.get("scope"), default_scope)
+        exclude = _normalize_scope(raw.get("exclude"), default_exclude)
+        allowed_paths = _normalize_scope(raw.get("allowed_paths"), tuple())
+        reason = str(raw.get("reason", "")).strip()
+        successor = str(raw.get("successor", "")).strip()
+        expires = _parse_date(raw.get("expires_on"))
+        if expires is not None and expires < today:
+            warnings.append(
+                f"semantic residue entry {entry_id} expired on {expires.isoformat()}; review or extend"
+            )
+
+        for path in _iter_scope_files(target, scope, exclude):
+            relpath = rel(path, target)
+            if allowed_paths and _glob_matches(relpath, allowed_paths):
+                continue
+            if not path.suffix.lower() in {".md", ".mdc", ".markdown", ".txt", ".yml", ".yaml"}:
+                continue
+            text = read_text(path)
+            if not text:
+                continue
+            for lineno, snippet in _match_lines(text, pattern):
+                finding = {
+                    "code": "residue.match",
+                    "severity": severity,
+                    "entry_id": entry_id,
+                    "path": relpath,
+                    "line": lineno,
+                    "match": snippet,
+                    "reason": reason or "stale vocabulary present in active scope",
+                }
+                if successor:
+                    finding["successor"] = successor
+                findings.append(finding)
+                if severity == "fail":
+                    overall = "FAIL"
+                elif severity == "needs_review" and status_rank[overall] < status_rank["NEEDS_REVIEW"]:
+                    overall = "NEEDS_REVIEW"
+
+    return {
+        "status": overall,
+        "applied": True,
+        "contract_path": contract.get("_path"),
+        "findings": findings,
+        "warnings": warnings,
+    }
+
+
+def _newest_mtime(paths: list[Path]) -> float:
+    return max((path.stat().st_mtime for path in paths if path.is_file()), default=0.0)
+
+
+def freshness_reconciliation(target: Path) -> dict[str, Any]:
+    """Compare current mesh against latest accepted ADRs and retained evidence.
+
+    Heuristic only: returns warnings or `needs_review` items, never `FAIL`. The
+    intent is to surface contradictions early so the agent re-reads the latest
+    decision before claiming alignment.
+    """
+    notes: list[str] = []
+    needs_review: list[dict[str, Any]] = []
+
+    decisions_dir = target / DECISIONS
+    adr_files = sorted(decisions_dir.glob("*.md")) if decisions_dir.is_dir() else []
+    evidence_paths = evidence_files(target)
+
+    if adr_files and evidence_paths:
+        newest_adr = max(adr_files, key=lambda p: p.stat().st_mtime)
+        newest_evidence = max(evidence_paths, key=lambda p: p.stat().st_mtime)
+        if newest_adr.stat().st_mtime > newest_evidence.stat().st_mtime + 1.0:
+            needs_review.append(
+                {
+                    "code": "freshness.adr_newer_than_evidence",
+                    "severity": "needs_review",
+                    "path": rel(newest_adr, target),
+                    "reason": (
+                        f"newest ADR {rel(newest_adr, target)} is newer than the latest "
+                        f"alignment evidence packet {rel(newest_evidence, target)}; re-read "
+                        "the ADR before claiming alignment"
+                    ),
+                }
+            )
+
+    if adr_files:
+        newest_adr = max(adr_files, key=lambda p: p.stat().st_mtime)
+        adr_text = read_text(newest_adr)
+        mesh_text = ""
+        for label in FRESHNESS_MESH_FILES:
+            path = target / ALIGNMENT_FILES[label]
+            mesh_text += "\n" + read_text(path)
+        # heuristic: find tokens in CamelCase or kebab-case longer than 4 chars
+        adr_tokens = {
+            token
+            for token in re.findall(r"\b[A-Za-z][A-Za-z0-9_-]{4,}\b", adr_text)
+            if any(c.isupper() for c in token) or "-" in token
+        }
+        mesh_casefold = mesh_text.casefold()
+        absent = sorted(
+            token for token in adr_tokens
+            if token.casefold() not in mesh_casefold
+            and token.lower() not in {"updated", "accepted", "decision", "context"}
+        )
+        if absent:
+            notes.append(
+                f"newest ADR {rel(newest_adr, target)} introduces tokens absent from "
+                f"the active mesh: {', '.join(absent[:5])}"
+            )
+
+    return {
+        "newest_adr": rel(adr_files[-1], target) if adr_files else None,
+        "newest_evidence": rel(evidence_paths[-1], target) if evidence_paths else None,
+        "needs_review": needs_review,
+        "notes": notes,
+    }
+
+
 def analyze(target: Path) -> dict[str, Any]:
     target = target.resolve()
     failures: list[str] = []
@@ -286,7 +677,45 @@ def analyze(target: Path) -> dict[str, Any]:
 
     failures.extend(obsidian_pollution(target))
 
-    status = "PASS" if not failures else "FAIL"
+    today = _dt.date.today()
+    contract_error: str | None = None
+    contract: dict[str, Any] | None = None
+    try:
+        contract = load_residue_contract(target)
+    except ValueError as exc:
+        contract_error = str(exc)
+        failures.append(contract_error)
+
+    residue = semantic_residue_gate(target, contract, today)
+    semantic_failures = [
+        f"{item['path']}:{item['line']} stale residue [{item['entry_id']}] {item['match']!r}"
+        for item in residue["findings"]
+        if item["severity"] == "fail"
+    ]
+    semantic_needs_review = [
+        f"{item['path']}:{item['line']} needs_review [{item['entry_id']}] {item['match']!r}"
+        for item in residue["findings"]
+        if item["severity"] == "needs_review"
+    ]
+    semantic_warn = [
+        f"{item['path']}:{item['line']} warn [{item['entry_id']}] {item['match']!r}"
+        for item in residue["findings"]
+        if item["severity"] == "warn"
+    ]
+    failures.extend(semantic_failures)
+    warnings.extend(residue.get("warnings", []))
+    warnings.extend(semantic_warn)
+
+    freshness = freshness_reconciliation(target)
+    warnings.extend(freshness.get("notes", []))
+
+    if failures:
+        status = "FAIL"
+    elif semantic_needs_review or freshness.get("needs_review"):
+        status = "NEEDS_REVIEW"
+    else:
+        status = "PASS"
+
     return {
         "version": VERSION,
         "status": status,
@@ -295,6 +724,11 @@ def analyze(target: Path) -> dict[str, Any]:
         "evidence_packets": [rel(path, target) for path in retained],
         "failures": failures,
         "warnings": warnings,
+        "semantic_residue": residue,
+        "freshness": freshness,
+        "needs_review": semantic_needs_review + [
+            item["reason"] for item in freshness.get("needs_review", [])
+        ],
     }
 
 
@@ -460,7 +894,7 @@ def write_good_fixture(target: Path) -> None:
         "# Project Alignment Evidence\n\n"
         + "```yaml\nalignment_evidence:\n"
         + "  target: fixture\n"
-        + "  tes_version: 0.3.123\n"
+        + "  tes_version: 0.3.124\n"
         + "  anchors_read:\n"
         + "    - README.md\n"
         + "    - package.json\n"
@@ -482,6 +916,40 @@ def write_good_fixture(target: Path) -> None:
         + "  oracle_result: PASS\n"
         + "  limits: sparse fixture\n```\n",
     )
+
+
+def write_residue_contract(
+    target: Path,
+    severity: str = "fail",
+    term_override: str | None = None,
+) -> None:
+    """Write a minimal Semantic Residue contract for self-test fixtures.
+
+    The contract uses synthetic vocabulary (`canary-retired-term`) so the
+    self-test never depends on real project-specific language.
+    """
+    term = term_override or "canary-retired-term"
+    contract_path = target / RESIDUE_CONTRACT_PATHS[0]
+    contract_path.parent.mkdir(parents=True, exist_ok=True)
+    body = (
+        "version: 1\n"
+        "defaults:\n"
+        "  severity: needs_review\n"
+        "  scope:\n"
+        "    - docs/agents/**\n"
+        "  exclude:\n"
+        "    - docs/agents/evidence/**\n"
+        "    - docs/agents/contracts/**\n"
+        "entries:\n"
+        f"  - id: canary-retired\n"
+        f"    term: \"{term}\"\n"
+        f"    severity: {severity}\n"
+        "    reason: \"Replaced by current-runtime-term per ADR-0001.\"\n"
+        "    successor: \"current-runtime-term\"\n"
+        "    allowed_paths:\n"
+        "      - docs/agents/evidence/**\n"
+    )
+    contract_path.write_text(body, encoding="utf-8")
 
 
 def self_test() -> dict[str, Any]:
@@ -564,6 +1032,88 @@ def self_test() -> dict[str, Any]:
         if result["status"] != "FAIL" or not any(".obsidian" in item for item in result["failures"]):
             failures.append("Obsidian runtime pollution fixture must fail")
 
+    # Semantic residue: stale current claim in active doc must fail or
+    # mark needs_review under the project-local contract.
+    with tempfile.TemporaryDirectory(prefix="tes-align-residue-fail-") as tempdir:
+        target = Path(tempdir)
+        write_good_fixture(target)
+        write_residue_contract(target, severity="fail")
+        state_path = target / ALIGNMENT_FILES["project_state"]
+        state_path.write_text(
+            read_text(state_path)
+            + "\n## Active Architecture\n\nThe canary-retired-term backend is the current runtime.\n",
+            encoding="utf-8",
+        )
+        result = analyze(target)
+        if result["status"] != "FAIL" or not any(
+            "canary-retired-term" in item or "stale residue" in item for item in result["failures"]
+        ):
+            failures.append("residue gate must fail when active doc asserts a retired term")
+        residue = result.get("semantic_residue") or {}
+        if not residue.get("applied"):
+            failures.append("residue gate must mark applied when contract is present")
+
+    # Semantic residue: historical evidence retains the retired term under
+    # explicit allowlist, oracle should pass.
+    with tempfile.TemporaryDirectory(prefix="tes-align-residue-allow-") as tempdir:
+        target = Path(tempdir)
+        write_good_fixture(target)
+        write_residue_contract(target, severity="fail")
+        evidence_path = target / EVIDENCE / "20260101T000000Z-historical-alignment.md"
+        evidence_path.parent.mkdir(parents=True, exist_ok=True)
+        evidence_path.write_text(
+            "# Historical Alignment\n\n"
+            "Past current-state language used canary-retired-term as the runtime claim.\n",
+            encoding="utf-8",
+        )
+        result = analyze(target)
+        if result["status"] != "PASS":
+            failures.extend(
+                [
+                    f"residue allowlist fixture must pass: {item}"
+                    for item in result.get("failures", [])
+                    if "canary-retired-term" in item or "stale residue" in item
+                ]
+            )
+
+    # Semantic residue: word boundary must not flag unrelated longer words.
+    # "<storage-backend>" must not match "do<storage-backend>". This is the regression for the
+    # naive-substring class that produced the original false fail.
+    with tempfile.TemporaryDirectory(prefix="tes-align-residue-boundary-") as tempdir:
+        target = Path(tempdir)
+        write_good_fixture(target)
+        write_residue_contract(target, severity="fail", term_override="<storage-backend>")
+        state_path = target / ALIGNMENT_FILES["project_state"]
+        state_path.write_text(
+            read_text(state_path)
+            + "\nThe project do<storage-backend> covers nothing related to the retired term.\n",
+            encoding="utf-8",
+        )
+        result = analyze(target)
+        if result["status"] != "PASS":
+            failures.append(
+                "residue boundary fixture must pass; '<storage-backend>' must not match 'do<storage-backend>'"
+            )
+
+    # Semantic residue: malformed entry must surface a clear failure code.
+    with tempfile.TemporaryDirectory(prefix="tes-align-residue-malformed-") as tempdir:
+        target = Path(tempdir)
+        write_good_fixture(target)
+        contract_path = target / RESIDUE_CONTRACT_PATHS[0]
+        contract_path.parent.mkdir(parents=True, exist_ok=True)
+        contract_path.write_text(
+            "version: 1\nentries:\n  - id: bad\n    term: stale\n    pattern: also-stale\n",
+            encoding="utf-8",
+        )
+        result = analyze(target)
+        if result["status"] != "FAIL" or not any(
+            "exactly one of term or pattern" in str(item)
+            for item in (result.get("semantic_residue") or {}).get("findings", [])
+        ):
+            failures.append(
+                "residue malformed entry fixture must fail with explicit code"
+            )
+
     return {
         "version": VERSION,
         "status": "PASS" if not failures else "FAIL",
@@ -577,12 +1127,27 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", type=Path, default=Path("."))
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit only the machine-readable JSON body; suppress the trailing tag line.",
+    )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Exit non-zero on NEEDS_REVIEW as well as FAIL.",
+    )
     args = parser.parse_args()
 
     result = self_test() if args.self_test else analyze(args.target)
     print(json.dumps(result, indent=2, sort_keys=True))
-    print("[project-alignment] " + result["status"])
-    return 0 if result["status"] == "PASS" else 1
+    if not args.json:
+        print("[project-alignment] " + result["status"])
+    if result["status"] == "FAIL":
+        return 1
+    if result["status"] == "NEEDS_REVIEW" and args.strict:
+        return 2
+    return 0
 
 
 if __name__ == "__main__":

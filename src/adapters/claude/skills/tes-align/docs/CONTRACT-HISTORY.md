@@ -46,6 +46,11 @@ decisions, glossary, knowledge lifecycle, and evidence.
 - Claiming alignment without retained evidence.
 - Mixing target-project `docs/agents/evidence/**` with TES source-package
   benchmark evidence under `docs/evidence/**`.
+- Reporting structural PASS while active docs still assert retired claims or
+  use vocabulary the project has already moved past. The Semantic Residue Gate
+  prevents this false green.
+- Outranking a newer accepted ADR with older retained evidence. Freshness
+  reconciliation requires the newest decision to be read before PASS.
 
 ## Relationship To Other Skills
 
@@ -61,6 +66,7 @@ Fix loops prove product changes after alignment selects the lane.
 | 2026-05-11 | Made Mermaid roadmap visualization the default presentation. | TES Align source-of-truth document; `scripts/project_alignment_oracle.py --self-test`. | high |
 | 2026-05-11 | Added System X-Ray plus Convergence Line as the standard roadmap frame. | TES Align source-of-truth document; `scripts/project_alignment_oracle.py --self-test`. | high |
 | 2026-05-21 | Clarified target-project alignment evidence boundary after source-package temporal evidence retention policy. | TES evidence retention policy; TES Align source-of-truth contract; project alignment oracle self-test. | high |
+| 2026-05-25 | Added Semantic Residue Gate and freshness reconciliation; vocabulary stays target-owned via `docs/agents/contracts/SEMANTIC-RESIDUE.yml`. | TES Align source-of-truth contract; project alignment oracle self-test fixtures for retired terms, allowlisted history, word-boundary, and malformed contracts. | high |
 
 ## Do Not Lose
 

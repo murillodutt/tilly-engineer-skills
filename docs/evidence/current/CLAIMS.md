@@ -47,3 +47,21 @@ Boundary: legacy evidence is retained proof. It is not a current operational
 claim unless linked from this directory or another active claim document.
 
 Retention status: `current`.
+
+## TES Align Semantic Residue Claim
+
+`/tes-align` runs a portable Semantic Residue Gate and freshness
+reconciliation before reporting PASS. TES owns the mechanism; the target
+project owns the vocabulary via
+`docs/agents/contracts/SEMANTIC-RESIDUE.yml`.
+
+Proof: `docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md`,
+`scripts/project_alignment_oracle.py` self-test fixtures, and the certification
+report at
+`docs/evidence/reports/2026/05/25/tes-align/semantic-drift-hardening/REPORT.md`.
+
+Boundary: certified at the package-source contract level. The originating
+target-project canary still owes a real-project rerun against the hardened
+oracle.
+
+Retention status: `current`.

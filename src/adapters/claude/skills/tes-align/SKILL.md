@@ -45,13 +45,19 @@ inside the managed `TES-MAP` block after this roadmap exists.
    `deferred`, or `not_applicable`.
 3. Read strong anchors before claiming depth: identity, structure, build and
    gates, architecture, governance, history, and risk.
-4. Create or update the project operating mesh under `docs/agents/**`:
+4. Before claiming alignment, read the latest accepted ADRs under
+   `docs/agents/DECISIONS/**` (or the linked decision system) and the most
+   recent retained alignment evidence packet under
+   `docs/agents/evidence/**`. Treat contradictions between newer decisions and
+   the active mesh as first-class evidence and record them in the retained
+   packet. Do not erase older claims without a successor decision.
+5. Create or update the project operating mesh under `docs/agents/**`:
    `PROJECT-CONTEXT.md`, `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`,
    `EXECUTION-LINE.md`, `QUALITY-GATES.md`,
    `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`,
    `GLOSSARY.md`, `DECISIONS/**` or a link to an existing decision system,
    and `evidence/<timestamp>-project-alignment.md`.
-5. In `PROJECT-ROADMAP.md`, make the first human scan path two Mermaid
+6. In `PROJECT-ROADMAP.md`, make the first human scan path two Mermaid
    `flowchart TD` graphs:
    - System X-Ray: Git state, delivered behavior, validation mesh, and release
      boundary.
@@ -59,21 +65,28 @@ inside the managed `TES-MAP` block after this roadmap exists.
      states.
    Keep Done, Active, Next, Later, Deferred, Blocked, and Unknown as compact
    audit lanes.
-6. Keep the mesh Obsidian-native and Git-portable: use Markdown, YAML
+7. Keep the mesh Obsidian-native and Git-portable: use Markdown, YAML
    frontmatter, and useful wikilinks; never write `.obsidian/**`; do not make
    `.base` or `.canvas` the only source of truth.
-7. Keep target-project alignment evidence under `docs/agents/evidence/**`.
+8. Keep target-project alignment evidence under `docs/agents/evidence/**`.
    Package benchmark evidence uses `docs/evidence/current/**`,
    `docs/evidence/reports/YYYY/MM/DD/**`, and `docs/evidence/archive/**`;
    do not mix those source-package retention layers into target projects.
-8. Certify with:
+9. Run the Semantic Residue Gate before PASS. If the project declares
+   `docs/agents/contracts/SEMANTIC-RESIDUE.yml`, the oracle scans active
+   documentation for retired terms and stale claim patterns. Report exact
+   stale terms and paths when the gate fails. Refuse to call scaffold output
+   deep alignment, and do not report PASS when retired vocabulary remains in
+   active docs. TES owns the mechanism; the target project owns the vocabulary.
+10. Certify with:
 
 ```bash
 python3 .tes/bin/project_alignment_oracle.py --target .
 ```
 
 Use `python3 scripts/project_alignment_oracle.py --target <target>` when
-running from the TES source package.
+running from the TES source package. Pass `--strict` to make `NEEDS_REVIEW`
+exit non-zero in CI.
 
 ## Done
 
@@ -96,3 +109,8 @@ Project alignment: PASS, with explicit limits.
 - Do not call scaffold output deep alignment.
 - Do not write `.obsidian/**`.
 - Do not claim PASS without retained evidence and a passing oracle.
+- Do not hard-code project-specific vocabulary into TES skill body. The
+  Semantic Residue Gate carries the mechanism; the project carries the terms
+  via `docs/agents/contracts/SEMANTIC-RESIDUE.yml`.
+- Do not report PASS when newer accepted ADRs introduce successor terms absent
+  from the active mesh. Re-read the ADR and reconcile first.

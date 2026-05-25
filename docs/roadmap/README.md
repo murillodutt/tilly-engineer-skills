@@ -19,6 +19,7 @@ readiness baseline.
 | Line | Status | Document |
 |------|--------|----------|
 | RC1 readiness cleanup | Active | `RC1-READINESS-ROADMAP.md` |
+| TES Align semantic drift hardening | Proposed | `TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
 | Flash-Fry skill gap | Proposed | `FLASH-FRY-SKILL-SPEC.md` |
 | V1 convergence lineage | Historical | `V1-CONVERGENCE-LOOP.md` |
 | V1 goal checklist | Historical | `V1-GOAL-CHECKLIST.md` |
@@ -27,7 +28,7 @@ readiness baseline.
 
 ## Baseline
 
-The current release-readiness baseline is TES `0.3.123`, after the GitHub-only
+The current release-readiness baseline is TES `0.3.124`, after the GitHub-only
 npx installer line, interactive installer screen, Node/Bun runtime matrix,
 first-session hooks, and fixed release documentation alignment.
 

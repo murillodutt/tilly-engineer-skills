@@ -26,7 +26,7 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.123/tilly-engineer-skills-0.3.123.zip` |
+| Public installer bundle | `dist/0.3.124/tilly-engineer-skills-0.3.124.zip` |
 | GitHub-only npx installation | `install/INSTALL.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
 | Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
@@ -34,6 +34,7 @@ turning the repository root into an inventory.
 | Neutral behavioral contract manifest | `mesh/CONTRACT-MANIFEST.yml` |
 | Context mesh method | `mesh/CONTEXT-MESH-METHOD.md` |
 | TES Align skill source of truth | `mesh/TES-ALIGN-SKILL-SOURCE-OF-TRUTH.md` |
+| TES Align semantic residue gate | `mesh/TES-ALIGN-SEMANTIC-RESIDUE.md` |
 | TES Mantra Gate | `mesh/MANTRA-GATE.md` |
 | TES Cortex | `mesh/CORTEX.md` |
 | TES Cortex MCP | `mesh/CORTEX-MCP.md` |
@@ -59,6 +60,7 @@ turning the repository root into an inventory.
 | Cursor adapter pipeline | `adapters/pipelines/CURSOR-PIPELINE.md` |
 | Current roadmap index | `roadmap/README.md` |
 | RC1 readiness roadmap | `roadmap/RC1-READINESS-ROADMAP.md` |
+| TES Align semantic drift hardening prompt | `roadmap/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
 | Flash-Fry skill gap spec | `roadmap/FLASH-FRY-SKILL-SPEC.md` |
 | Historical next-session continuity | `roadmap/NEXT-STEPS-LETTER-2026-05-05.md` |
 | TDS specification | `tds/TDS-SPEC.md` |

@@ -5,8 +5,8 @@ status: active
 consumer: maintainers and `/tes-align` skill authors
 source_of_truth: true
 evidence_level: L1
-tver: 0.2.3
-sources_verified_on: 2026-05-09
+tver: 0.3.0
+sources_verified_on: 2026-05-25
 source_refresh_interval_days: 15
 source_refresh_policy: >-
   If this document is accessed after a cycle of 15 days or more since
@@ -282,6 +282,37 @@ alignment_evidence:
   limits:
 ```
 
+## Semantic Residue And Freshness Responsibilities
+
+Structural alignment proves the mesh shape exists. Semantic alignment must also
+prove the mesh tells the current project truth.
+
+`/tes-align` must therefore run a Semantic Residue Gate and a freshness
+reconciliation before reporting PASS. Both layers are portable: TES owns the
+mechanism; the target project owns the vocabulary.
+
+The full contract shape, severity semantics, allowlist rules, expiration
+behavior, structured finding shape, and reconciliation heuristic live in
+`docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md`. This source-of-truth keeps the
+responsibility summary so the role boundary stays auditable:
+
+1. When the project declares `docs/agents/contracts/SEMANTIC-RESIDUE.yml`,
+   the oracle scans active documentation for retired terms or stale claim
+   patterns. Matches lower the oracle status to `FAIL` or `NEEDS_REVIEW`
+   according to per-entry severity.
+2. Word-boundary matching is mandatory for literal terms so `term: <storage-backend>`
+   does not flag `do<storage-backend>`.
+3. Historical evidence may retain retired vocabulary only when listed under
+   the entry's `allowed_paths`.
+4. Before PASS, the skill reads the newest accepted ADRs and the newest
+   retained alignment evidence packet. A newer ADR introducing successor
+   vocabulary absent from `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`,
+   `EXECUTION-LINE.md`, or `PROJECT-CONTEXT.md` lowers status to
+   `NEEDS_REVIEW`.
+5. TES generic code must not hard-code <project-A>, Intel, <storage-backend>, S3, <archive-format>, or any
+   other project-specific vocabulary. The mechanism is TES; the vocabulary is
+   target-owned.
+
 ## Oracle Requirements
 
 The implementation includes a deterministic `project_alignment_oracle.py`
@@ -302,9 +333,18 @@ Minimum checks:
 | Obsidian frontmatter/wikilink hygiene passes | Graph and query views degrade. |
 | No `.obsidian/**` writes | Runtime/editor state pollution. |
 | Evidence packet exists | Alignment cannot be audited. |
+| Semantic residue gate runs when contract is declared | Active docs assert retired claims. |
+| Stale vocabulary in active scope fails or marks `NEEDS_REVIEW` | Structural pass while project moved on. |
+| Allowlisted historical evidence keeps old terms without failing | False fail on retained timelines. |
+| Newer accepted ADR is read before claiming alignment | Older evidence silently outranks current decision. |
 
 The oracle must allow sparse projects to pass honestly when gaps are explicit.
 It must fail generic documents that look complete but cannot guide work.
+
+Failures are emitted as structured records with at minimum the fields
+`code`, `severity`, `entry_id`, `path`, `line`, `match`, and `reason`. The
+machine-readable surface is JSON via `--json` so downstream automation can
+classify residue without parsing prose.
 
 ## Skill Construction Requirements
 
@@ -359,6 +399,7 @@ This contract is based on:
 | Obsidian Canvas | `https://obsidian.md/help/plugins/canvas` | Canvas is a visual synthesis layer; it must not become the only source of truth. |
 | Obsidian CLI | `https://obsidian.md/help/cli` | CLI support is relevant for the optional `/tes-open-obsidian` opening workflow, not a TES runtime dependency. |
 | Context7 Obsidian documentation lookup | Context7 library `/websites/obsidian_md_help`, checked on 2026-05-09 | Confirms the same direction: Bases and Properties are local Markdown/property-oriented and suitable as optional views. |
+| Semantic drift canary failure | Retained certification packet for the structural-pass-with-stale-claims canary | Structural alignment is not enough; mesh must absorb the latest project truth and stop using retired vocabulary. |
 
 ## Locks
 
@@ -372,6 +413,13 @@ This contract is based on:
 - Do not overwrite project-owned governance.
 - Do not claim certification without a deterministic oracle and retained
   evidence.
+- Do not hard-code <project-A>, Intel, <storage-backend>, S3, <archive-format>, or any other project-specific
+  vocabulary into generic TES code. The Semantic Residue Gate mechanism is TES;
+  the vocabulary is target-owned.
+- Do not delete historical evidence merely because it contains retired
+  language. Allowlist it through the contract instead.
+- Do not call structural PASS deep alignment when the project has unread newer
+  ADRs or evidence packets.
 
 ## Done
 
@@ -385,7 +433,9 @@ This contract is based on:
 5. Project-specific quality gates and boundaries.
 6. An Obsidian-native but Git-portable mesh.
 7. A retained evidence packet.
-8. A passing alignment oracle.
+8. A passing alignment oracle, including the Semantic Residue Gate when a
+   contract is declared and freshness reconciliation against the latest ADRs
+   and retained evidence.
 
 The certification sentence should be:
 

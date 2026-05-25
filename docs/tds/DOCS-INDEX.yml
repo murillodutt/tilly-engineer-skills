@@ -1,4 +1,4 @@
-version: 0.3.123
+version: 0.3.124
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -253,6 +253,13 @@ documents:
     consumer: maintainers and `/tes-align` skill authors
     source_of_truth: true
     evidence_level: L1
+  - path: docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md
+    id: mesh.tes_align_semantic_residue
+    class: mesh
+    status: active
+    consumer: maintainers, `/tes-align` skill authors, and project residue contract authors
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/mesh/CONTEXT-MESH-CONVERGENCE.md
     id: mesh.context_mesh_convergence
     class: mesh
@@ -342,6 +349,13 @@ documents:
     class: roadmap
     status: proposed
     consumer: maintainers, adapter authors, and runtime installer reviewers
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md
+    id: roadmap.tes_align_semantic_drift_hardening_super_prompt
+    class: roadmap
+    status: proposed
+    consumer: maintainers, adapter authors, and TES alignment certifiers
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/SENIOR-MENTORSHIP-CONTEXT-2026-05-05.md
@@ -757,3 +771,10 @@ documents:
     consumer: TES maintainers, adapter authors, and certification reviewers
     source_of_truth: false
     evidence_level: L3
+  - path: docs/evidence/reports/2026/05/25/tes-align/semantic-drift-hardening/REPORT.md
+    id: evidence.tes_align_semantic_drift_hardening_20260525
+    class: evidence
+    status: active
+    consumer: TES maintainers, adapter authors, and certification reviewers
+    source_of_truth: false
+    evidence_level: L2
