@@ -117,7 +117,7 @@ tes bump     -> /tes-bump
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-source alias for the same oracles; not a target-project guarantee |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.133 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.134 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
@@ -130,6 +130,24 @@ tes bump     -> /tes-bump
 | project-context oracle | target gate that checks `/tes-init` left a useful, evidenced project map |
 | project-alignment oracle | target gate that checks `/tes-align` left an evidenced operating mesh |
 | Obsidian open gate | target gate that checks context/alignment before visible local Obsidian launch |
+| behavioral overlay | always-on, never-invoked discipline that constrains how other skills write (assumptions visible, scope smaller, edits surgical, success falsifiable) |
+| runtime capability rule | always-on Cursor rule that maps TES runtime command capabilities after clean install or semantic recovery |
+
+## Passive Overlays
+
+These are not user-invocable triggers. They are always-on skills/rules that
+shape how other triggers behave; they have no `/tes-*` slash and never write
+on their own.
+
+| Overlay | Host surface | Role |
+|---------|--------------|------|
+| `tes-guidelines` | Claude `SKILL.md`, Cursor `.cursor/rules/tes-guidelines.mdc` | Behavioral engineering discipline: assumptions visible, scope smaller, edits surgical, success falsifiable. Activates on non-trivial coding, review, refactor, or instruction-migration work. |
+| `tes-engineering-discipline` | Codex `SKILL.md` | Codex-side equivalent of `tes-guidelines` with the same four-gate discipline contract. |
+| `tes-runtime-capabilities` | Cursor `.cursor/rules/tes-runtime-capabilities.mdc` | Always-on Cursor rule that maps TES runtime command capabilities after clean install or semantic recovery. Refreshed only by the deterministic installer. |
+
+Overlays do not appear in the `Trigger Matrix` because users never invoke
+them. They are listed here so installers, doctors, and adapter certification
+can verify the overlay surface is present on every supported host.
 
 ## `/tes-init` Router Contract
 

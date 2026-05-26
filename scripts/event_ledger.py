@@ -17,7 +17,7 @@ from typing import Any
 import scope_contract
 
 
-VERSION = "0.3.133"
+VERSION = "0.3.134"
 SCHEMA = "tes-event-ledger@1"
 LEDGER = Path(".tes/events/ledger.jsonl")
 ALLOWED_STATUSES = {

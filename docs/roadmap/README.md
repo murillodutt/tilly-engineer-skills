@@ -30,7 +30,7 @@ Wave 7 local package-source closure.
 
 ## Baseline
 
-The current release-readiness baseline is TES `0.3.133`, after ADR 0001 memory
+The current release-readiness baseline is TES `0.3.134`, after ADR 0001 memory
 lifecycle implementation closed locally with clean bundle metadata and one
 neutral canary replay. Remote tag/ref release certification is still deferred.
 

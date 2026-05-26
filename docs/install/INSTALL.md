@@ -11,7 +11,7 @@ tver: 0.9.8
 # Adapter Installation
 
 The public installer path is the GitHub package-spec command through npx or Bun
-after a fixed ref is authorized and release-certified. The current `0.3.133`
+after a fixed ref is authorized and release-certified. The current `0.3.134`
 evidence is local package-source closure: it certifies source, bundle metadata,
 and a neutral canary replay without authorizing remote tag, release, package publish, or marketplace action.
 
@@ -26,11 +26,11 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 ## GitHub Package-Spec Form
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.133 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.134 tilly-engineer-skills add
 ```
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.133 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.134 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -42,10 +42,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.133 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.134 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.133` is the intended fixed-ref form for a release-certified install
+`#v0.3.134` is the intended fixed-ref form for a release-certified install
 channel. Do not call that remote ref certified until `npm run release:check`
 passes after the tag or fixed ref is authorized and available.
 

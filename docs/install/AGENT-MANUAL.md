@@ -99,6 +99,21 @@ updates only the managed `TES-MAP` block inside
 answer should be short and visual: `You are here`, `Next safe move`,
 `Blocked by`, and `Proof`.
 
+### Passive overlays
+
+These are not user-invocable triggers. They are always-on skills/rules that
+shape how other triggers behave; they have no `/tes-*` slash and never write
+on their own.
+
+| Overlay | Host surface | Role |
+|---------|--------------|------|
+| `tes-guidelines` | Claude `SKILL.md`, Cursor `.cursor/rules/tes-guidelines.mdc` | Behavioral engineering discipline: assumptions visible, scope smaller, edits surgical, success falsifiable. Activates on non-trivial coding, review, refactor, or instruction-migration work. |
+| `tes-engineering-discipline` | Codex `SKILL.md` | Codex-side equivalent of `tes-guidelines` with the same four-gate discipline contract. |
+| `tes-runtime-capabilities` | Cursor `.cursor/rules/tes-runtime-capabilities.mdc` | Always-on Cursor rule that maps TES runtime command capabilities after clean install or semantic recovery. Refreshed only by the deterministic installer. |
+
+Overlays are not selected by user intent. Adapter certification and `/tes-doctor`
+verify the overlay surface is present on every supported host.
+
 ---
 
 ## 3. Routes
