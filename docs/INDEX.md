@@ -27,7 +27,7 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.129/tilly-engineer-skills-0.3.129.zip` |
+| Public installer bundle | `dist/0.3.130/tilly-engineer-skills-0.3.130.zip` |
 | GitHub-only npx installation | `install/INSTALL.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
 | Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
@@ -38,6 +38,7 @@ turning the repository root into an inventory.
 | TES Align semantic residue gate | `mesh/TES-ALIGN-SEMANTIC-RESIDUE.md` |
 | TES Mantra Gate | `mesh/MANTRA-GATE.md` |
 | TES Scope Contract | `mesh/SCOPE-CONTRACT.md` |
+| TES Event Ledger | `mesh/EVENT-LEDGER.md` |
 | TES Cortex | `mesh/CORTEX.md` |
 | TES Cortex MCP | `mesh/CORTEX-MCP.md` |
 | TES Field Reports | `mesh/FIELD-REPORTS.md` |

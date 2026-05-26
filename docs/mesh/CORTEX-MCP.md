@@ -90,6 +90,7 @@ The activation path installs local MCP helpers into the target project:
 .tes/bin/cortex_mcp.py
 .tes/bin/cortex_embed.mjs
 .tes/bin/scope_contract.py
+.tes/bin/event_ledger.py
 .tes/bin/field_reports.py
 .tes/bin/mantra_gate.py
 .tes/bin/mantra_gate_adoption_oracle.py
@@ -131,6 +132,7 @@ cortex_cut:
     - .tes/bin/cortex_mcp.py
     - .tes/bin/cortex_embed.mjs
     - .tes/bin/scope_contract.py
+    - .tes/bin/event_ledger.py
     - .tes/bin/field_reports.py
     - .tes/bin/mantra_gate.py
     - .tes/bin/mantra_gate_adoption_oracle.py

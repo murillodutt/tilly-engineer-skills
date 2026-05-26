@@ -159,6 +159,13 @@ Scope is coordination metadata. It is not a Cortex cell, not durable memory,
 not a project name, and not authorization to write. A scope failure must fail
 closed instead of falling back to broad target assumptions.
 
+## Event Ledger Boundary
+
+`docs/mesh/EVENT-LEDGER.md` defines read-only lifecycle event inspection.
+Event ledger entries are coordination evidence, not Cortex memory. Inspecting a
+ledger must not append to `TRAIL.md`, create cells, rebuild recall, or promote
+events into durable knowledge.
+
 `curate-plan` statuses:
 
 | Status | Meaning |

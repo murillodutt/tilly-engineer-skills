@@ -60,6 +60,15 @@ python3 scripts/field_reports.py --self-test
 python3 scripts/scope_contract.py --self-test
 ```
 
+## Event Ledger
+
+```bash
+python3 scripts/event_ledger.py list --target /path/to/project
+python3 scripts/event_ledger.py status --target /path/to/project
+python3 scripts/event_ledger.py inspect-schema
+python3 scripts/event_ledger.py --self-test
+```
+
 ## Cortex
 
 ```bash
@@ -141,6 +150,7 @@ npm run field-reports:self-test
 npm run field-reports:status -- --target /path/to/project
 npm run field-reports:drain -- --target /path/to/project
 npm run scope:contract:self-test
+npm run event-ledger:self-test
 npm run claude:plugin:oracle
 npm run retention:check
 npm run reference:graph

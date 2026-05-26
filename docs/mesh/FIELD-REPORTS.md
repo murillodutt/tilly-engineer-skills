@@ -46,6 +46,11 @@ events without publishing project names, local paths, branch names, remotes, or
 user identity. Unsafe scope references block capture without writing to the
 outbox.
 
+`docs/mesh/EVENT-LEDGER.md` is separate from Field Reports. The ledger is local
+read-only lifecycle inspection, not GitHub transport, not a report outbox, and
+not a feedback destination. Field Reports may report that ledger inspection
+failed, but it must not drain ledger records as if they were Field Reports.
+
 ## GitHub Receiver
 
 The GitHub side is governed by `.github/ISSUE_TEMPLATE/tes-field-report.yml`,

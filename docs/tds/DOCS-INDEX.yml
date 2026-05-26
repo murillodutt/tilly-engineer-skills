@@ -1,4 +1,4 @@
-version: 0.3.129
+version: 0.3.130
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -293,6 +293,13 @@ documents:
     class: mesh
     status: active
     consumer: Cortex maintainers, Field Reports maintainers, oracle authors, and adapter authors
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/mesh/EVENT-LEDGER.md
+    id: mesh.event_ledger
+    class: mesh
+    status: active
+    consumer: Cortex maintainers, Field Reports maintainers, checkpoint authors, and oracle authors
     source_of_truth: true
     evidence_level: L2
   - path: docs/mesh/CORTEX-MCP.md
