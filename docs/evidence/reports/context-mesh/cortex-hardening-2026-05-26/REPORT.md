@@ -81,5 +81,5 @@ behavior was introduced by this sequence.
 ## Closeout Status
 
 Status: `GO`. The final closeout commit records this report and the
-private-vocabulary gate repair. Post-commit `npm run commit:check` replay is
-required before release or sync claims.
+private-vocabulary gate repair. Post-commit `npm run commit:check` replay
+passed on `a95c4bb4`.
