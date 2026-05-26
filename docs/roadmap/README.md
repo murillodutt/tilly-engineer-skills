@@ -19,6 +19,7 @@ readiness baseline.
 | Line | Status | Document |
 |------|--------|----------|
 | RC1 readiness cleanup | Active | `RC1-READINESS-ROADMAP.md` |
+| Cortex hardening sequence | Proposed | `GOAL-SUPER-SPEC-cortex-hardening.md` |
 | TES Align semantic drift hardening | Proposed | `TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
 | Flash-Fry skill gap | Proposed | `FLASH-FRY-SKILL-SPEC.md` |
 | V1 convergence lineage | Historical | `V1-CONVERGENCE-LOOP.md` |
