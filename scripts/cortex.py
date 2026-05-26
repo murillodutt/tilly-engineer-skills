@@ -18,6 +18,7 @@ import tempfile
 import unicodedata
 
 import field_reports
+import scope_contract
 
 
 CORTEX_ROOT = Path("docs/agents/cortex")
@@ -1676,6 +1677,50 @@ def evidence_display(line: str) -> str:
     return stripped
 
 
+def command_scope_evidence(command: str, source: Path | None, evidence: list[str]) -> object:
+    if source is not None:
+        return str(source)
+    if evidence:
+        return evidence[0]
+    if command in {"recall", "read-cell", "verify", "audit", "curate-plan"}:
+        return "docs/agents/cortex/MAP.md"
+    return "docs/agents/cortex/TRAIL.md"
+
+
+def attach_runtime_scope(
+    result: dict[str, object],
+    target: Path,
+    command_name: str,
+    source: Path | None,
+    evidence: list[str],
+) -> dict[str, object]:
+    verify = result.get("verify")
+    status = result.get("status")
+    if not status and isinstance(verify, dict):
+        status = verify.get("status")
+    scope_result = scope_contract.normalize_scope(
+        target,
+        adapter="local",
+        agent="cortex-cli",
+        run=f"cortex-{command_name}",
+        source="cortex",
+        evidence_ref=command_scope_evidence(command_name, source, evidence),
+        status=str(status or "UNKNOWN"),
+    )
+    result["scope"] = scope_result.get("scope", {})
+    result["scope_status"] = scope_result.get("status", "FAIL")
+    if scope_result.get("status") != "PASS":
+        failures = [str(item) for item in scope_result.get("failures", [])]
+        current_failures = result.get("failures")
+        if isinstance(current_failures, list):
+            current_failures.extend(failures)
+        else:
+            result["failures"] = failures
+        if str(result.get("status", "")).upper() == "PASS":
+            result["status"] = "FAIL"
+    return result
+
+
 def append_unique_line(path: Path, line: str) -> bool:
     text = read_text(path) if path.exists() else ""
     if line in text.splitlines():
@@ -2259,6 +2304,7 @@ def main() -> int:
     else:
         parser.error("command is required unless --self-test is used")
 
+    result = attach_runtime_scope(result, args.target, command, args.source, args.evidence)
     print(json.dumps(result, indent=2))
     status = result.get("status") or result.get("verify", {}).get("status")
     if command in {"verify", "audit", "rebuild", "curate-plan", "reflect", "apply"}:

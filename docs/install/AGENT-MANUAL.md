@@ -331,8 +331,8 @@ Write-capable MCP tools are intentionally outside this version.
 
 ### Installed helper set
 
-`cortex.py`, `cortex_mcp.py`, `cortex_embed.mjs`, `field_reports.py`,
-`tes_update.py`, `tes_legacy_retirement.py`, `root_context.py`,
+`cortex.py`, `cortex_mcp.py`, `cortex_embed.mjs`, `scope_contract.py`,
+`field_reports.py`, `tes_update.py`, `tes_legacy_retirement.py`, `root_context.py`,
 `tes_init.py`, `project_context_oracle.py`, `project_alignment_oracle.py`,
 `tes_open_obsidian.py`, `command_trigger_oracle.py`, `tes_bundle.py`,
 `materialize_adapter.py`.

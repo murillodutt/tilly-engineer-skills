@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.128"
+VERSION = "0.3.129"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -29,9 +29,9 @@ REQUIRED_PATHS = (
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/adr/0001-tes-memory-lifecycle.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.128/index.json",
-    "docs/dist/0.3.128/tilly-engineer-skills-0.3.128.zip",
-    "docs/dist/0.3.128/tilly-engineer-skills-0.3.128.zip.sha256",
+    "docs/dist/0.3.129/index.json",
+    "docs/dist/0.3.129/tilly-engineer-skills-0.3.129.zip",
+    "docs/dist/0.3.129/tilly-engineer-skills-0.3.129.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -55,6 +55,7 @@ REQUIRED_PATHS = (
     "docs/mesh/TES-ALIGN-SKILL-SOURCE-OF-TRUTH.md",
     "docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md",
     "docs/mesh/CORTEX.md",
+    "docs/mesh/SCOPE-CONTRACT.md",
     "docs/mesh/CORTEX-MCP.md",
     "docs/mesh/FIELD-REPORTS.md",
     "docs/mesh/MANTRA-GATE.md",
@@ -180,6 +181,7 @@ REQUIRED_PATHS = (
     "scripts/cortex_embed.mjs",
     "scripts/cortex_mcp.py",
     "scripts/cortex_quality_oracle.py",
+    "scripts/scope_contract.py",
     "scripts/field_reports.py",
     "scripts/field_reports_github_oracle.py",
     "scripts/field_reports_quality_oracle.py",
@@ -330,6 +332,7 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "tes:namespace:self-test",
     "root-context:check",
     "root-context:self-test",
+    "scope:contract:self-test",
     "mcp:install",
     "mcp:dry-run",
     "mcp:self-test",

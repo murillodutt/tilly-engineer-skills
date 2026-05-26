@@ -186,6 +186,19 @@ def run_oracle() -> dict[str, Any]:
             "cortex",
             surface_count=2,
         )
+        scoped_event = event(target, "cortex.audit", "PASS", "cortex", surface_count=2)
+        if scoped_event.get("scope_status") != "PASS" or not isinstance(scoped_event.get("scope"), dict):
+            failures.append("field report events must carry normalized runtime scope")
+        unsafe_scope = field_reports.record_event(
+            target,
+            "cortex.audit",
+            "FAIL",
+            "cortex",
+            "oracle",
+            details={"evidence_ref": "/absolute/unsafe/evidence.md"},
+        )
+        if unsafe_scope.get("status") != "BLOCKED" or unsafe_scope.get("writes") != []:
+            failures.append("unsafe scope refs must be blocked without writes")
 
         hostile = event(
             target,

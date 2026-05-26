@@ -227,6 +227,24 @@ def run_oracle() -> dict[str, Any]:
             failures.append("healthy no-write curate-plan reported writes")
         if healthy_result.get("status") != "PASS":
             failures.append(f"healthy curate-plan should PASS, got {healthy_result.get('status')}")
+        scoped_result = cortex.attach_runtime_scope(
+            {"status": "PASS", "writes": []},
+            healthy,
+            "curate-plan",
+            None,
+            [],
+        )
+        if scoped_result.get("scope_status") != "PASS" or not isinstance(scoped_result.get("scope"), dict):
+            failures.append("Cortex runtime results must carry normalized scope")
+        unsafe_scope = cortex.attach_runtime_scope(
+            {"status": "PASS", "writes": []},
+            healthy,
+            "learn",
+            Path("/absolute/unsafe/source.md"),
+            [],
+        )
+        if unsafe_scope.get("status") != "FAIL" or unsafe_scope.get("scope_status") != "FAIL":
+            failures.append("Cortex runtime scope must reject unsafe source references")
 
         weak_learn = cortex.learn(healthy, "important context")
         if weak_learn.get("status") not in {"NEEDS_EVIDENCE", "FAIL"}:

@@ -18,8 +18,10 @@ import tempfile
 import uuid
 from typing import Any
 
+import scope_contract
 
-VERSION = "0.3.128"
+
+VERSION = "0.3.129"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 LEGACY_SCHEMAS = ("tes-field-report@1", "tilly-field-report@1")
@@ -30,6 +32,7 @@ DISABLED = FIELD_ROOT / "DISABLED"
 INSTALL_ID = FIELD_ROOT / "install_id"
 LEGACY_FIELD_ROOT = Path(".tilly/field-reports")
 BIN_HELPER = Path(".tes/bin/field_reports.py")
+SCOPE_HELPER = Path(".tes/bin/scope_contract.py")
 HOOK_MARKER = "TES_FIELD_REPORTS_PRE_PUSH"
 BACKUP_HOOK_RE = re.compile(r'BACKUP_HOOK="(?P<path>\.git/hooks/pre-push\.before-tes-[^"]+)"')
 MAX_ISSUE_BODY_CHARS = 48000
@@ -278,18 +281,35 @@ def build_event(
     duration_bucket: str | None = None,
     details: dict[str, object] | None = None,
 ) -> dict[str, object]:
+    raw_details = details or {}
     safe_details = dict(sanitize_fact(key, value) for key, value in (details or {}).items())
     if duration_bucket:
         safe_details["duration_bucket"] = sanitize_value(duration_bucket)
+    created_at = utc_stamp()
+    scope_result = scope_contract.normalize_scope(
+        target,
+        adapter=raw_details.get("adapter", surface),
+        agent=trigger,
+        parent_agent=raw_details.get("parent_agent"),
+        run=raw_details.get("run"),
+        source="field-reports",
+        evidence_ref=raw_details.get("evidence_ref", ".tes/field-reports/outbox.jsonl"),
+        timestamp=created_at,
+        status=status_slug(status),
+    )
+    scope_status = str(scope_result.get("status", "FAIL"))
     return {
         "schema": SCHEMA,
         "tes_version": VERSION,
-        "created_at": utc_stamp(),
+        "created_at": created_at,
         "install_id": ensure_install_id(target),
         "event": safe_slug(event, "unknown-event"),
         "status": status_slug(status),
         "surface": safe_slug(surface, "unknown"),
         "trigger": safe_slug(trigger, "cli"),
+        "scope": scope_result.get("scope", {}),
+        "scope_status": scope_status,
+        "scope_failures": [sanitize_value(item) for item in scope_result.get("failures", [])],
         "facts": {**system_facts(), **safe_details},
     }
 
@@ -313,6 +333,14 @@ def record_event(
     if field_reports_disabled(target):
         return {"version": VERSION, "status": "SKIP", "reason": "field reports disabled", "writes": []}
     payload = build_event(target, event, status, surface, trigger, duration_bucket, details)
+    if payload.get("scope_status") != "PASS":
+        return {
+            "version": VERSION,
+            "status": "BLOCKED",
+            "reason": "invalid scope",
+            "failures": payload.get("scope_failures", []),
+            "writes": [],
+        }
     append_event(target, payload)
     ensure_git_exclude(target)
     return {
@@ -900,6 +928,17 @@ def copy_helper(target: Path) -> str:
     return rel(destination, target)
 
 
+def copy_scope_helper(target: Path) -> str | None:
+    source = Path(__file__).with_name("scope_contract.py").resolve()
+    if not source.exists():
+        return None
+    destination = target / SCOPE_HELPER
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if source != destination.resolve():
+        shutil.copy2(source, destination)
+    return rel(destination, target)
+
+
 def backup_hook_shell(backup_name: str) -> str:
     return f"""
 BACKUP_HOOK=".git/hooks/{backup_name}"
@@ -948,6 +987,7 @@ def install_hook(target: Path) -> dict[str, object]:
     ensure_layout(target)
     install_id = ensure_install_id(target)
     helper = copy_helper(target)
+    scope_helper = copy_scope_helper(target)
     exclude = ensure_git_exclude(target)
     hooks = git_dir / "hooks"
     hooks.mkdir(parents=True, exist_ok=True)
@@ -992,6 +1032,8 @@ exit 0
     hook.chmod(0o755)
 
     writes = [helper, rel(hook, target), rel(outbox_path(target), target), rel(install_id_path(target), target)]
+    if scope_helper:
+        writes.insert(1, scope_helper)
     if exclude:
         writes.append(exclude)
     if backup_rel:
@@ -1058,7 +1100,12 @@ def self_test() -> dict[str, object]:
             failures.append("legacy install_id must be preserved during migration")
         if not (receipts_path(target) / "legacy.json").exists():
             failures.append("legacy receipts must be moved into .tes")
-        for relpath in (".tes/bin/field_reports.py", ".tes/field-reports/outbox.jsonl", ".git/hooks/pre-push"):
+        for relpath in (
+            ".tes/bin/field_reports.py",
+            ".tes/bin/scope_contract.py",
+            ".tes/field-reports/outbox.jsonl",
+            ".git/hooks/pre-push",
+        ):
             if not (target / relpath).exists():
                 failures.append(f"missing installed path: {relpath}")
         if hook_result["status"] != "PASS":
@@ -1069,6 +1116,7 @@ def self_test() -> dict[str, object]:
         installed_helper = installed / BIN_HELPER
         installed_helper.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(Path(__file__).resolve(), installed_helper)
+        shutil.copy2(Path(__file__).with_name("scope_contract.py").resolve(), installed / SCOPE_HELPER)
         installed_result = subprocess.run(
             [sys.executable, str(installed_helper), "install-hook", "--target", str(installed), "--json-only"],
             cwd=installed,
@@ -1194,6 +1242,27 @@ printf '%s\\n' "$*" > gate-pre-git.log
         failures.extend(event_failures)
         if len(events) != 1:
             failures.append("capture must append exactly one event before drain")
+        elif events[0].get("scope_status") != "PASS" or not isinstance(events[0].get("scope"), dict):
+            failures.append("captured event must include a normalized PASS runtime scope")
+
+        scope_target = target / "scope-rejection"
+        scope_target.mkdir()
+        subprocess.run(["git", "init"], cwd=scope_target, text=True, capture_output=True, check=False)
+        install_hook(scope_target)
+        unsafe_scope = record_event(
+            scope_target,
+            "cortex.audit",
+            "FAIL",
+            "cortex",
+            "self-test",
+            details={"evidence_ref": "/absolute/unsafe/evidence.md"},
+        )
+        if unsafe_scope.get("status") != "BLOCKED" or unsafe_scope.get("writes") != []:
+            failures.append("unsafe runtime scope evidence refs must be rejected without outbox writes")
+        scope_events, scope_failures = read_outbox(scope_target)
+        failures.extend(scope_failures)
+        if scope_events:
+            failures.append("unsafe scope rejection must not append an event")
 
         disabled = disable(target)
         skipped = record_event(target, "cortex.verify", "PASS", "cortex", "self-test")

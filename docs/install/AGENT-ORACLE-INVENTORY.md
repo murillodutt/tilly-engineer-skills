@@ -54,6 +54,12 @@ python3 scripts/field_reports.py enable --target /path/to/project
 python3 scripts/field_reports.py --self-test
 ```
 
+## Scope Contract
+
+```bash
+python3 scripts/scope_contract.py --self-test
+```
+
 ## Cortex
 
 ```bash
@@ -134,6 +140,7 @@ npm run mcp:self-test
 npm run field-reports:self-test
 npm run field-reports:status -- --target /path/to/project
 npm run field-reports:drain -- --target /path/to/project
+npm run scope:contract:self-test
 npm run claude:plugin:oracle
 npm run retention:check
 npm run reference:graph

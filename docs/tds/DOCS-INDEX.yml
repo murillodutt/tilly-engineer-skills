@@ -1,4 +1,4 @@
-version: 0.3.128
+version: 0.3.129
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -286,6 +286,13 @@ documents:
     class: mesh
     status: active
     consumer: installer authors, adopters, and agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/mesh/SCOPE-CONTRACT.md
+    id: mesh.scope_contract
+    class: mesh
+    status: active
+    consumer: Cortex maintainers, Field Reports maintainers, oracle authors, and adapter authors
     source_of_truth: true
     evidence_level: L2
   - path: docs/mesh/CORTEX-MCP.md

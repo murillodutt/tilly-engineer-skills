@@ -148,6 +148,17 @@ The conveyor has three gates:
 or a specific durable lesson. Weak inputs return an explicit evidence gap or
 no-capture reason instead of producing a plausible-looking memory proposal.
 
+## Scope Boundary
+
+Cortex command output carries the runtime scope defined in
+`docs/mesh/SCOPE-CONTRACT.md`. The scope identifies the local run through an
+opaque project fingerprint, adapter, agent, run id, source, bounded evidence
+reference, timestamp, and status or trust level.
+
+Scope is coordination metadata. It is not a Cortex cell, not durable memory,
+not a project name, and not authorization to write. A scope failure must fail
+closed instead of falling back to broad target assumptions.
+
 `curate-plan` statuses:
 
 | Status | Meaning |

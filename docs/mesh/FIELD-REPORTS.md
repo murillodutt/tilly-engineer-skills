@@ -39,6 +39,13 @@ The local identity is a random `install_id` stored under
 `.tes/field-reports/`. It is not the project name and not a user identity.
 Published reports use a hash fingerprint of that ID, not the raw value.
 
+Captured events also carry the runtime scope defined in
+`docs/mesh/SCOPE-CONTRACT.md`. Scope uses an opaque local project fingerprint
+and bounded TES evidence references so Field Reports can correlate operational
+events without publishing project names, local paths, branch names, remotes, or
+user identity. Unsafe scope references block capture without writing to the
+outbox.
+
 ## GitHub Receiver
 
 The GitHub side is governed by `.github/ISSUE_TEMPLATE/tes-field-report.yml`,
