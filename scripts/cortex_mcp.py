@@ -30,7 +30,6 @@ def schema_integer(description: str, default: int | None = None) -> dict[str, ob
 
 
 def tool_definitions() -> list[dict[str, object]]:
-    target = schema_string("Target project root. Defaults to the server --target.")
     return [
         {
             "name": "cortex_verify",
@@ -38,7 +37,7 @@ def tool_definitions() -> list[dict[str, object]]:
             "description": "Validate the Cortex structure and immutable-source contract.",
             "inputSchema": {
                 "type": "object",
-                "properties": {"target": target},
+                "properties": {},
             },
         },
         {
@@ -47,7 +46,7 @@ def tool_definitions() -> list[dict[str, object]]:
             "description": "Audit cells, wikilinks, map coverage, and evidence grounding.",
             "inputSchema": {
                 "type": "object",
-                "properties": {"target": target},
+                "properties": {},
             },
         },
         {
@@ -57,7 +56,6 @@ def tool_definitions() -> list[dict[str, object]]:
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "target": target,
                     "query": schema_string("Recall query."),
                     "limit": schema_integer("Maximum matches.", 10),
                     "force_rg": {
@@ -76,7 +74,6 @@ def tool_definitions() -> list[dict[str, object]]:
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "target": target,
                     "cell": schema_string("Cell stem or path under cells/**, with or without .md."),
                 },
                 "required": ["cell"],
@@ -89,7 +86,6 @@ def tool_definitions() -> list[dict[str, object]]:
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "target": target,
                     "source": schema_string("Source path under docs/agents/cortex/sources/**."),
                 },
                 "required": ["source"],
@@ -105,7 +101,6 @@ def tool_definitions() -> list[dict[str, object]]:
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "target": target,
                     "backend": {
                         "type": "string",
                         "description": "Curation backend: auto, xenova, or lexical.",
@@ -122,7 +117,6 @@ def tool_definitions() -> list[dict[str, object]]:
             "inputSchema": {
                 "type": "object",
                 "properties": {
-                    "target": target,
                     "query": schema_string("Optional closure note, decision, or lesson to consider."),
                     "limit": schema_integer("Maximum changed files to inspect.", 20),
                     "line_budget": schema_integer("Changed-line budget that triggers curation review.", 500),
@@ -147,8 +141,9 @@ def tool_result(payload: dict[str, Any], is_error: bool | None = None) -> dict[s
 
 
 def resolve_target(default_target: Path, args: dict[str, Any]) -> Path:
-    raw = args.get("target")
-    return Path(raw).expanduser().resolve() if raw else default_target
+    if "target" in args:
+        raise ValueError("target argument is not accepted; restart the server with --target")
+    return default_target
 
 
 def read_cell(default_target: Path, args: dict[str, Any]) -> dict[str, Any]:
@@ -287,7 +282,7 @@ def serve(default_target: Path) -> int:
 
 def self_test() -> int:
     with tempfile.TemporaryDirectory(prefix="tes-cortex-mcp-") as tempdir:
-        target = Path(tempdir)
+        target = Path(tempdir) / "project-a"
         cortex.init(target)
         source = cortex.cortex_path(target) / "sources" / "mcp-source.md"
         source.write_text("# MCP Source\n\nCortex exposes read-only MCP tools.\n", encoding="utf-8")
@@ -335,6 +330,13 @@ def self_test() -> int:
         }
         if tool_names != expected_tools:
             failures.append(f"tool list mismatch: {sorted(tool_names)}")
+        tools_with_target = [
+            tool["name"]
+            for tool in replies[1]["result"]["tools"]  # type: ignore[index]
+            if "target" in tool.get("inputSchema", {}).get("properties", {})
+        ]
+        if tools_with_target:
+            failures.append(f"tool schemas expose target override: {sorted(tools_with_target)}")
         forbidden_tools = {
             name for name in tool_names
             if any(term in name for term in ("apply", "learn", "write", "mutate", "hook", "config"))
@@ -354,6 +356,41 @@ def self_test() -> int:
         if cortex.semantic_db_path(target).exists():
             failures.append("MCP curate_plan created a derived semantic index")
 
+        sibling_target = Path(tempdir) / "project-b"
+        cortex.init(sibling_target)
+        sibling_cell = cortex.cortex_path(sibling_target) / "cells" / "foreign-memory.md"
+        sibling_cell.write_text(
+            "# Foreign Memory\n\n"
+            "## Claim\n\n"
+            "A different project must not be readable through this MCP server.\n\n"
+            "## Evidence\n\n"
+            "- `sources/README.md`\n",
+            encoding="utf-8",
+        )
+        map_path = cortex.cortex_path(sibling_target) / "MAP.md"
+        map_path.write_text(
+            cortex.read_text(map_path) + "\n| [[foreign-memory]] | Foreign project fixture | |\n",
+            encoding="utf-8",
+        )
+        cross_project_messages = [
+            ("cortex_verify", {"target": str(sibling_target)}),
+            ("cortex_audit", {"target": str(sibling_target)}),
+            ("cortex_recall", {"target": str(sibling_target), "query": "Foreign Memory"}),
+            ("cortex_read_cell", {"target": str(sibling_target), "cell": "foreign-memory"}),
+            ("cortex_absorb_plan", {"target": str(sibling_target), "source": "docs/agents/cortex/sources/README.md"}),
+            ("cortex_curate_plan", {"target": str(sibling_target), "backend": "lexical"}),
+            ("cortex_reflect", {"target": str(sibling_target), "query": "Foreign Memory"}),
+        ]
+        for name, arguments in cross_project_messages:
+            reply = handle_message(
+                target.resolve(),
+                {"jsonrpc": "2.0", "id": 1000, "method": "tools/call", "params": {"name": name, "arguments": arguments}},
+            )
+            if reply is None:
+                failures.append(f"{name} target override: no reply")
+            elif "error" not in reply:
+                failures.append(f"{name} target override was not rejected")
+
         negative_messages = [
             (
                 "unknown write-like tool rejected",
@@ -364,7 +401,7 @@ def self_test() -> int:
                 {"jsonrpc": "2.0", "id": 102, "method": "tools/call", "params": {"name": "cortex_read_cell", "arguments": {"cell": "../CONTRACT.md"}}},
             ),
             (
-                "invalid target rejected",
+                "target override rejected",
                 {"jsonrpc": "2.0", "id": 103, "method": "tools/call", "params": {"name": "cortex_verify", "arguments": {"target": str(target / "missing")}}},
             ),
             (

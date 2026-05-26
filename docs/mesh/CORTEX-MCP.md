@@ -38,6 +38,8 @@ by the v1 MCP tools.
 The read-only server is `scripts/cortex_mcp.py`. It uses stdio JSON-RPC and
 does not require third-party Python packages. Target projects activate it
 through project-scoped runtime config, never through global config mutation.
+The server target is fixed at process startup with `--target`; individual MCP
+tool calls do not accept a `target` argument.
 
 | Tool | Behavior |
 |------|----------|
@@ -139,10 +141,15 @@ cortex_cut:
 MCP activation is local, read-only, and project-scoped. It must not edit global
 Codex, Claude, or Cursor configuration, secrets, hooks, remotes, package
 lockfiles, `.obsidian/**`, or Cortex source material.
+Project scope is enforced at the MCP tool boundary: a server initialized for
+one project rejects caller-provided `target` overrides instead of resolving
+another project path.
 
 Write-capable MCP tools remain outside v1. `learn` and `apply` stay CLI-governed
 because promotion into Cortex requires explicit evidence and authorization.
 The MCP self-test includes negative calls for unknown write-like tools, invalid
-argument shapes, path traversal, invalid targets, invalid curation backends, and
-empty required arguments. `cortex_curate_plan` is required to report no writes
-and no derived semantic-index writes over MCP.
+argument shapes, path traversal, target overrides, invalid curation backends,
+and empty required arguments. It also verifies that tool schemas do not expose a
+`target` property and that a second project cannot be read through caller input.
+`cortex_curate_plan` is required to report no writes and no derived
+semantic-index writes over MCP.
