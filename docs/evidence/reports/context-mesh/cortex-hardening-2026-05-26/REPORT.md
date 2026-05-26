@@ -21,8 +21,9 @@ The three accepted Cortex findings were resolved in sequence:
 2. MCP helper documentation now matches the installer helper inventory.
 3. `reflect` now counts durable untracked text line volume toward curation.
 
-No remote, release, publish, marketplace, or target-project mirror action was
-performed.
+No release, publish, marketplace, or target-project mirror action was
+performed. Remote sync to `origin/main` was performed only after the local
+package gate passed and the Mantra Gate adoption oracle accepted the push.
 
 ## Material Trail
 
@@ -80,6 +81,6 @@ behavior was introduced by this sequence.
 
 ## Closeout Status
 
-Status: `GO`. The final closeout commit records this report and the
-private-vocabulary gate repair. Post-commit `npm run commit:check` replay
-passed on `a95c4bb4`.
+Status: `GO`. The closeout commits record this report, the private-vocabulary
+gate repair, and the post-commit certification replay. Remote sync is limited
+to non-force `git push origin HEAD:main` after `npm run commit:check` passes.
