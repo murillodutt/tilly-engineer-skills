@@ -26,11 +26,11 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 ## Commercial Quickstart
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.131 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.132 tilly-engineer-skills add
 ```
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.131 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.132 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -42,10 +42,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.131 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.132 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.131` is the fixed release ref and supported commercial install path; do not certify mutable release refs without their own canary evidence.
+`#v0.3.132` is the fixed release ref and supported commercial install path; do not certify mutable release refs without their own canary evidence.
 
 During install, update, and clean-runtime refresh, obsolete plugin/root-skill surfaces are removed only when TES-owned/generated/empty; ambiguous content is preserved, backed up under `.tes/bk/**`, and reported as `NEEDS_REVIEW`.
 
@@ -130,6 +130,10 @@ also never memory, rebuilt by `curate-plan` from `cells/**`.
 `curate-plan` reports actionable candidates with rationale and next step.
 `learn` and `reflect` remain proposal-only and return explicit evidence-gap or
 no-capture reasons for weak generic inputs.
+The Cortex operator layer adds `health`, `peek`, and `review` as mechanically
+read-only commands, `checkpoint` as TTL resumability state, `remember` as the
+authorized durable-memory spelling, and `forget` as blocked until the
+consolidation gate exists.
 
 Cortex is Obsidian-compatible plain Markdown. The installer does not create
 `.obsidian/**`, require community plugins, or depend on Obsidian state. After
@@ -148,7 +152,8 @@ read-only and project-scoped. The installer may write `.tes/bin/cortex.py`,
 `.cursor/mcp.json`; MCP activation must not edit global MCP configuration,
 secrets, hooks, or write-capable MCP tools.
 The MCP self-test covers negative malformed and write-like calls, and
-`cortex_curate_plan` over MCP must not create the derived semantic index.
+`cortex_health`, `cortex_peek`, `cortex_review`, and `cortex_curate_plan` over
+MCP must not create the derived semantic index or expose write-capable tools.
 
 TES Field Reports is active by default. The initializer installs a local
 `pre-push` drain for sanitized operational facts, stores pending state under
@@ -199,23 +204,17 @@ uninitialized.
 
 ```bash
 python3 scripts/tes_init.py --target /path/to/project --yes
-python3 scripts/tes_init.py --self-test
 python3 scripts/project_context_oracle.py --target /path/to/project
-python3 scripts/project_context_oracle.py --self-test
 python3 scripts/project_alignment_oracle.py --target /path/to/project
-python3 scripts/project_alignment_oracle.py --self-test
 python3 scripts/tes_update.py plan --target /path/to/project --json-only
 python3 scripts/tes_update.py plan --target /path/to/project --json-only --record-field-report
 python3 scripts/field_reports.py status --target /path/to/project
-python3 scripts/field_reports.py --self-test
-python3 scripts/field_reports_quality_oracle.py --self-test
-python3 scripts/cortex.py init --target /path/to/project-or-vault
-python3 scripts/cortex.py verify --target /path/to/project-or-vault
-python3 scripts/cortex.py audit --target /path/to/project-or-vault
-python3 scripts/cortex.py rebuild --target /path/to/project-or-vault
-python3 scripts/cortex.py curate-plan --target /path/to/project-or-vault --backend lexical
-python3 scripts/cortex_quality_oracle.py --self-test
+python3 scripts/cortex.py health --target /path/to/project-or-vault
+python3 scripts/cortex.py review --target /path/to/project-or-vault --backend lexical
 ```
+
+Run the correlated `--self-test` commands from `scripts/**` when certifying
+the package source.
 
 Project-scoped MCP can be installed and checked with:
 

@@ -274,6 +274,10 @@ curation cache only. Never treat SQLite, MCP, or LLM as memory.
 | `reflect` | No | Generates proposal only |
 | `curate-plan` | No | `writes: []` always; may refresh derived semantic index from CLI only, not over MCP |
 | `apply --yes` | Yes | Requires explicit evidence + audit + rebuild; never writes to `sources/**` |
+| `health` / `peek` / `review` | No | Operator read-only commands; must report `writes: []` and `derived_writes: []` |
+| `checkpoint --yes` | Yes | Writes only `.tes/checkpoints/**`; not durable memory |
+| `remember --yes` | Yes | Same durable-memory gate as `apply --yes` |
+| `forget --yes` | Blocked | Returns `BLOCKED` until consolidation gate evidence exists |
 
 ### Backends
 
@@ -320,6 +324,9 @@ runtime config. Must not touch global MCP config, secrets, hooks, or
 | Tool | Behavior |
 |------|----------|
 | `cortex_verify` | Validates Cortex structure and contract |
+| `cortex_health` | Reports health and operator mutability classes without writes |
+| `cortex_peek` | Reads recall results or one cell without writes |
+| `cortex_review` | Runs audit, no-write curation, and reflection review |
 | `cortex_audit` | Finds broken links, missing evidence, loose cells |
 | `cortex_recall` | SQLite FTS5 search; falls back to `rg` |
 | `cortex_read_cell` | Reads one cell directly from `cells/**` |

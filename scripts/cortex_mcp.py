@@ -14,7 +14,7 @@ import cortex
 import field_reports
 
 
-VERSION = "0.3.131"
+VERSION = "0.3.132"
 PROTOCOL_VERSION = "2025-06-18"
 
 
@@ -38,6 +38,52 @@ def tool_definitions() -> list[dict[str, object]]:
             "inputSchema": {
                 "type": "object",
                 "properties": {},
+            },
+        },
+        {
+            "name": "cortex_health",
+            "title": "Cortex Health",
+            "description": "Inspect Cortex health and operator mutability classes without writing.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {},
+            },
+        },
+        {
+            "name": "cortex_peek",
+            "title": "Peek Cortex",
+            "description": "Read one Cortex cell or recall query results without writing.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "query": schema_string("Optional recall query."),
+                    "cell": schema_string("Optional cell stem or path under cells/**."),
+                    "limit": schema_integer("Maximum recall matches.", 10),
+                    "force_rg": {
+                        "type": "boolean",
+                        "description": "Force rg fallback instead of SQLite FTS5.",
+                        "default": False,
+                    },
+                },
+            },
+        },
+        {
+            "name": "cortex_review",
+            "title": "Review Cortex",
+            "description": "Run no-write Cortex audit, curation, and reflection review.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "query": schema_string("Optional closure note, decision, or lesson to review."),
+                    "limit": schema_integer("Maximum changed files to inspect.", 20),
+                    "line_budget": schema_integer("Changed-line budget that triggers curation review.", 500),
+                    "backend": {
+                        "type": "string",
+                        "description": "Curation backend: auto, xenova, or lexical.",
+                        "enum": ["auto", "xenova", "lexical"],
+                        "default": "lexical",
+                    },
+                },
             },
         },
         {
@@ -182,6 +228,22 @@ def read_cell(default_target: Path, args: dict[str, Any]) -> dict[str, Any]:
 def call_tool(default_target: Path, name: str, args: dict[str, Any]) -> dict[str, Any]:
     if name == "cortex_verify":
         return tool_result(cortex.verify(resolve_target(default_target, args)))
+    if name == "cortex_health":
+        return tool_result(cortex.health(resolve_target(default_target, args)))
+    if name == "cortex_peek":
+        query = str(args.get("query", "")).strip() or None
+        cell = str(args.get("cell", "")).strip() or None
+        limit = int(args.get("limit", 10))
+        force_rg = bool(args.get("force_rg", False))
+        return tool_result(cortex.peek(resolve_target(default_target, args), query, cell, limit, force_rg))
+    if name == "cortex_review":
+        backend = str(args.get("backend", "lexical")).strip() or "lexical"
+        if backend not in {"auto", "xenova", "lexical"}:
+            return tool_result({"status": "FAIL", "failures": ["backend must be auto, xenova, or lexical"]}, True)
+        query = str(args.get("query", "")).strip() or None
+        limit = int(args.get("limit", 20))
+        line_budget = int(args.get("line_budget", 500))
+        return tool_result(cortex.review(resolve_target(default_target, args), query, limit, line_budget, backend))
     if name == "cortex_audit":
         return tool_result(cortex.audit(resolve_target(default_target, args)))
     if name == "cortex_recall":
@@ -306,11 +368,15 @@ def self_test() -> int:
             {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": PROTOCOL_VERSION}},
             {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
             {"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "cortex_verify", "arguments": {}}},
-            {"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "cortex_recall", "arguments": {"query": "MCP"}}},
-            {"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": "cortex_read_cell", "arguments": {"cell": "mcp-read-only"}}},
-            {"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"name": "cortex_absorb_plan", "arguments": {"source": "docs/agents/cortex/sources/mcp-source.md"}}},
-            {"jsonrpc": "2.0", "id": 7, "method": "tools/call", "params": {"name": "cortex_curate_plan", "arguments": {"backend": "lexical"}}},
-            {"jsonrpc": "2.0", "id": 8, "method": "tools/call", "params": {"name": "cortex_reflect", "arguments": {"query": "MCP closure should consider memory capture"}}},
+            {"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "cortex_health", "arguments": {}}},
+            {"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": "cortex_peek", "arguments": {"query": "MCP"}}},
+            {"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"name": "cortex_peek", "arguments": {"cell": "mcp-read-only"}}},
+            {"jsonrpc": "2.0", "id": 7, "method": "tools/call", "params": {"name": "cortex_review", "arguments": {"backend": "lexical"}}},
+            {"jsonrpc": "2.0", "id": 8, "method": "tools/call", "params": {"name": "cortex_recall", "arguments": {"query": "MCP"}}},
+            {"jsonrpc": "2.0", "id": 9, "method": "tools/call", "params": {"name": "cortex_read_cell", "arguments": {"cell": "mcp-read-only"}}},
+            {"jsonrpc": "2.0", "id": 10, "method": "tools/call", "params": {"name": "cortex_absorb_plan", "arguments": {"source": "docs/agents/cortex/sources/mcp-source.md"}}},
+            {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": {"name": "cortex_curate_plan", "arguments": {"backend": "lexical"}}},
+            {"jsonrpc": "2.0", "id": 12, "method": "tools/call", "params": {"name": "cortex_reflect", "arguments": {"query": "MCP closure should consider memory capture"}}},
         ]
         replies = [handle_message(target.resolve(), message) for message in messages]
         failures: list[str] = []
@@ -321,6 +387,9 @@ def self_test() -> int:
         }
         expected_tools = {
             "cortex_verify",
+            "cortex_health",
+            "cortex_peek",
+            "cortex_review",
             "cortex_audit",
             "cortex_recall",
             "cortex_read_cell",
@@ -347,11 +416,24 @@ def self_test() -> int:
             result = reply["result"]  # type: ignore[index]
             if result.get("isError"):
                 failures.append(result["content"][0]["text"])
-        if "MCP Read Only" not in replies[4]["result"]["structuredContent"]["text"]:  # type: ignore[index]
-            failures.append("read_cell did not return cell text")
-        if replies[6]["result"]["structuredContent"]["writes"] != []:  # type: ignore[index]
-            failures.append("curate_plan did not remain no-write over MCP")
+        if replies[3]["result"]["structuredContent"].get("mutability_class") != "read-only":  # type: ignore[index]
+            failures.append("health did not report read-only mutability")
+        if replies[4]["result"]["structuredContent"].get("mutability_class") != "read-only":  # type: ignore[index]
+            failures.append("peek did not report read-only mutability")
+        if replies[6]["result"]["structuredContent"].get("writes") != []:  # type: ignore[index]
+            failures.append("review reported writes over MCP")
         if replies[6]["result"]["structuredContent"].get("derived_writes") != []:  # type: ignore[index]
+            failures.append("review reported derived writes over MCP")
+        peek_matches = replies[4]["result"]["structuredContent"].get("matches", [])  # type: ignore[index]
+        if not peek_matches:
+            failures.append("peek query did not return recall result")
+        if "MCP Read Only" not in replies[5]["result"]["structuredContent"]["text"]:  # type: ignore[index]
+            failures.append("peek cell did not return cell text")
+        if "MCP Read Only" not in replies[8]["result"]["structuredContent"]["text"]:  # type: ignore[index]
+            failures.append("read_cell did not return cell text")
+        if replies[10]["result"]["structuredContent"]["writes"] != []:  # type: ignore[index]
+            failures.append("curate_plan did not remain no-write over MCP")
+        if replies[10]["result"]["structuredContent"].get("derived_writes") != []:  # type: ignore[index]
             failures.append("curate_plan reported derived writes over MCP")
         if cortex.semantic_db_path(target).exists():
             failures.append("MCP curate_plan created a derived semantic index")
@@ -374,6 +456,9 @@ def self_test() -> int:
         )
         cross_project_messages = [
             ("cortex_verify", {"target": str(sibling_target)}),
+            ("cortex_health", {"target": str(sibling_target)}),
+            ("cortex_peek", {"target": str(sibling_target), "query": "Foreign Memory"}),
+            ("cortex_review", {"target": str(sibling_target)}),
             ("cortex_audit", {"target": str(sibling_target)}),
             ("cortex_recall", {"target": str(sibling_target), "query": "Foreign Memory"}),
             ("cortex_read_cell", {"target": str(sibling_target), "cell": "foreign-memory"}),
@@ -395,6 +480,14 @@ def self_test() -> int:
             (
                 "unknown write-like tool rejected",
                 {"jsonrpc": "2.0", "id": 101, "method": "tools/call", "params": {"name": "cortex_apply", "arguments": {}}},
+            ),
+            (
+                "unknown remember tool rejected",
+                {"jsonrpc": "2.0", "id": 1011, "method": "tools/call", "params": {"name": "cortex_remember", "arguments": {}}},
+            ),
+            (
+                "unknown checkpoint tool rejected",
+                {"jsonrpc": "2.0", "id": 1012, "method": "tools/call", "params": {"name": "cortex_checkpoint", "arguments": {}}},
             ),
             (
                 "path traversal rejected",

@@ -21,7 +21,7 @@ import tes_bundle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.131"
+VERSION = "0.3.132"
 RETROFIT_DIR = ".tes/retrofit"
 
 

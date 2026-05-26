@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.131"
+VERSION = "0.3.132"
 START_MARKER = "<!-- TES-MAP:START -->"
 END_MARKER = "<!-- TES-MAP:END -->"
 ROADMAP_REL = Path("docs/agents/PROJECT-ROADMAP.md")

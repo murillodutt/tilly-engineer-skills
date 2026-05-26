@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.131"
+VERSION = "0.3.132"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -29,9 +29,9 @@ REQUIRED_PATHS = (
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/adr/0001-tes-memory-lifecycle.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.131/index.json",
-    "docs/dist/0.3.131/tilly-engineer-skills-0.3.131.zip",
-    "docs/dist/0.3.131/tilly-engineer-skills-0.3.131.zip.sha256",
+    "docs/dist/0.3.132/index.json",
+    "docs/dist/0.3.132/tilly-engineer-skills-0.3.132.zip",
+    "docs/dist/0.3.132/tilly-engineer-skills-0.3.132.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -182,6 +182,7 @@ REQUIRED_PATHS = (
     "scripts/cortex.py",
     "scripts/cortex_embed.mjs",
     "scripts/cortex_mcp.py",
+    "scripts/cortex_operator_oracle.py",
     "scripts/cortex_quality_oracle.py",
     "scripts/scope_contract.py",
     "scripts/event_ledger.py",
@@ -369,7 +370,14 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "cortex:learn",
     "cortex:reflect",
     "cortex:apply",
+    "cortex:health",
+    "cortex:peek",
+    "cortex:review",
+    "cortex:checkpoint",
+    "cortex:remember",
+    "cortex:forget",
     "cortex:self-test",
+    "cortex:operator:self-test",
     "cortex:quality:self-test",
     "cortex:mcp:self-test",
     "oracle:self-test",

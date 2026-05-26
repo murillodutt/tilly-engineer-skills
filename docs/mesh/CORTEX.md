@@ -230,6 +230,25 @@ memory-quality failures are also present.
 | `reflect` | No-write closure reflex that decides whether a memory proposal or curation review is due |
 | `apply` | Write only with authorization and audit evidence |
 | `read-cell` | Read a single cell under `cells/**` without using the derived index |
+| `health` | Read-only operator health view with mutability classes |
+| `peek` | Read-only operator recall or cell inspection |
+| `review` | Read-only operator audit, curation, and reflection review |
+| `checkpoint` | Write TTL checkpoint state only after explicit `--yes` |
+| `remember` | Durable memory write through the same authorization and evidence gate as `apply` |
+| `forget` | Blocked destructive operator until consolidation gate evidence exists |
+
+## Operator Mutability
+
+| Operator | Mutability class | Contract |
+|----------|------------------|----------|
+| `health` | `read-only` | Reports verify, audit, recall-index presence, semantic-index presence, and operator inventory. |
+| `peek` | `read-only` | Reads recall results or a single cell. |
+| `review` | `read-only` | Runs audit, no-write curation, and reflection without semantic-index writes. |
+| `checkpoint` | `checkpoint-state-write` | Requires `--yes`; writes only `.tes/checkpoints/**`. |
+| `remember` | `durable-memory-write` | Requires `--yes`, claim, evidence, and the Cortex write gate. |
+| `forget` | `blocked-destructive` | Returns `BLOCKED` even with `--yes` until consolidation owns observed-write and rollback evidence. |
+
+Read-only operators must report `writes: []` and `derived_writes: []`.
 
 ## Automation
 
@@ -247,7 +266,14 @@ python3 scripts/cortex.py learn --target /path/to/project-or-vault --source docs
 python3 scripts/cortex.py reflect --target /path/to/project-or-vault "decision or lesson"
 python3 scripts/cortex.py absorb-plan --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
 python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell path-or-stem --claim "durable claim" --evidence sources/source.md --yes
+python3 scripts/cortex.py health --target /path/to/project-or-vault
+python3 scripts/cortex.py peek --target /path/to/project-or-vault "query"
+python3 scripts/cortex.py review --target /path/to/project-or-vault --backend lexical
+python3 scripts/cortex.py checkpoint --target /path/to/project-or-vault --id run-id --yes
+python3 scripts/cortex.py remember --target /path/to/project-or-vault --cell path-or-stem --claim "durable claim" --evidence sources/source.md --yes
+python3 scripts/cortex.py forget --target /path/to/project-or-vault --cell path-or-stem --evidence sources/source.md --yes
 python3 scripts/cortex.py --self-test
+python3 scripts/cortex_operator_oracle.py --self-test
 ```
 
 The helper scaffolds starter Markdown, migrates legacy Cortex names into the v1
@@ -270,6 +296,11 @@ means automatic deletion.
 derived recall index rebuilt from those artifacts. It refuses to write without
 `--yes`, refuses ungrounded evidence, refuses to overwrite an existing cell
 unless `--update` is passed, and never writes in `sources/**`.
+
+`remember` is the operator spelling for the same authorized durable-memory path
+as `apply`. `checkpoint` is not durable memory and writes only TTL state.
+`forget` is intentionally blocked until the consolidation gate can prove
+observed write behavior, rollback, and review evidence.
 
 Compatibility aliases `scaffold`, `check`, and `lint` may remain in the helper
 only to prevent transition friction. Documentation and package scripts use
@@ -340,6 +371,8 @@ Initial certification proves that:
 - read-only Cortex MCP is activated for selected runtime routes or explicitly
   blocked with a reason;
 - `curate-plan` is available as a no-write curation gate;
+- `health`, `peek`, and `review` are available as no-write operator commands;
+- `checkpoint`, `remember`, and `forget` report explicit mutability classes;
 - installation evidence states whether Cortex was created, skipped, or blocked.
 
 ## MCP Boundary

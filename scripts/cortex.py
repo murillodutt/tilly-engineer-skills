@@ -17,6 +17,7 @@ import sys
 import tempfile
 import unicodedata
 
+import checkpoint as checkpoint_helper
 import field_reports
 import scope_contract
 
@@ -122,6 +123,14 @@ DISCARD_TERMS = {
 }
 TRANSIENT_TERMS = {"draft", "maybe", "scratch", "temporary", "todo", "transient", "wip"}
 GENERIC_TERMS = {"context", "important", "information", "note", "project", "thing", "useful", "value"}
+OPERATOR_MUTABILITY = {
+    "health": "read-only",
+    "peek": "read-only",
+    "review": "read-only",
+    "checkpoint": "checkpoint-state-write",
+    "remember": "durable-memory-write",
+    "forget": "blocked-destructive",
+}
 
 
 def cortex_path(target: Path) -> Path:
@@ -1682,7 +1691,9 @@ def command_scope_evidence(command: str, source: Path | None, evidence: list[str
         return str(source)
     if evidence:
         return evidence[0]
-    if command in {"recall", "read-cell", "verify", "audit", "curate-plan"}:
+    if command == "checkpoint":
+        return "none"
+    if command in {"recall", "read-cell", "verify", "audit", "curate-plan", "health", "peek", "review", "forget"}:
         return "docs/agents/cortex/MAP.md"
     return "docs/agents/cortex/TRAIL.md"
 
@@ -1729,6 +1740,199 @@ def append_unique_line(path: Path, line: str) -> bool:
         text += "\n"
     path.write_text(text + line + "\n", encoding="utf-8")
     return True
+
+
+def operator_inventory() -> list[dict[str, str]]:
+    return [
+        {
+            "command": name,
+            "mutability_class": OPERATOR_MUTABILITY[name],
+        }
+        for name in ("health", "peek", "review", "checkpoint", "remember", "forget")
+    ]
+
+
+def health(target: Path) -> dict[str, object]:
+    target = target.resolve()
+    verify_result = verify(target)
+    audit_result = audit(target) if verify_result["status"] == "PASS" else {
+        "status": "FAIL",
+        "failures": verify_result["failures"],
+    }
+    failures = [*verify_result.get("failures", []), *audit_result.get("failures", [])]
+    return {
+        "target": str(target),
+        "status": "FAIL" if failures else "PASS",
+        "operator": "health",
+        "mutability_class": OPERATOR_MUTABILITY["health"],
+        "writes": [],
+        "derived_writes": [],
+        "verify": verify_result,
+        "audit": audit_result,
+        "recall_index_present": recall_db_path(target).exists(),
+        "semantic_index_present": semantic_db_path(target).exists(),
+        "operator_commands": operator_inventory(),
+        "failures": failures,
+    }
+
+
+def peek(target: Path, query: str | None, cell: str | None, limit: int, force_rg: bool = False) -> dict[str, object]:
+    target = target.resolve()
+    if cell:
+        result = read_cell(target, cell)
+        mode = "cell"
+    elif query:
+        result = recall(target, query, limit, force_rg)
+        mode = "recall"
+    else:
+        result = {"target": str(target), "status": "FAIL", "failures": ["peek requires a query or --cell"]}
+        mode = "none"
+    result["operator"] = "peek"
+    result["peek_mode"] = mode
+    result["mutability_class"] = OPERATOR_MUTABILITY["peek"]
+    result.setdefault("writes", [])
+    result.setdefault("derived_writes", [])
+    return result
+
+
+def review(target: Path, query: str | None, limit: int = 20, line_budget: int = 500, backend: str = "lexical") -> dict[str, object]:
+    target = target.resolve()
+    verify_result = verify(target)
+    audit_result = audit(target) if verify_result["status"] == "PASS" else {
+        "status": "FAIL",
+        "failures": verify_result["failures"],
+    }
+    curation_result = (
+        curate_plan(target, backend, write_index=False)
+        if verify_result["status"] == "PASS"
+        else {"status": "FAIL", "writes": [], "derived_writes": [], "failures": verify_result["failures"]}
+    )
+    reflection_result = reflect(target, query, limit, line_budget) if verify_result["status"] == "PASS" else {
+        "status": "FAIL",
+        "writes": [],
+        "capture_needed": False,
+        "failures": verify_result["failures"],
+    }
+    failures = [*verify_result.get("failures", []), *audit_result.get("failures", [])]
+    status = "PASS"
+    if failures:
+        status = "FAIL"
+    elif curation_result.get("status") == "DEGRADED":
+        status = "DEGRADED"
+    elif curation_result.get("status") in {"FAIL", "BLOCKED"} or reflection_result.get("capture_needed"):
+        status = "NEEDS_REVIEW"
+    return {
+        "target": str(target),
+        "status": status,
+        "operator": "review",
+        "mutability_class": OPERATOR_MUTABILITY["review"],
+        "writes": [],
+        "derived_writes": [],
+        "verify": verify_result,
+        "audit": audit_result,
+        "curation": curation_result,
+        "reflection": reflection_result,
+        "failures": failures,
+    }
+
+
+def checkpoint_operator(
+    target: Path,
+    *,
+    checkpoint_id: str,
+    ttl_seconds: int,
+    summary: str | None,
+    state: dict[str, object],
+    authorized: bool,
+) -> dict[str, object]:
+    target = target.resolve()
+    if not authorized:
+        return {
+            "target": str(target),
+            "status": "NEEDS_AUTH",
+            "operator": "checkpoint",
+            "mutability_class": OPERATOR_MUTABILITY["checkpoint"],
+            "writes": [],
+            "message": "checkpoint operator requires --yes before writing .tes/checkpoints/**",
+        }
+    result = checkpoint_helper.create_checkpoint(
+        target,
+        checkpoint_id_value=checkpoint_id,
+        ttl_seconds=ttl_seconds,
+        summary=summary or "Cortex operator checkpoint.",
+        adapter="local",
+        agent="cortex-cli",
+        run=checkpoint_id or None,
+        source="cortex-checkpoint",
+        evidence_ref="none",
+        state=state,
+        replace=True,
+    )
+    result["target"] = str(target)
+    result["operator"] = "checkpoint"
+    result["mutability_class"] = OPERATOR_MUTABILITY["checkpoint"]
+    return result
+
+
+def remember(
+    target: Path,
+    cell: str,
+    claim: str,
+    evidence: list[str],
+    summary: str | None,
+    links: list[str],
+    authorized: bool,
+    update_existing: bool,
+) -> dict[str, object]:
+    result = apply_cell(target, cell, claim, evidence, summary, links, authorized, update_existing)
+    result["operator"] = "remember"
+    result["mutability_class"] = OPERATOR_MUTABILITY["remember"]
+    return result
+
+
+def forget(target: Path, cell: str | None, evidence: list[str], authorized: bool) -> dict[str, object]:
+    target = target.resolve()
+    if not authorized:
+        return {
+            "target": str(target),
+            "status": "NEEDS_AUTH",
+            "operator": "forget",
+            "mutability_class": OPERATOR_MUTABILITY["forget"],
+            "writes": [],
+            "message": "forget requires --yes and a later consolidation gate before destructive memory changes",
+        }
+    failures: list[str] = []
+    if not cell:
+        failures.append("forget requires --cell")
+    if not evidence:
+        failures.append("forget requires at least one --evidence")
+    if cell:
+        try:
+            path = resolve_cell_path(target, cell)
+        except ValueError as exc:
+            failures.append(str(exc))
+            path = None
+        if path is not None and not path.is_file():
+            failures.append(f"cell missing: {rel(path, target)}")
+    if failures:
+        return {
+            "target": str(target),
+            "status": "FAIL",
+            "operator": "forget",
+            "mutability_class": OPERATOR_MUTABILITY["forget"],
+            "failures": failures,
+            "writes": [],
+        }
+    return {
+        "target": str(target),
+        "status": "BLOCKED",
+        "operator": "forget",
+        "mutability_class": OPERATOR_MUTABILITY["forget"],
+        "cell": cell,
+        "evidence": evidence,
+        "writes": [],
+        "message": "forget is intentionally blocked until the consolidation gate provides observed-write and rollback evidence",
+    }
 
 
 def apply_cell(
@@ -2236,6 +2440,12 @@ def main() -> int:
             "learn",
             "reflect",
             "apply",
+            "health",
+            "peek",
+            "review",
+            "checkpoint",
+            "remember",
+            "forget",
             "scaffold",
             "check",
             "lint",
@@ -2248,6 +2458,9 @@ def main() -> int:
     parser.add_argument("--claim")
     parser.add_argument("--summary")
     parser.add_argument("--evidence", action="append", default=[])
+    parser.add_argument("--id", default="")
+    parser.add_argument("--ttl-seconds", type=int, default=checkpoint_helper.DEFAULT_TTL_SECONDS)
+    parser.add_argument("--state-json", default="")
     parser.add_argument("--link", action="append", default=[])
     parser.add_argument("--limit", type=int, default=10)
     parser.add_argument("--line-budget", type=int, default=500)
@@ -2301,6 +2514,48 @@ def main() -> int:
             args.yes,
             args.update,
         )
+    elif command == "health":
+        result = health(args.target)
+    elif command == "peek":
+        result = peek(args.target, args.query, args.cell, args.limit, args.force_rg)
+    elif command == "review":
+        result = review(args.target, args.query, args.limit, args.line_budget, args.backend)
+    elif command == "checkpoint":
+        try:
+            state = checkpoint_helper.parse_state(args.state_json)
+        except (json.JSONDecodeError, ValueError) as exc:
+            result = {
+                "target": str(args.target.resolve()),
+                "status": "FAIL",
+                "operator": "checkpoint",
+                "mutability_class": OPERATOR_MUTABILITY["checkpoint"],
+                "failures": [str(exc)],
+                "writes": [],
+            }
+        else:
+            result = checkpoint_operator(
+                args.target,
+                checkpoint_id=args.id,
+                ttl_seconds=args.ttl_seconds,
+                summary=args.summary,
+                state=state,
+                authorized=args.yes,
+            )
+    elif command == "remember":
+        if not args.cell:
+            parser.error("remember requires --cell")
+        result = remember(
+            args.target,
+            args.cell,
+            args.claim or "",
+            args.evidence,
+            args.summary,
+            args.link,
+            args.yes,
+            args.update,
+        )
+    elif command == "forget":
+        result = forget(args.target, args.cell, args.evidence, args.yes)
     else:
         parser.error("command is required unless --self-test is used")
 

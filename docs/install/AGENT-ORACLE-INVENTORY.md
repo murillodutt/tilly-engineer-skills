@@ -179,7 +179,14 @@ npm run cortex:absorb-plan -- --target /path/to/project-or-vault --source docs/a
 npm run cortex:learn -- --target /path/to/project-or-vault --source docs/agents/cortex/sources/source.md
 npm run cortex:reflect -- --target /path/to/project-or-vault "decision or lesson"
 npm run cortex:apply -- --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
+npm run cortex:health -- --target /path/to/project-or-vault
+npm run cortex:peek -- --target /path/to/project-or-vault "query"
+npm run cortex:review -- --target /path/to/project-or-vault --backend lexical
+npm run cortex:checkpoint -- --target /path/to/project-or-vault --id run-id --yes
+npm run cortex:remember -- --target /path/to/project-or-vault --cell cell-name --claim "durable claim" --evidence sources/source.md --yes
+npm run cortex:forget -- --target /path/to/project-or-vault --cell cell-name --evidence sources/source.md --yes
 npm run cortex:self-test
+npm run cortex:operator:self-test
 npm run cortex:mcp:self-test
 npm run materialize:all
 npm run materialize:codex

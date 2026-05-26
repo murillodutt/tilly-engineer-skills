@@ -177,6 +177,9 @@ another project path.
 
 Write-capable MCP tools remain outside v1. `learn` and `apply` stay CLI-governed
 because promotion into Cortex requires explicit evidence and authorization.
+The read-only operator tools `cortex_health`, `cortex_peek`, and
+`cortex_review` are allowed. `checkpoint`, `remember`, `forget`, `apply`,
+`learn`, and any write-like operator remain outside MCP.
 The MCP self-test includes negative calls for unknown write-like tools, invalid
 argument shapes, path traversal, target overrides, invalid curation backends,
 and empty required arguments. It also verifies that tool schemas do not expose a
