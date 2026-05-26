@@ -5,20 +5,20 @@ status: active
 consumer: maintainers, release reviewers, and next-loop operators
 source_of_truth: false
 evidence_level: L2
-tver: 0.1.1
+tver: 0.1.2
 ---
 
 # Roadmap Index
 
 This folder preserves roadmap lineage. Older v1 planning documents remain
-auditable, but the active planning surface now starts from the Wave 6 release
-readiness baseline.
+auditable, but the current planning surface now starts from the ADR 0001
+Wave 7 local package-source closure.
 
 ## Current Line
 
 | Line | Status | Document |
 |------|--------|----------|
-| TES Memory Lifecycle implementation | Active | `GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
+| TES Memory Lifecycle implementation | Complete | `GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
 | RC1 readiness cleanup | Active | `RC1-READINESS-ROADMAP.md` |
 | Cortex hardening sequence | Complete | `GOAL-SUPER-SPEC-cortex-hardening.md` |
 | TES Align semantic drift hardening | Proposed | `TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
@@ -30,9 +30,9 @@ readiness baseline.
 
 ## Baseline
 
-The current release-readiness baseline is TES `0.3.133`, after the GitHub-only
-npx installer line, interactive installer screen, Node/Bun runtime matrix,
-first-session hooks, and fixed release documentation alignment.
+The current release-readiness baseline is TES `0.3.133`, after ADR 0001 memory
+lifecycle implementation closed locally with clean bundle metadata and one
+neutral canary replay. Remote tag/ref release certification is still deferred.
 
 The next work is not to create a release. The next work is to remove obvious
 pre-RC1 friction:

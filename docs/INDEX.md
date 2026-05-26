@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.13
+tver: 0.4.14
 ---
 
 # Tilly Engineer Skills Docs
@@ -28,7 +28,7 @@ turning the repository root into an inventory.
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
 | Public installer bundle | `dist/0.3.133/tilly-engineer-skills-0.3.133.zip` |
-| GitHub-only npx installation | `install/INSTALL.md` |
+| GitHub package-spec installation | `install/INSTALL.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
 | Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
 | Tool-neutral engineering principles | `mesh/PRINCIPLES.md` |

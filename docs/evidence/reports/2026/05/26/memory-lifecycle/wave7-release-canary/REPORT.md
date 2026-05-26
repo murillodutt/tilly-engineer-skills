@@ -39,7 +39,7 @@ ADR 0001 is implemented for the package-source contract through Wave 7:
 | Wave 4 | `748be759` | TTL checkpoint resume lane added |
 | Wave 5 | `17c34ded` | Cortex operator layer added |
 | Wave 6 | `58e4772f` | Consolidation gate added |
-| Wave 7 | current working set | Clean bundle metadata, evidence, and canary closure |
+| Wave 7 | `0d314b44` | Clean bundle metadata, evidence, and canary closure |
 
 ## Release Identity
 

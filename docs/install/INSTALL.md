@@ -5,15 +5,15 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.9.7
+tver: 0.9.8
 ---
 
 # Adapter Installation
 
-The commercial installer is the GitHub package-spec command through npx or
-Bun. It resolves a fixed release ref, installs TES locally into the target
-repository, prepares the selected agent hooks, and records the first-session
-setup path.
+The public installer path is the GitHub package-spec command through npx or Bun
+after a fixed ref is authorized and release-certified. The current `0.3.133`
+evidence is local package-source closure: it certifies source, bundle metadata,
+and a neutral canary replay without authorizing remote tag, release, package publish, or marketplace action.
 
 User-facing walkthrough:
 
@@ -23,7 +23,7 @@ User-facing walkthrough:
 For the agent-side contract behind runtime commands, gates, schemas, and
 closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 
-## Commercial Quickstart
+## GitHub Package-Spec Form
 
 ```bash
 npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.133 tilly-engineer-skills add
@@ -45,7 +45,9 @@ For non-interactive installs:
 npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.133 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.133` is the fixed release ref and supported commercial install path; do not certify mutable release refs without their own canary evidence.
+`#v0.3.133` is the intended fixed-ref form for a release-certified install
+channel. Do not call that remote ref certified until `npm run release:check`
+passes after the tag or fixed ref is authorized and available.
 
 During install, update, and clean-runtime refresh, obsolete plugin/root-skill surfaces are removed only when TES-owned/generated/empty; ambiguous content is preserved, backed up under `.tes/bk/**`, and reported as `NEEDS_REVIEW`.
 

@@ -8,6 +8,10 @@
 [![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE)
 [![Live Landing](https://img.shields.io/badge/live--landing-GitHub%20Pages-0969da)](https://murillodutt.github.io/tilly-engineer-skills/)
 
+Current phase: ADR 0001 memory lifecycle is closed at local package-source
+level for `0.3.133`. Remote tag/ref release certification remains deferred
+until explicitly authorized.
+
 <p align="center">
   <img src="https://github.com/user-attachments/assets/f5ca3e73-eec9-453a-bb97-a09bdd304c31" alt="Tilly Engineer Skills: agent operating layer for LLM development across Codex, Claude Code, Cursor, and Obsidian-ready project knowledge" width="100%">
 </p>

@@ -5,12 +5,12 @@ status: active
 consumer: maintainers, Cortex maintainers, adapter authors, oracle authors, release reviewers, and execution agents
 source_of_truth: false
 evidence_level: L1
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # GOAL Super SPEC: TES Memory Lifecycle Implementation
 
-Status: active planning authority for implementing ADR 0001.
+Status: implemented through Wave 7 at local package-source level.
 
 Capability: implement the TES memory lifecycle model in staged, releasable
 waves without promoting roadmap text into certified behavior.
@@ -42,11 +42,10 @@ Primary architecture and runtime surfaces:
 
 ## Current Meaning
 
-This document is a plan, not delivered behavior.
+This document is the retained execution plan, not delivered behavior.
 
-It may authorize a future execution sequence after the owner starts that run.
-It does not certify event ledger behavior, checkpoint behavior, write-capable
-MCP tools, adapter lifecycle hooks, operator commands, release readiness, or
+The Wave 7 closure evidence records what was implemented and certified. This
+roadmap does not certify write-capable MCP tools, remote release readiness, or
 commercial-use claims.
 
 ADR 0001 remains the architecture decision. Runtime and adapter source remain

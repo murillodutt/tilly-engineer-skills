@@ -5,15 +5,14 @@ status: active
 consumer: maintainers, release reviewers, and documentation operators
 source_of_truth: false
 evidence_level: L2
-tver: 0.1.1
+tver: 0.1.2
 ---
 
 # RC1 Readiness Roadmap
 
-This roadmap starts after the Wave 6 `RELEASE_CANDIDATE_READY /
-CERTIFIED_REMOTE` result. It does not authorize a tag, release, package
-publish, marketplace submission, live GitHub issue, global install, or global
-configuration mutation.
+This roadmap starts after the ADR 0001 Wave 7 local package-source closure.
+It does not authorize a tag, release, package publish, marketplace submission,
+live GitHub issue, global install, or global configuration mutation.
 
 ## Goal
 
@@ -25,9 +24,9 @@ coherent for a new adopter and auditable for a maintainer.
 | Item | Value |
 |------|-------|
 | Package version | `0.3.133` |
-| Latest certified line | GitHub-only npx installer, interactive screen, Node/Bun runtime matrix, first-session hooks, and fixed release docs alignment |
-| Release action status | GitHub ref release only; no npm publish or marketplace action |
-| Release readiness claim | Candidate-ready for fixed GitHub package-spec adoption |
+| Latest certified line | ADR 0001 memory lifecycle local package-source closure, clean `0.3.133` bundle metadata, and one neutral canary replay |
+| Release action status | Local source and bundle certified; remote tag/ref, publish, and marketplace actions not authorized |
+| Release readiness claim | Candidate-ready for an RC1 decision, not remotely release-certified |
 
 ## Stage 1: Documentation Freshness
 
@@ -100,7 +99,7 @@ Acceptance:
 | Item | Status | Reason |
 |------|--------|--------|
 | Tag or release | Not authorized | Requires explicit user decision |
-| Package publish | Not authorized | Wave 6 certified readiness, not publication |
+| Package publish | Not authorized | Wave 7 local closure certified source and bundle only |
 | Marketplace submission | Deferred | Local plugin/package surfaces only |
 | Live GitHub issue publication | Partial | Fake transport and receiver quarantine certified |
 | Vector/Xenova behavior | Optional blocked/deferred | Dependency not installed by default |
