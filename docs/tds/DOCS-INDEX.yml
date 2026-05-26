@@ -1,4 +1,4 @@
-version: 0.3.130
+version: 0.3.131
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -300,6 +300,13 @@ documents:
     class: mesh
     status: active
     consumer: Cortex maintainers, Field Reports maintainers, checkpoint authors, and oracle authors
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/mesh/CHECKPOINTS.md
+    id: mesh.checkpoints
+    class: mesh
+    status: active
+    consumer: Cortex maintainers, checkpoint authors, installer authors, and oracle authors
     source_of_truth: true
     evidence_level: L2
   - path: docs/mesh/CORTEX-MCP.md

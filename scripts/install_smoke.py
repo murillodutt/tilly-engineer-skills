@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.130"
+VERSION = "0.3.131"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -227,6 +227,7 @@ def expected_mcp_paths(adapter: str) -> tuple[str, ...]:
         ".tes/bin/cortex_embed.mjs",
         ".tes/bin/scope_contract.py",
         ".tes/bin/event_ledger.py",
+        ".tes/bin/checkpoint.py",
         ".tes/bin/field_reports.py",
         ".tes/bin/mantra_gate.py",
         ".tes/bin/mantra_gate_adoption_oracle.py",

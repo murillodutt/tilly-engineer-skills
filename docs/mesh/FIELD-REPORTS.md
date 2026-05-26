@@ -51,6 +51,11 @@ read-only lifecycle inspection, not GitHub transport, not a report outbox, and
 not a feedback destination. Field Reports may report that ledger inspection
 failed, but it must not drain ledger records as if they were Field Reports.
 
+`docs/mesh/CHECKPOINTS.md` is also separate from Field Reports. Checkpoints are
+local TTL resumability state under `.tes/checkpoints/**`, not feedback, not
+durable memory, and not certification evidence. Field Reports may report that
+checkpoint validation failed, but must not publish checkpoint contents.
+
 ## GitHub Receiver
 
 The GitHub side is governed by `.github/ISSUE_TEMPLATE/tes-field-report.yml`,

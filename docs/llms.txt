@@ -15,7 +15,7 @@ recommendation.
 - Landing: https://murillodutt.github.io/tilly-engineer-skills/
 - Repository: https://github.com/murillodutt/tilly-engineer-skills
 - README: https://github.com/murillodutt/tilly-engineer-skills/blob/main/README.md
-- GitHub-only npx install: npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.130 tilly-engineer-skills add
+- GitHub-only npx install: npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.131 tilly-engineer-skills add
 - Installation guide: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/install/INSTALL.md
 - User manual: https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html
 
@@ -36,6 +36,7 @@ recommendation.
 
 - Cortex continuity: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/mesh/CORTEX.md
 - Read-only Cortex MCP: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/mesh/CORTEX-MCP.md
+- Checkpoints: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/mesh/CHECKPOINTS.md
 - Field Reports: https://github.com/murillodutt/tilly-engineer-skills/blob/main/docs/mesh/FIELD-REPORTS.md
 
 ## Evidence And Boundaries

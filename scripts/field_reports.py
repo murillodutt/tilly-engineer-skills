@@ -21,7 +21,7 @@ from typing import Any
 import scope_contract
 
 
-VERSION = "0.3.130"
+VERSION = "0.3.131"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 LEGACY_SCHEMAS = ("tes-field-report@1", "tilly-field-report@1")
@@ -65,6 +65,7 @@ GIT_EXCLUDE_LINES = (
     ".tes/bin/__pycache__/",
     "*.pyc",
     ".tes/field-reports/",
+    ".tes/checkpoints/",
     ".tes/mantra-gates/",
     ".tes/legacy-retirement/",
     ".tes/cortex/*.sqlite",

@@ -69,6 +69,17 @@ python3 scripts/event_ledger.py inspect-schema
 python3 scripts/event_ledger.py --self-test
 ```
 
+## Checkpoints
+
+```bash
+python3 scripts/checkpoint.py create --target /path/to/project --id run-id
+python3 scripts/checkpoint.py list --target /path/to/project
+python3 scripts/checkpoint.py status --target /path/to/project --id run-id
+python3 scripts/checkpoint.py cleanup --target /path/to/project
+python3 scripts/checkpoint.py inspect-schema
+python3 scripts/checkpoint.py --self-test
+```
+
 ## Cortex
 
 ```bash
@@ -151,6 +162,7 @@ npm run field-reports:status -- --target /path/to/project
 npm run field-reports:drain -- --target /path/to/project
 npm run scope:contract:self-test
 npm run event-ledger:self-test
+npm run checkpoint:self-test
 npm run claude:plugin:oracle
 npm run retention:check
 npm run reference:graph

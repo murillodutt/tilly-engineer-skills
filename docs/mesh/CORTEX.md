@@ -166,6 +166,14 @@ Event ledger entries are coordination evidence, not Cortex memory. Inspecting a
 ledger must not append to `TRAIL.md`, create cells, rebuild recall, or promote
 events into durable knowledge.
 
+## Checkpoint Boundary
+
+`docs/mesh/CHECKPOINTS.md` defines TTL resumability state. Checkpoints may help
+an agent resume work, but they are not Cortex cells, not certification
+evidence, not Event Ledger records, and not Field Reports. Creating or cleaning
+a checkpoint must not append to `TRAIL.md`, create cells, rebuild recall, or
+authorize durable memory writes.
+
 `curate-plan` statuses:
 
 | Status | Meaning |
