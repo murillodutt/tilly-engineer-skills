@@ -277,6 +277,39 @@ def run_oracle() -> dict[str, Any]:
         if unauthorized.get("status") != "NEEDS_AUTH" or unauthorized.get("writes") != []:
             failures.append("unauthorized apply did not preserve no-write contract")
 
+        missing_apply = cortex.apply_cell(
+            healthy,
+            "missing-quality",
+            "Missing source evidence must not be promoted into Cortex memory.",
+            ["sources/missing-quality-source.md"],
+            None,
+            [],
+            authorized=True,
+            update_existing=False,
+        )
+        if missing_apply.get("status") != "FAIL" or missing_apply.get("writes") != []:
+            failures.append("missing-evidence apply did not fail without writes")
+        if not any("evidence file missing" in failure for failure in missing_apply.get("failures", [])):
+            failures.append("missing-evidence apply omitted missing evidence reason")
+        if (cortex.cortex_path(healthy) / "cells" / "missing-quality.md").exists():
+            failures.append("missing-evidence apply created a cell")
+
+        missing_cell = cortex.cortex_path(healthy) / "cells" / "missing-quality-audit.md"
+        missing_cell.write_text(
+            "# Missing Quality Audit\n\n"
+            "## Claim\n\n"
+            "Audit must reject cells that cite missing real evidence files.\n\n"
+            "## Evidence\n\n"
+            "- `sources/missing-quality-source.md`\n",
+            encoding="utf-8",
+        )
+        missing_audit = cortex.audit(healthy)
+        if missing_audit.get("status") != "FAIL":
+            failures.append("missing-evidence audit did not fail")
+        if not any("evidence file missing" in failure for failure in missing_audit.get("failures", [])):
+            failures.append("missing-evidence audit omitted missing evidence reason")
+        missing_cell.unlink()
+
         xenova_probe = cortex.curate_plan(healthy, "xenova", write_index=False)
         if xenova_probe.get("status") not in {"PASS", "BLOCKED"}:
             failures.append(f"xenova probe returned ambiguous status: {xenova_probe.get('status')}")

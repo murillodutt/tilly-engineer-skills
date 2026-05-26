@@ -57,8 +57,13 @@ H2_HEADING = re.compile(r"^## .+", re.MULTILINE)
 CLAIM_SECTION = re.compile(r"^## Claims?$", re.MULTILINE)
 EVIDENCE_SECTION = re.compile(r"^## Evidence$", re.MULTILINE)
 EVIDENCE_REF = re.compile(
-    r"(`?((?:\.\.?/)?(?:docs/agents/cortex/)?sources/[^`\s)]+|docs/agents/evidence/[^`\s)]+)`?|^[-*] Assumption:|^Assumption:)",
+    r"(?<![A-Za-z0-9_./-])(`?((?:/|\.\.?/)?(?:docs/agents/cortex/)?sources/[^`\s)]+|"
+    r"(?:/|\.\.?/)?docs/agents/evidence/[^`\s)]+)`?|^[-*] Assumption:|^Assumption:)",
     re.MULTILINE,
+)
+REAL_EVIDENCE_REF = re.compile(
+    r"(?<![A-Za-z0-9_./-])`?((?:/|(?:(?:\.\.?/)+))?(?:docs/agents/cortex/)?sources/[^`\s)]+|"
+    r"(?:/|(?:(?:\.\.?/)+))?docs/agents/evidence/[^`\s)]+)`?"
 )
 STOPWORDS = {
     "a", "an", "and", "are", "as", "be", "by", "com", "como", "con", "da", "das", "de", "del",
@@ -499,6 +504,7 @@ def cell_quality_failures(cell: Path, target: Path) -> list[str]:
     text = read_text(cell)
     failures: list[str] = []
     h1_count = len(H1_HEADING.findall(text))
+    evidence = section_text(text, {"evidence"})
 
     if h1_count != 1:
         failures.append(f"cell must contain exactly one H1: {rel(cell, target)}")
@@ -508,6 +514,10 @@ def cell_quality_failures(cell: Path, target: Path) -> list[str]:
         failures.append(f"cell missing ## Evidence section: {rel(cell, target)}")
     if not EVIDENCE_REF.search(text):
         failures.append(f"cell missing explicit evidence ref: {rel(cell, target)}")
+    failures.extend(
+        f"cell evidence ref invalid: {rel(cell, target)}: {failure}"
+        for failure in evidence_ref_failures(target, evidence)
+    )
 
     return failures
 
@@ -697,11 +707,50 @@ def direction(cell: dict[str, object]) -> str:
 
 
 def real_evidence_refs(evidence: str) -> list[str]:
-    refs = re.findall(
-        r"(?:\.\.?/)?(?:docs/agents/cortex/)?sources/[^\s`)]+|docs/agents/evidence/[^\s`)]+",
-        evidence,
-    )
+    refs = REAL_EVIDENCE_REF.findall(evidence)
     return sorted(set(ref.strip("`") for ref in refs))
+
+
+def resolve_real_evidence_ref(target: Path, raw_ref: str) -> tuple[Path | None, str | None]:
+    stripped = raw_ref.strip().strip("`")
+    candidate = Path(stripped)
+    if candidate.is_absolute():
+        return None, f"absolute evidence path is not allowed: {stripped}"
+    if ".." in candidate.parts:
+        return None, f"evidence path traversal is not allowed: {stripped}"
+
+    parts = candidate.parts
+    sources_prefix = ("docs", "agents", "cortex", "sources")
+    evidence_prefix = ("docs", "agents", "evidence")
+    if parts[:4] == sources_prefix:
+        root = (cortex_path(target) / "sources").resolve()
+        suffix = Path(*parts[4:])
+    elif parts[:1] == ("sources",):
+        root = (cortex_path(target) / "sources").resolve()
+        suffix = Path(*parts[1:])
+    elif parts[:3] == evidence_prefix:
+        root = (target / "docs" / "agents" / "evidence").resolve()
+        suffix = Path(*parts[3:])
+    else:
+        return None, f"unsupported evidence path: {stripped}"
+
+    resolved = (root / suffix).resolve()
+    try:
+        resolved.relative_to(root)
+    except ValueError:
+        return None, f"evidence path escapes allowed root: {stripped}"
+    if not resolved.is_file():
+        return None, f"evidence file missing: {rel(resolved, target)}"
+    return resolved, None
+
+
+def evidence_ref_failures(target: Path, evidence: str) -> list[str]:
+    failures: list[str] = []
+    for raw_ref in real_evidence_refs(evidence):
+        _resolved, failure = resolve_real_evidence_ref(target, raw_ref)
+        if failure:
+            failures.append(failure)
+    return failures
 
 
 def redundancy_reason(cell: dict[str, object]) -> str | None:
@@ -1679,6 +1728,7 @@ def apply_cell(
     evidence_text = "\n".join(evidence_lines)
     if not EVIDENCE_REF.search(evidence_text):
         failures.append("apply evidence must reference sources/**, docs/agents/evidence/**, or Assumption:")
+    failures.extend(evidence_ref_failures(target, evidence_text))
 
     root = cortex_path(target)
     map_path = root / "MAP.md"
@@ -1842,6 +1892,46 @@ def self_test() -> int:
             authorized=False,
             update_existing=False,
         )
+        missing_apply_result = apply_cell(
+            target,
+            "missing-evidence",
+            "Missing source evidence must not create a Cortex cell.",
+            ["sources/missing-source.md"],
+            None,
+            [],
+            authorized=True,
+            update_existing=False,
+        )
+        traversal_apply_result = apply_cell(
+            target,
+            "traversal-evidence",
+            "Evidence refs must not traverse out of allowed Cortex roots.",
+            ["sources/../karpathy-pattern.md"],
+            None,
+            [],
+            authorized=True,
+            update_existing=False,
+        )
+        absolute_apply_result = apply_cell(
+            target,
+            "absolute-evidence",
+            "Evidence refs must not use absolute paths.",
+            ["/sources/karpathy-pattern.md"],
+            None,
+            [],
+            authorized=True,
+            update_existing=False,
+        )
+        external_absolute_apply_result = apply_cell(
+            target,
+            "external-absolute-evidence",
+            "External absolute paths must not be reinterpreted as relative evidence refs.",
+            ["/tmp/sources/karpathy-pattern.md"],
+            None,
+            [],
+            authorized=True,
+            update_existing=False,
+        )
         apply_result = apply_cell(
             target,
             "applied-memory",
@@ -1868,6 +1958,17 @@ def self_test() -> int:
         loose_cell.write_text("# Loose Summary\n\nThis is only a summary with no explicit evidence.\n", encoding="utf-8")
         loose_audit_result = audit(target)
         loose_cell.unlink()
+        missing_evidence_cell = cortex_path(target) / "cells" / "missing-evidence-audit.md"
+        missing_evidence_cell.write_text(
+            "# Missing Evidence Audit\n\n"
+            "## Claim\n\n"
+            "Audit must reject cells whose real evidence refs do not exist.\n\n"
+            "## Evidence\n\n"
+            "- `sources/missing-source.md`\n",
+            encoding="utf-8",
+        )
+        missing_evidence_audit_result = audit(target)
+        missing_evidence_cell.unlink()
 
         dirty_target = Path(tempdir) / "dirty-curation"
         init(dirty_target)
@@ -1999,10 +2100,15 @@ def self_test() -> int:
             "untracked_reflect": untracked_reflect_result,
             "ignored_reflect": ignored_reflect_result,
             "unauthorized_apply": unauth_apply_result,
+            "missing_apply": missing_apply_result,
+            "traversal_apply": traversal_apply_result,
+            "absolute_apply": absolute_apply_result,
+            "external_absolute_apply": external_absolute_apply_result,
             "apply": apply_result,
             "read_cell": read_cell_result,
             "broken_link_audit": broken_audit_result,
             "loose_cell_audit": loose_audit_result,
+            "missing_evidence_audit": missing_evidence_audit_result,
             "dirty_curate_plan": dirty_curate_result,
             "healthy_curate_plan": healthy_curate_result,
         }
@@ -2027,6 +2133,22 @@ def self_test() -> int:
             and ignored_reflect_result["changed_lines"] == 0
             and not ignored_reflect_result["curation_due"],
             unauth_apply_result["status"] == "NEEDS_AUTH" and unauth_apply_result["writes"] == [],
+            missing_apply_result["status"] == "FAIL"
+            and missing_apply_result["writes"] == []
+            and any("evidence file missing" in failure for failure in missing_apply_result["failures"]),
+            not (cortex_path(target) / "cells" / "missing-evidence.md").exists(),
+            traversal_apply_result["status"] == "FAIL"
+            and traversal_apply_result["writes"] == []
+            and any("path traversal" in failure for failure in traversal_apply_result["failures"]),
+            not (cortex_path(target) / "cells" / "traversal-evidence.md").exists(),
+            absolute_apply_result["status"] == "FAIL"
+            and absolute_apply_result["writes"] == []
+            and any("absolute evidence path" in failure for failure in absolute_apply_result["failures"]),
+            not (cortex_path(target) / "cells" / "absolute-evidence.md").exists(),
+            external_absolute_apply_result["status"] == "FAIL"
+            and external_absolute_apply_result["writes"] == []
+            and any("apply evidence must reference" in failure for failure in external_absolute_apply_result["failures"]),
+            not (cortex_path(target) / "cells" / "external-absolute-evidence.md").exists(),
             apply_result["status"] == "PASS",
             any(path.endswith("cells/applied-memory.md") for path in apply_result["writes"]),
             read_cell_result["status"] == "PASS" and "Authorized apply" in read_cell_result["text"],
@@ -2034,6 +2156,8 @@ def self_test() -> int:
             any("missing-cell" in failure for failure in broken_audit_result["failures"]),
             loose_audit_result["status"] == "FAIL",
             any("explicit evidence ref" in failure for failure in loose_audit_result["failures"]),
+            missing_evidence_audit_result["status"] == "FAIL",
+            any("evidence file missing" in failure for failure in missing_evidence_audit_result["failures"]),
             dirty_curate_result["status"] == "FAIL" and dirty_curate_result["writes"] == [],
             bool(dirty_curate_result["merge_candidates"]),
             bool(dirty_curate_result["split_candidates"]),

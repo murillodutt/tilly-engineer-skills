@@ -1,4 +1,4 @@
-version: 0.3.126
+version: 0.3.127
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -22,6 +22,13 @@ documents:
     consumer: maintainers, installer authors, adapter authors, and installing agents
     source_of_truth: true
     evidence_level: L2
+  - path: docs/adr/0001-tes-memory-lifecycle.md
+    id: architecture.adr_0001_tes_memory_lifecycle
+    class: architecture
+    status: active
+    consumer: maintainers, Cortex authors, adapter authors, installer authors, and release operators
+    source_of_truth: true
+    evidence_level: L1
   - path: docs/install/INSTALL.md
     id: install.adapter_installer
     class: adapter

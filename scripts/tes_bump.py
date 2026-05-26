@@ -27,6 +27,7 @@ EXCLUDED_DIRS = {
     "__pycache__",
     "dist",
     "build",
+    "tmp",
 }
 GLOBAL_CONFIG_ROOT = Path.home() / ".tes" / "bump"
 LOCAL_CONFIG = Path(".tes/bump.json")
