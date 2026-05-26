@@ -5,7 +5,7 @@ status: active
 consumer: agents, maintainers, and certification reviewers
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # Current Evidence Claims
@@ -88,5 +88,23 @@ matching lock, and the external-review follow-up packet.
 Boundary: the policy is enforced on publish. Hand-created
 `docs/dist/<other>/` outside the publish flow is pruned on the next
 publish; the checklist lock blocks the inverse path.
+
+Retention status: `current`.
+
+## TES Memory Lifecycle ADR Claim
+
+ADR 0001 is implemented at the local package-source contract level through
+Wave 7. The implemented lifecycle preserves Markdown as durable truth, events
+as evidence, checkpoints as TTL resumability, Field Reports as transport, MCP
+as read-only, and subagents as parent-return evidence only.
+
+Proof: `docs/adr/0001-tes-memory-lifecycle.md`,
+`docs/roadmap/GOAL-SUPER-SPEC-tes-memory-lifecycle.md`,
+`docs/evidence/reports/2026/05/26/memory-lifecycle/wave7-release-canary/REPORT.md`,
+and the Wave 1-6 commits named in that report.
+
+Boundary: this is local package-source closure for version `0.3.133`. Remote
+release certification, package publish, marketplace action, write-capable MCP,
+and commercial-use certification remain outside the claim.
 
 Retention status: `current`.

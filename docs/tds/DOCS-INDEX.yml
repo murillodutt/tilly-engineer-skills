@@ -841,3 +841,10 @@ documents:
     consumer: TES maintainers, adapter authors, and certification reviewers
     source_of_truth: false
     evidence_level: L2
+  - path: docs/evidence/reports/2026/05/26/memory-lifecycle/wave7-release-canary/REPORT.md
+    id: evidence.memory_lifecycle.wave7_release_canary_20260526
+    class: evidence
+    status: active
+    consumer: TES maintainers, Cortex maintainers, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
