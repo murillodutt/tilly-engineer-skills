@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, adapter authors, and installing agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.4
+tver: 0.1.5
 ---
 
 # Platform Differences Reference
@@ -38,7 +38,7 @@ TES entry vocabulary is shared across platforms:
 | Prospect project stress | `/tes-prospect` | `/tes:prospect` | Explicitly invoke predictive pressure on a plan or design; no broad natural activation. |
 | Mine code and domain knowledge | `/tes-mine` | `/tes:mine` | Explicitly invoke code, terminology, context, and ADR mining with a cognitive brake. |
 | Open Obsidian | `/tes-open-obsidian` | `/tes:open-obsidian` | Preflight context/alignment and open `docs/agents` as the Obsidian vault without writing `.obsidian/**`. |
-| Cortex | `/tes-cortex` | `/tes:cortex`, `/tes:recall`, `/tes:learn`, `/tes:reflect` | Inspect or certify the continuity layer. |
+| Cortex | `/tes-cortex` | `/tes:cortex`, `/tes:recall`, `/tes:learn`, `/tes:reflect` | Inspect, consolidate, or certify the continuity layer. |
 | Curate | `/tes-curate` | `/tes:curate` | Classify Cortex memory quality risks without writing memory. |
 | MCP | `/tes-mcp` | `/tes:mcp` | Inspect or activate read-only Cortex MCP. |
 | Field Reports | `/tes-field-reports` | `/tes:field-reports` | Inspect or drain sanitized local feedback. |

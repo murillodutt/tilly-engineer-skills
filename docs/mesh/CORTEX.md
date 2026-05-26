@@ -5,7 +5,7 @@ status: active
 consumer: installer authors, adopters, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.5.0
+tver: 0.5.1
 ---
 
 # TES Cortex
@@ -236,6 +236,7 @@ memory-quality failures are also present.
 | `checkpoint` | Write TTL checkpoint state only after explicit `--yes` |
 | `remember` | Durable memory write through the same authorization and evidence gate as `apply` |
 | `forget` | Blocked destructive operator until consolidation gate evidence exists |
+| `consolidation_gate.py` | Lock and certify observed durable-memory writes without deleting memory |
 
 ## Operator Mutability
 
@@ -301,6 +302,25 @@ unless `--update` is passed, and never writes in `sources/**`.
 as `apply`. `checkpoint` is not durable memory and writes only TTL state.
 `forget` is intentionally blocked until the consolidation gate can prove
 observed write behavior, rollback, and review evidence.
+
+## Consolidation Gate
+
+Consolidation is the review layer after an authorized durable-memory write. It
+does not decide from intent, event records, checkpoints, or subagent claims
+alone.
+
+```bash
+python3 scripts/consolidation_gate.py lock --target /path/to/project-or-vault --id run-id --evidence sources/source.md --yes
+python3 scripts/consolidation_gate.py certify --target /path/to/project-or-vault --id run-id --observed-write .tes/cortex/consolidation/observed.json --review-status APPROVED --rollback-ref git:<sha> --evidence sources/source.md
+python3 scripts/consolidation_gate.py --self-test
+```
+
+`lock` writes only `.tes/cortex/consolidation/**` and requires `--yes`.
+`certify` is read-only. It returns `CERTIFIED` only when a valid lock, approved
+review, rollback reference, allowed evidence, and observed Cortex cell, MAP,
+LINKS, and TRAIL write result are present. Event-only records, checkpoint-only
+state, stale locks, ambiguous review, or subagent direct memory writes return
+`BLOCKED` or `NEEDS_REVIEW`.
 
 Compatibility aliases `scaffold`, `check`, and `lint` may remain in the helper
 only to prevent transition friction. Documentation and package scripts use

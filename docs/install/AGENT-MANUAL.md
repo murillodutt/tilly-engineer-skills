@@ -5,7 +5,7 @@ status: active
 consumer: installing agents and runtime adapters
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.5
+tver: 0.1.6
 ---
 
 # Tilly Engineer Skills — Agent Manual
@@ -278,6 +278,8 @@ curation cache only. Never treat SQLite, MCP, or LLM as memory.
 | `checkpoint --yes` | Yes | Writes only `.tes/checkpoints/**`; not durable memory |
 | `remember --yes` | Yes | Same durable-memory gate as `apply --yes` |
 | `forget --yes` | Blocked | Returns `BLOCKED` until consolidation gate evidence exists |
+| `consolidation_gate.py lock --yes` | Yes | Writes only `.tes/cortex/consolidation/**`; never writes durable memory |
+| `consolidation_gate.py certify` | No | Requires lock, approved review, rollback, evidence, and observed Cortex write result |
 
 ### Backends
 
@@ -339,7 +341,7 @@ Write-capable MCP tools are intentionally outside this version.
 ### Installed helper set
 
 `cortex.py`, `cortex_mcp.py`, `cortex_embed.mjs`, `scope_contract.py`,
-`event_ledger.py`, `checkpoint.py`, `field_reports.py`, `tes_update.py`, `tes_legacy_retirement.py`, `root_context.py`,
+`event_ledger.py`, `checkpoint.py`, `consolidation_gate.py`, `field_reports.py`, `tes_update.py`, `tes_legacy_retirement.py`, `root_context.py`,
 `tes_init.py`, `project_context_oracle.py`, `project_alignment_oracle.py`,
 `tes_open_obsidian.py`, `command_trigger_oracle.py`, `tes_bundle.py`,
 `materialize_adapter.py`.

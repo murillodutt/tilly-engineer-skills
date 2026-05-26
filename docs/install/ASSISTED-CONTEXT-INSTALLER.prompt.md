@@ -6,7 +6,7 @@ status: active
 consumer: installing LLMs and adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.10.7
+tver: 0.10.8
 ---
 
 # Tilly Assisted Context Installer
@@ -56,7 +56,7 @@ Useful source paths, relative to `raw_base`:
 docs/install/navigation/{common,codex,codex-cli,claude-code,claude-desktop,cursor,cursor-acp,anthropic-api,generic}.prompt.md
 docs/install/{USER-MANUAL.html,COMMAND-TRIGGERS.md}
 docs/mesh/{CORTEX.md,CORTEX-MCP.md}
-scripts/{cortex.py,cortex_embed.mjs,cortex_mcp.py,scope_contract.py,event_ledger.py,checkpoint.py,tes_init.py,tes_update.py,tes_legacy_retirement.py,root_context.py,install_adapter.py,install_mcp.py,field_reports.py,install_smoke.py,materialize_adapter.py,platform_surface_oracle.py}
+scripts/{cortex.py,cortex_embed.mjs,cortex_mcp.py,scope_contract.py,event_ledger.py,checkpoint.py,consolidation_gate.py,tes_init.py,tes_update.py,tes_legacy_retirement.py,root_context.py,install_adapter.py,install_mcp.py,field_reports.py,install_smoke.py,materialize_adapter.py,platform_surface_oracle.py}
 src/adapters/codex/AGENTS.md
 src/adapters/codex/skills/{tes-engineering-discipline,tes-goal-maestro}/
 src/adapters/claude/{CLAUDE.md,plugin/plugin.json,plugin/marketplace.json,skills/tes-*/SKILL.md}
@@ -932,7 +932,7 @@ Changed Surfaces
 - Clean backup: <.tes/bk/<timestamp>/manifest.json | none>; restore: <command>
 - Semantic recovery: RECOVERED | NEEDS_REVIEW | SKIP; evidence: <path | none>
 - Root context gate: PASS | RECOVERED | NEEDS_REVIEW | SKIP; plan/resolution: <path | backup recovery | none>
-- Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs, scope_contract.py, event_ledger.py, checkpoint.py, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py, tes_init.py, project_context_oracle.py: PASS/BLOCKED/MISSING
+- Installed helper set: cortex.py, cortex_mcp.py, cortex_embed.mjs, scope_contract.py, event_ledger.py, checkpoint.py, consolidation_gate.py, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py, tes_init.py, project_context_oracle.py: PASS/BLOCKED/MISSING
 - Helper contract parity: PASS | STALE_HELPERS | BLOCKED | NOT_INSTALLED
 - Project context: docs/agents/PROJECT-CONTEXT.md PASS | NEEDS_REVIEW | SKIP
 - Continuation plan: NONE | READY | PENDING_APPROVAL; required phases: <short list>

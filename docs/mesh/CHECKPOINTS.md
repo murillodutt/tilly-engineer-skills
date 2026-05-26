@@ -5,7 +5,7 @@ status: active
 consumer: Cortex maintainers, checkpoint authors, installer authors, and oracle authors
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # TES Checkpoints
@@ -95,6 +95,10 @@ Each checkpoint carries an authority block:
 Changing any of these values makes the checkpoint invalid. A checkpoint cannot
 bypass closeout, release identity, observed write evidence, or the Cortex write
 gate.
+
+The consolidation gate treats checkpoint-only state as temporary execution
+context. It can explain why memory consolidation is blocked, but it cannot
+certify durable memory.
 
 ## Certification
 

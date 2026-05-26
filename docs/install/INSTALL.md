@@ -5,7 +5,7 @@ status: active
 consumer: adopters and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.9.6
+tver: 0.9.7
 ---
 
 # Adapter Installation
@@ -26,11 +26,11 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 ## Commercial Quickstart
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.132 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.133 tilly-engineer-skills add
 ```
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.132 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.133 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -42,10 +42,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.132 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.133 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.132` is the fixed release ref and supported commercial install path; do not certify mutable release refs without their own canary evidence.
+`#v0.3.133` is the fixed release ref and supported commercial install path; do not certify mutable release refs without their own canary evidence.
 
 During install, update, and clean-runtime refresh, obsolete plugin/root-skill surfaces are removed only when TES-owned/generated/empty; ambiguous content is preserved, backed up under `.tes/bk/**`, and reported as `NEEDS_REVIEW`.
 
@@ -301,7 +301,7 @@ Changed Surfaces: new surfaces, updated existing mesh files, runtime config
 Clean Backup: .tes/bk/<timestamp>/manifest.json plus restore command
 Semantic Recovery: RECOVERED | NEEDS_REVIEW | SKIP, evidence path
 Root Context Gate: PASS | RECOVERED | NEEDS_REVIEW | SKIP
-Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, scope_contract.py, event_ledger.py, checkpoint.py, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py, tes_init.py, project_context_oracle.py, project_alignment_oracle.py, tes_open_obsidian.py
+Installed Helper Set: cortex.py, cortex_mcp.py, cortex_embed.mjs, scope_contract.py, event_ledger.py, checkpoint.py, consolidation_gate.py, field_reports.py, tes_update.py, tes_legacy_retirement.py, root_context.py, tes_init.py, project_context_oracle.py, project_alignment_oracle.py, tes_open_obsidian.py
 Field Reports: PASS | BLOCKED | DISABLED | SKIP, with pending outbox count
 Certification: compact PASS/FAIL/SKIP bullets, including Project Quality Gates PASS/BLOCKED/NEEDS_REVIEW/NOT_APPLIED with lint/typecheck/test/build/CI details
 Evidence: ...

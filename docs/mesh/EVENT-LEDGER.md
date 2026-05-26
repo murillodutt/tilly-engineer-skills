@@ -5,7 +5,7 @@ status: active
 consumer: Cortex maintainers, Field Reports maintainers, checkpoint authors, and oracle authors
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # TES Event Ledger
@@ -79,6 +79,9 @@ for product feedback.
 Cortex `TRAIL.md` remains the append-only evolution timeline for durable memory
 changes. Event Ledger entries are coordination evidence and must not become
 Cortex cells automatically.
+
+The consolidation gate may inspect event-related context only as rejection or
+coordination evidence. Event-only records cannot certify durable memory.
 
 Read-only event inspection must not write `docs/agents/cortex/TRAIL.md`,
 `docs/agents/cortex/cells/**`, `.tes/field-reports/outbox.jsonl`, or

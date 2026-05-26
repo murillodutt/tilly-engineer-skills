@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.132"
+VERSION = "0.3.133"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -29,9 +29,9 @@ REQUIRED_PATHS = (
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/adr/0001-tes-memory-lifecycle.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.132/index.json",
-    "docs/dist/0.3.132/tilly-engineer-skills-0.3.132.zip",
-    "docs/dist/0.3.132/tilly-engineer-skills-0.3.132.zip.sha256",
+    "docs/dist/0.3.133/index.json",
+    "docs/dist/0.3.133/tilly-engineer-skills-0.3.133.zip",
+    "docs/dist/0.3.133/tilly-engineer-skills-0.3.133.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -187,6 +187,7 @@ REQUIRED_PATHS = (
     "scripts/scope_contract.py",
     "scripts/event_ledger.py",
     "scripts/checkpoint.py",
+    "scripts/consolidation_gate.py",
     "scripts/field_reports.py",
     "scripts/field_reports_github_oracle.py",
     "scripts/field_reports_quality_oracle.py",
@@ -340,6 +341,9 @@ REQUIRED_PACKAGE_SCRIPTS = (
     "scope:contract:self-test",
     "event-ledger:self-test",
     "checkpoint:self-test",
+    "consolidation:lock",
+    "consolidation:certify",
+    "consolidation:self-test",
     "mcp:install",
     "mcp:dry-run",
     "mcp:self-test",

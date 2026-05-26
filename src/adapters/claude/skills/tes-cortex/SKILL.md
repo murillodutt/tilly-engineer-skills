@@ -1,6 +1,6 @@
 ---
 name: tes-cortex
-description: Use when the user says /tes-cortex, /tes:cortex, /tes-curate, /tes:recall, /tes:learn, /tes:reflect, /tes:curate, or asks to inspect, audit, rebuild, query, read, learn from, reflect into, semantically curate, or apply TES Cortex memory.
+description: Use when the user says /tes-cortex, /tes:cortex, /tes-curate, /tes:recall, /tes:learn, /tes:reflect, /tes:curate, or asks to inspect, audit, rebuild, query, read, learn from, reflect into, semantically curate, consolidate, or apply TES Cortex memory.
 license: MIT
 ---
 
@@ -28,6 +28,7 @@ oracles.
 | operator review | run read-only `cortex_review` MCP or `cortex.py review --backend lexical` |
 | checkpoint progress | run `cortex.py checkpoint --yes`; writes only `.tes/checkpoints/**` |
 | remember durable memory | run `cortex.py remember --yes` only with explicit approval and evidence |
+| consolidate memory | run `consolidation_gate.py lock --yes`, then read-only `consolidation_gate.py certify` with observed write, review, rollback, and evidence |
 | forget durable memory | run `cortex.py forget`; expect `BLOCKED` until consolidation gate exists |
 
 ## Rules
@@ -44,5 +45,7 @@ oracles.
   compaction, split, merge, or rejection.
 - Never run `apply --yes` without explicit user authorization.
 - Never run `remember --yes` without explicit user authorization and evidence.
+- Never call consolidation `CERTIFIED` without a valid lock, approved review,
+  rollback reference, allowed evidence, and observed Cortex cell write result.
 - Do not treat `forget` as available destructive deletion; it is blocked until
   the consolidation gate owns observed-write and rollback evidence.

@@ -5,7 +5,7 @@ status: active
 consumer: installing agents and runtime adapters
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # TES Agent Oracle Inventory
@@ -78,6 +78,15 @@ python3 scripts/checkpoint.py status --target /path/to/project --id run-id
 python3 scripts/checkpoint.py cleanup --target /path/to/project
 python3 scripts/checkpoint.py inspect-schema
 python3 scripts/checkpoint.py --self-test
+```
+
+## Consolidation Gate
+
+```bash
+python3 scripts/consolidation_gate.py lock --target /path/to/project --id run-id --evidence sources/source.md --yes
+python3 scripts/consolidation_gate.py certify --target /path/to/project --id run-id --observed-write .tes/cortex/consolidation/observed.json --review-status APPROVED --rollback-ref git:<sha> --evidence sources/source.md
+python3 scripts/consolidation_gate.py inspect-schema
+python3 scripts/consolidation_gate.py --self-test
 ```
 
 ## Cortex
