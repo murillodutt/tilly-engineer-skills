@@ -1,4 +1,4 @@
-version: 0.3.134
+version: 0.3.135
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -239,6 +239,13 @@ documents:
     consumer: benchmark authors
     source_of_truth: true
     evidence_level: L1
+  - path: docs/evals/CORTEX-MEMORY-BENCHMARKS.md
+    id: evals.cortex_memory_benchmarks
+    class: eval
+    status: active
+    consumer: Cortex maintainers, benchmark authors, oracle authors, and release reviewers
+    source_of_truth: true
+    evidence_level: L1
   - path: docs/evals/EXAMPLES.md
     id: evals.examples
     class: eval
@@ -393,6 +400,20 @@ documents:
     consumer: maintainers, MCP reviewers, Cortex maintainers, and execution agents
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md
+    id: roadmap.goal_super_spec_cortex_memory_benchmark_harness
+    class: roadmap
+    status: active
+    consumer: maintainers, Cortex maintainers, oracle authors, benchmark authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/cortex-memory-benchmark-harness/EXECUTION-UNITS.md
+    id: roadmap.cortex_memory_benchmark_harness.execution_units
+    class: roadmap
+    status: active
+    consumer: maintainers, Cortex maintainers, oracle authors, benchmark authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/GOAL-SUPER-SPEC-tes-memory-lifecycle.md
     id: roadmap.goal_super_spec_tes_memory_lifecycle
     class: roadmap
@@ -462,6 +483,13 @@ documents:
     status: active
     consumer: agents, maintainers, and certification reviewers
     source_of_truth: true
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/05/26/cortex-memory-benchmark-harness/REPORT.md
+    id: evidence.cortex_memory_benchmark_harness_20260526
+    class: evidence
+    status: active
+    consumer: Cortex maintainers, benchmark authors, oracle authors, and release reviewers
+    source_of_truth: false
     evidence_level: L2
   - path: docs/evidence/current/RISKS.md
     id: evidence.current.risks

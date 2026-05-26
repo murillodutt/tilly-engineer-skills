@@ -1,0 +1,258 @@
+{
+  "schema_version": "tes-cortex-memory-fixtures@0.1",
+  "version": "0.1.0",
+  "cutoffs": [1, 3, 5],
+  "capabilities": [
+    "information_extraction",
+    "temporal_reasoning",
+    "event_ordering",
+    "knowledge_update",
+    "contradiction_resolution",
+    "multi_session_reasoning",
+    "preference_following",
+    "instruction_following",
+    "summarization",
+    "abstention"
+  ],
+  "fixture_documents": [
+    {
+      "path": "CONTRACT.md",
+      "content": "# TES Cortex Contract\n\nMarkdown is the durable source of truth. SQLite recall is derived evidence only.\n"
+    },
+    {
+      "path": "MAP.md",
+      "content": "# TES Cortex Map\n\n- sources/current-decision.md: current authority decision.\n- sources/old-decision.md: historical superseded decision.\n- cells/memory-authority.md: compiled authority cell.\n"
+    },
+    {
+      "path": "LINKS.md",
+      "content": "# TES Cortex Links\n\n- [[memory-authority]] -> sources/current-decision.md\n"
+    },
+    {
+      "path": "TRAIL.md",
+      "content": "# TES Cortex Trail\n\n## 2026-01-01 Install\n\nCortex fixture initialized.\n"
+    },
+    {
+      "path": "sources/current-decision.md",
+      "content": "# Current Decision\n\nCMBH-current-decision records the current decision: Markdown remains durable memory truth, while SQLite, checkpoints, benchmark runs, and scores are derived evidence only.\n"
+    },
+    {
+      "path": "sources/old-decision.md",
+      "content": "# Superseded Decision\n\nCMBH-old-decision records an older rejected idea: a benchmark registry could have been treated as authority. This idea is superseded and must not be used as current truth.\n"
+    },
+    {
+      "path": "sources/contradiction-review.md",
+      "content": "# Contradiction Review\n\nCMBH-contradiction-review records that automatic Cortex writes remain blocked until explicit authorization, evidence, rollback, and oracle coverage exist.\n"
+    },
+    {
+      "path": "sources/events/01-scope.md",
+      "content": "# Scope Event\n\nCMBH-event-order step 1: scope is normalized before recall evidence is judged.\n"
+    },
+    {
+      "path": "sources/events/02-recall.md",
+      "content": "# Recall Event\n\nCMBH-event-order step 2: recall artifacts preserve ranked matches and source refs.\n"
+    },
+    {
+      "path": "sources/events/03-judge.md",
+      "content": "# Judge Event\n\nCMBH-event-order step 3: the sufficiency oracle judges whether evidence supports a safe answer.\n"
+    },
+    {
+      "path": "sources/preference.md",
+      "content": "# Durable Preference\n\nCMBH-preference-grounding records a durable preference: prefer local deterministic oracles before optional model-assisted scoring.\n"
+    },
+    {
+      "path": "sources/mutability-lock.md",
+      "content": "# Mutability Lock\n\nCMBH-mutability-lock records that read-only benchmark runs must not append to TRAIL.md, create cells, or authorize memory writes.\n"
+    },
+    {
+      "path": "sources/multi-source-a.md",
+      "content": "# Multi Source A\n\nCMBH-multi-source states that recall evidence must include the current decision ref.\n"
+    },
+    {
+      "path": "sources/multi-source-b.md",
+      "content": "# Multi Source B\n\nCMBH-multi-source states that recall evidence must also include the mutability lock ref.\n"
+    },
+    {
+      "path": "cells/memory-authority.md",
+      "content": "# Memory Authority\n\n## Claim\n\nCMBH-summary-line: Cortex benchmark outputs are evidence, not durable memory truth.\n\n## Evidence\n\n- sources/current-decision.md\n- sources/contradiction-review.md\n"
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "CM001-information-extraction",
+      "capability": "information_extraction",
+      "question": "Which source records the current Cortex authority decision?",
+      "query": "CMBH-current-decision",
+      "expected_sufficiency": "sufficient",
+      "required_refs": ["docs/agents/cortex/sources/current-decision.md"],
+      "forbidden_refs": [],
+      "rubric_nuggets": [
+        {
+          "id": "current-source",
+          "description": "The current decision source is retrieved.",
+          "required_refs": ["docs/agents/cortex/sources/current-decision.md"]
+        }
+      ]
+    },
+    {
+      "id": "CM002-temporal-update",
+      "capability": "temporal_reasoning",
+      "question": "Which decision is current, and which older idea is superseded?",
+      "query": "CMBH-current-decision",
+      "expected_sufficiency": "sufficient",
+      "required_refs": ["docs/agents/cortex/sources/current-decision.md"],
+      "forbidden_refs": ["docs/agents/cortex/sources/old-decision.md"],
+      "rubric_nuggets": [
+        {
+          "id": "stale-registry-rejected",
+          "description": "The stale registry-as-authority source is not needed for the current answer.",
+          "forbidden_refs": ["docs/agents/cortex/sources/old-decision.md"]
+        }
+      ]
+    },
+    {
+      "id": "CM003-contradiction-resolution",
+      "capability": "contradiction_resolution",
+      "question": "What boundary blocks automatic Cortex writes?",
+      "query": "CMBH-contradiction-review",
+      "expected_sufficiency": "sufficient",
+      "required_refs": ["docs/agents/cortex/sources/contradiction-review.md"],
+      "forbidden_refs": [],
+      "rubric_nuggets": [
+        {
+          "id": "blocked-writes",
+          "description": "The retrieved evidence says automatic Cortex writes remain blocked.",
+          "required_terms": ["automatic Cortex writes remain blocked"]
+        }
+      ]
+    },
+    {
+      "id": "CM004-event-ordering",
+      "capability": "event_ordering",
+      "question": "What is the order from scope to recall to judging?",
+      "query": "CMBH-event-order",
+      "expected_sufficiency": "sufficient",
+      "required_refs": [
+        "docs/agents/cortex/sources/events/01-scope.md",
+        "docs/agents/cortex/sources/events/02-recall.md",
+        "docs/agents/cortex/sources/events/03-judge.md"
+      ],
+      "expected_order": [
+        "docs/agents/cortex/sources/events/01-scope.md",
+        "docs/agents/cortex/sources/events/02-recall.md",
+        "docs/agents/cortex/sources/events/03-judge.md"
+      ],
+      "rubric_nuggets": [
+        {
+          "id": "chronological-order",
+          "description": "The three lifecycle events are retrieved in chronological order.",
+          "required_refs": [
+            "docs/agents/cortex/sources/events/01-scope.md",
+            "docs/agents/cortex/sources/events/02-recall.md",
+            "docs/agents/cortex/sources/events/03-judge.md"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "CM005-abstention",
+      "capability": "abstention",
+      "question": "What budget policy is recorded for this fixture?",
+      "query": "CMBH-missing-budget",
+      "expected_sufficiency": "insufficient",
+      "required_refs": [],
+      "forbidden_refs": [],
+      "rubric_nuggets": [
+        {
+          "id": "no-invention",
+          "description": "The oracle should report insufficient evidence instead of inventing a budget policy."
+        }
+      ]
+    },
+    {
+      "id": "CM006-preference-following",
+      "capability": "preference_following",
+      "question": "Which scoring path should be preferred first?",
+      "query": "CMBH-preference-grounding",
+      "expected_sufficiency": "sufficient",
+      "required_refs": ["docs/agents/cortex/sources/preference.md"],
+      "required_terms": ["prefer local deterministic oracles"],
+      "rubric_nuggets": [
+        {
+          "id": "deterministic-first",
+          "description": "The local deterministic preference is grounded in a source.",
+          "required_terms": ["prefer local deterministic oracles"]
+        }
+      ]
+    },
+    {
+      "id": "CM007-instruction-following",
+      "capability": "instruction_following",
+      "question": "What must a read-only benchmark run avoid writing?",
+      "query": "CMBH-mutability-lock",
+      "expected_sufficiency": "sufficient",
+      "required_refs": ["docs/agents/cortex/sources/mutability-lock.md"],
+      "required_terms": ["must not append to TRAIL.md"],
+      "rubric_nuggets": [
+        {
+          "id": "read-only-lock",
+          "description": "The mutability lock is retrieved and says no TRAIL/cell/write authorization occurs.",
+          "required_terms": ["must not append to TRAIL.md", "create cells", "authorize memory writes"]
+        }
+      ]
+    },
+    {
+      "id": "CM008-multi-session-reasoning",
+      "capability": "multi_session_reasoning",
+      "question": "Which two refs together support a safe multi-source answer?",
+      "query": "CMBH-multi-source",
+      "expected_sufficiency": "sufficient",
+      "required_refs": [
+        "docs/agents/cortex/sources/multi-source-a.md",
+        "docs/agents/cortex/sources/multi-source-b.md"
+      ],
+      "rubric_nuggets": [
+        {
+          "id": "two-source-evidence",
+          "description": "Both multi-source refs are retrieved.",
+          "required_refs": [
+            "docs/agents/cortex/sources/multi-source-a.md",
+            "docs/agents/cortex/sources/multi-source-b.md"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "CM009-summarization",
+      "capability": "summarization",
+      "question": "What is the compact authority summary?",
+      "query": "CMBH-summary-line",
+      "expected_sufficiency": "sufficient",
+      "required_refs": ["docs/agents/cortex/cells/memory-authority.md"],
+      "required_terms": ["evidence, not durable memory truth"],
+      "rubric_nuggets": [
+        {
+          "id": "summary-line",
+          "description": "The compiled summary cell is retrieved with the evidence boundary.",
+          "required_terms": ["evidence, not durable memory truth"]
+        }
+      ]
+    },
+    {
+      "id": "CM010-knowledge-update",
+      "capability": "knowledge_update",
+      "question": "Which updated authority should be used instead of the older registry idea?",
+      "query": "CMBH-current-decision",
+      "expected_sufficiency": "sufficient",
+      "required_refs": ["docs/agents/cortex/sources/current-decision.md"],
+      "forbidden_refs": ["docs/agents/cortex/sources/old-decision.md"],
+      "rubric_nuggets": [
+        {
+          "id": "updated-authority",
+          "description": "The current decision is retrieved without depending on the superseded registry source.",
+          "required_refs": ["docs/agents/cortex/sources/current-decision.md"],
+          "forbidden_refs": ["docs/agents/cortex/sources/old-decision.md"]
+        }
+      ]
+    }
+  ]
+}

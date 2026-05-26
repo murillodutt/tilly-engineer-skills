@@ -5,7 +5,7 @@ status: active
 consumer: installing agents and runtime adapters
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.1
+tver: 0.1.2
 ---
 
 # TES Agent Oracle Inventory
@@ -106,6 +106,21 @@ python3 scripts/cortex.py apply --target /path/to/project-or-vault --cell cell-n
 python3 scripts/cortex.py --self-test
 ```
 
+## Cortex Memory Benchmarks
+
+```bash
+python3 scripts/cortex_memory_benchmark.py plan
+python3 scripts/cortex_memory_benchmark.py predict-only --target /path/to/project-or-vault --out recall.json
+python3 scripts/cortex_memory_benchmark.py evaluate-only --predictions recall.json --out evaluation.json
+python3 scripts/cortex_memory_benchmark.py run --target /path/to/project-or-vault --out-dir .tes/runs/cortex-memory
+python3 scripts/cortex_memory_oracle.py validate-dataset
+python3 scripts/cortex_memory_oracle.py validate-result evaluation.json
+python3 scripts/cortex_memory_compare.py --baseline baseline.json --candidate candidate.json --out compare.json
+python3 scripts/cortex_memory_benchmark.py --self-test
+python3 scripts/cortex_memory_oracle.py --self-test
+python3 scripts/cortex_memory_compare.py --self-test
+```
+
 ## Adapters And MCP Install
 
 ```bash
@@ -197,6 +212,9 @@ npm run cortex:forget -- --target /path/to/project-or-vault --cell cell-name --e
 npm run cortex:self-test
 npm run cortex:operator:self-test
 npm run cortex:mcp:self-test
+npm run cortex-memory:plan
+npm run cortex-memory:run -- --target /path/to/project-or-vault --force-rg
+npm run cortex-memory:self-test
 npm run materialize:all
 npm run materialize:codex
 npm run materialize:cursor

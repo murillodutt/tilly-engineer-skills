@@ -5,7 +5,7 @@ status: active
 consumer: agents, maintainers, and certification reviewers
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.1
+tver: 0.1.2
 ---
 
 # Current Evidence Claims
@@ -106,5 +106,25 @@ and the Wave 1-6 commits named in that report.
 Boundary: this is local package-source closure for version `0.3.133`. Remote
 release certification, package publish, marketplace action, write-capable MCP,
 and commercial-use certification remain outside the claim.
+
+Retention status: `current`.
+
+## Cortex Memory Benchmark Harness Claim
+
+The Cortex Memory Benchmark Harness is implemented at the local package-source
+level. It preserves Cortex Markdown as durable memory truth and treats recall
+artifacts, scores, checkpoints, comparisons, and reports as evidence only.
+
+Proof: `docs/evals/CORTEX-MEMORY-BENCHMARKS.md`,
+`docs/roadmap/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md`,
+`docs/roadmap/cortex-memory-benchmark-harness/EXECUTION-UNITS.md`,
+`scripts/cortex_memory_benchmark.py`, `scripts/cortex_memory_oracle.py`,
+`scripts/cortex_memory_compare.py`, and
+`docs/evidence/reports/2026/05/26/cortex-memory-benchmark-harness/REPORT.md`.
+
+Boundary: this is local package-source implementation for version `0.3.135`.
+Remote release certification, package publish, marketplace action,
+write-capable MCP, external dataset adoption, UI/dashboard behavior, and
+commercial-use certification remain outside the claim.
 
 Retention status: `current`.

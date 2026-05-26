@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, release reviewers, and next-loop operators
 source_of_truth: false
 evidence_level: L2
-tver: 0.1.2
+tver: 0.1.3
 ---
 
 # Roadmap Index
@@ -19,6 +19,7 @@ Wave 7 local package-source closure.
 | Line | Status | Document |
 |------|--------|----------|
 | TES Memory Lifecycle implementation | Complete | `GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
+| Cortex memory benchmark harness | Active | `GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
 | RC1 readiness cleanup | Active | `RC1-READINESS-ROADMAP.md` |
 | Cortex hardening sequence | Complete | `GOAL-SUPER-SPEC-cortex-hardening.md` |
 | TES Align semantic drift hardening | Proposed | `TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
@@ -30,7 +31,7 @@ Wave 7 local package-source closure.
 
 ## Baseline
 
-The current release-readiness baseline is TES `0.3.134`, after ADR 0001 memory
+The current release-readiness baseline is TES `0.3.135`, after ADR 0001 memory
 lifecycle implementation closed locally with clean bundle metadata and one
 neutral canary replay. Remote tag/ref release certification is still deferred.
 

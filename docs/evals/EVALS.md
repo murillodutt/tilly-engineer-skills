@@ -5,7 +5,7 @@ status: active
 consumer: benchmark authors
 source_of_truth: true
 evidence_level: L1
-tver: 0.2.1
+tver: 0.2.2
 ---
 
 # Eval And Ablation Method
@@ -217,6 +217,16 @@ The legacy shape `docs/evidence/reports/context-mesh/<run-id>/` remains
 readable retained proof and may still be used with an explicit `--out-root`.
 New default runs use the temporal path so old reports do not compete with the
 current evidence claim panel.
+
+## Cortex Memory Harness
+
+`docs/evals/CORTEX-MEMORY-BENCHMARKS.md` defines the native Cortex memory
+benchmark harness. It reuses the local evidence-first eval principle, but its
+unit of judgment is memory recall sufficiency instead of agent response text.
+
+The harness keeps `predict-only` recall artifacts separate from
+`evaluate-only` sufficiency judgment so retrieval evidence can be retained,
+replayed, and compared without rerunning Cortex recall.
 
 The raw file is append-only NDJSON with one line per sample. Each line keeps
 the dataset hash, Git HEAD, backend, model, condition, eval id, sample id,

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tes-cortex-memory-benchmark-result@0.1",
+  "title": "TES Cortex Memory Benchmark Result",
+  "type": "object",
+  "required": ["schema_version", "mode", "metadata"],
+  "properties": {
+    "schema_version": {
+      "const": "tes-cortex-memory-benchmark@0.1"
+    },
+    "mode": {
+      "enum": ["predict-only", "evaluate-only", "run", "compare"]
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["created_at", "dataset", "dataset_sha", "cutoffs"],
+      "properties": {
+        "created_at": {"type": "string"},
+        "dataset": {"type": "string"},
+        "dataset_sha": {"type": "string"},
+        "git_head": {"type": "string"},
+        "target": {"type": "string"},
+        "backend": {"type": "string"},
+        "cutoffs": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "fixtures": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "records": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "summary": {
+      "type": "object"
+    }
+  }
+}
