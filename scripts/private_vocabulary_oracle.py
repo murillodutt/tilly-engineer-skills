@@ -22,10 +22,12 @@ an explicit regex pattern.
 
 Scope (scanned by default):
 
-- `*.md`, `*.mdc`, `*.py`, `*.json`, `*.yml`, `*.yaml`, `*.html`,
+- Tracked `*.md`, `*.mdc`, `*.py`, `*.json`, `*.yml`, `*.yaml`, `*.html`,
   `*.txt`, `*.js`, `*.ts` under the repository root.
 - Excluded: `.git/`, `node_modules/`, `.tes/`, `docs/dist/`,
   `dist/`, `<workspace>/tes-sync-workspace/` and other workspace dirs.
+- Non-Git fixture roots fall back to scanning the filesystem with the same
+  suffix and exclusion rules.
 
 When the allowlist file does not exist, the oracle exits PASS with a
 single informational note. This keeps CI green for forks and adopters
@@ -37,6 +39,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -118,6 +121,24 @@ def _should_scan(path: Path, root: Path) -> bool:
     return True
 
 
+def scan_paths(root: Path) -> list[Path]:
+    result = subprocess.run(
+        ["git", "ls-files", "-z"],
+        cwd=root,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode == 0:
+        paths = [
+            root / raw.decode("utf-8", errors="replace")
+            for raw in result.stdout.split(b"\0")
+            if raw
+        ]
+    else:
+        paths = [path for path in root.rglob("*") if path.is_file()]
+    return [path for path in paths if path.is_file() and _should_scan(path, root)]
+
+
 def scan(
     root: Path,
     allowlist: list[tuple[str, re.Pattern[str]]],
@@ -126,11 +147,7 @@ def scan(
     findings: list[dict[str, Any]] = []
     if not allowlist:
         return findings
-    for path in sorted(root.rglob("*")):
-        if not path.is_file():
-            continue
-        if not _should_scan(path, root):
-            continue
+    for path in sorted(scan_paths(root)):
         try:
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
@@ -270,6 +287,30 @@ def self_test() -> dict[str, Any]:
         result = analyze(root, allow)
         if result["status"] != "PASS":
             failures.append("excluded-path fixture must PASS; bundle archives must not break the gate")
+
+    # Fixture 8: in a Git worktree, only tracked source participates. Ignored
+    # local scratch content must not fail a package-source confidentiality gate.
+    with tempfile.TemporaryDirectory(prefix="priv-vocab-git-ignore-") as tempdir:
+        root = Path(tempdir)
+        subprocess.run(["git", "init"], cwd=root, text=True, capture_output=True, check=True)
+        allow = root / DEFAULT_ALLOWLIST_PATH
+        allow.parent.mkdir(parents=True, exist_ok=True)
+        allow.write_text("banned-word\n", encoding="utf-8")
+        (root / ".gitignore").write_text("tmp/\n", encoding="utf-8")
+        (root / "README.md").write_text("# clean tracked content\n", encoding="utf-8")
+        subprocess.run(["git", "add", ".gitignore", "README.md"], cwd=root, text=True, capture_output=True, check=True)
+        scratch = root / "tmp" / "scratch.md"
+        scratch.parent.mkdir(parents=True, exist_ok=True)
+        scratch.write_text("banned-word in ignored scratch\n", encoding="utf-8")
+        result = analyze(root, allow)
+        if result["status"] != "PASS":
+            failures.append("git-ignored scratch fixture must PASS")
+
+        (root / "tracked.md").write_text("banned-word in tracked source\n", encoding="utf-8")
+        subprocess.run(["git", "add", "tracked.md"], cwd=root, text=True, capture_output=True, check=True)
+        result = analyze(root, allow)
+        if result["status"] != "FAIL" or not result["findings"]:
+            failures.append("git-tracked leak fixture must FAIL")
 
     return {
         "version": VERSION,

@@ -361,7 +361,7 @@ documents:
   - path: docs/roadmap/GOAL-SUPER-SPEC-cortex-hardening.md
     id: roadmap.goal_super_spec_cortex_hardening
     class: roadmap
-    status: proposed
+    status: active
     consumer: maintainers, MCP reviewers, Cortex maintainers, and execution agents
     source_of_truth: false
     evidence_level: L2
@@ -713,6 +713,13 @@ documents:
     class: evidence
     status: active
     consumer: installer authors, MCP adapter authors, and certification reviewers
+    source_of_truth: false
+    evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/cortex-hardening-2026-05-26/REPORT.md
+    id: evidence.context_mesh.cortex_hardening_2026_05_26
+    class: evidence
+    status: active
+    consumer: Cortex maintainers, MCP reviewers, and certification reviewers
     source_of_truth: false
     evidence_level: L3
   - path: docs/evidence/reports/context-mesh/retention-metadata-strategy-2026-05-06/REPORT.md

@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_super_spec_cortex_hardening
 tds_class: roadmap
-status: proposed
+status: active
 consumer: maintainers, MCP reviewers, Cortex maintainers, and execution agents
 source_of_truth: false
 evidence_level: L2
@@ -10,7 +10,7 @@ tver: 0.1.0
 
 # GOAL Super SPEC: Cortex Hardening Sequence
 
-Status: proposed execution contract.
+Status: complete by `docs/evidence/reports/context-mesh/cortex-hardening-2026-05-26/REPORT.md`.
 
 Capability: harden TES Cortex behavior and audit surfaces for three known
 findings, in strict sequence, with one material commit per execution unit
