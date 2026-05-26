@@ -1428,9 +1428,9 @@ def learn(target: Path, query: str | None, source: Path | None = None) -> dict[s
     }
 
 
-def git_changed_files(target: Path, limit: int) -> list[str]:
+def git_status_paths(target: Path) -> list[tuple[str, str]]:
     result = subprocess.run(
-        ["git", "status", "--short"],
+        ["git", "status", "--short", "--untracked-files=all"],
         cwd=target,
         text=True,
         capture_output=True,
@@ -1438,15 +1438,50 @@ def git_changed_files(target: Path, limit: int) -> list[str]:
     )
     if result.returncode != 0:
         return []
-    files: list[str] = []
+    entries: list[tuple[str, str]] = []
     for line in result.stdout.splitlines():
         if not line.strip():
             continue
+        status = line[:2]
         path = line[3:].strip()
         if " -> " in path:
             path = path.rsplit(" -> ", 1)[1]
-        files.append(path)
-    return files[:limit]
+        entries.append((status, path))
+    return entries
+
+
+def git_changed_files(target: Path, limit: int) -> list[str]:
+    return [path for _status, path in git_status_paths(target)][:limit]
+
+
+def text_file_line_count(path: Path) -> int:
+    if not path.is_file():
+        return 0
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return 0
+    if not data or b"\0" in data[:8192]:
+        return 0
+    try:
+        data.decode("utf-8")
+    except UnicodeDecodeError:
+        return 0
+    return data.count(b"\n") + (0 if data.endswith(b"\n") else 1)
+
+
+def git_untracked_durable_line_count(target: Path) -> int:
+    total = 0
+    for status, path in git_status_paths(target):
+        if status != "??" or not durable_signal(path):
+            continue
+        candidate = (target / path).resolve()
+        try:
+            candidate.relative_to(target.resolve())
+        except ValueError:
+            continue
+        total += text_file_line_count(candidate)
+    return total
 
 
 def git_diff_line_count(target: Path) -> int:
@@ -1467,7 +1502,7 @@ def git_diff_line_count(target: Path) -> int:
             total += int(added)
         if deleted.isdigit():
             total += int(deleted)
-    return total
+    return total + git_untracked_durable_line_count(target)
 
 
 def durable_signal(path: str) -> bool:
@@ -1765,6 +1800,38 @@ def self_test() -> int:
         absorb_result = absorb_plan(target, source)
         learn_result = learn(target, "authorized applied memory", source)
         reflect_result = reflect(target, "authorized applied memory should be considered for Cortex")
+
+        def run_git(repo: Path, *args: str) -> None:
+            command = [
+                "git",
+                "-c",
+                "user.email=tes@example.invalid",
+                "-c",
+                "user.name=TES Self Test",
+                *args,
+            ]
+            subprocess.run(command, cwd=repo, text=True, capture_output=True, check=True)
+
+        untracked_reflect_target = Path(tempdir) / "untracked-reflect"
+        init(untracked_reflect_target)
+        run_git(untracked_reflect_target, "init")
+        run_git(untracked_reflect_target, "add", "docs")
+        run_git(untracked_reflect_target, "commit", "-m", "baseline cortex")
+        durable_untracked = untracked_reflect_target / "docs" / "durable-untracked.md"
+        durable_untracked.write_text("\n".join(f"durable line {number}" for number in range(12)) + "\n", encoding="utf-8")
+        untracked_reflect_result = reflect(untracked_reflect_target, None, line_budget=5)
+
+        ignored_reflect_target = Path(tempdir) / "ignored-reflect"
+        init(ignored_reflect_target)
+        run_git(ignored_reflect_target, "init")
+        (ignored_reflect_target / ".gitignore").write_text("tmp/\n", encoding="utf-8")
+        run_git(ignored_reflect_target, "add", ".gitignore", "docs")
+        run_git(ignored_reflect_target, "commit", "-m", "baseline cortex")
+        ignored_file = ignored_reflect_target / "tmp" / "private.txt"
+        ignored_file.parent.mkdir(parents=True, exist_ok=True)
+        ignored_file.write_text("\n".join(f"ignored line {number}" for number in range(20)) + "\n", encoding="utf-8")
+        ignored_reflect_result = reflect(ignored_reflect_target, None, line_budget=5)
+
         unauth_apply_result = apply_cell(
             target,
             "applied-memory",
@@ -1929,6 +1996,8 @@ def self_test() -> int:
             "absorb_plan": absorb_result,
             "learn": learn_result,
             "reflect": reflect_result,
+            "untracked_reflect": untracked_reflect_result,
+            "ignored_reflect": ignored_reflect_result,
             "unauthorized_apply": unauth_apply_result,
             "apply": apply_result,
             "read_cell": read_cell_result,
@@ -1950,6 +2019,13 @@ def self_test() -> int:
             absorb_result["status"] == "PASS" and absorb_result["writes"] == [],
             learn_result["status"] == "PASS" and learn_result["writes"] == [],
             reflect_result["status"] == "PASS" and reflect_result["writes"] == [] and reflect_result["capture_needed"],
+            untracked_reflect_result["status"] == "PASS"
+            and untracked_reflect_result["capture_needed"]
+            and untracked_reflect_result["curation_due"]
+            and untracked_reflect_result["changed_lines"] >= 12,
+            ignored_reflect_result["status"] == "PASS"
+            and ignored_reflect_result["changed_lines"] == 0
+            and not ignored_reflect_result["curation_due"],
             unauth_apply_result["status"] == "NEEDS_AUTH" and unauth_apply_result["writes"] == [],
             apply_result["status"] == "PASS",
             any(path.endswith("cells/applied-memory.md") for path in apply_result["writes"]),
