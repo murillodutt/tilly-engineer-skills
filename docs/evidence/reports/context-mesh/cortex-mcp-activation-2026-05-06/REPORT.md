@@ -12,6 +12,10 @@ evidence_level: L3
 This report records the first project-scoped Cortex MCP activation cut on
 May 6, 2026.
 
+Correction note, May 26, 2026: current helper installation uses `.tes/bin/**`.
+Older `.tilly/bin/**` references were stale path vocabulary, not the active
+runtime contract.
+
 ## Claim
 
 The assisted installer can activate the read-only Cortex MCP server for target
@@ -21,7 +25,7 @@ projects without relying on manual post-install configuration.
 
 | Surface | Status |
 |---------|--------|
-| Local server helpers | `.tilly/bin/cortex.py`, `.tilly/bin/cortex_mcp.py` |
+| Local server helpers | `.tes/bin/cortex.py`, `.tes/bin/cortex_mcp.py` |
 | Codex project config | `.codex/config.toml` |
 | Claude Code project config | `.mcp.json` |
 | Cursor project config | `.cursor/mcp.json` |
@@ -58,5 +62,5 @@ the target project:
 
 ```bash
 git revert <install-commit>
-rm -f .tilly/bin/cortex.py .tilly/bin/cortex_mcp.py
+rm -f .tes/bin/cortex.py .tes/bin/cortex_mcp.py
 ```

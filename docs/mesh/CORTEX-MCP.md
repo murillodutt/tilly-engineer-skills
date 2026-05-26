@@ -90,9 +90,21 @@ The activation path installs local MCP helpers into the target project:
 .tes/bin/cortex_mcp.py
 .tes/bin/cortex_embed.mjs
 .tes/bin/field_reports.py
+.tes/bin/mantra_gate.py
+.tes/bin/mantra_gate_adoption_oracle.py
+.tes/bin/tes_install.py
 .tes/bin/tes_update.py
 .tes/bin/tes_legacy_retirement.py
 .tes/bin/root_context.py
+.tes/bin/tes_init.py
+.tes/bin/project_context_oracle.py
+.tes/bin/project_alignment_oracle.py
+.tes/bin/tes_map.py
+.tes/bin/tes_map_oracle.py
+.tes/bin/tes_open_obsidian.py
+.tes/bin/command_trigger_oracle.py
+.tes/bin/tes_bundle.py
+.tes/bin/materialize_adapter.py
 ```
 
 It then writes only project-scoped config for the selected runtime:
@@ -118,9 +130,21 @@ cortex_cut:
     - .tes/bin/cortex_mcp.py
     - .tes/bin/cortex_embed.mjs
     - .tes/bin/field_reports.py
+    - .tes/bin/mantra_gate.py
+    - .tes/bin/mantra_gate_adoption_oracle.py
+    - .tes/bin/tes_install.py
     - .tes/bin/tes_update.py
     - .tes/bin/tes_legacy_retirement.py
     - .tes/bin/root_context.py
+    - .tes/bin/tes_init.py
+    - .tes/bin/project_context_oracle.py
+    - .tes/bin/project_alignment_oracle.py
+    - .tes/bin/tes_map.py
+    - .tes/bin/tes_map_oracle.py
+    - .tes/bin/tes_open_obsidian.py
+    - .tes/bin/command_trigger_oracle.py
+    - .tes/bin/tes_bundle.py
+    - .tes/bin/materialize_adapter.py
     - .codex/config.toml
     - .mcp.json
     - .cursor/mcp.json
