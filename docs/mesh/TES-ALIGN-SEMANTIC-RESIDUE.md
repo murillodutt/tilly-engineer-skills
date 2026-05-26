@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, `/tes-align` skill authors, and project residue contract authors
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # TES Align Semantic Residue Gate
@@ -93,6 +93,52 @@ boundaries so a short literal does not falsely match a longer unrelated word
 that contains it as a substring. When `pattern` is
 used, the project owns the regex boundaries; the oracle compiles the pattern
 as given.
+
+## Authoring Guardrails
+
+Write residue entries as surgical project contracts:
+
+| Choice | Use When | Risk If Misused |
+|--------|----------|-----------------|
+| `term` | One exact retired literal must disappear from active docs. | Overmatches if the literal is still live vocabulary in another context. |
+| `pattern` | Only a variant, prefix, or stale phrasing is retired. | Regex can become a silent broad ban if boundaries are vague. |
+| `allowed_paths` | Historical or live contexts may retain the term. | A broad allowlist can hide active drift. |
+| `needs_review` | The successor is not fully settled. | Permanent limbo if no review date or owner exists. |
+
+Inspect matched context before editing. A match can mean stale truth, live
+vocabulary, or historiography. If the candidate is mis-scoped, record the
+rejected candidate in the target contract comments rather than adding a broad
+rule.
+
+Do not use Semantic Residue to silence generic placeholders such as `TODO:`,
+`TBD`, or "fill this in". Those are enforced by the alignment oracle itself,
+not by a project vocabulary contract.
+
+### Neutral Examples
+
+```yaml
+entries:
+  - id: retired-term
+    term: "<retired-term>"
+    severity: fail
+    reason: "Active docs must use <successor-term>."
+    successor: "<successor-term>"
+    allowed_paths:
+      - docs/agents/evidence/**
+
+  - id: retired-variant-prefix
+    pattern: "(?i)\\b<retired-prefix>-[a-z0-9-]+\\b"
+    severity: needs_review
+    reason: "Only the prefixed variant is retired; the base term may remain live."
+    successor: "<successor-term>"
+
+  - id: historical-phrase
+    term: "<historical-phrase>"
+    severity: warn
+    reason: "Allowed only when describing past migration history."
+    allowed_paths:
+      - docs/agents/DECISIONS/archive/**
+```
 
 ## Severity Semantics
 

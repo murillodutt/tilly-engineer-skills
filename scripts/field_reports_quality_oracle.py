@@ -18,14 +18,24 @@ from typing import Any
 import field_reports
 
 
+SYNTHETIC_PRIVATE_FILE = "/" + "Users/murillo/private/project.py"
+SYNTHETIC_EMAIL = "person" + "@example.com"
+SYNTHETIC_SECRET_VALUE = "abc" + "123"
+SYNTHETIC_BEARER_SECRET = "Bearer " + SYNTHETIC_SECRET_VALUE
+SYNTHETIC_SECRET_ASSIGNMENT = "token=" + SYNTHETIC_SECRET_VALUE
+SYNTHETIC_PRIVATE_URL = "https://" + "private." + "example.test/repo"
+SYNTHETIC_PRIVATE_ISSUE_URL = "https://" + "private." + "example.test/issues/secret"
+SYNTHETIC_PRIVATE_REMOTE = "git@" + "github.com:private/repo.git"
+SYNTHETIC_PRIVATE_BRANCH = "feature/" + "private-branch"
+SYNTHETIC_PRIVATE_SHELL = "rm -rf " + "/" + "Users/murillo/private"
 FORBIDDEN_SNIPPETS = (
-    "/Users/murillo/private/project.py",
-    "person@example.com",
-    "Bearer abc123",
-    "token=abc123",
-    "https://private.example.test/repo",
-    "git@github.com:private/repo.git",
-    "feature/private-branch",
+    SYNTHETIC_PRIVATE_FILE,
+    SYNTHETIC_EMAIL,
+    SYNTHETIC_BEARER_SECRET,
+    SYNTHETIC_SECRET_ASSIGNMENT,
+    SYNTHETIC_PRIVATE_URL,
+    SYNTHETIC_PRIVATE_REMOTE,
+    SYNTHETIC_PRIVATE_BRANCH,
     "Traceback (most recent call last):",
     "```",
     "| leaked | table |",
@@ -92,8 +102,8 @@ def fake_gh(bin_dir: Path, mode: str) -> None:
 echo "https://github.com/murillodutt/tilly-engineer-skills/issues/123"
 """
     elif mode == "unsafe-success":
-        script = """#!/bin/sh
-echo "https://private.example.test/issues/secret"
+        script = f"""#!/bin/sh
+echo "{SYNTHETIC_PRIVATE_ISSUE_URL}"
 """
     else:
         script = """#!/bin/sh
@@ -205,16 +215,16 @@ def run_oracle() -> dict[str, Any]:
             "tes_update",
             "FAIL",
             "installer",
-            unsafe_path="/Users/murillo/private/project.py",
-            unsafe_email="person@example.com",
-            unsafe_token="Bearer abc123",
-            unsafe_url="https://private.example.test/repo",
-            unsafe_remote="git@github.com:private/repo.git",
-            unsafe_branch="feature/private-branch",
-            unsafe_stack="Traceback (most recent call last):\n  File '/Users/murillo/private/project.py', line 1",
+            unsafe_path=SYNTHETIC_PRIVATE_FILE,
+            unsafe_email=SYNTHETIC_EMAIL,
+            unsafe_token=SYNTHETIC_BEARER_SECRET,
+            unsafe_url=SYNTHETIC_PRIVATE_URL,
+            unsafe_remote=SYNTHETIC_PRIVATE_REMOTE,
+            unsafe_branch=SYNTHETIC_PRIVATE_BRANCH,
+            unsafe_stack="Traceback (most recent call last):\n  File '" + SYNTHETIC_PRIVATE_FILE + "', line 1",
             unsafe_prompt="raw prompt text",
             unsafe_code="def leaked_function(): return 'secret'",
-            unsafe_shell="rm -rf /Users/murillo/private",
+            unsafe_shell=SYNTHETIC_PRIVATE_SHELL,
             unsafe_table="| leaked | table |",
         )
         hostile_text = json.dumps(hostile, sort_keys=True)

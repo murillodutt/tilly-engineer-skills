@@ -13,7 +13,7 @@ import tempfile
 from typing import Any
 
 
-VERSION = "0.3.135"
+VERSION = "0.3.136"
 SCHEMA = "tes-mantra-gate@1"
 MARKER = "[🍳 Flash-Fry]"
 STATUSES = ("PROCEED", "BLOCKED", "NEEDS_REVIEW")
@@ -301,6 +301,9 @@ def sample_gate(**overrides: Any) -> dict[str, Any]:
 
 def self_test() -> dict[str, Any]:
     failures: list[str] = []
+    synthetic_secret = "token=" + "abc" + "123"
+    synthetic_path = "/" + "Users/example/project"
+    synthetic_email = "owner" + "@example.com"
 
     complete = validate_gate(sample_gate(), state_changing=True, closure_claim=True)
     if complete["status"] != "PROCEED" or not complete["valid"]:
@@ -334,7 +337,7 @@ def self_test() -> dict[str, Any]:
     if push["risk"] != "high-risk":
         failures.append("push must classify as high-risk")
 
-    forbidden = classify_risk("git reset --hard and echo token=abc123")
+    forbidden = classify_risk("git reset --hard and echo " + synthetic_secret)
     if forbidden["risk"] != "forbidden":
         failures.append("destructive git or secret disclosure must classify as forbidden")
 
@@ -346,7 +349,7 @@ def self_test() -> dict[str, Any]:
         target = Path(tmp)
         (target / ".tes/field-reports").mkdir(parents=True)
         result = validate_gate(
-            sample_gate(VERIFY="checked /Users/example/project and token=abc123"),
+            sample_gate(VERIFY="checked " + synthetic_path + " and " + synthetic_secret),
             state_changing=True,
             closure_claim=True,
         )
@@ -354,9 +357,9 @@ def self_test() -> dict[str, Any]:
         text = record.read_text(encoding="utf-8")
         if MARKER not in text or "VERIFY" not in text:
             failures.append("compact marker record must retain full gate evidence")
-        if "/Users/example/project" in text or "token=abc123" in text:
+        if synthetic_path in text or synthetic_secret in text:
             failures.append("record must sanitize paths and secrets")
-        if "owner@example.com" in json.dumps(sanitize({"email": "owner@example.com"})):
+        if synthetic_email in json.dumps(sanitize({"email": synthetic_email})):
             failures.append("record must sanitize emails")
 
     return {

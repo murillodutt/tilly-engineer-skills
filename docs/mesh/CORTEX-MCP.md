@@ -5,7 +5,7 @@ status: active
 consumer: MCP adapter authors, installer authors, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.3.3
+tver: 0.3.4
 ---
 
 # TES Cortex MCP
@@ -174,6 +174,14 @@ lockfiles, `.obsidian/**`, or Cortex source material.
 Project scope is enforced at the MCP tool boundary: a server initialized for
 one project rejects caller-provided `target` overrides instead of resolving
 another project path.
+
+MCP audit and recall preserve the same evidence boundary as the CLI. Valid
+Cortex cell evidence is limited to repository-relative refs under `sources/**`,
+`docs/agents/cortex/sources/**`, `docs/agents/evidence/**`, or an
+`Assumption:` line. Absolute paths, traversal refs, derived caches, checkpoints,
+run scratch, benchmark outputs, recall indexes, and semantic indexes are
+reported as evidence failures or non-memory artifacts; the MCP server must not
+repair them by writing memory.
 
 Write-capable MCP tools remain outside v1. `learn` and `apply` stay CLI-governed
 because promotion into Cortex requires explicit evidence and authorization.

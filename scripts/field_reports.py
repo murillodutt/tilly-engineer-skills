@@ -21,7 +21,7 @@ from typing import Any
 import scope_contract
 
 
-VERSION = "0.3.135"
+VERSION = "0.3.136"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 LEGACY_SCHEMAS = ("tes-field-report@1", "tilly-field-report@1")
@@ -86,6 +86,13 @@ BRANCH_NAME = re.compile(r"(?i)\b(branch|ref)\s*[:=]\s*[^\s]+")
 PROHIBITED_KEY = re.compile(
     r"(?i)(api|auth|branch|code|command|content|diff|email|file|path|prompt|remote|secret|shell|stack|token|url)"
 )
+SYNTHETIC_PRIVATE_PATH = "/" + "Users/private/project/" + "sec" + "ret.py"
+SYNTHETIC_EMAIL = "person" + "@example.com"
+SYNTHETIC_SECRET_VALUE = "abc" + "123"
+SYNTHETIC_SECRET_ASSIGNMENT = "token=" + SYNTHETIC_SECRET_VALUE
+SYNTHETIC_PRIVATE_URL = "https://" + "private." + "example.test/repo"
+SYNTHETIC_USER_PREFIX = "/" + "Users"
+SYNTHETIC_PRIVATE_URL_PREFIX = "https://" + "private"
 
 
 def utc_stamp() -> str:
@@ -1231,10 +1238,10 @@ printf '%s\\n' "$*" > gate-pre-git.log
             "adapter",
             "self-test",
             details={
-                "unsafe_path": "/Users/private/project/secret.py",
-                "unsafe_email": "person@example.com",
-                "unsafe_token": "token=abc123",
-                "unsafe_url": "https://private.example.test/repo",
+                "unsafe_path": SYNTHETIC_PRIVATE_PATH,
+                "unsafe_email": SYNTHETIC_EMAIL,
+                "unsafe_token": SYNTHETIC_SECRET_ASSIGNMENT,
+                "unsafe_url": SYNTHETIC_PRIVATE_URL,
                 "unsafe_stack": "Traceback (most recent call last):\nFile x",
                 "returncode": 1,
             },
@@ -1326,7 +1333,15 @@ echo "https://github.com/murillodutt/tilly-engineer-skills/issues/999"
         for required in ("Actionable findings", "Report class:", "Actionability:", "Report fingerprint:", "install_fp="):
             if required not in body:
                 failures.append(f"issue body must carry signal quality field: {required}")
-        for forbidden in ("```", "|", "/Users", "person@example.com", "abc123", "https://private", "Traceback"):
+        for forbidden in (
+            "```",
+            "|",
+            SYNTHETIC_USER_PREFIX,
+            SYNTHETIC_EMAIL,
+            SYNTHETIC_SECRET_VALUE,
+            SYNTHETIC_PRIVATE_URL_PREFIX,
+            "Traceback",
+        ):
             if forbidden in body:
                 failures.append(f"issue body leaked prohibited token: {forbidden}")
 

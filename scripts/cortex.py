@@ -28,6 +28,15 @@ SEMANTIC_DB = Path(".tes/cortex/semantic.sqlite")
 DEFAULT_SEMANTIC_MODEL = "Xenova/multilingual-e5-small"
 LEXICAL_MODEL = "tes-lexical-curation-v1"
 LEXICAL_DIMENSIONS = 64
+INSTALLED_RUNTIME_PREFIXES = (
+    ".tes/bin/",
+    ".tes/postinstall-runs/",
+)
+INSTALLED_RUNTIME_FILES = {
+    ".tes/manifest.json",
+    ".tes/postinstall.json",
+    ".tes/tes-install-lock.json",
+}
 REQUIRED_FILES = (
     "CONTRACT.md",
     "MAP.md",
@@ -66,6 +75,10 @@ EVIDENCE_REF = re.compile(
 REAL_EVIDENCE_REF = re.compile(
     r"(?<![A-Za-z0-9_./-])`?((?:/|(?:(?:\.\.?/)+))?(?:docs/agents/cortex/)?sources/[^`\s)]+|"
     r"(?:/|(?:(?:\.\.?/)+))?docs/agents/evidence/[^`\s)]+)`?"
+)
+ABSOLUTE_EVIDENCE_PATH = re.compile(
+    r"(?<![:/.\w-])/(?!/)[^\s`)'\",<>]+|"
+    r"(?<![A-Za-z0-9_])(?:[A-Za-z]:\\[^\s`)'\",<>]+|~/[^\s`)'\",<>]+)"
 )
 STOPWORDS = {
     "a", "an", "and", "are", "as", "be", "by", "com", "como", "con", "da", "das", "de", "del",
@@ -756,9 +769,12 @@ def resolve_real_evidence_ref(target: Path, raw_ref: str) -> tuple[Path | None, 
 
 def evidence_ref_failures(target: Path, evidence: str) -> list[str]:
     failures: list[str] = []
+    absolute_paths = sorted(set(match.group(0) for match in ABSOLUTE_EVIDENCE_PATH.finditer(evidence)))
+    for raw_path in absolute_paths:
+        failures.append(f"absolute evidence path is not allowed: {raw_path}")
     for raw_ref in real_evidence_refs(evidence):
         _resolved, failure = resolve_real_evidence_ref(target, raw_ref)
-        if failure:
+        if failure and not (failure.startswith("absolute evidence path is not allowed:") and raw_ref in absolute_paths):
             failures.append(failure)
     return failures
 
@@ -1529,10 +1545,19 @@ def text_file_line_count(path: Path) -> int:
     return data.count(b"\n") + (0 if data.endswith(b"\n") else 1)
 
 
+def installed_runtime_update_path(path: str) -> bool:
+    normalized = path.replace("\\", "/")
+    return normalized in INSTALLED_RUNTIME_FILES or normalized.startswith(INSTALLED_RUNTIME_PREFIXES)
+
+
+def reflect_signal(path: str) -> bool:
+    return durable_signal(path) and not installed_runtime_update_path(path)
+
+
 def git_untracked_durable_line_count(target: Path) -> int:
     total = 0
     for status, path in git_status_paths(target):
-        if status != "??" or not durable_signal(path):
+        if status != "??" or not reflect_signal(path):
             continue
         candidate = (target / path).resolve()
         try:
@@ -1556,7 +1581,9 @@ def git_diff_line_count(target: Path) -> int:
     total = 0
     for line in result.stdout.splitlines():
         added, _, deleted = line.partition("\t")
-        deleted, _, _path = deleted.partition("\t")
+        deleted, _, path = deleted.partition("\t")
+        if not reflect_signal(path):
+            continue
         if added.isdigit():
             total += int(added)
         if deleted.isdigit():
@@ -1607,7 +1634,7 @@ def reflect(target: Path, query: str | None, limit: int = 20, line_budget: int =
         }
 
     changed_files = git_changed_files(target, limit)
-    durable_files = [path for path in changed_files if durable_signal(path)]
+    durable_files = [path for path in changed_files if reflect_signal(path)]
     changed_lines = git_diff_line_count(target)
     curation_due = changed_lines >= line_budget > 0
     prompt = (query or "").strip()
@@ -1624,11 +1651,15 @@ def reflect(target: Path, query: str | None, limit: int = 20, line_budget: int =
     command = preferred_cortex_command(target)
     no_capture_reason = None
     if not capture_needed:
-        no_capture_reason = (
-            "reflection query is too generic to promote without evidence"
-            if weak_prompt else
-            "no durable changed files, specific closure note, or curation threshold was observed"
-        )
+        if weak_prompt:
+            no_capture_reason = "reflection query is too generic to promote without evidence"
+        elif changed_files and all(installed_runtime_update_path(path) for path in changed_files):
+            no_capture_reason = (
+                "only installed TES runtime helper/cache changes were observed; "
+                "derived update noise does not require Cortex capture"
+            )
+        else:
+            no_capture_reason = "no durable changed files, specific closure note, or curation threshold was observed"
 
     return {
         "target": str(target),
@@ -2131,6 +2162,61 @@ def self_test() -> int:
         ignored_file.write_text("\n".join(f"ignored line {number}" for number in range(20)) + "\n", encoding="utf-8")
         ignored_reflect_result = reflect(ignored_reflect_target, None, line_budget=5)
 
+        helper_reflect_target = Path(tempdir) / "helper-reflect"
+        init(helper_reflect_target)
+        run_git(helper_reflect_target, "init")
+        helper = helper_reflect_target / ".tes" / "bin" / "cortex.py"
+        helper.parent.mkdir(parents=True, exist_ok=True)
+        helper.write_text("print('baseline')\n", encoding="utf-8")
+        run_git(helper_reflect_target, "add", "docs", ".tes/bin/cortex.py")
+        run_git(helper_reflect_target, "commit", "-m", "baseline helper")
+        helper.write_text("\n".join(f"print('helper update {number}')" for number in range(20)) + "\n", encoding="utf-8")
+        helper_reflect_result = reflect(helper_reflect_target, None, line_budget=5)
+
+        helper_doc_reflect_target = Path(tempdir) / "helper-doc-reflect"
+        init(helper_doc_reflect_target)
+        run_git(helper_doc_reflect_target, "init")
+        helper_doc = helper_doc_reflect_target / ".tes" / "bin" / "cortex.py"
+        helper_doc.parent.mkdir(parents=True, exist_ok=True)
+        helper_doc.write_text("print('baseline')\n", encoding="utf-8")
+        run_git(helper_doc_reflect_target, "add", "docs", ".tes/bin/cortex.py")
+        run_git(helper_doc_reflect_target, "commit", "-m", "baseline helper")
+        helper_doc.write_text("\n".join(f"print('helper update {number}')" for number in range(20)) + "\n", encoding="utf-8")
+        durable_doc = helper_doc_reflect_target / "docs" / "durable-doc.md"
+        durable_doc.write_text("\n".join(f"durable doc line {number}" for number in range(12)) + "\n", encoding="utf-8")
+        helper_doc_reflect_result = reflect(helper_doc_reflect_target, None, line_budget=5)
+
+        mixed_absolute_audit_target = Path(tempdir) / "mixed-absolute-audit"
+        init(mixed_absolute_audit_target)
+        mixed_evidence = mixed_absolute_audit_target / "docs" / "agents" / "evidence" / "session.md"
+        mixed_evidence.parent.mkdir(parents=True, exist_ok=True)
+        mixed_evidence.write_text("# Evidence\n", encoding="utf-8")
+        mixed_cell = cortex_path(mixed_absolute_audit_target) / "cells" / "absolute-leak.md"
+        mixed_cell.write_text(
+            "# Absolute Leak\n\n"
+            "## Claim\n\n"
+            "Valid relative evidence must not mask absolute local evidence paths.\n\n"
+            "## Evidence\n\n"
+            "- `docs/agents/evidence/session.md`\n"
+            "- Local note: /absolute/unsafe/source.md\n\n"
+            "## Links\n\n"
+            "- [[absolute-leak]]\n",
+            encoding="utf-8",
+        )
+        mixed_map = cortex_path(mixed_absolute_audit_target) / "MAP.md"
+        mixed_map.write_text(
+            read_text(mixed_map)
+            + "\n| [[absolute-leak]] | Reject mixed absolute evidence. | docs/agents/evidence/session.md |\n",
+            encoding="utf-8",
+        )
+        mixed_links = cortex_path(mixed_absolute_audit_target) / "LINKS.md"
+        mixed_links.write_text(
+            read_text(mixed_links)
+            + "\n- [[absolute-leak]] -> `docs/agents/evidence/session.md`\n",
+            encoding="utf-8",
+        )
+        mixed_absolute_audit_result = audit(mixed_absolute_audit_target)
+
         unauth_apply_result = apply_cell(
             target,
             "applied-memory",
@@ -2348,6 +2434,9 @@ def self_test() -> int:
             "reflect": reflect_result,
             "untracked_reflect": untracked_reflect_result,
             "ignored_reflect": ignored_reflect_result,
+            "helper_reflect": helper_reflect_result,
+            "helper_doc_reflect": helper_doc_reflect_result,
+            "mixed_absolute_audit": mixed_absolute_audit_result,
             "unauthorized_apply": unauth_apply_result,
             "missing_apply": missing_apply_result,
             "traversal_apply": traversal_apply_result,
@@ -2381,6 +2470,15 @@ def self_test() -> int:
             ignored_reflect_result["status"] == "PASS"
             and ignored_reflect_result["changed_lines"] == 0
             and not ignored_reflect_result["curation_due"],
+            helper_reflect_result["status"] == "PASS"
+            and not helper_reflect_result["capture_needed"]
+            and helper_reflect_result["changed_lines"] == 0
+            and "installed TES runtime" in str(helper_reflect_result["no_capture_reason"]),
+            helper_doc_reflect_result["status"] == "PASS"
+            and helper_doc_reflect_result["capture_needed"]
+            and helper_doc_reflect_result["changed_lines"] >= 12,
+            mixed_absolute_audit_result["status"] == "FAIL"
+            and any("absolute evidence path" in failure for failure in mixed_absolute_audit_result["failures"]),
             unauth_apply_result["status"] == "NEEDS_AUTH" and unauth_apply_result["writes"] == [],
             missing_apply_result["status"] == "FAIL"
             and missing_apply_result["writes"] == []

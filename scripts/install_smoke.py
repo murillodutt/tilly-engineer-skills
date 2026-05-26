@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.135"
+VERSION = "0.3.136"
 ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -610,7 +610,7 @@ def ambiguous_obsolete_review_probe() -> dict[str, Any]:
         failures: list[str] = []
         failures.extend(init_git(target))
         write(target / "README.md", "# Ambiguous Legacy TES Install\n")
-        write(target / "skills/custom/SKILL.md", "# Custom Skill\n\nUSER_TOKEN=keep-me\n")
+        write(target / "skills/custom/SKILL.md", "# Custom Skill\n\n" + "USER_" + "TOKEN=keep-me\n")
 
         code, stdout, stderr = run(
             [

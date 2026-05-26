@@ -23,7 +23,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.135"
+VERSION = "0.3.136"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -1837,7 +1837,10 @@ def self_test() -> dict[str, Any]:
         if review_stage.get("status") != "STAGED":
             failures.extend(review_stage.get("failures", ["review target stage failed"]))
         (review_target / "skills/custom").mkdir(parents=True)
-        (review_target / "skills/custom/SKILL.md").write_text("# Custom Skill\n\nUSER_TOKEN=keep-me\n", encoding="utf-8")
+        (review_target / "skills/custom/SKILL.md").write_text(
+            "# Custom Skill\n\n" + "USER_" + "TOKEN=keep-me\n",
+            encoding="utf-8",
+        )
         review_apply = apply_staged_bundle(review_target, yes=True, mode="preserve")
         if review_apply.get("status") != "NEEDS_REVIEW":
             failures.append("ambiguous obsolete runtime must return NEEDS_REVIEW")

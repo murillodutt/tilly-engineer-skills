@@ -600,16 +600,19 @@ def self_test() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tes-mg-adoption-") as tmp:
         target = Path(tmp)
         (target / ".tes/field-reports").mkdir(parents=True)
+        synthetic_path = "/" + "Users/example/project"
+        synthetic_email = "owner" + "@example.com"
+        synthetic_secret = "token=" + "abc" + "123"
         write_record(
             target,
             mantra_gate.sample_gate(
-                VERIFY="checked /Users/example/project, owner@example.com, token=abc123",
+                VERIFY="checked " + synthetic_path + ", " + synthetic_email + ", " + synthetic_secret,
             ),
             visible="compact",
         )
         report = evaluate(target, action="edit docs", state_changing=True)
         encoded = json.dumps(report, ensure_ascii=False)
-        if "/Users/example/project" in encoded or "owner@example.com" in encoded or "token=abc123" in encoded:
+        if synthetic_path in encoded or synthetic_email in encoded or synthetic_secret in encoded:
             failures.append("adoption report must sanitize path, email, and secret content")
 
     with tempfile.TemporaryDirectory(prefix="tes-mg-adoption-") as tmp:

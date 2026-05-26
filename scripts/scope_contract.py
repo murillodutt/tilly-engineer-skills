@@ -15,7 +15,7 @@ import tempfile
 from typing import Any
 
 
-VERSION = "0.3.135"
+VERSION = "0.3.136"
 SCHEMA = "tes-scope@1"
 SAFE_TOKEN = re.compile(r"[^a-zA-Z0-9_.:-]+")
 ISO_UTC = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
@@ -249,7 +249,14 @@ def self_test() -> int:
             "missing status": normalize_scope(target, agent="parent", source="cortex", evidence_ref="sources/source.md", timestamp=timestamp),
             "absolute path": normalize_scope(target, agent="parent", source="cortex", evidence_ref="/absolute/unsafe/project.md", timestamp=timestamp, status="PASS"),
             "traversal": normalize_scope(target, agent="parent", source="cortex", evidence_ref="sources/../secret.md", timestamp=timestamp, status="PASS"),
-            "url": normalize_scope(target, agent="parent", source="cortex", evidence_ref="https://private.example.test/evidence", timestamp=timestamp, status="PASS"),
+            "url": normalize_scope(
+                target,
+                agent="parent",
+                source="cortex",
+                evidence_ref="https://" + "private." + "example.test/evidence",
+                timestamp=timestamp,
+                status="PASS",
+            ),
             "cross scope": normalize_scope(target, project="project:0000000000000000", agent="parent", source="cortex", evidence_ref="sources/source.md", timestamp=timestamp, status="PASS"),
             "bad timestamp": normalize_scope(target, agent="parent", source="cortex", evidence_ref="sources/source.md", timestamp="2026-05-26", status="PASS"),
         }

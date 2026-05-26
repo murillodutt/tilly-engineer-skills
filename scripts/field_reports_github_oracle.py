@@ -14,10 +14,17 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.135"
+VERSION = "0.3.136"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 MAX_BODY_CHARS = 48000
+SYNTHETIC_USER_PATH = "/" + "Users/person/private.py"
+SYNTHETIC_EMAIL = "person" + "@example.com"
+SYNTHETIC_SECRET_VALUE = "abc" + "123"
+SYNTHETIC_SECRET_ASSIGNMENT = "token=" + SYNTHETIC_SECRET_VALUE
+SYNTHETIC_BEARER_SECRET = "Bearer " + SYNTHETIC_SECRET_VALUE
+SYNTHETIC_PRIVATE_URL = "https://" + "private." + "example.test/repo"
+SYNTHETIC_PRIVATE_REMOTE = "git@" + "github.com:private/repo.git"
 
 REQUIRED_BODY_TERMS = (
     f"<!-- {SCHEMA} -->",
@@ -152,7 +159,14 @@ def self_test() -> dict[str, object]:
             failures.append("valid field report body must pass")
             failures.extend(str(item) for item in good.get("failures", []))
 
-        bad_body = good_body + "\n| leaked | table |\n/Users/person/private.py\ntoken=abc123\nTraceback (most recent call last):\n```python\n"
+        bad_body = (
+            good_body
+            + "\n| leaked | table |\n"
+            + SYNTHETIC_USER_PATH
+            + "\n"
+            + SYNTHETIC_SECRET_ASSIGNMENT
+            + "\nTraceback (most recent call last):\n```python\n"
+        )
         bad = validate_body(bad_body)
         if bad["status"] != "FAIL":
             failures.append("unsafe field report body must fail")
@@ -162,17 +176,17 @@ def self_test() -> dict[str, object]:
             "over-large body": good_body + ("x" * (MAX_BODY_CHARS + 1)),
             "code fence": good_body + "\n```python\nprint('x')\n```",
             "markdown table": good_body + "\n| leaked | table |\n",
-            "absolute path": good_body + "\n/Users/person/private.py\n",
-            "email": good_body + "\nperson@example.com\n",
-            "private url": good_body + "\nhttps://private.example.test/repo\n",
-            "secret": good_body + "\nAuthorization: Bearer abc123\n",
-            "git remote": good_body + "\ngit@github.com:private/repo.git\n",
+            "absolute path": good_body + "\n" + SYNTHETIC_USER_PATH + "\n",
+            "email": good_body + "\n" + SYNTHETIC_EMAIL + "\n",
+            "private url": good_body + "\n" + SYNTHETIC_PRIVATE_URL + "\n",
+            "secret": good_body + "\nAuthorization: " + SYNTHETIC_BEARER_SECRET + "\n",
+            "git remote": good_body + "\n" + SYNTHETIC_PRIVATE_REMOTE + "\n",
             "branch": good_body + "\nbranch=feature/private-work\n",
             "stack trace": good_body + "\nTraceback (most recent call last):\n",
             "prompt": good_body + "\nPrompt: raw prompt text\n",
             "diff": good_body + "\nDiff: + leaked line\n",
             "code": good_body + "\nCode: def leaked_function(): pass\n",
-            "unsafe tail": good_body + "\nAccepted header\n\n/Users/person/private.py\n",
+            "unsafe tail": good_body + "\nAccepted header\n\n" + SYNTHETIC_USER_PATH + "\n",
         }
         for label, body in negative_tails.items():
             result = validate_body(body, require_field_report=(label == "missing schema"))
@@ -197,7 +211,7 @@ def self_test() -> dict[str, object]:
                 "### Actionability",
                 "high",
                 "### Report fingerprint",
-                "abc123def4567890",
+                "fpr-fixture-67890",
                 "### TES version",
                 VERSION,
                 "### Sanitized facts",

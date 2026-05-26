@@ -5,7 +5,7 @@ status: active
 consumer: installer authors, adopters, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.5.1
+tver: 0.5.2
 ---
 
 # TES Cortex
@@ -117,11 +117,19 @@ have:
 - exactly one H1;
 - a `## Claim` section with the durable claim or synthesis;
 - a `## Evidence` section;
-- at least one explicit evidence ref to `sources/**`, `docs/agents/evidence/**`,
-  or an `Assumption:` line.
+- at least one explicit evidence ref to `sources/**`,
+  `docs/agents/cortex/sources/**`, `docs/agents/evidence/**`, or an
+  `Assumption:` line.
 
 `audit` fails when a cell misses this minimum. Missing map entries and orphan
 cells remain warnings; broken wikilinks and ungrounded cells are failures.
+
+Evidence refs are repository-relative by contract. Absolute filesystem paths,
+home-directory paths, drive-letter paths, traversal refs, derived caches, run
+scratch, checkpoints, benchmark outputs, recall indexes, and semantic indexes
+do not satisfy `## Evidence`. If a claim can only be grounded by local context
+that is not retained under an allowed evidence root, write an `Assumption:`
+line and keep the cell reviewable instead of embedding the local path.
 
 `curate-plan` adds the semantic gate above structural integrity. It classifies
 merge candidates, split candidates, link candidates, semantic tensions,
@@ -204,8 +212,11 @@ memory-quality failures are also present.
 - Do not file secrets, credentials, private keys, `.env` contents, or regulated
   personal data into Cortex unless the target project has an explicit local
   privacy contract.
-- Every compiled claim points to a source path, conversation evidence entry, or
-  explicit assumption inside the cell's `## Evidence` section.
+- Every compiled claim points to `sources/**`,
+  `docs/agents/cortex/sources/**`, `docs/agents/evidence/**`, or an explicit
+  assumption inside the cell's `## Evidence` section.
+- Do not use absolute local paths, derived caches, benchmark run artifacts,
+  checkpoints, recall indexes, or semantic indexes as durable cell evidence.
 - Every `absorb` updates `MAP.md`, `LINKS.md`, and appends to `TRAIL.md`.
 - Important relationships appear as normal Markdown links and in `LINKS.md`.
 - Prefer links that render in Obsidian and remain readable in GitHub or a plain

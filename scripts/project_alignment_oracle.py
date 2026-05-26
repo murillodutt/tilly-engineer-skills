@@ -29,7 +29,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.135"
+VERSION = "0.3.136"
 PACKAGE_MODE = (ROOT / "scripts").exists()
 AGENTS = Path("docs/agents")
 EVIDENCE = AGENTS / "evidence"
@@ -134,7 +134,11 @@ GENERIC_FAILURE_TERMS = (
 )
 GENERIC_FAILURE_PATTERNS = {
     "tbd": re.compile(r"(?<![A-Za-z0-9_])tbd(?![A-Za-z0-9_])", re.IGNORECASE),
-    "todo": re.compile(r"(?<![A-Za-z0-9_])todo(?![A-Za-z0-9_])", re.IGNORECASE),
+    "todo": re.compile(
+        r"(?m)(?:^|\n)\s*(?:[-*]\s*)?(?:\[[ xX]\]\s*)?(?:TODO|todo)(?:\s*[:\-]\s*|\s*$)|"
+        r"(?<![A-Za-z0-9_])TODO(?![A-Za-z0-9_])|"
+        r"(?i:(?<![A-Za-z0-9_])todo\s+(?:fill\s+this\s+in|run\s+tests|fix\b|replace\b|add\b|write\b))"
+    ),
     "lorem ipsum": re.compile(r"(?<![A-Za-z0-9_])lorem\s+ipsum(?![A-Za-z0-9_])", re.IGNORECASE),
     "fill this in": re.compile(r"(?<![A-Za-z0-9_])fill\s+this\s+in(?![A-Za-z0-9_])", re.IGNORECASE),
     "generic project": re.compile(r"(?<![A-Za-z0-9_])generic\s+project(?![A-Za-z0-9_])", re.IGNORECASE),
@@ -957,7 +961,7 @@ def write_good_fixture(target: Path) -> None:
         "# Project Alignment Evidence\n\n"
         + "```yaml\nalignment_evidence:\n"
         + "  target: fixture\n"
-        + "  tes_version: 0.3.135\n"
+        + "  tes_version: 0.3.136\n"
         + "  anchors_read:\n"
         + "    - README.md\n"
         + "    - package.json\n"
@@ -1045,6 +1049,20 @@ def self_test() -> dict[str, Any]:
             failures.extend(
                 [f"literal placeholder fixture must pass: {item}" for item in result["failures"]]
             )
+
+    with tempfile.TemporaryDirectory(prefix="tes-align-ptbr-prose-") as tempdir:
+        target = Path(tempdir)
+        write_good_fixture(target)
+        path = target / ALIGNMENT_FILES["glossary"]
+        path.write_text(
+            read_text(path)
+            + "\n## Connector Framework\n\n"
+            + "Em portugues, todo conector precisa satisfazer o contrato ativo.\n",
+            encoding="utf-8",
+        )
+        result = analyze(target)
+        if result["status"] != "PASS":
+            failures.extend([f"pt-br prose fixture must pass: {item}" for item in result["failures"]])
 
     with tempfile.TemporaryDirectory(prefix="tes-align-bad-roadmap-") as tempdir:
         target = Path(tempdir)

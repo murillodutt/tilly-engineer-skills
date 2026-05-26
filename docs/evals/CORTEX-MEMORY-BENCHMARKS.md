@@ -5,7 +5,7 @@ status: active
 consumer: Cortex maintainers, benchmark authors, oracle authors, and release reviewers
 source_of_truth: true
 evidence_level: L1
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # Cortex Memory Benchmarks
@@ -105,6 +105,10 @@ retrieval.
 - Do not commit external datasets or large result files.
 - Do not store private project names, private paths, storage backends, product
   names, secrets, or canary identifiers.
+- When fixtures model Cortex cells, their evidence refs must use
+  `sources/**`, `docs/agents/cortex/sources/**`, `docs/agents/evidence/**`, or
+  `Assumption:`. Absolute local paths, derived indexes, checkpoints, run
+  scratch, and benchmark outputs are not durable Cortex evidence.
 - Treat generated run directories as evidence only after a report is explicitly
   retained and indexed.
 - Use `docs/evidence/**` for retained proof and `.tes/runs/**` for local

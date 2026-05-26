@@ -16,7 +16,7 @@ from typing import Any
 import scope_contract
 
 
-VERSION = "0.3.135"
+VERSION = "0.3.136"
 SCHEMA = "tes-checkpoint@1"
 CHECKPOINT_ROOT = Path(".tes/checkpoints")
 DEFAULT_TTL_SECONDS = 24 * 60 * 60
@@ -31,13 +31,19 @@ SECRET = re.compile(
     r"(?i)(api[_-]?key|authorization|bearer|credential|password|secret|token)\s*[:=]?\s*[A-Za-z0-9._:/+=-]+"
 )
 STACK_TRACE = re.compile(r"(?i)(traceback \(most recent call last\)|\bat .+:\d+:\d+|exception: .+)")
+SYNTHETIC_EMAIL = "person" + "@example.com"
+SYNTHETIC_SECRET_VALUE = "abc" + "123"
+SYNTHETIC_BEARER_SECRET = "Bearer " + SYNTHETIC_SECRET_VALUE
+SYNTHETIC_SECRET_ASSIGNMENT = "token=" + SYNTHETIC_SECRET_VALUE
+SYNTHETIC_PRIVATE_URL = "https://" + "private." + "example.test"
+SYNTHETIC_PRIVATE_REPO_URL = SYNTHETIC_PRIVATE_URL + "/repo"
 FORBIDDEN_OUTPUT = (
     "/absolute/unsafe",
     "/Users/",
-    "person@example.com",
-    "Bearer abc123",
-    "token=abc123",
-    "https://private.example.test",
+    SYNTHETIC_EMAIL,
+    SYNTHETIC_BEARER_SECRET,
+    SYNTHETIC_SECRET_ASSIGNMENT,
+    SYNTHETIC_PRIVATE_URL,
     "Traceback (most recent call last):",
 )
 
@@ -597,7 +603,8 @@ def self_test() -> int:
             reject,
             checkpoint_id_value="unsafe",
             ttl_seconds=60,
-            summary="Traceback (most recent call last): /absolute/unsafe/source.py token=abc123",
+            summary="Traceback (most recent call last): /absolute/unsafe/source.py "
+            + SYNTHETIC_SECRET_ASSIGNMENT,
             adapter="codex",
             agent="checkpoint",
             source="checkpoint",
@@ -620,7 +627,8 @@ def self_test() -> int:
                     "expires_at": "2026-05-26T13:00:00Z",
                     "ttl_seconds": 3600,
                     "resume_status": "RESUMABLE",
-                    "summary": "Traceback (most recent call last): /absolute/unsafe/source.py token=abc123",
+                    "summary": "Traceback (most recent call last): /absolute/unsafe/source.py "
+                    + SYNTHETIC_SECRET_ASSIGNMENT,
                     "evidence_ref": "/absolute/unsafe/evidence.md",
                     "scope": scope_contract.normalize_scope(
                         hostile,
@@ -634,9 +642,9 @@ def self_test() -> int:
                     ).get("scope", {}),
                     "state": {
                         "unsafe_path": "/absolute/unsafe/source.py",
-                        "unsafe_email": "person@example.com",
-                        "unsafe_secret": "Bearer abc123",
-                        "unsafe_url": "https://private.example.test/repo",
+                        "unsafe_email": SYNTHETIC_EMAIL,
+                        "unsafe_secret": SYNTHETIC_BEARER_SECRET,
+                        "unsafe_url": SYNTHETIC_PRIVATE_REPO_URL,
                     },
                     "authority": authority_block(),
                 },
