@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.127"
+VERSION = "0.3.128"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -27,13 +27,15 @@ REQUIRED_PATHS = (
     "docs/index.html",
     "docs/architecture/PROJECT-STRUCTURE.md",
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
+    "docs/adr/0001-tes-memory-lifecycle.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.127/index.json",
-    "docs/dist/0.3.127/tilly-engineer-skills-0.3.127.zip",
-    "docs/dist/0.3.127/tilly-engineer-skills-0.3.127.zip.sha256",
+    "docs/dist/0.3.128/index.json",
+    "docs/dist/0.3.128/tilly-engineer-skills-0.3.128.zip",
+    "docs/dist/0.3.128/tilly-engineer-skills-0.3.128.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
+    "docs/adapters/ADAPTER-CAPABILITY-MATRIX.md",
     "docs/adapters/PLATFORM-DIFFERENCES.md",
     "docs/install/navigation/NAVIGATION-LIBRARY.md",
     "docs/install/navigation/common.prompt.md",

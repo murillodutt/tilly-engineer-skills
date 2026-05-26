@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, adapter authors, and installing agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.3
+tver: 0.1.4
 ---
 
 # Platform Differences Reference
@@ -14,15 +14,15 @@ This reference prevents false symmetry between Codex, Claude Code, and Cursor.
 TES keeps one shared behavioral contract, but each platform receives that
 contract through its native packaging shape.
 
-Last official-source check: 2026-05-08.
+Last official-source check: 2026-05-26.
 
 ## Official Sources
 
 | Platform | Official source checked | TES implication |
 |----------|-------------------------|-----------------|
-| Codex | [`openai/codex`](https://github.com/openai/codex), [AGENTS.md guide](https://developers.openai.com/codex/guides/agents-md), [skills](https://developers.openai.com/codex/skills), [plugins](https://developers.openai.com/codex/plugins/build), [slash commands](https://developers.openai.com/codex/cli/slash-commands) | Codex centers project guidance in `AGENTS.md`, reusable workflows in skills, and local distribution in `.codex-plugin/plugin.json`. |
-| Claude Code | [`anthropics/skills`](https://github.com/anthropics/skills), [skills](https://code.claude.com/docs/en/skills), [plugins](https://code.claude.com/docs/en/plugins), [slash commands](https://code.claude.com/docs/en/slash-commands), [settings](https://code.claude.com/docs/en/settings) | Claude centers project memory in `CLAUDE.md` and skills in `SKILL.md` folders; TES keeps plugin metadata as source-only templates instead of installing `.claude-plugin/**` into targets by default. |
-| Cursor | [`cursor/plugins`](https://github.com/cursor/plugins), [`cursor/plugin-template`](https://github.com/cursor/plugin-template), [rules](https://cursor.com/docs/rules), [plugins](https://cursor.com/docs/plugins), [MCP](https://cursor.com/docs/mcp) | Cursor centers persistent project instructions in `.cursor/rules/*.mdc` and supports richer plugin packaging with rules, skills, agents, commands, hooks, and MCP. |
+| Codex | [`openai/codex`](https://github.com/openai/codex), [AGENTS.md guide](https://developers.openai.com/codex/guides/agents-md), [skills](https://developers.openai.com/codex/skills), [plugins](https://developers.openai.com/codex/plugins/build), [slash commands](https://developers.openai.com/codex/cli/slash-commands), [config reference](https://developers.openai.com/codex/config-reference) | Codex centers project guidance in `AGENTS.md`, reusable workflows in skills, local distribution in `.codex-plugin/plugin.json`, and optional lifecycle hooks or memories outside the TES default package. |
+| Claude Code | [`anthropics/skills`](https://github.com/anthropics/skills), [skills](https://docs.anthropic.com/en/docs/claude-code/skills), [plugins](https://docs.anthropic.com/en/docs/claude-code/plugins), [slash commands](https://docs.anthropic.com/en/docs/claude-code/slash-commands), [settings](https://docs.anthropic.com/en/docs/claude-code/settings), [hooks](https://docs.anthropic.com/en/docs/claude-code/hooks), [subagents](https://docs.anthropic.com/en/docs/claude-code/sub-agents) | Claude centers project memory in `CLAUDE.md` and skills in `SKILL.md` folders; TES keeps plugin metadata as source-only templates and blocks default subagent memory writes. |
+| Cursor | [`cursor/plugins`](https://github.com/cursor/plugins), [`cursor/plugin-template`](https://github.com/cursor/plugin-template), [rules](https://docs.cursor.com/en/context/rules), [plugins](https://cursor.com/docs/plugins), [MCP](https://docs.cursor.com/en/tools/mcp), [hooks](https://cursor.com/docs/hooks), [SDK agents](https://cursor.com/docs/sdk/typescript) | Cursor centers persistent project instructions in `.cursor/rules/*.mdc` and supports richer plugin packaging with rules, skills, agents, commands, hooks, and MCP. |
 
 ## Shared Contract
 
@@ -81,6 +81,19 @@ brake.
 | Rules | Project guidance through `AGENTS.md` | No Cursor-style `.mdc` rule surface | `.cursor/rules/*.mdc` with frontmatter; TES separates governance from runtime command capability routing |
 | MCP config | `.codex/config.toml` | `.mcp.json` | `.cursor/mcp.json` for project config; plugin MCP is a future packaging decision |
 | Hooks | Tool-native hooks are sensitive and not claimed by TES default package | Tool-native hooks are sensitive and not claimed by TES default package | Plugin hooks exist officially; TES default package still uses repository Git hooks only |
+| Subagent or agent boundary | Native subagents exist, but TES memory writes stay parent-owned | Native subagents exist, but default package blocks direct durable writes | Native agents exist, but default package claims only rules and MCP install |
+
+## Memory Lifecycle Boundary
+
+Adapter lifecycle parity means each delivered surface names the same six
+moments: recall, scope normalization, write gate, checkpoint, closeout, and
+subagent return. The package may certify that textual and materialized boundary
+only when `scripts/adapter_parity_readiness.py` passes.
+
+Subagent return is not write authority. Subagents or agents may return findings
+and evidence to the parent context; the parent owns durable memory promotion and
+the write gate. Checkpoints and event records remain future waves, not implied
+by this adapter matrix.
 
 ## Platform Decisions
 

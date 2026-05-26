@@ -5,7 +5,7 @@ status: active
 consumer: cursor adopters and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.3.2
+tver: 0.3.3
 ---
 
 # Cursor Adapter
@@ -97,6 +97,24 @@ manual rules instead of expanding the always-on rule.
 | Hooks | Can alter agent loop behavior | Out of package |
 | Environment setup | Can install packages or prepare cloud agents | Out of package |
 | Background agents | Remote branch execution | Out of package |
+
+## Memory Lifecycle Boundary
+
+Cursor receives the TES memory lifecycle as rule text, not as a default plugin
+agent or hook package.
+
+| Moment | Package stance |
+|--------|----------------|
+| recall | `/tes-cortex` and Cortex reflection are read-only by default |
+| scope normalization | Deferred to the shared normalizer wave |
+| write gate | Durable Cortex writes require explicit parent authorization |
+| checkpoint | Deferred to the checkpoint lane wave |
+| closeout | Governed by TES oracles and repository Git hooks |
+| subagent return | Agents may return evidence only; parent owns memory |
+
+Cursor plugin hooks and SDK agents remain outside the default TES package.
+Parent-owned memory means no durable Cortex writes from an agent without the
+parent write gate.
 
 ## Validation
 

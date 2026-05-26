@@ -14,6 +14,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "docs/mesh/CONTRACT-MANIFEST.yml"
+LIFECYCLE_MATRIX = ROOT / "docs/adapters/ADAPTER-CAPABILITY-MATRIX.md"
 MATERIALIZER = ROOT / "scripts/materialize_adapter.py"
 DATASET = ROOT / "benchmarks/context-mesh/eval-dataset.json"
 
@@ -49,6 +50,27 @@ ADAPTER_MATERIALIZED_PATHS = {
 
 CORE_CONTRACT = "Assumptions visible. Scope smaller. Edits surgical. Success falsifiable."
 SUCCESS_FORMULA = "E = A * S * C * V"
+LIFECYCLE_MOMENTS = (
+    "recall",
+    "scope normalization",
+    "write gate",
+    "checkpoint",
+    "closeout",
+    "subagent return",
+)
+SUBAGENT_BOUNDARY_TERMS = (
+    "TES Memory Lifecycle Boundary",
+    "Parent owns durable memory",
+    "durable Cortex writes",
+    "evidence return only",
+)
+LIFECYCLE_STATUSES = (
+    "certified",
+    "blocked",
+    "deferred",
+    "not available",
+    "git-governed",
+)
 INTERNAL_MATRIX_LABELS = (
     "condition: full",
     "condition: none",
@@ -118,13 +140,46 @@ def check_adapter_text(
         term for term in (CORE_CONTRACT, SUCCESS_FORMULA)
         if term not in text
     ]
+    missing_lifecycle_moments = [
+        term for term in LIFECYCLE_MOMENTS
+        if term not in text
+    ]
+    missing_subagent_boundary_terms = [
+        term for term in SUBAGENT_BOUNDARY_TERMS
+        if term not in text
+    ]
+    status = "GO"
+    if missing_gates or missing_terms or missing_lifecycle_moments or missing_subagent_boundary_terms:
+        status = "NO-GO"
     return {
         "adapter": adapter,
         "materialized": materialized,
         "gate_count": len(gates),
         "missing_gates": missing_gates,
         "missing_terms": missing_terms,
-        "status": "GO" if not missing_gates and not missing_terms else "NO-GO",
+        "missing_lifecycle_moments": missing_lifecycle_moments,
+        "missing_subagent_boundary_terms": missing_subagent_boundary_terms,
+        "status": status,
+    }
+
+
+def check_lifecycle_matrix() -> dict[str, Any]:
+    failures: list[str] = []
+    if not LIFECYCLE_MATRIX.exists():
+        failures.append(f"missing lifecycle matrix: {rel(LIFECYCLE_MATRIX)}")
+        return {"status": "NO-GO", "failures": failures}
+
+    text = LIFECYCLE_MATRIX.read_text(encoding="utf-8")
+    for term in ("Memory Lifecycle Matrix", *LIFECYCLE_MOMENTS, *LIFECYCLE_STATUSES):
+        if term not in text:
+            failures.append(f"{rel(LIFECYCLE_MATRIX)} missing {term!r}")
+
+    return {
+        "status": "GO" if not failures else "NO-GO",
+        "matrix": rel(LIFECYCLE_MATRIX),
+        "lifecycle_moments": list(LIFECYCLE_MOMENTS),
+        "statuses": list(LIFECYCLE_STATUSES),
+        "failures": failures,
     }
 
 
@@ -202,6 +257,11 @@ def analyze() -> dict[str, Any]:
     ]:
         failures.append(f"unexpected contract gates: {gates!r}")
 
+    lifecycle_matrix = check_lifecycle_matrix()
+    if lifecycle_matrix["status"] != "GO":
+        failures.append("memory lifecycle matrix failed")
+        failures.extend(lifecycle_matrix.get("failures", []))
+
     source_results = []
     for adapter, paths in sorted(ADAPTER_SOURCE_PATHS.items()):
         try:
@@ -247,11 +307,15 @@ def analyze() -> dict[str, Any]:
         "git_head": git_head(),
         "contract_manifest": rel(CONTRACT),
         "contract_gates": gates,
+        "memory_lifecycle_matrix": lifecycle_matrix,
         "source_results": source_results,
         "materializer": materializer_output,
         "materialized_results": materialized_results,
         "benchmark_condition_labels": benchmark,
-        "claim": "structural/contract parity readiness only; no behavior parity claim",
+        "claim": (
+            "structural/contract and memory-lifecycle boundary readiness only; "
+            "no behavior parity claim"
+        ),
         "failures": failures,
     }
     tempdir.cleanup()
@@ -270,6 +334,10 @@ def render_text(result: dict[str, Any]) -> str:
     for gate in result["contract_gates"]:
         lines.append(f"- {gate}")
 
+    lifecycle_matrix = result["memory_lifecycle_matrix"]
+    lines.append("")
+    lines.append(f"memory_lifecycle_matrix: {lifecycle_matrix['status']}")
+
     lines.append("")
     lines.append("source_results:")
     for item in result["source_results"]:
@@ -286,6 +354,10 @@ def render_text(result: dict[str, Any]) -> str:
         "benchmark_condition_labels: "
         f"{benchmark['status']} samples_checked={benchmark.get('samples_checked')}"
     )
+    lines.append("")
+    lines.append("memory_lifecycle_boundary:")
+    lines.append(f"- lifecycle_moments={len(LIFECYCLE_MOMENTS)}")
+    lines.append(f"- subagent_boundary_terms={len(SUBAGENT_BOUNDARY_TERMS)}")
 
     if result["failures"]:
         lines.append("")
@@ -295,10 +367,53 @@ def render_text(result: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def self_test() -> int:
+    gates = contract_gate_names()
+    real_text = read_joined(ADAPTER_SOURCE_PATHS["codex"])
+    boundary_removed = real_text.replace("subagent return", "subagent handoff", 1)
+    boundary_result = check_adapter_text(
+        "codex",
+        boundary_removed,
+        gates,
+        materialized=False,
+    )
+
+    matrix_text = LIFECYCLE_MATRIX.read_text(encoding="utf-8")
+    matrix_backup = LIFECYCLE_MATRIX.read_text(encoding="utf-8")
+    failures: list[str] = []
+    try:
+        if boundary_result["status"] != "NO-GO":
+            failures.append("boundary removal fixture did not fail")
+        if "subagent return" not in boundary_result["missing_lifecycle_moments"]:
+            failures.append("boundary removal did not report missing subagent return")
+
+        synthetic = matrix_text.replace("not available", "not-applicable", 1)
+        missing_status = [
+            term
+            for term in LIFECYCLE_STATUSES
+            if term not in synthetic
+        ]
+        if "not available" not in missing_status:
+            failures.append("matrix status fixture did not detect missing not available")
+    finally:
+        # Keep the test read-only even if future edits change the helper.
+        _ = matrix_backup
+
+    if failures:
+        print(json.dumps({"status": "FAIL", "failures": failures}, indent=2))
+        return 1
+    print("adapter_parity_readiness self-test PASS")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
+
+    if args.self_test:
+        return self_test()
 
     result = analyze()
     if args.json:

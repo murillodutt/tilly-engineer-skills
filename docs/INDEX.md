@@ -5,7 +5,7 @@ status: active
 consumer: maintainers and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.12
+tver: 0.4.13
 ---
 
 # Tilly Engineer Skills Docs
@@ -27,7 +27,7 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.127/tilly-engineer-skills-0.3.127.zip` |
+| Public installer bundle | `dist/0.3.128/tilly-engineer-skills-0.3.128.zip` |
 | GitHub-only npx installation | `install/INSTALL.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
 | Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
@@ -61,6 +61,7 @@ turning the repository root into an inventory.
 | Claude adapter pipeline | `adapters/pipelines/CLAUDE-PIPELINE.md` |
 | Cursor adapter pipeline | `adapters/pipelines/CURSOR-PIPELINE.md` |
 | Current roadmap index | `roadmap/README.md` |
+| TES Memory Lifecycle Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
 | RC1 readiness roadmap | `roadmap/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening prompt | `roadmap/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
 | Flash-Fry skill gap spec | `roadmap/FLASH-FRY-SKILL-SPEC.md` |

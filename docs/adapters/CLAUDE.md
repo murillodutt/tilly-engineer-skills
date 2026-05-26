@@ -5,7 +5,7 @@ status: active
 consumer: claude code adopters and package maintainers
 source_of_truth: true
 evidence_level: L2
-tver: 0.3.3
+tver: 0.3.4
 ---
 
 # Claude Adapter
@@ -32,12 +32,12 @@ each runtime.
 | Commands | Runtime command shortcuts | Not materialized; skills are preferred |
 
 Official references: [Memory](https://code.claude.com/docs/en/memory),
-[Settings](https://code.claude.com/docs/en/settings),
-[Skills](https://code.claude.com/docs/en/skills),
-[Plugins](https://code.claude.com/docs/en/plugins),
-[Hooks](https://code.claude.com/docs/en/hooks),
-[MCP](https://code.claude.com/docs/en/mcp), and
-[Subagents](https://code.claude.com/docs/en/sub-agents).
+[Settings](https://docs.anthropic.com/en/docs/claude-code/settings),
+[Skills](https://docs.anthropic.com/en/docs/claude-code/skills),
+[Plugins](https://docs.anthropic.com/en/docs/claude-code/plugins),
+[Hooks](https://docs.anthropic.com/en/docs/claude-code/hooks),
+[MCP](https://docs.anthropic.com/en/docs/claude-code/mcp), and
+[Subagents](https://docs.anthropic.com/en/docs/claude-code/sub-agents).
 
 ## Source Contract
 
@@ -129,6 +129,24 @@ dedicated decision.
 | MCP | Adds external tools, auth, and lifecycle | Read-only Cortex only via installer |
 | Subagents | Can inherit tools and act automatically | Out of package |
 | Marketplace | Can distribute stale or unsafe packages | Local metadata only |
+
+## Memory Lifecycle Boundary
+
+Claude receives the TES memory lifecycle as adapter contract text, not as a
+default plugin hook or subagent package.
+
+| Moment | Package stance |
+|--------|----------------|
+| recall | `/tes-cortex` and Cortex reflection are read-only by default |
+| scope normalization | Deferred to the shared normalizer wave |
+| write gate | Durable Cortex writes require explicit parent authorization |
+| checkpoint | Deferred to the checkpoint lane wave |
+| closeout | Governed by TES oracles and repository Git hooks |
+| subagent return | Subagents may return evidence only; parent owns memory |
+
+Claude Code supports hooks and subagents, but TES default packaging does not
+grant subagents direct memory authority. Parent-owned memory means no durable
+Cortex writes from a subagent without the parent write gate.
 
 ## Validation
 

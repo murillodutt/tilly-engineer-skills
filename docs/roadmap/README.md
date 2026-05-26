@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, release reviewers, and next-loop operators
 source_of_truth: false
 evidence_level: L2
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # Roadmap Index
@@ -18,6 +18,7 @@ readiness baseline.
 
 | Line | Status | Document |
 |------|--------|----------|
+| TES Memory Lifecycle implementation | Active | `GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
 | RC1 readiness cleanup | Active | `RC1-READINESS-ROADMAP.md` |
 | Cortex hardening sequence | Complete | `GOAL-SUPER-SPEC-cortex-hardening.md` |
 | TES Align semantic drift hardening | Proposed | `TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
@@ -29,7 +30,7 @@ readiness baseline.
 
 ## Baseline
 
-The current release-readiness baseline is TES `0.3.127`, after the GitHub-only
+The current release-readiness baseline is TES `0.3.128`, after the GitHub-only
 npx installer line, interactive installer screen, Node/Bun runtime matrix,
 first-session hooks, and fixed release documentation alignment.
 

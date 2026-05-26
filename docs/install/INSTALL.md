@@ -26,11 +26,11 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 ## Commercial Quickstart
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.127 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.128 tilly-engineer-skills add
 ```
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.127 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.128 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -42,10 +42,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.127 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.128 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.127` is the fixed release ref and supported commercial install path; do not certify mutable release refs without their own canary evidence.
+`#v0.3.128` is the fixed release ref and supported commercial install path; do not certify mutable release refs without their own canary evidence.
 
 During install, update, and clean-runtime refresh, obsolete plugin/root-skill surfaces are removed only when TES-owned/generated/empty; ambiguous content is preserved, backed up under `.tes/bk/**`, and reported as `NEEDS_REVIEW`.
 

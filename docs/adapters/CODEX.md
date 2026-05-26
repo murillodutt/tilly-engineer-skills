@@ -5,7 +5,7 @@ status: active
 consumer: codex adopters
 source_of_truth: true
 evidence_level: L2
-tver: 0.5.2
+tver: 0.5.3
 ---
 
 # Codex Derivation
@@ -13,7 +13,7 @@ tver: 0.5.2
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.127`.
+Project version: `0.3.128`.
 
 It follows the Codex customization order:
 
@@ -56,6 +56,24 @@ The retained metadata does not claim marketplace publication, live Codex UI
 installation, native hooks, plugin skills, or plugin-bundled MCP servers. Those
 surfaces require a separate explicit packaging decision, official-source proof,
 safety contract, smoke, and negative tests.
+
+## Memory Lifecycle Boundary
+
+Codex receives the TES memory lifecycle as adapter contract text, not as a
+write-capable memory runtime.
+
+| Moment | Package stance |
+|--------|----------------|
+| recall | `/tes-cortex` and Cortex reflection are read-only by default |
+| scope normalization | Deferred to the shared normalizer wave |
+| write gate | Durable Cortex writes require explicit parent authorization |
+| checkpoint | Deferred to the checkpoint lane wave |
+| closeout | Governed by TES oracles and repository Git hooks |
+| subagent return | Subagents may return evidence only; parent owns memory |
+
+Do not enable Codex hooks, memories, or subagent configuration to bypass this
+boundary. Parent-owned memory means no durable Cortex writes from a spawned
+specialist without the parent write gate.
 
 ## Why This Shape
 

@@ -19,7 +19,7 @@ import project_context_oracle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.127"
+VERSION = "0.3.128"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -28,18 +28,53 @@ DOCS = {
     "codex_skills": "https://developers.openai.com/codex/skills",
     "codex_plugins": "https://developers.openai.com/codex/plugins",
     "codex_hooks": "https://developers.openai.com/codex/hooks",
+    "codex_config": "https://developers.openai.com/codex/config-reference",
     "codex_rules": "https://developers.openai.com/codex/rules",
     "codex_mcp": "https://developers.openai.com/codex/mcp",
-    "claude_features": "https://code.claude.com/docs/en/features-overview",
-    "claude_skills": "https://code.claude.com/docs/en/skills",
-    "claude_plugins": "https://code.claude.com/docs/en/plugins",
-    "claude_hooks": "https://code.claude.com/docs/en/hooks",
-    "cursor_rules": "https://cursor.com/docs/rules",
-    "cursor_mcp": "https://cursor.com/docs/mcp",
+    "claude_features": "https://docs.anthropic.com/en/docs/claude-code/overview",
+    "claude_skills": "https://docs.anthropic.com/en/docs/claude-code/skills",
+    "claude_plugins": "https://docs.anthropic.com/en/docs/claude-code/plugins",
+    "claude_hooks": "https://docs.anthropic.com/en/docs/claude-code/hooks",
+    "claude_subagents": "https://docs.anthropic.com/en/docs/claude-code/sub-agents",
+    "cursor_rules": "https://docs.cursor.com/en/context/rules",
+    "cursor_plugins": "https://cursor.com/docs/plugins",
+    "cursor_hooks": "https://cursor.com/docs/hooks",
+    "cursor_agents": "https://cursor.com/docs/sdk/typescript",
+    "cursor_mcp": "https://docs.cursor.com/en/tools/mcp",
     "mcp_spec": "https://modelcontextprotocol.io/specification/latest",
     "github_issue_forms": "https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms",
     "github_actions": "https://docs.github.com/actions/reference/workflows-and-actions/workflow-syntax",
 }
+
+LIFECYCLE_BOUNDARY_TERMS = (
+    "TES Memory Lifecycle Boundary",
+    "recall",
+    "scope normalization",
+    "write gate",
+    "checkpoint",
+    "closeout",
+    "subagent return",
+    "Parent owns durable memory",
+    "durable Cortex writes",
+    "evidence return only",
+)
+ADR_LIFECYCLE_TERMS = (
+    "recall",
+    "scope normalization",
+    "write gate",
+    "checkpoint",
+    "closeout",
+    "subagent return",
+)
+MATRIX_LIFECYCLE_TERMS = (
+    "Memory Lifecycle Matrix",
+    *ADR_LIFECYCLE_TERMS,
+    "certified",
+    "blocked",
+    "deferred",
+    "not available",
+    "git-governed",
+)
 
 
 def rel(path: Path) -> str:
@@ -95,6 +130,37 @@ def check_skill(relpath: str, expected_name: str) -> list[str]:
     return failures
 
 
+def check_lifecycle_boundary(relpath: str) -> list[str]:
+    text = read(relpath)
+    return [
+        f"{relpath} missing lifecycle boundary term: {term}"
+        for term in LIFECYCLE_BOUNDARY_TERMS
+        if term not in text
+    ]
+
+
+def check_memory_lifecycle_matrix() -> list[str]:
+    failures: list[str] = []
+    adr = "docs/adr/0001-tes-memory-lifecycle.md"
+    if not exists(adr):
+        failures.append(f"missing memory lifecycle contract: {adr}")
+    else:
+        text = read(adr)
+        for term in ADR_LIFECYCLE_TERMS:
+            if term not in text:
+                failures.append(f"{adr} missing lifecycle term: {term}")
+
+    matrix = "docs/adapters/ADAPTER-CAPABILITY-MATRIX.md"
+    if not exists(matrix):
+        failures.append(f"missing memory lifecycle matrix: {matrix}")
+    else:
+        text = read(matrix)
+        for term in MATRIX_LIFECYCLE_TERMS:
+            if term not in text:
+                failures.append(f"{matrix} missing lifecycle matrix term: {term}")
+    return failures
+
+
 def materialized_results() -> tuple[dict[str, Any], list[str]]:
     failures: list[str] = []
     with tempfile.TemporaryDirectory(prefix="tes-platform-surface-") as tempdir:
@@ -145,6 +211,7 @@ def analyze() -> dict[str, Any]:
     failures: list[str] = []
     warnings: list[str] = []
     surfaces: list[dict[str, str]] = []
+    failures.extend(check_memory_lifecycle_matrix())
 
     def surface(platform: str, name: str, status: str, evidence: str) -> None:
         surfaces.append(
@@ -165,6 +232,7 @@ def analyze() -> dict[str, Any]:
         for term in ("Think Before Coding", "Simplicity First", "cortex_reflex"):
             if term not in text:
                 failures.append(f"{codex_agent} missing {term}")
+        failures.extend(check_lifecycle_boundary(codex_agent))
     for skill in CODEX_SKILLS:
         failures.extend(check_skill(
             f"src/adapters/codex/skills/{skill}/SKILL.md",
@@ -195,6 +263,7 @@ def analyze() -> dict[str, Any]:
         "src/adapters/codex/plugin/plugin.json is retained in Git but omitted from target installs",
     )
     surface("codex", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
+    surface("codex", "memory-lifecycle", "certified", codex_agent)
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
 
@@ -207,6 +276,7 @@ def analyze() -> dict[str, Any]:
         for term in ("Think Before Coding", "Simplicity First", "Cortex Reflection"):
             if term not in text:
                 failures.append(f"{claude_agent} missing {term}")
+        failures.extend(check_lifecycle_boundary(claude_agent))
     for skill in CLAUDE_SKILLS:
         failures.extend(check_skill(f"src/adapters/claude/skills/{skill}/SKILL.md", skill))
     for relpath in (
@@ -221,6 +291,7 @@ def analyze() -> dict[str, Any]:
     surface("claude", "skill", "certified", ".claude/skills/** project skills sourced from src/adapters/claude/skills/**")
     surface("claude", "plugin", "source-only", "src/adapters/claude/plugin/plugin.json is retained in Git but omitted from target installs")
     surface("claude", "hook", "deferred", "Claude plugin hooks are native, but not claimed by this package.")
+    surface("claude", "memory-lifecycle", "certified", claude_agent)
     surface("claude", "rules", "not-native", "Claude uses CLAUDE.md, permissions, hooks, skills, plugins, and MCP.")
     surface("claude", "mcp", "certified", "scripts/install_mcp.py writes .mcp.json")
 
@@ -236,12 +307,15 @@ def analyze() -> dict[str, Any]:
             failures.append(f"{rule} must keep alwaysApply: true")
         if "description:" not in text:
             failures.append(f"{rule} missing description")
+    if exists(cursor_rule):
+        failures.extend(check_lifecycle_boundary(cursor_rule))
     if not exists("src/adapters/cursor/CURSOR.md"):
         failures.append("missing Cursor bootloader: src/adapters/cursor/CURSOR.md")
     surface("cursor", "agent", "certified", "src/adapters/cursor/CURSOR.md")
     surface("cursor", "skill", "certified", "src/adapters/cursor/rules/tes-runtime-capabilities.mdc provides command capability routing after clean runtime install and semantic recovery.")
     surface("cursor", "plugin", "deferred", "Cursor plugins are native, but no TES .cursor-plugin package is claimed.")
     surface("cursor", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
+    surface("cursor", "memory-lifecycle", "certified", cursor_rule)
     surface("cursor", "rules", "certified", cursor_rule)
     surface("cursor", "mcp", "certified", "scripts/install_mcp.py writes .cursor/mcp.json")
 
@@ -377,6 +451,12 @@ def analyze() -> dict[str, Any]:
         "command-triggers",
         "certified" if command_trigger_result["status"] == "PASS" else "fail",
         "scripts/command_trigger_oracle.py",
+    )
+    surface(
+        "shared",
+        "memory-lifecycle-matrix",
+        "certified",
+        "docs/adr/0001-tes-memory-lifecycle.md; docs/adapters/ADAPTER-CAPABILITY-MATRIX.md",
     )
 
     github_oracle = "scripts/field_reports_github_oracle.py"

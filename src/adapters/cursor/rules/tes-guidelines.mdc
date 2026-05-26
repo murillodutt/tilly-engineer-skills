@@ -204,3 +204,17 @@ TES Field Reports is active by default. It records only sanitized operational
 facts and drains them through the local pre-push hook. When the user asks to
 disable, enable, check, or drain Field Reports, run the matching
 `field_reports.py` oracle and never expand collection levels or schema.
+
+## TES Memory Lifecycle Boundary
+
+- recall stays read-only unless a specific TES skill or oracle authorizes more;
+- scope normalization is handled by the parent context until the shared
+  normalizer exists;
+- write gate means durable Cortex writes require explicit parent authorization;
+- checkpoint state is resumability, not durable memory;
+- closeout is proven by TES oracles and repository Git hooks;
+- subagent return is evidence return only.
+
+Parent owns durable memory. Agents may inspect, patch, or report findings inside
+their assigned scope, but they must not perform durable Cortex writes or promote
+checkpoint/event state into memory directly.

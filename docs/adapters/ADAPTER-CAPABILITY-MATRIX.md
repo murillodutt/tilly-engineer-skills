@@ -5,8 +5,8 @@ status: active
 consumer: maintainers and adapter authors
 source_of_truth: true
 evidence_level: L3
-tver: 0.3.1
-sources_verified_on: 2026-05-09
+tver: 0.4.0
+sources_verified_on: 2026-05-26
 source_refresh_interval_days: 15
 source_refresh_policy: >-
   If this document is accessed after a cycle of 15 days or more since
@@ -21,15 +21,20 @@ sources:
   - "https://developers.openai.com/codex/skills"
   - "https://developers.openai.com/codex/plugins/build"
   - "https://developers.openai.com/codex/cli/slash-commands"
+  - "https://developers.openai.com/codex/config-reference"
   - "https://github.com/anthropics/skills"
-  - "https://code.claude.com/docs/en/skills"
-  - "https://code.claude.com/docs/en/plugins"
-  - "https://code.claude.com/docs/en/slash-commands"
+  - "https://docs.anthropic.com/en/docs/claude-code/skills"
+  - "https://docs.anthropic.com/en/docs/claude-code/plugins"
+  - "https://docs.anthropic.com/en/docs/claude-code/slash-commands"
+  - "https://docs.anthropic.com/en/docs/claude-code/hooks"
+  - "https://docs.anthropic.com/en/docs/claude-code/sub-agents"
   - "https://github.com/cursor/plugins"
   - "https://github.com/cursor/plugin-template"
-  - "https://cursor.com/docs/rules"
+  - "https://docs.cursor.com/en/context/rules"
   - "https://cursor.com/docs/plugins"
-  - "https://cursor.com/docs/mcp"
+  - "https://docs.cursor.com/en/tools/mcp"
+  - "https://cursor.com/docs/hooks"
+  - "https://cursor.com/docs/sdk/typescript"
   - "https://modelcontextprotocol.io/specification/latest"
 ---
 
@@ -68,7 +73,8 @@ without making any single runtime adapter the design center.
 | Always-on rules | `AGENTS.md` project guidance | `CLAUDE.md` project guidance | `.cursor/rules/*.mdc` |
 | Skill | `.agents/skills/**` | `.claude/skills/**` project skills | Cursor plugin `skills/**` exists officially; TES v1 uses rules only |
 | Plugin | source-only `src/adapters/codex/plugin/**` retained by oracle | source-only `src/adapters/claude/plugin/**` retained by oracle | `.cursor-plugin/**` exists officially; TES v1 does not claim it |
-| Hooks | native platform support; Tilly uses Git hook only | native platform support; Tilly plugin hook deferred | native plugin hooks exist; Tilly uses Git hook only |
+| Hooks | native platform support; TES default package uses Git hook only | native platform support; TES plugin hook deferred | native plugin hooks exist; TES default package uses Git hook only |
+| Subagent or agent | native subagent config exists; TES boundary is parent-owned memory | native project/user subagents exist; TES default package blocks direct memory writes | native agents exist through SDK/plugin surfaces; TES default package keeps them out of scope |
 | MCP | project `.codex/config.toml` | project `.mcp.json` | project `.cursor/mcp.json` |
 | Behavior backend | `codex-cli` retained v1 scope | `claude-cli` retained v1 scope | deferred; no clean non-interactive route certified |
 
@@ -82,10 +88,32 @@ inputs:
 
 | Platform | Relevant docs |
 |----------|---------------|
-| Codex | `https://github.com/openai/codex`, `https://developers.openai.com/codex/guides/agents-md`, `https://developers.openai.com/codex/skills`, `https://developers.openai.com/codex/plugins/build`, `https://developers.openai.com/codex/cli/slash-commands` |
-| Claude | `https://github.com/anthropics/skills`, `https://code.claude.com/docs/en/skills`, `https://code.claude.com/docs/en/plugins`, `https://code.claude.com/docs/en/slash-commands` |
-| Cursor | `https://github.com/cursor/plugins`, `https://github.com/cursor/plugin-template`, `https://cursor.com/docs/rules`, `https://cursor.com/docs/plugins`, `https://cursor.com/docs/mcp` |
+| Codex | `https://github.com/openai/codex`, `https://developers.openai.com/codex/guides/agents-md`, `https://developers.openai.com/codex/skills`, `https://developers.openai.com/codex/plugins/build`, `https://developers.openai.com/codex/cli/slash-commands`, `https://developers.openai.com/codex/config-reference` |
+| Claude | `https://github.com/anthropics/skills`, `https://docs.anthropic.com/en/docs/claude-code/skills`, `https://docs.anthropic.com/en/docs/claude-code/plugins`, `https://docs.anthropic.com/en/docs/claude-code/slash-commands`, `https://docs.anthropic.com/en/docs/claude-code/hooks`, `https://docs.anthropic.com/en/docs/claude-code/sub-agents` |
+| Cursor | `https://github.com/cursor/plugins`, `https://github.com/cursor/plugin-template`, `https://docs.cursor.com/en/context/rules`, `https://cursor.com/docs/plugins`, `https://docs.cursor.com/en/tools/mcp`, `https://cursor.com/docs/hooks`, `https://cursor.com/docs/sdk/typescript` |
 | MCP | `https://modelcontextprotocol.io/specification/latest` |
+
+## Memory Lifecycle Matrix
+
+These statuses certify the TES package contract and materialized adapter text,
+not live host UI behavior or marketplace publication.
+
+Allowed lifecycle statuses are `certified`, `blocked`, `deferred`,
+`not available`, and `git-governed`.
+
+| Lifecycle moment | Codex | Claude | Cursor |
+|------------------|-------|--------|--------|
+| recall | certified | certified | certified |
+| scope normalization | deferred | deferred | deferred |
+| write gate | blocked | blocked | blocked |
+| checkpoint | deferred | deferred | deferred |
+| closeout | git-governed | git-governed | git-governed |
+| subagent return | certified | certified | certified |
+
+`subagent return` means parent-owned memory only: a specialist may return
+findings, patches, or evidence, but must not write durable Cortex memory
+directly. `write gate` remains blocked until a later wave adds an authorized
+durable-memory write path and oracle.
 
 ## Surface Oracle
 
