@@ -1,14 +1,18 @@
 ---
 tds_id: architecture.adr_0001_tes_memory_lifecycle
 tds_class: architecture
-status: active
+status: archived
 consumer: maintainers, Cortex authors, adapter authors, installer authors, and release operators
-source_of_truth: true
+source_of_truth: false
 evidence_level: L1
 tver: 0.1.0
 ---
 
 # ADR 0001: TES Memory Lifecycle And Cortex Operational Maturity
+
+Archived on 2026-05-27. This ADR is retained as the Cortex bootstrapping
+record. Active Cortex MCP evolution and the living invariants that still apply
+are now governed by ADR 0003.
 
 Accepted on 2026-05-26.
 

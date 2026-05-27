@@ -19,9 +19,9 @@ turning the repository root into an inventory.
 |------|----------|
 | Repository shape and ownership | `architecture/PROJECT-STRUCTURE.md` |
 | TES namespace migration catalog | `architecture/TES-NAMING-MIGRATION-CATALOG.md` |
-| TES Memory Lifecycle ADR | `adr/0001-tes-memory-lifecycle.md` |
-| Cortex governed MCP write lane ADR | `adr/0002-cortex-governed-mcp-write-lane.md` |
-| Cortex MCP capability expansion ADR | `adr/0003-cortex-mcp-capability-expansion.md` |
+| Archived TES Memory Lifecycle ADR | `adr/0001-tes-memory-lifecycle.md` |
+| Archived Cortex governed MCP write lane ADR | `adr/0002-cortex-governed-mcp-write-lane.md` |
+| Active Cortex MCP capability expansion ADR | `adr/0003-cortex-mcp-capability-expansion.md` |
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
 | Agent manual | `install/AGENT-MANUAL.md` |
 | Agent oracle inventory | `install/AGENT-ORACLE-INVENTORY.md` |
@@ -67,6 +67,7 @@ turning the repository root into an inventory.
 | Claude adapter pipeline | `adapters/pipelines/CLAUDE-PIPELINE.md` |
 | Cursor adapter pipeline | `adapters/pipelines/CURSOR-PIPELINE.md` |
 | Current roadmap index | `roadmap/README.md` |
+| Cortex MCP Capability Expansion Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md` |
 | TES Memory Lifecycle Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
 | Cortex Memory Benchmark Harness Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
 | TES Anti-Contamination Hardening Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md` |

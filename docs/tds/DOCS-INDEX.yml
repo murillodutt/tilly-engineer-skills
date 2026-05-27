@@ -25,23 +25,23 @@ documents:
   - path: docs/adr/0001-tes-memory-lifecycle.md
     id: architecture.adr_0001_tes_memory_lifecycle
     class: architecture
-    status: active
+    status: archived
     consumer: maintainers, Cortex authors, adapter authors, installer authors, and release operators
-    source_of_truth: true
+    source_of_truth: false
     evidence_level: L1
   - path: docs/adr/0002-cortex-governed-mcp-write-lane.md
     id: architecture.adr_0002_cortex_governed_mcp_write_lane
     class: architecture
-    status: active
+    status: archived
     consumer: maintainers, Cortex authors, MCP adapter authors, installer authors, and release operators
-    source_of_truth: true
+    source_of_truth: false
     evidence_level: L1
   - path: docs/adr/0003-cortex-mcp-capability-expansion.md
     id: architecture.adr_0003_cortex_mcp_capability_expansion
     class: architecture
-    status: proposed
+    status: active
     consumer: maintainers, Cortex MCP authors, host integration authors, and release operators
-    source_of_truth: false
+    source_of_truth: true
     evidence_level: L1
   - path: docs/install/INSTALL.md
     id: install.adapter_installer
@@ -414,6 +414,13 @@ documents:
     consumer: maintainers, MCP reviewers, Cortex maintainers, and execution agents
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md
+    id: roadmap.goal_super_spec_cortex_mcp_capability_expansion
+    class: roadmap
+    status: active
+    consumer: maintainers, Cortex MCP authors, host integration authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md
     id: roadmap.goal_super_spec_cortex_memory_benchmark_harness
     class: roadmap

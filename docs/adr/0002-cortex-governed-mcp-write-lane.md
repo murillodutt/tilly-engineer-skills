@@ -1,14 +1,18 @@
 ---
 tds_id: architecture.adr_0002_cortex_governed_mcp_write_lane
 tds_class: architecture
-status: active
+status: archived
 consumer: maintainers, Cortex authors, MCP adapter authors, installer authors, and release operators
-source_of_truth: true
+source_of_truth: false
 evidence_level: L1
 tver: 0.1.0
 ---
 
 # ADR 0002: Cortex Governed MCP Write Lane
+
+Archived on 2026-05-27. This ADR is retained as the governed-write
+bootstrapping record. The active Cortex MCP contract, including the write lane
+invariants that still apply, is now governed by ADR 0003.
 
 Accepted on 2026-05-27. Revised on 2026-05-27 after focused E2E evidence.
 

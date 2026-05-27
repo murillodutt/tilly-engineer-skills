@@ -1,22 +1,27 @@
 ---
 tds_id: architecture.adr_0003_cortex_mcp_capability_expansion
 tds_class: architecture
-status: proposed
+status: active
 consumer: maintainers, Cortex MCP authors, host integration authors, and release operators
-source_of_truth: false
+source_of_truth: true
 evidence_level: L1
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # ADR 0003: Cortex MCP Capability Expansion
 
 Proposed on 2026-05-27 after comparative analysis of the contemporary MCP memory-oriented server patterns of MCP
 servers (`external-memory-server-a`, `external-memory-server-b`, `external-memory-server-c`).
+Accepted on 2026-05-27 as the active Cortex MCP evolution contract.
 
 TES will expand the Cortex MCP surface along seven targeted capability axes
 without changing the source of truth, the write lane, or the dependency
 posture. Adopted patterns are observed in the contemporary MCP memory-oriented server patterns but reimplemented
 inside the TES boundary.
+
+ADR 0001 and ADR 0002 are now archived bootstrapping records. Their surviving
+runtime invariants are carried forward here so the active contract stays thin
+instead of accumulating multiple overlapping ADR sources of truth.
 
 ## Context
 
@@ -49,6 +54,34 @@ next implementation cycle can sequence the items against a stable contract.
 TES adopts seven targeted capabilities. Each item lists its surface, the
 expected invariants, and the oracle conditions a future implementation must
 satisfy.
+
+## Capability Status And Dependency Graph
+
+The ADR is active as an architectural decision. Individual capabilities become
+certified only when their scoped self-test additions pass inside
+`cortex_mcp.py --self-test`.
+
+| Capability | Status | Dependency note |
+|------------|--------|-----------------|
+| Current governed MCP baseline | certified | Existing stdio tools and governed write lane remain certified by current MCP and operator oracles. |
+| Schema helper | planned | First serial bridge; new schemas should be authored through this helper once it lands. |
+| Optional HTTP transport | planned | Second bridge; new capabilities must close with stdio and HTTP parity once this transport exists. |
+| Resources | planned | Independent after schema helper; certifies with resource list/read tests. |
+| Prompts | planned | Independent after schema helper; certifies with prompt registry tests. |
+| Verify cache | planned | Independent but hot-path; must merge only with focused cache invalidation oracle. |
+| Progress notifications | planned | Independent because target tools already exist; certifies advisory notifications only. |
+| Cell history | planned | Independent after schema helper; certifies read-only `TRAIL.md` parsing. |
+
+Implementation uses two tracks:
+
+- Serial bridge: land the schema helper first, then bring HTTP transport early
+  enough that capability closeout can prove dual-transport behavior.
+- Parallel capability fronts: resources, prompts, verify cache, progress
+  notifications, and cell history may proceed independently after the relevant
+  bridge is available.
+
+The merge gate is the consolidated `cortex_mcp.py --self-test`, with each
+available capability covered in stdio and HTTP once HTTP exists.
 
 ### 1. MCP Resources for Cells
 
@@ -151,18 +184,27 @@ JSON-RPC handler is unchanged; only the framing differs.
 | Bind address defaults to localhost. Non-localhost bind requires an explicit flag and prints a clear warning. |
 | The same `--self-test` runs against both transports. |
 
-## Invariants Preserved from Earlier Decisions
+## Active Cortex MCP Contract
 
-This ADR does not modify the following, which remain governed by their
-prior decisions:
+This ADR now owns the active Cortex MCP contract. The following invariants are
+carried forward from ADR 0001 and ADR 0002:
 
-- Markdown under `docs/agents/cortex/**` is the source of truth.
+- Markdown under `docs/agents/cortex/**` is the durable memory source of truth.
+- Runtime indexes, event logs, checkpoints, resources, prompts, transports, and
+  notifications are access, evidence, acceleration, or operator surfaces, not
+  memory truth.
 - The two-step `cortex_remember_plan` / `cortex_remember` write lane and its
   approval-phrase semantics are unchanged.
+- `cortex_remember` may create only one new cell plus correlated `MAP.md`,
+  `LINKS.md`, `TRAIL.md`, and derived recall-index writes already owned by the
+  Cortex write gate.
+- `cortex_remember` must not overwrite existing cells and must not write
+  `sources/**`.
 - Target is fixed at process startup. Tools never accept a `target` argument.
 - No new destructive surface (no delete, no update, no forget, no
   checkpoint, no apply over MCP).
 - No automatic capture. Reflection remains no-write.
+- Event tools are evidence inspection only and must report no writes.
 - No multi-tenant scope (`user_id` / `agent_id` / `app_id` / `run_id`).
 - No multi-target single process.
 
@@ -215,6 +257,7 @@ The cost is stricter self-test scope: every new capability is contract-
 verified inside the same binary, and the next time a external memory-oriented pattern is
 proposed, this ADR is the reference for what was deliberately not adopted.
 
-Status remains `proposed` until the first capability in this ADR ships with
-its self-test extension landed and passing. At that point status moves to
-`active` and subsequent items reference this ADR by id.
+ADR status `active` means the direction and carried-forward Cortex MCP
+invariants are accepted. Capability status `certified` means the specific
+capability has landed with its self-test extension and, once HTTP exists,
+stdio/HTTP parity.
