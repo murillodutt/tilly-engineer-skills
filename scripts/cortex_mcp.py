@@ -373,6 +373,34 @@ def tool_result(payload: dict[str, Any], is_error: bool | None = None) -> dict[s
     }
 
 
+def progress_notification(progress_token: object, progress: int, total: int, message: str) -> dict[str, Any]:
+    return {
+        "jsonrpc": "2.0",
+        "method": "notifications/progress",
+        "params": {
+            "progressToken": progress_token,
+            "progress": progress,
+            "total": total,
+            "message": message,
+        },
+    }
+
+
+def emit_progress(
+    progress_callback: Any,
+    progress_token: object | None,
+    progress: int,
+    total: int,
+    message: str,
+) -> None:
+    if progress_callback is None or progress_token is None:
+        return
+    try:
+        progress_callback(progress_notification(progress_token, progress, total, message))
+    except Exception:
+        return
+
+
 def resolve_target(default_target: Path, args: dict[str, Any]) -> Path:
     if "target" in args:
         raise ValueError("target argument is not accepted; restart the server with --target")
@@ -709,7 +737,14 @@ def get_prompt(args: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def call_tool(default_target: Path, name: str, args: dict[str, Any], writes_enabled: bool = True) -> dict[str, Any]:
+def call_tool(
+    default_target: Path,
+    name: str,
+    args: dict[str, Any],
+    writes_enabled: bool = True,
+    progress_callback: Any = None,
+    progress_token: object | None = None,
+) -> dict[str, Any]:
     resolve_target(default_target, args)
     if name in WRITE_TOOL_NAMES and not writes_enabled:
         return tool_result({
@@ -736,9 +771,15 @@ def call_tool(default_target: Path, name: str, args: dict[str, Any], writes_enab
         query = str(args.get("query", "")).strip() or None
         limit = int(args.get("limit", 20))
         line_budget = int(args.get("line_budget", 500))
-        return tool_result(cortex.review(resolve_target(default_target, args), query, limit, line_budget, backend))
+        emit_progress(progress_callback, progress_token, 1, 3, "review: audit, curation, and reflection started")
+        result = cortex.review(resolve_target(default_target, args), query, limit, line_budget, backend)
+        emit_progress(progress_callback, progress_token, 3, 3, "review: completed")
+        return tool_result(result)
     if name == "cortex_audit":
-        return tool_result(cortex.audit(resolve_target(default_target, args)))
+        emit_progress(progress_callback, progress_token, 1, 2, "audit: started")
+        result = cortex.audit(resolve_target(default_target, args))
+        emit_progress(progress_callback, progress_token, 2, 2, "audit: completed")
+        return tool_result(result)
     if name == "cortex_recall":
         query = str(args.get("query", "")).strip()
         if not query:
@@ -757,7 +798,12 @@ def call_tool(default_target: Path, name: str, args: dict[str, Any], writes_enab
         backend = str(args.get("backend", "lexical")).strip() or "lexical"
         if backend not in {"auto", "xenova", "lexical"}:
             return tool_result({"status": "FAIL", "failures": ["backend must be auto, xenova, or lexical"]}, True)
-        return tool_result(cortex.curate_plan(resolve_target(default_target, args), backend, write_index=False))
+        if backend != "lexical":
+            emit_progress(progress_callback, progress_token, 1, 2, "curation: semantic backend started")
+        result = cortex.curate_plan(resolve_target(default_target, args), backend, write_index=False)
+        if backend != "lexical":
+            emit_progress(progress_callback, progress_token, 2, 2, "curation: completed")
+        return tool_result(result)
     if name == "cortex_reflect":
         query = str(args.get("query", "")).strip() or None
         limit = int(args.get("limit", 20))
@@ -782,7 +828,12 @@ def error_response(request_id: Any, code: int, message: str) -> dict[str, Any]:
     return {"jsonrpc": "2.0", "id": request_id, "error": {"code": code, "message": message}}
 
 
-def handle_message(default_target: Path, message: dict[str, Any], writes_enabled: bool = True) -> dict[str, Any] | None:
+def handle_message(
+    default_target: Path,
+    message: dict[str, Any],
+    writes_enabled: bool = True,
+    progress_callback: Any = None,
+) -> dict[str, Any] | None:
     request_id = message.get("id")
     method = message.get("method")
     params = message.get("params") or {}
@@ -839,12 +890,17 @@ def handle_message(default_target: Path, message: dict[str, Any], writes_enabled
     if method == "tools/call":
         name = params.get("name")
         arguments = params.get("arguments") if "arguments" in params else {}
+        meta = params.get("_meta") if isinstance(params, dict) else {}
+        progress_token = meta.get("progressToken") if isinstance(meta, dict) else None
         if arguments is None:
             arguments = {}
         if not isinstance(arguments, dict):
             return error_response(request_id, -32602, "tool arguments must be an object")
         try:
-            return response(request_id, call_tool(default_target, str(name), arguments, writes_enabled))
+            return response(
+                request_id,
+                call_tool(default_target, str(name), arguments, writes_enabled, progress_callback, progress_token),
+            )
         except ValueError as exc:
             return error_response(request_id, -32602, str(exc))
         except Exception as exc:  # MCP transport should stay alive for client correction.
@@ -852,10 +908,17 @@ def handle_message(default_target: Path, message: dict[str, Any], writes_enabled
     return error_response(request_id, -32601, f"method not found: {method}")
 
 
-def handle_json_payload(default_target: Path, message: Any, writes_enabled: bool = True) -> dict[str, Any] | list[dict[str, Any]] | None:
+def handle_json_payload(
+    default_target: Path,
+    message: Any,
+    writes_enabled: bool = True,
+    progress_callback: Any = None,
+) -> dict[str, Any] | list[dict[str, Any]] | None:
     messages = message if isinstance(message, list) else [message]
     replies = [
-        handle_message(default_target, item, writes_enabled) if isinstance(item, dict) else error_response(None, -32600, "request must be an object")
+        handle_message(default_target, item, writes_enabled, progress_callback)
+        if isinstance(item, dict)
+        else error_response(None, -32600, "request must be an object")
         for item in messages
     ]
     replies = [item for item in replies if item is not None]
@@ -871,9 +934,12 @@ def serve(default_target: Path, writes_enabled: bool = True) -> int:
             continue
         try:
             message = json.loads(line)
-            payload = handle_json_payload(default_target, message, writes_enabled)
+            notifications: list[dict[str, Any]] = []
+            payload = handle_json_payload(default_target, message, writes_enabled, notifications.append)
             if payload is None:
                 continue
+            for notification in notifications:
+                print(json.dumps(notification, separators=(",", ":")), flush=True)
             print(json.dumps(payload, separators=(",", ":")), flush=True)
         except json.JSONDecodeError as exc:
             print(json.dumps(error_response(None, -32700, f"parse error: {exc}")), flush=True)
@@ -905,10 +971,13 @@ def make_http_handler(default_target: Path, writes_enabled: bool) -> type[BaseHT
                 return
             try:
                 message = json.loads(self.rfile.read(length).decode("utf-8"))
-                payload = handle_json_payload(default_target, message, writes_enabled)
+                notifications: list[dict[str, Any]] = []
+                payload = handle_json_payload(default_target, message, writes_enabled, notifications.append)
                 if payload is None:
                     self.send_json(204, {})
                     return
+                if notifications:
+                    payload = [*notifications, *(payload if isinstance(payload, list) else [payload])]
                 self.send_json(200, payload)
             except json.JSONDecodeError as exc:
                 self.send_json(400, error_response(None, -32700, f"parse error: {exc}"))
@@ -1442,6 +1511,34 @@ def self_test() -> int:
             if not result.get("isError"):
                 failures.append(f"{label}: call was not rejected")
 
+        progress_message = {
+            "jsonrpc": "2.0",
+            "id": 109,
+            "method": "tools/call",
+            "params": {
+                "name": "cortex_review",
+                "arguments": {"backend": "lexical"},
+                "_meta": {"progressToken": "mcp-progress"},
+            },
+        }
+        progress_notifications: list[dict[str, Any]] = []
+        progress_reply = handle_message(target.resolve(), progress_message, progress_callback=progress_notifications.append)
+        if progress_reply is None or progress_reply.get("result", {}).get("isError"):
+            failures.append("progress review call did not complete")
+        if not any(item.get("method") == "notifications/progress" for item in progress_notifications):
+            failures.append("progress review call emitted no progress notification")
+
+        def failing_progress_callback(_notification: dict[str, Any]) -> None:
+            raise RuntimeError("simulated progress notification failure")
+
+        progress_failure_reply = handle_message(
+            target.resolve(),
+            progress_message,
+            progress_callback=failing_progress_callback,
+        )
+        if progress_failure_reply is None or progress_failure_reply.get("result", {}).get("isError"):
+            failures.append("progress notification failure should not fail the tool result")
+
         def http_rpc(url: str, message: dict[str, Any]) -> dict[str, Any]:
             request = urllib_request.Request(
                 url,
@@ -1471,6 +1568,7 @@ def self_test() -> int:
             http_resource_list = http_rpc(http_url, resource_list_message)
             http_resource_read = http_rpc(http_url, resource_read_message)
             http_prompt_list = http_rpc(http_url, prompt_list_message)
+            http_progress = http_rpc(http_url, progress_message)
             if http_init != replies[0]:
                 failures.append("HTTP initialize envelope differed from stdio")
             if http_tools != replies[1]:
@@ -1495,6 +1593,10 @@ def self_test() -> int:
                 )
                 if http_prompt.get("result") != stdio_prompt_reply.get("result"):
                     failures.append(f"HTTP prompts/get envelope differed from stdio: {prompt_name}")
+            if not isinstance(http_progress, list) or not any(
+                item.get("method") == "notifications/progress" for item in http_progress
+            ):
+                failures.append("HTTP progress response did not include progress notification")
 
             http_bad_approval_args = {
                 "cell": "mcp-http-write",
