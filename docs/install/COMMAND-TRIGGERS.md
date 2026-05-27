@@ -117,7 +117,7 @@ tes bump     -> /tes-bump
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-source alias for the same oracles; not a target-project guarantee |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.136 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.137 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | read-only access surface, preferred for recall/read/curation/reflection |
 | skills | user-intent routers in runtimes that support skills |
@@ -177,6 +177,10 @@ completion instruction is: `Please, run /tes-setup for the report.` If
 avoid duplicate setup work. If the sentinel is already `complete`, summarize the
 sentinel and `last_run` instead of rerunning Project-Start, unless the user
 explicitly asks to recertify/update or the planner reports drift.
+If the sentinel is `needs_review`, `/tes-init` is the recovery route: inspect
+the latest run, repair the focused blocker, then run
+`tes_install.py postinstall --recover-needs-review` so TES reruns Project-Start,
+records the recovery run, and clears the sentinel only when the gates pass.
 
 1. **Install/Update Gate**: detect whether TES is missing, stale, helper-drifted,
    adapter-drifted, or legacy-blocked. When this gate requires installer/update
@@ -200,6 +204,9 @@ explicitly asks to recertify/update or the planner reports drift.
    helper-only or adapter repairs, rerun the Project-Start Gate before closing
    `/tes-init`; `tes_update.py plan` exposes the `project_start_gate` contract
    so executors cannot treat route planning as context initialization.
+   For `needs_review` postinstall recovery, use
+   `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`
+   as the final Project-Start closure instead of a broad forced rerun.
 
 When an old meshed project has stale helpers, runtime trigger drift, or an
 incomplete alignment mesh, `tes_update.py plan --json-only` also exposes a

@@ -21,6 +21,7 @@ Wave 7 local package-source closure.
 | TES Memory Lifecycle implementation | Complete | `GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
 | Cortex memory benchmark harness | Active | `GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
 | TES anti-contamination hardening | Active | `GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md` |
+| TES postinstall and Cortex curation hardening | Active | `GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
 | RC1 readiness cleanup | Active | `RC1-READINESS-ROADMAP.md` |
 | Cortex hardening sequence | Complete | `GOAL-SUPER-SPEC-cortex-hardening.md` |
 | TES Align semantic drift hardening | Proposed | `TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
@@ -32,9 +33,10 @@ Wave 7 local package-source closure.
 
 ## Baseline
 
-The current release-readiness baseline is TES `0.3.136`, after ADR 0001 memory
-lifecycle implementation closed locally with clean bundle metadata and one
-neutral canary replay. Remote tag/ref release certification is still deferred.
+The current release-readiness baseline is TES `0.3.137`, after ADR 0001 memory
+lifecycle implementation and postinstall/Cortex curation hardening closed
+locally with clean bundle metadata and one neutral canary replay. Remote
+tag/ref release certification is still deferred.
 
 The next work is not to create a release. The next work is to remove obvious
 pre-RC1 friction:

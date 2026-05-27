@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.136"
+VERSION = "0.3.137"
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -619,20 +619,38 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
     sentinel_path = target / POSTINSTALL_PATH
     sentinel = read_json(sentinel_path)
     state = str(sentinel.get("state") or "")
-    if state not in POSTINSTALL_STATES and not args.force:
+    recover_needs_review = bool(getattr(args, "recover_needs_review", False))
+    rerun_requested = bool(args.force or recover_needs_review)
+    if recover_needs_review and state != "needs_review":
+        result = {
+            "version": VERSION,
+            "status": "SKIP",
+            "reason": "postinstall recovery only runs when the sentinel is needs_review",
+            "target": str(target),
+            "state": state or "missing",
+        }
+        return 0, result
+    if state not in POSTINSTALL_STATES and not rerun_requested:
         result = {"version": VERSION, "status": "SKIP", "reason": "no postinstall sentinel", "target": str(target)}
         return 0, result
-    if state == "complete" and not args.force:
+    if state == "complete" and not rerun_requested:
         result = {"version": VERSION, "status": "SKIP", "reason": "postinstall already complete", "target": str(target)}
         return 0, result
-    if state == "needs_review" and not args.force:
-        result = {"version": VERSION, "status": "NEEDS_REVIEW", "reason": "previous postinstall needs review", "target": str(target)}
+    if state == "needs_review" and not rerun_requested:
+        result = {
+            "version": VERSION,
+            "status": "NEEDS_REVIEW",
+            "reason": "previous postinstall needs review",
+            "target": str(target),
+            "recovery": "run /tes-init, repair reported blockers, then rerun postinstall recovery",
+        }
         return 0, result
-    if state == "running" and not args.force:
+    if state == "running" and not rerun_requested:
         result = {"version": VERSION, "status": "RUNNING", "reason": "postinstall already running", "target": str(target)}
         return 0, result
     if args.dry_run:
-        result = {"version": VERSION, "status": "DRY-RUN", "target": str(target), "actions": ["would-run-postinstall"]}
+        action = "would-run-postinstall-recovery" if recover_needs_review else "would-run-postinstall"
+        result = {"version": VERSION, "status": "DRY-RUN", "target": str(target), "actions": [action]}
         return 0, result
 
     running = {
@@ -640,6 +658,8 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         "state": "running",
         "updated_at": utc_stamp(),
     }
+    if recover_needs_review:
+        running["recovery"] = "needs_review"
     write_json(sentinel_path, running)
     commands = [] if args.skip_project_init else list(DEFAULT_POSTINSTALL_COMMANDS)
     results = [run_helper(target, script, script_args, args.timeout) for script, script_args in commands]
@@ -657,6 +677,8 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         "commands": results,
         "hook_input_keys": sorted((hook_input or {}).keys()),
     }
+    if recover_needs_review:
+        run_payload["recovery"] = "needs_review"
     run_record = append_run_record(target, run_payload, dry_run=False)
     run_record_rel = rel(Path(run_record["path"]), target)
     runs = running.get("runs") if isinstance(running.get("runs"), list) else []
@@ -686,6 +708,8 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         "run_record": run_record_rel,
         "commands": [{"command": item["command"], "status": item["status"], "returncode": item["returncode"]} for item in results],
     }
+    if recover_needs_review:
+        result["recovery"] = "needs_review"
     return (0 if not failed else 1), result
 
 
@@ -1050,6 +1074,64 @@ def self_test() -> int:
         if "systemMessage" in claude_hook_payload:
             failures.append("Claude idempotent hook retry must stay quiet after postinstall is complete")
 
+        recovery_sentinel = {
+            **read_json(target / POSTINSTALL_PATH),
+            "state": "needs_review",
+            "last_status": "NEEDS_REVIEW",
+            "completed_at": None,
+            "failures": [{"command": "fixture", "returncode": 1, "stderr": "fixture blocker repaired"}],
+        }
+        write_json(target / POSTINSTALL_PATH, recovery_sentinel)
+        recovery_result = subprocess.run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/tes_install.py"),
+                "postinstall",
+                "--agent",
+                "codex",
+                "--target",
+                str(target),
+                "--recover-needs-review",
+            ],
+            cwd=target,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if recovery_result.returncode != 0:
+            failures.append("needs_review recovery postinstall failed")
+            failures.extend(recovery_result.stdout.splitlines())
+            failures.extend(recovery_result.stderr.splitlines())
+        recovered_sentinel = read_json(target / POSTINSTALL_PATH)
+        if recovered_sentinel.get("state") != "complete":
+            failures.append("needs_review recovery must clear the postinstall sentinel")
+        if recovered_sentinel.get("last_status") != "PASS":
+            failures.append("needs_review recovery must record PASS")
+        if recovered_sentinel.get("recovery") != "needs_review":
+            failures.append("needs_review recovery must record recovery mode")
+        if "failures" in recovered_sentinel:
+            failures.append("needs_review recovery must clear stale failure records after PASS")
+        recovery_skip = subprocess.run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/tes_install.py"),
+                "postinstall",
+                "--agent",
+                "codex",
+                "--target",
+                str(target),
+                "--recover-needs-review",
+            ],
+            cwd=target,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if recovery_skip.returncode != 0 or "postinstall recovery only runs when the sentinel is needs_review" not in recovery_skip.stdout:
+            failures.append("needs_review recovery must skip clean sentinels")
+            failures.extend(recovery_skip.stdout.splitlines())
+            failures.extend(recovery_skip.stderr.splitlines())
+
         with tempfile.TemporaryDirectory(prefix="tes-thin-install-claude-") as claude_tempdir:
             claude_target = Path(claude_tempdir)
             (claude_target / "README.md").write_text("# Claude Hook Fixture\n", encoding="utf-8")
@@ -1224,6 +1306,7 @@ def main() -> int:
     postinstall_parser.add_argument("--timeout", type=float, default=120.0)
     postinstall_parser.add_argument("--dry-run", action="store_true")
     postinstall_parser.add_argument("--force", action="store_true")
+    postinstall_parser.add_argument("--recover-needs-review", action="store_true")
     postinstall_parser.add_argument("--skip-project-init", action="store_true")
 
     hook_parser = subparsers.add_parser("hook")

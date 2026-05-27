@@ -795,12 +795,19 @@ def redundancy_reason(cell: dict[str, object]) -> str | None:
     return None
 
 
+def markdown_bullet_count(text: str) -> int:
+    return sum(1 for line in text.splitlines() if line.strip().startswith(("-", "*")))
+
+
 def split_reason(cell: dict[str, object]) -> str | None:
     claim = str(cell["claim"])
     claim_tokens = tokenize(claim)
     h2_count = int(cell["h2_count"])
     line_count = int(cell["line_count"])
     bullet_count = int(cell["bullet_count"])
+    claim_bullet_count = markdown_bullet_count(claim)
+    evidence_bullet_count = markdown_bullet_count(str(cell["evidence"]))
+    non_evidence_bullet_count = max(0, bullet_count - evidence_bullet_count)
     topic_markers = len(re.findall(r"\b(also|besides|separately|tambem|também|alem disso|além disso)\b", claim, re.I))
     if line_count > 120:
         return f"cell has {line_count} lines"
@@ -809,7 +816,14 @@ def split_reason(cell: dict[str, object]) -> str | None:
     if h2_count > 6:
         return f"cell has {h2_count} H2 sections"
     if bullet_count > 22:
-        return f"cell has {bullet_count} bullet lines"
+        if claim_bullet_count > 8:
+            return f"claim has {claim_bullet_count} bullet lines"
+        if non_evidence_bullet_count > 10:
+            return f"cell has {non_evidence_bullet_count} non-evidence bullet lines"
+        if bullet_count > 30:
+            return f"cell has {bullet_count} bullet lines"
+        if h2_count > 5 or len(claim_tokens) > 110 or line_count > 100 or topic_markers >= 2:
+            return f"cell has {bullet_count} bullet lines plus structural split pressure"
     if topic_markers >= 3:
         return "claim mixes multiple topic markers"
     return None
@@ -1165,6 +1179,10 @@ def curate_plan(target: Path, backend: str = "auto", write_index: bool = True) -
             "tension_score": 0.18,
             "max_cell_lines": 120,
             "max_claim_tokens": 140,
+            "soft_max_cell_bullets": 22,
+            "max_claim_bullets_before_split": 8,
+            "max_non_evidence_bullets_before_split": 10,
+            "max_cell_bullets_before_split": 30,
             "max_assumptions_without_review": 1,
         },
         "merge_candidates": merge_candidates,
@@ -2409,6 +2427,17 @@ def self_test() -> int:
                 "## Links\n\n"
                 "- [[adapter-routing]]\n"
             ),
+            "evidence-dense-cell.md": (
+                "# Evidence Dense Cell\n\n"
+                "## Claim\n\n"
+                "A narrow Cortex cell may retain many evidence bullets when they support one stable claim.\n\n"
+                "## Evidence\n\n"
+                + "".join(
+                    "- `sources/healthy-source.md` records evidence-dense fixture item "
+                    f"{number:02d}.\n"
+                    for number in range(1, 24)
+                )
+            ),
         }
         for name, text in healthy_fixtures.items():
             (healthy_cells / name).write_text(text, encoding="utf-8")
@@ -2513,6 +2542,10 @@ def self_test() -> int:
             bool(dirty_curate_result["reject_candidates"]),
             semantic_db_path(dirty_target).exists(),
             healthy_curate_result["status"] == "PASS" and healthy_curate_result["writes"] == [],
+            not any(
+                str(candidate.get("path", "")).endswith("evidence-dense-cell.md")
+                for candidate in healthy_curate_result["split_candidates"]
+            ),
         )
         if not all(checks):
             print("[cortex] FAIL")

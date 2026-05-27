@@ -27,7 +27,7 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.136/tilly-engineer-skills-0.3.136.zip` |
+| Public installer bundle | `dist/0.3.137/tilly-engineer-skills-0.3.137.zip` |
 | GitHub package-spec installation | `install/INSTALL.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
 | Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
@@ -68,6 +68,7 @@ turning the repository root into an inventory.
 | TES Memory Lifecycle Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
 | Cortex Memory Benchmark Harness Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
 | TES Anti-Contamination Hardening Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md` |
+| TES Postinstall And Cortex Curation Hardening Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
 | RC1 readiness roadmap | `roadmap/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening prompt | `roadmap/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
 | Flash-Fry skill gap spec | `roadmap/FLASH-FRY-SKILL-SPEC.md` |

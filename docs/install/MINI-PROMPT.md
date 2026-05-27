@@ -40,6 +40,8 @@ Treat tes_init.py as the deterministic scaffold and the active agent as the sema
 
 For `/tes-init`, run the Project-Start Gate before final reporting even when a preflight context check already passes. After helper-only or adapter repairs, run the installed `tes_init.py --target . --yes`, then certify with `project_context_oracle.py --target .` and `project_alignment_oracle.py --target .`.
 
+If `.tes/postinstall.json` is `needs_review`, inspect the latest run, repair the focused blocker, then run `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review` so the Project-Start recovery clears the sentinel only on PASS.
+
 If `tes_update.py plan --json-only` exposes `continuation_plan.status=PENDING_APPROVAL`, do not close with a bare `NEEDS_REVIEW`. Include the required phases, approvals, write surfaces, commands, and final recorded probe so the next run can resume without abandoning the line.
 
 The final report must expose the PT/EN/ES user manual link/path, installed helper set, root context gate, project context path, Field Reports state, and rollback summary.

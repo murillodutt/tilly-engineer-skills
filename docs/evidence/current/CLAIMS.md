@@ -128,3 +128,21 @@ write-capable MCP, external dataset adoption, UI/dashboard behavior, and
 commercial-use certification remain outside the claim.
 
 Retention status: `current`.
+
+## TES Postinstall And Cortex Curation Hardening Claim
+
+TES `0.3.137` adds explicit first-session `needs_review` recovery and narrows
+Cortex split detection so evidence-dense cells are not blocked solely by one
+extra evidence bullet.
+
+Proof: `docs/roadmap/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md`,
+`scripts/tes_install.py`, `scripts/cortex.py`,
+`scripts/command_trigger_oracle.py`, and
+`docs/evidence/reports/2026/05/27/tes-postinstall-cortex-hardening/REPORT.md`.
+
+Boundary: this is local package-source and local bundle implementation.
+Remote tag/ref certification, package publishing, marketplace action,
+write-capable MCP, automatic Cortex writes, and commercial-use certification
+remain outside the claim.
+
+Retention status: `current`.

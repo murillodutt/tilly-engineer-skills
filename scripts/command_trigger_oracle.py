@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.136"
+VERSION = "0.3.137"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -106,6 +106,7 @@ INIT_ROUTER_TERMS = (
     "must not block project-context initialization",
     "preflight context PASS does not replace project-start execution",
     "after helper-only",
+    "--recover-needs-review",
 )
 
 REPORT_GOVERNANCE_TERMS = (

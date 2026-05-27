@@ -167,6 +167,11 @@ setup commands. In Claude Code, TES first emits a synchronous start notice:
 `IMPORTANT: TES setup is running. Please wait; do not start project work.` It then uses native
 `asyncRewake` so setup runs in the background and wakes the session with:
 `Please, run /tes-setup for the report.` Repeated complete hooks stay quiet.
+When the sentinel is `needs_review`, `/tes-init` is recovery: inspect the latest
+run record, repair the focused blocker, then run
+`python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`.
+That recovery reruns Project-Start, records the new run, and clears the sentinel
+only on PASS.
 
 After install, platform-specific host review still matters:
 

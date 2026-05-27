@@ -1,4 +1,4 @@
-version: 0.3.136
+version: 0.3.137
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -414,6 +414,13 @@ documents:
     consumer: maintainers, Cortex maintainers, oracle authors, adapter maintainers, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md
+    id: roadmap.goal_super_spec_tes_postinstall_cortex_hardening
+    class: roadmap
+    status: active
+    consumer: maintainers, installer authors, Cortex maintainers, adapter maintainers, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/cortex-memory-benchmark-harness/EXECUTION-UNITS.md
     id: roadmap.cortex_memory_benchmark_harness.execution_units
     class: roadmap
@@ -496,6 +503,13 @@ documents:
     class: evidence
     status: active
     consumer: Cortex maintainers, benchmark authors, oracle authors, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/05/27/tes-postinstall-cortex-hardening/REPORT.md
+    id: evidence.tes_postinstall_cortex_hardening_20260527
+    class: evidence
+    status: active
+    consumer: TES maintainers, installer authors, Cortex maintainers, adapter maintainers, and release reviewers
     source_of_truth: false
     evidence_level: L2
   - path: docs/evidence/current/RISKS.md

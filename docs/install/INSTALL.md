@@ -10,10 +10,8 @@ tver: 0.9.8
 
 # Adapter Installation
 
-The public installer path is the GitHub package-spec command through npx or Bun
-after a fixed ref is authorized and release-certified. The current `0.3.136`
-evidence is local package-source closure: it certifies source, bundle metadata,
-and a neutral canary replay without authorizing remote tag, release, package publish, or marketplace action.
+The public installer path is the GitHub package-spec command through npx or Bun after a fixed ref is authorized and release-certified.
+Current `0.3.137` evidence is local package-source and bundle closure; it does not authorize remote tag, release, package publish, or marketplace action.
 
 User-facing walkthrough:
 
@@ -26,11 +24,11 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 ## GitHub Package-Spec Form
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.136 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.137 tilly-engineer-skills add
 ```
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.136 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.137 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -42,10 +40,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.136 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.137 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.136` is the intended fixed-ref form for a release-certified install
+`#v0.3.137` is the intended fixed-ref form for a release-certified install
 channel. Do not call that remote ref certified until `npm run release:check`
 passes after the tag or fixed ref is authorized and available.
 
@@ -77,6 +75,8 @@ Python 3.11+ executable validated by the installer.
 When the sentinel is `pending`, post-install runs `tes_init.py`,
 `project_context_oracle.py`, and `project_alignment_oracle.py`, then marks the
 sentinel `complete` or `needs_review`. Repeated hooks exit quickly.
+If the sentinel is `needs_review`, `/tes-init` repairs the focused blocker, then runs `tes_install.py postinstall --recover-needs-review`.
+That reruns Project-Start, records the recovery run, and clears the sentinel only on PASS.
 
 Claude Code receives first-session results as `SessionStart` hook context, not
 as a normal chat message. TES installs two Claude `SessionStart` handlers: a
@@ -189,11 +189,8 @@ protects installer/update writes but must not block project-context
 initialization; the agent reports the dirty tree, avoids helper/adapter/MCP
 changes, runs `tes_init.py`, and certifies both `PROJECT-CONTEXT.md` and the
 first-pass operating mesh. For `/tes-init`, the Project-Start Gate always runs
-before final reporting: a preflight context PASS does not replace project-start
-execution. After helper-only or adapter repairs, run
-`tes_init.py --target <target> --yes` and both
-`project_context_oracle.py --target <target>` and
-`project_alignment_oracle.py --target <target>` again.
+before final reporting: a preflight context PASS does not replace project-start execution.
+After helper-only or adapter repairs, run `tes_init.py --target <target> --yes` and both project oracles again. For `needs_review`, use `tes_install.py postinstall --recover-needs-review` so the retained run record and sentinel move together.
 For old meshed projects with stale helpers, trigger drift, or incomplete
 alignment, report the planner `continuation_plan` instead of a bare
 `NEEDS_REVIEW`; include phases, approvals, write surfaces, commands, and the

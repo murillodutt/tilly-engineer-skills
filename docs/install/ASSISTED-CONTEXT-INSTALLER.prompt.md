@@ -142,6 +142,11 @@ For `/tes-init`, run the router gates first:
 - **Project-Start Gate** is the `/tes-init` execution gate. It runs the
   installed project-context initializer and oracle before the final report. A
   preflight context PASS does not replace project-start execution.
+- When `.tes/postinstall.json` is `needs_review`, `/tes-init` is recovery:
+  inspect the latest postinstall run, repair the focused blocker, then run
+  `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`.
+  That command reruns Project-Start, records the recovery run, and clears the
+  sentinel only on PASS.
 
 If the Install/Update Gate finds an old meshed project that needs helper,
 adapter, legacy-retirement, context, or alignment repairs but the user has not
@@ -465,6 +470,13 @@ the first-pass Obsidian-compatible operating mesh when missing; `/tes-align`
 remains the deeper semantic refinement route. After helper-only or adapter
 repairs, rerun the Project-Start Gate; preflight context PASS does not replace
 project-start execution.
+
+If `.tes/postinstall.json` is `needs_review`, do not leave the user with a
+manual hidden `--force` step. Treat `/tes-init` as recovery, inspect the latest
+run, repair the focused blocker, then run
+`python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`
+as the Project-Start closure. If that recovery does not return PASS, report
+`NEEDS_REVIEW` with the new run record and blocker.
 
 When the update planner returns `continuation_plan.status=PENDING_APPROVAL`, do
 not improvise a shorter route. Present the approval-gated plan compactly in the

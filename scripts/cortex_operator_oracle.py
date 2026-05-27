@@ -12,7 +12,7 @@ import cortex
 import cortex_mcp
 
 
-VERSION = "0.3.136"
+VERSION = "0.3.137"
 
 
 def sha256_bytes(data: bytes) -> str:

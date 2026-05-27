@@ -138,6 +138,12 @@ memory artifacts. Every curation candidate carries an action, rationale, and
 next step so an agent can decide what to merge, split, link, resolve, ground, or
 reject without inventing the reason.
 
+Split detection uses compound pressure, not raw bullet count alone. A narrow
+cell with many evidence bullets may remain valid when the claim is small and
+the extra bullets are evidence support. A split candidate is raised when bullet
+pressure combines with claim bullets, non-evidence bullets, long claims, many
+headings, high line count, or mixed-topic markers.
+
 ## Curation Conveyor
 
 Cortex does not store everything that passes through the agent window. Cortex
@@ -149,7 +155,7 @@ The conveyor has three gates:
 | Gate | Contract |
 |------|----------|
 | `reflection_gate` | `reflect` decides whether durable capture or curation review is due. It writes nothing. |
-| `semantic_curation_gate` | `curate-plan` classifies duplicates, swollen cells, nearby unlinked cells, tensions, evidence gaps, redundancy, and transient material. It writes no memory. |
+| `semantic_curation_gate` | `curate-plan` classifies duplicates, compound swollen cells, nearby unlinked cells, tensions, evidence gaps, redundancy, and transient material. It writes no memory. |
 | `promotion_gate` | `apply --yes` is the only built-in path that writes compiled memory, and only with explicit evidence and authorization. |
 
 `learn` and `reflect` reject or no-op generic prompts that lack source evidence

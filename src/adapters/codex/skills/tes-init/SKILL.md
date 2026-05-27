@@ -67,6 +67,15 @@ the user for package contents.
    summarize the completed run, and do not rerun Project-Start unless the user
    explicitly asks to recertify/update, the sentinel is not `complete`, the
    planner reports drift, or evidence is missing.
+   When `.tes/postinstall.json` is `needs_review`, treat `/tes-init` as a
+   recovery intent: inspect the sentinel, the latest run record, and reported
+   blockers; repair only the relevant TES/setup issue; then run
+   `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`
+   as the final Project-Start closure. That recovery command reruns
+   `tes_init.py`, `project_context_oracle.py`, and
+   `project_alignment_oracle.py`, records a new run, and clears the sentinel
+   only when the gates pass. Do not use broad `--force` for this path unless
+   the user explicitly asks for full recertification.
 4. Run Step Zero before installer/update edits: inspect Git status and offer a
    local baseline commit when the tree is dirty and install/update writes are
    required.
