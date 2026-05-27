@@ -25,6 +25,35 @@ WRITE_APPROVAL_PREFIX = "APPROVE TES CORTEX MCP WRITE"
 WRITE_TOOL_NAMES = {"cortex_remember_plan", "cortex_remember"}
 LOCAL_HTTP_HOSTS = {"127.0.0.1", "localhost", "::1"}
 CELL_RESOURCE_PREFIX = "tes-cortex://cells/"
+PROMPT_REGISTRY: dict[str, dict[str, str]] = {
+    "cortex/closure-reflection": {
+        "title": "Cortex Closure Reflection",
+        "description": "Review a closure for durable Cortex learning without writing.",
+        "version": "1",
+        "body": (
+            "Review the latest closure. Identify durable decisions, evidence still needed, "
+            "and whether a memory proposal is warranted. Return no writes."
+        ),
+    },
+    "cortex/curation-review": {
+        "title": "Cortex Curation Review",
+        "description": "Classify Cortex curation signals without mutating memory.",
+        "version": "1",
+        "body": (
+            "Review Cortex curation signals. Classify duplicate, split, link, tension, "
+            "evidence-gap, redundancy, or reject candidates. Return no writes."
+        ),
+    },
+    "cortex/remember-checklist": {
+        "title": "Cortex Remember Checklist",
+        "description": "Check whether a durable-memory proposal is ready for human review.",
+        "version": "1",
+        "body": (
+            "Before durable memory, verify one claim, explicit evidence, target-neutral "
+            "wording, and user approval outside this prompt. Return checklist only."
+        ),
+    },
+}
 
 
 def schema_string(description: str) -> dict[str, str]:
@@ -612,6 +641,39 @@ def read_cell_resource(default_target: Path, args: dict[str, Any]) -> dict[str, 
     }
 
 
+def list_prompts() -> dict[str, Any]:
+    return {
+        "prompts": [
+            {
+                "name": name,
+                "title": prompt["title"],
+                "description": prompt["description"],
+            }
+            for name, prompt in PROMPT_REGISTRY.items()
+        ]
+    }
+
+
+def get_prompt(args: dict[str, Any]) -> dict[str, Any]:
+    name = args.get("name", "")
+    if not isinstance(name, str) or name not in PROMPT_REGISTRY:
+        raise ValueError("unknown prompt")
+    prompt = PROMPT_REGISTRY[name]
+    body = f"{prompt['body']}\n\nPrompt version: {prompt['version']}."
+    return {
+        "description": prompt["description"],
+        "messages": [
+            {
+                "role": "user",
+                "content": {
+                    "type": "text",
+                    "text": body,
+                },
+            }
+        ],
+    }
+
+
 def call_tool(default_target: Path, name: str, args: dict[str, Any], writes_enabled: bool = True) -> dict[str, Any]:
     resolve_target(default_target, args)
     if name in WRITE_TOOL_NAMES and not writes_enabled:
@@ -696,10 +758,11 @@ def handle_message(default_target: Path, message: dict[str, Any], writes_enabled
         client_version = params.get("protocolVersion") or PROTOCOL_VERSION
         return response(request_id, {
             "protocolVersion": client_version,
-                "capabilities": {
-                    "tools": {"listChanged": False},
-                    "resources": {"listChanged": False},
-                },
+            "capabilities": {
+                "tools": {"listChanged": False},
+                "resources": {"listChanged": False},
+                "prompts": {"listChanged": False},
+            },
             "serverInfo": {
                 "name": "tes-cortex-mcp",
                 "title": "TES Cortex MCP",
@@ -727,6 +790,15 @@ def handle_message(default_target: Path, message: dict[str, Any], writes_enabled
             return error_response(request_id, -32602, "resource arguments must be an object")
         try:
             return response(request_id, read_cell_resource(default_target, params))
+        except ValueError as exc:
+            return error_response(request_id, -32602, str(exc))
+    if method == "prompts/list":
+        return response(request_id, list_prompts())
+    if method == "prompts/get":
+        if not isinstance(params, dict):
+            return error_response(request_id, -32602, "prompt arguments must be an object")
+        try:
+            return response(request_id, get_prompt(params))
         except ValueError as exc:
             return error_response(request_id, -32602, str(exc))
     if method == "tools/call":
@@ -980,6 +1052,51 @@ def self_test() -> int:
             )
             if reply is None or "error" not in reply:
                 failures.append(label)
+        if "prompts" not in replies[0]["result"].get("capabilities", {}):  # type: ignore[index]
+            failures.append("initialize did not advertise prompts capability")
+        prompt_list_message = {"jsonrpc": "2.0", "id": 18, "method": "prompts/list"}
+        prompt_list_reply = handle_message(target.resolve(), prompt_list_message)
+        expected_prompts = {
+            "cortex/closure-reflection",
+            "cortex/curation-review",
+            "cortex/remember-checklist",
+        }
+        if prompt_list_reply is None:
+            failures.append("prompts/list returned no reply")
+        else:
+            prompt_names = {
+                item.get("name")
+                for item in prompt_list_reply["result"]["prompts"]  # type: ignore[index]
+            }
+            if prompt_names != expected_prompts:
+                failures.append(f"prompts/list mismatch: {sorted(prompt_names)}")
+        forbidden_prompt_terms = ("tools/call", "approval_phrase", "/Users", "/home", "token", "secret", "password")
+        prompt_get_replies: dict[str, dict[str, Any]] = {}
+        for prompt_name in sorted(expected_prompts):
+            prompt_message = {
+                "jsonrpc": "2.0",
+                "id": 19,
+                "method": "prompts/get",
+                "params": {"name": prompt_name},
+            }
+            reply = handle_message(target.resolve(), prompt_message)
+            if reply is None:
+                failures.append(f"prompts/get returned no reply for {prompt_name}")
+                continue
+            prompt_get_replies[prompt_name] = reply
+            messages_payload = reply["result"].get("messages", [])  # type: ignore[index]
+            body = str(messages_payload[0].get("content", {}).get("text", "")) if messages_payload else ""
+            if not body.strip():
+                failures.append(f"prompt body is empty: {prompt_name}")
+            for term in forbidden_prompt_terms:
+                if term in body:
+                    failures.append(f"prompt body contains forbidden term {term!r}: {prompt_name}")
+        bad_prompt_reply = handle_message(
+            target.resolve(),
+            {"jsonrpc": "2.0", "id": 191, "method": "prompts/get", "params": {"name": "unsafe"}},
+        )
+        if bad_prompt_reply is None or "error" not in bad_prompt_reply:
+            failures.append("unknown prompt was not rejected")
         tools_with_target = [
             tool["name"]
             for tool in replies[1]["result"]["tools"]  # type: ignore[index]
@@ -1294,6 +1411,7 @@ def self_test() -> int:
             stdio_resource_read_now = handle_message(target.resolve(), resource_read_message)
             http_resource_list = http_rpc(http_url, resource_list_message)
             http_resource_read = http_rpc(http_url, resource_read_message)
+            http_prompt_list = http_rpc(http_url, prompt_list_message)
             if http_init != replies[0]:
                 failures.append("HTTP initialize envelope differed from stdio")
             if http_tools != replies[1]:
@@ -1304,6 +1422,20 @@ def self_test() -> int:
                 failures.append("HTTP resources/list envelope differed from stdio")
             if http_resource_read != stdio_resource_read_now:
                 failures.append("HTTP resources/read envelope differed from stdio")
+            if http_prompt_list != prompt_list_reply:
+                failures.append("HTTP prompts/list envelope differed from stdio")
+            for prompt_name, stdio_prompt_reply in prompt_get_replies.items():
+                http_prompt = http_rpc(
+                    http_url,
+                    {
+                        "jsonrpc": "2.0",
+                        "id": 192,
+                        "method": "prompts/get",
+                        "params": {"name": prompt_name},
+                    },
+                )
+                if http_prompt.get("result") != stdio_prompt_reply.get("result"):
+                    failures.append(f"HTTP prompts/get envelope differed from stdio: {prompt_name}")
 
             http_bad_approval_args = {
                 "cell": "mcp-http-write",
