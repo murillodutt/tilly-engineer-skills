@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, Cortex MCP authors, host integration authors, and release operators
 source_of_truth: true
 evidence_level: L1
-tver: 0.2.0
+tver: 0.3.0
 ---
 
 # ADR 0003: Cortex MCP Capability Expansion
@@ -57,20 +57,21 @@ satisfy.
 
 ## Capability Status And Dependency Graph
 
-The ADR is active as an architectural decision. Individual capabilities become
-certified only when their scoped self-test additions pass inside
-`cortex_mcp.py --self-test`.
+The ADR is active as an architectural decision. The seven expansion
+capabilities are certified in the local package source by their scoped
+`cortex_mcp.py --self-test` additions and by the incremental commits listed
+below. Release identity remains a separate package decision.
 
 | Capability | Status | Dependency note |
 |------------|--------|-----------------|
 | Current governed MCP baseline | certified | Existing stdio tools and governed write lane remain certified by current MCP and operator oracles. |
-| Schema helper | planned | First serial bridge; new schemas should be authored through this helper once it lands. |
-| Optional HTTP transport | planned | Second bridge; new capabilities must close with stdio and HTTP parity once this transport exists. |
-| Resources | planned | Independent after schema helper; certifies with resource list/read tests. |
-| Prompts | planned | Independent after schema helper; certifies with prompt registry tests. |
-| Verify cache | planned | Independent but hot-path; must merge only with focused cache invalidation oracle. |
-| Progress notifications | planned | Independent because target tools already exist; certifies advisory notifications only. |
-| Cell history | planned | Independent after schema helper; certifies read-only `TRAIL.md` parsing. |
+| Schema helper | certified | Landed in `639e6081`; `cortex_recall` has a golden JSONSchema equality self-test. |
+| Optional HTTP transport | certified | Landed in `a1a92967`; HTTP is opt-in, localhost by default, stdlib-only, and covered by stdio parity tests. |
+| Resources | certified | Landed in `d65e88aa`; `resources/list` and `resources/read` expose only cell Markdown with HTTP parity. |
+| Prompts | certified | Landed in `d8104568`; inert prompt registry is covered by prompt list/get and forbidden-term checks. |
+| Verify cache | certified | Landed in `9cf4a5ae`; mtime cache hit, invalidation, fallback, and self-test bypass are covered. |
+| Progress notifications | certified | Landed in `ee58fa67`; advisory progress and callback-failure tolerance are covered. |
+| Cell history | certified | Landed in `13063264`; read-only `TRAIL.md` parsing, empty history, traversal rejection, and HTTP parity are covered. |
 
 Implementation uses two tracks:
 

@@ -5,7 +5,7 @@ status: active
 consumer: MCP adapter authors, installer authors, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.4.0
+tver: 0.5.0
 ---
 
 # TES Cortex MCP
@@ -35,18 +35,23 @@ and the correlated Cortex index files only through the `remember` gate.
 
 ## Tools
 
-The server is `scripts/cortex_mcp.py`. It uses stdio JSON-RPC and does not
-require third-party Python packages. Target projects activate it through
-project-scoped runtime config, never through global config mutation. The server
-target is fixed at process startup with `--target`; individual MCP tool calls
-do not accept a `target` argument.
+The server is `scripts/cortex_mcp.py`. It uses stdio JSON-RPC by default and
+also supports opt-in localhost HTTP framing. It does not require third-party
+Python packages. Target projects activate it through project-scoped runtime
+config, never through global config mutation. The server target is fixed at
+process startup with `--target`; individual MCP tool calls do not accept a
+`target` argument.
 
 | Tool | Behavior |
 |------|----------|
 | `cortex_verify` | Validate required Cortex files, directories, and contract terms |
+| `cortex_health` | Inspect Cortex health and operator mutability classes without writing |
+| `cortex_peek` | Read one Cortex cell or recall query results without writing |
+| `cortex_review` | Run no-write Cortex audit, curation, and reflection review |
 | `cortex_audit` | Detect broken links, missing evidence, unlisted cells, and orphans |
 | `cortex_recall` | Search through SQLite FTS5 and fall back to `rg` |
 | `cortex_read_cell` | Read one file under `docs/agents/cortex/cells/**` |
+| `cortex_cell_history` | Structure existing `TRAIL.md` entries for one cell without writing |
 | `cortex_absorb_plan` | Generate a no-write plan for a source under `sources/**` |
 | `cortex_curate_plan` | Classify semantic curation risks without writing memory or derived indexes |
 | `cortex_reflect` | Generate a no-write closure and curation proposal |
@@ -55,12 +60,49 @@ do not accept a `target` argument.
 | `cortex_remember_plan` | Validate a no-write durable-memory proposal and return an exact approval phrase |
 | `cortex_remember` | Write one new Cortex cell only after exact approval phrase match |
 
+## Native MCP Capabilities
+
+`initialize` advertises tools, resources, and prompts. Native resources expose
+cell Markdown only:
+
+```text
+tes-cortex://cells/<cell-ref>
+```
+
+`resources/list` enumerates files under `docs/agents/cortex/cells/**`, and
+`resources/read` returns on-disk Markdown bytes. It does not expose
+`MAP.md`, `LINKS.md`, `TRAIL.md`, `sources/**`, subscriptions, or writable
+resources.
+
+Server-side prompts are inert templates surfaced through `prompts/list` and
+`prompts/get`:
+
+```text
+cortex/closure-reflection
+cortex/curation-review
+cortex/remember-checklist
+```
+
+Prompts never invoke tools, embed credentials, include target-specific paths,
+or mutate state. They are operator guidance only.
+
+Long-running tools may emit advisory `notifications/progress` messages when a
+client supplies a progress token. Progress is best-effort and callback failure
+does not fail the tool result. The verify path uses an in-process mtime cache
+for hot reads; failures to compute the cache key fall back to uncached verify.
+
 ## Local Command
 
 ```bash
 python3 scripts/cortex_mcp.py --target /path/to/project
 python3 scripts/cortex_mcp.py --target /path/to/project --read-only
+python3 scripts/cortex_mcp.py --target /path/to/project --transport http --port 8765
 ```
+
+HTTP transport is opt-in. It binds to `127.0.0.1` by default, is stateless per
+request, uses the same JSON-RPC handler as stdio, honors `--read-only`, and
+requires an explicit `--allow-non-localhost` flag before binding outside
+localhost.
 
 Self-test:
 
@@ -239,4 +281,6 @@ argument shapes, path traversal, target overrides, invalid curation backends,
 and empty required arguments. It also verifies that tool schemas do not expose a
 `target` property and that a second project cannot be read through caller input.
 `cortex_curate_plan` is required to report no writes and no derived
-semantic-index writes over MCP.
+semantic-index writes over MCP. Resources, prompts, progress notifications,
+verify cache, optional HTTP, and `cortex_cell_history` add no memory authority:
+they are read-only, inert, advisory, cached, or opt-in transport surfaces.

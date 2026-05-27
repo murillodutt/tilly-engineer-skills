@@ -5,12 +5,13 @@ status: active
 consumer: maintainers, Cortex MCP authors, host integration authors, release reviewers, and execution agents
 source_of_truth: false
 evidence_level: L1
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # GOAL Super SPEC: Cortex MCP Capability Expansion
 
-Status: active planning artifact; no delivered capability expansion yet.
+Status: active execution artifact. `SPEC-000` through `SPEC-007` are locally
+committed; `SPEC-008` is in documentation and release-identity closeout.
 
 Capability: materialize ADR 0003 as an incremental Cortex MCP expansion that
 improves host integration, schema authoring, hot-path efficiency, progress
@@ -262,6 +263,26 @@ installer-observed behavior, adapter materialization, public docs, generated
 bundle content, or adopter-visible runtime behavior requires release identity
 review before closure. Default policy is patch bump for delivered behavior
 unless the owner explicitly defers it and closeout records the deferral.
+
+## Local Execution Record
+
+The following local commits materialize the ADR 0003 capability units. They are
+package-source evidence only until release identity and any remote sync are
+authorized separately.
+
+| Unit | Local commit | Sync status |
+|------|--------------|-------------|
+| `SPEC-001` Schema Helper Without Pydantic | `639e6081` | `REMOTE_SYNC_NOT_REQUESTED` |
+| `SPEC-002` Optional HTTP Transport Bridge | `a1a92967` | `REMOTE_SYNC_NOT_REQUESTED` |
+| `SPEC-003` MCP Resources For Cells | `d65e88aa` | `REMOTE_SYNC_NOT_REQUESTED` |
+| `SPEC-004` Server-side Prompts | `d8104568` | `REMOTE_SYNC_NOT_REQUESTED` |
+| `SPEC-005` Verify Cache By Mtime | `9cf4a5ae` | `REMOTE_SYNC_NOT_REQUESTED` |
+| `SPEC-006` Progress Notifications | `ee58fa67` | `REMOTE_SYNC_NOT_REQUESTED` |
+| `SPEC-007` Cell History Tool | `13063264` | `REMOTE_SYNC_NOT_REQUESTED` |
+
+Release identity decision for package version, public bundle, tag, publish, and
+remote sync remains owner-gated. No version, bundle, tag, publish, push, or
+remote action is authorized by this execution record alone.
 
 ## Ready Goal Prompt Source
 
