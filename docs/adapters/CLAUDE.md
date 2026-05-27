@@ -108,13 +108,14 @@ dedicated decision.
   under `.tes/bk/**`, apply the clean bootloader, recover useful semantics into
   `docs/agents/**`, and still install TES-owned assets under
   `.claude/skills/**`.
-- Hooks, write-capable MCP, and subagents must not be added to the default
-  plugin.
+- Hooks, ungoverned write-capable MCP, and subagents must not be added to the
+  default plugin.
 - The installer may add a project `SessionStart` hook that runs the local TES
   post-install routine and returns concise `additionalContext`; this hook is
   separate from plugin packaging and must stay idempotent.
-- Read-only Cortex MCP is activated by the assisted installer through
-  project-scoped `.mcp.json`, not plugin metadata.
+- Cortex MCP is activated by the assisted installer through project-scoped
+  `.mcp.json`, not plugin metadata. It is read-only by default; ADR 0002
+  governed remember requires explicit opt-in.
 - Source-only plugin retention and target-install omission are certified by
   `python3 scripts/claude_plugin_oracle.py --self-test`.
 - A publishable Claude marketplace package still requires a separate

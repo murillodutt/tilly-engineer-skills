@@ -97,7 +97,7 @@ the user for package contents.
    target project in depth, write or update `docs/agents/PROJECT-CONTEXT.md`,
    create the initial Obsidian-compatible operating mesh when missing,
    initialize `docs/agents/cortex/**`, keep runtime bootloaders thin, and
-   activate the read-only Cortex MCP route when selected.
+   activate the Cortex MCP route as read-only by default when selected.
    Treat `tes_init.py` as deterministic scaffold generation for context plus
    first-pass alignment. The active agent must open strong anchors before
    claiming deep project understanding, refine `PROJECT-CONTEXT.md` when

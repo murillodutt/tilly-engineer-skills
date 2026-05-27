@@ -56,7 +56,7 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 | Reusable discipline workflow | Skill in `.agents/skills/**` | Project skill in `.claude/skills/**` | Always-on project rule; Cursor plugin skills are future surface | Preserve behavioral parity, not packaging parity |
 | Distribution | Source-only plugin metadata in `src/adapters/codex/plugin/**` | Source-only plugin metadata in `src/adapters/claude/plugin/**` | Future `.cursor-plugin/**` if needed | Distribution is adapter-specific and not target-installed by default |
 | Hooks | Sensitive, feature-gated | Sensitive enforcement surface | Sensitive agent-loop surface | Excluded from default package until separately authorized |
-| MCP | External capability layer | External capability layer | External capability layer | Read-only Cortex MCP is installer-gated; other MCP requires decision and tests |
+| MCP | External capability layer | External capability layer | External capability layer | Cortex MCP is installer-gated; governed writes require ADR 0002 opt-in and tests |
 | Agents and subagents | Powerful specialist layer | Powerful specialist layer | Agent/background execution layer | Excluded by default; requires permission, tools, and oracle contract |
 | Commands | Shared `/tes-*` trigger vocabulary plus `/tes:*` aliases | Shared `/tes-*` trigger vocabulary plus `/tes:*` aliases | Shared `/tes-*` trigger vocabulary plus `/tes:*` aliases | Keep entry vocabulary consistent while materialization stays adapter-specific |
 
@@ -92,7 +92,7 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 | Adapter | Must Preserve | Must Not Do |
 |---------|---------------|-------------|
 | Codex | Thin `AGENTS.md`, repo skill in `.agents/skills/**`, progressive disclosure | Treat plugin cache or user runtime as source |
-| Claude | Short `CLAUDE.md`, project skills in `.claude/skills/**`, read-only Cortex MCP only through project config | Install root `skills/**` or `.claude-plugin/**` into targets by default; delete ambiguous legacy copies without `.tes/bk/**` backup and `NEEDS_REVIEW` |
+| Claude | Short `CLAUDE.md`, project skills in `.claude/skills/**`, Cortex MCP only through project config | Install root `skills/**` or `.claude-plugin/**` into targets by default; delete ambiguous legacy copies without `.tes/bk/**` backup and `NEEDS_REVIEW` |
 | Cursor | `.cursor/rules/*.mdc`, `alwaysApply: true` for the base discipline, no `.cursorrules` | Treat `CURSOR.md` as the primary operative context |
 
 ## Current Certification State
@@ -119,12 +119,13 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 - Do not add `CHANGELOG.md`; Git history is the changelog.
 - Do not publish or install plugins from this package without an explicit
   private decision.
-- Do not add target-project hooks, write-capable MCP, or agents to the default
-  installer package because they are operational surfaces, not passive
-  documentation.
+- Do not add target-project hooks, ungoverned write-capable MCP, or agents to
+  the default installer package because they are operational surfaces, not
+  passive documentation.
 - Do not use commit-time reflection or curation to write or delete Cortex
   content automatically.
-- Read-only Cortex MCP is allowed only as project-scoped installer activation
-  with lifecycle tests and no global config mutation.
+- Cortex MCP is allowed only as project-scoped installer activation with
+  lifecycle tests and no global config mutation. Governed writes require the
+  explicit ADR 0002 `--enable-writes` lane.
 - Do not duplicate the same behavioral prose in every layer. Keep the common
   contract small and route detail to the proper adapter.

@@ -4,7 +4,7 @@
 
 # Tilly Engineer Skills (TES)
 
-[![Version](https://img.shields.io/badge/version-0.3.138-1f6feb)](package.json)
+[![Version](https://img.shields.io/badge/version-0.3.139-1f6feb)](package.json)
 [![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE)
 [![Live Landing](https://img.shields.io/badge/live--landing-GitHub%20Pages-0969da)](https://murillodutt.github.io/tilly-engineer-skills/)
 
@@ -31,7 +31,8 @@ repository.
 - Mantra Gate with `[🍳 Flash-Fry]` before state-changing actions.
 - Deterministic gates before closure.
 - Retained evidence your team can inspect.
-- Read-only Cortex MCP for project recall.
+- Cortex MCP for project recall, event inspection, and optional governed
+  remember.
 
 **Where to start**
 

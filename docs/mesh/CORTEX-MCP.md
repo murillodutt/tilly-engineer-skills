@@ -5,14 +5,14 @@ status: active
 consumer: MCP adapter authors, installer authors, and agents
 source_of_truth: true
 evidence_level: L2
-tver: 0.3.4
+tver: 0.4.0
 ---
 
 # TES Cortex MCP
 
-The Cortex MCP surface is a read-only access layer over the filesystem Cortex
-contract. It exposes recall and inspection tools to MCP-capable runtimes without
-turning the MCP server into memory.
+The Cortex MCP surface is a project-scoped access layer over the filesystem
+Cortex contract. It is read-only by default and exposes an optional governed
+write lane only when the server starts with `--enable-writes`.
 
 ## Contract
 
@@ -27,19 +27,19 @@ docs/agents/cortex/sources/**
 docs/agents/cortex/cells/**
 ```
 
-The MCP server may read these files and may call the deterministic Cortex CLI
-functions. It must not write cells, sources, maps, links, trail entries, runtime
-bootloaders, `.obsidian/**`, `.tes/cortex/recall.sqlite`, or
-`.tes/cortex/semantic.sqlite` except through explicit local CLI commands, not
-by the v1 MCP tools.
+The MCP server may read these files and may call deterministic Cortex helper
+functions. Default activation must not write cells, sources, maps, links, trail
+entries, runtime bootloaders, `.obsidian/**`, `.tes/cortex/recall.sqlite`, or
+`.tes/cortex/semantic.sqlite`. The opt-in governed write lane may write one new
+cell and the correlated Cortex index files only through the `remember` gate.
 
 ## Tools
 
-The read-only server is `scripts/cortex_mcp.py`. It uses stdio JSON-RPC and
-does not require third-party Python packages. Target projects activate it
-through project-scoped runtime config, never through global config mutation.
-The server target is fixed at process startup with `--target`; individual MCP
-tool calls do not accept a `target` argument.
+The server is `scripts/cortex_mcp.py`. It uses stdio JSON-RPC and does not
+require third-party Python packages. Target projects activate it through
+project-scoped runtime config, never through global config mutation. The server
+target is fixed at process startup with `--target`; individual MCP tool calls
+do not accept a `target` argument.
 
 | Tool | Behavior |
 |------|----------|
@@ -50,11 +50,16 @@ tool calls do not accept a `target` argument.
 | `cortex_absorb_plan` | Generate a no-write plan for a source under `sources/**` |
 | `cortex_curate_plan` | Classify semantic curation risks without writing memory or derived indexes |
 | `cortex_reflect` | Generate a no-write closure and curation proposal |
+| `cortex_list_events` | List sanitized lifecycle ledger events without writing |
+| `cortex_get_event_status` | Return one lifecycle event status by id without writing |
+| `cortex_remember_plan` | With `--enable-writes`, validate a no-write durable-memory proposal and return an exact approval phrase |
+| `cortex_remember` | With `--enable-writes`, write one new Cortex cell only after exact approval phrase match |
 
 ## Local Command
 
 ```bash
 python3 scripts/cortex_mcp.py --target /path/to/project
+python3 scripts/cortex_mcp.py --target /path/to/project --enable-writes
 ```
 
 Self-test:
@@ -74,6 +79,7 @@ Project-scoped activation:
 ```bash
 python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
+python3 scripts/install_mcp.py --target /path/to/project --adapter all --enable-writes --yes
 python3 scripts/install_mcp.py --self-test
 ```
 
@@ -166,11 +172,19 @@ cortex_cut:
   rollback: git revert <commit>
 ```
 
+The cut above describes activation. Runtime `cortex_remember` writes are a
+separate ADR 0002 lane: one new `cells/**` file plus correlated `MAP.md`,
+`LINKS.md`, `TRAIL.md`, and derived recall index writes after exact approval.
+It does not grant permission to write `sources/**`, overwrite cells, delete
+memory, or mutate checkpoint/event state.
+
 ## Boundary
 
-MCP activation is local, read-only, and project-scoped. It must not edit global
-Codex, Claude, or Cursor configuration, secrets, hooks, remotes, package
-lockfiles, `.obsidian/**`, or Cortex source material.
+MCP activation is local and project-scoped. It installs read-only config by
+default. `--enable-writes` is an explicit opt-in that adds only the governed
+remember lane; it must not edit global Codex, Claude, or Cursor configuration,
+secrets, hooks, remotes, package lockfiles, `.obsidian/**`, or Cortex source
+material.
 Project scope is enforced at the MCP tool boundary: a server initialized for
 one project rejects caller-provided `target` overrides instead of resolving
 another project path.
@@ -183,11 +197,14 @@ run scratch, benchmark outputs, recall indexes, and semantic indexes are
 reported as evidence failures or non-memory artifacts; the MCP server must not
 repair them by writing memory.
 
-Write-capable MCP tools remain outside v1. `learn` and `apply` stay CLI-governed
-because promotion into Cortex requires explicit evidence and authorization.
-The read-only operator tools `cortex_health`, `cortex_peek`, and
-`cortex_review` are allowed. `checkpoint`, `remember`, `forget`, `apply`,
-`learn`, and any write-like operator remain outside MCP.
+Write-capable MCP is limited to the ADR 0002 governed lane. `learn` and
+`apply` stay CLI-governed. `cortex_remember_plan` is no-write; `cortex_remember`
+requires `--enable-writes`, a new cell, explicit evidence, and the exact
+approval phrase tied to the planned payload. The read-only operator tools
+`cortex_health`, `cortex_peek`, `cortex_review`, `cortex_list_events`, and
+`cortex_get_event_status` are allowed. `checkpoint`, `forget`, update, delete,
+bulk delete, entity delete, direct `apply`, and automatic writes remain outside
+MCP.
 The MCP self-test includes negative calls for unknown write-like tools, invalid
 argument shapes, path traversal, target overrides, invalid curation backends,
 and empty required arguments. It also verifies that tool schemas do not expose a

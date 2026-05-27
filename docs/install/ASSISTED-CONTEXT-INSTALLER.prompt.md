@@ -397,7 +397,7 @@ Routes:
     project-scoped Cortex MCP config for all three runtimes.
 
   mcp
-    Activate only the read-only Cortex MCP server for the detected runtime.
+    Activate only the Cortex MCP server for the detected runtime, read-only by default.
 
   audit
     Inspect and report what would change without modifying files.
@@ -657,7 +657,7 @@ It must route to `docs/agents/**` and mention `docs/agents/cortex/**` as the dur
 
 ## Phase 5.5 - Activate Cortex MCP
 
-Activate the read-only Cortex MCP server for every runtime selected by the route. This resolves Cortex being present but unreachable from MCP-capable agents.
+Activate the Cortex MCP server for every runtime selected by the route. Default activation is read-only; governed writes require the explicit ADR 0002 `--enable-writes` lane. This resolves Cortex being present but unreachable from MCP-capable agents.
 
 Use the package contract from:
 
@@ -680,7 +680,7 @@ The activation writes only project-scoped local assets:
 .cursor/mcp.json          # Cursor route only
 ```
 
-Do not write global configuration under the user's home directory. Do not add tokens, env files, hooks, background daemons, cloud config, or write-capable MCP tools.
+Do not write global configuration under the user's home directory. Do not add tokens, env files, hooks, background daemons, cloud config, or ungoverned write-capable MCP tools.
 
 If this package's local scripts are available, prefer:
 
@@ -980,7 +980,7 @@ GO requires:
 - selected runtime assets route to that source;
 - Cortex exists or is explicitly skipped/deferred with a reason;
 - root runtime context was backed up before clean overwrite and semantic recovery evidence exists, or root context was explicitly absent;
-- read-only Cortex MCP is activated for selected routes or explicitly blocked;
+- Cortex MCP is activated for selected routes as read-only by default or explicitly blocked;
 - Field Reports state and installed helper set are explicit in the report;
 - helper contract parity is PASS or NOT_INSTALLED; `STALE_HELPERS` cannot close as GO;
 - runtime trigger parity is PASS or NOT_APPLIED; `DRIFT` cannot close as GO;

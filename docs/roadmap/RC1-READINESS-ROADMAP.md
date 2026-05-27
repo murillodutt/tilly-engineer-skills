@@ -23,8 +23,8 @@ coherent for a new adopter and auditable for a maintainer.
 
 | Item | Value |
 |------|-------|
-| Package version | `0.3.138` |
-| Latest certified line | ADR 0001 memory lifecycle plus postinstall/Cortex curation hardening, clean `0.3.138` bundle metadata, and one neutral canary replay |
+| Package version | `0.3.139` |
+| Latest certified line | ADR 0001 memory lifecycle plus ADR 0002 governed MCP remember, postinstall/Cortex curation hardening, and clean `0.3.139` bundle metadata |
 | Release action status | Local source and bundle certified; remote tag/ref, publish, and marketplace actions not authorized |
 | Release readiness claim | Candidate-ready for an RC1 decision, not remotely release-certified |
 
@@ -41,7 +41,8 @@ Acceptance:
 - Rendered HTML entrypoints are treated as public surfaces, not TDS Markdown
   records, and are linked from the user-facing maps.
 - Public docs do not claim tag, release, marketplace, publish, live GitHub
-  issue creation, vector certification, write-capable MCP, or global install.
+  issue creation, vector certification, automatic MCP memory writes, or global
+  install.
 
 ## Stage 2: Root Structure
 

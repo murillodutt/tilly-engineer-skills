@@ -86,8 +86,9 @@ manual rules instead of expanding the always-on rule.
   recover durable local semantics into `docs/agents/**`. Refresh manifest-known
   TES-owned runtime capability rules such as `tes-runtime-capabilities.mdc`.
 - Do not add hook config or environment files to the default package.
-- Read-only Cortex MCP may be activated by the assisted installer through
-  project-scoped `.cursor/mcp.json`.
+- Cortex MCP may be activated by the assisted installer through project-scoped
+  `.cursor/mcp.json`. It is read-only by default; ADR 0002 governed remember
+  requires explicit opt-in.
 
 ## Sensitive Surface Register
 

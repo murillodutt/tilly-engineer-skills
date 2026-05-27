@@ -11,7 +11,7 @@ tver: 0.9.8
 # Adapter Installation
 
 The public installer path is the GitHub package-spec command through npx or Bun after a fixed ref is authorized and release-certified.
-Current `0.3.138` evidence is local package-source and bundle closure; it does not authorize remote tag, release, package publish, or marketplace action.
+Current `0.3.139` evidence is local package-source and bundle closure; it does not authorize remote tag, release, package publish, or marketplace action.
 
 User-facing walkthrough:
 
@@ -24,11 +24,11 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 ## GitHub Package-Spec Form
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.138 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.139 tilly-engineer-skills add
 ```
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.138 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.139 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -40,10 +40,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.138 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.139 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.138` is the intended fixed-ref form for a release-certified install
+`#v0.3.139` is the intended fixed-ref form for a release-certified install
 channel. Do not call that remote ref certified until `npm run release:check`
 passes after the tag or fixed ref is authorized and available.
 
@@ -144,18 +144,13 @@ Cortex is Obsidian-compatible plain Markdown. The installer does not create
 skills; Goal maestro emits `/goal` after maturity, internal tree,
 material-diff, material-continuation, semantic negative-grep, sequential ownership, and sync-status gates, while prospecting and mining keep the cognitive brake.
 
-Cortex MCP is activated by default for selected runtime routes. It remains
-read-only and project-scoped. The installer may write `.tes/bin/cortex.py`,
-`.tes/bin/cortex_mcp.py`, `.tes/bin/cortex_embed.mjs`,
-`.tes/bin/field_reports.py`, `.tes/bin/tes_update.py`,
-`.tes/bin/tes_legacy_retirement.py`,
-`.tes/bin/root_context.py`,
-`.codex/config.toml`, `.mcp.json`, and
-`.cursor/mcp.json`; MCP activation must not edit global MCP configuration,
-secrets, hooks, or write-capable MCP tools.
-The MCP self-test covers negative malformed and write-like calls, and
-`cortex_health`, `cortex_peek`, `cortex_review`, and `cortex_curate_plan` over
-MCP must not create the derived semantic index or expose write-capable tools.
+Cortex MCP is activated by default for selected runtime routes. It remains read-only and project-scoped unless the operator explicitly passes `--enable-writes`, which exposes only the governed `cortex_remember_plan` and `cortex_remember` lane.
+The installer may write `.tes/bin/cortex.py`, `.tes/bin/cortex_mcp.py`, `.tes/bin/cortex_embed.mjs`, `.tes/bin/field_reports.py`, `.tes/bin/tes_update.py`, `.tes/bin/tes_legacy_retirement.py`, `.tes/bin/root_context.py`, `.codex/config.toml`, `.mcp.json`, and `.cursor/mcp.json`; MCP activation must not edit global MCP configuration, secrets, hooks, or ungoverned write-capable MCP tools.
+The MCP self-test covers negative malformed and write-like calls, governed
+remember approval checks, event inspection, and target-boundary rejection.
+`cortex_health`, `cortex_peek`, `cortex_review`, event tools, and
+`cortex_curate_plan` over MCP must not create the derived semantic index or
+write memory.
 
 TES Field Reports is active by default. The initializer installs a local
 `pre-push` drain for sanitized operational facts, stores pending state under
@@ -220,6 +215,7 @@ Project-scoped MCP can be installed and checked with:
 ```bash
 python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
+python3 scripts/install_mcp.py --target /path/to/project --adapter all --enable-writes --yes
 python3 scripts/install_mcp.py --self-test
 ```
 
@@ -467,9 +463,9 @@ constraints, and existing agent rules.
 - No remote script execution.
 - No package manager install.
 - No hooks, background agent, cloud, secret changes, global MCP config, or
-  write-capable MCP tools.
-- Project-scoped read-only Cortex MCP config is allowed only through the
-  selected route and explicit installer report.
+  ungoverned write-capable MCP tools.
+- Project-scoped Cortex MCP config is allowed only through the selected route
+  and explicit installer report; governed writes require `--enable-writes`.
 - No runtime overwrite before `.tes/bk/<timestamp>/manifest.json` exists.
 - `.tes/bk/**` is local rollback/recovery history and must stay out of Git.
 - No non-interactive writes without `--yes`.

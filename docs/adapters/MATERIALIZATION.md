@@ -87,7 +87,8 @@ If a target tool changes packaging rules, update `src/adapters/<tool>/**`,
 | Cursor | Legacy `.cursorrules` leaks back into the package or project-owned rules block TES commands | Validator blocks `.cursorrules`; runtime capabilities materialize as a separate TES-owned rule |
 | All | Generated output becomes perceived source | `dist/adapters/**` is temporary inspection output and validation requires purging it after use |
 
-Hooks, write-capable MCP servers, agent definitions, cloud/background
-execution, and marketplace publishing are excluded from the default materialized
-output. Read-only Cortex MCP is activated by `scripts/install_mcp.py` as a
-project-scoped installer layer, not by adapter materialization.
+Hooks, ungoverned write-capable MCP servers, agent definitions,
+cloud/background execution, and marketplace publishing are excluded from the
+default materialized output. Cortex MCP is activated by `scripts/install_mcp.py`
+as a project-scoped installer layer, not by adapter materialization; governed
+remember requires explicit ADR 0002 opt-in.

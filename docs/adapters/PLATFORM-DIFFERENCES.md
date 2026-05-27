@@ -40,7 +40,7 @@ TES entry vocabulary is shared across platforms:
 | Open Obsidian | `/tes-open-obsidian` | `/tes:open-obsidian` | Preflight context/alignment and open `docs/agents` as the Obsidian vault without writing `.obsidian/**`. |
 | Cortex | `/tes-cortex` | `/tes:cortex`, `/tes:recall`, `/tes:learn`, `/tes:reflect` | Inspect, consolidate, or certify the continuity layer. |
 | Curate | `/tes-curate` | `/tes:curate` | Classify Cortex memory quality risks without writing memory. |
-| MCP | `/tes-mcp` | `/tes:mcp` | Inspect or activate read-only Cortex MCP. |
+| MCP | `/tes-mcp` | `/tes:mcp` | Inspect or activate Cortex MCP; default read-only, governed remember opt-in. |
 | Field Reports | `/tes-field-reports` | `/tes:field-reports` | Inspect or drain sanitized local feedback. |
 | Doctor / health check | `/tes-doctor` | `/tes:doctor`, `/tes:check`, `/tes:certify` | Inspect local TES health and blockers. |
 | Adapter | `/tes-adapter` | `/tes:adapter` | Materialize, dry-run, retrofit, or certify adapter surfaces. |

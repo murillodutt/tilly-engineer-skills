@@ -20,6 +20,7 @@ turning the repository root into an inventory.
 | Repository shape and ownership | `architecture/PROJECT-STRUCTURE.md` |
 | TES namespace migration catalog | `architecture/TES-NAMING-MIGRATION-CATALOG.md` |
 | TES Memory Lifecycle ADR | `adr/0001-tes-memory-lifecycle.md` |
+| Cortex governed MCP write lane ADR | `adr/0002-cortex-governed-mcp-write-lane.md` |
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
 | Agent manual | `install/AGENT-MANUAL.md` |
 | Agent oracle inventory | `install/AGENT-ORACLE-INVENTORY.md` |
@@ -27,7 +28,7 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.138/tilly-engineer-skills-0.3.138.zip` |
+| Public installer bundle | `dist/0.3.139/tilly-engineer-skills-0.3.139.zip` |
 | GitHub package-spec installation | `install/INSTALL.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
 | Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |

@@ -1,4 +1,4 @@
-version: 0.3.138
+version: 0.3.139
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -27,6 +27,13 @@ documents:
     class: architecture
     status: active
     consumer: maintainers, Cortex authors, adapter authors, installer authors, and release operators
+    source_of_truth: true
+    evidence_level: L1
+  - path: docs/adr/0002-cortex-governed-mcp-write-lane.md
+    id: architecture.adr_0002_cortex_governed_mcp_write_lane
+    class: architecture
+    status: active
+    consumer: maintainers, Cortex authors, MCP adapter authors, installer authors, and release operators
     source_of_truth: true
     evidence_level: L1
   - path: docs/install/INSTALL.md
@@ -517,6 +524,13 @@ documents:
     class: evidence
     status: active
     consumer: Cortex maintainers, adapter maintainers, release reviewers, and operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/05/27/cortex-governed-mcp-write-lane/REPORT.md
+    id: evidence.cortex_governed_mcp_write_lane_20260527
+    class: evidence
+    status: active
+    consumer: Cortex maintainers, MCP adapter authors, installer authors, release reviewers, and operators
     source_of_truth: false
     evidence_level: L2
   - path: docs/evidence/current/RISKS.md

@@ -52,7 +52,7 @@ User-facing intent typed in the agent window — never a shell command.
 | `/tes-open-obsidian` | Open `docs/agents/` in Obsidian via CLI or macOS app fallback | `/tes:open-obsidian` (compat) |
 | `/tes-cortex` | Inspect, query, audit, rebuild, curate, learn, reflect, or apply Cortex memory | `/tes:cortex`, `/tes:recall`, `/tes:learn`, `/tes:reflect` |
 | `/tes-curate` | Classify Cortex quality risks without writing memory | `/tes:curate` |
-| `/tes-mcp` | Activate or verify read-only Cortex MCP | `/tes:mcp` |
+| `/tes-mcp` | Activate or verify Cortex MCP | `/tes:mcp` |
 | `/tes-field-reports` | Inspect, drain, disable, or enable sanitized Field Reports | `/tes:field-reports`, `/tes:field-reports:disable`, `/tes:field-reports:enable` |
 | `/tes-doctor` | Health-check, certify, or prepare a commit | `/tes:doctor`, `/tes:check`, `/tes:certify` |
 | `/tes-adapter` | Materialize, dry-run, retrofit, or install adapter surfaces | `/tes:adapter` |
@@ -122,12 +122,12 @@ Selected during install/update. Default: `current`.
 
 | Route | Effect |
 |-------|--------|
-| `current` | Updates current runtime + its read-only Cortex MCP config |
+| `current` | Updates current runtime + its default read-only Cortex MCP config |
 | `codex` | Prepares `AGENTS.md`, Codex skill, `.codex/config.toml` |
 | `claude` | Prepares `CLAUDE.md`, `.claude/skills/**`, `.mcp.json` |
 | `cursor` | Prepares rules in `.cursor/rules/**`, `.cursor/mcp.json` |
 | `all` | Prepares Codex, Claude, Cursor + all project MCP configs |
-| `mcp` | Activates only read-only Cortex MCP layer for detected runtime |
+| `mcp` | Activates only Cortex MCP layer for detected runtime, read-only by default |
 | `audit` | Inspects without modifying files |
 
 ---

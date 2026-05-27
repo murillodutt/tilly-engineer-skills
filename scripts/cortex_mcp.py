@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Expose TES Cortex read-only tools over MCP stdio."""
+"""Expose TES Cortex tools over MCP stdio."""
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -11,11 +12,14 @@ import tempfile
 from typing import Any
 
 import cortex
+import event_ledger
 import field_reports
 
 
-VERSION = "0.3.138"
+VERSION = "0.3.139"
 PROTOCOL_VERSION = "2025-06-18"
+WRITE_APPROVAL_PREFIX = "APPROVE TES CORTEX MCP WRITE"
+WRITE_TOOL_NAMES = {"cortex_remember_plan", "cortex_remember"}
 
 
 def schema_string(description: str) -> dict[str, str]:
@@ -29,8 +33,55 @@ def schema_integer(description: str, default: int | None = None) -> dict[str, ob
     return schema
 
 
-def tool_definitions() -> list[dict[str, object]]:
+def schema_string_array(description: str) -> dict[str, object]:
+    return {"type": "array", "items": {"type": "string"}, "description": description}
+
+
+def write_tool_definitions() -> list[dict[str, object]]:
+    remember_properties = {
+        "cell": schema_string("Cell stem or path under cells/**."),
+        "claim": schema_string("Durable claim to write. Must not be a loose summary."),
+        "evidence": schema_string_array("Evidence refs under sources/** or docs/agents/evidence/**."),
+        "summary": schema_string("Optional MAP.md summary."),
+        "links": schema_string_array("Optional Cortex cell links to add."),
+    }
     return [
+        {
+            "name": "cortex_remember_plan",
+            "title": "Plan Cortex Remember",
+            "description": (
+                "Validate a no-write durable-memory proposal and return the exact approval "
+                "phrase required for cortex_remember."
+            ),
+            "inputSchema": {
+                "type": "object",
+                "properties": remember_properties,
+                "required": ["cell", "claim", "evidence"],
+            },
+        },
+        {
+            "name": "cortex_remember",
+            "title": "Remember Cortex",
+            "description": (
+                "Write one new Cortex cell only after explicit approval of the exact "
+                "cortex_remember_plan phrase. Requires --enable-writes at server startup."
+            ),
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    **remember_properties,
+                    "approval_phrase": schema_string(
+                        f"Exact phrase from cortex_remember_plan: {WRITE_APPROVAL_PREFIX} <approval_id>."
+                    ),
+                },
+                "required": ["cell", "claim", "evidence", "approval_phrase"],
+            },
+        },
+    ]
+
+
+def tool_definitions(writes_enabled: bool = False) -> list[dict[str, object]]:
+    tools: list[dict[str, object]] = [
         {
             "name": "cortex_verify",
             "title": "Verify Cortex",
@@ -169,7 +220,35 @@ def tool_definitions() -> list[dict[str, object]]:
                 },
             },
         },
+        {
+            "name": "cortex_list_events",
+            "title": "List Cortex Events",
+            "description": "List sanitized TES lifecycle ledger events without writing.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "status": schema_string("Optional event status filter."),
+                    "lifecycle": schema_string("Optional event lifecycle filter."),
+                    "limit": schema_integer("Maximum events to return.", 50),
+                },
+            },
+        },
+        {
+            "name": "cortex_get_event_status",
+            "title": "Get Cortex Event Status",
+            "description": "Return one lifecycle event status by event_id without writing.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "event_id": schema_string("Exact event id to inspect."),
+                },
+                "required": ["event_id"],
+            },
+        },
     ]
+    if writes_enabled:
+        tools.extend(write_tool_definitions())
+    return tools
 
 
 def result_text(payload: dict[str, Any]) -> str:
@@ -190,6 +269,220 @@ def resolve_target(default_target: Path, args: dict[str, Any]) -> Path:
     if "target" in args:
         raise ValueError("target argument is not accepted; restart the server with --target")
     return default_target
+
+
+def string_list_arg(args: dict[str, Any], key: str) -> list[str]:
+    raw = args.get(key, [])
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        raise ValueError(f"{key} must be an array")
+    values: list[str] = []
+    for item in raw:
+        if not isinstance(item, str):
+            raise ValueError(f"{key} must contain only strings")
+        stripped = item.strip()
+        if stripped:
+            values.append(stripped)
+    return values
+
+
+def string_arg(args: dict[str, Any], key: str, default: str = "") -> str:
+    raw = args.get(key, default)
+    if raw is None:
+        return ""
+    if not isinstance(raw, str):
+        raise ValueError(f"{key} must be a string")
+    return raw.strip()
+
+
+def remember_payload(default_target: Path, args: dict[str, Any]) -> tuple[Path, dict[str, object]]:
+    target = resolve_target(default_target, args)
+    payload: dict[str, object] = {
+        "cell": string_arg(args, "cell"),
+        "claim": string_arg(args, "claim"),
+        "evidence": string_list_arg(args, "evidence"),
+        "summary": string_arg(args, "summary") or None,
+        "links": string_list_arg(args, "links"),
+    }
+    return target, payload
+
+
+def remember_validation(target: Path, payload: dict[str, object]) -> dict[str, object]:
+    verify_result = cortex.verify(target)
+    failures = list(verify_result["failures"])
+    cell = str(payload["cell"])
+    claim = str(payload["claim"])
+    evidence = [str(item) for item in payload["evidence"]]  # type: ignore[index]
+    links = [str(item) for item in payload["links"]]  # type: ignore[index]
+    path: Path | None = None
+
+    if not cell:
+        failures.append("remember requires cell")
+    if not claim:
+        failures.append("remember requires claim")
+    if not evidence:
+        failures.append("remember requires at least one evidence ref")
+
+    if cell:
+        try:
+            path = cortex.resolve_cell_path(target, cell)
+        except ValueError as exc:
+            failures.append(str(exc))
+        else:
+            if path.exists():
+                failures.append(f"cell already exists; MCP remember does not overwrite: {cortex.rel(path, target)}")
+
+    for link in links:
+        try:
+            cortex.normalize_cell_rel(link)
+        except ValueError as exc:
+            failures.append(f"invalid link {link!r}: {exc}")
+
+    evidence_lines = [cortex.format_evidence_line(item) for item in evidence]
+    evidence_text = "\n".join(evidence_lines)
+    if evidence and not cortex.EVIDENCE_REF.search(evidence_text):
+        failures.append("remember evidence must reference sources/**, docs/agents/evidence/**, or Assumption:")
+    failures.extend(cortex.evidence_ref_failures(target, evidence_text))
+
+    return {
+        "status": "PASS" if not failures else "FAIL",
+        "failures": failures,
+        "cell_path": cortex.rel(path, target) if path is not None else None,
+        "verify": verify_result,
+    }
+
+
+def remember_approval_id(target: Path, payload: dict[str, object]) -> str:
+    approval_payload = {
+        "schema": "tes-cortex-mcp-remember-approval@1",
+        "target": str(target.resolve()),
+        "cell": payload["cell"],
+        "claim": payload["claim"],
+        "evidence": payload["evidence"],
+        "summary": payload["summary"],
+        "links": payload["links"],
+    }
+    encoded = json.dumps(approval_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()[:16]
+
+
+def remember_plan(default_target: Path, args: dict[str, Any]) -> dict[str, object]:
+    target, payload = remember_payload(default_target, args)
+    validation = remember_validation(target, payload)
+    approval_id = remember_approval_id(target, payload)
+    status = str(validation["status"])
+    result: dict[str, object] = {
+        "target": str(target),
+        "status": status,
+        "operator": "remember_plan",
+        "mutability_class": "proposal-only",
+        "writes": [],
+        "derived_writes": [],
+        "failures": validation["failures"],
+        "cell": payload["cell"],
+        "claim": payload["claim"],
+        "evidence": payload["evidence"],
+        "summary": payload["summary"],
+        "links": payload["links"],
+        "cell_path": validation["cell_path"],
+        "approval_id": approval_id,
+        "approval_phrase": f"{WRITE_APPROVAL_PREFIX} {approval_id}",
+        "route": "no-write plan; pass approval_phrase to cortex_remember only after explicit user approval",
+    }
+    return result
+
+
+def remember_apply(default_target: Path, args: dict[str, Any]) -> dict[str, object]:
+    target, payload = remember_payload(default_target, args)
+    validation = remember_validation(target, payload)
+    approval_id = remember_approval_id(target, payload)
+    expected_phrase = f"{WRITE_APPROVAL_PREFIX} {approval_id}"
+    approval_phrase = string_arg(args, "approval_phrase")
+    failures = [str(item) for item in validation["failures"]]  # type: ignore[index]
+    if approval_phrase != expected_phrase:
+        failures.append("approval_phrase must exactly match cortex_remember_plan for this payload")
+    if failures:
+        return {
+            "target": str(target),
+            "status": "FAIL",
+            "operator": "remember",
+            "mutability_class": "durable-memory-write",
+            "approval_id": approval_id,
+            "approval_status": "MISMATCH" if approval_phrase != expected_phrase else "MATCHED",
+            "failures": failures,
+            "writes": [],
+            "derived_writes": [],
+        }
+
+    result = cortex.remember(
+        target,
+        str(payload["cell"]),
+        str(payload["claim"]),
+        [str(item) for item in payload["evidence"]],  # type: ignore[index]
+        str(payload["summary"]) if payload["summary"] is not None else None,
+        [str(item) for item in payload["links"]],  # type: ignore[index]
+        authorized=True,
+        update_existing=False,
+    )
+    result["operator"] = "remember"
+    result["mutability_class"] = "durable-memory-write"
+    result["approval_id"] = approval_id
+    result["approval_status"] = "MATCHED"
+    result["route"] = "mcp-governed-write"
+    result.setdefault("derived_writes", [str(cortex.RECALL_DB)] if result.get("status") == "PASS" else [])
+    return result
+
+
+def list_events(default_target: Path, args: dict[str, Any]) -> dict[str, object]:
+    target = resolve_target(default_target, args)
+    result = event_ledger.list_events(target)
+    events = list(result.get("events", []))
+    status_filter = str(args.get("status", "")).strip().upper()
+    lifecycle_filter = str(args.get("lifecycle", "")).strip()
+    limit = int(args.get("limit", 50))
+    if status_filter:
+        events = [event for event in events if str(event.get("status", "")).upper() == status_filter]
+    if lifecycle_filter:
+        events = [event for event in events if str(event.get("lifecycle", "")) == lifecycle_filter]
+    result["events"] = events[:limit]
+    result["returned_count"] = len(result["events"])
+    result["filters"] = {
+        "status": status_filter or None,
+        "lifecycle": lifecycle_filter or None,
+        "limit": limit,
+    }
+    result["writes"] = []
+    result["derived_writes"] = []
+    return result
+
+
+def get_event_status(default_target: Path, args: dict[str, Any]) -> dict[str, object]:
+    target = resolve_target(default_target, args)
+    event_id = str(args.get("event_id", "")).strip()
+    if not event_id:
+        return {"target": str(target), "status": "FAIL", "failures": ["event_id is required"], "writes": []}
+    events, failures = event_ledger.read_events(target)
+    for event in events:
+        if str(event.get("id", "")) == event_id:
+            return {
+                "target": str(target),
+                "status": "FAIL" if failures else "PASS",
+                "event_id": event_id,
+                "event_status": event.get("status"),
+                "event": event,
+                "failures": failures,
+                "writes": [],
+                "derived_writes": [],
+            }
+    return {
+        "target": str(target),
+        "status": "FAIL",
+        "event_id": event_id,
+        "failures": [f"event not found: {event_id}", *failures],
+        "writes": [],
+        "derived_writes": [],
+    }
 
 
 def read_cell(default_target: Path, args: dict[str, Any]) -> dict[str, Any]:
@@ -225,7 +518,16 @@ def read_cell(default_target: Path, args: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def call_tool(default_target: Path, name: str, args: dict[str, Any]) -> dict[str, Any]:
+def call_tool(default_target: Path, name: str, args: dict[str, Any], writes_enabled: bool = False) -> dict[str, Any]:
+    resolve_target(default_target, args)
+    if name in WRITE_TOOL_NAMES and not writes_enabled:
+        return tool_result({
+            "target": str(default_target),
+            "status": "BLOCKED",
+            "failures": ["write-capable MCP tools require --enable-writes at server startup"],
+            "writes": [],
+            "derived_writes": [],
+        }, True)
     if name == "cortex_verify":
         return tool_result(cortex.verify(resolve_target(default_target, args)))
     if name == "cortex_health":
@@ -270,6 +572,14 @@ def call_tool(default_target: Path, name: str, args: dict[str, Any]) -> dict[str
         limit = int(args.get("limit", 20))
         line_budget = int(args.get("line_budget", 500))
         return tool_result(cortex.reflect(resolve_target(default_target, args), query, limit, line_budget))
+    if name == "cortex_list_events":
+        return tool_result(list_events(default_target, args))
+    if name == "cortex_get_event_status":
+        return tool_result(get_event_status(default_target, args))
+    if name == "cortex_remember_plan":
+        return tool_result(remember_plan(default_target, args))
+    if name == "cortex_remember":
+        return tool_result(remember_apply(default_target, args))
     raise ValueError(f"unknown tool: {name}")
 
 
@@ -281,7 +591,7 @@ def error_response(request_id: Any, code: int, message: str) -> dict[str, Any]:
     return {"jsonrpc": "2.0", "id": request_id, "error": {"code": code, "message": message}}
 
 
-def handle_message(default_target: Path, message: dict[str, Any]) -> dict[str, Any] | None:
+def handle_message(default_target: Path, message: dict[str, Any], writes_enabled: bool = False) -> dict[str, Any] | None:
     request_id = message.get("id")
     method = message.get("method")
     params = message.get("params") or {}
@@ -299,14 +609,16 @@ def handle_message(default_target: Path, message: dict[str, Any]) -> dict[str, A
                 "version": VERSION,
             },
             "instructions": (
-                "Read-only Cortex access. Markdown artifacts remain the source of truth; "
-                "SQLite is derived recall and rg is fallback."
+                "Cortex access. Markdown artifacts remain the source of truth; SQLite is "
+                "derived recall and rg is fallback. Durable writes are unavailable unless "
+                "the server was started with --enable-writes, and then only through the "
+                "two-step cortex_remember_plan/cortex_remember approval lane."
             ),
         })
     if method == "ping":
         return response(request_id, {})
     if method == "tools/list":
-        return response(request_id, {"tools": tool_definitions()})
+        return response(request_id, {"tools": tool_definitions(writes_enabled)})
     if method == "tools/call":
         name = params.get("name")
         arguments = params.get("arguments") if "arguments" in params else {}
@@ -315,7 +627,7 @@ def handle_message(default_target: Path, message: dict[str, Any]) -> dict[str, A
         if not isinstance(arguments, dict):
             return error_response(request_id, -32602, "tool arguments must be an object")
         try:
-            return response(request_id, call_tool(default_target, str(name), arguments))
+            return response(request_id, call_tool(default_target, str(name), arguments, writes_enabled))
         except ValueError as exc:
             return error_response(request_id, -32602, str(exc))
         except Exception as exc:  # MCP transport should stay alive for client correction.
@@ -323,7 +635,7 @@ def handle_message(default_target: Path, message: dict[str, Any]) -> dict[str, A
     return error_response(request_id, -32601, f"method not found: {method}")
 
 
-def serve(default_target: Path) -> int:
+def serve(default_target: Path, writes_enabled: bool = False) -> int:
     for line in sys.stdin:
         line = line.strip()
         if not line:
@@ -331,7 +643,7 @@ def serve(default_target: Path) -> int:
         try:
             message = json.loads(line)
             messages = message if isinstance(message, list) else [message]
-            replies = [handle_message(default_target, item) for item in messages]
+            replies = [handle_message(default_target, item, writes_enabled) for item in messages]
             replies = [item for item in replies if item is not None]
             if not replies:
                 continue
@@ -363,6 +675,28 @@ def self_test() -> int:
         links_path.write_text(cortex.read_text(links_path) + "\n- [[mcp-read-only]] -> `sources/mcp-source.md`\n", encoding="utf-8")
         cortex.rebuild(target)
         cortex.semantic_db_path(target).unlink(missing_ok=True)
+        events_dir = target / ".tes" / "events"
+        events_dir.mkdir(parents=True, exist_ok=True)
+        event_fixture = {
+            "schema": event_ledger.SCHEMA,
+            "id": "mcp-event-pass",
+            "created_at": "2026-05-27T00:00:00Z",
+            "lifecycle": "authorized_write",
+            "status": "PASS",
+            "surface": "mcp",
+            "summary": "MCP event fixture",
+            "evidence_ref": "none",
+            "scope": {
+                "adapter": "mcp",
+                "agent": "cortex-mcp",
+                "run": "mcp-self-test",
+                "source": "event-ledger",
+                "evidence_ref": "none",
+                "status": "PASS",
+            },
+            "facts": {"tool": "cortex_remember"},
+        }
+        (events_dir / "ledger.jsonl").write_text(json.dumps(event_fixture, sort_keys=True) + "\n", encoding="utf-8")
 
         messages = [
             {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": PROTOCOL_VERSION}},
@@ -377,6 +711,8 @@ def self_test() -> int:
             {"jsonrpc": "2.0", "id": 10, "method": "tools/call", "params": {"name": "cortex_absorb_plan", "arguments": {"source": "docs/agents/cortex/sources/mcp-source.md"}}},
             {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": {"name": "cortex_curate_plan", "arguments": {"backend": "lexical"}}},
             {"jsonrpc": "2.0", "id": 12, "method": "tools/call", "params": {"name": "cortex_reflect", "arguments": {"query": "MCP closure should consider memory capture"}}},
+            {"jsonrpc": "2.0", "id": 13, "method": "tools/call", "params": {"name": "cortex_list_events", "arguments": {"status": "PASS"}}},
+            {"jsonrpc": "2.0", "id": 14, "method": "tools/call", "params": {"name": "cortex_get_event_status", "arguments": {"event_id": "mcp-event-pass"}}},
         ]
         replies = [handle_message(target.resolve(), message) for message in messages]
         failures: list[str] = []
@@ -396,6 +732,8 @@ def self_test() -> int:
             "cortex_absorb_plan",
             "cortex_curate_plan",
             "cortex_reflect",
+            "cortex_list_events",
+            "cortex_get_event_status",
         }
         if tool_names != expected_tools:
             failures.append(f"tool list mismatch: {sorted(tool_names)}")
@@ -437,6 +775,158 @@ def self_test() -> int:
             failures.append("curate_plan reported derived writes over MCP")
         if cortex.semantic_db_path(target).exists():
             failures.append("MCP curate_plan created a derived semantic index")
+        if replies[12]["result"]["structuredContent"].get("returned_count") != 1:  # type: ignore[index]
+            failures.append("event list did not return the PASS fixture")
+        if replies[13]["result"]["structuredContent"].get("event_status") != "PASS":  # type: ignore[index]
+            failures.append("event status did not return PASS fixture")
+        if replies[12]["result"]["structuredContent"].get("writes") != []:  # type: ignore[index]
+            failures.append("event list reported writes over MCP")
+        if replies[13]["result"]["structuredContent"].get("writes") != []:  # type: ignore[index]
+            failures.append("event status reported writes over MCP")
+
+        enabled_tools = {
+            tool["name"]
+            for tool in tool_definitions(writes_enabled=True)
+        }
+        if "cortex_remember_plan" not in enabled_tools or "cortex_remember" not in enabled_tools:
+            failures.append("write-enabled MCP did not expose governed remember tools")
+        unsafe_enabled = sorted(
+            name for name in enabled_tools
+            if any(term in name for term in ("forget", "delete", "update", "checkpoint", "apply"))
+        )
+        if unsafe_enabled:
+            failures.append(f"write-enabled MCP exposed unsafe tools: {unsafe_enabled}")
+
+        remember_args = {
+            "cell": "mcp-governed-write",
+            "claim": "Governed MCP remember writes one new Cortex cell only after exact approval.",
+            "evidence": ["sources/mcp-source.md"],
+            "summary": "Governed MCP remember lane",
+            "links": ["mcp-read-only"],
+        }
+        planned_cell = cortex.cortex_path(target) / "cells" / "mcp-governed-write.md"
+        plan_reply = handle_message(
+            target.resolve(),
+            {
+                "jsonrpc": "2.0",
+                "id": 20,
+                "method": "tools/call",
+                "params": {"name": "cortex_remember_plan", "arguments": remember_args},
+            },
+            writes_enabled=True,
+        )
+        if plan_reply is None:
+            failures.append("remember plan returned no reply")
+            approval_phrase = ""
+        else:
+            plan_result = plan_reply["result"]["structuredContent"]  # type: ignore[index]
+            approval_phrase = str(plan_result.get("approval_phrase", ""))
+            if plan_result.get("status") != "PASS" or plan_result.get("writes") != []:
+                failures.append(f"remember plan should pass without writes: {plan_result}")
+            if planned_cell.exists():
+                failures.append("remember plan created a Cortex cell")
+
+        disabled_reply = handle_message(
+            target.resolve(),
+            {
+                "jsonrpc": "2.0",
+                "id": 21,
+                "method": "tools/call",
+                "params": {
+                    "name": "cortex_remember",
+                    "arguments": {**remember_args, "approval_phrase": approval_phrase},
+                },
+            },
+        )
+        if disabled_reply is None or not disabled_reply.get("result", {}).get("isError"):
+            failures.append("remember must be blocked when --enable-writes is not set")
+
+        bad_approval_reply = handle_message(
+            target.resolve(),
+            {
+                "jsonrpc": "2.0",
+                "id": 22,
+                "method": "tools/call",
+                "params": {
+                    "name": "cortex_remember",
+                    "arguments": {**remember_args, "approval_phrase": "bad approval"},
+                },
+            },
+            writes_enabled=True,
+        )
+        if bad_approval_reply is None:
+            failures.append("bad approval remember returned no reply")
+        else:
+            bad_result = bad_approval_reply["result"]["structuredContent"]  # type: ignore[index]
+            if bad_result.get("status") != "FAIL" or bad_result.get("writes") != []:
+                failures.append("bad approval remember must fail without writes")
+            if planned_cell.exists():
+                failures.append("bad approval remember created a Cortex cell")
+
+        non_string_plan_reply = handle_message(
+            target.resolve(),
+            {
+                "jsonrpc": "2.0",
+                "id": 221,
+                "method": "tools/call",
+                "params": {
+                    "name": "cortex_remember_plan",
+                    "arguments": {**remember_args, "cell": 123},
+                },
+            },
+            writes_enabled=True,
+        )
+        if non_string_plan_reply is None or "error" not in non_string_plan_reply:
+            failures.append("remember plan must reject non-string cell arguments")
+        if planned_cell.exists():
+            failures.append("non-string remember plan created a Cortex cell")
+
+        remember_reply = handle_message(
+            target.resolve(),
+            {
+                "jsonrpc": "2.0",
+                "id": 23,
+                "method": "tools/call",
+                "params": {
+                    "name": "cortex_remember",
+                    "arguments": {**remember_args, "approval_phrase": approval_phrase},
+                },
+            },
+            writes_enabled=True,
+        )
+        if remember_reply is None:
+            failures.append("approved remember returned no reply")
+        else:
+            remember_result = remember_reply["result"]["structuredContent"]  # type: ignore[index]
+            if remember_result.get("status") != "PASS":
+                failures.append(f"approved remember should pass: {remember_result}")
+            writes = remember_result.get("writes", [])
+            if "docs/agents/cortex/cells/mcp-governed-write.md" not in writes:
+                failures.append(f"approved remember did not report cell write: {writes}")
+            if remember_result.get("approval_status") != "MATCHED":
+                failures.append("approved remember did not report matched approval")
+            if not planned_cell.exists():
+                failures.append("approved remember did not create the Cortex cell")
+
+        duplicate_reply = handle_message(
+            target.resolve(),
+            {
+                "jsonrpc": "2.0",
+                "id": 24,
+                "method": "tools/call",
+                "params": {
+                    "name": "cortex_remember",
+                    "arguments": {**remember_args, "approval_phrase": approval_phrase},
+                },
+            },
+            writes_enabled=True,
+        )
+        if duplicate_reply is None:
+            failures.append("duplicate remember returned no reply")
+        else:
+            duplicate_result = duplicate_reply["result"]["structuredContent"]  # type: ignore[index]
+            if duplicate_result.get("status") != "FAIL" or duplicate_result.get("writes") != []:
+                failures.append("duplicate remember must fail without writes")
 
         sibling_target = Path(tempdir) / "project-b"
         cortex.init(sibling_target)
@@ -465,6 +955,8 @@ def self_test() -> int:
             ("cortex_absorb_plan", {"target": str(sibling_target), "source": "docs/agents/cortex/sources/README.md"}),
             ("cortex_curate_plan", {"target": str(sibling_target), "backend": "lexical"}),
             ("cortex_reflect", {"target": str(sibling_target), "query": "Foreign Memory"}),
+            ("cortex_list_events", {"target": str(sibling_target)}),
+            ("cortex_get_event_status", {"target": str(sibling_target), "event_id": "foreign"}),
         ]
         for name, arguments in cross_project_messages:
             reply = handle_message(
@@ -514,6 +1006,10 @@ def self_test() -> int:
                 {"jsonrpc": "2.0", "id": 107, "method": "tools/call", "params": {"name": "cortex_absorb_plan", "arguments": {"source": ""}}},
             ),
             (
+                "empty event id rejected",
+                {"jsonrpc": "2.0", "id": 1071, "method": "tools/call", "params": {"name": "cortex_get_event_status", "arguments": {"event_id": ""}}},
+            ),
+            (
                 "non-object arguments rejected",
                 {"jsonrpc": "2.0", "id": 108, "method": "tools/call", "params": {"name": "cortex_verify", "arguments": []}},
             ),
@@ -548,12 +1044,13 @@ def self_test() -> int:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", type=Path, default=Path.cwd())
+    parser.add_argument("--enable-writes", action="store_true", help="expose governed Cortex remember tools")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
 
     if args.self_test:
         return self_test()
-    return serve(args.target.expanduser().resolve())
+    return serve(args.target.expanduser().resolve(), args.enable_writes)
 
 
 if __name__ == "__main__":

@@ -23,8 +23,10 @@ agent remains the executor; scripts and MCP tools are oracles.
 | operator health | run read-only `cortex_health` MCP or `cortex.py health` |
 | operator peek | run read-only `cortex_peek` MCP or `cortex.py peek` |
 | operator review | run read-only `cortex_review` MCP or `cortex.py review --backend lexical` |
+| event inspection | use read-only `cortex_list_events` or `cortex_get_event_status` MCP |
 | checkpoint progress | run `cortex.py checkpoint --yes`; writes only `.tes/checkpoints/**` |
 | remember durable memory | run `cortex.py remember --yes` only with explicit approval and evidence |
+| governed MCP remember | use `cortex_remember_plan`, obtain explicit approval for its phrase, then call `cortex_remember` only on a `--enable-writes` MCP server |
 | consolidate memory | run `consolidation_gate.py lock --yes`, then read-only `consolidation_gate.py certify` with observed write, review, rollback, and evidence |
 | forget durable memory | run `cortex.py forget`; expect `BLOCKED` until consolidation gate exists |
 
@@ -36,12 +38,15 @@ agent remains the executor; scripts and MCP tools are oracles.
 - Treat `.tes/cortex/semantic.sqlite` as rebuildable curation cache.
 - Prefer MCP for read-only recall/read/curate/reflect when available.
 - Prefer MCP for read-only `health`, `peek`, and `review` when available.
+- Prefer MCP event tools only for read-only lifecycle evidence inspection.
 - Never write `sources/**` after import.
 - Never promote loose summaries; cells need `## Claim` and `## Evidence`.
 - When `reflect.curation_due=true`, run `curate-plan` before proposing memory
   compaction, split, merge, or rejection.
 - Never run `apply --yes` without explicit user authorization.
 - Never run `remember --yes` without explicit user authorization and evidence.
+- Never call `cortex_remember` unless the server was started with
+  `--enable-writes` and the user approved the exact plan phrase.
 - Never call consolidation `CERTIFIED` without a valid lock, approved review,
   rollback reference, allowed evidence, and observed Cortex cell write result.
 - Do not treat `forget` as available destructive deletion; it is blocked until

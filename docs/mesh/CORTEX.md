@@ -253,6 +253,8 @@ memory-quality failures are also present.
 | `checkpoint` | Write TTL checkpoint state only after explicit `--yes` |
 | `remember` | Durable memory write through the same authorization and evidence gate as `apply` |
 | `forget` | Blocked destructive operator until consolidation gate evidence exists |
+| `cortex_remember_plan` MCP | No-write governed MCP proposal for one durable-memory write |
+| `cortex_remember` MCP | Opt-in governed MCP write for one new cell after exact approval phrase match |
 | `consolidation_gate.py` | Lock and certify observed durable-memory writes without deleting memory |
 
 ## Operator Mutability
@@ -410,21 +412,24 @@ Initial certification proves that:
 - `.tes/cortex/recall.sqlite` is documented as derived and rebuildable;
 - the Obsidian boundary is declared without requiring `.obsidian/**`;
 - runtime bootloaders route to Cortex when durable project memory is relevant;
-- read-only Cortex MCP is activated for selected runtime routes or explicitly
-  blocked with a reason;
+- Cortex MCP is activated for selected runtime routes as read-only by default
+  or explicitly blocked with a reason;
 - `curate-plan` is available as a no-write curation gate;
 - `health`, `peek`, and `review` are available as no-write operator commands;
 - `checkpoint`, `remember`, and `forget` report explicit mutability classes;
+- MCP event inspection is read-only and governed MCP remember is opt-in only;
 - installation evidence states whether Cortex was created, skipped, or blocked.
 
 ## MCP Boundary
 
 MCP enters only after CLI, rebuild, fallback recall, and no-write curation are
-certified. The v1 MCP shape is read-only first: verify, audit, recall, read
-cell, absorb-plan, curate-plan, and reflect. Write tools require a later
-controlled cut.
+certified. The MCP shape is read-only by default: verify, audit, recall, read
+cell, absorb-plan, curate-plan, reflect, event list, and event status. ADR 0002
+adds a controlled opt-in write lane for `cortex_remember_plan` and
+`cortex_remember`.
 
 The first read-only stdio surface is governed by
 `docs/mesh/CORTEX-MCP.md` and implemented by `scripts/cortex_mcp.py`. It
-is activated by `scripts/install_mcp.py`, delegates to the deterministic Cortex
-CLI functions, and does not promote, rewrite, or persist knowledge.
+is activated by `scripts/install_mcp.py`, delegates to deterministic Cortex
+helper functions, and does not promote, rewrite, or persist knowledge unless
+the operator explicitly enables the governed remember lane.

@@ -22,6 +22,27 @@ adapter behavior by itself.
 
 Retention status: `current`.
 
+## Cortex Governed MCP Write Lane Claim
+
+TES `0.3.139` adds ADR 0002 and implements an opt-in governed MCP write lane.
+Default MCP activation remains read-only. When a project MCP server is started
+with `--enable-writes`, it exposes only `cortex_remember_plan` and
+`cortex_remember` for one new grounded Cortex cell after exact approval phrase
+match. Read-only event inspection is exposed through `cortex_list_events` and
+`cortex_get_event_status`.
+
+Proof: `docs/adr/0002-cortex-governed-mcp-write-lane.md`,
+`scripts/cortex_mcp.py`, `scripts/install_mcp.py`,
+`scripts/cortex_operator_oracle.py`, `docs/mesh/CORTEX-MCP.md`, and
+`docs/evidence/reports/2026/05/27/cortex-governed-mcp-write-lane/REPORT.md`.
+
+Boundary: this does not add an external memory backend, hosted MCP, graph
+store, automatic Cortex writes, update/delete/bulk/entity tools, checkpoint
+write over MCP, direct MCP `apply`, package publishing, marketplace action, or
+commercial-use certification.
+
+Retention status: `current`.
+
 ## Writer Path Claim
 
 New context mesh runs default to
