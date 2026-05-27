@@ -21,6 +21,7 @@ turning the repository root into an inventory.
 | TES namespace migration catalog | `architecture/TES-NAMING-MIGRATION-CATALOG.md` |
 | TES Memory Lifecycle ADR | `adr/0001-tes-memory-lifecycle.md` |
 | Cortex governed MCP write lane ADR | `adr/0002-cortex-governed-mcp-write-lane.md` |
+| Cortex MCP capability expansion ADR | `adr/0003-cortex-mcp-capability-expansion.md` |
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
 | Agent manual | `install/AGENT-MANUAL.md` |
 | Agent oracle inventory | `install/AGENT-ORACLE-INVENTORY.md` |

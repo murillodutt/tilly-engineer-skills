@@ -36,6 +36,13 @@ documents:
     consumer: maintainers, Cortex authors, MCP adapter authors, installer authors, and release operators
     source_of_truth: true
     evidence_level: L1
+  - path: docs/adr/0003-cortex-mcp-capability-expansion.md
+    id: architecture.adr_0003_cortex_mcp_capability_expansion
+    class: architecture
+    status: proposed
+    consumer: maintainers, Cortex MCP authors, host integration authors, and release operators
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/install/INSTALL.md
     id: install.adapter_installer
     class: adapter

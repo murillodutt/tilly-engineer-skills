@@ -1,0 +1,9 @@
+name: tes-mine
+description: Explicit-invocation code and domain knowledge mining skill with a cognitive brake.
+default_prompt: |
+  Use $tes-mine only because it has been explicitly invoked. Proactively and
+  predictively mine code, domain language, terminology, documented decisions,
+  CONTEXT.md candidates, and ADR candidates for durable project knowledge.
+  Ask one question at a time, and explore the codebase when local evidence can
+  answer before asking. If the user pulls the cognitive brake, stop the mining
+  pressure, summarize the current state, and wait for explicit resume.
