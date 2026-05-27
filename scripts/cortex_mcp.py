@@ -5,11 +5,14 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 import sys
 import tempfile
+import threading
 from typing import Any
+from urllib import request as urllib_request
 
 import cortex
 import event_ledger
@@ -20,6 +23,7 @@ VERSION = "0.3.142"
 PROTOCOL_VERSION = "2025-06-18"
 WRITE_APPROVAL_PREFIX = "APPROVE TES CORTEX MCP WRITE"
 WRITE_TOOL_NAMES = {"cortex_remember_plan", "cortex_remember"}
+LOCAL_HTTP_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
 
 def schema_string(description: str) -> dict[str, str]:
@@ -675,6 +679,18 @@ def handle_message(default_target: Path, message: dict[str, Any], writes_enabled
     return error_response(request_id, -32601, f"method not found: {method}")
 
 
+def handle_json_payload(default_target: Path, message: Any, writes_enabled: bool = True) -> dict[str, Any] | list[dict[str, Any]] | None:
+    messages = message if isinstance(message, list) else [message]
+    replies = [
+        handle_message(default_target, item, writes_enabled) if isinstance(item, dict) else error_response(None, -32600, "request must be an object")
+        for item in messages
+    ]
+    replies = [item for item in replies if item is not None]
+    if not replies:
+        return None
+    return replies if isinstance(message, list) else replies[0]
+
+
 def serve(default_target: Path, writes_enabled: bool = True) -> int:
     for line in sys.stdin:
         line = line.strip()
@@ -682,15 +698,78 @@ def serve(default_target: Path, writes_enabled: bool = True) -> int:
             continue
         try:
             message = json.loads(line)
-            messages = message if isinstance(message, list) else [message]
-            replies = [handle_message(default_target, item, writes_enabled) for item in messages]
-            replies = [item for item in replies if item is not None]
-            if not replies:
+            payload = handle_json_payload(default_target, message, writes_enabled)
+            if payload is None:
                 continue
-            payload: dict[str, Any] | list[dict[str, Any]] = replies if isinstance(message, list) else replies[0]
             print(json.dumps(payload, separators=(",", ":")), flush=True)
         except json.JSONDecodeError as exc:
             print(json.dumps(error_response(None, -32700, f"parse error: {exc}")), flush=True)
+    return 0
+
+
+class CortexHTTPServer(ThreadingHTTPServer):
+    daemon_threads = True
+    allow_reuse_address = True
+
+
+def make_http_handler(default_target: Path, writes_enabled: bool) -> type[BaseHTTPRequestHandler]:
+    class CortexHTTPHandler(BaseHTTPRequestHandler):
+        server_version = "TESCortexMCPHTTP/1.0"
+
+        def send_json(self, status: int, payload: dict[str, Any] | list[dict[str, Any]]) -> None:
+            encoded = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(encoded)))
+            self.end_headers()
+            self.wfile.write(encoded)
+
+        def do_POST(self) -> None:
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+            except ValueError:
+                self.send_json(411, error_response(None, -32600, "invalid content length"))
+                return
+            try:
+                message = json.loads(self.rfile.read(length).decode("utf-8"))
+                payload = handle_json_payload(default_target, message, writes_enabled)
+                if payload is None:
+                    self.send_json(204, {})
+                    return
+                self.send_json(200, payload)
+            except json.JSONDecodeError as exc:
+                self.send_json(400, error_response(None, -32700, f"parse error: {exc}"))
+            except Exception as exc:  # Keep HTTP framing alive for caller correction.
+                self.send_json(200, error_response(None, -32603, str(exc)))
+
+        def log_message(self, format: str, *args: object) -> None:
+            return
+
+    return CortexHTTPHandler
+
+
+def validate_http_bind(host: str, allow_non_localhost: bool = False) -> None:
+    if host not in LOCAL_HTTP_HOSTS and not allow_non_localhost:
+        raise ValueError("HTTP transport binds to localhost by default; pass --allow-non-localhost to bind elsewhere")
+
+
+def make_http_server(default_target: Path, writes_enabled: bool, host: str, port: int) -> CortexHTTPServer:
+    return CortexHTTPServer((host, port), make_http_handler(default_target, writes_enabled))
+
+
+def serve_http(
+    default_target: Path,
+    writes_enabled: bool = True,
+    host: str = "127.0.0.1",
+    port: int = 8765,
+    allow_non_localhost: bool = False,
+) -> int:
+    validate_http_bind(host, allow_non_localhost)
+    if host not in LOCAL_HTTP_HOSTS:
+        print(f"[cortex-mcp] WARNING: HTTP transport binding to non-localhost host {host}", file=sys.stderr)
+    with make_http_server(default_target, writes_enabled, host, port) as server:
+        print(f"[cortex-mcp] HTTP listening on http://{host}:{server.server_port}", file=sys.stderr)
+        server.serve_forever()
     return 0
 
 
@@ -1085,6 +1164,88 @@ def self_test() -> int:
             if not result.get("isError"):
                 failures.append(f"{label}: call was not rejected")
 
+        def http_rpc(url: str, message: dict[str, Any]) -> dict[str, Any]:
+            request = urllib_request.Request(
+                url,
+                data=json.dumps(message).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with urllib_request.urlopen(request, timeout=5) as response_body:
+                return json.loads(response_body.read().decode("utf-8"))
+
+        try:
+            validate_http_bind("0.0.0.0", allow_non_localhost=False)
+            failures.append("non-localhost HTTP bind did not require explicit flag")
+        except ValueError:
+            pass
+
+        http_server = make_http_server(target.resolve(), True, "127.0.0.1", 0)
+        http_thread = threading.Thread(target=http_server.serve_forever, daemon=True)
+        http_thread.start()
+        http_url = f"http://127.0.0.1:{http_server.server_port}/mcp"
+        try:
+            http_init = http_rpc(http_url, messages[0])
+            http_tools = http_rpc(http_url, messages[1])
+            http_verify = http_rpc(http_url, messages[2])
+            if http_init != replies[0]:
+                failures.append("HTTP initialize envelope differed from stdio")
+            if http_tools != replies[1]:
+                failures.append("HTTP tools/list envelope differed from stdio")
+            if http_verify != replies[2]:
+                failures.append("HTTP verify envelope differed from stdio")
+
+            http_bad_approval_args = {
+                "cell": "mcp-http-write",
+                "claim": "HTTP remember requires exact approval just like stdio.",
+                "evidence": ["sources/mcp-source.md"],
+                "approval_phrase": "bad approval",
+            }
+            http_bad_approval = http_rpc(
+                http_url,
+                {
+                    "jsonrpc": "2.0",
+                    "id": 25,
+                    "method": "tools/call",
+                    "params": {"name": "cortex_remember", "arguments": http_bad_approval_args},
+                },
+            )
+            bad_http_result = http_bad_approval.get("result", {}).get("structuredContent", {})
+            if bad_http_result.get("status") != "FAIL" or bad_http_result.get("writes") != []:
+                failures.append("HTTP bad approval remember must fail without writes")
+        finally:
+            http_server.shutdown()
+            http_server.server_close()
+            http_thread.join(timeout=5)
+
+        read_only_http_server = make_http_server(target.resolve(), False, "127.0.0.1", 0)
+        read_only_thread = threading.Thread(target=read_only_http_server.serve_forever, daemon=True)
+        read_only_thread.start()
+        read_only_url = f"http://127.0.0.1:{read_only_http_server.server_port}/mcp"
+        try:
+            read_only_tools_reply = http_rpc(read_only_url, messages[1])
+            read_only_http_tools = {
+                tool["name"]
+                for tool in read_only_tools_reply["result"]["tools"]  # type: ignore[index]
+            }
+            if "cortex_remember" in read_only_http_tools or "cortex_remember_plan" in read_only_http_tools:
+                failures.append("read-only HTTP tools/list exposed governed remember tools")
+            read_only_remember = http_rpc(
+                read_only_url,
+                {
+                    "jsonrpc": "2.0",
+                    "id": 26,
+                    "method": "tools/call",
+                    "params": {"name": "cortex_remember", "arguments": http_bad_approval_args},
+                },
+            )
+            if not read_only_remember.get("result", {}).get("isError"):
+                failures.append("read-only HTTP remember call was not blocked")
+        finally:
+            read_only_http_server.shutdown()
+            read_only_http_server.server_close()
+            read_only_thread.join(timeout=5)
+
         field_reports.safe_record_event(
             target,
             "cortex_mcp.self_test",
@@ -1111,6 +1272,10 @@ def main() -> int:
     )
     parser.add_argument("--read-only", action="store_true", help="hide governed Cortex remember tools")
     parser.add_argument("--disable-writes", action="store_true", help="alias for --read-only")
+    parser.add_argument("--transport", choices=("stdio", "http"), default="stdio")
+    parser.add_argument("--host", default="127.0.0.1", help="HTTP bind host; defaults to localhost")
+    parser.add_argument("--port", type=int, default=8765, help="HTTP bind port")
+    parser.add_argument("--allow-non-localhost", action="store_true", help="allow HTTP bind outside localhost")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
 
@@ -1119,7 +1284,13 @@ def main() -> int:
     if args.enable_writes and (args.read_only or args.disable_writes):
         parser.error("--enable-writes cannot be combined with --read-only/--disable-writes")
     writes_enabled = not (args.read_only or args.disable_writes)
-    return serve(args.target.expanduser().resolve(), writes_enabled)
+    target = args.target.expanduser().resolve()
+    if args.transport == "http":
+        try:
+            return serve_http(target, writes_enabled, args.host, args.port, args.allow_non_localhost)
+        except ValueError as exc:
+            parser.error(str(exc))
+    return serve(target, writes_enabled)
 
 
 if __name__ == "__main__":
