@@ -79,9 +79,9 @@ mode of `/tes-init`.
 | `/tes-open-obsidian` or `/tes:open-obsidian` | open `docs/agents` as the Obsidian vault after context and alignment pass | `tes_open_obsidian.py`, `project_context_oracle.py`, `project_alignment_oracle.py` | no TES writes; Obsidian app may manage project-owned `.obsidian/**` after explicit launch |
 | `/tes-cortex` or `/tes:cortex` | inspect, query, audit, rebuild, curate, learn, reflect, consolidate, or apply Cortex memory | `cortex.py`, `consolidation_gate.py`, Cortex MCP | Cortex files only when authorized; consolidation lock writes only `.tes/cortex/consolidation/**`; MCP remember requires ADR 0002 exact approval |
 | `/tes-curate` or `/tes:curate` | classify Cortex memory quality risks without writing memory | `cortex.py curate-plan`, read-only `cortex_curate_plan` | no memory writes; CLI may refresh `.tes/cortex/semantic.sqlite` |
-| `/tes-mcp` or `/tes:mcp` | activate or verify Cortex MCP | `install_mcp.py`, `cortex_mcp.py`, MCP smoke | `.tes/bin/**` and project-scoped MCP config, including `.vscode/mcp.json`; governed remember is default; use `--read-only` for inspection-only activation |
+| `/tes-mcp` or `/tes:mcp` | activate or verify Cortex MCP | `install_mcp.py`, `cortex_mcp.py`, MCP smoke, host listing when observable | `.tes/bin/**` and project-scoped MCP config, including `.vscode/mcp.json`; governed remember is default; use `--read-only` for inspection-only activation |
 | `/tes-field-reports` or `/tes:field-reports` | inspect, drain, disable, or re-enable sanitized operational reports | `field_reports.py`, local `pre-push` hook | `.tes/field-reports/**`, `.git/info/exclude`, `.git/hooks/pre-push` |
-| `/tes-doctor` or `/tes:doctor` | health-check, certify, prepare a commit, or fallback-test/repair/install MCP when MCP health is the failure | validation, TDS, doc-size, platform, materialization, MCP self-test, MCP install registration, commit gates | read-only by default; MCP fallback may write `.tes/bin/**` and project-scoped MCP config only after repair/install authorization; evidence only when requested |
+| `/tes-doctor` or `/tes:doctor` | health-check, certify, prepare a commit, or fallback-test/repair/install MCP when MCP health is the failure | validation, TDS, doc-size, platform, materialization, MCP self-test, MCP install registration, MCP host recognition, commit gates | read-only by default; MCP fallback may write `.tes/bin/**` and project-scoped MCP config only after repair/install authorization; evidence only when requested |
 | `/tes-adapter` or `/tes:adapter` | materialize, dry-run, retrofit, or install adapter surfaces | `materialize_adapter.py`, `install_adapter.py`, adapter oracles | adapter files only after review or approval |
 | `/tes-bench` or `/tes:bench` | plan, run, or converge context-mesh benchmarks | benchmark plan/run/converge scripts | temporal benchmark evidence artifacts under `docs/evidence/reports/YYYY/MM/DD/**` |
 | `/tes-bump` or `/tes:bump` | govern, plan, and apply bounded project version bumps | `tes_bump.py --governance-check`; `tes_bump.py --dry-run`, then `tes_bump.py --yes` after write authorization | governance check is read-only; writes only discovered version targets; no commits, tags, pushes, remotes, package locks, or publishing |
@@ -117,9 +117,10 @@ tes bump     -> /tes-bump
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-source alias for the same oracles; not a target-project guarantee |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.141 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.142 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | project-scoped Cortex surface, preferred for recall/read/curation/reflection and governed remember |
+| MCP host recognition | separate state after file registration: `config_present`, `server_self_test_pass`, `protocol_handshake_pass`, `host_listed`, `host_connected`, or `session_restart_required` |
 | skills | user-intent routers in runtimes that support skills |
 | goal materialization skill | explicit mature-artifact-to-`/goal` prompt materialization with artifact maturity, execution-unit fidelity, internal tree, material-diff, material-continuation, semantic negative-grep, sequential ownership, and sync-status gates |
 | predictive skills | explicit-invocation project-stress and mining skills with cognitive brake |

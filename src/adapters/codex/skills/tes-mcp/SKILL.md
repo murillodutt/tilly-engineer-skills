@@ -20,7 +20,30 @@ activation and health checks.
    MCP; default activation exposes governed Cortex remember.
 6. Run `install_mcp.py --self-test`, `cortex_mcp.py --self-test`, or
    `install_smoke.py --route mcp` as the local oracle.
-7. Report created or merged project-scoped config paths.
+7. Report created or merged project-scoped config paths and classify host
+   recognition separately.
+
+## Host Recognition
+
+Do not call MCP functional from config file presence alone. Report these states
+when evidence is available:
+
+- `config_present`: project-scoped MCP file contains `tes-cortex`.
+- `server_self_test_pass`: `cortex_mcp.py --self-test` passes.
+- `protocol_handshake_pass`: direct MCP initialize/tools-list returns tools.
+- `host_listed`: the host lists `tes-cortex`.
+- `host_connected`: the host exposes the TES Cortex tools.
+- `session_restart_required`: config is valid, but the active host session was
+  started outside the target workspace or has not reloaded project MCP config.
+
+For Codex, run `codex mcp list` from the target project when available. Codex
+supports user-level `~/.codex/config.toml` and project-scoped
+`.codex/config.toml` in trusted projects; TES defaults to project-scoped config.
+Do not edit global Codex MCP config unless the user explicitly requests that
+scope.
+
+For Cursor and VS Code, a valid project MCP file may still require the host to
+reload, approve, enable, or reconnect the project server before tools appear.
 
 The always-safe inspection surface includes `cortex_verify`, `cortex_audit`,
 `cortex_recall`, `cortex_read_cell`, `cortex_absorb_plan`,

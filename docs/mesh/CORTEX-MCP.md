@@ -139,9 +139,22 @@ It then writes only project-scoped config for the selected runtime:
 Existing config is merged when the `tes-cortex` server name is absent. If a
 different `tes-cortex` entry already exists, activation stops unless the user
 explicitly passes `--overwrite`; backups are created by default.
+Generated server entries use the active Python executable as an absolute
+command, the installed `.tes/bin/cortex_mcp.py` helper as an absolute script
+argument, the target root as an absolute `--target` argument, and, for Codex,
+the target root as absolute `cwd`. This keeps project-scoped config portable
+across host process working directories without mutating global MCP config.
 For JSON-based runtimes, the installer validates the final registered server
 object after write: Claude Code and Cursor use `mcpServers.tes-cortex`; VS Code
 uses `servers.tes-cortex`, matching the VS Code workspace MCP schema.
+
+Config registration is not the same as host recognition. A certification report
+must classify the highest observed state: `config_present`,
+`server_self_test_pass`, `protocol_handshake_pass`, `host_listed`,
+`host_connected`, or `session_restart_required`. Codex recognition is checked
+with `codex mcp list` from the target project when the CLI is available. Cursor
+and VS Code may require reload, approval, enable, or reconnect before a valid
+project config becomes visible in the host UI.
 
 ## MCP Cut
 

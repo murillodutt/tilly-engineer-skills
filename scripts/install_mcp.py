@@ -21,7 +21,7 @@ import tes_bundle
 
 SCRIPT_PATH = Path(__file__).resolve()
 ROOT = SCRIPT_PATH.parents[1]
-VERSION = "0.3.141"
+VERSION = "0.3.142"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (
@@ -99,6 +99,18 @@ def source_script(name: str) -> Path:
 
 def source_package_mode() -> bool:
     return (ROOT / "scripts/install_mcp.py").exists()
+
+
+def python_command() -> str:
+    executable = Path(sys.executable)
+    if executable.is_absolute() and executable.exists():
+        return str(executable)
+    resolved = shutil.which(sys.executable) or shutil.which("python3")
+    return resolved or "python3"
+
+
+def target_script(target: Path, name: str) -> str:
+    return str((target / BIN_DIR / name).resolve())
 
 
 def backup_file(path: Path) -> Path:
@@ -195,14 +207,18 @@ def install_server_files(target: Path, dry_run: bool, overwrite: bool, backup: b
     return actions, failures
 
 
-def codex_snippet(read_only: bool = False) -> str:
-    args = '".tes/bin/cortex_mcp.py", "--target", "."'
+def codex_snippet(target: Path, read_only: bool = False) -> str:
+    args = [
+        json.dumps(target_script(target, "cortex_mcp.py")),
+        json.dumps("--target"),
+        json.dumps(str(target)),
+    ]
     if read_only:
-        args += ', "--read-only"'
+        args.append(json.dumps("--read-only"))
     return f"""[mcp_servers.tes-cortex]
-command = "python3"
-args = [{args}]
-cwd = "."
+command = {json.dumps(python_command())}
+args = [{", ".join(args)}]
+cwd = {json.dumps(str(target))}
 startup_timeout_sec = 10
 tool_timeout_sec = 60
 enabled = true
@@ -217,7 +233,7 @@ def merge_codex_config(
     read_only: bool,
 ) -> tuple[dict[str, str] | None, str | None]:
     path = target / ".codex/config.toml"
-    snippet = codex_snippet(read_only)
+    snippet = codex_snippet(target, read_only)
     if not path.exists():
         action = write_text_file(path, snippet, dry_run, backup)
         action["path"] = rel(path, target)
@@ -248,16 +264,13 @@ def replace_toml_section(text: str, header: str, replacement: str) -> str:
     return "\n".join([*lines[:start], replacement.rstrip(), *lines[end:]]).rstrip() + "\n"
 
 
-def json_config(adapter: str, read_only: bool = False) -> dict[str, Any]:
-    if adapter in {"cursor", "vscode"}:
-        args = ["${workspaceFolder}/.tes/bin/cortex_mcp.py", "--target", "${workspaceFolder}"]
-    else:
-        args = [".tes/bin/cortex_mcp.py", "--target", "."]
+def json_config(adapter: str, target: Path, read_only: bool = False) -> dict[str, Any]:
+    args = [target_script(target, "cortex_mcp.py"), "--target", str(target)]
     if read_only:
         args.append("--read-only")
     return {
         "type": "stdio",
-        "command": "python3",
+        "command": python_command(),
         "args": args,
         "env": {},
     }
@@ -273,7 +286,7 @@ def merge_json_config(
 ) -> tuple[dict[str, str] | None, str | None]:
     path = target / JSON_CONFIG_PATHS[adapter]
     server_key = JSON_SERVER_KEYS[adapter]
-    desired_server = json_config(adapter, read_only)
+    desired_server = json_config(adapter, target, read_only)
     data: dict[str, Any]
     if path.exists():
         try:
@@ -314,7 +327,13 @@ def validate_config_registration(target: Path, adapter: str, read_only: bool) ->
         if not isinstance(server, dict):
             return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, "Codex MCP config missing tes-cortex server"
         args = server.get("args")
-        if server.get("command") != "python3" or not isinstance(args, list) or ".tes/bin/cortex_mcp.py" not in args:
+        if (
+            server.get("command") != python_command()
+            or server.get("cwd") != str(target)
+            or not isinstance(args, list)
+            or target_script(target, "cortex_mcp.py") not in args
+            or str(target) not in args
+        ):
             return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, "Codex MCP config has invalid tes-cortex command or args"
         if read_only and "--read-only" not in args:
             return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, "Codex read-only MCP config missing --read-only"
@@ -335,7 +354,7 @@ def validate_config_registration(target: Path, adapter: str, read_only: bool) ->
     servers = data.get(server_key)
     if not isinstance(servers, dict):
         return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, f"{rel(path, target)} {server_key} must be an object"
-    expected = json_config(adapter, read_only)
+    expected = json_config(adapter, target, read_only)
     actual = servers.get(SERVER_NAME)
     if actual != expected:
         return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, f"{rel(path, target)} missing expected tes-cortex server registration"
@@ -477,7 +496,7 @@ def install(args: argparse.Namespace) -> int:
 
 def self_test() -> int:
     with tempfile.TemporaryDirectory(prefix="tes-mcp-install-") as tempdir:
-        target = Path(tempdir)
+        target = Path(tempdir).resolve()
         result = subprocess.run(
             [sys.executable, str(ROOT / "scripts/cortex.py"), "init", "--target", str(target)],
             cwd=ROOT,
@@ -558,10 +577,29 @@ def self_test() -> int:
             failures.append("default Codex MCP install must expose governed remember tools")
         if "--enable-writes" in codex_config:
             failures.append("default Codex MCP install must not need legacy --enable-writes")
+        codex_data = tomllib.loads(codex_config)
+        codex_server = codex_data.get("mcp_servers", {}).get(SERVER_NAME)
+        if not isinstance(codex_server, dict):
+            failures.append("default Codex MCP install must create mcp_servers.tes-cortex")
+        else:
+            codex_args = codex_server.get("args")
+            if codex_server.get("command") != python_command():
+                failures.append("default Codex MCP install must use the active Python executable")
+            if codex_server.get("cwd") != str(target):
+                failures.append("default Codex MCP install must use absolute target cwd")
+            if not isinstance(codex_args, list) or target_script(target, "cortex_mcp.py") not in codex_args or str(target) not in codex_args:
+                failures.append("default Codex MCP install must use absolute target args")
         for relpath in (".mcp.json", ".cursor/mcp.json", ".vscode/mcp.json"):
             data = json.loads((target / relpath).read_text(encoding="utf-8"))
             server_key = "servers" if relpath == ".vscode/mcp.json" else "mcpServers"
-            args = data[server_key][SERVER_NAME]["args"]
+            server = data[server_key][SERVER_NAME]
+            args = server["args"]
+            if server.get("command") != python_command():
+                failures.append(f"default {relpath} MCP install must use the active Python executable")
+            if target_script(target, "cortex_mcp.py") not in args or str(target) not in args:
+                failures.append(f"default {relpath} MCP install must use absolute target args")
+            if any(str(arg).startswith("${workspaceFolder}") or str(arg) in {".", ".tes/bin/cortex_mcp.py"} for arg in args):
+                failures.append(f"default {relpath} MCP install must not depend on host cwd or workspace interpolation")
             if "--read-only" in args:
                 failures.append(f"default {relpath} MCP install must expose governed remember tools")
             if "--enable-writes" in args:
@@ -615,7 +653,7 @@ def self_test() -> int:
                 failures.append("installed helper MCP repair did not recreate .vscode/mcp.json")
 
     with tempfile.TemporaryDirectory(prefix="tes-mcp-read-only-install-") as tempdir:
-        target = Path(tempdir)
+        target = Path(tempdir).resolve()
         init_result = subprocess.run(
             [sys.executable, str(ROOT / "scripts/cortex.py"), "init", "--target", str(target)],
             cwd=ROOT,
@@ -658,7 +696,7 @@ def self_test() -> int:
                 failures.append(f"read-only {relpath} MCP install must include --read-only")
 
     with tempfile.TemporaryDirectory(prefix="tes-mcp-legacy-enable-install-") as tempdir:
-        target = Path(tempdir)
+        target = Path(tempdir).resolve()
         init_result = subprocess.run(
             [sys.executable, str(ROOT / "scripts/cortex.py"), "init", "--target", str(target)],
             cwd=ROOT,
@@ -696,7 +734,7 @@ def self_test() -> int:
                 failures.append("legacy --enable-writes install must not create read-only VS Code config")
 
     with tempfile.TemporaryDirectory(prefix="tes-mcp-helpers-only-") as tempdir:
-        target = Path(tempdir)
+        target = Path(tempdir).resolve()
         helpers_only_result = subprocess.run(
             [sys.executable, __file__, "--target", str(target), "--adapter", "all", "--helpers-only", "--yes", "--json-only"],
             cwd=ROOT,

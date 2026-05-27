@@ -69,10 +69,20 @@ Use this sequence:
    `python3 .tes/bin/install_mcp.py --target . --adapter all --overwrite --yes`.
    In the package source, use
    `python3 scripts/install_mcp.py --target <project> --adapter all --overwrite --yes`.
-5. Certify the final MCP registration by checking the installer result
+5. Certify file registration by checking the installer result
    `config_registrations`, rerunning `python3 .tes/bin/cortex_mcp.py --self-test`
    when installed, and confirming the expected project-scoped config path:
    `.codex/config.toml`, `.mcp.json`, `.cursor/mcp.json`, or `.vscode/mcp.json`.
+6. Certify host recognition separately. Report `config_present`,
+   `server_self_test_pass`, `protocol_handshake_pass`, `host_listed`,
+   `host_connected`, or `session_restart_required` instead of collapsing them
+   into one pass/fail claim.
+   - Codex: run `codex mcp list` from the target project when available. If it
+     lists `tes-cortex` but the current Codex thread cannot use the tools,
+     report `session_restart_required` or workspace mismatch.
+   - Cursor and VS Code: after valid project config, the host may still need
+     reload, approval, enablement, or reconnect before `host_connected`.
+   - Claude Code: use the host MCP manager or `/mcp` evidence when available.
 
 Report `NOT_AVAILABLE` if neither the installed helper nor a TES package source
 installer is available. Report `NEEDS_REVIEW` for conflicting MCP entries when

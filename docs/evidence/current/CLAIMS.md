@@ -34,7 +34,10 @@ the final project config registrations and adds VS Code project MCP support at
 `.vscode/mcp.json` under `servers.tes-cortex`. The same release adds
 `/tes-doctor` as a fallback path that can test, repair, or install project MCP
 through installed `.tes/bin/install_mcp.py` when MCP health is the failing
-surface.
+surface. TES `0.3.142` hardens that lane by generating absolute project MCP
+commands for Codex, Claude Code, Cursor, and VS Code, then separating config
+registration from host recognition with explicit states from `config_present`
+through `host_connected` or `session_restart_required`.
 
 Proof: `docs/adr/0002-cortex-governed-mcp-write-lane.md`,
 `scripts/cortex_mcp.py`, `scripts/install_mcp.py`,
@@ -43,7 +46,8 @@ Proof: `docs/adr/0002-cortex-governed-mcp-write-lane.md`,
 and
 `docs/evidence/reports/2026/05/27/cortex-mcp-vscode-config-parity/REPORT.md`,
 and
-`docs/evidence/reports/2026/05/27/tes-doctor-mcp-fallback/REPORT.md`.
+`docs/evidence/reports/2026/05/27/tes-doctor-mcp-fallback/REPORT.md`, and
+`docs/evidence/reports/2026/05/27/cortex-mcp-host-recognition-parity/REPORT.md`.
 
 Boundary: this does not add an external memory backend, hosted MCP, graph
 store, automatic Cortex writes, update/delete/bulk/entity tools, checkpoint

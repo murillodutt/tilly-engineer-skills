@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.141"
+VERSION = "0.3.142"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -135,6 +135,9 @@ TARGET_SOURCE_GATE_TERMS = {
         "MCP Fallback",
         "python3 .tes/bin/install_mcp.py --target . --adapter all --overwrite --yes",
         "config_registrations",
+        "host recognition",
+        "codex mcp list",
+        "session_restart_required",
         "Do not edit global MCP config",
     ),
     "bench": (
