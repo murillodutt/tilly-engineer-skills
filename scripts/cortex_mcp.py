@@ -25,6 +25,9 @@ WRITE_APPROVAL_PREFIX = "APPROVE TES CORTEX MCP WRITE"
 WRITE_TOOL_NAMES = {"cortex_remember_plan", "cortex_remember"}
 LOCAL_HTTP_HOSTS = {"127.0.0.1", "localhost", "::1"}
 CELL_RESOURCE_PREFIX = "tes-cortex://cells/"
+SELF_TEST_MODE = False
+VERIFY_CACHE: dict[str, tuple[int, dict[str, object]]] = {}
+VERIFY_CACHE_STATS = {"hits": 0, "misses": 0, "bypasses": 0, "fallbacks": 0}
 PROMPT_REGISTRY: dict[str, dict[str, str]] = {
     "cortex/closure-reflection": {
         "title": "Cortex Closure Reflection",
@@ -113,6 +116,38 @@ def schema_object(
     if required:
         schema["required"] = required
     return schema
+
+
+def copy_verify_result(result: dict[str, object]) -> dict[str, object]:
+    return json.loads(json.dumps(result))
+
+
+def cortex_tree_mtime_key(target: Path) -> int:
+    root = cortex.cortex_path(target)
+    mtimes = [root.stat().st_mtime_ns]
+    for path in root.rglob("*"):
+        mtimes.append(path.stat().st_mtime_ns)
+    return max(mtimes)
+
+
+def verify_target(target: Path) -> dict[str, object]:
+    if SELF_TEST_MODE:
+        VERIFY_CACHE_STATS["bypasses"] += 1
+        return cortex.verify(target)
+    cache_key = str(target.resolve())
+    try:
+        mtime_key = cortex_tree_mtime_key(target)
+    except OSError:
+        VERIFY_CACHE_STATS["fallbacks"] += 1
+        return cortex.verify(target)
+    cached = VERIFY_CACHE.get(cache_key)
+    if cached and cached[0] == mtime_key:
+        VERIFY_CACHE_STATS["hits"] += 1
+        return copy_verify_result(cached[1])
+    VERIFY_CACHE_STATS["misses"] += 1
+    result = cortex.verify(target)
+    VERIFY_CACHE[cache_key] = (mtime_key, copy_verify_result(result))
+    return result
 
 
 def write_tool_definitions() -> list[dict[str, object]]:
@@ -382,7 +417,7 @@ def remember_payload(default_target: Path, args: dict[str, Any]) -> tuple[Path, 
 
 
 def remember_validation(target: Path, payload: dict[str, object]) -> dict[str, object]:
-    verify_result = cortex.verify(target)
+    verify_result = verify_target(target)
     failures = list(verify_result["failures"])
     cell = str(payload["cell"])
     claim = str(payload["claim"])
@@ -560,7 +595,7 @@ def get_event_status(default_target: Path, args: dict[str, Any]) -> dict[str, ob
 
 def read_cell(default_target: Path, args: dict[str, Any]) -> dict[str, Any]:
     target = resolve_target(default_target, args)
-    verify_result = cortex.verify(target)
+    verify_result = verify_target(target)
     if verify_result["status"] != "PASS":
         return {"target": str(target), "status": "FAIL", "failures": verify_result["failures"]}
 
@@ -598,7 +633,7 @@ def cell_resource_uri(cell_path: Path, cells_root: Path) -> str:
 
 def list_cell_resources(default_target: Path, args: dict[str, Any]) -> dict[str, Any]:
     target = resolve_target(default_target, args)
-    verify_result = cortex.verify(target)
+    verify_result = verify_target(target)
     if verify_result["status"] != "PASS":
         raise ValueError("; ".join(str(item) for item in verify_result["failures"]))
     root = cortex.cells_root(target).resolve()
@@ -685,7 +720,7 @@ def call_tool(default_target: Path, name: str, args: dict[str, Any], writes_enab
             "derived_writes": [],
         }, True)
     if name == "cortex_verify":
-        return tool_result(cortex.verify(resolve_target(default_target, args)))
+        return tool_result(verify_target(resolve_target(default_target, args)))
     if name == "cortex_health":
         return tool_result(cortex.health(resolve_target(default_target, args)))
     if name == "cortex_peek":
@@ -912,6 +947,9 @@ def serve_http(
 
 
 def self_test() -> int:
+    global SELF_TEST_MODE
+    previous_self_test_mode = SELF_TEST_MODE
+    SELF_TEST_MODE = True
     with tempfile.TemporaryDirectory(prefix="tes-cortex-mcp-") as tempdir:
         target = Path(tempdir) / "project-a"
         cortex.init(target)
@@ -955,6 +993,27 @@ def self_test() -> int:
         }
         (events_dir / "ledger.jsonl").write_text(json.dumps(event_fixture, sort_keys=True) + "\n", encoding="utf-8")
 
+        SELF_TEST_MODE = False
+        VERIFY_CACHE.clear()
+        for key in VERIFY_CACHE_STATS:
+            VERIFY_CACHE_STATS[key] = 0
+        first_verify = verify_target(target)
+        second_verify = verify_target(target)
+        if first_verify["status"] != "PASS" or second_verify["status"] != "PASS":
+            failures_for_cache = ["verify cache fixture did not start from PASS"]
+        else:
+            failures_for_cache = []
+        if VERIFY_CACHE_STATS["hits"] != 1 or VERIFY_CACHE_STATS["misses"] != 1:
+            failures_for_cache.append(f"verify cache did not record one miss and one hit: {VERIFY_CACHE_STATS}")
+        cell.write_text(cell.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+        invalidated_verify = verify_target(target)
+        if invalidated_verify["status"] != "PASS" or VERIFY_CACHE_STATS["misses"] != 2:
+            failures_for_cache.append("verify cache did not invalidate after touched cell")
+        SELF_TEST_MODE = True
+        verify_target(target)
+        if VERIFY_CACHE_STATS["bypasses"] != 1:
+            failures_for_cache.append("verify cache was not bypassed in self-test mode")
+
         messages = [
             {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": PROTOCOL_VERSION}},
             {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
@@ -972,7 +1031,7 @@ def self_test() -> int:
             {"jsonrpc": "2.0", "id": 14, "method": "tools/call", "params": {"name": "cortex_get_event_status", "arguments": {"event_id": "mcp-event-pass"}}},
         ]
         replies = [handle_message(target.resolve(), message) for message in messages]
-        failures: list[str] = []
+        failures: list[str] = failures_for_cache
 
         tool_names = {
             tool["name"]
@@ -1499,8 +1558,10 @@ def self_test() -> int:
         print(json.dumps({"status": "FAIL" if failures else "PASS", "failures": failures}, indent=2))
         if failures:
             print("[cortex-mcp] FAIL")
+            SELF_TEST_MODE = previous_self_test_mode
             return 1
     print("[cortex-mcp] PASS")
+    SELF_TEST_MODE = previous_self_test_mode
     return 0
 
 
