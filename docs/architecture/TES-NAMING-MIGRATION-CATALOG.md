@@ -194,7 +194,8 @@ The Cortex MCP server must move to the TES namespace.
 - MCP package name `tilly-cortex-mcp` becomes `tes-cortex-mcp`.
 - Codex config section `mcp_servers.tilly-cortex` becomes
   `mcp_servers.tes-cortex`.
-- Claude and Cursor MCP configs must use `tes-cortex` as the server key.
+- Claude Code, Cursor, and VS Code MCP configs must use `tes-cortex` as the
+  server key.
 - Tool titles should say `TES Cortex MCP`.
 
 The installer may detect and remove old `tilly-cortex` configs only after the

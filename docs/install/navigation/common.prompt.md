@@ -122,10 +122,14 @@ options:
     label: Cursor
     recommended: false
     description: Apply clean Cursor rules after backup; recover local semantics into docs/agents/**.
+  - command: vscode
+    label: VS Code MCP
+    recommended: false
+    description: Merge tes-cortex into .vscode/mcp.json while preserving existing servers.
   - command: all
     label: All runtimes
     recommended: false
-    description: Create the shared mesh, refresh all clean bootloaders, and configure MCP with governed remember by default after backup.
+    description: Create the shared mesh, refresh all clean bootloaders, and configure all project MCP files with governed remember by default after backup.
   - command: mcp
     label: Cortex MCP
     recommended: false
@@ -136,6 +140,6 @@ options:
     description: Inspect and report what would change without modifying files.
 ```
 
-For this seven-route intent, use command navigation even on platforms whose
+For this eight-route intent, use command navigation even on platforms whose
 native card limits are 2-4 options. Do not split it into multiple cards unless
 the user asks for guided narrowing.

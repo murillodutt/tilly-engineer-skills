@@ -54,7 +54,7 @@ User-facing intent typed in the agent window — never a shell command.
 | `/tes-curate` | Classify Cortex quality risks without writing memory | `/tes:curate` |
 | `/tes-mcp` | Activate or verify Cortex MCP | `/tes:mcp` |
 | `/tes-field-reports` | Inspect, drain, disable, or enable sanitized Field Reports | `/tes:field-reports`, `/tes:field-reports:disable`, `/tes:field-reports:enable` |
-| `/tes-doctor` | Health-check, certify, or prepare a commit | `/tes:doctor`, `/tes:check`, `/tes:certify` |
+| `/tes-doctor` | Health-check, certify, prepare a commit, or fallback-test/repair/install MCP | `/tes:doctor`, `/tes:check`, `/tes:certify` |
 | `/tes-adapter` | Materialize, dry-run, retrofit, or install adapter surfaces | `/tes:adapter` |
 | `/tes-bench` | Plan, run, or converge context-mesh benchmarks | `/tes:bench` |
 | `/tes-bump` | Govern, plan, and apply bounded project version bumps | `/tes:bump` |
@@ -114,6 +114,9 @@ on their own.
 Overlays are not selected by user intent. Adapter certification and `/tes-doctor`
 verify the overlay surface is present on every supported host.
 
+When MCP is the failing surface, `/tes-doctor` falls back to `/tes-mcp`: test
+with `cortex_mcp.py --self-test`, dry-run `install_mcp.py --target . --adapter all --overwrite --json-only`, repair with `--yes` only after authorization, then certify `config_registrations` and the project-scoped config path.
+
 ---
 
 ## 3. Routes
@@ -126,6 +129,7 @@ Selected during install/update. Default: `current`.
 | `codex` | Prepares `AGENTS.md`, Codex skill, `.codex/config.toml` |
 | `claude` | Prepares `CLAUDE.md`, `.claude/skills/**`, `.mcp.json` |
 | `cursor` | Prepares rules in `.cursor/rules/**`, `.cursor/mcp.json` |
+| `vscode` | Prepares only `.vscode/mcp.json` for VS Code MCP |
 | `all` | Prepares Codex, Claude, Cursor + all project MCP configs |
 | `mcp` | Activates only Cortex MCP layer for detected runtime; `--read-only` is opt-out |
 | `audit` | Inspects without modifying files |
@@ -329,9 +333,9 @@ Routing matrix: `docs/install/COMMAND-TRIGGERS.md`.
 
 ## 11. MCP contract
 
-Read-only. Activation writes only `.tes/bin/**` and project-scoped
-runtime config. Must not touch global MCP config, secrets, hooks, or
-`sources/**`.
+Governed remember is available by default; `--read-only` hides that lane.
+Activation writes only `.tes/bin/**` and project-scoped runtime config. It must
+not touch global MCP config, secrets, hooks, or `sources/**`.
 
 ### Project-scoped config per runtime
 
@@ -340,6 +344,7 @@ runtime config. Must not touch global MCP config, secrets, hooks, or
 | Codex | `.codex/config.toml` |
 | Claude Code | `.mcp.json` |
 | Cursor | `.cursor/mcp.json` |
+| VS Code | `.vscode/mcp.json` |
 
 ### Tool surface
 

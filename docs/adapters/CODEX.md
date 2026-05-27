@@ -13,15 +13,15 @@ tver: 0.5.3
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.140`.
+Project version: `0.3.141`.
 
 It follows the Codex customization order:
 
 1. `AGENTS.md` for durable repository guidance in the target project.
 2. Skills for reusable workflows and domain expertise.
 3. Scripts and references for progressive disclosure.
-4. Cortex MCP through project-scoped `.codex/config.toml`, read-only by
-   default with ADR 0002 governed remember only when explicitly enabled.
+4. Cortex MCP through project-scoped `.codex/config.toml`, with ADR 0002
+   governed remember available by default and `--read-only` as the opt-out.
 5. Source-only Codex plugin metadata retained in Git for future packaging proof.
 
 Official reference: <https://developers.openai.com/codex/concepts/customization>

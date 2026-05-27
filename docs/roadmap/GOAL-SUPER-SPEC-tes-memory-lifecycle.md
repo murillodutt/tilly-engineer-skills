@@ -48,14 +48,18 @@ The Wave 7 closure evidence records what was implemented and certified. This
 roadmap does not certify write-capable MCP tools, remote release readiness, or
 commercial-use claims.
 
-ADR 0001 remains the architecture decision. Runtime and adapter source remain
-the delivered behavior. Evidence reports and oracles remain the only accepted
-path to certification.
+ADR 0001 remains the memory source-of-truth architecture decision. ADR 0002
+supersedes this roadmap's earlier read-only MCP assumption for current runtime
+posture: governed remember is now the narrow default MCP write lane, with
+`--read-only` as opt-out. Runtime and adapter source remain the delivered
+behavior. Evidence reports and oracles remain the only accepted path to
+certification.
 
 ## Assumptions
 
 - TES Markdown memory remains the durable source of truth.
-- MCP stays read-only until a later explicit decision changes that boundary.
+- At planning time, MCP stayed read-only until a later explicit decision changed
+  that boundary. ADR 0002 is now that decision for governed remember only.
 - Field Reports remain sanitized operational transport, not doctrine memory.
 - Subagents may return findings to a parent, but must not write durable Cortex
   memory directly.

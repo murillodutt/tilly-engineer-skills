@@ -70,7 +70,7 @@ Repository and sandbox:
   /Users/murillo/Dev/tes-canaries/runs/<UTC_RUN_ID>/
 - Before cloning, ensure `/Users/murillo/Dev/tes-canaries/.gitignore` ignores
   `RUN-INDEX.md`, local `JOURNAL.md`/`REPORT.md`, `_logs/`, `runs/`, `.tes/`,
-  `.codex/`, `.claude/`, `.cursor/`, and `.mcp.json`.
+  `.codex/`, `.claude/`, `.cursor/`, `.vscode/`, and `.mcp.json`.
 - Do not commit or push from canary repositories.
 - Do not treat any canary as the TES design mold.
 - Promote only portable findings back into the TES repository.

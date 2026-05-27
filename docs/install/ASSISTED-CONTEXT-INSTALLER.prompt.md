@@ -97,7 +97,7 @@ For `/tes-update` or `/tes:update`, `CURRENT` also requires helper contract pari
 - Never replace local product governance with generic Tilly prose.
 - Never move target-project-specific rules into the external Tilly skill.
 - Never edit secrets, `.env`, credentials, production remotes, non-Tilly hooks, CI secrets, cloud settings, or package-manager lockfiles unless the user explicitly asks and a project oracle requires it.
-- Never edit global MCP configuration. Project-scoped TES Cortex MCP config may be created only by the selected install route and only for the read-only local `tes-cortex` server.
+- Never edit global MCP configuration. Project-scoped TES Cortex MCP config may be created only by the selected install route and only for local `tes-cortex`; default activation exposes the ADR 0002 governed remember lane and `--read-only` is the inspection-only opt-out.
 - Never push, amend, tag, publish, install dependencies, overwrite files outside the selected TES clean-runtime route, overwrite root runtime files before `.tes/bk/<timestamp>/manifest.json` exists, or change remotes unless the user explicitly asks after reviewing the certification report.
 - A local baseline commit before installation is allowed only through Step Zero below. Post-install commits still require explicit approval after the certification report.
 - Do not claim certification until you run the smallest relevant local oracles available in the target project.
@@ -365,7 +365,7 @@ Recover local governance from `.tes/bk/**`, apply only surgical updates needed b
 
 ## Phase 3 - Navigation Menu
 
-If user input is needed, render the `adapter-route` intent from the navigation library before asking. This menu must be compatible with Codex, Claude CLI, Claude Code, and Cursor.
+If user input is needed, render the `adapter-route` intent from the navigation library before asking. This menu must be compatible with Codex, Claude CLI, Claude Code, Cursor, and VS Code MCP config selection.
 
 Use native structured cards only when the active runtime renderer explicitly supports them and the intent fits its limits. Otherwise use command navigation. Do not use a multiple-choice panel, checkbox UI, hidden chips, or a naked sequence such as "1, 2, 3, 4, 5, or 6".
 
@@ -392,9 +392,10 @@ Routes:
   cursor
     Apply clean .cursor/rules/*.mdc after backup; recover local semantics into docs/agents/**.
 
+  vscode
+    Activate only VS Code project MCP config at .vscode/mcp.json; preserve existing servers.
   all
-    Create the shared docs/agents/** mesh, all three runtime bootloaders, and
-    project-scoped Cortex MCP config for all three runtimes.
+    Create the shared docs/agents/** mesh, all runtime bootloaders, and project-scoped Cortex MCP config for every certified runtime config.
 
   mcp
     Activate only the Cortex MCP server for the detected runtime; use read-only only when requested.
@@ -402,7 +403,7 @@ Routes:
   audit
     Inspect and report what would change without modifying files.
 
-Type: current, codex, claude, cursor, all, mcp, or audit.
+Type: current, codex, claude, cursor, vscode, all, mcp, or audit.
 ```
 
 If the user already gave a clear instruction, proceed with the matching option and record it. Otherwise ask for one route command.
@@ -664,11 +665,11 @@ Use the package contract from:
 ```text
 docs/mesh/CORTEX-MCP.md
 ```
-
 The activation writes only project-scoped local assets:
 
 ```text
 .tes/bin/cortex.py
+.tes/bin/install_mcp.py
 .tes/bin/cortex_mcp.py
 .tes/bin/cortex_embed.mjs
 .tes/bin/field_reports.py
@@ -678,6 +679,7 @@ The activation writes only project-scoped local assets:
 .codex/config.toml        # Codex route only
 .mcp.json                 # Claude Code route only
 .cursor/mcp.json          # Cursor route only
+.vscode/mcp.json          # VS Code route only
 ```
 
 Do not write global configuration under the user's home directory. Do not add tokens, env files, hooks, background daemons, cloud config, or ungoverned write-capable MCP tools.
@@ -685,7 +687,7 @@ Do not write global configuration under the user's home directory. Do not add to
 If this package's local scripts are available, prefer:
 
 ```bash
-python3 scripts/install_mcp.py --target <target-root> --adapter <codex|claude|cursor|all> --yes
+python3 scripts/install_mcp.py --target <target-root> --adapter <codex|claude|cursor|vscode|all> --yes
 python3 scripts/install_mcp.py --self-test
 ```
 
@@ -738,6 +740,8 @@ Cursor project config at `.cursor/mcp.json`:
   }
 }
 ```
+
+VS Code project config at `.vscode/mcp.json` uses top-level `servers` with `tes-cortex` and the same workspace-folder args as Cursor.
 
 If a config file already exists, merge only the `tes-cortex` server entry. If that server name exists with different content, stop with `NEEDS_REVIEW` unless the user explicitly authorizes overwrite. Backups are required for overwrites.
 
@@ -850,7 +854,7 @@ If TES Cortex MCP is activated:
 ```bash
 test -f .tes/bin/cortex_mcp.py
 python3 .tes/bin/cortex_mcp.py --self-test
-test -f .codex/config.toml || test -f .mcp.json || test -f .cursor/mcp.json
+test -f .codex/config.toml || test -f .mcp.json || test -f .cursor/mcp.json || test -f .vscode/mcp.json
 ```
 
 If the target is already an Obsidian vault, `.obsidian/**` may exist. Record that it was pre-existing and do not edit it. If the vault is also a Git repo, verify no Obsidian config drift with:

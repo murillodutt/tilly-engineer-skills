@@ -35,6 +35,7 @@ sources:
   - "https://docs.cursor.com/en/tools/mcp"
   - "https://cursor.com/docs/hooks"
   - "https://cursor.com/docs/sdk/typescript"
+  - "https://code.visualstudio.com/docs/copilot/reference/mcp-configuration"
   - "https://modelcontextprotocol.io/specification/latest"
 ---
 
@@ -78,6 +79,10 @@ without making any single runtime adapter the design center.
 | MCP | project `.codex/config.toml` | project `.mcp.json` | project `.cursor/mcp.json` |
 | Behavior backend | `codex-cli` retained v1 scope | `claude-cli` retained v1 scope | deferred; no clean non-interactive route certified |
 
+VS Code is tracked as an MCP consumer, not as a fourth adapter. TES may write
+`.vscode/mcp.json` for `servers.tes-cortex`, but it does not claim VS Code
+skills, rules, hooks, bootloaders, or behavior-backend certification.
+
 Capability difference is not drift. Decision divergence under the same
 behavioral gate is drift.
 
@@ -91,6 +96,7 @@ inputs:
 | Codex | `https://github.com/openai/codex`, `https://developers.openai.com/codex/guides/agents-md`, `https://developers.openai.com/codex/skills`, `https://developers.openai.com/codex/plugins/build`, `https://developers.openai.com/codex/cli/slash-commands`, `https://developers.openai.com/codex/config-reference` |
 | Claude | `https://github.com/anthropics/skills`, `https://docs.anthropic.com/en/docs/claude-code/skills`, `https://docs.anthropic.com/en/docs/claude-code/plugins`, `https://docs.anthropic.com/en/docs/claude-code/slash-commands`, `https://docs.anthropic.com/en/docs/claude-code/hooks`, `https://docs.anthropic.com/en/docs/claude-code/sub-agents` |
 | Cursor | `https://github.com/cursor/plugins`, `https://github.com/cursor/plugin-template`, `https://docs.cursor.com/en/context/rules`, `https://cursor.com/docs/plugins`, `https://docs.cursor.com/en/tools/mcp`, `https://cursor.com/docs/hooks`, `https://cursor.com/docs/sdk/typescript` |
+| VS Code MCP | `https://code.visualstudio.com/docs/copilot/reference/mcp-configuration` |
 | MCP | `https://modelcontextprotocol.io/specification/latest` |
 
 ## Memory Lifecycle Matrix

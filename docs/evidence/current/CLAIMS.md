@@ -29,12 +29,21 @@ lane. Project MCP activation exposes only `cortex_remember_plan` and
 `cortex_remember` for one new grounded Cortex cell after exact approval phrase
 match; `--read-only` hides that lane for inspection-only activation. Read-only
 event inspection is exposed through `cortex_list_events` and
-`cortex_get_event_status`.
+`cortex_get_event_status`. TES `0.3.141` extends MCP activation validation to
+the final project config registrations and adds VS Code project MCP support at
+`.vscode/mcp.json` under `servers.tes-cortex`. The same release adds
+`/tes-doctor` as a fallback path that can test, repair, or install project MCP
+through installed `.tes/bin/install_mcp.py` when MCP health is the failing
+surface.
 
 Proof: `docs/adr/0002-cortex-governed-mcp-write-lane.md`,
 `scripts/cortex_mcp.py`, `scripts/install_mcp.py`,
 `scripts/cortex_operator_oracle.py`, `docs/mesh/CORTEX-MCP.md`, and
-`docs/evidence/reports/2026/05/27/cortex-mcp-governed-remember-default/REPORT.md`.
+`docs/evidence/reports/2026/05/27/cortex-mcp-governed-remember-default/REPORT.md`,
+and
+`docs/evidence/reports/2026/05/27/cortex-mcp-vscode-config-parity/REPORT.md`,
+and
+`docs/evidence/reports/2026/05/27/tes-doctor-mcp-fallback/REPORT.md`.
 
 Boundary: this does not add an external memory backend, hosted MCP, graph
 store, automatic Cortex writes, update/delete/bulk/entity tools, checkpoint

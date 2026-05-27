@@ -131,7 +131,9 @@ python3 scripts/install_smoke.py --self-test
 python3 scripts/install_smoke.py --route mcp
 python3 scripts/claude_plugin_oracle.py --self-test
 python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
+python3 scripts/install_mcp.py --target /path/to/project --adapter vscode --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
+python3 /path/to/project/.tes/bin/install_mcp.py --target /path/to/project --adapter all --overwrite --yes
 python3 scripts/install_mcp.py --self-test
 python3 scripts/cortex_mcp.py --target /path/to/project-or-vault
 python3 scripts/cortex_mcp.py --self-test

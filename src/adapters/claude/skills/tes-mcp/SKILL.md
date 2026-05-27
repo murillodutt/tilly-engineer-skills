@@ -1,6 +1,6 @@
 ---
 name: tes-mcp
-description: Use when the user says /tes-mcp, /tes:mcp, or asks to activate, verify, repair, audit, or explain the TES Cortex MCP server for Codex, Claude, Cursor, or all runtimes.
+description: Use when the user says /tes-mcp, /tes:mcp, or asks to activate, verify, repair, audit, or explain the TES Cortex MCP server for Codex, Claude, Cursor, VS Code, or all runtimes.
 license: MIT
 ---
 
@@ -13,7 +13,7 @@ the host reports it as an invalid slash.
 ## Workflow
 
 1. Identify the selected runtime route: `current`, `codex`, `claude`,
-   `cursor`, or `all`.
+   `cursor`, `vscode`, or `all`.
 2. Confirm the target project path.
 3. Use `install_mcp.py --dry-run` when reviewing changes.
 4. Use `install_mcp.py --target <project> --adapter <route> --yes` only when

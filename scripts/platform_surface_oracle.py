@@ -19,7 +19,7 @@ import project_context_oracle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.140"
+VERSION = "0.3.141"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -41,6 +41,7 @@ DOCS = {
     "cursor_hooks": "https://cursor.com/docs/hooks",
     "cursor_agents": "https://cursor.com/docs/sdk/typescript",
     "cursor_mcp": "https://docs.cursor.com/en/tools/mcp",
+    "vscode_mcp": "https://code.visualstudio.com/docs/copilot/reference/mcp-configuration",
     "mcp_spec": "https://modelcontextprotocol.io/specification/latest",
     "github_issue_forms": "https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms",
     "github_actions": "https://docs.github.com/actions/reference/workflows-and-actions/workflow-syntax",
@@ -318,6 +319,7 @@ def analyze() -> dict[str, Any]:
     surface("cursor", "memory-lifecycle", "certified", cursor_rule)
     surface("cursor", "rules", "certified", cursor_rule)
     surface("cursor", "mcp", "certified", "scripts/install_mcp.py writes .cursor/mcp.json")
+    surface("vscode", "mcp", "certified", "scripts/install_mcp.py writes .vscode/mcp.json servers.tes-cortex")
 
     hook = ".githooks/pre-commit"
     if not exists(hook):
@@ -342,6 +344,8 @@ def analyze() -> dict[str, Any]:
         "[mcp_servers.tes-cortex]",
         ".mcp.json",
         ".cursor/mcp.json",
+        ".vscode/mcp.json",
+        "JSON_SERVER_KEYS",
         "field_reports.py",
         "tes_update.py",
         "tes_legacy_retirement.py",

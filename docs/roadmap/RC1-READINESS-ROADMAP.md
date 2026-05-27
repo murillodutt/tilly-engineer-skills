@@ -23,8 +23,8 @@ coherent for a new adopter and auditable for a maintainer.
 
 | Item | Value |
 |------|-------|
-| Package version | `0.3.140` |
-| Latest certified line | ADR 0001 memory lifecycle plus ADR 0002 governed MCP remember, postinstall/Cortex curation hardening, and clean `0.3.140` bundle metadata |
+| Package version | `0.3.141` |
+| Latest certified line | ADR 0001 memory lifecycle plus ADR 0002 governed MCP remember, postinstall/Cortex curation hardening, and clean `0.3.141` bundle metadata |
 | Release action status | Local source and bundle certified; remote tag/ref, publish, and marketplace actions not authorized |
 | Release readiness claim | Candidate-ready for an RC1 decision, not remotely release-certified |
 

@@ -18,7 +18,7 @@ except Exception:  # noqa: BLE001 - installed copies may audit without package c
     field_reports = None  # type: ignore[assignment]
 
 
-VERSION = "0.3.140"
+VERSION = "0.3.141"
 LEGACY_FIELD_ROOT = Path(".tilly/field-reports")
 FIELD_ROOT = Path(".tes/field-reports")
 LEGACY_RETROFIT_ROOT = Path(".tilly/retrofit")
@@ -116,7 +116,11 @@ def mcp_config_actions(target: Path) -> list[dict[str, Any]]:
         elif LEGACY_MCP_SERVER in text:
             add_action(actions, "blocked", codex, target, "ambiguous legacy MCP reference")
 
-    for path in (target / ".mcp.json", target / ".cursor/mcp.json"):
+    for path, server_key in (
+        (target / ".mcp.json", "mcpServers"),
+        (target / ".cursor/mcp.json", "mcpServers"),
+        (target / ".vscode/mcp.json", "servers"),
+    ):
         if not path.exists():
             continue
         text = read_text(path)
@@ -127,9 +131,16 @@ def mcp_config_actions(target: Path) -> list[dict[str, Any]]:
         except json.JSONDecodeError:
             add_action(actions, "blocked", path, target, "invalid JSON with legacy MCP server")
             continue
-        servers = data.get("mcpServers")
+        servers = data.get(server_key)
         if isinstance(servers, dict) and LEGACY_MCP_SERVER in servers:
-            add_action(actions, "edit_config", path, target, "remove legacy JSON MCP server", mode="json-server")
+            add_action(
+                actions,
+                "edit_config",
+                path,
+                target,
+                "remove legacy JSON MCP server",
+                mode=f"json-server:{server_key}",
+            )
         else:
             add_action(actions, "blocked", path, target, "ambiguous legacy MCP reference")
     return actions
@@ -297,9 +308,10 @@ def edit_config(path: Path, mode: str) -> None:
     if mode == "toml-section":
         write_text(path, remove_toml_section(text, "[mcp_servers.tilly-cortex]"))
         return
-    if mode == "json-server":
+    if mode.startswith("json-server:"):
+        server_key = mode.split(":", 1)[1]
         data = json.loads(text)
-        servers = data.get("mcpServers")
+        servers = data.get(server_key)
         if isinstance(servers, dict):
             servers.pop(LEGACY_MCP_SERVER, None)
         write_text(path, json.dumps(data, indent=2, sort_keys=True) + "\n")
@@ -505,6 +517,11 @@ def run_self_test() -> dict[str, Any]:
             json.dumps({"mcpServers": {"tilly-cortex": {"command": "python3"}, "other": {"command": "true"}}}) + "\n",
             encoding="utf-8",
         )
+        (target / ".vscode").mkdir()
+        (target / ".vscode/mcp.json").write_text(
+            json.dumps({"servers": {"tilly-cortex": {"command": "python3"}, "other": {"command": "true"}}}) + "\n",
+            encoding="utf-8",
+        )
         (target / ".github/ISSUE_TEMPLATE").mkdir(parents=True)
         (target / ".github/ISSUE_TEMPLATE/tilly-field-report.yml").write_text("name: Tilly Field Report\nbody: tilly-field-report@1\n", encoding="utf-8")
         (target / "AGENTS.md").write_text("# Project rules\n\nKeep local governance.\n", encoding="utf-8")
@@ -553,6 +570,10 @@ def run_self_test() -> dict[str, Any]:
             failures.append("JSON legacy MCP server must be removed")
         if "other" not in read_text(target / ".mcp.json"):
             failures.append("other MCP servers must be preserved")
+        if "tilly-cortex" in read_text(target / ".vscode/mcp.json"):
+            failures.append("VS Code legacy MCP server must be removed")
+        if "other" not in read_text(target / ".vscode/mcp.json"):
+            failures.append("VS Code non-TES MCP servers must be preserved")
 
     with tempfile.TemporaryDirectory(prefix="tes-legacy-retirement-blocked-") as tempdir:
         target = Path(tempdir)

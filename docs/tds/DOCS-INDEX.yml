@@ -1,4 +1,4 @@
-version: 0.3.140
+version: 0.3.141
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -538,6 +538,20 @@ documents:
     class: evidence
     status: active
     consumer: Cortex maintainers, MCP adapter authors, installer authors, release reviewers, and operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/05/27/cortex-mcp-vscode-config-parity/REPORT.md
+    id: evidence.cortex_mcp_vscode_config_parity_20260527
+    class: evidence
+    status: active
+    consumer: maintainers, installer authors, MCP operators, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/05/27/tes-doctor-mcp-fallback/REPORT.md
+    id: evidence.tes_doctor_mcp_fallback_20260527
+    class: evidence
+    status: active
+    consumer: maintainers, installer authors, MCP operators, and release reviewers
     source_of_truth: false
     evidence_level: L2
   - path: docs/evidence/current/RISKS.md

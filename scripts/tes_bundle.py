@@ -23,7 +23,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.140"
+VERSION = "0.3.141"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -47,6 +47,7 @@ REQUIRED_LAYERS = {
 }
 REQUIRED_OWNERS = {"tes-owned", "project-owned", "generated", "derived"}
 HELPER_FILES = (
+    "install_mcp.py",
     "cortex.py",
     "cortex_mcp.py",
     "cortex_embed.mjs",
@@ -83,6 +84,7 @@ MCP_CONFIG_PATHS = {
     ".codex/config.toml",
     ".mcp.json",
     ".cursor/mcp.json",
+    ".vscode/mcp.json",
 }
 BACKUP_EXTRA_FILES = {
     *CONTEXT_GOVERNANCE_PATHS,

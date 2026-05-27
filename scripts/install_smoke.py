@@ -17,8 +17,8 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.140"
-ROUTES = ("current", "codex", "claude", "cursor", "all", "mcp", "audit")
+VERSION = "0.3.141"
+ROUTES = ("current", "codex", "claude", "cursor", "vscode", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
     "fixture-docs-only",
@@ -222,6 +222,7 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
 
 def expected_mcp_paths(adapter: str) -> tuple[str, ...]:
     base = (
+        ".tes/bin/install_mcp.py",
         ".tes/bin/cortex.py",
         ".tes/bin/cortex_mcp.py",
         ".tes/bin/cortex_embed.mjs",
@@ -253,8 +254,10 @@ def expected_mcp_paths(adapter: str) -> tuple[str, ...]:
         return (*base, ".mcp.json")
     if adapter == "cursor":
         return (*base, ".cursor/mcp.json")
+    if adapter == "vscode":
+        return (*base, ".vscode/mcp.json")
     if adapter == "all":
-        return (*base, ".codex/config.toml", ".mcp.json", ".cursor/mcp.json")
+        return (*base, ".codex/config.toml", ".mcp.json", ".cursor/mcp.json", ".vscode/mcp.json")
     raise ValueError(f"unknown MCP adapter: {adapter}")
 
 
@@ -304,12 +307,21 @@ def probe_route(route: str) -> dict[str, Any]:
             failures.extend(cortex_gate(target))
             return finish()
 
+        if route == "vscode":
+            failures.extend(install_mcp(target, "vscode"))
+            failures.extend(require_paths(target, expected_mcp_paths("vscode")))
+            failures.extend(mcp_gate(target))
+            failures.extend(cortex_gate(target))
+            return finish()
+
         adapters = route_adapters(route)
         adapter_arg = "all" if route == "all" else adapters[0]
         failures.extend(install_adapter(target, adapter_arg))
         failures.extend(install_mcp(target, adapter_arg))
         failures.extend(cortex_gate(target))
         failures.extend(mcp_gate(target))
+        if route == "all":
+            failures.extend(require_paths(target, expected_mcp_paths("all")))
         for adapter in adapters:
             failures.extend(require_paths(target, expected_adapter_paths(adapter)))
             failures.extend(require_paths(target, expected_mcp_paths(adapter)))

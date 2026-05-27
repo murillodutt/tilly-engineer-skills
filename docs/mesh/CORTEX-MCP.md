@@ -83,15 +83,26 @@ python3 scripts/install_mcp.py --target /path/to/project --adapter all --read-on
 python3 scripts/install_mcp.py --self-test
 ```
 
+Installed-target fallback repair, used by `/tes-doctor` when MCP health is the
+failing surface:
+
+```bash
+python3 .tes/bin/install_mcp.py --target . --adapter all --dry-run --overwrite --json-only
+python3 .tes/bin/install_mcp.py --target . --adapter all --overwrite --yes
+```
+
 The assisted-installer `current` route is resolved to the detected runtime
-before calling the script. The script accepts `codex`, `claude`, `cursor`, or
-`all`.
+before calling the script. The script accepts `codex`, `claude`, `cursor`,
+`vscode`, or `all`. `all` prepares every certified project-scoped MCP config,
+including VS Code's workspace MCP file when no conflicting `tes-cortex` entry
+exists.
 
 ## Runtime Config
 
 The activation path installs local MCP helpers into the target project:
 
 ```text
+.tes/bin/install_mcp.py
 .tes/bin/cortex.py
 .tes/bin/cortex_mcp.py
 .tes/bin/cortex_embed.mjs
@@ -123,10 +134,14 @@ It then writes only project-scoped config for the selected runtime:
 | Codex | `.codex/config.toml` |
 | Claude Code | `.mcp.json` |
 | Cursor | `.cursor/mcp.json` |
+| VS Code | `.vscode/mcp.json` |
 
 Existing config is merged when the `tes-cortex` server name is absent. If a
 different `tes-cortex` entry already exists, activation stops unless the user
 explicitly passes `--overwrite`; backups are created by default.
+For JSON-based runtimes, the installer validates the final registered server
+object after write: Claude Code and Cursor use `mcpServers.tes-cortex`; VS Code
+uses `servers.tes-cortex`, matching the VS Code workspace MCP schema.
 
 ## MCP Cut
 
@@ -141,6 +156,7 @@ cortex_cut:
     - .tes/bin/scope_contract.py
     - .tes/bin/event_ledger.py
     - .tes/bin/checkpoint.py
+    - .tes/bin/install_mcp.py
     - .tes/bin/field_reports.py
     - .tes/bin/mantra_gate.py
     - .tes/bin/mantra_gate_adoption_oracle.py
@@ -160,6 +176,7 @@ cortex_cut:
     - .codex/config.toml
     - .mcp.json
     - .cursor/mcp.json
+    - .vscode/mcp.json
   nao_toca:
     - docs/agents/cortex/sources/**
     - docs/agents/cortex/cells/**
@@ -182,8 +199,8 @@ memory, or mutate checkpoint/event state.
 
 MCP activation is local and project-scoped. It installs governed remember by
 default and may install read-only config with `--read-only`; it must not edit
-global Codex, Claude, or Cursor configuration, secrets, hooks, remotes, package
-lockfiles, `.obsidian/**`, or Cortex source material.
+global Codex, Claude, Cursor, or VS Code configuration, secrets, hooks, remotes,
+package lockfiles, `.obsidian/**`, or Cortex source material.
 Project scope is enforced at the MCP tool boundary: a server initialized for
 one project rejects caller-provided `target` overrides instead of resolving
 another project path.

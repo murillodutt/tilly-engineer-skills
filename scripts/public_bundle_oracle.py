@@ -70,6 +70,7 @@ def certify_public_bundle() -> dict[str, object]:
         with zipfile.ZipFile(bundle) as archive:
             names = set(archive.namelist())
             for relpath in (
+                "scripts/install_mcp.py",
                 "scripts/tes_bundle.py",
                 "scripts/tes_install.py",
                 "scripts/materialize_adapter.py",
@@ -163,6 +164,7 @@ def certify_public_bundle() -> dict[str, object]:
                 failures.extend(apply_result.stdout.splitlines())
                 failures.extend(apply_result.stderr.splitlines())
             for relpath in (
+                ".tes/bin/install_mcp.py",
                 ".tes/bin/tes_bundle.py",
                 ".tes/bin/tes_install.py",
                 ".tes/bin/materialize_adapter.py",
@@ -239,6 +241,7 @@ def certify_public_bundle() -> dict[str, object]:
             failures.append("public bundle apply did not replace project-owned AGENTS.md")
         for relpath in (
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",
+            ".tes/bin/install_mcp.py",
             ".tes/bin/tes_map.py",
             ".tes/bin/tes_map_oracle.py",
             ".tes/bin/tes_open_obsidian.py",

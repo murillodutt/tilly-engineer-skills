@@ -93,7 +93,9 @@ as user-facing aliases, resolves Python, then delegates to
 the Cortex MCP server in a target project by copying local helpers to
 `.tes/bin/**` and writing project-scoped runtime config. The installed config is
 governed-write capable by default for ADR 0002 remember; `--read-only`
-explicitly hides the governed remember lane.
+explicitly hides the governed remember lane. Codex, Claude Code, Cursor, and
+VS Code MCP configs are verified after write at their native project-scoped
+paths.
 
 `scripts/tes_update.py` plans low-friction updates by comparing installed and
 cloud package versions, detecting applied IDE surfaces, and recommending the

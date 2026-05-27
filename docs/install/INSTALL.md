@@ -11,7 +11,7 @@ tver: 0.9.8
 # Adapter Installation
 
 The public installer path is the GitHub package-spec command through npx or Bun after a fixed ref is authorized and release-certified.
-Current `0.3.140` evidence is local package-source and bundle closure; it does not authorize remote tag, release, package publish, or marketplace action.
+Current `0.3.141` evidence is local package-source and bundle closure; it does not authorize remote tag, release, package publish, or marketplace action.
 
 User-facing walkthrough:
 
@@ -24,11 +24,11 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 ## GitHub Package-Spec Form
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.140 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.141 tilly-engineer-skills add
 ```
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.140 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.141 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -40,10 +40,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.140 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.141 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.140` is the intended fixed-ref form for a release-certified install
+`#v0.3.141` is the intended fixed-ref form for a release-certified install
 channel. Do not call that remote ref certified until `npm run release:check`
 passes after the tag or fixed ref is authorized and available.
 
@@ -148,7 +148,7 @@ Cortex MCP is activated by default for selected runtime routes. It is
 project-scoped and exposes only the governed `cortex_remember_plan` and
 `cortex_remember` write lane; operators may choose inspection-only activation
 with `--read-only`.
-The installer may write `.tes/bin/cortex.py`, `.tes/bin/cortex_mcp.py`, `.tes/bin/cortex_embed.mjs`, `.tes/bin/field_reports.py`, `.tes/bin/tes_update.py`, `.tes/bin/tes_legacy_retirement.py`, `.tes/bin/root_context.py`, `.codex/config.toml`, `.mcp.json`, and `.cursor/mcp.json`; MCP activation must not edit global MCP configuration, secrets, hooks, or ungoverned write-capable MCP tools.
+The installer may write `.tes/bin/install_mcp.py`, `.tes/bin/cortex.py`, `.tes/bin/cortex_mcp.py`, `.tes/bin/cortex_embed.mjs`, `.tes/bin/field_reports.py`, `.tes/bin/tes_update.py`, `.tes/bin/tes_legacy_retirement.py`, `.tes/bin/root_context.py`, `.codex/config.toml`, `.mcp.json`, `.cursor/mcp.json`, and `.vscode/mcp.json`; MCP activation must not edit global MCP configuration, secrets, hooks, or ungoverned write-capable MCP tools.
 The MCP self-test covers negative malformed and write-like calls, governed
 remember approval checks, event inspection, and target-boundary rejection.
 `cortex_health`, `cortex_peek`, `cortex_review`, event tools, and
@@ -271,7 +271,7 @@ clean runtime overwrite, and semantic recovery into `docs/agents/**`.
 For a meshed project, the installer treats the run as update/convergence. It
 inspects the existing `docs/agents/**` mesh, compares the installed Tilly
 version with the cloud package version, detects applied IDE surfaces, recommends
-`all`, `codex`, `claude`, `cursor`, or `current`, applies only surgical updates,
+`all`, `codex`, `claude`, `cursor`, `vscode`, or `current`, applies only surgical updates,
 preserves durable `.tes/**` state, refreshes active runtime from the canonical
 bundle, recovers local governance semantics from backup evidence, and certifies
 the resulting state.

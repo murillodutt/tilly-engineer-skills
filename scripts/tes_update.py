@@ -21,7 +21,7 @@ except Exception:  # pragma: no cover - installed helper may be inspected alone.
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.140"
+VERSION = "0.3.141"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -30,6 +30,7 @@ REMOTE_RAW_ORIGIN = "https://raw.githubusercontent.com/murillodutt/tilly-enginee
 REMOTE_RAW_BASE = f"{REMOTE_RAW_ORIGIN}/main"
 REMOTE_REF = "refs/heads/main"
 HELPER_FILES = (
+    "install_mcp.py",
     "cortex.py",
     "cortex_mcp.py",
     "cortex_embed.mjs",
@@ -271,6 +272,7 @@ def surfaces(target: Path) -> dict[str, bool]:
         "mcp_codex": (target / ".codex/config.toml").exists(),
         "mcp_claude": (target / ".mcp.json").exists(),
         "mcp_cursor": (target / ".cursor/mcp.json").exists(),
+        "mcp_vscode": (target / ".vscode/mcp.json").exists(),
         "mcp_server": (target / ".tes/bin/cortex_mcp.py").exists()
         or (target / ".tilly/bin/cortex_mcp.py").exists(),
         "field_reports": (target / ".tes/bin/field_reports.py").exists()

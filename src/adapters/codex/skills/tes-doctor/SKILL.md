@@ -46,6 +46,38 @@ Run the smallest gate that proves the claim:
 | package-source | platform surfaces align | `npm run platform:surface:check` |
 | package-source | final local closure | `npm run commit:check` |
 
+## MCP Fallback
+
+When `/tes-doctor` is asked to validate, repair, install, or certify MCP, it
+acts as a fallback for `/tes-mcp` instead of stopping at a health report.
+
+Use this sequence:
+
+1. Test first.
+   - Installed target: run `python3 .tes/bin/cortex_mcp.py --self-test` when
+     the helper exists.
+   - Package source: run `npm run mcp:self-test` and
+     `npm run cortex:mcp:self-test`.
+2. Identify the route. Use the active host route when obvious; otherwise use
+   `all` so Codex, Claude, Cursor, and VS Code project MCP configs are covered.
+3. Dry-run repair when changing files is not yet authorized:
+   `python3 .tes/bin/install_mcp.py --target . --adapter all --dry-run --overwrite --json-only`.
+   If the installed helper is unavailable, use
+   `python3 <tes-package>/scripts/install_mcp.py --target . --adapter all --dry-run --overwrite --json-only`.
+4. Repair or install only when the user requested repair/install or otherwise
+   authorized writes:
+   `python3 .tes/bin/install_mcp.py --target . --adapter all --overwrite --yes`.
+   In the package source, use
+   `python3 scripts/install_mcp.py --target <project> --adapter all --overwrite --yes`.
+5. Certify the final MCP registration by checking the installer result
+   `config_registrations`, rerunning `python3 .tes/bin/cortex_mcp.py --self-test`
+   when installed, and confirming the expected project-scoped config path:
+   `.codex/config.toml`, `.mcp.json`, `.cursor/mcp.json`, or `.vscode/mcp.json`.
+
+Report `NOT_AVAILABLE` if neither the installed helper nor a TES package source
+installer is available. Report `NEEDS_REVIEW` for conflicting MCP entries when
+`--overwrite` is not authorized.
+
 ## Rules
 
 - Do not run heavy gates when a narrow oracle proves the claim.
@@ -61,4 +93,6 @@ Run the smallest gate that proves the claim:
 - For read-only `/tes-doctor`, do not promote historical gate records to a
   current blocker; use `--audit-history` only when the user asks for explicit
   history audit.
+- Do not edit global MCP config. The fallback may touch only `.tes/bin/**` and
+  project-scoped MCP config after write authorization.
 - After commit, rerun the principal gate when the user asks for sealed closure.

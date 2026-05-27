@@ -23,6 +23,7 @@ Last official-source check: 2026-05-26.
 | Codex | [`openai/codex`](https://github.com/openai/codex), [AGENTS.md guide](https://developers.openai.com/codex/guides/agents-md), [skills](https://developers.openai.com/codex/skills), [plugins](https://developers.openai.com/codex/plugins/build), [slash commands](https://developers.openai.com/codex/cli/slash-commands), [config reference](https://developers.openai.com/codex/config-reference) | Codex centers project guidance in `AGENTS.md`, reusable workflows in skills, local distribution in `.codex-plugin/plugin.json`, and optional lifecycle hooks or memories outside the TES default package. |
 | Claude Code | [`anthropics/skills`](https://github.com/anthropics/skills), [skills](https://docs.anthropic.com/en/docs/claude-code/skills), [plugins](https://docs.anthropic.com/en/docs/claude-code/plugins), [slash commands](https://docs.anthropic.com/en/docs/claude-code/slash-commands), [settings](https://docs.anthropic.com/en/docs/claude-code/settings), [hooks](https://docs.anthropic.com/en/docs/claude-code/hooks), [subagents](https://docs.anthropic.com/en/docs/claude-code/sub-agents) | Claude centers project memory in `CLAUDE.md` and skills in `SKILL.md` folders; TES keeps plugin metadata as source-only templates and blocks default subagent memory writes. |
 | Cursor | [`cursor/plugins`](https://github.com/cursor/plugins), [`cursor/plugin-template`](https://github.com/cursor/plugin-template), [rules](https://docs.cursor.com/en/context/rules), [plugins](https://cursor.com/docs/plugins), [MCP](https://docs.cursor.com/en/tools/mcp), [hooks](https://cursor.com/docs/hooks), [SDK agents](https://cursor.com/docs/sdk/typescript) | Cursor centers persistent project instructions in `.cursor/rules/*.mdc` and supports richer plugin packaging with rules, skills, agents, commands, hooks, and MCP. |
+| VS Code MCP | [MCP configuration](https://code.visualstudio.com/docs/copilot/reference/mcp-configuration) | VS Code is not a TES adapter, but TES certifies project-scoped Cortex MCP registration in `.vscode/mcp.json` under `servers.tes-cortex`. |
 
 ## Shared Contract
 
@@ -103,6 +104,7 @@ by this adapter matrix.
 | Keep `/tes-*` as the shared user vocabulary. | The user entrypoint should stay stable even when a host packages commands differently. |
 | Treat `/tes:*` as intent text when native slash parsing fails. | This avoids Claude, Cursor, or Codex asking the user to choose a route when TES already knows the route. |
 | Do not call `CURSOR.md` the primary Cursor operative surface. | Cursor's governed surface is `.cursor/rules/*.mdc`; `CURSOR.md` is a TES handoff note. |
+| Treat VS Code MCP as consumer config, not an adapter. | `.vscode/mcp.json` registers the same project-scoped `tes-cortex` server but does not add TES skills, rules, hooks, or bootloader semantics for VS Code. |
 | Do not claim marketplace or plugin publication from local files. | Local plugin metadata is not proof of marketplace distribution or live IDE activation. |
 | Do not create false parity from copied prose. | Parity is a retained decision under the same behavioral gate, not matching markdown. |
 | Back up project-owned bootloaders before clean runtime refresh. | A conflict in `AGENTS.md`, `CLAUDE.md`, or Cursor handoff files must not block install. The clean route snapshots them under `.tes/bk/**`, applies canonical TES runtime, and recovers durable semantics into `docs/agents/**`; preserve mode is compatibility-only. |
@@ -117,6 +119,7 @@ same patch:
 | Codex changes AGENTS, skills, plugins, hooks, commands, or MCP semantics | `docs/adapters/CODEX.md`, `src/adapters/codex/**`, `scripts/platform_surface_oracle.py` |
 | Claude changes skills, plugins, slash commands, settings, hooks, or MCP semantics | `docs/adapters/CLAUDE.md`, `src/adapters/claude/**`, `scripts/claude_plugin_oracle.py`, `scripts/platform_surface_oracle.py` |
 | Cursor changes rules, plugins, skills, commands, hooks, agents, or MCP semantics | `docs/adapters/CURSOR.md`, `src/adapters/cursor/**`, `scripts/platform_surface_oracle.py` |
+| VS Code MCP config semantics change | `docs/mesh/CORTEX-MCP.md`, `scripts/install_mcp.py`, `scripts/install_smoke.py`, `scripts/platform_surface_oracle.py` |
 | Any command trigger behavior changes | `docs/install/COMMAND-TRIGGERS.md`, `docs/install/MINI-PROMPT.md`, `docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md`, adapter skills/rules |
 | Trigger parity changes across adapters | `scripts/command_trigger_oracle.py --self-test` |
 

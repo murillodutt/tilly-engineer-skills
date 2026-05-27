@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -18,11 +19,13 @@ import field_reports
 import tes_bundle
 
 
-ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.140"
+SCRIPT_PATH = Path(__file__).resolve()
+ROOT = SCRIPT_PATH.parents[1]
+VERSION = "0.3.141"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (
+    "install_mcp.py",
     "cortex.py",
     "cortex_mcp.py",
     "cortex_embed.mjs",
@@ -47,7 +50,17 @@ SERVER_FILES = (
     "tes_bundle.py",
     "materialize_adapter.py",
 )
-ADAPTERS = ("codex", "claude", "cursor")
+ADAPTERS = ("codex", "claude", "cursor", "vscode")
+JSON_CONFIG_PATHS = {
+    "claude": Path(".mcp.json"),
+    "cursor": Path(".cursor/mcp.json"),
+    "vscode": Path(".vscode/mcp.json"),
+}
+JSON_SERVER_KEYS = {
+    "claude": "mcpServers",
+    "cursor": "mcpServers",
+    "vscode": "servers",
+}
 
 
 def utc_stamp() -> str:
@@ -78,8 +91,14 @@ def selected_adapters(adapter: str) -> list[str]:
 def source_script(name: str) -> Path:
     path = ROOT / "scripts" / name
     if not path.exists():
-        raise FileNotFoundError(f"missing source script: scripts/{name}")
+        path = SCRIPT_PATH.parent / name
+    if not path.exists():
+        raise FileNotFoundError(f"missing source script/helper: {name}")
     return path
+
+
+def source_package_mode() -> bool:
+    return (ROOT / "scripts/install_mcp.py").exists()
 
 
 def backup_file(path: Path) -> Path:
@@ -116,7 +135,11 @@ def install_server_files(target: Path, dry_run: bool, overwrite: bool, backup: b
     actions: list[dict[str, str]] = []
     failures: list[str] = []
     for name in SERVER_FILES:
-        source = source_script(name)
+        try:
+            source = source_script(name)
+        except FileNotFoundError as exc:
+            failures.append(str(exc))
+            continue
         target_path = target / BIN_DIR / name
         source_sha = sha256_file(source)
         if target_path.exists():
@@ -226,7 +249,7 @@ def replace_toml_section(text: str, header: str, replacement: str) -> str:
 
 
 def json_config(adapter: str, read_only: bool = False) -> dict[str, Any]:
-    if adapter == "cursor":
+    if adapter in {"cursor", "vscode"}:
         args = ["${workspaceFolder}/.tes/bin/cortex_mcp.py", "--target", "${workspaceFolder}"]
     else:
         args = [".tes/bin/cortex_mcp.py", "--target", "."]
@@ -248,7 +271,8 @@ def merge_json_config(
     backup: bool,
     read_only: bool,
 ) -> tuple[dict[str, str] | None, str | None]:
-    path = target / (".mcp.json" if adapter == "claude" else ".cursor/mcp.json")
+    path = target / JSON_CONFIG_PATHS[adapter]
+    server_key = JSON_SERVER_KEYS[adapter]
     desired_server = json_config(adapter, read_only)
     data: dict[str, Any]
     if path.exists():
@@ -261,9 +285,9 @@ def merge_json_config(
     else:
         data = {}
 
-    servers = data.setdefault("mcpServers", {})
+    servers = data.setdefault(server_key, {})
     if not isinstance(servers, dict):
-        return None, f"{rel(path, target)} mcpServers must be an object"
+        return None, f"{rel(path, target)} {server_key} must be an object"
     existing = servers.get(SERVER_NAME)
     if existing == desired_server:
         return {"path": rel(path, target), "action": "skip-identical"}, None
@@ -275,6 +299,58 @@ def merge_json_config(
     action = write_text_file(path, text, dry_run, backup)
     action["path"] = rel(path, target)
     return action, None
+
+
+def validate_config_registration(target: Path, adapter: str, read_only: bool) -> tuple[dict[str, str], str | None]:
+    if adapter == "codex":
+        path = target / ".codex/config.toml"
+        if not path.exists():
+            return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, "missing Codex MCP config: .codex/config.toml"
+        try:
+            data = tomllib.loads(path.read_text(encoding="utf-8"))
+        except tomllib.TOMLDecodeError as exc:
+            return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, f"invalid TOML in .codex/config.toml: {exc}"
+        server = data.get("mcp_servers", {}).get(SERVER_NAME) if isinstance(data.get("mcp_servers"), dict) else None
+        if not isinstance(server, dict):
+            return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, "Codex MCP config missing tes-cortex server"
+        args = server.get("args")
+        if server.get("command") != "python3" or not isinstance(args, list) or ".tes/bin/cortex_mcp.py" not in args:
+            return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, "Codex MCP config has invalid tes-cortex command or args"
+        if read_only and "--read-only" not in args:
+            return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, "Codex read-only MCP config missing --read-only"
+        if not read_only and "--read-only" in args:
+            return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, "Codex default MCP config must expose governed remember tools"
+        return {"adapter": adapter, "path": rel(path, target), "status": "PASS", "server": SERVER_NAME}, None
+
+    path = target / JSON_CONFIG_PATHS[adapter]
+    server_key = JSON_SERVER_KEYS[adapter]
+    if not path.exists():
+        return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, f"missing {adapter} MCP config: {rel(path, target)}"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, f"invalid JSON in {rel(path, target)}: {exc}"
+    if not isinstance(data, dict):
+        return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, f"{rel(path, target)} must contain a JSON object"
+    servers = data.get(server_key)
+    if not isinstance(servers, dict):
+        return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, f"{rel(path, target)} {server_key} must be an object"
+    expected = json_config(adapter, read_only)
+    actual = servers.get(SERVER_NAME)
+    if actual != expected:
+        return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, f"{rel(path, target)} missing expected tes-cortex server registration"
+    return {"adapter": adapter, "path": rel(path, target), "status": "PASS", "server": SERVER_NAME, "server_key": server_key}, None
+
+
+def validate_config_registrations(target: Path, adapters: list[str], read_only: bool) -> tuple[list[dict[str, str]], list[str]]:
+    registrations: list[dict[str, str]] = []
+    failures: list[str] = []
+    for adapter in adapters:
+        registration, failure = validate_config_registration(target, adapter, read_only)
+        registrations.append(registration)
+        if failure:
+            failures.append(failure)
+    return registrations, failures
 
 
 def install_configs(
@@ -329,15 +405,30 @@ def install(args: argparse.Namespace) -> int:
 
     read_only = bool(args.read_only or args.disable_writes)
     adapters = selected_adapters(args.adapter)
-    bundle_stage = tes_bundle.stage_preferred_bundle(target, dry_run=args.dry_run, adapter=args.adapter)
+    bundle_adapter = "all" if args.adapter == "vscode" else args.adapter
+    bundle_stage = (
+        tes_bundle.stage_preferred_bundle(target, dry_run=args.dry_run, adapter=bundle_adapter)
+        if source_package_mode()
+        else {
+            "version": VERSION,
+            "status": "SKIP",
+            "source": "installed-helper",
+            "reason": "source package unavailable; using installed .tes/bin helpers",
+        }
+    )
     server_actions, server_failures = install_server_files(target, args.dry_run, args.overwrite, not args.no_backup)
     config_actions, config_failures = (
         ([], [])
         if args.helpers_only
         else install_configs(target, adapters, args.dry_run, args.overwrite, not args.no_backup, read_only)
     )
+    config_registrations, registration_failures = (
+        ([], [])
+        if args.helpers_only or args.dry_run or config_failures
+        else validate_config_registrations(target, adapters, read_only)
+    )
     bundle_failures = bundle_stage.get("failures", []) if bundle_stage.get("status") == "FAIL" else []
-    failures = [*bundle_failures, *server_failures, *config_failures]
+    failures = [*bundle_failures, *server_failures, *config_failures, *registration_failures]
     status = "FAIL" if failures else ("DRY-RUN" if args.dry_run else "INSTALLED")
     result = {
         "version": VERSION,
@@ -353,6 +444,7 @@ def install(args: argparse.Namespace) -> int:
         "server": SERVER_NAME,
         "server_files": server_actions,
         "configs": config_actions,
+        "config_registrations": config_registrations,
         "failures": failures,
     }
     print(json.dumps(result, indent=2))
@@ -396,6 +488,22 @@ def self_test() -> int:
         failures: list[str] = []
         if result.returncode != 0:
             failures.append("cortex init failed")
+        (target / ".vscode").mkdir(parents=True, exist_ok=True)
+        (target / ".vscode/mcp.json").write_text(
+            json.dumps(
+                {
+                    "servers": {
+                        "existing-server": {
+                            "type": "http",
+                            "url": "https://example.invalid/mcp",
+                        }
+                    }
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         install_result = subprocess.run(
             [sys.executable, __file__, "--target", str(target), "--adapter", "all", "--yes"],
             cwd=ROOT,
@@ -408,6 +516,7 @@ def self_test() -> int:
             failures.extend(install_result.stdout.splitlines())
             failures.extend(install_result.stderr.splitlines())
         for relpath in (
+            ".tes/bin/install_mcp.py",
             ".tes/bin/cortex.py",
             ".tes/bin/cortex_mcp.py",
             ".tes/bin/cortex_embed.mjs",
@@ -429,6 +538,7 @@ def self_test() -> int:
             ".codex/config.toml",
             ".mcp.json",
             ".cursor/mcp.json",
+            ".vscode/mcp.json",
         ):
             if not (target / relpath).exists():
                 failures.append(f"missing installed path: {relpath}")
@@ -448,13 +558,61 @@ def self_test() -> int:
             failures.append("default Codex MCP install must expose governed remember tools")
         if "--enable-writes" in codex_config:
             failures.append("default Codex MCP install must not need legacy --enable-writes")
-        for relpath in (".mcp.json", ".cursor/mcp.json"):
+        for relpath in (".mcp.json", ".cursor/mcp.json", ".vscode/mcp.json"):
             data = json.loads((target / relpath).read_text(encoding="utf-8"))
-            args = data["mcpServers"][SERVER_NAME]["args"]
+            server_key = "servers" if relpath == ".vscode/mcp.json" else "mcpServers"
+            args = data[server_key][SERVER_NAME]["args"]
             if "--read-only" in args:
                 failures.append(f"default {relpath} MCP install must expose governed remember tools")
             if "--enable-writes" in args:
                 failures.append(f"default {relpath} MCP install must not need legacy --enable-writes")
+            if relpath == ".vscode/mcp.json" and "existing-server" not in data["servers"]:
+                failures.append("VS Code MCP install must preserve existing servers")
+
+        (target / ".vscode/mcp.json").unlink()
+        installed_repair_result = subprocess.run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/install_mcp.py"),
+                "--target",
+                str(target),
+                "--adapter",
+                "vscode",
+                "--yes",
+                "--json-only",
+            ],
+            cwd=target,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if installed_repair_result.returncode != 0:
+            failures.append("installed helper MCP repair failed")
+            failures.extend(installed_repair_result.stdout.splitlines())
+            failures.extend(installed_repair_result.stderr.splitlines())
+        else:
+            try:
+                repair_payload = json.loads(installed_repair_result.stdout)
+            except json.JSONDecodeError as exc:
+                failures.append(f"installed helper MCP repair returned invalid JSON: {exc}")
+            else:
+                registrations = repair_payload.get("config_registrations")
+                registration_items = registrations if isinstance(registrations, list) else []
+                if repair_payload.get("status") != "INSTALLED":
+                    failures.append("installed helper MCP repair must return INSTALLED")
+                if repair_payload.get("bundle_stage", {}).get("source") != "installed-helper":
+                    failures.append("installed helper MCP repair must use installed-helper source")
+                if not any(
+                    isinstance(item, dict)
+                    and item.get("adapter") == "vscode"
+                    and item.get("status") == "PASS"
+                    and item.get("server_key") == "servers"
+                    for item in registration_items
+                ):
+                    failures.append("installed helper MCP repair must validate VS Code server registration")
+            repaired = target / ".vscode/mcp.json"
+            if not repaired.exists():
+                failures.append("installed helper MCP repair did not recreate .vscode/mcp.json")
 
     with tempfile.TemporaryDirectory(prefix="tes-mcp-read-only-install-") as tempdir:
         target = Path(tempdir)
@@ -489,12 +647,13 @@ def self_test() -> int:
             failures.extend(read_only_install_result.stderr.splitlines())
         elif "--read-only" not in (target / ".codex/config.toml").read_text(encoding="utf-8"):
             failures.append("read-only Codex MCP install must include --read-only")
-        for relpath in (".mcp.json", ".cursor/mcp.json"):
+        for relpath in (".mcp.json", ".cursor/mcp.json", ".vscode/mcp.json"):
             if not (target / relpath).exists():
                 failures.append(f"read-only install missing config: {relpath}")
                 continue
             data = json.loads((target / relpath).read_text(encoding="utf-8"))
-            args = data["mcpServers"][SERVER_NAME]["args"]
+            server_key = "servers" if relpath == ".vscode/mcp.json" else "mcpServers"
+            args = data[server_key][SERVER_NAME]["args"]
             if "--read-only" not in args:
                 failures.append(f"read-only {relpath} MCP install must include --read-only")
 
@@ -529,8 +688,12 @@ def self_test() -> int:
             failures.append("legacy --enable-writes install failed")
             failures.extend(legacy_install_result.stdout.splitlines())
             failures.extend(legacy_install_result.stderr.splitlines())
-        elif "--read-only" in (target / ".codex/config.toml").read_text(encoding="utf-8"):
-            failures.append("legacy --enable-writes install must not create read-only config")
+        else:
+            if "--read-only" in (target / ".codex/config.toml").read_text(encoding="utf-8"):
+                failures.append("legacy --enable-writes install must not create read-only config")
+            vscode_args = json.loads((target / ".vscode/mcp.json").read_text(encoding="utf-8"))["servers"][SERVER_NAME]["args"]
+            if "--read-only" in vscode_args:
+                failures.append("legacy --enable-writes install must not create read-only VS Code config")
 
     with tempfile.TemporaryDirectory(prefix="tes-mcp-helpers-only-") as tempdir:
         target = Path(tempdir)
@@ -558,7 +721,7 @@ def self_test() -> int:
         for relpath in SERVER_FILES:
             if not (target / BIN_DIR / relpath).exists():
                 failures.append(f"helpers-only install missing helper: {relpath}")
-        for relpath in (".codex/config.toml", ".mcp.json", ".cursor/mcp.json"):
+        for relpath in (".codex/config.toml", ".mcp.json", ".cursor/mcp.json", ".vscode/mcp.json"):
             if (target / relpath).exists():
                 failures.append(f"helpers-only install wrote config: {relpath}")
         for relpath in (
