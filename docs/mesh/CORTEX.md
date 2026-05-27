@@ -310,6 +310,11 @@ run `curate-plan` and use the returned classifications before proposing
 compaction, split, or redundancy removal with a visible diff. Curation never
 means automatic deletion.
 
+Long closure notes do not become full cell filenames. `reflect` caps proposed
+cell slugs and adds a deterministic hash plus `cell_name_reason`; operators
+should still replace the suggestion with a short claim-specific cell name before
+authorized `apply --yes` promotion.
+
 `apply` writes only `cells/**`, `MAP.md`, `LINKS.md`, `TRAIL.md`, and the
 derived recall index rebuilt from those artifacts. It refuses to write without
 `--yes`, refuses ungrounded evidence, refuses to overwrite an existing cell

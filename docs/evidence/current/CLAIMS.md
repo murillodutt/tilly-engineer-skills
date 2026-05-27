@@ -146,3 +146,20 @@ write-capable MCP, automatic Cortex writes, and commercial-use certification
 remain outside the claim.
 
 Retention status: `current`.
+
+## Cortex Reflection Slug Hygiene Claim
+
+TES `0.3.138` caps long `reflect` proposal cell slugs and adds a
+`cell_name_reason` field so operators can replace generated suggestions with
+short claim-specific cell names before authorized promotion.
+
+Proof: `scripts/cortex.py`, `docs/mesh/CORTEX.md`, and
+`docs/evidence/reports/2026/05/27/cortex-reflect-slug-hygiene/REPORT.md`.
+
+Boundary: this changes proposal naming only. `reflect` remains no-write,
+`apply --yes` remains the authorized promotion path, and remote tag/ref
+certification, package publishing, marketplace action, write-capable MCP,
+automatic Cortex writes, and commercial-use certification remain outside the
+claim.
+
+Retention status: `current`.

@@ -1,4 +1,4 @@
-version: 0.3.137
+version: 0.3.138
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -510,6 +510,13 @@ documents:
     class: evidence
     status: active
     consumer: TES maintainers, installer authors, Cortex maintainers, adapter maintainers, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/05/27/cortex-reflect-slug-hygiene/REPORT.md
+    id: evidence.cortex_reflect_slug_hygiene_20260527
+    class: evidence
+    status: active
+    consumer: Cortex maintainers, adapter maintainers, release reviewers, and operators
     source_of_truth: false
     evidence_level: L2
   - path: docs/evidence/current/RISKS.md

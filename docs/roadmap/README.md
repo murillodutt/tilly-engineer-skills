@@ -33,10 +33,10 @@ Wave 7 local package-source closure.
 
 ## Baseline
 
-The current release-readiness baseline is TES `0.3.137`, after ADR 0001 memory
-lifecycle implementation and postinstall/Cortex curation hardening closed
-locally with clean bundle metadata and one neutral canary replay. Remote
-tag/ref release certification is still deferred.
+The current release-readiness baseline is TES `0.3.138`, after ADR 0001 memory
+lifecycle implementation, postinstall/Cortex curation hardening, and Cortex
+reflection slug hygiene closed locally with clean bundle metadata and neutral
+canary feedback. Remote tag/ref release certification is still deferred.
 
 The next work is not to create a release. The next work is to remove obvious
 pre-RC1 friction:

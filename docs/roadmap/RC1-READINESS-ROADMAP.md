@@ -23,8 +23,8 @@ coherent for a new adopter and auditable for a maintainer.
 
 | Item | Value |
 |------|-------|
-| Package version | `0.3.137` |
-| Latest certified line | ADR 0001 memory lifecycle plus postinstall/Cortex curation hardening, clean `0.3.137` bundle metadata, and one neutral canary replay |
+| Package version | `0.3.138` |
+| Latest certified line | ADR 0001 memory lifecycle plus postinstall/Cortex curation hardening, clean `0.3.138` bundle metadata, and one neutral canary replay |
 | Release action status | Local source and bundle certified; remote tag/ref, publish, and marketplace actions not authorized |
 | Release readiness claim | Candidate-ready for an RC1 decision, not remotely release-certified |
 

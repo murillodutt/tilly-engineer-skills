@@ -28,6 +28,7 @@ SEMANTIC_DB = Path(".tes/cortex/semantic.sqlite")
 DEFAULT_SEMANTIC_MODEL = "Xenova/multilingual-e5-small"
 LEXICAL_MODEL = "tes-lexical-curation-v1"
 LEXICAL_DIMENSIONS = 64
+REFLECT_PROPOSAL_SLUG_LIMIT = 80
 INSTALLED_RUNTIME_PREFIXES = (
     ".tes/bin/",
     ".tes/postinstall-runs/",
@@ -492,6 +493,17 @@ def cell_ref(path: Path, cells_root: Path) -> str:
 
 def slugify(value: str, fallback: str = "new-cell") -> str:
     return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-") or fallback
+
+
+def bounded_slug(value: str, fallback: str = "new-cell", max_length: int = 80) -> tuple[str, bool]:
+    slug = slugify(value, fallback)
+    if len(slug) <= max_length:
+        return slug, False
+
+    digest = hashlib.sha256(slug.encode("utf-8")).hexdigest()[:8]
+    head_limit = max(1, max_length - len(digest) - 1)
+    head = slug[:head_limit].rstrip("-") or fallback
+    return f"{head}-{digest}", True
 
 
 def title_from_slug(value: str) -> str:
@@ -1659,7 +1671,12 @@ def reflect(target: Path, query: str | None, limit: int = 20, line_budget: int =
     weak_prompt = bool(prompt) and weak_memory_prompt(prompt)
     capture_needed = bool((prompt and not weak_prompt) or durable_files or curation_due)
     cell_seed = prompt or (durable_files[0] if durable_files else "closure-reflection")
-    cell_name = slugify(cell_seed)
+    cell_fallback = "session-reflection" if prompt else "closure-reflection"
+    cell_name, cell_name_capped = bounded_slug(
+        cell_seed,
+        fallback=cell_fallback,
+        max_length=REFLECT_PROPOSAL_SLUG_LIMIT,
+    )
     evidence = (
         f"Assumption: user-approved closure note - {prompt}"
         if prompt else
@@ -1696,6 +1713,12 @@ def reflect(target: Path, query: str | None, limit: int = 20, line_budget: int =
         "no_capture_reason": no_capture_reason,
         "proposal": None if not capture_needed else {
             "cell": f"docs/agents/cortex/cells/{cell_name}.md",
+            "cell_name_reason": (
+                "long reflection seed was capped; prefer replacing this with a short "
+                "claim-specific cell name before apply"
+                if cell_name_capped else
+                "derived from reflection seed"
+            ),
             "claim_needed": "Promote only a durable decision, lesson, contract change, or reusable project fact.",
             "evidence": evidence,
             "evidence_status": evidence_status,
@@ -2148,6 +2171,12 @@ def self_test() -> int:
         absorb_result = absorb_plan(target, source)
         learn_result = learn(target, "authorized applied memory", source)
         reflect_result = reflect(target, "authorized applied memory should be considered for Cortex")
+        long_prompt = (
+            "session reflection should stay proposal only while avoiding a cell slug "
+            "derived from every word in a long operational closure note with repeated "
+            "details about align map update certify and local release evidence"
+        )
+        long_prompt_reflect_result = reflect(target, long_prompt)
 
         def run_git(repo: Path, *args: str) -> None:
             command = [
@@ -2203,6 +2232,9 @@ def self_test() -> int:
         durable_doc = helper_doc_reflect_target / "docs" / "durable-doc.md"
         durable_doc.write_text("\n".join(f"durable doc line {number}" for number in range(12)) + "\n", encoding="utf-8")
         helper_doc_reflect_result = reflect(helper_doc_reflect_target, None, line_budget=5)
+        long_prompt_proposal = long_prompt_reflect_result.get("proposal") or {}
+        long_prompt_cell = str(long_prompt_proposal.get("cell", ""))
+        long_prompt_reason = str(long_prompt_proposal.get("cell_name_reason", ""))
 
         mixed_absolute_audit_target = Path(tempdir) / "mixed-absolute-audit"
         init(mixed_absolute_audit_target)
@@ -2461,6 +2493,7 @@ def self_test() -> int:
             "absorb_plan": absorb_result,
             "learn": learn_result,
             "reflect": reflect_result,
+            "long_prompt_reflect": long_prompt_reflect_result,
             "untracked_reflect": untracked_reflect_result,
             "ignored_reflect": ignored_reflect_result,
             "helper_reflect": helper_reflect_result,
@@ -2492,6 +2525,12 @@ def self_test() -> int:
             absorb_result["status"] == "PASS" and absorb_result["writes"] == [],
             learn_result["status"] == "PASS" and learn_result["writes"] == [],
             reflect_result["status"] == "PASS" and reflect_result["writes"] == [] and reflect_result["capture_needed"],
+            long_prompt_reflect_result["status"] == "PASS"
+            and long_prompt_reflect_result["writes"] == []
+            and long_prompt_reflect_result["capture_needed"]
+            and bool(long_prompt_proposal)
+            and len(Path(long_prompt_cell).stem) <= REFLECT_PROPOSAL_SLUG_LIMIT
+            and "claim-specific cell name" in long_prompt_reason,
             untracked_reflect_result["status"] == "PASS"
             and untracked_reflect_result["capture_needed"]
             and untracked_reflect_result["curation_due"]
