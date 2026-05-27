@@ -5,19 +5,19 @@ status: active
 consumer: maintainers, Cortex MCP authors, host integration authors, and release operators
 source_of_truth: true
 evidence_level: L1
-tver: 0.3.0
+tver: 0.4.0
 ---
 
 # ADR 0003: Cortex MCP Capability Expansion
 
-Proposed on 2026-05-27 after comparative analysis of the contemporary MCP memory-oriented server patterns of MCP
-servers (`external-memory-server-a`, `external-memory-server-b`, `external-memory-server-c`).
+Proposed on 2026-05-27 after comparative analysis of contemporary
+MCP memory-oriented server patterns.
 Accepted on 2026-05-27 as the active Cortex MCP evolution contract.
 
 TES will expand the Cortex MCP surface along seven targeted capability axes
 without changing the source of truth, the write lane, or the dependency
-posture. Adopted patterns are observed in the contemporary MCP memory-oriented server patterns but reimplemented
-inside the TES boundary.
+posture. Adopted patterns are drawn from contemporary MCP practice but
+reimplemented inside the TES boundary.
 
 ADR 0001 and ADR 0002 are now archived bootstrapping records. Their surviving
 runtime invariants are carried forward here so the active contract stays thin
@@ -40,11 +40,11 @@ visible after comparison with current MCP servers in the field:
    on long tools (`review`, `curate_plan`, `audit`), durable history of a
    single cell, and remote invocation are all unaddressed.
 
-The contemporary MCP memory-oriented server patterns demonstrates pragmatic answers for several of these (Pydantic
-schemas, streamable HTTP transport, server-side prompts, soft history). It
-also demonstrates patterns that this ADR explicitly does not adopt:
-automatic capture, broad CRUD, multi-tenant scopes, and FastMCP/Pydantic as
-a hard dependency.
+Comparable MCP servers demonstrate pragmatic answers for several of these
+(declarative schemas, streamable HTTP transport, server-side prompts, soft
+history). They also demonstrate patterns that this ADR explicitly does not
+adopt: automatic capture, broad CRUD, multi-tenant scopes, and
+FastMCP/Pydantic as a hard dependency.
 
 This ADR records the capability expansion as a single decision so that the
 next implementation cycle can sequence the items against a stable contract.
@@ -255,8 +255,9 @@ framework. A new read tool, `cortex_cell_history`, exposes durable change
 history that today requires reading raw Markdown.
 
 The cost is stricter self-test scope: every new capability is contract-
-verified inside the same binary, and the next time a external memory-oriented pattern is
-proposed, this ADR is the reference for what was deliberately not adopted.
+verified inside the same binary, and the next time a similar MCP memory-server
+pattern is proposed, this ADR is the reference for what was deliberately not
+adopted.
 
 ADR status `active` means the direction and carried-forward Cortex MCP
 invariants are accepted. Capability status `certified` means the specific
