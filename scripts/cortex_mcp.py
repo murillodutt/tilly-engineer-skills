@@ -8,6 +8,7 @@ import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
+import re
 import sys
 import tempfile
 import threading
@@ -25,6 +26,9 @@ WRITE_APPROVAL_PREFIX = "APPROVE TES CORTEX MCP WRITE"
 WRITE_TOOL_NAMES = {"cortex_remember_plan", "cortex_remember"}
 LOCAL_HTTP_HOSTS = {"127.0.0.1", "localhost", "::1"}
 CELL_RESOURCE_PREFIX = "tes-cortex://cells/"
+TRAIL_ENTRY_HEADING = re.compile(
+    r"^## \[(?P<date>\d{4}-\d{2}-\d{2})\] (?P<event>[^|]+?) \| (?P<cell>.+)$"
+)
 SELF_TEST_MODE = False
 VERIFY_CACHE: dict[str, tuple[int, dict[str, object]]] = {}
 VERIFY_CACHE_STATS = {"hits": 0, "misses": 0, "bypasses": 0, "fallbacks": 0}
@@ -283,6 +287,17 @@ def tool_definitions(writes_enabled: bool = True) -> list[dict[str, object]]:
                 },
                 "required": ["cell"],
             },
+        },
+        {
+            "name": "cortex_cell_history",
+            "title": "Read Cortex Cell History",
+            "description": "Read structured TRAIL.md entries associated with one Cortex cell.",
+            "inputSchema": schema_object(
+                {
+                    "cell": ("string", "Cell stem or path under cells/**, with or without .md."),
+                },
+                ["cell"],
+            ),
         },
         {
             "name": "cortex_absorb_plan",
@@ -654,6 +669,115 @@ def read_cell(default_target: Path, args: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def trail_heading_match(line: str) -> re.Match[str] | None:
+    return TRAIL_ENTRY_HEADING.match(line.strip())
+
+
+def trail_entry_value(lines: list[str], prefix: str) -> str | None:
+    for line in lines:
+        if line.startswith(prefix):
+            return line[len(prefix):].strip()
+    return None
+
+
+def first_trail_detail(lines: list[str]) -> str | None:
+    for line in lines:
+        stripped = line.strip()
+        if stripped:
+            return stripped
+    return None
+
+
+def parse_cell_trail_entries(trail_text: str, wanted_cell: str) -> list[dict[str, object]]:
+    entries: list[dict[str, object]] = []
+    current: dict[str, str] | None = None
+    current_lines: list[str] = []
+
+    def flush_current() -> None:
+        if current is None or current["cell"] != wanted_cell:
+            return
+        claim_summary = trail_entry_value(current_lines, "Claim:") or first_trail_detail(current_lines)
+        entries.append({
+            "date": current["date"],
+            "event": current["event"],
+            "cell": current["cell"],
+            "claim_summary": claim_summary,
+            "evidence_ref": trail_entry_value(current_lines, "Evidence:"),
+            "links_delta": trail_entry_value(current_lines, "Links:"),
+        })
+
+    for line in trail_text.splitlines():
+        match = trail_heading_match(line)
+        if match:
+            flush_current()
+            current = {
+                "date": match.group("date"),
+                "event": match.group("event").strip(),
+                "cell": match.group("cell").strip(),
+            }
+            current_lines = []
+            continue
+        if current is not None:
+            current_lines.append(line)
+    flush_current()
+    return entries
+
+
+def cell_history(default_target: Path, args: dict[str, Any]) -> dict[str, object]:
+    target = resolve_target(default_target, args)
+    verify_result = verify_target(target)
+    if verify_result["status"] != "PASS":
+        return {
+            "target": str(target),
+            "status": "FAIL",
+            "failures": verify_result["failures"],
+            "writes": [],
+            "derived_writes": [],
+        }
+
+    raw_cell = string_arg(args, "cell")
+    if not raw_cell:
+        return {
+            "target": str(target),
+            "status": "FAIL",
+            "failures": ["cell is required"],
+            "writes": [],
+            "derived_writes": [],
+        }
+    try:
+        cell_path = cortex.resolve_cell_path(target, raw_cell)
+    except ValueError as exc:
+        return {
+            "target": str(target),
+            "status": "FAIL",
+            "failures": [str(exc)],
+            "writes": [],
+            "derived_writes": [],
+        }
+    if not cell_path.is_file():
+        return {
+            "target": str(target),
+            "status": "FAIL",
+            "failures": [f"cell missing: {cortex.normalize_cell_rel(raw_cell)}"],
+            "writes": [],
+            "derived_writes": [],
+        }
+
+    root = cortex.cells_root(target).resolve()
+    cell_reference = cortex.cell_ref(cell_path, root)
+    trail_path = cortex.cortex_path(target) / "TRAIL.md"
+    entries = parse_cell_trail_entries(cortex.read_text(trail_path), cell_reference) if trail_path.is_file() else []
+    return {
+        "target": str(target),
+        "status": "PASS",
+        "cell": cell_reference,
+        "trail_path": cortex.rel(trail_path, target),
+        "entries": entries,
+        "writes": [],
+        "derived_writes": [],
+    }
+
+
 def cell_resource_uri(cell_path: Path, cells_root: Path) -> str:
     cell_ref = cell_path.relative_to(cells_root).with_suffix("").as_posix()
     return f"{CELL_RESOURCE_PREFIX}{cell_ref}"
@@ -789,6 +913,8 @@ def call_tool(
         return tool_result(cortex.recall(resolve_target(default_target, args), query, limit, force_rg))
     if name == "cortex_read_cell":
         return tool_result(read_cell(default_target, args))
+    if name == "cortex_cell_history":
+        return tool_result(cell_history(default_target, args))
     if name == "cortex_absorb_plan":
         source = args.get("source")
         if not source:
@@ -1114,6 +1240,7 @@ def self_test() -> int:
             "cortex_audit",
             "cortex_recall",
             "cortex_read_cell",
+            "cortex_cell_history",
             "cortex_absorb_plan",
             "cortex_curate_plan",
             "cortex_reflect",
@@ -1180,6 +1307,91 @@ def self_test() -> int:
             )
             if reply is None or "error" not in reply:
                 failures.append(label)
+
+        empty_history_reply = handle_message(
+            target.resolve(),
+            {
+                "jsonrpc": "2.0",
+                "id": 171,
+                "method": "tools/call",
+                "params": {"name": "cortex_cell_history", "arguments": {"cell": "mcp-existing"}},
+            },
+        )
+        if empty_history_reply is None:
+            failures.append("cell history returned no reply for empty history")
+        else:
+            empty_history = empty_history_reply["result"]["structuredContent"]  # type: ignore[index]
+            if empty_history.get("status") != "PASS" or empty_history.get("entries") != []:
+                failures.append(f"empty cell history should pass with no entries: {empty_history}")
+            if empty_history.get("writes") != [] or empty_history.get("derived_writes") != []:
+                failures.append("empty cell history reported writes")
+
+        history_cell = cortex.cortex_path(target) / "cells" / "mcp-history.md"
+        history_cell.write_text(
+            "# MCP History\n\n"
+            "## Claim\n\n"
+            "Structured history reads Cortex trail entries without writing.\n\n"
+            "## Evidence\n\n"
+            "- `sources/mcp-source.md` records the history fixture.\n",
+            encoding="utf-8",
+        )
+        map_path.write_text(
+            cortex.read_text(map_path) + "\n| [[mcp-history]] | MCP history fixture | [[mcp-existing]] |\n",
+            encoding="utf-8",
+        )
+        links_path.write_text(
+            cortex.read_text(links_path)
+            + "\n- [[mcp-history]] -> `sources/mcp-source.md`\n"
+            + "- [[mcp-history]] -> [[mcp-existing]]\n",
+            encoding="utf-8",
+        )
+        trail_path = cortex.cortex_path(target) / "TRAIL.md"
+        trail_path.write_text(
+            cortex.read_text(trail_path)
+            + "\n## [2026-05-27] apply | mcp-history\n"
+            + "Claim: History fixture claim.\n"
+            + "Evidence: `sources/mcp-source.md`\n"
+            + "Links: +[[mcp-existing]]\n",
+            encoding="utf-8",
+        )
+        history_message = {
+            "jsonrpc": "2.0",
+            "id": 172,
+            "method": "tools/call",
+            "params": {"name": "cortex_cell_history", "arguments": {"cell": "mcp-history"}},
+        }
+        history_reply = handle_message(target.resolve(), history_message)
+        if history_reply is None:
+            failures.append("cell history returned no reply")
+        else:
+            history_result = history_reply["result"]["structuredContent"]  # type: ignore[index]
+            history_entries = history_result.get("entries", [])
+            if history_result.get("status") != "PASS" or len(history_entries) != 1:
+                failures.append(f"cell history did not return one structured entry: {history_result}")
+            else:
+                entry = history_entries[0]
+                if entry.get("date") != "2026-05-27" or entry.get("event") != "apply":
+                    failures.append(f"cell history parsed heading incorrectly: {entry}")
+                if entry.get("claim_summary") != "History fixture claim.":
+                    failures.append(f"cell history claim summary mismatch: {entry}")
+                if entry.get("evidence_ref") != "`sources/mcp-source.md`":
+                    failures.append(f"cell history evidence ref mismatch: {entry}")
+                if entry.get("links_delta") != "+[[mcp-existing]]":
+                    failures.append(f"cell history links delta mismatch: {entry}")
+            if history_result.get("writes") != [] or history_result.get("derived_writes") != []:
+                failures.append("cell history reported writes")
+
+        history_traversal_reply = handle_message(
+            target.resolve(),
+            {
+                "jsonrpc": "2.0",
+                "id": 173,
+                "method": "tools/call",
+                "params": {"name": "cortex_cell_history", "arguments": {"cell": "../TRAIL"}},
+            },
+        )
+        if history_traversal_reply is None or not history_traversal_reply.get("result", {}).get("isError"):
+            failures.append("cell history traversal was not rejected")
         if "prompts" not in replies[0]["result"].get("capabilities", {}):  # type: ignore[index]
             failures.append("initialize did not advertise prompts capability")
         prompt_list_message = {"jsonrpc": "2.0", "id": 18, "method": "prompts/list"}
@@ -1438,6 +1650,7 @@ def self_test() -> int:
             ("cortex_audit", {"target": str(sibling_target)}),
             ("cortex_recall", {"target": str(sibling_target), "query": "Foreign Memory"}),
             ("cortex_read_cell", {"target": str(sibling_target), "cell": "foreign-memory"}),
+            ("cortex_cell_history", {"target": str(sibling_target), "cell": "foreign-memory"}),
             ("cortex_absorb_plan", {"target": str(sibling_target), "source": "docs/agents/cortex/sources/README.md"}),
             ("cortex_curate_plan", {"target": str(sibling_target), "backend": "lexical"}),
             ("cortex_reflect", {"target": str(sibling_target), "query": "Foreign Memory"}),
@@ -1486,6 +1699,10 @@ def self_test() -> int:
             (
                 "empty read-cell argument rejected",
                 {"jsonrpc": "2.0", "id": 106, "method": "tools/call", "params": {"name": "cortex_read_cell", "arguments": {"cell": ""}}},
+            ),
+            (
+                "empty cell-history argument rejected",
+                {"jsonrpc": "2.0", "id": 1061, "method": "tools/call", "params": {"name": "cortex_cell_history", "arguments": {"cell": ""}}},
             ),
             (
                 "empty absorb source rejected",
@@ -1569,6 +1786,8 @@ def self_test() -> int:
             http_resource_read = http_rpc(http_url, resource_read_message)
             http_prompt_list = http_rpc(http_url, prompt_list_message)
             http_progress = http_rpc(http_url, progress_message)
+            stdio_history_now = handle_message(target.resolve(), history_message)
+            http_history = http_rpc(http_url, history_message)
             if http_init != replies[0]:
                 failures.append("HTTP initialize envelope differed from stdio")
             if http_tools != replies[1]:
@@ -1581,6 +1800,8 @@ def self_test() -> int:
                 failures.append("HTTP resources/read envelope differed from stdio")
             if http_prompt_list != prompt_list_reply:
                 failures.append("HTTP prompts/list envelope differed from stdio")
+            if http_history != stdio_history_now:
+                failures.append("HTTP cell history envelope differed from stdio")
             for prompt_name, stdio_prompt_reply in prompt_get_replies.items():
                 http_prompt = http_rpc(
                     http_url,
