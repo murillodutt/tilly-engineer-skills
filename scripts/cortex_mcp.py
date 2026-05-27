@@ -24,6 +24,7 @@ PROTOCOL_VERSION = "2025-06-18"
 WRITE_APPROVAL_PREFIX = "APPROVE TES CORTEX MCP WRITE"
 WRITE_TOOL_NAMES = {"cortex_remember_plan", "cortex_remember"}
 LOCAL_HTTP_HOSTS = {"127.0.0.1", "localhost", "::1"}
+CELL_RESOURCE_PREFIX = "tes-cortex://cells/"
 
 
 def schema_string(description: str) -> dict[str, str]:
@@ -561,6 +562,56 @@ def read_cell(default_target: Path, args: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def cell_resource_uri(cell_path: Path, cells_root: Path) -> str:
+    cell_ref = cell_path.relative_to(cells_root).with_suffix("").as_posix()
+    return f"{CELL_RESOURCE_PREFIX}{cell_ref}"
+
+
+def list_cell_resources(default_target: Path, args: dict[str, Any]) -> dict[str, Any]:
+    target = resolve_target(default_target, args)
+    verify_result = cortex.verify(target)
+    if verify_result["status"] != "PASS":
+        raise ValueError("; ".join(str(item) for item in verify_result["failures"]))
+    root = cortex.cells_root(target).resolve()
+    resources = [
+        {
+            "uri": cell_resource_uri(path, root),
+            "name": path.relative_to(root).with_suffix("").as_posix(),
+            "mimeType": "text/markdown",
+        }
+        for path in sorted(root.rglob("*.md"))
+        if path.is_file()
+    ]
+    return {"resources": resources}
+
+
+def read_cell_resource(default_target: Path, args: dict[str, Any]) -> dict[str, Any]:
+    target = resolve_target(default_target, args)
+    raw_uri = args.get("uri", "")
+    if not isinstance(raw_uri, str) or not raw_uri.startswith(CELL_RESOURCE_PREFIX):
+        raise ValueError("resource uri must start with tes-cortex://cells/")
+    cell_ref = raw_uri[len(CELL_RESOURCE_PREFIX):]
+    if not cell_ref:
+        raise ValueError("resource uri must name a cell")
+    cell_path = cortex.resolve_cell_path(target, cell_ref)
+    root = cortex.cells_root(target).resolve()
+    try:
+        cell_path.relative_to(root)
+    except ValueError as exc:
+        raise ValueError("resource uri must stay under cells/**") from exc
+    if not cell_path.is_file():
+        raise ValueError(f"resource cell missing: {cell_ref}")
+    return {
+        "contents": [
+            {
+                "uri": raw_uri,
+                "mimeType": "text/markdown",
+                "text": cell_path.read_text(encoding="utf-8"),
+            }
+        ]
+    }
+
+
 def call_tool(default_target: Path, name: str, args: dict[str, Any], writes_enabled: bool = True) -> dict[str, Any]:
     resolve_target(default_target, args)
     if name in WRITE_TOOL_NAMES and not writes_enabled:
@@ -645,7 +696,10 @@ def handle_message(default_target: Path, message: dict[str, Any], writes_enabled
         client_version = params.get("protocolVersion") or PROTOCOL_VERSION
         return response(request_id, {
             "protocolVersion": client_version,
-            "capabilities": {"tools": {"listChanged": False}},
+                "capabilities": {
+                    "tools": {"listChanged": False},
+                    "resources": {"listChanged": False},
+                },
             "serverInfo": {
                 "name": "tes-cortex-mcp",
                 "title": "TES Cortex MCP",
@@ -663,6 +717,18 @@ def handle_message(default_target: Path, message: dict[str, Any], writes_enabled
         return response(request_id, {})
     if method == "tools/list":
         return response(request_id, {"tools": tool_definitions(writes_enabled)})
+    if method == "resources/list":
+        try:
+            return response(request_id, list_cell_resources(default_target, params if isinstance(params, dict) else {}))
+        except ValueError as exc:
+            return error_response(request_id, -32602, str(exc))
+    if method == "resources/read":
+        if not isinstance(params, dict):
+            return error_response(request_id, -32602, "resource arguments must be an object")
+        try:
+            return response(request_id, read_cell_resource(default_target, params))
+        except ValueError as exc:
+            return error_response(request_id, -32602, str(exc))
     if method == "tools/call":
         name = params.get("name")
         arguments = params.get("arguments") if "arguments" in params else {}
@@ -878,6 +944,42 @@ def self_test() -> int:
         }
         if recall_schema != expected_recall_schema:
             failures.append("schema helper changed cortex_recall JSONSchema shape")
+        if "resources" not in replies[0]["result"].get("capabilities", {}):  # type: ignore[index]
+            failures.append("initialize did not advertise resources capability")
+        resource_list_message = {"jsonrpc": "2.0", "id": 15, "method": "resources/list"}
+        resource_read_message = {
+            "jsonrpc": "2.0",
+            "id": 16,
+            "method": "resources/read",
+            "params": {"uri": f"{CELL_RESOURCE_PREFIX}mcp-existing"},
+        }
+        resource_list_reply = handle_message(target.resolve(), resource_list_message)
+        resource_read_reply = handle_message(target.resolve(), resource_read_message)
+        if resource_list_reply is None:
+            failures.append("resources/list returned no reply")
+        else:
+            resource_uris = {
+                item.get("uri")
+                for item in resource_list_reply["result"]["resources"]  # type: ignore[index]
+            }
+            if resource_uris != {f"{CELL_RESOURCE_PREFIX}mcp-existing"}:
+                failures.append(f"resources/list exposed unexpected resources: {sorted(resource_uris)}")
+        if resource_read_reply is None:
+            failures.append("resources/read returned no reply")
+        else:
+            contents = resource_read_reply["result"]["contents"]  # type: ignore[index]
+            if contents[0].get("text") != cell.read_text(encoding="utf-8"):
+                failures.append("resources/read did not match on-disk cell bytes")
+        for label, uri in (
+            ("non-cell resource rejected", "tes-cortex://sources/mcp-source"),
+            ("resource traversal rejected", f"{CELL_RESOURCE_PREFIX}../TRAIL"),
+        ):
+            reply = handle_message(
+                target.resolve(),
+                {"jsonrpc": "2.0", "id": 17, "method": "resources/read", "params": {"uri": uri}},
+            )
+            if reply is None or "error" not in reply:
+                failures.append(label)
         tools_with_target = [
             tool["name"]
             for tool in replies[1]["result"]["tools"]  # type: ignore[index]
@@ -1188,12 +1290,20 @@ def self_test() -> int:
             http_init = http_rpc(http_url, messages[0])
             http_tools = http_rpc(http_url, messages[1])
             http_verify = http_rpc(http_url, messages[2])
+            stdio_resource_list_now = handle_message(target.resolve(), resource_list_message)
+            stdio_resource_read_now = handle_message(target.resolve(), resource_read_message)
+            http_resource_list = http_rpc(http_url, resource_list_message)
+            http_resource_read = http_rpc(http_url, resource_read_message)
             if http_init != replies[0]:
                 failures.append("HTTP initialize envelope differed from stdio")
             if http_tools != replies[1]:
                 failures.append("HTTP tools/list envelope differed from stdio")
             if http_verify != replies[2]:
                 failures.append("HTTP verify envelope differed from stdio")
+            if http_resource_list != stdio_resource_list_now:
+                failures.append("HTTP resources/list envelope differed from stdio")
+            if http_resource_read != stdio_resource_read_now:
+                failures.append("HTTP resources/read envelope differed from stdio")
 
             http_bad_approval_args = {
                 "cell": "mcp-http-write",
