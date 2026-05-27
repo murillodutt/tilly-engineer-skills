@@ -37,6 +37,50 @@ def schema_string_array(description: str) -> dict[str, object]:
     return {"type": "array", "items": {"type": "string"}, "description": description}
 
 
+def schema_boolean(description: str, default: bool | None = None) -> dict[str, object]:
+    schema: dict[str, object] = {"type": "boolean", "description": description}
+    if default is not None:
+        schema["default"] = default
+    return schema
+
+
+def schema_field(descriptor: tuple[object, ...]) -> dict[str, object]:
+    kind = str(descriptor[0])
+    description = str(descriptor[1])
+    if kind == "string":
+        return schema_string(description)
+    if kind == "integer":
+        default = descriptor[2] if len(descriptor) > 2 else None
+        return schema_integer(description, int(default) if default is not None else None)
+    if kind == "string-array":
+        return schema_string_array(description)
+    if kind == "boolean":
+        default = descriptor[2] if len(descriptor) > 2 else None
+        return schema_boolean(description, bool(default) if default is not None else None)
+    if kind == "enum":
+        values = descriptor[2]
+        if not isinstance(values, list):
+            raise TypeError("enum descriptor values must be a list")
+        schema: dict[str, object] = {"type": "string", "description": description, "enum": values}
+        if len(descriptor) > 3:
+            schema["default"] = descriptor[3]
+        return schema
+    raise ValueError(f"unknown schema descriptor type: {kind}")
+
+
+def schema_object(
+    properties: dict[str, tuple[object, ...]],
+    required: list[str] | None = None,
+) -> dict[str, object]:
+    schema: dict[str, object] = {
+        "type": "object",
+        "properties": {name: schema_field(descriptor) for name, descriptor in properties.items()},
+    }
+    if required:
+        schema["required"] = required
+    return schema
+
+
 def write_tool_definitions() -> list[dict[str, object]]:
     remember_properties = {
         "cell": schema_string("Cell stem or path under cells/**."),
@@ -150,19 +194,14 @@ def tool_definitions(writes_enabled: bool = True) -> list[dict[str, object]]:
             "name": "cortex_recall",
             "title": "Recall Cortex",
             "description": "Search Cortex through SQLite FTS5 with rg fallback.",
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "query": schema_string("Recall query."),
-                    "limit": schema_integer("Maximum matches.", 10),
-                    "force_rg": {
-                        "type": "boolean",
-                        "description": "Force rg fallback instead of SQLite FTS5.",
-                        "default": False,
-                    },
+            "inputSchema": schema_object(
+                {
+                    "query": ("string", "Recall query."),
+                    "limit": ("integer", "Maximum matches.", 10),
+                    "force_rg": ("boolean", "Force rg fallback instead of SQLite FTS5.", False),
                 },
-                "required": ["query"],
-            },
+                ["query"],
+            ),
         },
         {
             "name": "cortex_read_cell",
@@ -740,6 +779,26 @@ def self_test() -> int:
         }
         if tool_names != expected_tools:
             failures.append(f"tool list mismatch: {sorted(tool_names)}")
+        recall_schema = next(
+            tool["inputSchema"]
+            for tool in replies[1]["result"]["tools"]  # type: ignore[index]
+            if tool["name"] == "cortex_recall"
+        )
+        expected_recall_schema = {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Recall query."},
+                "limit": {"type": "integer", "description": "Maximum matches.", "minimum": 1, "default": 10},
+                "force_rg": {
+                    "type": "boolean",
+                    "description": "Force rg fallback instead of SQLite FTS5.",
+                    "default": False,
+                },
+            },
+            "required": ["query"],
+        }
+        if recall_schema != expected_recall_schema:
+            failures.append("schema helper changed cortex_recall JSONSchema shape")
         tools_with_target = [
             tool["name"]
             for tool in replies[1]["result"]["tools"]  # type: ignore[index]
