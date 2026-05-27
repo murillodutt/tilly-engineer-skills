@@ -5,12 +5,14 @@ status: active
 consumer: maintainers, Cortex maintainers, oracle authors, benchmark authors, release reviewers, and execution agents
 source_of_truth: false
 evidence_level: L1
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # GOAL Super SPEC: Cortex Memory Benchmark Harness
 
-Status: active planning artifact; no delivered behavior yet.
+Status: retained execution plan. The harness was locally implemented and
+certified in package-source version `0.3.135`; remote release certification
+and commercial-use claims remain deferred.
 
 Capability: add a governed Cortex memory benchmark harness that tests recall,
 retrieval sufficiency, temporal reasoning, contradiction handling, and
@@ -37,8 +39,11 @@ Primary related surfaces:
 - `docs/mesh/SCOPE-CONTRACT.md`
 - `docs/governance/MAINTAINER-CORRELATION-RULE.md`
 - `benchmarks/context-mesh/eval-dataset.json`
-- future `benchmarks/cortex-memory/**`
-- future `scripts/cortex_memory_*.py`
+- `benchmarks/cortex-memory/eval-dataset.json`
+- `benchmarks/cortex-memory/result-schema.json`
+- `scripts/cortex_memory_benchmark.py`
+- `scripts/cortex_memory_oracle.py`
+- `scripts/cortex_memory_compare.py`
 
 ## Governing Matrix
 
@@ -52,7 +57,9 @@ Primary related surfaces:
 
 ## Current Meaning
 
-This document is the retained implementation plan, not delivered behavior.
+This document is the retained implementation plan and boundary record. The
+local package-source implementation is recorded in
+`docs/evidence/reports/2026/05/26/cortex-memory-benchmark-harness/REPORT.md`.
 
 The benchmark harness must strengthen ADR 0001 by proving memory behavior. It
 must not create a second memory architecture. Run registries, indexes, result
@@ -86,7 +93,8 @@ claim with source evidence.
 ## Non-Objectives
 
 - Create a new ADR.
-- Copy a memory-oriented MCP, vector database, Docker, SaaS, or web-app stack into TES.
+- Copy an external memory-server, vector database, Docker, SaaS, or web-app
+  stack into TES.
 - Treat benchmark results or run registries as durable memory.
 - Add write-capable MCP or automatic Cortex writes.
 - Commit external datasets or large benchmark result files.
