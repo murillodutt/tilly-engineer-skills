@@ -16,7 +16,7 @@ import event_ledger
 import field_reports
 
 
-VERSION = "0.3.139"
+VERSION = "0.3.140"
 PROTOCOL_VERSION = "2025-06-18"
 WRITE_APPROVAL_PREFIX = "APPROVE TES CORTEX MCP WRITE"
 WRITE_TOOL_NAMES = {"cortex_remember_plan", "cortex_remember"}
@@ -64,7 +64,7 @@ def write_tool_definitions() -> list[dict[str, object]]:
             "title": "Remember Cortex",
             "description": (
                 "Write one new Cortex cell only after explicit approval of the exact "
-                "cortex_remember_plan phrase. Requires --enable-writes at server startup."
+                "cortex_remember_plan phrase. Disabled only when the server starts read-only."
             ),
             "inputSchema": {
                 "type": "object",
@@ -80,7 +80,7 @@ def write_tool_definitions() -> list[dict[str, object]]:
     ]
 
 
-def tool_definitions(writes_enabled: bool = False) -> list[dict[str, object]]:
+def tool_definitions(writes_enabled: bool = True) -> list[dict[str, object]]:
     tools: list[dict[str, object]] = [
         {
             "name": "cortex_verify",
@@ -518,13 +518,13 @@ def read_cell(default_target: Path, args: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def call_tool(default_target: Path, name: str, args: dict[str, Any], writes_enabled: bool = False) -> dict[str, Any]:
+def call_tool(default_target: Path, name: str, args: dict[str, Any], writes_enabled: bool = True) -> dict[str, Any]:
     resolve_target(default_target, args)
     if name in WRITE_TOOL_NAMES and not writes_enabled:
         return tool_result({
             "target": str(default_target),
             "status": "BLOCKED",
-            "failures": ["write-capable MCP tools require --enable-writes at server startup"],
+            "failures": ["governed MCP remember tools are disabled because the server started read-only"],
             "writes": [],
             "derived_writes": [],
         }, True)
@@ -591,7 +591,7 @@ def error_response(request_id: Any, code: int, message: str) -> dict[str, Any]:
     return {"jsonrpc": "2.0", "id": request_id, "error": {"code": code, "message": message}}
 
 
-def handle_message(default_target: Path, message: dict[str, Any], writes_enabled: bool = False) -> dict[str, Any] | None:
+def handle_message(default_target: Path, message: dict[str, Any], writes_enabled: bool = True) -> dict[str, Any] | None:
     request_id = message.get("id")
     method = message.get("method")
     params = message.get("params") or {}
@@ -610,9 +610,10 @@ def handle_message(default_target: Path, message: dict[str, Any], writes_enabled
             },
             "instructions": (
                 "Cortex access. Markdown artifacts remain the source of truth; SQLite is "
-                "derived recall and rg is fallback. Durable writes are unavailable unless "
-                "the server was started with --enable-writes, and then only through the "
-                "two-step cortex_remember_plan/cortex_remember approval lane."
+                "derived recall and rg is fallback. Governed remember tools are available "
+                "by default and can write only through the two-step "
+                "cortex_remember_plan/cortex_remember approval lane. Start with "
+                "--read-only to hide durable-memory write tools."
             ),
         })
     if method == "ping":
@@ -635,7 +636,7 @@ def handle_message(default_target: Path, message: dict[str, Any], writes_enabled
     return error_response(request_id, -32601, f"method not found: {method}")
 
 
-def serve(default_target: Path, writes_enabled: bool = False) -> int:
+def serve(default_target: Path, writes_enabled: bool = True) -> int:
     for line in sys.stdin:
         line = line.strip()
         if not line:
@@ -659,20 +660,20 @@ def self_test() -> int:
         target = Path(tempdir) / "project-a"
         cortex.init(target)
         source = cortex.cortex_path(target) / "sources" / "mcp-source.md"
-        source.write_text("# MCP Source\n\nCortex exposes read-only MCP tools.\n", encoding="utf-8")
-        cell = cortex.cortex_path(target) / "cells" / "mcp-read-only.md"
+        source.write_text("# MCP Source\n\nCortex exposes governed MCP tools.\n", encoding="utf-8")
+        cell = cortex.cortex_path(target) / "cells" / "mcp-existing.md"
         cell.write_text(
-            "# MCP Read Only\n\n"
+            "# MCP Existing\n\n"
             "## Claim\n\n"
-            "The MCP surface is read-only and delegates to the Cortex CLI contract.\n\n"
+            "The MCP surface delegates to the Cortex CLI contract and gates durable writes.\n\n"
             "## Evidence\n\n"
             "- `sources/mcp-source.md` records the MCP source fixture.\n",
             encoding="utf-8",
         )
         map_path = cortex.cortex_path(target) / "MAP.md"
-        map_path.write_text(cortex.read_text(map_path) + "\n| [[mcp-read-only]] | MCP is read-only | |\n", encoding="utf-8")
+        map_path.write_text(cortex.read_text(map_path) + "\n| [[mcp-existing]] | MCP gates durable writes | |\n", encoding="utf-8")
         links_path = cortex.cortex_path(target) / "LINKS.md"
-        links_path.write_text(cortex.read_text(links_path) + "\n- [[mcp-read-only]] -> `sources/mcp-source.md`\n", encoding="utf-8")
+        links_path.write_text(cortex.read_text(links_path) + "\n- [[mcp-existing]] -> `sources/mcp-source.md`\n", encoding="utf-8")
         cortex.rebuild(target)
         cortex.semantic_db_path(target).unlink(missing_ok=True)
         events_dir = target / ".tes" / "events"
@@ -704,10 +705,10 @@ def self_test() -> int:
             {"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "cortex_verify", "arguments": {}}},
             {"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "cortex_health", "arguments": {}}},
             {"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": "cortex_peek", "arguments": {"query": "MCP"}}},
-            {"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"name": "cortex_peek", "arguments": {"cell": "mcp-read-only"}}},
+            {"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"name": "cortex_peek", "arguments": {"cell": "mcp-existing"}}},
             {"jsonrpc": "2.0", "id": 7, "method": "tools/call", "params": {"name": "cortex_review", "arguments": {"backend": "lexical"}}},
             {"jsonrpc": "2.0", "id": 8, "method": "tools/call", "params": {"name": "cortex_recall", "arguments": {"query": "MCP"}}},
-            {"jsonrpc": "2.0", "id": 9, "method": "tools/call", "params": {"name": "cortex_read_cell", "arguments": {"cell": "mcp-read-only"}}},
+            {"jsonrpc": "2.0", "id": 9, "method": "tools/call", "params": {"name": "cortex_read_cell", "arguments": {"cell": "mcp-existing"}}},
             {"jsonrpc": "2.0", "id": 10, "method": "tools/call", "params": {"name": "cortex_absorb_plan", "arguments": {"source": "docs/agents/cortex/sources/mcp-source.md"}}},
             {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": {"name": "cortex_curate_plan", "arguments": {"backend": "lexical"}}},
             {"jsonrpc": "2.0", "id": 12, "method": "tools/call", "params": {"name": "cortex_reflect", "arguments": {"query": "MCP closure should consider memory capture"}}},
@@ -734,6 +735,8 @@ def self_test() -> int:
             "cortex_reflect",
             "cortex_list_events",
             "cortex_get_event_status",
+            "cortex_remember_plan",
+            "cortex_remember",
         }
         if tool_names != expected_tools:
             failures.append(f"tool list mismatch: {sorted(tool_names)}")
@@ -765,9 +768,9 @@ def self_test() -> int:
         peek_matches = replies[4]["result"]["structuredContent"].get("matches", [])  # type: ignore[index]
         if not peek_matches:
             failures.append("peek query did not return recall result")
-        if "MCP Read Only" not in replies[5]["result"]["structuredContent"]["text"]:  # type: ignore[index]
+        if "MCP Existing" not in replies[5]["result"]["structuredContent"]["text"]:  # type: ignore[index]
             failures.append("peek cell did not return cell text")
-        if "MCP Read Only" not in replies[8]["result"]["structuredContent"]["text"]:  # type: ignore[index]
+        if "MCP Existing" not in replies[8]["result"]["structuredContent"]["text"]:  # type: ignore[index]
             failures.append("read_cell did not return cell text")
         if replies[10]["result"]["structuredContent"]["writes"] != []:  # type: ignore[index]
             failures.append("curate_plan did not remain no-write over MCP")
@@ -784,25 +787,27 @@ def self_test() -> int:
         if replies[13]["result"]["structuredContent"].get("writes") != []:  # type: ignore[index]
             failures.append("event status reported writes over MCP")
 
-        enabled_tools = {
-            tool["name"]
-            for tool in tool_definitions(writes_enabled=True)
-        }
+        enabled_tools = {tool["name"] for tool in tool_definitions(writes_enabled=True)}
+        read_only_tools = {tool["name"] for tool in tool_definitions(writes_enabled=False)}
+        if tool_names != enabled_tools:
+            failures.append("default MCP tools must match governed-write-enabled tools")
         if "cortex_remember_plan" not in enabled_tools or "cortex_remember" not in enabled_tools:
-            failures.append("write-enabled MCP did not expose governed remember tools")
+            failures.append("default MCP did not expose governed remember tools")
+        if "cortex_remember_plan" in read_only_tools or "cortex_remember" in read_only_tools:
+            failures.append("read-only MCP exposed governed remember tools")
         unsafe_enabled = sorted(
             name for name in enabled_tools
             if any(term in name for term in ("forget", "delete", "update", "checkpoint", "apply"))
         )
         if unsafe_enabled:
-            failures.append(f"write-enabled MCP exposed unsafe tools: {unsafe_enabled}")
+            failures.append(f"default MCP exposed unsafe tools: {unsafe_enabled}")
 
         remember_args = {
             "cell": "mcp-governed-write",
             "claim": "Governed MCP remember writes one new Cortex cell only after exact approval.",
             "evidence": ["sources/mcp-source.md"],
             "summary": "Governed MCP remember lane",
-            "links": ["mcp-read-only"],
+            "links": ["mcp-existing"],
         }
         planned_cell = cortex.cortex_path(target) / "cells" / "mcp-governed-write.md"
         plan_reply = handle_message(
@@ -813,7 +818,6 @@ def self_test() -> int:
                 "method": "tools/call",
                 "params": {"name": "cortex_remember_plan", "arguments": remember_args},
             },
-            writes_enabled=True,
         )
         if plan_reply is None:
             failures.append("remember plan returned no reply")
@@ -837,9 +841,10 @@ def self_test() -> int:
                     "arguments": {**remember_args, "approval_phrase": approval_phrase},
                 },
             },
+            writes_enabled=False,
         )
         if disabled_reply is None or not disabled_reply.get("result", {}).get("isError"):
-            failures.append("remember must be blocked when --enable-writes is not set")
+            failures.append("remember must be blocked when server starts read-only")
 
         bad_approval_reply = handle_message(
             target.resolve(),
@@ -852,7 +857,6 @@ def self_test() -> int:
                     "arguments": {**remember_args, "approval_phrase": "bad approval"},
                 },
             },
-            writes_enabled=True,
         )
         if bad_approval_reply is None:
             failures.append("bad approval remember returned no reply")
@@ -874,7 +878,6 @@ def self_test() -> int:
                     "arguments": {**remember_args, "cell": 123},
                 },
             },
-            writes_enabled=True,
         )
         if non_string_plan_reply is None or "error" not in non_string_plan_reply:
             failures.append("remember plan must reject non-string cell arguments")
@@ -892,7 +895,6 @@ def self_test() -> int:
                     "arguments": {**remember_args, "approval_phrase": approval_phrase},
                 },
             },
-            writes_enabled=True,
         )
         if remember_reply is None:
             failures.append("approved remember returned no reply")
@@ -919,7 +921,6 @@ def self_test() -> int:
                     "arguments": {**remember_args, "approval_phrase": approval_phrase},
                 },
             },
-            writes_enabled=True,
         )
         if duplicate_reply is None:
             failures.append("duplicate remember returned no reply")
@@ -974,7 +975,7 @@ def self_test() -> int:
                 {"jsonrpc": "2.0", "id": 101, "method": "tools/call", "params": {"name": "cortex_apply", "arguments": {}}},
             ),
             (
-                "unknown remember tool rejected",
+                "empty remember payload rejected",
                 {"jsonrpc": "2.0", "id": 1011, "method": "tools/call", "params": {"name": "cortex_remember", "arguments": {}}},
             ),
             (
@@ -1044,13 +1045,22 @@ def self_test() -> int:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", type=Path, default=Path.cwd())
-    parser.add_argument("--enable-writes", action="store_true", help="expose governed Cortex remember tools")
+    parser.add_argument(
+        "--enable-writes",
+        action="store_true",
+        help="compatibility flag; governed Cortex remember tools are enabled by default",
+    )
+    parser.add_argument("--read-only", action="store_true", help="hide governed Cortex remember tools")
+    parser.add_argument("--disable-writes", action="store_true", help="alias for --read-only")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
 
     if args.self_test:
         return self_test()
-    return serve(args.target.expanduser().resolve(), args.enable_writes)
+    if args.enable_writes and (args.read_only or args.disable_writes):
+        parser.error("--enable-writes cannot be combined with --read-only/--disable-writes")
+    writes_enabled = not (args.read_only or args.disable_writes)
+    return serve(args.target.expanduser().resolve(), writes_enabled)
 
 
 if __name__ == "__main__":

@@ -29,7 +29,7 @@ oracles.
 | event inspection | use read-only `cortex_list_events` or `cortex_get_event_status` MCP |
 | checkpoint progress | run `cortex.py checkpoint --yes`; writes only `.tes/checkpoints/**` |
 | remember durable memory | run `cortex.py remember --yes` only with explicit approval and evidence |
-| governed MCP remember | use `cortex_remember_plan`, obtain explicit approval for its phrase, then call `cortex_remember` only on a `--enable-writes` MCP server |
+| governed MCP remember | use `cortex_remember_plan`, obtain explicit approval for its phrase, then call `cortex_remember` |
 | consolidate memory | run `consolidation_gate.py lock --yes`, then read-only `consolidation_gate.py certify` with observed write, review, rollback, and evidence |
 | forget durable memory | run `cortex.py forget`; expect `BLOCKED` until consolidation gate exists |
 
@@ -48,8 +48,8 @@ oracles.
   compaction, split, merge, or rejection.
 - Never run `apply --yes` without explicit user authorization.
 - Never run `remember --yes` without explicit user authorization and evidence.
-- Never call `cortex_remember` unless the server was started with
-  `--enable-writes` and the user approved the exact plan phrase.
+- Never call `cortex_remember` unless the user approved the exact plan phrase;
+  read-only MCP mode intentionally hides the tool.
 - Never call consolidation `CERTIFIED` without a valid lock, approved review,
   rollback reference, allowed evidence, and observed Cortex cell write result.
 - Do not treat `forget` as available destructive deletion; it is blocked until

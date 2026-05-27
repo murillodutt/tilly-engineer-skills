@@ -19,7 +19,7 @@ import tes_bundle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.139"
+VERSION = "0.3.140"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (
@@ -172,10 +172,10 @@ def install_server_files(target: Path, dry_run: bool, overwrite: bool, backup: b
     return actions, failures
 
 
-def codex_snippet(enable_writes: bool = False) -> str:
+def codex_snippet(read_only: bool = False) -> str:
     args = '".tes/bin/cortex_mcp.py", "--target", "."'
-    if enable_writes:
-        args += ', "--enable-writes"'
+    if read_only:
+        args += ', "--read-only"'
     return f"""[mcp_servers.tes-cortex]
 command = "python3"
 args = [{args}]
@@ -191,10 +191,10 @@ def merge_codex_config(
     dry_run: bool,
     overwrite: bool,
     backup: bool,
-    enable_writes: bool,
+    read_only: bool,
 ) -> tuple[dict[str, str] | None, str | None]:
     path = target / ".codex/config.toml"
-    snippet = codex_snippet(enable_writes)
+    snippet = codex_snippet(read_only)
     if not path.exists():
         action = write_text_file(path, snippet, dry_run, backup)
         action["path"] = rel(path, target)
@@ -225,13 +225,13 @@ def replace_toml_section(text: str, header: str, replacement: str) -> str:
     return "\n".join([*lines[:start], replacement.rstrip(), *lines[end:]]).rstrip() + "\n"
 
 
-def json_config(adapter: str, enable_writes: bool = False) -> dict[str, Any]:
+def json_config(adapter: str, read_only: bool = False) -> dict[str, Any]:
     if adapter == "cursor":
         args = ["${workspaceFolder}/.tes/bin/cortex_mcp.py", "--target", "${workspaceFolder}"]
     else:
         args = [".tes/bin/cortex_mcp.py", "--target", "."]
-    if enable_writes:
-        args.append("--enable-writes")
+    if read_only:
+        args.append("--read-only")
     return {
         "type": "stdio",
         "command": "python3",
@@ -246,10 +246,10 @@ def merge_json_config(
     dry_run: bool,
     overwrite: bool,
     backup: bool,
-    enable_writes: bool,
+    read_only: bool,
 ) -> tuple[dict[str, str] | None, str | None]:
     path = target / (".mcp.json" if adapter == "claude" else ".cursor/mcp.json")
-    desired_server = json_config(adapter, enable_writes)
+    desired_server = json_config(adapter, read_only)
     data: dict[str, Any]
     if path.exists():
         try:
@@ -283,15 +283,15 @@ def install_configs(
     dry_run: bool,
     overwrite: bool,
     backup: bool,
-    enable_writes: bool,
+    read_only: bool,
 ) -> tuple[list[dict[str, str]], list[str]]:
     actions: list[dict[str, str]] = []
     failures: list[str] = []
     for adapter in adapters:
         if adapter == "codex":
-            action, failure = merge_codex_config(target, dry_run, overwrite, backup, enable_writes)
+            action, failure = merge_codex_config(target, dry_run, overwrite, backup, read_only)
         else:
-            action, failure = merge_json_config(target, adapter, dry_run, overwrite, backup, enable_writes)
+            action, failure = merge_json_config(target, adapter, dry_run, overwrite, backup, read_only)
         if failure:
             failures.append(failure)
         if action:
@@ -327,13 +327,14 @@ def install(args: argparse.Namespace) -> int:
     if not args.dry_run:
         field_reports.ensure_git_exclude(target)
 
+    read_only = bool(args.read_only or args.disable_writes)
     adapters = selected_adapters(args.adapter)
     bundle_stage = tes_bundle.stage_preferred_bundle(target, dry_run=args.dry_run, adapter=args.adapter)
     server_actions, server_failures = install_server_files(target, args.dry_run, args.overwrite, not args.no_backup)
     config_actions, config_failures = (
         ([], [])
         if args.helpers_only
-        else install_configs(target, adapters, args.dry_run, args.overwrite, not args.no_backup, args.enable_writes)
+        else install_configs(target, adapters, args.dry_run, args.overwrite, not args.no_backup, read_only)
     )
     bundle_failures = bundle_stage.get("failures", []) if bundle_stage.get("status") == "FAIL" else []
     failures = [*bundle_failures, *server_failures, *config_failures]
@@ -345,7 +346,9 @@ def install(args: argparse.Namespace) -> int:
         "adapter": args.adapter,
         "route": args.adapter,
         "helpers_only": args.helpers_only,
-        "write_capable": args.enable_writes,
+        "governed_writes": not read_only,
+        "write_capable": not read_only,
+        "read_only": read_only,
         "bundle_stage": bundle_stage,
         "server": SERVER_NAME,
         "server_files": server_actions,
@@ -364,7 +367,9 @@ def install(args: argparse.Namespace) -> int:
                 "adapter": args.adapter,
                 "route": args.adapter,
                 "helpers_only": args.helpers_only,
-                "write_capable": args.enable_writes,
+                "governed_writes": not read_only,
+                "write_capable": not read_only,
+                "read_only": read_only,
                 "dry_run": args.dry_run,
                 "failures": len(failures),
             },
@@ -438,15 +443,20 @@ def self_test() -> int:
             failures.append("installed cortex_mcp.py --self-test failed")
             failures.extend(mcp_self_test.stdout.splitlines())
             failures.extend(mcp_self_test.stderr.splitlines())
-        if "--enable-writes" in (target / ".codex/config.toml").read_text(encoding="utf-8"):
-            failures.append("default Codex MCP install must stay read-only")
+        codex_config = (target / ".codex/config.toml").read_text(encoding="utf-8")
+        if "--read-only" in codex_config:
+            failures.append("default Codex MCP install must expose governed remember tools")
+        if "--enable-writes" in codex_config:
+            failures.append("default Codex MCP install must not need legacy --enable-writes")
         for relpath in (".mcp.json", ".cursor/mcp.json"):
             data = json.loads((target / relpath).read_text(encoding="utf-8"))
             args = data["mcpServers"][SERVER_NAME]["args"]
+            if "--read-only" in args:
+                failures.append(f"default {relpath} MCP install must expose governed remember tools")
             if "--enable-writes" in args:
-                failures.append(f"default {relpath} MCP install must stay read-only")
+                failures.append(f"default {relpath} MCP install must not need legacy --enable-writes")
 
-    with tempfile.TemporaryDirectory(prefix="tes-mcp-write-enabled-install-") as tempdir:
+    with tempfile.TemporaryDirectory(prefix="tes-mcp-read-only-install-") as tempdir:
         target = Path(tempdir)
         init_result = subprocess.run(
             [sys.executable, str(ROOT / "scripts/cortex.py"), "init", "--target", str(target)],
@@ -456,8 +466,50 @@ def self_test() -> int:
             check=False,
         )
         if init_result.returncode != 0:
-            failures.append("write-enabled cortex init failed")
-        write_install_result = subprocess.run(
+            failures.append("read-only cortex init failed")
+        read_only_install_result = subprocess.run(
+            [
+                sys.executable,
+                __file__,
+                "--target",
+                str(target),
+                "--adapter",
+                "all",
+                "--read-only",
+                "--yes",
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if read_only_install_result.returncode != 0:
+            failures.append("read-only install all failed")
+            failures.extend(read_only_install_result.stdout.splitlines())
+            failures.extend(read_only_install_result.stderr.splitlines())
+        elif "--read-only" not in (target / ".codex/config.toml").read_text(encoding="utf-8"):
+            failures.append("read-only Codex MCP install must include --read-only")
+        for relpath in (".mcp.json", ".cursor/mcp.json"):
+            if not (target / relpath).exists():
+                failures.append(f"read-only install missing config: {relpath}")
+                continue
+            data = json.loads((target / relpath).read_text(encoding="utf-8"))
+            args = data["mcpServers"][SERVER_NAME]["args"]
+            if "--read-only" not in args:
+                failures.append(f"read-only {relpath} MCP install must include --read-only")
+
+    with tempfile.TemporaryDirectory(prefix="tes-mcp-legacy-enable-install-") as tempdir:
+        target = Path(tempdir)
+        init_result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts/cortex.py"), "init", "--target", str(target)],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if init_result.returncode != 0:
+            failures.append("legacy-enable cortex init failed")
+        legacy_install_result = subprocess.run(
             [
                 sys.executable,
                 __file__,
@@ -473,20 +525,12 @@ def self_test() -> int:
             capture_output=True,
             check=False,
         )
-        if write_install_result.returncode != 0:
-            failures.append("write-enabled install all failed")
-            failures.extend(write_install_result.stdout.splitlines())
-            failures.extend(write_install_result.stderr.splitlines())
-        elif "--enable-writes" not in (target / ".codex/config.toml").read_text(encoding="utf-8"):
-            failures.append("write-enabled Codex MCP install must include --enable-writes")
-        for relpath in (".mcp.json", ".cursor/mcp.json"):
-            if not (target / relpath).exists():
-                failures.append(f"write-enabled install missing config: {relpath}")
-                continue
-            data = json.loads((target / relpath).read_text(encoding="utf-8"))
-            args = data["mcpServers"][SERVER_NAME]["args"]
-            if "--enable-writes" not in args:
-                failures.append(f"write-enabled {relpath} MCP install must include --enable-writes")
+        if legacy_install_result.returncode != 0:
+            failures.append("legacy --enable-writes install failed")
+            failures.extend(legacy_install_result.stdout.splitlines())
+            failures.extend(legacy_install_result.stderr.splitlines())
+        elif "--read-only" in (target / ".codex/config.toml").read_text(encoding="utf-8"):
+            failures.append("legacy --enable-writes install must not create read-only config")
 
     with tempfile.TemporaryDirectory(prefix="tes-mcp-helpers-only-") as tempdir:
         target = Path(tempdir)
@@ -569,7 +613,13 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--yes", action="store_true", help="confirm writes without an interactive prompt")
     parser.add_argument("--overwrite", action="store_true", help="replace existing tes-cortex MCP entries")
-    parser.add_argument("--enable-writes", action="store_true", help="expose governed Cortex remember MCP tools")
+    parser.add_argument(
+        "--enable-writes",
+        action="store_true",
+        help="compatibility flag; governed Cortex remember MCP tools are enabled by default",
+    )
+    parser.add_argument("--read-only", action="store_true", help="install MCP config with governed remember tools hidden")
+    parser.add_argument("--disable-writes", action="store_true", help="alias for --read-only")
     parser.add_argument("--helpers-only", action="store_true", help="copy only TES helper files under .tes/bin/**")
     parser.add_argument("--no-backup", action="store_true", help="do not create .bak-* files before overwrite")
     parser.add_argument("--json-only", action="store_true")
@@ -578,6 +628,8 @@ def main() -> int:
 
     if args.self_test:
         return self_test()
+    if args.enable_writes and (args.read_only or args.disable_writes):
+        parser.error("--enable-writes cannot be combined with --read-only/--disable-writes")
     return install(args)
 
 

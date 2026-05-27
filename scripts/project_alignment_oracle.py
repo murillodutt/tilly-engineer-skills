@@ -29,7 +29,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.139"
+VERSION = "0.3.140"
 PACKAGE_MODE = (ROOT / "scripts").exists()
 AGENTS = Path("docs/agents")
 EVIDENCE = AGENTS / "evidence"
@@ -961,7 +961,7 @@ def write_good_fixture(target: Path) -> None:
         "# Project Alignment Evidence\n\n"
         + "```yaml\nalignment_evidence:\n"
         + "  target: fixture\n"
-        + "  tes_version: 0.3.139\n"
+        + "  tes_version: 0.3.140\n"
         + "  anchors_read:\n"
         + "    - README.md\n"
         + "    - package.json\n"

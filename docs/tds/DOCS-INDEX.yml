@@ -1,4 +1,4 @@
-version: 0.3.139
+version: 0.3.140
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -528,6 +528,13 @@ documents:
     evidence_level: L2
   - path: docs/evidence/reports/2026/05/27/cortex-governed-mcp-write-lane/REPORT.md
     id: evidence.cortex_governed_mcp_write_lane_20260527
+    class: evidence
+    status: active
+    consumer: Cortex maintainers, MCP adapter authors, installer authors, release reviewers, and operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/05/27/cortex-mcp-governed-remember-default/REPORT.md
+    id: evidence.cortex_mcp_governed_remember_default_20260527
     class: evidence
     status: active
     consumer: Cortex maintainers, MCP adapter authors, installer authors, release reviewers, and operators

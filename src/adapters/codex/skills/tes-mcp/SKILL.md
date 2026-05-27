@@ -16,20 +16,20 @@ activation and health checks.
 3. Use `install_mcp.py --dry-run` when reviewing changes.
 4. Use `install_mcp.py --target <project> --adapter <route> --yes` only when
    activation is authorized.
-5. Add `--enable-writes` only when the user explicitly requests governed MCP
-   Cortex writes; default activation remains read-only.
+5. Add `--read-only` only when the user explicitly requests inspection-only
+   MCP; default activation exposes governed Cortex remember.
 6. Run `install_mcp.py --self-test`, `cortex_mcp.py --self-test`, or
    `install_smoke.py --route mcp` as the local oracle.
 7. Report created or merged project-scoped config paths.
 
-The read-only surface includes `cortex_verify`, `cortex_audit`,
+The always-safe inspection surface includes `cortex_verify`, `cortex_audit`,
 `cortex_recall`, `cortex_read_cell`, `cortex_absorb_plan`,
 `cortex_curate_plan`, `cortex_reflect`, `cortex_list_events`, and
 `cortex_get_event_status`.
 
-The opt-in governed write surface includes only `cortex_remember_plan` and
-`cortex_remember`; it requires `--enable-writes`, exact approval phrase match,
-claim, evidence, and a new cell.
+The governed write surface includes only `cortex_remember_plan` and
+`cortex_remember`; it requires exact approval phrase match, claim, evidence,
+and a new cell.
 
 ## Locks
 

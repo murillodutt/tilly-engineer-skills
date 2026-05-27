@@ -91,4 +91,4 @@ Hooks, ungoverned write-capable MCP servers, agent definitions,
 cloud/background execution, and marketplace publishing are excluded from the
 default materialized output. Cortex MCP is activated by `scripts/install_mcp.py`
 as a project-scoped installer layer, not by adapter materialization; governed
-remember requires explicit ADR 0002 opt-in.
+remember requires ADR 0002 exact approval.

@@ -24,17 +24,17 @@ Retention status: `current`.
 
 ## Cortex Governed MCP Write Lane Claim
 
-TES `0.3.139` adds ADR 0002 and implements an opt-in governed MCP write lane.
-Default MCP activation remains read-only. When a project MCP server is started
-with `--enable-writes`, it exposes only `cortex_remember_plan` and
+TES `0.3.140` adds ADR 0002 and implements a default governed MCP remember
+lane. Project MCP activation exposes only `cortex_remember_plan` and
 `cortex_remember` for one new grounded Cortex cell after exact approval phrase
-match. Read-only event inspection is exposed through `cortex_list_events` and
+match; `--read-only` hides that lane for inspection-only activation. Read-only
+event inspection is exposed through `cortex_list_events` and
 `cortex_get_event_status`.
 
 Proof: `docs/adr/0002-cortex-governed-mcp-write-lane.md`,
 `scripts/cortex_mcp.py`, `scripts/install_mcp.py`,
 `scripts/cortex_operator_oracle.py`, `docs/mesh/CORTEX-MCP.md`, and
-`docs/evidence/reports/2026/05/27/cortex-governed-mcp-write-lane/REPORT.md`.
+`docs/evidence/reports/2026/05/27/cortex-mcp-governed-remember-default/REPORT.md`.
 
 Boundary: this does not add an external memory backend, hosted MCP, graph
 store, automatic Cortex writes, update/delete/bulk/entity tools, checkpoint
@@ -116,8 +116,9 @@ Retention status: `current`.
 
 ADR 0001 is implemented at the local package-source contract level through
 Wave 7. The implemented lifecycle preserves Markdown as durable truth, events
-as evidence, checkpoints as TTL resumability, Field Reports as transport, MCP
-as read-only, and subagents as parent-return evidence only.
+as evidence, checkpoints as TTL resumability, Field Reports as transport, and
+subagents as parent-return evidence only. ADR 0002 separately governs the MCP
+remember write lane.
 
 Proof: `docs/adr/0001-tes-memory-lifecycle.md`,
 `docs/roadmap/GOAL-SUPER-SPEC-tes-memory-lifecycle.md`,
@@ -125,8 +126,8 @@ Proof: `docs/adr/0001-tes-memory-lifecycle.md`,
 and the Wave 1-6 commits named in that report.
 
 Boundary: this is local package-source closure for version `0.3.133`. Remote
-release certification, package publish, marketplace action, write-capable MCP,
-and commercial-use certification remain outside the claim.
+release certification, package publish, marketplace action, and commercial-use
+certification remain outside the claim; MCP writes are governed by ADR 0002.
 
 Retention status: `current`.
 
@@ -144,9 +145,9 @@ Proof: `docs/evals/CORTEX-MEMORY-BENCHMARKS.md`,
 `docs/evidence/reports/2026/05/26/cortex-memory-benchmark-harness/REPORT.md`.
 
 Boundary: this is local package-source implementation for version `0.3.135`.
-Remote release certification, package publish, marketplace action,
-write-capable MCP, external dataset adoption, UI/dashboard behavior, and
-commercial-use certification remain outside the claim.
+Remote release certification, package publish, marketplace action, external
+dataset adoption, UI/dashboard behavior, and commercial-use certification
+remain outside the claim; MCP writes are governed by ADR 0002.
 
 Retention status: `current`.
 
@@ -163,8 +164,8 @@ Proof: `docs/roadmap/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md`,
 
 Boundary: this is local package-source and local bundle implementation.
 Remote tag/ref certification, package publishing, marketplace action,
-write-capable MCP, automatic Cortex writes, and commercial-use certification
-remain outside the claim.
+automatic Cortex writes, and commercial-use certification remain outside the
+claim; MCP writes are governed by ADR 0002.
 
 Retention status: `current`.
 
@@ -179,8 +180,8 @@ Proof: `scripts/cortex.py`, `docs/mesh/CORTEX.md`, and
 
 Boundary: this changes proposal naming only. `reflect` remains no-write,
 `apply --yes` remains the authorized promotion path, and remote tag/ref
-certification, package publishing, marketplace action, write-capable MCP,
-automatic Cortex writes, and commercial-use certification remain outside the
-claim.
+certification, package publishing, marketplace action, automatic Cortex writes,
+and commercial-use certification remain outside the claim; MCP writes are
+governed by ADR 0002.
 
 Retention status: `current`.

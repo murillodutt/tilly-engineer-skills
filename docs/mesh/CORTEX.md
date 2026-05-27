@@ -412,24 +412,24 @@ Initial certification proves that:
 - `.tes/cortex/recall.sqlite` is documented as derived and rebuildable;
 - the Obsidian boundary is declared without requiring `.obsidian/**`;
 - runtime bootloaders route to Cortex when durable project memory is relevant;
-- Cortex MCP is activated for selected runtime routes as read-only by default
-  or explicitly blocked with a reason;
+- Cortex MCP is activated for selected runtime routes with governed remember
+  available by default, or explicitly blocked/read-only with a reason;
 - `curate-plan` is available as a no-write curation gate;
 - `health`, `peek`, and `review` are available as no-write operator commands;
 - `checkpoint`, `remember`, and `forget` report explicit mutability classes;
-- MCP event inspection is read-only and governed MCP remember is opt-in only;
+- MCP event inspection is read-only and governed MCP remember remains
+  exact-approval only;
 - installation evidence states whether Cortex was created, skipped, or blocked.
 
 ## MCP Boundary
 
-MCP enters only after CLI, rebuild, fallback recall, and no-write curation are
-certified. The MCP shape is read-only by default: verify, audit, recall, read
-cell, absorb-plan, curate-plan, reflect, event list, and event status. ADR 0002
-adds a controlled opt-in write lane for `cortex_remember_plan` and
-`cortex_remember`.
+MCP enters only after CLI, rebuild, fallback recall, no-write curation, and the
+ADR 0002 governed remember lane are certified. The MCP shape includes verify,
+audit, recall, read cell, absorb-plan, curate-plan, reflect, event list, event
+status, `cortex_remember_plan`, and `cortex_remember`. Operators may start or
+install MCP with `--read-only` to hide the governed remember tools.
 
-The first read-only stdio surface is governed by
-`docs/mesh/CORTEX-MCP.md` and implemented by `scripts/cortex_mcp.py`. It
-is activated by `scripts/install_mcp.py`, delegates to deterministic Cortex
-helper functions, and does not promote, rewrite, or persist knowledge unless
-the operator explicitly enables the governed remember lane.
+The stdio surface is governed by `docs/mesh/CORTEX-MCP.md` and implemented by
+`scripts/cortex_mcp.py`. It is activated by `scripts/install_mcp.py`, delegates
+to deterministic Cortex helper functions, and does not promote, rewrite, or
+persist knowledge except through the exact-approval governed remember lane.

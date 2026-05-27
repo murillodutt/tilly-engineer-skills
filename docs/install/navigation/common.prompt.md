@@ -109,7 +109,7 @@ options:
   - command: current
     label: Current runtime
     recommended: true
-    description: Install or refresh the current runtime after central backup and activate Cortex MCP read-only by default.
+    description: Install or refresh the current runtime after central backup and activate Cortex MCP with governed remember by default.
   - command: codex
     label: Codex
     recommended: false
@@ -125,11 +125,11 @@ options:
   - command: all
     label: All runtimes
     recommended: false
-    description: Create the shared mesh, refresh all clean bootloaders, and configure MCP read-only by default after backup.
+    description: Create the shared mesh, refresh all clean bootloaders, and configure MCP with governed remember by default after backup.
   - command: mcp
     label: Cortex MCP
     recommended: false
-    description: Activate only the Cortex MCP server for this runtime, read-only by default.
+    description: Activate only the Cortex MCP server for this runtime; use read-only only when requested.
   - command: audit
     label: Audit only
     recommended: false

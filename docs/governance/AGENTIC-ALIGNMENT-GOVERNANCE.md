@@ -56,7 +56,7 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 | Reusable discipline workflow | Skill in `.agents/skills/**` | Project skill in `.claude/skills/**` | Always-on project rule; Cursor plugin skills are future surface | Preserve behavioral parity, not packaging parity |
 | Distribution | Source-only plugin metadata in `src/adapters/codex/plugin/**` | Source-only plugin metadata in `src/adapters/claude/plugin/**` | Future `.cursor-plugin/**` if needed | Distribution is adapter-specific and not target-installed by default |
 | Hooks | Sensitive, feature-gated | Sensitive enforcement surface | Sensitive agent-loop surface | Excluded from default package until separately authorized |
-| MCP | External capability layer | External capability layer | External capability layer | Cortex MCP is installer-gated; governed writes require ADR 0002 opt-in and tests |
+| MCP | External capability layer | External capability layer | External capability layer | Cortex MCP is installer-gated; governed remember requires ADR 0002 exact approval and tests |
 | Agents and subagents | Powerful specialist layer | Powerful specialist layer | Agent/background execution layer | Excluded by default; requires permission, tools, and oracle contract |
 | Commands | Shared `/tes-*` trigger vocabulary plus `/tes:*` aliases | Shared `/tes-*` trigger vocabulary plus `/tes:*` aliases | Shared `/tes-*` trigger vocabulary plus `/tes:*` aliases | Keep entry vocabulary consistent while materialization stays adapter-specific |
 
@@ -125,7 +125,7 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 - Do not use commit-time reflection or curation to write or delete Cortex
   content automatically.
 - Cortex MCP is allowed only as project-scoped installer activation with
-  lifecycle tests and no global config mutation. Governed writes require the
-  explicit ADR 0002 `--enable-writes` lane.
+  lifecycle tests and no global config mutation. Governed remember is the
+  default ADR 0002 lane; `--read-only` is the explicit inspection-only opt-out.
 - Do not duplicate the same behavioral prose in every layer. Keep the common
   contract small and route detail to the proper adapter.

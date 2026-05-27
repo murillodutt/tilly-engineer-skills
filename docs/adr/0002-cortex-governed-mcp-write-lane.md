@@ -10,11 +10,11 @@ tver: 0.1.0
 
 # ADR 0002: Cortex Governed MCP Write Lane
 
-Accepted on 2026-05-27.
+Accepted on 2026-05-27. Revised on 2026-05-27 after focused E2E evidence.
 
-TES will add a governed Cortex MCP write lane. The default MCP surface remains
-read-only; write-capable tools are exposed only when the server is started with
-an explicit write flag.
+TES will add a governed Cortex MCP write lane. Governed remember is available
+by default in project-scoped MCP activation; read-only mode is an explicit
+opt-out with `--read-only`.
 
 ## Context
 
@@ -43,14 +43,15 @@ TES adopts a narrow, native MCP write lane:
 | Tool | Contract |
 |------|----------|
 | `cortex_remember_plan` | No-write validation of one durable Cortex memory proposal. Returns an approval id and exact approval phrase tied to the target, cell, claim, evidence, summary, and links. |
-| `cortex_remember` | Writes one new Cortex cell only when the server was started with `--enable-writes` and the exact approval phrase from `cortex_remember_plan` is supplied. |
+| `cortex_remember` | Writes one new Cortex cell only when the exact approval phrase from `cortex_remember_plan` is supplied. |
 | `cortex_list_events` | Read-only inspection of sanitized lifecycle events. |
 | `cortex_get_event_status` | Read-only lookup of one lifecycle event status by id. |
 
-The write lane is opt-in at process startup. Project-scoped MCP activation
-continues to install read-only MCP by default. Operators may opt in with
-`install_mcp.py --enable-writes`, which only appends `--enable-writes` to the
-project-scoped MCP server args.
+The write lane is default at process startup because it is no longer broad
+write authority: it is a two-step, exact-approval, evidence-gated remember
+operation. Operators may explicitly hide it with `cortex_mcp.py --read-only` or
+`install_mcp.py --read-only`. `--enable-writes` remains accepted as a
+backward-compatible no-op for existing local configuration.
 
 ## Invariants
 
@@ -91,7 +92,7 @@ or stale approval reuse across changed claims, evidence, or targets.
 |-------------|-----------|
 | Port a full external memory MCP API | Would add backend and authority drift beyond Cortex Markdown. |
 | Expose update/delete/bulk/entity tools | Destructive and broad writes are outside the proven gate. |
-| Enable writes by default | Violates the boring default boundary established by ADR 0001. |
+| Enable automatic or broad writes by default | Violates the boring boundary established by ADR 0001. |
 | Let MCP write from reflection automatically | Converts transient closure output into doctrine without review. |
 | Use event ledger records as memory certification | Event records are evidence, not durable Cortex memory. |
 
@@ -116,6 +117,7 @@ Before a sealed package or release claim, run the full repository commit gate.
 TES crosses from read-only MCP into governed MCP mutability without changing the
 source of truth. The gain is operational: an MCP-capable runtime can now create
 grounded Cortex memory through the same authorization and evidence gate as the
-CLI. The cost is stricter audit language: any future automatic capture,
-overwrite, deletion, graph backend, hosted backend, or subagent-owned write must
-return to ADR before implementation.
+CLI without requiring a separate write-enable flag. The cost is stricter audit
+language: any future automatic capture, overwrite, deletion, graph backend,
+hosted backend, or subagent-owned write must return to ADR before
+implementation.

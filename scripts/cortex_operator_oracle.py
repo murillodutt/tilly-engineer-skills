@@ -12,7 +12,7 @@ import cortex
 import cortex_mcp
 
 
-VERSION = "0.3.139"
+VERSION = "0.3.140"
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -193,21 +193,24 @@ def self_test() -> int:
             failures.append("blocked forget mutated files")
 
         mcp_tools = {tool["name"] for tool in cortex_mcp.tool_definitions()}
-        for forbidden in ("checkpoint", "remember", "forget", "apply", "write", "mutate"):
+        for required in ("cortex_health", "cortex_peek", "cortex_review", "cortex_remember_plan", "cortex_remember"):
+            if required not in mcp_tools:
+                failures.append(f"MCP missing default governed operator: {required}")
+        for forbidden in ("checkpoint", "forget", "delete", "update", "apply", "write", "mutate"):
             exposed = sorted(name for name in mcp_tools if forbidden in name)
             if exposed:
-                failures.append(f"MCP exposed write-capable operator terms: {exposed}")
+                failures.append(f"MCP exposed unsafe operator terms: {exposed}")
+        read_only_mcp_tools = {tool["name"] for tool in cortex_mcp.tool_definitions(writes_enabled=False)}
         for required in ("cortex_health", "cortex_peek", "cortex_review"):
-            if required not in mcp_tools:
+            if required not in read_only_mcp_tools:
                 failures.append(f"MCP missing read-only operator: {required}")
-        enabled_mcp_tools = {tool["name"] for tool in cortex_mcp.tool_definitions(writes_enabled=True)}
-        for required in ("cortex_remember_plan", "cortex_remember"):
-            if required not in enabled_mcp_tools:
-                failures.append(f"write-enabled MCP missing governed operator: {required}")
+        for hidden in ("cortex_remember_plan", "cortex_remember"):
+            if hidden in read_only_mcp_tools:
+                failures.append(f"read-only MCP exposed governed operator: {hidden}")
         for forbidden in ("checkpoint", "forget", "delete", "update", "apply"):
-            exposed = sorted(name for name in enabled_mcp_tools if forbidden in name)
+            exposed = sorted(name for name in mcp_tools if forbidden in name)
             if exposed:
-                failures.append(f"write-enabled MCP exposed unsafe operator terms: {exposed}")
+                failures.append(f"default MCP exposed unsafe operator terms: {exposed}")
 
     result = {"version": VERSION, "status": "FAIL" if failures else "PASS", "failures": failures}
     print(json.dumps(result, indent=2, sort_keys=True))

@@ -114,8 +114,8 @@ dedicated decision.
   post-install routine and returns concise `additionalContext`; this hook is
   separate from plugin packaging and must stay idempotent.
 - Cortex MCP is activated by the assisted installer through project-scoped
-  `.mcp.json`, not plugin metadata. It is read-only by default; ADR 0002
-  governed remember requires explicit opt-in.
+  `.mcp.json`, not plugin metadata. ADR 0002 governed remember is available by
+  default and still requires exact approval.
 - Source-only plugin retention and target-install omission are certified by
   `python3 scripts/claude_plugin_oracle.py --self-test`.
 - A publishable Claude marketplace package still requires a separate
@@ -138,7 +138,7 @@ default plugin hook or subagent package.
 
 | Moment | Package stance |
 |--------|----------------|
-| recall | `/tes-cortex` and Cortex reflection are read-only by default |
+| recall | `/tes-cortex` and Cortex reflection stay no-write unless an explicit memory operation is authorized |
 | scope normalization | Deferred to the shared normalizer wave |
 | write gate | Durable Cortex writes require explicit parent authorization |
 | checkpoint | Deferred to the checkpoint lane wave |

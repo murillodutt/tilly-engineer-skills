@@ -33,7 +33,7 @@ claiming domain or architecture facts without evidence.
 
 The executor is the active LLM coding agent inside the current IDE/runtime context window. This installer is not a background daemon, shell-only script, or blind package manager. The current agent reads this spec, classifies the project, edits files, invokes local tools when the runtime exposes them, and reports certification.
 
-Treat Python scripts and `npm run ...` entries as deterministic oracles and portable helper tools. Treat skills, rules, bootloaders, and adapter files as routing/governance surfaces that tell the agent when and how to act. Treat hooks as local Git gates for validation, Field Reports drain, and no-write Cortex reflection/curation. Treat MCP as a read-only Cortex access surface for agents, not as memory and not as the installer.
+Treat Python scripts and `npm run ...` entries as deterministic oracles and portable helper tools. Treat skills, rules, bootloaders, and adapter files as routing/governance surfaces that tell the agent when and how to act. Treat hooks as local Git gates for validation, Field Reports drain, and no-write Cortex reflection/curation. Treat MCP as a project-scoped Cortex access surface for agents, not as memory and not as the installer.
 
 `/tes-init`, `/tes-setup`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, `tes setup`, and direct command/prompts such as `TES, initialize this project` or `Atualizar TES` are preferred entries. Treat them as intents that load this installer contract, not as raw shell commands. Across Codex, Claude Code, and Cursor, prefer shared hyphen triggers such as `/tes-init`, `/tes-setup`, `/tes-update`, `/tes-goal-maestro`, `/tes-prospect`, `/tes-mine`, and `/tes-cortex`; if a host reports a `/tes:*` alias as invalid, continue as TES intent text through the matching `tes-*` skill/rule/spec instead of asking the user to choose a route. `/tes-setup` is the direct setup alias for `/tes-init`.
 
@@ -397,7 +397,7 @@ Routes:
     project-scoped Cortex MCP config for all three runtimes.
 
   mcp
-    Activate only the Cortex MCP server for the detected runtime, read-only by default.
+    Activate only the Cortex MCP server for the detected runtime; use read-only only when requested.
 
   audit
     Inspect and report what would change without modifying files.
@@ -657,7 +657,7 @@ It must route to `docs/agents/**` and mention `docs/agents/cortex/**` as the dur
 
 ## Phase 5.5 - Activate Cortex MCP
 
-Activate the Cortex MCP server for every runtime selected by the route. Default activation is read-only; governed writes require the explicit ADR 0002 `--enable-writes` lane. This resolves Cortex being present but unreachable from MCP-capable agents.
+Activate the Cortex MCP server for every runtime selected by the route. Default activation exposes only the ADR 0002 governed remember lane; use `--read-only` only for inspection-only installs. This resolves Cortex being present but unreachable from MCP-capable agents.
 
 Use the package contract from:
 
@@ -980,7 +980,7 @@ GO requires:
 - selected runtime assets route to that source;
 - Cortex exists or is explicitly skipped/deferred with a reason;
 - root runtime context was backed up before clean overwrite and semantic recovery evidence exists, or root context was explicitly absent;
-- Cortex MCP is activated for selected routes as read-only by default or explicitly blocked;
+- Cortex MCP is activated for selected routes with governed remember by default, explicitly read-only, or explicitly blocked;
 - Field Reports state and installed helper set are explicit in the report;
 - helper contract parity is PASS or NOT_INSTALLED; `STALE_HELPERS` cannot close as GO;
 - runtime trigger parity is PASS or NOT_APPLIED; `DRIFT` cannot close as GO;

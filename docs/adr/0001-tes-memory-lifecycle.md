@@ -22,7 +22,8 @@ Cortex already has a strong truth boundary:
 
 - durable memory lives in versioned Markdown under `docs/agents/cortex/**`;
 - `.tes/cortex/recall.sqlite` and `.tes/cortex/semantic.sqlite` are derived;
-- MCP is read-only in v1;
+- MCP begins read-only in v1, with governed write capability deferred to a
+  later ADR;
 - `learn` and `reflect` propose; only `apply --yes` writes with evidence and
   authorization.
 
@@ -132,14 +133,18 @@ Subagents must not:
 
 ## MCP Boundary
 
-The v1 Cortex MCP remains read-only. Write-capable MCP tools are rejected by
-this ADR until a later decision proves:
+This ADR keeps the original v1 Cortex MCP read-only until a later decision
+proves:
 
 1. explicit user authorization is preserved;
 2. evidence grounding is mechanically enforced;
 3. scope normalization cannot be bypassed;
 4. destructive or broad writes are blocked;
 5. the write path is covered by contract, oracle, and rollback evidence.
+
+ADR 0002 is that later decision. It adds a narrow governed MCP remember lane
+without changing this ADR's source-of-truth rule: Markdown remains durable
+memory truth, and automatic memory capture remains forbidden.
 
 ## Rejected Alternatives
 

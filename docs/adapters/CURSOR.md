@@ -87,8 +87,8 @@ manual rules instead of expanding the always-on rule.
   TES-owned runtime capability rules such as `tes-runtime-capabilities.mdc`.
 - Do not add hook config or environment files to the default package.
 - Cortex MCP may be activated by the assisted installer through project-scoped
-  `.cursor/mcp.json`. It is read-only by default; ADR 0002 governed remember
-  requires explicit opt-in.
+  `.cursor/mcp.json`. ADR 0002 governed remember is available by default and
+  still requires exact approval.
 
 ## Sensitive Surface Register
 
@@ -106,7 +106,7 @@ agent or hook package.
 
 | Moment | Package stance |
 |--------|----------------|
-| recall | `/tes-cortex` and Cortex reflection are read-only by default |
+| recall | `/tes-cortex` and Cortex reflection stay no-write unless an explicit memory operation is authorized |
 | scope normalization | Deferred to the shared normalizer wave |
 | write gate | Durable Cortex writes require explicit parent authorization |
 | checkpoint | Deferred to the checkpoint lane wave |

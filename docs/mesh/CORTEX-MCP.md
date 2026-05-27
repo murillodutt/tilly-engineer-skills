@@ -11,8 +11,8 @@ tver: 0.4.0
 # TES Cortex MCP
 
 The Cortex MCP surface is a project-scoped access layer over the filesystem
-Cortex contract. It is read-only by default and exposes an optional governed
-write lane only when the server starts with `--enable-writes`.
+Cortex contract. It exposes governed remember by default and can be started
+read-only with `--read-only` when an operator wants inspection only.
 
 ## Contract
 
@@ -28,10 +28,10 @@ docs/agents/cortex/cells/**
 ```
 
 The MCP server may read these files and may call deterministic Cortex helper
-functions. Default activation must not write cells, sources, maps, links, trail
+functions. Read-only mode must not write cells, sources, maps, links, trail
 entries, runtime bootloaders, `.obsidian/**`, `.tes/cortex/recall.sqlite`, or
-`.tes/cortex/semantic.sqlite`. The opt-in governed write lane may write one new
-cell and the correlated Cortex index files only through the `remember` gate.
+`.tes/cortex/semantic.sqlite`. The governed write lane may write one new cell
+and the correlated Cortex index files only through the `remember` gate.
 
 ## Tools
 
@@ -52,14 +52,14 @@ do not accept a `target` argument.
 | `cortex_reflect` | Generate a no-write closure and curation proposal |
 | `cortex_list_events` | List sanitized lifecycle ledger events without writing |
 | `cortex_get_event_status` | Return one lifecycle event status by id without writing |
-| `cortex_remember_plan` | With `--enable-writes`, validate a no-write durable-memory proposal and return an exact approval phrase |
-| `cortex_remember` | With `--enable-writes`, write one new Cortex cell only after exact approval phrase match |
+| `cortex_remember_plan` | Validate a no-write durable-memory proposal and return an exact approval phrase |
+| `cortex_remember` | Write one new Cortex cell only after exact approval phrase match |
 
 ## Local Command
 
 ```bash
 python3 scripts/cortex_mcp.py --target /path/to/project
-python3 scripts/cortex_mcp.py --target /path/to/project --enable-writes
+python3 scripts/cortex_mcp.py --target /path/to/project --read-only
 ```
 
 Self-test:
@@ -79,7 +79,7 @@ Project-scoped activation:
 ```bash
 python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
-python3 scripts/install_mcp.py --target /path/to/project --adapter all --enable-writes --yes
+python3 scripts/install_mcp.py --target /path/to/project --adapter all --read-only --yes
 python3 scripts/install_mcp.py --self-test
 ```
 
@@ -180,11 +180,10 @@ memory, or mutate checkpoint/event state.
 
 ## Boundary
 
-MCP activation is local and project-scoped. It installs read-only config by
-default. `--enable-writes` is an explicit opt-in that adds only the governed
-remember lane; it must not edit global Codex, Claude, or Cursor configuration,
-secrets, hooks, remotes, package lockfiles, `.obsidian/**`, or Cortex source
-material.
+MCP activation is local and project-scoped. It installs governed remember by
+default and may install read-only config with `--read-only`; it must not edit
+global Codex, Claude, or Cursor configuration, secrets, hooks, remotes, package
+lockfiles, `.obsidian/**`, or Cortex source material.
 Project scope is enforced at the MCP tool boundary: a server initialized for
 one project rejects caller-provided `target` overrides instead of resolving
 another project path.
@@ -199,8 +198,8 @@ repair them by writing memory.
 
 Write-capable MCP is limited to the ADR 0002 governed lane. `learn` and
 `apply` stay CLI-governed. `cortex_remember_plan` is no-write; `cortex_remember`
-requires `--enable-writes`, a new cell, explicit evidence, and the exact
-approval phrase tied to the planned payload. The read-only operator tools
+requires a new cell, explicit evidence, and the exact approval phrase tied to
+the planned payload. The read-only operator tools
 `cortex_health`, `cortex_peek`, `cortex_review`, `cortex_list_events`, and
 `cortex_get_event_status` are allowed. `checkpoint`, `forget`, update, delete,
 bulk delete, entity delete, direct `apply`, and automatic writes remain outside

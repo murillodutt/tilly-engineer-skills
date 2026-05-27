@@ -122,12 +122,12 @@ Selected during install/update. Default: `current`.
 
 | Route | Effect |
 |-------|--------|
-| `current` | Updates current runtime + its default read-only Cortex MCP config |
+| `current` | Updates current runtime + its default governed Cortex MCP config |
 | `codex` | Prepares `AGENTS.md`, Codex skill, `.codex/config.toml` |
 | `claude` | Prepares `CLAUDE.md`, `.claude/skills/**`, `.mcp.json` |
 | `cursor` | Prepares rules in `.cursor/rules/**`, `.cursor/mcp.json` |
 | `all` | Prepares Codex, Claude, Cursor + all project MCP configs |
-| `mcp` | Activates only Cortex MCP layer for detected runtime, read-only by default |
+| `mcp` | Activates only Cortex MCP layer for detected runtime; `--read-only` is opt-out |
 | `audit` | Inspects without modifying files |
 
 ---

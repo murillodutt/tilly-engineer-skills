@@ -13,7 +13,7 @@ tver: 0.5.3
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.139`.
+Project version: `0.3.140`.
 
 It follows the Codex customization order:
 
@@ -65,7 +65,7 @@ write-capable memory runtime.
 
 | Moment | Package stance |
 |--------|----------------|
-| recall | `/tes-cortex` and Cortex reflection are read-only by default |
+| recall | `/tes-cortex` and Cortex reflection stay no-write unless an explicit memory operation is authorized |
 | scope normalization | Deferred to the shared normalizer wave |
 | write gate | Durable Cortex writes require explicit parent authorization |
 | checkpoint | Deferred to the checkpoint lane wave |

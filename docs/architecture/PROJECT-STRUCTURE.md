@@ -92,8 +92,8 @@ as user-facing aliases, resolves Python, then delegates to
 `scripts/install_mcp.py` is separate from adapter materialization. It activates
 the Cortex MCP server in a target project by copying local helpers to
 `.tes/bin/**` and writing project-scoped runtime config. The installed config is
-read-only by default; `--enable-writes` explicitly opts into the governed
-remember lane.
+governed-write capable by default for ADR 0002 remember; `--read-only`
+explicitly hides the governed remember lane.
 
 `scripts/tes_update.py` plans low-friction updates by comparing installed and
 cloud package versions, detecting applied IDE surfaces, and recommending the
