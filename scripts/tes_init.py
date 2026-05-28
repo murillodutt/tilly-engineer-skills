@@ -1206,16 +1206,20 @@ def semantic_territory_guide(territories: list[dict[str, Any]]) -> list[dict[str
 
 def weak_anchor_triage(scan: dict[str, Any]) -> list[dict[str, str]]:
     files = [str(record["path"]) for record in scan["files"]]
+    target = Path(str(scan.get("target") or ".")).resolve()
     rows: list[dict[str, str]] = []
     checks = (
         ("fixture/example data", ("fixtures/", "/fixtures/", "examples/", "/examples/"), "use for repros, not architecture"),
         ("generated or build artifacts", ("generated", "__generated__", ".map", "enhancement-configs"), "treat as derived/specialized evidence"),
-        ("dependency lockfiles", ("pnpm-lock.yaml", "uv.lock", "package-lock.json", "yarn.lock", "Cargo.lock"), "use for dependency state, not ownership"),
+        ("dependency lockfiles", project_context_oracle.ROOT_DEPENDENCY_LOCKFILES, "use for dependency state, not ownership"),
         ("TES runtime", (".tes/", "docs/agents/evidence/", "docs/agents/cortex/"), "exclude from project architecture claims"),
         ("migrations", ("/migrations/", "migrations/"), "high-caution historical/schema state"),
     )
     for label, needles, reason in checks:
         sample = next((path for path in files if any(needle in path for needle in needles)), None)
+        if sample is None and label == "dependency lockfiles":
+            lockfile = project_context_oracle.root_dependency_lockfile(target)
+            sample = lockfile.name if lockfile is not None else None
         if sample:
             rows.append({"category": label, "sample": sample, "handling": reason})
     if not rows:
@@ -2404,6 +2408,8 @@ def self_test() -> dict[str, Any]:
         analysis = project_context_oracle.analyze(target)
         if any(record["path"] == "package-lock.json" for record in scan["files"]):
             failures.append("ignored dependency lockfile must stay outside git-index inventory")
+        if "dependency lockfiles" not in context_text:
+            failures.append("project context must mark ignored root lockfile as weak ownership evidence")
         if "dependency locks" not in context_text:
             failures.append("project context must include dependency locks caution for ignored root lockfile")
         if analysis["status"] != "PASS":
