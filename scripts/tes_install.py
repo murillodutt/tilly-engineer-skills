@@ -872,13 +872,18 @@ def run_helper(target: Path, script_name: str, args: tuple[str, ...], timeout: f
             "stdout": stdout.strip(),
             "stderr": (stderr.strip() + f"\ncommand timed out after {timeout:g}s").strip(),
         }
-    return {
+    payload = parse_json_output(result.stdout)
+    failures = payload.get("failures") if isinstance(payload.get("failures"), list) else []
+    command_result = {
         "command": " ".join(command),
         "returncode": result.returncode,
         "status": "PASS" if result.returncode == 0 else "FAIL",
         "stdout": result.stdout.strip(),
         "stderr": result.stderr.strip(),
     }
+    if result.returncode != 0 and failures:
+        command_result["oracle_failures"] = [str(item) for item in failures if item]
+    return command_result
 
 
 def append_run_record(target: Path, payload: dict[str, Any], dry_run: bool) -> dict[str, str]:
@@ -994,7 +999,12 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
     }
     if failed or needs_cert_review:
         complete_payload["failures"] = [
-            {"command": item["command"], "returncode": item["returncode"], "stderr": item["stderr"][:1000]}
+            {
+                "command": item["command"],
+                "returncode": item["returncode"],
+                "stderr": item["stderr"][:1000],
+                **({"oracle_failures": item["oracle_failures"][:8]} if item.get("oracle_failures") else {}),
+            }
             for item in failed
         ]
         if needs_cert_review:
@@ -1167,6 +1177,20 @@ def status(args: argparse.Namespace) -> int:
 
 def self_test() -> int:
     failures: list[str] = []
+    with tempfile.TemporaryDirectory(prefix="tes-postinstall-oracle-failure-") as tempdir:
+        target = Path(tempdir)
+        script = target / ".tes/bin/project_context_oracle.py"
+        script.parent.mkdir(parents=True, exist_ok=True)
+        script.write_text(
+            "import json, sys\n"
+            "print(json.dumps({'status': 'FAIL', 'failures': ['neutral oracle failure']}))\n"
+            "sys.exit(1)\n",
+            encoding="utf-8",
+        )
+        result = run_helper(target, "project_context_oracle.py", (), 10)
+        if result.get("oracle_failures") != ["neutral oracle failure"]:
+            failures.append("postinstall helper results must preserve structured oracle failures")
+
     with tempfile.TemporaryDirectory(prefix="tes-thin-install-") as tempdir:
         target = Path(tempdir)
         (target / "README.md").write_text("# Thin Installer Fixture\n\nA test project.\n", encoding="utf-8")
