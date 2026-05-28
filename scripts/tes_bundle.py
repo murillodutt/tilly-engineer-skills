@@ -306,10 +306,7 @@ def source_is_ancestor(repository: str, source_commit: str, remote_commit: str) 
     return github_ancestor_check(repository, source_commit, remote_commit)
 
 
-def bundle_metadata() -> dict[str, Any]:
-    source_commit = git_value(["rev-parse", "HEAD"])
-    packaged_index = read_json(public_index_path())
-    packaged_metadata = packaged_index.get("metadata") if isinstance(packaged_index.get("metadata"), dict) else {}
+def source_status_lines() -> list[str]:
     status = subprocess.run(
         ["git", "status", "--short"],
         cwd=ROOT,
@@ -317,8 +314,23 @@ def bundle_metadata() -> dict[str, Any]:
         capture_output=True,
         check=False,
     )
+    if status.returncode != 0:
+        return ["<git-status-unavailable>"]
+    lines: list[str] = []
+    for line in status.stdout.splitlines():
+        path = line[3:]
+        if path.startswith("docs/dist/"):
+            continue
+        lines.append(line)
+    return lines
+
+
+def bundle_metadata() -> dict[str, Any]:
+    source_commit = git_value(["rev-parse", "HEAD"])
+    packaged_index = read_json(public_index_path())
+    packaged_metadata = packaged_index.get("metadata") if isinstance(packaged_index.get("metadata"), dict) else {}
     if source_commit:
-        source_tree_state = "clean" if status.returncode == 0 and not status.stdout.strip() else "dirty"
+        source_tree_state = "clean" if not source_status_lines() else "dirty"
     else:
         source_commit = str(packaged_index.get("source_commit") or packaged_metadata.get("source_commit") or "")
         source_tree_state = "unsealed-package"
