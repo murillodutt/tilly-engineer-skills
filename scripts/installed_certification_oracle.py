@@ -22,6 +22,13 @@ REVIEW_STATUSES = {"NEEDS_REVIEW"}
 BLOCKED_STATUSES = {"BLOCKED", "BYPASS_SUSPECTED"}
 OS_RESIDUE_NAMES = {".DS_Store", ".AppleDouble", ".LSOverride", "__MACOSX"}
 OS_RESIDUE_PREFIXES = ("._",)
+REPAIR_ROUTES = {
+    "mcp_registration": "Run /tes-mcp or rerun install_mcp.py for the missing adapter, then recertify.",
+    "mantra_gate_adoption": "Run /tes-doctor for Mantra Gate adoption, repair bootloader-to-owner-skill routing, then recertify.",
+    "command_trigger_parity": "Regenerate installed trigger surfaces through the TES adapter/update path, then rerun command_trigger_oracle.py.",
+    "quality_gates_path": "Run tes_legacy_retirement.py or tes_update.py to replace retired discipline paths, then recertify.",
+    "artifact_hygiene": "Remove OS residue from package source/materialized setup surfaces, rebuild materialization if authorized, then recertify.",
+}
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -173,6 +180,7 @@ def evaluate(target: Path) -> dict[str, Any]:
                 "component": name,
                 "status": "PARTIAL" if status in {"DEGRADED", "FAIL"} else status,
                 "detail": payload.get("failures") or payload.get("findings") or payload.get("surface_health") or [],
+                "repair": REPAIR_ROUTES.get(name, "Inspect this certification component and rerun installed certification."),
             }
         )
     return {
@@ -319,6 +327,8 @@ def self_test() -> dict[str, Any]:
             failures.append("degraded fixture must expose stale quality-gate path")
         if degraded_components["artifact_hygiene"]["status"] != "FAIL":
             failures.append("degraded fixture must expose artifact hygiene failure")
+        if any(not item.get("repair") for item in degraded_result.get("findings", [])):
+            failures.append("degraded fixture findings must include repair routes")
         if healthy_result["status"] != "PASS":
             failures.append(f"healthy fixture must report PASS, got {healthy_result['status']}")
         if not healthy_result["negative_checks"]["host_connected_not_inferred"]:
