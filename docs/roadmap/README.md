@@ -24,6 +24,7 @@ Wave 7 local package-source closure.
 | Cortex memory benchmark harness | Active | `GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
 | TES anti-contamination hardening | Active | `GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md` |
 | TES postinstall and Cortex curation hardening | Active | `GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
+| TES postinstall recovery contract symmetry | Active | `GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md` |
 | TES NPX MCP convergence | Active | `GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
 | TES installed certification and Field Reports hardening | Active | `GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
 | RC1 readiness cleanup | Active | `RC1-READINESS-ROADMAP.md` |

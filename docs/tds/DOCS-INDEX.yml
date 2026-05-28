@@ -456,6 +456,13 @@ documents:
     consumer: maintainers, installer authors, Cortex maintainers, adapter maintainers, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md
+    id: roadmap.goal_super_spec_tes_postinstall_recovery_contract_symmetry
+    class: roadmap
+    status: active
+    consumer: maintainers, installer authors, oracle authors, adapter maintainers, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md
     id: roadmap.goal_super_spec_tes_npx_mcp_convergence
     class: roadmap
