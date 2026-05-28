@@ -1,6 +1,6 @@
 ---
 name: tes-sync
-description: Local-only self-consumed guidance for running the complete sync routine on the TES source package: identity bump, public bundle, validate, commit, push, tag, release certification. Use when the user says sync completo, bump + commit + push, release, publica, /tes-sync, or asks to ship a delivered-behavior change end-to-end. Mirror of the audit checklist that survived the 0.3.124 and 0.3.125 cycles. Do not present as a user-facing TES product skill.
+description: "Local-only self-consumed guidance for running the complete sync routine on the TES source package: identity bump, public bundle, validate, commit, push, tag, release certification. Use when the user says sync completo, bump + commit + push, release, publica, /tes-sync, or asks to ship a delivered-behavior change end-to-end. Mirror of the audit checklist that survived the 0.3.124 and 0.3.125 cycles. Do not present as a user-facing TES product skill."
 license: MIT
 ---
 
@@ -32,6 +32,21 @@ Activate on these signals from the user:
 
 Do not activate for read-only inspection, draft commits, or single-file
 edits. The skill is for the whole route.
+
+## Discoverability Guard
+
+The skill must remain parseable by Codex. Before closing any `tes-sync`
+change, validate the installed Codex copy and every tracked mirror:
+
+```bash
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+python3 "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" "$CODEX_HOME/skills/tes-sync"
+python3 "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" .agents/skills/tes-sync
+python3 "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" .claude/skills/tes-sync
+```
+
+YAML frontmatter drift is a hard stop because it makes the skill present on
+disk but unavailable to Codex.
 
 ## Operating Principle
 

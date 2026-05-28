@@ -84,10 +84,12 @@ routine — the complete sync — and pairs with the human checklist at
 | 2026-05-25 | Created `tes-sync` from the audit checklist and the 0.3.124/0.3.125 release evidence. | `docs/governance/SYNC-AUDIT-CHECKLIST.md`, evidence packets under `docs/evidence/reports/2026/05/25/tes-align/**`. | high |
 | 2026-05-28 | Removed the no-bump sync route. `/tes-sync` now always applies a bump; governance `PASS` maps to source-only bump unless sync is cancelled. | User directive: "atualize tes-sync para sempre aplicar bump". | high |
 | 2026-05-28 | Added an explicit parity lock so scope-rule changes must update `docs/governance/SYNC-AUDIT-CHECKLIST.md` with the skill. | Post-release gap review found the checklist still described `PASS` as no-bump. | high |
+| 2026-05-28 | Added discoverability validation after Codex could see the skill directory but could not load the skill because frontmatter YAML was invalid. | `quick_validate.py "$CODEX_HOME/skills/tes-sync"` failed on an unquoted `description` containing `package:`. | high |
 
 ## Do Not Lose
 
 The skill exists because every release cycle costs time when the agent
 re-derives the sync routine. The 12 phases, the bumped scope choices, and
 the trap catalog are the durable knowledge. The version numbers cited
-in examples will age, but the structure must not.
+in examples will age, but the structure must not. A skill that exists on disk
+but fails Codex frontmatter parsing is operationally absent.

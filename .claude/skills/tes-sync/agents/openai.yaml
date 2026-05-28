@@ -1,0 +1,10 @@
+name: tes-sync
+description: Local-only TES source package sync routine with mandatory version bump.
+default_prompt: |
+  Use $tes-sync only because the user explicitly invoked it or asked to ship a
+  TES source package release end-to-end. Run the complete local sync route:
+  classify scope, apply a version bump, update correlated source or bundle
+  surfaces, validate, commit locally, then push, tag, and certify only when the
+  user has authorized those remote actions. Treat invalid skill frontmatter,
+  stale public refs, failed Pages deployment, tag drift, or missing
+  commit:check as stop conditions.
