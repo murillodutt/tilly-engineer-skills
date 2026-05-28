@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.146"
+VERSION = "0.3.147"
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -1171,16 +1171,17 @@ def claude_rewake_message(result: dict[str, Any]) -> str:
     status = str(result.get("status") or "UNKNOWN")
     if status == "PASS":
         return "TES first-session setup completed.\nTell the user: " + CLAUDE_SETUP_COMPLETED_MESSAGE
-    if status == "NEEDS_REVIEW":
-        return (
-            "TES first-session setup needs review.\n"
-            "Tell the user: TES setup needs review. Run /tes-init for recovery "
-            "before starting project work."
-        )
     if status == "RUNNING":
         return (
             "TES first-session setup is still running.\n"
             "Tell the user: please wait for TES setup to complete."
+        )
+    if status not in {"SKIP", "DRY-RUN"}:
+        return (
+            "TES first-session setup needs review.\n"
+            f"Status: {status}.\n"
+            "Tell the user: TES setup needs review. Run /tes-init for recovery "
+            "before starting project work."
         )
     return ""
 
@@ -1724,6 +1725,67 @@ def self_test() -> int:
                 failures.append("Claude complete start notice hook must return structured JSON")
             if "systemMessage" in claude_complete_payload:
                 failures.append("Claude start notice must stay quiet after postinstall is complete")
+
+        with tempfile.TemporaryDirectory(prefix="tes-thin-install-claude-partial-") as claude_partial_tempdir:
+            claude_partial_target = Path(claude_partial_tempdir)
+            (claude_partial_target / "README.md").write_text("# Claude Partial Hook Fixture\n", encoding="utf-8")
+            (claude_partial_target / "package.json").write_text(
+                '{"name":"tes-claude-partial-hook-fixture"}\n',
+                encoding="utf-8",
+            )
+            claude_partial_install = subprocess.run(
+                [
+                    sys.executable,
+                    str(Path(__file__).resolve()),
+                    "install",
+                    "--target",
+                    str(claude_partial_target),
+                    "--agent",
+                    "claude",
+                    "--yes",
+                ],
+                cwd=source_root(),
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if claude_partial_install.returncode != 0:
+                failures.append("Claude partial fixture install failed")
+                failures.extend(claude_partial_install.stdout.splitlines())
+                failures.extend(claude_partial_install.stderr.splitlines())
+            (claude_partial_target / ".tes/bin/.DS_Store").write_text("neutral residue\n", encoding="utf-8")
+            claude_partial_hook = subprocess.run(
+                [
+                    sys.executable,
+                    str(claude_partial_target / ".tes/bin/tes_install.py"),
+                    "hook",
+                    "--agent",
+                    "claude",
+                    "--target",
+                    str(claude_partial_target),
+                    "--rewake-on-complete",
+                ],
+                cwd=claude_partial_target,
+                input=json.dumps(
+                    {"hook_event_name": "SessionStart", "source": "startup", "cwd": str(claude_partial_target)}
+                ),
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if claude_partial_hook.returncode != 2:
+                failures.append("Claude asyncRewake partial certification must wake the CLI")
+                failures.extend(claude_partial_hook.stdout.splitlines())
+                failures.extend(claude_partial_hook.stderr.splitlines())
+            if "TES first-session setup needs review." not in claude_partial_hook.stderr:
+                failures.append("Claude asyncRewake partial certification must report needs review")
+            if "Status: PARTIAL." not in claude_partial_hook.stderr:
+                failures.append("Claude asyncRewake partial certification must expose PARTIAL status")
+            claude_partial_sentinel = read_json(claude_partial_target / POSTINSTALL_PATH)
+            if claude_partial_sentinel.get("state") != "needs_review":
+                failures.append("Claude asyncRewake partial certification must leave needs_review sentinel")
+            if claude_partial_sentinel.get("last_status") != "PARTIAL":
+                failures.append("Claude asyncRewake partial certification must retain PARTIAL last_status")
 
     with tempfile.TemporaryDirectory(prefix="tes-thin-install-dry-") as tempdir:
         target = Path(tempdir)
