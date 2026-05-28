@@ -973,11 +973,15 @@ def self_test() -> int:
                     or "Please, run /tes-setup for the report." not in first_claude_hook.stderr
                 ):
                     failures.append("installed Claude first-session asyncRewake must wake with /tes-setup guidance")
-                first_sentinel = load_json(first_claude_target / ".tes/postinstall.json")
-                if first_sentinel.get("state") != "complete":
-                    failures.append("installed Claude asyncRewake postinstall must complete before completion message")
-                if first_sentinel.get("last_status") != "PASS":
-                    failures.append("installed Claude asyncRewake postinstall must record PASS before completion message")
+                first_sentinel_path = first_claude_target / ".tes/postinstall.json"
+                if not first_sentinel_path.exists():
+                    failures.append("installed Claude asyncRewake postinstall sentinel missing after completion message")
+                else:
+                    first_sentinel = load_json(first_sentinel_path)
+                    if first_sentinel.get("state") != "complete":
+                        failures.append("installed Claude asyncRewake postinstall must complete before completion message")
+                    if first_sentinel.get("last_status") != "PASS":
+                        failures.append("installed Claude asyncRewake postinstall must record PASS before completion message")
             first_complete_notice = run(
                 [
                     sys.executable,

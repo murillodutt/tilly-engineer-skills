@@ -422,6 +422,7 @@ def write_install_lock(
     apply_result: dict[str, Any],
     hook_actions: list[dict[str, str]],
     mcp_result: dict[str, Any],
+    certification_result: dict[str, Any],
     dry_run: bool,
 ) -> dict[str, str]:
     manifest = read_json(target / ".tes/manifest.json")
@@ -440,6 +441,7 @@ def write_install_lock(
         "apply": summarize_result(apply_result),
         "hooks": hook_actions,
         "mcp": summarize_mcp_result(mcp_result),
+        "certification": summarize_certification_result(certification_result),
     }
     return write_json(target / LOCK_PATH, lock, dry_run=dry_run)
 
@@ -605,6 +607,88 @@ def summarize_mcp_result(result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def certification_status_rank(status: str) -> int:
+    return {"PASS": 0, "DRY-RUN": 0, "PARTIAL": 1, "NEEDS_REVIEW": 2, "BLOCKED": 3, "FAIL": 3}.get(status, 2)
+
+
+def run_installed_certification(target: Path, dry_run: bool, timeout: float) -> dict[str, Any]:
+    script = helper_path(target, "installed_certification_oracle.py")
+    command = [sys.executable, str(script), "--target", str(target), "--json-only"]
+    if dry_run:
+        return {
+            "status": "DRY-RUN",
+            "command": " ".join(command),
+            "returncode": 0,
+            "payload": {},
+            "failures": [],
+        }
+    try:
+        result = subprocess.run(
+            command,
+            cwd=target,
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout if isinstance(exc.stdout, str) else ""
+        stderr = exc.stderr if isinstance(exc.stderr, str) else ""
+        return {
+            "status": "BLOCKED",
+            "command": " ".join(command),
+            "returncode": 124,
+            "stdout": stdout.strip(),
+            "stderr": (stderr.strip() + f"\ncommand timed out after {timeout:g}s").strip(),
+            "payload": {},
+            "failures": [f"installed certification timed out after {timeout:g}s"],
+        }
+    payload = parse_json_output(result.stdout)
+    status = str(payload.get("status") or ("PASS" if result.returncode == 0 else "FAIL"))
+    failures = [str(item) for item in payload.get("failures", []) if item] if isinstance(payload.get("failures"), list) else []
+    if result.returncode != 0 and not failures:
+        failures.append(result.stderr.strip() or result.stdout.strip() or "installed certification failed")
+    return {
+        "status": status,
+        "command": " ".join(command),
+        "returncode": result.returncode,
+        "stdout": result.stdout.strip(),
+        "stderr": result.stderr.strip(),
+        "payload": payload,
+        "failures": failures,
+    }
+
+
+def summarize_certification_result(result: dict[str, Any]) -> dict[str, Any]:
+    payload = result.get("payload") if isinstance(result.get("payload"), dict) else {}
+    components = payload.get("components") if isinstance(payload.get("components"), dict) else {}
+    return {
+        "status": result.get("status"),
+        "components": {
+            name: value.get("status")
+            for name, value in components.items()
+            if isinstance(value, dict) and "status" in value
+        },
+        "findings": payload.get("findings", []),
+        "negative_checks": payload.get("negative_checks", {}),
+        "failures": result.get("failures", []),
+    }
+
+
+def aggregate_install_status(dry_run: bool, apply_status: str, certification_status: str) -> str:
+    if dry_run:
+        return "DRY-RUN"
+    if apply_status == "NEEDS_REVIEW":
+        return "NEEDS_REVIEW"
+    if certification_status in {"PASS", "DRY-RUN"}:
+        return "INSTALLED"
+    if certification_status == "PARTIAL":
+        return "PARTIAL"
+    if certification_status in {"NEEDS_REVIEW", "BLOCKED", "FAIL"}:
+        return certification_status
+    return "NEEDS_REVIEW"
+
+
 def install(args: argparse.Namespace) -> int:
     target = target_root(args.target)
     if not target.exists() or not target.is_dir():
@@ -695,19 +779,34 @@ def install(args: argparse.Namespace) -> int:
         print(json.dumps(result, indent=2, sort_keys=True))
         print("[tes-install] FAIL")
         return 1
+    certification_result = run_installed_certification(target, args.dry_run, args.timeout)
     sentinel_action = (
         {"path": rel(target / POSTINSTALL_PATH, target), "action": "skip-disabled"}
         if args.no_postinstall
         else (
             write_review_sentinel(target, args.agent, agents, args.postinstall_mode, apply_result, args.dry_run)
             if apply_result.get("status") == "NEEDS_REVIEW"
+            or certification_status_rank(str(certification_result.get("status") or "")) >= certification_status_rank("NEEDS_REVIEW")
             else write_pending_sentinel(target, args.agent, agents, args.postinstall_mode, args.dry_run)
         )
     )
-    lock_action = write_install_lock(target, args.agent, agents, args.mode, stage, apply_result, hook_actions, mcp_result, args.dry_run)
-    status = "DRY-RUN" if args.dry_run else "INSTALLED"
-    if apply_result.get("status") == "NEEDS_REVIEW":
-        status = "NEEDS_REVIEW"
+    lock_action = write_install_lock(
+        target,
+        args.agent,
+        agents,
+        args.mode,
+        stage,
+        apply_result,
+        hook_actions,
+        mcp_result,
+        certification_result,
+        args.dry_run,
+    )
+    status = aggregate_install_status(
+        args.dry_run,
+        str(apply_result.get("status") or ""),
+        str(certification_result.get("status") or ""),
+    )
     result = {
         "version": VERSION,
         "status": status,
@@ -719,12 +818,13 @@ def install(args: argparse.Namespace) -> int:
         "apply": summarize_result(apply_result),
         "hooks": hook_actions,
         "mcp": summarize_mcp_result(mcp_result),
+        "certification": summarize_certification_result(certification_result),
         "postinstall": sentinel_action,
         "lock": lock_action,
     }
     print(json.dumps(result, indent=2, sort_keys=True))
     print("[tes-install] " + result["status"])
-    return 0
+    return 1 if status in {"BLOCKED", "FAIL"} else 0
 
 
 def parse_hook_input() -> dict[str, Any]:
@@ -846,9 +946,25 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         }
         for command in mcp_result.get("commands", [])
     )
+    certification_result = run_installed_certification(target, False, args.timeout)
+    certification_command = {
+        "command": certification_result["command"],
+        "returncode": certification_result["returncode"],
+        "status": certification_result["status"],
+        "stdout": "",
+        "stderr": "\n".join(certification_result.get("failures", [])),
+    }
+    results.append(certification_command)
     failed = [item for item in results if item["returncode"] != 0]
-    final_state = "needs_review" if failed else "complete"
-    status = "NEEDS_REVIEW" if failed else "PASS"
+    certification_status = str(certification_result.get("status") or "NEEDS_REVIEW")
+    needs_cert_review = certification_status not in {"PASS", "DRY-RUN"}
+    final_state = "needs_review" if failed or needs_cert_review else "complete"
+    if failed:
+        status = "NEEDS_REVIEW"
+    elif needs_cert_review:
+        status = certification_status
+    else:
+        status = "PASS"
     run_payload = {
         "schema": "tes-postinstall-run@1",
         "version": VERSION,
@@ -859,6 +975,7 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         "status": status,
         "commands": results,
         "mcp": summarize_mcp_result(mcp_result),
+        "certification": summarize_certification_result(certification_result),
         "hook_input_keys": sorted((hook_input or {}).keys()),
     }
     if recover_needs_review:
@@ -875,11 +992,19 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         "last_run": run_record_rel,
         "runs": [*runs, run_record_rel],
     }
-    if failed:
+    if failed or needs_cert_review:
         complete_payload["failures"] = [
             {"command": item["command"], "returncode": item["returncode"], "stderr": item["stderr"][:1000]}
             for item in failed
         ]
+        if needs_cert_review:
+            complete_payload["failures"].append(
+                {
+                    "command": certification_result["command"],
+                    "returncode": certification_result["returncode"],
+                    "stderr": json.dumps(summarize_certification_result(certification_result), sort_keys=True)[:1000],
+                }
+            )
     else:
         complete_payload.pop("failures", None)
     write_json(sentinel_path, complete_payload)
@@ -892,10 +1017,11 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         "run_record": run_record_rel,
         "commands": [{"command": item["command"], "status": item["status"], "returncode": item["returncode"]} for item in results],
         "mcp": summarize_mcp_result(mcp_result),
+        "certification": summarize_certification_result(certification_result),
     }
     if recover_needs_review:
         result["recovery"] = "needs_review"
-    return (0 if not failed else 1), result
+    return (0 if not failed and not needs_cert_review else 1), result
 
 
 def claude_postinstall_context(result: dict[str, Any], hook_input: dict[str, Any]) -> str:
@@ -1111,6 +1237,9 @@ def self_test() -> int:
         install_mcp = install_payload.get("mcp") if isinstance(install_payload.get("mcp"), dict) else {}
         if install_mcp.get("status") != "INSTALLED":
             failures.append("thin install must report MCP status INSTALLED")
+        install_certification = install_payload.get("certification") if isinstance(install_payload.get("certification"), dict) else {}
+        if install_certification.get("status") != "PASS":
+            failures.append("thin install must report installed certification PASS")
         if install_mcp.get("adapters") != ["codex", "claude", "cursor"]:
             failures.append("thin install --agent all must map MCP adapters to codex, claude, cursor only")
         for relpath in (
@@ -1137,6 +1266,40 @@ def self_test() -> int:
             servers = data.get(server_key) if isinstance(data.get(server_key), dict) else {}
             if "tes-cortex" not in servers:
                 failures.append(f"thin install must register tes-cortex in {relpath}")
+
+        partial_target = Path(tempdir) / "partial-target"
+        partial_target.mkdir()
+        (partial_target / "docs/agents").mkdir(parents=True)
+        (partial_target / "docs/agents/QUALITY-GATES.md").write_text(
+            "Run `.agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py`.\n",
+            encoding="utf-8",
+        )
+        subprocess.run(["git", "init"], cwd=partial_target, text=True, capture_output=True, check=False)
+        partial_install = subprocess.run(
+            [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "install",
+                "--target",
+                str(partial_target),
+                "--agent",
+                "all",
+                "--yes",
+            ],
+            cwd=source_root(),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        partial_payload = parse_json_output(partial_install.stdout)
+        partial_mcp = partial_payload.get("mcp") if isinstance(partial_payload.get("mcp"), dict) else {}
+        partial_certification = (
+            partial_payload.get("certification") if isinstance(partial_payload.get("certification"), dict) else {}
+        )
+        if partial_mcp.get("status") != "INSTALLED":
+            failures.append("partial install fixture must still install MCP")
+        if partial_payload.get("status") == "INSTALLED" or partial_certification.get("status") == "PASS":
+            failures.append("installer must not claim clean INSTALLED/PASS from MCP success when installed certification fails")
         sentinel = read_json(target / POSTINSTALL_PATH)
         if sentinel.get("state") != "pending":
             failures.append("postinstall sentinel must be pending after install")

@@ -35,6 +35,7 @@ SETUP_IGNORE_COMMENT = "# TES installer staging cache"
 BACKUP_IGNORE_COMMENT = "# TES clean install local backups"
 BACKUP_SCHEMA = "tes-clean-backup@1"
 RECOVERY_SCHEMA = "tes-root-governance-recovery@1"
+OS_RESIDUE_NAMES = {".DS_Store"}
 
 REQUIRED_LAYERS = {
     "helper",
@@ -306,6 +307,8 @@ def source_is_ancestor(repository: str, source_commit: str, remote_commit: str) 
 
 def bundle_metadata() -> dict[str, Any]:
     source_commit = git_value(["rev-parse", "HEAD"])
+    packaged_index = read_json(public_index_path())
+    packaged_metadata = packaged_index.get("metadata") if isinstance(packaged_index.get("metadata"), dict) else {}
     status = subprocess.run(
         ["git", "status", "--short"],
         cwd=ROOT,
@@ -313,17 +316,25 @@ def bundle_metadata() -> dict[str, Any]:
         capture_output=True,
         check=False,
     )
-    source_tree_state = "clean" if status.returncode == 0 and not status.stdout.strip() else "dirty"
+    if source_commit:
+        source_tree_state = "clean" if status.returncode == 0 and not status.stdout.strip() else "dirty"
+    else:
+        source_commit = str(packaged_index.get("source_commit") or packaged_metadata.get("source_commit") or "")
+        source_tree_state = "unsealed-package"
     return {
         "schema": "tes-bundle-metadata@1",
         "version": VERSION,
         "source_repository": git_value(["config", "--get", "remote.origin.url"])
+        or packaged_index.get("source_repository")
+        or packaged_metadata.get("source_repository")
         or "https://github.com/murillodutt/tilly-engineer-skills.git",
         "source_commit": source_commit,
         "source_ref": "HEAD",
-        "source_branch": git_value(["branch", "--show-current"]),
+        "source_branch": git_value(["branch", "--show-current"]) or packaged_metadata.get("source_branch"),
         "source_tree_state": source_tree_state,
-        "created_at": git_value(["show", "-s", "--format=%cI", "HEAD"]),
+        "created_at": git_value(["show", "-s", "--format=%cI", "HEAD"])
+        or packaged_index.get("created_at")
+        or packaged_metadata.get("created_at"),
     }
 
 
@@ -334,8 +345,12 @@ def rel(path: Path, root: Path) -> str:
         return str(path)
 
 
+def is_os_residue(path: Path) -> bool:
+    return any(part in OS_RESIDUE_NAMES for part in path.parts)
+
+
 def iter_files(root: Path) -> list[Path]:
-    return sorted(path for path in root.rglob("*") if path.is_file())
+    return sorted(path for path in root.rglob("*") if path.is_file() and not is_os_residue(path))
 
 
 def layer_for_path(path: str) -> str:
@@ -449,6 +464,8 @@ def validate_manifest(data: dict[str, Any]) -> list[str]:
         path = str(entry.get("path", ""))
         if not path:
             failures.append("manifest entry missing path")
+        if any(part in OS_RESIDUE_NAMES for part in Path(path).parts):
+            failures.append(f"{path}: OS residue must not be delivered")
         if path in paths:
             failures.append(f"duplicate manifest path: {path}")
         paths.add(path)
@@ -1774,6 +1791,15 @@ def self_test() -> dict[str, Any]:
             failures.append("staged bundle manifest missing source_commit metadata")
         if validate_manifest(manifest):
             failures.extend(f"staged manifest invalid: {failure}" for failure in validate_manifest(manifest))
+        residue_entries = [
+            entry.get("path")
+            for entry in manifest.get("entries", [])
+            if isinstance(entry, dict) and any(part in OS_RESIDUE_NAMES for part in Path(str(entry.get("path", ""))).parts)
+        ]
+        if residue_entries:
+            failures.append(f"staged manifest included OS residue: {sorted(residue_entries)}")
+        if list((target / ".tes/setup" / VERSION).rglob(".DS_Store")):
+            failures.append("staged setup included .DS_Store residue")
         downloaded_target = temp / "downloaded-target"
         downloaded_target.mkdir()
         downloaded = stage_public_bundle(
@@ -1799,6 +1825,15 @@ def self_test() -> dict[str, Any]:
         if applied.get("status") != "CLEAN_APPLIED":
             failures.extend(applied.get("failures", ["apply failed"]))
         installed = read_installed_manifest(target)
+        installed_residue_entries = [
+            entry.get("path")
+            for entry in installed.get("entries", [])
+            if isinstance(entry, dict) and any(part in OS_RESIDUE_NAMES for part in Path(str(entry.get("path", ""))).parts)
+        ]
+        if installed_residue_entries:
+            failures.append(f"installed manifest included OS residue: {sorted(installed_residue_entries)}")
+        if list((target / ".tes/bin").rglob(".DS_Store")) or list((target / ".agents").rglob(".DS_Store")):
+            failures.append("installed runtime included .DS_Store residue")
         installed_metadata = installed.get("metadata") if isinstance(installed.get("metadata"), dict) else {}
         if installed_metadata.get("source_commit") != metadata.get("source_commit"):
             failures.append("installed manifest source_commit metadata drifted")

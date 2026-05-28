@@ -117,13 +117,12 @@ def artifact_hygiene(target: Path) -> dict[str, Any]:
         failures.extend(f"OS residue present: {path}" for path in sorted(set(residue)))
     metadata = manifest.get("metadata") if isinstance(manifest.get("metadata"), dict) else {}
     source_tree_state = str(metadata.get("source_tree_state") or "unknown")
-    sealed_claim_allowed = source_tree_state in {"clean", "unknown"}
-    if source_tree_state == "dirty":
-        failures.append("dirty source_tree_state cannot support sealed release claim")
+    sealed_claim_allowed = source_tree_state in {"clean", "unknown"} and not failures
     return {
         "status": "FAIL" if failures else "PASS",
         "source_tree_state": source_tree_state,
-        "sealed_claim_allowed": sealed_claim_allowed and not failures,
+        "sealed_claim_allowed": sealed_claim_allowed,
+        "release_claim_status": "SEALED_ALLOWED" if sealed_claim_allowed else "UNSEALED_OR_NEEDS_RELEASE_GATE",
         "residue": sorted(set(residue)),
         "failures": failures,
     }
