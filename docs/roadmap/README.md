@@ -27,6 +27,10 @@ Wave 7 local package-source closure.
 | TES postinstall recovery contract symmetry | Active | `GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md` |
 | TES NPX MCP convergence | Active | `GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
 | TES installed certification and Field Reports hardening | Active | `GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
+| TES TTS sequential convergence | Active | `GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` |
+| TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
+| TES TTS normalization architecture | Proposed | `TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
+| TES TTS normalization execution | Proposed | `TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
 | RC1 readiness cleanup | Active | `RC1-READINESS-ROADMAP.md` |
 | Cortex hardening sequence | Complete | `GOAL-SUPER-SPEC-cortex-hardening.md` |
 | TES Align semantic drift hardening | Proposed | `TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |

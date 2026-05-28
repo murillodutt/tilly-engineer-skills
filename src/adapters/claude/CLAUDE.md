@@ -176,7 +176,9 @@ treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
 `/tes:cortex`, `/tes-curate`, `/tes:curate`,
 `/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
 `/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`, `/tes-bench`,
-`/tes:bench`, `/tes-bump`, and `/tes:bump` as intent shortcuts. Use the
+`/tes:bench`, `/tes-bump`, `/tes:bump`, `/tes-tts`, `/tes:tts`, `tes tts`,
+`read this text aloud`, `leia em voz alta`, and `narrar este texto` as intent
+shortcuts. Use the
 matching `.claude/skills/tes-*` skill when present; otherwise follow the local
 installer or helper spec directly and choose the smallest safe oracle. These
 are not shell commands.

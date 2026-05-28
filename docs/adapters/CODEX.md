@@ -118,6 +118,7 @@ deterministic oracles or agent-led codebase exploration:
 | `/tes-adapter`, `/tes:adapter` | `tes-adapter` |
 | `/tes-bench`, `/tes:bench` | `tes-bench` |
 | `/tes-bump`, `/tes:bump` | `tes-bump` |
+| `/tes-tts`, `/tes:tts` | `tes-tts` |
 
 This keeps the four gates available without bloating every context window.
 

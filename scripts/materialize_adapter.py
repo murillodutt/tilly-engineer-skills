@@ -34,6 +34,7 @@ CODEX_SKILLS = (
     "tes-adapter",
     "tes-bench",
     "tes-bump",
+    "tes-tts",
 )
 CLAUDE_SKILLS = (
     "tes-guidelines",
@@ -53,6 +54,7 @@ CLAUDE_SKILLS = (
     "tes-adapter",
     "tes-bench",
     "tes-bump",
+    "tes-tts",
 )
 CLAUDE_PROJECT_SKILL_ROOT = ".claude/skills"
 FORBIDDEN_OUTPUT_REFS = (

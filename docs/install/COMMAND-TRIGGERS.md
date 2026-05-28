@@ -19,7 +19,7 @@ All adapters share the same preferred user triggers: `/tes-init`,
 `/tes-prospect`, `/tes-mine`,
 `/tes-open-obsidian`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
 `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, and
-`/tes-bump`. Treat
+`/tes-bump`, and `/tes-tts`. Treat
 `/tes:*` forms as compatible TES intent aliases; if a host reports one as an
 invalid slash, continue through the matching `tes-*` skill/rule/spec instead of
 asking the user to restate the route.
@@ -64,6 +64,7 @@ mode of `/tes-init`.
 | `/tes-adapter` | `tes-adapter` | visible skill |
 | `/tes-bench` | `tes-bench` | visible skill |
 | `/tes-bump` | `tes-bump` | visible version-governance guard |
+| `/tes-tts` | `tes-tts` | visible reactive text-to-speech skill |
 
 ## Trigger Matrix
 
@@ -85,6 +86,7 @@ mode of `/tes-init`.
 | `/tes-adapter` or `/tes:adapter` | materialize, dry-run, retrofit, or install adapter surfaces | `materialize_adapter.py`, `install_adapter.py`, adapter oracles | adapter files only after review or approval |
 | `/tes-bench` or `/tes:bench` | plan, run, or converge context-mesh benchmarks | benchmark plan/run/converge scripts | temporal benchmark evidence artifacts under `docs/evidence/reports/YYYY/MM/DD/**` |
 | `/tes-bump` or `/tes:bump` | govern, plan, and apply bounded project version bumps | `tes_bump.py --governance-check`; `tes_bump.py --dry-run`, then `tes_bump.py --yes` after write authorization | governance check is read-only; writes only discovered version targets; no commits, tags, pushes, remotes, package locks, or publishing |
+| `/tes-tts` or `/tes:tts` | read user-provided text aloud through an available local TTS tool | host TTS tool when available | no file writes; reports `TTS_NOT_AVAILABLE` when unavailable and redacts secret-like content |
 
 Aliases:
 
@@ -109,6 +111,8 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 /tes:certify -> /tes-doctor
 /tes:bump    -> /tes-bump
 tes bump     -> /tes-bump
+/tes:tts     -> /tes-tts
+tes tts / read this text aloud / leia em voz alta / narrar este texto -> /tes-tts
 ```
 
 ## Classification

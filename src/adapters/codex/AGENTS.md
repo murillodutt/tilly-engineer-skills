@@ -87,6 +87,7 @@ requires exact syntax.
 | Adapter materialization | `.agents/skills/tes-adapter/SKILL.md` |
 | Benchmark evidence | `.agents/skills/tes-bench/SKILL.md` |
 | Version bump release action | `.agents/skills/tes-bump/SKILL.md` |
+| Text-to-speech reading | `.agents/skills/tes-tts/SKILL.md` |
 | Failure examples | `.agents/skills/tes-engineering-discipline/references/failure-patterns.md` |
 | Tool migration | `.agents/skills/tes-engineering-discipline/references/source-portability.md` |
 | Skill self-test | `python3 .agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test` |
@@ -158,7 +159,9 @@ Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
 `/tes:cortex`, `/tes-curate`, `/tes:curate`,
 `/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
 `/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`, `/tes-bench`,
-`/tes:bench`, `/tes-bump`, and `/tes:bump` as intent shortcuts. Load the
+`/tes:bench`, `/tes-bump`, `/tes:bump`, `/tes-tts`, `/tes:tts`, `tes tts`,
+`read this text aloud`, `leia em voz alta`, and `narrar este texto` as intent
+shortcuts. Load the
 matching TES skill when one exists, otherwise route through
 `docs/install/COMMAND-TRIGGERS.md` and the smallest safe oracle. These are not
 shell commands.

@@ -47,6 +47,7 @@ TES entry vocabulary is shared across platforms:
 | Adapter | `/tes-adapter` | `/tes:adapter` | Materialize, dry-run, retrofit, or certify adapter surfaces. |
 | Bench | `/tes-bench` | `/tes:bench` | Plan, run, or inspect context-mesh benchmark evidence under the temporal evidence contract. |
 | Bump | `/tes-bump` | `/tes:bump` | Govern, plan, and apply bounded project version bumps through read-only governance and dry-run-first target discovery; no Git or publishing side effects. |
+| TTS | `/tes-tts` | `/tes:tts` | Read user-provided text aloud through an available local TTS tool, or report `TTS_NOT_AVAILABLE`. |
 
 The hyphen form is the preferred cross-platform trigger. The colon form is a
 compatibility alias and may be rejected by a host slash-command parser. If a
@@ -54,7 +55,8 @@ host says a `/tes:*` slash command is invalid, the agent must treat the text as
 TES intent and route to the matching `tes-*` skill, rule, or installer spec.
 Natural intent text such as `tes init`, `tes setup`, `tes update`, `tes align`,
 `tes map`, `generate a maestral /goal prompt`, `gerar um /goal maestral`,
-`project GPS`, `mapa TES`, `tes open obsidian`, `tes bump`, `align TES`,
+`project GPS`, `mapa TES`, `tes open obsidian`, `tes bump`, `tes tts`,
+`read this text aloud`, `leia em voz alta`, `narrar este texto`, `align TES`,
 `align this project`, `map this project`, `open Obsidian`,
 `open this project in Obsidian`, `Atualizar TES`, `atualizar TES`,
 `alinhar TES`, `alinhar projeto`, `mapear TES`, `mapear projeto`,

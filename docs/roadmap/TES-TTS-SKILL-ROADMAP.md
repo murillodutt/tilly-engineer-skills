@@ -1,0 +1,253 @@
+---
+tds_id: roadmap.tes_tts_skill_roadmap
+tds_class: roadmap
+status: active
+consumer: maintainers, tes-tts maintainers, adapter authors, and release reviewers
+source_of_truth: false
+evidence_level: L2
+---
+
+# TES TTS Skill Roadmap
+
+This roadmap organizes the executive evolution of `tes-tts` from a small
+reactive read-aloud skill into a governed TES capability. It records what is
+already decided, where each decision lives, and the next sequential work units
+needed before acceptance, release identity, or sync can be considered.
+
+This document does not replace ADR 0004 or the normalization SPECs. ADR 0004
+is the architectural boundary. The SPECs own architecture and execution
+details. This roadmap owns sequencing, registry, and operating visibility.
+
+## Current Position
+
+`tes-tts` is proposed delivered behavior staged in TES source. It is reactive:
+it reads or narrates user-provided text only when explicitly requested. It must
+not become the proactive `speak` channel, a dependency manager, a bundled
+translation stack, or a global voice registry.
+
+The current package state is intentionally pre-release:
+
+- no sync has been authorized;
+- no release identity has been closed;
+- no provider dependency has been installed, bundled, or certified;
+- normalization is instruction-level plus proposed architecture;
+- local validators have passed during construction, but final package closure
+  still requires the normal release gates and maintainer approval.
+
+## Artifact Registry
+
+| Surface | Role | Status |
+|---------|------|--------|
+| `src/adapters/codex/skills/tes-tts/SKILL.md` | Codex source skill contract. | staged |
+| `src/adapters/claude/skills/tes-tts/SKILL.md` | Claude source skill contract. | staged |
+| `src/adapters/*/skills/tes-tts/agents/openai.yaml` | Agent-facing invocation guidance. | staged |
+| `src/adapters/*/skills/tes-tts/docs/CONTRACT-HISTORY.md` | Local history, origin signals, preserved contracts, and failure modes. | staged |
+| `src/adapters/*/skills/tes-tts/references/language-normalization.md` | Instruction-level default-language, conversion-cache, and pronunciation reference. | staged |
+| `src/adapters/*/skills/tes-tts/references/providers-and-fallbacks.md` | Portable provider fallback lessons from `speak`. | staged |
+| `docs/adr/0004-tes-tts-pronunciation-normalization-and-enrichment.md` | Architectural GPS and boundary. | proposed |
+| `docs/roadmap/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` | Optional normalization architecture. | proposed |
+| `docs/roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` | Sequential execution contract and acceptance gates. | proposed |
+| `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` | Executive registry and evolution roadmap. | active |
+| `scripts/materialize_adapter.py` | Adapter materialization inclusion. | staged |
+| `scripts/command_trigger_oracle.py` | Slash, alias, and natural trigger oracle inclusion. | staged |
+| `scripts/validate_reference_package.py` | Package reference validation inclusion. | staged |
+| `docs/install/COMMAND-TRIGGERS.md` | User-visible command trigger registration. | staged |
+| `docs/adapters/CODEX.md`, `docs/adapters/CLAUDE.md`, `docs/adapters/PLATFORM-DIFFERENCES.md` | Adapter-facing discoverability and parity notes. | staged |
+
+## Evolution Ledger
+
+| Stage | Decision | Evidence |
+|-------|----------|----------|
+| 0 | Promote the working local TTS behavior into TES as a simple reactive skill. | `CONTRACT-HISTORY.md`; `SKILL.md` sources. |
+| 1 | Keep `tes-tts` separate from proactive `speak`. | Provider/fallback reference and ADR 0004 non-goals. |
+| 2 | Absorb only portable `speak` references: provider order, fallback, error classes, voice policy, speech transformation. | `providers-and-fallbacks.md`. |
+| 3 | Add multilingual normalization and pronunciation enrichment as optional speech preparation. | `language-normalization.md`; ADR 0004. |
+| 4 | Keep ADR 0004 as GPS/boundary, not pipeline detail. | ADR 0004 plus architecture/execution SPEC split. |
+| 5 | Treat provider libraries as optional candidates only. | ADR 0004 and architecture SPEC. |
+| 6 | Add first-class language scope: `pt-BR`, `en`, `es`, `fr`, `it`, `de`, `he`. | Architecture SPEC. |
+| 7 | Introduce adapter default language as an explicit preference that never overrides user-requested language. | Language reference and execution SPEC. |
+| 8 | Require sequential convergence: one unit, one decision, one oracle, one next step. | Execution SPEC. |
+
+## Sequential Roadmap
+
+### R0: Baseline Skill Registration
+
+Status: materially implemented, pending final release identity.
+
+Required closure:
+
+- Codex and Claude skill folders validate with `quick_validate.py`.
+- Materialization check passes for Codex and Claude.
+- Command trigger oracle covers `/tes-tts`, `/tes:tts`, and natural intents.
+- Reference package validation includes the new skill files.
+
+Exit state: `tes-tts` is installable from source adapters, but not yet released
+or synced.
+
+### R1: Executive Registry
+
+Status: current work unit.
+
+Required closure:
+
+- This roadmap exists and is indexed.
+- TDS document index includes the roadmap.
+- ADR/SPEC/skill surfaces have a clear ownership relationship.
+- The next unresolved decision is named before continuing.
+
+Exit state: maintainers can see the full skill evolution from one roadmap
+without confusing roadmap detail with ADR boundary.
+
+### R2: Default-Language Selector Contract
+
+Status: decided, pending fixtures.
+
+Decision: adapter default language is a default preference, not a hard
+priority. Explicit user language overrides adapter default language. A user
+request such as "read this in English" must win even if the adapter declares
+`pt-BR`.
+
+Required closure:
+
+- Update language references with the precedence rule.
+- Update architecture or execution SPEC if needed.
+- Add selection fixtures before certification.
+
+Exit state: the selector contract is unambiguous and testable.
+
+### R3: Fixture Corpus
+
+Status: not started.
+
+Required fixture classes:
+
+- single-language samples for each first-class language;
+- mixed-language text with one foreign span;
+- protected technical terms across language boundaries;
+- Hebrew text without niqqud;
+- Markdown with links, paths, code fences, and long hashes;
+- secret-like multilingual text;
+- explicit voice/provider request;
+- provider unavailable and voice unavailable cases.
+
+Exit state: fixture names and expected outcomes exist before any provider
+probing or implementation claims.
+
+### R4: Instruction-Level Normalizer Oracle
+
+Status: not started.
+
+Goal: prove the current instruction-only behavior before introducing optional
+libraries.
+
+Required closure:
+
+- The conversion cache shape is produced without disk writes.
+- Protected terms survive translation planning.
+- Secret-like values are redacted before any provider or TTS step.
+- Long text is chunked without summarizing unless requested.
+
+Exit state: `normalization_degraded` remains useful and honest when no
+provider exists.
+
+### R5: Provider Probe Contract
+
+Status: proposed only.
+
+Goal: detect optional local providers without installation, downloads, network
+model fetches, or persistent config writes.
+
+Required closure:
+
+- Probe output matches the execution SPEC.
+- Mocked provider tests cover available, unavailable, and needs-review states.
+- License and language-coverage notes are recorded as local signals only.
+
+Exit state: provider discovery is safe enough to inform, but not certify,
+runtime choices.
+
+### R6: Provider Candidate Review
+
+Status: deferred until R5 passes.
+
+Candidate layers:
+
+- language detection;
+- translation;
+- locale normalization;
+- TTS text normalization;
+- pronunciation, G2P, IPA, or Hebrew enrichment;
+- Unicode cleanup.
+
+Exit state: each provider candidate is either accepted for optional local use,
+classified as degraded, or deferred.
+
+### R7: Adapter Parity And Install Surface
+
+Status: partially implemented.
+
+Required closure:
+
+- Codex and Claude skill content remains behaviorally aligned.
+- Cursor documentation advertises capability only where the adapter can
+  reasonably trigger it.
+- Install/manual/command-trigger docs match the real source behavior.
+- No hidden root copy or target-project mirror becomes source of truth.
+
+Exit state: materialized adapters behave consistently without duplicating
+source.
+
+### R8: Acceptance Gate
+
+Status: blocked until R2-R7 converge.
+
+Required closure:
+
+- ADR 0004 can only move from proposed to accepted after fixtures, probes,
+  adapter validation, TDS/doc-size validation, and explicit maintainer
+  approval.
+- Release identity is decided separately.
+- Sync remains forbidden until the maintainer approves the complete skill.
+
+Exit state: `tes-tts` has a certified release path or remains explicitly
+proposed/degraded.
+
+## Current Open Questions
+
+1. Where should a future `agent_default_language` declaration live for each
+   adapter?
+2. What is the minimum fixture schema for language normalization without
+   adding runtime dependencies?
+3. Which provider probe should be built first: local `say`, language
+   detection, or translation package discovery?
+4. What is the acceptance threshold for Hebrew: preserve, translate, niqqud
+   enrich, or explicitly degraded?
+
+## Governance Rules
+
+- Do not run sync from this roadmap.
+- Do not release from this roadmap.
+- Do not install or bundle normalization providers from this roadmap.
+- Do not turn `tes-tts` into proactive `speak`.
+- Do not summarize user text unless the user asks for summary.
+- Do not persist conversion caches by default.
+- Do not claim library-backed normalization until fixtures and provider probes
+  prove the local behavior.
+
+## Local Oracle Set
+
+Use the smallest relevant oracle for each work unit:
+
+```bash
+python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py src/adapters/codex/skills/tes-tts
+python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py src/adapters/claude/skills/tes-tts
+python3 scripts/materialize_adapter.py codex --check
+python3 scripts/materialize_adapter.py claude --check
+python3 scripts/command_trigger_oracle.py --self-test
+python3 scripts/validate_tds.py
+python3 scripts/validate_doc_size.py
+python3 scripts/validate_reference_package.py
+```
+
+`npm run commit:check` remains the package closure gate, not a substitute for
+the missing TTS-specific fixtures.

@@ -50,6 +50,13 @@ documents:
     consumer: maintainers, installer authors, Field Reports maintainers, adapter authors, and release operators
     source_of_truth: true
     evidence_level: L1
+  - path: docs/adr/0004-tes-tts-pronunciation-normalization-and-enrichment.md
+    id: architecture.adr_0004_tes_tts_pronunciation_normalization_and_enrichment
+    class: architecture
+    status: proposed
+    consumer: maintainers, adapter authors, tes-tts maintainers, and release operators
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/install/INSTALL.md
     id: install.adapter_installer
     class: adapter
@@ -169,6 +176,34 @@ documents:
     consumer: Continue.dev, Aider, and other installing LLMs
     source_of_truth: true
     evidence_level: L2
+  - path: docs/roadmap/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md
+    id: roadmap.tes_tts_normalization_architecture_spec
+    class: roadmap
+    status: proposed
+    consumer: maintainers, tes-tts maintainers, adapter authors, and provider reviewers
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md
+    id: roadmap.tes_tts_normalization_execution_spec
+    class: roadmap
+    status: proposed
+    consumer: maintainers, tes-tts maintainers, adapter authors, and validation authors
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/TES-TTS-SKILL-ROADMAP.md
+    id: roadmap.tes_tts_skill_roadmap
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
+    id: roadmap.goal_super_spec_tes_tts_sequential_convergence
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/adapters/CODEX.md
     id: adapters.codex
     class: adapter
