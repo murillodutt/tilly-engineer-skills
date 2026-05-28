@@ -29,6 +29,7 @@ Wave 7 local package-source closure.
 | TES installed certification and Field Reports hardening | Active | `GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
 | TES TTS sequential convergence | Active | `GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` |
 | TES TTS TTS-000 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md` |
+| TES TTS TTS-001 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS normalization architecture | Proposed | `TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution | Proposed | `TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |

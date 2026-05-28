@@ -211,6 +211,13 @@ documents:
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md
+    id: roadmap.goal_prompt_tes_tts_tts_001_roadmap_and_spec_coherence
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/adapters/CODEX.md
     id: adapters.codex
     class: adapter

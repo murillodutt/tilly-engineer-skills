@@ -49,7 +49,8 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` | Sequential execution contract and acceptance gates. | proposed |
 | `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` | Executive registry and evolution roadmap. | active |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` | Circular execution contract for the skill. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md` | Ready prompt artifact for the next execution cycle. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md` | Historical prompt artifact for the completed preflight cycle. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md` | Ready prompt artifact for the next execution cycle. | active |
 | `scripts/materialize_adapter.py` | Adapter materialization inclusion. | staged |
 | `scripts/command_trigger_oracle.py` | Slash, alias, and natural trigger oracle inclusion. | staged |
 | `scripts/validate_reference_package.py` | Package reference validation inclusion. | staged |
@@ -69,7 +70,7 @@ The current package state is intentionally pre-release:
 | 6 | Add first-class language scope: `pt-BR`, `en`, `es`, `fr`, `it`, `de`, `he`. | Architecture SPEC. |
 | 7 | Introduce adapter default language as an explicit preference that never overrides user-requested language. | Language reference and execution SPEC. |
 | 8 | Require sequential convergence: one unit, one decision, one oracle, one next step. | Execution SPEC. |
-| 9 | Require every non-converged execution cycle to create the next `/goal` prompt as a tracked artifact. | GOAL Super SPEC and TTS-000 prompt artifact. |
+| 9 | Require every non-converged execution cycle to create the next `/goal` prompt as a tracked artifact. | GOAL Super SPEC and tracked prompt artifacts. |
 
 ## Circular Execution Control
 
@@ -83,7 +84,7 @@ The current circular execution contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the

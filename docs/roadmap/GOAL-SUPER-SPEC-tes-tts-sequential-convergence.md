@@ -239,7 +239,7 @@ and remaining release identity decision instead.
 ## Current Ready /goal Prompt
 
 Prompt artifact:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md`
 
 Use this prompt to start the next sequential execution cycle:
 
@@ -250,30 +250,33 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
 
 Current unit:
-TTS-000 Preflight And Baseline
+TTS-001 Roadmap And SPEC Coherence
 
 Certified evidence from prior cycle:
-- GOAL Super SPEC exists and is indexed.
-- Circular contract includes execute -> analyze -> fix -> certify -> create
-  next /goal prompt -> local commit.
-- Latest local commit: ff438e5 Add tes-tts skill and convergence roadmap.
+- TTS-000 preflight confirmed `main` is ahead only by local commits.
+- Super SPEC and roadmap were re-read during TTS-000.
+- Next unresolved unit was classified as TTS-001.
 - Ready prompt artifact:
-  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md.
-- `npm run commit:check` passed before that local commit.
+  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md.
+- TTS-000 focused oracles passed:
+  - `python3 scripts/validate_tds.py`
+  - `python3 scripts/validate_doc_size.py`
+  - `python3 scripts/validate_reference_graph.py`
+  - `python3 scripts/validate_reference_package.py`
 
 Task:
-Execute only TTS-000 through the circular sequence:
+Execute only TTS-001 through the circular sequence:
 execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit.
 
 Required actions:
 1. Run `git status --short --branch --untracked-files=all`.
-2. Confirm the worktree is ahead only by local commits and no sync/release is
-   authorized.
-3. Re-read this Super SPEC and `docs/roadmap/TES-TTS-SKILL-ROADMAP.md`.
-4. Classify the next unresolved unit after TTS-000.
-5. If the preflight contract is coherent, certify with the smallest focused
-   oracle and create the next `/goal` prompt for TTS-001.
-6. Commit the local execution as the final action of the cycle.
+2. Re-read roadmap, ADR 0004, architecture SPEC, execution SPEC, and
+   `tes-tts` normalization references.
+3. Search for contradictions across roadmap, ADR, SPECs, and references.
+4. Fix only coherence defects found in TTS-001 scope.
+5. Certify with focused docs/oracle checks.
+6. Create the next `/goal` prompt artifact for TTS-002 if not converged.
+7. Commit the local execution as the final action of the cycle.
 
 Forbidden:
 - no sync, release, push, tag, publish, provider install, provider download,
