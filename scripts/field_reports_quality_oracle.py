@@ -258,6 +258,28 @@ def run_oracle() -> dict[str, Any]:
         ):
             if term not in body:
                 failures.append(f"issue body missing actionable report field: {term}")
+        recovery_event = event(
+            target,
+            "tes_init",
+            "NEEDS_REVIEW",
+            "installer",
+            route="codex",
+            certification_status="PARTIAL",
+            failures="dependency locks missing from generated project context",
+        )
+        recovery_body = field_reports.build_issue_body([recovery_event], 1, 1)
+        for term in (
+            "Product classes:",
+            "Certification impact:",
+            "Owner surface:",
+            "Next action:",
+            "Dedupe fingerprint:",
+            "Status counts:",
+            "dependency locks missing",
+        ):
+            if term not in recovery_body:
+                failures.append(f"postinstall recovery report missing actionable hint: {term}")
+        assert_private_values_absent(recovery_body, failures, "postinstall recovery issue body")
         hostile_summary = field_reports.classify_report([hostile])
         if hostile_summary.get("privacy_state") != "sanitized":
             failures.append("field report summaries must declare sanitized privacy state")
