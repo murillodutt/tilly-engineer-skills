@@ -50,6 +50,9 @@ Run the smallest gate that proves the claim:
 
 When `/tes-doctor` is asked to validate, repair, install, or certify MCP, it
 acts as a fallback for `/tes-mcp` instead of stopping at a health report.
+Normal first registration for Codex, Claude Code, and Cursor belongs to the
+`npx`/`bunx` installer; doctor handles MCP drift, failed health, explicit
+repair/install requests, and host recognition evidence.
 
 Use this sequence:
 

@@ -6,8 +6,12 @@ license: MIT
 
 # TES MCP
 
-`/tes-mcp` is the preferred shared TES trigger for project-scoped Cortex MCP
-activation and health checks. `/tes:mcp` is a compatible TES intent alias if
+`/tes-mcp` is the preferred shared TES trigger for explicit project-scoped
+Cortex MCP activation, repair, host-recognition checks, and VS Code MCP
+registration. Normal first registration for Codex, Claude Code, and Cursor
+comes from the `npx`/`bunx` installer; this skill is the focused MCP route
+after install or when the user asks for MCP directly. `/tes:mcp` is a
+compatible TES intent alias if
 the host reports it as an invalid slash.
 
 ## Workflow

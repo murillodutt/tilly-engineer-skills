@@ -216,7 +216,7 @@ python3 scripts/cortex.py review --target /path/to/project-or-vault --backend le
 Run the correlated `--self-test` commands from `scripts/**` when certifying
 the package source.
 
-Project-scoped MCP can be installed and checked with:
+The `npx`/`bunx add` installer is the primary first-registration path for project-scoped MCP on Codex, Claude Code, and Cursor. Its `--agent all` route does not create VS Code config. Explicit MCP work, including VS Code, uses:
 
 ```bash
 python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
@@ -274,10 +274,9 @@ clean runtime overwrite, and semantic recovery into `docs/agents/**`.
 For a meshed project, the installer treats the run as update/convergence. It
 inspects the existing `docs/agents/**` mesh, compares the installed Tilly
 version with the cloud package version, detects applied IDE surfaces, recommends
-`all`, `codex`, `claude`, `cursor`, `vscode`, or `current`, applies only surgical updates,
+`all`, `codex`, `claude`, `cursor`, or `current`, applies only surgical updates,
 preserves durable `.tes/**` state, refreshes active runtime from the canonical
-bundle, recovers local governance semantics from backup evidence, and certifies
-the resulting state.
+bundle, recovers local governance semantics, and certifies the resulting state. VS Code remains an explicit MCP-only route rather than an adapter install route.
 
 ## Certification Output
 

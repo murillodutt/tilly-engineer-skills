@@ -278,7 +278,7 @@
           {"type": "code", "label": "fixed ref form", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.143 tilly-engineer-skills add"},
           {"type": "code", "label": "bun runtime", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.143 tilly-engineer-skills add"},
           {"type": "code", "label": "non-interactive", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.143 tilly-engineer-skills add --agent all --yes"},
-          {"type": "steps", "items": ["Run from the target repository with Node.js 18+ and npx, or Bun 1.0+ and bunx. TES also requires Python 3.11+ for local setup oracles.", "Interactive mode lets you confirm target, agent hooks, and install mode before TES writes files.", "Use `--agent all --yes` when you want all Codex, Claude Code, and Cursor hooks prepared non-interactively.", "Codex: open Settings > Hooks, then Trust and enable the Session Start hook if it is marked needs review.", "Claude Code: open or reopen Claude Code, wait for the TES completion notice, then run `/tes-setup`.", "Cursor: reopen the workspace, let first-session setup complete, then run `/tes-setup` for the report.", "After `/tes-setup` reports complete, run `/tes-align`, then use `/tes-map` for the current GPS view before starting project work.", "Read the final report before approving commit, push, or rollout."]},
+          {"type": "steps", "items": ["Run from the target repository with Node.js 18+ and npx, or Bun 1.0+ and bunx. TES also requires Python 3.11+ for local setup oracles.", "Interactive mode lets you confirm target, agent hooks, and install mode before TES writes files.", "Use `--agent all --yes` when you want Codex, Claude Code, and Cursor hooks plus their project MCP configs prepared non-interactively.", "Codex: open Settings > Hooks, then Trust and enable the Session Start hook if it is marked needs review.", "Claude Code: open or reopen Claude Code, wait for the TES completion notice, then run `/tes-setup`.", "Cursor: reopen the workspace, let first-session setup complete, then run `/tes-setup` for the report.", "Use `/tes-mcp` for explicit VS Code MCP registration or host-recognition repair.", "After `/tes-setup` reports complete, run `/tes-align`, then use `/tes-map` for the current GPS view before starting project work.", "Read the final report before approving commit, push, or rollout."]},
           {"type": "aside", "title": "Important: agent follow-up is host-specific", "text": "The first run is not the same in every host. Codex: open Settings > Hooks, then Trust and enable Session Start if it is marked needs review. Claude Code: reopen Claude Code, wait for the TES completion notice, then run `/tes-setup`. Cursor: reopen the workspace, let first-session setup complete, then run `/tes-setup`. Only after the report is complete, run `/tes-align`, then use `/tes-map` for the current GPS view before project work."},
           {"type": "p", "text": "`#v0.3.143` is the intended fixed-ref form. Treat the remote ref as certified only after the tag or fixed ref is authorized and `npm run release:check` passes; the current evidence is local package-source and bundle closure."},
           {"type": "p", "text": "`--loglevel=error` keeps package-runner warnings out of the first-run screen while preserving real command failures. For Bun-only machines, use the `bunx --silent --bun` command. If neither runtime is installed, install Node.js LTS or Bun before running TES."}
@@ -292,7 +292,7 @@
           {"type": "code", "label": "ref fija", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.143 tilly-engineer-skills add"},
           {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.143 tilly-engineer-skills add"},
           {"type": "code", "label": "no interactivo", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.143 tilly-engineer-skills add --agent all --yes"},
-          {"type": "steps", "items": ["Ejecuta desde el repositorio objetivo con Node.js 18+ y npx, o Bun 1.0+ y bunx. TES tambien requiere Python 3.11+ para los oraculos locales de setup.", "El modo interactivo te deja confirmar target, hooks de agentes y modo de instalacion antes de escribir archivos.", "Usa `--agent all --yes` cuando quieras preparar hooks para Codex, Claude Code y Cursor de forma no interactiva.", "Codex: abre Settings > Hooks, luego usa Trust y activa el hook Session Start si aparece como needs review.", "Claude Code: abre o reabre Claude Code, espera el aviso de finalizacion de TES y ejecuta `/tes-setup`.", "Cursor: reabre el workspace, deja que el setup de primera sesion termine y ejecuta `/tes-setup` para el reporte.", "Despues de que `/tes-setup` reporte complete, ejecuta `/tes-align` y usa `/tes-map` para la vista GPS actual antes de empezar trabajo de proyecto.", "Lee el reporte final antes de aprobar commit, push o rollout."]},
+          {"type": "steps", "items": ["Ejecuta desde el repositorio objetivo con Node.js 18+ y npx, o Bun 1.0+ y bunx. TES tambien requiere Python 3.11+ para los oraculos locales de setup.", "El modo interactivo te deja confirmar target, hooks de agentes y modo de instalacion antes de escribir archivos.", "Usa `--agent all --yes` cuando quieras preparar hooks y configs MCP de proyecto para Codex, Claude Code y Cursor de forma no interactiva.", "Codex: abre Settings > Hooks, luego usa Trust y activa el hook Session Start si aparece como needs review.", "Claude Code: abre o reabre Claude Code, espera el aviso de finalizacion de TES y ejecuta `/tes-setup`.", "Cursor: reabre el workspace, deja que el setup de primera sesion termine y ejecuta `/tes-setup` para el reporte.", "Usa `/tes-mcp` para registro MCP explicito de VS Code o reparacion de reconocimiento del host.", "Despues de que `/tes-setup` reporte complete, ejecuta `/tes-align` y usa `/tes-map` para la vista GPS actual antes de empezar trabajo de proyecto.", "Lee el reporte final antes de aprobar commit, push o rollout."]},
           {"type": "aside", "title": "Importante: el seguimiento del agente depende del host", "text": "La primera ejecucion no es igual en todos los hosts. Codex: abre Settings > Hooks, luego usa Trust y activa Session Start si aparece como needs review. Claude Code: reabre Claude Code, espera el aviso de finalizacion de TES y ejecuta `/tes-setup`. Cursor: reabre el workspace, deja que el setup termine y ejecuta `/tes-setup`. Solo despues del reporte completo, ejecuta `/tes-align` y usa `/tes-map` para la vista GPS actual antes del trabajo de proyecto."},
           {"type": "p", "text": "`#v0.3.143` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de autorizar el tag o ref fijo y de que `npm run release:check` pase; la evidencia actual es cierre local de package-source y bundle."},
           {"type": "p", "text": "`--loglevel=error` mantiene los avisos del package runner fuera de la primera pantalla sin ocultar fallas reales del comando. En maquinas solo con Bun, usa `bunx --silent --bun`. Si no hay runtime instalado, instala Node.js LTS o Bun antes de ejecutar TES."}
@@ -306,7 +306,7 @@
           {"type": "code", "label": "ref fixa", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.143 tilly-engineer-skills add"},
           {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.143 tilly-engineer-skills add"},
           {"type": "code", "label": "nao interativo", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.143 tilly-engineer-skills add --agent all --yes"},
-          {"type": "steps", "items": ["Rode a partir do repositorio alvo com Node.js 18+ e npx, ou Bun 1.0+ e bunx. O TES tambem exige Python 3.11+ para os oraculos locais de setup.", "O modo interativo deixa confirmar target, hooks de agentes e modo de instalacao antes de escrever arquivos.", "Use `--agent all --yes` quando quiser preparar hooks para Codex, Claude Code e Cursor de forma nao interativa.", "Codex: abra Settings > Hooks, depois use Trust e ative o hook Session Start se ele aparecer como needs review.", "Claude Code: abra ou reabra o Claude Code, aguarde o aviso de conclusao do TES e rode `/tes-setup`.", "Cursor: reabra o workspace, deixe o setup de primeira sessao terminar e rode `/tes-setup` para o relatorio.", "Depois que `/tes-setup` reportar complete, rode `/tes-align` e use `/tes-map` para a visao GPS atual antes de iniciar trabalho no projeto.", "Leia o relatorio final antes de aprovar commit, push ou rollout."]},
+          {"type": "steps", "items": ["Rode a partir do repositorio alvo com Node.js 18+ e npx, ou Bun 1.0+ e bunx. O TES tambem exige Python 3.11+ para os oraculos locais de setup.", "O modo interativo deixa confirmar target, hooks de agentes e modo de instalacao antes de escrever arquivos.", "Use `--agent all --yes` quando quiser preparar hooks e configs MCP de projeto para Codex, Claude Code e Cursor de forma nao interativa.", "Codex: abra Settings > Hooks, depois use Trust e ative o hook Session Start se ele aparecer como needs review.", "Claude Code: abra ou reabra o Claude Code, aguarde o aviso de conclusao do TES e rode `/tes-setup`.", "Cursor: reabra o workspace, deixe o setup de primeira sessao terminar e rode `/tes-setup` para o relatorio.", "Use `/tes-mcp` para registro MCP explicito do VS Code ou reparo de reconhecimento do host.", "Depois que `/tes-setup` reportar complete, rode `/tes-align` e use `/tes-map` para a visao GPS atual antes de iniciar trabalho no projeto.", "Leia o relatorio final antes de aprovar commit, push ou rollout."]},
           {"type": "aside", "title": "Importante: o follow-up do agente depende do host", "text": "A primeira execucao nao e igual em todos os hosts. Codex: abra Settings > Hooks, depois use Trust e ative Session Start se aparecer como needs review. Claude Code: reabra o Claude Code, aguarde o aviso de conclusao do TES e rode `/tes-setup`. Cursor: reabra o workspace, deixe o setup terminar e rode `/tes-setup`. So depois do relatorio completo, rode `/tes-align` e use `/tes-map` para a visao GPS atual antes do trabalho no projeto."},
           {"type": "p", "text": "`#v0.3.143` e a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de autorizar a tag ou ref fixo e de `npm run release:check` passar; a evidencia atual e fechamento local de package-source e bundle."},
           {"type": "p", "text": "`--loglevel=error` mantem avisos do package runner fora da primeira tela sem esconder falhas reais do comando. Em maquinas somente com Bun, use `bunx --silent --bun`. Se nenhum runtime estiver instalado, instale Node.js LTS ou Bun antes de executar o TES."}
@@ -651,7 +651,7 @@
             ["`/tes-prospect`", "Explicitly stress-test a plan or design with predictive project pressure.", "No project writes; cognitive brake pauses the pressure."],
             ["`/tes-mine`", "Explicitly mine code, terminology, context, and ADR candidates.", "May write `CONTEXT.md` or ADRs only when resolved and not braked."],
             ["`/tes-cortex`", "Inspect, recall, audit, learn from, or reflect into Cortex.", "Memory writes require explicit authorization and evidence."],
-            ["`/tes-mcp`", "Activate or verify Cortex MCP.", "May write project-scoped MCP config and TES helpers; governed remember is default and still requires exact approval."],
+            ["`/tes-mcp`", "Explicitly activate, repair, or verify Cortex MCP after install, including VS Code MCP.", "May write project-scoped MCP config and TES helpers; governed remember is default and still requires exact approval."],
             ["`/tes-field-reports`", "Inspect, drain, disable, or enable sanitized reports.", "May update `.tes/field-reports/**` and the local pre-push hook."],
             ["`/tes-doctor` / `/tes:doctor`", "Validate, health-check, certify, prepare a commit, or fallback-test/repair/install MCP when MCP health is the failure.", "Read-only by default; MCP fallback may write `.tes/bin/**` and project-scoped MCP config only after repair/install authorization."],
             ["`/tes-adapter` / `/tes:adapter`", "Materialize, install, dry-run, retrofit, validate, or certify Codex, Claude, Cursor, or all TES adapters.", "Writes generated adapter trees and target installs only with explicit authorization (e.g. `--yes`); defaults to dry-run."],
@@ -680,7 +680,7 @@
             ["`/tes-prospect`", "Estresar explicitamente un plan o diseno con presion predictiva de proyecto.", "No escribe archivos; el freno cognitivo pausa la presion."],
             ["`/tes-mine`", "Minar explicitamente codigo, terminologia, contexto y candidatos ADR.", "Puede escribir `CONTEXT.md` o ADRs solo cuando esten resueltos y sin freno activo."],
             ["`/tes-cortex`", "Inspeccionar, recordar, auditar, aprender o reflexionar en Cortex.", "Escrituras de memoria requieren autorizacion y evidencia."],
-            ["`/tes-mcp`", "Activar o verificar Cortex MCP.", "Puede escribir config MCP con escopo de proyecto y helpers TES; remember gobernado es default y exige aprobacion exacta."],
+            ["`/tes-mcp`", "Activar, reparar o verificar Cortex MCP explicitamente despues de instalar, incluido VS Code MCP.", "Puede escribir config MCP con escopo de proyecto y helpers TES; remember gobernado es default y exige aprobacion exacta."],
             ["`/tes-field-reports`", "Inspeccionar, drenar, desactivar o activar reportes sanitizados.", "Puede actualizar `.tes/field-reports/**` y el hook pre-push local."],
             ["`/tes-doctor` / `/tes:doctor`", "Validar, hacer health-check, certificar, preparar commit o probar/reparar/instalar MCP como fallback cuando MCP es la falla.", "Read-only por defecto; el fallback MCP puede escribir `.tes/bin/**` y config MCP del proyecto solo tras autorizacion de reparacion/instalacion."],
             ["`/tes-adapter` / `/tes:adapter`", "Materializar, instalar, dry-run, retrofit, validar o certificar adapters Codex, Claude, Cursor o todos.", "Escribe arboles de adapter generados e instalaciones de target solo con autorizacion explicita (p.ej. `--yes`); por defecto dry-run."],
@@ -709,7 +709,7 @@
             ["`/tes-prospect`", "Estressar explicitamente um plano ou design com pressao preditiva de projeto.", "Nao escreve arquivos; o freio cognitivo pausa a pressao."],
             ["`/tes-mine`", "Minerar explicitamente codigo, terminologia, contexto e candidatos ADR.", "Pode escrever `CONTEXT.md` ou ADRs apenas quando resolvidos e sem freio ativo."],
             ["`/tes-cortex`", "Inspecionar, lembrar, auditar, aprender ou refletir no Cortex.", "Escritas de memoria exigem autorizacao explicita e evidencia."],
-            ["`/tes-mcp`", "Ativar ou verificar Cortex MCP.", "Pode escrever config MCP com escopo de projeto e helpers TES; remember governado e default e exige aprovacao exata."],
+            ["`/tes-mcp`", "Ativar, reparar ou verificar Cortex MCP explicitamente depois da instalacao, incluindo VS Code MCP.", "Pode escrever config MCP com escopo de projeto e helpers TES; remember governado e default e exige aprovacao exata."],
             ["`/tes-field-reports`", "Inspecionar, drenar, desativar ou ativar relatorios sanitizados.", "Pode atualizar `.tes/field-reports/**` e o hook pre-push local."],
             ["`/tes-doctor` / `/tes:doctor`", "Validar, fazer health-check, certificar, preparar commit ou testar/reparar/instalar MCP como fallback quando MCP e a falha.", "Read-only por padrao; o fallback MCP pode escrever `.tes/bin/**` e config MCP do projeto apenas apos autorizacao de reparo/instalacao."],
             ["`/tes-adapter` / `/tes:adapter`", "Materializar, instalar, dry-run, retrofit, validar ou certificar adapters Codex, Claude, Cursor ou todos.", "Escreve arvores de adapter geradas e instalacoes de target apenas com autorizacao explicita (ex. `--yes`); padrao dry-run."],
@@ -736,8 +736,8 @@
             ["`codex`", "Prepare `AGENTS.md`, Codex skills, and `.codex/config.toml`."],
             ["`claude`", "Prepare `CLAUDE.md`, `.claude/skills/**`, and `.mcp.json`."],
             ["`cursor`", "Prepare `.cursor/rules/**` and `.cursor/mcp.json`."],
-            ["`vscode`", "Prepare only VS Code MCP config at `.vscode/mcp.json`."],
-            ["`all`", "Prepare all supported runtime surfaces."],
+            ["`vscode`", "Explicit MCP-only route for VS Code config at `.vscode/mcp.json`."],
+            ["`all`", "Prepare Codex, Claude Code, Cursor, and their project MCP configs; VS Code stays explicit."],
             ["`audit`", "Inspect without modifying files."]
           ]}
         ]
@@ -752,8 +752,8 @@
             ["`codex`", "Preparar `AGENTS.md`, skills Codex y `.codex/config.toml`."],
             ["`claude`", "Preparar `CLAUDE.md`, `.claude/skills/**` y `.mcp.json`."],
             ["`cursor`", "Preparar `.cursor/rules/**` y `.cursor/mcp.json`."],
-            ["`vscode`", "Preparar solo la config MCP de VS Code en `.vscode/mcp.json`."],
-            ["`all`", "Preparar todas las superficies soportadas."],
+            ["`vscode`", "Ruta explicita solo MCP para VS Code en `.vscode/mcp.json`."],
+            ["`all`", "Preparar Codex, Claude Code, Cursor y sus configs MCP de proyecto; VS Code queda explicito."],
             ["`audit`", "Inspeccionar sin modificar archivos."]
           ]}
         ]
@@ -768,8 +768,8 @@
             ["`codex`", "Preparar `AGENTS.md`, skills Codex e `.codex/config.toml`."],
             ["`claude`", "Preparar `CLAUDE.md`, `.claude/skills/**` e `.mcp.json`."],
             ["`cursor`", "Preparar `.cursor/rules/**` e `.cursor/mcp.json`."],
-            ["`vscode`", "Preparar apenas a config MCP do VS Code em `.vscode/mcp.json`."],
-            ["`all`", "Preparar todas as superficies suportadas."],
+            ["`vscode`", "Rota explicita apenas MCP para VS Code em `.vscode/mcp.json`."],
+            ["`all`", "Preparar Codex, Claude Code, Cursor e suas configs MCP de projeto; VS Code fica explicito."],
             ["`audit`", "Inspecionar sem modificar arquivos."]
           ]}
         ]
@@ -907,7 +907,7 @@
       "en": {
         "num": "07",
         "title": "MCP",
-        "lede": "Cortex MCP is project-scoped. Governed remember is default; read-only is opt-out.",
+        "lede": "Cortex MCP is project-scoped. Governed remember is default; read-only is opt-out. npx `--agent all` registers Codex, Claude Code, and Cursor; VS Code uses explicit MCP registration.",
         "blocks": [
           {"type": "table", "headers": ["Runtime", "Config file"], "rows": [["Codex", "`.codex/config.toml`"], ["Claude Code", "`.mcp.json`"], ["Cursor", "`.cursor/mcp.json`"], ["VS Code", "`.vscode/mcp.json`"]]},
           {"type": "p", "text": "The MCP surface can verify, audit, recall, read cells, plan absorbs, plan curation, reflect, inspect events, run read-only health, peek, and review operators, and run `cortex_remember_plan` plus `cortex_remember` for one new grounded cell after exact approval. Use `--read-only` to hide the governed remember tools."}
@@ -916,7 +916,7 @@
       "es": {
         "num": "07",
         "title": "MCP",
-        "lede": "Cortex MCP tiene escopo de proyecto. Remember gobernado es default; read-only es opt-out.",
+        "lede": "Cortex MCP tiene escopo de proyecto. Remember gobernado es default; read-only es opt-out. npx `--agent all` registra Codex, Claude Code y Cursor; VS Code usa registro MCP explicito.",
         "blocks": [
           {"type": "table", "headers": ["Runtime", "Config"], "rows": [["Codex", "`.codex/config.toml`"], ["Claude Code", "`.mcp.json`"], ["Cursor", "`.cursor/mcp.json`"], ["VS Code", "`.vscode/mcp.json`"]]},
           {"type": "p", "text": "La superficie MCP puede verificar, auditar, recordar, leer cells, planear absorbs, planear curadoria, reflect, inspeccionar eventos, ejecutar operadores read-only de health, peek y review, y ejecutar `cortex_remember_plan` mas `cortex_remember` para una nueva cell fundamentada despues de aprobacion exacta. Usa `--read-only` para ocultar las herramientas de remember gobernado."}
@@ -925,7 +925,7 @@
       "pt": {
         "num": "07",
         "title": "MCP",
-        "lede": "Cortex MCP tem escopo de projeto. Remember governado e default; read-only e opt-out.",
+        "lede": "Cortex MCP tem escopo de projeto. Remember governado e default; read-only e opt-out. npx `--agent all` registra Codex, Claude Code e Cursor; VS Code usa registro MCP explicito.",
         "blocks": [
           {"type": "table", "headers": ["Runtime", "Config"], "rows": [["Codex", "`.codex/config.toml`"], ["Claude Code", "`.mcp.json`"], ["Cursor", "`.cursor/mcp.json`"], ["VS Code", "`.vscode/mcp.json`"]]},
           {"type": "p", "text": "A superficie MCP pode verificar, auditar, lembrar, ler cells, planejar absorbs, planejar curadoria, refletir, inspecionar eventos, executar operadores somente leitura de health, peek e review, e executar `cortex_remember_plan` mais `cortex_remember` para uma nova cell fundamentada depois de aprovacao exata. Use `--read-only` para ocultar as ferramentas de remember governado."}

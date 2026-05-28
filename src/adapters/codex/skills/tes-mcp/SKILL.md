@@ -5,8 +5,11 @@ description: Use when the user says /tes-mcp, /tes:mcp, or asks to activate, ver
 
 # TES MCP
 
-`/tes-mcp` and `/tes:mcp` are shortcuts for project-scoped Cortex MCP
-activation and health checks.
+`/tes-mcp` and `/tes:mcp` are explicit shortcuts for project-scoped Cortex MCP
+activation, repair, host-recognition checks, and VS Code MCP registration.
+Normal first registration for Codex, Claude Code, and Cursor comes from the
+`npx`/`bunx` installer; this skill is the focused MCP route after install or
+when the user asks for MCP directly.
 
 ## Workflow
 

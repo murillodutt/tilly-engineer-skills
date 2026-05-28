@@ -121,7 +121,7 @@ with `cortex_mcp.py --self-test`, dry-run `install_mcp.py --target . --adapter a
 
 ## 3. Routes
 
-Selected during install/update. Default: `current`.
+Selected during install/update or explicit MCP work. Default: `current`. For `npx`/`bunx add`, `--agent all` means Codex, Claude Code, and Cursor; VS Code MCP registration is an explicit `/tes-mcp` or `install_mcp.py` route.
 
 | Route | Effect |
 |-------|--------|
@@ -129,8 +129,8 @@ Selected during install/update. Default: `current`.
 | `codex` | Prepares `AGENTS.md`, Codex skill, `.codex/config.toml` |
 | `claude` | Prepares `CLAUDE.md`, `.claude/skills/**`, `.mcp.json` |
 | `cursor` | Prepares rules in `.cursor/rules/**`, `.cursor/mcp.json` |
-| `vscode` | Prepares only `.vscode/mcp.json` for VS Code MCP |
-| `all` | Prepares Codex, Claude, Cursor + all project MCP configs |
+| `vscode` | Explicit MCP-only route for `.vscode/mcp.json` |
+| `all` | Prepares Codex, Claude, Cursor + their project MCP configs |
 | `mcp` | Activates only Cortex MCP layer for detected runtime; `--read-only` is opt-out |
 | `audit` | Inspects without modifying files |
 
