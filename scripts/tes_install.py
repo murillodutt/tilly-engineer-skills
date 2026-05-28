@@ -114,6 +114,13 @@ def selected_agents(agent: str) -> list[str]:
     return [agent]
 
 
+def selected_mcp_adapters(agent: str) -> list[str]:
+    # VS Code is a certified MCP consumer config, not a TES adapter.
+    if agent == "all":
+        return ["codex", "claude", "cursor"]
+    return [agent]
+
+
 def source_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
@@ -414,6 +421,7 @@ def write_install_lock(
     stage: dict[str, Any],
     apply_result: dict[str, Any],
     hook_actions: list[dict[str, str]],
+    mcp_result: dict[str, Any],
     dry_run: bool,
 ) -> dict[str, str]:
     manifest = read_json(target / ".tes/manifest.json")
@@ -431,6 +439,7 @@ def write_install_lock(
         "stage": summarize_result(stage),
         "apply": summarize_result(apply_result),
         "hooks": hook_actions,
+        "mcp": summarize_mcp_result(mcp_result),
     }
     return write_json(target / LOCK_PATH, lock, dry_run=dry_run)
 
@@ -450,6 +459,150 @@ def summarize_result(result: dict[str, Any]) -> dict[str, Any]:
     if result.get("failures"):
         summary["failures"] = result["failures"]
     return summary
+
+
+def parse_json_output(text: str) -> dict[str, Any]:
+    start = text.find("{")
+    if start < 0:
+        return {}
+    depth = 0
+    in_string = False
+    escaping = False
+    for index in range(start, len(text)):
+        char = text[index]
+        if in_string:
+            if escaping:
+                escaping = False
+            elif char == "\\":
+                escaping = True
+            elif char == '"':
+                in_string = False
+            continue
+        if char == '"':
+            in_string = True
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    data = json.loads(text[start:index + 1])
+                except json.JSONDecodeError:
+                    return {}
+                return data if isinstance(data, dict) else {}
+    try:
+        data = json.loads(text[start:])
+    except json.JSONDecodeError:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def mcp_command_result(target: Path, adapter: str, dry_run: bool, timeout: float) -> dict[str, Any]:
+    script = helper_path(target, "install_mcp.py")
+    command = [
+        sys.executable,
+        str(script),
+        "--target",
+        str(target),
+        "--adapter",
+        adapter,
+        "--overwrite",
+        "--json-only",
+    ]
+    if dry_run:
+        command.append("--dry-run")
+    else:
+        command.append("--yes")
+    try:
+        result = subprocess.run(
+            command,
+            cwd=target,
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout if isinstance(exc.stdout, str) else ""
+        stderr = exc.stderr if isinstance(exc.stderr, str) else ""
+        return {
+            "adapter": adapter,
+            "command": " ".join(command),
+            "returncode": 124,
+            "status": "BLOCKED",
+            "stdout": stdout.strip(),
+            "stderr": (stderr.strip() + f"\ncommand timed out after {timeout:g}s").strip(),
+            "payload": {},
+        }
+    payload = parse_json_output(result.stdout)
+    return {
+        "adapter": adapter,
+        "command": " ".join(command),
+        "returncode": result.returncode,
+        "status": "PASS" if result.returncode == 0 else "FAIL",
+        "stdout": result.stdout.strip(),
+        "stderr": result.stderr.strip(),
+        "payload": payload,
+    }
+
+
+def mcp_summary_from_results(agent: str, adapters: list[str], results: list[dict[str, Any]], dry_run: bool) -> dict[str, Any]:
+    failures: list[str] = []
+    configs: list[dict[str, Any]] = []
+    registrations: list[dict[str, Any]] = []
+    server_files: list[dict[str, Any]] = []
+    for item in results:
+        payload = item.get("payload") if isinstance(item.get("payload"), dict) else {}
+        failures.extend(str(failure) for failure in payload.get("failures", []) if failure)
+        if item.get("returncode") != 0 and not payload.get("failures"):
+            detail = item.get("stderr") or item.get("stdout") or "MCP installer failed"
+            failures.append(f"{item.get('adapter')}: {str(detail).splitlines()[-1]}")
+        for action in payload.get("configs", []) if isinstance(payload.get("configs"), list) else []:
+            if isinstance(action, dict):
+                configs.append(action)
+        for action in payload.get("config_registrations", []) if isinstance(payload.get("config_registrations"), list) else []:
+            if isinstance(action, dict):
+                registrations.append(action)
+        for action in payload.get("server_files", []) if isinstance(payload.get("server_files"), list) else []:
+            if isinstance(action, dict):
+                server_files.append(action)
+    status = "FAIL" if failures else ("DRY-RUN" if dry_run else "INSTALLED")
+    return {
+        "status": status,
+        "agent": agent,
+        "adapters": adapters,
+        "server": "tes-cortex",
+        "configs": configs,
+        "config_registrations": registrations,
+        "server_files": server_files,
+        "commands": [
+            {
+                "adapter": item["adapter"],
+                "command": item["command"],
+                "status": item["status"],
+                "returncode": item["returncode"],
+            }
+            for item in results
+        ],
+        "failures": failures,
+    }
+
+
+def run_mcp_bootstrap(target: Path, agent: str, dry_run: bool, timeout: float) -> dict[str, Any]:
+    adapters = selected_mcp_adapters(agent)
+    results = [mcp_command_result(target, adapter, dry_run, timeout) for adapter in adapters]
+    return mcp_summary_from_results(agent, adapters, results, dry_run)
+
+
+def summarize_mcp_result(result: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "status": result.get("status"),
+        "adapters": result.get("adapters", []),
+        "server": result.get("server"),
+        "configs": result.get("configs", []),
+        "config_registrations": result.get("config_registrations", []),
+        "failures": result.get("failures", []),
+    }
 
 
 def install(args: argparse.Namespace) -> int:
@@ -524,6 +677,24 @@ def install(args: argparse.Namespace) -> int:
             return 1
 
     hook_actions = [] if args.no_hooks else install_hooks(target, agents, args.dry_run)
+    mcp_result = run_mcp_bootstrap(target, args.agent, args.dry_run, args.timeout)
+    if mcp_result.get("status") == "FAIL":
+        result = {
+            "version": VERSION,
+            "status": "FAIL",
+            "target": str(target),
+            "agent": args.agent,
+            "agents": agents,
+            "mode": args.mode,
+            "stage": summarize_result(stage),
+            "apply": summarize_result(apply_result),
+            "hooks": hook_actions,
+            "mcp": summarize_mcp_result(mcp_result),
+            "failures": mcp_result.get("failures", ["MCP bootstrap failed"]),
+        }
+        print(json.dumps(result, indent=2, sort_keys=True))
+        print("[tes-install] FAIL")
+        return 1
     sentinel_action = (
         {"path": rel(target / POSTINSTALL_PATH, target), "action": "skip-disabled"}
         if args.no_postinstall
@@ -533,7 +704,7 @@ def install(args: argparse.Namespace) -> int:
             else write_pending_sentinel(target, args.agent, agents, args.postinstall_mode, args.dry_run)
         )
     )
-    lock_action = write_install_lock(target, args.agent, agents, args.mode, stage, apply_result, hook_actions, args.dry_run)
+    lock_action = write_install_lock(target, args.agent, agents, args.mode, stage, apply_result, hook_actions, mcp_result, args.dry_run)
     status = "DRY-RUN" if args.dry_run else "INSTALLED"
     if apply_result.get("status") == "NEEDS_REVIEW":
         status = "NEEDS_REVIEW"
@@ -547,6 +718,7 @@ def install(args: argparse.Namespace) -> int:
         "stage": summarize_result(stage),
         "apply": summarize_result(apply_result),
         "hooks": hook_actions,
+        "mcp": summarize_mcp_result(mcp_result),
         "postinstall": sentinel_action,
         "lock": lock_action,
     }
@@ -663,6 +835,17 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
     write_json(sentinel_path, running)
     commands = [] if args.skip_project_init else list(DEFAULT_POSTINSTALL_COMMANDS)
     results = [run_helper(target, script, script_args, args.timeout) for script, script_args in commands]
+    mcp_result = run_mcp_bootstrap(target, args.agent, False, args.timeout)
+    results.extend(
+        {
+            "command": command["command"],
+            "returncode": command["returncode"],
+            "status": command["status"],
+            "stdout": "",
+            "stderr": "\n".join(mcp_result.get("failures", [])) if command["returncode"] != 0 else "",
+        }
+        for command in mcp_result.get("commands", [])
+    )
     failed = [item for item in results if item["returncode"] != 0]
     final_state = "needs_review" if failed else "complete"
     status = "NEEDS_REVIEW" if failed else "PASS"
@@ -675,6 +858,7 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         "completed_at": utc_stamp(),
         "status": status,
         "commands": results,
+        "mcp": summarize_mcp_result(mcp_result),
         "hook_input_keys": sorted((hook_input or {}).keys()),
     }
     if recover_needs_review:
@@ -707,6 +891,7 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         "state": final_state,
         "run_record": run_record_rel,
         "commands": [{"command": item["command"], "status": item["status"], "returncode": item["returncode"]} for item in results],
+        "mcp": summarize_mcp_result(mcp_result),
     }
     if recover_needs_review:
         result["recovery"] = "needs_review"
@@ -922,11 +1107,19 @@ def self_test() -> int:
             failures.append("thin install failed")
             failures.extend(install_result.stdout.splitlines())
             failures.extend(install_result.stderr.splitlines())
+        install_payload = parse_json_output(install_result.stdout)
+        install_mcp = install_payload.get("mcp") if isinstance(install_payload.get("mcp"), dict) else {}
+        if install_mcp.get("status") != "INSTALLED":
+            failures.append("thin install must report MCP status INSTALLED")
+        if install_mcp.get("adapters") != ["codex", "claude", "cursor"]:
+            failures.append("thin install --agent all must map MCP adapters to codex, claude, cursor only")
         for relpath in (
             ".tes/bin/tes_install.py",
             ".tes/tes-install-lock.json",
             ".tes/postinstall.json",
             ".codex/config.toml",
+            ".mcp.json",
+            ".cursor/mcp.json",
             ".claude/settings.json",
             ".claude/skills/tes-setup/SKILL.md",
             ".cursor/hooks.json",
@@ -934,6 +1127,16 @@ def self_test() -> int:
         ):
             if not (target / relpath).exists():
                 failures.append(f"missing installed path: {relpath}")
+        if (target / ".vscode/mcp.json").exists():
+            failures.append("thin install --agent all must not create VS Code MCP config")
+        codex_config = (target / ".codex/config.toml").read_text(encoding="utf-8") if (target / ".codex/config.toml").exists() else ""
+        if "[mcp_servers.tes-cortex]" not in codex_config:
+            failures.append("thin install must register Codex tes-cortex MCP server")
+        for relpath, server_key in ((".mcp.json", "mcpServers"), (".cursor/mcp.json", "mcpServers")):
+            data = read_json(target / relpath)
+            servers = data.get(server_key) if isinstance(data.get(server_key), dict) else {}
+            if "tes-cortex" not in servers:
+                failures.append(f"thin install must register tes-cortex in {relpath}")
         sentinel = read_json(target / POSTINSTALL_PATH)
         if sentinel.get("state") != "pending":
             failures.append("postinstall sentinel must be pending after install")
@@ -1029,6 +1232,16 @@ def self_test() -> int:
         sentinel = read_json(target / POSTINSTALL_PATH)
         if sentinel.get("state") != "complete":
             failures.append("postinstall sentinel must be complete after hook")
+        if sentinel.get("last_status") != "PASS":
+            failures.append("postinstall sentinel must record PASS after hook")
+        last_run = sentinel.get("last_run")
+        if isinstance(last_run, str) and (target / last_run).exists():
+            run_record = read_json(target / last_run)
+            run_mcp = run_record.get("mcp") if isinstance(run_record.get("mcp"), dict) else {}
+            if run_mcp.get("status") != "INSTALLED":
+                failures.append("postinstall run record must include MCP status INSTALLED")
+        else:
+            failures.append("postinstall sentinel must point to an existing run record")
         for relpath in (
             "docs/agents/PROJECT-CONTEXT.md",
             "docs/agents/PROJECT-REGISTER.md",

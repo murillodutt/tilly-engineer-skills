@@ -159,7 +159,7 @@ def raw_engine_output_leaked(text: str) -> bool:
         return True
     if "{" in lines or "}" in lines:
         return True
-    raw_json_keys = {"\"agent\":", "\"apply\":", "\"hooks\":", "\"stage\":", "\"postinstall\":"}
+    raw_json_keys = {"\"agent\":", "\"apply\":", "\"hooks\":", "\"mcp\":", "\"stage\":", "\"postinstall\":"}
     return any(any(line.startswith(key) for key in raw_json_keys) for line in lines)
 
 
@@ -248,6 +248,27 @@ def claude_hook_contract_failures(target: Path) -> list[str]:
         for term in ("name: tes-setup", "/tes-init", ".tes/postinstall.json"):
             if term not in setup_text:
                 failures.append(f"Claude /tes-setup skill missing contract term: {term}")
+    return failures
+
+
+def mcp_all_contract_failures(target: Path, label: str) -> list[str]:
+    failures: list[str] = []
+    expected = (".codex/config.toml", ".mcp.json", ".cursor/mcp.json")
+    for relpath in expected:
+        if not (target / relpath).exists():
+            failures.append(f"{label} missing MCP config: {relpath}")
+    if (target / ".vscode/mcp.json").exists():
+        failures.append(f"{label} --agent all must not create .vscode/mcp.json")
+    codex_config = (target / ".codex/config.toml").read_text(encoding="utf-8") if (target / ".codex/config.toml").exists() else ""
+    if "[mcp_servers.tes-cortex]" not in codex_config:
+        failures.append(f"{label} must register Codex tes-cortex MCP server")
+    for relpath in (".mcp.json", ".cursor/mcp.json"):
+        if not (target / relpath).exists():
+            continue
+        data = load_json(target / relpath)
+        servers = data.get("mcpServers") if isinstance(data.get("mcpServers"), dict) else {}
+        if "tes-cortex" not in servers:
+            failures.append(f"{label} must register tes-cortex in {relpath}")
     return failures
 
 
@@ -672,11 +693,14 @@ def self_test() -> int:
             ".tes/bin/tes_install.py",
             ".tes/postinstall.json",
             ".codex/config.toml",
+            ".mcp.json",
+            ".cursor/mcp.json",
             ".claude/settings.json",
             ".cursor/hooks.json",
         ):
             if not (accept_target / relpath).exists():
                 failures.append(f"interactive accept install missing path: {relpath}")
+        failures.extend(mcp_all_contract_failures(accept_target, "interactive accept install"))
 
         pack_result = run(["npm", "pack", "--pack-destination", str(pack_dir)], ROOT, timeout=240.0)
         if pack_result.returncode != 0:
@@ -765,12 +789,15 @@ def self_test() -> int:
                 ".tes/tes-install-lock.json",
                 ".tes/postinstall.json",
                 ".codex/config.toml",
+                ".mcp.json",
+                ".cursor/mcp.json",
                 ".claude/settings.json",
                 ".claude/skills/tes-setup/SKILL.md",
                 ".cursor/hooks.json",
             ):
                 if not (install_target / relpath).exists():
                     failures.append(f"npm exec install missing path: {relpath}")
+            failures.extend(mcp_all_contract_failures(install_target, "npm exec install"))
             sentinel = load_json(install_target / ".tes/postinstall.json") if (install_target / ".tes/postinstall.json").exists() else {}
             if sentinel.get("state") != "pending":
                 failures.append("npm exec install must leave pending postinstall sentinel")
