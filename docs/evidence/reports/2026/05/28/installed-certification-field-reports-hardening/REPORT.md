@@ -66,53 +66,48 @@ alone is not enough.
   hygiene, or provenance fails.
 - No stale `.agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py`
   path in generated quality gates.
-- Source bundle generation now rejects `.DS_Store` and OS residue in bundle
-  entries, staged setup, and installed runtime artifacts. The existing public
-  bundle for `0.3.144` still requires an authorized rebuild before this
-  negative check can be claimed for the published artifact.
+- Source bundle generation removes and rejects `.DS_Store` and OS residue in
+  bundle entries, staged setup, installed runtime artifacts, and the regenerated
+  public bundle for `0.3.144`.
 - No sealed release claim with dirty or unsealed package provenance.
 - No unsafe Field Reports body content.
 
 ## Closeout Gate
 
-Current closeout status is `NEEDS_REVIEW`, not `PASS`.
+Current local closeout status is `PASS`.
 
-`npm run commit:check` reaches `scripts/public_bundle_oracle.py` and then fails
-because the checked-in public bundle `docs/dist/0.3.144/**` predates this
-hygiene hardening. The oracle reports `.DS_Store` entries in the published ZIP
-and stale public bundle application/provenance evidence.
-
-This is an expected stop condition under the Super SPEC locks: the source repair
-is local and committed, but public bundle rebuild was not authorized for this
-run. A clean closeout requires an explicit maintainer decision to regenerate the
-public bundle locally, then rerun `npm run commit:check`.
+After explicit maintainer authorization, the public bundle script now purges
+macOS residue before packaging and separates source provenance from
+`docs/dist/**` distribution artifacts. The regenerated `0.3.144` bundle records
+`source_tree_state=clean`, carries SHA-256
+`5cccb0b3c900552504e87aa3b6337ad4266acc3a54dcaf8728239165cf9568fd`, and passes
+`scripts/public_bundle_oracle.py`.
 
 Mantra Gate record:
 
-- `VERIFY`: current `scripts/public_bundle_oracle.py` failure proves the public
-  artifact is stale and contains OS residue.
-- `SCOPE`: evidence correction only; no runtime, bundle, release, tag, push, or
-  remote sync.
-- `BEST_PATH`: record `NEEDS_REVIEW` honestly instead of weakening the oracle or
-  claiming a clean pass.
-- `DOCUMENT`: this report carries the local closeout blocker and release
+- `VERIFY`: `scripts/public_bundle_oracle.py` proves the regenerated public
+  artifact has no OS residue and applies through the public bundle path.
+- `SCOPE`: local source, docs, and `docs/dist/0.3.144/**` only; no tag, push,
+  marketplace, cloud, or remote sync.
+- `BEST_PATH`: keep source hygiene in the bundle generator and keep public
+  release/ref certification separate from local artifact certification.
+- `DOCUMENT`: this report carries the local closeout result and release
   identity boundary.
-- `ORACLE`: `python3 scripts/public_bundle_oracle.py` fails on
-  `docs/dist/0.3.144/**`; `npm run commit:check` therefore remains blocked at
-  the public bundle gate.
-- `RESOLVE`: authorize local public bundle rebuild, rerun closeout oracles, and
-  commit the regenerated artifact if green.
-- `STATUS`: `NEEDS_REVIEW`.
+- `ORACLE`: `python3 scripts/public_bundle_oracle.py` passes on
+  `docs/dist/0.3.144/**`.
+- `RESOLVE`: remote GitHub npx/Bun ref certification remains pending explicit
+  remote release gate authorization.
+- `STATUS`: `PASS`.
 
 ## Release Identity
 
-Delivered behavior changed. A patch release identity and fresh public bundle are
-required before claiming a sealed GitHub npx/Bun ref. This run does not rebuild
-the public bundle, tag, push, publish, release, or certify a remote ref because
-remote sync and public bundle rebuild were not authorized.
+Delivered behavior changed. The local `0.3.144` public bundle was regenerated
+after maintainer authorization, but no tag, push, publish, marketplace, cloud
+action, or remote sync was performed. A sealed GitHub npx/Bun ref certification
+still requires the authorized remote release gate.
 
-Current local status is therefore: implementation committed locally; release
-identity required and deferred; remote installer certification not claimed.
+Current local status is therefore: implementation and regenerated public bundle
+committed locally; remote installer certification not claimed.
 
 ## Boundary
 
