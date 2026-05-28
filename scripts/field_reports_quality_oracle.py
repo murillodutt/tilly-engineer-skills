@@ -82,6 +82,7 @@ def require_class(
         "owner_surface",
         "privacy_state",
         "product_class",
+        "product_classes",
         "report_fingerprint",
         "severity",
         "surface_counts",
@@ -251,6 +252,7 @@ def run_oracle() -> dict[str, Any]:
             "Owner surface:",
             "Privacy state:",
             "Product class:",
+            "Product classes:",
             "Report class:",
             "Severity:",
         ):
@@ -262,6 +264,9 @@ def run_oracle() -> dict[str, Any]:
         if not hostile_summary.get("dedupe_fingerprint"):
             failures.append("field report summaries must expose a dedupe fingerprint")
             failures.append("issue body missing actionable report fields")
+        product_classes = hostile_summary.get("product_classes")
+        if not isinstance(product_classes, list) or not all(str(item).isupper() for item in product_classes):
+            failures.append("field report summaries must expose uppercase product_classes")
 
         low_target = root / "low"
         init_git(low_target)

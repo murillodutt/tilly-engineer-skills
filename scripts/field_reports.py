@@ -67,6 +67,18 @@ NEXT_ACTION_BY_CLASS = {
     "multi-surface-operation": "split findings by owner surface and certify each gate",
     "version-drift": "review update scope and release identity",
 }
+PRODUCT_CLASSES_BY_CLASS = {
+    "adapter-drift": ("ADAPTER_DRIFT",),
+    "cortex-certification": ("CERTIFICATION_GAP",),
+    "failure-or-blocker": ("CERTIFICATION_GAP", "PRODUCT_BUG"),
+    "helper-contract-failure": ("CERTIFICATION_GAP", "PRODUCT_BUG"),
+    "installation-signal": ("CERTIFICATION_GAP",),
+    "legacy-migration": ("PRODUCT_BUG",),
+    "low-signal-heartbeat": ("LOW_SIGNAL_SUPPRESSED",),
+    "mcp-activation-failure": ("CERTIFICATION_GAP",),
+    "multi-surface-operation": ("CERTIFICATION_GAP",),
+    "version-drift": ("RELEASE_HYGIENE",),
+}
 SUMMARY_FACT_KEYS = (
     "adapter",
     "cloud_version",
@@ -666,6 +678,7 @@ def classify_report(events: list[dict[str, object]]) -> dict[str, object]:
         "owner_surface": owner_surface,
     }
     dedupe_fingerprint = sha256_text(json.dumps(fingerprint_payload, sort_keys=True))[:16]
+    product_classes = PRODUCT_CLASSES_BY_CLASS.get(report_class, ("PRODUCT_BUG",))
     return {
         "actionability": actionability,
         "adapters": sorted(adapters),
@@ -681,6 +694,7 @@ def classify_report(events: list[dict[str, object]]) -> dict[str, object]:
         "owner_surface": owner_surface,
         "privacy_state": "sanitized",
         "product_class": report_class,
+        "product_classes": list(product_classes),
         "report_class": report_class,
         "report_fingerprint": dedupe_fingerprint,
         "routes": sorted(routes),
@@ -719,6 +733,7 @@ def build_issue_body(events: list[dict[str, object]], chunk_index: int, chunk_co
         f"- Actionability: {summary['actionability']}",
         f"- Severity: {summary['severity']}",
         f"- Product class: {summary['product_class']}",
+        "- Product classes: " + summary_values(summary, "product_classes"),
         f"- Certification impact: {summary['certification_impact']}",
         f"- Owner surface: {summary['owner_surface']}",
         f"- Next action: {summary['next_action']}",
@@ -817,6 +832,7 @@ def write_receipt(target: Path, issue_url: str, events: list[dict[str, object]],
         "payload_sha256": sha256_text(body),
         "privacy_state": summary.get("privacy_state"),
         "product_class": summary.get("product_class"),
+        "product_classes": summary.get("product_classes"),
         "report_class": summary.get("report_class"),
         "report_fingerprint": summary.get("report_fingerprint"),
         "severity": summary.get("severity"),
@@ -838,6 +854,7 @@ def write_suppression_receipt(target: Path, events: list[dict[str, object]], sum
         "owner_surface": summary.get("owner_surface"),
         "privacy_state": summary.get("privacy_state"),
         "product_class": summary.get("product_class"),
+        "product_classes": summary.get("product_classes"),
         "reason": "low-signal-heartbeat",
         "report_class": summary.get("report_class"),
         "report_fingerprint": summary.get("report_fingerprint"),
@@ -874,6 +891,7 @@ def write_transport_receipt(
                 "owner_surface": summary.get("owner_surface"),
                 "privacy_state": summary.get("privacy_state"),
                 "product_class": summary.get("product_class"),
+                "product_classes": summary.get("product_classes"),
                 "report_class": summary.get("report_class"),
                 "report_fingerprint": summary.get("report_fingerprint"),
                 "severity": summary.get("severity"),

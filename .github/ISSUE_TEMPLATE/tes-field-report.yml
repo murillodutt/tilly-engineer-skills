@@ -64,6 +64,13 @@ body:
     validations:
       required: true
   - type: input
+    id: product-classes
+    attributes:
+      label: Product classes
+      placeholder: "CERTIFICATION_GAP, ADAPTER_DRIFT, RELEASE_HYGIENE"
+    validations:
+      required: true
+  - type: input
     id: certification-impact
     attributes:
       label: Certification impact

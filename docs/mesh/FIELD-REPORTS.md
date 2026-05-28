@@ -24,6 +24,10 @@ Field Reports may record package version, runtime, OS, event name, status,
 duration bucket, Tilly gate names, return codes, feature presence, failure
 categories, report class, product class, severity, certification impact, owner
 surface, next action, privacy state, signal score, and hash fingerprints.
+Each high-signal report also exposes uppercase product-maintenance classes such
+as `CERTIFICATION_GAP`, `ADAPTER_DRIFT`, `RELEASE_HYGIENE`, `PRODUCT_BUG`, or
+`LOW_SIGNAL_SUPPRESSED` so maintainer triage can group sanitized reports by
+ADR 0003.1 product responsibility rather than only by transport event shape.
 
 High-signal classes include version drift, helper-contract failure,
 adapter/runtime drift, MCP activation failure, Cortex certification batches,
@@ -73,7 +77,7 @@ quarantine contract without creating live issues. This workflow is a second
 gate, not a privacy substitute for local sanitization.
 Receiver bodies must include report class, product class, severity,
 certification impact, owner surface, next action, privacy state, report
-fingerprint, and dedupe fingerprint.
+fingerprint, dedupe fingerprint, and uppercase product classes.
 
 ## Local State
 
@@ -132,9 +136,9 @@ blocked, or degraded states. A report body, whether fake-drained in
 certification or later published through real GitHub transport, must include
 actionable findings, report class, product class, severity, certification
 impact, owner surface, next action, privacy state, actionability, signal score,
-report fingerprint, dedupe fingerprint, surface counts, routes, versions,
-schemas seen, and event details. Transport heartbeats alone are not product
-feedback.
+report fingerprint, dedupe fingerprint, uppercase product classes, surface
+counts, routes, versions, schemas seen, and event details. Transport heartbeats
+alone are not product feedback.
 
 ## Certification
 
