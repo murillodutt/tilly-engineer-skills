@@ -25,6 +25,8 @@ LEGACY_RETROFIT_ROOT = Path(".tilly/retrofit")
 RETROFIT_ARCHIVE_ROOT = Path(".tes/legacy-retirement/retrofit")
 BACKUP_ROOT = Path(".tes/legacy-retirement")
 LEGACY_MCP_SERVER = "tilly-cortex"
+STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
+CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
 KNOWN_TEMPLATE_MARKERS = ("tilly-field-report@1", "Tilly Field Report", "tilly-version")
 SKIP_PARTS = {".git", "node_modules", "dist", ".venv", "venv"}
 CLEANUP_REASONS = {"python bytecode cache", "old TES rollback backup"}
@@ -173,6 +175,23 @@ def migration_actions(target: Path) -> list[dict[str, Any]]:
     return actions
 
 
+def text_rewrite_actions(target: Path) -> list[dict[str, Any]]:
+    actions: list[dict[str, Any]] = []
+    quality_gates = target / "docs/agents/QUALITY-GATES.md"
+    if quality_gates.exists():
+        text = read_text(quality_gates)
+        if STALE_DISCIPLINE_PATH in text:
+            add_action(
+                actions,
+                "edit_text",
+                quality_gates,
+                target,
+                "replace retired discipline oracle path",
+                mode="quality-gates-discipline-path",
+            )
+    return actions
+
+
 def preserve_actions(target: Path) -> list[dict[str, Any]]:
     actions: list[dict[str, Any]] = []
     for relpath in ("AGENTS.md", "CLAUDE.md", "CURSOR.md", ".cursorrules", "docs/agents", "docs/agents/cortex"):
@@ -218,7 +237,12 @@ def build_plan(target: Path) -> dict[str, Any]:
     if not target.exists() or not target.is_dir():
         return {"version": VERSION, "status": "FAIL", "target": str(target), "failures": [f"target is not a directory: {target}"], "writes": []}
 
-    actions = [*known_removals(target), *mcp_config_actions(target), *migration_actions(target)]
+    actions = [
+        *known_removals(target),
+        *mcp_config_actions(target),
+        *migration_actions(target),
+        *text_rewrite_actions(target),
+    ]
     blocked = [item for item in actions if item["action"] == "blocked"]
     blocked.extend(blocked_unknowns(target, actions))
     actions = [item for item in actions if item["action"] != "blocked"]
@@ -235,6 +259,7 @@ def build_plan(target: Path) -> dict[str, Any]:
             "remove": sum(1 for item in actions if item["action"] == "remove"),
             "migrate": sum(1 for item in actions if item["action"] == "migrate"),
             "edit_config": sum(1 for item in actions if item["action"] == "edit_config"),
+            "edit_text": sum(1 for item in actions if item["action"] == "edit_text"),
             "cleanup": sum(1 for item in actions if item.get("reason") in CLEANUP_REASONS),
             "preserve": len(preserves),
             "blocked": len(blocked),
@@ -317,6 +342,14 @@ def edit_config(path: Path, mode: str) -> None:
         write_text(path, json.dumps(data, indent=2, sort_keys=True) + "\n")
         return
     raise ValueError(f"unknown edit mode: {mode}")
+
+
+def edit_text(path: Path, mode: str) -> None:
+    text = read_text(path)
+    if mode == "quality-gates-discipline-path":
+        write_text(path, text.replace(STALE_DISCIPLINE_PATH, CANONICAL_DISCIPLINE_PATH))
+        return
+    raise ValueError(f"unknown text edit mode: {mode}")
 
 
 def merge_outbox(source: Path, destination: Path) -> None:
@@ -421,7 +454,7 @@ def apply_plan(target: Path, *, yes: bool) -> dict[str, Any]:
 
     for action in plan["actions"]:
         path = target / action["path"]
-        if action["action"] in {"remove", "edit_config", "migrate"}:
+        if action["action"] in {"remove", "edit_config", "edit_text", "migrate"}:
             backup = backup_existing(path, target, backup_root)
             if backup:
                 backups.append(backup)
@@ -431,6 +464,9 @@ def apply_plan(target: Path, *, yes: bool) -> dict[str, Any]:
             removed_empty_dirs.extend(remove_empty_parents(path, target))
         elif action["action"] == "edit_config":
             edit_config(path, str(action["mode"]))
+            writes.append(action["path"])
+        elif action["action"] == "edit_text":
+            edit_text(path, str(action["mode"]))
             writes.append(action["path"])
         elif action["action"] == "migrate":
             if action.get("mode") == "field-reports":
@@ -527,6 +563,11 @@ def run_self_test() -> dict[str, Any]:
         (target / "AGENTS.md").write_text("# Project rules\n\nKeep local governance.\n", encoding="utf-8")
         (target / "docs/agents/cortex").mkdir(parents=True)
         (target / "docs/agents/cortex/CONTRACT.md").write_text("# Cortex\n", encoding="utf-8")
+        (target / "docs/agents/QUALITY-GATES.md").write_text(
+            "# Quality Gates\n\n"
+            f"- `python3 {STALE_DISCIPLINE_PATH} --self-test`\n",
+            encoding="utf-8",
+        )
         (target / "__pycache__").mkdir()
         (target / "__pycache__/probe.pyc").write_bytes(b"pyc")
 
@@ -538,6 +579,8 @@ def run_self_test() -> dict[str, Any]:
             failures.append("known legacy fixture must be plannable")
         if not plan["legacy_retirement_required"]:
             failures.append("known legacy fixture must require retirement")
+        if not any(item.get("action") == "edit_text" for item in plan["actions"]):
+            failures.append("stale quality gate discipline path must require text migration")
         result = apply_plan(target, yes=True)
         if result["status"] != "PASS":
             failures.append("known legacy fixture must apply cleanly")
@@ -574,6 +617,11 @@ def run_self_test() -> dict[str, Any]:
             failures.append("VS Code legacy MCP server must be removed")
         if "other" not in read_text(target / ".vscode/mcp.json"):
             failures.append("VS Code non-TES MCP servers must be preserved")
+        quality_text = read_text(target / "docs/agents/QUALITY-GATES.md")
+        if STALE_DISCIPLINE_PATH in quality_text:
+            failures.append("stale quality gate discipline path must be removed")
+        if CANONICAL_DISCIPLINE_PATH not in quality_text:
+            failures.append("canonical quality gate discipline path must be present")
 
     with tempfile.TemporaryDirectory(prefix="tes-legacy-retirement-blocked-") as tempdir:
         target = Path(tempdir)
