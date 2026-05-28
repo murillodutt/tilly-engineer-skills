@@ -116,7 +116,7 @@ verify the overlay surface is present on every supported host.
 
 When MCP is the failing surface, `/tes-doctor` falls back to `/tes-mcp`: test
 with `cortex_mcp.py --self-test`, dry-run `install_mcp.py --target . --adapter all --overwrite --json-only`, repair with `--yes` only after authorization, then certify `config_registrations` and the project-scoped config path.
-
+For full installed health, `/tes-doctor` runs `installed_certification_oracle.py --target . --json-only` and preserves `PASS`, `PARTIAL`, `NEEDS_REVIEW`, or `BLOCKED`; MCP success alone is not a clean installed certification.
 ---
 
 ## 3. Routes

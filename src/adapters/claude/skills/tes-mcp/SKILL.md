@@ -28,6 +28,9 @@ the host reports it as an invalid slash.
    `install_smoke.py --route mcp` as the local oracle.
 7. Report created or merged project-scoped config paths and classify host
    recognition separately.
+8. If the user asks for full installed TES certification, hand off to
+   `/tes-doctor` or run `installed_certification_oracle.py`; `/tes-mcp` may
+   repair MCP drift, but MCP success alone is not a clean install `PASS`.
 
 ## Host Recognition
 

@@ -28,6 +28,7 @@ Run the smallest gate that proves the claim:
 | Context | Claim | Typical oracle |
 |---------|-------|----------------|
 | installed target | TES runtime is installed | `python3 .tes/bin/tes_install.py status --target .` |
+| installed target | installed certification is clean or partial | `python3 .tes/bin/installed_certification_oracle.py --target . --json-only` |
 | installed target | project context is healthy | `python3 .tes/bin/project_context_oracle.py --target .` |
 | installed target | project alignment is healthy | `python3 .tes/bin/project_alignment_oracle.py --target .` |
 | installed target | Mantra Gate adoption is healthy | `python3 .tes/bin/mantra_gate_adoption_oracle.py --target .` (health/read-only) |
@@ -90,6 +91,27 @@ Use this sequence:
 Report `NOT_AVAILABLE` if neither the installed helper nor a TES package source
 installer is available. Report `NEEDS_REVIEW` for conflicting MCP entries when
 `--overwrite` is not authorized.
+
+## Installed Certification Repair
+
+When `/tes-doctor` is asked to repair installed TES health, run
+`installed_certification_oracle.py` first and preserve its distinction between
+`PASS`, `PARTIAL`, `NEEDS_REVIEW`, and `BLOCKED`. MCP `PASS` does not certify
+the install if Mantra Gate adoption, command trigger parity, quality-gate path,
+hygiene, or provenance is partial.
+
+Safe repair order:
+
+1. Read-only classify with
+   `python3 .tes/bin/installed_certification_oracle.py --target . --json-only`.
+2. If Mantra Gate or trigger surfaces are degraded and the user authorized
+   repair, refresh TES-owned runtime files with the installed package route
+   rather than editing generated target mirrors by hand.
+3. If `.tes/postinstall.json` is `needs_review`, repair only the focused
+   blocker, then run
+   `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`.
+4. Rerun `installed_certification_oracle.py`; report `PARTIAL` instead of
+   claiming clean certification when any non-MCP component still fails.
 
 ## Rules
 
