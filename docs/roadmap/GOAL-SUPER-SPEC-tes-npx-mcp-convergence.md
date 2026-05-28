@@ -11,7 +11,7 @@ tver: 0.1.0
 # GOAL Super SPEC: TES NPX MCP Convergence
 
 Status: implementation planning artifact for the next package-source cut after
-TES `0.3.143`.
+TES `0.3.144`.
 
 Capability: make the `npx`/`bunx` installer the primary local executor for
 project-scoped Cortex MCP installation, update, and repair across the TES
