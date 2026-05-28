@@ -48,6 +48,8 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` | Optional normalization architecture. | proposed |
 | `docs/roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` | Sequential execution contract and acceptance gates. | proposed |
 | `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` | Executive registry and evolution roadmap. | active |
+| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` | Circular execution contract for the skill. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md` | Ready prompt artifact for the next execution cycle. | active |
 | `scripts/materialize_adapter.py` | Adapter materialization inclusion. | staged |
 | `scripts/command_trigger_oracle.py` | Slash, alias, and natural trigger oracle inclusion. | staged |
 | `scripts/validate_reference_package.py` | Package reference validation inclusion. | staged |
@@ -67,6 +69,25 @@ The current package state is intentionally pre-release:
 | 6 | Add first-class language scope: `pt-BR`, `en`, `es`, `fr`, `it`, `de`, `he`. | Architecture SPEC. |
 | 7 | Introduce adapter default language as an explicit preference that never overrides user-requested language. | Language reference and execution SPEC. |
 | 8 | Require sequential convergence: one unit, one decision, one oracle, one next step. | Execution SPEC. |
+| 9 | Require every non-converged execution cycle to create the next `/goal` prompt as a tracked artifact. | GOAL Super SPEC and TTS-000 prompt artifact. |
+
+## Circular Execution Control
+
+The executable sequence is:
+
+```text
+execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit
+```
+
+The current circular execution contract is:
+`docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
+
+The current ready prompt artifact is:
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md`
+
+Each non-converged cycle must create and index the next prompt artifact before
+its local commit. This prevents the execution loop from breaking because the
+next `/goal` prompt exists only in chat or only embedded inside the Super SPEC.
 
 ## Sequential Roadmap
 
@@ -93,6 +114,8 @@ Required closure:
 - This roadmap exists and is indexed.
 - TDS document index includes the roadmap.
 - ADR/SPEC/skill surfaces have a clear ownership relationship.
+- The circular Super SPEC and ready prompt artifact are mapped from this
+  roadmap.
 - The next unresolved decision is named before continuing.
 
 Exit state: maintainers can see the full skill evolution from one roadmap
@@ -233,6 +256,8 @@ proposed/degraded.
 - Do not persist conversion caches by default.
 - Do not claim library-backed normalization until fixtures and provider probes
   prove the local behavior.
+- Do not close a non-converged cycle without a tracked next `/goal` prompt
+  artifact.
 
 ## Local Oracle Set
 
