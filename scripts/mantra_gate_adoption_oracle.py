@@ -681,6 +681,25 @@ def self_test() -> dict[str, Any]:
         if audit["status"] != "OK":
             failures.append("audit-history must pass when compact display has a complete gate record")
 
+    with tempfile.TemporaryDirectory(prefix="tes-mg-adoption-dirty-") as tmp:
+        target = Path(tmp)
+        subprocess.run(["git", "init"], cwd=target, capture_output=True, text=True, check=False)
+        subprocess.run(["git", "config", "user.email", "tes@example.invalid"], cwd=target, check=False)
+        subprocess.run(["git", "config", "user.name", "TES"], cwd=target, check=False)
+        (target / ".gitignore").write_text(".tes/local-only.txt\n", encoding="utf-8")
+        (target / "tracked.txt").write_text("base\n", encoding="utf-8")
+        subprocess.run(["git", "add", ".gitignore", "tracked.txt"], cwd=target, check=False)
+        subprocess.run(["git", "commit", "-m", "fixture"], cwd=target, capture_output=True, text=True, check=False)
+        (target / ".tes").mkdir()
+        (target / ".tes/local-only.txt").write_text("ignored\n", encoding="utf-8")
+        ignored = evaluate(target)
+        if ignored["dirty_worktree_present"] or ignored["git"]["status_short"]:
+            failures.append("ignored local files must not create dirty-worktree closure noise")
+        (target / "tracked.txt").write_text("changed\n", encoding="utf-8")
+        tracked = evaluate(target)
+        if not tracked["dirty_worktree_present"] or tracked["git"]["diff_files"] != ["tracked.txt"]:
+            failures.append("tracked file changes must remain visible in dirty-worktree reporting")
+
     return {
         "schema": SCHEMA,
         "version": VERSION,
