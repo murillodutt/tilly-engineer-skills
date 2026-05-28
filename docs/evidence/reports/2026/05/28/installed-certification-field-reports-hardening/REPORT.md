@@ -99,6 +99,24 @@ Mantra Gate record:
   remote release gate authorization.
 - `STATUS`: `PASS`.
 
+## Reverse Review Addendum
+
+Date: 2026-05-28.
+
+A reverse evidence-first review found two coverage gaps after the initial local
+PASS:
+
+| Finding | Status | Repair commit | Evidence |
+|---------|--------|---------------|----------|
+| OS-residue certification covered `.DS_Store` strongly but some self-test and public ZIP checks did not prove the broader residue set: `._*`, `.AppleDouble`, `.LSOverride`, and `__MACOSX`. | fixed | `d8142a0` | `tes_bundle.py --self-test`, `installed_certification_oracle.py --self-test`, and `public_bundle_oracle.py` now exercise or inspect the broader residue set. |
+| Field Reports exposed a lower-case event-shaped `product_class`, but ADR 0003.1 also requires actionable product-maintenance classes such as `CERTIFICATION_GAP`, `ADAPTER_DRIFT`, and `RELEASE_HYGIENE`. | fixed | `b0f08a0` | `field_reports.py --self-test`, `field_reports_quality_oracle.py --self-test`, and `field_reports_github_oracle.py --self-test` require `product_classes`. |
+
+GitHub issue #46 remains valid public baseline evidence of the original partial
+certification signal. It is not treated as proof of the repaired Field Reports
+2.1 shape because it was opened before the new product-class fields existed.
+The repaired shape is certified by deterministic local fixtures and receiver
+oracles.
+
 ## Release Identity
 
 Delivered behavior changed. The local `0.3.144` public bundle was regenerated
