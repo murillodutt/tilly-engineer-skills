@@ -80,6 +80,13 @@ MANTRA_GATE_SKILL_TERMS = (
     "TES Mantra Gate",
     "[🍳 Flash-Fry]",
 )
+DOCTOR_REPAIR_ROUTE_TERMS = (
+    "context oracle mismatch",
+    "stale quality-gate path",
+    "missing Mantra Gate route",
+    "trigger parity drift",
+    "residue",
+)
 
 
 @dataclass(frozen=True)
@@ -215,6 +222,17 @@ def mantra_gate_skill_failures(adapter: str, adapter_root: Path, relpath: str) -
     return failures
 
 
+def doctor_repair_route_failures(adapter: str, adapter_root: Path, relpath: str) -> list[str]:
+    text = read_output_text(adapter_root, relpath).lower()
+    if not text:
+        return [f"{adapter}: missing doctor skill {relpath}"]
+    return [
+        f"{adapter}: {relpath} missing repair route term: {term}"
+        for term in DOCTOR_REPAIR_ROUTE_TERMS
+        if term.lower() not in text
+    ]
+
+
 def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
     failures: list[str] = []
 
@@ -261,6 +279,11 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
         for skill in CODEX_SKILLS:
             if not (adapter_root / f".agents/skills/{skill}/SKILL.md").exists():
                 failures.append(f"codex: missing {skill} skill")
+        failures.extend(doctor_repair_route_failures(
+            adapter,
+            adapter_root,
+            ".agents/skills/tes-doctor/SKILL.md",
+        ))
         for relpath in (
             ".agents/plugins/marketplace.json",
             "plugins/tilly-engineer-skills/.codex-plugin/plugin.json",
@@ -304,6 +327,11 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
         for skill in CLAUDE_SKILLS:
             if not (adapter_root / f"{CLAUDE_PROJECT_SKILL_ROOT}/{skill}/SKILL.md").exists():
                 failures.append(f"claude: missing project skill {skill}")
+        failures.extend(doctor_repair_route_failures(
+            adapter,
+            adapter_root,
+            f"{CLAUDE_PROJECT_SKILL_ROOT}/tes-doctor/SKILL.md",
+        ))
         for relpath in (
             ".claude-plugin/plugin.json",
             ".claude-plugin/marketplace.json",

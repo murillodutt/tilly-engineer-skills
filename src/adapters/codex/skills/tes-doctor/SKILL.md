@@ -113,6 +113,19 @@ Safe repair order:
 4. Rerun `installed_certification_oracle.py`; report `PARTIAL` instead of
    claiming clean certification when any non-MCP component still fails.
 
+## Contract-Symmetry Repair Routes
+
+When the failure belongs to the postinstall recovery symmetry family, keep the
+same detected fact, status word, repair route, and Field Report hint aligned:
+
+| Failure family | Doctor route |
+|----------------|--------------|
+| context oracle mismatch | Run `project_context_oracle.py`, preserve its structured failures, then rerun `/tes-init` or postinstall recovery only for that blocker. |
+| stale quality-gate path | Run `tes_legacy_retirement.py plan`; if authorized, apply it to replace retired discipline oracle paths, then recertify. |
+| missing Mantra Gate route | Run `mantra_gate_adoption_oracle.py`; repair bootloader-to-owner-skill routing through the TES adapter/update route, then recertify. |
+| trigger parity drift | Run `command_trigger_oracle.py`; refresh TES-owned trigger surfaces through the adapter/update route, not by hand-editing installed mirrors. |
+| residue | Run installed certification artifact hygiene; remove OS residue from source/materialized setup surfaces and rebuild only when authorized. |
+
 ## Rules
 
 - Do not run heavy gates when a narrow oracle proves the claim.
