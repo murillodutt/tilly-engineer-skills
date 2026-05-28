@@ -181,7 +181,8 @@ explicitly asks to recertify/update or the planner reports drift.
 If the sentinel is `needs_review`, `/tes-init` is the recovery route: inspect
 the latest run, repair the focused blocker, then run
 `tes_install.py postinstall --recover-needs-review` so TES reruns Project-Start,
-records the recovery run, and clears the sentinel only when the gates pass.
+verifies selected MCP config, records the recovery run, and clears the sentinel
+only when the gates pass.
 
 1. **Install/Update Gate**: detect whether TES is missing, stale, helper-drifted,
    adapter-drifted, or legacy-blocked. When this gate requires installer/update
@@ -286,8 +287,8 @@ when the planner declares Project-Start, missing context, evidence drift, or
 the user explicitly asks to recertify/reinitialize. If the planner reports
 `STALE_HELPERS` or `recommended_update_scope=helpers-only`, repair only
 TES-owned `.tes/bin/**` helpers first, then rerun the planner before adapter or
-MCP work. If adapter/runtime drift remains, refresh runtime capability only
-after helper parity is `PASS`.
+MCP config refresh. If adapter/runtime drift remains, refresh runtime capability
+and selected TES adapter MCP config only after helper parity is `PASS`.
 
 After any write, the final recorded probe is mandatory:
 

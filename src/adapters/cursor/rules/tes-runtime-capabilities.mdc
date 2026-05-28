@@ -95,7 +95,7 @@ the planner reports drift, or evidence is missing.
 If `.tes/postinstall.json` is `needs_review`, inspect the latest run, repair
 the focused blocker, then run
 `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`
-to rerun Project-Start, record the recovery run, and clear the sentinel only on
-PASS.
+to rerun Project-Start, verify selected MCP config, record the recovery run,
+and clear the sentinel only on PASS.
 The target `docs/agents/PROJECT-CONTEXT.md` must analyze source anchors before
 TES claims durable project understanding.

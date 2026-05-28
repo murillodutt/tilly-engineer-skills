@@ -139,8 +139,8 @@ the planner reports drift, or evidence is missing.
 If `.tes/postinstall.json` is `needs_review`, route `/tes-init` as recovery:
 inspect the latest run, repair the focused blocker, then run
 `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`
-to rerun Project-Start, record the recovery run, and clear the sentinel only on
-PASS.
+to rerun Project-Start, verify selected MCP config, record the recovery run,
+and clear the sentinel only on PASS.
 `tes_init.py` creates the scaffold; the active agent must open strong anchors
 before claiming deep project understanding and refine the context or report
 `Project context: NEEDS_REVIEW`.
@@ -155,9 +155,11 @@ parity, applied IDE surfaces, recommended route, and
 `recommended_update_scope`. Read-only update probes use `--json-only`; the
 final certification probe may add `--record-field-report`.
 `recommended_update_scope=helpers-only` or `STALE_HELPERS` is repaired first
-through the helper-only Layer Zero route before MCP config activation. After any
-helper overwrite, the final recorded probe is required before GO, commit, or
-push and must show `helper_contract_status=PASS`,
+through the helper-only Layer Zero route before adapter or MCP config refresh.
+When adapter runtime drift remains after helper parity passes, refresh selected
+TES adapter MCP config as part of the update plan. After any helper overwrite,
+the final recorded probe is required before GO, commit, or push and must show
+`helper_contract_status=PASS`,
 `runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and
 `recommended_update_scope=none`. Also
 treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,

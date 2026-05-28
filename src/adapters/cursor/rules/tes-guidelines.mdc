@@ -127,7 +127,8 @@ preflight context PASS does not replace project-start execution. Run the
 rerun this gate. When `.tes/postinstall.json` is `needs_review`, inspect the
 latest run, repair the focused blocker, then run
 `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`
-to rerun Project-Start and clear the sentinel only on PASS. For `/tes-update`
+to rerun Project-Start, verify selected MCP config, and clear the sentinel only
+on PASS. For `/tes-update`
 or `/tes:update`, first check installed
 version, cloud version, applied IDE surfaces, helper contract parity,
 recommended route, and
@@ -137,8 +138,8 @@ run Step Zero before installer/update edits, back up local governance centrally,
 initialize or update `docs/agents/**`, analyze the target project in depth,
 write or update `docs/agents/PROJECT-CONTEXT.md`, initialize Cortex, repair
 `recommended_update_scope=helpers-only` or `STALE_HELPERS` through the
-helper-only Layer Zero route before MCP config activation, then require a final
-recorded probe before GO, commit, or push that shows
+helper-only Layer Zero route before adapter or MCP config refresh, then require
+a final recorded probe before GO, commit, or push that shows
 `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or `NOT_APPLIED`,
 `update_available=False`, and `recommended_update_scope=none`. Run available
 oracles, and finish with a certification report that includes the project

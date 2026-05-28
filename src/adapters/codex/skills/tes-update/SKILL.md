@@ -36,9 +36,9 @@ The engine is `tes_update.py`. Do not reimplement update planning in the skill.
 5. If the plan reports `STALE_HELPERS` or
    `recommended_update_scope=helpers-only`, repair only TES-owned
    `.tes/bin/**` helpers through the helper-only Layer Zero route, then rerun
-   the plan before any adapter or MCP work.
-6. If the plan reports adapter/runtime drift, refresh adapter configuration
-   only after helper parity is `PASS`.
+   the plan before any adapter or MCP config refresh.
+6. If the plan reports adapter/runtime drift, refresh adapter configuration and
+   selected TES adapter MCP config only after helper parity is `PASS`.
 7. Do not rerun `/tes-init` by default. Route to `/tes-init` only when the
    planner declares Project-Start, missing context, evidence drift, or the user
    explicitly asks to recertify/reinitialize.

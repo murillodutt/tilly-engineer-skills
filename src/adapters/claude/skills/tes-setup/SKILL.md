@@ -26,7 +26,8 @@ Code recognizes the slash command that the first-session hook recommends.
 5. When `.tes/postinstall.json` is `needs_review`, inspect the latest run
    record, repair the focused blocker, then run
    `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`
-   to rerun Project-Start and clear the sentinel only on PASS.
+   to rerun Project-Start, verify selected MCP config, and clear the sentinel
+   only on PASS.
 6. If the init skill is unavailable but installed helpers exist, run the
    installed Project-Start Gate:
    - `python3 .tes/bin/tes_init.py --target . --yes`
