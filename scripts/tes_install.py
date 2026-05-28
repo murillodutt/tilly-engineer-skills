@@ -22,6 +22,8 @@ MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
 POSTINSTALL_RUN_ROOT = Path(".tes/postinstall-runs")
+POSTINSTALL_RUN_INDEX = POSTINSTALL_RUN_ROOT / "index.json"
+POSTINSTALL_SENTINEL_RUN_LIMIT = 20
 AGENTS = ("codex", "claude", "cursor")
 POSTINSTALL_STATES = {"pending", "running", "complete", "needs_review"}
 CLAUDE_SESSIONSTART_MATCHER = "startup|resume|clear|compact"
@@ -379,7 +381,46 @@ def sentinel_payload(agent: str, agents: list[str], mode: str, existing: dict[st
         "requested_by": agent,
         "agents": agents,
         "mode": mode,
-        "runs": runs,
+        "runs": bounded_sentinel_runs(runs),
+    }
+
+
+def bounded_sentinel_runs(runs: list[Any]) -> list[str]:
+    normalized = [str(item) for item in runs if isinstance(item, str) and item]
+    return normalized[-POSTINSTALL_SENTINEL_RUN_LIMIT:]
+
+
+def unique_postinstall_run_path(target: Path, agent: str) -> Path:
+    root = target / POSTINSTALL_RUN_ROOT
+    base = f"{file_stamp()}-{agent}"
+    path = root / f"{base}.json"
+    counter = 1
+    while path.exists():
+        counter += 1
+        path = root / f"{base}-{counter}.json"
+    return path
+
+
+def postinstall_run_index(target: Path, run_rel: str, dry_run: bool) -> dict[str, Any]:
+    index_path = target / POSTINSTALL_RUN_INDEX
+    existing = read_json(index_path)
+    runs = existing.get("runs") if isinstance(existing.get("runs"), list) else []
+    normalized = [str(item) for item in runs if isinstance(item, str) and item]
+    if run_rel not in normalized:
+        normalized.append(run_rel)
+    payload = {
+        "schema": "tes-postinstall-run-index@1",
+        "version": VERSION,
+        "updated_at": utc_stamp(),
+        "total_runs": len(normalized),
+        "latest_run": run_rel,
+        "runs": normalized,
+    }
+    write_json(index_path, payload, dry_run=dry_run)
+    return {
+        "path": rel(index_path, target),
+        "total_runs": payload["total_runs"],
+        "latest_run": run_rel,
     }
 
 
@@ -887,8 +928,11 @@ def run_helper(target: Path, script_name: str, args: tuple[str, ...], timeout: f
 
 
 def append_run_record(target: Path, payload: dict[str, Any], dry_run: bool) -> dict[str, str]:
-    path = target / POSTINSTALL_RUN_ROOT / f"{file_stamp()}-{payload['agent']}.json"
-    return write_json(path, payload, dry_run=dry_run)
+    path = unique_postinstall_run_path(target, str(payload["agent"]))
+    action = write_json(path, payload, dry_run=dry_run)
+    run_rel = rel(path, target)
+    index = postinstall_run_index(target, run_rel, dry_run)
+    return {**action, "path": str(path), "run_index": str(index["path"]), "total_runs": str(index["total_runs"])}
 
 
 def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = None) -> tuple[int, dict[str, Any]]:
@@ -988,6 +1032,8 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
     run_record = append_run_record(target, run_payload, dry_run=False)
     run_record_rel = rel(Path(run_record["path"]), target)
     runs = running.get("runs") if isinstance(running.get("runs"), list) else []
+    sentinel_runs = bounded_sentinel_runs([*runs, run_record_rel])
+    total_runs = int(str(run_record.get("total_runs") or len(sentinel_runs)))
     complete_payload = {
         **running,
         "state": final_state,
@@ -995,7 +1041,11 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         "completed_at": utc_stamp() if final_state == "complete" else None,
         "last_status": status,
         "last_run": run_record_rel,
-        "runs": [*runs, run_record_rel],
+        "runs": sentinel_runs,
+        "run_index": run_record.get("run_index"),
+        "run_count": total_runs,
+        "retained_run_count": len(sentinel_runs),
+        "archived_run_count": max(0, total_runs - len(sentinel_runs)),
     }
     if failed or needs_cert_review:
         complete_payload["failures"] = [
@@ -1190,6 +1240,35 @@ def self_test() -> int:
         result = run_helper(target, "project_context_oracle.py", (), 10)
         if result.get("oracle_failures") != ["neutral oracle failure"]:
             failures.append("postinstall helper results must preserve structured oracle failures")
+
+    with tempfile.TemporaryDirectory(prefix="tes-postinstall-retention-") as tempdir:
+        target = Path(tempdir)
+        recorded: list[str] = []
+        for index in range(POSTINSTALL_SENTINEL_RUN_LIMIT + 5):
+            record = append_run_record(
+                target,
+                {
+                    "schema": "tes-postinstall-run@1",
+                    "version": VERSION,
+                    "agent": "codex",
+                    "status": "PASS",
+                    "sequence": index,
+                },
+                dry_run=False,
+            )
+            recorded.append(rel(Path(record["path"]), target))
+        index_payload = read_json(target / POSTINSTALL_RUN_INDEX)
+        if index_payload.get("total_runs") != len(recorded):
+            failures.append("postinstall run index must retain the full run count")
+        if index_payload.get("runs") != recorded:
+            failures.append("postinstall run index must preserve run order")
+        if len(set(recorded)) != len(recorded):
+            failures.append("postinstall run records must not collide within the same second")
+        sentinel = sentinel_payload("codex", ["codex"], "first-session", {"runs": recorded})
+        if len(sentinel.get("runs", [])) != POSTINSTALL_SENTINEL_RUN_LIMIT:
+            failures.append("postinstall sentinel runs must be bounded")
+        if sentinel.get("runs", [None])[0] != recorded[-POSTINSTALL_SENTINEL_RUN_LIMIT]:
+            failures.append("postinstall sentinel must retain the most recent run window")
 
     with tempfile.TemporaryDirectory(prefix="tes-thin-install-") as tempdir:
         target = Path(tempdir)
