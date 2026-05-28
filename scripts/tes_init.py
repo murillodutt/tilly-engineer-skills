@@ -19,6 +19,7 @@ from typing import Any
 
 import cortex
 import field_reports
+import project_context_oracle
 import root_context
 
 
@@ -1224,16 +1225,20 @@ def weak_anchor_triage(scan: dict[str, Any]) -> list[dict[str, str]]:
 
 def caution_zones(scan: dict[str, Any]) -> list[dict[str, str]]:
     files = [str(record["path"]) for record in scan["files"]]
+    target = Path(str(scan.get("target") or ".")).resolve()
     rows: list[dict[str, str]] = []
     checks = (
         ("project-owned agent governance", ("AGENTS.md", "CLAUDE.md", "CURSOR.md"), "clean runtime after central backup; recover durable semantics from backup evidence"),
         ("migrations and schema history", ("/migrations/", "migrations/"), "do not edit casually; use project migration workflow"),
         ("self-hosted or environment config", ("self-hosted/", "devservices/", "devenv/", "config/"), "changes may affect boot/deploy/dev services"),
-        ("dependency locks", ("pnpm-lock.yaml", "uv.lock", "Cargo.lock", "package-lock.json"), "update only through package manager workflow"),
+        ("dependency locks", project_context_oracle.ROOT_DEPENDENCY_LOCKFILES, "update only through package manager workflow"),
         ("fixtures and generated data", ("fixtures/", "__generated__", "enhancement-configs"), "avoid deriving product boundaries from these alone"),
     )
     for zone, needles, guidance in checks:
         sample = next((path for path in files if any(path == needle or needle in path for needle in needles)), None)
+        if sample is None and zone == "dependency locks":
+            lockfile = project_context_oracle.root_dependency_lockfile(target)
+            sample = lockfile.name if lockfile is not None else None
         if sample:
             rows.append({"zone": zone, "evidence": sample, "guidance": guidance})
     return rows
@@ -2352,6 +2357,57 @@ def self_test() -> dict[str, Any]:
             failures.append(f"expected PASS, got {result['status']}")
         if not any(gate["status"] == "RECOVERED" for gate in result["gates"]):
             failures.append("project-owned root context must close as RECOVERED during init")
+
+    with tempfile.TemporaryDirectory(prefix="tes-init-ignored-lock-") as tempdir:
+        target = Path(tempdir)
+        (target / ".gitignore").write_text("package-lock.json\n", encoding="utf-8")
+        (target / "README.md").write_text(
+            "# Neutral target project\n\nA generic fixture for TES contract-symmetry validation.\n",
+            encoding="utf-8",
+        )
+        (target / "package.json").write_text(
+            json.dumps(
+                {
+                    "name": "neutral-target-project",
+                    "description": "neutral fixture",
+                    "scripts": {"test": "echo test"},
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (target / "AGENTS.md").write_text("# Local Agent Rules\n", encoding="utf-8")
+        (target / "package-lock.json").write_text("{\"lockfileVersion\":3}\n", encoding="utf-8")
+        territory_paths: list[str] = []
+        for index in range(12):
+            relpath = f"territory_{index:02d}/anchor.txt"
+            (target / relpath).parent.mkdir(parents=True, exist_ok=True)
+            (target / relpath).write_text("fixture\n", encoding="utf-8")
+            territory_paths.append(relpath)
+        subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False, env=isolated_git_env())
+        subprocess.run(
+            ["git", "add", ".gitignore", "README.md", "package.json", "AGENTS.md", *territory_paths],
+            cwd=target,
+            text=True,
+            capture_output=True,
+            check=False,
+            env=isolated_git_env(),
+        )
+        manifest_rel = "docs/agents/evidence/20260528T000000Z-tes-project-manifest.json"
+        (target / manifest_rel).parent.mkdir(parents=True, exist_ok=True)
+        (target / manifest_rel).write_text("{}\n", encoding="utf-8")
+        scan = scan_project(target)
+        context_text = write_project_context(target, scan, [], manifest_rel)
+        (target / PROJECT_CONTEXT).parent.mkdir(parents=True, exist_ok=True)
+        (target / PROJECT_CONTEXT).write_text(context_text, encoding="utf-8")
+        analysis = project_context_oracle.analyze(target)
+        if any(record["path"] == "package-lock.json" for record in scan["files"]):
+            failures.append("ignored dependency lockfile must stay outside git-index inventory")
+        if "dependency locks" not in context_text:
+            failures.append("project context must include dependency locks caution for ignored root lockfile")
+        if analysis["status"] != "PASS":
+            failures.append(f"ignored-lockfile project context must pass oracle: {analysis['failures'][:3]}")
 
     with tempfile.TemporaryDirectory(prefix="tes-init-ignored-parent-") as tempdir:
         parent = Path(tempdir)

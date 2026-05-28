@@ -80,6 +80,18 @@ MAKEFILE_QUALITY_TARGETS = {
     "yamllint",
 }
 MAKE_TARGET_RE = re.compile(r"^([A-Za-z0-9_.-]+):(?!=)")
+ROOT_DEPENDENCY_LOCKFILES = (
+    "pnpm-lock.yaml",
+    "npm-shrinkwrap.json",
+    "package-lock.json",
+    "yarn.lock",
+    "uv.lock",
+    "Cargo.lock",
+    "composer.lock",
+    "Gemfile.lock",
+    "poetry.lock",
+    "Pipfile.lock",
+)
 EXCLUDED_PARTS = {
     ".git",
     ".hg",
@@ -575,13 +587,21 @@ def expected_caution_terms(target: Path) -> list[str]:
     terms: list[str] = []
     if (target / "AGENTS.md").exists() or (target / "CLAUDE.md").exists():
         terms.append("project-owned agent governance")
-    if any(path.name in {"pnpm-lock.yaml", "uv.lock", "Cargo.lock", "package-lock.json"} for path in target.iterdir() if path.is_file()):
+    if root_dependency_lockfile(target) is not None:
         terms.append("dependency locks")
     if (target / "self-hosted").exists() or (target / "devservices").exists() or (target / "devenv").exists() or (target / "config").exists():
         terms.append("self-hosted or environment config")
     if any("/migrations/" in rel(path, target) for path in iter_project_files(target)[:5000]):
         terms.append("migrations and schema history")
     return terms
+
+
+def root_dependency_lockfile(target: Path) -> Path | None:
+    for name in ROOT_DEPENDENCY_LOCKFILES:
+        path = target / name
+        if path.is_file():
+            return path
+    return None
 
 
 def package_workspace_patterns(package: dict[str, Any]) -> list[str]:
@@ -991,6 +1011,17 @@ def self_test() -> dict[str, Any]:
         large_generic = analyze(target)
         if large_generic["status"] != "FAIL" or not any("anti-generic section" in item for item in large_generic["failures"]):
             failures.append("oracle must fail large contexts missing anti-generic semantic sections")
+
+    with tempfile.TemporaryDirectory(prefix="tes-project-context-ignored-lock-") as tempdir:
+        target = Path(tempdir)
+        write(target / ".gitignore", "package-lock.json\n")
+        write(target / "AGENTS.md", "# Local rules\n")
+        write(target / "package-lock.json", "{\"lockfileVersion\":3}\n")
+        subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "add", ".gitignore", "AGENTS.md"], cwd=target, text=True, capture_output=True, check=False)
+        terms = expected_caution_terms(target)
+        if "dependency locks" not in terms:
+            failures.append("oracle must detect root dependency lockfiles even when ignored by git")
 
     with tempfile.TemporaryDirectory(prefix="tes-project-context-bootstrap-") as tempdir:
         target = Path(tempdir)
