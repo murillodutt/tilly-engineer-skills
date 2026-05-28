@@ -245,6 +245,19 @@ already exist locally and remotely from a previous attempt.
 - [ ] `npm run release:check` returns `status: PASS`,
   `classification: certified_local`, and `resolved_commit` equals HEAD.
 
+## GitHub Pages live certification
+
+Only when the bump publishes public refs:
+
+- [ ] `python3 scripts/public_pages_oracle.py --version <new> --retries 12 --interval 10`
+  returns `status: PASS`.
+- [ ] The live home page and user manual mention `<new>`.
+- [ ] The live `dist/<new>/index.json` exists and matches the local bundle
+  filename and sha.
+- [ ] If Pages is still building or serving `<old>`, close with
+  `NEEDS_REVIEW: public pages not deployed`; do not tell users to install
+  from the public site yet.
+
 ## Closeout report
 
 Record in the session closeout:

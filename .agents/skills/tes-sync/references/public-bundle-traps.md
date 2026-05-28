@@ -124,6 +124,25 @@ not match a future tag.
 `release:check` after tag push validates the tag/commit alignment
 separately. For a fully clean run, stage and commit before publishing.
 
+## GitHub Pages still serves the previous version
+
+**Symptom:** `npm run release:check` passes, but the public site still shows
+the old `#v<old>` install command or `dist/<new>/index.json` returns 404.
+
+**Cause:** `release:check` validates the GitHub package ref and tag/source
+identity. GitHub Pages is a separate deployment surface and can lag or fail
+after `main` is pushed.
+
+**Resolution:**
+
+```bash
+python3 scripts/public_pages_oracle.py --version <new> --retries 12 --interval 10
+```
+
+If the oracle still fails, close with `NEEDS_REVIEW: public pages not
+deployed`. Do not use the public site as the install source until Pages
+serves the current version and bundle index.
+
 ## `npm run commit:check` runs `tes_bundle.py publish` as a side effect
 
 **Symptom:** historical dist directories disappeared after running

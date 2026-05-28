@@ -85,6 +85,7 @@ routine — the complete sync — and pairs with the human checklist at
 | 2026-05-28 | Removed the no-bump sync route. `/tes-sync` now always applies a bump; governance `PASS` maps to source-only bump unless sync is cancelled. | User directive: "atualize tes-sync para sempre aplicar bump". | high |
 | 2026-05-28 | Added an explicit parity lock so scope-rule changes must update `docs/governance/SYNC-AUDIT-CHECKLIST.md` with the skill. | Post-release gap review found the checklist still described `PASS` as no-bump. | high |
 | 2026-05-28 | Added discoverability validation after Codex could see the skill directory but could not load the skill because frontmatter YAML was invalid. | `quick_validate.py "$CODEX_HOME/skills/tes-sync"` failed on an unquoted `description` containing `package:`. | high |
+| 2026-05-28 | Added live GitHub Pages certification to prevent closing a release while public install docs still serve the previous version. | Post-release gap review found package ref `v0.3.146` certified while GitHub Pages still served `0.3.145`. | high |
 
 ## Do Not Lose
 

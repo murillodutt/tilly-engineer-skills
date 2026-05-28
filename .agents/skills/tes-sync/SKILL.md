@@ -262,7 +262,21 @@ Required result: `status: PASS`, `classification: certified_local`,
 `resolved_commit` equals HEAD. Anything else means tag and source are not
 aligned — stop and reconcile.
 
-### 12. Closeout
+### 12. GitHub Pages live certification (bundle scope only)
+
+GitHub package refs and GitHub Pages are different surfaces. Do not close a
+bundle sync while Pages is still serving the previous install command.
+
+```bash
+python3 scripts/public_pages_oracle.py --version <new> --retries 12 --interval 10
+```
+
+Required result: `status: PASS`. If Pages reports stale HTML, missing
+`dist/<new>/index.json`, or a bundle sha mismatch, report
+`NEEDS_REVIEW: public pages not deployed` and do not tell users to install
+from the public site yet.
+
+### 13. Closeout
 
 Report in one block:
 
