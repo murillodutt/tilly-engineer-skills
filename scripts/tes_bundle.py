@@ -35,7 +35,8 @@ SETUP_IGNORE_COMMENT = "# TES installer staging cache"
 BACKUP_IGNORE_COMMENT = "# TES clean install local backups"
 BACKUP_SCHEMA = "tes-clean-backup@1"
 RECOVERY_SCHEMA = "tes-root-governance-recovery@1"
-OS_RESIDUE_NAMES = {".DS_Store"}
+OS_RESIDUE_NAMES = {".DS_Store", ".AppleDouble", ".LSOverride", "__MACOSX"}
+OS_RESIDUE_PREFIXES = ("._",)
 
 REQUIRED_LAYERS = {
     "helper",
@@ -346,7 +347,32 @@ def rel(path: Path, root: Path) -> str:
 
 
 def is_os_residue(path: Path) -> bool:
-    return any(part in OS_RESIDUE_NAMES for part in path.parts)
+    return any(part in OS_RESIDUE_NAMES or part.startswith(OS_RESIDUE_PREFIXES) for part in path.parts)
+
+
+def purge_os_residue(root: Path) -> list[str]:
+    """Delete macOS metadata residue before materialization or ZIP creation."""
+    root = root.resolve()
+    removed: list[str] = []
+    excluded_roots = {
+        root / ".git",
+        root / "node_modules",
+    }
+    for path in sorted(root.rglob("*")):
+        if any(path == excluded or excluded in path.parents for excluded in excluded_roots):
+            continue
+        try:
+            relative = path.relative_to(root)
+        except ValueError:
+            continue
+        if not is_os_residue(relative):
+            continue
+        if path.is_dir():
+            shutil.rmtree(path)
+        elif path.exists():
+            path.unlink()
+        removed.append(relative.as_posix())
+    return removed
 
 
 def iter_files(root: Path) -> list[Path]:
@@ -464,7 +490,7 @@ def validate_manifest(data: dict[str, Any]) -> list[str]:
         path = str(entry.get("path", ""))
         if not path:
             failures.append("manifest entry missing path")
-        if any(part in OS_RESIDUE_NAMES for part in Path(path).parts):
+        if is_os_residue(Path(path)):
             failures.append(f"{path}: OS residue must not be delivered")
         if path in paths:
             failures.append(f"duplicate manifest path: {path}")
@@ -482,6 +508,7 @@ def build_bundle(out: Path, adapter: str = "all") -> dict[str, Any]:
     out = out.resolve()
     out.parent.mkdir(parents=True, exist_ok=True)
     entries: list[BundleEntry] = []
+    purged_os_residue = purge_os_residue(ROOT)
 
     with tempfile.TemporaryDirectory(prefix="tes-bundle-") as tempdir:
         temp = Path(tempdir)
@@ -517,6 +544,12 @@ def build_bundle(out: Path, adapter: str = "all") -> dict[str, Any]:
             bundle.writestr(MANIFEST_NAME, json.dumps(manifest, indent=2, sort_keys=True) + "\n")
             bundle.writestr("tes-bundle-metadata.json", json.dumps(manifest["metadata"], indent=2, sort_keys=True) + "\n")
             for source, archive_path in staged_files:
+                if is_os_residue(Path(archive_path)):
+                    return {
+                        "version": VERSION,
+                        "status": "FAIL",
+                        "failures": [f"{archive_path}: OS residue must not be zipped"],
+                    }
                 bundle.write(source, archive_path)
 
     return {
@@ -526,6 +559,7 @@ def build_bundle(out: Path, adapter: str = "all") -> dict[str, Any]:
         "sha256": sha256_file(out),
         "entries": len(entries),
         "metadata": manifest["metadata"],
+        "purged_os_residue": purged_os_residue,
     }
 
 
@@ -538,6 +572,7 @@ def extracted_public_bundle_available() -> bool:
 
 
 def zip_extracted_public_bundle(out: Path) -> dict[str, Any]:
+    purged_os_residue = purge_os_residue(ROOT)
     manifest_path = ROOT / MANIFEST_NAME
     if not manifest_path.exists():
         return {"version": VERSION, "status": "FAIL", "failures": ["missing extracted bundle manifest"]}
@@ -554,6 +589,9 @@ def zip_extracted_public_bundle(out: Path) -> dict[str, Any]:
             bundle.write(metadata_path, "tes-bundle-metadata.json")
         for entry in manifest.get("entries", []):
             archive_path = str(entry.get("archive_path") or "")
+            if is_os_residue(Path(archive_path)):
+                failures.append(f"{archive_path}: OS residue must not be zipped")
+                continue
             source = ROOT / archive_path
             if not source.exists():
                 failures.append(f"missing extracted archive member: {archive_path}")
@@ -573,6 +611,7 @@ def zip_extracted_public_bundle(out: Path) -> dict[str, Any]:
         "entries": len(manifest.get("entries", [])),
         "metadata": manifest.get("metadata", {}),
         "coverage": "public-extracted-bundle-contract",
+        "purged_os_residue": purged_os_residue,
     }
 
 
