@@ -66,10 +66,43 @@ alone is not enough.
   hygiene, or provenance fails.
 - No stale `.agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py`
   path in generated quality gates.
-- No `.DS_Store` in delivered bundle entries, staged setup, or installed
-  runtime artifacts.
+- Source bundle generation now rejects `.DS_Store` and OS residue in bundle
+  entries, staged setup, and installed runtime artifacts. The existing public
+  bundle for `0.3.144` still requires an authorized rebuild before this
+  negative check can be claimed for the published artifact.
 - No sealed release claim with dirty or unsealed package provenance.
 - No unsafe Field Reports body content.
+
+## Closeout Gate
+
+Current closeout status is `NEEDS_REVIEW`, not `PASS`.
+
+`npm run commit:check` reaches `scripts/public_bundle_oracle.py` and then fails
+because the checked-in public bundle `docs/dist/0.3.144/**` predates this
+hygiene hardening. The oracle reports `.DS_Store` entries in the published ZIP
+and stale public bundle application/provenance evidence.
+
+This is an expected stop condition under the Super SPEC locks: the source repair
+is local and committed, but public bundle rebuild was not authorized for this
+run. A clean closeout requires an explicit maintainer decision to regenerate the
+public bundle locally, then rerun `npm run commit:check`.
+
+Mantra Gate record:
+
+- `VERIFY`: current `scripts/public_bundle_oracle.py` failure proves the public
+  artifact is stale and contains OS residue.
+- `SCOPE`: evidence correction only; no runtime, bundle, release, tag, push, or
+  remote sync.
+- `BEST_PATH`: record `NEEDS_REVIEW` honestly instead of weakening the oracle or
+  claiming a clean pass.
+- `DOCUMENT`: this report carries the local closeout blocker and release
+  identity boundary.
+- `ORACLE`: `python3 scripts/public_bundle_oracle.py` fails on
+  `docs/dist/0.3.144/**`; `npm run commit:check` therefore remains blocked at
+  the public bundle gate.
+- `RESOLVE`: authorize local public bundle rebuild, rerun closeout oracles, and
+  commit the regenerated artifact if green.
+- `STATUS`: `NEEDS_REVIEW`.
 
 ## Release Identity
 
