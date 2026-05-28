@@ -20,6 +20,8 @@ CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/d
 PARTIAL_STATUSES = {"DEGRADED", "FAIL", "PARTIAL"}
 REVIEW_STATUSES = {"NEEDS_REVIEW"}
 BLOCKED_STATUSES = {"BLOCKED", "BYPASS_SUSPECTED"}
+OS_RESIDUE_NAMES = {".DS_Store", ".AppleDouble", ".LSOverride", "__MACOSX"}
+OS_RESIDUE_PREFIXES = ("._",)
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -37,6 +39,10 @@ def rel(path: Path, root: Path) -> str:
         return path.relative_to(root).as_posix()
     except ValueError:
         return str(path)
+
+
+def is_os_residue(path: Path) -> bool:
+    return any(part in OS_RESIDUE_NAMES or part.startswith(OS_RESIDUE_PREFIXES) for part in path.parts)
 
 
 def status_from_findings(findings: list[dict[str, Any]]) -> str:
@@ -108,11 +114,11 @@ def artifact_hygiene(target: Path) -> dict[str, Any]:
     residue: list[str] = []
     manifest = read_json(target / ".tes/manifest.json")
     for entry in manifest.get("entries", []) if isinstance(manifest.get("entries"), list) else []:
-        if isinstance(entry, dict) and str(entry.get("path", "")).endswith(".DS_Store"):
+        if isinstance(entry, dict) and is_os_residue(Path(str(entry.get("path", "")))):
             residue.append(str(entry.get("path")))
     for root in (target / ".tes/setup", target / ".tes/bin"):
         if root.exists():
-            residue.extend(rel(path, target) for path in root.rglob(".DS_Store") if path.is_file())
+            residue.extend(rel(path, target) for path in root.rglob("*") if path.is_file() and is_os_residue(path.relative_to(root)))
     if residue:
         failures.extend(f"OS residue present: {path}" for path in sorted(set(residue)))
     metadata = manifest.get("metadata") if isinstance(manifest.get("metadata"), dict) else {}
@@ -282,12 +288,12 @@ def write_base_fixture(target: Path, *, healthy: bool) -> None:
     manifest = {
         "schema": "tes-bundle-manifest@1",
         "metadata": {"source_tree_state": "clean" if healthy else "dirty"},
-        "entries": [] if healthy else [{"path": ".agents/skills/tes-goal-maestro/.DS_Store"}],
+        "entries": [] if healthy else [{"path": ".agents/skills/tes-goal-maestro/._SKILL.md"}],
     }
     (target / ".tes").mkdir(parents=True, exist_ok=True)
     (target / ".tes/manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     if not healthy:
-        residue = target / ".tes/setup/0.0.0/adapters/codex/.agents/skills/tes-goal-maestro/.DS_Store"
+        residue = target / ".tes/setup/0.0.0/adapters/codex/.agents/skills/tes-goal-maestro/__MACOSX/._SKILL.md"
         residue.parent.mkdir(parents=True, exist_ok=True)
         residue.write_text("", encoding="utf-8")
 

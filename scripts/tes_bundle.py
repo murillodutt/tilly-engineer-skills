@@ -387,6 +387,12 @@ def purge_os_residue(root: Path) -> list[str]:
     return removed
 
 
+def os_residue_files(root: Path) -> list[Path]:
+    if not root.exists():
+        return []
+    return sorted(path for path in root.rglob("*") if path.is_file() and is_os_residue(path.relative_to(root)))
+
+
 def iter_files(root: Path) -> list[Path]:
     return sorted(path for path in root.rglob("*") if path.is_file() and not is_os_residue(path))
 
@@ -1778,6 +1784,9 @@ def self_test() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tes-bundle-self-test-") as tempdir:
         temp = Path(tempdir)
         bundle = temp / "tes.zip"
+        source_residue = ROOT / "src/adapters/codex/skills/tes-goal-maestro/._tes-bundle-self-test"
+        source_residue.parent.mkdir(parents=True, exist_ok=True)
+        source_residue.write_text("", encoding="utf-8")
         if source_package_available():
             built = build_bundle(bundle)
             self_test_mode = "source-package"
@@ -1790,6 +1799,8 @@ def self_test() -> dict[str, Any]:
                 "status": "FAIL",
                 "failures": ["self-test requires source package or extracted public bundle"],
             }
+        if source_residue.exists():
+            failures.append("build_bundle did not purge source OS residue before packaging")
         if built.get("status") != "BUILT":
             return {"version": VERSION, "status": "FAIL", "failures": built.get("failures", ["build failed"])}
         target = temp / "target"
@@ -1845,12 +1856,13 @@ def self_test() -> dict[str, Any]:
         residue_entries = [
             entry.get("path")
             for entry in manifest.get("entries", [])
-            if isinstance(entry, dict) and any(part in OS_RESIDUE_NAMES for part in Path(str(entry.get("path", ""))).parts)
+            if isinstance(entry, dict) and is_os_residue(Path(str(entry.get("path", ""))))
         ]
         if residue_entries:
             failures.append(f"staged manifest included OS residue: {sorted(residue_entries)}")
-        if list((target / ".tes/setup" / VERSION).rglob(".DS_Store")):
-            failures.append("staged setup included .DS_Store residue")
+        setup_residue = os_residue_files(target / ".tes/setup" / VERSION)
+        if setup_residue:
+            failures.append(f"staged setup included OS residue: {[rel(path, target) for path in setup_residue]}")
         downloaded_target = temp / "downloaded-target"
         downloaded_target.mkdir()
         downloaded = stage_public_bundle(
@@ -1879,12 +1891,16 @@ def self_test() -> dict[str, Any]:
         installed_residue_entries = [
             entry.get("path")
             for entry in installed.get("entries", [])
-            if isinstance(entry, dict) and any(part in OS_RESIDUE_NAMES for part in Path(str(entry.get("path", ""))).parts)
+            if isinstance(entry, dict) and is_os_residue(Path(str(entry.get("path", ""))))
         ]
         if installed_residue_entries:
             failures.append(f"installed manifest included OS residue: {sorted(installed_residue_entries)}")
-        if list((target / ".tes/bin").rglob(".DS_Store")) or list((target / ".agents").rglob(".DS_Store")):
-            failures.append("installed runtime included .DS_Store residue")
+        installed_residue = [
+            *os_residue_files(target / ".tes/bin"),
+            *os_residue_files(target / ".agents"),
+        ]
+        if installed_residue:
+            failures.append(f"installed runtime included OS residue: {[rel(path, target) for path in installed_residue]}")
         installed_metadata = installed.get("metadata") if isinstance(installed.get("metadata"), dict) else {}
         if installed_metadata.get("source_commit") != metadata.get("source_commit"):
             failures.append("installed manifest source_commit metadata drifted")

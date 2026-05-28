@@ -69,6 +69,9 @@ def certify_public_bundle() -> dict[str, object]:
         extracted = Path(tempdir) / "extracted"
         with zipfile.ZipFile(bundle) as archive:
             names = set(archive.namelist())
+            residue = sorted(name for name in names if tes_bundle.is_os_residue(Path(name)))
+            if residue:
+                failures.extend(f"public bundle includes OS residue member: {name}" for name in residue)
             for relpath in (
                 "scripts/install_mcp.py",
                 "scripts/tes_bundle.py",
