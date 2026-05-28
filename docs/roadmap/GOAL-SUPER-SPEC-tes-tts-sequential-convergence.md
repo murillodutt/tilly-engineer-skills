@@ -238,6 +238,9 @@ and remaining release identity decision instead.
 
 ## Current Ready /goal Prompt
 
+Prompt artifact:
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md`
+
 Use this prompt to start the next sequential execution cycle:
 
 ```text
@@ -254,6 +257,8 @@ Certified evidence from prior cycle:
 - Circular contract includes execute -> analyze -> fix -> certify -> create
   next /goal prompt -> local commit.
 - Latest local commit: ff438e5 Add tes-tts skill and convergence roadmap.
+- Ready prompt artifact:
+  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md.
 - `npm run commit:check` passed before that local commit.
 
 Task:

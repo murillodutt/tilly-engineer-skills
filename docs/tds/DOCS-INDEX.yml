@@ -204,6 +204,13 @@ documents:
     consumer: maintainers, tes-tts maintainers, adapter authors, oracle authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md
+    id: roadmap.goal_prompt_tes_tts_tts_000_preflight_and_baseline
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/adapters/CODEX.md
     id: adapters.codex
     class: adapter

@@ -79,6 +79,7 @@ turning the repository root into an inventory.
 | TES NPX MCP Convergence Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
 | TES Installed Certification And Field Reports Hardening Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
 | TES TTS Sequential Convergence Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` |
+| TES TTS TTS-000 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS normalization architecture SPEC | `roadmap/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution SPEC | `roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
