@@ -43,6 +43,30 @@ SUCCESS_INSTALL_EVENTS = {
     "tes_init",
 }
 CAPABILITY_SURFACES = {"adapter", "cortex", "field-reports", "installer", "mcp"}
+OWNER_SURFACE_BY_CLASS = {
+    "adapter-drift": "adapter",
+    "cortex-certification": "cortex",
+    "failure-or-blocker": "maintainer-triage",
+    "helper-contract-failure": "installer",
+    "installation-signal": "installer",
+    "legacy-migration": "legacy-retirement",
+    "low-signal-heartbeat": "none",
+    "mcp-activation-failure": "mcp",
+    "multi-surface-operation": "maintainer-triage",
+    "version-drift": "release",
+}
+NEXT_ACTION_BY_CLASS = {
+    "adapter-drift": "review adapter materialization and trigger parity",
+    "cortex-certification": "review Cortex certification batch evidence",
+    "failure-or-blocker": "triage failing surface and reproduce with a neutral fixture",
+    "helper-contract-failure": "repair Layer Zero helper contract before adapter convergence",
+    "installation-signal": "correlate install signal with installer certification",
+    "legacy-migration": "run legacy retirement review before clean certification",
+    "low-signal-heartbeat": "suppress locally and keep receipt",
+    "mcp-activation-failure": "repair project-scoped MCP config or helper route",
+    "multi-surface-operation": "split findings by owner surface and certify each gate",
+    "version-drift": "review update scope and release identity",
+}
 SUMMARY_FACT_KEYS = (
     "adapter",
     "cloud_version",
@@ -56,6 +80,8 @@ SUMMARY_FACT_KEYS = (
     "returncode",
     "route",
     "surface_count",
+    "certification_status",
+    "installed_certification_status",
     "update_available",
     "update_reasons",
     "update_scope",
@@ -623,24 +649,44 @@ def classify_report(events: list[dict[str, object]]) -> dict[str, object]:
         findings.append("Suppressed because the drain contained only successful low-signal heartbeat events.")
 
     actionability = "high" if score >= 4 else "medium" if score >= 2 else "low"
+    severity = "critical" if any(status in statuses for status in ("BLOCKED", "FAIL")) and score >= 6 else actionability
+    owner_surface = OWNER_SURFACE_BY_CLASS.get(report_class, "maintainer-triage")
+    certification_impact = (
+        "none"
+        if report_class == "low-signal-heartbeat"
+        else "blocks-clean-pass"
+        if any(status in statuses for status in ("BLOCKED", "FAIL", "NEEDS_REVIEW", "DEGRADED"))
+        else "partial-certification"
+        if score >= 2
+        else "monitor-only"
+    )
     fingerprint_payload = {
         "events": [compact_event_signature(event) for event in material],
         "report_class": report_class,
+        "owner_surface": owner_surface,
     }
+    dedupe_fingerprint = sha256_text(json.dumps(fingerprint_payload, sort_keys=True))[:16]
     return {
         "actionability": actionability,
         "adapters": sorted(adapters),
         "cloud_versions": sorted(cloud_versions),
+        "certification_impact": certification_impact,
+        "dedupe_fingerprint": dedupe_fingerprint,
         "event_count": len(events),
         "findings": findings,
         "install_fingerprints": sorted({install_fingerprint(event.get("install_id", "unknown")) for event in material}),
         "installed_versions": sorted(installed_versions),
         "material_event_count": len(material),
+        "next_action": NEXT_ACTION_BY_CLASS.get(report_class, "triage sanitized operational facts"),
+        "owner_surface": owner_surface,
+        "privacy_state": "sanitized",
+        "product_class": report_class,
         "report_class": report_class,
-        "report_fingerprint": sha256_text(json.dumps(fingerprint_payload, sort_keys=True))[:16],
+        "report_fingerprint": dedupe_fingerprint,
         "routes": sorted(routes),
         "schemas": sorted(schemas),
         "score": score,
+        "severity": severity,
         "status_counts": statuses,
         "surface_counts": surfaces,
         "suppressed": actionability == "low",
@@ -671,8 +717,15 @@ def build_issue_body(events: list[dict[str, object]], chunk_index: int, chunk_co
         f"- Material event count: {summary['material_event_count']}",
         f"- Report class: {summary['report_class']}",
         f"- Actionability: {summary['actionability']}",
+        f"- Severity: {summary['severity']}",
+        f"- Product class: {summary['product_class']}",
+        f"- Certification impact: {summary['certification_impact']}",
+        f"- Owner surface: {summary['owner_surface']}",
+        f"- Next action: {summary['next_action']}",
+        f"- Privacy state: {summary['privacy_state']}",
         f"- Signal score: {summary['score']}",
         f"- Report fingerprint: {summary['report_fingerprint']}",
+        f"- Dedupe fingerprint: {summary['dedupe_fingerprint']}",
         "- Status counts: " + rendered_counts({str(key): int(value) for key, value in statuses.items()}),
         "- Surface counts: " + rendered_counts({str(key): int(value) for key, value in surfaces.items()}),
         "- Routes: " + summary_values(summary, "routes"),
@@ -755,11 +808,18 @@ def write_receipt(target: Path, issue_url: str, events: list[dict[str, object]],
     summary = classify_report(events)
     payload = {
         "actionability": summary.get("actionability"),
+        "certification_impact": summary.get("certification_impact"),
+        "dedupe_fingerprint": summary.get("dedupe_fingerprint"),
         "issue_url": sanitize_issue_url(issue_url),
         "event_count": len(events),
+        "next_action": summary.get("next_action"),
+        "owner_surface": summary.get("owner_surface"),
         "payload_sha256": sha256_text(body),
+        "privacy_state": summary.get("privacy_state"),
+        "product_class": summary.get("product_class"),
         "report_class": summary.get("report_class"),
         "report_fingerprint": summary.get("report_fingerprint"),
+        "severity": summary.get("severity"),
         "sent_at": utc_stamp(),
     }
     path = receipts_path(target) / f"{file_stamp()}-{chunk:02d}.json"
@@ -771,10 +831,17 @@ def write_suppression_receipt(target: Path, events: list[dict[str, object]], sum
     receipts_path(target).mkdir(parents=True, exist_ok=True)
     payload = {
         "actionability": summary.get("actionability"),
+        "certification_impact": summary.get("certification_impact"),
+        "dedupe_fingerprint": summary.get("dedupe_fingerprint"),
         "event_count": len(events),
+        "next_action": summary.get("next_action"),
+        "owner_surface": summary.get("owner_surface"),
+        "privacy_state": summary.get("privacy_state"),
+        "product_class": summary.get("product_class"),
         "reason": "low-signal-heartbeat",
         "report_class": summary.get("report_class"),
         "report_fingerprint": summary.get("report_fingerprint"),
+        "severity": summary.get("severity"),
         "sent_at": utc_stamp(),
         "suppressed": True,
     }
@@ -801,8 +868,15 @@ def write_transport_receipt(
         payload.update(
             {
                 "actionability": summary.get("actionability"),
+                "certification_impact": summary.get("certification_impact"),
+                "dedupe_fingerprint": summary.get("dedupe_fingerprint"),
+                "next_action": summary.get("next_action"),
+                "owner_surface": summary.get("owner_surface"),
+                "privacy_state": summary.get("privacy_state"),
+                "product_class": summary.get("product_class"),
                 "report_class": summary.get("report_class"),
                 "report_fingerprint": summary.get("report_fingerprint"),
+                "severity": summary.get("severity"),
             }
         )
     path = receipts_path(target) / f"{file_stamp()}-{safe_slug(outcome, 'transport')}.json"

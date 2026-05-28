@@ -45,11 +45,64 @@ body:
         - low
     validations:
       required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - critical
+        - high
+        - medium
+        - low
+    validations:
+      required: true
+  - type: input
+    id: product-class
+    attributes:
+      label: Product class
+      placeholder: "version-drift, helper-contract-failure, adapter-drift, mcp-activation-failure"
+    validations:
+      required: true
+  - type: input
+    id: certification-impact
+    attributes:
+      label: Certification impact
+      placeholder: "blocks-clean-pass, partial-certification, monitor-only, none"
+    validations:
+      required: true
+  - type: input
+    id: owner-surface
+    attributes:
+      label: Owner surface
+      placeholder: "installer, adapter, mcp, cortex, release, maintainer-triage"
+    validations:
+      required: true
+  - type: input
+    id: next-action
+    attributes:
+      label: Next action
+      placeholder: "sanitized, bounded maintainer action"
+    validations:
+      required: true
+  - type: input
+    id: privacy-state
+    attributes:
+      label: Privacy state
+      value: sanitized
+    validations:
+      required: true
   - type: input
     id: report-fingerprint
     attributes:
       label: Report fingerprint
       placeholder: "16-character sanitized report fingerprint"
+    validations:
+      required: true
+  - type: input
+    id: dedupe-fingerprint
+    attributes:
+      label: Dedupe fingerprint
+      placeholder: "16-character sanitized dedupe fingerprint"
     validations:
       required: true
   - type: input

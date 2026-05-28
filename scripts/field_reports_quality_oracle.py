@@ -74,7 +74,19 @@ def require_class(
         failures.append(f"{label}: expected class {expected_class}, got {summary.get('report_class')}")
     if summary.get("actionability") != expected_actionability:
         failures.append(f"{label}: expected actionability {expected_actionability}, got {summary.get('actionability')}")
-    for required in ("report_fingerprint", "findings", "surface_counts", "status_counts"):
+    for required in (
+        "certification_impact",
+        "dedupe_fingerprint",
+        "findings",
+        "next_action",
+        "owner_surface",
+        "privacy_state",
+        "product_class",
+        "report_fingerprint",
+        "severity",
+        "surface_counts",
+        "status_counts",
+    ):
         if not summary.get(required):
             failures.append(f"{label}: missing {required}")
 
@@ -231,7 +243,24 @@ def run_oracle() -> dict[str, Any]:
         assert_private_values_absent(hostile_text, failures, "event payload")
         body = field_reports.build_issue_body([hostile], 1, 1)
         assert_private_values_absent(body, failures, "issue body")
-        if "Actionable findings" not in body or "Report class:" not in body:
+        for term in (
+            "Actionable findings",
+            "Certification impact:",
+            "Dedupe fingerprint:",
+            "Next action:",
+            "Owner surface:",
+            "Privacy state:",
+            "Product class:",
+            "Report class:",
+            "Severity:",
+        ):
+            if term not in body:
+                failures.append(f"issue body missing actionable report field: {term}")
+        hostile_summary = field_reports.classify_report([hostile])
+        if hostile_summary.get("privacy_state") != "sanitized":
+            failures.append("field report summaries must declare sanitized privacy state")
+        if not hostile_summary.get("dedupe_fingerprint"):
+            failures.append("field report summaries must expose a dedupe fingerprint")
             failures.append("issue body missing actionable report fields")
 
         low_target = root / "low"

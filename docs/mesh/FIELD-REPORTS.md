@@ -22,13 +22,16 @@ transport.
 
 Field Reports may record package version, runtime, OS, event name, status,
 duration bucket, Tilly gate names, return codes, feature presence, failure
-categories, report class, actionability level, signal score, and hash
-fingerprints.
+categories, report class, product class, severity, certification impact, owner
+surface, next action, privacy state, signal score, and hash fingerprints.
 
 High-signal classes include version drift, helper-contract failure,
 adapter/runtime drift, MCP activation failure, Cortex certification batches,
-legacy migration, installation signals, and multi-surface operations. Low-signal
-heartbeats are suppressed locally with a receipt instead of becoming issues.
+legacy migration, installation signals, and multi-surface operations. Each
+high-signal report is deduped by a sanitized fingerprint and carries an owner
+surface plus bounded next action so it can feed TES product work instead of
+becoming undifferentiated telemetry. Low-signal heartbeats are suppressed
+locally with a receipt instead of becoming issues.
 
 Field Reports must never send code, diffs, prompts, file contents, raw stack
 traces, secrets, tokens, personal data, absolute paths, raw branch names, or raw
@@ -68,6 +71,9 @@ names, secrets, personal data, or raw stack traces, and labels accepted reports
 as sanitized when a real issue exists. The receiver oracle proves this
 quarantine contract without creating live issues. This workflow is a second
 gate, not a privacy substitute for local sanitization.
+Receiver bodies must include report class, product class, severity,
+certification impact, owner surface, next action, privacy state, report
+fingerprint, and dedupe fingerprint.
 
 ## Local State
 
@@ -124,9 +130,11 @@ installation, MCP activation, install smoke, Cortex verify/audit/rebuild,
 Cortex curation/reflection/apply, MCP self-test, commit gates, and failed,
 blocked, or degraded states. A report body, whether fake-drained in
 certification or later published through real GitHub transport, must include
-actionable findings, report class, actionability, signal score, report
-fingerprint, surface counts, routes, versions, schemas seen, and event details.
-Transport heartbeats alone are not product feedback.
+actionable findings, report class, product class, severity, certification
+impact, owner surface, next action, privacy state, actionability, signal score,
+report fingerprint, dedupe fingerprint, surface counts, routes, versions,
+schemas seen, and event details. Transport heartbeats alone are not product
+feedback.
 
 ## Certification
 
