@@ -41,7 +41,7 @@ class CursorHost(HostAdapter):
             "env": {},
         }
 
-    def build_http(self, target, url, bearer_token_env_var=None, extra_headers=None):  # type: ignore[override]
+    def build_http(self, target, url, bearer_token_env_var=None, extra_headers=None, auth_block=None):  # type: ignore[override]
         # Cursor McpServerConfig http variant.
         # Reference: cursor.com/docs/sdk/typescript.
         headers: dict[str, str] = dict(extra_headers or {})
@@ -50,15 +50,20 @@ class CursorHost(HostAdapter):
         entry: dict[str, Any] = {"type": "http", "url": url}
         if headers:
             entry["headers"] = headers
+        if auth_block:
+            # Sensitive fields are redacted by Cursor backend before VM sees them.
+            entry["auth"] = dict(auth_block)
         return entry
 
-    def _desired(self, target, read_only, transport, url, bearer_token_env_var):
+    def _desired(self, target, read_only, transport, url, bearer_token_env_var, auth_block=None):
         from install_mcp import python_command, target_script  # type: ignore
 
         if transport == "http":
             if not url:
                 raise ValueError("Cursor HTTP install requires --url")
-            entry = self.build_http(target, url, bearer_token_env_var=bearer_token_env_var)
+            entry = self.build_http(
+                target, url, bearer_token_env_var=bearer_token_env_var, auth_block=auth_block
+            )
         else:
             entry = self.build_stdio(
                 target, target_script(target, "cortex_mcp.py"), python_command(), read_only
@@ -70,10 +75,10 @@ class CursorHost(HostAdapter):
 
     def merge_into_existing(  # type: ignore[override]
         self, target, dry_run, overwrite, backup, read_only,
-        transport="stdio", url=None, bearer_token_env_var=None,
+        transport="stdio", url=None, bearer_token_env_var=None, auth_block=None,
     ):
         try:
-            desired = self._desired(target, read_only, transport, url, bearer_token_env_var)
+            desired = self._desired(target, read_only, transport, url, bearer_token_env_var, auth_block)
         except ValueError as exc:
             return None, str(exc)
         return merge_json_server(
@@ -83,15 +88,16 @@ class CursorHost(HostAdapter):
 
     def validate_registered(  # type: ignore[override]
         self, target, read_only,
-        transport="stdio", url=None, bearer_token_env_var=None,
+        transport="stdio", url=None, bearer_token_env_var=None, auth_block=None,
     ):
         try:
-            expected = self._desired(target, read_only, transport, url, bearer_token_env_var)
+            expected = self._desired(target, read_only, transport, url, bearer_token_env_var, auth_block)
         except ValueError as exc:
             return (
                 {"adapter": self.name, "path": str(self.config_path), "status": "FAIL"},
                 str(exc),
             )
         return validate_json_server(
-            self.name, target, self.config_path, self.server_key, expected
+            self.name, target, self.config_path, self.server_key, expected,
+            adapter=self, transport=transport,
         )

@@ -70,7 +70,9 @@ tool_timeout_sec = 60
 enabled = true
 """
 
-    def build_http(self, target, url, bearer_token_env_var=None, extra_headers=None):  # type: ignore[override]
+    def build_http(self, target, url, bearer_token_env_var=None, extra_headers=None, auth_block=None):  # type: ignore[override]
+        if auth_block:
+            raise ValueError("Codex MCP does not support an 'auth' block; use bearer_token_env_var")
         lines = [
             "[mcp_servers.tes-cortex]",
             f"url = {json.dumps(url)}",
@@ -88,8 +90,10 @@ enabled = true
 
     def merge_into_existing(  # type: ignore[override]
         self, target, dry_run, overwrite, backup, read_only,
-        transport="stdio", url=None, bearer_token_env_var=None,
+        transport="stdio", url=None, bearer_token_env_var=None, auth_block=None,
     ):
+        if auth_block:
+            return None, "Codex MCP does not support an 'auth' block; use bearer_token_env_var"
         from install_mcp import (  # type: ignore
             python_command,
             rel,
@@ -129,7 +133,7 @@ enabled = true
 
     def validate_registered(  # type: ignore[override]
         self, target, read_only,
-        transport="stdio", url=None, bearer_token_env_var=None,
+        transport="stdio", url=None, bearer_token_env_var=None, auth_block=None,
     ):
         from install_mcp import python_command, rel, target_script  # type: ignore
 
@@ -152,6 +156,13 @@ enabled = true
             return (
                 {"adapter": adapter, "path": rel(path, target), "status": "FAIL"},
                 "Codex MCP config missing tes-cortex server",
+            )
+        # Apply deny_unknown_fields parity on the registered dict.
+        drift_failures = self.assert_entry_valid(server, transport=transport)
+        if drift_failures:
+            return (
+                {"adapter": adapter, "path": rel(path, target), "status": "FAIL"},
+                "; ".join(drift_failures),
             )
         if transport == "http":
             if server.get("url") != url:

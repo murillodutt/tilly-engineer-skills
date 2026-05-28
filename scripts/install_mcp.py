@@ -98,7 +98,10 @@ def source_script(name: str) -> Path:
 
 
 def source_package_mode() -> bool:
-    return (ROOT / "scripts/install_mcp.py").exists()
+    # Source package mode requires both the install script and the adapter
+    # source tree the bundle needs to materialize. The public bundle ships
+    # only scripts/**, so the extracted target stays in installed-helper mode.
+    return (ROOT / "scripts/install_mcp.py").exists() and (ROOT / "src/adapters").exists()
 
 
 def python_command() -> str:
@@ -214,6 +217,7 @@ def validate_config_registrations(
     transport: str = "stdio",
     url: str | None = None,
     bearer_token_env_var: str | None = None,
+    auth_block: dict[str, Any] | None = None,
 ) -> tuple[list[dict[str, str]], list[str]]:
     registrations: list[dict[str, str]] = []
     failures: list[str] = []
@@ -221,6 +225,7 @@ def validate_config_registrations(
         registration, failure = HOSTS[adapter].validate_registered(
             target, read_only,
             transport=transport, url=url, bearer_token_env_var=bearer_token_env_var,
+            auth_block=auth_block if adapter == "cursor" else None,
         )
         registrations.append(registration)
         if failure:
@@ -238,6 +243,7 @@ def install_configs(
     transport: str = "stdio",
     url: str | None = None,
     bearer_token_env_var: str | None = None,
+    auth_block: dict[str, Any] | None = None,
 ) -> tuple[list[dict[str, str]], list[str]]:
     actions: list[dict[str, str]] = []
     failures: list[str] = []
@@ -245,6 +251,7 @@ def install_configs(
         action, failure = HOSTS[adapter].merge_into_existing(
             target, dry_run, overwrite, backup, read_only,
             transport=transport, url=url, bearer_token_env_var=bearer_token_env_var,
+            auth_block=auth_block if adapter == "cursor" else None,
         )
         if failure:
             failures.append(failure)
@@ -286,6 +293,17 @@ def install(args: argparse.Namespace) -> int:
     transport = args.transport
     bearer_env = args.bearer_env
     url = args.url
+    auth_block: dict[str, Any] | None = None
+    if args.auth_client_id_env:
+        auth_block = {"CLIENT_ID": f"${{env:{args.auth_client_id_env}}}"}
+        if args.auth_client_secret_env:
+            auth_block["CLIENT_SECRET"] = f"${{env:{args.auth_client_secret_env}}}"
+        if args.auth_scope:
+            auth_block["scopes"] = list(args.auth_scope)
+    elif args.auth_client_secret_env or args.auth_scope:
+        print("[install-mcp] FAIL")
+        print("- --auth-client-secret-env and --auth-scope require --auth-client-id-env")
+        return 1
     if transport == "http" and not url:
         url = f"http://{args.host}:{args.port}/mcp"
     if transport == "http" and not args.allow_non_localhost:
@@ -314,7 +332,7 @@ def install(args: argparse.Namespace) -> int:
         if args.helpers_only
         else install_configs(
             target, adapters, args.dry_run, args.overwrite, not args.no_backup, read_only,
-            transport=transport, url=url, bearer_token_env_var=bearer_env,
+            transport=transport, url=url, bearer_token_env_var=bearer_env, auth_block=auth_block,
         )
     )
     config_registrations, registration_failures = (
@@ -322,7 +340,7 @@ def install(args: argparse.Namespace) -> int:
         if args.helpers_only or args.dry_run or config_failures
         else validate_config_registrations(
             target, adapters, read_only,
-            transport=transport, url=url, bearer_token_env_var=bearer_env,
+            transport=transport, url=url, bearer_token_env_var=bearer_env, auth_block=auth_block,
         )
     )
     bundle_failures = bundle_stage.get("failures", []) if bundle_stage.get("status") == "FAIL" else []
@@ -341,6 +359,9 @@ def install(args: argparse.Namespace) -> int:
         "transport": transport,
         "url": url,
         "bearer_env": bearer_env,
+        "auth_client_id_env": args.auth_client_id_env,
+        "auth_client_secret_env": args.auth_client_secret_env,
+        "auth_scopes": args.auth_scope,
         "bundle_stage": bundle_stage,
         "server": SERVER_NAME,
         "server_files": server_actions,
@@ -365,6 +386,8 @@ def install(args: argparse.Namespace) -> int:
                 "read_only": read_only,
                 "transport": transport,
                 "bearer_env": bearer_env,
+                "auth_client_id_env": args.auth_client_id_env,
+                "auth_client_secret_env": args.auth_client_secret_env,
                 "dry_run": args.dry_run,
                 "failures": len(failures),
             },
@@ -528,7 +551,7 @@ def self_test() -> int:
             failures.append("install all failed")
             failures.extend(install_result.stdout.splitlines())
             failures.extend(install_result.stderr.splitlines())
-        for relpath in (
+        required_paths = [
             ".tes/bin/install_mcp.py",
             ".tes/bin/cortex.py",
             ".tes/bin/cortex_mcp.py",
@@ -547,12 +570,15 @@ def self_test() -> int:
             ".tes/bin/command_trigger_oracle.py",
             ".tes/bin/tes_bundle.py",
             ".tes/bin/materialize_adapter.py",
-            f".tes/setup/{VERSION}/tes-bundle-manifest.json",
             ".codex/config.toml",
             ".mcp.json",
             ".cursor/mcp.json",
             ".vscode/mcp.json",
-        ):
+        ]
+        # Source-package mode stages a bundle manifest; installed-helper mode does not.
+        if source_package_mode():
+            required_paths.append(f".tes/setup/{VERSION}/tes-bundle-manifest.json")
+        for relpath in required_paths:
             if not (target / relpath).exists():
                 failures.append(f"missing installed path: {relpath}")
         mcp_self_test = subprocess.run(
@@ -781,9 +807,129 @@ def self_test() -> int:
                     failures.append(f"{relpath} bearer install must interpolate Authorization header")
                 if bearer_secret in authorization:
                     failures.append(f"{relpath} bearer install must not embed secret value")
+                if relpath == ".vscode/mcp.json":
+                    inputs = data.get("inputs")
+                    if not isinstance(inputs, list) or not inputs:
+                        failures.append(".vscode/mcp.json bearer install must emit top-level inputs[]")
+                    else:
+                        input_ids = [i.get("id") for i in inputs]
+                        expected_id = "tes-bearer-token-token"
+                        if expected_id not in input_ids:
+                            failures.append(f".vscode/mcp.json inputs must include {expected_id}, got {input_ids}")
+                        if not any(i.get("type") == "promptString" for i in inputs):
+                            failures.append(".vscode/mcp.json inputs must declare type=promptString")
+                        if f"${{input:{expected_id}}}" not in authorization:
+                            failures.append(f".vscode/mcp.json Authorization must reference ${{input:{expected_id}}}")
             event_path = target / ".tes/events/ledger.jsonl"
             if event_path.exists() and bearer_secret in event_path.read_text(encoding="utf-8"):
                 failures.append("bearer-env install leaked secret value into event ledger")
+
+    # SPEC-007 supplement: Cursor auth block via --auth-client-id-env.
+    with tempfile.TemporaryDirectory(prefix="tes-mcp-cursor-auth-") as tempdir:
+        target = Path(tempdir).resolve()
+        init_result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts/cortex.py"), "init", "--target", str(target)],
+            cwd=ROOT, text=True, capture_output=True, check=False,
+        )
+        if init_result.returncode != 0:
+            failures.append("cursor-auth cortex init failed")
+        client_secret = "client-secret-must-not-leak"
+        env = {**dict(__import__("os").environ),
+               "TES_CURSOR_CLIENT_ID": "cid", "TES_CURSOR_CLIENT_SECRET": client_secret}
+        auth_result = subprocess.run(
+            [sys.executable, __file__, "--target", str(target), "--adapter", "cursor",
+             "--transport", "http", "--port", "8765",
+             "--auth-client-id-env", "TES_CURSOR_CLIENT_ID",
+             "--auth-client-secret-env", "TES_CURSOR_CLIENT_SECRET",
+             "--auth-scope", "read:cortex", "--auth-scope", "write:cortex",
+             "--yes"],
+            cwd=ROOT, text=True, capture_output=True, check=False, env=env,
+        )
+        if auth_result.returncode != 0:
+            failures.append("cursor auth install failed")
+            failures.extend(auth_result.stdout.splitlines())
+            failures.extend(auth_result.stderr.splitlines())
+        else:
+            if client_secret in auth_result.stdout + auth_result.stderr:
+                failures.append("cursor auth install leaked client secret in stdout/stderr")
+            data = json.loads((target / ".cursor/mcp.json").read_text(encoding="utf-8"))
+            entry = data["mcpServers"][SERVER_NAME]
+            auth = entry.get("auth")
+            if not isinstance(auth, dict):
+                failures.append("cursor auth install must emit auth block")
+            else:
+                if auth.get("CLIENT_ID") != "${env:TES_CURSOR_CLIENT_ID}":
+                    failures.append(f"cursor auth.CLIENT_ID must interpolate env var, got {auth.get('CLIENT_ID')}")
+                if auth.get("CLIENT_SECRET") != "${env:TES_CURSOR_CLIENT_SECRET}":
+                    failures.append(f"cursor auth.CLIENT_SECRET must interpolate env var, got {auth.get('CLIENT_SECRET')}")
+                if auth.get("scopes") != ["read:cortex", "write:cortex"]:
+                    failures.append(f"cursor auth.scopes mismatch, got {auth.get('scopes')}")
+            if client_secret in (target / ".cursor/mcp.json").read_text(encoding="utf-8"):
+                failures.append("cursor auth install leaked client secret to config file")
+
+        # Negative: auth flags rejected on non-Cursor adapters silently (auth ignored).
+        # Codex must fail loud if auth is passed.
+        codex_auth = HOSTS["codex"].merge_into_existing(
+            target, dry_run=True, overwrite=True, backup=False, read_only=False,
+            transport="http", url="http://127.0.0.1:8765/mcp",
+            auth_block={"CLIENT_ID": "x"},
+        )
+        if codex_auth[1] is None:
+            failures.append("codex must reject auth_block; got success")
+
+    # SPEC-006 supplement: on-disk drift detection per host.
+    with tempfile.TemporaryDirectory(prefix="tes-mcp-drift-") as tempdir:
+        target = Path(tempdir).resolve()
+        init_result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts/cortex.py"), "init", "--target", str(target)],
+            cwd=ROOT, text=True, capture_output=True, check=False,
+        )
+        if init_result.returncode != 0:
+            failures.append("drift cortex init failed")
+        baseline = subprocess.run(
+            [sys.executable, __file__, "--target", str(target), "--adapter", "all",
+             "--transport", "http", "--port", "8765", "--yes"],
+            cwd=ROOT, text=True, capture_output=True, check=False,
+        )
+        if baseline.returncode != 0:
+            failures.append("drift baseline http install failed")
+
+        # Inject drift into Codex TOML.
+        codex_path = target / ".codex/config.toml"
+        codex_text = codex_path.read_text(encoding="utf-8")
+        drifted_codex = codex_text.replace(
+            "enabled = true\n",
+            "enabled = true\nunexpected_field = \"drift\"\n",
+            1,
+        )
+        codex_path.write_text(drifted_codex, encoding="utf-8")
+        reg, err = HOSTS["codex"].validate_registered(
+            target, read_only=False, transport="http", url="http://127.0.0.1:8765/mcp",
+        )
+        if err is None:
+            failures.append("codex validate_registered must detect unknown_field drift in TOML")
+
+        # Inject drift into Claude JSON.
+        claude_path = target / ".mcp.json"
+        claude_data = json.loads(claude_path.read_text(encoding="utf-8"))
+        claude_data["mcpServers"][SERVER_NAME]["cwd"] = "/forbidden"
+        claude_path.write_text(json.dumps(claude_data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        reg, err = HOSTS["claude"].validate_registered(
+            target, read_only=False, transport="http", url="http://127.0.0.1:8765/mcp",
+        )
+        if err is None:
+            failures.append("claude validate_registered must detect cwd drift in JSON")
+
+        # Inject drift into VS Code JSON (unknown field in server entry).
+        vscode_path = target / ".vscode/mcp.json"
+        vscode_data = json.loads(vscode_path.read_text(encoding="utf-8"))
+        vscode_data["servers"][SERVER_NAME]["bogus_field"] = 1
+        vscode_path.write_text(json.dumps(vscode_data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        reg, err = HOSTS["vscode"].validate_registered(
+            target, read_only=False, transport="http", url="http://127.0.0.1:8765/mcp",
+        )
+        if err is None:
+            failures.append("vscode validate_registered must detect bogus_field drift in JSON")
 
     with tempfile.TemporaryDirectory(prefix="tes-mcp-legacy-enable-install-") as tempdir:
         target = Path(tempdir).resolve()
@@ -919,6 +1065,12 @@ def main() -> int:
     parser.add_argument("--url", default=None, help="explicit HTTP URL; overrides --host/--port")
     parser.add_argument("--allow-non-localhost", action="store_true", help="allow HTTP URLs outside localhost")
     parser.add_argument("--bearer-env", default=None, help="environment variable name for HTTP bearer token")
+    parser.add_argument("--auth-client-id-env", default=None,
+                        help="env var name for OAuth CLIENT_ID (Cursor auth block); never read by installer")
+    parser.add_argument("--auth-client-secret-env", default=None,
+                        help="env var name for OAuth CLIENT_SECRET (Cursor auth block); never read by installer")
+    parser.add_argument("--auth-scope", action="append", default=None,
+                        help="OAuth scope for Cursor auth block; repeat to add multiple scopes")
     parser.add_argument("--json-only", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()

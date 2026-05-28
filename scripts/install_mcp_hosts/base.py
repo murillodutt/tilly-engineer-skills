@@ -39,6 +39,7 @@ class HostAdapter(ABC):
         url: str,
         bearer_token_env_var: str | None = None,
         extra_headers: dict[str, str] | None = None,
+        auth_block: dict[str, Any] | None = None,
     ) -> Any:
         """Return the host-native server entry for HTTP transport."""
 
@@ -53,6 +54,7 @@ class HostAdapter(ABC):
         transport: str = "stdio",
         url: str | None = None,
         bearer_token_env_var: str | None = None,
+        auth_block: dict[str, Any] | None = None,
     ) -> tuple[dict[str, str] | None, str | None]:
         """Merge the desired server entry into the host-specific config file."""
 
@@ -64,6 +66,7 @@ class HostAdapter(ABC):
         transport: str = "stdio",
         url: str | None = None,
         bearer_token_env_var: str | None = None,
+        auth_block: dict[str, Any] | None = None,
     ) -> tuple[dict[str, str], str | None]:
         """Validate the registered server entry on disk."""
 
@@ -104,6 +107,7 @@ def merge_json_server(
     dry_run: bool,
     overwrite: bool,
     backup: bool,
+    extra_top_level: dict[str, Any] | None = None,
 ) -> tuple[dict[str, str] | None, str | None]:
     from install_mcp import rel, write_text_file  # type: ignore
 
@@ -122,10 +126,30 @@ def merge_json_server(
     servers = data.setdefault(server_key, {})
     if not isinstance(servers, dict):
         return None, f"{rel(path, target)} {server_key} must be an object"
+
+    extras_changed = False
+    if extra_top_level:
+        for key, value in extra_top_level.items():
+            if isinstance(value, list):
+                existing_list = data.get(key)
+                if not isinstance(existing_list, list):
+                    existing_list = []
+                merged_list = list(existing_list)
+                for item in value:
+                    if item not in merged_list:
+                        merged_list.append(item)
+                if merged_list != data.get(key):
+                    data[key] = merged_list
+                    extras_changed = True
+            else:
+                if data.get(key) != value:
+                    data[key] = value
+                    extras_changed = True
+
     existing = servers.get(SERVER_NAME)
-    if existing == desired_server:
+    if existing == desired_server and not extras_changed:
         return {"path": rel(path, target), "action": "skip-identical"}, None
-    if existing is not None and not overwrite:
+    if existing is not None and existing != desired_server and not overwrite:
         return None, f"conflicting {adapter_name} MCP config: {rel(path, target)}"
 
     servers[SERVER_NAME] = desired_server
@@ -141,6 +165,9 @@ def validate_json_server(
     config_path: Path,
     server_key: str,
     expected: dict[str, Any],
+    expected_top_level: dict[str, Any] | None = None,
+    adapter: "HostAdapter | None" = None,
+    transport: str = "stdio",
 ) -> tuple[dict[str, str], str | None]:
     from install_mcp import rel  # type: ignore
 
@@ -174,6 +201,33 @@ def validate_json_server(
             {"adapter": adapter_name, "path": rel(path, target), "status": "FAIL"},
             f"{rel(path, target)} missing expected tes-cortex server registration",
         )
+    if adapter is not None and isinstance(actual, dict):
+        drift_failures = adapter.assert_entry_valid(actual, transport=transport)
+        if drift_failures:
+            return (
+                {"adapter": adapter_name, "path": rel(path, target), "status": "FAIL"},
+                f"{rel(path, target)} drift: " + "; ".join(drift_failures),
+            )
+    if expected_top_level:
+        for key, value in expected_top_level.items():
+            actual_value = data.get(key)
+            if isinstance(value, list):
+                if not isinstance(actual_value, list):
+                    return (
+                        {"adapter": adapter_name, "path": rel(path, target), "status": "FAIL"},
+                        f"{rel(path, target)} missing top-level {key}[]",
+                    )
+                for item in value:
+                    if item not in actual_value:
+                        return (
+                            {"adapter": adapter_name, "path": rel(path, target), "status": "FAIL"},
+                            f"{rel(path, target)} top-level {key}[] missing required entry",
+                        )
+            elif actual_value != value:
+                return (
+                    {"adapter": adapter_name, "path": rel(path, target), "status": "FAIL"},
+                    f"{rel(path, target)} top-level {key} mismatch",
+                )
     return (
         {
             "adapter": adapter_name,
