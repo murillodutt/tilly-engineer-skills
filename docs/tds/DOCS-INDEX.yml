@@ -617,6 +617,13 @@ documents:
     consumer: maintainers, installer authors, MCP operators, and release reviewers
     source_of_truth: false
     evidence_level: L2
+  - path: docs/evidence/reports/2026/05/28/installed-certification-field-reports-hardening/REPORT.md
+    id: evidence.installed_certification_field_reports_hardening_20260528
+    class: evidence
+    status: active
+    consumer: maintainers, installer authors, adapter authors, Field Reports maintainers, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/evidence/current/RISKS.md
     id: evidence.current.risks
     class: evidence
