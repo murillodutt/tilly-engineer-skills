@@ -204,7 +204,9 @@ analysis cycle. It cannot replace missing TTS-specific fixtures.
 
 ## Next /goal Prompt Contract
 
-At the end of each non-converged cycle, create the next prompt in this shape:
+At the end of each non-converged cycle, create the next executable `/goal`
+prompt in this shape. The prompt is a required circular artifact, not optional
+chat garnish:
 
 ```text
 /goal Continue TES TTS sequential convergence.
@@ -221,7 +223,7 @@ Certified evidence from prior cycle:
 
 Task:
 Execute only the current unit through:
-execute -> analyze -> fix -> certify -> create next /goal prompt.
+execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit.
 
 Forbidden:
 - no sync, release, push, tag, publish, provider install, provider download,
@@ -233,6 +235,48 @@ BLOCKED, DEGRADED, NEEDS_REVIEW, NEEDS_OWNER_DECISION.
 
 If convergence is complete, do not create a next prompt. Report closure state
 and remaining release identity decision instead.
+
+## Current Ready /goal Prompt
+
+Use this prompt to start the next sequential execution cycle:
+
+```text
+/goal Continue TES TTS sequential convergence.
+
+Canonical artifact:
+docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
+
+Current unit:
+TTS-000 Preflight And Baseline
+
+Certified evidence from prior cycle:
+- GOAL Super SPEC exists and is indexed.
+- Circular contract includes execute -> analyze -> fix -> certify -> create
+  next /goal prompt -> local commit.
+- Latest local commit: ff438e5 Add tes-tts skill and convergence roadmap.
+- `npm run commit:check` passed before that local commit.
+
+Task:
+Execute only TTS-000 through the circular sequence:
+execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit.
+
+Required actions:
+1. Run `git status --short --branch --untracked-files=all`.
+2. Confirm the worktree is ahead only by local commits and no sync/release is
+   authorized.
+3. Re-read this Super SPEC and `docs/roadmap/TES-TTS-SKILL-ROADMAP.md`.
+4. Classify the next unresolved unit after TTS-000.
+5. If the preflight contract is coherent, certify with the smallest focused
+   oracle and create the next `/goal` prompt for TTS-001.
+6. Commit the local execution as the final action of the cycle.
+
+Forbidden:
+- no sync, release, push, tag, publish, provider install, provider download,
+  proactive speak behavior, global config writes, or durable conversion cache.
+
+Stop states:
+BLOCKED, DEGRADED, NEEDS_REVIEW, NEEDS_OWNER_DECISION.
+```
 
 ## Stop States
 
