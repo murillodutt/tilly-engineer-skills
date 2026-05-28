@@ -73,6 +73,7 @@ turning the repository root into an inventory.
 | Cortex Memory Benchmark Harness Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
 | TES Anti-Contamination Hardening Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md` |
 | TES Postinstall And Cortex Curation Hardening Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
+| TES NPX MCP Convergence Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
 | RC1 readiness roadmap | `roadmap/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening prompt | `roadmap/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
 | Flash-Fry skill gap spec | `roadmap/FLASH-FRY-SKILL-SPEC.md` |
