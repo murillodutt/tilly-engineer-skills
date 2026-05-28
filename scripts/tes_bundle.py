@@ -62,6 +62,7 @@ HELPER_FILES = (
     "checkpoint.py",
     "consolidation_gate.py",
     "field_reports.py",
+    "installed_certification_oracle.py",
     "mantra_gate.py",
     "mantra_gate_adoption_oracle.py",
     "tes_install.py",

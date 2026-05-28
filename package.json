@@ -57,6 +57,7 @@
     "field-reports:self-test": "python3 scripts/field_reports.py --self-test",
     "field-reports:quality:self-test": "python3 scripts/field_reports_quality_oracle.py --self-test",
     "field-reports:github-oracle": "python3 scripts/field_reports_github_oracle.py --self-test",
+    "installed-certification:self-test": "python3 scripts/installed_certification_oracle.py --self-test",
     "mantra-gate:self-test": "python3 scripts/mantra_gate.py --self-test",
     "mantra-gate:adoption:self-test": "python3 scripts/mantra_gate_adoption_oracle.py --self-test",
     "github:readiness:self-test": "python3 scripts/github_readiness_oracle.py --self-test",
