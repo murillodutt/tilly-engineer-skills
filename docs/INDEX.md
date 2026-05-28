@@ -29,7 +29,7 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.142/tilly-engineer-skills-0.3.142.zip` |
+| Public installer bundle | `dist/0.3.143/tilly-engineer-skills-0.3.143.zip` |
 | GitHub package-spec installation | `install/INSTALL.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
 | Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |

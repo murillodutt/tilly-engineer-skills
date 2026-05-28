@@ -31,18 +31,18 @@ server layer. Markdown under `docs/agents/cortex/**` remains durable memory
 truth.
 
 Initial closure at SHA `b1fffd5` was committed as `ece2cc2`. A senior review
-audit found four gaps against the Super SPEC and one evidence drift; this
-revision documents the corrections that close all five findings.
+audit found four gaps against the Super SPEC and one evidence drift; the
+five corrections landed at HEAD `66bd7c7` and this revision documents them.
 
 ## Review Findings And Corrections
 
 | # | Finding | Correction |
 |---|---------|------------|
-| 1 | Public bundle `0.3.142` was stale (`source_commit=6a2ae7d`) and the extracted ZIP failed `install_mcp.py --self-test` because `source_package_mode()` triggered source-only paths when only `scripts/**` was present. | `source_package_mode()` now also requires `src/adapters/**` so installed-helper mode is detected correctly when extracted. Public bundle re-published at the current HEAD; extracted ZIP self-test PASS. |
+| 1 | Public bundle `0.3.142` was stale (`source_commit=6a2ae7d`) and the extracted ZIP failed `install_mcp.py --self-test` because `source_package_mode()` triggered source-only paths when only `scripts/**` was present. | `source_package_mode()` now also requires `src/adapters/**` so installed-helper mode is detected correctly when extracted. Public bundle re-published at HEAD `66bd7c7` with `source_tree_state: clean` and SHA256 `e6b3192584ff83ce6d6fa9cdcd2a0af3bbc385891774b366aca0da9496689bf3`; extracted ZIP self-test PASS. |
 | 2 | VS Code bearer-env install emitted only the header without the required top-level `inputs[]`. | `VSCodeHost` now emits `inputs[]` with `type: "promptString"`, `password: true`, and a stable id (`<NAME_lowercased>-token`). `Authorization` header references the same id via `${input:<id>}`. Self-test asserts both the input entry and the matching header reference. |
 | 3 | Cursor `auth` block path was documented but had no CLI surface. | `--auth-client-id-env`, `--auth-client-secret-env`, and repeatable `--auth-scope` flags added. `CursorHost.build_http` emits `auth: {CLIENT_ID, CLIENT_SECRET, scopes}` using `${env:<NAME>}` interpolation; secret values are never read. Other hosts (Codex, Claude, VS Code) refuse `auth_block` with a clear error. |
 | 4 | Codex strict validation did not detect drift in the registered TOML server object. | `CodexHost.validate_registered` now applies `assert_entry_valid` on the parsed server dict for both stdio and http, mirroring Rust `deny_unknown_fields`. `validate_json_server` gained an optional `adapter` param so Claude, Cursor, and VS Code also detect on-disk drift. Negative self-tests inject unknown fields and assert FAIL. |
-| 5 | The previous REPORT cited `b1fffd5` as the validating SHA, but runtime landed at `ece2cc2` with dirty tree. | This revision rewrites the report against the post-correction working tree, lists every oracle output with the matching SHA, and records release identity decision explicitly. |
+| 5 | The previous REPORT cited `b1fffd5` as the validating SHA, but runtime landed at `ece2cc2` with dirty tree; a follow-up audit further found the REPORT still naming `ece2cc2` even after corrections landed. | This revision rewrites the report against HEAD `66bd7c7` with `source_tree_state: clean` in the re-published bundle metadata, lists every oracle output with the matching SHA, and records release identity decision explicitly. |
 
 ## Wave Results
 
@@ -81,8 +81,8 @@ the closed `McpServerConfig` and `StreamableHttp` field sets mirrored from
 ## Oracles
 
 All Gate Record oracles plus the full `commit:check` suite passed at HEAD
-SHA `ece2cc2cbe5ff70c07460590b586990c6ef962cb` with the post-review
-corrections applied on the working tree:
+SHA `66bd7c7f2afda6b33939e6a03b2254c57800e7c0`, with the re-published bundle
+metadata reporting `source_tree_state: clean`:
 
 | Oracle | Result |
 |--------|--------|
