@@ -13,7 +13,7 @@ tver: 0.5.3
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.145`.
+Project version: `0.3.146`.
 
 It follows the Codex customization order:
 

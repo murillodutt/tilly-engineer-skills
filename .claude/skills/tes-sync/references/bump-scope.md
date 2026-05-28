@@ -1,33 +1,27 @@
 # Bump Scope Decision
 
 Read this when `tes_bump.py --governance-check` reports
-`NEEDS_VERSION_DECISION` and you need to pick the sync scope.
+`PASS` or `NEEDS_VERSION_DECISION` and you need to pick the sync scope.
 
-## The Three Scopes
+## The Two Scopes
 
-### No bump
-
-Governance verdict is `PASS`. The change is documentation, governance,
-test scaffolding, or evidence — no delivered behavior, no installer
-ref, no skill body, no oracle gate moved.
-
-Sync surface: source only.
-Phases run: pre-flight, validation, commit, push.
-Phases skipped: identity bump, public refs, bundle, tag, release:check.
+`/tes-sync` always applies a version bump. There is no no-bump sync route.
+The governance check classifies how far the bump must propagate.
 
 ### Source-only bump
 
-Governance verdict is `NEEDS_VERSION_DECISION`, but the change does not
-move installer refs, i18n, or bundle behavior. Examples that fit here:
+This is the minimum `/tes-sync` route. Use it when governance verdict is
+`PASS`, or when the verdict is `NEEDS_VERSION_DECISION` but the change does
+not move installer refs, i18n, or bundle behavior. Examples that fit here:
 
 - Internal oracle hardening that does not change CLI flags.
 - New self-test fixtures.
 - Adapter source edits that materialize identically.
+- Governance docs, internal evidence, and test scaffolding.
 
-This scope is rare in practice. The TES `release_identity` block in
-`AGENTS.md` allows it with an explicit closeout exception ("bump
-intentionally deferred from public refs"), but most delivered-behavior
-changes flow naturally into the bundle scope.
+Keep this scope narrow. The TES `release_identity` block in `AGENTS.md`
+still means most delivered-behavior changes flow naturally into the bundle
+scope. Source-only is now a bumped sync, not a no-bump sync.
 
 Sync surface: source identity only (no `docs/install/**`, no `i18n`, no
 `docs/dist/`).
@@ -54,13 +48,13 @@ difference?
 
 - Yes (skill body, oracle exit code, installer copy, command surface) →
   bundle scope.
-- No (test fixtures, internal docs, governance) → no bump.
+- No (test fixtures, internal docs, governance) → source-only bump.
 - Yes but installer refs were already moved this session, or refs stay
   on the old version intentionally → source-only with explicit closeout.
 
 ## Canonical Identity Bump File Set
 
-When the scope is source-only or bundle:
+Every `/tes-sync` scope touches the source identity set:
 
 | Surface | Path | Notes |
 |---------|------|-------|

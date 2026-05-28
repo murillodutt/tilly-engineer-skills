@@ -54,6 +54,8 @@ for fast retrieval during active sync work.
 - Public tags are not moved without explicit user authorization.
 - `docs/dist/` keeps exactly one version directory.
 - Mechanism in TES, vocabulary in target.
+- `/tes-sync` always applies a version bump; the scope decision only chooses
+  source-only versus bundle/public refs.
 
 ## Known Failure Modes Prevented
 
@@ -80,10 +82,11 @@ routine — the complete sync — and pairs with the human checklist at
 | Date | Change | Evidence | Confidence |
 |------|--------|----------|------------|
 | 2026-05-25 | Created `tes-sync` from the audit checklist and the 0.3.124/0.3.125 release evidence. | `docs/governance/SYNC-AUDIT-CHECKLIST.md`, evidence packets under `docs/evidence/reports/2026/05/25/tes-align/**`. | high |
+| 2026-05-28 | Removed the no-bump sync route. `/tes-sync` now always applies a bump; governance `PASS` maps to source-only bump unless sync is cancelled. | User directive: "atualize tes-sync para sempre aplicar bump". | high |
 
 ## Do Not Lose
 
 The skill exists because every release cycle costs time when the agent
-re-derives the sync routine. The 12 phases, the 3 scope choices, and
+re-derives the sync routine. The 12 phases, the bumped scope choices, and
 the trap catalog are the durable knowledge. The version numbers cited
 in examples will age, but the structure must not.

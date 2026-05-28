@@ -37,15 +37,18 @@ Sync is one operation with many synchronized surfaces. Skipping a surface
 breaks something downstream. The skill enforces the order, the scope
 decision, and the traps that already cost time in prior sessions.
 
-Three sync scopes exist. Pick one **before** touching files — the wrong
-scope name is itself a class of error (no-bump and source-only are not
+Every `/tes-sync` run applies a version bump. There is no no-bump sync
+route. The governance check still matters, but only to decide whether the
+bump stays source-only or must also move bundle and public refs.
+
+Two sync scopes exist. Pick one **before** touching files — the wrong
+scope name is itself a class of error (source-only and bundle are not
 synonyms; calling one by the other's name leaks into commit messages and
 audit trails):
 
 | Scope | When | Bumps version? |
 |-------|------|---------------:|
-| **No bump** | `tes_bump.py --governance-check` returns `PASS`. Changes do not move delivered behavior (governance docs, internal evidence, test fixtures). Commit + push only. | No |
-| **Bump source-only** | Delivered behavior changes but no installer / i18n / bundle ref moves. Bump source identity, no bundle regeneration. Rare in practice. | Yes |
+| **Bump source-only** | Minimum `/tes-sync` route, including when `tes_bump.py --governance-check` returns `PASS` and the diff is governance/docs/evidence/test-only. Bump source identity, no bundle regeneration. | Yes |
 | **Bump + bundle + public refs** | Default for delivered-behavior changes. Every identity surface, bundle, installer, i18n, public HTML, tag, `release:check`. | Yes |
 
 If unsure, read `references/bump-scope.md` to decide.
@@ -70,15 +73,17 @@ python3 scripts/tes_bump.py --governance-check
 ```
 
 - Diff scope is intentional; no surprise files in `.tes/` or stale dist.
-- Governance check verdict declares whether a bump is needed and which
-  paths drive the decision.
+- Governance check verdict declares whether bundle/public refs must move
+  and which paths drive the decision.
 
 ### 2. Scope decision
 
-Match the governance verdict to one of the three scopes above. Announce the
-choice in one sentence before any write.
+Match the governance verdict to one of the two bump scopes above. Announce
+the choice in one sentence before any write. A `PASS` governance verdict
+does not permit a no-bump sync; it selects the source-only bump route unless
+the user explicitly cancels sync.
 
-### 3. Source identity bump (when bumping)
+### 3. Source identity bump
 
 Touch every file in this set. Missing one creates a sync drift that the
 parity checks catch downstream.
@@ -178,7 +183,7 @@ git commit -m "$(cat <<'EOF'
 
 <why this matters; the failure pattern being closed when applicable>
 
-<bump scope statement: "Release identity X -> Y synchronized..." when applicable>
+<bump scope statement: "Release identity X -> Y synchronized..." required>
 
 Retained certification packet: <path to evidence>.
 
@@ -282,7 +287,7 @@ current phase, the next planned write, and wait for explicit resume.
 
 When activated, produce in this order:
 
-1. `Scope`: no-bump | source-only | bundle. One sentence justifying.
+1. `Scope`: source-only | bundle. One sentence justifying.
 2. `Plan`: numbered phases from the workflow you will execute.
 3. `Active phase`: the current step, the command about to run, the
    expected post-condition.
@@ -291,4 +296,4 @@ When activated, produce in this order:
 5. `Closeout`: final claim, hashes, evidence path.
 
 Skip phases that do not apply (e.g., no bundle phases when scope is
-no-bump), but state the skip explicitly so it is auditable.
+source-only), but state the skip explicitly so it is auditable.
