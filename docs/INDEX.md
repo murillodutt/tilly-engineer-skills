@@ -22,6 +22,7 @@ turning the repository root into an inventory.
 | Archived TES Memory Lifecycle ADR | `adr/0001-tes-memory-lifecycle.md` |
 | Archived Cortex governed MCP write lane ADR | `adr/0002-cortex-governed-mcp-write-lane.md` |
 | Active Cortex MCP capability expansion ADR | `adr/0003-cortex-mcp-capability-expansion.md` |
+| Active installed certification and Field Reports intake ADR | `adr/0003-1-installed-certification-and-field-reports-feedback-intake.md` |
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
 | Agent manual | `install/AGENT-MANUAL.md` |
 | Agent oracle inventory | `install/AGENT-ORACLE-INVENTORY.md` |
@@ -74,6 +75,7 @@ turning the repository root into an inventory.
 | TES Anti-Contamination Hardening Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md` |
 | TES Postinstall And Cortex Curation Hardening Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
 | TES NPX MCP Convergence Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
+| TES Installed Certification And Field Reports Hardening Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
 | RC1 readiness roadmap | `roadmap/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening prompt | `roadmap/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
 | Flash-Fry skill gap spec | `roadmap/FLASH-FRY-SKILL-SPEC.md` |
