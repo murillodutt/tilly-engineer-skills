@@ -122,6 +122,8 @@ Project-scoped activation:
 python3 scripts/install_mcp.py --target /path/to/project --adapter codex --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --yes
 python3 scripts/install_mcp.py --target /path/to/project --adapter all --read-only --yes
+python3 scripts/install_mcp.py --target /path/to/project --adapter all --transport http --port 8765 --yes
+python3 scripts/install_mcp.py --target /path/to/project --adapter all --transport http --bearer-env TES_BEARER_TOKEN --yes
 python3 scripts/install_mcp.py --self-test
 ```
 
@@ -145,6 +147,12 @@ The activation path installs local MCP helpers into the target project:
 
 ```text
 .tes/bin/install_mcp.py
+.tes/bin/install_mcp_hosts/__init__.py
+.tes/bin/install_mcp_hosts/base.py
+.tes/bin/install_mcp_hosts/codex.py
+.tes/bin/install_mcp_hosts/claude.py
+.tes/bin/install_mcp_hosts/cursor.py
+.tes/bin/install_mcp_hosts/vscode.py
 .tes/bin/cortex.py
 .tes/bin/cortex_mcp.py
 .tes/bin/cortex_embed.mjs
@@ -198,6 +206,62 @@ with `codex mcp list` from the target project when the CLI is available. Cursor
 and VS Code may require reload, approval, enable, or reconnect before a valid
 project config becomes visible in the host UI.
 
+## Per-Host Installer Segmentation
+
+The installer at `scripts/install_mcp.py` delegates to one adapter module per
+host under `scripts/install_mcp_hosts/`. Each adapter owns the host's exact
+schema for stdio, opt-in localhost HTTP, and bearer-env authenticated HTTP.
+The plan that introduced this segmentation lives at
+`docs/roadmap/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md`.
+
+Authoritative field matrix per host:
+
+| Field | Codex `.codex/config.toml` | Claude `.mcp.json` | Cursor `.cursor/mcp.json` | VS Code `.vscode/mcp.json` |
+|---|---|---|---|---|
+| Root key | `[mcp_servers.<name>]` | `mcpServers.<name>` | `mcpServers.<name>` | `servers.<name>` |
+| stdio discriminator | absence of `url` (untagged) | optional `type: "stdio"` | optional `type: "stdio"` | `type: "stdio"` |
+| http discriminator | presence of `url` | `type: "http"` | `type: "http"` | `type: "http"` |
+| `command` (stdio) | yes | yes | yes | yes |
+| `args` (stdio) | yes | yes | yes | yes |
+| `env` (stdio) | sub-table `[mcp_servers.<name>.env]` | object | object | object |
+| `cwd` | yes | not supported | local only | yes |
+| `url` (http) | yes | yes | yes | yes |
+| HTTP headers | `http_headers` + `env_http_headers` | `headers` | `headers` | `headers` |
+| Bearer auth | `bearer_token_env_var` | inline `headers.Authorization` | inline `headers.Authorization` | inline `headers.Authorization` with `${input:...}` |
+| Timeouts | `startup_timeout_sec`, `tool_timeout_sec` | not exposed | not exposed | not exposed |
+| Strict fields | `deny_unknown_fields` | tolerant | tolerant | tolerant |
+
+Per-host forbidden-field guards, enforced before write:
+
+| Host | stdio forbidden | http forbidden |
+|------|-----------------|----------------|
+| Codex | `url`, `bearer_token_env_var`, `http_headers`, `env_http_headers` | `command`, `args`, `env`, `cwd` |
+| Claude | `url`, `headers`, `cwd` | `command`, `args`, `env`, `cwd` |
+| Cursor | `url`, `headers`, `auth` | `command`, `args`, `env`, `cwd` |
+| VS Code | `url`, `headers` | `command`, `args`, `env`, `cwd` |
+
+HTTP transport contract:
+
+- HTTP install is opt-in. Default remains stdio.
+- Default URL is `http://127.0.0.1:8765/mcp`. Non-localhost URLs require
+  `--allow-non-localhost`, mirroring the server-side guard.
+- Codex HTTP installs use the `StreamableHttp` untagged variant of
+  `McpServerTransportConfig`. Claude, Cursor, and VS Code use
+  `{"type": "http", "url": "..."}` in their respective root keys.
+
+Bearer-env authentication contract:
+
+- `--bearer-env <NAME>` declares the environment variable that holds the
+  bearer secret. The installer never reads, prints, or stores the secret
+  value; only the variable name appears in generated config, the JSON
+  report, and the event ledger.
+- Codex emits `bearer_token_env_var = "<NAME>"`. The Rust runtime reads the
+  variable at startup.
+- Claude and Cursor emit `headers: {"Authorization": "Bearer ${env:<NAME>}"}`
+  using each host's documented environment-interpolation form.
+- VS Code emits `headers: {"Authorization": "Bearer ${input:<name>-token>}"}`
+  following the VS Code workspace MCP `inputs` convention.
+
 ## MCP Cut
 
 ```yaml
@@ -212,6 +276,12 @@ cortex_cut:
     - .tes/bin/event_ledger.py
     - .tes/bin/checkpoint.py
     - .tes/bin/install_mcp.py
+    - .tes/bin/install_mcp_hosts/__init__.py
+    - .tes/bin/install_mcp_hosts/base.py
+    - .tes/bin/install_mcp_hosts/codex.py
+    - .tes/bin/install_mcp_hosts/claude.py
+    - .tes/bin/install_mcp_hosts/cursor.py
+    - .tes/bin/install_mcp_hosts/vscode.py
     - .tes/bin/field_reports.py
     - .tes/bin/mantra_gate.py
     - .tes/bin/mantra_gate_adoption_oracle.py

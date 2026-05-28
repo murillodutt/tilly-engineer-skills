@@ -223,6 +223,12 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
 def expected_mcp_paths(adapter: str) -> tuple[str, ...]:
     base = (
         ".tes/bin/install_mcp.py",
+        ".tes/bin/install_mcp_hosts/__init__.py",
+        ".tes/bin/install_mcp_hosts/base.py",
+        ".tes/bin/install_mcp_hosts/codex.py",
+        ".tes/bin/install_mcp_hosts/claude.py",
+        ".tes/bin/install_mcp_hosts/cursor.py",
+        ".tes/bin/install_mcp_hosts/vscode.py",
         ".tes/bin/cortex.py",
         ".tes/bin/cortex_mcp.py",
         ".tes/bin/cortex_embed.mjs",

@@ -18,14 +18,24 @@ from typing import Any
 import field_reports
 import tes_bundle
 
-
 SCRIPT_PATH = Path(__file__).resolve()
 ROOT = SCRIPT_PATH.parents[1]
+
+if str(SCRIPT_PATH.parent) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_PATH.parent))
+
+from install_mcp_hosts import HOSTS  # noqa: E402
 VERSION = "0.3.142"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (
     "install_mcp.py",
+    "install_mcp_hosts/__init__.py",
+    "install_mcp_hosts/base.py",
+    "install_mcp_hosts/codex.py",
+    "install_mcp_hosts/claude.py",
+    "install_mcp_hosts/cursor.py",
+    "install_mcp_hosts/vscode.py",
     "cortex.py",
     "cortex_mcp.py",
     "cortex_embed.mjs",
@@ -51,16 +61,6 @@ SERVER_FILES = (
     "materialize_adapter.py",
 )
 ADAPTERS = ("codex", "claude", "cursor", "vscode")
-JSON_CONFIG_PATHS = {
-    "claude": Path(".mcp.json"),
-    "cursor": Path(".cursor/mcp.json"),
-    "vscode": Path(".vscode/mcp.json"),
-}
-JSON_SERVER_KEYS = {
-    "claude": "mcpServers",
-    "cursor": "mcpServers",
-    "vscode": "servers",
-}
 
 
 def utc_stamp() -> str:
@@ -207,165 +207,21 @@ def install_server_files(target: Path, dry_run: bool, overwrite: bool, backup: b
     return actions, failures
 
 
-def codex_snippet(target: Path, read_only: bool = False) -> str:
-    args = [
-        json.dumps(target_script(target, "cortex_mcp.py")),
-        json.dumps("--target"),
-        json.dumps(str(target)),
-    ]
-    if read_only:
-        args.append(json.dumps("--read-only"))
-    return f"""[mcp_servers.tes-cortex]
-command = {json.dumps(python_command())}
-args = [{", ".join(args)}]
-cwd = {json.dumps(str(target))}
-startup_timeout_sec = 10
-tool_timeout_sec = 60
-enabled = true
-"""
-
-
-def merge_codex_config(
+def validate_config_registrations(
     target: Path,
-    dry_run: bool,
-    overwrite: bool,
-    backup: bool,
+    adapters: list[str],
     read_only: bool,
-) -> tuple[dict[str, str] | None, str | None]:
-    path = target / ".codex/config.toml"
-    snippet = codex_snippet(target, read_only)
-    if not path.exists():
-        action = write_text_file(path, snippet, dry_run, backup)
-        action["path"] = rel(path, target)
-        return action, None
-
-    text = path.read_text(encoding="utf-8")
-    if "[mcp_servers.tes-cortex]" in text:
-        if snippet.strip() in text:
-            return {"path": rel(path, target), "action": "skip-identical"}, None
-        if not overwrite:
-            return None, "conflicting Codex MCP config: .codex/config.toml"
-        updated = replace_toml_section(text, "[mcp_servers.tes-cortex]", snippet)
-    else:
-        updated = text.rstrip() + "\n\n" + snippet
-    action = write_text_file(path, updated, dry_run, backup)
-    action["path"] = rel(path, target)
-    return action, None
-
-
-def replace_toml_section(text: str, header: str, replacement: str) -> str:
-    lines = text.splitlines()
-    start = next(i for i, line in enumerate(lines) if line.strip() == header)
-    end = len(lines)
-    for idx in range(start + 1, len(lines)):
-        if lines[idx].startswith("[") and lines[idx].endswith("]"):
-            end = idx
-            break
-    return "\n".join([*lines[:start], replacement.rstrip(), *lines[end:]]).rstrip() + "\n"
-
-
-def json_config(adapter: str, target: Path, read_only: bool = False) -> dict[str, Any]:
-    args = [target_script(target, "cortex_mcp.py"), "--target", str(target)]
-    if read_only:
-        args.append("--read-only")
-    return {
-        "type": "stdio",
-        "command": python_command(),
-        "args": args,
-        "env": {},
-    }
-
-
-def merge_json_config(
-    target: Path,
-    adapter: str,
-    dry_run: bool,
-    overwrite: bool,
-    backup: bool,
-    read_only: bool,
-) -> tuple[dict[str, str] | None, str | None]:
-    path = target / JSON_CONFIG_PATHS[adapter]
-    server_key = JSON_SERVER_KEYS[adapter]
-    desired_server = json_config(adapter, target, read_only)
-    data: dict[str, Any]
-    if path.exists():
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError as exc:
-            return None, f"invalid JSON in {rel(path, target)}: {exc}"
-        if not isinstance(data, dict):
-            return None, f"{rel(path, target)} must contain a JSON object"
-    else:
-        data = {}
-
-    servers = data.setdefault(server_key, {})
-    if not isinstance(servers, dict):
-        return None, f"{rel(path, target)} {server_key} must be an object"
-    existing = servers.get(SERVER_NAME)
-    if existing == desired_server:
-        return {"path": rel(path, target), "action": "skip-identical"}, None
-    if existing is not None and not overwrite:
-        return None, f"conflicting {adapter} MCP config: {rel(path, target)}"
-
-    servers[SERVER_NAME] = desired_server
-    text = json.dumps(data, indent=2, sort_keys=True) + "\n"
-    action = write_text_file(path, text, dry_run, backup)
-    action["path"] = rel(path, target)
-    return action, None
-
-
-def validate_config_registration(target: Path, adapter: str, read_only: bool) -> tuple[dict[str, str], str | None]:
-    if adapter == "codex":
-        path = target / ".codex/config.toml"
-        if not path.exists():
-            return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, "missing Codex MCP config: .codex/config.toml"
-        try:
-            data = tomllib.loads(path.read_text(encoding="utf-8"))
-        except tomllib.TOMLDecodeError as exc:
-            return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, f"invalid TOML in .codex/config.toml: {exc}"
-        server = data.get("mcp_servers", {}).get(SERVER_NAME) if isinstance(data.get("mcp_servers"), dict) else None
-        if not isinstance(server, dict):
-            return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, "Codex MCP config missing tes-cortex server"
-        args = server.get("args")
-        if (
-            server.get("command") != python_command()
-            or server.get("cwd") != str(target)
-            or not isinstance(args, list)
-            or target_script(target, "cortex_mcp.py") not in args
-            or str(target) not in args
-        ):
-            return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, "Codex MCP config has invalid tes-cortex command or args"
-        if read_only and "--read-only" not in args:
-            return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, "Codex read-only MCP config missing --read-only"
-        if not read_only and "--read-only" in args:
-            return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, "Codex default MCP config must expose governed remember tools"
-        return {"adapter": adapter, "path": rel(path, target), "status": "PASS", "server": SERVER_NAME}, None
-
-    path = target / JSON_CONFIG_PATHS[adapter]
-    server_key = JSON_SERVER_KEYS[adapter]
-    if not path.exists():
-        return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, f"missing {adapter} MCP config: {rel(path, target)}"
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, f"invalid JSON in {rel(path, target)}: {exc}"
-    if not isinstance(data, dict):
-        return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, f"{rel(path, target)} must contain a JSON object"
-    servers = data.get(server_key)
-    if not isinstance(servers, dict):
-        return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, f"{rel(path, target)} {server_key} must be an object"
-    expected = json_config(adapter, target, read_only)
-    actual = servers.get(SERVER_NAME)
-    if actual != expected:
-        return {"adapter": adapter, "path": rel(path, target), "status": "FAIL"}, f"{rel(path, target)} missing expected tes-cortex server registration"
-    return {"adapter": adapter, "path": rel(path, target), "status": "PASS", "server": SERVER_NAME, "server_key": server_key}, None
-
-
-def validate_config_registrations(target: Path, adapters: list[str], read_only: bool) -> tuple[list[dict[str, str]], list[str]]:
+    transport: str = "stdio",
+    url: str | None = None,
+    bearer_token_env_var: str | None = None,
+) -> tuple[list[dict[str, str]], list[str]]:
     registrations: list[dict[str, str]] = []
     failures: list[str] = []
     for adapter in adapters:
-        registration, failure = validate_config_registration(target, adapter, read_only)
+        registration, failure = HOSTS[adapter].validate_registered(
+            target, read_only,
+            transport=transport, url=url, bearer_token_env_var=bearer_token_env_var,
+        )
         registrations.append(registration)
         if failure:
             failures.append(failure)
@@ -379,14 +235,17 @@ def install_configs(
     overwrite: bool,
     backup: bool,
     read_only: bool,
+    transport: str = "stdio",
+    url: str | None = None,
+    bearer_token_env_var: str | None = None,
 ) -> tuple[list[dict[str, str]], list[str]]:
     actions: list[dict[str, str]] = []
     failures: list[str] = []
     for adapter in adapters:
-        if adapter == "codex":
-            action, failure = merge_codex_config(target, dry_run, overwrite, backup, read_only)
-        else:
-            action, failure = merge_json_config(target, adapter, dry_run, overwrite, backup, read_only)
+        action, failure = HOSTS[adapter].merge_into_existing(
+            target, dry_run, overwrite, backup, read_only,
+            transport=transport, url=url, bearer_token_env_var=bearer_token_env_var,
+        )
         if failure:
             failures.append(failure)
         if action:
@@ -424,6 +283,20 @@ def install(args: argparse.Namespace) -> int:
 
     read_only = bool(args.read_only or args.disable_writes)
     adapters = selected_adapters(args.adapter)
+    transport = args.transport
+    bearer_env = args.bearer_env
+    url = args.url
+    if transport == "http" and not url:
+        url = f"http://{args.host}:{args.port}/mcp"
+    if transport == "http" and not args.allow_non_localhost:
+        host_part = ""
+        if url:
+            from urllib.parse import urlparse
+            host_part = urlparse(url).hostname or ""
+        if host_part and host_part not in {"127.0.0.1", "localhost", "::1"}:
+            print("[install-mcp] FAIL")
+            print(f"- HTTP install binds to localhost by default; pass --allow-non-localhost to use {host_part}")
+            return 1
     bundle_adapter = "all" if args.adapter == "vscode" else args.adapter
     bundle_stage = (
         tes_bundle.stage_preferred_bundle(target, dry_run=args.dry_run, adapter=bundle_adapter)
@@ -439,12 +312,18 @@ def install(args: argparse.Namespace) -> int:
     config_actions, config_failures = (
         ([], [])
         if args.helpers_only
-        else install_configs(target, adapters, args.dry_run, args.overwrite, not args.no_backup, read_only)
+        else install_configs(
+            target, adapters, args.dry_run, args.overwrite, not args.no_backup, read_only,
+            transport=transport, url=url, bearer_token_env_var=bearer_env,
+        )
     )
     config_registrations, registration_failures = (
         ([], [])
         if args.helpers_only or args.dry_run or config_failures
-        else validate_config_registrations(target, adapters, read_only)
+        else validate_config_registrations(
+            target, adapters, read_only,
+            transport=transport, url=url, bearer_token_env_var=bearer_env,
+        )
     )
     bundle_failures = bundle_stage.get("failures", []) if bundle_stage.get("status") == "FAIL" else []
     failures = [*bundle_failures, *server_failures, *config_failures, *registration_failures]
@@ -459,6 +338,9 @@ def install(args: argparse.Namespace) -> int:
         "governed_writes": not read_only,
         "write_capable": not read_only,
         "read_only": read_only,
+        "transport": transport,
+        "url": url,
+        "bearer_env": bearer_env,
         "bundle_stage": bundle_stage,
         "server": SERVER_NAME,
         "server_files": server_actions,
@@ -481,6 +363,8 @@ def install(args: argparse.Namespace) -> int:
                 "governed_writes": not read_only,
                 "write_capable": not read_only,
                 "read_only": read_only,
+                "transport": transport,
+                "bearer_env": bearer_env,
                 "dry_run": args.dry_run,
                 "failures": len(failures),
             },
@@ -494,6 +378,116 @@ def install(args: argparse.Namespace) -> int:
     return 0
 
 
+def _golden_stdio_failures() -> list[str]:
+    """Golden assertions for per-host stdio builders against fixed inputs."""
+    failures: list[str] = []
+    fixture_target = Path("/abs/target")
+    fixture_python = "/abs/python"
+    fixture_script = "/abs/target/.tes/bin/cortex_mcp.py"
+
+    codex_default = HOSTS["codex"].build_stdio(fixture_target, fixture_script, fixture_python, False)
+    expected_codex_default = (
+        '[mcp_servers.tes-cortex]\n'
+        'command = "/abs/python"\n'
+        'args = ["/abs/target/.tes/bin/cortex_mcp.py", "--target", "/abs/target"]\n'
+        'cwd = "/abs/target"\n'
+        'startup_timeout_sec = 10\n'
+        'tool_timeout_sec = 60\n'
+        'enabled = true\n'
+    )
+    if codex_default != expected_codex_default:
+        failures.append("codex golden stdio default drift")
+    codex_read_only = HOSTS["codex"].build_stdio(fixture_target, fixture_script, fixture_python, True)
+    expected_codex_read_only = (
+        '[mcp_servers.tes-cortex]\n'
+        'command = "/abs/python"\n'
+        'args = ["/abs/target/.tes/bin/cortex_mcp.py", "--target", "/abs/target", "--read-only"]\n'
+        'cwd = "/abs/target"\n'
+        'startup_timeout_sec = 10\n'
+        'tool_timeout_sec = 60\n'
+        'enabled = true\n'
+    )
+    if codex_read_only != expected_codex_read_only:
+        failures.append("codex golden stdio read-only drift")
+
+    expected_json_default = {
+        "type": "stdio",
+        "command": "/abs/python",
+        "args": ["/abs/target/.tes/bin/cortex_mcp.py", "--target", "/abs/target"],
+        "env": {},
+    }
+    expected_json_read_only = {
+        "type": "stdio",
+        "command": "/abs/python",
+        "args": ["/abs/target/.tes/bin/cortex_mcp.py", "--target", "/abs/target", "--read-only"],
+        "env": {},
+    }
+    for host_name in ("claude", "cursor", "vscode"):
+        actual_default = HOSTS[host_name].build_stdio(fixture_target, fixture_script, fixture_python, False)
+        if actual_default != expected_json_default:
+            failures.append(f"{host_name} golden stdio default drift: {actual_default}")
+        actual_read_only = HOSTS[host_name].build_stdio(fixture_target, fixture_script, fixture_python, True)
+        if actual_read_only != expected_json_read_only:
+            failures.append(f"{host_name} golden stdio read-only drift: {actual_read_only}")
+
+    if HOSTS["vscode"].server_key != "servers":
+        failures.append("vscode adapter must use server_key='servers' per VS Code workspace MCP schema")
+    if HOSTS["claude"].server_key != "mcpServers":
+        failures.append("claude adapter must use server_key='mcpServers'")
+    if HOSTS["cursor"].server_key != "mcpServers":
+        failures.append("cursor adapter must use server_key='mcpServers'")
+    if HOSTS["claude"].supports_cwd is not False:
+        failures.append("claude adapter must declare supports_cwd=False per Claude Code MCP schema")
+
+    fixture_url = "http://127.0.0.1:8765/mcp"
+    codex_http = HOSTS["codex"].build_http(fixture_target, fixture_url)
+    expected_codex_http = (
+        '[mcp_servers.tes-cortex]\n'
+        'url = "http://127.0.0.1:8765/mcp"\n'
+        'startup_timeout_sec = 10\n'
+        'tool_timeout_sec = 60\n'
+        'enabled = true\n'
+    )
+    if codex_http != expected_codex_http:
+        failures.append(f"codex golden http drift: {codex_http!r}")
+    expected_json_http = {"type": "http", "url": fixture_url}
+    for host_name in ("claude", "cursor", "vscode"):
+        actual_http = HOSTS[host_name].build_http(fixture_target, fixture_url)
+        if actual_http != expected_json_http:
+            failures.append(f"{host_name} golden http drift: {actual_http}")
+
+    codex_http_bearer = HOSTS["codex"].build_http(fixture_target, fixture_url, bearer_token_env_var="TES_TOKEN")
+    if 'bearer_token_env_var = "TES_TOKEN"' not in codex_http_bearer:
+        failures.append("codex bearer_token_env_var missing from http snippet")
+    claude_http_bearer = HOSTS["claude"].build_http(fixture_target, fixture_url, bearer_token_env_var="TES_TOKEN")
+    if claude_http_bearer.get("headers", {}).get("Authorization") != "Bearer ${env:TES_TOKEN}":
+        failures.append("claude bearer Authorization header missing")
+    cursor_http_bearer = HOSTS["cursor"].build_http(fixture_target, fixture_url, bearer_token_env_var="TES_TOKEN")
+    if cursor_http_bearer.get("headers", {}).get("Authorization") != "Bearer ${env:TES_TOKEN}":
+        failures.append("cursor bearer Authorization header missing")
+    vscode_http_bearer = HOSTS["vscode"].build_http(fixture_target, fixture_url, bearer_token_env_var="TES_TOKEN")
+    if "${input:" not in str(vscode_http_bearer.get("headers", {}).get("Authorization", "")):
+        failures.append("vscode bearer Authorization must use ${input:...} interpolation")
+
+    # Negative validation: forbidden/unknown fields per host.
+    codex_unknown = HOSTS["codex"].assert_entry_valid({"command": "/x", "args": [], "secret": "boom"}, "stdio")
+    if not codex_unknown:
+        failures.append("codex strict validation must reject unknown field (deny_unknown_fields parity)")
+    codex_http_forbidden = HOSTS["codex"].assert_entry_valid({"url": "u", "command": "/x"}, "http")
+    if not codex_http_forbidden:
+        failures.append("codex http must forbid command in StreamableHttp variant")
+    claude_cwd = HOSTS["claude"].assert_entry_valid({"type": "stdio", "command": "/x", "cwd": "/y"}, "stdio")
+    if not claude_cwd:
+        failures.append("claude must forbid cwd (Claude Code MCP schema)")
+    cursor_http_cwd = HOSTS["cursor"].assert_entry_valid({"type": "http", "url": "u", "cwd": "/y"}, "http")
+    if not cursor_http_cwd:
+        failures.append("cursor http must forbid cwd (Cursor cloud rejects cwd)")
+    vscode_unknown = HOSTS["vscode"].assert_entry_valid({"type": "stdio", "command": "/x", "bogus": 1}, "stdio")
+    if not vscode_unknown:
+        failures.append("vscode must reject unknown field")
+    return failures
+
+
 def self_test() -> int:
     with tempfile.TemporaryDirectory(prefix="tes-mcp-install-") as tempdir:
         target = Path(tempdir).resolve()
@@ -504,7 +498,7 @@ def self_test() -> int:
             capture_output=True,
             check=False,
         )
-        failures: list[str] = []
+        failures: list[str] = _golden_stdio_failures()
         if result.returncode != 0:
             failures.append("cortex init failed")
         (target / ".vscode").mkdir(parents=True, exist_ok=True)
@@ -695,6 +689,102 @@ def self_test() -> int:
             if "--read-only" not in args:
                 failures.append(f"read-only {relpath} MCP install must include --read-only")
 
+    with tempfile.TemporaryDirectory(prefix="tes-mcp-http-install-") as tempdir:
+        target = Path(tempdir).resolve()
+        init_result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts/cortex.py"), "init", "--target", str(target)],
+            cwd=ROOT, text=True, capture_output=True, check=False,
+        )
+        if init_result.returncode != 0:
+            failures.append("http cortex init failed")
+        http_install_result = subprocess.run(
+            [sys.executable, __file__, "--target", str(target), "--adapter", "all",
+             "--transport", "http", "--port", "8765", "--yes"],
+            cwd=ROOT, text=True, capture_output=True, check=False,
+        )
+        if http_install_result.returncode != 0:
+            failures.append("http install all failed")
+            failures.extend(http_install_result.stdout.splitlines())
+            failures.extend(http_install_result.stderr.splitlines())
+        else:
+            codex_http_text = (target / ".codex/config.toml").read_text(encoding="utf-8")
+            if 'url = "http://127.0.0.1:8765/mcp"' not in codex_http_text:
+                failures.append("http codex install missing StreamableHttp url")
+            if "command =" in codex_http_text.split("[mcp_servers.tes-cortex]", 1)[1]:
+                failures.append("http codex install must not emit command for StreamableHttp variant")
+            for relpath in (".mcp.json", ".cursor/mcp.json", ".vscode/mcp.json"):
+                if not (target / relpath).exists():
+                    failures.append(f"http install missing config: {relpath}")
+                    continue
+                data = json.loads((target / relpath).read_text(encoding="utf-8"))
+                server_key = "servers" if relpath == ".vscode/mcp.json" else "mcpServers"
+                entry = data[server_key][SERVER_NAME]
+                if entry.get("type") != "http":
+                    failures.append(f"http {relpath} install must register type=http")
+                if entry.get("url") != "http://127.0.0.1:8765/mcp":
+                    failures.append(f"http {relpath} install must register expected url")
+                if "command" in entry or "args" in entry:
+                    failures.append(f"http {relpath} install must not emit command/args")
+
+        non_local_result = subprocess.run(
+            [sys.executable, __file__, "--target", str(target), "--adapter", "claude",
+             "--transport", "http", "--url", "https://remote.example.invalid/mcp",
+             "--overwrite", "--yes"],
+            cwd=ROOT, text=True, capture_output=True, check=False,
+        )
+        if non_local_result.returncode == 0:
+            failures.append("non-localhost http install was not rejected")
+        if "allow-non-localhost" not in non_local_result.stdout + non_local_result.stderr:
+            failures.append("non-localhost http install must hint about --allow-non-localhost")
+
+    # SPEC-007: bearer-env authenticated HTTP install with privacy self-test.
+    with tempfile.TemporaryDirectory(prefix="tes-mcp-bearer-install-") as tempdir:
+        target = Path(tempdir).resolve()
+        init_result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts/cortex.py"), "init", "--target", str(target)],
+            cwd=ROOT, text=True, capture_output=True, check=False,
+        )
+        if init_result.returncode != 0:
+            failures.append("bearer cortex init failed")
+        bearer_secret = "super-secret-not-stored"
+        env = {**dict(__import__("os").environ), "TES_BEARER_TOKEN": bearer_secret}
+        bearer_result = subprocess.run(
+            [sys.executable, __file__, "--target", str(target), "--adapter", "all",
+             "--transport", "http", "--port", "8765", "--bearer-env", "TES_BEARER_TOKEN", "--yes"],
+            cwd=ROOT, text=True, capture_output=True, check=False, env=env,
+        )
+        if bearer_result.returncode != 0:
+            failures.append("bearer-env http install all failed")
+            failures.extend(bearer_result.stdout.splitlines())
+            failures.extend(bearer_result.stderr.splitlines())
+        else:
+            combined_output = bearer_result.stdout + bearer_result.stderr
+            if bearer_secret in combined_output:
+                failures.append("bearer-env install leaked secret value in stdout/stderr")
+            codex_text = (target / ".codex/config.toml").read_text(encoding="utf-8")
+            if 'bearer_token_env_var = "TES_BEARER_TOKEN"' not in codex_text:
+                failures.append("codex bearer install must emit bearer_token_env_var")
+            if bearer_secret in codex_text:
+                failures.append("codex bearer install leaked secret value to TOML")
+            for relpath, host_key in (
+                (".mcp.json", "mcpServers"),
+                (".cursor/mcp.json", "mcpServers"),
+                (".vscode/mcp.json", "servers"),
+            ):
+                data_text = (target / relpath).read_text(encoding="utf-8")
+                if bearer_secret in data_text:
+                    failures.append(f"{relpath} bearer install leaked secret value")
+                data = json.loads(data_text)
+                entry = data[host_key][SERVER_NAME]
+                authorization = entry.get("headers", {}).get("Authorization", "")
+                if "Bearer ${" not in authorization:
+                    failures.append(f"{relpath} bearer install must interpolate Authorization header")
+                if bearer_secret in authorization:
+                    failures.append(f"{relpath} bearer install must not embed secret value")
+            event_path = target / ".tes/events/ledger.jsonl"
+            if event_path.exists() and bearer_secret in event_path.read_text(encoding="utf-8"):
+                failures.append("bearer-env install leaked secret value into event ledger")
+
     with tempfile.TemporaryDirectory(prefix="tes-mcp-legacy-enable-install-") as tempdir:
         target = Path(tempdir).resolve()
         init_result = subprocess.run(
@@ -823,6 +913,12 @@ def main() -> int:
     parser.add_argument("--disable-writes", action="store_true", help="alias for --read-only")
     parser.add_argument("--helpers-only", action="store_true", help="copy only TES helper files under .tes/bin/**")
     parser.add_argument("--no-backup", action="store_true", help="do not create .bak-* files before overwrite")
+    parser.add_argument("--transport", choices=("stdio", "http"), default="stdio", help="MCP transport to register")
+    parser.add_argument("--host", default="127.0.0.1", help="HTTP host for the registered URL (default 127.0.0.1)")
+    parser.add_argument("--port", type=int, default=8765, help="HTTP port for the registered URL (default 8765)")
+    parser.add_argument("--url", default=None, help="explicit HTTP URL; overrides --host/--port")
+    parser.add_argument("--allow-non-localhost", action="store_true", help="allow HTTP URLs outside localhost")
+    parser.add_argument("--bearer-env", default=None, help="environment variable name for HTTP bearer token")
     parser.add_argument("--json-only", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()

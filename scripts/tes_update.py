@@ -31,6 +31,12 @@ REMOTE_RAW_BASE = f"{REMOTE_RAW_ORIGIN}/main"
 REMOTE_REF = "refs/heads/main"
 HELPER_FILES = (
     "install_mcp.py",
+    "install_mcp_hosts/__init__.py",
+    "install_mcp_hosts/base.py",
+    "install_mcp_hosts/codex.py",
+    "install_mcp_hosts/claude.py",
+    "install_mcp_hosts/cursor.py",
+    "install_mcp_hosts/vscode.py",
     "cortex.py",
     "cortex_mcp.py",
     "cortex_embed.mjs",

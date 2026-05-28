@@ -341,20 +341,33 @@ def analyze() -> dict[str, Any]:
 
     install_text = read("scripts/install_mcp.py")
     for term in (
-        "[mcp_servers.tes-cortex]",
-        ".mcp.json",
-        ".cursor/mcp.json",
-        ".vscode/mcp.json",
-        "JSON_SERVER_KEYS",
+        "install_mcp_hosts",
         "field_reports.py",
         "tes_update.py",
         "tes_legacy_retirement.py",
         "root_context.py",
         "helpers_only",
         "--json-only",
+        "--transport",
+        "--bearer-env",
+        "--allow-non-localhost",
     ):
         if term not in install_text:
             failures.append(f"scripts/install_mcp.py missing {term}")
+    codex_host_text = read("scripts/install_mcp_hosts/codex.py")
+    if "[mcp_servers.tes-cortex]" not in codex_host_text:
+        failures.append("scripts/install_mcp_hosts/codex.py missing [mcp_servers.tes-cortex]")
+    claude_host_text = read("scripts/install_mcp_hosts/claude.py")
+    if ".mcp.json" not in claude_host_text:
+        failures.append("scripts/install_mcp_hosts/claude.py missing .mcp.json")
+    cursor_host_text = read("scripts/install_mcp_hosts/cursor.py")
+    if ".cursor/mcp.json" not in cursor_host_text:
+        failures.append("scripts/install_mcp_hosts/cursor.py missing .cursor/mcp.json")
+    vscode_host_text = read("scripts/install_mcp_hosts/vscode.py")
+    if ".vscode/mcp.json" not in vscode_host_text:
+        failures.append("scripts/install_mcp_hosts/vscode.py missing .vscode/mcp.json")
+    if 'server_key = "servers"' not in vscode_host_text:
+        failures.append("scripts/install_mcp_hosts/vscode.py missing server_key='servers'")
     adapter_text = read("scripts/install_adapter.py")
     for term in (
         "INSTALLED_CLEAN_RUNTIME",

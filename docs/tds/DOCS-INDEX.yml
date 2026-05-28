@@ -421,6 +421,13 @@ documents:
     consumer: maintainers, Cortex MCP authors, host integration authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md
+    id: roadmap.goal_super_spec_cortex_mcp_host_segmentation
+    class: roadmap
+    status: active
+    consumer: maintainers, Cortex MCP authors, installer authors, host integration authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md
     id: roadmap.goal_super_spec_cortex_memory_benchmark_harness
     class: roadmap
@@ -447,6 +454,13 @@ documents:
     class: roadmap
     status: active
     consumer: maintainers, Cortex maintainers, oracle authors, benchmark authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/cortex-mcp-host-segmentation/EXECUTION-UNITS.md
+    id: roadmap.cortex_mcp_host_segmentation.execution_units
+    class: roadmap
+    status: active
+    consumer: maintainers, Cortex MCP authors, installer authors, host integration authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L1
   - path: docs/roadmap/GOAL-SUPER-SPEC-tes-memory-lifecycle.md
@@ -552,6 +566,13 @@ documents:
     class: evidence
     status: active
     consumer: Cortex maintainers, MCP adapter authors, installer authors, release reviewers, and operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/evidence/reports/2026/05/27/cortex-mcp-host-segmentation/REPORT.md
+    id: evidence.cortex_mcp_host_segmentation_20260527
+    class: evidence
+    status: active
+    consumer: Cortex MCP authors, installer authors, host integration authors, release reviewers, and operators
     source_of_truth: false
     evidence_level: L2
   - path: docs/evidence/reports/2026/05/27/cortex-mcp-vscode-config-parity/REPORT.md

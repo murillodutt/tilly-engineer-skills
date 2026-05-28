@@ -19,6 +19,7 @@ Wave 7 local package-source closure.
 | Line | Status | Document |
 |------|--------|----------|
 | Cortex MCP capability expansion | Active | `GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md` |
+| Cortex MCP host segmentation | Active | `GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md` |
 | TES Memory Lifecycle implementation | Complete | `GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
 | Cortex memory benchmark harness | Active | `GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
 | TES anti-contamination hardening | Active | `GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md` |

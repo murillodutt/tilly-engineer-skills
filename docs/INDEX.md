@@ -68,6 +68,7 @@ turning the repository root into an inventory.
 | Cursor adapter pipeline | `adapters/pipelines/CURSOR-PIPELINE.md` |
 | Current roadmap index | `roadmap/README.md` |
 | Cortex MCP Capability Expansion Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md` |
+| Cortex MCP Host Segmentation Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md` |
 | TES Memory Lifecycle Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
 | Cortex Memory Benchmark Harness Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
 | TES Anti-Contamination Hardening Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md` |
