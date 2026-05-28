@@ -10,9 +10,11 @@ tver: 0.1.0
 
 # Sync Audit Checklist
 
-Use this checklist when a TES source change is large enough to need a version
-bump, a public bundle, a tag, and a push. It captures the real sequence that
-worked end-to-end and the traps that came up along the way.
+Use this checklist when a TES source change enters the `/tes-sync` route.
+Every `/tes-sync` run applies a version bump. The remaining scope decision is
+whether the bump stays source-only or also moves public refs, bundle, tag, and
+release certification. This checklist captures the real sequence that worked
+end-to-end and the traps that came up along the way.
 
 It is not a substitute for `npm run commit:check`. It is the human-readable
 audit path that wraps that gate.
@@ -21,8 +23,10 @@ audit path that wraps that gate.
 
 - [ ] `git status -sb` shows the expected diff scope; no surprise files in
   `.tes/`, `docs/dist/`, or `node_modules/`.
-- [ ] You can name in one sentence what delivered behavior changed. If you
-  cannot, the bump is premature.
+- [ ] You can name in one sentence why this change is entering `/tes-sync`.
+  For delivered behavior, name the adopter-visible change. For governance,
+  evidence, or fixture-only work, state that the sync will still apply the
+  minimum source-only bump.
 - [ ] `docs/mesh/TES-ALIGN-SKILL-SOURCE-OF-TRUTH.md` or any other touched
   source-of-truth doc has `sources_verified_on` within
   `source_refresh_interval_days`. Refresh the date if the doc was used as
@@ -87,15 +91,19 @@ audit path that wraps that gate.
 
 Run `python3 scripts/tes_bump.py --governance-check`. Interpret the verdict:
 
-- [ ] `PASS` → no bump needed; continue to **Commit**.
+- [ ] `PASS` → choose **source-only bump** unless the user cancels sync.
+  `PASS` no longer means "no bump"; it only means bundle/public refs are not
+  required by the current diff.
 - [ ] `NEEDS_VERSION_DECISION` → choose the scope explicitly:
-  - [ ] **Source-only sync** (recommended for hardening / oracle / skill
-    body changes that do not change installer behavior).
-  - [ ] **Source + public refs + bundle** (chosen this session: installer
-    refs in `INSTALL.md`, `COMMAND-TRIGGERS.md`, `bin/tes.js`, i18n, and
-    HTML all need to move together with a freshly generated bundle).
-  - [ ] **Defer bump** with an explicit exception recorded in the closeout
-    (allowed by `release_identity`).
+  - [ ] **Source-only bump** for governance / evidence / fixture-only work,
+    or for rare source identity updates that intentionally do not move
+    installer refs, i18n, or bundle behavior.
+  - [ ] **Bump + public refs + bundle** for adopter-visible behavior,
+    installer refs, public docs, CLI/package identity, or any change where
+    `commit:check` requires refreshed `docs/dist/<new>/` artifacts.
+
+There is no `/tes-sync` no-bump route. If a change should not bump, do not run
+`/tes-sync`; use an ordinary local commit workflow instead.
 
 ## Identity bump 0.3.X → 0.3.Y
 
@@ -119,7 +127,7 @@ together (verified this session):
 - [ ] `src/adapters/codex/plugin/plugin.json` and `marketplace.json`.
 - [ ] `src/adapters/claude/plugin/plugin.json` and `marketplace.json`.
 
-If the bump is **source + public refs**:
+If the bump is **bump + public refs + bundle**:
 
 - [ ] `docs/install/INSTALL.md` install commands (`#v<new>`).
 - [ ] `docs/install/COMMAND-TRIGGERS.md` install row.
@@ -141,7 +149,7 @@ missed file. Decide explicitly; do not let it slide.
 
 ## Public bundle
 
-Only when the bump scope is **source + public refs + bundle**:
+Only when the bump scope is **bump + public refs + bundle**:
 
 - [ ] `python3 scripts/tes_bundle.py publish --adapter all` succeeds.
 - [ ] `docs/dist/<new>/` contains `index.json`, the zip, and the `.sha256`

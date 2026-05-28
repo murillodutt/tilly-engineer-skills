@@ -13,6 +13,8 @@ target projects.
 
 `docs/governance/SYNC-AUDIT-CHECKLIST.md` is the human-readable contract.
 This skill is the agent-facing condensation of the same flow.
+When the sync scope contract changes, update that checklist in the same change
+so maintainer-facing docs and agent-facing instructions do not diverge.
 
 Self-consume when the user asks for a complete sync, a release, a bump
 followed by push, or invokes `/tes-sync`. Do not ask the user to invoke this
@@ -282,6 +284,9 @@ current phase, the next planned write, and wait for explicit resume.
 - Do not push or tag without `npm run commit:check` PASS.
 - Do not present this skill as a user-facing TES product slash command.
   It is local development guidance.
+- Do not change `/tes-sync` scope rules without updating
+  `docs/governance/SYNC-AUDIT-CHECKLIST.md` and the local skill references in
+  the same change.
 
 ## Output Shape
 
