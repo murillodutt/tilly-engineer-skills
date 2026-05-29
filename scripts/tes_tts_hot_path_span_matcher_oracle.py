@@ -177,6 +177,8 @@ def match_hot_path_spans(source_text: str, locale: str) -> dict[str, Any]:
         "redaction_count": len(redactions),
         "spans": [
             {
+                "start": span.start,
+                "end": span.end,
                 "kind": span.kind,
                 "text": span.text,
                 "rendering": span.rendering,
