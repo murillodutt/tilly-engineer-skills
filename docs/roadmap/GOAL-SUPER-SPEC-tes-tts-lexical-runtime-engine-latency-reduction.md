@@ -15,10 +15,10 @@ Canonical artifact:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md`
 
 Current execution unit:
-`RTE-005 Chunked Preparation Boundary`
+`RTE-006 Runtime Audit And Closure`
 
 Ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-RTE-005-chunked-preparation-boundary.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-RTE-006-runtime-audit-and-closure.md`
 
 Prior line:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md`
@@ -114,7 +114,7 @@ only, not runtime output in this line.
 | RTE-002 | Hot-path span matcher | Complete: dependency-free matcher proves redaction-first, longest phrase, exact-island, fragile span, no-execute, and provider-out-of-scope behavior. |
 | RTE-003 | Fast-path spoken rendering | Complete: dependency-free fast path renders simple and mixed PT-BR speech through matcher/index contracts while preserving redaction, exact islands, no-summary, no-execute, and provider-out-of-scope behavior. |
 | RTE-004 | Request-local memoization | Complete: dependency-free request-local memoization proves repeated protected terms, paths, URLs, code-like spans, exact islands, and redacted secrets resolve once per request without cross-request persistence. |
-| RTE-005 | Chunked preparation boundary | Prepare first speakable chunk quickly while later chunks remain request-local and ordered. |
+| RTE-005 | Chunked preparation boundary | Complete: dependency-free chunked preparation proves first speakable chunk readiness while later chunks stay request-local, ordered, redacted, and non-executable. |
 | RTE-006 | Runtime audit and closure | Certify latency improvement, preserved boundaries, degraded surfaces, and next G2P-lite decision. |
 
 ## Performance Targets
@@ -151,6 +151,7 @@ python3 scripts/tes_tts_compiled_lexical_index_oracle.py --self-test
 python3 scripts/tes_tts_hot_path_span_matcher_oracle.py --self-test
 python3 scripts/tes_tts_fast_path_spoken_rendering_oracle.py --self-test
 python3 scripts/tes_tts_request_local_memoization_oracle.py --self-test
+python3 scripts/tes_tts_chunked_preparation_oracle.py --self-test
 python3 scripts/tes_tts_ptbr_lexical_manifest_oracle.py --self-test
 python3 scripts/tes_tts_ptbr_lexical_lookup_oracle.py --self-test
 python3 scripts/tes_tts_ptbr_lexical_integration_oracle.py --self-test

@@ -69,7 +69,7 @@ surface for release, materialization, and sync decisions.
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md` | Post-ADR capability migration execution contract. | complete |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` | Post-CAP extension contract for conversational spoken rendering. | superseded |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md` | PT-BR lexical normalization pivot inspired by mature TTS/G2P architecture. | complete |
-| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md` | Runtime engine and latency reduction contract; ready prompt is RTE-005. | active |
+| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md` | Runtime engine and latency reduction contract; ready prompt is RTE-006. | active |
 | `docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` | Feasibility study for migrating portable TTS behavior. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` | Historical prompt for first portable capability migration cut. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` | Historical prompt for speech transformation hardening. | historical |
@@ -153,7 +153,7 @@ The current ten-SPEC convergence contract is:
 The current CAP migration prompt state is closed:
 `docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md`
 
-The current TTS execution contract is `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md`; ready prompt: `docs/roadmap/GOAL-PROMPT-tes-tts-RTE-005-chunked-preparation-boundary.md`.
+The current TTS execution contract is `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md`; ready prompt: `docs/roadmap/GOAL-PROMPT-tes-tts-RTE-006-runtime-audit-and-closure.md`.
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -453,7 +453,7 @@ PT-BR lexical normalization status: LEX-001 through LEX-005 passed; local
 evidence-only sequence closed, next prompt none, sync status
 `REMOTE_SYNC_NOT_REQUESTED`.
 
-Runtime latency status: RTE-004 passed with request-local memoization fixtures/oracle; RTE-005 ready prompt created for chunked preparation.
+Runtime latency status: RTE-005 passed with chunked-preparation fixtures/oracle; RTE-006 ready prompt created for runtime audit and closure.
 
 Open questions: release identity planning and sync remain owner decisions.
 

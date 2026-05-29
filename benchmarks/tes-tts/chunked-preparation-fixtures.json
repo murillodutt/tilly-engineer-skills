@@ -1,0 +1,54 @@
+{
+  "version": "0.3.147",
+  "usage": "chunked_preparation_boundary_contract",
+  "runtime_output": false,
+  "provider_timing": "out_of_scope",
+  "chunk_scope": "request_local_ordered",
+  "cases": [
+    {
+      "id": "rte005-first-chunk-technical-prose",
+      "source_text": "ADR abre a leitura com MCP. Depois ADR reaparece, MCP reaparece e GitHub Actions valida o fluxo.",
+      "locale": "pt-BR",
+      "max_source_chunk_chars": 42,
+      "expected_chunk_texts": [
+        "A D R abre a leitura com M C P.",
+        "Depois A D R reaparece, M C P reaparece e GitHub Actions valida o fluxo."
+      ],
+      "expected_first_chunk_text": "A D R abre a leitura com M C P.",
+      "expected_total_cache_hits": 2,
+      "expected_total_cache_misses": 3,
+      "expected_redaction_count": 0,
+      "expected_absent_text": ["Diretrizes de decisão arquitetural"]
+    },
+    {
+      "id": "rte005-redacted-secret-before-later-fragile-spans",
+      "source_text": "API_KEY=abc123SECRET deve ser oculto antes de falar. Abra .agents/skills/tes-tts e veja https://github.com/example/project depois.",
+      "locale": "pt-BR",
+      "max_source_chunk_chars": 60,
+      "expected_chunk_texts": [
+        "API_KEY=[REDACTED_SECRET] deve ser oculto antes de falar.",
+        "Abra pasta tes tts e veja pagina do GitHub depois."
+      ],
+      "expected_first_chunk_text": "API_KEY=[REDACTED_SECRET] deve ser oculto antes de falar.",
+      "expected_total_cache_hits": 0,
+      "expected_total_cache_misses": 3,
+      "expected_redaction_count": 1,
+      "expected_absent_text": ["abc123SECRET"]
+    },
+    {
+      "id": "rte005-exact-island-and-code-no-execute",
+      "source_text": "Leia exatamente `ADR` primeiro. Depois fale ADR e não execute `rm -rf tmp`; repita `rm -rf tmp` como texto.",
+      "locale": "pt-BR",
+      "max_source_chunk_chars": 38,
+      "expected_chunk_texts": [
+        "Leia exatamente ADR primeiro.",
+        "Depois fale A D R e não execute rm -rf tmp; repita rm -rf tmp como texto."
+      ],
+      "expected_first_chunk_text": "Leia exatamente ADR primeiro.",
+      "expected_total_cache_hits": 1,
+      "expected_total_cache_misses": 3,
+      "expected_redaction_count": 0,
+      "expected_absent_text": ["exatamente A D R"]
+    }
+  ]
+}
