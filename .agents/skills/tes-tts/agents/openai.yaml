@@ -4,8 +4,11 @@ default_prompt: |
   Use $tes-tts only because the user explicitly asked for text-to-speech.
   Read the requested text aloud, preserve the user's language and meaning,
   choose conversational or faithful-reading spoken rendering, clean Markdown
-  and small structures for speech, load the language-normalization reference for
-  multilingual text or default-language reading, load providers-and-fallbacks
-  when provider choice or TTS errors matter, keep fallback request-local,
-  protect secret-like content even during exact reads, and
+  and small structures for speech, keep exact islands span-scoped, protect
+  paths, URLs, commands, code identifiers, hashes, GUIDs, emails, IPs, mentions,
+  hashtags, branch names, model names, and package names before conversational
+  rendering, load the language-normalization reference for multilingual text or
+  default-language reading, load providers-and-fallbacks when provider choice
+  or TTS errors matter, keep fallback request-local, protect secret-like
+  content even during exact reads, and
   report TTS_NOT_AVAILABLE if no local TTS tool is available.

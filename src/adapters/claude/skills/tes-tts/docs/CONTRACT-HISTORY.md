@@ -40,6 +40,8 @@ speech cleanup, speed handling, and honest unavailable state.
   pronunciation for natural speech.
 - Distinguish conversational spoken rendering from faithful reading so
   agent-authored speech can become oral prose without summarizing user text.
+- Keep exact handling span-scoped so one literal cue does not force unrelated
+  fragile spans into raw speech.
 - Use provider fallback and error classification as optional runtime guidance
   without importing proactive `speak` behavior or provider persistence.
 - Use the tested local voice/rate when accepted, but degrade to the host
@@ -83,6 +85,7 @@ a proactive announcement channel for normal TES status updates.
 | 2026-05-29 | Hardened CAP-004 provider fallback as a request-local catalog plan with error classes, voice-default retry, no provider certification, and no durable provider state. | CAP-004 provider fallback fixtures and provider probe oracle. | high |
 | 2026-05-29 | Added an enriched English protected-term pronunciation catalog for proper nouns and engineering workflow terms without claiming provider-backed pronunciation. | Maintainer feedback after live TTS test; instruction normalizer fixture `tts-pronunciation-english-protected-terms`. | high |
 | 2026-05-29 | Added CAP-006 conversational spoken-rendering intent with fixture-backed distinction from faithful reading, exact islands, table/list oral prose, and stronger secret redaction. | `GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md`; CAP-006 instruction normalizer fixtures. | high |
+| 2026-05-29 | Hardened CAP-007 exact islands and protected spans so selective literal spans survive while paths, URLs, emails, IPs, hashes, GUIDs, mentions, hashtags, scoped packages, branch names, model names, commands, and code identifiers keep safe spoken forms. | CAP-007 instruction normalizer fixtures and exact-island oracle hardening. | high |
 
 ## Do Not Lose
 

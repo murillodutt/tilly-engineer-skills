@@ -774,6 +774,20 @@ documents:
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-007-exact-island-protected-span-hardening.md
     id: roadmap.goal_prompt_tes_tts_cap_007_exact_island_protected_span_hardening
     class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/TES-TTS-CAP-007-EXACT-ISLAND-PROTECTED-SPAN-HARDENING.md
+    id: roadmap.tes_tts_cap_007_exact_island_protected_span_hardening
+    class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-008-table-list-code-block-oralization.md
+    id: roadmap.goal_prompt_tes_tts_cap_008_table_list_code_block_oralization
+    class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false

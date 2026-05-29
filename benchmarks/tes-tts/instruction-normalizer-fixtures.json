@@ -1146,5 +1146,170 @@
       "exact_islands",
       "no_summary"
     ]
+  },
+  {
+    "id": "tts-cap007-selective-exact-islands",
+    "rendering_intent": "conversational",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Fale naturalmente sobre .agents/skills/tes-tts, mas leia exatamente https://example.test/raw/SPEC.md e depois mencione https://github.com/example/project normalmente.",
+    "protected_terms": [
+      ".agents/skills/tes-tts",
+      "https://example.test/raw/SPEC.md",
+      "https://github.com/example/project"
+    ],
+    "exact_terms": [
+      "https://example.test/raw/SPEC.md"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_speech_contains": [
+      "pasta tes tts",
+      "https://example.test/raw/SPEC.md",
+      "pagina do GitHub"
+    ],
+    "expected_speech_excludes": [
+      ".agents/skills/tes-tts",
+      "https://github.com/example/project"
+    ],
+    "max_chunk_chars": 320,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "conversational_rendering",
+      "exact_islands",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap007-secret-redaction-over-selective-exact",
+    "rendering_intent": "faithful_reading",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Leia exatamente token=LIVE_SECRET_987 e depois explique o path .agents/skills/tes-tts em fala natural.",
+    "protected_terms": [
+      "token",
+      ".agents/skills/tes-tts"
+    ],
+    "exact_terms": [
+      "token=[REDACTED_SECRET]"
+    ],
+    "expected_redactions": [
+      "token=LIVE_SECRET_987"
+    ],
+    "forbidden_terms": [
+      "LIVE_SECRET_987"
+    ],
+    "expected_speech_contains": [
+      "token=[REDACTED_SECRET]",
+      "pasta tes tts"
+    ],
+    "expected_speech_excludes": [
+      "token=LIVE_SECRET_987",
+      ".agents/skills/tes-tts"
+    ],
+    "max_chunk_chars": 260,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "redaction",
+      "spoken_rendering",
+      "exact_islands",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap007-protect-fragile-span-classes",
+    "rendering_intent": "conversational",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Narre: path .agents/skills/tes-tts; URL https://github.com/example/project; comando python3 scripts/oracle.py --self-test; identificador render_spoken_text; hash 0123456789abcdef0123456789abcdef; GUID 123e4567-e89b-12d3-a456-426614174000; email ops@example.com; IP 10.0.0.7; mention @tes-team; hashtag #release-2026; branch feature/cap-007; model gpt-4o-mini-tts; pacote @openai/agents.",
+    "protected_terms": [
+      ".agents/skills/tes-tts",
+      "https://github.com/example/project",
+      "python3 scripts/oracle.py --self-test",
+      "render_spoken_text",
+      "0123456789abcdef0123456789abcdef",
+      "123e4567-e89b-12d3-a456-426614174000",
+      "ops@example.com",
+      "10.0.0.7",
+      "@tes-team",
+      "#release-2026",
+      "feature/cap-007",
+      "gpt-4o-mini-tts",
+      "@openai/agents"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [
+      "https://github.com/example/project",
+      ".agents/skills/tes-tts",
+      "0123456789abcdef0123456789abcdef",
+      "123e4567-e89b-12d3-a456-426614174000",
+      "ops@example.com",
+      "10.0.0.7"
+    ],
+    "expected_speech_contains": [
+      "pasta tes tts",
+      "pagina do GitHub",
+      "python3 scripts/oracle.py --self-test",
+      "render_spoken_text",
+      "hash",
+      "GUID",
+      "email ops em example com",
+      "IP 10 ponto 0 ponto 0 ponto 7",
+      "mencao tes team",
+      "hashtag release 2026",
+      "feature/cap-007",
+      "gpt-4o-mini-tts",
+      "@openai/agents"
+    ],
+    "max_chunk_chars": 520,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "conversational_rendering",
+      "no_execute",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap007-protect-scoped-package-before-mention",
+    "rendering_intent": "conversational",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Diga que @openai/agents fica como pacote, enquanto @tes-team vira mencao e #cap-007 vira hashtag.",
+    "protected_terms": [
+      "@openai/agents",
+      "@tes-team",
+      "#cap-007"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [
+      "mencao openai/agents",
+      "mencao openai"
+    ],
+    "expected_speech_contains": [
+      "@openai/agents",
+      "mencao tes team",
+      "hashtag cap 007"
+    ],
+    "max_chunk_chars": 260,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "conversational_rendering",
+      "no_summary"
+    ]
   }
 ]

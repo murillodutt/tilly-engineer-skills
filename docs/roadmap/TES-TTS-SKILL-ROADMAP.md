@@ -439,9 +439,9 @@ Next ready prompt: none. CAP capability migration is locally closed by
 `docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
-Conversational rendering status: CAP-006 is complete for the first
-oracle-backed intent boundary. CAP-007 is the next unit for exact-island and
-protected-span hardening. Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+Conversational rendering status: CAP-007 is complete for selective exact
+islands and protected-span hardening. CAP-008 is the next unit for table, list,
+and code-block oralization. Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 CAP outcomes:
 
@@ -453,13 +453,9 @@ CAP outcomes:
 | CAP-004 | Closed request-local provider fallback catalog use with mocked fixtures for provider order, error classes, explicit voice preservation, voice-default retry, all-provider failure, and no durable provider state. | `REMOTE_SYNC_NOT_REQUESTED` |
 | CAP-005 | Closed adapter parity and final local audit. Workbench and Codex are byte-aligned; Codex and Claude differ only in the intentional adapter-specific history line. Package closure is degraded by unrelated development skill parity drift. | `REMOTE_SYNC_NOT_REQUESTED` |
 | CAP-006 | Closed the first conversational spoken-rendering cut: `conversational` vs `faithful_reading`, CAP-006 fixtures, exact islands, PT-BR narration with protected English terms, no-summary preservation, table/list oral prose, code no-execute posture, and secret redaction over exact reads. | `REMOTE_SYNC_NOT_REQUESTED` |
+| CAP-007 | Closed selective exact islands and protected-span hardening for paths, URLs, commands, code identifiers, hashes, GUIDs, emails, IPs, mentions, hashtags, branch names, model names, and package names. | `REMOTE_SYNC_NOT_REQUESTED` |
 
-## Current Open Questions
-
-1. Does the maintainer explicitly approve release identity planning or
-   continued deferral?
-2. Does the maintainer explicitly authorize a later sync cycle after release
-   identity is handled?
+Open questions: release identity planning and sync remain owner decisions.
 
 ## Governance Rules
 

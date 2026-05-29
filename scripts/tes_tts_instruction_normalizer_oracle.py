@@ -30,6 +30,7 @@ REQUIRED_CACHE_KEYS = {
     "target_language",
     "normalized_text",
     "spoken_text",
+    "exact_terms",
     "preserved_terms",
     "pronunciation_hints",
     "redactions",
@@ -86,6 +87,9 @@ GUID_PATTERN = re.compile(
 LONG_HASH_PATTERN = re.compile(r"\b[0-9a-fA-F]{16,}\b")
 MENTION_PATTERN = re.compile(r"(?<![\w.])@([A-Za-z0-9_][A-Za-z0-9_.-]{0,63})\b")
 HASHTAG_PATTERN = re.compile(r"(?<![\w])#([A-Za-z0-9_][A-Za-z0-9_-]{0,63})\b")
+SCOPED_PACKAGE_PATTERN = re.compile(
+    r"(?<!\w)@[A-Za-z0-9_-]+/[A-Za-z0-9._~@%+:-]+"
+)
 PATH_PATTERN = re.compile(
     r"(?<!\w)(?:\.{1,2}/|\.[A-Za-z0-9_-]+/|/)"
     r"[A-Za-z0-9._~@%+:-]+(?:/[A-Za-z0-9._~@%+:-]+)*"
@@ -339,30 +343,70 @@ def render_hashtag_for_speech(match: re.Match[str], exact_read: bool) -> str:
     return "hashtag " + re.sub(r"[_-]+", " ", match.group(1)).strip()
 
 
-def render_spoken_text(text: str, source_text: str) -> str:
-    exact_read = wants_exact_reading(source_text)
+def should_keep_exact(candidate: str, exact_terms: set[str], global_exact: bool) -> bool:
+    return global_exact or candidate in exact_terms
+
+
+def render_spoken_text(
+    text: str,
+    source_text: str,
+    exact_terms: set[str] | None = None,
+) -> str:
+    explicit_exact_terms = exact_terms if exact_terms is not None else set()
+    global_exact = wants_exact_reading(source_text) and exact_terms is None
     rendered_spans: list[str] = []
 
     def stash(rendered: str) -> str:
         rendered_spans.append(rendered)
         return f"__TES_TTS_SPAN_{len(rendered_spans) - 1}__"
 
-    spoken = URL_PATTERN.sub(lambda match: stash(render_url_for_speech(match.group(0), exact_read)), text)
-    spoken = EMAIL_PATTERN.sub(lambda match: stash(render_email_for_speech(match.group(0), exact_read)), spoken)
-    spoken = IPV4_PATTERN.sub(lambda match: stash(render_ipv4_for_speech(match.group(0), exact_read)), spoken)
+    def is_exact(candidate: str) -> bool:
+        return should_keep_exact(candidate, explicit_exact_terms, global_exact)
+
+    spoken = URL_PATTERN.sub(
+        lambda match: stash(render_url_for_speech(match.group(0), is_exact(match.group(0)))),
+        text,
+    )
+    spoken = EMAIL_PATTERN.sub(
+        lambda match: stash(render_email_for_speech(match.group(0), is_exact(match.group(0)))),
+        spoken,
+    )
+    spoken = IPV4_PATTERN.sub(
+        lambda match: stash(render_ipv4_for_speech(match.group(0), is_exact(match.group(0)))),
+        spoken,
+    )
     spoken = GUID_PATTERN.sub(
-        lambda match: stash(render_identifier_for_speech(match.group(0), exact_read, "GUID")),
+        lambda match: stash(
+            render_identifier_for_speech(match.group(0), is_exact(match.group(0)), "GUID")
+        ),
         spoken,
     )
     spoken = LONG_HASH_PATTERN.sub(
-        lambda match: stash(render_identifier_for_speech(match.group(0), exact_read, "hash")),
+        lambda match: stash(
+            render_identifier_for_speech(match.group(0), is_exact(match.group(0)), "hash")
+        ),
         spoken,
     )
-    spoken = PATH_PATTERN.sub(lambda match: stash(render_path_for_speech(match.group(0), exact_read)), spoken)
-    spoken = MENTION_PATTERN.sub(lambda match: stash(render_mention_for_speech(match, exact_read)), spoken)
-    spoken = HASHTAG_PATTERN.sub(lambda match: stash(render_hashtag_for_speech(match, exact_read)), spoken)
-    if not exact_read:
-        spoken = ACRONYM_PATTERN.sub(render_acronym, spoken)
+    spoken = SCOPED_PACKAGE_PATTERN.sub(lambda match: stash(match.group(0)), spoken)
+    spoken = PATH_PATTERN.sub(
+        lambda match: stash(render_path_for_speech(match.group(0), is_exact(match.group(0)))),
+        spoken,
+    )
+    spoken = MENTION_PATTERN.sub(
+        lambda match: stash(render_mention_for_speech(match, is_exact(match.group(0)))),
+        spoken,
+    )
+    spoken = HASHTAG_PATTERN.sub(
+        lambda match: stash(render_hashtag_for_speech(match, is_exact(match.group(0)))),
+        spoken,
+    )
+    if not global_exact:
+        spoken = ACRONYM_PATTERN.sub(
+            lambda match: match.group(0)
+            if match.group(0) in explicit_exact_terms
+            else render_acronym(match),
+            spoken,
+        )
 
     for index, rendered in enumerate(rendered_spans):
         spoken = spoken.replace(f"__TES_TTS_SPAN_{index}__", rendered)
@@ -494,6 +538,7 @@ def prepare_instruction_level_speech(fixture: dict[str, Any]) -> PreparedSpeech:
     cleaned_text = clean_markdown_for_speech(intent_text)
     chunks = chunk_without_summary(cleaned_text, fixture["max_chunk_chars"])
     protected_terms = fixture["protected_terms"]
+    exact_terms = set(fixture["exact_terms"]) if "exact_terms" in fixture else None
     translation_plan = plan_optional_translation(fixture, redacted_text, protected_terms)
     pronunciation_plan = plan_optional_pronunciation(fixture, protected_terms)
     cache = [
@@ -502,7 +547,8 @@ def prepare_instruction_level_speech(fixture: dict[str, Any]) -> PreparedSpeech:
             "detected_language": fixture["detected_language"],
             "target_language": fixture["target_language"],
             "normalized_text": chunk,
-            "spoken_text": render_spoken_text(chunk, fixture["source_text"]),
+            "spoken_text": render_spoken_text(chunk, fixture["source_text"], exact_terms),
+            "exact_terms": sorted(exact_terms) if exact_terms is not None else [],
             "preserved_terms": [term for term in protected_terms if term in chunk],
             "pronunciation_hints": pronunciation_hints([term for term in protected_terms if term in chunk]),
             "redactions": redactions,
@@ -555,6 +601,8 @@ def validate_fixture_shape(fixture: dict[str, Any]) -> list[str]:
         fixture["expected_pronunciation_hints"], list
     ):
         failures.append(f"{fixture['id']}: expected_pronunciation_hints must be a list when present")
+    if "exact_terms" in fixture and not isinstance(fixture["exact_terms"], list):
+        failures.append(f"{fixture['id']}: exact_terms must be a list when present")
     if "rendering_intent" in fixture and fixture["rendering_intent"] not in {
         "conversational",
         "faithful_reading",
@@ -668,7 +716,8 @@ def validate_prepared_fixture(fixture: dict[str, Any]) -> list[str]:
             failures.append(f"{fixture_id}: faithful reading requires faithful_reading intent")
 
     if "exact_islands" in fixture["checks"]:
-        for term in fixture["protected_terms"]:
+        exact_terms = fixture.get("exact_terms", fixture["protected_terms"])
+        for term in exact_terms:
             if term not in prepared.speech_text and REDACTION_TOKEN not in term:
                 failures.append(f"{fixture_id}: exact island {term} missing from speech text")
 
@@ -839,6 +888,20 @@ def validate_cap006_conversational_fixtures(fixtures: list[dict[str, Any]]) -> l
     return []
 
 
+def validate_cap007_exact_island_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
+    required = {
+        "tts-cap007-selective-exact-islands",
+        "tts-cap007-secret-redaction-over-selective-exact",
+        "tts-cap007-protect-fragile-span-classes",
+        "tts-cap007-protect-scoped-package-before-mention",
+    }
+    seen = {fixture["id"] for fixture in fixtures if "cap007" in fixture["id"]}
+    missing = sorted(required - seen)
+    if missing:
+        return [f"missing CAP-007 exact-island fixtures: {missing}"]
+    return []
+
+
 def validate_no_disk_write_surface() -> list[str]:
     tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
     failures: list[str] = []
@@ -872,6 +935,7 @@ def main() -> int:
     failures.extend(validate_spoken_rendering_fixtures(fixtures))
     failures.extend(validate_pronunciation_hint_fixtures(fixtures))
     failures.extend(validate_cap006_conversational_fixtures(fixtures))
+    failures.extend(validate_cap007_exact_island_fixtures(fixtures))
     for fixture in fixtures:
         failures.extend(validate_prepared_fixture(fixture))
 

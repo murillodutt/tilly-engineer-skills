@@ -64,6 +64,7 @@ tts_conversion_cache:
   spoken_text: request-local text that will be spoken
   rendering_intent: conversational or faithful_reading
   preserved_terms: proper nouns, product names, acronyms, commands, paths
+  exact_terms: request-scoped fragile spans to preserve literally, if any
   pronunciation_hints: spoken rendering changes, if any
   redactions: secret-like content removed from speech
 ```
@@ -88,9 +89,10 @@ short oral prose. It may add small connectors such as "Primeiro", "Depois",
 and "Por fim". It must not summarize, remove facts, infer missing owners,
 translate protected terms, or turn code into an action.
 
-Exact islands remain exact inside conversational speech when the user asks for
-literal handling around a path, URL, command, code identifier, hash, or quoted
-term. Secret redaction still wins over exact reading.
+Exact islands remain exact inside conversational speech only for the specific
+path, URL, command, code identifier, hash, or quoted term the user asked to
+hear literally. One exact cue must not force every fragile span in the same
+utterance to stay raw. Secret redaction still wins over exact reading.
 
 ## Normalization Rules
 
@@ -109,7 +111,9 @@ term. Secret redaction still wins over exact reading.
 7. Redact secret-like values before translation and before speech.
 8. Render headings, bullets, and small tables as oral prose only in
    `conversational` intent.
-9. Preserve exact islands and code/command text in `faithful_reading` intent.
+9. Preserve exact islands and code/command text in `faithful_reading` intent;
+   in `conversational` intent, preserve exact islands only when explicitly
+   scoped by the user.
 
 ## Technical Term Handling
 
@@ -161,6 +165,8 @@ language:
 | Commands | Preserve command text exactly; never execute it. |
 | Code identifiers | Preserve exact spelling, including underscores, dots, and casing. |
 | Package and model names | Preserve written identity, including scopes, hyphens, and version-like tokens. |
+| Scoped packages | Preserve tokens such as `@openai/agents` before mention rendering. |
+| Branch names | Preserve written identity such as `feature/cap-007`; do not translate it. |
 | Proper nouns | Preserve written identity; add spacing only if the TTS engine would distort it. |
 
 Pronunciation hints are cache metadata. They must not alter the visible source

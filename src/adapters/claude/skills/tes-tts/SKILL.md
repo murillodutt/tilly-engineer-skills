@@ -6,7 +6,7 @@ license: MIT
 
 # TES TTS
 
-Operational contract: `tes.tts@0.1.7`.
+Operational contract: `tes.tts@0.1.8`.
 
 `/tes-tts` is the small TES text-to-speech skill. It reads user-provided text
 aloud through whatever local TTS tool the host exposes. `/tes:tts` is a
@@ -59,6 +59,9 @@ compatible TES intent alias if the host reports it as an invalid slash.
   separate decisions into a vague summary.
 - Small tables may become prose row facts. Code blocks and commands are spoken
   as text and never executed.
+- Exact handling is span-scoped inside conversational speech: preserve only the
+  path, URL, command, code identifier, hash, quoted term, or other fragile span
+  the user specifically asked to hear literally.
 - Secret-like values are redacted before rendering and before TTS. Redaction
   overrides exact, literal, raw, and verbatim requests.
 
@@ -72,9 +75,12 @@ compatible TES intent alias if the host reports it as an invalid slash.
   non-exact mode.
 - Render email addresses, valid IPv4 addresses, mentions, and hashtags into
   compact spoken forms in non-exact mode.
+- Preserve scoped package names, branch names, model names, and code
+  identifiers as protected identity before mention or path rendering can change
+  them.
 - Preserve raw URLs, paths, hashes, GUIDs, email addresses, IP addresses,
-  mentions, hashtags, commands, and code-like spans when the user asks for
-  exact, literal, raw, or verbatim reading.
+  mentions, hashtags, commands, and code-like spans only for the exact island
+  requested by the user. Do not turn one literal cue into a global raw dump.
 - Remove Markdown code fences while preserving the code or command text unless
   the user asks for a summary.
 - Read dates clearly, preserving concrete dates.
