@@ -124,7 +124,12 @@ Do not translate terms such as:
 - English workflow terms such as GitHub, Markdown, provider, fallback, cache,
   prompt, workflow, pipeline, branch, commit, release, sync, tag, push, pull
   request, merge, runtime, fixture, oracle, adapter, workbench, rollback,
-  checkpoint, canary, debug, build, test, and deploy
+  checkpoint, canary, debug, build, test, deploy, review, diff, patch, issue,
+  milestone, sprint, backlog, standup, roadmap, release candidate, hotfix,
+  merge conflict, rebase, cherry-pick, fork, upstream, origin, main,
+  workspace, worktree, sandbox, hook, lint, formatter, CI, and CD
+- product and platform terms such as GitHub Actions, Docker, Kubernetes,
+  Node.js, TypeScript, Playwright, MCP server, LLM, AI, and TTS
 - package names, command names, filenames, branch names, model names
 
 Adapt pronunciation without changing the visible term's meaning. English
@@ -155,6 +160,10 @@ language:
 | Markdown, provider, fallback, cache, prompt, workflow, pipeline | Preserve as English workflow terms; keep English pronunciation intent. |
 | branch, commit, release, sync, tag, push, pull request, merge | Preserve as English version-control/release terms; keep English pronunciation intent. |
 | runtime, fixture, oracle, adapter, workbench, rollback, checkpoint, canary, debug, build, test, deploy | Preserve as English engineering terms; keep English pronunciation intent. |
+| review, diff, patch, issue, milestone, sprint, backlog, standup, roadmap, release candidate, hotfix | Preserve as English planning/review terms; keep English pronunciation intent. |
+| merge conflict, rebase, cherry-pick, fork, upstream, origin, main, workspace, worktree, sandbox, hook, lint, formatter | Preserve as English engineering/session terms; keep English pronunciation intent. |
+| CI, CD, LLM, AI, TTS, PR | Read as spaced letters unless exact reading is requested. |
+| GitHub Actions, Docker, Kubernetes, Node.js, TypeScript, Playwright, MCP server | Preserve as product/platform terms; keep English pronunciation intent. |
 | URLs | Use a useful destination phrase in non-exact mode, such as "pagina do GitHub" for GitHub URLs; preserve raw URLs for exact reading. |
 | Paths | Use a useful folder/file phrase in non-exact mode, such as "pasta tes tts"; preserve raw paths for exact reading. |
 | Long hashes | Say "hash" in non-exact mode; preserve the raw value for exact reading. |

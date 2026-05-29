@@ -45,6 +45,9 @@ speech cleanup, speed handling, and honest unavailable state.
 - Oralize tables, bullets, numbered lists, quotes, and code blocks in a way
   that preserves facts, ordering, protected spans, exact islands, and
   no-execute behavior.
+- Preserve mixed-language English identity for engineering workflow,
+  planning, product, package, model, command, and code terms while keeping
+  pronunciation hints instruction-level only.
 - Use provider fallback and error classification as optional runtime guidance
   without importing proactive `speak` behavior or provider persistence.
 - Use the tested local voice/rate when accepted, but degrade to the host
@@ -90,6 +93,7 @@ a proactive announcement channel for normal TES status updates.
 | 2026-05-29 | Added CAP-006 conversational spoken-rendering intent with fixture-backed distinction from faithful reading, exact islands, table/list oral prose, and stronger secret redaction. | `GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md`; CAP-006 instruction normalizer fixtures. | high |
 | 2026-05-29 | Hardened CAP-007 exact islands and protected spans so selective literal spans survive while paths, URLs, emails, IPs, hashes, GUIDs, mentions, hashtags, scoped packages, branch names, model names, commands, and code identifiers keep safe spoken forms. | CAP-007 instruction normalizer fixtures and exact-island oracle hardening. | high |
 | 2026-05-29 | Added CAP-008 table, list, quote, and code-block oralization with ordering, no-summary, exact-island, redaction, and no-execute fixtures. | CAP-008 instruction normalizer fixtures and structure oralization oracle hardening. | high |
+| 2026-05-29 | Hardened CAP-009 mixed-language and English identity handling for planning, review, CI/CD, product, package, model, and platform terms without provider-backed pronunciation claims. | CAP-009 instruction normalizer fixtures and English identity oracle hardening. | high |
 
 ## Do Not Lose
 

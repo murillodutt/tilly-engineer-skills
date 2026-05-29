@@ -36,7 +36,21 @@ REQUIRED_CACHE_KEYS = {
     "redactions",
 }
 FIRST_CLASS_LANGUAGES = {"pt-BR", "en", "es", "fr", "it", "de", "he"}
-LETTER_SPELLED_TERMS = {"ADR", "MCP", "API", "SDK", "CLI", "URL", "HTTP"}
+LETTER_SPELLED_TERMS = {
+    "ADR",
+    "MCP",
+    "API",
+    "SDK",
+    "CLI",
+    "URL",
+    "HTTP",
+    "TTS",
+    "LLM",
+    "AI",
+    "CI",
+    "CD",
+    "PR",
+}
 TECHNICAL_NOUN_TERMS = {"SPEC"}
 COMMON_LOCAL_PRONUNCIATION_TERMS = {"JSON", "YAML", "SQL"}
 PROPER_NOUN_TERMS = {"TES", "Tilly", "Codex", "Claude", "Cursor", "OpenAI"}
@@ -69,6 +83,39 @@ ENGLISH_PRONUNCIATION_TERMS = {
     "build",
     "test",
     "deploy",
+    "review",
+    "diff",
+    "patch",
+    "issue",
+    "milestone",
+    "sprint",
+    "backlog",
+    "standup",
+    "roadmap",
+    "release candidate",
+    "hotfix",
+    "merge conflict",
+    "rebase",
+    "cherry-pick",
+    "fork",
+    "upstream",
+    "origin",
+    "main",
+    "workspace",
+    "worktree",
+    "sandbox",
+    "hook",
+    "lint",
+    "formatter",
+    "CI",
+    "CD",
+    "GitHub Actions",
+    "Docker",
+    "Kubernetes",
+    "Node.js",
+    "TypeScript",
+    "Playwright",
+    "MCP server",
     "OpenAI",
     "Claude Code",
     "Cursor",
@@ -76,7 +123,7 @@ ENGLISH_PRONUNCIATION_TERMS = {
     "ChatGPT",
     "ElevenLabs",
 }
-ACRONYM_PATTERN = re.compile(r"\b(ADR|MCP|API|SDK|CLI)(?:-(\d+))?\b")
+ACRONYM_PATTERN = re.compile(r"\b(ADR|MCP|API|SDK|CLI|URL|HTTP|TTS|LLM|AI|CI|CD|PR)(?:-(\d+))?\b")
 URL_PATTERN = re.compile(r"https?://[^\s)\]]+")
 EMAIL_PATTERN = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
 IPV4_PATTERN = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
@@ -960,6 +1007,21 @@ def validate_cap008_structure_oralization_fixtures(fixtures: list[dict[str, Any]
     return []
 
 
+def validate_cap009_english_identity_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
+    required = {
+        "tts-cap009-ptbr-narration-english-workflow-identity",
+        "tts-cap009-mixed-span-translation-degraded-preserves-english",
+        "tts-cap009-product-package-model-identity",
+        "tts-cap009-hebrew-degraded-keeps-english-identity",
+        "tts-cap009-structural-rendering-keeps-english-identity",
+    }
+    seen = {fixture["id"] for fixture in fixtures if "cap009" in fixture["id"]}
+    missing = sorted(required - seen)
+    if missing:
+        return [f"missing CAP-009 English identity fixtures: {missing}"]
+    return []
+
+
 def validate_no_disk_write_surface() -> list[str]:
     tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
     failures: list[str] = []
@@ -995,6 +1057,7 @@ def main() -> int:
     failures.extend(validate_cap006_conversational_fixtures(fixtures))
     failures.extend(validate_cap007_exact_island_fixtures(fixtures))
     failures.extend(validate_cap008_structure_oralization_fixtures(fixtures))
+    failures.extend(validate_cap009_english_identity_fixtures(fixtures))
     for fixture in fixtures:
         failures.extend(validate_prepared_fixture(fixture))
 

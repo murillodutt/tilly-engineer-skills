@@ -21,7 +21,7 @@ First execution unit:
 `docs/roadmap/TES-TTS-CAP-006-CONVERSATIONAL-SPOKEN-RENDERING.md`
 
 Ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-009-mixed-language-english-identity-hardening.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md`
 
 ADR boundary:
 `docs/adr/0004-tes-tts-pronunciation-normalization-and-enrichment.md`
@@ -162,7 +162,8 @@ Each non-closed unit must update `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` and
 create the next ready prompt artifact before local commit. CAP-006 completed
 the first oracle-backed rendering intent cut. CAP-007 hardened exact islands
 and protected spans. CAP-008 hardened table, list, quote, and code-block
-oralization, then handed off to CAP-009.
+oralization. CAP-009 hardened mixed-language and English identity, then handed
+off to CAP-010.
 
 ## Certification
 

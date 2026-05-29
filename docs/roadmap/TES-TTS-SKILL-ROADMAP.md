@@ -80,7 +80,9 @@ surface for release, materialization, and sync decisions.
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-007-exact-island-protected-span-hardening.md` | Historical prompt for CAP-007 exact-island and protected-span hardening. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-008-table-list-code-block-oralization.md` | Historical prompt for CAP-008 table, list, and code-block oralization. | historical |
 | `docs/roadmap/TES-TTS-CAP-008-TABLE-LIST-CODE-BLOCK-ORALIZATION.md` | CAP-008 result record for structure oralization. | complete |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-009-mixed-language-english-identity-hardening.md` | Ready prompt for CAP-009 mixed-language and English identity hardening. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-009-mixed-language-english-identity-hardening.md` | Historical prompt for CAP-009 mixed-language and English identity hardening. | historical |
+| `docs/roadmap/TES-TTS-CAP-009-MIXED-LANGUAGE-ENGLISH-IDENTITY-HARDENING.md` | CAP-009 result record for mixed-language and English identity hardening. | complete |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md` | Ready prompt for CAP-010 conversational rendering final audit. | active |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | TTS-009 acceptance and release decision record. | active |
 | `docs/roadmap/TES-TTS-OWNER-*.md` | Historical owner-decision records TTS-010 through TTS-031; retained in TDS and `docs/INDEX.md`. | historical |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
@@ -91,10 +93,7 @@ surface for release, materialization, and sync decisions.
 | `benchmarks/tes-tts/provider-candidate-review.json` | Structured provider candidate review queue. | proposed |
 | `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` | Executive registry and evolution roadmap. | active |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` | Circular execution contract for the skill. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000*.md` through `TTS-009*.md` | Historical prompt artifacts for baseline through acceptance decision. Indexed individually in TDS. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-010*.md` through `TTS-019*.md` | Historical prompt artifacts for owner-decision preservation cycles. Indexed individually in TDS. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-020*.md` through `TTS-031*.md` | Historical prompt artifacts for unresolved owner-decision cycles. Indexed individually in TDS. | historical |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md` | Ready prompt artifact that must be superseded before reuse because the owner-decision loop no longer advances implementation. | needs-rewrite |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000*.md` through `TTS-032*.md` | Historical prompt artifacts for baseline, acceptance, and owner-decision cycles; indexed individually in TDS. | historical |
 | `scripts/materialize_adapter.py` | Adapter materialization inclusion. | staged |
 | `scripts/command_trigger_oracle.py` | Slash, alias, and natural trigger oracle inclusion. | staged |
 | `scripts/validate_reference_package.py` | Package reference validation inclusion. | staged |
@@ -145,7 +144,7 @@ The current CAP migration prompt state is closed:
 The current conversational rendering execution contract is
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md`; its ready
 prompt is
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-009-mixed-language-english-identity-hardening.md`.
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md`.
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -442,9 +441,9 @@ Next ready prompt: none. CAP capability migration is locally closed by
 `docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
-Conversational rendering status: CAP-008 is complete for table, list, quote,
-and code-block oralization. CAP-009 is the next unit for mixed-language and
-English identity hardening. Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+Conversational rendering status: CAP-009 is complete for mixed-language and
+English identity hardening. CAP-010 is the next unit for final audit and local
+closure decision. Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 CAP outcomes:
 
@@ -458,6 +457,7 @@ CAP outcomes:
 | CAP-006 | Closed the first conversational spoken-rendering cut: `conversational` vs `faithful_reading`, CAP-006 fixtures, exact islands, PT-BR narration with protected English terms, no-summary preservation, table/list oral prose, code no-execute posture, and secret redaction over exact reads. | `REMOTE_SYNC_NOT_REQUESTED` |
 | CAP-007 | Closed selective exact islands and protected-span hardening for paths, URLs, commands, code identifiers, hashes, GUIDs, emails, IPs, mentions, hashtags, branch names, model names, and package names. | `REMOTE_SYNC_NOT_REQUESTED` |
 | CAP-008 | Closed table, bullet, numbered-list, quote, and code-block oralization with ordered fact preservation, scoped exact islands, secret redaction, and code no-execute behavior. | `REMOTE_SYNC_NOT_REQUESTED` |
+| CAP-009 | Closed mixed-language and English identity hardening for review/planning terms, CI/CD, product/platform names, package/model identity, Hebrew degraded posture, and structural rendering preservation. | `REMOTE_SYNC_NOT_REQUESTED` |
 
 Open questions: release identity planning and sync remain owner decisions.
 

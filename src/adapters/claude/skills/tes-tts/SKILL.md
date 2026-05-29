@@ -94,6 +94,10 @@ compatible TES intent alias if the host reports it as an invalid slash.
 - Keep product names, proper nouns, package/model names, commands, code
   identifiers, English-origin workflow terms, and mixed-language technical
   terms as written. Do not translate them into the system language.
+- In PT-BR platform narration, keep English engineering words and product
+  names as English identity: review, diff, patch, issue, milestone, backlog,
+  roadmap, worktree, sandbox, GitHub Actions, Docker, Kubernetes, Node.js,
+  TypeScript, Playwright, and MCP server.
 - Use request-local pronunciation hints for protected terms; do not claim IPA,
   SSML, phoneme, lexicon, provider-backed pronunciation, or Hebrew enrichment.
 - For long text, split into sensible chunks rather than dropping content.
