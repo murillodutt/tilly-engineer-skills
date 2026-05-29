@@ -47,15 +47,19 @@ The current package state is intentionally pre-release:
 | `docs/adr/0004-tes-tts-pronunciation-normalization-and-enrichment.md` | Architectural GPS and boundary. | proposed |
 | `docs/roadmap/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` | Optional normalization architecture. | proposed |
 | `docs/roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` | Sequential execution contract and acceptance gates. | proposed |
+| `docs/roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` | Fixture schema explanation and TTS-004 boundary. | proposed |
+| `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
 | `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` | Executive registry and evolution roadmap. | active |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` | Circular execution contract for the skill. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md` | Historical prompt artifact for the completed preflight cycle. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md` | Historical prompt artifact for roadmap and SPEC coherence. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md` | Historical prompt artifact for selector contract readiness. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md` | Ready prompt artifact for the next execution cycle. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md` | Historical prompt artifact for fixture schema. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-004-fixture-corpus.md` | Ready prompt artifact for the next execution cycle. | active |
 | `scripts/materialize_adapter.py` | Adapter materialization inclusion. | staged |
 | `scripts/command_trigger_oracle.py` | Slash, alias, and natural trigger oracle inclusion. | staged |
 | `scripts/validate_reference_package.py` | Package reference validation inclusion. | staged |
+| `scripts/tes_tts_fixture_schema_oracle.py` | Dependency-free fixture schema oracle. | staged |
 | `docs/install/COMMAND-TRIGGERS.md` | User-visible command trigger registration. | staged |
 | `docs/adapters/CODEX.md`, `docs/adapters/CLAUDE.md`, `docs/adapters/PLATFORM-DIFFERENCES.md` | Adapter-facing discoverability and parity notes. | staged |
 
@@ -86,7 +90,7 @@ The current circular execution contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-004-fixture-corpus.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -143,7 +147,7 @@ Exit state: the selector contract is unambiguous and testable.
 
 ### R3: Fixture Schema
 
-Status: next work unit.
+Status: schema contract defined, pending corpus use.
 
 Required closure:
 
@@ -157,7 +161,7 @@ Exit state: future corpus entries have one governed shape and can be linted.
 
 ### R4: Fixture Corpus
 
-Status: blocked until R3 passes.
+Status: next work unit.
 
 Required fixture classes:
 
@@ -256,8 +260,8 @@ proposed/degraded.
 
 1. Where should a future `agent_default_language` declaration live for each
    adapter?
-2. What is the minimum fixture schema for language normalization without
-   adding runtime dependencies?
+2. Which TTS fixture class should become the first corpus entry after the
+   selector cases?
 3. Which provider probe should be built first: local `say`, language
    detection, or translation package discovery?
 4. What is the acceptance threshold for Hebrew: preserve, translate, niqqud
@@ -286,6 +290,7 @@ python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validat
 python3 scripts/materialize_adapter.py codex --check
 python3 scripts/materialize_adapter.py claude --check
 python3 scripts/command_trigger_oracle.py --self-test
+python3 scripts/tes_tts_fixture_schema_oracle.py --self-test
 python3 scripts/validate_tds.py
 python3 scripts/validate_doc_size.py
 python3 scripts/validate_reference_package.py

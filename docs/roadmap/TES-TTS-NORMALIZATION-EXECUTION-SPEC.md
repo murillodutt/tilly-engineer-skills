@@ -82,6 +82,20 @@ Expected selector outcomes:
 The future fixture schema owns the executable representation of these cases.
 This SPEC owns the expected selector decision order.
 
+## Fixture Schema Contract
+
+Fixture records use the machine-readable schema at
+[`benchmarks/tes-tts/normalization-fixture.schema.json`](../../benchmarks/tes-tts/normalization-fixture.schema.json).
+The schema is dependency-free and can be checked with:
+
+```bash
+python3 scripts/tes_tts_fixture_schema_oracle.py --self-test
+```
+
+Every fixture must include selector inputs, source text, expected target
+language, protected terms, redaction expectation, provider state, expected
+status, and `no_summary: true`.
+
 ## Fixture Classes
 
 Required fixture classes:

@@ -232,6 +232,20 @@ documents:
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-004-fixture-corpus.md
+    id: roadmap.goal_prompt_tes_tts_tts_004_fixture_corpus
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md
+    id: roadmap.tes_tts_normalization_fixture_schema
+    class: roadmap
+    status: proposed
+    consumer: maintainers, tes-tts maintainers, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/adapters/CODEX.md
     id: adapters.codex
     class: adapter

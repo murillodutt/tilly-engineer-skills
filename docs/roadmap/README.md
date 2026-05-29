@@ -32,9 +32,11 @@ Wave 7 local package-source closure.
 | TES TTS TTS-001 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md` |
 | TES TTS TTS-002 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md` |
 | TES TTS TTS-003 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md` |
+| TES TTS TTS-004 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-004-fixture-corpus.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS normalization architecture | Proposed | `TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution | Proposed | `TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
+| TES TTS normalization fixture schema | Proposed | `TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` |
 | RC1 readiness cleanup | Active | `RC1-READINESS-ROADMAP.md` |
 | Cortex hardening sequence | Complete | `GOAL-SUPER-SPEC-cortex-hardening.md` |
 | TES Align semantic drift hardening | Proposed | `TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |

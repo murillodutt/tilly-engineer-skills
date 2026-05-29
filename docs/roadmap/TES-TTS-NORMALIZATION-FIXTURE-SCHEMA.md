@@ -1,0 +1,84 @@
+---
+tds_id: roadmap.tes_tts_normalization_fixture_schema
+tds_class: roadmap
+status: proposed
+consumer: maintainers, tes-tts maintainers, validation authors, and execution agents
+source_of_truth: false
+evidence_level: L2
+---
+
+# TES TTS Normalization Fixture Schema
+
+This document defines the minimum fixture shape for future `tes-tts`
+normalization tests. It does not add the fixture corpus, provider probing,
+runtime dependencies, sync, release, or certified language behavior.
+
+Machine-readable schema:
+[`benchmarks/tes-tts/normalization-fixture.schema.json`](../../benchmarks/tes-tts/normalization-fixture.schema.json)
+
+Focused oracle:
+`python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
+
+## Fixture Record
+
+Each fixture is one JSON object with these required fields:
+
+| Field | Meaning |
+|-------|---------|
+| `id` | Stable lowercase fixture id, such as `tts-selector-user-language-wins`. |
+| `class` | Fixture class: selector, normalization, protected terms, redaction, Markdown transform, provider fallback, or pronunciation hint. |
+| `selector` | Inputs for the default-language selector. |
+| `source_text` | The original user text or span to prepare for speech. |
+| `expected_target_language` | Expected target language or `preserve_original`. |
+| `protected_terms` | Terms that must survive normalization without semantic translation. |
+| `redaction` | Whether secret-like content is present and which redactions are expected. |
+| `provider_state` | Local provider/enrichment posture expected for the fixture. |
+| `expected_status` | Expected oracle status for the fixture. |
+| `no_summary` | Must be `true`; fixtures must not permit summarizing user text unless a later accepted contract adds that class explicitly. |
+
+## Selector Shape
+
+`selector` records the decision inputs without invoking translation or TTS:
+
+```json
+{
+  "explicit_user_language": "absent",
+  "declared_adapter_default": "unknown",
+  "request_language": "pt-BR",
+  "dominant_text_language": "en"
+}
+```
+
+Allowed first-class language codes are `pt-BR`, `en`, `es`, `fr`, `it`, `de`,
+and `he`. Selector fields may also use `absent`, `unknown`, or `unclear` where
+the schema permits them.
+
+## Status Values
+
+Fixtures use the same stop vocabulary as the convergence loop:
+
+| Status | Meaning |
+|--------|---------|
+| `PASS` | The expected instruction-level behavior should pass. |
+| `DEGRADED` | Basic read-aloud remains possible, but enrichment is intentionally partial. |
+| `NEEDS_REVIEW` | The fixture exposes an ambiguity that must not be auto-certified. |
+| `BLOCKED` | Continuing would violate a boundary such as privacy, provider posture, or unavailable TTS. |
+
+## Provider State Values
+
+`provider_state` is a fixture expectation, not provider discovery:
+
+- `provider_available`
+- `provider_not_available`
+- `provider_needs_review`
+- `normalization_degraded`
+- `tts_not_available`
+
+Fixtures must not install, download, probe the network, write global config, or
+persist conversion caches.
+
+## TTS-004 Boundary
+
+The next unit may add a corpus using this schema. That corpus must stay
+dependency-free, avoid private project vocabulary, and include at least the
+selector cases `DLS-001` through `DLS-005` before provider work opens.
