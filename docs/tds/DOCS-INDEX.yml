@@ -732,6 +732,13 @@ documents:
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md
     id: roadmap.goal_prompt_tes_tts_cap_004_provider_fallback_catalog_use
     class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md
+    id: roadmap.goal_prompt_tes_tts_cap_005_adapter_parity_final_local_audit
+    class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
     source_of_truth: false

@@ -6,7 +6,7 @@ license: MIT
 
 # TES TTS
 
-Operational contract: `tes.tts@0.1.4`.
+Operational contract: `tes.tts@0.1.5`.
 
 `/tes-tts` is the small TES text-to-speech skill. It reads user-provided text
 aloud through whatever local TTS tool the host exposes. `/tes:tts` is a
@@ -23,8 +23,10 @@ compatible TES intent alias if the host reports it as an invalid slash.
 5. When the text is multilingual or the user asks for a standard/default
    reading language, load `references/language-normalization.md` and prepare a
    TTS conversion cache before playback.
-6. Use the available local TTS tool. In a Codex host with `mcp-tts`, prefer
-   `mcp__mcp_tts__say_tts`.
+6. Use the available local TTS tool. When multiple providers exist or one
+   fails, load `references/providers-and-fallbacks.md` and apply the
+   request-local fallback plan only for this read-aloud request. In a Codex
+   host with `mcp-tts`, prefer `mcp__mcp_tts__say_tts`.
 7. Use `voice: "Felipe (Enhanced)"` and `rate: 225` when the tool accepts
    those settings. If the host rejects the voice, retry once with the default
    voice and the same text.
@@ -70,6 +72,9 @@ compatible TES intent alias if the host reports it as an invalid slash.
   keys, or credentials aloud. Say that secret-like content was redacted.
 - Do not use this skill for proactive status announcements. It is reactive to
   an explicit read-aloud or TTS request.
+- Do not install providers, download provider assets, write global provider
+  config, persist unavailable-provider state, or certify provider support from
+  a read-aloud fallback.
 - If no TTS tool is available, report `TTS_NOT_AVAILABLE` briefly and do not
   pretend audio played.
 

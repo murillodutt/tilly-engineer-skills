@@ -84,4 +84,4 @@ create the next ready prompt artifact before local commit.
 
 ## Ready Prompt
 
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md`

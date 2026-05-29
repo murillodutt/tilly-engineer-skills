@@ -33,6 +33,34 @@ provider settings from this skill. If no provider is available, report
 Tool names are host-specific. Match by available tool capability, not by
 assuming a namespace exists.
 
+## Request-Local Fallback Plan
+
+Fallback is a request-local execution plan, not durable provider state.
+
+1. Build a provider attempt list from the locally exposed TTS tools, preserving
+   the catalog order `google -> openai -> elevenlabs -> say`.
+2. Try the first locally available provider with the request-local `spoken_text`.
+3. If the provider fails with `AUTH_UNAVAILABLE`, `RATE_LIMITED`,
+   `PROVIDER_UNAVAILABLE`, or `GENERIC_TTS_ERROR`, try the next provider for
+   this request only.
+4. If the provider fails with `VOICE_UNAVAILABLE`, retry the same provider once
+   with its default voice. If that also fails, continue to the next provider.
+5. If a provider succeeds, report normal completion without claiming that any
+   provider has been certified for future requests.
+6. If every provider fails, report `TTS_NOT_AVAILABLE` and do not claim audio
+   played.
+
+The fallback plan must not install providers, download models or voices, write
+global config, persist an unavailable-provider registry, write a durable
+conversion cache, or certify provider support.
+
+Status vocabulary:
+
+| Status | Meaning |
+|--------|---------|
+| `fallback_ready` | A provider succeeded for this request. |
+| `TTS_NOT_AVAILABLE` | No attempted provider succeeded; audio must not be claimed. |
+
 ## Error Classification
 
 | Error class | Signals | Action |

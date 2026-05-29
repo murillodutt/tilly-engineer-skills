@@ -76,13 +76,15 @@ surface for release, materialization, and sync decisions.
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` | Historical prompt for first portable capability migration cut. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` | Historical prompt for speech transformation hardening. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-003-pronunciation-hints-protected-terms.md` | Historical prompt for pronunciation hints and protected terms. | historical |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md` | Ready prompt for provider fallback catalog use. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md` | Historical prompt for provider fallback catalog use. | historical |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md` | Ready prompt for adapter parity and final local audit. | active |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | TTS-009 acceptance and release decision record. | active |
 | `docs/roadmap/TES-TTS-OWNER-*.md` | Historical owner-decision records TTS-010 through TTS-031; retained in TDS and `docs/INDEX.md`. | historical |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
 | `benchmarks/tes-tts/normalization-fixtures.json` | Minimal dependency-free fixture corpus. | proposed |
 | `benchmarks/tes-tts/instruction-normalizer-fixtures.json` | Instruction-level normalizer oracle fixtures. | proposed |
 | `benchmarks/tes-tts/provider-probe-fixtures.json` | Mocked provider probe contract fixtures. | proposed |
+| `benchmarks/tes-tts/provider-fallback-fixtures.json` | Mocked request-local provider fallback fixtures. | proposed |
 | `benchmarks/tes-tts/provider-candidate-review.json` | Structured provider candidate review queue. | proposed |
 | `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` | Executive registry and evolution roadmap. | active |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` | Circular execution contract for the skill. | active |
@@ -134,7 +136,7 @@ The current ten-SPEC convergence contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -428,28 +430,17 @@ technical sequence is complete for the bounded scope, ADR 0004 is `active`,
 release identity is deferred, package identity remains at `0.3.147`, provider
 claims remain optional/degraded/deferred, and sync remains unauthorized.
 Next ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md`.
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
-CAP-001 outcome: dependency-free `spoken_text` rendering is implemented in the
-instruction normalizer oracle and documented in the workbench, Codex, and
-Claude skill references. Certified coverage includes acronyms, semantic
-path/URL handling, exact-read preservation, URL false-positive guards,
-redaction, and no-summary behavior. CAP-001 is closed.
+CAP outcomes:
 
-CAP-002 outcome: dependency-free `spoken_text` hardening now covers Markdown
-links, code fences, headings, bullets, emphasis, long hashes, GUID-like
-identifiers, email addresses, valid IPv4 addresses, mentions, hashtags,
-path/URL false-positive guards, and exact-read preservation. The workbench,
-Codex source, and Claude source references are aligned. CAP-002 is closed.
-Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
-
-CAP-003 outcome: dependency-free pronunciation hints and protected-term
-preservation now cover URL, HTTP, JSON, YAML, SQL, SPEC, TES, Tilly, Codex,
-Claude, Cursor, OpenAI, package/model names, commands, and code identifiers.
-The workbench, Codex source, and Claude source references are aligned. CAP-004
-is next.
-Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+| CAP | Outcome | Sync |
+|-----|---------|------|
+| CAP-001 | Closed dependency-free `spoken_text` rendering for acronyms, semantic path/URL handling, exact-read preservation, redaction, and no-summary behavior. | `REMOTE_SYNC_NOT_REQUESTED` |
+| CAP-002 | Closed speech transformation hardening for Markdown, code fences, hashes, GUIDs, email, IPv4, mentions, hashtags, false-positive guards, and exact reads. | `REMOTE_SYNC_NOT_REQUESTED` |
+| CAP-003 | Closed pronunciation hints and protected-term preservation for URL, HTTP, JSON, YAML, SQL, SPEC, TES, Tilly, Codex, Claude, Cursor, OpenAI, package/model names, commands, and code identifiers. | `REMOTE_SYNC_NOT_REQUESTED` |
+| CAP-004 | Closed request-local provider fallback catalog use with mocked fixtures for provider order, error classes, explicit voice preservation, voice-default retry, all-provider failure, and no durable provider state. | `REMOTE_SYNC_NOT_REQUESTED` |
 
 ## Current Open Questions
 
