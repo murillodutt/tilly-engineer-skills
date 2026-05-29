@@ -48,7 +48,8 @@ Wave 7 local package-source closure.
 | TES TTS capability migration | Complete | `GOAL-SUPER-SPEC-tes-tts-capability-migration.md` |
 | TES TTS conversational rendering | Superseded | `GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` |
 | TES TTS PT-BR lexical normalization | Complete | `GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md` |
-| TES TTS lexical runtime engine and latency reduction | Active | `GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md` |
+| TES TTS lexical runtime engine and latency reduction | Complete | `GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md` |
+| TES TTS RTE-006 runtime audit and closure | Complete | `TES-TTS-RTE-006-RUNTIME-AUDIT-AND-CLOSURE.md` |
 | TES TTS CAP-001 feasibility study | Active | `TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` |
 | TES TTS CAP-001 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` |
 | TES TTS CAP-002 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` |
@@ -81,7 +82,7 @@ Wave 7 local package-source closure.
 | TES TTS RTE-003 goal prompt | Historical | `GOAL-PROMPT-tes-tts-RTE-003-fast-path-spoken-rendering.md` |
 | TES TTS RTE-004 goal prompt | Historical | `GOAL-PROMPT-tes-tts-RTE-004-request-local-memoization.md` |
 | TES TTS RTE-005 goal prompt | Historical | `GOAL-PROMPT-tes-tts-RTE-005-chunked-preparation-boundary.md` |
-| TES TTS RTE-006 goal prompt | Active | `GOAL-PROMPT-tes-tts-RTE-006-runtime-audit-and-closure.md` |
+| TES TTS RTE-006 goal prompt | Historical | `GOAL-PROMPT-tes-tts-RTE-006-runtime-audit-and-closure.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |

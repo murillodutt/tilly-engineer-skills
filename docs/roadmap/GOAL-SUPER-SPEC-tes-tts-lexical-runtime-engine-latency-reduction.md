@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_super_spec_tes_tts_lexical_runtime_engine_latency_reduction
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
 source_of_truth: false
 evidence_level: L1
@@ -9,16 +9,16 @@ evidence_level: L1
 
 # GOAL Super SPEC: TES TTS Lexical Runtime Engine And Latency Reduction
 
-Status: active runtime-performance line after the PT-BR lexical foundation.
+Status: complete local runtime-performance line after the PT-BR lexical foundation.
 
 Canonical artifact:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md`
 
 Current execution unit:
-`RTE-006 Runtime Audit And Closure`
+`closed locally`
 
 Ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-RTE-006-runtime-audit-and-closure.md`
+`none`
 
 Prior line:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md`
@@ -115,7 +115,7 @@ only, not runtime output in this line.
 | RTE-003 | Fast-path spoken rendering | Complete: dependency-free fast path renders simple and mixed PT-BR speech through matcher/index contracts while preserving redaction, exact islands, no-summary, no-execute, and provider-out-of-scope behavior. |
 | RTE-004 | Request-local memoization | Complete: dependency-free request-local memoization proves repeated protected terms, paths, URLs, code-like spans, exact islands, and redacted secrets resolve once per request without cross-request persistence. |
 | RTE-005 | Chunked preparation boundary | Complete: dependency-free chunked preparation proves first speakable chunk readiness while later chunks stay request-local, ordered, redacted, and non-executable. |
-| RTE-006 | Runtime audit and closure | Certify latency improvement, preserved boundaries, degraded surfaces, and next G2P-lite decision. |
+| RTE-006 | Runtime audit and closure | Complete: local runtime line closed with preserved boundaries, degraded package closure noted, and G2P-lite/release/sync deferred for future owner authorization. |
 
 ## Performance Targets
 
@@ -191,7 +191,8 @@ required outside that unit.
 
 ## Closure
 
-This line closes only when RTE-006 proves the runtime path is faster for the
-bounded fixtures and preserves ADR 0004 boundaries. Closure does not authorize
-release identity, sync, provider certification, full dictionary vendoring, G2P,
-SSML, PLS, IPA runtime output, phoneme output, or proactive speech.
+This line is locally closed by
+`docs/roadmap/TES-TTS-RTE-006-RUNTIME-AUDIT-AND-CLOSURE.md`. Closure does not
+authorize release identity, sync, provider certification, full dictionary
+vendoring, G2P, SSML, PLS, IPA runtime output, phoneme output, or proactive
+speech.

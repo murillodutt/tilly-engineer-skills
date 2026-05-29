@@ -130,6 +130,7 @@ turning the repository root into an inventory.
 | TES TTS conversational rendering Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` |
 | TES TTS PT-BR lexical normalization Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md` |
 | TES TTS lexical runtime engine latency reduction Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md` |
+| TES TTS RTE-006 runtime audit and closure | `roadmap/TES-TTS-RTE-006-RUNTIME-AUDIT-AND-CLOSURE.md` |
 | TES TTS CAP-001 feasibility study | `roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` |
 | TES TTS CAP-001 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` |
 | TES TTS CAP-002 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` |
@@ -162,7 +163,7 @@ turning the repository root into an inventory.
 | TES TTS RTE-003 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-RTE-003-fast-path-spoken-rendering.md` |
 | TES TTS RTE-004 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-RTE-004-request-local-memoization.md` |
 | TES TTS RTE-005 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-RTE-005-chunked-preparation-boundary.md` |
-| TES TTS RTE-006 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-RTE-006-runtime-audit-and-closure.md` |
+| TES TTS RTE-006 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-RTE-006-runtime-audit-and-closure.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |
