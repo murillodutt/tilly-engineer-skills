@@ -38,23 +38,32 @@ contract before use.
 
 ## Review Result
 
-The initial order is:
+SPEC-006 selects only optional local probe candidates. It does not install,
+download, bundle, certify, or claim support for any provider.
 
-1. `ftfy`
-2. `ICU / CLDR`
-3. `Babel`
-4. `Lingua`
-5. `CLD3`
-6. `fastText lid.176`
-7. `Argos Translate`
-8. `eSpeak NG`
-9. `phonemizer`
-10. `gruut`
-11. `Epitran`
-12. `eSpeak NG he`
-13. `Phonikud`
-14. `NVIDIA NeMo text processing`
+| Rank | Candidate | Decision | Notes |
+|------|-----------|----------|-------|
+| 1 | `ftfy` | selected | First Unicode cleanup probe; Apache-2.0; local-only if already available. |
+| 2 | `Babel` | selected | First locale helper probe; Babel license plus Unicode CLDR data license. |
+| 3 | `ICU / CLDR` | deferred | Standards reference; direct binding policy is broader than this unit. |
+| 4 | `Lingua` | selected | First language-detection probe after cleanup and locale helpers; Apache-2.0. |
+| 5 | `CLD3` | degraded | Binding and packaging posture need local evidence. |
+| 6 | `fastText lid.176` | deferred | Model artifact policy is unresolved. |
+| 7 | `Argos Translate` | deferred | Translation needs SPEC-007 safeguards and local model evidence. |
+| 8 | `eSpeak NG` | deferred | Pronunciation boundary belongs to SPEC-008; GPL posture needs review. |
+| 9 | `phonemizer` | deferred | Backend dependency and GPL posture follow the eSpeak boundary. |
+| 10 | `gruut` | degraded | Partial first-class language coverage and per-language data review needed. |
+| 11 | `Epitran` | degraded | Language-script coverage must be proven with fixtures. |
+| 12 | `eSpeak NG he` | degraded | Hebrew remains explicitly degraded until pronunciation quality is proven. |
+| 13 | `Phonikud` | deferred | Hebrew dataset and model artifact policy require owner review. |
+| 14 | `NVIDIA NeMo text processing` | rejected | Too heavyweight and platform-sensitive for current `tes-tts` scope. |
 
-This order is a review queue, not a provider support claim. A later unit must
-keep unavailable, unclear, heavyweight, or language-sensitive candidates in
-`provider_needs_review` or degraded states until local evidence exists.
+The selected set is a local probe queue only:
+
+1. Unicode cleanup: `ftfy`.
+2. Locale normalization: `Babel`.
+3. Language detection: `Lingua`.
+
+Every selected candidate still returns only local evidence. A present package
+does not certify provider support, translation quality, pronunciation quality,
+or language coverage.

@@ -118,7 +118,8 @@ turning the repository root into an inventory.
 | TES TTS SPEC-003 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md` |
 | TES TTS SPEC-004 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md` |
 | TES TTS SPEC-005 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-005-provider-probe-no-write.md` |
-| TES TTS SPEC-006 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md` |
+| TES TTS SPEC-006 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md` |
+| TES TTS SPEC-007 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |

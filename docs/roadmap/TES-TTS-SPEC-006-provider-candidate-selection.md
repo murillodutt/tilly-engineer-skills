@@ -37,6 +37,34 @@ turning the review queue into a support claim.
 - Explicit license, offline, maintenance, and language-coverage notes.
 - Next SPEC prompt for the chosen provider layer.
 
+## SPEC-006 Result
+
+Status: `PASS`.
+
+Selected optional local probe candidates:
+
+1. `ftfy` for Unicode cleanup.
+2. `Babel` for locale normalization.
+3. `Lingua` for language detection after cleanup and locale normalization.
+
+Deferred candidates: `ICU / CLDR`, `fastText lid.176`, `Argos Translate`,
+`eSpeak NG`, `phonemizer`, and `Phonikud`.
+
+Degraded candidates: `CLD3`, `gruut`, `Epitran`, and `eSpeak NG he`.
+
+Rejected for current scope: `NVIDIA NeMo text processing`.
+
+The structured review records license, offline, maintenance, and language
+coverage notes for every candidate in
+`benchmarks/tes-tts/provider-candidate-review.json`. This is still a probe
+queue only: no provider was installed, downloaded, bundled, certified, or
+claimed as supported.
+
+Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md`.
+
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
 ## Oracles
 
 ```bash

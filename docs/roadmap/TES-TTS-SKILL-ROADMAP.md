@@ -125,7 +125,7 @@ The current ten-SPEC convergence contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -257,7 +257,8 @@ runtime choices.
 
 ### R7: Provider Candidate Review
 
-Status: provider review queue added, pending adapter parity.
+Status: provider candidate selection complete, pending optional translation
+boundary.
 
 Candidate layers:
 
@@ -268,8 +269,9 @@ Candidate layers:
 - pronunciation, G2P, IPA, or Hebrew enrichment;
 - Unicode cleanup.
 
-Exit state: each provider candidate is either accepted for optional local use,
-classified as degraded, or deferred.
+Exit state: every provider candidate is classified as selected, deferred,
+degraded, or rejected. `ftfy`, `Babel`, and `Lingua` are selected as optional
+local probe candidates only; no provider support is certified.
 
 ### R8: Adapter Parity And Install Surface
 
@@ -432,17 +434,18 @@ The remaining execution path is now organized as ten draft SPECs:
 These drafts do not authorize sync, release, provider install, provider
 download, global config writes, or durable conversion caches.
 
-SPEC outcomes: SPEC-001 through SPEC-005 are `PASS`. SPEC-005 hardened mocked
-provider probes for available, unavailable, needs-review, and degraded states
-without network, install, download, write, certification, or provider support
-claims. Next ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md`.
+SPEC outcomes: SPEC-001 through SPEC-006 are `PASS`. SPEC-006 selected `ftfy`,
+`Babel`, and `Lingua` as optional local probe candidates; classified the
+remaining candidates as deferred, degraded, or rejected; and recorded license,
+offline, maintenance, and language-coverage notes without provider install,
+download, bundle, certification, or support claims. Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 ## Current Open Questions
 
-1. Which provider probe should be built first: local `say`, language
-   detection, or translation package discovery?
+1. What exact optional translation fixture shape is enough to prove
+   protected-term preservation without claiming provider-backed translation?
 2. What is the acceptance threshold for Hebrew beyond the current degraded
    posture: preserve, translate, niqqud enrich, or provider-backed voice
    support?

@@ -23,8 +23,20 @@ REQUIRED_FIELDS = {
     "decision",
     "probe_required",
     "no_install",
+    "no_download",
+    "no_bundle",
     "no_certification",
+    "license_note",
+    "offline_note",
+    "maintenance_note",
+    "language_coverage_note",
     "reason",
+}
+ALLOWED_DECISIONS = {
+    "selected",
+    "deferred",
+    "degraded",
+    "rejected",
 }
 REQUIRED_LAYERS = {
     "unicode_cleanup",
@@ -115,6 +127,8 @@ def validate_review(review: list[dict[str, Any]]) -> list[str]:
     ranks: list[int] = []
     layers: set[str] = set()
     candidates: set[str] = set()
+    decisions: set[str] = set()
+    selected_layers: set[str] = set()
     for item in review:
         missing = sorted(REQUIRED_FIELDS - set(item))
         if missing:
@@ -123,14 +137,30 @@ def validate_review(review: list[dict[str, Any]]) -> list[str]:
         ranks.append(item["rank"])
         layers.add(item["layer"])
         candidates.add(item["candidate"])
+        decisions.add(item["decision"])
+        if item["decision"] == "selected":
+            selected_layers.add(item["layer"])
+        if item["decision"] not in ALLOWED_DECISIONS:
+            failures.append(f"{item['candidate']}: invalid decision {item['decision']}")
         if item["probe_required"] is not True:
             failures.append(f"{item['candidate']}: probe_required must be true")
         if item["no_install"] is not True:
             failures.append(f"{item['candidate']}: no_install must be true")
+        if item["no_download"] is not True:
+            failures.append(f"{item['candidate']}: no_download must be true")
+        if item["no_bundle"] is not True:
+            failures.append(f"{item['candidate']}: no_bundle must be true")
         if item["no_certification"] is not True:
             failures.append(f"{item['candidate']}: no_certification must be true")
-        if not item["reason"]:
-            failures.append(f"{item['candidate']}: reason must be non-empty")
+        for field in (
+            "license_note",
+            "offline_note",
+            "maintenance_note",
+            "language_coverage_note",
+            "reason",
+        ):
+            if not item[field]:
+                failures.append(f"{item['candidate']}: {field} must be non-empty")
 
     expected_ranks = list(range(1, len(review) + 1))
     if sorted(ranks) != expected_ranks:
@@ -144,6 +174,15 @@ def validate_review(review: list[dict[str, Any]]) -> list[str]:
     if missing_candidates:
         failures.append(f"missing candidates: {missing_candidates}")
 
+    missing_decisions = sorted(ALLOWED_DECISIONS - decisions)
+    if missing_decisions:
+        failures.append(f"missing decisions: {missing_decisions}")
+
+    if not selected_layers:
+        failures.append("at least one candidate must be selected")
+    if not ({"unicode_cleanup", "locale_normalization"} & selected_layers):
+        failures.append("at least one low-risk cleanup or locale helper must be selected")
+
     return failures
 
 
@@ -153,6 +192,8 @@ def validate_doc_mentions(review: list[dict[str, Any]]) -> list[str]:
     for item in review:
         if item["candidate"] not in text:
             failures.append(f"doc missing candidate {item['candidate']}")
+        if item["decision"] not in text:
+            failures.append(f"doc missing decision {item['decision']}")
     forbidden_claims = (
         "certified provider",
         "provider is certified",

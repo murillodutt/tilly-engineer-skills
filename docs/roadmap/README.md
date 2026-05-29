@@ -37,7 +37,8 @@ Wave 7 local package-source closure.
 | TES TTS SPEC-003 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md` |
 | TES TTS SPEC-004 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md` |
 | TES TTS SPEC-005 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-005-provider-probe-no-write.md` |
-| TES TTS SPEC-006 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md` |
+| TES TTS SPEC-006 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md` |
+| TES TTS SPEC-007 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |
@@ -50,7 +51,7 @@ Wave 7 local package-source closure.
 | TES TTS SPEC 003 deterministic instruction normalizer | Complete | `TES-TTS-SPEC-003-deterministic-instruction-normalizer.md` |
 | TES TTS SPEC 004 pronunciation enrichment rules | Complete | `TES-TTS-SPEC-004-pronunciation-enrichment-rules.md` |
 | TES TTS SPEC 005 provider probe no-write | Complete | `TES-TTS-SPEC-005-provider-probe-no-write.md` |
-| TES TTS SPEC 006 provider candidate selection | Proposed | `TES-TTS-SPEC-006-provider-candidate-selection.md` |
+| TES TTS SPEC 006 provider candidate selection | Complete | `TES-TTS-SPEC-006-provider-candidate-selection.md` |
 | TES TTS SPEC 007 optional translation layer | Proposed | `TES-TTS-SPEC-007-optional-translation-layer.md` |
 | TES TTS SPEC 008 optional G2P pronunciation provider layer | Proposed | `TES-TTS-SPEC-008-optional-g2p-pronunciation-provider-layer.md` |
 | TES TTS SPEC 009 release identity and sync readiness | Proposed | `TES-TTS-SPEC-009-release-identity-sync-readiness.md` |
