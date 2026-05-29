@@ -68,7 +68,7 @@ surface for release, materialization, and sync decisions.
 | `docs/roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` | ADR 0004 acceptance decision record. | active |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md` | Post-ADR capability migration execution contract. | complete |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` | Post-CAP extension contract for conversational spoken rendering. | superseded |
-| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md` | Active PT-BR lexical normalization pivot inspired by mature TTS/G2P architecture. | active |
+| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md` | PT-BR lexical normalization pivot inspired by mature TTS/G2P architecture. | complete |
 | `docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` | Feasibility study for migrating portable TTS behavior. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` | Historical prompt for first portable capability migration cut. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` | Historical prompt for speech transformation hardening. | historical |
@@ -92,7 +92,7 @@ surface for release, materialization, and sync decisions.
 | `docs/roadmap/GOAL-PROMPT-tes-tts-LEX-003-spoken-rendering-integration-boundary.md` | Historical prompt for LEX-003 spoken-rendering integration boundary. | historical |
 | `docs/roadmap/TES-TTS-LEX-004-FIXTURE-MIGRATION-FROM-MARKDOWN-SHAPED-TTS-CASES.md` | Fixture migration result record. | complete |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-LEX-004-fixture-migration-from-markdown-shaped-tts-cases.md` | Historical prompt for LEX-004 fixture migration. | historical |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md` | Ready prompt for LEX-005 final audit. | active |
+| `docs/roadmap/TES-TTS-LEX-005-PTBR-LEXICAL-FINAL-AUDIT.md` and `docs/roadmap/GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md` | LEX-005 final audit record and historical prompt. | complete |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | TTS-009 acceptance and release decision record. | active |
 | `docs/roadmap/TES-TTS-OWNER-*.md` | Historical owner-decision records TTS-010 through TTS-031; retained in TDS and `docs/INDEX.md`. | historical |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
@@ -152,10 +152,8 @@ The current ten-SPEC convergence contract is:
 The current CAP migration prompt state is closed:
 `docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md`
 
-The current TTS execution contract is
-`docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md`; its ready
-prompt is
-`docs/roadmap/GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md`.
+The current TTS execution contract is closed by
+`docs/roadmap/TES-TTS-LEX-005-PTBR-LEXICAL-FINAL-AUDIT.md`; next prompt: none.
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -455,10 +453,9 @@ Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 Conversational rendering status: CAP-001 through CAP-009 are locally closed;
 CAP-010 is superseded by the PT-BR lexical normalization pivot.
 
-PT-BR lexical normalization status: LEX-001 through LEX-004 passed; LEX-004
-migrated representative pronunciation guidance into JSON catalog fixtures.
-Next: `docs/roadmap/GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md`.
-Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+PT-BR lexical normalization status: LEX-001 through LEX-005 passed; local
+evidence-only sequence closed, next prompt none, sync status
+`REMOTE_SYNC_NOT_REQUESTED`.
 
 Open questions: release identity planning and sync remain owner decisions.
 

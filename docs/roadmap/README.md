@@ -47,7 +47,7 @@ Wave 7 local package-source closure.
 | TES TTS OWNER-001 acceptance decision | Complete | `TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` |
 | TES TTS capability migration | Complete | `GOAL-SUPER-SPEC-tes-tts-capability-migration.md` |
 | TES TTS conversational rendering | Superseded | `GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` |
-| TES TTS PT-BR lexical normalization | Active | `GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md` |
+| TES TTS PT-BR lexical normalization | Complete | `GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md` |
 | TES TTS CAP-001 feasibility study | Active | `TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` |
 | TES TTS CAP-001 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` |
 | TES TTS CAP-002 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` |
@@ -72,7 +72,8 @@ Wave 7 local package-source closure.
 | TES TTS LEX-003 goal prompt | Historical | `GOAL-PROMPT-tes-tts-LEX-003-spoken-rendering-integration-boundary.md` |
 | TES TTS LEX-004 fixture migration | Complete | `TES-TTS-LEX-004-FIXTURE-MIGRATION-FROM-MARKDOWN-SHAPED-TTS-CASES.md` |
 | TES TTS LEX-004 goal prompt | Historical | `GOAL-PROMPT-tes-tts-LEX-004-fixture-migration-from-markdown-shaped-tts-cases.md` |
-| TES TTS LEX-005 goal prompt | Active | `GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md` |
+| TES TTS LEX-005 final audit | Complete | `TES-TTS-LEX-005-PTBR-LEXICAL-FINAL-AUDIT.md` |
+| TES TTS LEX-005 goal prompt | Historical | `GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |

@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_super_spec_tes_tts_ptbr_lexical_normalization
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
 source_of_truth: false
 evidence_level: L1
@@ -9,17 +9,17 @@ evidence_level: L1
 
 # GOAL Super SPEC: TES TTS PT-BR Lexical Normalization
 
-Status: active pivot from the conversational-rendering line. CAP-010 final
-audit is intentionally superseded until this lexical foundation converges.
+Status: locally complete. CAP-010 final audit was superseded by this lexical
+foundation pivot.
 
 Canonical artifact:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md`
 
 Current execution unit:
-`LEX-005 PT-BR lexical final audit`
+closed by `LEX-005 PT-BR lexical final audit`
 
 Ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md`
+none
 
 Prior line:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md`
@@ -119,7 +119,7 @@ evidence and deterministic local checks.
 | LEX-002 | PT-BR lexical lookup oracle | Complete: dependency-free parser/lookup over fixture/sample data; no provider integration. |
 | LEX-003 | Spoken-rendering integration boundary | Complete: attach lexical evidence to request-local speech preparation without altering source text or claiming IPA runtime. |
 | LEX-004 | Fixture migration from Markdown-shaped TTS cases | Complete: migrated representative pronunciation guidance to JSON fixtures while preserving current oracles. |
-| LEX-005 | PT-BR lexical final audit | Confirm local scope, gaps, license/provenance notes, and next language expansion decision. |
+| LEX-005 | PT-BR lexical final audit | Complete: local evidence-only scope closed; full dictionary, runtime pronunciation surfaces, language expansion, release, and sync remain separate owner decisions. |
 
 ## Required Loop
 
@@ -169,7 +169,7 @@ Add lexical-specific oracles as LEX units create them.
 
 ## Closure
 
-This line closes only after LEX-005 audits the PT-BR lexical foundation.
+This line closed locally after LEX-005 audited the PT-BR lexical foundation.
 Closure does not authorize release identity, sync, provider installation,
-provider certification, IPA runtime output, SSML, phoneme output, or proactive
-speech.
+provider certification, full dictionary vendoring, IPA runtime output, SSML,
+phoneme output, language expansion, or proactive speech.
