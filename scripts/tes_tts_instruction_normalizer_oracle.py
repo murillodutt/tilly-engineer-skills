@@ -47,6 +47,7 @@ FORBIDDEN_HINT_CLAIMS = {
 class PreparedSpeech:
     cache: list[dict[str, Any]]
     speech_text: str
+    translation_plan: dict[str, Any]
 
 
 def load_fixtures() -> list[dict[str, Any]]:
@@ -116,6 +117,38 @@ def pronunciation_hints(terms: list[str]) -> list[str]:
     return [pronunciation_hint(term) for term in terms]
 
 
+def plan_optional_translation(
+    fixture: dict[str, Any],
+    redacted_text: str,
+    protected_terms: list[str],
+) -> dict[str, Any]:
+    provider_state = fixture.get("translation_provider_state", "provider_not_available")
+    language_pair_state = fixture.get("language_pair_state", "unknown")
+    status = (
+        "translation_ready"
+        if provider_state == "provider_available" and language_pair_state == "available"
+        else "normalization_degraded"
+    )
+    return {
+        "mode": "speech_preparation_only",
+        "status": status,
+        "provider_state": provider_state,
+        "language_pair_state": language_pair_state,
+        "source_text_unchanged": fixture["source_text"],
+        "redacted_text": redacted_text,
+        "detected_language": fixture["detected_language"],
+        "target_language": fixture["target_language"],
+        "protected_terms": protected_terms,
+        "actions": [
+            "redaction_before_translation",
+            "protected_terms_before_translation",
+            "span_level_translation_only",
+            "no_summary",
+            "preserve_source_text",
+        ],
+    }
+
+
 def select_target_language(selector: dict[str, str]) -> str:
     explicit = selector["explicit_user_language"]
     if explicit in FIRST_CLASS_LANGUAGES:
@@ -149,6 +182,7 @@ def prepare_instruction_level_speech(fixture: dict[str, Any]) -> PreparedSpeech:
     cleaned_text = clean_markdown_for_speech(redacted_text)
     chunks = chunk_without_summary(cleaned_text, fixture["max_chunk_chars"])
     protected_terms = fixture["protected_terms"]
+    translation_plan = plan_optional_translation(fixture, redacted_text, protected_terms)
     cache = [
         {
             "source_span": chunk,
@@ -161,7 +195,11 @@ def prepare_instruction_level_speech(fixture: dict[str, Any]) -> PreparedSpeech:
         }
         for chunk in chunks
     ]
-    return PreparedSpeech(cache=cache, speech_text=" ".join(entry["normalized_text"] for entry in cache))
+    return PreparedSpeech(
+        cache=cache,
+        speech_text=" ".join(entry["normalized_text"] for entry in cache),
+        translation_plan=translation_plan,
+    )
 
 
 def validate_fixture_shape(fixture: dict[str, Any]) -> list[str]:
@@ -197,6 +235,14 @@ def validate_fixture_shape(fixture: dict[str, Any]) -> list[str]:
         fixture["expected_pronunciation_hints"], list
     ):
         failures.append(f"{fixture['id']}: expected_pronunciation_hints must be a list when present")
+    if "translation_boundary" in fixture["checks"]:
+        for field in (
+            "translation_provider_state",
+            "language_pair_state",
+            "expected_translation_status",
+        ):
+            if field not in fixture:
+                failures.append(f"{fixture['id']}: {field} is required for translation_boundary")
     return failures
 
 
@@ -265,6 +311,38 @@ def validate_prepared_fixture(fixture: dict[str, Any]) -> list[str]:
         if leaked:
             failures.append(f"{fixture_id}: markdown markers leaked to speech text {leaked}")
 
+    if "translation_boundary" in fixture["checks"]:
+        plan = prepared.translation_plan
+        if plan["mode"] != "speech_preparation_only":
+            failures.append(f"{fixture_id}: translation mode must be speech_preparation_only")
+        if plan["status"] != fixture["expected_translation_status"]:
+            failures.append(
+                f"{fixture_id}: expected translation status {fixture['expected_translation_status']}, "
+                f"got {plan['status']}"
+            )
+        if plan["source_text_unchanged"] != fixture["source_text"]:
+            failures.append(f"{fixture_id}: source text changed during translation planning")
+        required_actions = {
+            "redaction_before_translation",
+            "protected_terms_before_translation",
+            "span_level_translation_only",
+            "no_summary",
+            "preserve_source_text",
+        }
+        missing_actions = sorted(required_actions - set(plan["actions"]))
+        if missing_actions:
+            failures.append(f"{fixture_id}: translation plan missing actions {missing_actions}")
+        for expected in fixture["expected_redactions"]:
+            if expected in plan["redacted_text"]:
+                failures.append(f"{fixture_id}: translation plan kept unredacted secret {expected}")
+        for term in fixture["protected_terms"]:
+            if term not in plan["protected_terms"]:
+                failures.append(f"{fixture_id}: translation plan lost protected term {term}")
+        if plan["status"] == "normalization_degraded" and plan["redacted_text"] != redact_secret_like_values(
+            fixture["source_text"]
+        )[0]:
+            failures.append(f"{fixture_id}: degraded translation plan must preserve redacted source text")
+
     if "no_summary" in fixture["checks"]:
         source_terms = set(clean_markdown_for_speech(redact_secret_like_values(fixture["source_text"])[0]).split())
         speech_terms = set(prepared.speech_text.split())
@@ -288,6 +366,19 @@ def validate_selector_corpus() -> list[str]:
         if selected != expected:
             failures.append(f"{fixture_id}: selector selected {selected}, expected {expected}")
     return failures
+
+
+def validate_translation_boundary_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
+    required = {
+        "tts-translation-redaction-first",
+        "tts-translation-protected-terms-first",
+        "tts-translation-unclear-pair-degraded",
+    }
+    seen = {fixture["id"] for fixture in fixtures if "translation_boundary" in fixture["checks"]}
+    missing = sorted(required - seen)
+    if missing:
+        return [f"missing translation boundary fixtures: {missing}"]
+    return []
 
 
 def validate_no_disk_write_surface() -> list[str]:
@@ -314,6 +405,7 @@ def main() -> int:
     failures = validate_no_disk_write_surface()
     failures.extend(validate_selector_corpus())
     fixtures = load_fixtures()
+    failures.extend(validate_translation_boundary_fixtures(fixtures))
     for fixture in fixtures:
         failures.extend(validate_prepared_fixture(fixture))
 

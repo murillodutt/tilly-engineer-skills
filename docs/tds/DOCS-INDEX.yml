@@ -662,8 +662,15 @@ documents:
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md
     id: roadmap.goal_prompt_tes_tts_spec_007_optional_translation_layer
     class: roadmap
-    status: active
+    status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and validation authors
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md
+    id: roadmap.goal_prompt_tes_tts_spec_008_optional_g2p_pronunciation_provider_layer
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, execution agents, and provider reviewers
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/TES-TTS-SPEC-001-roadmap-compaction-agent-default-language.md

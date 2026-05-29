@@ -119,5 +119,69 @@
       "pronunciation_hints",
       "no_summary"
     ]
+  },
+  {
+    "id": "tts-translation-redaction-first",
+    "target_language": "pt-BR",
+    "detected_language": "en",
+    "source_text": "Translate for speech only: deploy the ADR after token=LIVE_SECRET_123 and keep API.",
+    "protected_terms": ["ADR", "API"],
+    "expected_redactions": ["token=LIVE_SECRET_123"],
+    "forbidden_terms": ["LIVE_SECRET_123"],
+    "translation_provider_state": "provider_not_available",
+    "language_pair_state": "unavailable",
+    "expected_translation_status": "normalization_degraded",
+    "max_chunk_chars": 180,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "redaction",
+      "translation_boundary",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-translation-protected-terms-first",
+    "target_language": "pt-BR",
+    "detected_language": "en",
+    "source_text": "Read this in the default language: preserve MCP, SPEC, and Tilly before any translation plan.",
+    "protected_terms": ["MCP", "SPEC", "Tilly"],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "translation_provider_state": "provider_needs_review",
+    "language_pair_state": "unknown",
+    "expected_translation_status": "normalization_degraded",
+    "max_chunk_chars": 180,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "translation_boundary",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-translation-unclear-pair-degraded",
+    "target_language": "pt-BR",
+    "detected_language": "de",
+    "source_text": "Bitte lies den API Hinweis vor und bewahre JSON ohne Zusammenfassung.",
+    "protected_terms": ["API", "JSON"],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "translation_provider_state": "provider_available",
+    "language_pair_state": "unknown",
+    "expected_translation_status": "normalization_degraded",
+    "max_chunk_chars": 180,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "translation_boundary",
+      "no_summary"
+    ]
   }
 ]

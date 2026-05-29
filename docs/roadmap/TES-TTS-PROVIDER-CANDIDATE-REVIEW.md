@@ -49,7 +49,7 @@ download, bundle, certify, or claim support for any provider.
 | 4 | `Lingua` | selected | First language-detection probe after cleanup and locale helpers; Apache-2.0. |
 | 5 | `CLD3` | degraded | Binding and packaging posture need local evidence. |
 | 6 | `fastText lid.176` | deferred | Model artifact policy is unresolved. |
-| 7 | `Argos Translate` | deferred | Translation needs SPEC-007 safeguards and local model evidence. |
+| 7 | `Argos Translate` | deferred | Translation boundary exists, but local model/package evidence is still absent. |
 | 8 | `eSpeak NG` | deferred | Pronunciation boundary belongs to SPEC-008; GPL posture needs review. |
 | 9 | `phonemizer` | deferred | Backend dependency and GPL posture follow the eSpeak boundary. |
 | 10 | `gruut` | degraded | Partial first-class language coverage and per-language data review needed. |

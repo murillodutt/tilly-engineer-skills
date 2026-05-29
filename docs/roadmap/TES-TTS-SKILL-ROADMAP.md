@@ -125,7 +125,7 @@ The current ten-SPEC convergence contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -275,7 +275,8 @@ local probe candidates only; no provider support is certified.
 
 ### R8: Adapter Parity And Install Surface
 
-Status: adapter parity checked, pending acceptance gate.
+Status: pending optional pronunciation provider boundary before adapter parity
+recheck.
 
 Required closure:
 
@@ -434,19 +435,18 @@ The remaining execution path is now organized as ten draft SPECs:
 These drafts do not authorize sync, release, provider install, provider
 download, global config writes, or durable conversion caches.
 
-SPEC outcomes: SPEC-001 through SPEC-006 are `PASS`. SPEC-006 selected `ftfy`,
-`Babel`, and `Lingua` as optional local probe candidates; classified the
-remaining candidates as deferred, degraded, or rejected; and recorded license,
-offline, maintenance, and language-coverage notes without provider install,
-download, bundle, certification, or support claims. Next ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md`.
+SPEC outcomes: SPEC-001 through SPEC-007 are `PASS`. SPEC-007 defined optional
+translation as speech preparation only; required redaction and protected-term
+extraction before translation planning; kept source text unchanged and
+unsummarized; and kept absent or unclear provider/language-pair support as
+`normalization_degraded` without provider install, download, bundle,
+certification, or support claims. Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 ## Current Open Questions
 
-1. What exact optional translation fixture shape is enough to prove
-   protected-term preservation without claiming provider-backed translation?
-2. What is the acceptance threshold for Hebrew beyond the current degraded
+1. What is the acceptance threshold for Hebrew beyond the current degraded
    posture: preserve, translate, niqqud enrich, or provider-backed voice
    support?
 
