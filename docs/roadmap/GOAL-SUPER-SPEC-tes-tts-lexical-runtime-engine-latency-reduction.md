@@ -15,10 +15,10 @@ Canonical artifact:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md`
 
 Current execution unit:
-`RTE-000 Preflight And Latency Baseline`
+`RTE-001 Compiled Lexical Index Contract`
 
 Ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-RTE-000-preflight-latency-baseline.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-RTE-001-compiled-lexical-index-contract.md`
 
 Prior line:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md`
@@ -109,7 +109,7 @@ only, not runtime output in this line.
 
 | Unit | Focus | Boundary |
 |------|-------|----------|
-| RTE-000 | Preflight and latency baseline | Define measurable latency vocabulary, baseline fixtures, and first benchmark oracle without changing runtime behavior. |
+| RTE-000 | Preflight and latency baseline | Complete: measurable latency fixtures and dependency-free benchmark oracle without runtime behavior changes. |
 | RTE-001 | Compiled lexical index contract | Build dependency-free index shape over governed fixtures; exact map first, trie only if needed. |
 | RTE-002 | Hot-path span matcher | Use precompiled matchers for protected terms, paths, URLs, commands, code, hashes, and secrets. |
 | RTE-003 | Fast-path spoken rendering | Add a cheap PT-BR prose path that avoids deep analysis when shape scan is simple. |

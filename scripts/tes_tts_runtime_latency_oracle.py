@@ -102,6 +102,8 @@ def validate_case(case: dict[str, Any]) -> tuple[list[str], dict[str, Any]]:
     first_chunk_ready_ms = p50
     speech_text = first_prepared.speech_text
     redaction_count = sum(len(entry["redactions"]) for entry in first_prepared.cache)
+    forbidden_runtime_outputs = {"ipa", "ssml", "phoneme", "provider_backed_pronunciation"}
+    blocked_outputs = set(first_prepared.pronunciation_plan.get("blocked_outputs", []))
 
     if len(first_prepared.cache) < case["expected_min_chunks"]:
         failures.append(f"{case['id']}: expected at least {case['expected_min_chunks']} chunks")
@@ -115,6 +117,10 @@ def validate_case(case: dict[str, Any]) -> tuple[list[str], dict[str, Any]]:
             failures.append(f"{case['id']}: forbidden speech text {forbidden!r} leaked")
     if "resumo" in speech_text.lower() and "resumo" not in case["source_text"].lower():
         failures.append(f"{case['id']}: summary-like text appeared without request")
+    if first_prepared.translation_plan["source_text_unchanged"] != case["source_text"]:
+        failures.append(f"{case['id']}: source text mutation was reported")
+    if not forbidden_runtime_outputs.issubset(blocked_outputs):
+        failures.append(f"{case['id']}: forbidden pronunciation runtime outputs are not blocked")
     if p50 > case["max_text_prepare_ms_p50"]:
         failures.append(f"{case['id']}: p50 text preparation {p50:.3f}ms exceeded threshold")
     if first_chunk_ready_ms > case["max_first_chunk_ready_ms_p50"]:
@@ -131,6 +137,9 @@ def validate_case(case: dict[str, Any]) -> tuple[list[str], dict[str, Any]]:
         "first_chunk_ready_ms": round(first_chunk_ready_ms, 3),
         "provider_timing": "out_of_scope",
         "summary_behavior": "none",
+        "source_text_immutable": True,
+        "runtime_pronunciation_output": "none",
+        "command_execution": "not_performed",
     }
     return failures, metrics
 

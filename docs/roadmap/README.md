@@ -75,7 +75,8 @@ Wave 7 local package-source closure.
 | TES TTS LEX-004 goal prompt | Historical | `GOAL-PROMPT-tes-tts-LEX-004-fixture-migration-from-markdown-shaped-tts-cases.md` |
 | TES TTS LEX-005 final audit | Complete | `TES-TTS-LEX-005-PTBR-LEXICAL-FINAL-AUDIT.md` |
 | TES TTS LEX-005 goal prompt | Historical | `GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md` |
-| TES TTS RTE-000 goal prompt | Active | `GOAL-PROMPT-tes-tts-RTE-000-preflight-latency-baseline.md` |
+| TES TTS RTE-000 goal prompt | Historical | `GOAL-PROMPT-tes-tts-RTE-000-preflight-latency-baseline.md` |
+| TES TTS RTE-001 goal prompt | Active | `GOAL-PROMPT-tes-tts-RTE-001-compiled-lexical-index-contract.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |
