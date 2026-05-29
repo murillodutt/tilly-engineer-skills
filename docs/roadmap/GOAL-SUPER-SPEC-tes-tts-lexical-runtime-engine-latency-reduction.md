@@ -15,10 +15,10 @@ Canonical artifact:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md`
 
 Current execution unit:
-`RTE-001 Compiled Lexical Index Contract`
+`RTE-002 Hot-Path Span Matcher`
 
 Ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-RTE-001-compiled-lexical-index-contract.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-RTE-002-hot-path-span-matcher.md`
 
 Prior line:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md`
@@ -110,7 +110,7 @@ only, not runtime output in this line.
 | Unit | Focus | Boundary |
 |------|-------|----------|
 | RTE-000 | Preflight and latency baseline | Complete: measurable latency fixtures and dependency-free benchmark oracle without runtime behavior changes. |
-| RTE-001 | Compiled lexical index contract | Build dependency-free index shape over governed fixtures; exact map first, trie only if needed. |
+| RTE-001 | Compiled lexical index contract | Complete: dependency-free exact/phrase index contract over governed fixtures with priority, duplicate, locale, and OOV checks. |
 | RTE-002 | Hot-path span matcher | Use precompiled matchers for protected terms, paths, URLs, commands, code, hashes, and secrets. |
 | RTE-003 | Fast-path spoken rendering | Add a cheap PT-BR prose path that avoids deep analysis when shape scan is simple. |
 | RTE-004 | Request-local memoization | Avoid reprocessing repeated spans inside one read-aloud request without creating durable cache. |
@@ -147,6 +147,7 @@ Each unit chooses the smallest relevant set from:
 
 ```bash
 python3 scripts/tes_tts_runtime_latency_oracle.py --self-test
+python3 scripts/tes_tts_compiled_lexical_index_oracle.py --self-test
 python3 scripts/tes_tts_ptbr_lexical_manifest_oracle.py --self-test
 python3 scripts/tes_tts_ptbr_lexical_lookup_oracle.py --self-test
 python3 scripts/tes_tts_ptbr_lexical_integration_oracle.py --self-test
