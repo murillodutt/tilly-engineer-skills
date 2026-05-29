@@ -39,8 +39,10 @@ Wave 7 local package-source closure.
 | TES TTS TTS-008 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-008-adapter-parity.md` |
 | TES TTS TTS-009 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-009-acceptance-and-release-decision.md` |
 | TES TTS TTS-010 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-010-owner-approval-gate.md` |
+| TES TTS TTS-011 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-011-owner-decision-required.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
+| TES TTS owner approval gate | Active | `TES-TTS-OWNER-APPROVAL-GATE.md` |
 | TES TTS normalization architecture | Proposed | `TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution | Proposed | `TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
 | TES TTS normalization fixture schema | Proposed | `TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` |

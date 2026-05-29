@@ -151,6 +151,7 @@ has approved the complete skill.
 | TTS-008 Adapter Parity | Keep Codex and Claude skill content behaviorally aligned and Cursor docs honest. | adapter source/docs/scripts. | `quick_validate.py` for Codex/Claude skills; `materialize_adapter.py all --check`; `command_trigger_oracle.py --self-test`. |
 | TTS-009 Acceptance And Release Decision | Decide whether ADR 0004 can move to accepted and whether release identity can proceed. | ADR/SPEC/docs/version surfaces only after owner approval. | `npm run commit:check`; release gate only when explicitly authorized. |
 | TTS-010 Owner Approval Gate | Capture explicit maintainer approval or deferral for ADR acceptance, release identity, and sync posture. | ADR/status and decision docs only when explicitly approved. | focused TTS oracles; `npm run commit:check` when package closure is needed. |
+| TTS-011 Owner Decision Required | Apply or continue deferring the first explicit owner decision for ADR acceptance, release identity, and sync posture. | ADR/status and decision docs only when explicitly approved. | focused TTS oracles; `npm run commit:check` when package closure is needed. |
 
 Every unit must preserve its identifier. A future `/goal` may expand a unit
 into sub-steps, but must not merge, skip, rename, or reorder these units
@@ -240,7 +241,7 @@ and remaining release identity decision instead.
 ## Current Ready /goal Prompt
 
 Prompt artifact:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-010-owner-approval-gate.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-011-owner-decision-required.md`
 
 Use this prompt to start the next sequential execution cycle:
 
@@ -251,25 +252,24 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
 
 Current unit:
-TTS-010 Owner Approval Gate
+TTS-011 Owner Decision Required
 
 Certified evidence from prior cycle:
-- TTS-009 re-read ADR 0004, normalization architecture and execution SPECs,
-  the TES TTS roadmap, this Super SPEC, the TTS-009 prompt, focused fixtures,
-  and focused TTS oracles.
-- TTS-009 recorded the decision at
-  docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md.
-- TTS-009 recommends ADR 0004 acceptance for the bounded instruction-level and
-  provider-boundary scope but did not change ADR status without explicit
-  maintainer approval.
-- TTS-009 decided release identity cannot proceed without separate explicit
-  authorization.
-- TTS-009 made no provider certification claim and performed no sync, release,
+- TTS-010 re-read ADR 0004, the TTS-009 decision record, the TES TTS roadmap,
+  this Super SPEC, and the TTS-010 prompt.
+- TTS-010 found no explicit maintainer decision in the current goal context to
+  accept ADR 0004, authorize release identity planning, or authorize sync.
+- TTS-010 recorded the owner approval gate result at
+  docs/roadmap/TES-TTS-OWNER-APPROVAL-GATE.md.
+- ADR 0004 remains `proposed`.
+- Release identity remains deferred.
+- Sync remains forbidden.
+- TTS-010 made no provider certification claim and performed no sync, release,
   push, tag, publish, provider install, provider download, global config write,
   durable conversion cache, or proactive `speak` behavior.
 - Ready prompt artifact:
-  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-010-owner-approval-gate.md.
-- TTS-009 focused oracles passed:
+  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-011-owner-decision-required.md.
+- TTS-010 focused oracles passed:
   - `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
   - `python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test`
   - `python3 scripts/tes_tts_provider_probe_oracle.py --self-test`
@@ -286,13 +286,13 @@ Certified evidence from prior cycle:
   - `npm run commit:check`
 
 Task:
-Execute only TTS-010 through the circular sequence:
+Execute only TTS-011 through the circular sequence:
 execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit.
 
 Required actions:
 1. Run `git status --short --branch --untracked-files=all`.
-2. Re-read ADR 0004, the TTS-009 decision record, roadmap, this Super SPEC,
-   and the TTS-010 prompt.
+2. Re-read ADR 0004, the TTS-010 owner approval gate, the TTS-009 decision
+   record, roadmap, this Super SPEC, and the TTS-011 prompt.
 3. Apply only explicit maintainer decisions already present in the current
    prompt or user message.
 4. If ADR acceptance, release identity, or sync approval is absent or partial,

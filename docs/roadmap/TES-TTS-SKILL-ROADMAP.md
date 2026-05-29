@@ -50,6 +50,7 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` | Fixture schema explanation and TTS-004 boundary. | proposed |
 | `docs/roadmap/TES-TTS-PROVIDER-CANDIDATE-REVIEW.md` | Ranked provider review queue, not certification. | proposed |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | TTS-009 acceptance and release decision record. | active |
+| `docs/roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` | TTS-010 owner approval gate result. | active |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
 | `benchmarks/tes-tts/normalization-fixtures.json` | Minimal dependency-free fixture corpus. | proposed |
 | `benchmarks/tes-tts/instruction-normalizer-fixtures.json` | Instruction-level normalizer oracle fixtures. | proposed |
@@ -67,7 +68,8 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-007-provider-candidate-review.md` | Historical prompt artifact for provider candidate review. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-008-adapter-parity.md` | Historical prompt artifact for adapter parity. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-009-acceptance-and-release-decision.md` | Historical prompt artifact for acceptance and release decision. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-010-owner-approval-gate.md` | Ready prompt artifact for the next execution cycle. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-010-owner-approval-gate.md` | Historical prompt artifact for owner approval gate. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-011-owner-decision-required.md` | Ready prompt artifact for the next execution cycle. | active |
 | `scripts/materialize_adapter.py` | Adapter materialization inclusion. | staged |
 | `scripts/command_trigger_oracle.py` | Slash, alias, and natural trigger oracle inclusion. | staged |
 | `scripts/validate_reference_package.py` | Package reference validation inclusion. | staged |
@@ -105,7 +107,7 @@ The current circular execution contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-010-owner-approval-gate.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-011-owner-decision-required.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -275,7 +277,8 @@ proposed/degraded.
 
 ### R10: Owner Approval Gate
 
-Status: next work unit, `NEEDS_OWNER_DECISION`.
+Status: TTS-010 recorded no explicit approval in the current goal context;
+state remains `NEEDS_OWNER_DECISION`.
 
 Required closure:
 
@@ -286,6 +289,23 @@ Required closure:
 
 Exit state: `tes-tts` either moves into an authorized acceptance/release
 identity cycle or remains proposed/degraded with the next owner decision named.
+
+### R11: Owner Decision Required
+
+Status: next work unit, awaiting explicit maintainer decision.
+
+Required closure:
+
+- If the maintainer accepts ADR 0004, change only the ADR/status and correlated
+  decision surfaces.
+- If release identity planning is authorized, create the release-identity
+  execution prompt without bumping or releasing in the same cycle unless
+  explicitly authorized.
+- If sync remains forbidden, keep sync out of scope and name the next
+  unresolved release or approval decision.
+
+Exit state: the first explicit owner decision is applied or recorded without
+crossing into unauthorized release, sync, provider, or global-state work.
 
 ## Current Open Questions
 
