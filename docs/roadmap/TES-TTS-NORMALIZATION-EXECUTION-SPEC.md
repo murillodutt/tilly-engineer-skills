@@ -139,6 +139,16 @@ provider_probe:
 Probes must not call installers, package managers, network downloads, or model
 fetch commands.
 
+The initial provider probe contract is mocked and no-write:
+
+```bash
+python3 scripts/tes_tts_provider_probe_oracle.py --self-test
+```
+
+That oracle covers `provider_available`, `provider_not_available`, and
+`provider_needs_review` without probing real providers or claiming provider
+support.
+
 ## Acceptance Gates
 
 Before ADR 0004 can move from `proposed` to accepted:

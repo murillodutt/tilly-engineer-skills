@@ -1,0 +1,32 @@
+[
+  {
+    "id": "tts-provider-available",
+    "provider": "mock_local_say",
+    "mock_state": "available",
+    "version": "mock-1.0",
+    "languages": ["en", "pt-BR"],
+    "license_note": "local mock only",
+    "expected_status": "provider_available",
+    "expected_reason": "mock provider is available"
+  },
+  {
+    "id": "tts-provider-unavailable",
+    "provider": "mock_openai_tts",
+    "mock_state": "unavailable",
+    "version": null,
+    "languages": [],
+    "license_note": "not inspected",
+    "expected_status": "provider_not_available",
+    "expected_reason": "mock provider is unavailable"
+  },
+  {
+    "id": "tts-provider-needs-review",
+    "provider": "mock_hebrew_enrichment",
+    "mock_state": "needs_review",
+    "version": "mock-unknown-license",
+    "languages": ["he"],
+    "license_note": "mock license needs review",
+    "expected_status": "provider_needs_review",
+    "expected_reason": "mock provider needs review"
+  }
+]

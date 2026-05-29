@@ -51,6 +51,7 @@ The current package state is intentionally pre-release:
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
 | `benchmarks/tes-tts/normalization-fixtures.json` | Minimal dependency-free fixture corpus. | proposed |
 | `benchmarks/tes-tts/instruction-normalizer-fixtures.json` | Instruction-level normalizer oracle fixtures. | proposed |
+| `benchmarks/tes-tts/provider-probe-fixtures.json` | Mocked provider probe contract fixtures. | proposed |
 | `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` | Executive registry and evolution roadmap. | active |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` | Circular execution contract for the skill. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md` | Historical prompt artifact for the completed preflight cycle. | active |
@@ -59,12 +60,14 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md` | Historical prompt artifact for fixture schema. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-004-fixture-corpus.md` | Historical prompt artifact for the minimal corpus. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-005-instruction-normalizer-oracle.md` | Historical prompt artifact for the instruction normalizer oracle. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-006-provider-probe-contract.md` | Ready prompt artifact for the next execution cycle. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-006-provider-probe-contract.md` | Historical prompt artifact for the provider probe contract. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-007-provider-candidate-review.md` | Ready prompt artifact for the next execution cycle. | active |
 | `scripts/materialize_adapter.py` | Adapter materialization inclusion. | staged |
 | `scripts/command_trigger_oracle.py` | Slash, alias, and natural trigger oracle inclusion. | staged |
 | `scripts/validate_reference_package.py` | Package reference validation inclusion. | staged |
 | `scripts/tes_tts_fixture_schema_oracle.py` | Dependency-free fixture schema oracle. | staged |
 | `scripts/tes_tts_instruction_normalizer_oracle.py` | Dependency-free instruction normalizer oracle. | staged |
+| `scripts/tes_tts_provider_probe_oracle.py` | Mocked no-write provider probe oracle. | staged |
 | `docs/install/COMMAND-TRIGGERS.md` | User-visible command trigger registration. | staged |
 | `docs/adapters/CODEX.md`, `docs/adapters/CLAUDE.md`, `docs/adapters/PLATFORM-DIFFERENCES.md` | Adapter-facing discoverability and parity notes. | staged |
 
@@ -95,7 +98,7 @@ The current circular execution contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-006-provider-probe-contract.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-007-provider-candidate-review.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -201,7 +204,7 @@ provider exists.
 
 ### R6: Provider Probe Contract
 
-Status: next work unit.
+Status: mocked no-write contract added, pending provider candidate review.
 
 Goal: detect optional local providers without installation, downloads, network
 model fetches, or persistent config writes.
@@ -217,7 +220,7 @@ runtime choices.
 
 ### R7: Provider Candidate Review
 
-Status: deferred until R6 passes.
+Status: next work unit.
 
 Candidate layers:
 
@@ -297,6 +300,7 @@ python3 scripts/materialize_adapter.py claude --check
 python3 scripts/command_trigger_oracle.py --self-test
 python3 scripts/tes_tts_fixture_schema_oracle.py --self-test
 python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test
+python3 scripts/tes_tts_provider_probe_oracle.py --self-test
 python3 scripts/validate_tds.py
 python3 scripts/validate_doc_size.py
 python3 scripts/validate_reference_package.py

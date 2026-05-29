@@ -239,7 +239,7 @@ and remaining release identity decision instead.
 ## Current Ready /goal Prompt
 
 Prompt artifact:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-006-provider-probe-contract.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-007-provider-candidate-review.md`
 
 Use this prompt to start the next sequential execution cycle:
 
@@ -250,40 +250,40 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
 
 Current unit:
-TTS-006 Provider Probe Contract
+TTS-007 Provider Candidate Review
 
 Certified evidence from prior cycle:
-- TTS-005 re-read the minimal corpus, fixture schema doc, execution SPEC,
-  roadmap, and Codex/Claude language-normalization references.
-- TTS-005 added instruction normalizer fixtures at
-  benchmarks/tes-tts/instruction-normalizer-fixtures.json.
-- TTS-005 added `scripts/tes_tts_instruction_normalizer_oracle.py --self-test`.
-- TTS-005 proved dependency-free instruction behavior: cache shape without
-  disk writes, protected terms, redaction before speech, and chunking without
-  summary.
+- TTS-006 re-read the execution SPEC provider probe contract, roadmap,
+  Super SPEC, providers-and-fallbacks references, and instruction normalizer
+  oracle.
+- TTS-006 added mocked provider probe fixtures at
+  benchmarks/tes-tts/provider-probe-fixtures.json.
+- TTS-006 added `scripts/tes_tts_provider_probe_oracle.py --self-test`.
+- TTS-006 covered `provider_available`, `provider_not_available`, and
+  `provider_needs_review` without probing real providers.
 - Ready prompt artifact:
-  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-006-provider-probe-contract.md.
-- TTS-005 focused oracles passed:
+  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-007-provider-candidate-review.md.
+- TTS-006 focused oracles passed:
+  - `python3 scripts/tes_tts_provider_probe_oracle.py --self-test`
   - `python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test`
   - `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
   - `python3 scripts/validate_tds.py`
   - `python3 scripts/validate_doc_size.py`
   - `python3 scripts/validate_reference_package.py`
-  - targeted instruction-normalizer `rg` checks.
+  - targeted no-provider/no-install `rg` checks.
 
 Task:
-Execute only TTS-006 through the circular sequence:
+Execute only TTS-007 through the circular sequence:
 execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit.
 
 Required actions:
 1. Run `git status --short --branch --untracked-files=all`.
-2. Re-read execution SPEC provider probe contract, roadmap, Super SPEC,
-   provider reference, and the new instruction-normalizer oracle.
-3. Add a no-write local provider probe contract and mocked available,
-   unavailable, and needs-review states.
-4. Fix only TTS-006 probe-contract or mock-oracle gaps.
+2. Re-read architecture SPEC provider candidates, execution SPEC, roadmap,
+   provider fallback references, and provider probe oracle.
+3. Rank provider candidates after the no-write probe contract exists.
+4. Fix only TTS-007 provider-review or governance gaps.
 5. Certify with targeted `rg` checks and the smallest docs/package oracles.
-6. Create the next `/goal` prompt artifact for TTS-007 if not converged.
+6. Create the next `/goal` prompt artifact for TTS-008 if not converged.
 7. Commit the local execution as the final action of the cycle.
 
 Forbidden:
