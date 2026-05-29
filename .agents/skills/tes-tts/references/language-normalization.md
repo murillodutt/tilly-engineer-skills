@@ -95,10 +95,21 @@ Do not translate terms such as:
 
 - ADR, SPEC, MCP, API, SDK, CLI, URL, HTTP, JSON, YAML, SQL
 - TES, Tilly, Codex, Claude, Cursor, OpenAI
+- English workflow terms such as GitHub, Markdown, provider, fallback, cache,
+  prompt, workflow, pipeline, branch, commit, release, sync, tag, push, pull
+  request, merge, runtime, fixture, oracle, adapter, workbench, rollback,
+  checkpoint, canary, debug, build, test, and deploy
 - package names, command names, filenames, branch names, model names
 
-Adapt pronunciation without changing the visible term's meaning. For acronyms,
-prefer a pronunciation that sounds natural in the default language:
+Adapt pronunciation without changing the visible term's meaning. English
+proper nouns and workflow terms should keep English pronunciation intent even
+when the default/system language is `pt-BR`, `es`, `fr`, `it`, `de`, or `he`.
+If the local TTS provider cannot honor per-span language or voice hints, keep
+the term written and mark the pronunciation as degraded rather than translating
+or approximating it in the system language.
+
+For acronyms, prefer a pronunciation that sounds natural in the default
+language:
 
 | Term | Spoken rendering guidance |
 |------|---------------------------|
@@ -113,7 +124,11 @@ prefer a pronunciation that sounds natural in the default language:
 | JSON | Use the common local pronunciation, not a literal translation. |
 | YAML | Use the common local pronunciation, not a literal translation. |
 | SQL | Use the common local pronunciation, not a literal translation. |
-| TES, Tilly, Codex, Claude, Cursor, OpenAI | Preserve as proper nouns; do not translate into generic words. |
+| TES, Tilly | Preserve as proper nouns; do not translate into generic words. |
+| Codex, Claude, Cursor, OpenAI, ChatGPT, GitHub, ElevenLabs | Preserve as proper nouns; keep English pronunciation intent. |
+| Markdown, provider, fallback, cache, prompt, workflow, pipeline | Preserve as English workflow terms; keep English pronunciation intent. |
+| branch, commit, release, sync, tag, push, pull request, merge | Preserve as English version-control/release terms; keep English pronunciation intent. |
+| runtime, fixture, oracle, adapter, workbench, rollback, checkpoint, canary, debug, build, test, deploy | Preserve as English engineering terms; keep English pronunciation intent. |
 | URLs | Use a useful destination phrase in non-exact mode, such as "pagina do GitHub" for GitHub URLs; preserve raw URLs for exact reading. |
 | Paths | Use a useful folder/file phrase in non-exact mode, such as "pasta tes tts"; preserve raw paths for exact reading. |
 | Long hashes | Say "hash" in non-exact mode; preserve the raw value for exact reading. |

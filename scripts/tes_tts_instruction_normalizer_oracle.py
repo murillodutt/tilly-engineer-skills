@@ -35,6 +35,42 @@ LETTER_SPELLED_TERMS = {"ADR", "MCP", "API", "SDK", "CLI", "URL", "HTTP"}
 TECHNICAL_NOUN_TERMS = {"SPEC"}
 COMMON_LOCAL_PRONUNCIATION_TERMS = {"JSON", "YAML", "SQL"}
 PROPER_NOUN_TERMS = {"TES", "Tilly", "Codex", "Claude", "Cursor", "OpenAI"}
+ENGLISH_PRONUNCIATION_TERMS = {
+    "GitHub",
+    "Markdown",
+    "provider",
+    "fallback",
+    "cache",
+    "prompt",
+    "workflow",
+    "pipeline",
+    "branch",
+    "commit",
+    "release",
+    "sync",
+    "tag",
+    "push",
+    "pull request",
+    "merge",
+    "runtime",
+    "fixture",
+    "oracle",
+    "adapter",
+    "workbench",
+    "rollback",
+    "checkpoint",
+    "canary",
+    "debug",
+    "build",
+    "test",
+    "deploy",
+    "OpenAI",
+    "Claude Code",
+    "Cursor",
+    "Codex",
+    "ChatGPT",
+    "ElevenLabs",
+}
 ACRONYM_PATTERN = re.compile(r"\b(ADR|MCP|API|SDK|CLI)(?:-(\d+))?\b")
 URL_PATTERN = re.compile(r"https?://[^\s)\]]+")
 EMAIL_PATTERN = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
@@ -67,7 +103,7 @@ FORBIDDEN_HINT_CLAIMS = {
     "ssml",
     "phoneme",
     "phonetic",
-    "provider",
+    "provider-backed",
     "translate",
     "translation",
 }
@@ -242,6 +278,8 @@ def pronunciation_hint(term: str) -> str:
         return "SPEC -> read as technical noun"
     if term in COMMON_LOCAL_PRONUNCIATION_TERMS:
         return f"{term} -> common local pronunciation"
+    if term in ENGLISH_PRONUNCIATION_TERMS:
+        return f"{term} -> preserve English pronunciation"
     if term in PROPER_NOUN_TERMS:
         return f"{term} -> preserve proper noun"
     if " --" in term or term.startswith("tes "):
@@ -638,6 +676,7 @@ def validate_pronunciation_hint_fixtures(fixtures: list[dict[str, Any]]) -> list
         "tts-pronunciation-package-model-proper-nouns",
         "tts-pronunciation-command-code-identifiers",
         "tts-pronunciation-forbidden-claim-guard",
+        "tts-pronunciation-english-protected-terms",
     }
     seen = {fixture["id"] for fixture in fixtures if "pronunciation_hints" in fixture["checks"]}
     missing = sorted(required - seen)

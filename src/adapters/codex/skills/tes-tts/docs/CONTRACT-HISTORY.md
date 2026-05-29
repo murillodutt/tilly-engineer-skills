@@ -78,6 +78,7 @@ a proactive announcement channel for normal TES status updates.
 | 2026-05-29 | Hardened CAP-002 speech transformation for Markdown, code fences, hashes, GUIDs, email addresses, valid IPv4 addresses, mentions, hashtags, and exact-read preservation. | CAP-002 instruction normalizer fixtures and speech transformation hardening prompt. | high |
 | 2026-05-29 | Hardened CAP-003 pronunciation hints and protected-term preservation for URL, HTTP, JSON, YAML, SQL, SPEC, TES, Tilly, Codex, Claude, Cursor, OpenAI, package/model names, commands, and code identifiers. | CAP-003 instruction normalizer fixtures and protected-term prompt. | high |
 | 2026-05-29 | Hardened CAP-004 provider fallback as a request-local catalog plan with error classes, voice-default retry, no provider certification, and no durable provider state. | CAP-004 provider fallback fixtures and provider probe oracle. | high |
+| 2026-05-29 | Added an enriched English protected-term pronunciation catalog for proper nouns and engineering workflow terms without claiming provider-backed pronunciation. | Maintainer feedback after live TTS test; instruction normalizer fixture `tts-pronunciation-english-protected-terms`. | high |
 
 ## Do Not Lose
 
