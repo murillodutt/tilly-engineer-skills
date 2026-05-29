@@ -20,7 +20,7 @@ details. This roadmap owns sequencing, registry, and operating visibility.
 
 ## Current Position
 
-`tes-tts` is proposed delivered behavior staged in TES source. It is reactive:
+`tes-tts` is accepted delivered behavior staged in TES source. It is reactive:
 it reads or narrates user-provided text only when explicitly requested. It must
 not become the proactive `speak` channel, a dependency manager, a bundled
 translation stack, or a global voice registry.
@@ -30,7 +30,7 @@ The current package state is intentionally pre-release:
 - no sync has been authorized;
 - no release identity has been closed;
 - no provider dependency has been installed, bundled, or certified;
-- normalization is instruction-level plus proposed architecture;
+- normalization is instruction-level plus accepted architecture;
 - local validators have passed during construction, but final package closure
   still requires the normal release gates and maintainer approval.
 
@@ -44,14 +44,17 @@ The current package state is intentionally pre-release:
 | `src/adapters/*/skills/tes-tts/docs/CONTRACT-HISTORY.md` | Local history, origin signals, preserved contracts, and failure modes. | staged |
 | `src/adapters/*/skills/tes-tts/references/language-normalization.md` | Instruction-level default-language, conversion-cache, and pronunciation reference. | staged |
 | `src/adapters/*/skills/tes-tts/references/providers-and-fallbacks.md` | Portable provider fallback lessons from `speak`. | staged |
-| `docs/adr/0004-tes-tts-pronunciation-normalization-and-enrichment.md` | Architectural GPS and boundary. | proposed |
+| `docs/adr/0004-tes-tts-pronunciation-normalization-and-enrichment.md` | Architectural GPS and boundary. | active |
 | `docs/roadmap/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` | Optional normalization architecture. | proposed |
 | `docs/roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` | Sequential execution contract and acceptance gates. | proposed |
 | `docs/roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` | Fixture schema explanation and TTS-004 boundary. | proposed |
 | `docs/roadmap/TES-TTS-PROVIDER-CANDIDATE-REVIEW.md` | Ranked provider review queue, not certification. | proposed |
 | `docs/roadmap/TES-TTS-SPEC-001-*.md` through `TES-TTS-SPEC-010-*.md` | Ten-step convergence SPEC draft set from roadmap compaction through final audit. | proposed |
-| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md` | Post-convergence owner decision gate. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md` | Ready prompt for explicit owner acceptance, release identity, or sync decision. | active |
+| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md` | Post-convergence owner decision gate. | archived |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md` | OWNER-001 acceptance/release/sync decision prompt. | archived |
+| `docs/roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` | ADR 0004 acceptance decision record. | active |
+| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md` | Post-ADR capability migration execution contract. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` | Ready prompt for first portable capability migration cut. | active |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | TTS-009 acceptance and release decision record. | active |
 | `docs/roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` | TTS-010 owner approval gate result. | active |
 | `docs/roadmap/TES-TTS-OWNER-DECISION-REQUIRED.md` | TTS-011 owner decision result. | active |
@@ -111,6 +114,8 @@ The current package state is intentionally pre-release:
 | 8 | Require sequential convergence: one unit, one decision, one oracle, one next step. | Execution SPEC. |
 | 9 | Require every non-converged execution cycle to create the next `/goal` prompt as a tracked artifact. | GOAL Super SPEC and tracked prompt artifacts. |
 | 10 | Require every `tes-tts` execution cycle to update this roadmap before closure. | This roadmap, GOAL Super SPEC, and ready prompt artifacts. |
+| 11 | Accept ADR 0004 as the active pronunciation normalization and enrichment boundary. | `TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md`. |
+| 12 | Start capability migration as a new bounded sequence, using mapped simple TTS and `speak` learning as references rather than wholesale copies. | `GOAL-SUPER-SPEC-tes-tts-capability-migration.md`. |
 
 ## Circular Execution Control
 
@@ -127,7 +132,7 @@ The current ten-SPEC convergence contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -437,19 +442,21 @@ The remaining execution path is now organized as ten draft SPECs:
 These drafts do not authorize sync, release, provider install, provider
 download, global config writes, or durable conversion caches.
 
-SPEC outcomes: SPEC-001 through SPEC-008 are `PASS`; SPEC-009 and SPEC-010 are
-`NEEDS_OWNER_DECISION`. The ten-SPEC technical sequence is complete for the
-proposed bounded scope, but ADR 0004 remains `proposed`, release identity is
-deferred, package identity remains at `0.3.147`, provider claims remain
-optional/degraded/deferred, and sync remains unauthorized.
+SPEC outcomes: SPEC-001 through SPEC-008 are `PASS`; SPEC-009 and SPEC-010
+exited `NEEDS_OWNER_DECISION`; OWNER-001 resolved ADR acceptance. The ten-SPEC
+technical sequence is complete for the bounded scope, ADR 0004 is `active`,
+release identity is deferred, package identity remains at `0.3.147`, provider
+claims remain optional/degraded/deferred, and sync remains unauthorized.
 Next ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md`.
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 ## Current Open Questions
 
-1. Does the maintainer explicitly approve ADR 0004 acceptance, release
-   identity planning, or continued deferral?
+1. Does the maintainer explicitly approve release identity planning or
+   continued deferral?
+2. Does the maintainer explicitly authorize a later sync cycle after release
+   identity is handled?
 
 ## Governance Rules
 

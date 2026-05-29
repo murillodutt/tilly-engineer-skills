@@ -1,24 +1,27 @@
 ---
 tds_id: architecture.adr_0004_tes_tts_pronunciation_normalization_and_enrichment
 tds_class: architecture
-status: proposed
+status: active
 consumer: maintainers, adapter authors, tes-tts maintainers, and release operators
-source_of_truth: false
+source_of_truth: true
 evidence_level: L1
+tver: 0.1.0
 ---
 
 # ADR 0004: TES TTS Pronunciation Normalization And Enrichment
 
 Proposed on 2026-05-28 during `tes-tts` skill construction.
+Accepted on 2026-05-29 as the active `tes-tts` pronunciation normalization
+and enrichment boundary.
 
 TES will treat pronunciation normalization and language enrichment for
 `tes-tts` as an optional, locally verified speech-preparation boundary, not as
 a bundled translation stack, audio subsystem, dependency manager, or proactive
 announcement channel.
 
-This ADR is proposed, not accepted. It must not be treated as release
-certification, sync approval, or permission to bundle new models, binaries, or
-third-party libraries.
+This ADR is accepted as an architectural boundary. It must not be treated as
+release certification, sync approval, or permission to bundle new models,
+binaries, or third-party libraries.
 
 ## Context
 
@@ -87,10 +90,10 @@ This decision gives `tes-tts` a clear north star without overclaiming current
 implementation. The skill can improve speech quality incrementally while the
 package remains boring at its dependency boundary.
 
-Until this ADR is accepted and the execution oracles exist:
+After acceptance and until separate execution/release decisions exist:
 
 - `tes-tts` may document the strategy and use instruction-level normalization;
 - optional provider catalogs remain references, not certified behavior;
 - TES must not claim bundled or library-backed normalization;
-- TES must not sync, release, or advertise this behavior from the proposed ADR
+- TES must not sync, release, or advertise this behavior from the accepted ADR
   alone.

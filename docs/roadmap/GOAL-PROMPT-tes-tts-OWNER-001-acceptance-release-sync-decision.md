@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_prompt_tes_tts_owner_001_acceptance_release_sync_decision
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, tes-tts maintainers, release reviewers, and sync operators
 source_of_truth: false
 evidence_level: L2
@@ -9,8 +9,8 @@ evidence_level: L2
 
 # GOAL Prompt: TES TTS OWNER-001 Acceptance Release Sync Decision
 
-This is the ready `/goal` prompt for the next `tes-tts` cycle only when the
-maintainer provides an explicit acceptance, release identity, or sync decision.
+This prompt is archived after OWNER-001 accepted ADR 0004 on 2026-05-29.
+Release identity and sync remain deferred.
 
 ```text
 /goal Continue TES TTS owner decision gate.

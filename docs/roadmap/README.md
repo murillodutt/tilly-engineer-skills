@@ -29,10 +29,10 @@ Wave 7 local package-source closure.
 | TES installed certification and Field Reports hardening | Active | `GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
 | TES TTS sequential convergence | Active | `GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` |
 | TES TTS ten-SPEC convergence | Complete | `GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md` |
-| TES TTS owner decision gate | Active | `GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md` |
+| TES TTS owner decision gate | Complete | `GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md` |
 | TES TTS TTS-000 through TTS-009 prompt lineage | Historical | Baseline through acceptance decision prompt artifacts. |
 | TES TTS TTS-010 through TTS-031 prompt lineage | Historical | Owner-decision preservation prompt artifacts; retained for audit, not active execution. |
-| TES TTS TTS-032 roadmap compaction and agent default language prompt | Active | `GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md` |
+| TES TTS TTS-032 roadmap compaction and agent default language prompt | Historical | `GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md` |
 | TES TTS SPEC-001 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md` |
 | TES TTS SPEC-002 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md` |
 | TES TTS SPEC-003 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md` |
@@ -43,7 +43,10 @@ Wave 7 local package-source closure.
 | TES TTS SPEC-008 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md` |
 | TES TTS SPEC-009 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md` |
 | TES TTS SPEC-010 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md` |
-| TES TTS OWNER-001 decision prompt | Active | `GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md` |
+| TES TTS OWNER-001 decision prompt | Historical | `GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md` |
+| TES TTS OWNER-001 acceptance decision | Complete | `TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` |
+| TES TTS capability migration | Active | `GOAL-SUPER-SPEC-tes-tts-capability-migration.md` |
+| TES TTS CAP-001 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |

@@ -113,7 +113,7 @@ turning the repository root into an inventory.
 | TES TTS TTS-029 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-029-owner-decision-still-open-again.md` |
 | TES TTS TTS-030 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-030-owner-decision-continues-open-again.md` |
 | TES TTS TTS-031 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-031-owner-decision-remains-open-yet-again.md` |
-| TES TTS TTS-032 roadmap compaction and agent default language prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md` |
+| TES TTS TTS-032 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md` |
 | TES TTS SPEC-001 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md` |
 | TES TTS SPEC-002 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md` |
 | TES TTS SPEC-003 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md` |
@@ -124,7 +124,10 @@ turning the repository root into an inventory.
 | TES TTS SPEC-008 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md` |
 | TES TTS SPEC-009 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md` |
 | TES TTS SPEC-010 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md` |
-| TES TTS OWNER-001 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md` |
+| TES TTS OWNER-001 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md` |
+| TES TTS OWNER-001 acceptance decision | `roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` |
+| TES TTS capability migration Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md` |
+| TES TTS CAP-001 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |

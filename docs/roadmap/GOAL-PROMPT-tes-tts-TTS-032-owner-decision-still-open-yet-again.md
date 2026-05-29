@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_prompt_tes_tts_tts_032_owner_decision_still_open_yet_again
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
 source_of_truth: false
 evidence_level: L2
@@ -9,8 +9,8 @@ evidence_level: L2
 
 # GOAL Prompt: TES TTS TTS-032 Roadmap Compaction And Agent Default Language Contract
 
-This is the ready `/goal` prompt for the next circular execution cycle of
-`tes-tts`.
+This prompt is archived. The active execution prompt is
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md`.
 
 ```text
 /goal Continue TES TTS sequential convergence.

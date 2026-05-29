@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_super_spec_tes_tts_owner_decision_gate
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, tes-tts maintainers, release reviewers, and sync operators
 source_of_truth: false
 evidence_level: L1
@@ -9,7 +9,7 @@ evidence_level: L1
 
 # GOAL Super SPEC: TES TTS Owner Decision Gate
 
-Status: active decision gate after ten-SPEC technical convergence.
+Status: archived after OWNER-001 accepted ADR 0004.
 
 Canonical artifact:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md`
@@ -22,6 +22,9 @@ Technical closure artifact:
 Apply only explicit maintainer decisions for `tes-tts` after the ten-SPEC
 technical sequence closed with `NEEDS_OWNER_DECISION`.
 
+OWNER-001 applied the explicit maintainer approval on 2026-05-29 and accepted
+ADR 0004. Release identity and sync remain deferred.
+
 ## Decisions Required
 
 | Decision | Allowed values | Boundary |
@@ -32,12 +35,23 @@ technical sequence closed with `NEEDS_OWNER_DECISION`.
 
 ## Current Certified State
 
-- `tes-tts` is technically complete for the proposed bounded scope.
-- ADR 0004 remains `proposed`.
+- `tes-tts` is technically complete for the bounded scope.
+- ADR 0004 is `active`.
 - Package identity remains `0.3.147`.
 - Provider-backed translation/pronunciation remains optional, degraded, or
   deferred; no real provider runtime is certified.
 - Sync status is `REMOTE_SYNC_NOT_REQUESTED`.
+
+## Closure
+
+Decision record:
+`docs/roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md`
+
+Next execution gate:
+`docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md`
+
+Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md`
 
 ## Execution Rule
 
@@ -56,4 +70,5 @@ exists to receive a decision, not to loop.
 
 ## Ready Prompt
 
+Archived prompt:
 `docs/roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md`

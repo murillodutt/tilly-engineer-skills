@@ -6,6 +6,30 @@
 extracts the operating pattern proven by `tes-mine` and `tes-prospect` without
 changing those reference skills or promoting the pattern into distributable TES.
 
+## Why This Skill Exists
+
+Some local development-layer skills benefit from high agency after activation,
+but that pattern is dangerous if it becomes always-on, verbose by default, or
+commercialized before evidence proves it useful. This skill preserves the
+portable operating pattern while keeping it local, conservative at activation,
+and bounded to one target skill or workflow at a time.
+
+## Origin Signals
+
+| Source | Signal | Confidence |
+|--------|--------|------------|
+| `.agents/skills/tes-prospect/SKILL.md` | Explicit invocation, proactive pressure, one question at a time, and cognitive brake. | high |
+| `.agents/skills/tes-mine/SKILL.md` | Evidence-first mining, one question at a time, durable writes only after resolution, and cognitive brake. | high |
+| Maintainer directive, 2026-05-22 | The pattern should be self-consumed locally and not exposed as a user command. | high |
+| Maintainer directive, 2026-05-29 | Apply review findings: valid skill packaging, docs/agents trace, local-only placement, and clearer contract memory. | high |
+
+## Source Search Ledger
+
+| Window | Query | Occurrences | Meaning |
+|--------|-------|-------------|---------|
+| 2026-05-29 review | `tes-high-agency-pattern` across `.agents/**`, `docs/**`, and `AGENTS.md` | local skill only before repair | The new runtime asset needed an explicit `docs/agents/**` trace. |
+| 2026-05-29 review | `explicit invocation` in `tes-prospect`, `tes-mine`, and this skill | direct conceptual lineage | The explicit-trigger rule belongs to target workflows; this meta-skill remains self-consumed. |
+
 ## Contracts Preserved
 
 - Keep `tes-mine` and `tes-prospect` untouched as reference skills.
@@ -18,6 +42,23 @@ changing those reference skills or promoting the pattern into distributable TES.
   authority layer.
 - Keep commercial/public TES surfaces out of scope.
 
+## Known Failure Modes Prevented
+
+- Turning a local design lens into an always-on user command.
+- Applying high agency to skills that need terse diagnostics or gate output.
+- Asking many questions at once instead of resolving one risk at a time.
+- Producing artifacts before the target pattern resolves.
+- Importing external skill text or commercial claims as TES authority.
+
+## Relationship To Other Skills
+
+- `tes-prospect` proves the plan-risk pressure side of the pattern.
+- `tes-mine` proves the language, evidence, and durable-memory side of the
+  pattern.
+- `tes-predictive-operations` chooses prospect/mine/alternate/package modes
+  during active reasoning.
+- `tes-high-agency-pattern` reviews or designs one local skill/workflow pattern.
+
 ## Changelog
 
 | Date | Change | Evidence | Confidence |
@@ -29,6 +70,7 @@ changing those reference skills or promoting the pattern into distributable TES.
 | 2026-05-22 | Added local Operating Temperament guidance for sniper, miner, prospector, builder, gate, and curator skill design. | Maintainer clarified that the development layer should learn how to create powerful skills with different verbosity and question profiles. | high |
 | 2026-05-22 | Renamed `operating-temperament.md` to `temperament-profiles.md` and added cross-routing to `tes-predictive-operations`. | Maintainer senior analysis identified false same-name drift between complementary temperament references. | high |
 | 2026-05-22 | Tightened frontmatter description to route one-skill operating-pattern design away from active project mode selection. | Maintainer approved P4 trigger-alignment pass after senior review. | high |
+| 2026-05-29 | Quoted frontmatter description, added operational contract version, clarified self-consumed versus explicit-target activation, added validation, done criteria, OpenAI metadata, expanded contract history, and docs/agents trace expectation. | Read-only review found invalid YAML frontmatter, ambiguous self-consumed placement, missing local skill metadata, incomplete Tilly contract history, and missing `docs/agents/**` trace. | high |
 
 ## Do Not Lose
 

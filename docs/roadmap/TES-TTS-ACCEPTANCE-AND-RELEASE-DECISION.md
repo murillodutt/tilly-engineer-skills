@@ -9,9 +9,12 @@ evidence_level: L2
 
 # TES TTS Acceptance And Release Decision
 
-This record closes TTS-009 as a decision cycle. It does not accept ADR 0004,
-change release identity, run sync, publish, tag, push, or certify provider
-behavior.
+This record closed TTS-009 as a decision cycle. TTS-009 recommended ADR 0004
+acceptance but did not itself accept the ADR, change release identity, run
+sync, publish, tag, push, or certify provider behavior.
+
+OWNER-001 later accepted ADR 0004 on 2026-05-29. Release identity, sync, and
+provider certification remain separate deferred decisions.
 
 ## Decision
 
@@ -21,8 +24,8 @@ semantics, protected-term preservation, secret redaction, no-summary behavior,
 mocked no-write provider probing, provider candidate review, and adapter
 parity.
 
-ADR 0004 remains `proposed` because explicit maintainer approval to change its
-status was not provided in this cycle.
+OWNER-001 supersedes the TTS-009 status limitation: ADR 0004 is now `active`
+because explicit maintainer approval was provided on 2026-05-29.
 
 Release identity must not proceed in this cycle. `tes-tts` is adopter-visible
 delivered behavior and will require a separate authorized release identity
@@ -60,7 +63,7 @@ Focused evidence surfaces:
 | Question | TTS-009 result |
 |----------|----------------|
 | Can ADR 0004 be recommended for acceptance? | Yes, for the bounded instruction-level and provider-boundary scope. |
-| Can ADR 0004 status be changed now? | No. Explicit maintainer approval is still required. |
+| Can ADR 0004 status be changed now? | Yes. OWNER-001 accepted ADR 0004 on 2026-05-29. |
 | Can release identity proceed now? | No. Release identity needs separate explicit approval. |
 | Can sync proceed now? | No. Sync remains forbidden until complete skill approval. |
 | Are providers certified? | No. Provider review and probe behavior remain mocked/no-write and non-certifying. |
@@ -68,7 +71,8 @@ Focused evidence surfaces:
 
 ## Owner Decision Needed
 
-Next state: `NEEDS_OWNER_DECISION`.
+Next state after OWNER-001: ADR acceptance `PASS`; release identity and sync
+remain deferred.
 
 The next cycle must ask for an explicit maintainer decision on:
 
@@ -77,6 +81,5 @@ The next cycle must ask for an explicit maintainer decision on:
 3. Continue forbidding sync or authorize a later sync cycle after release
    identity is handled.
 
-Until those decisions are explicit, the correct state is recommended but not
-accepted, installable from source but not released/synced, and provider-aware
-but not provider-certified.
+After OWNER-001, the correct state is accepted architecture, installable from
+source but not released/synced, and provider-aware but not provider-certified.

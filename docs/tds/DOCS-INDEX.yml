@@ -53,9 +53,9 @@ documents:
   - path: docs/adr/0004-tes-tts-pronunciation-normalization-and-enrichment.md
     id: architecture.adr_0004_tes_tts_pronunciation_normalization_and_enrichment
     class: architecture
-    status: proposed
+    status: active
     consumer: maintainers, adapter authors, tes-tts maintainers, and release operators
-    source_of_truth: false
+    source_of_truth: true
     evidence_level: L1
   - path: docs/install/INSTALL.md
     id: install.adapter_installer
@@ -431,7 +431,7 @@ documents:
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md
     id: roadmap.goal_prompt_tes_tts_tts_032_owner_decision_still_open_yet_again
     class: roadmap
-    status: active
+    status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
@@ -620,8 +620,15 @@ documents:
   - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md
     id: roadmap.goal_super_spec_tes_tts_owner_decision_gate
     class: roadmap
-    status: active
+    status: archived
     consumer: maintainers, tes-tts maintainers, release reviewers, and sync operators
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md
+    id: roadmap.goal_super_spec_tes_tts_capability_migration
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, and validation authors
     source_of_truth: false
     evidence_level: L1
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md
@@ -696,6 +703,20 @@ documents:
     evidence_level: L2
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md
     id: roadmap.goal_prompt_tes_tts_owner_001_acceptance_release_sync_decision
+    class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, release reviewers, and sync operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md
+    id: roadmap.goal_prompt_tes_tts_cap_001_portable_capability_migration
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md
+    id: roadmap.tes_tts_owner_001_acceptance_decision
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, release reviewers, and sync operators
