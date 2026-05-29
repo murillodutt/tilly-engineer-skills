@@ -225,6 +225,13 @@ documents:
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md
+    id: roadmap.goal_prompt_tes_tts_tts_003_fixture_schema
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/adapters/CODEX.md
     id: adapters.codex
     class: adapter

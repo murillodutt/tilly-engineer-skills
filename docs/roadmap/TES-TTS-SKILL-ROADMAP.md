@@ -51,7 +51,8 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` | Circular execution contract for the skill. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md` | Historical prompt artifact for the completed preflight cycle. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md` | Historical prompt artifact for roadmap and SPEC coherence. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md` | Ready prompt artifact for the next execution cycle. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md` | Historical prompt artifact for selector contract readiness. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md` | Ready prompt artifact for the next execution cycle. | active |
 | `scripts/materialize_adapter.py` | Adapter materialization inclusion. | staged |
 | `scripts/command_trigger_oracle.py` | Slash, alias, and natural trigger oracle inclusion. | staged |
 | `scripts/validate_reference_package.py` | Package reference validation inclusion. | staged |
@@ -85,7 +86,7 @@ The current circular execution contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -125,7 +126,7 @@ without confusing roadmap detail with ADR boundary.
 
 ### R2: Default-Language Selector Contract
 
-Status: decided, pending fixtures.
+Status: selector contract fixture-ready, pending executable fixtures.
 
 Decision: adapter default language is a default preference, not a hard
 priority. Explicit user language overrides adapter default language. A user
@@ -136,13 +137,27 @@ Required closure:
 
 - Update language references with the precedence rule.
 - Update architecture or execution SPEC if needed.
-- Add selection fixtures before certification.
+- Record selector fixture candidates before executable fixture work.
 
 Exit state: the selector contract is unambiguous and testable.
 
-### R3: Fixture Corpus
+### R3: Fixture Schema
 
-Status: not started.
+Status: next work unit.
+
+Required closure:
+
+- Select the fixture file shape before creating the corpus.
+- Include selector inputs and expected target language.
+- Include source span, protected terms, redaction expectation, provider state,
+  expected status, and no-summary expectation.
+- Keep schema dependency-free and suitable for deterministic validation.
+
+Exit state: future corpus entries have one governed shape and can be linted.
+
+### R4: Fixture Corpus
+
+Status: blocked until R3 passes.
 
 Required fixture classes:
 
@@ -158,7 +173,7 @@ Required fixture classes:
 Exit state: fixture names and expected outcomes exist before any provider
 probing or implementation claims.
 
-### R4: Instruction-Level Normalizer Oracle
+### R5: Instruction-Level Normalizer Oracle
 
 Status: not started.
 
@@ -175,7 +190,7 @@ Required closure:
 Exit state: `normalization_degraded` remains useful and honest when no
 provider exists.
 
-### R5: Provider Probe Contract
+### R6: Provider Probe Contract
 
 Status: proposed only.
 
@@ -191,9 +206,9 @@ Required closure:
 Exit state: provider discovery is safe enough to inform, but not certify,
 runtime choices.
 
-### R6: Provider Candidate Review
+### R7: Provider Candidate Review
 
-Status: deferred until R5 passes.
+Status: deferred until R6 passes.
 
 Candidate layers:
 
@@ -207,7 +222,7 @@ Candidate layers:
 Exit state: each provider candidate is either accepted for optional local use,
 classified as degraded, or deferred.
 
-### R7: Adapter Parity And Install Surface
+### R8: Adapter Parity And Install Surface
 
 Status: partially implemented.
 
@@ -222,9 +237,9 @@ Required closure:
 Exit state: materialized adapters behave consistently without duplicating
 source.
 
-### R8: Acceptance Gate
+### R9: Acceptance Gate
 
-Status: blocked until R2-R7 converge.
+Status: blocked until R2-R8 converge.
 
 Required closure:
 

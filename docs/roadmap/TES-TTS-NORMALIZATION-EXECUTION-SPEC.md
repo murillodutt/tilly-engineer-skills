@@ -69,6 +69,19 @@ Selection fixtures must cover:
 - user language request overriding the declared adapter default;
 - mixed text falling through to request or dominant text language.
 
+Expected selector outcomes:
+
+| Case | Explicit user language | Declared adapter default | Request language | Dominant text language | Expected target |
+|------|------------------------|--------------------------|------------------|------------------------|-----------------|
+| DLS-001 | `en` | `pt-BR` | `pt-BR` | `pt-BR` | `en` |
+| DLS-002 | absent | `pt-BR` | `en` | `en` | `pt-BR` |
+| DLS-003 | absent | `unknown` | `pt-BR` | `en` | `pt-BR` |
+| DLS-004 | absent | `unknown` | unclear | `de` | `de` |
+| DLS-005 | absent | `unknown` | unclear | unclear | preserve original |
+
+The future fixture schema owns the executable representation of these cases.
+This SPEC owns the expected selector decision order.
+
 ## Fixture Classes
 
 Required fixture classes:

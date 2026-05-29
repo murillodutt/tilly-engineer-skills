@@ -31,6 +31,7 @@ Wave 7 local package-source closure.
 | TES TTS TTS-000 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md` |
 | TES TTS TTS-001 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md` |
 | TES TTS TTS-002 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md` |
+| TES TTS TTS-003 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS normalization architecture | Proposed | `TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution | Proposed | `TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |

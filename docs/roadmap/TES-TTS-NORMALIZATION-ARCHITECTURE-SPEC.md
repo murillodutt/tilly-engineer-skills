@@ -68,6 +68,8 @@ locale, prior chat history, or repository text.
 
 When no explicit adapter declaration exists, the adapter default is `unknown`
 and the selector proceeds to the request language and dominant text language.
+The selector is a pure decision step that must be fixture-testable before any
+translation, provider probing, pronunciation enrichment, or TTS playback.
 
 ## First-Class Languages
 

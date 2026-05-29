@@ -26,6 +26,19 @@ language explicitly. Do not infer it from the assistant name, host locale,
 prior chat history, or repository text. If the adapter default is not declared,
 treat it as `unknown` and continue with the current request language.
 
+Selector fixture candidates:
+
+| Case | Inputs | Expected target |
+|------|--------|-----------------|
+| DLS-001 | User requests `en`; adapter declares `pt-BR`; request is `pt-BR`; text is `pt-BR`. | `en` |
+| DLS-002 | No user language; adapter declares `pt-BR`; request is `en`; text is `en`. | `pt-BR` |
+| DLS-003 | No user language; adapter default is `unknown`; request is `pt-BR`; text is `en`. | `pt-BR` |
+| DLS-004 | No user language; adapter default is `unknown`; request language is unclear; text is mostly `de`. | `de` |
+| DLS-005 | No user language; adapter default is `unknown`; request language is unclear; text language is unclear. | preserve original |
+
+These cases define selector expectations for future fixtures. They do not
+certify translation quality, provider behavior, or spoken output.
+
 ## Conversion Cache
 
 Prepare a compact internal cache before calling TTS:

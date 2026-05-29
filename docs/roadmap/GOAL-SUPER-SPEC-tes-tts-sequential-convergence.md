@@ -239,7 +239,7 @@ and remaining release identity decision instead.
 ## Current Ready /goal Prompt
 
 Prompt artifact:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md`
 
 Use this prompt to start the next sequential execution cycle:
 
@@ -250,35 +250,36 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
 
 Current unit:
-TTS-002 Default-Language Selector
+TTS-003 Fixture Schema
 
 Certified evidence from prior cycle:
-- TTS-001 re-read roadmap, ADR 0004, architecture SPEC, execution SPEC, and
-  Codex/Claude language-normalization references.
-- TTS-001 searched for contradiction classes.
-- TTS-001 fixed one coherence defect: protected-term extraction now occurs
-  before language detection in the architecture SPEC.
+- TTS-002 re-read Codex/Claude language-normalization references, architecture
+  SPEC, execution SPEC, and roadmap.
+- TTS-002 confirmed explicit user language wins before declared adapter
+  default, request language, dominant text language, and preserve-original
+  fallback.
+- TTS-002 added selector fixture candidates DLS-001 through DLS-005 without
+  adding runtime dependencies or provider claims.
 - Ready prompt artifact:
-  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md.
-- TTS-001 focused oracles passed:
+  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md.
+- TTS-002 focused oracles passed:
   - `python3 scripts/validate_tds.py`
   - `python3 scripts/validate_doc_size.py`
-  - `python3 scripts/validate_reference_graph.py`
   - `python3 scripts/validate_reference_package.py`
-  - targeted `rg` contradiction checks.
+  - targeted selector `rg` checks.
 
 Task:
-Execute only TTS-002 through the circular sequence:
+Execute only TTS-003 through the circular sequence:
 execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit.
 
 Required actions:
 1. Run `git status --short --branch --untracked-files=all`.
-2. Re-read language-normalization references and correlated SPEC/roadmap
-   selector text.
-3. Verify the selector is precise and fixture-ready.
-4. Fix only TTS-002 selector defects or fixture-readiness gaps.
+2. Re-read execution SPEC, roadmap, Super SPEC, and selector fixture
+   candidates.
+3. Define the minimal fixture schema before writing a corpus.
+4. Fix only TTS-003 schema defects or governance gaps.
 5. Certify with targeted `rg` checks and the smallest docs/package oracles.
-6. Create the next `/goal` prompt artifact for TTS-003 if not converged.
+6. Create the next `/goal` prompt artifact for TTS-004 if not converged.
 7. Commit the local execution as the final action of the cycle.
 
 Forbidden:
