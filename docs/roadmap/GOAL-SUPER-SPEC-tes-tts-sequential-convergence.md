@@ -114,6 +114,7 @@ Each cycle must follow this shape:
 | Analyze | Review diff, contracts, false-green risk, precision, quality, and efficiency. | Senior analysis note. |
 | Fix | Repair only observed defects or contract drift. | Smaller corrected diff. |
 | Certify | Run the focused oracle set and classify result. | `PASS`, `DEGRADED`, `NEEDS_REVIEW`, or `BLOCKED`. |
+| Roadmap Update | Update `TES-TTS-SKILL-ROADMAP.md` with the current unit status, evidence pointer, and ready prompt pointer. | Roadmap entry that reflects the cycle outcome. |
 | Next Prompt | Generate the next sequential `/goal` prompt when not converged. | Prompt that preserves current evidence and next unit. |
 | Local Commit | Commit the certified local execution when the cycle is authorized. | Final local commit for the execution cycle. |
 
@@ -131,6 +132,8 @@ Before every cycle:
 4. Confirm ADR 0004 boundary still permits the intended change.
 5. Name the focused oracle before editing.
 6. Confirm no sync/release action is being performed.
+7. Confirm the cycle will update `TES-TTS-SKILL-ROADMAP.md` before closure or
+   record an explicit no-change rationale in that roadmap.
 
 Stop if the worktree state cannot be classified, the focused oracle cannot be
 named, or the change would require a release identity decision before the user
@@ -153,6 +156,7 @@ has approved the complete skill.
 | TTS-010 Owner Approval Gate | Capture explicit maintainer approval or deferral for ADR acceptance, release identity, and sync posture. | ADR/status and decision docs only when explicitly approved. | focused TTS oracles; `npm run commit:check` when package closure is needed. |
 | TTS-011 Owner Decision Required | Apply or continue deferring the first explicit owner decision for ADR acceptance, release identity, and sync posture. | ADR/status and decision docs only when explicitly approved. | focused TTS oracles; `npm run commit:check` when package closure is needed. |
 | TTS-012 Explicit Owner Decision | Apply a concrete maintainer decision or preserve the owner-decision stop state. | ADR/status and decision docs only when explicitly approved. | focused TTS oracles; `npm run commit:check` when package closure is needed. |
+| TTS-013 Owner Decision Pending | Apply a concrete maintainer decision after TTS-012 preserved the stop state. | ADR/status and decision docs only when explicitly approved. | focused TTS oracles; `npm run commit:check` when package closure is needed. |
 
 Every unit must preserve its identifier. A future `/goal` may expand a unit
 into sub-steps, but must not merge, skip, rename, or reorder these units
@@ -242,7 +246,7 @@ and remaining release identity decision instead.
 ## Current Ready /goal Prompt
 
 Prompt artifact:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-012-explicit-owner-decision.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-013-owner-decision-pending.md`
 
 Use this prompt to start the next sequential execution cycle:
 
@@ -253,26 +257,29 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
 
 Current unit:
-TTS-012 Explicit Owner Decision
+TTS-013 Owner Decision Pending
 
 Certified evidence from prior cycle:
-- TTS-011 re-read ADR 0004, the TTS-010 owner approval gate, the TTS-009
-  decision record, the TES TTS roadmap, this Super SPEC, and the TTS-011
-  prompt.
-- TTS-011 found no explicit maintainer decision in the current goal context to
+- TTS-012 re-read ADR 0004, the TTS-010 owner approval gate, the TTS-011 owner
+  decision record, the TTS-009 decision record, the TES TTS roadmap, this Super
+  SPEC, and the TTS-012 prompt.
+- TTS-012 found no explicit maintainer decision in the current goal context to
   accept ADR 0004 or keep it proposed, authorize release identity planning or
   defer it, or continue forbidding sync or authorize a later sync cycle.
-- TTS-011 recorded the owner decision result at
-  docs/roadmap/TES-TTS-OWNER-DECISION-REQUIRED.md.
+- TTS-012 recorded the explicit owner decision result at
+  docs/roadmap/TES-TTS-EXPLICIT-OWNER-DECISION.md.
+- TTS-012 preserved the roadmap synchronization rule: every future `tes-tts`
+  cycle must update `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` before closure or
+  record an explicit no-change rationale there.
 - ADR 0004 remains `proposed`.
 - Release identity remains deferred.
 - Sync remains forbidden.
-- TTS-011 made no provider certification claim and performed no sync, release,
+- TTS-012 made no provider certification claim and performed no sync, release,
   push, tag, publish, provider install, provider download, real provider probe,
   global config write, durable conversion cache, or proactive `speak` behavior.
 - Ready prompt artifact:
-  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-012-explicit-owner-decision.md.
-- TTS-011 focused oracles passed:
+  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-013-owner-decision-pending.md.
+- TTS-012 focused oracles passed:
   - `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
   - `python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test`
   - `python3 scripts/tes_tts_provider_probe_oracle.py --self-test`
@@ -289,22 +296,24 @@ Certified evidence from prior cycle:
   - `npm run commit:check`
 
 Task:
-Execute only TTS-012 through the circular sequence:
+Execute only TTS-013 through the circular sequence:
 execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit.
 
 Required actions:
 1. Run `git status --short --branch --untracked-files=all`.
 2. Re-read ADR 0004, the TTS-010 owner approval gate, the TTS-011 owner
-   decision record, the TTS-009 decision record, roadmap, this Super SPEC, and
-   the TTS-012 prompt.
+   decision record, the TTS-012 explicit owner decision record, the TTS-009
+   decision record, roadmap, this Super SPEC, and the TTS-013 prompt.
 3. Apply only explicit maintainer decisions already present in the current
    prompt or user message.
 4. If ADR acceptance, release identity, or sync approval is absent or partial,
    keep the state `NEEDS_OWNER_DECISION`.
 5. Certify with focused TTS oracles, docs/package validators, and
    `npm run commit:check` when package closure is needed.
-6. Create the next `/goal` prompt artifact for any unresolved owner decision.
-7. Commit the local execution as the final action of the cycle.
+6. Update `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` with the cycle outcome,
+   current unit status, and ready prompt pointer.
+7. Create the next `/goal` prompt artifact for any unresolved owner decision.
+8. Commit the local execution as the final action of the cycle.
 
 Forbidden:
 - no sync, release, push, tag, publish, provider install, provider download,

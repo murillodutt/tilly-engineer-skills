@@ -1,5 +1,5 @@
 ---
-tds_id: roadmap.goal_prompt_tes_tts_tts_012_explicit_owner_decision
+tds_id: roadmap.goal_prompt_tes_tts_tts_013_owner_decision_pending
 tds_class: roadmap
 status: active
 consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
@@ -7,7 +7,7 @@ source_of_truth: false
 evidence_level: L2
 ---
 
-# GOAL Prompt: TES TTS TTS-012 Explicit Owner Decision
+# GOAL Prompt: TES TTS TTS-013 Owner Decision Pending
 
 This is the ready `/goal` prompt for the next circular execution cycle of
 `tes-tts`.
@@ -19,30 +19,34 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
 
 Current unit:
-TTS-012 Explicit Owner Decision
+TTS-013 Owner Decision Pending
 
 Certified evidence from prior cycle:
-- TTS-011 re-read:
+- TTS-012 re-read:
   - `docs/adr/0004-tes-tts-pronunciation-normalization-and-enrichment.md`
   - `docs/roadmap/TES-TTS-OWNER-APPROVAL-GATE.md`
+  - `docs/roadmap/TES-TTS-OWNER-DECISION-REQUIRED.md`
   - `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md`
   - `docs/roadmap/TES-TTS-SKILL-ROADMAP.md`
   - `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
-  - `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-011-owner-decision-required.md`
-- TTS-011 found no explicit maintainer decision in the current goal context to
+  - `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-012-explicit-owner-decision.md`
+- TTS-012 found no explicit maintainer decision in the current goal context to
   accept ADR 0004 or keep it proposed, authorize release identity planning or
   defer it, or continue forbidding sync or authorize a later sync cycle.
-- TTS-011 recorded the owner decision result at
-  `docs/roadmap/TES-TTS-OWNER-DECISION-REQUIRED.md`.
+- TTS-012 recorded the explicit owner decision result at
+  `docs/roadmap/TES-TTS-EXPLICIT-OWNER-DECISION.md`.
+- TTS-012 preserved the roadmap synchronization rule: every future `tes-tts`
+  cycle must update `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` before closure or
+  record an explicit no-change rationale there.
 - ADR 0004 remains `proposed`.
 - Release identity remains deferred.
 - Sync remains forbidden.
 - No provider install, provider download, real provider probe, global config
   write, durable conversion cache, proactive `speak` behavior, version bump,
   release, push, tag, publish, or sync was performed.
-- Ready prompt artifact for TTS-012 exists at
-  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-012-explicit-owner-decision.md.
-- TTS-011 focused oracles passed:
+- Ready prompt artifact for TTS-013 exists at
+  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-013-owner-decision-pending.md.
+- TTS-012 focused oracles passed:
   - `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
   - `python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test`
   - `python3 scripts/tes_tts_provider_probe_oracle.py --self-test`
@@ -59,7 +63,7 @@ Certified evidence from prior cycle:
   - `npm run commit:check`
 
 Task:
-Execute only TTS-012 through the circular sequence:
+Execute only TTS-013 through the circular sequence:
 execute -> analyze -> fix -> certify -> create next /goal prompt or close
 convergence -> local commit.
 
@@ -69,10 +73,11 @@ Required actions:
    - `docs/adr/0004-tes-tts-pronunciation-normalization-and-enrichment.md`
    - `docs/roadmap/TES-TTS-OWNER-APPROVAL-GATE.md`
    - `docs/roadmap/TES-TTS-OWNER-DECISION-REQUIRED.md`
+   - `docs/roadmap/TES-TTS-EXPLICIT-OWNER-DECISION.md`
    - `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md`
    - `docs/roadmap/TES-TTS-SKILL-ROADMAP.md`
    - `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
-   - `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-012-explicit-owner-decision.md`
+   - `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-013-owner-decision-pending.md`
 3. Apply only explicit maintainer decisions already present in the current
    user message:
    - accept ADR 0004 or keep it proposed;

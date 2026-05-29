@@ -52,6 +52,7 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | TTS-009 acceptance and release decision record. | active |
 | `docs/roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` | TTS-010 owner approval gate result. | active |
 | `docs/roadmap/TES-TTS-OWNER-DECISION-REQUIRED.md` | TTS-011 owner decision result. | active |
+| `docs/roadmap/TES-TTS-EXPLICIT-OWNER-DECISION.md` | TTS-012 explicit owner decision result. | active |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
 | `benchmarks/tes-tts/normalization-fixtures.json` | Minimal dependency-free fixture corpus. | proposed |
 | `benchmarks/tes-tts/instruction-normalizer-fixtures.json` | Instruction-level normalizer oracle fixtures. | proposed |
@@ -71,7 +72,8 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-009-acceptance-and-release-decision.md` | Historical prompt artifact for acceptance and release decision. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-010-owner-approval-gate.md` | Historical prompt artifact for owner approval gate. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-011-owner-decision-required.md` | Historical prompt artifact for owner decision required. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-012-explicit-owner-decision.md` | Ready prompt artifact for the next execution cycle. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-012-explicit-owner-decision.md` | Historical prompt artifact for explicit owner decision. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-013-owner-decision-pending.md` | Ready prompt artifact for the next execution cycle. | active |
 | `scripts/materialize_adapter.py` | Adapter materialization inclusion. | staged |
 | `scripts/command_trigger_oracle.py` | Slash, alias, and natural trigger oracle inclusion. | staged |
 | `scripts/validate_reference_package.py` | Package reference validation inclusion. | staged |
@@ -96,6 +98,7 @@ The current package state is intentionally pre-release:
 | 7 | Introduce adapter default language as an explicit preference that never overrides user-requested language. | Language reference and execution SPEC. |
 | 8 | Require sequential convergence: one unit, one decision, one oracle, one next step. | Execution SPEC. |
 | 9 | Require every non-converged execution cycle to create the next `/goal` prompt as a tracked artifact. | GOAL Super SPEC and tracked prompt artifacts. |
+| 10 | Require every `tes-tts` execution cycle to update this roadmap before closure. | This roadmap, GOAL Super SPEC, and ready prompt artifacts. |
 
 ## Circular Execution Control
 
@@ -109,11 +112,18 @@ The current circular execution contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-012-explicit-owner-decision.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-013-owner-decision-pending.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
 next `/goal` prompt exists only in chat or only embedded inside the Super SPEC.
+
+Every `tes-tts` execution cycle must update this roadmap before closure, even
+when no ADR, source, provider, release, or sync decision changes. The roadmap
+update must record at least the current unit status, the ready prompt pointer,
+and any newly created decision or evidence artifact. If the cycle produces no
+material roadmap change, it must add a short no-change rationale to the current
+unit entry instead of silently skipping the roadmap.
 
 ## Sequential Roadmap
 
@@ -312,7 +322,9 @@ crossing into unauthorized release, sync, provider, or global-state work.
 
 ### R12: Explicit Owner Decision
 
-Status: next work unit, awaiting explicit maintainer decision.
+Status: TTS-012 recorded no explicit owner decision in the current goal
+context; state remains `NEEDS_OWNER_DECISION`. This cycle also made the
+roadmap update rule mandatory for every future `tes-tts` execution.
 
 Required closure:
 
@@ -324,6 +336,23 @@ Required closure:
   `NEEDS_REVIEW`.
 
 Exit state: the explicit owner decision is applied, or the cycle remains
+`NEEDS_OWNER_DECISION` with the next unresolved decision named.
+
+### R13: Owner Decision Pending
+
+Status: next work unit, awaiting explicit maintainer decision.
+
+Required closure:
+
+- If ADR 0004 is explicitly accepted or kept proposed, apply only that
+  decision and correlated decision surfaces.
+- If release identity planning is explicitly authorized or deferred, apply
+  only that decision and create the next exact prompt.
+- If sync is explicitly authorized without release identity approval, stop at
+  `NEEDS_REVIEW`.
+- Update this roadmap with the cycle outcome before closure.
+
+Exit state: the owner decision is applied, or the cycle remains
 `NEEDS_OWNER_DECISION` with the next unresolved decision named.
 
 ## Current Open Questions
@@ -347,6 +376,8 @@ Exit state: the explicit owner decision is applied, or the cycle remains
 - Do not persist conversion caches by default.
 - Do not claim library-backed normalization until fixtures and provider probes
   prove the local behavior.
+- Do not close any `tes-tts` execution cycle without updating this roadmap or
+  recording why no material roadmap change was needed.
 - Do not close a non-converged cycle without a tracked next `/goal` prompt
   artifact.
 

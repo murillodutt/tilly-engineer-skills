@@ -295,6 +295,13 @@ documents:
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-013-owner-decision-pending.md
+    id: roadmap.goal_prompt_tes_tts_tts_013_owner_decision_pending
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md
     id: roadmap.tes_tts_acceptance_and_release_decision
     class: roadmap
@@ -311,6 +318,13 @@ documents:
     evidence_level: L2
   - path: docs/roadmap/TES-TTS-OWNER-DECISION-REQUIRED.md
     id: roadmap.tes_tts_owner_decision_required
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/TES-TTS-EXPLICIT-OWNER-DECISION.md
+    id: roadmap.tes_tts_explicit_owner_decision
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
