@@ -31,8 +31,10 @@ REQUIRED_CACHE_KEYS = {
     "redactions",
 }
 FIRST_CLASS_LANGUAGES = {"pt-BR", "en", "es", "fr", "it", "de", "he"}
-LETTER_SPELLED_TERMS = {"ADR", "MCP", "API", "SDK", "CLI"}
+LETTER_SPELLED_TERMS = {"ADR", "MCP", "API", "SDK", "CLI", "URL", "HTTP"}
+TECHNICAL_NOUN_TERMS = {"SPEC"}
 COMMON_LOCAL_PRONUNCIATION_TERMS = {"JSON", "YAML", "SQL"}
+PROPER_NOUN_TERMS = {"TES", "Tilly", "Codex", "Claude", "Cursor", "OpenAI"}
 ACRONYM_PATTERN = re.compile(r"\b(ADR|MCP|API|SDK|CLI)(?:-(\d+))?\b")
 URL_PATTERN = re.compile(r"https?://[^\s)\]]+")
 EMAIL_PATTERN = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
@@ -123,7 +125,7 @@ def clean_markdown_for_speech(text: str) -> str:
     cleaned = re.sub(r"(?m)^\s{0,3}#{1,6}\s*", "", cleaned)
     cleaned = re.sub(r"(?m)^\s*[-*+]\s+", "", cleaned)
     cleaned = re.sub(r"(?m)^\s*\d+[.)]\s+", "", cleaned)
-    cleaned = re.sub(r"[*_]{1,3}([^*_]+)[*_]{1,3}", r"\1", cleaned)
+    cleaned = re.sub(r"(?<!\w)[*_]{1,3}([^*_]+)[*_]{1,3}(?!\w)", r"\1", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned)
     return cleaned.strip()
 
@@ -236,14 +238,22 @@ def render_spoken_text(text: str, source_text: str) -> str:
 def pronunciation_hint(term: str) -> str:
     if term in LETTER_SPELLED_TERMS:
         return f"{term} -> spell letters"
-    if term == "SPEC":
+    if term in TECHNICAL_NOUN_TERMS:
         return "SPEC -> read as technical noun"
     if term in COMMON_LOCAL_PRONUNCIATION_TERMS:
         return f"{term} -> common local pronunciation"
-    if "/" in term:
-        return f"{term} -> preserve path exactly"
+    if term in PROPER_NOUN_TERMS:
+        return f"{term} -> preserve proper noun"
     if " --" in term or term.startswith("tes "):
         return f"{term} -> preserve command exactly"
+    if "/" in term:
+        return f"{term} -> preserve path exactly"
+    if re.search(r"\b[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*\b", term):
+        return f"{term} -> preserve code identifier exactly"
+    if "_" in term and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", term):
+        return f"{term} -> preserve code identifier exactly"
+    if term.startswith("@") or re.search(r"[A-Za-z]+[-_][A-Za-z0-9]", term):
+        return f"{term} -> preserve package or model identity"
     return f"{term} -> preserve written identity"
 
 
@@ -622,6 +632,20 @@ def validate_spoken_rendering_fixtures(fixtures: list[dict[str, Any]]) -> list[s
     return []
 
 
+def validate_pronunciation_hint_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
+    required = {
+        "tts-pronunciation-technical-term-hints",
+        "tts-pronunciation-package-model-proper-nouns",
+        "tts-pronunciation-command-code-identifiers",
+        "tts-pronunciation-forbidden-claim-guard",
+    }
+    seen = {fixture["id"] for fixture in fixtures if "pronunciation_hints" in fixture["checks"]}
+    missing = sorted(required - seen)
+    if missing:
+        return [f"missing CAP-003 pronunciation hint fixtures: {missing}"]
+    return []
+
+
 def validate_no_disk_write_surface() -> list[str]:
     tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
     failures: list[str] = []
@@ -649,6 +673,7 @@ def main() -> int:
     failures.extend(validate_translation_boundary_fixtures(fixtures))
     failures.extend(validate_pronunciation_boundary_fixtures(fixtures))
     failures.extend(validate_spoken_rendering_fixtures(fixtures))
+    failures.extend(validate_pronunciation_hint_fixtures(fixtures))
     for fixture in fixtures:
         failures.extend(validate_prepared_fixture(fixture))
 

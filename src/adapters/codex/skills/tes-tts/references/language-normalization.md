@@ -108,9 +108,12 @@ prefer a pronunciation that sounds natural in the default language:
 | API | Read as `A P I` unless exact reading is requested. |
 | SDK | Read as `S D K` unless exact reading is requested. |
 | CLI | Read as `C L I` unless exact reading is requested. |
+| URL | Read as `U R L` unless exact reading is requested. |
+| HTTP | Read as `H T T P` unless exact reading is requested. |
 | JSON | Use the common local pronunciation, not a literal translation. |
 | YAML | Use the common local pronunciation, not a literal translation. |
 | SQL | Use the common local pronunciation, not a literal translation. |
+| TES, Tilly, Codex, Claude, Cursor, OpenAI | Preserve as proper nouns; do not translate into generic words. |
 | URLs | Use a useful destination phrase in non-exact mode, such as "pagina do GitHub" for GitHub URLs; preserve raw URLs for exact reading. |
 | Paths | Use a useful folder/file phrase in non-exact mode, such as "pasta tes tts"; preserve raw paths for exact reading. |
 | Long hashes | Say "hash" in non-exact mode; preserve the raw value for exact reading. |
@@ -119,6 +122,8 @@ prefer a pronunciation that sounds natural in the default language:
 | IPv4 addresses | Say valid dotted IPv4 addresses with "ponto" separators in non-exact mode; leave invalid dotted tokens unchanged. |
 | Mentions and hashtags | Say "mencao ..." and "hashtag ..." in non-exact mode; preserve raw tokens for exact reading. |
 | Commands | Preserve command text exactly; never execute it. |
+| Code identifiers | Preserve exact spelling, including underscores, dots, and casing. |
+| Package and model names | Preserve written identity, including scopes, hyphens, and version-like tokens. |
 | Proper nouns | Preserve written identity; add spacing only if the TTS engine would distort it. |
 
 Pronunciation hints are cache metadata. They must not alter the visible source

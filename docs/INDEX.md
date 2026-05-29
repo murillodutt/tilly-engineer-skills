@@ -130,7 +130,8 @@ turning the repository root into an inventory.
 | TES TTS CAP-001 feasibility study | `roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` |
 | TES TTS CAP-001 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` |
 | TES TTS CAP-002 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` |
-| TES TTS CAP-003 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-003-pronunciation-hints-protected-terms.md` |
+| TES TTS CAP-003 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-003-pronunciation-hints-protected-terms.md` |
+| TES TTS CAP-004 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |

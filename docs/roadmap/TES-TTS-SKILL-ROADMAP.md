@@ -75,7 +75,8 @@ surface for release, materialization, and sync decisions.
 | `docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` | Feasibility study for migrating portable TTS behavior. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` | Historical prompt for first portable capability migration cut. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` | Historical prompt for speech transformation hardening. | historical |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-003-pronunciation-hints-protected-terms.md` | Ready prompt for pronunciation hints and protected terms. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-003-pronunciation-hints-protected-terms.md` | Historical prompt for pronunciation hints and protected terms. | historical |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md` | Ready prompt for provider fallback catalog use. | active |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | TTS-009 acceptance and release decision record. | active |
 | `docs/roadmap/TES-TTS-OWNER-*.md` | Historical owner-decision records TTS-010 through TTS-031; retained in TDS and `docs/INDEX.md`. | historical |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
@@ -133,7 +134,7 @@ The current ten-SPEC convergence contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-003-pronunciation-hints-protected-terms.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -427,7 +428,7 @@ technical sequence is complete for the bounded scope, ADR 0004 is `active`,
 release identity is deferred, package identity remains at `0.3.147`, provider
 claims remain optional/degraded/deferred, and sync remains unauthorized.
 Next ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-003-pronunciation-hints-protected-terms.md`.
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 CAP-001 outcome: dependency-free `spoken_text` rendering is implemented in the
@@ -440,7 +441,14 @@ CAP-002 outcome: dependency-free `spoken_text` hardening now covers Markdown
 links, code fences, headings, bullets, emphasis, long hashes, GUID-like
 identifiers, email addresses, valid IPv4 addresses, mentions, hashtags,
 path/URL false-positive guards, and exact-read preservation. The workbench,
-Codex source, and Claude source references are aligned. CAP-003 is next.
+Codex source, and Claude source references are aligned. CAP-002 is closed.
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
+CAP-003 outcome: dependency-free pronunciation hints and protected-term
+preservation now cover URL, HTTP, JSON, YAML, SQL, SPEC, TES, Tilly, Codex,
+Claude, Cursor, OpenAI, package/model names, commands, and code identifiers.
+The workbench, Codex source, and Claude source references are aligned. CAP-004
+is next.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 ## Current Open Questions

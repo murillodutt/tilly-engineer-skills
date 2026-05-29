@@ -1,13 +1,13 @@
 ---
-tds_id: roadmap.goal_prompt_tes_tts_cap_003_pronunciation_hints_protected_terms
+tds_id: roadmap.goal_prompt_tes_tts_cap_004_provider_fallback_catalog_use
 tds_class: roadmap
-status: archived
+status: active
 consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
 source_of_truth: false
 evidence_level: L2
 ---
 
-# GOAL Prompt: TES TTS CAP-003 Pronunciation Hints And Protected Terms
+# GOAL Prompt: TES TTS CAP-004 Provider Fallback Catalog Use
 
 ```text
 /goal Continue TES TTS capability migration.
@@ -16,17 +16,17 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md
 
 Current unit:
-CAP-003 Pronunciation Hints And Protected Terms
+CAP-004 Provider Fallback Catalog Use
 
 Certified evidence from prior cycle:
-- CAP-002 hardened dependency-free spoken rendering for Markdown links,
-  code fences, headings, bullets, emphasis, long hashes, GUID-like
-  identifiers, email addresses, valid IPv4 addresses, mentions, hashtags,
-  path/URL false-positive guards, and exact-read preservation.
-- CAP-002 kept source text separate from request-local `spoken_text`.
-- CAP-002 preserved no-summary behavior, redaction before speech, provider
+- CAP-003 hardened dependency-free pronunciation hints and protected-term
+  preservation for URL, HTTP, JSON, YAML, SQL, SPEC, TES, Tilly, Codex,
+  Claude, Cursor, OpenAI, package/model names, commands, and code
+  identifiers.
+- CAP-003 kept source text separate from request-local `spoken_text`.
+- CAP-003 preserved no-summary behavior, redaction before speech, provider
   degraded posture, reactive-only `tes-tts`, and no durable conversion cache.
-- CAP-002 mirrored converged workbench behavior into Codex and Claude source
+- CAP-003 mirrored converged workbench behavior into Codex and Claude source
   skill references.
 - Release identity, sync, provider installs, provider downloads, provider
   certification, durable conversion cache, and proactive `speak` behavior
@@ -34,7 +34,7 @@ Certified evidence from prior cycle:
 - Sync status is REMOTE_SYNC_NOT_REQUESTED.
 
 Task:
-Execute only CAP-003 through:
+Execute only CAP-004 through:
 execute -> analyze -> fix -> certify -> create next /goal prompt or close
 convergence -> local commit.
 
@@ -46,35 +46,34 @@ Required actions:
    - `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md`
    - `docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md`
    - `docs/roadmap/TES-TTS-SKILL-ROADMAP.md`
-   - `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-003-pronunciation-hints-protected-terms.md`
+   - `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md`
    - `.agents/skills/tes-tts/**`
    - `src/adapters/codex/skills/tes-tts/**`
    - `src/adapters/claude/skills/tes-tts/**`
-   - `benchmarks/tes-tts/instruction-normalizer-fixtures.json`
-   - `scripts/tes_tts_instruction_normalizer_oracle.py`
-4. Harden only dependency-free pronunciation-hint and protected-term behavior
-   that preserves user text without summary. Preferred candidates:
-   - technical terms beyond CAP-001 acronyms, such as URL, HTTP, JSON, YAML,
-     SQL, SPEC, TES, Tilly, Codex, Claude, Cursor, and OpenAI;
-   - proper nouns and package/model names that must not be translated;
-   - command and code identifier preservation;
-   - request-local hint metadata that never claims IPA, SSML, phoneme,
-     lexicon, provider-backed pronunciation, or Hebrew enrichment support.
+   - provider references and mocked provider probe fixtures/oracles
+4. Harden only dependency-free provider fallback catalog behavior. Preferred
+   candidates:
+   - request-local provider order and fallback explanation;
+   - error classification for auth, quota/rate limit, unavailable provider,
+     unavailable voice, and generic failure;
+   - voice policy that respects explicit user voice and degrades honestly;
+   - catalog use as reference/runtime guidance only, with no provider install,
+     download, certification, global unavailable registry, or config write.
 5. Keep source text separate from `spoken_text`; never write durable conversion
-   cache data.
+   cache data or provider state.
 6. Validate first in `.agents/skills/tes-tts`, then mirror converged behavior
    to `src/adapters/codex/skills/tes-tts` and Claude when parity is required.
 7. Analyze the diff for quality, efficiency, precision, false-green risk,
    adapter parity, privacy, and boundary drift.
-8. Fix only observed CAP-003 defects.
-9. Certify with the focused TTS oracles, workbench and adapter quick
-   validation, materialization check, TDS/doc-size/reference graph validators,
-   and `git diff --check`.
-10. Create the next exact CAP `/goal` prompt before closure unless CAP-003
+8. Fix only observed CAP-004 defects.
+9. Certify with the focused TTS oracles, provider probe/candidate review
+   oracles, workbench and adapter quick validation, materialization check,
+   TDS/doc-size/reference graph validators, and `git diff --check`.
+10. Create the next exact CAP `/goal` prompt before closure unless CAP-004
     closes the migration sequence.
-11. Update `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` with CAP-003 outcome,
+11. Update `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` with CAP-004 outcome,
     next prompt pointer, and sync status.
-12. Stage only CAP-003 files and commit locally as the final shell action.
+12. Stage only CAP-004 files and commit locally as the final shell action.
 
 Forbidden:
 - no sync, release, push, tag, publish, provider install, provider download,

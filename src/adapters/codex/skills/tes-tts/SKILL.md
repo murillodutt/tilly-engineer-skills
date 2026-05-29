@@ -6,7 +6,7 @@ license: MIT
 
 # TES TTS
 
-Operational contract: `tes.tts@0.1.3`.
+Operational contract: `tes.tts@0.1.4`.
 
 `/tes-tts` is the small TES text-to-speech skill. It reads user-provided text
 aloud through whatever local TTS tool the host exposes. `/tes:tts` is a
@@ -58,7 +58,10 @@ compatible TES intent alias if the host reports it as an invalid slash.
 - Remove Markdown code fences while preserving the code or command text unless
   the user asks for a summary.
 - Read dates clearly, preserving concrete dates.
-- Keep product names, commands, and mixed-language technical terms as written.
+- Keep product names, proper nouns, package/model names, commands, code
+  identifiers, and mixed-language technical terms as written.
+- Use request-local pronunciation hints for protected terms; do not claim IPA,
+  SSML, phoneme, lexicon, provider-backed pronunciation, or Hebrew enrichment.
 - For long text, split into sensible chunks rather than dropping content.
 
 ## Safety

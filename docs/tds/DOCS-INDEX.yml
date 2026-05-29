@@ -725,6 +725,13 @@ documents:
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-003-pronunciation-hints-protected-terms.md
     id: roadmap.goal_prompt_tes_tts_cap_003_pronunciation_hints_protected_terms
     class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md
+    id: roadmap.goal_prompt_tes_tts_cap_004_provider_fallback_catalog_use
+    class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
     source_of_truth: false

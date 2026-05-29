@@ -106,7 +106,7 @@
       "JSON -> common local pronunciation",
       "YAML -> common local pronunciation",
       "SQL -> common local pronunciation",
-      "Tilly -> preserve written identity",
+      "Tilly -> preserve proper noun",
       "/tmp/tes/SPEC.md -> preserve path exactly",
       "tes tts --voice default -> preserve command exactly"
     ],
@@ -412,6 +412,147 @@
     ]
   },
   {
+    "id": "tts-pronunciation-technical-term-hints",
+    "target_language": "pt-BR",
+    "detected_language": "en",
+    "source_text": "Read URL, HTTP, JSON, YAML, SQL, SPEC, TES, Tilly, Codex, Claude, Cursor, and OpenAI as protected technical terms.",
+    "protected_terms": [
+      "URL",
+      "HTTP",
+      "JSON",
+      "YAML",
+      "SQL",
+      "SPEC",
+      "TES",
+      "Tilly",
+      "Codex",
+      "Claude",
+      "Cursor",
+      "OpenAI"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_pronunciation_hints": [
+      "URL -> spell letters",
+      "HTTP -> spell letters",
+      "JSON -> common local pronunciation",
+      "YAML -> common local pronunciation",
+      "SQL -> common local pronunciation",
+      "SPEC -> read as technical noun",
+      "TES -> preserve proper noun",
+      "Tilly -> preserve proper noun",
+      "Codex -> preserve proper noun",
+      "Claude -> preserve proper noun",
+      "Cursor -> preserve proper noun",
+      "OpenAI -> preserve proper noun"
+    ],
+    "max_chunk_chars": 260,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "pronunciation_hints",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-pronunciation-package-model-proper-nouns",
+    "target_language": "pt-BR",
+    "detected_language": "en",
+    "source_text": "Read @openai/agents, gpt-4o-mini-tts, tts-1-hd, tilly-engineer-skills, and OpenAI without translating package or model names.",
+    "protected_terms": [
+      "@openai/agents",
+      "gpt-4o-mini-tts",
+      "tts-1-hd",
+      "tilly-engineer-skills",
+      "OpenAI"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_pronunciation_hints": [
+      "@openai/agents -> preserve path exactly",
+      "gpt-4o-mini-tts -> preserve package or model identity",
+      "tts-1-hd -> preserve package or model identity",
+      "tilly-engineer-skills -> preserve package or model identity",
+      "OpenAI -> preserve proper noun"
+    ],
+    "max_chunk_chars": 260,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "pronunciation_hints",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-pronunciation-command-code-identifiers",
+    "target_language": "pt-BR",
+    "detected_language": "en",
+    "source_text": "Read `python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test`, render_spoken_text, and TES_TTS_SPAN without translating commands or identifiers.",
+    "protected_terms": [
+      "python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test",
+      "render_spoken_text",
+      "TES_TTS_SPAN"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_pronunciation_hints": [
+      "python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test -> preserve command exactly",
+      "render_spoken_text -> preserve code identifier exactly",
+      "TES_TTS_SPAN -> preserve code identifier exactly"
+    ],
+    "max_chunk_chars": 260,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "markdown_cleanup",
+      "pronunciation_hints",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-pronunciation-forbidden-claim-guard",
+    "target_language": "he",
+    "detected_language": "he",
+    "source_text": "שמור את URL, HTTP, JSON, OpenAI, gpt-4o-mini-tts ו-Codex ללא הבטחת העשרה.",
+    "protected_terms": [
+      "URL",
+      "HTTP",
+      "JSON",
+      "OpenAI",
+      "gpt-4o-mini-tts",
+      "Codex"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_pronunciation_hints": [
+      "URL -> spell letters",
+      "HTTP -> spell letters",
+      "JSON -> common local pronunciation",
+      "OpenAI -> preserve proper noun",
+      "gpt-4o-mini-tts -> preserve package or model identity",
+      "Codex -> preserve proper noun"
+    ],
+    "pronunciation_provider_state": "provider_needs_review",
+    "pronunciation_language_state": "unknown",
+    "expected_pronunciation_status": "normalization_degraded",
+    "max_chunk_chars": 260,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "pronunciation_hints",
+      "pronunciation_provider_boundary",
+      "no_summary"
+    ]
+  },
+  {
     "id": "tts-translation-protected-terms-first",
     "target_language": "pt-BR",
     "detected_language": "en",
@@ -491,7 +632,7 @@
     "expected_pronunciation_hints": [
       "API -> spell letters",
       "MCP -> spell letters",
-      "Tilly -> preserve written identity"
+      "Tilly -> preserve proper noun"
     ],
     "pronunciation_provider_state": "provider_needs_review",
     "pronunciation_language_state": "unknown",
