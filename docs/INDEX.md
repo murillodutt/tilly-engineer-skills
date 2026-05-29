@@ -147,7 +147,9 @@ turning the repository root into an inventory.
 | TES TTS CAP-010 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md` |
 | TES TTS LEX-001 PT-BR lexical dataset manifest | `roadmap/TES-TTS-LEX-001-PTBR-LEXICAL-DATASET-MANIFEST.md` |
 | TES TTS LEX-001 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-LEX-001-ptbr-lexical-dataset-manifest.md` |
-| TES TTS LEX-002 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-LEX-002-ptbr-lexical-lookup-oracle.md` |
+| TES TTS LEX-002 PT-BR lexical lookup oracle | `roadmap/TES-TTS-LEX-002-PTBR-LEXICAL-LOOKUP-ORACLE.md` |
+| TES TTS LEX-002 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-LEX-002-ptbr-lexical-lookup-oracle.md` |
+| TES TTS LEX-003 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-LEX-003-spoken-rendering-integration-boundary.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |

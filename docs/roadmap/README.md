@@ -66,7 +66,9 @@ Wave 7 local package-source closure.
 | TES TTS CAP-010 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md` |
 | TES TTS LEX-001 PT-BR lexical dataset manifest | Complete | `TES-TTS-LEX-001-PTBR-LEXICAL-DATASET-MANIFEST.md` |
 | TES TTS LEX-001 goal prompt | Historical | `GOAL-PROMPT-tes-tts-LEX-001-ptbr-lexical-dataset-manifest.md` |
-| TES TTS LEX-002 goal prompt | Active | `GOAL-PROMPT-tes-tts-LEX-002-ptbr-lexical-lookup-oracle.md` |
+| TES TTS LEX-002 lookup oracle | Complete | `TES-TTS-LEX-002-PTBR-LEXICAL-LOOKUP-ORACLE.md` |
+| TES TTS LEX-002 goal prompt | Historical | `GOAL-PROMPT-tes-tts-LEX-002-ptbr-lexical-lookup-oracle.md` |
+| TES TTS LEX-003 goal prompt | Active | `GOAL-PROMPT-tes-tts-LEX-003-spoken-rendering-integration-boundary.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |

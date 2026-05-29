@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_prompt_tes_tts_lex_002_ptbr_lexical_lookup_oracle
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
 source_of_truth: false
 evidence_level: L2
