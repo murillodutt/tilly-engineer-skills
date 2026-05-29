@@ -43,12 +43,14 @@ Wave 7 local package-source closure.
 | TES TTS TTS-012 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-012-explicit-owner-decision.md` |
 | TES TTS TTS-013 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-013-owner-decision-pending.md` |
 | TES TTS TTS-014 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-014-owner-decision-still-pending.md` |
+| TES TTS TTS-015 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-015-owner-decision-still-required.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | Active | `TES-TTS-OWNER-APPROVAL-GATE.md` |
 | TES TTS owner decision required | Active | `TES-TTS-OWNER-DECISION-REQUIRED.md` |
 | TES TTS explicit owner decision | Active | `TES-TTS-EXPLICIT-OWNER-DECISION.md` |
 | TES TTS owner decision pending | Active | `TES-TTS-OWNER-DECISION-PENDING.md` |
+| TES TTS owner decision still pending | Active | `TES-TTS-OWNER-DECISION-STILL-PENDING.md` |
 | TES TTS normalization architecture | Proposed | `TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution | Proposed | `TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
 | TES TTS normalization fixture schema | Proposed | `TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` |
