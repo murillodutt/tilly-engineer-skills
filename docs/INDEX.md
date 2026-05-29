@@ -81,6 +81,7 @@ turning the repository root into an inventory.
 | TES TTS Sequential Convergence Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` |
 | TES TTS TTS-000 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md` |
 | TES TTS TTS-001 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md` |
+| TES TTS TTS-002 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS normalization architecture SPEC | `roadmap/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution SPEC | `roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |

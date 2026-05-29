@@ -239,7 +239,7 @@ and remaining release identity decision instead.
 ## Current Ready /goal Prompt
 
 Prompt artifact:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md`
 
 Use this prompt to start the next sequential execution cycle:
 
@@ -250,32 +250,35 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
 
 Current unit:
-TTS-001 Roadmap And SPEC Coherence
+TTS-002 Default-Language Selector
 
 Certified evidence from prior cycle:
-- TTS-000 preflight confirmed `main` is ahead only by local commits.
-- Super SPEC and roadmap were re-read during TTS-000.
-- Next unresolved unit was classified as TTS-001.
+- TTS-001 re-read roadmap, ADR 0004, architecture SPEC, execution SPEC, and
+  Codex/Claude language-normalization references.
+- TTS-001 searched for contradiction classes.
+- TTS-001 fixed one coherence defect: protected-term extraction now occurs
+  before language detection in the architecture SPEC.
 - Ready prompt artifact:
-  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md.
-- TTS-000 focused oracles passed:
+  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md.
+- TTS-001 focused oracles passed:
   - `python3 scripts/validate_tds.py`
   - `python3 scripts/validate_doc_size.py`
   - `python3 scripts/validate_reference_graph.py`
   - `python3 scripts/validate_reference_package.py`
+  - targeted `rg` contradiction checks.
 
 Task:
-Execute only TTS-001 through the circular sequence:
+Execute only TTS-002 through the circular sequence:
 execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit.
 
 Required actions:
 1. Run `git status --short --branch --untracked-files=all`.
-2. Re-read roadmap, ADR 0004, architecture SPEC, execution SPEC, and
-   `tes-tts` normalization references.
-3. Search for contradictions across roadmap, ADR, SPECs, and references.
-4. Fix only coherence defects found in TTS-001 scope.
-5. Certify with focused docs/oracle checks.
-6. Create the next `/goal` prompt artifact for TTS-002 if not converged.
+2. Re-read language-normalization references and correlated SPEC/roadmap
+   selector text.
+3. Verify the selector is precise and fixture-ready.
+4. Fix only TTS-002 selector defects or fixture-readiness gaps.
+5. Certify with targeted `rg` checks and the smallest docs/package oracles.
+6. Create the next `/goal` prompt artifact for TTS-003 if not converged.
 7. Commit the local execution as the final action of the cycle.
 
 Forbidden:

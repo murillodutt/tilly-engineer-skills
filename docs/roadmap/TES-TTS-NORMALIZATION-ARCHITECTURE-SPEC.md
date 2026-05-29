@@ -28,8 +28,8 @@ The target speech-preparation pipeline is:
 input text
 -> cleanup and secret redaction
 -> paragraph/sentence span segmentation
--> language detection
 -> protected-term extraction
+-> language detection
 -> default-language translation for non-default spans
 -> locale-aware text normalization
 -> pronunciation hints
@@ -108,8 +108,11 @@ Preserve before translation:
   branches, versions, model names, identifiers.
 - Proper nouns: people, products, repositories, companies, standards.
 
-Protected terms may receive pronunciation hints. They must not be translated
-into different semantic objects.
+Protected terms are extracted before language detection and translation so
+acronyms, commands, paths, code identifiers, and names do not pollute language
+classification or become translation targets. Protected terms may receive
+pronunciation hints. They must not be translated into different semantic
+objects.
 
 ## Provider States
 
