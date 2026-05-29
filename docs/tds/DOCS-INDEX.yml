@@ -613,8 +613,15 @@ documents:
   - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md
     id: roadmap.goal_super_spec_tes_tts_ten_spec_convergence
     class: roadmap
-    status: active
+    status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md
+    id: roadmap.goal_super_spec_tes_tts_owner_decision_gate
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, release reviewers, and sync operators
     source_of_truth: false
     evidence_level: L1
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md
@@ -683,8 +690,15 @@ documents:
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md
     id: roadmap.goal_prompt_tes_tts_spec_010_final_audit_and_closure
     class: roadmap
-    status: active
+    status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and final auditors
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md
+    id: roadmap.goal_prompt_tes_tts_owner_001_acceptance_release_sync_decision
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, release reviewers, and sync operators
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/TES-TTS-SPEC-001-roadmap-compaction-agent-default-language.md

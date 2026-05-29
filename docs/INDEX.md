@@ -80,6 +80,7 @@ turning the repository root into an inventory.
 | TES Installed Certification And Field Reports Hardening Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
 | TES TTS Sequential Convergence Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` |
 | TES TTS Ten-SPEC Convergence Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md` |
+| TES TTS Owner Decision Gate Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md` |
 | TES TTS TTS-000 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md` |
 | TES TTS TTS-001 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md` |
 | TES TTS TTS-002 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md` |
@@ -122,7 +123,8 @@ turning the repository root into an inventory.
 | TES TTS SPEC-007 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md` |
 | TES TTS SPEC-008 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md` |
 | TES TTS SPEC-009 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md` |
-| TES TTS SPEC-010 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md` |
+| TES TTS SPEC-010 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md` |
+| TES TTS OWNER-001 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |

@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_super_spec_tes_tts_ten_spec_convergence
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
 source_of_truth: false
 evidence_level: L1
@@ -97,10 +97,16 @@ create the next Super SPEC before the local commit.
 
 ## Current Ready /goal Prompt
 
-Current ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md`
+Final technical result:
+`docs/roadmap/TES-TTS-SPEC-010-final-audit-and-closure.md`
 
-SPEC-001 through SPEC-009 prompts are retained as historical execution evidence:
+Next owner-decision gate:
+`docs/roadmap/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md`
+
+Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md`
+
+SPEC-001 through SPEC-010 prompts are retained as historical execution evidence:
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md`
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md`
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md`
@@ -110,6 +116,7 @@ SPEC-001 through SPEC-009 prompts are retained as historical execution evidence:
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md`
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md`
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md`
 
 ## Subagent Ownership
 

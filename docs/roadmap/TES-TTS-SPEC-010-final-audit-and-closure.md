@@ -43,6 +43,70 @@ for the approved scope or remains explicitly degraded/deferred.
 - Owner-facing closure statement.
 - Next prompt only if a real unresolved unit remains.
 
+## SPEC-010 Result
+
+Status: `NEEDS_OWNER_DECISION`.
+
+The ten-SPEC technical convergence is complete for the proposed bounded scope:
+reactive `tes-tts`, instruction-level normalization, protected-term
+preservation, no-summary behavior, secret redaction, mocked no-write provider
+probing, provider candidate review, adapter parity, and command trigger
+registration.
+
+The product is not accepted, released, synced, version-bumped, bundled, pushed,
+tagged, published, or provider-certified. ADR 0004 remains `proposed` because
+this cycle contains no explicit maintainer approval to accept it. Package
+identity remains `0.3.147`.
+
+Final audit classification:
+
+| Area | Result |
+|------|--------|
+| ADR 0004 | Proposed; acceptance recommended but owner decision still required. |
+| SPEC 001-010 | Technical sequence complete; SPEC-010 exits `NEEDS_OWNER_DECISION`. |
+| fixtures | First-class language, negative, provider, and pronunciation boundary fixtures exist for the claimed scope. |
+| oracles | Focused TTS oracles pass; global package closure is obscured by unrelated `.agents/**` drift. |
+| adapters | Codex and Claude `tes-tts` quick validation passes; materialization check passes. |
+| release | Version, bundle, release, tag, push, publish, and sync are deferred. |
+| privacy | Secret-like values are redacted before speech/provider stages. |
+| behavior | `tes-tts` remains reactive and does not summarize unless requested. |
+
+Closure evidence:
+
+- Focused TTS oracles, `tes-tts` quick validation, adapter materialization,
+  command trigger oracle, TDS, doc-size, reference graph, and whitespace
+  checks passed.
+- Negative checks found only policy references, forbidden-pattern guards, or
+  existing historical owner-decision records; no executable release, sync,
+  provider install, provider download, proactive `speak`, durable cache, or
+  global config path was introduced by SPEC-010.
+- `python3 scripts/validate_reference_package.py` was run but remains
+  non-interpretable as package closure evidence because unrelated `.agents/**`
+  development-skill parity drift fails outside the `tes-tts` scope. That drift
+  remains unstaged and unmodified.
+- `npm run commit:check` is deferred as package closure evidence for this
+  cycle because it would include the same unrelated `.agents/**` drift.
+
+Mantra Gate record:
+
+| Field | SPEC-010 decision |
+|-------|-------------------|
+| VERIFY | Re-read ADR, SPECs, roadmap, skill source, fixtures, oracles, adapter docs, and install triggers. |
+| SCOPE | Final audit docs and next owner-decision gate only. |
+| BEST_PATH | Close technical convergence and create a single decision gate instead of another preservation loop. |
+| DOCUMENT | This result, the roadmap update, and the owner-decision Super SPEC/prompt. |
+| ORACLE | Focused TTS oracles, quick validation, materialization, TDS, doc-size, reference graph, and diff checks. |
+| RESOLVE | Keep ADR/release/sync/provider decisions with the owner. |
+| STATUS | `NEEDS_OWNER_DECISION`. |
+
+Next decision gate:
+`docs/roadmap/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md`
+
+Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md`
+
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
 ## Oracles
 
 ```bash
