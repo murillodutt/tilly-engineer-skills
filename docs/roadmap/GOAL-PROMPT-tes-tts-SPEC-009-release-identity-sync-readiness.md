@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_prompt_tes_tts_spec_009_release_identity_sync_readiness
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
 source_of_truth: false
 evidence_level: L2
@@ -11,6 +11,9 @@ evidence_level: L2
 
 This is the ready `/goal` prompt for the next ten-SPEC `tes-tts` convergence
 cycle after SPEC-008.
+
+Status note: archived after SPEC-009. Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md`.
 
 ```text
 /goal Continue TES TTS ten-SPEC convergence.

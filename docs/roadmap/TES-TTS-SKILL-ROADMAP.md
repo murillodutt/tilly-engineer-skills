@@ -125,7 +125,7 @@ The current ten-SPEC convergence contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -435,19 +435,22 @@ The remaining execution path is now organized as ten draft SPECs:
 These drafts do not authorize sync, release, provider install, provider
 download, global config writes, or durable conversion caches.
 
-SPEC outcomes: SPEC-001 through SPEC-008 are `PASS`. SPEC-008 defined optional
-G2P/pronunciation provider boundaries; kept instruction-level pronunciation
-hints as the baseline; blocked IPA, SSML, phoneme, lexicon, and
-provider-backed pronunciation outputs until proven; and kept Hebrew explicitly
-degraded until local runtime, language, quality, and license evidence exists.
+SPEC outcomes: SPEC-001 through SPEC-008 are `PASS`. SPEC-009 is
+`NEEDS_OWNER_DECISION`: evidence is sufficient to recommend ADR 0004
+acceptance for the bounded instruction-level and provider-boundary scope, but
+ADR 0004 remains `proposed` because explicit maintainer approval is absent.
+Release identity is deferred, package identity remains at `0.3.147`, provider
+claims remain optional/degraded/deferred, and sync remains unauthorized.
 Next ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md`.
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 ## Current Open Questions
 
 1. Does the maintainer explicitly approve ADR 0004 acceptance, release
    identity planning, or continued deferral?
+2. Does final audit close `tes-tts` as complete for the approved proposed
+   scope, or leave a narrower owner-decision prompt?
 
 ## Governance Rules
 

@@ -98,9 +98,9 @@ create the next Super SPEC before the local commit.
 ## Current Ready /goal Prompt
 
 Current ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md`
 
-SPEC-001 through SPEC-008 prompts are retained as historical execution evidence:
+SPEC-001 through SPEC-009 prompts are retained as historical execution evidence:
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md`
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md`
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md`
@@ -109,6 +109,7 @@ SPEC-001 through SPEC-008 prompts are retained as historical execution evidence:
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md`
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md`
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md`
 
 ## Subagent Ownership
 

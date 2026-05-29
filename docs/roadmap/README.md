@@ -40,7 +40,8 @@ Wave 7 local package-source closure.
 | TES TTS SPEC-006 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md` |
 | TES TTS SPEC-007 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md` |
 | TES TTS SPEC-008 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md` |
-| TES TTS SPEC-009 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md` |
+| TES TTS SPEC-009 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md` |
+| TES TTS SPEC-010 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |
@@ -56,7 +57,7 @@ Wave 7 local package-source closure.
 | TES TTS SPEC 006 provider candidate selection | Complete | `TES-TTS-SPEC-006-provider-candidate-selection.md` |
 | TES TTS SPEC 007 optional translation layer | Complete | `TES-TTS-SPEC-007-optional-translation-layer.md` |
 | TES TTS SPEC 008 optional G2P pronunciation provider layer | Complete | `TES-TTS-SPEC-008-optional-g2p-pronunciation-provider-layer.md` |
-| TES TTS SPEC 009 release identity and sync readiness | Proposed | `TES-TTS-SPEC-009-release-identity-sync-readiness.md` |
+| TES TTS SPEC 009 release identity and sync readiness | Complete | `TES-TTS-SPEC-009-release-identity-sync-readiness.md` |
 | TES TTS SPEC 010 final audit and closure | Proposed | `TES-TTS-SPEC-010-final-audit-and-closure.md` |
 | RC1 readiness cleanup | Active | `RC1-READINESS-ROADMAP.md` |
 | Cortex hardening sequence | Complete | `GOAL-SUPER-SPEC-cortex-hardening.md` |

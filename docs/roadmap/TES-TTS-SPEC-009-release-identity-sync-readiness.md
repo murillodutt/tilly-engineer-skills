@@ -39,6 +39,48 @@ accepted, without performing release or sync inside this SPEC.
 - Next `/goal` prompt for release or explicit deferral.
 - No version bump unless the owner explicitly authorizes it.
 
+## SPEC-009 Result
+
+Status: `NEEDS_OWNER_DECISION`.
+
+SPEC-009 confirms the current evidence is sufficient to recommend ADR 0004
+acceptance for the bounded instruction-level and provider-boundary scope:
+reactive read-aloud behavior, no-summary text preparation, protected-term
+preservation, secret redaction, mocked no-write provider probing, optional
+provider candidate review, adapter parity, and command trigger coverage.
+
+ADR 0004 remains `proposed` because this cycle contains no explicit
+maintainer approval to accept it. No ADR status, version, bundle, release,
+tag, push, publish, sync, provider install, provider download, provider
+certification, durable conversion cache, global config, or proactive `speak`
+behavior changed.
+
+Release identity planning cannot proceed to a bump, bundle, release, tag,
+push, publish, or sync without a separate explicit owner decision. Read-only
+review found the current package identity anchored at `0.3.147` across the
+package, script constants, public bundle references, and release-check
+surfaces. That identity is preserved.
+
+Provider-backed claims remain optional, degraded, or deferred. The current
+certified behavior is instruction-level normalization and mocked no-write
+provider review only; no real provider runtime is certified.
+
+Closure evidence:
+
+- Focused TTS oracles, adapter materialization, command trigger oracle, TDS,
+  doc-size, reference graph, and whitespace checks passed for this cycle.
+- `python3 scripts/validate_reference_package.py` was run but is not
+  interpretable as SPEC-009 package closure evidence because unrelated
+  `.agents/**` drift fails development-skill parity outside the `tes-tts`
+  scope. That drift remains unstaged and unmodified.
+- `npm run commit:check` is therefore deferred as package closure evidence for
+  this cycle; running it would include the same unrelated `.agents/**` drift.
+
+Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md`.
+
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
 ## Oracles
 
 ```bash
