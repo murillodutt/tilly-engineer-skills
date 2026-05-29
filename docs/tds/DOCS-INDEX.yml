@@ -788,6 +788,20 @@ documents:
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-008-table-list-code-block-oralization.md
     id: roadmap.goal_prompt_tes_tts_cap_008_table_list_code_block_oralization
     class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/TES-TTS-CAP-008-TABLE-LIST-CODE-BLOCK-ORALIZATION.md
+    id: roadmap.tes_tts_cap_008_table_list_code_block_oralization
+    class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-009-mixed-language-english-identity-hardening.md
+    id: roadmap.goal_prompt_tes_tts_cap_009_mixed_language_english_identity_hardening
+    class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false

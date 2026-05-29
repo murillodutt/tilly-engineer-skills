@@ -58,7 +58,9 @@ Wave 7 local package-source closure.
 | TES TTS CAP-006 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-006-conversational-spoken-rendering.md` |
 | TES TTS CAP-007 exact-island protected-span hardening | Complete | `TES-TTS-CAP-007-EXACT-ISLAND-PROTECTED-SPAN-HARDENING.md` |
 | TES TTS CAP-007 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-007-exact-island-protected-span-hardening.md` |
-| TES TTS CAP-008 goal prompt | Active | `GOAL-PROMPT-tes-tts-CAP-008-table-list-code-block-oralization.md` |
+| TES TTS CAP-008 table list code block oralization | Complete | `TES-TTS-CAP-008-TABLE-LIST-CODE-BLOCK-ORALIZATION.md` |
+| TES TTS CAP-008 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-008-table-list-code-block-oralization.md` |
+| TES TTS CAP-009 goal prompt | Active | `GOAL-PROMPT-tes-tts-CAP-009-mixed-language-english-identity-hardening.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |

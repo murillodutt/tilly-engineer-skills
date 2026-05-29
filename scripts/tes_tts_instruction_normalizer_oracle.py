@@ -229,11 +229,11 @@ def conversational_connector(index: int, total: int) -> str:
 def render_conversational_structure(text: str) -> str:
     lines = text.splitlines()
     rendered: list[str] = []
-    bullet_lines = [
-        line for line in lines if re.match(r"^\s*[-*+]\s+", line)
+    list_lines = [
+        line for line in lines if re.match(r"^\s*(?:[-*+]|\d+[.)])\s+", line)
     ]
-    bullet_total = len(bullet_lines)
-    bullet_index = 0
+    list_total = len(list_lines)
+    list_index = 0
     index = 0
     while index < len(lines):
         raw_line = lines[index]
@@ -252,15 +252,48 @@ def render_conversational_structure(text: str) -> str:
             rendered.append(heading.group(1).rstrip(".") + ".")
             index += 1
             continue
+        if re.fullmatch(r"`{3}[A-Za-z0-9_-]*", stripped):
+            code_lines: list[str] = []
+            index += 1
+            while index < len(lines) and lines[index].strip() != "```":
+                code_line = lines[index].strip()
+                if code_line:
+                    code_lines.append(code_line)
+                index += 1
+            if index < len(lines) and lines[index].strip() == "```":
+                index += 1
+            if code_lines:
+                rendered.append("Bloco de codigo: " + " ".join(code_lines).rstrip(".") + ".")
+            continue
+        if stripped == "```":
+            index += 1
+            continue
+        quote = re.match(r"^>\s*(.+)$", stripped)
+        if quote:
+            quote_lines = [quote.group(1).strip()]
+            index += 1
+            while index < len(lines):
+                next_quote = re.match(r"^>\s*(.+)$", lines[index].strip())
+                if not next_quote:
+                    break
+                quote_lines.append(next_quote.group(1).strip())
+                index += 1
+            rendered.append("Citacao: " + " ".join(quote_lines).rstrip(".") + ".")
+            continue
         bullet = re.match(r"^[-*+]\s+(.+)$", stripped)
         if bullet:
             text_part = bullet.group(1).rstrip(".")
-            connector = conversational_connector(bullet_index, bullet_total)
+            connector = conversational_connector(list_index, list_total)
             rendered.append(f"{connector}, {text_part}.")
-            bullet_index += 1
+            list_index += 1
             index += 1
             continue
-        if re.fullmatch(r"`{3}[A-Za-z0-9_-]*", stripped) or stripped == "```":
+        numbered = re.match(r"^\d+[.)]\s+(.+)$", stripped)
+        if numbered:
+            text_part = numbered.group(1).rstrip(".")
+            connector = conversational_connector(list_index, list_total)
+            rendered.append(f"{connector}, {text_part}.")
+            list_index += 1
             index += 1
             continue
         rendered.append(stripped)
@@ -292,6 +325,14 @@ def render_url_for_speech(url: str, exact_read: bool) -> str:
     if "github.com" in url.lower():
         return "pagina do GitHub"
     return "link"
+
+
+def render_url_match_for_speech(url: str, exact_terms: set[str], global_exact: bool) -> str:
+    trailing = ""
+    while url and url[-1] in ".,;:!?":
+        trailing = url[-1] + trailing
+        url = url[:-1]
+    return render_url_for_speech(url, should_keep_exact(url, exact_terms, global_exact)) + trailing
 
 
 def render_path_for_speech(path: str, exact_read: bool) -> str:
@@ -364,7 +405,9 @@ def render_spoken_text(
         return should_keep_exact(candidate, explicit_exact_terms, global_exact)
 
     spoken = URL_PATTERN.sub(
-        lambda match: stash(render_url_for_speech(match.group(0), is_exact(match.group(0)))),
+        lambda match: stash(
+            render_url_match_for_speech(match.group(0), explicit_exact_terms, global_exact)
+        ),
         text,
     )
     spoken = EMAIL_PATTERN.sub(
@@ -902,6 +945,21 @@ def validate_cap007_exact_island_fixtures(fixtures: list[dict[str, Any]]) -> lis
     return []
 
 
+def validate_cap008_structure_oralization_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
+    required = {
+        "tts-cap008-table-multicolumn-ordered-facts",
+        "tts-cap008-bullet-numbered-list-ordering",
+        "tts-cap008-quote-oralization",
+        "tts-cap008-code-block-conversational-no-execute",
+        "tts-cap008-structure-preserves-exact-and-redaction",
+    }
+    seen = {fixture["id"] for fixture in fixtures if "cap008" in fixture["id"]}
+    missing = sorted(required - seen)
+    if missing:
+        return [f"missing CAP-008 structure oralization fixtures: {missing}"]
+    return []
+
+
 def validate_no_disk_write_surface() -> list[str]:
     tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
     failures: list[str] = []
@@ -936,6 +994,7 @@ def main() -> int:
     failures.extend(validate_pronunciation_hint_fixtures(fixtures))
     failures.extend(validate_cap006_conversational_fixtures(fixtures))
     failures.extend(validate_cap007_exact_island_fixtures(fixtures))
+    failures.extend(validate_cap008_structure_oralization_fixtures(fixtures))
     for fixture in fixtures:
         failures.extend(validate_prepared_fixture(fixture))
 

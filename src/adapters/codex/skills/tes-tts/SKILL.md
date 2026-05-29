@@ -57,8 +57,15 @@ compatible TES intent alias if the host reports it as an invalid slash.
 - Conversational rendering may add small oral connectors, such as "Primeiro",
   "Depois", and "Por fim", but it must not drop facts, invent intent, or merge
   separate decisions into a vague summary.
-- Small tables may become prose row facts. Code blocks and commands are spoken
-  as text and never executed.
+- Small tables become ordered row facts. Keep every row fact and preserve row
+  order; for wider tables, speak each header/value pair in sequence.
+- Bullets and numbered lists become ordered oral prose with connectors such as
+  "Primeiro", "Depois", and "Por fim". Do not collapse the list into a
+  summary.
+- Quotes become explicit quoted speech, for example "Citacao: ...", without
+  leaking Markdown `>` markers.
+- Code blocks and commands are introduced as code text, spoken as text, and
+  never executed.
 - Exact handling is span-scoped inside conversational speech: preserve only the
   path, URL, command, code identifier, hash, quoted term, or other fragile span
   the user specifically asked to hear literally.

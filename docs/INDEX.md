@@ -139,7 +139,9 @@ turning the repository root into an inventory.
 | TES TTS CAP-006 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-006-conversational-spoken-rendering.md` |
 | TES TTS CAP-007 exact-island protected-span hardening | `roadmap/TES-TTS-CAP-007-EXACT-ISLAND-PROTECTED-SPAN-HARDENING.md` |
 | TES TTS CAP-007 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-007-exact-island-protected-span-hardening.md` |
-| TES TTS CAP-008 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-008-table-list-code-block-oralization.md` |
+| TES TTS CAP-008 table list code block oralization | `roadmap/TES-TTS-CAP-008-TABLE-LIST-CODE-BLOCK-ORALIZATION.md` |
+| TES TTS CAP-008 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-008-table-list-code-block-oralization.md` |
+| TES TTS CAP-009 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-009-mixed-language-english-identity-hardening.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |

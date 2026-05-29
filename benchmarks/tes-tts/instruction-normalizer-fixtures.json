@@ -1311,5 +1311,185 @@
       "conversational_rendering",
       "no_summary"
     ]
+  },
+  {
+    "id": "tts-cap008-table-multicolumn-ordered-facts",
+    "rendering_intent": "conversational",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "| Item | Status | Acao |\n|------|--------|------|\n| CAP-008 | PASS | manter ordem |\n| CAP-009 | NEXT | preparar prompt |",
+    "protected_terms": [
+      "CAP-008",
+      "PASS",
+      "CAP-009",
+      "NEXT"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [
+      "|",
+      "------"
+    ],
+    "expected_speech_contains": [
+      "Item CAP-008, Status PASS, Acao manter ordem.",
+      "Item CAP-009, Status NEXT, Acao preparar prompt."
+    ],
+    "max_chunk_chars": 260,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "conversational_rendering",
+      "table_to_prose",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap008-bullet-numbered-list-ordering",
+    "rendering_intent": "conversational",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "## Plano\n1. Validar fixture CAP-008\n2. Preservar MCP\n- Criar prompt CAP-009",
+    "protected_terms": [
+      "CAP-008",
+      "MCP",
+      "CAP-009"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [
+      "##",
+      "1.",
+      "2.",
+      "- Criar"
+    ],
+    "expected_speech_contains": [
+      "Plano.",
+      "Primeiro, Validar fixture CAP-008.",
+      "Depois, Preservar M C P.",
+      "Por fim, Criar prompt CAP-009."
+    ],
+    "max_chunk_chars": 280,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "conversational_rendering",
+      "markdown_cleanup",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap008-quote-oralization",
+    "rendering_intent": "conversational",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "> ADR 0004 permanece ativo\n> provider fallback continua opcional\nDepois disso, manter TES.",
+    "protected_terms": [
+      "ADR",
+      "provider",
+      "fallback",
+      "TES"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [
+      "> ADR",
+      "> provider"
+    ],
+    "expected_speech_contains": [
+      "Citacao: A D R 0004 permanece ativo provider fallback continua opcional.",
+      "Depois disso, manter TES."
+    ],
+    "max_chunk_chars": 260,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "conversational_rendering",
+      "pronunciation_hints",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap008-code-block-conversational-no-execute",
+    "rendering_intent": "conversational",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Narre o bloco sem executar:\n```bash\npython3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test\nnpm run commit:check\n```\nCLI deve ser preservado.",
+    "protected_terms": [
+      "python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test",
+      "npm run commit:check",
+      "CLI"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [
+      "```bash",
+      "```",
+      "executado",
+      "executei"
+    ],
+    "expected_speech_contains": [
+      "Narre o bloco sem executar:",
+      "Bloco de codigo: python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test npm run commit:check.",
+      "C L I deve ser preservado."
+    ],
+    "max_chunk_chars": 360,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "conversational_rendering",
+      "markdown_cleanup",
+      "no_execute",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap008-structure-preserves-exact-and-redaction",
+    "rendering_intent": "conversational",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "- Leia exatamente https://example.test/raw.md\n- Redija token=LIVE_SECRET_456\n- Depois fale .agents/skills/tes-tts naturalmente",
+    "protected_terms": [
+      "https://example.test/raw.md",
+      "token",
+      ".agents/skills/tes-tts"
+    ],
+    "exact_terms": [
+      "https://example.test/raw.md"
+    ],
+    "expected_redactions": [
+      "token=LIVE_SECRET_456"
+    ],
+    "forbidden_terms": [
+      "LIVE_SECRET_456",
+      ".agents/skills/tes-tts"
+    ],
+    "expected_speech_contains": [
+      "Primeiro, Leia exatamente https://example.test/raw.md.",
+      "Depois, Redija token=[REDACTED_SECRET].",
+      "Por fim, Depois fale pasta tes tts naturalmente."
+    ],
+    "expected_speech_excludes": [
+      "link"
+    ],
+    "max_chunk_chars": 360,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "redaction",
+      "spoken_rendering",
+      "conversational_rendering",
+      "exact_islands",
+      "no_summary"
+    ]
   }
 ]
