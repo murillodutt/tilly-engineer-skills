@@ -1,0 +1,53 @@
+[
+  {
+    "id": "tts-instruction-cache-shape",
+    "target_language": "pt-BR",
+    "detected_language": "en",
+    "source_text": "Read the ADR and MCP note aloud without changing TES terms.",
+    "protected_terms": ["ADR", "MCP", "TES"],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "max_chunk_chars": 160,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms"
+    ]
+  },
+  {
+    "id": "tts-instruction-redaction-before-speech",
+    "target_language": "pt-BR",
+    "detected_language": "en",
+    "source_text": "Narrate the API setup, but redact api_key=TEST_SECRET_VALUE before speech.",
+    "protected_terms": ["API"],
+    "expected_redactions": ["api_key=TEST_SECRET_VALUE"],
+    "forbidden_terms": ["TEST_SECRET_VALUE"],
+    "max_chunk_chars": 160,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "redaction"
+    ]
+  },
+  {
+    "id": "tts-instruction-long-text-chunking",
+    "target_language": "pt-BR",
+    "detected_language": "en",
+    "source_text": "First keep the JSON term intact while reading a longer operational note. Second keep the YAML term intact while reading a longer operational note. Third keep the CLI term intact while reading a longer operational note. Fourth keep the SDK term intact while reading a longer operational note.",
+    "protected_terms": ["JSON", "YAML", "CLI", "SDK"],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "max_chunk_chars": 90,
+    "expected_min_chunks": 3,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "chunking",
+      "no_summary"
+    ]
+  }
+]

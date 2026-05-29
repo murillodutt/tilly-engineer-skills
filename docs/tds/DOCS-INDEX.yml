@@ -246,6 +246,13 @@ documents:
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-006-provider-probe-contract.md
+    id: roadmap.goal_prompt_tes_tts_tts_006_provider_probe_contract
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md
     id: roadmap.tes_tts_normalization_fixture_schema
     class: roadmap

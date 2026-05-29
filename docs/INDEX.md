@@ -85,6 +85,7 @@ turning the repository root into an inventory.
 | TES TTS TTS-003 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md` |
 | TES TTS TTS-004 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-004-fixture-corpus.md` |
 | TES TTS TTS-005 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-005-instruction-normalizer-oracle.md` |
+| TES TTS TTS-006 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-006-provider-probe-contract.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS normalization architecture SPEC | `roadmap/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution SPEC | `roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |

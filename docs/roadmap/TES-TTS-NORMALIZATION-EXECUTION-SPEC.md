@@ -113,6 +113,17 @@ Required fixture classes:
 
 ## Provider Probe Contract
 
+Instruction-level normalization is checked before provider probing with:
+
+```bash
+python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test
+```
+
+That oracle uses
+[`benchmarks/tes-tts/instruction-normalizer-fixtures.json`](../../benchmarks/tes-tts/instruction-normalizer-fixtures.json)
+to verify ephemeral cache shape, protected terms, redaction-before-speech, and
+chunking without summary.
+
 Provider probes must return only local evidence:
 
 ```text

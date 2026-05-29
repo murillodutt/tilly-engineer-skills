@@ -19,8 +19,14 @@ Machine-readable schema:
 Minimal corpus:
 [`benchmarks/tes-tts/normalization-fixtures.json`](../../benchmarks/tes-tts/normalization-fixtures.json)
 
+Instruction normalizer fixtures:
+[`benchmarks/tes-tts/instruction-normalizer-fixtures.json`](../../benchmarks/tes-tts/instruction-normalizer-fixtures.json)
+
 Focused oracle:
 `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
+
+Instruction normalizer oracle:
+`python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test`
 
 ## Fixture Record
 
@@ -88,3 +94,7 @@ selector cases `DLS-001` through `DLS-005` before provider work opens.
 The schema oracle validates both the schema and the corpus shape. It does not
 execute translation, TTS playback, provider probing, network calls, downloads,
 or install steps.
+
+The instruction normalizer oracle validates only dependency-free preparation
+behavior: ephemeral cache shape, protected-term preservation, redaction before
+speech text, and long-text chunking without summary.
