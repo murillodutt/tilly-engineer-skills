@@ -115,7 +115,8 @@ turning the repository root into an inventory.
 | TES TTS TTS-032 roadmap compaction and agent default language prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md` |
 | TES TTS SPEC-001 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md` |
 | TES TTS SPEC-002 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md` |
-| TES TTS SPEC-003 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md` |
+| TES TTS SPEC-003 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md` |
+| TES TTS SPEC-004 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |

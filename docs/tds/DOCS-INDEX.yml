@@ -634,6 +634,13 @@ documents:
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md
     id: roadmap.goal_prompt_tes_tts_spec_003_deterministic_instruction_normalizer
     class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, execution agents, and validation authors
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md
+    id: roadmap.goal_prompt_tes_tts_spec_004_pronunciation_enrichment_rules
+    class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and validation authors
     source_of_truth: false

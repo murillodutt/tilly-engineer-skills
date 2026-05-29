@@ -125,7 +125,7 @@ The current ten-SPEC convergence contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -445,6 +445,13 @@ unavailable, voice unavailable, and Hebrew degraded posture. The fixture
 schema already represented the required cases, and the schema oracle now
 checks coverage, not only shape. The next ready prompt is
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md`.
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
+SPEC-003 outcome: `PASS`. The instruction normalizer oracle now proves
+selector precedence, stable ephemeral cache shape without disk write surfaces,
+protected-term preservation, redaction before speech assembly, chunking without
+summary, and Markdown speech cleanup. Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 ## Current Open Questions

@@ -15,6 +15,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/instruction-normalizer-fixtures.json"
+NORMALIZATION_FIXTURE_PATH = ROOT / "benchmarks/tes-tts/normalization-fixtures.json"
 VERSION = "0.3.147"
 
 SECRET_PATTERN = re.compile(r"\b(?:api_key|token|password)=([A-Za-z0-9_./:-]+)")
@@ -28,6 +29,7 @@ REQUIRED_CACHE_KEYS = {
     "pronunciation_hints",
     "redactions",
 }
+FIRST_CLASS_LANGUAGES = {"pt-BR", "en", "es", "fr", "it", "de", "he"}
 
 
 @dataclass(frozen=True)
@@ -38,6 +40,10 @@ class PreparedSpeech:
 
 def load_fixtures() -> list[dict[str, Any]]:
     return json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+
+
+def load_normalization_fixtures() -> list[dict[str, Any]]:
+    return json.loads(NORMALIZATION_FIXTURE_PATH.read_text(encoding="utf-8"))
 
 
 def redact_secret_like_values(text: str) -> tuple[str, list[str]]:
@@ -66,13 +72,57 @@ def chunk_without_summary(text: str, max_chars: int) -> list[str]:
     return chunks
 
 
+def clean_markdown_for_speech(text: str) -> str:
+    cleaned = text
+    cleaned = re.sub(r"```[A-Za-z0-9_-]*\n?", "", cleaned)
+    cleaned = cleaned.replace("```", "")
+    cleaned = re.sub(r"`([^`]+)`", r"\1", cleaned)
+    cleaned = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", r"\1 \2", cleaned)
+    cleaned = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r"\1 \2", cleaned)
+    cleaned = re.sub(r"(?m)^\s{0,3}#{1,6}\s*", "", cleaned)
+    cleaned = re.sub(r"(?m)^\s*[-*+]\s+", "", cleaned)
+    cleaned = re.sub(r"(?m)^\s*\d+[.)]\s+", "", cleaned)
+    cleaned = re.sub(r"[*_]{1,3}([^*_]+)[*_]{1,3}", r"\1", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned)
+    return cleaned.strip()
+
+
 def pronunciation_hints(terms: list[str]) -> list[str]:
     return [term for term in terms if term.isupper() and len(term) > 1]
 
 
+def select_target_language(selector: dict[str, str]) -> str:
+    explicit = selector["explicit_user_language"]
+    if explicit in FIRST_CLASS_LANGUAGES:
+        return explicit
+
+    declared = selector["declared_adapter_default"]
+    if declared in FIRST_CLASS_LANGUAGES:
+        return declared
+
+    if selector["active_adapter"] == "cursor":
+        codex_default = selector["codex_default"]
+        if codex_default in FIRST_CLASS_LANGUAGES:
+            return codex_default
+        claude_default = selector["claude_default"]
+        if claude_default in FIRST_CLASS_LANGUAGES:
+            return claude_default
+
+    request_language = selector["request_language"]
+    if request_language in FIRST_CLASS_LANGUAGES:
+        return request_language
+
+    dominant_text_language = selector["dominant_text_language"]
+    if dominant_text_language in FIRST_CLASS_LANGUAGES:
+        return dominant_text_language
+
+    return "preserve_original"
+
+
 def prepare_instruction_level_speech(fixture: dict[str, Any]) -> PreparedSpeech:
     redacted_text, redactions = redact_secret_like_values(fixture["source_text"])
-    chunks = chunk_without_summary(redacted_text, fixture["max_chunk_chars"])
+    cleaned_text = clean_markdown_for_speech(redacted_text)
+    chunks = chunk_without_summary(cleaned_text, fixture["max_chunk_chars"])
     protected_terms = fixture["protected_terms"]
     cache = [
         {
@@ -114,6 +164,10 @@ def validate_fixture_shape(fixture: dict[str, Any]) -> list[str]:
         failures.append(f"{fixture['id']}: source_text must be non-empty")
     if not isinstance(fixture["protected_terms"], list):
         failures.append(f"{fixture['id']}: protected_terms must be a list")
+    if "expected_speech_contains" in fixture and not isinstance(
+        fixture["expected_speech_contains"], list
+    ):
+        failures.append(f"{fixture['id']}: expected_speech_contains must be a list when present")
     return failures
 
 
@@ -154,13 +208,38 @@ def validate_prepared_fixture(fixture: dict[str, Any]) -> list[str]:
         if forbidden in prepared.speech_text:
             failures.append(f"{fixture_id}: forbidden term {forbidden} leaked to speech text")
 
+    for expected in fixture.get("expected_speech_contains", []):
+        if expected not in prepared.speech_text:
+            failures.append(f"{fixture_id}: expected speech text {expected!r} missing")
+
+    if "markdown_cleanup" in fixture["checks"]:
+        markdown_markers = ["```", "[", "](", "##", "`"]
+        leaked = [marker for marker in markdown_markers if marker in prepared.speech_text]
+        if leaked:
+            failures.append(f"{fixture_id}: markdown markers leaked to speech text {leaked}")
+
     if "no_summary" in fixture["checks"]:
-        source_terms = set(redact_secret_like_values(fixture["source_text"])[0].split())
+        source_terms = set(clean_markdown_for_speech(redact_secret_like_values(fixture["source_text"])[0]).split())
         speech_terms = set(prepared.speech_text.split())
         missing_terms = sorted(source_terms - speech_terms)
         if missing_terms:
             failures.append(f"{fixture_id}: speech text dropped terms {missing_terms}")
 
+    return failures
+
+
+def validate_selector_corpus() -> list[str]:
+    failures: list[str] = []
+    for fixture in load_normalization_fixtures():
+        fixture_id = fixture.get("id", "<unknown>")
+        selector = fixture.get("selector")
+        if not isinstance(selector, dict):
+            failures.append(f"{fixture_id}: missing selector object")
+            continue
+        selected = select_target_language(selector)
+        expected = fixture.get("expected_target_language")
+        if selected != expected:
+            failures.append(f"{fixture_id}: selector selected {selected}, expected {expected}")
     return failures
 
 
@@ -186,6 +265,7 @@ def main() -> int:
         parser.error("only --self-test is supported")
 
     failures = validate_no_disk_write_surface()
+    failures.extend(validate_selector_corpus())
     fixtures = load_fixtures()
     for fixture in fixtures:
         failures.extend(validate_prepared_fixture(fixture))

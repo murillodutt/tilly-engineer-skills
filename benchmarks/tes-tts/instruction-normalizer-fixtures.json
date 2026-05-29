@@ -49,5 +49,30 @@
       "chunking",
       "no_summary"
     ]
+  },
+  {
+    "id": "tts-instruction-markdown-cleanup",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "## Plano\n- Leia [ADR 0004](https://example.test/adr/0004)\n- Preserve o path `/tmp/tes/SPEC.md`\n```bash\ntes tts --voice default\n```",
+    "protected_terms": ["ADR", "/tmp/tes/SPEC.md", "tes tts --voice default"],
+    "expected_redactions": [],
+    "forbidden_terms": ["##", "[ADR 0004]", "```bash", "```"],
+    "expected_speech_contains": [
+      "Plano",
+      "ADR 0004",
+      "https://example.test/adr/0004",
+      "/tmp/tes/SPEC.md",
+      "tes tts --voice default"
+    ],
+    "max_chunk_chars": 160,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "markdown_cleanup",
+      "no_summary"
+    ]
   }
 ]

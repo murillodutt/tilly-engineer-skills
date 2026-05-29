@@ -134,6 +134,10 @@ That oracle uses
 to verify ephemeral cache shape, protected terms, redaction-before-speech, and
 chunking without summary.
 
+It also validates selector precedence against the dependency-free
+normalization corpus and verifies Markdown speech cleanup for headings, links,
+paths, and code fences without changing meaning or summarizing user text.
+
 Provider probes must return only local evidence:
 
 ```text

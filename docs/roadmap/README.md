@@ -34,7 +34,8 @@ Wave 7 local package-source closure.
 | TES TTS TTS-032 roadmap compaction and agent default language prompt | Active | `GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md` |
 | TES TTS SPEC-001 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md` |
 | TES TTS SPEC-002 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md` |
-| TES TTS SPEC-003 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md` |
+| TES TTS SPEC-003 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md` |
+| TES TTS SPEC-004 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |
@@ -44,7 +45,7 @@ Wave 7 local package-source closure.
 | TES TTS provider candidate review | Proposed | `TES-TTS-PROVIDER-CANDIDATE-REVIEW.md` |
 | TES TTS SPEC 001 roadmap compaction and agent default language | Complete | `TES-TTS-SPEC-001-roadmap-compaction-agent-default-language.md` |
 | TES TTS SPEC 002 fixture corpus complete | Complete | `TES-TTS-SPEC-002-fixture-corpus-complete.md` |
-| TES TTS SPEC 003 deterministic instruction normalizer | Proposed | `TES-TTS-SPEC-003-deterministic-instruction-normalizer.md` |
+| TES TTS SPEC 003 deterministic instruction normalizer | Complete | `TES-TTS-SPEC-003-deterministic-instruction-normalizer.md` |
 | TES TTS SPEC 004 pronunciation enrichment rules | Proposed | `TES-TTS-SPEC-004-pronunciation-enrichment-rules.md` |
 | TES TTS SPEC 005 provider probe no-write | Proposed | `TES-TTS-SPEC-005-provider-probe-no-write.md` |
 | TES TTS SPEC 006 provider candidate selection | Proposed | `TES-TTS-SPEC-006-provider-candidate-selection.md` |

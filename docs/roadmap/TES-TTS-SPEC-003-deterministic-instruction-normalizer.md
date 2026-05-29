@@ -39,6 +39,28 @@ without external providers.
 - Fixtures proving the behaviors above.
 - Skill references updated only when user-facing contract changes.
 
+## SPEC-003 Result
+
+Status: `PASS`.
+
+The instruction normalizer oracle now proves:
+
+- deterministic target-language selection across the normalization corpus;
+- stable ephemeral cache entries without disk write surfaces;
+- protected-term preservation before speech cleanup;
+- secret-like redaction before speech text is assembled;
+- long-text chunking without dropping words or summarizing;
+- Markdown cleanup for speech without changing meaning.
+
+The instruction fixture corpus now includes a Markdown cleanup case with a
+link, path, and code fence. No provider, dependency, global state, durable
+cache, release, or sync action was introduced.
+
+Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md`.
+
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
 ## Oracles
 
 ```bash
