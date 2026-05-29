@@ -6,6 +6,11 @@
     "version": "mock-1.0",
     "languages": ["en", "pt-BR"],
     "license_note": "local mock only",
+    "allows_network": false,
+    "allows_install": false,
+    "allows_download": false,
+    "allows_write": false,
+    "certifies_provider_support": false,
     "expected_status": "provider_available",
     "expected_reason": "mock provider is available"
   },
@@ -16,6 +21,11 @@
     "version": null,
     "languages": [],
     "license_note": "not inspected",
+    "allows_network": false,
+    "allows_install": false,
+    "allows_download": false,
+    "allows_write": false,
+    "certifies_provider_support": false,
     "expected_status": "provider_not_available",
     "expected_reason": "mock provider is unavailable"
   },
@@ -26,7 +36,27 @@
     "version": "mock-unknown-license",
     "languages": ["he"],
     "license_note": "mock license needs review",
+    "allows_network": false,
+    "allows_install": false,
+    "allows_download": false,
+    "allows_write": false,
+    "certifies_provider_support": false,
     "expected_status": "provider_needs_review",
     "expected_reason": "mock provider needs review"
+  },
+  {
+    "id": "tts-provider-degraded-language",
+    "provider": "mock_local_say",
+    "mock_state": "degraded",
+    "version": "mock-1.0",
+    "languages": ["en"],
+    "license_note": "local mock only",
+    "allows_network": false,
+    "allows_install": false,
+    "allows_download": false,
+    "allows_write": false,
+    "certifies_provider_support": false,
+    "expected_status": "provider_needs_review",
+    "expected_reason": "mock provider is present but target language support is degraded"
   }
 ]

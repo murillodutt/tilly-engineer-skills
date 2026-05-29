@@ -125,7 +125,7 @@ The current ten-SPEC convergence contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-005-provider-probe-no-write.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -432,11 +432,11 @@ The remaining execution path is now organized as ten draft SPECs:
 These drafts do not authorize sync, release, provider install, provider
 download, global config writes, or durable conversion caches.
 
-SPEC outcomes: SPEC-001, SPEC-002, SPEC-003, and SPEC-004 are `PASS`.
-SPEC-004 added conservative pronunciation hints as cache metadata while
-preserving visible text and avoiding IPA, SSML, phoneme, provider-backed, or
-translation claims. Next ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-005-provider-probe-no-write.md`.
+SPEC outcomes: SPEC-001 through SPEC-005 are `PASS`. SPEC-005 hardened mocked
+provider probes for available, unavailable, needs-review, and degraded states
+without network, install, download, write, certification, or provider support
+claims. Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 ## Current Open Questions

@@ -41,6 +41,21 @@ provider_probe:
   states.
 - Negative check for installer, package manager, network, and write commands.
 
+## SPEC-005 Result
+
+Status: `PASS`.
+
+The provider probe oracle now covers mocked `available`, `unavailable`,
+`needs_review`, and `degraded` states. Each fixture explicitly forbids network,
+install, download, write, and provider-support certification. Probe output is
+limited to local evidence: provider, status, version, languages, license note,
+and reason.
+
+Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md`.
+
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
 ## Oracles
 
 ```bash

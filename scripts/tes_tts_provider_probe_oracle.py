@@ -25,6 +25,7 @@ MOCK_STATE_TO_STATUS = {
     "available": "provider_available",
     "unavailable": "provider_not_available",
     "needs_review": "provider_needs_review",
+    "degraded": "provider_needs_review",
 }
 REQUIRED_PROBE_KEYS = {
     "provider",
@@ -33,6 +34,13 @@ REQUIRED_PROBE_KEYS = {
     "languages",
     "license_note",
     "reason",
+}
+SIDE_EFFECT_FIELDS = {
+    "allows_network",
+    "allows_install",
+    "allows_download",
+    "allows_write",
+    "certifies_provider_support",
 }
 FORBIDDEN_IMPORT_ROOTS = {
     "http",
@@ -138,6 +146,11 @@ def validate_fixture_shape(fixture: dict[str, Any]) -> list[str]:
         "version",
         "languages",
         "license_note",
+        "allows_network",
+        "allows_install",
+        "allows_download",
+        "allows_write",
+        "certifies_provider_support",
         "expected_status",
         "expected_reason",
     }
@@ -151,6 +164,9 @@ def validate_fixture_shape(fixture: dict[str, Any]) -> list[str]:
         failures.append(f"{fixture['id']}: invalid expected_status {fixture['expected_status']}")
     if not isinstance(fixture["languages"], list):
         failures.append(f"{fixture['id']}: languages must be a list")
+    for field in SIDE_EFFECT_FIELDS:
+        if fixture.get(field) is not False:
+            failures.append(f"{fixture['id']}: {field} must be false")
     return failures
 
 
@@ -186,6 +202,7 @@ def main() -> int:
     failures = validate_no_probe_side_effect_surface()
     fixtures = load_fixtures()
     seen_statuses: set[str] = set()
+    seen_mock_states: set[str] = set()
     for fixture in fixtures:
         shape_failures = validate_fixture_shape(fixture)
         failures.extend(shape_failures)
@@ -193,11 +210,15 @@ def main() -> int:
             continue
         probe = probe_mock_provider(fixture).to_dict()
         seen_statuses.add(probe["status"])
+        seen_mock_states.add(fixture["mock_state"])
         failures.extend(validate_probe_contract(probe, fixture))
 
     missing_statuses = sorted(PROVIDER_STATUSES - seen_statuses)
     if missing_statuses:
         failures.append(f"missing mocked provider statuses: {missing_statuses}")
+    missing_mock_states = sorted(set(MOCK_STATE_TO_STATUS) - seen_mock_states)
+    if missing_mock_states:
+        failures.append(f"missing mocked provider states: {missing_mock_states}")
 
     status = "FAIL" if failures else "PASS"
     print(
@@ -208,6 +229,7 @@ def main() -> int:
                 "fixtures": str(FIXTURE_PATH.relative_to(ROOT)),
                 "checked_fixtures": len(fixtures),
                 "mocked_statuses": sorted(seen_statuses),
+                "mocked_states": sorted(seen_mock_states),
                 "failures": failures,
             },
             indent=2,

@@ -164,8 +164,10 @@ python3 scripts/tes_tts_provider_probe_oracle.py --self-test
 ```
 
 That oracle covers `provider_available`, `provider_not_available`, and
-`provider_needs_review` without probing real providers or claiming provider
-support.
+`provider_needs_review` across available, unavailable, needs-review, and
+degraded mocked states without probing real providers or claiming provider
+support. Fixtures explicitly forbid network, install, download, write, and
+provider-support certification.
 
 Provider candidate review is checked with:
 
