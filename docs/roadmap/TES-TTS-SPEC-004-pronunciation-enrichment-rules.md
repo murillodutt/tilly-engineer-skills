@@ -37,6 +37,21 @@ translation or provider dependency.
 - Updated `language-normalization.md` references.
 - Instruction normalizer oracle checks for hint generation.
 
+## SPEC-004 Result
+
+Status: `PASS`.
+
+The instruction normalizer oracle now generates conservative pronunciation
+hints for ADR, SPEC, MCP, API, SDK, CLI, JSON, YAML, SQL, proper nouns, paths,
+and commands while leaving visible speech text unchanged. The oracle rejects
+IPA, SSML, phoneme, provider-backed, and translation claims inside hints.
+Hebrew and provider-backed pronunciation remain explicitly degraded.
+
+Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-005-provider-probe-no-write.md`.
+
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
 ## Oracles
 
 ```bash

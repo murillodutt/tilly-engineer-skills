@@ -74,5 +74,50 @@
       "markdown_cleanup",
       "no_summary"
     ]
+  },
+  {
+    "id": "tts-instruction-pronunciation-hints",
+    "target_language": "pt-BR",
+    "detected_language": "en",
+    "source_text": "Read ADR, SPEC, MCP, API, SDK, CLI, JSON, YAML, SQL, Tilly, /tmp/tes/SPEC.md, and `tes tts --voice default` without changing the written terms.",
+    "protected_terms": [
+      "ADR",
+      "SPEC",
+      "MCP",
+      "API",
+      "SDK",
+      "CLI",
+      "JSON",
+      "YAML",
+      "SQL",
+      "Tilly",
+      "/tmp/tes/SPEC.md",
+      "tes tts --voice default"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_pronunciation_hints": [
+      "ADR -> spell letters",
+      "SPEC -> read as technical noun",
+      "MCP -> spell letters",
+      "API -> spell letters",
+      "SDK -> spell letters",
+      "CLI -> spell letters",
+      "JSON -> common local pronunciation",
+      "YAML -> common local pronunciation",
+      "SQL -> common local pronunciation",
+      "Tilly -> preserve written identity",
+      "/tmp/tes/SPEC.md -> preserve path exactly",
+      "tes tts --voice default -> preserve command exactly"
+    ],
+    "max_chunk_chars": 260,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "pronunciation_hints",
+      "no_summary"
+    ]
   }
 ]

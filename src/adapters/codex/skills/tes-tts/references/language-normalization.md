@@ -102,8 +102,20 @@ prefer a pronunciation that sounds natural in the default language:
 | SPEC | Read as "spec" when used as a technical noun. |
 | MCP | Read as separate letters. |
 | API | Read as separate letters. |
+| SDK | Read as separate letters. |
+| CLI | Read as separate letters. |
 | JSON | Use the common local pronunciation, not a literal translation. |
 | YAML | Use the common local pronunciation, not a literal translation. |
+| SQL | Use the common local pronunciation, not a literal translation. |
+| Paths | Preserve the path exactly; make it speech-friendly only when exact reading is not requested. |
+| Commands | Preserve command text exactly; never execute it. |
+| Proper nouns | Preserve written identity; add spacing only if the TTS engine would distort it. |
+
+Pronunciation hints are cache metadata. They must not alter the visible source
+text, translate a protected term into a different concept, or claim IPA, SSML,
+phoneme, provider-backed, or Hebrew enrichment support before a later SPEC
+certifies it. Hebrew pronunciation remains degraded unless niqqud or local
+voice support is explicitly certified later.
 
 When unsure, preserve the written term and add spacing only if the TTS engine
 would otherwise pronounce it poorly.

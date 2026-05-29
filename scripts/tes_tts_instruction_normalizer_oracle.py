@@ -30,6 +30,17 @@ REQUIRED_CACHE_KEYS = {
     "redactions",
 }
 FIRST_CLASS_LANGUAGES = {"pt-BR", "en", "es", "fr", "it", "de", "he"}
+LETTER_SPELLED_TERMS = {"ADR", "MCP", "API", "SDK", "CLI"}
+COMMON_LOCAL_PRONUNCIATION_TERMS = {"JSON", "YAML", "SQL"}
+FORBIDDEN_HINT_CLAIMS = {
+    "ipa",
+    "ssml",
+    "phoneme",
+    "phonetic",
+    "provider",
+    "translate",
+    "translation",
+}
 
 
 @dataclass(frozen=True)
@@ -87,8 +98,22 @@ def clean_markdown_for_speech(text: str) -> str:
     return cleaned.strip()
 
 
+def pronunciation_hint(term: str) -> str:
+    if term in LETTER_SPELLED_TERMS:
+        return f"{term} -> spell letters"
+    if term == "SPEC":
+        return "SPEC -> read as technical noun"
+    if term in COMMON_LOCAL_PRONUNCIATION_TERMS:
+        return f"{term} -> common local pronunciation"
+    if "/" in term:
+        return f"{term} -> preserve path exactly"
+    if " --" in term or term.startswith("tes "):
+        return f"{term} -> preserve command exactly"
+    return f"{term} -> preserve written identity"
+
+
 def pronunciation_hints(terms: list[str]) -> list[str]:
-    return [term for term in terms if term.isupper() and len(term) > 1]
+    return [pronunciation_hint(term) for term in terms]
 
 
 def select_target_language(selector: dict[str, str]) -> str:
@@ -168,6 +193,10 @@ def validate_fixture_shape(fixture: dict[str, Any]) -> list[str]:
         fixture["expected_speech_contains"], list
     ):
         failures.append(f"{fixture['id']}: expected_speech_contains must be a list when present")
+    if "expected_pronunciation_hints" in fixture and not isinstance(
+        fixture["expected_pronunciation_hints"], list
+    ):
+        failures.append(f"{fixture['id']}: expected_pronunciation_hints must be a list when present")
     return failures
 
 
@@ -211,6 +240,24 @@ def validate_prepared_fixture(fixture: dict[str, Any]) -> list[str]:
     for expected in fixture.get("expected_speech_contains", []):
         if expected not in prepared.speech_text:
             failures.append(f"{fixture_id}: expected speech text {expected!r} missing")
+
+    actual_hints = [
+        hint
+        for entry in prepared.cache
+        for hint in entry["pronunciation_hints"]
+    ]
+    for expected in fixture.get("expected_pronunciation_hints", []):
+        if expected not in actual_hints:
+            failures.append(f"{fixture_id}: expected pronunciation hint {expected!r} missing")
+
+    if "pronunciation_hints" in fixture["checks"]:
+        lowered_hints = " ".join(actual_hints).lower()
+        leaked_claims = sorted(claim for claim in FORBIDDEN_HINT_CLAIMS if claim in lowered_hints)
+        if leaked_claims:
+            failures.append(f"{fixture_id}: pronunciation hints contain forbidden claims {leaked_claims}")
+        for term in fixture["protected_terms"]:
+            if term not in prepared.speech_text:
+                failures.append(f"{fixture_id}: pronunciation hint changed visible term {term}")
 
     if "markdown_cleanup" in fixture["checks"]:
         markdown_markers = ["```", "[", "](", "##", "`"]

@@ -138,6 +138,10 @@ It also validates selector precedence against the dependency-free
 normalization corpus and verifies Markdown speech cleanup for headings, links,
 paths, and code fences without changing meaning or summarizing user text.
 
+The same oracle checks conservative pronunciation hints as cache metadata for
+protected terms. Hints must preserve visible text and must not claim IPA,
+SSML, phoneme, provider-backed, or semantic translation behavior.
+
 Provider probes must return only local evidence:
 
 ```text

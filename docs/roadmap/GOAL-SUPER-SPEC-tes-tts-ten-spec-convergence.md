@@ -98,12 +98,13 @@ create the next Super SPEC before the local commit.
 ## Current Ready /goal Prompt
 
 Current ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-005-provider-probe-no-write.md`
 
-SPEC-001 through SPEC-003 prompts are retained as historical execution evidence:
+SPEC-001 through SPEC-004 prompts are retained as historical execution evidence:
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md`
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md`
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md`
 
 ## Subagent Ownership
 

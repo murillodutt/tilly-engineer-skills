@@ -125,7 +125,7 @@ The current ten-SPEC convergence contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-005-provider-probe-no-write.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -432,26 +432,11 @@ The remaining execution path is now organized as ten draft SPECs:
 These drafts do not authorize sync, release, provider install, provider
 download, global config writes, or durable conversion caches.
 
-SPEC-001 outcome: `PASS`. The roadmap index is compacted, the
-`agent_default_language` selector contract is encoded, `tts-dls-006` covers
-Cursor fallback to Codex then Claude, and the next ready prompt is
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md`.
-Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
-
-SPEC-002 outcome: `PASS`. The dependency-free fixture corpus now covers
-`pt-BR`, `en`, `es`, `fr`, `it`, `de`, and `he`, plus negative fixtures for
-Markdown, URLs, paths, code fences, long hashes, secret-like values, provider
-unavailable, voice unavailable, and Hebrew degraded posture. The fixture
-schema already represented the required cases, and the schema oracle now
-checks coverage, not only shape. The next ready prompt is
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md`.
-Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
-
-SPEC-003 outcome: `PASS`. The instruction normalizer oracle now proves
-selector precedence, stable ephemeral cache shape without disk write surfaces,
-protected-term preservation, redaction before speech assembly, chunking without
-summary, and Markdown speech cleanup. Next ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md`.
+SPEC outcomes: SPEC-001, SPEC-002, SPEC-003, and SPEC-004 are `PASS`.
+SPEC-004 added conservative pronunciation hints as cache metadata while
+preserving visible text and avoiding IPA, SSML, phoneme, provider-backed, or
+translation claims. Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-005-provider-probe-no-write.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 ## Current Open Questions
