@@ -102,6 +102,7 @@ turning the repository root into an inventory.
 | TES TTS TTS-020 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-020-owner-decision-continues-unresolved.md` |
 | TES TTS TTS-021 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-021-owner-decision-remains-unresolved.md` |
 | TES TTS TTS-022 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-022-owner-decision-still-remains-unresolved.md` |
+| TES TTS TTS-023 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-023-owner-decision-unresolved-again.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |
@@ -116,6 +117,7 @@ turning the repository root into an inventory.
 | TES TTS owner decision still unresolved | `roadmap/TES-TTS-OWNER-DECISION-STILL-UNRESOLVED.md` |
 | TES TTS owner decision continues unresolved | `roadmap/TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED.md` |
 | TES TTS owner decision remains unresolved | `roadmap/TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED.md` |
+| TES TTS owner decision still remains unresolved | `roadmap/TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED.md` |
 | TES TTS normalization architecture SPEC | `roadmap/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution SPEC | `roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
 | TES TTS normalization fixture schema | `roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` |

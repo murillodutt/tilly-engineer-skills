@@ -51,6 +51,7 @@ Wave 7 local package-source closure.
 | TES TTS TTS-020 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-020-owner-decision-continues-unresolved.md` |
 | TES TTS TTS-021 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-021-owner-decision-remains-unresolved.md` |
 | TES TTS TTS-022 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-022-owner-decision-still-remains-unresolved.md` |
+| TES TTS TTS-023 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-023-owner-decision-unresolved-again.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | Active | `TES-TTS-OWNER-APPROVAL-GATE.md` |
@@ -65,6 +66,7 @@ Wave 7 local package-source closure.
 | TES TTS owner decision still unresolved | Active | `TES-TTS-OWNER-DECISION-STILL-UNRESOLVED.md` |
 | TES TTS owner decision continues unresolved | Active | `TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED.md` |
 | TES TTS owner decision remains unresolved | Active | `TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED.md` |
+| TES TTS owner decision still remains unresolved | Active | `TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED.md` |
 | TES TTS normalization architecture | Proposed | `TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution | Proposed | `TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
 | TES TTS normalization fixture schema | Proposed | `TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` |
