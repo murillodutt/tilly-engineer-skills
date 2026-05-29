@@ -6,7 +6,7 @@ license: MIT
 
 # TES TTS
 
-Operational contract: `tes.tts@0.1.6`.
+Operational contract: `tes.tts@0.1.7`.
 
 `/tes-tts` is the small TES text-to-speech skill. It reads user-provided text
 aloud through whatever local TTS tool the host exposes. `/tes:tts` is a
@@ -15,25 +15,30 @@ compatible TES intent alias if the host reports it as an invalid slash.
 ## Workflow
 
 1. Extract only the text the user wants read aloud.
-2. Convert Markdown, bullets, headings, links, file paths, and code fences into
-   speech-friendly plain text.
-3. Preserve the user's meaning. Do not summarize unless asked.
-4. Keep source text separate from the request-local spoken rendering. The
+2. Choose the request-local rendering intent:
+   - `conversational` for agent-authored speech or user-requested natural
+     narration;
+   - `faithful_reading` for user-provided text, exact reads, or literal
+     reading requests.
+3. Convert Markdown, bullets, headings, small tables, links, file paths, and
+   code fences into speech-friendly spoken rendering for the selected intent.
+4. Preserve the user's meaning. Do not summarize unless asked.
+5. Keep source text separate from the request-local spoken rendering. The
    spoken rendering is the only text sent to TTS.
-5. When the text is multilingual or the user asks for a standard/default
+6. When the text is multilingual or the user asks for a standard/default
    reading language, load `references/language-normalization.md` and prepare a
    TTS conversion cache before playback.
-6. Use the available local TTS tool. When multiple providers exist or one
+7. Use the available local TTS tool. When multiple providers exist or one
    fails, load `references/providers-and-fallbacks.md` and apply the
    request-local fallback plan only for this read-aloud request. In a Codex
    host with `mcp-tts`, prefer `mcp__mcp_tts__say_tts`.
-7. Use `voice: "Felipe (Enhanced)"` and `rate: 225` when the tool accepts
+8. Use `voice: "Felipe (Enhanced)"` and `rate: 225` when the tool accepts
    those settings. If the host rejects the voice, retry once with the default
    voice and the same text.
-8. If the user asks for a different speed, use that speed for the current
+9. If the user asks for a different speed, use that speed for the current
    request. For a percentage change, compute it from the last spoken rate in
    this conversation; if there is no last rate, use `225` as the base.
-9. Keep chat confirmation brief after playback.
+10. Keep chat confirmation brief after playback.
 
 ## Modules
 
@@ -42,7 +47,20 @@ compatible TES intent alias if the host reports it as an invalid slash.
 | Mixed-language text, default-language reading, or pronunciation adaptation | `references/language-normalization.md` |
 | Provider choice, fallback, TTS error classification, or voice policy | `references/providers-and-fallbacks.md` |
 
-## Text Cleanup
+## Spoken Rendering
+
+- Use `conversational` intent when the content is agent-authored or the user
+  asks for natural narration. Speak in oral prose, not tables, raw Markdown,
+  YAML-like dumps, or mechanical bullet lists.
+- Use `faithful_reading` intent when reading user-provided text, exact spans,
+  code, commands, or anything the user asks to hear literally.
+- Conversational rendering may add small oral connectors, such as "Primeiro",
+  "Depois", and "Por fim", but it must not drop facts, invent intent, or merge
+  separate decisions into a vague summary.
+- Small tables may become prose row facts. Code blocks and commands are spoken
+  as text and never executed.
+- Secret-like values are redacted before rendering and before TTS. Redaction
+  overrides exact, literal, raw, and verbatim requests.
 
 - Render common acronyms as speech text in non-exact mode: `ADR` -> `A D R`,
   `MCP` -> `M C P`, `API` -> `A P I`, `SDK` -> `S D K`, and `CLI` -> `C L I`.
@@ -70,7 +88,8 @@ compatible TES intent alias if the host reports it as an invalid slash.
 ## Safety
 
 - Do not read secret-like values such as API keys, tokens, passwords, private
-  keys, or credentials aloud. Say that secret-like content was redacted.
+  keys, bearer tokens, environment values, or credentials aloud. Say that
+  secret-like content was redacted. This remains true for exact reads.
 - Do not use this skill for proactive status announcements. It is reactive to
   an explicit read-aloud or TTS request.
 - Do not install providers, download provider assets, write global provider

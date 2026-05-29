@@ -760,12 +760,19 @@ documents:
   - path: docs/roadmap/TES-TTS-CAP-006-CONVERSATIONAL-SPOKEN-RENDERING.md
     id: roadmap.tes_tts_cap_006_conversational_spoken_rendering
     class: roadmap
-    status: active
+    status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-006-conversational-spoken-rendering.md
     id: roadmap.goal_prompt_tes_tts_cap_006_conversational_spoken_rendering
+    class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-007-exact-island-protected-span-hardening.md
+    id: roadmap.goal_prompt_tes_tts_cap_007_exact_island_protected_span_hardening
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents

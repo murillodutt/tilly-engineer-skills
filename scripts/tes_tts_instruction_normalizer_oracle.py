@@ -18,7 +18,11 @@ FIXTURE_PATH = ROOT / "benchmarks/tes-tts/instruction-normalizer-fixtures.json"
 NORMALIZATION_FIXTURE_PATH = ROOT / "benchmarks/tes-tts/normalization-fixtures.json"
 VERSION = "0.3.147"
 
-SECRET_PATTERN = re.compile(r"\b(?:api_key|token|password)=([A-Za-z0-9_./:-]+)")
+SECRET_PATTERN = re.compile(
+    r"\b(?:api_key|token|password|secret|[A-Z][A-Z0-9_]*(?:KEY|TOKEN|SECRET|PASSWORD))="
+    r"([A-Za-z0-9_./:+-]+)"
+)
+BEARER_SECRET_PATTERN = re.compile(r"\bBearer\s+([A-Za-z0-9._:+/-]{8,})")
 REDACTION_TOKEN = "[REDACTED_SECRET]"
 REQUIRED_CACHE_KEYS = {
     "source_span",
@@ -132,7 +136,13 @@ def redact_secret_like_values(text: str) -> tuple[str, list[str]]:
         redactions.append(match.group(0))
         return match.group(0).split("=", 1)[0] + "=" + REDACTION_TOKEN
 
-    return SECRET_PATTERN.sub(replace, text), redactions
+    redacted = SECRET_PATTERN.sub(replace, text)
+
+    def replace_bearer(match: re.Match[str]) -> str:
+        redactions.append(match.group(0))
+        return "Bearer " + REDACTION_TOKEN
+
+    return BEARER_SECRET_PATTERN.sub(replace_bearer, redacted), redactions
 
 
 def chunk_without_summary(text: str, max_chars: int) -> list[str]:
@@ -164,6 +174,94 @@ def clean_markdown_for_speech(text: str) -> str:
     cleaned = re.sub(r"(?<!\w)[*_]{1,3}([^*_]+)[*_]{1,3}(?!\w)", r"\1", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned)
     return cleaned.strip()
+
+
+def rendering_intent(fixture: dict[str, Any]) -> str:
+    intent = fixture.get("rendering_intent")
+    if intent in {"conversational", "faithful_reading"}:
+        return intent
+    source = fixture["source_text"].lower()
+    if wants_exact_reading(source) or "leia fielmente" in source or "read faithfully" in source:
+        return "faithful_reading"
+    return "faithful_reading"
+
+
+def parse_markdown_table(lines: list[str], start: int) -> tuple[list[str], int] | None:
+    table_lines: list[str] = []
+    index = start
+    while index < len(lines) and lines[index].strip().startswith("|"):
+        table_lines.append(lines[index].strip())
+        index += 1
+    if len(table_lines) < 3:
+        return None
+    rows = [
+        [cell.strip() for cell in line.strip("|").split("|")]
+        for line in table_lines
+        if not re.fullmatch(r"\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)+\|?", line)
+    ]
+    if len(rows) < 2:
+        return None
+    headers = rows[0]
+    rendered: list[str] = []
+    for row in rows[1:]:
+        if len(row) != len(headers):
+            continue
+        if len(row) == 2:
+            rendered.append(f"{headers[0]} {row[0]}: {headers[1]} {row[1]}.")
+        else:
+            pairs = ", ".join(f"{header} {value}" for header, value in zip(headers, row))
+            rendered.append(pairs + ".")
+    return rendered, index
+
+
+def conversational_connector(index: int, total: int) -> str:
+    if index == 0:
+        return "Primeiro"
+    if index == total - 1:
+        return "Por fim"
+    return "Depois"
+
+
+def render_conversational_structure(text: str) -> str:
+    lines = text.splitlines()
+    rendered: list[str] = []
+    bullet_lines = [
+        line for line in lines if re.match(r"^\s*[-*+]\s+", line)
+    ]
+    bullet_total = len(bullet_lines)
+    bullet_index = 0
+    index = 0
+    while index < len(lines):
+        raw_line = lines[index]
+        stripped = raw_line.strip()
+        if not stripped:
+            index += 1
+            continue
+        table = parse_markdown_table(lines, index)
+        if table is not None:
+            table_rendered, next_index = table
+            rendered.extend(table_rendered)
+            index = next_index
+            continue
+        heading = re.match(r"^#{1,6}\s+(.+)$", stripped)
+        if heading:
+            rendered.append(heading.group(1).rstrip(".") + ".")
+            index += 1
+            continue
+        bullet = re.match(r"^[-*+]\s+(.+)$", stripped)
+        if bullet:
+            text_part = bullet.group(1).rstrip(".")
+            connector = conversational_connector(bullet_index, bullet_total)
+            rendered.append(f"{connector}, {text_part}.")
+            bullet_index += 1
+            index += 1
+            continue
+        if re.fullmatch(r"`{3}[A-Za-z0-9_-]*", stripped) or stripped == "```":
+            index += 1
+            continue
+        rendered.append(stripped)
+        index += 1
+    return " ".join(rendered)
 
 
 def wants_exact_reading(text: str) -> bool:
@@ -387,7 +485,13 @@ def select_target_language(selector: dict[str, str]) -> str:
 
 def prepare_instruction_level_speech(fixture: dict[str, Any]) -> PreparedSpeech:
     redacted_text, redactions = redact_secret_like_values(fixture["source_text"])
-    cleaned_text = clean_markdown_for_speech(redacted_text)
+    intent = rendering_intent(fixture)
+    intent_text = (
+        render_conversational_structure(redacted_text)
+        if intent == "conversational"
+        else redacted_text
+    )
+    cleaned_text = clean_markdown_for_speech(intent_text)
     chunks = chunk_without_summary(cleaned_text, fixture["max_chunk_chars"])
     protected_terms = fixture["protected_terms"]
     translation_plan = plan_optional_translation(fixture, redacted_text, protected_terms)
@@ -402,6 +506,7 @@ def prepare_instruction_level_speech(fixture: dict[str, Any]) -> PreparedSpeech:
             "preserved_terms": [term for term in protected_terms if term in chunk],
             "pronunciation_hints": pronunciation_hints([term for term in protected_terms if term in chunk]),
             "redactions": redactions,
+            "rendering_intent": intent,
         }
         for chunk in chunks
     ]
@@ -450,6 +555,11 @@ def validate_fixture_shape(fixture: dict[str, Any]) -> list[str]:
         fixture["expected_pronunciation_hints"], list
     ):
         failures.append(f"{fixture['id']}: expected_pronunciation_hints must be a list when present")
+    if "rendering_intent" in fixture and fixture["rendering_intent"] not in {
+        "conversational",
+        "faithful_reading",
+    }:
+        failures.append(f"{fixture['id']}: unsupported rendering_intent")
     if "translation_boundary" in fixture["checks"]:
         for field in (
             "translation_provider_state",
@@ -493,6 +603,9 @@ def validate_prepared_fixture(fixture: dict[str, Any]) -> list[str]:
             failures.append(f"{fixture_id}: cache[{index}] exceeds max_chunk_chars")
         if entry["target_language"] != fixture["target_language"]:
             failures.append(f"{fixture_id}: cache[{index}] target language drifted")
+        expected_intent = fixture.get("rendering_intent")
+        if expected_intent and entry.get("rendering_intent") != expected_intent:
+            failures.append(f"{fixture_id}: cache[{index}] rendering intent drifted")
 
     normalized_text = " ".join(entry["normalized_text"] for entry in prepared.cache)
 
@@ -541,6 +654,29 @@ def validate_prepared_fixture(fixture: dict[str, Any]) -> list[str]:
         leaked = [marker for marker in markdown_markers if marker in prepared.speech_text]
         if leaked:
             failures.append(f"{fixture_id}: markdown markers leaked to speech text {leaked}")
+
+    if "conversational_rendering" in fixture["checks"]:
+        if fixture.get("rendering_intent") != "conversational":
+            failures.append(f"{fixture_id}: conversational rendering requires conversational intent")
+        leaked_shapes = ["|", "\n-", "\n* ", "```"]
+        leaked = [marker for marker in leaked_shapes if marker in prepared.speech_text]
+        if leaked:
+            failures.append(f"{fixture_id}: structural markup leaked to conversational speech {leaked}")
+
+    if "faithful_reading" in fixture["checks"]:
+        if fixture.get("rendering_intent") != "faithful_reading":
+            failures.append(f"{fixture_id}: faithful reading requires faithful_reading intent")
+
+    if "exact_islands" in fixture["checks"]:
+        for term in fixture["protected_terms"]:
+            if term not in prepared.speech_text and REDACTION_TOKEN not in term:
+                failures.append(f"{fixture_id}: exact island {term} missing from speech text")
+
+    if "no_execute" in fixture["checks"]:
+        forbidden_actions = ["executado", "executei", "running", "ran command"]
+        leaked = [action for action in forbidden_actions if action in prepared.speech_text.lower()]
+        if leaked:
+            failures.append(f"{fixture_id}: command execution claim leaked {leaked}")
 
     if "translation_boundary" in fixture["checks"]:
         plan = prepared.translation_plan
@@ -595,7 +731,7 @@ def validate_prepared_fixture(fixture: dict[str, Any]) -> list[str]:
         if fixture["target_language"] == "he" and plan["hebrew_posture"] != "degraded":
             failures.append(f"{fixture_id}: Hebrew pronunciation posture must remain degraded")
 
-    if "no_summary" in fixture["checks"]:
+    if "no_summary" in fixture["checks"] and fixture.get("rendering_intent") != "conversational":
         source_terms = set(clean_markdown_for_speech(redact_secret_like_values(fixture["source_text"])[0]).split())
         normalized_terms = set(normalized_text.split())
         missing_terms = sorted(source_terms - normalized_terms)
@@ -685,6 +821,24 @@ def validate_pronunciation_hint_fixtures(fixtures: list[dict[str, Any]]) -> list
     return []
 
 
+def validate_cap006_conversational_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
+    required = {
+        "tts-cap006-interlocutor-oral-prose-ptbr",
+        "tts-cap006-faithful-reading-markdown",
+        "tts-cap006-exact-path-url-code-islands",
+        "tts-cap006-ptbr-default-english-protected-terms",
+        "tts-cap006-no-summary-long-operational-note",
+        "tts-cap006-code-block-faithful-no-execute",
+        "tts-cap006-table-to-prose-no-loss",
+        "tts-cap006-secret-redaction-beats-exact",
+    }
+    seen = {fixture["id"] for fixture in fixtures if "cap006" in fixture["id"]}
+    missing = sorted(required - seen)
+    if missing:
+        return [f"missing CAP-006 conversational fixtures: {missing}"]
+    return []
+
+
 def validate_no_disk_write_surface() -> list[str]:
     tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
     failures: list[str] = []
@@ -696,6 +850,10 @@ def validate_no_disk_write_surface() -> list[str]:
             failures.append(f"oracle contains disk write call: {function.attr}")
         if isinstance(function, ast.Name) and function.id in {"open", "NamedTemporaryFile", "mkstemp"}:
             failures.append(f"oracle contains disk write surface call: {function.id}")
+        if isinstance(function, ast.Attribute) and function.attr in {"system", "popen"}:
+            failures.append(f"oracle contains command execution surface call: {function.attr}")
+        if isinstance(function, ast.Name) and function.id in {"run", "Popen", "call", "check_call"}:
+            failures.append(f"oracle contains command execution surface call: {function.id}")
     return failures
 
 
@@ -713,6 +871,7 @@ def main() -> int:
     failures.extend(validate_pronunciation_boundary_fixtures(fixtures))
     failures.extend(validate_spoken_rendering_fixtures(fixtures))
     failures.extend(validate_pronunciation_hint_fixtures(fixtures))
+    failures.extend(validate_cap006_conversational_fixtures(fixtures))
     for fixture in fixtures:
         failures.extend(validate_prepared_fixture(fixture))
 

@@ -38,6 +38,8 @@ speech cleanup, speed handling, and honest unavailable state.
   ephemeral TTS conversion cache when requested or needed.
 - Preserve technical terms, proper nouns, commands, and acronyms while adapting
   pronunciation for natural speech.
+- Distinguish conversational spoken rendering from faithful reading so
+  agent-authored speech can become oral prose without summarizing user text.
 - Use provider fallback and error classification as optional runtime guidance
   without importing proactive `speak` behavior or provider persistence.
 - Use the tested local voice/rate when accepted, but degrade to the host
@@ -52,6 +54,7 @@ speech cleanup, speed handling, and honest unavailable state.
 - Pretending audio played when no TTS tool was available.
 - Reading credentials, tokens, or other secret-like content aloud.
 - Summarizing user text when the request was to read it.
+- Letting conversational speech become silent summary or invented intent.
 - Dropping long text instead of chunking it.
 - Reading mixed-language text with forced or awkward untranslated pronunciation.
 - Translating technical acronyms such as ADR, SPEC, or MCP into the wrong
@@ -79,6 +82,7 @@ a proactive announcement channel for normal TES status updates.
 | 2026-05-29 | Hardened CAP-003 pronunciation hints and protected-term preservation for URL, HTTP, JSON, YAML, SQL, SPEC, TES, Tilly, Codex, Claude, Cursor, OpenAI, package/model names, commands, and code identifiers. | CAP-003 instruction normalizer fixtures and protected-term prompt. | high |
 | 2026-05-29 | Hardened CAP-004 provider fallback as a request-local catalog plan with error classes, voice-default retry, no provider certification, and no durable provider state. | CAP-004 provider fallback fixtures and provider probe oracle. | high |
 | 2026-05-29 | Added an enriched English protected-term pronunciation catalog for proper nouns and engineering workflow terms without claiming provider-backed pronunciation. | Maintainer feedback after live TTS test; instruction normalizer fixture `tts-pronunciation-english-protected-terms`. | high |
+| 2026-05-29 | Added CAP-006 conversational spoken-rendering intent with fixture-backed distinction from faithful reading, exact islands, table/list oral prose, and stronger secret redaction. | `GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md`; CAP-006 instruction normalizer fixtures. | high |
 
 ## Do Not Lose
 

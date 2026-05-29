@@ -4,7 +4,11 @@
     "target_language": "pt-BR",
     "detected_language": "en",
     "source_text": "Read the ADR and MCP note aloud without changing TES terms.",
-    "protected_terms": ["ADR", "MCP", "TES"],
+    "protected_terms": [
+      "ADR",
+      "MCP",
+      "TES"
+    ],
     "expected_redactions": [],
     "forbidden_terms": [],
     "max_chunk_chars": 160,
@@ -20,9 +24,15 @@
     "target_language": "pt-BR",
     "detected_language": "en",
     "source_text": "Narrate the API setup, but redact api_key=TEST_SECRET_VALUE before speech.",
-    "protected_terms": ["API"],
-    "expected_redactions": ["api_key=TEST_SECRET_VALUE"],
-    "forbidden_terms": ["TEST_SECRET_VALUE"],
+    "protected_terms": [
+      "API"
+    ],
+    "expected_redactions": [
+      "api_key=TEST_SECRET_VALUE"
+    ],
+    "forbidden_terms": [
+      "TEST_SECRET_VALUE"
+    ],
     "max_chunk_chars": 160,
     "expected_min_chunks": 1,
     "no_summary": true,
@@ -37,7 +47,12 @@
     "target_language": "pt-BR",
     "detected_language": "en",
     "source_text": "First keep the JSON term intact while reading a longer operational note. Second keep the YAML term intact while reading a longer operational note. Third keep the CLI term intact while reading a longer operational note. Fourth keep the SDK term intact while reading a longer operational note.",
-    "protected_terms": ["JSON", "YAML", "CLI", "SDK"],
+    "protected_terms": [
+      "JSON",
+      "YAML",
+      "CLI",
+      "SDK"
+    ],
     "expected_redactions": [],
     "forbidden_terms": [],
     "max_chunk_chars": 90,
@@ -55,9 +70,18 @@
     "target_language": "pt-BR",
     "detected_language": "pt-BR",
     "source_text": "## Plano\n- Leia [ADR 0004](https://example.test/adr/0004)\n- Preserve o path `/tmp/tes/SPEC.md`\n```bash\ntes tts --voice default\n```",
-    "protected_terms": ["ADR", "/tmp/tes/SPEC.md", "tes tts --voice default"],
+    "protected_terms": [
+      "ADR",
+      "/tmp/tes/SPEC.md",
+      "tes tts --voice default"
+    ],
     "expected_redactions": [],
-    "forbidden_terms": ["##", "[ADR 0004]", "```bash", "```"],
+    "forbidden_terms": [
+      "##",
+      "[ADR 0004]",
+      "```bash",
+      "```"
+    ],
     "expected_speech_contains": [
       "Plano",
       "ADR 0004",
@@ -125,7 +149,13 @@
     "target_language": "pt-BR",
     "detected_language": "pt-BR",
     "source_text": "Leia ADR, MCP, API, SDK e CLI em voz alta sem resumir.",
-    "protected_terms": ["ADR", "MCP", "API", "SDK", "CLI"],
+    "protected_terms": [
+      "ADR",
+      "MCP",
+      "API",
+      "SDK",
+      "CLI"
+    ],
     "expected_redactions": [],
     "forbidden_terms": [],
     "expected_speech_contains": [
@@ -135,7 +165,13 @@
       "S D K",
       "C L I"
     ],
-    "expected_speech_excludes": ["ADR", "MCP", "API", "SDK", "CLI"],
+    "expected_speech_excludes": [
+      "ADR",
+      "MCP",
+      "API",
+      "SDK",
+      "CLI"
+    ],
     "max_chunk_chars": 180,
     "expected_min_chunks": 1,
     "no_summary": true,
@@ -151,11 +187,17 @@
     "target_language": "pt-BR",
     "detected_language": "pt-BR",
     "source_text": "Leia .agents/skills/tes-tts em voz alta sem resumir.",
-    "protected_terms": [".agents/skills/tes-tts"],
+    "protected_terms": [
+      ".agents/skills/tes-tts"
+    ],
     "expected_redactions": [],
     "forbidden_terms": [],
-    "expected_speech_contains": ["pasta tes tts"],
-    "expected_speech_excludes": [".agents/skills/tes-tts"],
+    "expected_speech_contains": [
+      "pasta tes tts"
+    ],
+    "expected_speech_excludes": [
+      ".agents/skills/tes-tts"
+    ],
     "max_chunk_chars": 180,
     "expected_min_chunks": 1,
     "no_summary": true,
@@ -171,11 +213,17 @@
     "target_language": "pt-BR",
     "detected_language": "pt-BR",
     "source_text": "Leia https://github.com/example/project em voz alta sem resumir.",
-    "protected_terms": ["https://github.com/example/project"],
+    "protected_terms": [
+      "https://github.com/example/project"
+    ],
     "expected_redactions": [],
     "forbidden_terms": [],
-    "expected_speech_contains": ["pagina do GitHub"],
-    "expected_speech_excludes": ["https://github.com/example/project"],
+    "expected_speech_contains": [
+      "pagina do GitHub"
+    ],
+    "expected_speech_excludes": [
+      "https://github.com/example/project"
+    ],
     "max_chunk_chars": 180,
     "expected_min_chunks": 1,
     "no_summary": true,
@@ -223,11 +271,21 @@
     "target_language": "pt-BR",
     "detected_language": "pt-BR",
     "source_text": "Leia 7.am e release.v1 como texto; depois leia ADR sem resumir.",
-    "protected_terms": ["7.am", "release.v1", "ADR"],
+    "protected_terms": [
+      "7.am",
+      "release.v1",
+      "ADR"
+    ],
     "expected_redactions": [],
     "forbidden_terms": [],
-    "expected_speech_contains": ["7.am", "release.v1", "A D R"],
-    "expected_speech_excludes": ["link"],
+    "expected_speech_contains": [
+      "7.am",
+      "release.v1",
+      "A D R"
+    ],
+    "expected_speech_excludes": [
+      "link"
+    ],
     "max_chunk_chars": 180,
     "expected_min_chunks": 1,
     "no_summary": true,
@@ -243,9 +301,17 @@
     "target_language": "pt-BR",
     "detected_language": "pt-BR",
     "source_text": "## Links\n- Leia [repo](https://github.com/example/project) com *cuidado*.\n- Fale `ADR` sem resumir.",
-    "protected_terms": ["https://github.com/example/project", "ADR"],
+    "protected_terms": [
+      "https://github.com/example/project",
+      "ADR"
+    ],
     "expected_redactions": [],
-    "forbidden_terms": ["##", "[repo]", "*cuidado*", "`ADR`"],
+    "forbidden_terms": [
+      "##",
+      "[repo]",
+      "*cuidado*",
+      "`ADR`"
+    ],
     "expected_speech_contains": [
       "Links",
       "repo pagina do GitHub",
@@ -274,9 +340,15 @@
     "target_language": "pt-BR",
     "detected_language": "pt-BR",
     "source_text": "Leia o bloco:\n```bash\ntes tts --voice default\n```\nDepois confirme CLI.",
-    "protected_terms": ["tes tts --voice default", "CLI"],
+    "protected_terms": [
+      "tes tts --voice default",
+      "CLI"
+    ],
     "expected_redactions": [],
-    "forbidden_terms": ["```bash", "```"],
+    "forbidden_terms": [
+      "```bash",
+      "```"
+    ],
     "expected_speech_contains": [
       "tes tts --voice default",
       "C L I"
@@ -303,7 +375,10 @@
     ],
     "expected_redactions": [],
     "forbidden_terms": [],
-    "expected_speech_contains": ["hash", "GUID"],
+    "expected_speech_contains": [
+      "hash",
+      "GUID"
+    ],
     "expected_speech_excludes": [
       "abcdef1234567890abcdef1234567890",
       "550e8400-e29b-41d4-a716-446655440000"
@@ -323,7 +398,13 @@
     "target_language": "pt-BR",
     "detected_language": "pt-BR",
     "source_text": "Leia ops@example.com, IP 192.168.0.10, @tes-team e #release sem transformar 999.1.1.1 em IP.",
-    "protected_terms": ["ops@example.com", "192.168.0.10", "@tes-team", "#release", "999.1.1.1"],
+    "protected_terms": [
+      "ops@example.com",
+      "192.168.0.10",
+      "@tes-team",
+      "#release",
+      "999.1.1.1"
+    ],
     "expected_redactions": [],
     "forbidden_terms": [],
     "expected_speech_contains": [
@@ -394,9 +475,16 @@
     "target_language": "pt-BR",
     "detected_language": "en",
     "source_text": "Translate for speech only: deploy the ADR after token=LIVE_SECRET_123 and keep API.",
-    "protected_terms": ["ADR", "API"],
-    "expected_redactions": ["token=LIVE_SECRET_123"],
-    "forbidden_terms": ["LIVE_SECRET_123"],
+    "protected_terms": [
+      "ADR",
+      "API"
+    ],
+    "expected_redactions": [
+      "token=LIVE_SECRET_123"
+    ],
+    "forbidden_terms": [
+      "LIVE_SECRET_123"
+    ],
     "translation_provider_state": "provider_not_available",
     "language_pair_state": "unavailable",
     "expected_translation_status": "normalization_degraded",
@@ -557,7 +645,11 @@
     "target_language": "pt-BR",
     "detected_language": "en",
     "source_text": "Read this in the default language: preserve MCP, SPEC, and Tilly before any translation plan.",
-    "protected_terms": ["MCP", "SPEC", "Tilly"],
+    "protected_terms": [
+      "MCP",
+      "SPEC",
+      "Tilly"
+    ],
     "expected_redactions": [],
     "forbidden_terms": [],
     "translation_provider_state": "provider_needs_review",
@@ -578,7 +670,10 @@
     "target_language": "pt-BR",
     "detected_language": "de",
     "source_text": "Bitte lies den API Hinweis vor und bewahre JSON ohne Zusammenfassung.",
-    "protected_terms": ["API", "JSON"],
+    "protected_terms": [
+      "API",
+      "JSON"
+    ],
     "expected_redactions": [],
     "forbidden_terms": [],
     "translation_provider_state": "provider_available",
@@ -599,7 +694,11 @@
     "target_language": "pt-BR",
     "detected_language": "en",
     "source_text": "Read ADR, SPEC, and MCP with the safest pronunciation hints only.",
-    "protected_terms": ["ADR", "SPEC", "MCP"],
+    "protected_terms": [
+      "ADR",
+      "SPEC",
+      "MCP"
+    ],
     "expected_redactions": [],
     "forbidden_terms": [],
     "expected_pronunciation_hints": [
@@ -626,7 +725,11 @@
     "target_language": "he",
     "detected_language": "he",
     "source_text": "קרא את API ואת MCP ושמור את Tilly כפי שהוא.",
-    "protected_terms": ["API", "MCP", "Tilly"],
+    "protected_terms": [
+      "API",
+      "MCP",
+      "Tilly"
+    ],
     "expected_redactions": [],
     "forbidden_terms": [],
     "expected_pronunciation_hints": [
@@ -653,7 +756,11 @@
     "target_language": "de",
     "detected_language": "de",
     "source_text": "Lies API, JSON und SQL mit konservativen Hinweisen vor.",
-    "protected_terms": ["API", "JSON", "SQL"],
+    "protected_terms": [
+      "API",
+      "JSON",
+      "SQL"
+    ],
     "expected_redactions": [],
     "forbidden_terms": [],
     "expected_pronunciation_hints": [
@@ -731,6 +838,312 @@
       "protected_terms",
       "pronunciation_hints",
       "pronunciation_provider_boundary",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap006-interlocutor-oral-prose-ptbr",
+    "rendering_intent": "conversational",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "## Decisao\n- GitHub pull request esta pronto\n- provider fallback continua request-local\n- MCP deve ser preservado",
+    "protected_terms": [
+      "GitHub",
+      "pull request",
+      "provider",
+      "fallback",
+      "MCP"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [
+      "##",
+      "- GitHub",
+      "- provider",
+      "- MCP"
+    ],
+    "expected_speech_contains": [
+      "Decisao.",
+      "Primeiro, GitHub pull request esta pronto.",
+      "Depois, provider fallback continua request-local.",
+      "Por fim, M C P deve ser preservado."
+    ],
+    "expected_pronunciation_hints": [
+      "GitHub -> preserve English pronunciation",
+      "pull request -> preserve English pronunciation",
+      "provider -> preserve English pronunciation",
+      "fallback -> preserve English pronunciation",
+      "MCP -> spell letters"
+    ],
+    "max_chunk_chars": 260,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "conversational_rendering",
+      "pronunciation_hints",
+      "markdown_cleanup",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap006-faithful-reading-markdown",
+    "rendering_intent": "faithful_reading",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Leia fielmente:\n## Decisao\n- item alfa permanece\n- item beta permanece",
+    "protected_terms": [
+      "item alfa",
+      "item beta"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [
+      "##",
+      "- item"
+    ],
+    "expected_speech_contains": [
+      "Leia fielmente: Decisao item alfa permanece item beta permanece"
+    ],
+    "expected_speech_excludes": [
+      "Primeiro,",
+      "Depois,"
+    ],
+    "max_chunk_chars": 220,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "faithful_reading",
+      "markdown_cleanup",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap006-exact-path-url-code-islands",
+    "rendering_intent": "conversational",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Explique em portugues, mas leia exatamente `/tmp/target/SPEC.md`, `https://example.test/docs/ADR-0004` e `python3 scripts/oracle.py --self-test` sem alterar.",
+    "protected_terms": [
+      "/tmp/target/SPEC.md",
+      "https://example.test/docs/ADR-0004",
+      "python3 scripts/oracle.py --self-test"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_speech_contains": [
+      "/tmp/target/SPEC.md",
+      "https://example.test/docs/ADR-0004",
+      "python3 scripts/oracle.py --self-test"
+    ],
+    "expected_speech_excludes": [
+      "arquivo SPEC.md",
+      "link",
+      "pagina do GitHub"
+    ],
+    "max_chunk_chars": 320,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "conversational_rendering",
+      "exact_islands",
+      "markdown_cleanup",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap006-ptbr-default-english-protected-terms",
+    "rendering_intent": "conversational",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "A fala deve manter workflow, fixture, oracle, cache, branch e commit na identidade original.",
+    "protected_terms": [
+      "workflow",
+      "fixture",
+      "oracle",
+      "cache",
+      "branch",
+      "commit"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [
+      "fluxo de trabalho",
+      "acessório",
+      "oráculo",
+      "ramo",
+      "confirmação"
+    ],
+    "expected_speech_contains": [
+      "workflow",
+      "fixture",
+      "oracle",
+      "cache",
+      "branch",
+      "commit"
+    ],
+    "expected_pronunciation_hints": [
+      "workflow -> preserve English pronunciation",
+      "fixture -> preserve English pronunciation",
+      "oracle -> preserve English pronunciation",
+      "cache -> preserve English pronunciation",
+      "branch -> preserve English pronunciation",
+      "commit -> preserve English pronunciation"
+    ],
+    "max_chunk_chars": 220,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "conversational_rendering",
+      "pronunciation_hints",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap006-no-summary-long-operational-note",
+    "rendering_intent": "conversational",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Fato um: CAP-006 cria intent. Fato dois: source_text permanece intacto. Fato tres: spoken_text e request-local. Fato quatro: segredo e redigido antes da fala. Fato cinco: provider nao e certificado.",
+    "protected_terms": [
+      "CAP-006",
+      "source_text",
+      "spoken_text",
+      "provider"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [
+      "em resumo",
+      "em suma",
+      "basicamente",
+      "o ponto principal"
+    ],
+    "expected_speech_contains": [
+      "Fato um",
+      "Fato dois",
+      "Fato tres",
+      "Fato quatro",
+      "Fato cinco",
+      "provider"
+    ],
+    "max_chunk_chars": 90,
+    "expected_min_chunks": 2,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "conversational_rendering",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap006-code-block-faithful-no-execute",
+    "rendering_intent": "faithful_reading",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Leia o comando sem executar:\n```bash\npython3 scripts/oracle.py --self-test\n```",
+    "protected_terms": [
+      "python3 scripts/oracle.py --self-test"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [
+      "```bash",
+      "```",
+      "executado",
+      "executei"
+    ],
+    "expected_speech_contains": [
+      "Leia o comando sem executar: python3 scripts/oracle.py --self-test"
+    ],
+    "max_chunk_chars": 220,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "faithful_reading",
+      "markdown_cleanup",
+      "no_execute",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap006-table-to-prose-no-loss",
+    "rendering_intent": "conversational",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "| Status | Acao |\n|--------|------|\n| PASS | manter |\n| DEGRADED | registrar |",
+    "protected_terms": [
+      "PASS",
+      "DEGRADED"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [
+      "|",
+      "--------"
+    ],
+    "expected_speech_contains": [
+      "Status PASS: Acao manter.",
+      "Status DEGRADED: Acao registrar."
+    ],
+    "max_chunk_chars": 220,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "conversational_rendering",
+      "table_to_prose",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-cap006-secret-redaction-beats-exact",
+    "rendering_intent": "faithful_reading",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Leia literalmente OPENAI_API_KEY=sk-test-secret-123 e token=LIVE_SECRET_123 sem alterar.",
+    "protected_terms": [
+      "OPENAI_API_KEY",
+      "token"
+    ],
+    "expected_redactions": [
+      "OPENAI_API_KEY=sk-test-secret-123",
+      "token=LIVE_SECRET_123"
+    ],
+    "forbidden_terms": [
+      "sk-test-secret-123",
+      "LIVE_SECRET_123"
+    ],
+    "expected_speech_contains": [
+      "OPENAI_API_KEY=[REDACTED_SECRET]",
+      "token=[REDACTED_SECRET]"
+    ],
+    "expected_speech_excludes": [
+      "OPENAI_API_KEY=sk-test-secret-123",
+      "token=LIVE_SECRET_123"
+    ],
+    "max_chunk_chars": 220,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "redaction",
+      "spoken_rendering",
+      "faithful_reading",
+      "exact_islands",
       "no_summary"
     ]
   }

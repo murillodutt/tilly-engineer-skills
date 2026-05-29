@@ -54,8 +54,9 @@ Wave 7 local package-source closure.
 | TES TTS CAP-004 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md` |
 | TES TTS CAP-005 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md` |
 | TES TTS CAP-005 final local audit | Complete | `TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md` |
-| TES TTS CAP-006 conversational spoken rendering | Active | `TES-TTS-CAP-006-CONVERSATIONAL-SPOKEN-RENDERING.md` |
-| TES TTS CAP-006 goal prompt | Active | `GOAL-PROMPT-tes-tts-CAP-006-conversational-spoken-rendering.md` |
+| TES TTS CAP-006 conversational spoken rendering | Complete | `TES-TTS-CAP-006-CONVERSATIONAL-SPOKEN-RENDERING.md` |
+| TES TTS CAP-006 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-006-conversational-spoken-rendering.md` |
+| TES TTS CAP-007 goal prompt | Active | `GOAL-PROMPT-tes-tts-CAP-007-exact-island-protected-span-hardening.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |

@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.tes_tts_cap_006_conversational_spoken_rendering
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
 source_of_truth: false
 evidence_level: L2
@@ -120,7 +120,22 @@ Run provider and command-trigger oracles when the implementation touches those
 surfaces. Use `npm run commit:check` as package closure evidence only when
 unrelated drift does not obscure the result.
 
+## Execution Result
+
+Status: `PASS` for the focused CAP-006 scope.
+
+CAP-006 added fixture-backed `conversational` and `faithful_reading` rendering
+intent boundaries to the instruction normalizer. The first cut proves
+conversational oral prose, faithful Markdown reading, exact path/URL/command
+islands, PT-BR narration with protected English terms, no-summary preservation,
+code-block no-execute posture, small table-to-prose rendering, and secret
+redaction that wins over exact reading.
+
+This unit did not authorize release identity, sync, provider installs,
+provider downloads, provider certification, durable conversion cache, global
+config writes, version bump, or proactive `speak` behavior.
+
 ## Next Prompt
 
 Ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-006-conversational-spoken-rendering.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-007-exact-island-protected-span-hardening.md`

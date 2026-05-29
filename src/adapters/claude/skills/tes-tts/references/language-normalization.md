@@ -62,6 +62,7 @@ tts_conversion_cache:
   target_language: default reading language
   normalized_text: source-faithful cleaned text
   spoken_text: request-local text that will be spoken
+  rendering_intent: conversational or faithful_reading
   preserved_terms: proper nouns, product names, acronyms, commands, paths
   pronunciation_hints: spoken rendering changes, if any
   redactions: secret-like content removed from speech
@@ -72,6 +73,24 @@ user asks to see it.
 
 `spoken_text` is derived from `normalized_text`. Do not mutate source text to
 make speech sound better.
+
+## Rendering Intent
+
+Choose the spoken rendering intent before final cleanup:
+
+| Intent | Use | Boundary |
+|--------|-----|----------|
+| `conversational` | Agent-authored speech or explicit natural narration. | Speak in PT-BR oral prose by default, preserving facts and protected terms. |
+| `faithful_reading` | User text, exact reads, code, commands, or literal/verbatim/raw requests. | Preserve order, fragile spans, and content density while removing only speech-hostile markup. |
+
+Conversational rendering may convert headings, bullets, and small tables into
+short oral prose. It may add small connectors such as "Primeiro", "Depois",
+and "Por fim". It must not summarize, remove facts, infer missing owners,
+translate protected terms, or turn code into an action.
+
+Exact islands remain exact inside conversational speech when the user asks for
+literal handling around a path, URL, command, code identifier, hash, or quoted
+term. Secret redaction still wins over exact reading.
 
 ## Normalization Rules
 
@@ -88,6 +107,9 @@ make speech sound better.
 6. Remove code fences for speech while preserving code or command text unless
    the user explicitly asks for a summary.
 7. Redact secret-like values before translation and before speech.
+8. Render headings, bullets, and small tables as oral prose only in
+   `conversational` intent.
+9. Preserve exact islands and code/command text in `faithful_reading` intent.
 
 ## Technical Term Handling
 

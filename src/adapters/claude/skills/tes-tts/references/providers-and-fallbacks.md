@@ -85,8 +85,11 @@ Never claim audio played after every provider failed.
 
 ## Speech Transformation
 
-For `tes-tts`, transformation prepares the requested text for speech. It must
-not summarize user-provided text unless the user explicitly asks for summary.
+For `tes-tts`, transformation prepares the requested text for speech. It can
+use `conversational` intent for agent-authored or naturally narrated speech,
+and `faithful_reading` intent for user text, code, commands, exact spans, and
+literal requests. It must not summarize user-provided text unless the user
+explicitly asks for summary.
 
 Apply these cleanup rules conservatively:
 
@@ -98,8 +101,12 @@ Apply these cleanup rules conservatively:
 | Email/IP/social tokens | Say compact forms for email addresses, valid IPv4 addresses, mentions, and hashtags; preserve raw tokens for exact/verbatim reading. |
 | Markdown formatting | Remove markup and preserve the words. |
 | Code blocks | Remove code fences and preserve code or command text unless the user asks for a summary. |
+| Tables and lists | In conversational intent, convert small tables and lists into oral prose without dropping row facts or items. In faithful reading, preserve item order and content density. |
 | Long lists | Preserve items when the user asked to hear them; group only when the user asked for summary. |
 | Technical terms | Preserve the term in source/cache metadata and use `language-normalization.md` for spoken rendering, such as `ADR` -> `A D R`. |
+
+Secret-like values are redacted before transformation and before provider
+fallback. Redaction wins over exact, literal, raw, and verbatim requests.
 
 ## Non-Goals From Speak
 

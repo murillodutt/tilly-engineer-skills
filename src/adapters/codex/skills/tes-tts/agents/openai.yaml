@@ -3,8 +3,9 @@ description: Read user-provided text aloud through the available local TTS tool.
 default_prompt: |
   Use $tes-tts only because the user explicitly asked for text-to-speech.
   Read the requested text aloud, preserve the user's language and meaning,
-  clean Markdown for speech, load the language-normalization reference for
+  choose conversational or faithful-reading spoken rendering, clean Markdown
+  and small structures for speech, load the language-normalization reference for
   multilingual text or default-language reading, load providers-and-fallbacks
   when provider choice or TTS errors matter, keep fallback request-local,
-  protect secret-like content, and
+  protect secret-like content even during exact reads, and
   report TTS_NOT_AVAILABLE if no local TTS tool is available.
