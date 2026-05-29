@@ -239,7 +239,7 @@ and remaining release identity decision instead.
 ## Current Ready /goal Prompt
 
 Prompt artifact:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-008-adapter-parity.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-009-acceptance-and-release-decision.md`
 
 Use this prompt to start the next sequential execution cycle:
 
@@ -250,44 +250,53 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
 
 Current unit:
-TTS-008 Adapter Parity
+TTS-009 Acceptance And Release Decision
 
 Certified evidence from prior cycle:
-- TTS-007 re-read architecture SPEC provider candidates, execution SPEC,
-  roadmap, provider fallback references, and provider probe oracle.
-- TTS-007 added provider candidate review at
-  docs/roadmap/TES-TTS-PROVIDER-CANDIDATE-REVIEW.md.
-- TTS-007 added structured provider candidate review data at
-  benchmarks/tes-tts/provider-candidate-review.json.
-- TTS-007 added `scripts/tes_tts_provider_candidate_review_oracle.py --self-test`.
-- TTS-007 ranked candidates only for future probes and made no provider
-  certification claim.
+- TTS-008 re-read Codex and Claude `tes-tts` skill sources, references,
+  agents, adapter docs, command triggers, materialization script, and command
+  trigger oracle.
+- TTS-008 confirmed Codex and Claude skill file sets match and the only
+  expected tree diff is adapter-specific contract-history wording.
+- TTS-008 confirmed `/tes-tts`, `/tes:tts`, and natural TTS intents are present
+  across Codex, Claude, Cursor, install docs, and command-trigger oracle
+  surfaces.
+- TTS-008 made no provider certification claim and performed no sync, release,
+  push, tag, publish, provider install, provider download, global config write,
+  durable conversion cache, or proactive `speak` behavior.
 - Ready prompt artifact:
-  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-008-adapter-parity.md.
-- TTS-007 focused oracles passed:
-  - `python3 scripts/tes_tts_provider_candidate_review_oracle.py --self-test`
+  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-009-acceptance-and-release-decision.md.
+- TTS-008 focused oracles passed:
+  - `python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py src/adapters/codex/skills/tes-tts`
+  - `python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py src/adapters/claude/skills/tes-tts`
+  - `python3 scripts/materialize_adapter.py all --check`
+  - `python3 scripts/command_trigger_oracle.py --self-test`
   - `python3 scripts/tes_tts_provider_probe_oracle.py --self-test`
   - `python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test`
   - `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
+  - `python3 scripts/tes_tts_provider_candidate_review_oracle.py --self-test`
   - `python3 scripts/validate_tds.py`
   - `python3 scripts/validate_doc_size.py`
+  - `python3 scripts/validate_reference_graph.py`
   - `python3 scripts/validate_reference_package.py`
-  - targeted provider-review `rg` checks.
+  - `python3 scripts/private_vocabulary_oracle.py`
+  - targeted adapter parity and forbidden-action `rg` checks.
 
 Task:
-Execute only TTS-008 through the circular sequence:
+Execute only TTS-009 through the circular sequence:
 execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit.
 
 Required actions:
 1. Run `git status --short --branch --untracked-files=all`.
-2. Re-read Codex and Claude `tes-tts` skill sources, references, agents,
-   adapter docs, command triggers, and materialization/oracle scripts.
-3. Keep Codex and Claude behaviorally aligned and Cursor/install surfaces
-   honest.
-4. Fix only TTS-008 adapter parity or install-surface gaps.
-5. Certify with quick skill validation, materialization, command-trigger
-   oracle, targeted `rg`, and the smallest docs/package oracles.
-6. Create the next `/goal` prompt artifact for TTS-009 if not converged.
+2. Re-read ADR 0004, both normalization SPECs, the roadmap, this Super SPEC,
+   the TTS-009 prompt, and focused TTS fixtures/oracles.
+3. Decide whether ADR 0004 can move to accepted; if approval is still missing,
+   stop at `NEEDS_OWNER_DECISION` without changing ADR status.
+4. Decide whether release identity can proceed; do not edit release surfaces
+   without explicit maintainer approval.
+5. Certify with focused TTS oracles, docs/package validators, and
+   `npm run commit:check` only as package closure evidence.
+6. Create the next `/goal` prompt artifact only if convergence remains open.
 7. Commit the local execution as the final action of the cycle.
 
 Forbidden:
