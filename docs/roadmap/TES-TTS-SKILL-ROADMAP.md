@@ -65,6 +65,7 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED.md` | TTS-022 owner decision still remains unresolved result. | active |
 | `docs/roadmap/TES-TTS-OWNER-DECISION-UNRESOLVED-AGAIN.md` | TTS-023 owner decision unresolved again result. | active |
 | `docs/roadmap/TES-TTS-OWNER-DECISION-STILL-UNRESOLVED-AGAIN.md` | TTS-024 owner decision still unresolved again result. | active |
+| `docs/roadmap/TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED-AGAIN.md` | TTS-025 owner decision continues unresolved again result. | active |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
 | `benchmarks/tes-tts/normalization-fixtures.json` | Minimal dependency-free fixture corpus. | proposed |
 | `benchmarks/tes-tts/instruction-normalizer-fixtures.json` | Instruction-level normalizer oracle fixtures. | proposed |
@@ -97,7 +98,8 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-022-owner-decision-still-remains-unresolved.md` | Historical prompt artifact for owner decision still remains unresolved. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-023-owner-decision-unresolved-again.md` | Historical prompt artifact for owner decision unresolved again. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-024-owner-decision-still-unresolved-again.md` | Historical prompt artifact for owner decision still unresolved again. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-025-owner-decision-continues-unresolved-again.md` | Ready prompt artifact for the next execution cycle. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-025-owner-decision-continues-unresolved-again.md` | Historical prompt artifact for owner decision continues unresolved again. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-026-owner-decision-remains-unresolved-again.md` | Ready prompt artifact for the next execution cycle. | active |
 | `scripts/materialize_adapter.py` | Adapter materialization inclusion. | staged |
 | `scripts/command_trigger_oracle.py` | Slash, alias, and natural trigger oracle inclusion. | staged |
 | `scripts/validate_reference_package.py` | Package reference validation inclusion. | staged |
@@ -136,7 +138,7 @@ The current circular execution contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-025-owner-decision-continues-unresolved-again.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-026-owner-decision-remains-unresolved-again.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -428,6 +430,11 @@ Status: TTS-024 recorded no explicit owner decision; state remains
 `NEEDS_OWNER_DECISION`, with roadmap update and TTS-025 prompt pointer done.
 
 ### R25: Owner Decision Continues Unresolved Again
+
+Status: TTS-025 recorded no explicit owner decision; state remains
+`NEEDS_OWNER_DECISION`, with roadmap update and TTS-026 prompt pointer done.
+
+### R26: Owner Decision Remains Unresolved Again
 
 Status: next work unit, awaiting explicit maintainer decision. Required
 closure remains ADR 0004, release identity, and sync posture only.
