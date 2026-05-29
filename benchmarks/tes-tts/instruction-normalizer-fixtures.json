@@ -183,5 +183,86 @@
       "translation_boundary",
       "no_summary"
     ]
+  },
+  {
+    "id": "tts-pronunciation-provider-boundary",
+    "target_language": "pt-BR",
+    "detected_language": "en",
+    "source_text": "Read ADR, SPEC, and MCP with the safest pronunciation hints only.",
+    "protected_terms": ["ADR", "SPEC", "MCP"],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_pronunciation_hints": [
+      "ADR -> spell letters",
+      "SPEC -> read as technical noun",
+      "MCP -> spell letters"
+    ],
+    "pronunciation_provider_state": "provider_not_available",
+    "pronunciation_language_state": "unavailable",
+    "expected_pronunciation_status": "normalization_degraded",
+    "max_chunk_chars": 180,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "pronunciation_hints",
+      "pronunciation_provider_boundary",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-pronunciation-hebrew-degraded",
+    "target_language": "he",
+    "detected_language": "he",
+    "source_text": "קרא את API ואת MCP ושמור את Tilly כפי שהוא.",
+    "protected_terms": ["API", "MCP", "Tilly"],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_pronunciation_hints": [
+      "API -> spell letters",
+      "MCP -> spell letters",
+      "Tilly -> preserve written identity"
+    ],
+    "pronunciation_provider_state": "provider_needs_review",
+    "pronunciation_language_state": "unknown",
+    "expected_pronunciation_status": "normalization_degraded",
+    "max_chunk_chars": 180,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "pronunciation_hints",
+      "pronunciation_provider_boundary",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-pronunciation-provider-unclear-degraded",
+    "target_language": "de",
+    "detected_language": "de",
+    "source_text": "Lies API, JSON und SQL mit konservativen Hinweisen vor.",
+    "protected_terms": ["API", "JSON", "SQL"],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_pronunciation_hints": [
+      "API -> spell letters",
+      "JSON -> common local pronunciation",
+      "SQL -> common local pronunciation"
+    ],
+    "pronunciation_provider_state": "provider_available",
+    "pronunciation_language_state": "unknown",
+    "expected_pronunciation_status": "normalization_degraded",
+    "max_chunk_chars": 180,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "pronunciation_hints",
+      "pronunciation_provider_boundary",
+      "no_summary"
+    ]
   }
 ]

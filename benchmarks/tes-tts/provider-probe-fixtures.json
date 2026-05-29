@@ -58,5 +58,35 @@
     "certifies_provider_support": false,
     "expected_status": "provider_needs_review",
     "expected_reason": "mock provider is present but target language support is degraded"
+  },
+  {
+    "id": "tts-provider-g2p-degraded",
+    "provider": "mock_espeak_ng_g2p",
+    "mock_state": "degraded",
+    "version": "mock-1.0",
+    "languages": ["en", "de"],
+    "license_note": "mock GPL posture needs review before any bundle",
+    "allows_network": false,
+    "allows_install": false,
+    "allows_download": false,
+    "allows_write": false,
+    "certifies_provider_support": false,
+    "expected_status": "provider_needs_review",
+    "expected_reason": "mock G2P provider is present but pronunciation quality is degraded"
+  },
+  {
+    "id": "tts-provider-hebrew-pronunciation-needs-review",
+    "provider": "mock_phonikud_hebrew",
+    "mock_state": "needs_review",
+    "version": "mock-research",
+    "languages": ["he"],
+    "license_note": "mock Hebrew model and dataset licenses need review",
+    "allows_network": false,
+    "allows_install": false,
+    "allows_download": false,
+    "allows_write": false,
+    "certifies_provider_support": false,
+    "expected_status": "provider_needs_review",
+    "expected_reason": "mock Hebrew pronunciation provider needs quality and license review"
   }
 ]

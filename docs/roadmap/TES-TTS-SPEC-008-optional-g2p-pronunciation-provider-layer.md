@@ -37,6 +37,53 @@ improve speech rendering after provider probes and fixtures exist.
 - Golden pronunciation fixtures for protected technical terms.
 - Degraded-state fixtures for unsupported languages, especially Hebrew.
 
+## SPEC-008 Boundary
+
+Instruction-level pronunciation hints remain the baseline. Optional G2P,
+phonemizer, Hebrew enrichment, lexicon, IPA, SSML, or provider-backed
+pronunciation output can only move beyond `normalization_degraded` after a
+later local probe proves provider availability, language support, license
+posture, and fixture quality.
+
+Provider-backed pronunciation is not certified by this SPEC. The allowed plan
+for now emits only `instruction_level_hints` and blocks `ipa`, `ssml`,
+`phoneme`, `lexicon`, and `provider_backed_pronunciation` outputs.
+
+Hebrew acceptance threshold: Hebrew remains `normalization_degraded` until
+local evidence proves all of these:
+
+1. provider availability without install, download, bundle, or global write;
+2. Hebrew language support for the exact runtime path;
+3. quality evidence for unpointed Hebrew and protected technical terms;
+4. license review for code, models, lexicons, and datasets.
+
+## SPEC-008 Result
+
+Status: `PASS`.
+
+Instruction-level pronunciation boundary fixtures:
+
+1. `tts-pronunciation-provider-boundary`
+2. `tts-pronunciation-hebrew-degraded`
+3. `tts-pronunciation-provider-unclear-degraded`
+
+Provider probe fixtures added:
+
+1. `tts-provider-g2p-degraded`
+2. `tts-provider-hebrew-pronunciation-needs-review`
+
+The normalizer oracle now produces an optional pronunciation plan that keeps
+instruction-level hints as the only emitted output unless future evidence
+proves provider-backed behavior. Hebrew remains explicitly degraded.
+
+No provider was installed, downloaded, bundled, certified, or claimed as
+supported.
+
+Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md`.
+
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
 ## Oracles
 
 ```bash

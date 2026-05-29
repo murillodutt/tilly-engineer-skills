@@ -48,6 +48,7 @@ class PreparedSpeech:
     cache: list[dict[str, Any]]
     speech_text: str
     translation_plan: dict[str, Any]
+    pronunciation_plan: dict[str, Any]
 
 
 def load_fixtures() -> list[dict[str, Any]]:
@@ -149,6 +150,32 @@ def plan_optional_translation(
     }
 
 
+def plan_optional_pronunciation(
+    fixture: dict[str, Any],
+    protected_terms: list[str],
+) -> dict[str, Any]:
+    provider_state = fixture.get("pronunciation_provider_state", "provider_not_available")
+    language_support_state = fixture.get("pronunciation_language_state", "unknown")
+    status = "normalization_degraded"
+    return {
+        "mode": "instruction_hints_baseline",
+        "status": status,
+        "provider_state": provider_state,
+        "language_support_state": language_support_state,
+        "target_language": fixture["target_language"],
+        "protected_terms": protected_terms,
+        "emitted_outputs": ["instruction_level_hints"],
+        "blocked_outputs": [
+            "ipa",
+            "ssml",
+            "phoneme",
+            "lexicon",
+            "provider_backed_pronunciation",
+        ],
+        "hebrew_posture": "degraded" if fixture["target_language"] == "he" else "not_applicable",
+    }
+
+
 def select_target_language(selector: dict[str, str]) -> str:
     explicit = selector["explicit_user_language"]
     if explicit in FIRST_CLASS_LANGUAGES:
@@ -183,6 +210,7 @@ def prepare_instruction_level_speech(fixture: dict[str, Any]) -> PreparedSpeech:
     chunks = chunk_without_summary(cleaned_text, fixture["max_chunk_chars"])
     protected_terms = fixture["protected_terms"]
     translation_plan = plan_optional_translation(fixture, redacted_text, protected_terms)
+    pronunciation_plan = plan_optional_pronunciation(fixture, protected_terms)
     cache = [
         {
             "source_span": chunk,
@@ -199,6 +227,7 @@ def prepare_instruction_level_speech(fixture: dict[str, Any]) -> PreparedSpeech:
         cache=cache,
         speech_text=" ".join(entry["normalized_text"] for entry in cache),
         translation_plan=translation_plan,
+        pronunciation_plan=pronunciation_plan,
     )
 
 
@@ -243,6 +272,16 @@ def validate_fixture_shape(fixture: dict[str, Any]) -> list[str]:
         ):
             if field not in fixture:
                 failures.append(f"{fixture['id']}: {field} is required for translation_boundary")
+    if "pronunciation_provider_boundary" in fixture["checks"]:
+        for field in (
+            "pronunciation_provider_state",
+            "pronunciation_language_state",
+            "expected_pronunciation_status",
+        ):
+            if field not in fixture:
+                failures.append(
+                    f"{fixture['id']}: {field} is required for pronunciation_provider_boundary"
+                )
     return failures
 
 
@@ -343,6 +382,27 @@ def validate_prepared_fixture(fixture: dict[str, Any]) -> list[str]:
         )[0]:
             failures.append(f"{fixture_id}: degraded translation plan must preserve redacted source text")
 
+    if "pronunciation_provider_boundary" in fixture["checks"]:
+        plan = prepared.pronunciation_plan
+        if plan["mode"] != "instruction_hints_baseline":
+            failures.append(f"{fixture_id}: pronunciation mode must keep instruction hints as baseline")
+        if plan["status"] != fixture["expected_pronunciation_status"]:
+            failures.append(
+                f"{fixture_id}: expected pronunciation status {fixture['expected_pronunciation_status']}, "
+                f"got {plan['status']}"
+            )
+        if plan["emitted_outputs"] != ["instruction_level_hints"]:
+            failures.append(f"{fixture_id}: pronunciation plan must emit only instruction-level hints")
+        forbidden_outputs = {"ipa", "ssml", "phoneme", "lexicon", "provider_backed_pronunciation"}
+        missing_blocked = sorted(forbidden_outputs - set(plan["blocked_outputs"]))
+        if missing_blocked:
+            failures.append(f"{fixture_id}: pronunciation plan missing blocked outputs {missing_blocked}")
+        for term in fixture["protected_terms"]:
+            if term not in plan["protected_terms"]:
+                failures.append(f"{fixture_id}: pronunciation plan lost protected term {term}")
+        if fixture["target_language"] == "he" and plan["hebrew_posture"] != "degraded":
+            failures.append(f"{fixture_id}: Hebrew pronunciation posture must remain degraded")
+
     if "no_summary" in fixture["checks"]:
         source_terms = set(clean_markdown_for_speech(redact_secret_like_values(fixture["source_text"])[0]).split())
         speech_terms = set(prepared.speech_text.split())
@@ -381,6 +441,23 @@ def validate_translation_boundary_fixtures(fixtures: list[dict[str, Any]]) -> li
     return []
 
 
+def validate_pronunciation_boundary_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
+    required = {
+        "tts-pronunciation-provider-boundary",
+        "tts-pronunciation-hebrew-degraded",
+        "tts-pronunciation-provider-unclear-degraded",
+    }
+    seen = {
+        fixture["id"]
+        for fixture in fixtures
+        if "pronunciation_provider_boundary" in fixture["checks"]
+    }
+    missing = sorted(required - seen)
+    if missing:
+        return [f"missing pronunciation boundary fixtures: {missing}"]
+    return []
+
+
 def validate_no_disk_write_surface() -> list[str]:
     tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
     failures: list[str] = []
@@ -406,6 +483,7 @@ def main() -> int:
     failures.extend(validate_selector_corpus())
     fixtures = load_fixtures()
     failures.extend(validate_translation_boundary_fixtures(fixtures))
+    failures.extend(validate_pronunciation_boundary_fixtures(fixtures))
     for fixture in fixtures:
         failures.extend(validate_prepared_fixture(fixture))
 

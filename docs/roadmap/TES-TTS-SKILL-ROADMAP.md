@@ -125,7 +125,7 @@ The current ten-SPEC convergence contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -275,8 +275,8 @@ local probe candidates only; no provider support is certified.
 
 ### R8: Adapter Parity And Install Surface
 
-Status: pending optional pronunciation provider boundary before adapter parity
-recheck.
+Status: optional pronunciation provider boundary complete, pending release
+identity readiness and final parity recheck.
 
 Required closure:
 
@@ -435,20 +435,19 @@ The remaining execution path is now organized as ten draft SPECs:
 These drafts do not authorize sync, release, provider install, provider
 download, global config writes, or durable conversion caches.
 
-SPEC outcomes: SPEC-001 through SPEC-007 are `PASS`. SPEC-007 defined optional
-translation as speech preparation only; required redaction and protected-term
-extraction before translation planning; kept source text unchanged and
-unsummarized; and kept absent or unclear provider/language-pair support as
-`normalization_degraded` without provider install, download, bundle,
-certification, or support claims. Next ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md`.
+SPEC outcomes: SPEC-001 through SPEC-008 are `PASS`. SPEC-008 defined optional
+G2P/pronunciation provider boundaries; kept instruction-level pronunciation
+hints as the baseline; blocked IPA, SSML, phoneme, lexicon, and
+provider-backed pronunciation outputs until proven; and kept Hebrew explicitly
+degraded until local runtime, language, quality, and license evidence exists.
+Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 ## Current Open Questions
 
-1. What is the acceptance threshold for Hebrew beyond the current degraded
-   posture: preserve, translate, niqqud enrich, or provider-backed voice
-   support?
+1. Does the maintainer explicitly approve ADR 0004 acceptance, release
+   identity planning, or continued deferral?
 
 ## Governance Rules
 

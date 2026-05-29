@@ -50,11 +50,11 @@ download, bundle, certify, or claim support for any provider.
 | 5 | `CLD3` | degraded | Binding and packaging posture need local evidence. |
 | 6 | `fastText lid.176` | deferred | Model artifact policy is unresolved. |
 | 7 | `Argos Translate` | deferred | Translation boundary exists, but local model/package evidence is still absent. |
-| 8 | `eSpeak NG` | deferred | Pronunciation boundary belongs to SPEC-008; GPL posture needs review. |
+| 8 | `eSpeak NG` | deferred | SPEC-008 boundary exists; GPL posture and per-language quality still need review. |
 | 9 | `phonemizer` | deferred | Backend dependency and GPL posture follow the eSpeak boundary. |
 | 10 | `gruut` | degraded | Partial first-class language coverage and per-language data review needed. |
 | 11 | `Epitran` | degraded | Language-script coverage must be proven with fixtures. |
-| 12 | `eSpeak NG he` | degraded | Hebrew remains explicitly degraded until pronunciation quality is proven. |
+| 12 | `eSpeak NG he` | degraded | Hebrew remains explicitly degraded until runtime, quality, and license evidence exists. |
 | 13 | `Phonikud` | deferred | Hebrew dataset and model artifact policy require owner review. |
 | 14 | `NVIDIA NeMo text processing` | rejected | Too heavyweight and platform-sensitive for current `tes-tts` scope. |
 
