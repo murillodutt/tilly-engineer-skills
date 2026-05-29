@@ -99,6 +99,11 @@ Provider evaluation must include license, offline posture, privacy, model
 size, maintenance health, determinism, language coverage, G2P/IPA support,
 SSML/lexicon support, and unsupported-language behavior.
 
+The initial candidate review is tracked in
+[`TES-TTS-PROVIDER-CANDIDATE-REVIEW.md`](TES-TTS-PROVIDER-CANDIDATE-REVIEW.md).
+That review is a queue for future probes, not a support or certification
+claim.
+
 ## Protected Terms
 
 Preserve before translation:

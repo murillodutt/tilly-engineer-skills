@@ -1,0 +1,142 @@
+[
+  {
+    "rank": 1,
+    "layer": "unicode_cleanup",
+    "candidate": "ftfy",
+    "decision": "review_first",
+    "probe_required": true,
+    "no_install": true,
+    "no_certification": true,
+    "reason": "Small helper candidate for cleanup before heavier language providers."
+  },
+  {
+    "rank": 2,
+    "layer": "locale_normalization",
+    "candidate": "ICU / CLDR",
+    "decision": "review_first",
+    "probe_required": true,
+    "no_install": true,
+    "no_certification": true,
+    "reason": "Locale data can improve normalization while remaining helper-level."
+  },
+  {
+    "rank": 3,
+    "layer": "locale_normalization",
+    "candidate": "Babel",
+    "decision": "review_after_icu",
+    "probe_required": true,
+    "no_install": true,
+    "no_certification": true,
+    "reason": "Useful locale helper, but should follow ICU/CLDR evidence."
+  },
+  {
+    "rank": 4,
+    "layer": "language_detection",
+    "candidate": "Lingua",
+    "decision": "review_first",
+    "probe_required": true,
+    "no_install": true,
+    "no_certification": true,
+    "reason": "Likely local language detection candidate; must verify language coverage."
+  },
+  {
+    "rank": 5,
+    "layer": "language_detection",
+    "candidate": "CLD3",
+    "decision": "review_after_lingua",
+    "probe_required": true,
+    "no_install": true,
+    "no_certification": true,
+    "reason": "Detection candidate with implementation and packaging risk to verify."
+  },
+  {
+    "rank": 6,
+    "layer": "language_detection",
+    "candidate": "fastText lid.176",
+    "decision": "defer_until_model_policy",
+    "probe_required": true,
+    "no_install": true,
+    "no_certification": true,
+    "reason": "Model size and artifact acquisition posture must be resolved before use."
+  },
+  {
+    "rank": 7,
+    "layer": "translation",
+    "candidate": "Argos Translate",
+    "decision": "defer_until_fixture_coverage",
+    "probe_required": true,
+    "no_install": true,
+    "no_certification": true,
+    "reason": "Translation needs package availability and quality fixtures before claims."
+  },
+  {
+    "rank": 8,
+    "layer": "pronunciation_g2p_ipa",
+    "candidate": "eSpeak NG",
+    "decision": "review_for_pronunciation",
+    "probe_required": true,
+    "no_install": true,
+    "no_certification": true,
+    "reason": "Strong pronunciation candidate; language and voice behavior must be verified locally."
+  },
+  {
+    "rank": 9,
+    "layer": "pronunciation_g2p_ipa",
+    "candidate": "phonemizer",
+    "decision": "review_after_espeak",
+    "probe_required": true,
+    "no_install": true,
+    "no_certification": true,
+    "reason": "May depend on backend tools; verify no hidden setup path."
+  },
+  {
+    "rank": 10,
+    "layer": "pronunciation_g2p_ipa",
+    "candidate": "gruut",
+    "decision": "needs_review",
+    "probe_required": true,
+    "no_install": true,
+    "no_certification": true,
+    "reason": "Language coverage and maintenance posture need local evidence."
+  },
+  {
+    "rank": 11,
+    "layer": "pronunciation_g2p_ipa",
+    "candidate": "Epitran",
+    "decision": "needs_review",
+    "probe_required": true,
+    "no_install": true,
+    "no_certification": true,
+    "reason": "Useful candidate but script/language coverage must be verified."
+  },
+  {
+    "rank": 12,
+    "layer": "hebrew_enrichment",
+    "candidate": "eSpeak NG he",
+    "decision": "needs_review",
+    "probe_required": true,
+    "no_install": true,
+    "no_certification": true,
+    "reason": "Hebrew support is quality-sensitive and must remain explicitly degraded until proven."
+  },
+  {
+    "rank": 13,
+    "layer": "hebrew_enrichment",
+    "candidate": "Phonikud",
+    "decision": "defer_until_hebrew_policy",
+    "probe_required": true,
+    "no_install": true,
+    "no_certification": true,
+    "reason": "Niqqud enrichment is a research candidate and needs owner acceptance."
+  },
+  {
+    "rank": 14,
+    "layer": "tts_text_normalization",
+    "candidate": "NVIDIA NeMo text processing",
+    "decision": "defer_as_advanced",
+    "probe_required": true,
+    "no_install": true,
+    "no_certification": true,
+    "reason": "Advanced normalization candidate with dependency and scope risk."
+  }
+]

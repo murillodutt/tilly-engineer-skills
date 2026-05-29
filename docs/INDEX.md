@@ -87,10 +87,12 @@ turning the repository root into an inventory.
 | TES TTS TTS-005 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-005-instruction-normalizer-oracle.md` |
 | TES TTS TTS-006 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-006-provider-probe-contract.md` |
 | TES TTS TTS-007 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-007-provider-candidate-review.md` |
+| TES TTS TTS-008 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-008-adapter-parity.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS normalization architecture SPEC | `roadmap/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution SPEC | `roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
 | TES TTS normalization fixture schema | `roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` |
+| TES TTS provider candidate review | `roadmap/TES-TTS-PROVIDER-CANDIDATE-REVIEW.md` |
 | RC1 readiness roadmap | `roadmap/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening prompt | `roadmap/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
 | Flash-Fry skill gap spec | `roadmap/FLASH-FRY-SKILL-SPEC.md` |

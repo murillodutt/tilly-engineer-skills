@@ -239,7 +239,7 @@ and remaining release identity decision instead.
 ## Current Ready /goal Prompt
 
 Prompt artifact:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-007-provider-candidate-review.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-008-adapter-parity.md`
 
 Use this prompt to start the next sequential execution cycle:
 
@@ -250,40 +250,44 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
 
 Current unit:
-TTS-007 Provider Candidate Review
+TTS-008 Adapter Parity
 
 Certified evidence from prior cycle:
-- TTS-006 re-read the execution SPEC provider probe contract, roadmap,
-  Super SPEC, providers-and-fallbacks references, and instruction normalizer
-  oracle.
-- TTS-006 added mocked provider probe fixtures at
-  benchmarks/tes-tts/provider-probe-fixtures.json.
-- TTS-006 added `scripts/tes_tts_provider_probe_oracle.py --self-test`.
-- TTS-006 covered `provider_available`, `provider_not_available`, and
-  `provider_needs_review` without probing real providers.
+- TTS-007 re-read architecture SPEC provider candidates, execution SPEC,
+  roadmap, provider fallback references, and provider probe oracle.
+- TTS-007 added provider candidate review at
+  docs/roadmap/TES-TTS-PROVIDER-CANDIDATE-REVIEW.md.
+- TTS-007 added structured provider candidate review data at
+  benchmarks/tes-tts/provider-candidate-review.json.
+- TTS-007 added `scripts/tes_tts_provider_candidate_review_oracle.py --self-test`.
+- TTS-007 ranked candidates only for future probes and made no provider
+  certification claim.
 - Ready prompt artifact:
-  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-007-provider-candidate-review.md.
-- TTS-006 focused oracles passed:
+  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-008-adapter-parity.md.
+- TTS-007 focused oracles passed:
+  - `python3 scripts/tes_tts_provider_candidate_review_oracle.py --self-test`
   - `python3 scripts/tes_tts_provider_probe_oracle.py --self-test`
   - `python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test`
   - `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
   - `python3 scripts/validate_tds.py`
   - `python3 scripts/validate_doc_size.py`
   - `python3 scripts/validate_reference_package.py`
-  - targeted no-provider/no-install `rg` checks.
+  - targeted provider-review `rg` checks.
 
 Task:
-Execute only TTS-007 through the circular sequence:
+Execute only TTS-008 through the circular sequence:
 execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit.
 
 Required actions:
 1. Run `git status --short --branch --untracked-files=all`.
-2. Re-read architecture SPEC provider candidates, execution SPEC, roadmap,
-   provider fallback references, and provider probe oracle.
-3. Rank provider candidates after the no-write probe contract exists.
-4. Fix only TTS-007 provider-review or governance gaps.
-5. Certify with targeted `rg` checks and the smallest docs/package oracles.
-6. Create the next `/goal` prompt artifact for TTS-008 if not converged.
+2. Re-read Codex and Claude `tes-tts` skill sources, references, agents,
+   adapter docs, command triggers, and materialization/oracle scripts.
+3. Keep Codex and Claude behaviorally aligned and Cursor/install surfaces
+   honest.
+4. Fix only TTS-008 adapter parity or install-surface gaps.
+5. Certify with quick skill validation, materialization, command-trigger
+   oracle, targeted `rg`, and the smallest docs/package oracles.
+6. Create the next `/goal` prompt artifact for TTS-009 if not converged.
 7. Commit the local execution as the final action of the cycle.
 
 Forbidden:

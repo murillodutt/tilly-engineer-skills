@@ -149,6 +149,15 @@ That oracle covers `provider_available`, `provider_not_available`, and
 `provider_needs_review` without probing real providers or claiming provider
 support.
 
+Provider candidate review is checked with:
+
+```bash
+python3 scripts/tes_tts_provider_candidate_review_oracle.py --self-test
+```
+
+The review ranks candidates for future probes only. It must not certify,
+install, download, or execute providers.
+
 ## Acceptance Gates
 
 Before ADR 0004 can move from `proposed` to accepted:

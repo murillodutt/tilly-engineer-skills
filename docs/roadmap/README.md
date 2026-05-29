@@ -36,10 +36,12 @@ Wave 7 local package-source closure.
 | TES TTS TTS-005 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-005-instruction-normalizer-oracle.md` |
 | TES TTS TTS-006 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-006-provider-probe-contract.md` |
 | TES TTS TTS-007 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-007-provider-candidate-review.md` |
+| TES TTS TTS-008 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-008-adapter-parity.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS normalization architecture | Proposed | `TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution | Proposed | `TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
 | TES TTS normalization fixture schema | Proposed | `TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` |
+| TES TTS provider candidate review | Proposed | `TES-TTS-PROVIDER-CANDIDATE-REVIEW.md` |
 | RC1 readiness cleanup | Active | `RC1-READINESS-ROADMAP.md` |
 | Cortex hardening sequence | Complete | `GOAL-SUPER-SPEC-cortex-hardening.md` |
 | TES Align semantic drift hardening | Proposed | `TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
