@@ -1,13 +1,20 @@
 ---
 tds_id: roadmap.goal_prompt_tes_tts_cap_010_conversational_rendering_final_audit
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
 source_of_truth: false
 evidence_level: L2
 ---
 
 # GOAL Prompt: TES TTS CAP-010 Conversational Rendering Final Audit
+
+Superseded by:
+`docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md`
+
+Reason: maintainer approved a PT-BR lexical normalization pivot before final
+auditing the conversational-rendering line. This prompt is retained for
+lineage, not active execution.
 
 ```text
 /goal Continue TES TTS conversational rendering.

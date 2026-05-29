@@ -67,7 +67,8 @@ surface for release, materialization, and sync decisions.
 | `docs/roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md` | OWNER-001 acceptance/release/sync decision prompt. | archived |
 | `docs/roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` | ADR 0004 acceptance decision record. | active |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md` | Post-ADR capability migration execution contract. | complete |
-| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` | Post-CAP extension contract for conversational spoken rendering. | active |
+| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` | Post-CAP extension contract for conversational spoken rendering. | superseded |
+| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md` | Active PT-BR lexical normalization pivot inspired by mature TTS/G2P architecture. | active |
 | `docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` | Feasibility study for migrating portable TTS behavior. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` | Historical prompt for first portable capability migration cut. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` | Historical prompt for speech transformation hardening. | historical |
@@ -82,7 +83,10 @@ surface for release, materialization, and sync decisions.
 | `docs/roadmap/TES-TTS-CAP-008-TABLE-LIST-CODE-BLOCK-ORALIZATION.md` | CAP-008 result record for structure oralization. | complete |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-009-mixed-language-english-identity-hardening.md` | Historical prompt for CAP-009 mixed-language and English identity hardening. | historical |
 | `docs/roadmap/TES-TTS-CAP-009-MIXED-LANGUAGE-ENGLISH-IDENTITY-HARDENING.md` | CAP-009 result record for mixed-language and English identity hardening. | complete |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md` | Ready prompt for CAP-010 conversational rendering final audit. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md` | Superseded prompt for CAP-010 conversational rendering final audit. | historical |
+| `docs/roadmap/TES-TTS-LEX-001-PTBR-LEXICAL-DATASET-MANIFEST.md` | PT-BR lexical dataset manifest SPEC and result record. | complete |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-LEX-001-ptbr-lexical-dataset-manifest.md` | Historical prompt for LEX-001 PT-BR lexical dataset manifest. | historical |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-LEX-002-ptbr-lexical-lookup-oracle.md` | Ready prompt for LEX-002 PT-BR lexical lookup oracle. | active |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | TTS-009 acceptance and release decision record. | active |
 | `docs/roadmap/TES-TTS-OWNER-*.md` | Historical owner-decision records TTS-010 through TTS-031; retained in TDS and `docs/INDEX.md`. | historical |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
@@ -101,6 +105,7 @@ surface for release, materialization, and sync decisions.
 | `scripts/tes_tts_instruction_normalizer_oracle.py` | Dependency-free instruction normalizer oracle. | staged |
 | `scripts/tes_tts_provider_probe_oracle.py` | Mocked no-write provider probe oracle. | staged |
 | `scripts/tes_tts_provider_candidate_review_oracle.py` | Provider review queue oracle. | staged |
+| `benchmarks/tes-tts/ptbr-lexical-*.json*` and `scripts/tes_tts_ptbr_*.py` | PT-BR lexical manifest sample, schema, converter, and oracle. | staged |
 | `docs/install/COMMAND-TRIGGERS.md` | User-visible command trigger registration. | staged |
 | `docs/adapters/CODEX.md`, `docs/adapters/CLAUDE.md`, `docs/adapters/PLATFORM-DIFFERENCES.md` | Adapter-facing discoverability and parity notes. | staged |
 
@@ -141,10 +146,10 @@ The current ten-SPEC convergence contract is:
 The current CAP migration prompt state is closed:
 `docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md`
 
-The current conversational rendering execution contract is
-`docs/roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md`; its ready
+The current TTS execution contract is
+`docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md`; its ready
 prompt is
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md`.
+`docs/roadmap/GOAL-PROMPT-tes-tts-LEX-002-ptbr-lexical-lookup-oracle.md`.
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -441,23 +446,19 @@ Next ready prompt: none. CAP capability migration is locally closed by
 `docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
-Conversational rendering status: CAP-009 is complete for mixed-language and
-English identity hardening. CAP-010 is the next unit for final audit and local
-closure decision. Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+Conversational rendering status: CAP-001 through CAP-009 are locally closed
+for the bounded manual-rule path. CAP-010 final audit is superseded by the
+PT-BR lexical normalization pivot because Markdown-shaped pronunciation
+fixtures and growing manual rules no longer scale. Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-LEX-001-ptbr-lexical-dataset-manifest.md`.
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
-CAP outcomes:
-
-| CAP | Outcome | Sync |
-|-----|---------|------|
-| CAP-001 | Closed dependency-free `spoken_text` rendering for acronyms, semantic path/URL handling, exact-read preservation, redaction, and no-summary behavior. | `REMOTE_SYNC_NOT_REQUESTED` |
-| CAP-002 | Closed speech transformation hardening for Markdown, code fences, hashes, GUIDs, email, IPv4, mentions, hashtags, false-positive guards, and exact reads. | `REMOTE_SYNC_NOT_REQUESTED` |
-| CAP-003 | Closed pronunciation hints and protected-term preservation for URL, HTTP, JSON, YAML, SQL, SPEC, TES, Tilly, Codex, Claude, Cursor, OpenAI, package/model names, commands, and code identifiers. | `REMOTE_SYNC_NOT_REQUESTED` |
-| CAP-004 | Closed request-local provider fallback catalog use with mocked fixtures for provider order, error classes, explicit voice preservation, voice-default retry, all-provider failure, and no durable provider state. | `REMOTE_SYNC_NOT_REQUESTED` |
-| CAP-005 | Closed adapter parity and final local audit. Workbench and Codex are byte-aligned; Codex and Claude differ only in the intentional adapter-specific history line. Package closure is degraded by unrelated development skill parity drift. | `REMOTE_SYNC_NOT_REQUESTED` |
-| CAP-006 | Closed the first conversational spoken-rendering cut: `conversational` vs `faithful_reading`, CAP-006 fixtures, exact islands, PT-BR narration with protected English terms, no-summary preservation, table/list oral prose, code no-execute posture, and secret redaction over exact reads. | `REMOTE_SYNC_NOT_REQUESTED` |
-| CAP-007 | Closed selective exact islands and protected-span hardening for paths, URLs, commands, code identifiers, hashes, GUIDs, emails, IPs, mentions, hashtags, branch names, model names, and package names. | `REMOTE_SYNC_NOT_REQUESTED` |
-| CAP-008 | Closed table, bullet, numbered-list, quote, and code-block oralization with ordered fact preservation, scoped exact islands, secret redaction, and code no-execute behavior. | `REMOTE_SYNC_NOT_REQUESTED` |
-| CAP-009 | Closed mixed-language and English identity hardening for review/planning terms, CI/CD, product/platform names, package/model identity, Hebrew degraded posture, and structural rendering preservation. | `REMOTE_SYNC_NOT_REQUESTED` |
+PT-BR lexical normalization status: LEX-001 passed. It created the manifest
+schema, sample JSONL, prondict converter, and lexical manifest oracle with
+`usage: evidence_only`; IPA remains evidence metadata, not runtime output.
+Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-LEX-002-ptbr-lexical-lookup-oracle.md`.
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 Open questions: release identity planning and sync remain owner decisions.
 

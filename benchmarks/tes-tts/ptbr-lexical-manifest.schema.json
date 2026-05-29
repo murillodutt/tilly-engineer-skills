@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tilly-engineer-skills.local/schemas/tes-tts/ptbr-lexical-manifest.schema.json",
+  "title": "TES TTS PT-BR Lexical Manifest Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "language",
+    "text_graphemes",
+    "pronunciation",
+    "pronunciation_system",
+    "source",
+    "source_path",
+    "source_line",
+    "license_note",
+    "usage",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^ptbr-lexical-[0-9]{6}$"
+    },
+    "language": {
+      "const": "pt-BR"
+    },
+    "text_graphemes": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pronunciation": {
+      "type": "string"
+    },
+    "pronunciation_system": {
+      "enum": [
+        "ipa",
+        "none"
+      ]
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_line": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "license_note": {
+      "type": "string",
+      "minLength": 1
+    },
+    "usage": {
+      "const": "evidence_only"
+    },
+    "status": {
+      "enum": [
+        "reference",
+        "degraded"
+      ]
+    }
+  }
+}

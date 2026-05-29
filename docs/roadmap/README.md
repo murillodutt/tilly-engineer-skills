@@ -46,7 +46,8 @@ Wave 7 local package-source closure.
 | TES TTS OWNER-001 decision prompt | Historical | `GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md` |
 | TES TTS OWNER-001 acceptance decision | Complete | `TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` |
 | TES TTS capability migration | Complete | `GOAL-SUPER-SPEC-tes-tts-capability-migration.md` |
-| TES TTS conversational rendering | Active | `GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` |
+| TES TTS conversational rendering | Superseded | `GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` |
+| TES TTS PT-BR lexical normalization | Active | `GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md` |
 | TES TTS CAP-001 feasibility study | Active | `TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` |
 | TES TTS CAP-001 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` |
 | TES TTS CAP-002 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` |
@@ -62,7 +63,10 @@ Wave 7 local package-source closure.
 | TES TTS CAP-008 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-008-table-list-code-block-oralization.md` |
 | TES TTS CAP-009 mixed-language English identity hardening | Complete | `TES-TTS-CAP-009-MIXED-LANGUAGE-ENGLISH-IDENTITY-HARDENING.md` |
 | TES TTS CAP-009 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-009-mixed-language-english-identity-hardening.md` |
-| TES TTS CAP-010 goal prompt | Active | `GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md` |
+| TES TTS CAP-010 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md` |
+| TES TTS LEX-001 PT-BR lexical dataset manifest | Complete | `TES-TTS-LEX-001-PTBR-LEXICAL-DATASET-MANIFEST.md` |
+| TES TTS LEX-001 goal prompt | Historical | `GOAL-PROMPT-tes-tts-LEX-001-ptbr-lexical-dataset-manifest.md` |
+| TES TTS LEX-002 goal prompt | Active | `GOAL-PROMPT-tes-tts-LEX-002-ptbr-lexical-lookup-oracle.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |

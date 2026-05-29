@@ -128,6 +128,7 @@ turning the repository root into an inventory.
 | TES TTS OWNER-001 acceptance decision | `roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` |
 | TES TTS capability migration Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md` |
 | TES TTS conversational rendering Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` |
+| TES TTS PT-BR lexical normalization Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md` |
 | TES TTS CAP-001 feasibility study | `roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` |
 | TES TTS CAP-001 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` |
 | TES TTS CAP-002 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` |
@@ -143,7 +144,10 @@ turning the repository root into an inventory.
 | TES TTS CAP-008 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-008-table-list-code-block-oralization.md` |
 | TES TTS CAP-009 mixed-language English identity hardening | `roadmap/TES-TTS-CAP-009-MIXED-LANGUAGE-ENGLISH-IDENTITY-HARDENING.md` |
 | TES TTS CAP-009 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-009-mixed-language-english-identity-hardening.md` |
-| TES TTS CAP-010 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md` |
+| TES TTS CAP-010 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md` |
+| TES TTS LEX-001 PT-BR lexical dataset manifest | `roadmap/TES-TTS-LEX-001-PTBR-LEXICAL-DATASET-MANIFEST.md` |
+| TES TTS LEX-001 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-LEX-001-ptbr-lexical-dataset-manifest.md` |
+| TES TTS LEX-002 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-LEX-002-ptbr-lexical-lookup-oracle.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |
