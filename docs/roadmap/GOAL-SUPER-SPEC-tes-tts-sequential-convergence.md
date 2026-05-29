@@ -173,6 +173,7 @@ has approved the complete skill.
 | TTS-027 Owner Decision Still Remains Unresolved Again | Apply a concrete maintainer decision after TTS-026 preserved the stop state. | ADR/status and decision docs only when explicitly approved. | focused TTS oracles; `npm run commit:check` when package closure is needed. |
 | TTS-028 Owner Decision Remains Open Again | Apply a concrete maintainer decision after TTS-027 preserved the stop state. | ADR/status and decision docs only when explicitly approved. | focused TTS oracles; `npm run commit:check` when package closure is needed. |
 | TTS-029 Owner Decision Still Open Again | Apply a concrete maintainer decision after TTS-028 preserved the stop state. | ADR/status and decision docs only when explicitly approved. | focused TTS oracles; `npm run commit:check` when package closure is needed. |
+| TTS-030 Owner Decision Continues Open Again | Apply a concrete maintainer decision after TTS-029 preserved the stop state. | ADR/status and decision docs only when explicitly approved. | focused TTS oracles; `npm run commit:check` when package closure is needed. |
 
 Every unit must preserve its identifier. A future `/goal` may expand a unit
 into sub-steps, but must not merge, skip, rename, or reorder these units
@@ -262,7 +263,7 @@ and remaining release identity decision instead.
 ## Current Ready /goal Prompt
 
 Prompt artifact:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-029-owner-decision-still-open-again.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-030-owner-decision-continues-open-again.md`
 
 Use this prompt to start the next sequential execution cycle:
 
@@ -273,28 +274,28 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
 
 Current unit:
-TTS-029 Owner Decision Still Open Again
+TTS-030 Owner Decision Continues Open Again
 
 Certified evidence from prior cycle:
-- TTS-028 re-read ADR 0004, all previous TES TTS owner decision records from
+- TTS-029 re-read ADR 0004, all previous TES TTS owner decision records from
   TTS-010 onward, the TTS-009 decision record, the TES TTS roadmap, this Super
-  SPEC, and the TTS-028 prompt.
-- TTS-028 found no explicit maintainer decision in the current goal context to
+  SPEC, and the TTS-029 prompt.
+- TTS-029 found no explicit maintainer decision in the current goal context to
   accept ADR 0004 or keep it proposed, authorize release identity planning or
   defer it, or continue forbidding sync or authorize a later sync cycle.
-- TTS-028 recorded the owner decision remains open again result at
-  docs/roadmap/TES-TTS-OWNER-DECISION-REMAINS-OPEN-AGAIN.md.
-- TTS-028 updated `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` with the cycle
+- TTS-029 recorded the owner decision still open again result at
+  docs/roadmap/TES-TTS-OWNER-DECISION-STILL-OPEN-AGAIN.md.
+- TTS-029 updated `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` with the cycle
   outcome, current unit status, and ready prompt pointer.
 - ADR 0004 remains `proposed`.
 - Release identity remains deferred.
 - Sync remains forbidden.
-- TTS-028 made no provider certification claim and performed no sync, release,
+- TTS-029 made no provider certification claim and performed no sync, release,
   push, tag, publish, provider install, provider download, real provider probe,
   global config write, durable conversion cache, or proactive `speak` behavior.
 - Ready prompt artifact:
-  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-029-owner-decision-still-open-again.md.
-- TTS-028 focused oracles passed:
+  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-030-owner-decision-continues-open-again.md.
+- TTS-029 focused oracles passed:
   - `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
   - `python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test`
   - `python3 scripts/tes_tts_provider_probe_oracle.py --self-test`
@@ -311,14 +312,14 @@ Certified evidence from prior cycle:
   - `npm run commit:check`
 
 Task:
-Execute only TTS-029 through the circular sequence:
+Execute only TTS-030 through the circular sequence:
 execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit.
 
 Required actions:
 1. Run `git status --short --branch --untracked-files=all`.
 2. Re-read ADR 0004, all previous TES TTS owner decision records from TTS-010
    onward, the TTS-009 decision record, roadmap, this Super SPEC, and the
-   TTS-029 prompt.
+   TTS-030 prompt.
 3. Apply only explicit maintainer decisions already present in the current
    prompt or user message.
 4. If ADR acceptance, release identity, or sync approval is absent or partial,
