@@ -60,6 +60,7 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/TES-TTS-OWNER-DECISION-OPEN.md` | TTS-017 owner decision open result. | active |
 | `docs/roadmap/TES-TTS-OWNER-DECISION-UNRESOLVED.md` | TTS-018 owner decision unresolved result. | active |
 | `docs/roadmap/TES-TTS-OWNER-DECISION-STILL-UNRESOLVED.md` | TTS-019 owner decision still unresolved result. | active |
+| `docs/roadmap/TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED.md` | TTS-020 owner decision continues unresolved result. | active |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
 | `benchmarks/tes-tts/normalization-fixtures.json` | Minimal dependency-free fixture corpus. | proposed |
 | `benchmarks/tes-tts/instruction-normalizer-fixtures.json` | Instruction-level normalizer oracle fixtures. | proposed |
@@ -87,7 +88,8 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-017-owner-decision-open.md` | Historical prompt artifact for owner decision open. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-018-owner-decision-unresolved.md` | Historical prompt artifact for owner decision unresolved. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-019-owner-decision-still-unresolved.md` | Historical prompt artifact for owner decision still unresolved. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-020-owner-decision-continues-unresolved.md` | Ready prompt artifact for the next execution cycle. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-020-owner-decision-continues-unresolved.md` | Historical prompt artifact for owner decision continues unresolved. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-021-owner-decision-remains-unresolved.md` | Ready prompt artifact for the next execution cycle. | active |
 | `scripts/materialize_adapter.py` | Adapter materialization inclusion. | staged |
 | `scripts/command_trigger_oracle.py` | Slash, alias, and natural trigger oracle inclusion. | staged |
 | `scripts/validate_reference_package.py` | Package reference validation inclusion. | staged |
@@ -126,7 +128,7 @@ The current circular execution contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-020-owner-decision-continues-unresolved.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-021-owner-decision-remains-unresolved.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -354,86 +356,32 @@ Exit state: the explicit owner decision is applied, or the cycle remains
 
 ### R13: Owner Decision Pending
 
-Status: TTS-013 recorded no explicit owner decision in the current goal
-context; state remains `NEEDS_OWNER_DECISION`. Roadmap update was performed
-for the cycle outcome and next prompt pointer.
-
-Required closure:
-
-- If ADR 0004 is explicitly accepted or kept proposed, apply only that
-  decision and correlated decision surfaces.
-- If release identity planning is explicitly authorized or deferred, apply
-  only that decision and create the next exact prompt.
-- If sync is explicitly authorized without release identity approval, stop at
-  `NEEDS_REVIEW`.
-- Update this roadmap with the cycle outcome before closure.
-
-Exit state: the owner decision is applied, or the cycle remains
-`NEEDS_OWNER_DECISION` with the next unresolved decision named.
+Status: TTS-013 recorded no explicit owner decision; state remains
+`NEEDS_OWNER_DECISION`. See `TES-TTS-OWNER-DECISION-PENDING.md`.
 
 ### R14: Owner Decision Still Pending
 
-Status: TTS-014 recorded no explicit owner decision in the current goal
-context; state remains `NEEDS_OWNER_DECISION`. Roadmap update was performed
-for the cycle outcome and next prompt pointer.
-
-Required closure:
-
-- If ADR 0004 is explicitly accepted or kept proposed, apply only that
-  decision and correlated decision surfaces.
-- If release identity planning is explicitly authorized or deferred, apply
-  only that decision and create the next exact prompt.
-- If sync is explicitly authorized without release identity approval, stop at
-  `NEEDS_REVIEW`.
-- Update this roadmap with the cycle outcome before closure.
-
-Exit state: the owner decision is applied, or the cycle remains
-`NEEDS_OWNER_DECISION` with the next unresolved decision named.
+Status: TTS-014 recorded no explicit owner decision; state remains
+`NEEDS_OWNER_DECISION`. See `TES-TTS-OWNER-DECISION-STILL-PENDING.md`.
 
 ### R15: Owner Decision Still Required
 
-Status: TTS-015 recorded no explicit owner decision in the current goal
-context; state remains `NEEDS_OWNER_DECISION`. Roadmap update was performed
-for the cycle outcome and next prompt pointer.
-
-Required closure:
-
-- If ADR 0004 is explicitly accepted or kept proposed, apply only that
-  decision and correlated decision surfaces.
-- If release identity planning is explicitly authorized or deferred, apply
-  only that decision and create the next exact prompt.
-- If sync is explicitly authorized without release identity approval, stop at
-  `NEEDS_REVIEW`.
-- Update this roadmap with the cycle outcome before closure.
-
-Exit state: the owner decision is applied, or the cycle remains
-`NEEDS_OWNER_DECISION` with the next unresolved decision named.
+Status: TTS-015 recorded no explicit owner decision; state remains
+`NEEDS_OWNER_DECISION`. See `TES-TTS-OWNER-DECISION-STILL-REQUIRED.md`.
 
 ### R16: Owner Decision Remains Required
 
-Status: TTS-016 recorded no explicit owner decision in the current goal
-context; state remains `NEEDS_OWNER_DECISION`. Roadmap update was performed
-for the cycle outcome and next prompt pointer.
-
-Required closure: apply only explicit maintainer decisions for ADR 0004,
-release identity, and sync posture; otherwise keep `NEEDS_OWNER_DECISION` and
-update this roadmap before closure.
-
-Exit state: the owner decision is applied, or the cycle remains
-`NEEDS_OWNER_DECISION` with the next unresolved decision named.
+Status: TTS-016 recorded no explicit owner decision; state remains
+`NEEDS_OWNER_DECISION`. See `TES-TTS-OWNER-DECISION-REMAINS-REQUIRED.md`.
 
 ### R17: Owner Decision Open
 
-Status: TTS-017 recorded no explicit owner decision in the current goal
-context; state remains `NEEDS_OWNER_DECISION`. Roadmap update was performed
-for the cycle outcome and next prompt pointer.
+Status: TTS-017 recorded no explicit owner decision; state remains
+`NEEDS_OWNER_DECISION`. See `TES-TTS-OWNER-DECISION-OPEN.md`.
 
-Required closure: apply only explicit maintainer decisions for ADR 0004,
-release identity, and sync posture; otherwise keep `NEEDS_OWNER_DECISION` and
-update this roadmap before closure.
-
-Exit state: the owner decision is applied, or the cycle remains
-`NEEDS_OWNER_DECISION` with the next unresolved decision named.
+R13-R17 required closure: apply only explicit maintainer decisions for ADR
+0004, release identity, and sync posture; otherwise keep
+`NEEDS_OWNER_DECISION`, update this roadmap, and create the next exact prompt.
 
 ### R18: Owner Decision Unresolved
 
@@ -446,6 +394,12 @@ Status: TTS-019 recorded no explicit owner decision; state remains
 `NEEDS_OWNER_DECISION`, with roadmap update and TTS-020 prompt pointer done.
 
 ### R20: Owner Decision Continues Unresolved
+
+Status: TTS-020 recorded no explicit owner decision; state remains
+`NEEDS_OWNER_DECISION`, with roadmap update, repeated-history compaction, and
+TTS-021 prompt pointer done.
+
+### R21: Owner Decision Remains Unresolved
 
 Status: next work unit, awaiting explicit maintainer decision. Required
 closure remains ADR 0004, release identity, and sync posture only.
