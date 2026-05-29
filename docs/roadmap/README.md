@@ -79,7 +79,8 @@ Wave 7 local package-source closure.
 | TES TTS RTE-001 goal prompt | Historical | `GOAL-PROMPT-tes-tts-RTE-001-compiled-lexical-index-contract.md` |
 | TES TTS RTE-002 goal prompt | Historical | `GOAL-PROMPT-tes-tts-RTE-002-hot-path-span-matcher.md` |
 | TES TTS RTE-003 goal prompt | Historical | `GOAL-PROMPT-tes-tts-RTE-003-fast-path-spoken-rendering.md` |
-| TES TTS RTE-004 goal prompt | Active | `GOAL-PROMPT-tes-tts-RTE-004-request-local-memoization.md` |
+| TES TTS RTE-004 goal prompt | Historical | `GOAL-PROMPT-tes-tts-RTE-004-request-local-memoization.md` |
+| TES TTS RTE-005 goal prompt | Active | `GOAL-PROMPT-tes-tts-RTE-005-chunked-preparation-boundary.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |
