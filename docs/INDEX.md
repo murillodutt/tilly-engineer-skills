@@ -129,6 +129,7 @@ turning the repository root into an inventory.
 | TES TTS capability migration Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md` |
 | TES TTS conversational rendering Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` |
 | TES TTS PT-BR lexical normalization Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md` |
+| TES TTS lexical runtime engine latency reduction Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md` |
 | TES TTS CAP-001 feasibility study | `roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` |
 | TES TTS CAP-001 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` |
 | TES TTS CAP-002 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` |
@@ -155,6 +156,7 @@ turning the repository root into an inventory.
 | TES TTS LEX-004 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-LEX-004-fixture-migration-from-markdown-shaped-tts-cases.md` |
 | TES TTS LEX-005 PT-BR lexical final audit | `roadmap/TES-TTS-LEX-005-PTBR-LEXICAL-FINAL-AUDIT.md` |
 | TES TTS LEX-005 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md` |
+| TES TTS RTE-000 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-RTE-000-preflight-latency-baseline.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |

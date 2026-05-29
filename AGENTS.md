@@ -24,6 +24,21 @@ Apply Tilly Engineering Discipline to material changes in this repository:
 
 </instructions>
 
+<documentation_runtime_focus>
+
+Documentation must not become the work. For active engineering lines, use the
+latest accepted SPEC or Super SPEC plus its audit record as the normalization
+surface, then update only the indexes or roadmap entries needed to keep that
+line executable. Prefer programming, fixtures, oracles, and runtime evidence
+over creating parallel explanatory documents.
+
+When a documentation change is still necessary, keep it structural and compact:
+record the current execution authority, the audit result, the next prompt when
+the sequence is not closed, and the smallest evidence pointer required for a
+future agent to continue without chat history.
+
+</documentation_runtime_focus>
+
 <success_formula>
 
 ```text

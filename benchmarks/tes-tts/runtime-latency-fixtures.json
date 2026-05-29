@@ -1,0 +1,67 @@
+{
+  "version": "0.3.147",
+  "usage": "runtime_latency_baseline",
+  "provider_timing": "out_of_scope",
+  "cases": [
+    {
+      "id": "rte-simple-ptbr-prose",
+      "source_text": "Leia este resumo em voz alta para confirmar que o caminho rápido de prosa em português permanece simples.",
+      "detected_language": "pt-BR",
+      "target_language": "pt-BR",
+      "protected_terms": [],
+      "max_chunk_chars": 260,
+      "rendering_intent": "faithful_reading",
+      "expected_redaction_count": 0,
+      "expected_min_chunks": 1,
+      "expected_speech_contains": ["caminho rápido"],
+      "expected_speech_excludes": ["resumo automático"],
+      "max_text_prepare_ms_p50": 20.0,
+      "max_first_chunk_ready_ms_p50": 20.0
+    },
+    {
+      "id": "rte-mixed-technical-prose",
+      "source_text": "ADR 0004 protege o runtime do tes-tts enquanto GitHub Actions valida fixture, oracle e provider fallback.",
+      "detected_language": "pt-BR",
+      "target_language": "pt-BR",
+      "protected_terms": ["ADR", "runtime", "tes-tts", "GitHub Actions", "fixture", "oracle", "provider", "fallback"],
+      "max_chunk_chars": 260,
+      "rendering_intent": "faithful_reading",
+      "expected_redaction_count": 0,
+      "expected_min_chunks": 1,
+      "expected_speech_contains": ["A D R", "GitHub Actions"],
+      "expected_speech_excludes": ["Diretrizes de decisão arquitetural"],
+      "max_text_prepare_ms_p50": 35.0,
+      "max_first_chunk_ready_ms_p50": 35.0
+    },
+    {
+      "id": "rte-repeated-protected-terms",
+      "source_text": "API, SDK e CLI aparecem várias vezes: API para entrada, SDK para integração e CLI para execução.",
+      "detected_language": "pt-BR",
+      "target_language": "pt-BR",
+      "protected_terms": ["API", "SDK", "CLI"],
+      "max_chunk_chars": 260,
+      "rendering_intent": "faithful_reading",
+      "expected_redaction_count": 0,
+      "expected_min_chunks": 1,
+      "expected_speech_contains": ["A P I", "S D K", "C L I"],
+      "expected_speech_excludes": ["interface de programação de aplicações"],
+      "max_text_prepare_ms_p50": 35.0,
+      "max_first_chunk_ready_ms_p50": 35.0
+    },
+    {
+      "id": "rte-path-url-code-secret",
+      "source_text": "Abra .agents/skills/tes-tts, veja https://github.com/murillodutt/tilly-engineer-skills e não execute `rm -rf tmp`; API_KEY=abc123SECRET deve ser oculto.",
+      "detected_language": "pt-BR",
+      "target_language": "pt-BR",
+      "protected_terms": [".agents/skills/tes-tts", "GitHub", "API_KEY"],
+      "max_chunk_chars": 320,
+      "rendering_intent": "faithful_reading",
+      "expected_redaction_count": 1,
+      "expected_min_chunks": 1,
+      "expected_speech_contains": ["pasta tes tts", "pagina do GitHub", "[REDACTED_SECRET]"],
+      "expected_speech_excludes": ["abc123SECRET"],
+      "max_text_prepare_ms_p50": 45.0,
+      "max_first_chunk_ready_ms_p50": 45.0
+    }
+  ]
+}
