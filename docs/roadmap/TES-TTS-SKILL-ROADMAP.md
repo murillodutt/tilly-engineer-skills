@@ -71,13 +71,14 @@ surface for release, materialization, and sync decisions.
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md` | Post-convergence owner decision gate. | archived |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md` | OWNER-001 acceptance/release/sync decision prompt. | archived |
 | `docs/roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` | ADR 0004 acceptance decision record. | active |
-| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md` | Post-ADR capability migration execution contract. | active |
+| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md` | Post-ADR capability migration execution contract. | complete |
 | `docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` | Feasibility study for migrating portable TTS behavior. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` | Historical prompt for first portable capability migration cut. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` | Historical prompt for speech transformation hardening. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-003-pronunciation-hints-protected-terms.md` | Historical prompt for pronunciation hints and protected terms. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md` | Historical prompt for provider fallback catalog use. | historical |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md` | Ready prompt for adapter parity and final local audit. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md` | Historical prompt for adapter parity and final local audit. | historical |
+| `docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md` | Final local audit record for CAP capability migration. | complete |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | TTS-009 acceptance and release decision record. | active |
 | `docs/roadmap/TES-TTS-OWNER-*.md` | Historical owner-decision records TTS-010 through TTS-031; retained in TDS and `docs/INDEX.md`. | historical |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
@@ -135,8 +136,8 @@ The current circular execution contract is:
 The current ten-SPEC convergence contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
 
-The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md`
+The current CAP migration prompt state is closed:
+`docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -429,8 +430,8 @@ exited `NEEDS_OWNER_DECISION`; OWNER-001 resolved ADR acceptance. The ten-SPEC
 technical sequence is complete for the bounded scope, ADR 0004 is `active`,
 release identity is deferred, package identity remains at `0.3.147`, provider
 claims remain optional/degraded/deferred, and sync remains unauthorized.
-Next ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md`.
+Next ready prompt: none. CAP capability migration is locally closed by
+`docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 CAP outcomes:
@@ -441,6 +442,7 @@ CAP outcomes:
 | CAP-002 | Closed speech transformation hardening for Markdown, code fences, hashes, GUIDs, email, IPv4, mentions, hashtags, false-positive guards, and exact reads. | `REMOTE_SYNC_NOT_REQUESTED` |
 | CAP-003 | Closed pronunciation hints and protected-term preservation for URL, HTTP, JSON, YAML, SQL, SPEC, TES, Tilly, Codex, Claude, Cursor, OpenAI, package/model names, commands, and code identifiers. | `REMOTE_SYNC_NOT_REQUESTED` |
 | CAP-004 | Closed request-local provider fallback catalog use with mocked fixtures for provider order, error classes, explicit voice preservation, voice-default retry, all-provider failure, and no durable provider state. | `REMOTE_SYNC_NOT_REQUESTED` |
+| CAP-005 | Closed adapter parity and final local audit. Workbench and Codex are byte-aligned; Codex and Claude differ only in the intentional adapter-specific history line. Package closure is degraded by unrelated development skill parity drift. | `REMOTE_SYNC_NOT_REQUESTED` |
 
 ## Current Open Questions
 

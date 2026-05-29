@@ -627,7 +627,7 @@ documents:
   - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md
     id: roadmap.goal_super_spec_tes_tts_capability_migration
     class: roadmap
-    status: active
+    status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, and validation authors
     source_of_truth: false
     evidence_level: L1
@@ -739,8 +739,15 @@ documents:
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md
     id: roadmap.goal_prompt_tes_tts_cap_005_adapter_parity_final_local_audit
     class: roadmap
-    status: active
+    status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md
+    id: roadmap.tes_tts_cap_005_final_local_audit
+    class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, adapter authors, and release reviewers
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md

@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_super_spec_tes_tts_capability_migration
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, tes-tts maintainers, adapter authors, and validation authors
 source_of_truth: false
 evidence_level: L1
@@ -9,7 +9,8 @@ evidence_level: L1
 
 # GOAL Super SPEC: TES TTS Capability Migration
 
-Status: active execution contract after ADR 0004 acceptance.
+Status: completed for local capability migration after ADR 0004 acceptance.
+Release identity and sync remain separate owner decisions.
 
 Canonical artifact:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md`
@@ -70,7 +71,8 @@ convergence -> local commit
 ```
 
 Each non-closed unit must update `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` and
-create the next ready prompt artifact before local commit.
+create the next ready prompt artifact before local commit. CAP-005 closes the
+local migration sequence without creating a next CAP prompt.
 
 ## Forbidden
 
@@ -82,6 +84,8 @@ create the next ready prompt artifact before local commit.
 - user-text summary unless explicitly requested;
 - unrelated `.agents/**` changes.
 
-## Ready Prompt
+## Closure
 
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md`
+No next CAP prompt. Local capability migration is closed by:
+
+`docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md`
