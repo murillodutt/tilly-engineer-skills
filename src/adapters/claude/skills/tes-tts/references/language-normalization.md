@@ -17,14 +17,25 @@ Choose the default reading language in this order:
 1. The language explicitly requested by the user.
 2. The default language declared by the active coding agent adapter, such as
    Claude, Codex, or Cursor, when that declaration exists.
-3. The language of the current user request.
-4. The dominant language of the provided text.
-5. If still unclear, preserve the original language and do not guess.
+3. If the active adapter is Cursor and no Cursor language rule is declared,
+   use the Codex default first, then the Claude default.
+4. The language of the current user request.
+5. The dominant language of the provided text.
+6. If still unclear, preserve the original language and do not guess.
 
 Use the adapter default only when the active adapter declares its default
 language explicitly. Do not infer it from the assistant name, host locale,
-prior chat history, or repository text. If the adapter default is not declared,
-treat it as `unknown` and continue with the current request language.
+prior chat history, or repository text. The current recognized declarations
+are:
+
+| Adapter | Declaration source | Normalization |
+|---------|--------------------|---------------|
+| Codex | `~/.codex/config.toml` -> `[desktop].localeOverride` | Use the locale value directly, for example `pt-BR`. |
+| Claude Code | `~/.claude/settings.json` -> `language` | Map `Portuguese` to the configured TES Portuguese target, currently `pt-BR`. |
+| Cursor | Cursor User Rules or project rules when explicitly declared | If absent, use Codex default first, then Claude default. |
+
+If the adapter default and fallback defaults are all unknown, continue with
+the current request language.
 
 Selector fixture candidates:
 
@@ -35,6 +46,7 @@ Selector fixture candidates:
 | DLS-003 | No user language; adapter default is `unknown`; request is `pt-BR`; text is `en`. | `pt-BR` |
 | DLS-004 | No user language; adapter default is `unknown`; request language is unclear; text is mostly `de`. | `de` |
 | DLS-005 | No user language; adapter default is `unknown`; request language is unclear; text language is unclear. | preserve original |
+| DLS-006 | Cursor has no declared default; Codex default is `pt-BR`; Claude default is `pt-BR`; request/text are `en`. | `pt-BR` |
 
 These cases define selector expectations for future fixtures. They do not
 certify translation quality, provider behavior, or spoken output.

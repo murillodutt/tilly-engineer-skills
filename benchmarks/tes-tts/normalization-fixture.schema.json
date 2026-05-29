@@ -37,16 +37,34 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
+        "active_adapter",
         "explicit_user_language",
         "declared_adapter_default",
+        "codex_default",
+        "claude_default",
         "request_language",
         "dominant_text_language"
       ],
       "properties": {
+        "active_adapter": {
+          "type": "string",
+          "enum": [
+            "codex",
+            "claude",
+            "cursor",
+            "unknown"
+          ]
+        },
         "explicit_user_language": {
           "$ref": "#/$defs/language_or_absent"
         },
         "declared_adapter_default": {
+          "$ref": "#/$defs/language_or_unknown"
+        },
+        "codex_default": {
+          "$ref": "#/$defs/language_or_unknown"
+        },
+        "claude_default": {
           "$ref": "#/$defs/language_or_unknown"
         },
         "request_language": {

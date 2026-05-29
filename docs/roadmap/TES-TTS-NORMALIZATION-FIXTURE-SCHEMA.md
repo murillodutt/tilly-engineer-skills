@@ -51,8 +51,11 @@ Each fixture is one JSON object with these required fields:
 
 ```json
 {
+  "active_adapter": "cursor",
   "explicit_user_language": "absent",
   "declared_adapter_default": "unknown",
+  "codex_default": "pt-BR",
+  "claude_default": "pt-BR",
   "request_language": "pt-BR",
   "dominant_text_language": "en"
 }
@@ -60,7 +63,9 @@ Each fixture is one JSON object with these required fields:
 
 Allowed first-class language codes are `pt-BR`, `en`, `es`, `fr`, `it`, `de`,
 and `he`. Selector fields may also use `absent`, `unknown`, or `unclear` where
-the schema permits them.
+the schema permits them. Cursor fixtures may keep `declared_adapter_default` as
+`unknown` and use `codex_default` then `claude_default` as fallback inputs when
+no Cursor User Rules or project rules declare a language.
 
 ## Status Values
 
@@ -89,7 +94,7 @@ persist conversion caches.
 ## TTS-004 Boundary
 
 The initial corpus uses this schema and stays dependency-free. It includes the
-selector cases `DLS-001` through `DLS-005` before provider work opens.
+selector cases `DLS-001` through `DLS-006` before provider work opens.
 
 The schema oracle validates both the schema and the corpus shape. It does not
 execute translation, TTS playback, provider probing, network calls, downloads,

@@ -7,7 +7,7 @@ source_of_truth: false
 evidence_level: L2
 ---
 
-# GOAL Prompt: TES TTS TTS-032 Owner Decision Still Open Yet Again
+# GOAL Prompt: TES TTS TTS-032 Roadmap Compaction And Agent Default Language Contract
 
 This is the ready `/goal` prompt for the next circular execution cycle of
 `tes-tts`.
@@ -19,7 +19,7 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
 
 Current unit:
-TTS-032 Owner Decision Still Open Yet Again
+TTS-032 Roadmap Compaction And Agent Default Language Contract
 
 Certified evidence from prior cycle:
 - TTS-031 re-read ADR 0004, all previous TES TTS owner decision records from
@@ -40,6 +40,8 @@ Certified evidence from prior cycle:
   release, push, tag, publish, or sync was performed.
 - Ready prompt artifact for TTS-032 exists at
   docs/roadmap/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md.
+- The repeated owner-decision loop is now classified as non-convergent unless
+  the current user message explicitly asks to preserve that stop state again.
 - TTS-031 focused oracles passed:
   - `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
   - `python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test`
@@ -63,26 +65,26 @@ convergence -> local commit.
 
 Required actions:
 1. Run `git status --short --branch --untracked-files=all`.
-2. Re-read ADR 0004, all previous TES TTS owner decision records from TTS-010
-   onward, the TTS-009 decision record, roadmap, this Super SPEC, and the
-   TTS-032 prompt.
-3. Apply only explicit maintainer decisions already present in the current
-   user message:
-   - accept ADR 0004 or keep it proposed;
-   - authorize release identity planning or defer it;
-   - continue forbidding sync or authorize a later sync cycle.
-4. If ADR acceptance is explicitly approved, update only ADR/status and
-   directly correlated decision surfaces, then certify.
-5. If release identity is explicitly approved, create the next release-identity
-   `/goal` prompt. Do not bump, release, push, tag, publish, or sync in this
-   cycle unless explicitly authorized in this same prompt.
-6. If sync is explicitly authorized without release identity approval, stop at
-   `NEEDS_REVIEW` because release identity must be handled first.
-7. If approval is absent or partial, keep the state `NEEDS_OWNER_DECISION` and
-   create the next exact prompt for the unresolved decision.
+2. Re-read ADR 0004, roadmap, this Super SPEC, normalization SPECs,
+   language-normalization references, selector fixtures, and this TTS-032
+   prompt.
+3. Keep ADR 0004 proposed unless the current user message explicitly accepts
+   it.
+4. Keep release identity and sync out of scope unless the current user message
+   explicitly authorizes them.
+5. Compact `docs/roadmap/README.md` so historical TTS prompts and owner
+   records are not shown as active SPECs.
+6. Encode the `agent_default_language` selector contract:
+   - Codex: `~/.codex/config.toml` `[desktop].localeOverride`;
+   - Claude Code: `~/.claude/settings.json` `language`, normalized by TES
+     policy;
+   - Cursor: explicit User Rules/project rules first; if absent, Codex default
+     first and Claude default second.
+7. Add or update selector fixture coverage for the Cursor fallback.
 8. Update `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` with the cycle outcome,
-   current unit status, and ready prompt pointer before closure.
-9. Commit the local execution as the final action of the cycle.
+   current unit status, and ready prompt posture before closure.
+9. Certify with fixture schema, TDS, doc-size, and focused TTS validators.
+10. Commit the local execution as the final action of the cycle.
 
 Forbidden:
 - no sync, release, push, tag, publish, provider install, provider download,

@@ -49,6 +49,7 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` | Sequential execution contract and acceptance gates. | proposed |
 | `docs/roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` | Fixture schema explanation and TTS-004 boundary. | proposed |
 | `docs/roadmap/TES-TTS-PROVIDER-CANDIDATE-REVIEW.md` | Ranked provider review queue, not certification. | proposed |
+| `docs/roadmap/TES-TTS-SPEC-001-*.md` through `TES-TTS-SPEC-010-*.md` | Ten-step convergence SPEC draft set from roadmap compaction through final audit. | proposed |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | TTS-009 acceptance and release decision record. | active |
 | `docs/roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` | TTS-010 owner approval gate result. | active |
 | `docs/roadmap/TES-TTS-OWNER-DECISION-REQUIRED.md` | TTS-011 owner decision result. | active |
@@ -81,8 +82,8 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` | Circular execution contract for the skill. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000*.md` through `TTS-009*.md` | Historical prompt artifacts for baseline through acceptance decision. Indexed individually in TDS. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-010*.md` through `TTS-019*.md` | Historical prompt artifacts for owner-decision preservation cycles. Indexed individually in TDS. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-020*.md` through `TTS-031*.md` | Historical prompt artifacts for unresolved owner-decision cycles. Indexed individually in TDS. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md` | Ready prompt artifact for the next execution cycle. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-020*.md` through `TTS-031*.md` | Historical prompt artifacts for unresolved owner-decision cycles. Indexed individually in TDS. | historical |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md` | Ready prompt artifact that must be superseded before reuse because the owner-decision loop no longer advances implementation. | needs-rewrite |
 | `scripts/materialize_adapter.py` | Adapter materialization inclusion. | staged |
 | `scripts/command_trigger_oracle.py` | Slash, alias, and natural trigger oracle inclusion. | staged |
 | `scripts/validate_reference_package.py` | Package reference validation inclusion. | staged |
@@ -104,7 +105,7 @@ The current package state is intentionally pre-release:
 | 4 | Keep ADR 0004 as GPS/boundary, not pipeline detail. | ADR 0004 plus architecture/execution SPEC split. |
 | 5 | Treat provider libraries as optional candidates only. | ADR 0004 and architecture SPEC. |
 | 6 | Add first-class language scope: `pt-BR`, `en`, `es`, `fr`, `it`, `de`, `he`. | Architecture SPEC. |
-| 7 | Introduce adapter default language as an explicit preference that never overrides user-requested language. | Language reference and execution SPEC. |
+| 7 | Introduce adapter default language as an explicit preference that never overrides user-requested language, with Cursor falling back to Codex default first and Claude default second when Cursor has no declaration. | Language reference, execution SPEC, and selector fixture `tts-dls-006`. |
 | 8 | Require sequential convergence: one unit, one decision, one oracle, one next step. | Execution SPEC. |
 | 9 | Require every non-converged execution cycle to create the next `/goal` prompt as a tracked artifact. | GOAL Super SPEC and tracked prompt artifacts. |
 | 10 | Require every `tes-tts` execution cycle to update this roadmap before closure. | This roadmap, GOAL Super SPEC, and ready prompt artifacts. |
@@ -120,8 +121,11 @@ execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit
 The current circular execution contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
 
+The current ten-SPEC convergence contract is:
+`docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
+
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -168,7 +172,7 @@ without confusing roadmap detail with ADR boundary.
 
 ### R2: Default-Language Selector Contract
 
-Status: selector contract fixture-ready, pending executable fixtures.
+Status: selector fallback contract fixture-ready, with executable DLS fixtures.
 
 Decision: adapter default language is a default preference, not a hard
 priority. Explicit user language overrides adapter default language. A user
@@ -180,6 +184,9 @@ Required closure:
 - Update language references with the precedence rule.
 - Update architecture or execution SPEC if needed.
 - Record selector fixture candidates before executable fixture work.
+- Preserve the concrete source order: explicit user language, active adapter
+  declaration, Cursor fallback to Codex default, Cursor fallback to Claude
+  default, request language, dominant text language, preserve original.
 
 Exit state: the selector contract is unambiguous and testable.
 
@@ -387,18 +394,57 @@ through `GOAL-PROMPT-tes-tts-TTS-032*.md`.
 
 ### R32: Owner Decision Still Open Yet Again
 
-Status: next work unit, awaiting explicit maintainer decision. Required
-closure remains ADR 0004, release identity, and sync posture only.
+Status: superseded as the next execution shape. The repeated owner-decision
+loop is now classified as non-convergent unless the user message contains a
+direct approval decision. The next productive unit should be a technical
+closure unit, starting with roadmap compaction and the concrete
+`agent_default_language` selector contract.
+
+Required closure:
+
+- Keep ADR 0004 proposed unless explicitly accepted.
+- Keep release identity and sync out of scope unless explicitly authorized.
+- Compact roadmap index noise so historical prompts are not shown as active
+  SPECs.
+- Use `~/.codex/config.toml` `[desktop].localeOverride` as Codex default.
+- Use `~/.claude/settings.json` `language` as Claude default, normalized by
+  TES language policy.
+- Treat Cursor as explicit User Rules/project rules first; when absent, use
+  Codex default first and Claude default second.
+
+## Ten-SPEC Convergence Draft Set
+
+The remaining execution path is now organized as ten draft SPECs:
+
+| SPEC | Focus | Artifact |
+|------|-------|----------|
+| 001 | Roadmap compaction and agent default language | `TES-TTS-SPEC-001-roadmap-compaction-agent-default-language.md` |
+| 002 | Complete fixture corpus | `TES-TTS-SPEC-002-fixture-corpus-complete.md` |
+| 003 | Deterministic instruction normalizer | `TES-TTS-SPEC-003-deterministic-instruction-normalizer.md` |
+| 004 | Pronunciation enrichment rules | `TES-TTS-SPEC-004-pronunciation-enrichment-rules.md` |
+| 005 | No-write provider probe | `TES-TTS-SPEC-005-provider-probe-no-write.md` |
+| 006 | Provider candidate selection | `TES-TTS-SPEC-006-provider-candidate-selection.md` |
+| 007 | Optional translation layer | `TES-TTS-SPEC-007-optional-translation-layer.md` |
+| 008 | Optional G2P/pronunciation provider layer | `TES-TTS-SPEC-008-optional-g2p-pronunciation-provider-layer.md` |
+| 009 | Release identity and sync readiness | `TES-TTS-SPEC-009-release-identity-sync-readiness.md` |
+| 010 | Final audit and closure | `TES-TTS-SPEC-010-final-audit-and-closure.md` |
+
+These drafts do not authorize sync, release, provider install, provider
+download, global config writes, or durable conversion caches.
+
+SPEC-001 outcome: `PASS`. The roadmap index is compacted, the
+`agent_default_language` selector contract is encoded, `tts-dls-006` covers
+Cursor fallback to Codex then Claude, and the next ready prompt is
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md`.
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 ## Current Open Questions
 
-1. Where should a future `agent_default_language` declaration live for each
-   adapter?
-2. Which TTS fixture class should become the first corpus entry after the
+1. Which TTS fixture class should become the first corpus entry after the
    selector cases?
-3. Which provider probe should be built first: local `say`, language
+2. Which provider probe should be built first: local `say`, language
    detection, or translation package discovery?
-4. What is the acceptance threshold for Hebrew: preserve, translate, niqqud
+3. What is the acceptance threshold for Hebrew: preserve, translate, niqqud
    enrich, or explicitly degraded?
 
 ## Governance Rules

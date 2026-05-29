@@ -79,6 +79,7 @@ turning the repository root into an inventory.
 | TES NPX MCP Convergence Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
 | TES Installed Certification And Field Reports Hardening Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
 | TES TTS Sequential Convergence Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` |
+| TES TTS Ten-SPEC Convergence Goal Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md` |
 | TES TTS TTS-000 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md` |
 | TES TTS TTS-001 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md` |
 | TES TTS TTS-002 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md` |
@@ -111,7 +112,9 @@ turning the repository root into an inventory.
 | TES TTS TTS-029 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-029-owner-decision-still-open-again.md` |
 | TES TTS TTS-030 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-030-owner-decision-continues-open-again.md` |
 | TES TTS TTS-031 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-031-owner-decision-remains-open-yet-again.md` |
-| TES TTS TTS-032 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md` |
+| TES TTS TTS-032 roadmap compaction and agent default language prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md` |
+| TES TTS SPEC-001 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md` |
+| TES TTS SPEC-002 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |
@@ -140,6 +143,16 @@ turning the repository root into an inventory.
 | TES TTS normalization execution SPEC | `roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
 | TES TTS normalization fixture schema | `roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` |
 | TES TTS provider candidate review | `roadmap/TES-TTS-PROVIDER-CANDIDATE-REVIEW.md` |
+| TES TTS SPEC 001 roadmap compaction and agent default language | `roadmap/TES-TTS-SPEC-001-roadmap-compaction-agent-default-language.md` |
+| TES TTS SPEC 002 fixture corpus complete | `roadmap/TES-TTS-SPEC-002-fixture-corpus-complete.md` |
+| TES TTS SPEC 003 deterministic instruction normalizer | `roadmap/TES-TTS-SPEC-003-deterministic-instruction-normalizer.md` |
+| TES TTS SPEC 004 pronunciation enrichment rules | `roadmap/TES-TTS-SPEC-004-pronunciation-enrichment-rules.md` |
+| TES TTS SPEC 005 provider probe no-write | `roadmap/TES-TTS-SPEC-005-provider-probe-no-write.md` |
+| TES TTS SPEC 006 provider candidate selection | `roadmap/TES-TTS-SPEC-006-provider-candidate-selection.md` |
+| TES TTS SPEC 007 optional translation layer | `roadmap/TES-TTS-SPEC-007-optional-translation-layer.md` |
+| TES TTS SPEC 008 optional G2P pronunciation provider layer | `roadmap/TES-TTS-SPEC-008-optional-g2p-pronunciation-provider-layer.md` |
+| TES TTS SPEC 009 release identity and sync readiness | `roadmap/TES-TTS-SPEC-009-release-identity-sync-readiness.md` |
+| TES TTS SPEC 010 final audit and closure | `roadmap/TES-TTS-SPEC-010-final-audit-and-closure.md` |
 | RC1 readiness roadmap | `roadmap/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening prompt | `roadmap/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
 | Flash-Fry skill gap spec | `roadmap/FLASH-FRY-SKILL-SPEC.md` |

@@ -3,8 +3,11 @@
     "id": "tts-dls-001",
     "class": "default_language_selector",
     "selector": {
+      "active_adapter": "codex",
       "explicit_user_language": "en",
       "declared_adapter_default": "pt-BR",
+      "codex_default": "pt-BR",
+      "claude_default": "pt-BR",
       "request_language": "pt-BR",
       "dominant_text_language": "pt-BR"
     },
@@ -31,8 +34,11 @@
     "id": "tts-dls-002",
     "class": "default_language_selector",
     "selector": {
+      "active_adapter": "codex",
       "explicit_user_language": "absent",
       "declared_adapter_default": "pt-BR",
+      "codex_default": "pt-BR",
+      "claude_default": "pt-BR",
       "request_language": "en",
       "dominant_text_language": "en"
     },
@@ -59,8 +65,11 @@
     "id": "tts-dls-003",
     "class": "default_language_selector",
     "selector": {
+      "active_adapter": "unknown",
       "explicit_user_language": "absent",
       "declared_adapter_default": "unknown",
+      "codex_default": "unknown",
+      "claude_default": "unknown",
       "request_language": "pt-BR",
       "dominant_text_language": "en"
     },
@@ -87,8 +96,11 @@
     "id": "tts-dls-004",
     "class": "default_language_selector",
     "selector": {
+      "active_adapter": "unknown",
       "explicit_user_language": "absent",
       "declared_adapter_default": "unknown",
+      "codex_default": "unknown",
+      "claude_default": "unknown",
       "request_language": "unclear",
       "dominant_text_language": "de"
     },
@@ -115,8 +127,11 @@
     "id": "tts-dls-005",
     "class": "default_language_selector",
     "selector": {
+      "active_adapter": "unknown",
       "explicit_user_language": "absent",
       "declared_adapter_default": "unknown",
+      "codex_default": "unknown",
+      "claude_default": "unknown",
       "request_language": "unclear",
       "dominant_text_language": "unclear"
     },
@@ -150,5 +165,36 @@
     "expected_status": "PASS",
     "no_summary": true,
     "notes": "DLS-005: unclear inputs preserve original language instead of guessing."
+  },
+  {
+    "id": "tts-dls-006",
+    "class": "default_language_selector",
+    "selector": {
+      "active_adapter": "cursor",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "unknown",
+      "codex_default": "pt-BR",
+      "claude_default": "pt-BR",
+      "request_language": "en",
+      "dominant_text_language": "en"
+    },
+    "source_text": "Read the SDK note aloud from Cursor when no Cursor language rule exists.",
+    "expected_target_language": "pt-BR",
+    "protected_terms": [
+      {
+        "term": "SDK",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "DLS-006: Cursor without a native structured default falls back to Codex default first, then Claude default."
   }
 ]

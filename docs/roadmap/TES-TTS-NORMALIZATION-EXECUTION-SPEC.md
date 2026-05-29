@@ -48,7 +48,7 @@ Convergence means the current unit has:
 | Fixture corpus | Mixed-language samples for `pt-BR`, `en`, `es`, `fr`, `it`, `de`, and `he`. | Fixture schema check. |
 | Protected-term extractor | ADR, SPEC, MCP, API, JSON, YAML, CLI, SDK, SQL, commands, paths, and names survive translation. | Deterministic unit fixtures. |
 | Cache builder | Ephemeral conversion cache shape is produced without disk writes. | Cache fixture test. |
-| Default-language selector | Explicit user language wins, then declared coding-agent adapter default, then request language, then dominant text language. | Selection fixtures. |
+| Default-language selector | Explicit user language wins, then declared coding-agent adapter default, then Cursor fallback to Codex default and Claude default, then request language, then dominant text language. | Selection fixtures. |
 | Provider probe | Detect available provider versions and supported languages without installation. | Probe self-test with mocked providers. |
 | Pronunciation hints | Conservative hints are generated without semantic corruption. | Golden-output fixtures. |
 | Redaction gate | Secret-like values are removed before translation and TTS. | Negative fixtures. |
@@ -57,27 +57,37 @@ Convergence means the current unit has:
 ## Agent Default Language Contract
 
 The coding-agent adapter default language is a selector preference only when
-the adapter declares it explicitly, for example as a future
-`agent_default_language` contract value. It must never override an explicit
-user language request. If that declaration is absent, the value is `unknown`
-and the selector proceeds to request language or dominant text language.
+the adapter declares it explicitly. It must never override an explicit user
+language request. Codex uses `~/.codex/config.toml`
+`[desktop].localeOverride`. Claude Code uses `~/.claude/settings.json`
+`language`, with `Portuguese` normalized to the TES Portuguese target
+`pt-BR`. Cursor has no native structured language setting identified for this
+contract; when Cursor has no explicit User Rules or project rules declaring a
+language, the selector falls back to the Codex default first, then the Claude
+default.
+
+If the active adapter declaration and fallback declarations are absent, the
+value is `unknown` and the selector proceeds to request language or dominant
+text language.
 
 Selection fixtures must cover:
 
 - explicit adapter default language present;
 - adapter default language absent;
 - user language request overriding the declared adapter default;
+- Cursor without a declared default falling back to Codex, then Claude;
 - mixed text falling through to request or dominant text language.
 
 Expected selector outcomes:
 
-| Case | Explicit user language | Declared adapter default | Request language | Dominant text language | Expected target |
-|------|------------------------|--------------------------|------------------|------------------------|-----------------|
-| DLS-001 | `en` | `pt-BR` | `pt-BR` | `pt-BR` | `en` |
-| DLS-002 | absent | `pt-BR` | `en` | `en` | `pt-BR` |
-| DLS-003 | absent | `unknown` | `pt-BR` | `en` | `pt-BR` |
-| DLS-004 | absent | `unknown` | unclear | `de` | `de` |
-| DLS-005 | absent | `unknown` | unclear | unclear | preserve original |
+| Case | Active adapter | Explicit user language | Declared adapter default | Codex default | Claude default | Request language | Dominant text language | Expected target |
+|------|----------------|------------------------|--------------------------|---------------|----------------|------------------|------------------------|-----------------|
+| DLS-001 | Codex | `en` | `pt-BR` | `pt-BR` | `pt-BR` | `pt-BR` | `pt-BR` | `en` |
+| DLS-002 | Codex | absent | `pt-BR` | `pt-BR` | `pt-BR` | `en` | `en` | `pt-BR` |
+| DLS-003 | unknown | absent | `unknown` | `unknown` | `unknown` | `pt-BR` | `en` | `pt-BR` |
+| DLS-004 | unknown | absent | `unknown` | `unknown` | `unknown` | unclear | `de` | `de` |
+| DLS-005 | unknown | absent | `unknown` | `unknown` | `unknown` | unclear | unclear | preserve original |
+| DLS-006 | Cursor | absent | `unknown` | `pt-BR` | `pt-BR` | `en` | `en` | `pt-BR` |
 
 The future fixture schema owns the executable representation of these cases.
 This SPEC owns the expected selector decision order.

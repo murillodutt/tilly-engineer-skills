@@ -62,6 +62,17 @@ REQUIRED_DLS_TARGETS = {
     "tts-dls-003": "pt-BR",
     "tts-dls-004": "de",
     "tts-dls-005": "preserve_original",
+    "tts-dls-006": "pt-BR",
+}
+ADAPTERS = {"codex", "claude", "cursor", "unknown"}
+SELECTOR_FIELDS = {
+    "active_adapter",
+    "explicit_user_language",
+    "declared_adapter_default",
+    "codex_default",
+    "claude_default",
+    "request_language",
+    "dominant_text_language",
 }
 
 
@@ -91,12 +102,7 @@ def validate_schema(schema: dict[str, Any]) -> list[str]:
 
     selector = schema.get("properties", {}).get("selector", {})
     selector_required = set(selector.get("required", []))
-    expected_selector = {
-        "explicit_user_language",
-        "declared_adapter_default",
-        "request_language",
-        "dominant_text_language",
-    }
+    expected_selector = SELECTOR_FIELDS
     if selector_required != expected_selector:
         failures.append(
             "selector required fields mismatch: "
@@ -149,19 +155,16 @@ def validate_selector(fixture: dict[str, Any], failures: list[str]) -> None:
     if not isinstance(selector, dict):
         fail(failures, fixture_id, "selector must be an object")
         return
-    expected = {
-        "explicit_user_language",
-        "declared_adapter_default",
-        "request_language",
-        "dominant_text_language",
-    }
-    if set(selector) != expected:
+    if set(selector) != SELECTOR_FIELDS:
         fail(failures, fixture_id, f"selector keys mismatch: {sorted(selector)}")
         return
+    if selector["active_adapter"] not in ADAPTERS:
+        fail(failures, fixture_id, "active_adapter has invalid value")
     if selector["explicit_user_language"] not in FIRST_CLASS_LANGUAGES | {"absent"}:
         fail(failures, fixture_id, "explicit_user_language has invalid value")
-    if selector["declared_adapter_default"] not in FIRST_CLASS_LANGUAGES | {"unknown"}:
-        fail(failures, fixture_id, "declared_adapter_default has invalid value")
+    for key in ("declared_adapter_default", "codex_default", "claude_default"):
+        if selector[key] not in FIRST_CLASS_LANGUAGES | {"unknown"}:
+            fail(failures, fixture_id, f"{key} has invalid value")
     for key in ("request_language", "dominant_text_language"):
         if selector[key] not in FIRST_CLASS_LANGUAGES | {"unclear"}:
             fail(failures, fixture_id, f"{key} has invalid value")

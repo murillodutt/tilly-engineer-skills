@@ -62,14 +62,23 @@ artifact.
 
 `tes-tts` may use the default language of the active coding-agent adapter as
 a default-language preference only when that adapter declares it explicitly.
-An explicit user language request has higher priority than the adapter
+An explicit user language request has higher priority than any adapter
 default. The skill must not infer this value from the assistant name, host
 locale, prior chat history, or repository text.
 
-When no explicit adapter declaration exists, the adapter default is `unknown`
-and the selector proceeds to the request language and dominant text language.
-The selector is a pure decision step that must be fixture-testable before any
-translation, provider probing, pronunciation enrichment, or TTS playback.
+Recognized adapter declarations are:
+
+| Adapter | Declaration source | Selector handling |
+|---------|--------------------|-------------------|
+| Codex | `~/.codex/config.toml` -> `[desktop].localeOverride` | Use the locale value directly, for example `pt-BR`. |
+| Claude Code | `~/.claude/settings.json` -> `language` | Normalize named languages through TES policy; `Portuguese` maps to `pt-BR` unless a later owner policy changes it. |
+| Cursor | Explicit Cursor User Rules or project rules | If absent, fall back to Codex default first, then Claude default. |
+
+When no active adapter declaration or fallback declaration exists, the adapter
+default is `unknown` and the selector proceeds to the request language and
+dominant text language. The selector is a pure decision step that must be
+fixture-testable before any translation, provider probing, pronunciation
+enrichment, or TTS playback.
 
 ## First-Class Languages
 

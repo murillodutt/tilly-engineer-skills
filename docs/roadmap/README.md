@@ -28,67 +28,29 @@ Wave 7 local package-source closure.
 | TES NPX MCP convergence | Active | `GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
 | TES installed certification and Field Reports hardening | Active | `GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
 | TES TTS sequential convergence | Active | `GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` |
-| TES TTS TTS-000 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md` |
-| TES TTS TTS-001 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md` |
-| TES TTS TTS-002 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md` |
-| TES TTS TTS-003 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md` |
-| TES TTS TTS-004 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-004-fixture-corpus.md` |
-| TES TTS TTS-005 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-005-instruction-normalizer-oracle.md` |
-| TES TTS TTS-006 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-006-provider-probe-contract.md` |
-| TES TTS TTS-007 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-007-provider-candidate-review.md` |
-| TES TTS TTS-008 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-008-adapter-parity.md` |
-| TES TTS TTS-009 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-009-acceptance-and-release-decision.md` |
-| TES TTS TTS-010 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-010-owner-approval-gate.md` |
-| TES TTS TTS-011 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-011-owner-decision-required.md` |
-| TES TTS TTS-012 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-012-explicit-owner-decision.md` |
-| TES TTS TTS-013 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-013-owner-decision-pending.md` |
-| TES TTS TTS-014 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-014-owner-decision-still-pending.md` |
-| TES TTS TTS-015 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-015-owner-decision-still-required.md` |
-| TES TTS TTS-016 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-016-owner-decision-remains-required.md` |
-| TES TTS TTS-017 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-017-owner-decision-open.md` |
-| TES TTS TTS-018 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-018-owner-decision-unresolved.md` |
-| TES TTS TTS-019 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-019-owner-decision-still-unresolved.md` |
-| TES TTS TTS-020 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-020-owner-decision-continues-unresolved.md` |
-| TES TTS TTS-021 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-021-owner-decision-remains-unresolved.md` |
-| TES TTS TTS-022 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-022-owner-decision-still-remains-unresolved.md` |
-| TES TTS TTS-023 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-023-owner-decision-unresolved-again.md` |
-| TES TTS TTS-024 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-024-owner-decision-still-unresolved-again.md` |
-| TES TTS TTS-025 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-025-owner-decision-continues-unresolved-again.md` |
-| TES TTS TTS-026 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-026-owner-decision-remains-unresolved-again.md` |
-| TES TTS TTS-027 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-027-owner-decision-still-remains-unresolved-again.md` |
-| TES TTS TTS-028 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-028-owner-decision-remains-open-again.md` |
-| TES TTS TTS-029 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-029-owner-decision-still-open-again.md` |
-| TES TTS TTS-030 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-030-owner-decision-continues-open-again.md` |
-| TES TTS TTS-031 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-031-owner-decision-remains-open-yet-again.md` |
-| TES TTS TTS-032 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md` |
+| TES TTS ten-SPEC convergence | Active | `GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md` |
+| TES TTS TTS-000 through TTS-009 prompt lineage | Historical | Baseline through acceptance decision prompt artifacts. |
+| TES TTS TTS-010 through TTS-031 prompt lineage | Historical | Owner-decision preservation prompt artifacts; retained for audit, not active execution. |
+| TES TTS TTS-032 roadmap compaction and agent default language prompt | Active | `GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md` |
+| TES TTS SPEC-001 ready goal prompt | Historical | `GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md` |
+| TES TTS SPEC-002 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
-| TES TTS owner approval gate | Active | `TES-TTS-OWNER-APPROVAL-GATE.md` |
-| TES TTS owner decision required | Active | `TES-TTS-OWNER-DECISION-REQUIRED.md` |
-| TES TTS explicit owner decision | Active | `TES-TTS-EXPLICIT-OWNER-DECISION.md` |
-| TES TTS owner decision pending | Active | `TES-TTS-OWNER-DECISION-PENDING.md` |
-| TES TTS owner decision still pending | Active | `TES-TTS-OWNER-DECISION-STILL-PENDING.md` |
-| TES TTS owner decision still required | Active | `TES-TTS-OWNER-DECISION-STILL-REQUIRED.md` |
-| TES TTS owner decision remains required | Active | `TES-TTS-OWNER-DECISION-REMAINS-REQUIRED.md` |
-| TES TTS owner decision open | Active | `TES-TTS-OWNER-DECISION-OPEN.md` |
-| TES TTS owner decision unresolved | Active | `TES-TTS-OWNER-DECISION-UNRESOLVED.md` |
-| TES TTS owner decision still unresolved | Active | `TES-TTS-OWNER-DECISION-STILL-UNRESOLVED.md` |
-| TES TTS owner decision continues unresolved | Active | `TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED.md` |
-| TES TTS owner decision remains unresolved | Active | `TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED.md` |
-| TES TTS owner decision still remains unresolved | Active | `TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED.md` |
-| TES TTS owner decision unresolved again | Active | `TES-TTS-OWNER-DECISION-UNRESOLVED-AGAIN.md` |
-| TES TTS owner decision still unresolved again | Active | `TES-TTS-OWNER-DECISION-STILL-UNRESOLVED-AGAIN.md` |
-| TES TTS owner decision continues unresolved again | Active | `TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED-AGAIN.md` |
-| TES TTS owner decision remains unresolved again | Active | `TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED-AGAIN.md` |
-| TES TTS owner decision still remains unresolved again | Active | `TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED-AGAIN.md` |
-| TES TTS owner decision remains open again | Active | `TES-TTS-OWNER-DECISION-REMAINS-OPEN-AGAIN.md` |
-| TES TTS owner decision still open again | Active | `TES-TTS-OWNER-DECISION-STILL-OPEN-AGAIN.md` |
-| TES TTS owner decision continues open again | Active | `TES-TTS-OWNER-DECISION-CONTINUES-OPEN-AGAIN.md` |
-| TES TTS owner decision remains open yet again | Active | `TES-TTS-OWNER-DECISION-REMAINS-OPEN-YET-AGAIN.md` |
+| TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |
 | TES TTS normalization architecture | Proposed | `TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution | Proposed | `TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
 | TES TTS normalization fixture schema | Proposed | `TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` |
 | TES TTS provider candidate review | Proposed | `TES-TTS-PROVIDER-CANDIDATE-REVIEW.md` |
+| TES TTS SPEC 001 roadmap compaction and agent default language | Complete | `TES-TTS-SPEC-001-roadmap-compaction-agent-default-language.md` |
+| TES TTS SPEC 002 fixture corpus complete | Proposed | `TES-TTS-SPEC-002-fixture-corpus-complete.md` |
+| TES TTS SPEC 003 deterministic instruction normalizer | Proposed | `TES-TTS-SPEC-003-deterministic-instruction-normalizer.md` |
+| TES TTS SPEC 004 pronunciation enrichment rules | Proposed | `TES-TTS-SPEC-004-pronunciation-enrichment-rules.md` |
+| TES TTS SPEC 005 provider probe no-write | Proposed | `TES-TTS-SPEC-005-provider-probe-no-write.md` |
+| TES TTS SPEC 006 provider candidate selection | Proposed | `TES-TTS-SPEC-006-provider-candidate-selection.md` |
+| TES TTS SPEC 007 optional translation layer | Proposed | `TES-TTS-SPEC-007-optional-translation-layer.md` |
+| TES TTS SPEC 008 optional G2P pronunciation provider layer | Proposed | `TES-TTS-SPEC-008-optional-g2p-pronunciation-provider-layer.md` |
+| TES TTS SPEC 009 release identity and sync readiness | Proposed | `TES-TTS-SPEC-009-release-identity-sync-readiness.md` |
+| TES TTS SPEC 010 final audit and closure | Proposed | `TES-TTS-SPEC-010-final-audit-and-closure.md` |
 | RC1 readiness cleanup | Active | `RC1-READINESS-ROADMAP.md` |
 | Cortex hardening sequence | Complete | `GOAL-SUPER-SPEC-cortex-hardening.md` |
 | TES Align semantic drift hardening | Proposed | `TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
@@ -121,6 +83,7 @@ Roadmap updates must classify their status clearly:
 | Status | Meaning |
 |--------|---------|
 | Active | Current planning authority |
+| Needs rewrite | Existing artifact is retained, but should be rewritten before it is reused as execution authority |
 | Historical | Retained for lineage, not the next execution source |
 | Deferred | Intentionally postponed with reason |
 | Complete | Closed by evidence or replaced by a newer source |

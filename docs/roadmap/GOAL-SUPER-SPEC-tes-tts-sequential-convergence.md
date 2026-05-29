@@ -175,11 +175,17 @@ has approved the complete skill.
 | TTS-029 Owner Decision Still Open Again | Apply a concrete maintainer decision after TTS-028 preserved the stop state. | ADR/status and decision docs only when explicitly approved. | focused TTS oracles; `npm run commit:check` when package closure is needed. |
 | TTS-030 Owner Decision Continues Open Again | Apply a concrete maintainer decision after TTS-029 preserved the stop state. | ADR/status and decision docs only when explicitly approved. | focused TTS oracles; `npm run commit:check` when package closure is needed. |
 | TTS-031 Owner Decision Remains Open Yet Again | Apply a concrete maintainer decision after TTS-030 preserved the stop state. | ADR/status and decision docs only when explicitly approved. | focused TTS oracles; `npm run commit:check` when package closure is needed. |
-| TTS-032 Owner Decision Still Open Yet Again | Apply a concrete maintainer decision after TTS-031 preserved the stop state. | ADR/status and decision docs only when explicitly approved. | focused TTS oracles; `npm run commit:check` when package closure is needed. |
+| TTS-032 Roadmap Compaction And Agent Default Language Contract | Stop repeating the owner-decision preservation loop, compact roadmap index noise, and encode the concrete `agent_default_language` selector fallback. | roadmap/index docs, normalization SPECs, language references, selector fixtures, selector oracle. | `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`; `python3 scripts/validate_doc_size.py`; `python3 scripts/validate_tds.py`. |
 
 Every unit must preserve its identifier. A future `/goal` may expand a unit
 into sub-steps, but must not merge, skip, rename, or reorder these units
 without maintainer acceptance.
+
+Repeated owner-decision cycles must not continue unless the current user
+message asks specifically for an owner-decision preservation cycle. If no
+approval decision exists and a productive technical unit is available, choose
+the technical unit instead and keep ADR 0004, release identity, and sync
+unchanged.
 
 ## Senior Analysis Gate
 
@@ -276,7 +282,7 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
 
 Current unit:
-TTS-032 Owner Decision Still Open Yet Again
+TTS-032 Roadmap Compaction And Agent Default Language Contract
 
 Certified evidence from prior cycle:
 - TTS-031 re-read ADR 0004, all previous TES TTS owner decision records from
@@ -295,7 +301,7 @@ Certified evidence from prior cycle:
 - TTS-031 made no provider certification claim and performed no sync, release,
   push, tag, publish, provider install, provider download, real provider probe,
   global config write, durable conversion cache, or proactive `speak` behavior.
-- Ready prompt artifact:
+- Ready prompt artifact exists but must be rewritten before reuse:
   docs/roadmap/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md.
 - TTS-031 focused oracles passed:
   - `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
@@ -319,19 +325,25 @@ execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit
 
 Required actions:
 1. Run `git status --short --branch --untracked-files=all`.
-2. Re-read ADR 0004, all previous TES TTS owner decision records from TTS-010
-   onward, the TTS-009 decision record, roadmap, this Super SPEC, and the
-   TTS-032 prompt.
-3. Apply only explicit maintainer decisions already present in the current
-   prompt or user message.
-4. If ADR acceptance, release identity, or sync approval is absent or partial,
-   keep the state `NEEDS_OWNER_DECISION`.
-5. Certify with focused TTS oracles, docs/package validators, and
-   `npm run commit:check` when package closure is needed.
-6. Update `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` with the cycle outcome,
-   current unit status, and ready prompt pointer.
-7. Create the next `/goal` prompt artifact for any unresolved owner decision.
-8. Commit the local execution as the final action of the cycle.
+2. Re-read ADR 0004, roadmap, this Super SPEC, normalization SPECs,
+   language-normalization references, selector fixtures, and the TTS-032
+   prompt.
+3. Keep ADR 0004 proposed unless the current user message explicitly accepts
+   it.
+4. Keep release identity and sync out of scope unless the current user message
+   explicitly authorizes them.
+5. Compact `docs/roadmap/README.md` so historical TTS prompts and owner
+   records are not shown as active SPECs.
+6. Encode the `agent_default_language` selector contract:
+   - Codex: `~/.codex/config.toml` `[desktop].localeOverride`;
+   - Claude Code: `~/.claude/settings.json` `language`, normalized by TES
+     policy;
+   - Cursor: explicit User Rules/project rules first; if absent, Codex default
+     first and Claude default second.
+7. Add or update selector fixture coverage for the Cursor fallback.
+8. Update `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` with the cycle outcome,
+   current unit status, and ready prompt posture before closure.
+9. Certify with fixture schema, TDS, doc-size, and focused TTS validators.
 
 Forbidden:
 - no sync, release, push, tag, publish, provider install, provider download,
