@@ -1,13 +1,13 @@
 ---
-tds_id: roadmap.goal_prompt_tes_tts_lex_003_spoken_rendering_integration_boundary
+tds_id: roadmap.goal_prompt_tes_tts_lex_004_fixture_migration_from_markdown_shaped_tts_cases
 tds_class: roadmap
-status: archived
+status: active
 consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
 source_of_truth: false
 evidence_level: L2
 ---
 
-# GOAL Prompt: TES TTS LEX-003 Spoken-Rendering Integration Boundary
+# GOAL Prompt: TES TTS LEX-004 Fixture Migration From Markdown-Shaped TTS Cases
 
 ```text
 /goal Continue TES TTS PT-BR lexical normalization.
@@ -16,26 +16,27 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md
 
 Current unit:
-LEX-003 Spoken-Rendering Integration Boundary
+LEX-004 Fixture Migration From Markdown-Shaped TTS Cases
 
 Certified evidence from prior cycle:
 - LEX-001 created the PT-BR lexical manifest schema, sample JSONL, prondict
   converter, and lexical manifest oracle.
-- LEX-002 added dependency-free lookup fixtures at
-  `benchmarks/tes-tts/ptbr-lexical-lookup-fixtures.json`.
-- LEX-002 added the lookup oracle
-  `scripts/tes_tts_ptbr_lexical_lookup_oracle.py`.
-- LEX-002 proved exact lookup, casefold lookup, accented and hyphenated
-  graphemes, governed degraded OOV fixtures, and unknown OOV fallback.
-- Lookup output remains `usage: evidence_only`, preserves source queries, and
-  reports `runtime_output: false`.
-- No full dictionary vendoring, runtime dependency import, IPA/phoneme/SSML
-  runtime output, provider-backed pronunciation claim, release, sync, push,
-  tag, publish, provider install, or provider download was performed.
+- LEX-002 added dependency-free lexical lookup fixtures and oracle coverage.
+- LEX-003 added PT-BR lexical integration fixtures and the oracle
+  `scripts/tes_tts_ptbr_lexical_integration_oracle.py`.
+- LEX-003 updated `.agents`, Codex, and Claude `tes-tts`
+  `references/language-normalization.md` with the lexical evidence boundary.
+- LEX-003 proved source immutability, request-local `spoken_text`, evidence as
+  `usage: evidence_only`, secret redaction before speech, code no-execute
+  posture, no-summary behavior, provider absence degradation, and no IPA,
+  phoneme, or SSML runtime output.
+- No full dictionary vendoring, runtime dependency import, provider-backed
+  pronunciation claim, release, sync, push, tag, publish, provider install, or
+  provider download was performed.
 - Sync status is REMOTE_SYNC_NOT_REQUESTED.
 
 Task:
-Execute only LEX-003 through:
+Execute only LEX-004 through:
 execute -> analyze -> fix -> certify -> create next /goal prompt or close
 convergence -> local commit.
 
@@ -45,35 +46,36 @@ Required actions:
    stage or modify unrelated `.agents/**` changes.
 3. Re-read:
    - `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md`
-   - `docs/roadmap/TES-TTS-LEX-002-PTBR-LEXICAL-LOOKUP-ORACLE.md`
+   - `docs/roadmap/TES-TTS-LEX-003-SPOKEN-RENDERING-INTEGRATION-BOUNDARY.md`
    - `docs/roadmap/TES-TTS-SKILL-ROADMAP.md`
-   - `benchmarks/tes-tts/ptbr-lexical-sample.jsonl`
-   - `benchmarks/tes-tts/ptbr-lexical-lookup-fixtures.json`
-   - `scripts/tes_tts_ptbr_lexical_lookup_oracle.py`
+   - `benchmarks/tes-tts/**`
+   - `scripts/tes_tts_*_oracle.py`
    - `.agents/skills/tes-tts/**`
    - `src/adapters/codex/skills/tes-tts/**`
    - `src/adapters/claude/skills/tes-tts/**`
-4. Execute LEX-003 only:
-   - define the boundary for attaching PT-BR lexical evidence to request-local
-     speech preparation;
-   - preserve immutable `source_text`;
-   - keep `spoken_text` request-local;
-   - keep IPA/pronunciation evidence out of runtime speech output unless a
-     later explicitly approved surface allows it;
-   - preserve secret redaction, exact islands, no-summary behavior, code
-     no-execute posture, and provider-absence degradation.
-5. Analyze the diff for source immutability, runtime claim drift, no-summary
-   behavior, privacy, adapter parity, and migration pressure.
-6. Fix only observed LEX-003 defects.
+4. Execute LEX-004 only:
+   - identify Markdown-shaped TTS pronunciation evidence that should move
+     toward JSON/JSONL lexical manifests;
+   - add or migrate the smallest representative fixture set without deleting
+     still-used legacy fixtures;
+   - preserve existing normalizer and provider oracles;
+   - keep source text immutable, `spoken_text` request-local, and lexical
+     evidence metadata-only;
+   - do not introduce runtime IPA/phoneme/SSML output or provider-backed
+     pronunciation claims.
+5. Analyze the diff for fixture stability, false-green risk, source
+   immutability, no-summary behavior, privacy, adapter parity, and migration
+   pressure.
+6. Fix only observed LEX-004 defects.
 7. Certify with lexical oracles, focused TTS oracles, workbench/adapter quick
    validation when skill docs change, materialization check, TDS/doc-size
    reference graph validators, `git diff --check`, and package closure only
    when unrelated drift does not make it impossible to interpret.
 8. Create the next exact LEX `/goal` prompt before closure unless the lexical
    sequence closes.
-9. Update `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` with LEX-003 outcome, next
+9. Update `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` with LEX-004 outcome, next
    prompt pointer, and sync status.
-10. Stage only LEX-003 files and commit locally as the final shell action.
+10. Stage only LEX-004 files and commit locally as the final shell action.
 
 Forbidden:
 - no sync, release, push, tag, publish, provider install, provider download,

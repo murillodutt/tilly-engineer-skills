@@ -16,10 +16,10 @@ Canonical artifact:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md`
 
 Current execution unit:
-`LEX-003 Spoken-rendering integration boundary`
+`LEX-004 Fixture migration from Markdown-shaped TTS cases`
 
 Ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-LEX-003-spoken-rendering-integration-boundary.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-LEX-004-fixture-migration-from-markdown-shaped-tts-cases.md`
 
 Prior line:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md`
@@ -117,7 +117,7 @@ evidence and deterministic local checks.
 |------|-------|----------|
 | LEX-001 | PT-BR lexical dataset and manifest contract | Complete: schema, converter, sample fixtures, provenance fields, and no-runtime-claim rules. |
 | LEX-002 | PT-BR lexical lookup oracle | Complete: dependency-free parser/lookup over fixture/sample data; no provider integration. |
-| LEX-003 | Spoken-rendering integration boundary | Attach lexical evidence to `spoken_text` preparation without altering source text or claiming IPA runtime. |
+| LEX-003 | Spoken-rendering integration boundary | Complete: attach lexical evidence to request-local speech preparation without altering source text or claiming IPA runtime. |
 | LEX-004 | Fixture migration from Markdown-shaped TTS cases | Move pronunciation evidence toward JSON/JSONL manifests while preserving current oracles. |
 | LEX-005 | PT-BR lexical final audit | Confirm local scope, gaps, license/provenance notes, and next language expansion decision. |
 

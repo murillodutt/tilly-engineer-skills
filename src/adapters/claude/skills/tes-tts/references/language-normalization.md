@@ -75,6 +75,36 @@ user asks to see it.
 `spoken_text` is derived from `normalized_text`. Do not mutate source text to
 make speech sound better.
 
+## PT-BR Lexical Evidence Boundary
+
+When PT-BR lexical lookup is available, attach its result only as
+request-local evidence metadata during speech preparation:
+
+```text
+source_text
+-> redacted_source_for_speech
+-> normalized_text
+-> lexical_evidence
+-> spoken_text
+```
+
+Rules:
+
+1. Keep `source_text` immutable.
+2. Keep `spoken_text` request-local and send only `spoken_text` to TTS.
+3. Keep `lexical_evidence.usage` as `evidence_only`.
+4. Do not copy IPA, phonemes, SSML, or lexicon text into `spoken_text`.
+5. Do not claim provider-backed pronunciation, G2P, or runtime IPA output.
+6. Redact secrets before lexical lookup and before TTS.
+7. Preserve exact islands, commands, code, paths, URLs, hashes, and protected
+   terms according to the selected rendering intent.
+8. Treat OOV or provider absence as degraded evidence, not a hard failure for
+   basic read-aloud.
+
+The PT-BR lexical data can help future pronunciation decisions, but this skill
+does not speak IPA or phoneme strings. A later approved runtime surface must
+certify any provider-specific pronunciation use before it is sent to TTS.
+
 ## Rendering Intent
 
 Choose the spoken rendering intent before final cleanup:

@@ -858,6 +858,20 @@ documents:
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-LEX-003-spoken-rendering-integration-boundary.md
     id: roadmap.goal_prompt_tes_tts_lex_003_spoken_rendering_integration_boundary
     class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/TES-TTS-LEX-003-SPOKEN-RENDERING-INTEGRATION-BOUNDARY.md
+    id: roadmap.tes_tts_lex_003_spoken_rendering_integration_boundary
+    class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-LEX-004-fixture-migration-from-markdown-shaped-tts-cases.md
+    id: roadmap.goal_prompt_tes_tts_lex_004_fixture_migration_from_markdown_shaped_tts_cases
+    class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
