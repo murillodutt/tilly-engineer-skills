@@ -127,6 +127,7 @@ turning the repository root into an inventory.
 | TES TTS OWNER-001 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md` |
 | TES TTS OWNER-001 acceptance decision | `roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` |
 | TES TTS capability migration Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md` |
+| TES TTS conversational rendering Super SPEC | `roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` |
 | TES TTS CAP-001 feasibility study | `roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` |
 | TES TTS CAP-001 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` |
 | TES TTS CAP-002 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` |
@@ -134,6 +135,8 @@ turning the repository root into an inventory.
 | TES TTS CAP-004 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md` |
 | TES TTS CAP-005 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md` |
 | TES TTS CAP-005 final local audit | `roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md` |
+| TES TTS CAP-006 conversational spoken rendering | `roadmap/TES-TTS-CAP-006-CONVERSATIONAL-SPOKEN-RENDERING.md` |
+| TES TTS CAP-006 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-CAP-006-conversational-spoken-rendering.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |

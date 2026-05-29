@@ -46,6 +46,7 @@ Wave 7 local package-source closure.
 | TES TTS OWNER-001 decision prompt | Historical | `GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md` |
 | TES TTS OWNER-001 acceptance decision | Complete | `TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` |
 | TES TTS capability migration | Complete | `GOAL-SUPER-SPEC-tes-tts-capability-migration.md` |
+| TES TTS conversational rendering | Active | `GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` |
 | TES TTS CAP-001 feasibility study | Active | `TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` |
 | TES TTS CAP-001 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` |
 | TES TTS CAP-002 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` |
@@ -53,6 +54,8 @@ Wave 7 local package-source closure.
 | TES TTS CAP-004 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md` |
 | TES TTS CAP-005 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md` |
 | TES TTS CAP-005 final local audit | Complete | `TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md` |
+| TES TTS CAP-006 conversational spoken rendering | Active | `TES-TTS-CAP-006-CONVERSATIONAL-SPOKEN-RENDERING.md` |
+| TES TTS CAP-006 goal prompt | Active | `GOAL-PROMPT-tes-tts-CAP-006-conversational-spoken-rendering.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |

@@ -631,6 +631,13 @@ documents:
     consumer: maintainers, tes-tts maintainers, adapter authors, and validation authors
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md
+    id: roadmap.goal_super_spec_tes_tts_conversational_rendering
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md
     id: roadmap.goal_prompt_tes_tts_spec_001_roadmap_compaction_agent_default_language
     class: roadmap
@@ -748,6 +755,20 @@ documents:
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/TES-TTS-CAP-006-CONVERSATIONAL-SPOKEN-RENDERING.md
+    id: roadmap.tes_tts_cap_006_conversational_spoken_rendering
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-006-conversational-spoken-rendering.md
+    id: roadmap.goal_prompt_tes_tts_cap_006_conversational_spoken_rendering
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md

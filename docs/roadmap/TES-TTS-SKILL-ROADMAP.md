@@ -25,14 +25,9 @@ it reads or narrates user-provided text only when explicitly requested. It must
 not become the proactive `speak` channel, a dependency manager, a bundled
 translation stack, or a global voice registry.
 
-The current package state is intentionally pre-release:
-
-- no sync has been authorized;
-- no release identity has been closed;
-- no provider dependency has been installed, bundled, or certified;
-- normalization is instruction-level plus accepted architecture;
-- local validators have passed during construction, but final package closure
-  still requires the normal release gates and maintainer approval.
+The package is intentionally pre-release: no sync, release identity, or
+provider dependency has been authorized, and final package closure still
+requires normal release gates plus maintainer approval.
 
 ## Development Target
 
@@ -72,6 +67,7 @@ surface for release, materialization, and sync decisions.
 | `docs/roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md` | OWNER-001 acceptance/release/sync decision prompt. | archived |
 | `docs/roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` | ADR 0004 acceptance decision record. | active |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md` | Post-ADR capability migration execution contract. | complete |
+| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` | Post-CAP extension contract for conversational spoken rendering. | active |
 | `docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` | Feasibility study for migrating portable TTS behavior. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` | Historical prompt for first portable capability migration cut. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` | Historical prompt for speech transformation hardening. | historical |
@@ -79,6 +75,8 @@ surface for release, materialization, and sync decisions.
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md` | Historical prompt for provider fallback catalog use. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md` | Historical prompt for adapter parity and final local audit. | historical |
 | `docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md` | Final local audit record for CAP capability migration. | complete |
+| `docs/roadmap/TES-TTS-CAP-006-CONVERSATIONAL-SPOKEN-RENDERING.md` | First conversational rendering unit for interlocutor-style oral prose. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-006-conversational-spoken-rendering.md` | Ready prompt for CAP-006 conversational spoken rendering execution. | active |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | TTS-009 acceptance and release decision record. | active |
 | `docs/roadmap/TES-TTS-OWNER-*.md` | Historical owner-decision records TTS-010 through TTS-031; retained in TDS and `docs/INDEX.md`. | historical |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
@@ -121,6 +119,7 @@ surface for release, materialization, and sync decisions.
 | 11 | Accept ADR 0004 as the active pronunciation normalization and enrichment boundary. | `TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md`. |
 | 12 | Start capability migration as a new bounded sequence, using mapped simple TTS and `speak` learning as references rather than wholesale copies. | `GOAL-SUPER-SPEC-tes-tts-capability-migration.md`. |
 | 13 | Use `.agents/skills/tes-tts` as the active development and test workbench, then mirror converged content into the canonical Codex adapter source. | This roadmap and `GOAL-SUPER-SPEC-tes-tts-capability-migration.md`. |
+| 14 | Open conversational spoken rendering as a new successor line after CAP-005 closure, focused on interlocutor-style oral prose with protected technical identity. | `GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md`; `TES-TTS-CAP-006-CONVERSATIONAL-SPOKEN-RENDERING.md`. |
 
 ## Circular Execution Control
 
@@ -138,6 +137,11 @@ The current ten-SPEC convergence contract is:
 
 The current CAP migration prompt state is closed:
 `docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md`
+
+The current conversational rendering execution contract is
+`docs/roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md`; its ready
+prompt is
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-006-conversational-spoken-rendering.md`.
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -434,6 +438,12 @@ Next ready prompt: none. CAP capability migration is locally closed by
 `docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
+Conversational rendering status: CAP-006 is now the active successor line for
+interlocutor-style oral prose. It is not a release, sync, provider, or proactive
+`speak` authorization. Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-006-conversational-spoken-rendering.md`.
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
 CAP outcomes:
 
 | CAP | Outcome | Sync |
@@ -443,6 +453,7 @@ CAP outcomes:
 | CAP-003 | Closed pronunciation hints and protected-term preservation for URL, HTTP, JSON, YAML, SQL, SPEC, TES, Tilly, Codex, Claude, Cursor, OpenAI, package/model names, commands, and code identifiers. | `REMOTE_SYNC_NOT_REQUESTED` |
 | CAP-004 | Closed request-local provider fallback catalog use with mocked fixtures for provider order, error classes, explicit voice preservation, voice-default retry, all-provider failure, and no durable provider state. | `REMOTE_SYNC_NOT_REQUESTED` |
 | CAP-005 | Closed adapter parity and final local audit. Workbench and Codex are byte-aligned; Codex and Claude differ only in the intentional adapter-specific history line. Package closure is degraded by unrelated development skill parity drift. | `REMOTE_SYNC_NOT_REQUESTED` |
+| CAP-006 | Active. Conversational spoken-rendering Super SPEC, CAP unit, and ready prompt were materialized for the next execution cycle. | `REMOTE_SYNC_NOT_REQUESTED` |
 
 ## Current Open Questions
 
