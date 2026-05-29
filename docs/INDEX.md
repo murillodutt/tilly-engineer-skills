@@ -158,7 +158,8 @@ turning the repository root into an inventory.
 | TES TTS LEX-005 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md` |
 | TES TTS RTE-000 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-RTE-000-preflight-latency-baseline.md` |
 | TES TTS RTE-001 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-RTE-001-compiled-lexical-index-contract.md` |
-| TES TTS RTE-002 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-RTE-002-hot-path-span-matcher.md` |
+| TES TTS RTE-002 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-RTE-002-hot-path-span-matcher.md` |
+| TES TTS RTE-003 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-RTE-003-fast-path-spoken-rendering.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |
