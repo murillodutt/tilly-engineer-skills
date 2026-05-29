@@ -110,6 +110,7 @@ turning the repository root into an inventory.
 | TES TTS TTS-028 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-028-owner-decision-remains-open-again.md` |
 | TES TTS TTS-029 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-029-owner-decision-still-open-again.md` |
 | TES TTS TTS-030 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-030-owner-decision-continues-open-again.md` |
+| TES TTS TTS-031 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-031-owner-decision-remains-open-yet-again.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |
@@ -132,6 +133,7 @@ turning the repository root into an inventory.
 | TES TTS owner decision still remains unresolved again | `roadmap/TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED-AGAIN.md` |
 | TES TTS owner decision remains open again | `roadmap/TES-TTS-OWNER-DECISION-REMAINS-OPEN-AGAIN.md` |
 | TES TTS owner decision still open again | `roadmap/TES-TTS-OWNER-DECISION-STILL-OPEN-AGAIN.md` |
+| TES TTS owner decision continues open again | `roadmap/TES-TTS-OWNER-DECISION-CONTINUES-OPEN-AGAIN.md` |
 | TES TTS normalization architecture SPEC | `roadmap/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution SPEC | `roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
 | TES TTS normalization fixture schema | `roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` |
