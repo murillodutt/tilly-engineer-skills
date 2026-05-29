@@ -68,6 +68,7 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED-AGAIN.md` | TTS-025 owner decision continues unresolved again result. | active |
 | `docs/roadmap/TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED-AGAIN.md` | TTS-026 owner decision remains unresolved again result. | active |
 | `docs/roadmap/TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED-AGAIN.md` | TTS-027 owner decision still remains unresolved again result. | active |
+| `docs/roadmap/TES-TTS-OWNER-DECISION-REMAINS-OPEN-AGAIN.md` | TTS-028 owner decision remains open again result. | active |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
 | `benchmarks/tes-tts/normalization-fixtures.json` | Minimal dependency-free fixture corpus. | proposed |
 | `benchmarks/tes-tts/instruction-normalizer-fixtures.json` | Instruction-level normalizer oracle fixtures. | proposed |
@@ -77,8 +78,8 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` | Circular execution contract for the skill. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000*.md` through `TTS-009*.md` | Historical prompt artifacts for baseline through acceptance decision. Indexed individually in TDS. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-010*.md` through `TTS-019*.md` | Historical prompt artifacts for owner-decision preservation cycles. Indexed individually in TDS. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-020*.md` through `TTS-027*.md` | Historical prompt artifacts for unresolved owner-decision cycles. Indexed individually in TDS. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-028-owner-decision-remains-open-again.md` | Ready prompt artifact for the next execution cycle. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-020*.md` through `TTS-028*.md` | Historical prompt artifacts for unresolved owner-decision cycles. Indexed individually in TDS. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-029-owner-decision-still-open-again.md` | Ready prompt artifact for the next execution cycle. | active |
 | `scripts/materialize_adapter.py` | Adapter materialization inclusion. | staged |
 | `scripts/command_trigger_oracle.py` | Slash, alias, and natural trigger oracle inclusion. | staged |
 | `scripts/validate_reference_package.py` | Package reference validation inclusion. | staged |
@@ -117,7 +118,7 @@ The current circular execution contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-028-owner-decision-remains-open-again.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-029-owner-decision-still-open-again.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -425,6 +426,11 @@ Status: TTS-027 recorded no explicit owner decision; state remains
 `NEEDS_OWNER_DECISION`, with roadmap update and TTS-028 prompt pointer done.
 
 ### R28: Owner Decision Remains Open Again
+
+Status: TTS-028 recorded no explicit owner decision; state remains
+`NEEDS_OWNER_DECISION`, with roadmap update and TTS-029 prompt pointer done.
+
+### R29: Owner Decision Still Open Again
 
 Status: next work unit, awaiting explicit maintainer decision. Required
 closure remains ADR 0004, release identity, and sync posture only.
