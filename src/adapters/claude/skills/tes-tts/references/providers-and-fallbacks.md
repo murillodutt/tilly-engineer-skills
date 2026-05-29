@@ -66,9 +66,10 @@ Apply these cleanup rules conservatively:
 |----------------|-----------------|
 | URLs | In non-exact mode, say a useful destination phrase such as "pagina do GitHub" for GitHub URLs, or "link" for generic URLs. Preserve raw URLs for exact/verbatim reading. |
 | File paths | In non-exact mode, say a useful folder or file phrase such as "pasta tes tts". Preserve raw paths for exact/verbatim reading. |
-| Long hashes/IDs | Say "hash" or "identifier" unless the user asks for exact reading. |
+| Long hashes/IDs | Say "hash" or `GUID` unless the user asks for exact reading. |
+| Email/IP/social tokens | Say compact forms for email addresses, valid IPv4 addresses, mentions, and hashtags; preserve raw tokens for exact/verbatim reading. |
 | Markdown formatting | Remove markup and preserve the words. |
-| Code blocks | Describe briefly unless the user asks to read code verbatim. |
+| Code blocks | Remove code fences and preserve code or command text unless the user asks for a summary. |
 | Long lists | Preserve items when the user asked to hear them; group only when the user asked for summary. |
 | Technical terms | Preserve the term in source/cache metadata and use `language-normalization.md` for spoken rendering, such as `ADR` -> `A D R`. |
 

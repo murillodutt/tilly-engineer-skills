@@ -75,6 +75,7 @@ a proactive announcement channel for normal TES status updates.
 | 2026-05-28 | Added default-language normalization reference and ephemeral TTS conversion cache semantics. | Maintainer directive to analyze text, translate non-default language spans, preserve technical terms, and adapt pronunciation. | high |
 | 2026-05-28 | Added provider/fallback reference from portable `speak` lessons while preserving reactive/proactive separation. | Maintainer directive and `tmp/skills/speak/SKILL.md` source review. | high |
 | 2026-05-29 | Added CAP-001 deterministic spoken-rendering boundary for acronyms, paths, URLs, exact reads, and no-summary preservation. | CAP-001 feasibility study, instruction normalizer oracle fixtures, and maintainer runtime feedback. | high |
+| 2026-05-29 | Hardened CAP-002 speech transformation for Markdown, code fences, hashes, GUIDs, email addresses, valid IPv4 addresses, mentions, hashtags, and exact-read preservation. | CAP-002 instruction normalizer fixtures and speech transformation hardening prompt. | high |
 
 ## Do Not Lose
 

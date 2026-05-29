@@ -35,6 +35,15 @@ LETTER_SPELLED_TERMS = {"ADR", "MCP", "API", "SDK", "CLI"}
 COMMON_LOCAL_PRONUNCIATION_TERMS = {"JSON", "YAML", "SQL"}
 ACRONYM_PATTERN = re.compile(r"\b(ADR|MCP|API|SDK|CLI)(?:-(\d+))?\b")
 URL_PATTERN = re.compile(r"https?://[^\s)\]]+")
+EMAIL_PATTERN = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+IPV4_PATTERN = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+GUID_PATTERN = re.compile(
+    r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-"
+    r"[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b"
+)
+LONG_HASH_PATTERN = re.compile(r"\b[0-9a-fA-F]{16,}\b")
+MENTION_PATTERN = re.compile(r"(?<![\w.])@([A-Za-z0-9_][A-Za-z0-9_.-]{0,63})\b")
+HASHTAG_PATTERN = re.compile(r"(?<![\w])#([A-Za-z0-9_][A-Za-z0-9_-]{0,63})\b")
 PATH_PATTERN = re.compile(
     r"(?<!\w)(?:\.{1,2}/|\.[A-Za-z0-9_-]+/|/)"
     r"[A-Za-z0-9._~@%+:-]+(?:/[A-Za-z0-9._~@%+:-]+)*"
@@ -155,6 +164,45 @@ def render_path_for_speech(path: str, exact_read: bool) -> str:
     return f"pasta {spoken_name}"
 
 
+def render_email_for_speech(email: str, exact_read: bool) -> str:
+    if exact_read:
+        return email
+    local, domain = email.split("@", 1)
+    local_name = re.sub(r"[._%+-]+", " ", local).strip()
+    domain_name = re.sub(r"[.-]+", " ", domain).strip()
+    if local_name and domain_name:
+        return f"email {local_name} em {domain_name}"
+    return "email"
+
+
+def is_valid_ipv4(candidate: str) -> bool:
+    return all(0 <= int(part) <= 255 for part in candidate.split("."))
+
+
+def render_ipv4_for_speech(ip_address: str, exact_read: bool) -> str:
+    if exact_read or not is_valid_ipv4(ip_address):
+        return ip_address
+    return "IP " + " ponto ".join(ip_address.split("."))
+
+
+def render_identifier_for_speech(identifier: str, exact_read: bool, label: str) -> str:
+    if exact_read:
+        return identifier
+    return label
+
+
+def render_mention_for_speech(match: re.Match[str], exact_read: bool) -> str:
+    if exact_read:
+        return match.group(0)
+    return "mencao " + re.sub(r"[_.-]+", " ", match.group(1)).strip()
+
+
+def render_hashtag_for_speech(match: re.Match[str], exact_read: bool) -> str:
+    if exact_read:
+        return match.group(0)
+    return "hashtag " + re.sub(r"[_-]+", " ", match.group(1)).strip()
+
+
 def render_spoken_text(text: str, source_text: str) -> str:
     exact_read = wants_exact_reading(source_text)
     rendered_spans: list[str] = []
@@ -164,7 +212,19 @@ def render_spoken_text(text: str, source_text: str) -> str:
         return f"__TES_TTS_SPAN_{len(rendered_spans) - 1}__"
 
     spoken = URL_PATTERN.sub(lambda match: stash(render_url_for_speech(match.group(0), exact_read)), text)
+    spoken = EMAIL_PATTERN.sub(lambda match: stash(render_email_for_speech(match.group(0), exact_read)), spoken)
+    spoken = IPV4_PATTERN.sub(lambda match: stash(render_ipv4_for_speech(match.group(0), exact_read)), spoken)
+    spoken = GUID_PATTERN.sub(
+        lambda match: stash(render_identifier_for_speech(match.group(0), exact_read, "GUID")),
+        spoken,
+    )
+    spoken = LONG_HASH_PATTERN.sub(
+        lambda match: stash(render_identifier_for_speech(match.group(0), exact_read, "hash")),
+        spoken,
+    )
     spoken = PATH_PATTERN.sub(lambda match: stash(render_path_for_speech(match.group(0), exact_read)), spoken)
+    spoken = MENTION_PATTERN.sub(lambda match: stash(render_mention_for_speech(match, exact_read)), spoken)
+    spoken = HASHTAG_PATTERN.sub(lambda match: stash(render_hashtag_for_speech(match, exact_read)), spoken)
     if not exact_read:
         spoken = ACRONYM_PATTERN.sub(render_acronym, spoken)
 
@@ -549,6 +609,11 @@ def validate_spoken_rendering_fixtures(fixtures: list[dict[str, Any]]) -> list[s
         "tts-spoken-github-url-rendering",
         "tts-spoken-exact-read-preserves-technical-spans",
         "tts-spoken-url-false-positive-guard",
+        "tts-transform-markdown-entities",
+        "tts-transform-code-fence-preserves-command",
+        "tts-transform-long-hash-and-guid",
+        "tts-transform-email-ip-social-spans",
+        "tts-transform-exact-preserves-new-entities",
     }
     seen = {fixture["id"] for fixture in fixtures if "spoken_rendering" in fixture["checks"]}
     missing = sorted(required - seen)

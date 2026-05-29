@@ -85,8 +85,8 @@ make speech sound better.
    word-for-word translation.
 5. Keep quoted user text faithful. Translate it for speech only when the user
    asked for standard-language reading.
-6. Keep code blocks summarized unless the user explicitly asks to read code
-   verbatim.
+6. Remove code fences for speech while preserving code or command text unless
+   the user explicitly asks for a summary.
 7. Redact secret-like values before translation and before speech.
 
 ## Technical Term Handling
@@ -113,6 +113,11 @@ prefer a pronunciation that sounds natural in the default language:
 | SQL | Use the common local pronunciation, not a literal translation. |
 | URLs | Use a useful destination phrase in non-exact mode, such as "pagina do GitHub" for GitHub URLs; preserve raw URLs for exact reading. |
 | Paths | Use a useful folder/file phrase in non-exact mode, such as "pasta tes tts"; preserve raw paths for exact reading. |
+| Long hashes | Say "hash" in non-exact mode; preserve the raw value for exact reading. |
+| GUIDs | Say `GUID` in non-exact mode; preserve the raw value for exact reading. |
+| Email addresses | Say a compact address phrase in non-exact mode; preserve the raw address for exact reading. |
+| IPv4 addresses | Say valid dotted IPv4 addresses with "ponto" separators in non-exact mode; leave invalid dotted tokens unchanged. |
+| Mentions and hashtags | Say "mencao ..." and "hashtag ..." in non-exact mode; preserve raw tokens for exact reading. |
 | Commands | Preserve command text exactly; never execute it. |
 | Proper nouns | Preserve written identity; add spacing only if the TTS engine would distort it. |
 

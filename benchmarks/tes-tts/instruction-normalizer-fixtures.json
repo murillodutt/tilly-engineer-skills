@@ -239,6 +239,157 @@
     ]
   },
   {
+    "id": "tts-transform-markdown-entities",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "## Links\n- Leia [repo](https://github.com/example/project) com *cuidado*.\n- Fale `ADR` sem resumir.",
+    "protected_terms": ["https://github.com/example/project", "ADR"],
+    "expected_redactions": [],
+    "forbidden_terms": ["##", "[repo]", "*cuidado*", "`ADR`"],
+    "expected_speech_contains": [
+      "Links",
+      "repo pagina do GitHub",
+      "cuidado",
+      "A D R"
+    ],
+    "expected_speech_excludes": [
+      "https://github.com/example/project",
+      "[",
+      "](",
+      "`"
+    ],
+    "max_chunk_chars": 220,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "markdown_cleanup",
+      "spoken_rendering",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-transform-code-fence-preserves-command",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Leia o bloco:\n```bash\ntes tts --voice default\n```\nDepois confirme CLI.",
+    "protected_terms": ["tes tts --voice default", "CLI"],
+    "expected_redactions": [],
+    "forbidden_terms": ["```bash", "```"],
+    "expected_speech_contains": [
+      "tes tts --voice default",
+      "C L I"
+    ],
+    "max_chunk_chars": 220,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "markdown_cleanup",
+      "spoken_rendering",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-transform-long-hash-and-guid",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Leia commit abcdef1234567890abcdef1234567890 e job 550e8400-e29b-41d4-a716-446655440000 sem resumir.",
+    "protected_terms": [
+      "abcdef1234567890abcdef1234567890",
+      "550e8400-e29b-41d4-a716-446655440000"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_speech_contains": ["hash", "GUID"],
+    "expected_speech_excludes": [
+      "abcdef1234567890abcdef1234567890",
+      "550e8400-e29b-41d4-a716-446655440000"
+    ],
+    "max_chunk_chars": 220,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-transform-email-ip-social-spans",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Leia ops@example.com, IP 192.168.0.10, @tes-team e #release sem transformar 999.1.1.1 em IP.",
+    "protected_terms": ["ops@example.com", "192.168.0.10", "@tes-team", "#release", "999.1.1.1"],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_speech_contains": [
+      "email ops em example com",
+      "IP 192 ponto 168 ponto 0 ponto 10",
+      "mencao tes team",
+      "hashtag release",
+      "999.1.1.1"
+    ],
+    "expected_speech_excludes": [
+      "ops@example.com",
+      "@tes-team",
+      "#release"
+    ],
+    "max_chunk_chars": 240,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-transform-exact-preserves-new-entities",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Leia literalmente ops@example.com, 192.168.0.10, abcdef1234567890abcdef1234567890, 550e8400-e29b-41d4-a716-446655440000, @tes-team e #release.",
+    "protected_terms": [
+      "ops@example.com",
+      "192.168.0.10",
+      "abcdef1234567890abcdef1234567890",
+      "550e8400-e29b-41d4-a716-446655440000",
+      "@tes-team",
+      "#release"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_speech_contains": [
+      "ops@example.com",
+      "192.168.0.10",
+      "abcdef1234567890abcdef1234567890",
+      "550e8400-e29b-41d4-a716-446655440000",
+      "@tes-team",
+      "#release"
+    ],
+    "expected_speech_excludes": [
+      "email ops em example com",
+      "IP 192 ponto 168 ponto 0 ponto 10",
+      "hash",
+      "GUID",
+      "mencao tes team",
+      "hashtag release"
+    ],
+    "max_chunk_chars": 280,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "no_summary"
+    ]
+  },
+  {
     "id": "tts-translation-redaction-first",
     "target_language": "pt-BR",
     "detected_language": "en",

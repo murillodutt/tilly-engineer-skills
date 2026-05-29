@@ -48,7 +48,8 @@ Wave 7 local package-source closure.
 | TES TTS capability migration | Active | `GOAL-SUPER-SPEC-tes-tts-capability-migration.md` |
 | TES TTS CAP-001 feasibility study | Active | `TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` |
 | TES TTS CAP-001 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` |
-| TES TTS CAP-002 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` |
+| TES TTS CAP-002 goal prompt | Historical | `GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` |
+| TES TTS CAP-003 ready goal prompt | Active | `GOAL-PROMPT-tes-tts-CAP-003-pronunciation-hints-protected-terms.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |

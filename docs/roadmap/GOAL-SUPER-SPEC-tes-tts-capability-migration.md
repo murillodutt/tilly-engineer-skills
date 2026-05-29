@@ -84,4 +84,4 @@ create the next ready prompt artifact before local commit.
 
 ## Ready Prompt
 
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-003-pronunciation-hints-protected-terms.md`
