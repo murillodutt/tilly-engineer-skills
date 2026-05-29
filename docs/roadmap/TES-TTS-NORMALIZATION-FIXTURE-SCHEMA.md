@@ -16,6 +16,9 @@ runtime dependencies, sync, release, or certified language behavior.
 Machine-readable schema:
 [`benchmarks/tes-tts/normalization-fixture.schema.json`](../../benchmarks/tes-tts/normalization-fixture.schema.json)
 
+Minimal corpus:
+[`benchmarks/tes-tts/normalization-fixtures.json`](../../benchmarks/tes-tts/normalization-fixtures.json)
+
 Focused oracle:
 `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
 
@@ -79,6 +82,9 @@ persist conversion caches.
 
 ## TTS-004 Boundary
 
-The next unit may add a corpus using this schema. That corpus must stay
-dependency-free, avoid private project vocabulary, and include at least the
+The initial corpus uses this schema and stays dependency-free. It includes the
 selector cases `DLS-001` through `DLS-005` before provider work opens.
+
+The schema oracle validates both the schema and the corpus shape. It does not
+execute translation, TTS playback, provider probing, network calls, downloads,
+or install steps.

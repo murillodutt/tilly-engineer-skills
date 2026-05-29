@@ -49,13 +49,15 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` | Sequential execution contract and acceptance gates. | proposed |
 | `docs/roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` | Fixture schema explanation and TTS-004 boundary. | proposed |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
+| `benchmarks/tes-tts/normalization-fixtures.json` | Minimal dependency-free fixture corpus. | proposed |
 | `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` | Executive registry and evolution roadmap. | active |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` | Circular execution contract for the skill. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md` | Historical prompt artifact for the completed preflight cycle. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md` | Historical prompt artifact for roadmap and SPEC coherence. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md` | Historical prompt artifact for selector contract readiness. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md` | Historical prompt artifact for fixture schema. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-004-fixture-corpus.md` | Ready prompt artifact for the next execution cycle. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-004-fixture-corpus.md` | Historical prompt artifact for the minimal corpus. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-005-instruction-normalizer-oracle.md` | Ready prompt artifact for the next execution cycle. | active |
 | `scripts/materialize_adapter.py` | Adapter materialization inclusion. | staged |
 | `scripts/command_trigger_oracle.py` | Slash, alias, and natural trigger oracle inclusion. | staged |
 | `scripts/validate_reference_package.py` | Package reference validation inclusion. | staged |
@@ -90,7 +92,7 @@ The current circular execution contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-004-fixture-corpus.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-005-instruction-normalizer-oracle.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -161,7 +163,7 @@ Exit state: future corpus entries have one governed shape and can be linted.
 
 ### R4: Fixture Corpus
 
-Status: next work unit.
+Status: minimal selector corpus created, pending broader fixture classes.
 
 Required fixture classes:
 
@@ -179,7 +181,7 @@ probing or implementation claims.
 
 ### R5: Instruction-Level Normalizer Oracle
 
-Status: not started.
+Status: next work unit.
 
 Goal: prove the current instruction-only behavior before introducing optional
 libraries.

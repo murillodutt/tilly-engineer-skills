@@ -239,7 +239,7 @@ and remaining release identity decision instead.
 ## Current Ready /goal Prompt
 
 Prompt artifact:
-`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-004-fixture-corpus.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-TTS-005-instruction-normalizer-oracle.md`
 
 Use this prompt to start the next sequential execution cycle:
 
@@ -250,40 +250,39 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
 
 Current unit:
-TTS-004 Fixture Corpus
+TTS-005 Instruction Normalizer Oracle
 
 Certified evidence from prior cycle:
-- TTS-003 re-read the Super SPEC, execution SPEC, roadmap, and Codex/Claude
-  language-normalization references.
-- TTS-003 added a dependency-free fixture schema at
-  benchmarks/tes-tts/normalization-fixture.schema.json.
-- TTS-003 documented the schema at
-  docs/roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md.
-- TTS-003 added `scripts/tes_tts_fixture_schema_oracle.py --self-test`.
-- The schema covers selector inputs, source text, expected target language,
-  protected terms, redaction expectation, provider state, expected status, and
-  `no_summary: true`.
+- TTS-004 re-read the fixture schema doc, JSON schema, execution SPEC,
+  roadmap, and Codex/Claude language-normalization references.
+- TTS-004 added the minimal dependency-free corpus at
+  benchmarks/tes-tts/normalization-fixtures.json.
+- TTS-004 began the corpus with selector cases `tts-dls-001` through
+  `tts-dls-005`, corresponding to DLS-001 through DLS-005.
+- TTS-004 strengthened `scripts/tes_tts_fixture_schema_oracle.py --self-test`
+  so it validates both schema and corpus shape.
 - Ready prompt artifact:
-  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-004-fixture-corpus.md.
-- TTS-003 focused oracles passed:
+  docs/roadmap/GOAL-PROMPT-tes-tts-TTS-005-instruction-normalizer-oracle.md.
+- TTS-004 focused oracles passed:
   - `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
   - `python3 scripts/validate_tds.py`
   - `python3 scripts/validate_doc_size.py`
   - `python3 scripts/validate_reference_package.py`
-  - targeted schema `rg` checks.
+  - targeted corpus `rg` checks.
 
 Task:
-Execute only TTS-004 through the circular sequence:
+Execute only TTS-005 through the circular sequence:
 execute -> analyze -> fix -> certify -> create next /goal prompt -> local commit.
 
 Required actions:
 1. Run `git status --short --branch --untracked-files=all`.
-2. Re-read the fixture schema doc, JSON schema, execution SPEC, roadmap, and
-   selector candidates.
-3. Add the minimal fixture corpus using the TTS-003 schema.
-4. Fix only TTS-004 corpus defects or schema-compatibility gaps.
+2. Re-read the minimal corpus, fixture schema doc, execution SPEC, roadmap,
+   and language-normalization references.
+3. Prove instruction-level cache, protected terms, redaction, and no-summary
+   behavior without provider dependencies.
+4. Fix only TTS-005 oracle or fixture gaps.
 5. Certify with targeted `rg` checks and the smallest docs/package oracles.
-6. Create the next `/goal` prompt artifact for TTS-005 if not converged.
+6. Create the next `/goal` prompt artifact for TTS-006 if not converged.
 7. Commit the local execution as the final action of the cycle.
 
 Forbidden:

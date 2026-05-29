@@ -1,0 +1,154 @@
+[
+  {
+    "id": "tts-dls-001",
+    "class": "default_language_selector",
+    "selector": {
+      "explicit_user_language": "en",
+      "declared_adapter_default": "pt-BR",
+      "request_language": "pt-BR",
+      "dominant_text_language": "pt-BR"
+    },
+    "source_text": "Leia este texto em English: vamos revisar a ADR.",
+    "expected_target_language": "en",
+    "protected_terms": [
+      {
+        "term": "ADR",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "DLS-001: explicit user language wins over declared adapter default."
+  },
+  {
+    "id": "tts-dls-002",
+    "class": "default_language_selector",
+    "selector": {
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "pt-BR",
+      "request_language": "en",
+      "dominant_text_language": "en"
+    },
+    "source_text": "Read the MCP note aloud with the adapter default.",
+    "expected_target_language": "pt-BR",
+    "protected_terms": [
+      {
+        "term": "MCP",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "DLS-002: declared adapter default wins when no user language is explicit."
+  },
+  {
+    "id": "tts-dls-003",
+    "class": "default_language_selector",
+    "selector": {
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "unknown",
+      "request_language": "pt-BR",
+      "dominant_text_language": "en"
+    },
+    "source_text": "Pode narrar: the SPEC should stay precise.",
+    "expected_target_language": "pt-BR",
+    "protected_terms": [
+      {
+        "term": "SPEC",
+        "kind": "technical_term",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "DLS-003: request language wins when adapter default is unknown."
+  },
+  {
+    "id": "tts-dls-004",
+    "class": "default_language_selector",
+    "selector": {
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "unknown",
+      "request_language": "unclear",
+      "dominant_text_language": "de"
+    },
+    "source_text": "Bitte lies den API-Hinweis vor.",
+    "expected_target_language": "de",
+    "protected_terms": [
+      {
+        "term": "API",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "DLS-004: dominant text language wins when request language is unclear."
+  },
+  {
+    "id": "tts-dls-005",
+    "class": "default_language_selector",
+    "selector": {
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "unknown",
+      "request_language": "unclear",
+      "dominant_text_language": "unclear"
+    },
+    "source_text": "ADR / SPEC / MCP",
+    "expected_target_language": "preserve_original",
+    "protected_terms": [
+      {
+        "term": "ADR",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      },
+      {
+        "term": "SPEC",
+        "kind": "technical_term",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      },
+      {
+        "term": "MCP",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "DLS-005: unclear inputs preserve original language instead of guessing."
+  }
+]

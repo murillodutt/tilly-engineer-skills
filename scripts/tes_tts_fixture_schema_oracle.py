@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the TES TTS fixture schema contract without loading a corpus."""
+"""Validate the TES TTS fixture schema contract and dependency-free corpus."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "benchmarks/tes-tts/normalization-fixture.schema.json"
+CORPUS_PATH = ROOT / "benchmarks/tes-tts/normalization-fixtures.json"
 VERSION = "0.3.147"
 
 REQUIRED_FIELDS = {
@@ -36,6 +37,32 @@ PROVIDER_STATES = {
     "tts_not_available",
 }
 EXPECTED_STATUSES = {"PASS", "DEGRADED", "NEEDS_REVIEW", "BLOCKED"}
+FIXTURE_CLASSES = {
+    "default_language_selector",
+    "language_normalization",
+    "protected_terms",
+    "redaction",
+    "markdown_transform",
+    "provider_fallback",
+    "pronunciation_hint",
+}
+PROTECTED_TERM_KINDS = {
+    "acronym",
+    "technical_term",
+    "proper_noun",
+    "command",
+    "path",
+    "code_identifier",
+    "model_name",
+    "package_name",
+}
+REQUIRED_DLS_TARGETS = {
+    "tts-dls-001": "en",
+    "tts-dls-002": "pt-BR",
+    "tts-dls-003": "pt-BR",
+    "tts-dls-004": "de",
+    "tts-dls-005": "preserve_original",
+}
 
 
 def enum_at(schema: dict[str, Any], *path: str) -> set[str]:
@@ -112,6 +139,135 @@ def validate_schema(schema: dict[str, Any]) -> list[str]:
     return failures
 
 
+def fail(failures: list[str], fixture_id: str, message: str) -> None:
+    failures.append(f"{fixture_id}: {message}")
+
+
+def validate_selector(fixture: dict[str, Any], failures: list[str]) -> None:
+    fixture_id = str(fixture.get("id", "<unknown>"))
+    selector = fixture.get("selector")
+    if not isinstance(selector, dict):
+        fail(failures, fixture_id, "selector must be an object")
+        return
+    expected = {
+        "explicit_user_language",
+        "declared_adapter_default",
+        "request_language",
+        "dominant_text_language",
+    }
+    if set(selector) != expected:
+        fail(failures, fixture_id, f"selector keys mismatch: {sorted(selector)}")
+        return
+    if selector["explicit_user_language"] not in FIRST_CLASS_LANGUAGES | {"absent"}:
+        fail(failures, fixture_id, "explicit_user_language has invalid value")
+    if selector["declared_adapter_default"] not in FIRST_CLASS_LANGUAGES | {"unknown"}:
+        fail(failures, fixture_id, "declared_adapter_default has invalid value")
+    for key in ("request_language", "dominant_text_language"):
+        if selector[key] not in FIRST_CLASS_LANGUAGES | {"unclear"}:
+            fail(failures, fixture_id, f"{key} has invalid value")
+
+
+def validate_protected_terms(fixture: dict[str, Any], failures: list[str]) -> None:
+    fixture_id = str(fixture.get("id", "<unknown>"))
+    terms = fixture.get("protected_terms")
+    if not isinstance(terms, list):
+        fail(failures, fixture_id, "protected_terms must be an array")
+        return
+    for index, term in enumerate(terms):
+        if not isinstance(term, dict):
+            fail(failures, fixture_id, f"protected_terms[{index}] must be an object")
+            continue
+        if not isinstance(term.get("term"), str) or not term["term"]:
+            fail(failures, fixture_id, f"protected_terms[{index}].term must be non-empty")
+        if term.get("kind") not in PROTECTED_TERM_KINDS:
+            fail(failures, fixture_id, f"protected_terms[{index}].kind has invalid value")
+        if term.get("must_preserve") is not True:
+            fail(failures, fixture_id, f"protected_terms[{index}].must_preserve must be true")
+
+
+def validate_redaction(fixture: dict[str, Any], failures: list[str]) -> None:
+    fixture_id = str(fixture.get("id", "<unknown>"))
+    redaction = fixture.get("redaction")
+    if not isinstance(redaction, dict):
+        fail(failures, fixture_id, "redaction must be an object")
+        return
+    if set(redaction) != {"contains_secret_like_value", "expected_redactions"}:
+        fail(failures, fixture_id, f"redaction keys mismatch: {sorted(redaction)}")
+    if not isinstance(redaction.get("contains_secret_like_value"), bool):
+        fail(failures, fixture_id, "contains_secret_like_value must be boolean")
+    if not isinstance(redaction.get("expected_redactions"), list):
+        fail(failures, fixture_id, "expected_redactions must be an array")
+
+
+def validate_fixture(fixture: Any) -> list[str]:
+    failures: list[str] = []
+    if not isinstance(fixture, dict):
+        return ["fixture entry must be an object"]
+
+    fixture_id = str(fixture.get("id", "<unknown>"))
+    unknown_keys = sorted(set(fixture) - (REQUIRED_FIELDS | {"notes"}))
+    missing_keys = sorted(REQUIRED_FIELDS - set(fixture))
+    if unknown_keys:
+        fail(failures, fixture_id, f"unknown fields: {unknown_keys}")
+    if missing_keys:
+        fail(failures, fixture_id, f"missing required fields: {missing_keys}")
+        return failures
+
+    if not isinstance(fixture["id"], str) or not fixture["id"].startswith("tts-"):
+        fail(failures, fixture_id, "id must start with tts-")
+    if fixture["class"] not in FIXTURE_CLASSES:
+        fail(failures, fixture_id, "class has invalid value")
+    if not isinstance(fixture["source_text"], str) or not fixture["source_text"]:
+        fail(failures, fixture_id, "source_text must be non-empty")
+    if fixture["expected_target_language"] not in FIRST_CLASS_LANGUAGES | {"preserve_original"}:
+        fail(failures, fixture_id, "expected_target_language has invalid value")
+    if fixture["provider_state"] not in PROVIDER_STATES:
+        fail(failures, fixture_id, "provider_state has invalid value")
+    if fixture["expected_status"] not in EXPECTED_STATUSES:
+        fail(failures, fixture_id, "expected_status has invalid value")
+    if fixture["no_summary"] is not True:
+        fail(failures, fixture_id, "no_summary must be true")
+
+    validate_selector(fixture, failures)
+    validate_protected_terms(fixture, failures)
+    validate_redaction(fixture, failures)
+    return failures
+
+
+def validate_corpus(corpus: Any) -> list[str]:
+    failures: list[str] = []
+    if not isinstance(corpus, list):
+        return ["corpus root must be an array"]
+
+    seen_ids: set[str] = set()
+    for fixture in corpus:
+        fixture_id = fixture.get("id", "<unknown>") if isinstance(fixture, dict) else "<unknown>"
+        if fixture_id in seen_ids:
+            fail(failures, str(fixture_id), "duplicate fixture id")
+        seen_ids.add(str(fixture_id))
+        failures.extend(validate_fixture(fixture))
+
+    missing_dls = sorted(set(REQUIRED_DLS_TARGETS) - seen_ids)
+    if missing_dls:
+        failures.append(f"missing required DLS fixtures: {missing_dls}")
+
+    by_id = {fixture.get("id"): fixture for fixture in corpus if isinstance(fixture, dict)}
+    for fixture_id, expected_target in REQUIRED_DLS_TARGETS.items():
+        fixture = by_id.get(fixture_id)
+        if not fixture:
+            continue
+        if fixture.get("class") != "default_language_selector":
+            fail(failures, fixture_id, "DLS fixture class must be default_language_selector")
+        if fixture.get("expected_target_language") != expected_target:
+            fail(
+                failures,
+                fixture_id,
+                f"expected target {expected_target}, got {fixture.get('expected_target_language')}",
+            )
+
+    return failures
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--self-test", action="store_true")
@@ -121,7 +277,9 @@ def main() -> int:
         parser.error("only --self-test is supported")
 
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    corpus = json.loads(CORPUS_PATH.read_text(encoding="utf-8"))
     failures = validate_schema(schema)
+    failures.extend(validate_corpus(corpus))
     status = "FAIL" if failures else "PASS"
     print(
         json.dumps(
@@ -129,6 +287,7 @@ def main() -> int:
                 "status": status,
                 "version": VERSION,
                 "schema": str(SCHEMA_PATH.relative_to(ROOT)),
+                "corpus": str(CORPUS_PATH.relative_to(ROOT)),
                 "failures": failures,
             },
             indent=2,

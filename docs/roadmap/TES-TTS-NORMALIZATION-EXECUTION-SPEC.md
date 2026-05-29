@@ -86,6 +86,8 @@ This SPEC owns the expected selector decision order.
 
 Fixture records use the machine-readable schema at
 [`benchmarks/tes-tts/normalization-fixture.schema.json`](../../benchmarks/tes-tts/normalization-fixture.schema.json).
+The initial dependency-free corpus lives at
+[`benchmarks/tes-tts/normalization-fixtures.json`](../../benchmarks/tes-tts/normalization-fixtures.json).
 The schema is dependency-free and can be checked with:
 
 ```bash
