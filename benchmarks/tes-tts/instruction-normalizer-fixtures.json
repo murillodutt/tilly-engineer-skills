@@ -121,6 +121,124 @@
     ]
   },
   {
+    "id": "tts-spoken-acronym-rendering",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Leia ADR, MCP, API, SDK e CLI em voz alta sem resumir.",
+    "protected_terms": ["ADR", "MCP", "API", "SDK", "CLI"],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_speech_contains": [
+      "A D R",
+      "M C P",
+      "A P I",
+      "S D K",
+      "C L I"
+    ],
+    "expected_speech_excludes": ["ADR", "MCP", "API", "SDK", "CLI"],
+    "max_chunk_chars": 180,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-spoken-path-rendering",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Leia .agents/skills/tes-tts em voz alta sem resumir.",
+    "protected_terms": [".agents/skills/tes-tts"],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_speech_contains": ["pasta tes tts"],
+    "expected_speech_excludes": [".agents/skills/tes-tts"],
+    "max_chunk_chars": 180,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-spoken-github-url-rendering",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Leia https://github.com/example/project em voz alta sem resumir.",
+    "protected_terms": ["https://github.com/example/project"],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_speech_contains": ["pagina do GitHub"],
+    "expected_speech_excludes": ["https://github.com/example/project"],
+    "max_chunk_chars": 180,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-spoken-exact-read-preserves-technical-spans",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Leia exatamente ADR, .agents/skills/tes-tts e https://github.com/example/project sem alterar.",
+    "protected_terms": [
+      "ADR",
+      ".agents/skills/tes-tts",
+      "https://github.com/example/project"
+    ],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_speech_contains": [
+      "ADR",
+      ".agents/skills/tes-tts",
+      "https://github.com/example/project"
+    ],
+    "expected_speech_excludes": [
+      "A D R",
+      "pasta tes tts",
+      "pagina do GitHub"
+    ],
+    "max_chunk_chars": 220,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "no_summary"
+    ]
+  },
+  {
+    "id": "tts-spoken-url-false-positive-guard",
+    "target_language": "pt-BR",
+    "detected_language": "pt-BR",
+    "source_text": "Leia 7.am e release.v1 como texto; depois leia ADR sem resumir.",
+    "protected_terms": ["7.am", "release.v1", "ADR"],
+    "expected_redactions": [],
+    "forbidden_terms": [],
+    "expected_speech_contains": ["7.am", "release.v1", "A D R"],
+    "expected_speech_excludes": ["link"],
+    "max_chunk_chars": 180,
+    "expected_min_chunks": 1,
+    "no_summary": true,
+    "checks": [
+      "cache_shape",
+      "protected_terms",
+      "spoken_rendering",
+      "no_summary"
+    ]
+  },
+  {
     "id": "tts-translation-redaction-first",
     "target_language": "pt-BR",
     "detected_language": "en",

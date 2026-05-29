@@ -25,6 +25,7 @@ REQUIRED_CACHE_KEYS = {
     "detected_language",
     "target_language",
     "normalized_text",
+    "spoken_text",
     "preserved_terms",
     "pronunciation_hints",
     "redactions",
@@ -32,6 +33,24 @@ REQUIRED_CACHE_KEYS = {
 FIRST_CLASS_LANGUAGES = {"pt-BR", "en", "es", "fr", "it", "de", "he"}
 LETTER_SPELLED_TERMS = {"ADR", "MCP", "API", "SDK", "CLI"}
 COMMON_LOCAL_PRONUNCIATION_TERMS = {"JSON", "YAML", "SQL"}
+ACRONYM_PATTERN = re.compile(r"\b(ADR|MCP|API|SDK|CLI)(?:-(\d+))?\b")
+URL_PATTERN = re.compile(r"https?://[^\s)\]]+")
+PATH_PATTERN = re.compile(
+    r"(?<!\w)(?:\.{1,2}/|\.[A-Za-z0-9_-]+/|/)"
+    r"[A-Za-z0-9._~@%+:-]+(?:/[A-Za-z0-9._~@%+:-]+)*"
+)
+EXACT_READ_PATTERNS = (
+    "exact",
+    "verbatim",
+    "literal",
+    "raw",
+    "exatamente",
+    "literalmente",
+    "sem alterar",
+    "sem modificar",
+    "preserve o path",
+    "preserve the path",
+)
 FORBIDDEN_HINT_CLAIMS = {
     "ipa",
     "ssml",
@@ -98,6 +117,60 @@ def clean_markdown_for_speech(text: str) -> str:
     cleaned = re.sub(r"[*_]{1,3}([^*_]+)[*_]{1,3}", r"\1", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned)
     return cleaned.strip()
+
+
+def wants_exact_reading(text: str) -> bool:
+    lowered = text.lower()
+    return any(pattern in lowered for pattern in EXACT_READ_PATTERNS)
+
+
+def spell_letters(term: str) -> str:
+    return " ".join(term)
+
+
+def render_acronym(match: re.Match[str]) -> str:
+    term = match.group(1)
+    suffix = match.group(2)
+    rendered = spell_letters(term)
+    if suffix:
+        return f"{rendered} {suffix}"
+    return rendered
+
+
+def render_url_for_speech(url: str, exact_read: bool) -> str:
+    if exact_read:
+        return url
+    if "github.com" in url.lower():
+        return "pagina do GitHub"
+    return "link"
+
+
+def render_path_for_speech(path: str, exact_read: bool) -> str:
+    if exact_read:
+        return path
+    name = path.rstrip("/").split("/")[-1]
+    spoken_name = re.sub(r"[-_]+", " ", name)
+    if "." in name and not name.startswith("."):
+        return f"arquivo {spoken_name}"
+    return f"pasta {spoken_name}"
+
+
+def render_spoken_text(text: str, source_text: str) -> str:
+    exact_read = wants_exact_reading(source_text)
+    rendered_spans: list[str] = []
+
+    def stash(rendered: str) -> str:
+        rendered_spans.append(rendered)
+        return f"__TES_TTS_SPAN_{len(rendered_spans) - 1}__"
+
+    spoken = URL_PATTERN.sub(lambda match: stash(render_url_for_speech(match.group(0), exact_read)), text)
+    spoken = PATH_PATTERN.sub(lambda match: stash(render_path_for_speech(match.group(0), exact_read)), spoken)
+    if not exact_read:
+        spoken = ACRONYM_PATTERN.sub(render_acronym, spoken)
+
+    for index, rendered in enumerate(rendered_spans):
+        spoken = spoken.replace(f"__TES_TTS_SPAN_{index}__", rendered)
+    return re.sub(r"\s+", " ", spoken).strip()
 
 
 def pronunciation_hint(term: str) -> str:
@@ -217,6 +290,7 @@ def prepare_instruction_level_speech(fixture: dict[str, Any]) -> PreparedSpeech:
             "detected_language": fixture["detected_language"],
             "target_language": fixture["target_language"],
             "normalized_text": chunk,
+            "spoken_text": render_spoken_text(chunk, fixture["source_text"]),
             "preserved_terms": [term for term in protected_terms if term in chunk],
             "pronunciation_hints": pronunciation_hints([term for term in protected_terms if term in chunk]),
             "redactions": redactions,
@@ -225,7 +299,7 @@ def prepare_instruction_level_speech(fixture: dict[str, Any]) -> PreparedSpeech:
     ]
     return PreparedSpeech(
         cache=cache,
-        speech_text=" ".join(entry["normalized_text"] for entry in cache),
+        speech_text=" ".join(entry["spoken_text"] for entry in cache),
         translation_plan=translation_plan,
         pronunciation_plan=pronunciation_plan,
     )
@@ -260,6 +334,10 @@ def validate_fixture_shape(fixture: dict[str, Any]) -> list[str]:
         fixture["expected_speech_contains"], list
     ):
         failures.append(f"{fixture['id']}: expected_speech_contains must be a list when present")
+    if "expected_speech_excludes" in fixture and not isinstance(
+        fixture["expected_speech_excludes"], list
+    ):
+        failures.append(f"{fixture['id']}: expected_speech_excludes must be a list when present")
     if "expected_pronunciation_hints" in fixture and not isinstance(
         fixture["expected_pronunciation_hints"], list
     ):
@@ -308,9 +386,11 @@ def validate_prepared_fixture(fixture: dict[str, Any]) -> list[str]:
         if entry["target_language"] != fixture["target_language"]:
             failures.append(f"{fixture_id}: cache[{index}] target language drifted")
 
+    normalized_text = " ".join(entry["normalized_text"] for entry in prepared.cache)
+
     for term in fixture["protected_terms"]:
-        if term not in prepared.speech_text:
-            failures.append(f"{fixture_id}: protected term {term} missing from speech text")
+        if term not in normalized_text:
+            failures.append(f"{fixture_id}: protected term {term} missing from normalized text")
 
     for expected in fixture["expected_redactions"]:
         if not any(expected in entry["redactions"] for entry in prepared.cache):
@@ -325,6 +405,10 @@ def validate_prepared_fixture(fixture: dict[str, Any]) -> list[str]:
     for expected in fixture.get("expected_speech_contains", []):
         if expected not in prepared.speech_text:
             failures.append(f"{fixture_id}: expected speech text {expected!r} missing")
+
+    for forbidden in fixture.get("expected_speech_excludes", []):
+        if forbidden in prepared.speech_text:
+            failures.append(f"{fixture_id}: excluded speech text {forbidden!r} leaked")
 
     actual_hints = [
         hint
@@ -341,7 +425,7 @@ def validate_prepared_fixture(fixture: dict[str, Any]) -> list[str]:
         if leaked_claims:
             failures.append(f"{fixture_id}: pronunciation hints contain forbidden claims {leaked_claims}")
         for term in fixture["protected_terms"]:
-            if term not in prepared.speech_text:
+            if term not in normalized_text:
                 failures.append(f"{fixture_id}: pronunciation hint changed visible term {term}")
 
     if "markdown_cleanup" in fixture["checks"]:
@@ -405,10 +489,10 @@ def validate_prepared_fixture(fixture: dict[str, Any]) -> list[str]:
 
     if "no_summary" in fixture["checks"]:
         source_terms = set(clean_markdown_for_speech(redact_secret_like_values(fixture["source_text"])[0]).split())
-        speech_terms = set(prepared.speech_text.split())
-        missing_terms = sorted(source_terms - speech_terms)
+        normalized_terms = set(normalized_text.split())
+        missing_terms = sorted(source_terms - normalized_terms)
         if missing_terms:
-            failures.append(f"{fixture_id}: speech text dropped terms {missing_terms}")
+            failures.append(f"{fixture_id}: normalized text dropped terms {missing_terms}")
 
     return failures
 
@@ -458,6 +542,21 @@ def validate_pronunciation_boundary_fixtures(fixtures: list[dict[str, Any]]) -> 
     return []
 
 
+def validate_spoken_rendering_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
+    required = {
+        "tts-spoken-acronym-rendering",
+        "tts-spoken-path-rendering",
+        "tts-spoken-github-url-rendering",
+        "tts-spoken-exact-read-preserves-technical-spans",
+        "tts-spoken-url-false-positive-guard",
+    }
+    seen = {fixture["id"] for fixture in fixtures if "spoken_rendering" in fixture["checks"]}
+    missing = sorted(required - seen)
+    if missing:
+        return [f"missing spoken rendering fixtures: {missing}"]
+    return []
+
+
 def validate_no_disk_write_surface() -> list[str]:
     tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
     failures: list[str] = []
@@ -484,6 +583,7 @@ def main() -> int:
     fixtures = load_fixtures()
     failures.extend(validate_translation_boundary_fixtures(fixtures))
     failures.extend(validate_pronunciation_boundary_fixtures(fixtures))
+    failures.extend(validate_spoken_rendering_fixtures(fixtures))
     for fixture in fixtures:
         failures.extend(validate_prepared_fixture(fixture))
 

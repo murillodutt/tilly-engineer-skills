@@ -64,13 +64,13 @@ Apply these cleanup rules conservatively:
 
 | Source pattern | Speech handling |
 |----------------|-----------------|
-| URLs | Say "link" or omit when non-essential. |
-| File paths | Say the filename or a short path only when relevant. |
+| URLs | In non-exact mode, say a useful destination phrase such as "pagina do GitHub" for GitHub URLs, or "link" for generic URLs. Preserve raw URLs for exact/verbatim reading. |
+| File paths | In non-exact mode, say a useful folder or file phrase such as "pasta tes tts". Preserve raw paths for exact/verbatim reading. |
 | Long hashes/IDs | Say "hash" or "identifier" unless the user asks for exact reading. |
 | Markdown formatting | Remove markup and preserve the words. |
 | Code blocks | Describe briefly unless the user asks to read code verbatim. |
 | Long lists | Preserve items when the user asked to hear them; group only when the user asked for summary. |
-| Technical terms | Preserve the term and use `language-normalization.md` for pronunciation hints. |
+| Technical terms | Preserve the term in source/cache metadata and use `language-normalization.md` for spoken rendering, such as `ADR` -> `A D R`. |
 
 ## Non-Goals From Speak
 

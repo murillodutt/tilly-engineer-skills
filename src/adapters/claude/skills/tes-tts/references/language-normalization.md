@@ -60,7 +60,8 @@ tts_conversion_cache:
 - source_span: original sentence or paragraph
   detected_language: language inferred from the span
   target_language: default reading language
-  normalized_text: text that will be spoken
+  normalized_text: source-faithful cleaned text
+  spoken_text: request-local text that will be spoken
   preserved_terms: proper nouns, product names, acronyms, commands, paths
   pronunciation_hints: spoken rendering changes, if any
   redactions: secret-like content removed from speech
@@ -68,6 +69,9 @@ tts_conversion_cache:
 
 The cache is for speech only. It is not a translation deliverable unless the
 user asks to see it.
+
+`spoken_text` is derived from `normalized_text`. Do not mutate source text to
+make speech sound better.
 
 ## Normalization Rules
 
@@ -98,16 +102,17 @@ prefer a pronunciation that sounds natural in the default language:
 
 | Term | Spoken rendering guidance |
 |------|---------------------------|
-| ADR | Read as separate letters unless the user has a project pronunciation. |
+| ADR | Read as `A D R` unless exact reading is requested. |
 | SPEC | Read as "spec" when used as a technical noun. |
-| MCP | Read as separate letters. |
-| API | Read as separate letters. |
-| SDK | Read as separate letters. |
-| CLI | Read as separate letters. |
+| MCP | Read as `M C P` unless exact reading is requested. |
+| API | Read as `A P I` unless exact reading is requested. |
+| SDK | Read as `S D K` unless exact reading is requested. |
+| CLI | Read as `C L I` unless exact reading is requested. |
 | JSON | Use the common local pronunciation, not a literal translation. |
 | YAML | Use the common local pronunciation, not a literal translation. |
 | SQL | Use the common local pronunciation, not a literal translation. |
-| Paths | Preserve the path exactly; make it speech-friendly only when exact reading is not requested. |
+| URLs | Use a useful destination phrase in non-exact mode, such as "pagina do GitHub" for GitHub URLs; preserve raw URLs for exact reading. |
+| Paths | Use a useful folder/file phrase in non-exact mode, such as "pasta tes tts"; preserve raw paths for exact reading. |
 | Commands | Preserve command text exactly; never execute it. |
 | Proper nouns | Preserve written identity; add spacing only if the TTS engine would distort it. |
 
@@ -122,5 +127,5 @@ would otherwise pronounce it poorly.
 
 ## Output To TTS
 
-Send only the normalized speech text to the TTS tool. Keep chat confirmation
-short. Do not print the cache unless the user asks for debug detail.
+Send only `spoken_text` to the TTS tool. Keep chat confirmation short. Do not
+print the cache unless the user asks for debug detail.

@@ -74,6 +74,7 @@ a proactive announcement channel for normal TES status updates.
 | 2026-05-28 | Promoted the simple local TTS skill into TES Codex adapter source as `tes-tts`. | Maintainer directive in this session; local runtime skill analysis. | high |
 | 2026-05-28 | Added default-language normalization reference and ephemeral TTS conversion cache semantics. | Maintainer directive to analyze text, translate non-default language spans, preserve technical terms, and adapt pronunciation. | high |
 | 2026-05-28 | Added provider/fallback reference from portable `speak` lessons while preserving reactive/proactive separation. | Maintainer directive and `tmp/skills/speak/SKILL.md` source review. | high |
+| 2026-05-29 | Added CAP-001 deterministic spoken-rendering boundary for acronyms, paths, URLs, exact reads, and no-summary preservation. | CAP-001 feasibility study, instruction normalizer oracle fixtures, and maintainer runtime feedback. | high |
 
 ## Do Not Lose
 

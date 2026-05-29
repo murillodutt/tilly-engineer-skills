@@ -711,6 +711,20 @@ documents:
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md
     id: roadmap.goal_prompt_tes_tts_cap_001_portable_capability_migration
     class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md
+    id: roadmap.goal_prompt_tes_tts_cap_002_speech_transformation_hardening
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md
+    id: roadmap.tes_tts_cap_001_portable_capability_feasibility
+    class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
     source_of_truth: false

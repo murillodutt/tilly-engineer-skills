@@ -34,10 +34,28 @@ The current package state is intentionally pre-release:
 - local validators have passed during construction, but final package closure
   still requires the normal release gates and maintainer approval.
 
+## Development Target
+
+The active development and test workbench for the next `tes-tts` capability
+migration units is:
+
+`/Users/murillo/Dev/tilly-engineer-skills/.agents/skills/tes-tts`
+
+The canonical Codex adapter target remains:
+
+`/Users/murillo/Dev/tilly-engineer-skills/src/adapters/codex/skills/tes-tts`
+
+The execution rule is develop and test first in `.agents/skills/tes-tts`, then
+sync the converged content into `src/adapters/codex/skills/tes-tts` after the
+unit passes focused validation. The `.agents` directory is the active workbench
+for this skill evolution; the adapter source remains the canonical package
+surface for release, materialization, and sync decisions.
+
 ## Artifact Registry
 
 | Surface | Role | Status |
 |---------|------|--------|
+| `.agents/skills/tes-tts/**` | Active local development and test workbench for `tes-tts`. | workbench |
 | `src/adapters/codex/skills/tes-tts/SKILL.md` | Codex source skill contract. | staged |
 | `src/adapters/claude/skills/tes-tts/SKILL.md` | Claude source skill contract. | staged |
 | `src/adapters/*/skills/tes-tts/agents/openai.yaml` | Agent-facing invocation guidance. | staged |
@@ -54,30 +72,11 @@ The current package state is intentionally pre-release:
 | `docs/roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md` | OWNER-001 acceptance/release/sync decision prompt. | archived |
 | `docs/roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` | ADR 0004 acceptance decision record. | active |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md` | Post-ADR capability migration execution contract. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` | Ready prompt for first portable capability migration cut. | active |
+| `docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` | Feasibility study for migrating portable TTS behavior. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md` | Historical prompt for first portable capability migration cut. | historical |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md` | Ready prompt for speech transformation hardening. | active |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | TTS-009 acceptance and release decision record. | active |
-| `docs/roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` | TTS-010 owner approval gate result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-REQUIRED.md` | TTS-011 owner decision result. | active |
-| `docs/roadmap/TES-TTS-EXPLICIT-OWNER-DECISION.md` | TTS-012 explicit owner decision result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-PENDING.md` | TTS-013 owner decision pending result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-STILL-PENDING.md` | TTS-014 owner decision still pending result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-STILL-REQUIRED.md` | TTS-015 owner decision still required result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-REMAINS-REQUIRED.md` | TTS-016 owner decision remains required result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-OPEN.md` | TTS-017 owner decision open result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-UNRESOLVED.md` | TTS-018 owner decision unresolved result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-STILL-UNRESOLVED.md` | TTS-019 owner decision still unresolved result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED.md` | TTS-020 owner decision continues unresolved result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED.md` | TTS-021 owner decision remains unresolved result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED.md` | TTS-022 owner decision still remains unresolved result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-UNRESOLVED-AGAIN.md` | TTS-023 owner decision unresolved again result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-STILL-UNRESOLVED-AGAIN.md` | TTS-024 owner decision still unresolved again result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED-AGAIN.md` | TTS-025 owner decision continues unresolved again result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED-AGAIN.md` | TTS-026 owner decision remains unresolved again result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED-AGAIN.md` | TTS-027 owner decision still remains unresolved again result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-REMAINS-OPEN-AGAIN.md` | TTS-028 owner decision remains open again result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-STILL-OPEN-AGAIN.md` | TTS-029 owner decision still open again result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-CONTINUES-OPEN-AGAIN.md` | TTS-030 owner decision continues open again result. | active |
-| `docs/roadmap/TES-TTS-OWNER-DECISION-REMAINS-OPEN-YET-AGAIN.md` | TTS-031 owner decision remains open yet again result. | active |
+| `docs/roadmap/TES-TTS-OWNER-*.md` | Historical owner-decision records TTS-010 through TTS-031; retained in TDS and `docs/INDEX.md`. | historical |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
 | `benchmarks/tes-tts/normalization-fixtures.json` | Minimal dependency-free fixture corpus. | proposed |
 | `benchmarks/tes-tts/instruction-normalizer-fixtures.json` | Instruction-level normalizer oracle fixtures. | proposed |
@@ -116,6 +115,7 @@ The current package state is intentionally pre-release:
 | 10 | Require every `tes-tts` execution cycle to update this roadmap before closure. | This roadmap, GOAL Super SPEC, and ready prompt artifacts. |
 | 11 | Accept ADR 0004 as the active pronunciation normalization and enrichment boundary. | `TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md`. |
 | 12 | Start capability migration as a new bounded sequence, using mapped simple TTS and `speak` learning as references rather than wholesale copies. | `GOAL-SUPER-SPEC-tes-tts-capability-migration.md`. |
+| 13 | Use `.agents/skills/tes-tts` as the active development and test workbench, then mirror converged content into the canonical Codex adapter source. | This roadmap and `GOAL-SUPER-SPEC-tes-tts-capability-migration.md`. |
 
 ## Circular Execution Control
 
@@ -132,7 +132,7 @@ The current ten-SPEC convergence contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -364,34 +364,12 @@ Required closure:
 Exit state: the explicit owner decision is applied, or the cycle remains
 `NEEDS_OWNER_DECISION` with the next unresolved decision named.
 
-### R13: Owner Decision Pending
+### R13-R17: Owner Decision Preservation
 
-Status: TTS-013 recorded no explicit owner decision; state remains
-`NEEDS_OWNER_DECISION`. See `TES-TTS-OWNER-DECISION-PENDING.md`.
-
-### R14: Owner Decision Still Pending
-
-Status: TTS-014 recorded no explicit owner decision; state remains
-`NEEDS_OWNER_DECISION`. See `TES-TTS-OWNER-DECISION-STILL-PENDING.md`.
-
-### R15: Owner Decision Still Required
-
-Status: TTS-015 recorded no explicit owner decision; state remains
-`NEEDS_OWNER_DECISION`. See `TES-TTS-OWNER-DECISION-STILL-REQUIRED.md`.
-
-### R16: Owner Decision Remains Required
-
-Status: TTS-016 recorded no explicit owner decision; state remains
-`NEEDS_OWNER_DECISION`. See `TES-TTS-OWNER-DECISION-REMAINS-REQUIRED.md`.
-
-### R17: Owner Decision Open
-
-Status: TTS-017 recorded no explicit owner decision; state remains
-`NEEDS_OWNER_DECISION`. See `TES-TTS-OWNER-DECISION-OPEN.md`.
-
-R13-R17 required closure: apply only explicit maintainer decisions for ADR
-0004, release identity, and sync posture; otherwise keep
-`NEEDS_OWNER_DECISION`, update this roadmap, and create the next exact prompt.
+Status: TTS-013 through TTS-017 recorded no explicit owner decision and stayed
+`NEEDS_OWNER_DECISION`. See the matching `TES-TTS-OWNER-DECISION-*.md`
+records. Required closure was to apply only explicit maintainer decisions for
+ADR 0004, release identity, and sync posture.
 
 ### R18-R31: Owner Decision Preservation Cycles
 
@@ -448,8 +426,14 @@ technical sequence is complete for the bounded scope, ADR 0004 is `active`,
 release identity is deferred, package identity remains at `0.3.147`, provider
 claims remain optional/degraded/deferred, and sync remains unauthorized.
 Next ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md`.
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
+CAP-001 outcome: dependency-free `spoken_text` rendering is implemented in the
+instruction normalizer oracle and documented in the workbench, Codex, and
+Claude skill references. Certified coverage includes acronyms, semantic
+path/URL handling, exact-read preservation, URL false-positive guards,
+redaction, and no-summary behavior. CAP-002 is next.
 
 ## Current Open Questions
 

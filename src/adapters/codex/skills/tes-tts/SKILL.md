@@ -18,18 +18,20 @@ compatible TES intent alias if the host reports it as an invalid slash.
 2. Convert Markdown, bullets, headings, links, file paths, and code fences into
    speech-friendly plain text.
 3. Preserve the user's meaning. Do not summarize unless asked.
-4. When the text is multilingual or the user asks for a standard/default
+4. Keep source text separate from the request-local spoken rendering. The
+   spoken rendering is the only text sent to TTS.
+5. When the text is multilingual or the user asks for a standard/default
    reading language, load `references/language-normalization.md` and prepare a
    TTS conversion cache before playback.
-5. Use the available local TTS tool. In a Codex host with `mcp-tts`, prefer
+6. Use the available local TTS tool. In a Codex host with `mcp-tts`, prefer
    `mcp__mcp_tts__say_tts`.
-6. Use `voice: "Felipe (Enhanced)"` and `rate: 225` when the tool accepts
+7. Use `voice: "Felipe (Enhanced)"` and `rate: 225` when the tool accepts
    those settings. If the host rejects the voice, retry once with the default
    voice and the same text.
-7. If the user asks for a different speed, use that speed for the current
+8. If the user asks for a different speed, use that speed for the current
    request. For a percentage change, compute it from the last spoken rate in
    this conversation; if there is no last rate, use `225` as the base.
-8. Keep chat confirmation brief after playback.
+9. Keep chat confirmation brief after playback.
 
 ## Modules
 
@@ -40,7 +42,14 @@ compatible TES intent alias if the host reports it as an invalid slash.
 
 ## Text Cleanup
 
-- Replace URLs with "link" or omit them when they are not essential.
+- Render common acronyms as speech text in non-exact mode: `ADR` -> `A D R`,
+  `MCP` -> `M C P`, `API` -> `A P I`, `SDK` -> `S D K`, and `CLI` -> `C L I`.
+- Render GitHub URLs as "pagina do GitHub" in non-exact mode; use "link" for
+  generic URLs when the exact URL is not essential.
+- Render file paths as useful folder or file references in non-exact mode, for
+  example `.agents/skills/tes-tts` -> "pasta tes tts".
+- Preserve raw URLs, paths, hashes, commands, and code-like spans when the user
+  asks for exact, literal, raw, or verbatim reading.
 - Replace code blocks with a concise spoken description unless the user
   explicitly asks to read code verbatim.
 - Read dates clearly, preserving concrete dates.

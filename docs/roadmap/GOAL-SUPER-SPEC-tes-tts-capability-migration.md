@@ -22,6 +22,22 @@ ADR boundary:
 Migrate portable, already-mapped capabilities into `tes-tts` in small certified
 cuts while preserving the accepted ADR boundary.
 
+## Development Target
+
+During capability migration, the active development and test workbench is:
+
+`/Users/murillo/Dev/tilly-engineer-skills/.agents/skills/tes-tts`
+
+The canonical adapter target remains:
+
+`/Users/murillo/Dev/tilly-engineer-skills/src/adapters/codex/skills/tes-tts`
+
+Develop first in `.agents/skills/tes-tts`, validate the local runtime skill,
+and mirror the converged content into `src/adapters/codex/skills/tes-tts` only
+after the current unit passes its focused checks. The workbench is not a
+second source of truth; it is the execution surface used to evolve and test the
+skill before canonical synchronization.
+
 ## Migration Rule
 
 Use existing simple TTS and `speak` learning as reference material, not as
@@ -30,7 +46,10 @@ source to copy wholesale. A capability may move into `tes-tts` only when it is:
 - reactive and user-requested;
 - dependency-free or optional-provider guarded;
 - covered by focused fixtures or an oracle;
-- mirrored across Codex and Claude adapter skill source when behavior changes;
+- first validated in `.agents/skills/tes-tts`;
+- mirrored to `src/adapters/codex/skills/tes-tts` after convergence;
+- mirrored across Claude adapter skill source when behavior changes and parity
+  is required for the package cut;
 - honest about degraded, deferred, or unavailable states.
 
 ## Candidate Units
@@ -65,4 +84,4 @@ create the next ready prompt artifact before local commit.
 
 ## Ready Prompt
 
-`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md`
