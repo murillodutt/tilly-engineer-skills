@@ -1,0 +1,78 @@
+{
+  "version": "0.3.147",
+  "source_reference": ".agents/skills/tes-tts/references/language-normalization.md#technical-term-handling",
+  "usage": "evidence_only",
+  "runtime_output": false,
+  "entries": [
+    {
+      "id": "pron-cat-adr",
+      "term": "ADR",
+      "class": "acronym",
+      "default_language": "pt-BR",
+      "spoken_rendering": "A D R",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-mcp",
+      "term": "MCP",
+      "class": "acronym",
+      "default_language": "pt-BR",
+      "spoken_rendering": "M C P",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-spec",
+      "term": "SPEC",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "spec",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-github",
+      "term": "GitHub",
+      "class": "proper_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "GitHub",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-github-url",
+      "term": "https://github.com/example/project",
+      "class": "url",
+      "default_language": "pt-BR",
+      "spoken_rendering": "pagina do GitHub",
+      "preserve_written_identity": false,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-tes-tts-path",
+      "term": ".agents/skills/tes-tts",
+      "class": "path",
+      "default_language": "pt-BR",
+      "spoken_rendering": "pasta tes tts",
+      "preserve_written_identity": false,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-command",
+      "term": "tes tts --voice default",
+      "class": "command",
+      "default_language": "pt-BR",
+      "spoken_rendering": "tes tts --voice default",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    }
+  ]
+}

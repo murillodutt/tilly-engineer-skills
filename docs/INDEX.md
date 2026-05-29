@@ -151,7 +151,9 @@ turning the repository root into an inventory.
 | TES TTS LEX-002 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-LEX-002-ptbr-lexical-lookup-oracle.md` |
 | TES TTS LEX-003 spoken-rendering integration boundary | `roadmap/TES-TTS-LEX-003-SPOKEN-RENDERING-INTEGRATION-BOUNDARY.md` |
 | TES TTS LEX-003 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-LEX-003-spoken-rendering-integration-boundary.md` |
-| TES TTS LEX-004 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-LEX-004-fixture-migration-from-markdown-shaped-tts-cases.md` |
+| TES TTS LEX-004 fixture migration | `roadmap/TES-TTS-LEX-004-FIXTURE-MIGRATION-FROM-MARKDOWN-SHAPED-TTS-CASES.md` |
+| TES TTS LEX-004 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-LEX-004-fixture-migration-from-markdown-shaped-tts-cases.md` |
+| TES TTS LEX-005 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |

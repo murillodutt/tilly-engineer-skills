@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_prompt_tes_tts_lex_004_fixture_migration_from_markdown_shaped_tts_cases
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
 source_of_truth: false
 evidence_level: L2

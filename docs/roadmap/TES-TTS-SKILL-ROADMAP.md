@@ -90,7 +90,9 @@ surface for release, materialization, and sync decisions.
 | `docs/roadmap/GOAL-PROMPT-tes-tts-LEX-002-ptbr-lexical-lookup-oracle.md` | Historical prompt for LEX-002 PT-BR lexical lookup oracle. | historical |
 | `docs/roadmap/TES-TTS-LEX-003-SPOKEN-RENDERING-INTEGRATION-BOUNDARY.md` | Spoken-rendering integration boundary result record. | complete |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-LEX-003-spoken-rendering-integration-boundary.md` | Historical prompt for LEX-003 spoken-rendering integration boundary. | historical |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-LEX-004-fixture-migration-from-markdown-shaped-tts-cases.md` | Ready prompt for LEX-004 fixture migration. | active |
+| `docs/roadmap/TES-TTS-LEX-004-FIXTURE-MIGRATION-FROM-MARKDOWN-SHAPED-TTS-CASES.md` | Fixture migration result record. | complete |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-LEX-004-fixture-migration-from-markdown-shaped-tts-cases.md` | Historical prompt for LEX-004 fixture migration. | historical |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md` | Ready prompt for LEX-005 final audit. | active |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | TTS-009 acceptance and release decision record. | active |
 | `docs/roadmap/TES-TTS-OWNER-*.md` | Historical owner-decision records TTS-010 through TTS-031; retained in TDS and `docs/INDEX.md`. | historical |
 | `benchmarks/tes-tts/normalization-fixture.schema.json` | Machine-readable fixture schema. | proposed |
@@ -153,7 +155,7 @@ The current CAP migration prompt state is closed:
 The current TTS execution contract is
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md`; its ready
 prompt is
-`docs/roadmap/GOAL-PROMPT-tes-tts-LEX-004-fixture-migration-from-markdown-shaped-tts-cases.md`.
+`docs/roadmap/GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md`.
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -453,11 +455,9 @@ Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 Conversational rendering status: CAP-001 through CAP-009 are locally closed;
 CAP-010 is superseded by the PT-BR lexical normalization pivot.
 
-PT-BR lexical normalization status: LEX-001 through LEX-003 passed. LEX-003
-defined the request-local lexical evidence boundary across workbench/Codex/
-Claude and proved source immutability, redaction, code no-execute, no-summary,
-provider degradation, and no IPA/phoneme/SSML runtime output.
-Next: `docs/roadmap/GOAL-PROMPT-tes-tts-LEX-004-fixture-migration-from-markdown-shaped-tts-cases.md`.
+PT-BR lexical normalization status: LEX-001 through LEX-004 passed; LEX-004
+migrated representative pronunciation guidance into JSON catalog fixtures.
+Next: `docs/roadmap/GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
 Open questions: release identity planning and sync remain owner decisions.
