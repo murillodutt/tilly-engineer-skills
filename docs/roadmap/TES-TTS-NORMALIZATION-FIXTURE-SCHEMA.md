@@ -91,10 +91,28 @@ Fixtures use the same stop vocabulary as the convergence loop:
 Fixtures must not install, download, probe the network, write global config, or
 persist conversion caches.
 
+## Corpus Coverage
+
+The SPEC-002 corpus covers:
+
+- first-class languages: `pt-BR`, `en`, `es`, `fr`, `it`, `de`, and `he`;
+- mixed-language default-language text with one foreign span;
+- protected terms including ADR, SPEC, MCP, API, JSON, YAML, CLI, SDK,
+  commands, paths, and code identifiers;
+- redaction of secret-like values before speech text;
+- Markdown, URLs, paths, code fences, and long hashes;
+- provider unavailable and voice unavailable degraded states;
+- Hebrew degraded posture when niqqud or certified local Hebrew voice support
+  is absent.
+
+The schema oracle validates required corpus coverage so a structurally valid
+but incomplete corpus does not pass silently.
+
 ## TTS-004 Boundary
 
-The initial corpus uses this schema and stays dependency-free. It includes the
-selector cases `DLS-001` through `DLS-006` before provider work opens.
+The corpus uses this schema and stays dependency-free. It includes the selector
+cases `DLS-001` through `DLS-006` and the SPEC-002 language and negative
+fixtures before provider work opens.
 
 The schema oracle validates both the schema and the corpus shape. It does not
 execute translation, TTS playback, provider probing, network calls, downloads,

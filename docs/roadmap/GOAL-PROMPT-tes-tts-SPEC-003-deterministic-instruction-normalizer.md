@@ -1,19 +1,16 @@
 ---
-tds_id: roadmap.goal_prompt_tes_tts_spec_002_fixture_corpus_complete
+tds_id: roadmap.goal_prompt_tes_tts_spec_003_deterministic_instruction_normalizer
 tds_class: roadmap
-status: archived
+status: active
 consumer: maintainers, tes-tts maintainers, execution agents, and validation authors
 source_of_truth: false
 evidence_level: L2
 ---
 
-# GOAL Prompt: TES TTS SPEC-002 Fixture Corpus Complete
-
-Status: archived after SPEC-002 local execution. The next ready prompt is
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md`.
+# GOAL Prompt: TES TTS SPEC-003 Deterministic Instruction Normalizer
 
 This is the ready `/goal` prompt for the next ten-SPEC `tes-tts` convergence
-cycle after SPEC-001.
+cycle after SPEC-002.
 
 ```text
 /goal Continue TES TTS ten-SPEC convergence.
@@ -22,29 +19,27 @@ Canonical artifact:
 docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md
 
 Current unit:
-SPEC-002 Fixture Corpus Complete
+SPEC-003 Deterministic Instruction Normalizer
 
 Certified evidence from prior cycle:
-- SPEC-001 compacted roadmap index noise so historical TTS prompts and
-  owner-decision records are no longer treated as active execution SPECs.
-- SPEC-001 encoded `agent_default_language` selector policy:
-  - Codex: `~/.codex/config.toml` `[desktop].localeOverride`;
-  - Claude Code: `~/.claude/settings.json` `language`, normalized by TES
-    policy;
-  - Cursor: explicit User Rules/project rules first, otherwise Codex default
-    first and Claude default second.
-- SPEC-001 added selector fixture coverage for Cursor fallback with
-  `tts-dls-006`.
+- SPEC-002 expanded the dependency-free normalization corpus for all
+  first-class languages: `pt-BR`, `en`, `es`, `fr`, `it`, `de`, and `he`.
+- SPEC-002 added negative fixtures for Markdown, URLs, paths, code fences,
+  long hashes, secret-like values, provider unavailable, voice unavailable,
+  and Hebrew degraded posture.
+- SPEC-002 preserved `no_summary: true` across every fixture.
+- SPEC-002 hardened `scripts/tes_tts_fixture_schema_oracle.py` so it validates
+  corpus coverage, not only schema shape.
 - ADR 0004 remains proposed.
 - Release identity and sync remain out of scope.
 - No provider install, provider download, real provider certification, global
   config write, durable conversion cache, proactive `speak` behavior, push,
   tag, publish, release, or sync was performed.
-- Ready prompt artifact for SPEC-002:
-  `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md`.
+- Ready prompt artifact for SPEC-003:
+  `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md`.
 
 Task:
-Execute only SPEC-002 through:
+Execute only SPEC-003 through:
 execute -> analyze -> fix -> certify -> create next Super SPEC + /goal prompt
 or close convergence -> local commit.
 
@@ -54,35 +49,35 @@ Required actions:
    stage or modify unrelated `.agents/**` changes.
 3. Re-read:
    - `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
-   - `docs/roadmap/TES-TTS-SPEC-002-fixture-corpus-complete.md`
+   - `docs/roadmap/TES-TTS-SPEC-003-deterministic-instruction-normalizer.md`
    - `docs/roadmap/TES-TTS-SKILL-ROADMAP.md`
-   - `docs/roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md`
    - `docs/roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md`
-   - `benchmarks/tes-tts/normalization-fixture.schema.json`
+   - `benchmarks/tes-tts/instruction-normalizer-fixtures.json`
    - `benchmarks/tes-tts/normalization-fixtures.json`
+   - `scripts/tes_tts_instruction_normalizer_oracle.py`
    - `scripts/tes_tts_fixture_schema_oracle.py`
-4. Execute SPEC-002 only:
-   - add dependency-free fixture coverage for all first-class languages:
-     `pt-BR`, `en`, `es`, `fr`, `it`, `de`, and `he`;
-   - add negative fixture classes for Markdown, URLs, paths, code fences,
-     long hashes, secret-like values, provider unavailable, voice unavailable,
-     and Hebrew degraded posture;
-   - preserve `no_summary: true`;
-   - update schema only if the required cases cannot be represented.
+4. Execute SPEC-003 only:
+   - make selector behavior deterministic according to SPEC-001 precedence;
+   - make ephemeral cache entry shape deterministic without disk writes;
+   - preserve protected terms before speech cleanup;
+   - redact secret-like values before speech text is assembled;
+   - chunk long text without dropping words or summarizing;
+   - clean Markdown for speech without changing meaning.
 5. Analyze the diff for quality, efficiency, precision, false-green risk,
    boundary drift, and evidence sufficiency.
-6. Fix only observed SPEC-002 defects.
+6. Fix only observed SPEC-003 defects.
 7. Certify with:
+   - `python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test`
    - `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
    - `python3 scripts/validate_tds.py`
    - `python3 scripts/validate_doc_size.py`
    - `python3 scripts/validate_reference_graph.py`
    - `git diff --check`
-8. Create or update the next `/goal` prompt for SPEC-003 Deterministic
-   Instruction Normalizer before closure.
-9. Update `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` with SPEC-002 outcome,
+8. Create or update the next `/goal` prompt for SPEC-004 Pronunciation
+   Enrichment Rules before closure.
+9. Update `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` with SPEC-003 outcome,
    next prompt pointer, and sync status.
-10. Stage only SPEC-002 files and the next prompt artifact.
+10. Stage only SPEC-003 files and the next prompt artifact.
 11. Commit locally as the final shell action for the cycle.
 
 Forbidden:

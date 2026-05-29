@@ -39,6 +39,25 @@ normalization behavior.
 - Schema updates only if the current schema cannot represent a required case.
 - Roadmap status update naming remaining fixture gaps, if any.
 
+## SPEC-002 Result
+
+Status: `PASS`.
+
+The corpus now includes dependency-free fixtures for every first-class
+language: `pt-BR`, `en`, `es`, `fr`, `it`, `de`, and `he`.
+
+Negative fixture coverage now includes Markdown, URLs, paths, code fences,
+long hashes, secret-like values, provider unavailable, voice unavailable, and
+Hebrew degraded posture. The schema already represented these cases, so no
+schema expansion was needed.
+
+`no_summary: true` remains mandatory for every corpus entry.
+
+Next ready prompt:
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md`.
+
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
 ## Oracles
 
 ```bash

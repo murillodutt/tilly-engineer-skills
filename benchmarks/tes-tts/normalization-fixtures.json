@@ -196,5 +196,568 @@
     "expected_status": "PASS",
     "no_summary": true,
     "notes": "DLS-006: Cursor without a native structured default falls back to Codex default first, then Claude default."
+  },
+  {
+    "id": "tts-lang-pt-br",
+    "class": "language_normalization",
+    "selector": {
+      "active_adapter": "codex",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "pt-BR",
+      "codex_default": "pt-BR",
+      "claude_default": "pt-BR",
+      "request_language": "pt-BR",
+      "dominant_text_language": "pt-BR"
+    },
+    "source_text": "Leia a SPEC em voz alta sem resumir o texto original.",
+    "expected_target_language": "pt-BR",
+    "protected_terms": [
+      {
+        "term": "SPEC",
+        "kind": "technical_term",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "Single-language pt-BR fixture."
+  },
+  {
+    "id": "tts-lang-en",
+    "class": "language_normalization",
+    "selector": {
+      "active_adapter": "codex",
+      "explicit_user_language": "en",
+      "declared_adapter_default": "pt-BR",
+      "codex_default": "pt-BR",
+      "claude_default": "pt-BR",
+      "request_language": "en",
+      "dominant_text_language": "en"
+    },
+    "source_text": "Read this ADR aloud and preserve MCP as a technical term.",
+    "expected_target_language": "en",
+    "protected_terms": [
+      {
+        "term": "ADR",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      },
+      {
+        "term": "MCP",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "Single-language English fixture."
+  },
+  {
+    "id": "tts-lang-es",
+    "class": "language_normalization",
+    "selector": {
+      "active_adapter": "unknown",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "unknown",
+      "codex_default": "unknown",
+      "claude_default": "unknown",
+      "request_language": "es",
+      "dominant_text_language": "es"
+    },
+    "source_text": "Lee este resumen de API en voz alta sin cambiar JSON.",
+    "expected_target_language": "es",
+    "protected_terms": [
+      {
+        "term": "API",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      },
+      {
+        "term": "JSON",
+        "kind": "technical_term",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "Single-language Spanish fixture."
+  },
+  {
+    "id": "tts-lang-fr",
+    "class": "language_normalization",
+    "selector": {
+      "active_adapter": "unknown",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "unknown",
+      "codex_default": "unknown",
+      "claude_default": "unknown",
+      "request_language": "fr",
+      "dominant_text_language": "fr"
+    },
+    "source_text": "Lis cette note CLI a voix haute et garde YAML intact.",
+    "expected_target_language": "fr",
+    "protected_terms": [
+      {
+        "term": "CLI",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      },
+      {
+        "term": "YAML",
+        "kind": "technical_term",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "Single-language French fixture."
+  },
+  {
+    "id": "tts-lang-it",
+    "class": "language_normalization",
+    "selector": {
+      "active_adapter": "unknown",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "unknown",
+      "codex_default": "unknown",
+      "claude_default": "unknown",
+      "request_language": "it",
+      "dominant_text_language": "it"
+    },
+    "source_text": "Leggi questa nota SDK ad alta voce senza tradurre Tilly.",
+    "expected_target_language": "it",
+    "protected_terms": [
+      {
+        "term": "SDK",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      },
+      {
+        "term": "Tilly",
+        "kind": "proper_noun",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "Single-language Italian fixture."
+  },
+  {
+    "id": "tts-lang-de",
+    "class": "language_normalization",
+    "selector": {
+      "active_adapter": "unknown",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "unknown",
+      "codex_default": "unknown",
+      "claude_default": "unknown",
+      "request_language": "de",
+      "dominant_text_language": "de"
+    },
+    "source_text": "Lies den Befehl `tes tts` laut vor und erhalte ADR.",
+    "expected_target_language": "de",
+    "protected_terms": [
+      {
+        "term": "tes tts",
+        "kind": "command",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      },
+      {
+        "term": "ADR",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "Single-language German fixture."
+  },
+  {
+    "id": "tts-lang-he",
+    "class": "language_normalization",
+    "selector": {
+      "active_adapter": "unknown",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "unknown",
+      "codex_default": "unknown",
+      "claude_default": "unknown",
+      "request_language": "he",
+      "dominant_text_language": "he"
+    },
+    "source_text": "קרא את הערת API בקול ושמור על MCP.",
+    "expected_target_language": "he",
+    "protected_terms": [
+      {
+        "term": "API",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      },
+      {
+        "term": "MCP",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "DEGRADED",
+    "no_summary": true,
+    "notes": "Single-language Hebrew fixture; local pronunciation enrichment remains degraded without certified Hebrew voice or niqqud support."
+  },
+  {
+    "id": "tts-mixed-foreign-span",
+    "class": "language_normalization",
+    "selector": {
+      "active_adapter": "codex",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "pt-BR",
+      "codex_default": "pt-BR",
+      "claude_default": "pt-BR",
+      "request_language": "pt-BR",
+      "dominant_text_language": "pt-BR"
+    },
+    "source_text": "Leia: precisamos revisar the fallback strategy antes do merge.",
+    "expected_target_language": "pt-BR",
+    "protected_terms": [
+      {
+        "term": "fallback strategy",
+        "kind": "technical_term",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "Mixed-language fixture with one foreign span and no summary."
+  },
+  {
+    "id": "tts-negative-markdown",
+    "class": "markdown_transform",
+    "selector": {
+      "active_adapter": "codex",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "pt-BR",
+      "codex_default": "pt-BR",
+      "claude_default": "pt-BR",
+      "request_language": "pt-BR",
+      "dominant_text_language": "pt-BR"
+    },
+    "source_text": "## Plano\n- Leia o item **sem resumir**\n- Preserve `MCP` e `JSON`.",
+    "expected_target_language": "pt-BR",
+    "protected_terms": [
+      {
+        "term": "MCP",
+        "kind": "acronym",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      },
+      {
+        "term": "JSON",
+        "kind": "technical_term",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "Negative Markdown transform fixture; formatting may be speech-cleaned but content must not be summarized."
+  },
+  {
+    "id": "tts-negative-url",
+    "class": "markdown_transform",
+    "selector": {
+      "active_adapter": "codex",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "pt-BR",
+      "codex_default": "pt-BR",
+      "claude_default": "pt-BR",
+      "request_language": "pt-BR",
+      "dominant_text_language": "pt-BR"
+    },
+    "source_text": "Leia o link https://example.test/docs/ADR-0004 sem tentar abrir a URL.",
+    "expected_target_language": "pt-BR",
+    "protected_terms": [
+      {
+        "term": "https://example.test/docs/ADR-0004",
+        "kind": "path",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      },
+      {
+        "term": "ADR-0004",
+        "kind": "technical_term",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "Negative URL fixture; URL is speech-transformed locally and never fetched."
+  },
+  {
+    "id": "tts-negative-path",
+    "class": "markdown_transform",
+    "selector": {
+      "active_adapter": "codex",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "pt-BR",
+      "codex_default": "pt-BR",
+      "claude_default": "pt-BR",
+      "request_language": "pt-BR",
+      "dominant_text_language": "pt-BR"
+    },
+    "source_text": "Narre o path /Users/example/project/docs/SPEC.md sem alterar o caminho.",
+    "expected_target_language": "pt-BR",
+    "protected_terms": [
+      {
+        "term": "/Users/example/project/docs/SPEC.md",
+        "kind": "path",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "Negative path fixture; filesystem path remains protected text."
+  },
+  {
+    "id": "tts-negative-code-fence",
+    "class": "markdown_transform",
+    "selector": {
+      "active_adapter": "codex",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "pt-BR",
+      "codex_default": "pt-BR",
+      "claude_default": "pt-BR",
+      "request_language": "pt-BR",
+      "dominant_text_language": "pt-BR"
+    },
+    "source_text": "Leia o bloco:\n```bash\ntes tts --voice default\n```\nsem executar comandos.",
+    "expected_target_language": "pt-BR",
+    "protected_terms": [
+      {
+        "term": "tes tts --voice default",
+        "kind": "command",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "Negative code-fence fixture; commands are read as text and never executed."
+  },
+  {
+    "id": "tts-negative-long-hash",
+    "class": "protected_terms",
+    "selector": {
+      "active_adapter": "codex",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "pt-BR",
+      "codex_default": "pt-BR",
+      "claude_default": "pt-BR",
+      "request_language": "pt-BR",
+      "dominant_text_language": "pt-BR"
+    },
+    "source_text": "Leia o hash 4f9c2a8b7d6e5f40123456789abcdef0123456789abcdef0123456789abcdef0 como identificador tecnico.",
+    "expected_target_language": "pt-BR",
+    "protected_terms": [
+      {
+        "term": "4f9c2a8b7d6e5f40123456789abcdef0123456789abcdef0123456789abcdef0",
+        "kind": "code_identifier",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "Negative long-hash fixture; long hashes are protected identifiers, not natural-language text."
+  },
+  {
+    "id": "tts-negative-secret-redaction",
+    "class": "redaction",
+    "selector": {
+      "active_adapter": "codex",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "pt-BR",
+      "codex_default": "pt-BR",
+      "claude_default": "pt-BR",
+      "request_language": "pt-BR",
+      "dominant_text_language": "pt-BR"
+    },
+    "source_text": "Leia sem vazar segredo: OPENAI_API_KEY=sk-proj-example1234567890 e depois continue.",
+    "expected_target_language": "pt-BR",
+    "protected_terms": [
+      {
+        "term": "OPENAI_API_KEY",
+        "kind": "code_identifier",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": true,
+      "expected_redactions": [
+        "sk-proj-example1234567890"
+      ]
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "PASS",
+    "no_summary": true,
+    "notes": "Negative secret-like fixture; redaction happens before translation or speech text."
+  },
+  {
+    "id": "tts-negative-provider-unavailable",
+    "class": "provider_fallback",
+    "selector": {
+      "active_adapter": "codex",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "pt-BR",
+      "codex_default": "pt-BR",
+      "claude_default": "pt-BR",
+      "request_language": "pt-BR",
+      "dominant_text_language": "pt-BR"
+    },
+    "source_text": "Leia este texto usando o provedor opcional, mas degrade se ele nao existir.",
+    "expected_target_language": "pt-BR",
+    "protected_terms": [],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "provider_not_available",
+    "expected_status": "DEGRADED",
+    "no_summary": true,
+    "notes": "Negative provider-unavailable fixture; no install, download, or certification is allowed."
+  },
+  {
+    "id": "tts-negative-voice-unavailable",
+    "class": "provider_fallback",
+    "selector": {
+      "active_adapter": "codex",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "pt-BR",
+      "codex_default": "pt-BR",
+      "claude_default": "pt-BR",
+      "request_language": "pt-BR",
+      "dominant_text_language": "pt-BR"
+    },
+    "source_text": "Leia com a voz 'Studio Narrator' se existir; caso contrario use degradacao honesta.",
+    "expected_target_language": "pt-BR",
+    "protected_terms": [
+      {
+        "term": "Studio Narrator",
+        "kind": "proper_noun",
+        "must_preserve": true,
+        "pronunciation_hint_expected": true
+      }
+    ],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "tts_not_available",
+    "expected_status": "DEGRADED",
+    "no_summary": true,
+    "notes": "Negative voice-unavailable fixture; requested voice is respected when available and degraded honestly otherwise."
+  },
+  {
+    "id": "tts-negative-hebrew-degraded",
+    "class": "pronunciation_hint",
+    "selector": {
+      "active_adapter": "unknown",
+      "explicit_user_language": "absent",
+      "declared_adapter_default": "unknown",
+      "codex_default": "unknown",
+      "claude_default": "unknown",
+      "request_language": "he",
+      "dominant_text_language": "he"
+    },
+    "source_text": "קרא את הטקסט בלי ניקוד ובלי לטעון מודל חיצוני.",
+    "expected_target_language": "he",
+    "protected_terms": [],
+    "redaction": {
+      "contains_secret_like_value": false,
+      "expected_redactions": []
+    },
+    "provider_state": "normalization_degraded",
+    "expected_status": "DEGRADED",
+    "no_summary": true,
+    "notes": "Negative Hebrew degraded fixture; without niqqud or certified local voice support, enrichment remains degraded."
   }
 ]

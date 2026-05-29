@@ -64,6 +64,58 @@ REQUIRED_DLS_TARGETS = {
     "tts-dls-005": "preserve_original",
     "tts-dls-006": "pt-BR",
 }
+REQUIRED_LANGUAGE_FIXTURES = {
+    "tts-lang-pt-br": "pt-BR",
+    "tts-lang-en": "en",
+    "tts-lang-es": "es",
+    "tts-lang-fr": "fr",
+    "tts-lang-it": "it",
+    "tts-lang-de": "de",
+    "tts-lang-he": "he",
+}
+REQUIRED_NEGATIVE_FIXTURES = {
+    "tts-negative-markdown": {
+        "class": "markdown_transform",
+        "contains": ["##", "- ", "`MCP`"],
+    },
+    "tts-negative-url": {
+        "class": "markdown_transform",
+        "contains": ["https://", "ADR-0004"],
+    },
+    "tts-negative-path": {
+        "class": "markdown_transform",
+        "contains": ["/Users/example/project/docs/SPEC.md"],
+    },
+    "tts-negative-code-fence": {
+        "class": "markdown_transform",
+        "contains": ["```bash", "tes tts --voice default"],
+    },
+    "tts-negative-long-hash": {
+        "class": "protected_terms",
+        "contains": ["4f9c2a8b7d6e5f40123456789abcdef0123456789abcdef0123456789abcdef0"],
+    },
+    "tts-negative-secret-redaction": {
+        "class": "redaction",
+        "contains": ["OPENAI_API_KEY", "sk-proj-example1234567890"],
+    },
+    "tts-negative-provider-unavailable": {
+        "class": "provider_fallback",
+        "provider_state": "provider_not_available",
+        "expected_status": "DEGRADED",
+    },
+    "tts-negative-voice-unavailable": {
+        "class": "provider_fallback",
+        "provider_state": "tts_not_available",
+        "expected_status": "DEGRADED",
+    },
+    "tts-negative-hebrew-degraded": {
+        "class": "pronunciation_hint",
+        "provider_state": "normalization_degraded",
+        "expected_status": "DEGRADED",
+        "expected_target_language": "he",
+        "contains": ["בלי ניקוד"],
+    },
+}
 ADAPTERS = {"codex", "claude", "cursor", "unknown"}
 SELECTOR_FIELDS = {
     "active_adapter",
@@ -267,6 +319,46 @@ def validate_corpus(corpus: Any) -> list[str]:
                 fixture_id,
                 f"expected target {expected_target}, got {fixture.get('expected_target_language')}",
             )
+
+    missing_language = sorted(set(REQUIRED_LANGUAGE_FIXTURES) - seen_ids)
+    if missing_language:
+        failures.append(f"missing required language fixtures: {missing_language}")
+
+    for fixture_id, expected_target in REQUIRED_LANGUAGE_FIXTURES.items():
+        fixture = by_id.get(fixture_id)
+        if not fixture:
+            continue
+        if fixture.get("class") != "language_normalization":
+            fail(failures, fixture_id, "language fixture class must be language_normalization")
+        if fixture.get("expected_target_language") != expected_target:
+            fail(
+                failures,
+                fixture_id,
+                f"expected language target {expected_target}, got {fixture.get('expected_target_language')}",
+            )
+
+    missing_negative = sorted(set(REQUIRED_NEGATIVE_FIXTURES) - seen_ids)
+    if missing_negative:
+        failures.append(f"missing required negative fixtures: {missing_negative}")
+
+    for fixture_id, expectations in REQUIRED_NEGATIVE_FIXTURES.items():
+        fixture = by_id.get(fixture_id)
+        if not fixture:
+            continue
+        expected_class = expectations.get("class")
+        if fixture.get("class") != expected_class:
+            fail(failures, fixture_id, f"expected class {expected_class}, got {fixture.get('class')}")
+        for key in ("provider_state", "expected_status", "expected_target_language"):
+            if key in expectations and fixture.get(key) != expectations[key]:
+                fail(failures, fixture_id, f"expected {key} {expectations[key]}, got {fixture.get(key)}")
+        source_text = str(fixture.get("source_text", ""))
+        for needle in expectations.get("contains", []):
+            if needle not in source_text:
+                fail(failures, fixture_id, f"source_text must contain {needle!r}")
+        if fixture_id == "tts-negative-secret-redaction":
+            redactions = fixture.get("redaction", {}).get("expected_redactions", [])
+            if "sk-proj-example1234567890" not in redactions:
+                fail(failures, fixture_id, "secret-like value must be listed in expected_redactions")
 
     return failures
 

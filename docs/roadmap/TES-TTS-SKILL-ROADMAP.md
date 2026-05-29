@@ -125,7 +125,7 @@ The current ten-SPEC convergence contract is:
 `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md`
 
 The current ready prompt artifact is:
-`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md`
 
 Each non-converged cycle must create and index the next prompt artifact before
 its local commit. This prevents the execution loop from breaking because the
@@ -438,14 +438,22 @@ Cursor fallback to Codex then Claude, and the next ready prompt is
 `docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md`.
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 
+SPEC-002 outcome: `PASS`. The dependency-free fixture corpus now covers
+`pt-BR`, `en`, `es`, `fr`, `it`, `de`, and `he`, plus negative fixtures for
+Markdown, URLs, paths, code fences, long hashes, secret-like values, provider
+unavailable, voice unavailable, and Hebrew degraded posture. The fixture
+schema already represented the required cases, and the schema oracle now
+checks coverage, not only shape. The next ready prompt is
+`docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md`.
+Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+
 ## Current Open Questions
 
-1. Which TTS fixture class should become the first corpus entry after the
-   selector cases?
-2. Which provider probe should be built first: local `say`, language
+1. Which provider probe should be built first: local `say`, language
    detection, or translation package discovery?
-3. What is the acceptance threshold for Hebrew: preserve, translate, niqqud
-   enrich, or explicitly degraded?
+2. What is the acceptance threshold for Hebrew beyond the current degraded
+   posture: preserve, translate, niqqud enrich, or provider-backed voice
+   support?
 
 ## Governance Rules
 
