@@ -274,6 +274,20 @@ documents:
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-010-owner-approval-gate.md
+    id: roadmap.goal_prompt_tes_tts_tts_010_owner_approval_gate
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md
+    id: roadmap.tes_tts_acceptance_and_release_decision
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md
     id: roadmap.tes_tts_normalization_fixture_schema
     class: roadmap

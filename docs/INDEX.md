@@ -89,7 +89,9 @@ turning the repository root into an inventory.
 | TES TTS TTS-007 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-007-provider-candidate-review.md` |
 | TES TTS TTS-008 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-008-adapter-parity.md` |
 | TES TTS TTS-009 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-009-acceptance-and-release-decision.md` |
+| TES TTS TTS-010 ready goal prompt | `roadmap/GOAL-PROMPT-tes-tts-TTS-010-owner-approval-gate.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
+| TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS normalization architecture SPEC | `roadmap/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution SPEC | `roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
 | TES TTS normalization fixture schema | `roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` |
