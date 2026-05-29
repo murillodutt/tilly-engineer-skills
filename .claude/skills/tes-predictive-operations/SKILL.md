@@ -1,10 +1,12 @@
 ---
 name: tes-predictive-operations
-description: Local-only self-consumed guidance for choosing the next reasoning mode during active project work: prospect, mine, alternate, or package. Use when balancing planning pressure, evidence mining, and packaging timing across project reasoning. Prefer tes-high-agency-pattern for designing or reviewing one local development-layer skill/workflow operating pattern. Do not present as user-invoked.
+description: "Local-only self-consumed guidance for choosing the next reasoning mode during active project work: prospect, mine, alternate, or package. Use when balancing planning pressure, evidence mining, and packaging timing across project reasoning. Prefer tes-high-agency-pattern for designing or reviewing one local development-layer skill/workflow operating pattern. Do not present as user-invoked."
 license: MIT
 ---
 
 # TES Predictive Operations
+
+Operational contract: `tes.predictive_operations@0.1.0`.
 
 Local development surface only. Do not package, publish, materialize, or treat
 as distributable TES.
@@ -47,6 +49,20 @@ wait for explicit resume.
 - `Recommended answer`
 - `Write policy`
 - `Packaging check` when relevant
+
+## Validation
+
+When this skill changes, run:
+
+```bash
+python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/tes-predictive-operations
+```
+
+## Done
+
+`tes-predictive-operations` is done when the next reasoning mode is selected,
+the next question or repository check is singular, and no durable write is
+performed outside the active workflow's write policy.
 
 ## Locks
 

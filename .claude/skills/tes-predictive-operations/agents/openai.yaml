@@ -1,0 +1,8 @@
+name: tes-predictive-operations
+description: Local-only self-consumed mode-selection guidance for active project reasoning.
+default_prompt: |
+  Use $tes-predictive-operations only as local self-consumed guidance while
+  already balancing planning pressure, evidence mining, alternation, or skill
+  packaging timing. Choose the smallest mode, name one next question or
+  repository check, respect the write policy, and do not present this as a
+  user-invoked command.
