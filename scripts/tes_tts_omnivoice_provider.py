@@ -41,11 +41,13 @@ DEFAULT_SESSION_DIR = DEFAULT_CACHE_DIR / "sessions"
 ENV_PYTHON = "TES_TTS_OMNIVOICE_PYTHON"
 ENV_REF_AUDIO = "TES_TTS_OMNIVOICE_REF_AUDIO"
 ENV_OUTPUT_DIR = "TES_TTS_OMNIVOICE_OUTPUT_DIR"
+ENV_BENCHMARK_DIR = "TES_TTS_OMNIVOICE_BENCHMARK_DIR"
 LATENCY_PROFILES = {
     "fast": {"num_step": 8, "description": "lowest latency; audible quality must be reviewed per session"},
     "balanced": {"num_step": 16, "description": "middle ground for live iteration"},
     "quality": {"num_step": 32, "description": "current quality-preserving default"},
 }
+LATENCY_PROFILE_CHOICES = ("auto", *tuple(sorted(LATENCY_PROFILES)))
 PROFILE_RECOMMENDATION_ORDER = ("fast", "balanced", "quality")
 
 
@@ -246,10 +248,44 @@ def common_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path) -> list
 
 
 def apply_latency_profile(args: argparse.Namespace) -> argparse.Namespace:
-    profile = getattr(args, "latency_profile", "quality")
+    requested_profile = getattr(args, "requested_latency_profile", getattr(args, "latency_profile", "auto"))
+    profile = requested_profile
+    source = "explicit"
+    if requested_profile == "auto":
+        benchmark_dir = os.environ.get(ENV_BENCHMARK_DIR)
+        profile, source = resolve_auto_latency_profile(benchmark_dir)
+    args.requested_latency_profile = requested_profile
+    args.latency_profile = profile
+    args.latency_profile_source = source
     if getattr(args, "num_step", None) is None:
         args.num_step = LATENCY_PROFILES[profile]["num_step"]
     return args
+
+
+def latency_profile_metadata(args: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "requested_latency_profile": getattr(args, "requested_latency_profile", getattr(args, "latency_profile", None)),
+        "latency_profile_source": getattr(args, "latency_profile_source", "explicit"),
+    }
+
+
+def resolve_auto_latency_profile(benchmark_dir: str | None = None) -> tuple[str, str]:
+    review_html, source = resolve_review_html(None, benchmark_dir)
+    if review_html is None:
+        return "quality", "auto_fallback_no_review"
+    decision_json = review_html.parent / "review-decision.json"
+    if not decision_json.exists():
+        return "quality", f"auto_fallback_no_decision:{source}"
+    try:
+        decision_payload = json.loads(decision_json.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return "quality", f"auto_fallback_invalid_decision:{source}"
+    if decision_payload.get("decision") != "AUDIO_CANDIDATE":
+        return "quality", f"auto_fallback_not_candidate:{source}"
+    recommended = decision_payload.get("recommended_latency_profile")
+    if isinstance(recommended, str) and recommended in LATENCY_PROFILES:
+        return recommended, f"auto_sealed_candidate:{source}"
+    return "quality", f"auto_fallback_no_recommended_profile:{source}"
 
 
 def synthesize_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path, output: Path) -> list[str]:
@@ -1182,6 +1218,7 @@ def command_warm_cache(args: argparse.Namespace) -> int:
                 "voice_prompt_cache_exists": cache_path.exists(),
                 "refresh_requested": args.refresh_prompt,
                 "latency_profile": args.latency_profile,
+                **latency_profile_metadata(args),
                 "num_step": args.num_step,
                 "command_shape": redact_command_value(command, "--ref-text"),
                 "allows_install": False,
@@ -1273,6 +1310,7 @@ def command_session(args: argparse.Namespace) -> int:
                 "resident_model": True,
                 "resident_voice_prompt": True,
                 "latency_profile": args.latency_profile,
+                **latency_profile_metadata(args),
                 "num_step": args.num_step,
                 "latency_profiles": LATENCY_PROFILES,
                 "command_shape": redact_command_value(command, "--ref-text"),
@@ -1347,6 +1385,7 @@ def command_speak(args: argparse.Namespace) -> int:
                 "text_chars": len(args.text),
                 "play_requested": args.play,
                 "latency_profile": args.latency_profile,
+                **latency_profile_metadata(args),
                 "num_step": args.num_step,
                 "command_shape": [
                     provider_python,
@@ -1478,6 +1517,7 @@ def command_bench(args: argparse.Namespace) -> int:
                 "open_requested": args.open,
                 "package_requested": args.package,
                 "latency_profile": args.latency_profile,
+                **latency_profile_metadata(args),
                 "num_step": args.num_step,
                 "result_json": str(output_dir / "result.json"),
                 "review_html": str(output_dir / "review.html"),
@@ -2021,6 +2061,7 @@ def command_prepare_prompt(args: argparse.Namespace) -> int:
             "device": device,
             "language": args.language,
             "latency_profile": args.latency_profile,
+            **latency_profile_metadata(args),
             "num_step": args.num_step,
             "model_load_ms": model_load_ms,
             **prompt_metrics,
@@ -2074,6 +2115,7 @@ def command_synthesize(args: argparse.Namespace) -> int:
             "device": device,
             "language": args.language,
             "latency_profile": args.latency_profile,
+            **latency_profile_metadata(args),
             "num_step": args.num_step,
             "text_mode": text_info["mode"],
             "source_text_immutable": text_info["prepared"]["source_text_immutable"],
@@ -2154,6 +2196,7 @@ def command_batch(args: argparse.Namespace) -> int:
             "device": device,
             "language": args.language,
             "latency_profile": args.latency_profile,
+            **latency_profile_metadata(args),
             "num_step": args.num_step,
             "model_load_ms": model_load_ms,
             **prompt_metrics,
@@ -2199,6 +2242,7 @@ def command_serve(args: argparse.Namespace) -> int:
             "device": device,
             "language": args.language,
             "latency_profile": args.latency_profile,
+            **latency_profile_metadata(args),
             "num_step": args.num_step,
             "output_dir": str(out_dir),
             "model_load_ms": model_load_ms,
@@ -2248,6 +2292,7 @@ def command_serve(args: argparse.Namespace) -> int:
                     "mode": "resident_session_utterance",
                     "id": request_id,
                     "latency_profile": args.latency_profile,
+                    **latency_profile_metadata(args),
                     "num_step": args.num_step,
                     "text_mode": text_info["mode"],
                     "source_text_immutable": text_info["prepared"]["source_text_immutable"],
@@ -2285,7 +2330,12 @@ def add_runtime_args(parser: argparse.ArgumentParser, *, ref_audio_required: boo
     parser.add_argument("--prompt-cache")
     parser.add_argument("--refresh-prompt", action="store_true")
     parser.add_argument("--device")
-    parser.add_argument("--latency-profile", choices=sorted(LATENCY_PROFILES), default="quality")
+    parser.add_argument(
+        "--latency-profile",
+        choices=LATENCY_PROFILE_CHOICES,
+        default="auto",
+        help="Use a concrete profile or auto-select the latest sealed AUDIO_CANDIDATE recommendation.",
+    )
     parser.add_argument(
         "--text-mode",
         choices=["redacted_source", "spoken_text", "raw"],

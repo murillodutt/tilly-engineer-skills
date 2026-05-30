@@ -64,6 +64,8 @@ REQUIRED_DRY_RUN_KEYS = {
     "text_chars",
     "play_requested",
     "latency_profile",
+    "requested_latency_profile",
+    "latency_profile_source",
     "num_step",
     "command_shape",
     "allows_install",
@@ -85,6 +87,8 @@ REQUIRED_BENCH_DRY_RUN_KEYS = {
     "open_requested",
     "package_requested",
     "latency_profile",
+    "requested_latency_profile",
+    "latency_profile_source",
     "num_step",
     "result_json",
     "review_html",
@@ -130,6 +134,8 @@ REQUIRED_WARM_CACHE_DRY_RUN_KEYS = {
     "voice_prompt_cache_exists",
     "refresh_requested",
     "latency_profile",
+    "requested_latency_profile",
+    "latency_profile_source",
     "num_step",
     "command_shape",
     "allows_install",
@@ -150,6 +156,8 @@ REQUIRED_SESSION_DRY_RUN_KEYS = {
     "resident_model",
     "resident_voice_prompt",
     "latency_profile",
+    "requested_latency_profile",
+    "latency_profile_source",
     "num_step",
     "latency_profiles",
     "command_shape",
@@ -807,6 +815,81 @@ def validate_session_dry_run_command() -> list[str]:
     for key in ("allows_install", "allows_download", "allows_global_config_write"):
         if payload.get(key) is not False:
             failures.append(f"session dry-run must keep {key}=false")
+    return failures
+
+
+def validate_auto_latency_profile_selection() -> list[str]:
+    failures: list[str] = []
+    provider = load_provider_module()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        benchmark = root / "sealed-profile"
+        benchmark.mkdir()
+        ref = root / "ref.wav"
+        review = benchmark / "review.html"
+        decision = benchmark / "review-decision.json"
+        ref.write_bytes(b"not-real-audio-for-dry-run")
+        review.write_text("<!doctype html>", encoding="utf-8")
+        decision.write_text(
+            json.dumps(
+                {
+                    "schema": "tes-tts-omnivoice-review-decision@1",
+                    "review_kind": "profile_review",
+                    "decision": "AUDIO_CANDIDATE",
+                    "recommended_latency_profile": "fast",
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        profile, source = provider.resolve_auto_latency_profile(str(root))
+        if profile != "fast":
+            failures.append("auto latency profile must use sealed AUDIO_CANDIDATE recommendation")
+        if not source.startswith("auto_sealed_candidate"):
+            failures.append("auto latency profile must explain sealed candidate source")
+
+        env = os.environ.copy()
+        env["TES_TTS_OMNIVOICE_PYTHON"] = sys.executable
+        env["TES_TTS_OMNIVOICE_REF_AUDIO"] = str(ref)
+        env["TES_TTS_OMNIVOICE_BENCHMARK_DIR"] = str(root)
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(PROVIDER_SCRIPT),
+                "speak",
+                "--text",
+                "Teste ADR e API em modo automatico.",
+                "--dry-run",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            env=env,
+        )
+    if completed.returncode != 0:
+        failures.append(f"auto profile speak dry-run returned unexpected exit code {completed.returncode}")
+        return failures
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        failures.append(f"auto profile speak dry-run did not emit JSON: {exc}")
+        return failures
+    if payload.get("requested_latency_profile") != "auto":
+        failures.append("auto profile dry-run must preserve requested profile")
+    if payload.get("latency_profile") != "fast":
+        failures.append("auto profile dry-run must resolve to recommended fast profile")
+    if payload.get("num_step") != 8:
+        failures.append("auto profile dry-run must resolve fast profile to 8 steps")
+    if not str(payload.get("latency_profile_source")).startswith("auto_sealed_candidate"):
+        failures.append("auto profile dry-run must report sealed candidate source")
+    command_shape = payload.get("command_shape")
+    if not isinstance(command_shape, list):
+        failures.append("auto profile dry-run command_shape must be a list")
+    else:
+        joined = " ".join(str(part) for part in command_shape)
+        if "--latency-profile fast" not in joined or "--num-step 8" not in joined:
+            failures.append("auto profile dry-run command must carry resolved fast profile")
     return failures
 
 
@@ -1539,6 +1622,7 @@ def main() -> int:
     failures.extend(validate_profile_review_dry_run_payload(profile_review_payload))
     failures.extend(validate_warm_cache_dry_run_command())
     failures.extend(validate_session_dry_run_command())
+    failures.extend(validate_auto_latency_profile_selection())
     failures.extend(validate_jsonl_emitter())
     failures.extend(validate_review_dry_run_payload(review_payload))
     failures.extend(validate_package_dry_run_payload(package_payload))

@@ -6,7 +6,7 @@ license: MIT
 
 # TES TTS
 
-Operational contract: `tes.tts@0.1.16`.
+Operational contract: `tes.tts@0.1.17`.
 
 `/tes-tts` is the small TES text-to-speech skill. It reads user-provided text
 aloud through whatever local TTS tool the host exposes. `/tes:tts` is a
@@ -46,8 +46,10 @@ compatible TES intent alias if the host reports it as an invalid slash.
    prefer the resident JSONL session:
    `python3 scripts/tes_tts_omnivoice_provider.py session`, which keeps the
    model and voice prompt loaded until stdin closes. Use
-   `--latency-profile fast` for live iteration, `balanced` for review, and
-   `quality` when preserving the current high-quality default matters most. Use
+   `--latency-profile auto` is the default: it uses the latest sealed
+   `AUDIO_CANDIDATE` profile recommendation, or falls back to `quality` when no
+   candidate is sealed. Use `fast` for live iteration, `balanced` for review,
+   and `quality` when preserving the current high-quality default matters most. Use
    `python3 scripts/tes_tts_omnivoice_provider.py product-status`
    as the product cockpit for provider readiness, latest review, sealed
    decision, package SHA, and next action. Use `--format text` for operator

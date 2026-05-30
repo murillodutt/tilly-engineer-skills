@@ -59,14 +59,14 @@ cache, and proactive `speak`.
 - `candidate --format text --strict` replays/opens sealed audio without
   regenerating it.
 - Profile-review smoke sealed `AUDIO_CANDIDATE`; recommended profile `fast`; ZIP SHA starts `e9757a4e`.
+- Runtime `--latency-profile auto` applies sealed recommendation; otherwise `quality`.
 
-Relevant gates: focused TTS provider/runtime/oracle suite, roadmap partition,
-materialization, TDS/doc-size/reference validators, and `npm run commit:check`
-for package closure.
+Relevant gates: focused TTS suite, roadmap partition, materialization, TDS,
+doc-size, reference validators, and `npm run commit:check`.
 
 ## Next Cut
 
-Run `profile-review` and pick the default live-session profile before the next audio candidate package.
+Use the auto-selected `fast` profile in the next live resident-session smoke.
 
 ## Maintenance Rules
 
