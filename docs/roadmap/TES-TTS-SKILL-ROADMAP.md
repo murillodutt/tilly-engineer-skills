@@ -55,8 +55,11 @@ durable cache, or proactive `speak`.
   presets and combined WAV review.
 
 ## Next Cut
-Human-score `20260530-174724-539838`, then promote the winning server preset or
-switch to profile-based clone synthesis to avoid repeated reference uploads.
+Future goal 1: create a local OmniVoice server voice profile from
+`tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav`, then use
+`clone:<profile-id>` for synthesis so repeated reads do not upload the
+reference WAV each time. Human-score `20260530-174724-539838` before promoting
+any preset or profile workflow as default.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.
