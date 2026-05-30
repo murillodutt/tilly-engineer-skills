@@ -9,11 +9,9 @@ environment where the maintainer explicitly installed `omnivoice`.
 from __future__ import annotations
 
 import argparse
-import contextlib
 import datetime as dt
 import hashlib
 import html
-import importlib.util
 import json
 import os
 from pathlib import Path
@@ -32,7 +30,7 @@ import urllib.request
 import wave
 import zipfile
 
-from tes_tts_runtime_adapter import prepare_audio_quality_text, prepare_spoken_text
+import tes_tts_omnivoice_direct_kernel as direct_kernel
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -879,7 +877,7 @@ def synthesize_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path, out
 def prompt_cache_path_from_args(args: argparse.Namespace, ref_audio: Path) -> Path:
     if args.prompt_cache:
         return Path(args.prompt_cache)
-    return prompt_cache_path(Path(args.cache_dir), args.model, ref_audio, args.ref_text)
+    return direct_kernel.prompt_cache_path(Path(args.cache_dir), args.model, ref_audio, args.ref_text)
 
 
 def playback_audio(output: Path) -> dict[str, Any]:
@@ -1301,7 +1299,7 @@ def redacted_case_text(case: dict[str, Any], locale: str) -> str:
         text = case.get("source_text")
     if not isinstance(text, str):
         return ""
-    return prepare_spoken_text(text, locale)["redacted_text"]
+    return direct_kernel.provider_text(text, locale, "spoken_text")["prepared"]["redacted_text"]
 
 
 def write_benchmark_review(
@@ -3757,69 +3755,23 @@ def normalize_ref_audio(source: Path, output: Path) -> None:
 
 
 def provider_text(source_text: str, locale: str, mode: str) -> dict[str, Any]:
-    if mode == "audio_quality":
-        return prepare_audio_quality_text(source_text, locale)
-    prepared = prepare_spoken_text(source_text, locale)
-    if mode == "spoken_text":
-        text = prepared["spoken_text"]
-    elif mode == "redacted_source":
-        text = prepared["redacted_text"].replace("`", "")
-    else:
-        text = source_text
-    return {
-        "text": text,
-        "prepared": prepared,
-        "mode": mode,
-    }
+    return direct_kernel.provider_text(source_text, locale, mode)
 
 
 def load_omnivoice_modules() -> dict[str, Any]:
-    missing = [name for name in ("omnivoice", "torch", "soundfile") if importlib.util.find_spec(name) is None]
-    if missing:
-        raise RuntimeError(f"missing optional OmniVoice dependencies: {', '.join(missing)}")
-    import torch
-    import soundfile as sf
-    from omnivoice.models.omnivoice import OmniVoice
-
-    return {
-        "torch": torch,
-        "soundfile": sf,
-        "OmniVoice": OmniVoice,
-    }
+    return direct_kernel.load_omnivoice_modules()
 
 
 def best_device(torch: Any, requested: str | None) -> str:
-    if requested:
-        return requested
-    if torch.cuda.is_available():
-        return "cuda"
-    if torch.backends.mps.is_available():
-        return "mps"
-    return "cpu"
+    return direct_kernel.best_device(torch, requested)
 
 
 def prompt_cache_path(cache_dir: Path, model: str, ref_audio: Path, ref_text: str | None) -> Path:
-    cache_key = {
-        "model": model,
-        "ref_audio_sha256": sha256_path(ref_audio),
-        "ref_text_sha256": hashlib.sha256((ref_text or "").encode("utf-8")).hexdigest(),
-    }
-    key = hashlib.sha256(json.dumps(cache_key, sort_keys=True).encode("utf-8")).hexdigest()[:24]
-    return cache_dir / "voice-prompts" / f"{key}.pt"
+    return direct_kernel.prompt_cache_path(cache_dir, model, ref_audio, ref_text)
 
 
 def protect_voice_prompt_cache_path(cache_path: Path) -> None:
-    """Keep local cloned-voice prompt artifacts private to the current user."""
-    cache_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-    try:
-        cache_path.parent.chmod(0o700)
-    except OSError:
-        pass
-    if cache_path.exists():
-        try:
-            cache_path.chmod(0o600)
-        except OSError:
-            pass
+    direct_kernel.protect_voice_prompt_cache_path(cache_path)
 
 
 def load_or_create_voice_prompt(
@@ -3831,35 +3783,14 @@ def load_or_create_voice_prompt(
     cache_path: Path,
     refresh: bool,
 ) -> tuple[Any, dict[str, Any]]:
-    protect_voice_prompt_cache_path(cache_path)
-    if cache_path.exists() and not refresh:
-        started = time.perf_counter()
-        prompt = torch.load(cache_path, map_location=model.device, weights_only=False)
-        protect_voice_prompt_cache_path(cache_path)
-        cached_ref_text = getattr(prompt, "ref_text", None)
-        return prompt, {
-            "voice_prompt_cache": "hit",
-            "voice_prompt_cache_path": str(cache_path),
-            "voice_prompt_prepare_ms": round((time.perf_counter() - started) * 1000, 3),
-            "ref_text_source": "cache",
-            "ref_text_present": bool(cached_ref_text),
-            "ref_text_chars": len(cached_ref_text or ""),
-        }
-
-    started = time.perf_counter()
-    with contextlib.redirect_stdout(sys.stderr):
-        prompt = model.create_voice_clone_prompt(ref_audio=str(ref_audio), ref_text=ref_text)
-    torch.save(prompt, cache_path)
-    protect_voice_prompt_cache_path(cache_path)
-    prompt_ref_text = getattr(prompt, "ref_text", None)
-    return prompt, {
-        "voice_prompt_cache": "miss",
-        "voice_prompt_cache_path": str(cache_path),
-        "voice_prompt_prepare_ms": round((time.perf_counter() - started) * 1000, 3),
-        "ref_text_source": "provided" if ref_text else "auto_transcribed",
-        "ref_text_present": bool(prompt_ref_text),
-        "ref_text_chars": len(prompt_ref_text or ""),
-    }
+    return direct_kernel.load_or_create_voice_prompt(
+        model=model,
+        torch=torch,
+        ref_audio=ref_audio,
+        ref_text=ref_text,
+        cache_path=cache_path,
+        refresh=refresh,
+    )
 
 
 def synthesize_once(
@@ -3872,52 +3803,39 @@ def synthesize_once(
     output: Path,
     args: argparse.Namespace,
 ) -> dict[str, Any]:
-    output.parent.mkdir(parents=True, exist_ok=True)
-    started = time.perf_counter()
-    with contextlib.redirect_stdout(sys.stderr):
-        audios = model.generate(
-            text=text,
-            language=language,
-            voice_clone_prompt=voice_prompt,
-            num_step=args.num_step,
-            guidance_scale=args.guidance_scale,
-            speed=args.speed,
-            t_shift=args.t_shift,
-            denoise=args.denoise,
-            postprocess_output=args.postprocess_output,
-        )
-    generation_ms = round((time.perf_counter() - started) * 1000, 3)
-    sf.write(output, audios[0], model.sampling_rate)
-    duration_seconds = round(float(len(audios[0]) / model.sampling_rate), 3)
-    return {
-        "output": str(output),
-        "generation_ms": generation_ms,
-        "audio_duration_seconds": duration_seconds,
-        "rtf": round(generation_ms / 1000 / duration_seconds, 4) if duration_seconds else None,
-        "sample_rate": model.sampling_rate,
-    }
+    kernel = direct_kernel.DirectOmniVoiceKernel(
+        model=model,
+        soundfile=sf,
+        voice_prompt=voice_prompt,
+        device=str(getattr(model, "device", "unknown")),
+        model_load_ms=0,
+        prompt_metrics={},
+    )
+    return kernel.synthesize(
+        text=text,
+        language=language,
+        output=output,
+        num_step=args.num_step,
+        guidance_scale=args.guidance_scale,
+        speed=args.speed,
+        t_shift=args.t_shift,
+        denoise=args.denoise,
+        postprocess_output=args.postprocess_output,
+    )
 
 
 def command_prepare_prompt(args: argparse.Namespace) -> int:
     apply_latency_profile(args)
-    modules = load_omnivoice_modules()
-    torch = modules["torch"]
-    OmniVoice = modules["OmniVoice"]
-    device = best_device(torch, args.device)
     total_started = time.perf_counter()
-    load_started = time.perf_counter()
-    with contextlib.redirect_stdout(sys.stderr):
-        model = OmniVoice.from_pretrained(args.model, device_map=device, dtype=torch.float16)
-    model_load_ms = round((time.perf_counter() - load_started) * 1000, 3)
     ref_audio = Path(args.ref_audio)
     cache_path = prompt_cache_path_from_args(args, ref_audio)
-    _prompt, prompt_metrics = load_or_create_voice_prompt(
-        model=model,
-        torch=torch,
+    kernel = direct_kernel.DirectOmniVoiceKernel.load(
+        model_name=args.model,
         ref_audio=ref_audio,
         ref_text=args.ref_text,
         cache_path=cache_path,
-        refresh=args.refresh_prompt,
+        refresh_prompt=args.refresh_prompt,
+        requested_device=args.device,
     )
     emit(
         {
@@ -3926,13 +3844,13 @@ def command_prepare_prompt(args: argparse.Namespace) -> int:
             "version": VERSION,
             "mode": "voice_prompt_cache",
             "model": args.model,
-            "device": device,
+            "device": kernel.device,
             "language": args.language,
             "latency_profile": args.latency_profile,
             **latency_profile_metadata(args),
             "num_step": args.num_step,
-            "model_load_ms": model_load_ms,
-            **prompt_metrics,
+            "model_load_ms": kernel.model_load_ms,
+            **kernel.prompt_metrics,
             "total_ms": round((time.perf_counter() - total_started) * 1000, 3),
             "allows_install": False,
             "allows_download": False,
@@ -3944,32 +3862,20 @@ def command_prepare_prompt(args: argparse.Namespace) -> int:
 
 def command_synthesize(args: argparse.Namespace) -> int:
     apply_latency_profile(args)
-    modules = load_omnivoice_modules()
-    torch = modules["torch"]
-    sf = modules["soundfile"]
-    OmniVoice = modules["OmniVoice"]
-    device = best_device(torch, args.device)
-    text_info = provider_text(args.text, args.locale, args.text_mode)
-
     total_started = time.perf_counter()
-    load_started = time.perf_counter()
-    with contextlib.redirect_stdout(sys.stderr):
-        model = OmniVoice.from_pretrained(args.model, device_map=device, dtype=torch.float16)
-    model_load_ms = round((time.perf_counter() - load_started) * 1000, 3)
-    cache_path = prompt_cache_path_from_args(args, Path(args.ref_audio))
-    prompt, prompt_metrics = load_or_create_voice_prompt(
-        model=model,
-        torch=torch,
-        ref_audio=Path(args.ref_audio),
+    ref_audio = Path(args.ref_audio)
+    kernel = direct_kernel.DirectOmniVoiceKernel.load(
+        model_name=args.model,
+        ref_audio=ref_audio,
         ref_text=args.ref_text,
-        cache_path=cache_path,
-        refresh=args.refresh_prompt,
+        cache_path=prompt_cache_path_from_args(args, ref_audio),
+        refresh_prompt=args.refresh_prompt,
+        requested_device=args.device,
     )
-    audio_metrics = synthesize_once(
-        model=model,
-        sf=sf,
-        voice_prompt=prompt,
-        text=text_info["text"],
+    text_info, audio_metrics = kernel.synthesize_prepared(
+        source_text=args.text,
+        locale=args.locale,
+        text_mode=args.text_mode,
         language=args.language,
         output=Path(args.output),
         args=args,
@@ -3980,7 +3886,7 @@ def command_synthesize(args: argparse.Namespace) -> int:
             "status": "PASS",
             "version": VERSION,
             "model": args.model,
-            "device": device,
+            "device": kernel.device,
             "language": args.language,
             "latency_profile": args.latency_profile,
             **latency_profile_metadata(args),
@@ -3990,8 +3896,8 @@ def command_synthesize(args: argparse.Namespace) -> int:
             "redaction_count": text_info["prepared"]["redaction_count"],
             "summary_behavior": text_info["prepared"]["summary_behavior"],
             "command_execution": text_info["prepared"]["command_execution"],
-            "model_load_ms": model_load_ms,
-            **prompt_metrics,
+            "model_load_ms": kernel.model_load_ms,
+            **kernel.prompt_metrics,
             **audio_metrics,
             "total_ms": round((time.perf_counter() - total_started) * 1000, 3),
         }
@@ -4008,26 +3914,17 @@ def load_text_cases(path: Path) -> list[dict[str, Any]]:
 
 def command_batch(args: argparse.Namespace) -> int:
     apply_latency_profile(args)
-    modules = load_omnivoice_modules()
-    torch = modules["torch"]
-    sf = modules["soundfile"]
-    OmniVoice = modules["OmniVoice"]
-    device = best_device(torch, args.device)
     cases = load_text_cases(Path(args.cases))
 
     total_started = time.perf_counter()
-    load_started = time.perf_counter()
-    with contextlib.redirect_stdout(sys.stderr):
-        model = OmniVoice.from_pretrained(args.model, device_map=device, dtype=torch.float16)
-    model_load_ms = round((time.perf_counter() - load_started) * 1000, 3)
-    cache_path = prompt_cache_path_from_args(args, Path(args.ref_audio))
-    prompt, prompt_metrics = load_or_create_voice_prompt(
-        model=model,
-        torch=torch,
-        ref_audio=Path(args.ref_audio),
+    ref_audio = Path(args.ref_audio)
+    kernel = direct_kernel.DirectOmniVoiceKernel.load(
+        model_name=args.model,
+        ref_audio=ref_audio,
         ref_text=args.ref_text,
-        cache_path=cache_path,
-        refresh=args.refresh_prompt,
+        cache_path=prompt_cache_path_from_args(args, ref_audio),
+        refresh_prompt=args.refresh_prompt,
+        requested_device=args.device,
     )
 
     outputs: list[dict[str, Any]] = []
@@ -4035,13 +3932,11 @@ def command_batch(args: argparse.Namespace) -> int:
     for index, case in enumerate(cases, start=1):
         case_id = case.get("id") or f"case-{index:03d}"
         source_text = case["text"]
-        text_info = provider_text(source_text, args.locale, args.text_mode)
         output = out_dir / f"{index:02d}-{case_id}.wav"
-        metrics = synthesize_once(
-            model=model,
-            sf=sf,
-            voice_prompt=prompt,
-            text=text_info["text"],
+        text_info, metrics = kernel.synthesize_prepared(
+            source_text=source_text,
+            locale=args.locale,
+            text_mode=args.text_mode,
             language=case.get("language", args.language),
             output=output,
             args=args,
@@ -4061,13 +3956,13 @@ def command_batch(args: argparse.Namespace) -> int:
             "status": "PASS",
             "version": VERSION,
             "model": args.model,
-            "device": device,
+            "device": kernel.device,
             "language": args.language,
             "latency_profile": args.latency_profile,
             **latency_profile_metadata(args),
             "num_step": args.num_step,
-            "model_load_ms": model_load_ms,
-            **prompt_metrics,
+            "model_load_ms": kernel.model_load_ms,
+            **kernel.prompt_metrics,
             "outputs": outputs,
             "total_ms": round((time.perf_counter() - total_started) * 1000, 3),
         }
@@ -4077,27 +3972,18 @@ def command_batch(args: argparse.Namespace) -> int:
 
 def command_serve(args: argparse.Namespace) -> int:
     apply_latency_profile(args)
-    modules = load_omnivoice_modules()
-    torch = modules["torch"]
-    sf = modules["soundfile"]
-    OmniVoice = modules["OmniVoice"]
-    device = best_device(torch, args.device)
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     total_started = time.perf_counter()
-    load_started = time.perf_counter()
-    with contextlib.redirect_stdout(sys.stderr):
-        model = OmniVoice.from_pretrained(args.model, device_map=device, dtype=torch.float16)
-    model_load_ms = round((time.perf_counter() - load_started) * 1000, 3)
-    cache_path = prompt_cache_path_from_args(args, Path(args.ref_audio))
-    prompt, prompt_metrics = load_or_create_voice_prompt(
-        model=model,
-        torch=torch,
-        ref_audio=Path(args.ref_audio),
+    ref_audio = Path(args.ref_audio)
+    kernel = direct_kernel.DirectOmniVoiceKernel.load(
+        model_name=args.model,
+        ref_audio=ref_audio,
         ref_text=args.ref_text,
-        cache_path=cache_path,
-        refresh=args.refresh_prompt,
+        cache_path=prompt_cache_path_from_args(args, ref_audio),
+        refresh_prompt=args.refresh_prompt,
+        requested_device=args.device,
     )
     emit_jsonl(
         {
@@ -4107,14 +3993,14 @@ def command_serve(args: argparse.Namespace) -> int:
             "mode": "resident_session",
             "protocol": "jsonl_stdin_stdout",
             "model": args.model,
-            "device": device,
+            "device": kernel.device,
             "language": args.language,
             "latency_profile": args.latency_profile,
             **latency_profile_metadata(args),
             "num_step": args.num_step,
             "output_dir": str(out_dir),
-            "model_load_ms": model_load_ms,
-            **prompt_metrics,
+            "model_load_ms": kernel.model_load_ms,
+            **kernel.prompt_metrics,
             "startup_ms": round((time.perf_counter() - total_started) * 1000, 3),
             "allows_install": False,
             "allows_download": False,
@@ -4142,12 +4028,10 @@ def command_serve(args: argparse.Namespace) -> int:
                 if isinstance(output_value, str) and output_value
                 else out_dir / f"{served:04d}-{safe_file_stem(request_id)}.wav"
             )
-            text_info = provider_text(text, args.locale, args.text_mode)
-            audio_metrics = synthesize_once(
-                model=model,
-                sf=sf,
-                voice_prompt=prompt,
-                text=text_info["text"],
+            text_info, audio_metrics = kernel.synthesize_prepared(
+                source_text=text,
+                locale=args.locale,
+                text_mode=args.text_mode,
                 language=language,
                 output=output,
                 args=args,

@@ -23,6 +23,7 @@ import wave
 
 ROOT = Path(__file__).resolve().parents[1]
 PROVIDER_SCRIPT = ROOT / "scripts/tes_tts_omnivoice_provider.py"
+DIRECT_KERNEL_SCRIPT = ROOT / "scripts/tes_tts_omnivoice_direct_kernel.py"
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/omnivoice-provider-cases.json"
 VERSION = "0.3.147"
 FORBIDDEN_TOP_LEVEL_IMPORTS = {"omnivoice", "torch", "soundfile"}
@@ -454,28 +455,30 @@ def load_json(path: Path) -> dict[str, Any]:
 
 def validate_source_imports() -> list[str]:
     failures: list[str] = []
-    tree = ast.parse(PROVIDER_SCRIPT.read_text(encoding="utf-8"))
-    for node in tree.body:
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                root = alias.name.split(".", 1)[0]
+    for source in (PROVIDER_SCRIPT, DIRECT_KERNEL_SCRIPT):
+        tree = ast.parse(source.read_text(encoding="utf-8"))
+        for node in tree.body:
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    root = alias.name.split(".", 1)[0]
+                    if root in FORBIDDEN_TOP_LEVEL_IMPORTS:
+                        failures.append(f"{source.name} top-level optional import leaked: {alias.name}")
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                root = node.module.split(".", 1)[0]
                 if root in FORBIDDEN_TOP_LEVEL_IMPORTS:
-                    failures.append(f"top-level optional import leaked: {alias.name}")
-        elif isinstance(node, ast.ImportFrom) and node.module:
-            root = node.module.split(".", 1)[0]
-            if root in FORBIDDEN_TOP_LEVEL_IMPORTS:
-                failures.append(f"top-level optional import leaked: {node.module}")
+                    failures.append(f"{source.name} top-level optional import leaked: {node.module}")
     return failures
 
 
 def validate_no_reference_text_logging() -> list[str]:
     failures: list[str] = []
-    tree = ast.parse(PROVIDER_SCRIPT.read_text(encoding="utf-8"))
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Dict):
-            for key in node.keys:
-                if isinstance(key, ast.Constant) and key.value == "ref_text":
-                    failures.append("provider metrics must not emit reference voice text")
+    for source in (PROVIDER_SCRIPT, DIRECT_KERNEL_SCRIPT):
+        tree = ast.parse(source.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Dict):
+                for key in node.keys:
+                    if isinstance(key, ast.Constant) and key.value == "ref_text":
+                        failures.append(f"{source.name} metrics must not emit reference voice text")
     return failures
 
 

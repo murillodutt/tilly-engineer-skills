@@ -19,7 +19,7 @@ Input analysis:
 `docs/roadmap/TES-TTS-PYTHON-SCRIPT-EFFICIENCY-ANALYSIS.md`
 
 Ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-PSO-001-direct-resident-kernel-extraction.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-PSO-002-short-read-path-unification.md`
 
 ## Purpose
 
