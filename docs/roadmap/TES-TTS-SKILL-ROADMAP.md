@@ -12,8 +12,7 @@ Dashboard for current decisions, latest evidence, and the next cut only. Dense
 pointers live in `TES-TTS-SKILL-ROADMAP-REGISTRY.md`; closed lineage lives in
 `TES-TTS-SKILL-ROADMAP-HISTORY.md`. ADR 0004 remains the boundary.
 
-Partition contract: dashboard = state, registry = pointers, history = lineage,
-validators = size/shape budgets.
+Partition contract: dashboard = objective state, registry = structured pointers, history = organized lineage, validators = budgets.
 
 ## State
 `tes-tts` is reactive-only. PT-BR is the primary quality target. The path is
@@ -35,10 +34,12 @@ durable cache, or proactive `speak`.
 - Sealed profile review selected `fast` as the current auto latency profile.
 - Latest live-smoke review package passed: 3 WAVs, `review.html`, ZIP package,
   avg RTF `0.3864`, package SHA starts `eafb9419`.
+- `decide-review --path <live review>` classifies unscored live-smoke reviews
+  as `PENDING_REVIEW` and can seal scored decisions into the live-smoke ZIP.
 
 ## Next Cut
-Use exported listener scores from the 3-case review to decide whether the
-current `fast` live profile is the default product path or needs targeted fix.
+Score the 3-case live review, export JSON, then seal the decision with
+`decide-review --path <review.html> --review-json <json> --package`.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.
@@ -49,10 +50,10 @@ current `fast` live profile is the default product path or needs targeted fix.
   leave only the current conclusion here.
 - Keep the root index grouped by product line, not by every prompt/SPEC/audit.
 - Every `tes-tts` cycle must update this dashboard or record no-change
-  rationale in the active audit/commit message.
+  rationale; ambiguous, stale, or repeated status is a defect.
 - Do not use this roadmap to authorize sync, release, provider installs,
   provider downloads, or global config writes.
 
 ## Closure Rule
-Close material `tes-tts` changes after the smallest relevant TTS oracles and
-package gates. Never claim release closure without a release identity decision.
+Close material changes after focused TTS/package gates. Never claim release
+closure without a release identity decision.

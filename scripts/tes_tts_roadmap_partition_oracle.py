@@ -89,6 +89,10 @@ def validate_dashboard(text: str, failures: list[str]) -> None:
         failures.append(f"{rel} must point closed lineage to history")
     if "Partition contract:" not in text:
         failures.append(f"{rel} must state the partition contract")
+    if "objective state" not in text or "structured" not in text or "organized lineage" not in text:
+        failures.append(f"{rel} must keep the roadmap organized, structured, and objective")
+    if "ambiguous, stale, or repeated status is a defect" not in text:
+        failures.append(f"{rel} must treat ambiguous roadmap status as a defect")
     if "Hard limit: 80 lines" not in text:
         failures.append(f"{rel} must state its hard line limit")
     if "Review zone starts at 60 lines" not in text:

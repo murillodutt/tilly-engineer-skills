@@ -393,6 +393,9 @@ def live_smoke_package_files(result_json: Path) -> list[Path]:
     review_html = root / "review.html"
     if review_html.is_file():
         files.append(review_html.resolve())
+    review_decision = root / "review-decision.json"
+    if review_decision.is_file():
+        files.append(review_decision.resolve())
     try:
         payload = json.loads(result_json.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
@@ -692,7 +695,8 @@ def resolve_review_html(path: str | None, benchmark_dir: str | None) -> tuple[Pa
             return candidate / "review.html", "arg_dir"
         return candidate, "arg_file"
     root = Path(benchmark_dir) if benchmark_dir else DEFAULT_BENCHMARK_DIR
-    candidates = [item for item in root.glob("*/review.html") if item.is_file()]
+    roots = [root] if benchmark_dir else [DEFAULT_BENCHMARK_DIR, DEFAULT_SESSION_DIR]
+    candidates = [item for candidate_root in roots for item in candidate_root.glob("*/review.html") if item.is_file()]
     if not candidates:
         return None, "missing"
     candidates.sort(key=lambda item: item.stat().st_mtime, reverse=True)
@@ -853,7 +857,9 @@ def build_review_decision(review_html: Path, review_json: Path | None) -> dict[s
     scores_by_id = load_review_scores(review_json)
     cases: list[dict[str, Any]] = []
     minimum_scores: list[float] = []
-    profile_review = result_payload.get("mode") == "product_profile_review"
+    result_mode = result_payload.get("mode")
+    profile_review = result_mode == "product_profile_review"
+    live_smoke_review = result_mode == "product_live_smoke"
     required = ("score",) if profile_review else ("overall", "pronunciation", "technical_terms", "naturalness")
     outputs = result_payload.get("outputs", [])
     output_items = outputs if isinstance(outputs, list) else []
@@ -892,7 +898,7 @@ def build_review_decision(review_html: Path, review_json: Path | None) -> dict[s
         "created_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         "provider": "omnivoice",
         "version": VERSION,
-        "review_kind": "profile_review" if profile_review else "benchmark_review",
+        "review_kind": "profile_review" if profile_review else "live_smoke_review" if live_smoke_review else "benchmark_review",
         "decision": decision,
         "recommended_latency_profile": (
             profile_recommendation.get("recommended_latency_profile") if profile_recommendation else None
@@ -947,8 +953,17 @@ def command_decide_review(args: argparse.Namespace) -> int:
     if args.package and decision_path.resolve().parent != review_html.parent.resolve():
         shutil.copy2(decision_path, review_html.parent / "review-decision.json")
     if args.package:
-        package_path = default_review_package_path(review_html, None)
-        decision.update(write_review_package(review_html, package_path))
+        result_json = review_html.parent / "result.json"
+        try:
+            result_payload = json.loads(result_json.read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError):
+            result_payload = {}
+        if result_payload.get("mode") == "product_live_smoke":
+            package_path = review_html.parent / "tes-tts-omnivoice-live-smoke-package.zip"
+            decision.update(write_live_smoke_package(result_json, package_path))
+        else:
+            package_path = default_review_package_path(review_html, None)
+            decision.update(write_review_package(review_html, package_path))
     emit(decision)
     return 0
 
@@ -967,7 +982,7 @@ def product_state_and_next_action(*, ready: bool, review_html: Path | None, deci
     if decision is None:
         return (
             "NEEDS_REVIEW_DECISION",
-            "Score the review page, export JSON, then run decide-review --review-json <exported-json> --package.",
+            "Score the review page, export JSON, then run decide-review --path <review.html> --review-json <exported-json> --package.",
         )
     if decision == "AUDIO_CANDIDATE":
         return (
@@ -1035,11 +1050,18 @@ def command_product_status(args: argparse.Namespace) -> int:
     review_exists = bool(review_html and review_html.exists())
     result_json = review_html.parent / "result.json" if review_exists and review_html else None
     decision_json = review_html.parent / "review-decision.json" if review_exists and review_html else None
-    package_zip = review_html.parent / "tes-tts-omnivoice-review-package.zip" if review_exists and review_html else None
+    package_zip: Path | None = None
     result_payload: dict[str, Any] = {}
     decision_payload: dict[str, Any] = {}
     if result_json and result_json.exists():
         result_payload = json.loads(result_json.read_text(encoding="utf-8"))
+    if review_exists and review_html:
+        package_name = (
+            "tes-tts-omnivoice-live-smoke-package.zip"
+            if result_payload.get("mode") == "product_live_smoke"
+            else "tes-tts-omnivoice-review-package.zip"
+        )
+        package_zip = review_html.parent / package_name
     if decision_json and decision_json.exists():
         decision_payload = json.loads(decision_json.read_text(encoding="utf-8"))
     decision = decision_payload.get("decision") if isinstance(decision_payload.get("decision"), str) else None
@@ -1109,7 +1131,7 @@ def candidate_state_and_next_action(
     if not review_exists:
         return False, "Run bench --play --open --package to create a review page and audio evidence."
     if decision is None:
-        return False, "Score the review page, export JSON, then seal it with decide-review --review-json <json> --package."
+        return False, "Score the review page, export JSON, then seal it with decide-review --path <review.html> --review-json <json> --package."
     if decision != "AUDIO_CANDIDATE":
         return False, "Apply the targeted audio/runtime fix, then rerun bench and decide-review."
     if not package_exists:

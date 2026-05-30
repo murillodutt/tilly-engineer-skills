@@ -1386,6 +1386,127 @@ def validate_review_decision_command() -> list[str]:
     return failures
 
 
+def validate_live_smoke_review_decision_command() -> list[str]:
+    failures: list[str] = []
+    provider = load_provider_module()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        cases = root / "cases.json"
+        wav = root / "live-case.wav"
+        review_json = root / "exported-live-review.json"
+        wav.write_bytes(b"fake-wave")
+        cases.write_text(
+            json.dumps(
+                {
+                    "cases": [
+                        {
+                            "id": "live-case",
+                            "source_text": "Teste live-smoke com API_KEY=abc123SECRET e TypeScript.",
+                        }
+                    ]
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        payload = {
+            "provider": "omnivoice",
+            "status": "PASS",
+            "version": VERSION,
+            "mode": "product_live_smoke",
+            "outputs": [
+                {
+                    "id": "live-case",
+                    "output": str(wav),
+                    "rtf": 0.4,
+                    "audio_duration_seconds": 3.0,
+                    "generation_ms": 1200,
+                    "redaction_count": 1,
+                }
+            ],
+            "summary": {
+                "request_count": 1,
+                "avg_rtf": 0.4,
+                "total_audio_duration_seconds": 3.0,
+                "total_generation_ms": 1200,
+                "provider_timing_scope": "resident_local_optional_environment_only",
+            },
+            "benchmark_summary": {
+                "case_count": 1,
+                "avg_rtf": 0.4,
+                "total_audio_duration_seconds": 3.0,
+                "total_generation_ms": 1200,
+                "provider_timing_scope": "resident_local_optional_environment_only",
+            },
+        }
+        provider.write_benchmark_review(payload=payload, cases_path=cases, output_dir=root, locale="pt-BR")
+        review_json.write_text(
+            json.dumps(
+                {
+                    "schema": "tes-tts-omnivoice-review@1",
+                    "cases": [
+                        {
+                            "id": "live-case",
+                            "scores": {
+                                "overall": 9,
+                                "pronunciation": 8,
+                                "technical_terms": 8,
+                                "naturalness": 8.5,
+                                "notes": "resident smoke candidate",
+                            },
+                        }
+                    ],
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        args = argparse.Namespace(
+            path=str(root / "review.html"),
+            benchmark_dir=None,
+            review_json=str(review_json),
+            output=None,
+            package=True,
+            dry_run=False,
+        )
+        with contextlib.redirect_stdout(io.StringIO()):
+            if provider.command_decide_review(args) != 0:
+                failures.append("decide-review failed for live-smoke review")
+        decision_path = root / "review-decision.json"
+        if not decision_path.exists():
+            failures.append("live-smoke decide-review did not write review-decision.json")
+            return failures
+        decision = json.loads(decision_path.read_text(encoding="utf-8"))
+        if decision.get("review_kind") != "live_smoke_review":
+            failures.append("live-smoke decision must report review_kind=live_smoke_review")
+        if decision.get("decision") != "AUDIO_CANDIDATE":
+            failures.append("live-smoke decision should classify strong scores as AUDIO_CANDIDATE")
+        package_zip = root / "tes-tts-omnivoice-live-smoke-package.zip"
+        if not package_zip.exists():
+            failures.append("live-smoke decide-review --package did not update live-smoke package")
+            return failures
+        import zipfile
+
+        with zipfile.ZipFile(package_zip) as archive:
+            names = set(archive.namelist())
+            for required in {
+                "live-case.wav",
+                "result.json",
+                "review.html",
+                "review-decision.json",
+                "live-smoke-package-manifest.json",
+            }:
+                if required not in names:
+                    failures.append(f"live-smoke decision package missing {required}")
+            manifest = json.loads(archive.read("live-smoke-package-manifest.json").decode("utf-8"))
+        if manifest.get("schema") != "tes-tts-omnivoice-live-smoke-package@1":
+            failures.append("live-smoke decision package manifest schema drifted")
+        manifest_paths = {item.get("path") for item in manifest.get("files", []) if isinstance(item, dict)}
+        if "review-decision.json" not in manifest_paths:
+            failures.append("live-smoke package manifest missing review-decision.json")
+    return failures
+
+
 def validate_profile_review_decision_command() -> list[str]:
     failures: list[str] = []
     provider = load_provider_module()
@@ -1757,6 +1878,7 @@ def main() -> int:
     failures.extend(validate_profile_review_html_scorecard())
     failures.extend(validate_review_package_zip())
     failures.extend(validate_review_decision_command())
+    failures.extend(validate_live_smoke_review_decision_command())
     failures.extend(validate_profile_review_decision_command())
     failures.extend(validate_product_status_command())
     failures.extend(validate_candidate_command())
