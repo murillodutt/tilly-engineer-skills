@@ -454,7 +454,7 @@ PT-BR lexical normalization status: LEX-001 through LEX-005 passed; local
 evidence-only sequence closed, next prompt none, sync status
 `REMOTE_SYNC_NOT_REQUESTED`.
 
-Runtime status: RTE-000 through RTE-006 passed; runtime-first work uses `scripts/tes_tts_runtime.py` as CLI facade over classifier, verbalizer, adapter, and shared types modules; protected terms now use a cached `regex_union` matcher with Trie/Aho-Corasick thresholds, sync status `REMOTE_SYNC_NOT_REQUESTED`.
+Runtime status: RTE-000 through RTE-006 passed; runtime-first work uses `scripts/tes_tts_runtime.py` as CLI facade over classifier, verbalizer, adapter, and shared types modules; protected terms use a cached `regex_union` matcher with Trie/Aho-Corasick thresholds; live session utterance oracle now covers 20 real mixed PT-BR/English phrases, sync status `REMOTE_SYNC_NOT_REQUESTED`.
 
 Open questions: release identity planning and sync remain owner decisions.
 

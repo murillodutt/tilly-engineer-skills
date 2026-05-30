@@ -25,11 +25,121 @@
       "runtime_claim": "none"
     },
     {
+      "id": "pron-cat-api",
+      "term": "API",
+      "class": "acronym",
+      "default_language": "pt-BR",
+      "spoken_rendering": "A P I",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-sdk",
+      "term": "SDK",
+      "class": "acronym",
+      "default_language": "pt-BR",
+      "spoken_rendering": "S D K",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-cli",
+      "term": "CLI",
+      "class": "acronym",
+      "default_language": "pt-BR",
+      "spoken_rendering": "C L I",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-tes",
+      "term": "TES",
+      "class": "acronym",
+      "default_language": "pt-BR",
+      "spoken_rendering": "T E S",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-tts",
+      "term": "TTS",
+      "class": "acronym",
+      "default_language": "pt-BR",
+      "spoken_rendering": "T T S",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
       "id": "pron-cat-spec",
       "term": "SPEC",
       "class": "technical_noun",
       "default_language": "pt-BR",
       "spoken_rendering": "spec",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-ssml",
+      "term": "SSML",
+      "class": "acronym",
+      "default_language": "pt-BR",
+      "spoken_rendering": "S S M L",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-pls",
+      "term": "PLS",
+      "class": "acronym",
+      "default_language": "pt-BR",
+      "spoken_rendering": "P L S",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-url",
+      "term": "URL",
+      "class": "acronym",
+      "default_language": "pt-BR",
+      "spoken_rendering": "U R L",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-json",
+      "term": "JSON",
+      "class": "acronym",
+      "default_language": "pt-BR",
+      "spoken_rendering": "J S O N",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-yaml",
+      "term": "YAML",
+      "class": "acronym",
+      "default_language": "pt-BR",
+      "spoken_rendering": "Y A M L",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-http",
+      "term": "HTTP",
+      "class": "acronym",
+      "default_language": "pt-BR",
+      "spoken_rendering": "H T T P",
       "preserve_written_identity": true,
       "exact_request_behavior": "preserve_raw",
       "runtime_claim": "none"
@@ -61,6 +171,186 @@
       "default_language": "pt-BR",
       "spoken_rendering": "com suporte de provider",
       "preserve_written_identity": false,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-openai",
+      "term": "OpenAI",
+      "class": "proper_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "Open A I",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-claude",
+      "term": "Claude",
+      "class": "proper_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "Claude",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-codex",
+      "term": "Codex",
+      "class": "proper_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "Codex",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-cursor",
+      "term": "Cursor",
+      "class": "proper_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "Cursor",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-node-js",
+      "term": "Node.js",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "Node J S",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-typescript",
+      "term": "TypeScript",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "TypeScript",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-python",
+      "term": "Python",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "Python",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-regex-union",
+      "term": "regex_union",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "regex union",
+      "preserve_written_identity": false,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-spoken-text",
+      "term": "spoken_text",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "spoken text",
+      "preserve_written_identity": false,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-request-local",
+      "term": "request-local",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "request local",
+      "preserve_written_identity": false,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-trie",
+      "term": "Trie",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "Trie",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-aho-corasick",
+      "term": "Aho-Corasick",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "Aho Corasick",
+      "preserve_written_identity": false,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-thresholds",
+      "term": "thresholds",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "thresholds",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-provider-fallback",
+      "term": "provider fallback",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "provider fallback",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-hot-path",
+      "term": "hot path",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "hot path",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-memoization",
+      "term": "memoization",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "memoization",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-docker",
+      "term": "Docker",
+      "class": "proper_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "Docker",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-kubernetes",
+      "term": "Kubernetes",
+      "class": "proper_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "Kubernetes",
+      "preserve_written_identity": true,
       "exact_request_behavior": "preserve_raw",
       "runtime_claim": "none"
     },

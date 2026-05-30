@@ -22,7 +22,7 @@
       "expected_spoken_text": "A D R 0004 protege o runtime enquanto GitHub Actions valida provider fallback.",
       "expected_contains": ["A D R", "GitHub Actions", "runtime"],
       "expected_absent_text": ["Diretrizes de decisão arquitetural"],
-      "expected_span_kinds": ["protected_term", "protected_term", "protected_phrase", "protected_term", "protected_term"],
+      "expected_span_kinds": ["protected_term", "protected_term", "protected_phrase", "protected_phrase"],
       "expected_redaction_count": 0,
       "max_text_prepare_ms_p50": 35.0
     },
