@@ -21,6 +21,7 @@ import subprocess
 import sys
 import time
 from typing import Any
+import zipfile
 
 from tes_tts_runtime_adapter import prepare_spoken_text
 
@@ -411,6 +412,116 @@ def resolve_review_html(path: str | None, benchmark_dir: str | None) -> tuple[Pa
         return None, "missing"
     candidates.sort(key=lambda item: item.stat().st_mtime, reverse=True)
     return candidates[0], "latest"
+
+
+def is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.resolve().relative_to(root.resolve())
+        return True
+    except ValueError:
+        return False
+
+
+def review_package_files(review_html: Path) -> list[Path]:
+    root = review_html.parent
+    files: list[Path] = []
+    for candidate in (review_html, root / "result.json"):
+        if candidate.is_file():
+            files.append(candidate.resolve())
+    result_json = root / "result.json"
+    if result_json.is_file():
+        try:
+            payload = json.loads(result_json.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            payload = {}
+        for item in payload.get("outputs", []):
+            if not isinstance(item, dict) or not isinstance(item.get("output"), str):
+                continue
+            candidate = Path(item["output"])
+            if candidate.is_file() and is_relative_to(candidate, root):
+                files.append(candidate.resolve())
+    unique: dict[str, Path] = {}
+    for item in files:
+        unique[str(item.resolve())] = item
+    return [unique[key] for key in sorted(unique)]
+
+
+def review_package_manifest(review_html: Path, files: list[Path]) -> dict[str, Any]:
+    root = review_html.parent
+    return {
+        "schema": "tes-tts-omnivoice-review-package@1",
+        "created_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "provider": "omnivoice",
+        "version": VERSION,
+        "review_html": review_html.name,
+        "files": [
+            {
+                "path": str(item.resolve().relative_to(root.resolve())),
+                "bytes": item.stat().st_size,
+                "sha256": sha256_path(item),
+            }
+            for item in files
+        ],
+        "allows_install": False,
+        "allows_download": False,
+        "allows_global_config_write": False,
+    }
+
+
+def default_review_package_path(review_html: Path, output: str | None) -> Path:
+    if output:
+        return Path(output)
+    return review_html.parent / "tes-tts-omnivoice-review-package.zip"
+
+
+def command_package_review(args: argparse.Namespace) -> int:
+    review_html, source = resolve_review_html(args.path, args.benchmark_dir)
+    if review_html is None or not review_html.exists():
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "NOT_FOUND",
+                "version": VERSION,
+                "mode": "product_review_package",
+                "review_html": str(review_html) if review_html else None,
+                "review_source": source,
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 2
+    files = review_package_files(review_html)
+    package_path = default_review_package_path(review_html, args.output)
+    manifest = review_package_manifest(review_html, files)
+    payload = {
+        "provider": "omnivoice",
+        "status": "DRY_RUN" if args.dry_run else "PASS",
+        "version": VERSION,
+        "mode": "product_review_package",
+        "review_html": str(review_html),
+        "review_source": source,
+        "package_zip": str(package_path),
+        "file_count": len(files),
+        "included_files": [item["path"] for item in manifest["files"]],
+        "manifest_schema": manifest["schema"],
+        "allows_install": False,
+        "allows_download": False,
+        "allows_global_config_write": False,
+    }
+    if args.dry_run:
+        emit(payload)
+        return 0
+    package_path.parent.mkdir(parents=True, exist_ok=True)
+    root = review_html.parent
+    with zipfile.ZipFile(package_path, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for item in files:
+            archive.write(item, arcname=str(item.resolve().relative_to(root.resolve())))
+        archive.writestr("review-package-manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
+    payload["package_sha256"] = sha256_path(package_path)
+    payload["package_bytes"] = package_path.stat().st_size
+    emit(payload)
+    return 0
 
 
 def redact_command_value(tokens: list[str], option: str) -> list[str]:
@@ -1083,6 +1194,13 @@ def build_parser() -> argparse.ArgumentParser:
     review.add_argument("--benchmark-dir")
     review.add_argument("--dry-run", action="store_true")
     review.set_defaults(func=command_review)
+
+    package_review = subparsers.add_parser("package-review")
+    package_review.add_argument("--path")
+    package_review.add_argument("--benchmark-dir")
+    package_review.add_argument("--output")
+    package_review.add_argument("--dry-run", action="store_true")
+    package_review.set_defaults(func=command_package_review)
     return parser
 
 

@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import argparse
 import ast
+import contextlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -99,6 +101,21 @@ REQUIRED_REVIEW_DRY_RUN_KEYS = {
     "allows_download",
     "allows_global_config_write",
 }
+REQUIRED_PACKAGE_DRY_RUN_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "mode",
+    "review_html",
+    "review_source",
+    "package_zip",
+    "file_count",
+    "included_files",
+    "manifest_schema",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
+}
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -174,14 +191,24 @@ def run_status_and_dry_run() -> tuple[
     dict[str, Any] | None,
     dict[str, Any] | None,
     dict[str, Any] | None,
+    dict[str, Any] | None,
     list[str],
 ]:
     failures: list[str] = []
     with tempfile.TemporaryDirectory() as tmp_dir:
         ref = Path(tmp_dir) / "ref.wav"
-        review = Path(tmp_dir) / "review.html"
+        review_dir = Path(tmp_dir) / "review-dir"
+        review_dir.mkdir()
+        review = review_dir / "review.html"
+        result = review_dir / "result.json"
+        wav = review_dir / "case.wav"
         ref.write_bytes(b"not-real-audio-for-dry-run")
         review.write_text("<!doctype html><audio controls></audio>", encoding="utf-8")
+        wav.write_bytes(b"fake-wave")
+        result.write_text(
+            json.dumps({"outputs": [{"id": "case", "output": str(wav)}]}, ensure_ascii=False),
+            encoding="utf-8",
+        )
         env = os.environ.copy()
         env["TES_TTS_OMNIVOICE_PYTHON"] = sys.executable
         env["TES_TTS_OMNIVOICE_REF_AUDIO"] = str(ref)
@@ -271,7 +298,30 @@ def run_status_and_dry_run() -> tuple[
         except json.JSONDecodeError as exc:
             failures.append(f"review dry-run did not emit JSON: {exc}")
             review_payload = None
-    return status_payload, dry_payload, bench_payload, review_payload, failures
+
+        package_completed = subprocess.run(
+            [
+                sys.executable,
+                str(PROVIDER_SCRIPT),
+                "package-review",
+                "--path",
+                str(review),
+                "--dry-run",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            env=env,
+        )
+        if package_completed.returncode != 0:
+            failures.append(f"package-review dry-run returned unexpected exit code {package_completed.returncode}")
+        try:
+            package_payload = json.loads(package_completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"package-review dry-run did not emit JSON: {exc}")
+            package_payload = None
+    return status_payload, dry_payload, bench_payload, review_payload, package_payload, failures
 
 
 def validate_status_payload(payload: dict[str, Any] | None) -> list[str]:
@@ -406,6 +456,40 @@ def validate_review_dry_run_payload(payload: dict[str, Any] | None) -> list[str]
     return failures
 
 
+def validate_package_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
+    if payload is None:
+        return []
+    failures: list[str] = []
+    missing = sorted(REQUIRED_PACKAGE_DRY_RUN_KEYS - set(payload))
+    extra = sorted(set(payload) - REQUIRED_PACKAGE_DRY_RUN_KEYS)
+    if missing:
+        failures.append(f"package-review dry-run missing keys {missing}")
+    if extra:
+        failures.append(f"package-review dry-run has extra keys {extra}")
+    if payload.get("status") != "DRY_RUN":
+        failures.append("package-review dry-run status drifted")
+    if payload.get("mode") != "product_review_package":
+        failures.append("package-review dry-run mode drifted")
+    if payload.get("manifest_schema") != "tes-tts-omnivoice-review-package@1":
+        failures.append("package-review manifest schema drifted")
+    if payload.get("file_count") != 3:
+        failures.append("package-review dry-run should include review, result, and audio fixture")
+    included = payload.get("included_files")
+    if not isinstance(included, list):
+        failures.append("package-review included_files must be a list")
+    else:
+        for required in ("review.html", "result.json", "case.wav"):
+            if required not in included:
+                failures.append(f"package-review missing included file {required}")
+    if payload.get("allows_install") is not False:
+        failures.append("package-review must not install providers")
+    if payload.get("allows_download") is not False:
+        failures.append("package-review must not download models")
+    if payload.get("allows_global_config_write") is not False:
+        failures.append("package-review must not write global config")
+    return failures
+
+
 def load_provider_module() -> Any:
     scripts_dir = ROOT / "scripts"
     sys.path.insert(0, str(scripts_dir))
@@ -490,6 +574,47 @@ def validate_review_html_scorecard() -> list[str]:
     return failures
 
 
+def validate_review_package_zip() -> list[str]:
+    failures: list[str] = []
+    provider = load_provider_module()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        review = root / "review.html"
+        result = root / "result.json"
+        wav = root / "case.wav"
+        review.write_text("<!doctype html><audio controls src=\"case.wav\"></audio>", encoding="utf-8")
+        wav.write_bytes(b"fake-wave")
+        result.write_text(
+            json.dumps({"outputs": [{"id": "case", "output": str(wav)}]}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        args = argparse.Namespace(path=str(review), benchmark_dir=None, output=None, dry_run=False)
+        with contextlib.redirect_stdout(io.StringIO()):
+            if provider.command_package_review(args) != 0:
+                failures.append("package-review command failed for local fixture")
+        package_zip = root / "tes-tts-omnivoice-review-package.zip"
+        if not package_zip.exists():
+            failures.append("package-review did not write expected zip")
+            return failures
+        import zipfile
+
+        with zipfile.ZipFile(package_zip) as archive:
+            names = set(archive.namelist())
+            for required in {"review.html", "result.json", "case.wav", "review-package-manifest.json"}:
+                if required not in names:
+                    failures.append(f"package zip missing {required}")
+            manifest = json.loads(archive.read("review-package-manifest.json").decode("utf-8"))
+        if manifest.get("schema") != "tes-tts-omnivoice-review-package@1":
+            failures.append("package zip manifest schema drifted")
+        if manifest.get("allows_install") is not False:
+            failures.append("package manifest must not install providers")
+        if manifest.get("allows_download") is not False:
+            failures.append("package manifest must not download models")
+        if manifest.get("allows_global_config_write") is not False:
+            failures.append("package manifest must not write global config")
+    return failures
+
+
 def validate_fixtures(fixtures: dict[str, Any]) -> list[str]:
     failures: list[str] = []
     if fixtures.get("version") != VERSION:
@@ -530,13 +655,15 @@ def main() -> int:
     failures.extend(validate_no_reference_text_logging())
     probe, probe_failures = run_probe()
     failures.extend(probe_failures)
-    status_payload, dry_payload, bench_payload, review_payload, shortcut_failures = run_status_and_dry_run()
+    status_payload, dry_payload, bench_payload, review_payload, package_payload, shortcut_failures = run_status_and_dry_run()
     failures.extend(shortcut_failures)
     failures.extend(validate_status_payload(status_payload))
     failures.extend(validate_dry_run_payload(dry_payload))
     failures.extend(validate_bench_dry_run_payload(bench_payload))
     failures.extend(validate_review_dry_run_payload(review_payload))
+    failures.extend(validate_package_dry_run_payload(package_payload))
     failures.extend(validate_review_html_scorecard())
+    failures.extend(validate_review_package_zip())
     failures.extend(validate_fixtures(load_json(FIXTURE_PATH)))
     print(
         json.dumps(
@@ -550,6 +677,7 @@ def main() -> int:
                 "speak_dry_run": dry_payload.get("status") if dry_payload else None,
                 "bench_dry_run": bench_payload.get("status") if bench_payload else None,
                 "review_dry_run": review_payload.get("status") if review_payload else None,
+                "package_dry_run": package_payload.get("status") if package_payload else None,
                 "failures": failures,
             },
             indent=2,
