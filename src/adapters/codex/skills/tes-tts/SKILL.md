@@ -150,8 +150,9 @@ compatible TES intent alias if the host reports it as an invalid slash.
   TypeScript, Playwright, and MCP server.
 - Use request-local pronunciation hints for protected terms when the active
   provider needs them. Prefer raw redacted source text for OmniVoice by default.
-  For mixed technical chunks that degrade in audio audit, test
-  `--text-mode audio_quality`; promote it only after audible review.
+  For mixed technical chunks that degrade in audio audit, test the `quality`
+  latency profile first, then `--text-mode audio_quality` as an explicit
+  variant. Promote either only after audible review.
 - For long text, split into sensible chunks rather than dropping content.
 
 ## Safety

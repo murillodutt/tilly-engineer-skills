@@ -5,12 +5,16 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import html
 import json
 from pathlib import Path
 import re
 import subprocess
 import sys
 from typing import Any
+import zipfile
+
+from tes_tts_runtime_adapter import prepare_audio_quality_text
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -118,29 +122,51 @@ def pause_newlines(text: str) -> str:
     return text
 
 
-def build_variant_text(source_text: str, variant: str) -> tuple[str, int]:
+def build_variant_plan(source_text: str, variant: str) -> dict[str, Any]:
     if variant == "baseline":
-        return source_text, 420
+        return {"text": source_text, "audit_text": source_text, "chunk_chars": 420, "text_mode": "redacted_source"}
+    if variant == "audio_quality_text_mode":
+        return {
+            "text": source_text,
+            "audit_text": prepare_audio_quality_text(source_text)["text"],
+            "chunk_chars": 420,
+            "text_mode": "audio_quality",
+        }
     if variant == "small_sentence_chunks":
-        return source_text, 240
+        return {"text": source_text, "audit_text": source_text, "chunk_chars": 240, "text_mode": "redacted_source"}
     if variant == "technical_oral_ptbr":
-        return technical_oral_ptbr(source_text), 420
+        text = technical_oral_ptbr(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 420, "text_mode": "redacted_source"}
     if variant == "technical_oral_ptbr_keep_jsonl":
-        return technical_oral_ptbr_keep_jsonl(source_text), 420
+        text = technical_oral_ptbr_keep_jsonl(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 420, "text_mode": "redacted_source"}
     if variant == "technical_oral_ptbr_json_hyphen":
-        return technical_oral_ptbr_json_hyphen(source_text), 420
+        text = technical_oral_ptbr_json_hyphen(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 420, "text_mode": "redacted_source"}
     if variant == "technical_oral_ptbr_small":
-        return technical_oral_ptbr(source_text), 240
+        text = technical_oral_ptbr(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 240, "text_mode": "redacted_source"}
     if variant == "pause_newlines":
-        return pause_newlines(source_text), 240
+        text = pause_newlines(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 240, "text_mode": "redacted_source"}
     raise ValueError(f"unknown variant: {variant}")
 
 
-def write_variant_session(root: Path, *, source_id: str, variant: str, text: str, chunk_chars: int) -> Path:
+def write_variant_session(
+    root: Path,
+    *,
+    source_id: str,
+    variant: str,
+    text: str,
+    audit_text: str,
+    chunk_chars: int,
+    text_mode: str,
+) -> Path:
     session = root / f"{safe_stem(source_id)}--{safe_stem(variant)}"
     session.mkdir(parents=True, exist_ok=True)
-    chunks = split_sentence_chunks(text, max_chars=chunk_chars)
+    chunks = split_sentence_chunks(audit_text, max_chars=chunk_chars)
     (session / "input.txt").write_text(text, encoding="utf-8")
+    (session / "audit-reference.txt").write_text(audit_text, encoding="utf-8")
     (session / "chunk-texts.json").write_text(
         json.dumps(
             {
@@ -149,6 +175,7 @@ def write_variant_session(root: Path, *, source_id: str, variant: str, text: str
                 "source_chunk_id": source_id,
                 "variant": variant,
                 "chunk_chars": chunk_chars,
+                "text_mode": text_mode,
                 "chunks": [
                     {
                         "id": f"chunk-{index:03d}",
@@ -184,7 +211,7 @@ def run_command(command: list[str]) -> dict[str, Any]:
     }
 
 
-def synthesize_session(session: Path, *, chunk_chars: int, latency_profile: str) -> dict[str, Any]:
+def synthesize_session(session: Path, *, chunk_chars: int, latency_profile: str, text_mode: str) -> dict[str, Any]:
     text = (session / "input.txt").read_text(encoding="utf-8")
     command = [
         "python3",
@@ -194,6 +221,8 @@ def synthesize_session(session: Path, *, chunk_chars: int, latency_profile: str)
         latency_profile,
         "--chunk-chars",
         str(chunk_chars),
+        "--text-mode",
+        text_mode,
         "--monitor-heartbeat",
         "3",
         "--slow-chunk-ms",
@@ -254,6 +283,7 @@ def rank_results(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
             {
                 "source_chunk_id": result.get("source_chunk_id"),
                 "variant": result.get("variant"),
+                "text_mode": result.get("text_mode"),
                 "session": result.get("session"),
                 "status": summary.get("status") or result.get("synthesize_status"),
                 "max_wer": max_wer,
@@ -270,6 +300,89 @@ def rank_results(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
         )
     )
     return ranked
+
+
+def audio_files_for_session(session: Path) -> list[Path]:
+    return sorted(path for path in session.glob("*.wav") if path.is_file())
+
+
+def write_review_html(output_root: Path, payload: dict[str, Any]) -> Path:
+    review_path = output_root / "review.html"
+    rows: list[str] = []
+    for result in payload["results"]:
+        session = Path(result["session"])
+        summary = result.get("audit_summary") or {}
+        audio_items = []
+        for audio in audio_files_for_session(session):
+            rel_audio = audio.relative_to(output_root)
+            audio_items.append(
+                "<li>"
+                f"<code>{html.escape(str(rel_audio))}</code><br>"
+                f"<audio controls src=\"{html.escape(str(rel_audio))}\"></audio>"
+                "</li>"
+            )
+        input_text = (session / "input.txt").read_text(encoding="utf-8") if (session / "input.txt").exists() else ""
+        audit_text = (
+            (session / "audit-reference.txt").read_text(encoding="utf-8")
+            if (session / "audit-reference.txt").exists()
+            else input_text
+        )
+        rows.append(
+            "<section class=\"case\">"
+            f"<h2>{html.escape(str(result['source_chunk_id']))} / {html.escape(result['variant'])}</h2>"
+            "<dl>"
+            f"<dt>Status</dt><dd>{html.escape(str(summary.get('status', 'not audited')))}</dd>"
+            f"<dt>Text mode</dt><dd>{html.escape(str(result.get('text_mode')))}</dd>"
+            f"<dt>Max WER</dt><dd>{html.escape(str(summary.get('max_wer')))}</dd>"
+            f"<dt>Min similarity</dt><dd>{html.escape(str(summary.get('min_similarity')))}</dd>"
+            f"<dt>Flags</dt><dd>{html.escape(', '.join(summary.get('flags', [])) or 'none')}</dd>"
+            "</dl>"
+            "<h3>Input text</h3>"
+            f"<pre>{html.escape(input_text)}</pre>"
+            "<h3>Audit reference</h3>"
+            f"<pre>{html.escape(audit_text)}</pre>"
+            f"<ul>{''.join(audio_items)}</ul>"
+            "</section>"
+        )
+    ranked = "\n".join(
+        "<li>"
+        f"{html.escape(item['variant'])}: status={html.escape(str(item['status']))}, "
+        f"WER={html.escape(str(item['max_wer']))}, "
+        f"similarity={html.escape(str(item['min_similarity']))}, "
+        f"text_mode={html.escape(str(item.get('text_mode')))}"
+        "</li>"
+        for item in payload.get("ranked_results", [])
+    )
+    review_path.write_text(
+        "\n".join(
+            [
+                "<!doctype html>",
+                "<meta charset=\"utf-8\">",
+                "<title>TES TTS Audio Variant Review</title>",
+                "<style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.5;max-width:960px;margin:32px auto;padding:0 16px}section{border-top:1px solid #ddd;padding:20px 0}pre{white-space:pre-wrap;background:#f7f7f7;padding:12px}audio{width:100%;max-width:720px}dt{font-weight:700}dd{margin:0 0 8px}</style>",
+                "<h1>TES TTS Audio Variant Review</h1>",
+                f"<p>Source session: <code>{html.escape(payload['source_session'])}</code></p>",
+                "<h2>Ranking</h2>",
+                f"<ol>{ranked}</ol>",
+                *rows,
+            ]
+        ),
+        encoding="utf-8",
+    )
+    return review_path
+
+
+def write_review_package(output_root: Path, review_html: Path, payload: dict[str, Any]) -> Path:
+    package_path = output_root / "audio-variant-review.zip"
+    files = [review_html, output_root / "variant-lab-summary.json"]
+    for result in payload["results"]:
+        session = Path(result["session"])
+        files.extend(path for path in session.iterdir() if path.is_file())
+    with zipfile.ZipFile(package_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for file_path in files:
+            if file_path.exists():
+                archive.write(file_path, file_path.relative_to(output_root))
+    return package_path
 
 
 def command_run(args: argparse.Namespace) -> int:
@@ -297,24 +410,36 @@ def command_run(args: argparse.Namespace) -> int:
         if not isinstance(source_text, str) or not source_text:
             continue
         for variant in variants:
-            variant_text, chunk_chars = build_variant_text(source_text, variant)
+            plan = build_variant_plan(source_text, variant)
+            variant_text = plan["text"]
+            audit_text = plan["audit_text"]
+            chunk_chars = plan["chunk_chars"]
+            text_mode = plan["text_mode"]
             session = write_variant_session(
                 output_root,
                 source_id=str(source_id),
                 variant=variant,
                 text=variant_text,
+                audit_text=audit_text,
                 chunk_chars=chunk_chars,
+                text_mode=text_mode,
             )
             entry: dict[str, Any] = {
                 "source_chunk_id": source_id,
                 "variant": variant,
+                "text_mode": text_mode,
                 "session": str(session),
                 "chunk_chars": chunk_chars,
                 "source_chars": len(source_text),
                 "variant_chars": len(variant_text),
             }
             if args.synthesize:
-                synth = synthesize_session(session, chunk_chars=chunk_chars, latency_profile=args.latency_profile)
+                synth = synthesize_session(
+                    session,
+                    chunk_chars=chunk_chars,
+                    latency_profile=args.latency_profile,
+                    text_mode=text_mode,
+                )
                 entry["synthesize_returncode"] = synth["returncode"]
                 entry["synthesize_status"] = (synth.get("json") or {}).get("status")
             if args.audit:
@@ -336,7 +461,21 @@ def command_run(args: argparse.Namespace) -> int:
     }
     output = output_root / "variant-lab-summary.json"
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({"status": "PASS", "output": str(output), "result_count": len(results)}, ensure_ascii=False, indent=2))
+    review_html = write_review_html(output_root, payload) if args.review else None
+    package = write_review_package(output_root, review_html, payload) if args.package and review_html else None
+    print(
+        json.dumps(
+            {
+                "status": "PASS",
+                "output": str(output),
+                "review_html": str(review_html) if review_html else None,
+                "package": str(package) if package else None,
+                "result_count": len(results),
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     return 0
 
 
@@ -358,6 +497,8 @@ def command_self_test(_args: argparse.Namespace) -> int:
         failures.append("keep JSONL transform drifted")
     if "JSON-L" not in technical_oral_ptbr_json_hyphen(text):
         failures.append("JSON hyphen transform drifted")
+    if build_variant_plan(text, "audio_quality_text_mode")["text_mode"] != "audio_quality":
+        failures.append("audio_quality text mode plan drifted")
     paused = pause_newlines(text)
     if "\n\n" not in paused:
         failures.append("pause newline transform did not add paragraph boundary")
@@ -380,6 +521,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--synthesize", action="store_true")
     run.add_argument("--audit", action="store_true")
     run.add_argument("--stt", action="store_true")
+    run.add_argument("--review", action="store_true")
+    run.add_argument("--package", action="store_true")
     run.add_argument("--latency-profile", default="fast")
     run.set_defaults(func=command_run)
 

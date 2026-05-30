@@ -36,13 +36,13 @@ durable cache, or proactive `speak`.
   avg RTF `0.3864`, package SHA starts `eafb9419`.
 - Long-read OmniVoice correction passed: 12 chunks played, `avg_rtf=0.2067`,
   `fallback_used=false`, monitor log under `tmp/**/runtime-logs`.
-- Audio audit loop started: local Whisper/WER found mixed technical chunk
-  degradation; `audio_quality` smoke passed on the degraded chunk with
-  `WER=0.0727`, while human listening remains the final decision.
+- Audio variant review now packages WAVs, STT/WER, and HTML review. In latest
+  `chunk-002` evidence, `fast` stayed degraded while `quality` passed for both
+  baseline and `audio_quality`; human listening remains the final decision.
 
 ## Next Cut
-Use `audio_quality` in a live audible review, then decide whether it becomes
-the OmniVoice default or remains an explicit test mode.
+Listen to packaged baseline-vs-`audio_quality` reviews, then decide whether
+mixed technical chunks should prefer `quality`, `audio_quality`, or both.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.
