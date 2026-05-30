@@ -63,6 +63,8 @@ REQUIRED_DRY_RUN_KEYS = {
     "output",
     "text_chars",
     "play_requested",
+    "latency_profile",
+    "num_step",
     "command_shape",
     "allows_install",
     "allows_download",
@@ -82,6 +84,8 @@ REQUIRED_BENCH_DRY_RUN_KEYS = {
     "play_requested",
     "open_requested",
     "package_requested",
+    "latency_profile",
+    "num_step",
     "result_json",
     "review_html",
     "package_zip",
@@ -102,6 +106,8 @@ REQUIRED_WARM_CACHE_DRY_RUN_KEYS = {
     "voice_prompt_cache_path",
     "voice_prompt_cache_exists",
     "refresh_requested",
+    "latency_profile",
+    "num_step",
     "command_shape",
     "allows_install",
     "allows_download",
@@ -120,6 +126,9 @@ REQUIRED_SESSION_DRY_RUN_KEYS = {
     "protocol",
     "resident_model",
     "resident_voice_prompt",
+    "latency_profile",
+    "num_step",
+    "latency_profiles",
     "command_shape",
     "allows_install",
     "allows_download",
@@ -625,6 +634,8 @@ def validate_session_dry_run_command() -> list[str]:
                 str(ref),
                 "--output-dir",
                 str(output_dir),
+                "--latency-profile",
+                "fast",
                 "--ref-text",
                 "SECRET_REF_TEXT",
                 "--dry-run",
@@ -658,6 +669,13 @@ def validate_session_dry_run_command() -> list[str]:
         failures.append("session dry-run must report resident model reuse")
     if payload.get("resident_voice_prompt") is not True:
         failures.append("session dry-run must report resident voice prompt reuse")
+    if payload.get("latency_profile") != "fast":
+        failures.append("session dry-run must preserve requested latency profile")
+    if payload.get("num_step") != 8:
+        failures.append("session fast latency profile must resolve to num_step=8")
+    profiles = payload.get("latency_profiles")
+    if not isinstance(profiles, dict) or sorted(profiles) != ["balanced", "fast", "quality"]:
+        failures.append("session dry-run must report supported latency profiles")
     command_shape = payload.get("command_shape")
     if not isinstance(command_shape, list):
         failures.append("session dry-run command_shape must be a list")
@@ -665,6 +683,10 @@ def validate_session_dry_run_command() -> list[str]:
         joined = " ".join(str(part) for part in command_shape)
         if "serve" not in command_shape:
             failures.append("session dry-run must delegate to serve")
+        if "--latency-profile" not in command_shape or "fast" not in command_shape:
+            failures.append("session dry-run command must carry requested latency profile")
+        if "--num-step" not in command_shape or "8" not in command_shape:
+            failures.append("session dry-run command must carry resolved fast num-step")
         if "SECRET_REF_TEXT" in joined:
             failures.append("session dry-run leaked reference text")
         if "--ref-text" in command_shape and "<redacted>" not in command_shape:

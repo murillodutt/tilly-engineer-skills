@@ -41,6 +41,11 @@ DEFAULT_SESSION_DIR = DEFAULT_CACHE_DIR / "sessions"
 ENV_PYTHON = "TES_TTS_OMNIVOICE_PYTHON"
 ENV_REF_AUDIO = "TES_TTS_OMNIVOICE_REF_AUDIO"
 ENV_OUTPUT_DIR = "TES_TTS_OMNIVOICE_OUTPUT_DIR"
+LATENCY_PROFILES = {
+    "fast": {"num_step": 8, "description": "lowest latency; audible quality must be reviewed per session"},
+    "balanced": {"num_step": 16, "description": "middle ground for live iteration"},
+    "quality": {"num_step": 32, "description": "current quality-preserving default"},
+}
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -210,6 +215,7 @@ def command_status(args: argparse.Namespace) -> int:
 
 
 def common_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path) -> list[str]:
+    apply_latency_profile(args)
     return [
         "--model",
         args.model,
@@ -221,6 +227,8 @@ def common_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path) -> list
         str(ref_audio),
         "--cache-dir",
         args.cache_dir,
+        "--latency-profile",
+        args.latency_profile,
         "--text-mode",
         args.text_mode,
         "--num-step",
@@ -234,6 +242,13 @@ def common_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path) -> list
         "--denoise" if args.denoise else "--no-denoise",
         "--postprocess-output" if args.postprocess_output else "--no-postprocess-output",
     ]
+
+
+def apply_latency_profile(args: argparse.Namespace) -> argparse.Namespace:
+    profile = getattr(args, "latency_profile", "quality")
+    if getattr(args, "num_step", None) is None:
+        args.num_step = LATENCY_PROFILES[profile]["num_step"]
+    return args
 
 
 def synthesize_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path, output: Path) -> list[str]:
@@ -977,6 +992,7 @@ def command_warm_cache(args: argparse.Namespace) -> int:
     if args.device:
         command.extend(["--device", args.device])
     if args.dry_run:
+        apply_latency_profile(args)
         emit(
             {
                 "provider": "omnivoice",
@@ -990,6 +1006,8 @@ def command_warm_cache(args: argparse.Namespace) -> int:
                 "voice_prompt_cache_path": str(cache_path),
                 "voice_prompt_cache_exists": cache_path.exists(),
                 "refresh_requested": args.refresh_prompt,
+                "latency_profile": args.latency_profile,
+                "num_step": args.num_step,
                 "command_shape": redact_command_value(command, "--ref-text"),
                 "allows_install": False,
                 "allows_download": False,
@@ -1079,6 +1097,9 @@ def command_session(args: argparse.Namespace) -> int:
                 "protocol": "jsonl_stdin_stdout",
                 "resident_model": True,
                 "resident_voice_prompt": True,
+                "latency_profile": args.latency_profile,
+                "num_step": args.num_step,
+                "latency_profiles": LATENCY_PROFILES,
                 "command_shape": redact_command_value(command, "--ref-text"),
                 "allows_install": False,
                 "allows_download": False,
@@ -1136,6 +1157,7 @@ def command_speak(args: argparse.Namespace) -> int:
         command.extend(["--device", args.device])
 
     if args.dry_run:
+        apply_latency_profile(args)
         emit(
             {
                 "provider": "omnivoice",
@@ -1149,6 +1171,8 @@ def command_speak(args: argparse.Namespace) -> int:
                 "output": str(output),
                 "text_chars": len(args.text),
                 "play_requested": args.play,
+                "latency_profile": args.latency_profile,
+                "num_step": args.num_step,
                 "command_shape": [
                     provider_python,
                     str(Path(__file__).resolve()),
@@ -1262,6 +1286,7 @@ def command_bench(args: argparse.Namespace) -> int:
         command.extend(["--device", args.device])
 
     if args.dry_run:
+        apply_latency_profile(args)
         emit(
             {
                 "provider": "omnivoice",
@@ -1277,6 +1302,8 @@ def command_bench(args: argparse.Namespace) -> int:
                 "play_requested": args.play,
                 "open_requested": args.open,
                 "package_requested": args.package,
+                "latency_profile": args.latency_profile,
+                "num_step": args.num_step,
                 "result_json": str(output_dir / "result.json"),
                 "review_html": str(output_dir / "review.html"),
                 "package_zip": str(output_dir / "tes-tts-omnivoice-review-package.zip"),
@@ -1572,6 +1599,7 @@ def synthesize_once(
 
 
 def command_prepare_prompt(args: argparse.Namespace) -> int:
+    apply_latency_profile(args)
     modules = load_omnivoice_modules()
     torch = modules["torch"]
     OmniVoice = modules["OmniVoice"]
@@ -1600,6 +1628,8 @@ def command_prepare_prompt(args: argparse.Namespace) -> int:
             "model": args.model,
             "device": device,
             "language": args.language,
+            "latency_profile": args.latency_profile,
+            "num_step": args.num_step,
             "model_load_ms": model_load_ms,
             **prompt_metrics,
             "total_ms": round((time.perf_counter() - total_started) * 1000, 3),
@@ -1612,6 +1642,7 @@ def command_prepare_prompt(args: argparse.Namespace) -> int:
 
 
 def command_synthesize(args: argparse.Namespace) -> int:
+    apply_latency_profile(args)
     modules = load_omnivoice_modules()
     torch = modules["torch"]
     sf = modules["soundfile"]
@@ -1650,6 +1681,8 @@ def command_synthesize(args: argparse.Namespace) -> int:
             "model": args.model,
             "device": device,
             "language": args.language,
+            "latency_profile": args.latency_profile,
+            "num_step": args.num_step,
             "text_mode": text_info["mode"],
             "source_text_immutable": text_info["prepared"]["source_text_immutable"],
             "redaction_count": text_info["prepared"]["redaction_count"],
@@ -1672,6 +1705,7 @@ def load_text_cases(path: Path) -> list[dict[str, Any]]:
 
 
 def command_batch(args: argparse.Namespace) -> int:
+    apply_latency_profile(args)
     modules = load_omnivoice_modules()
     torch = modules["torch"]
     sf = modules["soundfile"]
@@ -1727,6 +1761,8 @@ def command_batch(args: argparse.Namespace) -> int:
             "model": args.model,
             "device": device,
             "language": args.language,
+            "latency_profile": args.latency_profile,
+            "num_step": args.num_step,
             "model_load_ms": model_load_ms,
             **prompt_metrics,
             "outputs": outputs,
@@ -1737,6 +1773,7 @@ def command_batch(args: argparse.Namespace) -> int:
 
 
 def command_serve(args: argparse.Namespace) -> int:
+    apply_latency_profile(args)
     modules = load_omnivoice_modules()
     torch = modules["torch"]
     sf = modules["soundfile"]
@@ -1769,6 +1806,8 @@ def command_serve(args: argparse.Namespace) -> int:
             "model": args.model,
             "device": device,
             "language": args.language,
+            "latency_profile": args.latency_profile,
+            "num_step": args.num_step,
             "output_dir": str(out_dir),
             "model_load_ms": model_load_ms,
             **prompt_metrics,
@@ -1816,6 +1855,8 @@ def command_serve(args: argparse.Namespace) -> int:
                     "version": VERSION,
                     "mode": "resident_session_utterance",
                     "id": request_id,
+                    "latency_profile": args.latency_profile,
+                    "num_step": args.num_step,
                     "text_mode": text_info["mode"],
                     "source_text_immutable": text_info["prepared"]["source_text_immutable"],
                     "redaction_count": text_info["prepared"]["redaction_count"],
@@ -1852,12 +1893,13 @@ def add_runtime_args(parser: argparse.ArgumentParser, *, ref_audio_required: boo
     parser.add_argument("--prompt-cache")
     parser.add_argument("--refresh-prompt", action="store_true")
     parser.add_argument("--device")
+    parser.add_argument("--latency-profile", choices=sorted(LATENCY_PROFILES), default="quality")
     parser.add_argument(
         "--text-mode",
         choices=["redacted_source", "spoken_text", "raw"],
         default="redacted_source",
     )
-    parser.add_argument("--num-step", type=int, default=32)
+    parser.add_argument("--num-step", type=int)
     parser.add_argument("--guidance-scale", type=float, default=2.0)
     parser.add_argument("--speed", type=float, default=1.0)
     parser.add_argument("--t-shift", type=float, default=0.1)

@@ -14,9 +14,8 @@ decision-oriented. Dense pointers live in `TES-TTS-SKILL-ROADMAP-REGISTRY.md`;
 closed lineage lives in `TES-TTS-SKILL-ROADMAP-HISTORY.md`. ADR 0004 remains
 the architectural boundary.
 
-Partition contract: dashboard for state/decisions/evidence/next cut, registry
-for dense pointers, history for closed lineage, and `validate_doc_size.py` for
-budgets plus early warnings.
+Partition contract: dashboard for current state only, registry for dense
+pointers, history for closed lineage, and validators for size/shape budgets.
 
 ## State
 
@@ -50,13 +49,14 @@ cache, and proactive `speak`.
 - `status` auto-discovers env/reference; `warm-cache` prepares voice prompt
   cache; `session` keeps model/prompt resident for repeated utterances; `speak`
   delegates one-shot synthesis without long CLI arguments.
+- Latency profiles: `fast` = 8 steps, `balanced` = 16, `quality` = 32 default.
 - `bench --play --open --package` writes WAVs, metrics, review HTML, ZIP
   manifest; `decide-review --review-json <json> --package` seals the decision.
 - `product-status --format text --strict` gates `AUDIO_CANDIDATE`; latest run:
   `32.69s` audio, `30.19s` total, RTF `0.9422`, SHA starts `0206b249`.
 - `candidate --format text --strict` replays/opens sealed audio without
   regenerating it.
-- Resident JSONL smoke: startup `867.3ms`; two utterances reused model/prompt.
+- Fast profile smoke: generation `1.88s`, audio `3.81s`, RTF `0.4939`.
 
 Relevant gates: focused TTS provider/runtime/oracle suite, roadmap partition,
 materialization, TDS/doc-size/reference validators, and `npm run commit:check`
@@ -64,13 +64,12 @@ for package closure.
 
 ## Next Cut
 
-Run `session --dry-run`, then a short JSONL session smoke in the local provider
-env; compare one-shot and resident-session latency before the next audio
-candidate package.
+Run an audible `fast` vs `quality` review and pick the default operator profile
+for live sessions before the next audio candidate package.
 
 ## Maintenance Rules
 
-- Hard limit: 120 lines. Warning zone starts at 90 lines.
+- Hard limit: 100 lines. Warning zone starts at 90 lines.
 - Keep only current state, active decisions, next decisions, and latest
   evidence here.
 - Move dense artifact listings to `TES-TTS-SKILL-ROADMAP-REGISTRY.md`.

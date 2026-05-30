@@ -72,13 +72,14 @@ Keep this root index short and partitioned:
 - Every update must reduce ambiguity for the next executor.
 
 Roadmap partition budgets are enforced by `scripts/validate_doc_size.py`.
-`tes-tts` also has a structural partition oracle. Warning begins at 75% for
-governed roadmap partitions so maintenance happens before ambiguity accumulates:
+`tes-tts` also has a structural partition oracle. Generic roadmap warning
+starts at 75%; the `tes-tts` dashboard is stricter: 100 lines hard limit, with
+review at 90 lines.
 
 | Partition | Limit | Purpose |
 |-----------|-------|---------|
 | Root index | 140 lines | Active product lines only. |
-| Active dashboard | 120 lines | Current state, decisions, latest evidence, next cut. |
+| Active dashboard | 100 lines | Current state, decisions, latest evidence, next cut. |
 | Registry | 160 lines | Stable artifact pointers and grouped ranges. |
 | History | 140 lines | Closed lineage and lessons. |
 
