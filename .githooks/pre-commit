@@ -8,22 +8,70 @@ unset GIT_OBJECT_DIRECTORY
 unset GIT_PREFIX
 unset GIT_WORK_TREE
 
-python3 scripts/validate_reference_package.py --staged-ready
-python3 scripts/build_public_docs.py --check
-python3 scripts/validate_tds.py
-python3 scripts/validate_doc_size.py
-python3 scripts/context_mesh_plan.py
-python3 scripts/field_reports.py --self-test
-python3 scripts/field_reports_github_oracle.py --self-test
-python3 scripts/materialize_adapter.py all --check
-python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test
-if [ -f docs/agents/cortex/CONTRACT.md ]; then
-  if [ -f .tes/bin/cortex.py ]; then
-    python3 .tes/bin/cortex.py reflect --target . "pre-commit Cortex reflection"
-    python3 .tes/bin/cortex.py curate-plan --target . --backend lexical
-  elif [ -f scripts/cortex.py ]; then
-    python3 scripts/cortex.py reflect --target . "pre-commit Cortex reflection"
-    python3 scripts/cortex.py curate-plan --target . --backend lexical
+staged_files="$(git diff --cached --name-only --diff-filter=ACMR)"
+
+has_staged() {
+  printf '%s\n' "$staged_files" | grep -Eq "$1"
+}
+
+run() {
+  echo "[pre-commit] $*"
+  "$@"
+}
+
+run python3 scripts/validate_reference_package.py --staged-ready
+
+if has_staged '^(docs/i18n/|docs/index\.html$|docs/install/USER-MANUAL\.html$|scripts/build_public_docs\.py$|package\.json$|docs/dist/)'; then
+  run python3 scripts/build_public_docs.py --check
+fi
+
+if has_staged '^docs/'; then
+  run python3 scripts/validate_tds.py
+  run python3 scripts/validate_doc_size.py
+fi
+
+if has_staged '^docs/roadmap/TES-TTS-SKILL-ROADMAP'; then
+  run python3 scripts/tes_tts_roadmap_partition_oracle.py
+fi
+
+if has_staged '^(benchmarks/context-mesh/|docs/mesh/|scripts/context_mesh_)'; then
+  run python3 scripts/context_mesh_plan.py
+fi
+
+if has_staged '^(\.github/ISSUE_TEMPLATE/tes-field-report\.yml|\.github/workflows/field-report-governance\.yml|scripts/field_reports)'; then
+  run python3 scripts/field_reports.py --self-test
+  run python3 scripts/field_reports_github_oracle.py --self-test
+fi
+
+if has_staged '^(src/adapters/|scripts/materialize_adapter\.py$)'; then
+  run python3 scripts/materialize_adapter.py all --check
+fi
+
+if has_staged '^(AGENTS\.md|src/adapters/(codex|claude|cursor)/|docs/governance/)'; then
+  run python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test
+fi
+
+if has_staged '^scripts/tes_tts_audio_audit\.py$'; then
+  run python3 scripts/tes_tts_audio_audit.py self-test
+fi
+
+if has_staged '^scripts/tes_tts_audio_variant_lab\.py$'; then
+  run python3 scripts/tes_tts_audio_variant_lab.py self-test
+fi
+
+if has_staged '^(scripts/tes_tts_omnivoice_provider\.py|benchmarks/tes-tts/omnivoice-provider-cases\.json)'; then
+  run python3 scripts/tes_tts_omnivoice_provider_oracle.py --self-test
+fi
+
+if has_staged '^(docs/agents/cortex/|scripts/cortex\.py|scripts/cortex_)'; then
+  if [ -f docs/agents/cortex/CONTRACT.md ]; then
+    if [ -f .tes/bin/cortex.py ]; then
+      run python3 .tes/bin/cortex.py reflect --target . "pre-commit Cortex reflection"
+      run python3 .tes/bin/cortex.py curate-plan --target . --backend lexical
+    elif [ -f scripts/cortex.py ]; then
+      run python3 scripts/cortex.py reflect --target . "pre-commit Cortex reflection"
+      run python3 scripts/cortex.py curate-plan --target . --backend lexical
+    fi
   fi
 fi
 git diff --check

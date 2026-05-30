@@ -286,6 +286,20 @@ def mixed_technical_pt_letter_names_semicolon_english(text: str) -> str:
     return rendered
 
 
+def mixed_technical_scope_semicolon_english(text: str) -> str:
+    rendered = mixed_technical_semicolon_english_chunked(text)
+    rendered = re.sub(
+        r"Não vamos usar SSML, PLS, fonema ou G dois P\. com suporte de provider agora\.",
+        (
+            "Limite atual. As siglas SSML e PLS ficam fora. "
+            "Fonema, G dois P e suporte de provider também ficam fora agora."
+        ),
+        rendered,
+        flags=re.IGNORECASE,
+    )
+    return rendered
+
+
 def mixed_technical_problem_aliases(text: str) -> str:
     rendered = mixed_technical_clean_natural(text)
     rendered = re.sub(
@@ -405,6 +419,9 @@ def build_variant_plan(source_text: str, variant: str) -> dict[str, Any]:
         return {"text": text, "audit_text": text, "chunk_chars": 220, "text_mode": "redacted_source"}
     if variant == "mixed_technical_pt_letter_names_semicolon_english":
         text = mixed_technical_pt_letter_names_semicolon_english(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 220, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_scope_semicolon_english":
+        text = mixed_technical_scope_semicolon_english(source_text)
         return {"text": text, "audit_text": text, "chunk_chars": 220, "text_mode": "redacted_source"}
     if variant == "mixed_technical_problem_aliases":
         text = mixed_technical_problem_aliases(source_text)
@@ -930,6 +947,12 @@ def command_self_test(_args: argparse.Namespace) -> int:
     for expected in ("Siglas em português", "a dê érre", "a pê i", "ésse dê cá", "ême cê pê"):
         if expected not in pt_letters:
             failures.append(f"mixed PT letter names transform missing {expected}")
+    scope_semicolon = mixed_technical_scope_semicolon_english(
+        "Teste real do TES-TTS: Não vamos usar SSML, PLS, fonema ou G. dois P. com suporte de provider agora. JSON., YAML., HTTP., Node.JS., TypeScript, Python, Open.AI. API., Trie e Aho Corasick ficam como thresholds futuros."
+    )
+    for expected in ("Limite atual", "As siglas SSML e PLS ficam fora", "suporte de provider também fica"):
+        if expected not in scope_semicolon:
+            failures.append(f"mixed scope semicolon transform missing {expected}")
     problem_aliases = mixed_technical_problem_aliases(
         "Teste real do TES-TTS: MCP. Não vamos usar SSML com suporte de provider agora. JSON., YAML., HTTP., Node.JS., TypeScript, Python, Open.AI. API., Trie e Aho Corasick ficam como thresholds futuros."
     )

@@ -36,8 +36,25 @@ NEAR_CLIP_THRESHOLD = 0.95
 BAD_SIMILARITY_THRESHOLD = 0.86
 BAD_WER_THRESHOLD = 0.28
 DOMAIN_NORMALIZED_SUBSTITUTIONS = [
+    (r"\bzero\s+zero\s+zero\s+quatro\b", "0004"),
+    (r"\bg\s+dois\s+p\b", "g2p"),
+    (r"\bg\s*2\s*p\b", "g2p"),
+    (r"\bssmls\b", "ssml"),
     (r"\bjson[\s-]*l\b", "jsonl"),
     (r"\bjason[\s-]*l\b", "jsonl"),
+    (r"\bnode[\s.]*js\b", "nodejs"),
+    (r"\bopen\s*ai\s*,?\s*api\b", "openaiapi"),
+    (r"\bopenai\s*,?\s*api\b", "openaiapi"),
+    (r"\btrie\b", "trie"),
+    (r"\btree\b", "trie"),
+    (r"\btry\b", "trie"),
+    (r"\bah[oó]\s*[- ]?\s*corasick\b", "ahocorasick"),
+    (r"\bah[oó]\s*[- ]?\s*corasic\b", "ahocorasick"),
+    (r"\bahu\s*core\s*seq\b", "ahocorasick"),
+    (r"\bahokorasek\b", "ahocorasick"),
+    (r"\bar[oó]\s*corasic\b", "ahocorasick"),
+    (r"\btreholds\b", "thresholds"),
+    (r"\bthreshold\b", "thresholds"),
     (r"\bomni\s+voice\b", "omnivoice"),
     (r"\bomni\s*voyce\b", "omnivoice"),
     (r"\bomnivoyce\b", "omnivoice"),
@@ -602,6 +619,12 @@ def command_self_test(_args: argparse.Namespace) -> int:
         )
         if domain["status"] != "PASS":
             failures.append("expected domain-normalized comparison to pass")
+        mixed_domain = domain_normalized_comparison(
+            "G dois P, OpenAI API, Trie, Aho-Corasick e thresholds.",
+            "G2P, OpenAI, API, Tree, Ahokorasek e threshold.",
+        )
+        if mixed_domain["status"] != "PASS":
+            failures.append("expected mixed technical domain-normalized comparison to pass")
         if failures:
             print(json.dumps({"status": "FAIL", "failures": failures, "payload": payload}, ensure_ascii=False, indent=2))
             return 1

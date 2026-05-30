@@ -38,15 +38,15 @@ durable cache, or proactive `speak`.
   `fallback_used=false`, monitor log under `tmp/**/runtime-logs`.
 - Audio variant review now supports per-chunk STT language, `combined.wav`,
   `language=auto`, and lab-only English-island variants.
-- Latest lab evidence: `20260530-161021-480399` is the best routed English
-  island candidate (`chunk-003 WER=0.1481`); PT-BR acronym chunks still need
-  human scoring plus a less brittle STT term-normalization oracle.
+- Latest lab evidence: `20260530-162231-615943` improves target chunks 2 and
+  3 (`domain WER=0.0` and `0.0769`); chunk 1 still needs human scoring and a
+  less brittle STT term-normalization oracle.
 
 ## Next Cut
-Human-score `20260530-161021-480399` against `20260530-151743`. If the
-semicolon English island wins by ear, promote it as the current rendering
-candidate; otherwise pivot to provider/runtime strategy and improve STT
-normalization before adding more punctuation or alias variants.
+Human-score `20260530-162231-615943` against `20260530-151743`. If the scope
+plus semicolon English island wins by ear, promote it as the current rendering
+candidate; otherwise improve STT normalization before adding more punctuation
+or alias variants.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.
