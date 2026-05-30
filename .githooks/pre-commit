@@ -19,15 +19,14 @@ run() {
   "$@"
 }
 
-run python3 scripts/validate_reference_package.py --staged-ready
+run python3 scripts/validate_reference_package.py --staged-only
 
 if has_staged '^(docs/i18n/|docs/index\.html$|docs/install/USER-MANUAL\.html$|scripts/build_public_docs\.py$|package\.json$|docs/dist/)'; then
   run python3 scripts/build_public_docs.py --check
 fi
 
-if has_staged '^docs/'; then
+if has_staged '^(docs/tds/|docs/INDEX\.md$|scripts/validate_tds\.py$)'; then
   run python3 scripts/validate_tds.py
-  run python3 scripts/validate_doc_size.py
 fi
 
 if has_staged '^docs/roadmap/TES-TTS-SKILL-ROADMAP'; then

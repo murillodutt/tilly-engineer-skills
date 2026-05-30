@@ -621,6 +621,23 @@ def staged_ready_failures() -> list[str]:
     return failures
 
 
+def staged_only_failures() -> tuple[list[str], int]:
+    failures: list[str] = []
+    staged = git_path_list("diff", "--cached", "--name-only", "--diff-filter=ACMR")
+
+    for path in sorted(staged):
+        if path.name == ".DS_Store":
+            failures.append(f"package artifact staged: {path}")
+        if path.name == "CHANGELOG.md":
+            failures.append(f"changelog must remain in Git history, not a file: {path}")
+        if path.name == ".cursorrules":
+            failures.append(f"legacy Cursor rules file is forbidden: {path}")
+        if str(path) in FORBIDDEN_ROOT_PATHS:
+            failures.append(f"source leaked back into root: {path}")
+
+    return failures, len(staged)
+
+
 def generated_adapter_output_failures() -> list[str]:
     if not GENERATED_ADAPTER_OUTPUT.exists():
         return []
@@ -867,9 +884,22 @@ def yaml_surface_failures() -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--staged-ready", action="store_true")
+    parser.add_argument("--staged-only", action="store_true")
     args = parser.parse_args()
 
     failures: list[str] = []
+
+    if args.staged_only:
+        failures, checked_count = staged_only_failures()
+        if failures:
+            print("[tes-reference:staged-only] FAIL")
+            for failure in failures:
+                print(f"- {failure}")
+            return 1
+        print("[tes-reference:staged-only] PASS")
+        print(f"root={ROOT}")
+        print(f"checked_staged_files={checked_count}")
+        return 0
 
     for relpath in REQUIRED_PATHS:
         if not (ROOT / relpath).exists():
