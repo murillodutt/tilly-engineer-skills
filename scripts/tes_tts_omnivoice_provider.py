@@ -9,6 +9,7 @@ environment where the maintainer explicitly installed `omnivoice`.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime as dt
 import hashlib
 import html
@@ -36,6 +37,7 @@ DEFAULT_LOCAL_REF_AUDIO = ROOT / "tmp/tes-tts-lab/omnivoice/refs/audio-modelo-cl
 DEFAULT_OUTPUT_DIR = DEFAULT_CACHE_DIR / "audio"
 DEFAULT_BENCHMARK_CASES = ROOT / "benchmarks/tes-tts/omnivoice-provider-cases.json"
 DEFAULT_BENCHMARK_DIR = DEFAULT_CACHE_DIR / "benchmarks"
+DEFAULT_SESSION_DIR = DEFAULT_CACHE_DIR / "sessions"
 ENV_PYTHON = "TES_TTS_OMNIVOICE_PYTHON"
 ENV_REF_AUDIO = "TES_TTS_OMNIVOICE_REF_AUDIO"
 ENV_OUTPUT_DIR = "TES_TTS_OMNIVOICE_OUTPUT_DIR"
@@ -43,6 +45,10 @@ ENV_OUTPUT_DIR = "TES_TTS_OMNIVOICE_OUTPUT_DIR"
 
 def emit(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+
+def emit_jsonl(payload: dict[str, Any]) -> None:
+    print(json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
 
 
 def sha256_path(path: Path) -> str:
@@ -165,6 +171,13 @@ def default_benchmark_dir(output_dir: str | None) -> Path:
     return DEFAULT_BENCHMARK_DIR / stamp
 
 
+def default_session_dir(output_dir: str | None) -> Path:
+    if output_dir:
+        return Path(output_dir)
+    stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    return DEFAULT_SESSION_DIR / stamp
+
+
 def command_status(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
     ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
@@ -247,6 +260,12 @@ def playback_audio(output: Path) -> dict[str, Any]:
         "player": player,
         "returncode": completed.returncode,
     }
+
+
+def safe_file_stem(value: str) -> str:
+    cleaned = "".join(ch if ch.isalnum() or ch in {"-", "_"} else "-" for ch in value.strip())
+    cleaned = "-".join(part for part in cleaned.split("-") if part)
+    return cleaned[:80] or "utterance"
 
 
 def open_local_file(path: Path) -> dict[str, Any]:
@@ -1009,6 +1028,68 @@ def command_warm_cache(args: argparse.Namespace) -> int:
     return completed.returncode
 
 
+def command_session(args: argparse.Namespace) -> int:
+    provider_python, python_source = resolve_provider_python(args.python)
+    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    output_dir = default_session_dir(args.output_dir)
+    if not ref_audio or not ref_audio.exists():
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "NEEDS_SETUP",
+                "version": VERSION,
+                "mode": "product_session",
+                "reason": "reference audio is required before resident session start",
+                "ref_audio": str(ref_audio) if ref_audio else None,
+                "ref_audio_source": ref_source,
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 2
+    command = [
+        provider_python,
+        str(Path(__file__).resolve()),
+        "serve",
+        *common_runtime_arg_tokens(args, ref_audio),
+        "--output-dir",
+        str(output_dir),
+    ]
+    if args.ref_text:
+        command.extend(["--ref-text", args.ref_text])
+    if args.prompt_cache:
+        command.extend(["--prompt-cache", args.prompt_cache])
+    if args.refresh_prompt:
+        command.append("--refresh-prompt")
+    if args.device:
+        command.extend(["--device", args.device])
+    if args.dry_run:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "DRY_RUN",
+                "version": VERSION,
+                "mode": "product_session",
+                "provider_python": provider_python,
+                "provider_python_source": python_source,
+                "ref_audio": str(ref_audio),
+                "ref_audio_source": ref_source,
+                "output_dir": str(output_dir),
+                "protocol": "jsonl_stdin_stdout",
+                "resident_model": True,
+                "resident_voice_prompt": True,
+                "command_shape": redact_command_value(command, "--ref-text"),
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 0
+    output_dir.mkdir(parents=True, exist_ok=True)
+    return subprocess.run(command, check=False).returncode
+
+
 def redact_command_value(tokens: list[str], option: str) -> list[str]:
     redacted = list(tokens)
     for index, token in enumerate(redacted[:-1]):
@@ -1440,7 +1521,8 @@ def load_or_create_voice_prompt(
         }
 
     started = time.perf_counter()
-    prompt = model.create_voice_clone_prompt(ref_audio=str(ref_audio), ref_text=ref_text)
+    with contextlib.redirect_stdout(sys.stderr):
+        prompt = model.create_voice_clone_prompt(ref_audio=str(ref_audio), ref_text=ref_text)
     torch.save(prompt, cache_path)
     prompt_ref_text = getattr(prompt, "ref_text", None)
     return prompt, {
@@ -1465,17 +1547,18 @@ def synthesize_once(
 ) -> dict[str, Any]:
     output.parent.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
-    audios = model.generate(
-        text=text,
-        language=language,
-        voice_clone_prompt=voice_prompt,
-        num_step=args.num_step,
-        guidance_scale=args.guidance_scale,
-        speed=args.speed,
-        t_shift=args.t_shift,
-        denoise=args.denoise,
-        postprocess_output=args.postprocess_output,
-    )
+    with contextlib.redirect_stdout(sys.stderr):
+        audios = model.generate(
+            text=text,
+            language=language,
+            voice_clone_prompt=voice_prompt,
+            num_step=args.num_step,
+            guidance_scale=args.guidance_scale,
+            speed=args.speed,
+            t_shift=args.t_shift,
+            denoise=args.denoise,
+            postprocess_output=args.postprocess_output,
+        )
     generation_ms = round((time.perf_counter() - started) * 1000, 3)
     sf.write(output, audios[0], model.sampling_rate)
     duration_seconds = round(float(len(audios[0]) / model.sampling_rate), 3)
@@ -1495,7 +1578,8 @@ def command_prepare_prompt(args: argparse.Namespace) -> int:
     device = best_device(torch, args.device)
     total_started = time.perf_counter()
     load_started = time.perf_counter()
-    model = OmniVoice.from_pretrained(args.model, device_map=device, dtype=torch.float16)
+    with contextlib.redirect_stdout(sys.stderr):
+        model = OmniVoice.from_pretrained(args.model, device_map=device, dtype=torch.float16)
     model_load_ms = round((time.perf_counter() - load_started) * 1000, 3)
     ref_audio = Path(args.ref_audio)
     cache_path = prompt_cache_path_from_args(args, ref_audio)
@@ -1537,7 +1621,8 @@ def command_synthesize(args: argparse.Namespace) -> int:
 
     total_started = time.perf_counter()
     load_started = time.perf_counter()
-    model = OmniVoice.from_pretrained(args.model, device_map=device, dtype=torch.float16)
+    with contextlib.redirect_stdout(sys.stderr):
+        model = OmniVoice.from_pretrained(args.model, device_map=device, dtype=torch.float16)
     model_load_ms = round((time.perf_counter() - load_started) * 1000, 3)
     cache_path = prompt_cache_path_from_args(args, Path(args.ref_audio))
     prompt, prompt_metrics = load_or_create_voice_prompt(
@@ -1596,7 +1681,8 @@ def command_batch(args: argparse.Namespace) -> int:
 
     total_started = time.perf_counter()
     load_started = time.perf_counter()
-    model = OmniVoice.from_pretrained(args.model, device_map=device, dtype=torch.float16)
+    with contextlib.redirect_stdout(sys.stderr):
+        model = OmniVoice.from_pretrained(args.model, device_map=device, dtype=torch.float16)
     model_load_ms = round((time.perf_counter() - load_started) * 1000, 3)
     cache_path = prompt_cache_path_from_args(args, Path(args.ref_audio))
     prompt, prompt_metrics = load_or_create_voice_prompt(
@@ -1647,6 +1733,112 @@ def command_batch(args: argparse.Namespace) -> int:
             "total_ms": round((time.perf_counter() - total_started) * 1000, 3),
         }
     )
+    return 0
+
+
+def command_serve(args: argparse.Namespace) -> int:
+    modules = load_omnivoice_modules()
+    torch = modules["torch"]
+    sf = modules["soundfile"]
+    OmniVoice = modules["OmniVoice"]
+    device = best_device(torch, args.device)
+    out_dir = Path(args.output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    total_started = time.perf_counter()
+    load_started = time.perf_counter()
+    with contextlib.redirect_stdout(sys.stderr):
+        model = OmniVoice.from_pretrained(args.model, device_map=device, dtype=torch.float16)
+    model_load_ms = round((time.perf_counter() - load_started) * 1000, 3)
+    cache_path = prompt_cache_path_from_args(args, Path(args.ref_audio))
+    prompt, prompt_metrics = load_or_create_voice_prompt(
+        model=model,
+        torch=torch,
+        ref_audio=Path(args.ref_audio),
+        ref_text=args.ref_text,
+        cache_path=cache_path,
+        refresh=args.refresh_prompt,
+    )
+    emit_jsonl(
+        {
+            "provider": "omnivoice",
+            "status": "READY",
+            "version": VERSION,
+            "mode": "resident_session",
+            "protocol": "jsonl_stdin_stdout",
+            "model": args.model,
+            "device": device,
+            "language": args.language,
+            "output_dir": str(out_dir),
+            "model_load_ms": model_load_ms,
+            **prompt_metrics,
+            "startup_ms": round((time.perf_counter() - total_started) * 1000, 3),
+            "allows_install": False,
+            "allows_download": False,
+            "allows_global_config_write": False,
+        }
+    )
+    sys.stdout.flush()
+
+    served = 0
+    for line in sys.stdin:
+        if not line.strip():
+            continue
+        served += 1
+        request_started = time.perf_counter()
+        try:
+            request = json.loads(line)
+            text = request.get("text")
+            if not isinstance(text, str) or not text:
+                raise ValueError("request.text must be a non-empty string")
+            request_id = str(request.get("id") or f"utterance-{served:04d}")
+            language = str(request.get("language") or args.language)
+            output_value = request.get("output")
+            output = (
+                Path(output_value)
+                if isinstance(output_value, str) and output_value
+                else out_dir / f"{served:04d}-{safe_file_stem(request_id)}.wav"
+            )
+            text_info = provider_text(text, args.locale, args.text_mode)
+            audio_metrics = synthesize_once(
+                model=model,
+                sf=sf,
+                voice_prompt=prompt,
+                text=text_info["text"],
+                language=language,
+                output=output,
+                args=args,
+            )
+            emit_jsonl(
+                {
+                    "provider": "omnivoice",
+                    "status": "PASS",
+                    "version": VERSION,
+                    "mode": "resident_session_utterance",
+                    "id": request_id,
+                    "text_mode": text_info["mode"],
+                    "source_text_immutable": text_info["prepared"]["source_text_immutable"],
+                    "redaction_count": text_info["prepared"]["redaction_count"],
+                    "summary_behavior": text_info["prepared"]["summary_behavior"],
+                    "command_execution": text_info["prepared"]["command_execution"],
+                    "model_reused": True,
+                    "voice_prompt_reused": True,
+                    **audio_metrics,
+                    "request_total_ms": round((time.perf_counter() - request_started) * 1000, 3),
+                }
+            )
+        except Exception as exc:
+            emit_jsonl(
+                {
+                    "provider": "omnivoice",
+                    "status": "FAIL",
+                    "version": VERSION,
+                    "mode": "resident_session_utterance",
+                    "error": str(exc),
+                    "request_total_ms": round((time.perf_counter() - request_started) * 1000, 3),
+                }
+            )
+        sys.stdout.flush()
     return 0
 
 
@@ -1701,6 +1893,11 @@ def build_parser() -> argparse.ArgumentParser:
     add_runtime_args(prepare_prompt)
     prepare_prompt.set_defaults(func=command_prepare_prompt)
 
+    serve = subparsers.add_parser("serve")
+    add_runtime_args(serve)
+    serve.add_argument("--output-dir", required=True)
+    serve.set_defaults(func=command_serve)
+
     synthesize = subparsers.add_parser("synthesize")
     add_runtime_args(synthesize)
     synthesize.add_argument("--text", required=True)
@@ -1721,6 +1918,13 @@ def build_parser() -> argparse.ArgumentParser:
     speak.add_argument("--play", action="store_true")
     speak.add_argument("--dry-run", action="store_true")
     speak.set_defaults(func=command_speak)
+
+    session = subparsers.add_parser("session")
+    add_runtime_args(session, ref_audio_required=False)
+    session.add_argument("--python")
+    session.add_argument("--output-dir")
+    session.add_argument("--dry-run", action="store_true")
+    session.set_defaults(func=command_session)
 
     bench = subparsers.add_parser("bench")
     add_runtime_args(bench, ref_audio_required=False)

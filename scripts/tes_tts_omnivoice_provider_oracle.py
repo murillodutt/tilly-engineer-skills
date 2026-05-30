@@ -107,6 +107,24 @@ REQUIRED_WARM_CACHE_DRY_RUN_KEYS = {
     "allows_download",
     "allows_global_config_write",
 }
+REQUIRED_SESSION_DRY_RUN_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "mode",
+    "provider_python",
+    "provider_python_source",
+    "ref_audio",
+    "ref_audio_source",
+    "output_dir",
+    "protocol",
+    "resident_model",
+    "resident_voice_prompt",
+    "command_shape",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
+}
 REQUIRED_REVIEW_DRY_RUN_KEYS = {
     "provider",
     "status",
@@ -589,6 +607,76 @@ def validate_warm_cache_dry_run_command() -> list[str]:
     return failures
 
 
+def validate_session_dry_run_command() -> list[str]:
+    failures: list[str] = []
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        ref = root / "ref.wav"
+        output_dir = root / "session-audio"
+        ref.write_bytes(b"not-real-audio-for-dry-run")
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(PROVIDER_SCRIPT),
+                "session",
+                "--python",
+                sys.executable,
+                "--ref-audio",
+                str(ref),
+                "--output-dir",
+                str(output_dir),
+                "--ref-text",
+                "SECRET_REF_TEXT",
+                "--dry-run",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+    if completed.returncode != 0:
+        failures.append(f"session dry-run returned unexpected exit code {completed.returncode}")
+        return failures
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        failures.append(f"session dry-run did not emit JSON: {exc}")
+        return failures
+    missing = sorted(REQUIRED_SESSION_DRY_RUN_KEYS - set(payload))
+    extra = sorted(set(payload) - REQUIRED_SESSION_DRY_RUN_KEYS)
+    if missing:
+        failures.append(f"session dry-run missing keys {missing}")
+    if extra:
+        failures.append(f"session dry-run has extra keys {extra}")
+    if payload.get("status") != "DRY_RUN":
+        failures.append("session dry-run status drifted")
+    if payload.get("mode") != "product_session":
+        failures.append("session dry-run mode drifted")
+    if payload.get("protocol") != "jsonl_stdin_stdout":
+        failures.append("session dry-run must report JSONL stdin/stdout protocol")
+    if payload.get("resident_model") is not True:
+        failures.append("session dry-run must report resident model reuse")
+    if payload.get("resident_voice_prompt") is not True:
+        failures.append("session dry-run must report resident voice prompt reuse")
+    command_shape = payload.get("command_shape")
+    if not isinstance(command_shape, list):
+        failures.append("session dry-run command_shape must be a list")
+    else:
+        joined = " ".join(str(part) for part in command_shape)
+        if "serve" not in command_shape:
+            failures.append("session dry-run must delegate to serve")
+        if "SECRET_REF_TEXT" in joined:
+            failures.append("session dry-run leaked reference text")
+        if "--ref-text" in command_shape and "<redacted>" not in command_shape:
+            failures.append("session dry-run must redact reference text")
+    if output_dir.exists():
+        failures.append("session dry-run should not create output directory")
+    for key in ("allows_install", "allows_download", "allows_global_config_write"):
+        if payload.get(key) is not False:
+            failures.append(f"session dry-run must keep {key}=false")
+    return failures
+
+
 def validate_review_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
     if payload is None:
         return []
@@ -668,6 +756,29 @@ def load_provider_module() -> Any:
             sys.path.remove(str(scripts_dir))
         except ValueError:
             pass
+
+
+def validate_jsonl_emitter() -> list[str]:
+    failures: list[str] = []
+    provider = load_provider_module()
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        provider.emit_jsonl({"status": "READY", "nested": {"ok": True}})
+    output = buffer.getvalue()
+    lines = output.splitlines()
+    if len(lines) != 1:
+        failures.append("emit_jsonl must emit exactly one line per payload")
+        return failures
+    try:
+        payload = json.loads(lines[0])
+    except json.JSONDecodeError as exc:
+        failures.append(f"emit_jsonl did not emit parseable compact JSON: {exc}")
+        return failures
+    if payload.get("status") != "READY":
+        failures.append("emit_jsonl payload drifted")
+    if "  " in lines[0]:
+        failures.append("emit_jsonl must not pretty-print resident session payloads")
+    return failures
 
 
 def validate_review_html_scorecard() -> list[str]:
@@ -1142,6 +1253,8 @@ def main() -> int:
     failures.extend(validate_dry_run_payload(dry_payload))
     failures.extend(validate_bench_dry_run_payload(bench_payload))
     failures.extend(validate_warm_cache_dry_run_command())
+    failures.extend(validate_session_dry_run_command())
+    failures.extend(validate_jsonl_emitter())
     failures.extend(validate_review_dry_run_payload(review_payload))
     failures.extend(validate_package_dry_run_payload(package_payload))
     failures.extend(validate_review_html_scorecard())

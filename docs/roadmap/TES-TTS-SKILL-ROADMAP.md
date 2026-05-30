@@ -48,13 +48,15 @@ cache, and proactive `speak`.
 - Maintainer live rating: OmniVoice cloned voice result `9.5`.
 - Optional provider probe: `provider_available`.
 - `status` auto-discovers env/reference; `warm-cache` prepares voice prompt
-  cache; `speak` delegates synthesis without long CLI arguments.
+  cache; `session` keeps model/prompt resident for repeated utterances; `speak`
+  delegates one-shot synthesis without long CLI arguments.
 - `bench --play --open --package` writes WAVs, metrics, review HTML, ZIP
   manifest; `decide-review --review-json <json> --package` seals the decision.
 - `product-status --format text --strict` gates `AUDIO_CANDIDATE`; latest run:
   `32.69s` audio, `30.19s` total, RTF `0.9422`, SHA starts `0206b249`.
 - `candidate --format text --strict` replays/opens sealed audio without
   regenerating it.
+- Resident JSONL smoke: startup `867.3ms`; two utterances reused model/prompt.
 
 Relevant gates: focused TTS provider/runtime/oracle suite, roadmap partition,
 materialization, TDS/doc-size/reference validators, and `npm run commit:check`
@@ -62,11 +64,9 @@ for package closure.
 
 ## Next Cut
 
-Run `warm-cache`, then `bench --play --open --package`; score fixtures, seal
-with `decide-review --review-json <json> --package`, gate with
-`product-status --format text --strict`, and inspect with `candidate --format
-text --strict`. The result decides release identity planning or one targeted
-provider/runtime fix.
+Run `session --dry-run`, then a short JSONL session smoke in the local provider
+env; compare one-shot and resident-session latency before the next audio
+candidate package.
 
 ## Maintenance Rules
 
