@@ -7,6 +7,7 @@ and redacting secrets before speech preparation.
 from __future__ import annotations
 
 import json
+from functools import lru_cache
 from pathlib import Path
 import re
 from typing import Any
@@ -181,6 +182,47 @@ def runtime_protected_entries(fixtures: dict[str, Any], start_order: int) -> lis
     return entries
 
 
+def compile_protected_matchers(
+    exact: dict[str, dict[str, IndexEntry]],
+    phrase: dict[str, list[IndexEntry]],
+) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+    matchers: dict[str, dict[str, Any]] = {}
+    strategies: dict[str, dict[str, Any]] = {}
+    locales = sorted(set(exact) | set(phrase))
+    for locale in locales:
+        entries = list(phrase.get(locale, []))
+        entries.extend(exact.get(locale, {}).values())
+        entries = [entry for entry in entries if entry.spoken_rendering]
+        entries.sort(key=lambda entry: (-len(entry.term), -entry.priority, entry.insertion_order))
+
+        entries_by_key: dict[str, IndexEntry] = {}
+        alternatives: list[str] = []
+        for entry in entries:
+            key = canonical(entry.term)
+            if key in entries_by_key:
+                continue
+            entries_by_key[key] = entry
+            alternatives.append(re.escape(entry.term))
+
+        entry_count = len(alternatives)
+        strategy = {
+            "strategy": "regex_union" if entry_count else "empty",
+            "runtime_dependency": "none",
+            "entry_count": entry_count,
+            "trie_recommended": entry_count >= 128,
+            "aho_corasick_recommended": entry_count >= 512,
+        }
+        strategies[locale] = strategy
+        if entry_count:
+            pattern = re.compile(r"(?<![\w/-])(?:" + "|".join(alternatives) + r")(?![\w/-])", re.IGNORECASE)
+            matchers[locale] = {
+                "pattern": pattern,
+                "entries_by_key": entries_by_key,
+            }
+    return matchers, strategies
+
+
+@lru_cache(maxsize=1)
 def compile_index() -> dict[str, Any]:
     entries: list[IndexEntry] = []
     entries.extend(lexical_entries(load_jsonl(LEXICAL_MANIFEST_PATH), len(entries)))
@@ -221,7 +263,15 @@ def compile_index() -> dict[str, Any]:
 
     for entries_for_locale in phrase.values():
         entries_for_locale.sort(key=entry_sort_key)
-    return {"exact": exact, "phrase": phrase, "duplicates": duplicates, "entry_count": len(entries)}
+    protected_matchers, index_strategy = compile_protected_matchers(exact, phrase)
+    return {
+        "exact": exact,
+        "phrase": phrase,
+        "duplicates": duplicates,
+        "entry_count": len(entries),
+        "protected_matchers": protected_matchers,
+        "index_strategy": index_strategy,
+    }
 
 
 def has_exact_marker_before(text: str, start: int) -> bool:
@@ -430,33 +480,34 @@ def literal_spans(redacted_text: str) -> list[Span]:
 
 def protected_spans(redacted_text: str, locale: str, index: dict[str, Any]) -> list[Span]:
     spans: list[Span] = []
-    entries = list(index["phrase"].get(locale, []))
-    entries.extend(index["exact"].get(locale, {}).values())
-    entries.sort(key=entry_sort_key)
-    for entry in entries:
-        if not entry.spoken_rendering:
+    matcher = index.get("protected_matchers", {}).get(locale)
+    if not matcher:
+        return spans
+    pattern = matcher["pattern"]
+    entries_by_key = matcher["entries_by_key"]
+    for match in pattern.finditer(redacted_text):
+        entry = entries_by_key.get(canonical(match.group(0)))
+        if entry is None:
             continue
-        pattern = re.compile(rf"(?<![\w/-]){re.escape(entry.term)}(?![\w/-])", re.IGNORECASE)
-        for match in pattern.finditer(redacted_text):
-            if redacted_text[match.end() :].startswith("=" + REDACTION_TOKEN):
-                continue
-            if entry.source == "pronunciation_catalog" and " --" in entry.term:
-                kind = "command"
-            else:
-                kind = "protected_phrase" if entry.match_scope == "phrase" else "protected_term"
-            spans.append(
-                Span(
-                    start=match.start(),
-                    end=match.end(),
-                    kind=kind,
-                    text=match.group(0),
-                    rendering=entry.spoken_rendering,
-                    source=entry.source,
-                    priority=entry.priority + (250 if kind == "protected_phrase" else 0),
-                    preserve_identity=entry.preserve_identity,
-                    language_hint=entry.language_hint,
-                )
+        if redacted_text[match.end() :].startswith("=" + REDACTION_TOKEN):
+            continue
+        if entry.source == "pronunciation_catalog" and " --" in entry.term:
+            kind = "command"
+        else:
+            kind = "protected_phrase" if entry.match_scope == "phrase" else "protected_term"
+        spans.append(
+            Span(
+                start=match.start(),
+                end=match.end(),
+                kind=kind,
+                text=match.group(0),
+                rendering=entry.spoken_rendering,
+                source=entry.source,
+                priority=entry.priority + (250 if kind == "protected_phrase" else 0),
+                preserve_identity=entry.preserve_identity,
+                language_hint=entry.language_hint,
             )
+        )
     return spans
 
 
@@ -481,6 +532,19 @@ def match_spans(source_text: str, locale: str = "pt-BR") -> dict[str, Any]:
         "redacted_text": redacted_text,
         "redaction_count": len(redactions),
         "spans": accepted,
+        "index_strategy": index.get(
+            "index_strategy",
+            {},
+        ).get(
+            locale,
+            {
+                "strategy": "empty",
+                "runtime_dependency": "none",
+                "entry_count": 0,
+                "trie_recommended": False,
+                "aho_corasick_recommended": False,
+            },
+        ),
     }
 
 
@@ -513,6 +577,7 @@ def classify_text(source_text: str, locale: str = "pt-BR") -> dict[str, Any]:
         "ir": [span_to_ir(span) for span in spans],
         "span_kinds": [span.kind for span in spans],
         "redaction_count": match_result["redaction_count"],
+        "index_strategy": match_result["index_strategy"],
         "provider_timing": "out_of_scope",
         "summary_behavior": "none",
         "command_execution": "not_performed",

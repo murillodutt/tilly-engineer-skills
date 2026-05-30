@@ -112,6 +112,17 @@ def validate_case(case: dict[str, Any]) -> tuple[list[str], dict[str, Any]]:
         failures.append(f"{case['id']}: command execution changed")
     if first_result["runtime_pronunciation_output"] != "none":
         failures.append(f"{case['id']}: pronunciation runtime surface leaked")
+    index_strategy = first_result.get("index_strategy", {})
+    if index_strategy.get("strategy") != "regex_union":
+        failures.append(f"{case['id']}: protected matcher strategy drifted")
+    if index_strategy.get("runtime_dependency") != "none":
+        failures.append(f"{case['id']}: protected matcher gained runtime dependency")
+    if not isinstance(index_strategy.get("entry_count"), int) or index_strategy["entry_count"] < 10:
+        failures.append(f"{case['id']}: protected matcher did not compile enough entries")
+    if not isinstance(index_strategy.get("trie_recommended"), bool):
+        failures.append(f"{case['id']}: trie recommendation must be boolean")
+    if not isinstance(index_strategy.get("aho_corasick_recommended"), bool):
+        failures.append(f"{case['id']}: aho-corasick recommendation must be boolean")
     if any("runtime_class" not in span for span in ir):
         failures.append(f"{case['id']}: structured span catalog metadata missing")
     if any(span["executable"] for span in ir):
@@ -130,6 +141,8 @@ def validate_case(case: dict[str, Any]) -> tuple[list[str], dict[str, Any]]:
         "span_types": span_types,
         "aliases": aliases,
         "redaction_count": first_result["redaction_count"],
+        "index_strategy": index_strategy.get("strategy"),
+        "protected_entry_count": index_strategy.get("entry_count"),
         "text_prepare_ms_p50": round(median(timings), 3),
     }
     return failures, observed

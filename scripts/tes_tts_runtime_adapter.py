@@ -20,6 +20,7 @@ def adapt_plain_text(classified: dict[str, Any], verbalized: dict[str, Any]) -> 
         "ir": classified["ir"],
         "span_kinds": classified["span_kinds"],
         "redaction_count": classified["redaction_count"],
+        "index_strategy": classified["index_strategy"],
         "memo_scope": verbalized["memo_scope"],
         "cache_hits": verbalized["cache_hits"],
         "cache_misses": verbalized["cache_misses"],
