@@ -90,6 +90,23 @@ REQUIRED_BENCH_DRY_RUN_KEYS = {
     "allows_download",
     "allows_global_config_write",
 }
+REQUIRED_WARM_CACHE_DRY_RUN_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "mode",
+    "provider_python",
+    "provider_python_source",
+    "ref_audio",
+    "ref_audio_source",
+    "voice_prompt_cache_path",
+    "voice_prompt_cache_exists",
+    "refresh_requested",
+    "command_shape",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
+}
 REQUIRED_REVIEW_DRY_RUN_KEYS = {
     "provider",
     "status",
@@ -499,6 +516,76 @@ def validate_bench_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
     package_zip = payload.get("package_zip")
     if not isinstance(package_zip, str) or not package_zip.endswith("tes-tts-omnivoice-review-package.zip"):
         failures.append("bench dry-run must report review package path")
+    return failures
+
+
+def validate_warm_cache_dry_run_command() -> list[str]:
+    failures: list[str] = []
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        ref = root / "ref.wav"
+        cache_dir = root / "cache"
+        ref.write_bytes(b"not-real-audio-for-dry-run")
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(PROVIDER_SCRIPT),
+                "warm-cache",
+                "--python",
+                sys.executable,
+                "--ref-audio",
+                str(ref),
+                "--cache-dir",
+                str(cache_dir),
+                "--ref-text",
+                "SECRET_REF_TEXT",
+                "--refresh-prompt",
+                "--dry-run",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+    if completed.returncode != 0:
+        failures.append(f"warm-cache dry-run returned unexpected exit code {completed.returncode}")
+        return failures
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        failures.append(f"warm-cache dry-run did not emit JSON: {exc}")
+        return failures
+    missing = sorted(REQUIRED_WARM_CACHE_DRY_RUN_KEYS - set(payload))
+    extra = sorted(set(payload) - REQUIRED_WARM_CACHE_DRY_RUN_KEYS)
+    if missing:
+        failures.append(f"warm-cache dry-run missing keys {missing}")
+    if extra:
+        failures.append(f"warm-cache dry-run has extra keys {extra}")
+    if payload.get("status") != "DRY_RUN":
+        failures.append("warm-cache dry-run status drifted")
+    if payload.get("mode") != "product_warm_cache":
+        failures.append("warm-cache dry-run mode drifted")
+    if payload.get("refresh_requested") is not True:
+        failures.append("warm-cache dry-run must report refresh intent")
+    if payload.get("voice_prompt_cache_exists") is not False:
+        failures.append("warm-cache dry-run should not create the cache")
+    cache_path = payload.get("voice_prompt_cache_path")
+    if not isinstance(cache_path, str) or not cache_path.endswith(".pt"):
+        failures.append("warm-cache dry-run must report a .pt prompt cache path")
+    command_shape = payload.get("command_shape")
+    if not isinstance(command_shape, list):
+        failures.append("warm-cache dry-run command_shape must be a list")
+    else:
+        joined = " ".join(str(part) for part in command_shape)
+        if "prepare-prompt" not in command_shape:
+            failures.append("warm-cache dry-run must delegate to prepare-prompt")
+        if "SECRET_REF_TEXT" in joined:
+            failures.append("warm-cache dry-run leaked reference text")
+        if "--ref-text" in command_shape and "<redacted>" not in command_shape:
+            failures.append("warm-cache dry-run must redact reference text")
+    for key in ("allows_install", "allows_download", "allows_global_config_write"):
+        if payload.get(key) is not False:
+            failures.append(f"warm-cache dry-run must keep {key}=false")
     return failures
 
 
@@ -1054,6 +1141,7 @@ def main() -> int:
     failures.extend(validate_status_payload(status_payload))
     failures.extend(validate_dry_run_payload(dry_payload))
     failures.extend(validate_bench_dry_run_payload(bench_payload))
+    failures.extend(validate_warm_cache_dry_run_command())
     failures.extend(validate_review_dry_run_payload(review_payload))
     failures.extend(validate_package_dry_run_payload(package_payload))
     failures.extend(validate_review_html_scorecard())

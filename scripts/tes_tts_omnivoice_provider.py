@@ -231,6 +231,12 @@ def synthesize_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path, out
     ]
 
 
+def prompt_cache_path_from_args(args: argparse.Namespace, ref_audio: Path) -> Path:
+    if args.prompt_cache:
+        return Path(args.prompt_cache)
+    return prompt_cache_path(Path(args.cache_dir), args.model, ref_audio, args.ref_text)
+
+
 def playback_audio(output: Path) -> dict[str, Any]:
     player = shutil.which("afplay")
     if not player:
@@ -917,6 +923,92 @@ def command_package_review(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_warm_cache(args: argparse.Namespace) -> int:
+    provider_python, python_source = resolve_provider_python(args.python)
+    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    if not ref_audio or not ref_audio.exists():
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "NEEDS_SETUP",
+                "version": VERSION,
+                "mode": "product_warm_cache",
+                "reason": "reference audio is required before voice prompt cache warmup",
+                "ref_audio": str(ref_audio) if ref_audio else None,
+                "ref_audio_source": ref_source,
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 2
+    cache_path = prompt_cache_path_from_args(args, ref_audio)
+    command = [
+        provider_python,
+        str(Path(__file__).resolve()),
+        "prepare-prompt",
+        *common_runtime_arg_tokens(args, ref_audio),
+    ]
+    if args.ref_text:
+        command.extend(["--ref-text", args.ref_text])
+    if args.prompt_cache:
+        command.extend(["--prompt-cache", args.prompt_cache])
+    if args.refresh_prompt:
+        command.append("--refresh-prompt")
+    if args.device:
+        command.extend(["--device", args.device])
+    if args.dry_run:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "DRY_RUN",
+                "version": VERSION,
+                "mode": "product_warm_cache",
+                "provider_python": provider_python,
+                "provider_python_source": python_source,
+                "ref_audio": str(ref_audio),
+                "ref_audio_source": ref_source,
+                "voice_prompt_cache_path": str(cache_path),
+                "voice_prompt_cache_exists": cache_path.exists(),
+                "refresh_requested": args.refresh_prompt,
+                "command_shape": redact_command_value(command, "--ref-text"),
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 0
+    completed = subprocess.run(
+        command,
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "FAIL",
+                "version": VERSION,
+                "mode": "product_warm_cache",
+                "provider_python": provider_python,
+                "stdout": completed.stdout[-1000:],
+                "stderr": completed.stderr[-1000:],
+                "returncode": completed.returncode,
+            }
+        )
+        return 1
+    payload["mode"] = "product_warm_cache"
+    payload["provider_python"] = provider_python
+    payload["provider_python_source"] = python_source
+    payload["ref_audio_source"] = ref_source
+    emit(payload)
+    return completed.returncode
+
+
 def redact_command_value(tokens: list[str], option: str) -> list[str]:
     redacted = list(tokens)
     for index, token in enumerate(redacted[:-1]):
@@ -1396,6 +1488,45 @@ def synthesize_once(
     }
 
 
+def command_prepare_prompt(args: argparse.Namespace) -> int:
+    modules = load_omnivoice_modules()
+    torch = modules["torch"]
+    OmniVoice = modules["OmniVoice"]
+    device = best_device(torch, args.device)
+    total_started = time.perf_counter()
+    load_started = time.perf_counter()
+    model = OmniVoice.from_pretrained(args.model, device_map=device, dtype=torch.float16)
+    model_load_ms = round((time.perf_counter() - load_started) * 1000, 3)
+    ref_audio = Path(args.ref_audio)
+    cache_path = prompt_cache_path_from_args(args, ref_audio)
+    _prompt, prompt_metrics = load_or_create_voice_prompt(
+        model=model,
+        torch=torch,
+        ref_audio=ref_audio,
+        ref_text=args.ref_text,
+        cache_path=cache_path,
+        refresh=args.refresh_prompt,
+    )
+    emit(
+        {
+            "provider": "omnivoice",
+            "status": "PASS",
+            "version": VERSION,
+            "mode": "voice_prompt_cache",
+            "model": args.model,
+            "device": device,
+            "language": args.language,
+            "model_load_ms": model_load_ms,
+            **prompt_metrics,
+            "total_ms": round((time.perf_counter() - total_started) * 1000, 3),
+            "allows_install": False,
+            "allows_download": False,
+            "allows_global_config_write": False,
+        }
+    )
+    return 0
+
+
 def command_synthesize(args: argparse.Namespace) -> int:
     modules = load_omnivoice_modules()
     torch = modules["torch"]
@@ -1408,9 +1539,7 @@ def command_synthesize(args: argparse.Namespace) -> int:
     load_started = time.perf_counter()
     model = OmniVoice.from_pretrained(args.model, device_map=device, dtype=torch.float16)
     model_load_ms = round((time.perf_counter() - load_started) * 1000, 3)
-    cache_path = Path(args.prompt_cache) if args.prompt_cache else prompt_cache_path(
-        Path(args.cache_dir), args.model, Path(args.ref_audio), args.ref_text
-    )
+    cache_path = prompt_cache_path_from_args(args, Path(args.ref_audio))
     prompt, prompt_metrics = load_or_create_voice_prompt(
         model=model,
         torch=torch,
@@ -1469,9 +1598,7 @@ def command_batch(args: argparse.Namespace) -> int:
     load_started = time.perf_counter()
     model = OmniVoice.from_pretrained(args.model, device_map=device, dtype=torch.float16)
     model_load_ms = round((time.perf_counter() - load_started) * 1000, 3)
-    cache_path = Path(args.prompt_cache) if args.prompt_cache else prompt_cache_path(
-        Path(args.cache_dir), args.model, Path(args.ref_audio), args.ref_text
-    )
+    cache_path = prompt_cache_path_from_args(args, Path(args.ref_audio))
     prompt, prompt_metrics = load_or_create_voice_prompt(
         model=model,
         torch=torch,
@@ -1559,10 +1686,20 @@ def build_parser() -> argparse.ArgumentParser:
     status.add_argument("--ref-audio")
     status.set_defaults(func=command_status)
 
+    warm_cache = subparsers.add_parser("warm-cache")
+    add_runtime_args(warm_cache, ref_audio_required=False)
+    warm_cache.add_argument("--python")
+    warm_cache.add_argument("--dry-run", action="store_true")
+    warm_cache.set_defaults(func=command_warm_cache)
+
     normalize = subparsers.add_parser("normalize-ref")
     normalize.add_argument("--input", required=True)
     normalize.add_argument("--output", required=True)
     normalize.set_defaults(func=lambda args: normalize_ref_audio(Path(args.input), Path(args.output)) or 0)
+
+    prepare_prompt = subparsers.add_parser("prepare-prompt")
+    add_runtime_args(prepare_prompt)
+    prepare_prompt.set_defaults(func=command_prepare_prompt)
 
     synthesize = subparsers.add_parser("synthesize")
     add_runtime_args(synthesize)

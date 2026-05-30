@@ -47,8 +47,8 @@ cache, and proactive `speak`.
   shortcut.
 - Maintainer live rating: OmniVoice cloned voice result `9.5`.
 - Optional provider probe: `provider_available`.
-- `status` auto-discovers the local OmniVoice env/reference; `speak` delegates
-  synthesis without long CLI arguments.
+- `status` auto-discovers env/reference; `warm-cache` prepares voice prompt
+  cache; `speak` delegates synthesis without long CLI arguments.
 - `bench --play --open --package` writes WAVs, metrics, review HTML, ZIP
   manifest; `decide-review --review-json <json> --package` seals the decision.
 - `product-status --format text --strict` gates `AUDIO_CANDIDATE`; latest run:
@@ -62,11 +62,11 @@ closure.
 
 ## Next Cut
 
-Run `bench --play --open --package`, score audible quality by fixture, export
-review JSON, seal with `decide-review --review-json <json> --package`, then
-gate with `product-status --format text --strict` and inspect with `candidate
---format text --strict`. The result decides release identity planning or one
-targeted provider/runtime fix.
+Run `warm-cache`, then `bench --play --open --package`; score fixtures, seal
+with `decide-review --review-json <json> --package`, gate with
+`product-status --format text --strict`, and inspect with `candidate --format
+text --strict`. The result decides release identity planning or one targeted
+provider/runtime fix.
 
 ## Maintenance Rules
 
