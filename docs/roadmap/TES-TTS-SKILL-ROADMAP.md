@@ -454,7 +454,7 @@ PT-BR lexical normalization status: LEX-001 through LEX-005 passed; local
 evidence-only sequence closed, next prompt none, sync status
 `REMOTE_SYNC_NOT_REQUESTED`.
 
-Runtime status: RTE-000 through RTE-006 passed; runtime-first work now uses `scripts/tes_tts_runtime.py` for `classify -> verbalize -> adapt_plain_text`, with expanded session spans and sync status `REMOTE_SYNC_NOT_REQUESTED`.
+Runtime status: RTE-000 through RTE-006 passed; runtime-first work now uses `scripts/tes_tts_runtime.py` as CLI facade over classifier, verbalizer, adapter, and shared types modules, with sync status `REMOTE_SYNC_NOT_REQUESTED`.
 
 Open questions: release identity planning and sync remain owner decisions.
 
