@@ -21,7 +21,7 @@ runtime preparation plus optional OmniVoice with the canonical local reference
 WAV through direct/resident execution; `say`/Felipe is only a fallback when
 OmniVoice is unavailable.
 Unauthorized: release/sync/push/tag/publish, redistribution, global writes,
-durable cache, or proactive `speak`.
+durable conversion cache, or proactive `speak`.
 
 ## Decisions
 - Source text is immutable; speech is request-local; secrets are redacted.
@@ -36,6 +36,8 @@ durable cache, or proactive `speak`.
   was human-rated 7.5/10: `language=en`, `quality`, 420-char chunks,
   combined WAV, 450 ms inter-chunk silence.
 - Python efficiency analysis targets provider/lab monoliths, not text prep.
+- Direct voice prompt cache is permitted only as protected local `tmp/**`
+  runtime state, never as committed or shared artifact.
 - Active `tes-tts` execution is direct/resident OmniVoice for cloned-voice
   reads; fallback remains request-local and honest.
 

@@ -3808,6 +3808,20 @@ def prompt_cache_path(cache_dir: Path, model: str, ref_audio: Path, ref_text: st
     return cache_dir / "voice-prompts" / f"{key}.pt"
 
 
+def protect_voice_prompt_cache_path(cache_path: Path) -> None:
+    """Keep local cloned-voice prompt artifacts private to the current user."""
+    cache_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    try:
+        cache_path.parent.chmod(0o700)
+    except OSError:
+        pass
+    if cache_path.exists():
+        try:
+            cache_path.chmod(0o600)
+        except OSError:
+            pass
+
+
 def load_or_create_voice_prompt(
     *,
     model: Any,
@@ -3817,10 +3831,11 @@ def load_or_create_voice_prompt(
     cache_path: Path,
     refresh: bool,
 ) -> tuple[Any, dict[str, Any]]:
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    protect_voice_prompt_cache_path(cache_path)
     if cache_path.exists() and not refresh:
         started = time.perf_counter()
         prompt = torch.load(cache_path, map_location=model.device, weights_only=False)
+        protect_voice_prompt_cache_path(cache_path)
         cached_ref_text = getattr(prompt, "ref_text", None)
         return prompt, {
             "voice_prompt_cache": "hit",
@@ -3835,6 +3850,7 @@ def load_or_create_voice_prompt(
     with contextlib.redirect_stdout(sys.stderr):
         prompt = model.create_voice_clone_prompt(ref_audio=str(ref_audio), ref_text=ref_text)
     torch.save(prompt, cache_path)
+    protect_voice_prompt_cache_path(cache_path)
     prompt_ref_text = getattr(prompt, "ref_text", None)
     return prompt, {
         "voice_prompt_cache": "miss",

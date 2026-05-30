@@ -72,6 +72,11 @@ speak-long -> provider Python -> serve -> JSONL chunk requests -> combined WAV
 That path is correct because it loads the model and voice prompt once, then
 processes chunks in one resident subprocess.
 
+The direct cloned-voice prompt cache is an allowed local runtime artifact under
+`tmp/tes-tts-omnivoice-provider/voice-prompts/*.pt`. It must stay private to
+the current user, remain uncommitted, and not be confused with a durable text
+conversion cache.
+
 The short `speak` shortcut still shells into `synthesize`, which is a separate
 subprocess path. For repeated short utterances, that is a likely inefficiency
 and should converge toward the same resident kernel used by `speak-long`.

@@ -96,6 +96,7 @@ a proactive announcement channel for normal TES status updates.
 | 2026-05-29 | Hardened CAP-009 mixed-language and English identity handling for planning, review, CI/CD, product, package, model, and platform terms without provider-backed pronunciation claims. | CAP-009 instruction normalizer fixtures and English identity oracle hardening. | high |
 | 2026-05-30 | Compacted `SKILL.md` back to a runtime-first read-aloud router, removed lab/review command sprawl from the main workflow, and made `tes-tts-local-clone` the concise OmniVoice clone identity. | Maintainer directive to purge obsolete layers; local profile smoke and commit `5eebf61`. | high |
 | 2026-05-30 | Marked the OmniVoice server route obsolete for `tes-tts` after direct/resident and server long-read tests produced near-identical wall time while direct execution stayed simpler for the active skill path. | Maintainer decision after human-rated long-read recipe; direct result `20260530-190552-healthy-reference-read`; server comparison `20260530-191103-healthy-reference-server-read`. | high |
+| 2026-05-30 | Protected the direct OmniVoice voice prompt cache as local sensitive runtime state with private permissions and documented that it is not a durable text conversion cache. | Maintainer directive after confirming direct execution uses `tmp/tes-tts-omnivoice-provider/voice-prompts/*.pt` cache hits. | high |
 
 ## Do Not Lose
 

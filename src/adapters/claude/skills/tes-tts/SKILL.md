@@ -39,6 +39,14 @@ The canonical local clone source is
 `tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav`. Profile and
 audio outputs stay under `tmp/**` and are not committed.
 
+## Voice Prompt Cache
+
+Direct OmniVoice may reuse a local cloned-voice prompt cache under
+`tmp/tes-tts-omnivoice-provider/voice-prompts/*.pt`. Treat this cache as
+sensitive local runtime state: keep the directory `0700`, cache files `0600`,
+never commit it, and refresh it only when the reference WAV, reference text, or
+model changes. This voice prompt cache is not a durable text conversion cache.
+
 ## Validated Long-Read Recipe
 
 Use this human-rated recipe for long PT-BR narration with English technical
