@@ -2,11 +2,31 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from tes_tts_runtime_classifier import classify_text
 from tes_tts_runtime_types import VERSION
 from tes_tts_runtime_verbalizer import verbalize_ir
+
+
+def prepare_audio_quality_text(source_text: str, locale: str = "pt-BR") -> dict[str, Any]:
+    prepared = prepare_spoken_text(source_text, locale)
+    text = prepared["redacted_text"].replace("`", "")
+    replacements = (
+        (r"\bspeak long\b", "leitura longa"),
+        (r"\bchunks\b", "blocos"),
+        (r"\bchunk\b", "bloco"),
+        (r"\bJSONL\b", "JSON L"),
+    )
+    for pattern, replacement in replacements:
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+    return {
+        "text": text,
+        "prepared": prepared,
+        "mode": "audio_quality",
+        "strategy": "minimal_functional_term_oralization",
+    }
 
 
 def adapt_plain_text(classified: dict[str, Any], verbalized: dict[str, Any]) -> dict[str, Any]:

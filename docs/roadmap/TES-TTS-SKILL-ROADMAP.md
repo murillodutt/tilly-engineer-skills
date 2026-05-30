@@ -36,14 +36,13 @@ durable cache, or proactive `speak`.
   avg RTF `0.3864`, package SHA starts `eafb9419`.
 - Long-read OmniVoice correction passed: 12 chunks played, `avg_rtf=0.2067`,
   `fallback_used=false`, monitor log under `tmp/**/runtime-logs`.
-- Audio audit loop started: preserved chunk text, WAV metrics, local Whisper
-  STT, and WER-style comparison show chunk 1 acceptable while longer mixed
-  technical chunks need targeted segmentation/rendering fixes.
+- Audio audit loop started: local Whisper/WER found mixed technical chunk
+  degradation; `audio_quality` smoke passed on the degraded chunk with
+  `WER=0.0727`, while human listening remains the final decision.
 
 ## Next Cut
-Use `scripts/tes_tts_audio_audit.py audit-session --stt` on preserved
-OmniVoice sessions, then iterate smaller chunks and mixed-language rendering
-until degraded chunks reach audible review quality.
+Use `audio_quality` in a live audible review, then decide whether it becomes
+the OmniVoice default or remains an explicit test mode.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.

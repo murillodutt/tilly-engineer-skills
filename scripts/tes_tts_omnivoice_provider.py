@@ -27,7 +27,7 @@ import time
 from typing import Any
 import zipfile
 
-from tes_tts_runtime_adapter import prepare_spoken_text
+from tes_tts_runtime_adapter import prepare_audio_quality_text, prepare_spoken_text
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -2585,6 +2585,8 @@ def normalize_ref_audio(source: Path, output: Path) -> None:
 
 
 def provider_text(source_text: str, locale: str, mode: str) -> dict[str, Any]:
+    if mode == "audio_quality":
+        return prepare_audio_quality_text(source_text, locale)
     prepared = prepare_spoken_text(source_text, locale)
     if mode == "spoken_text":
         text = prepared["spoken_text"]
@@ -3016,7 +3018,7 @@ def add_runtime_args(parser: argparse.ArgumentParser, *, ref_audio_required: boo
     )
     parser.add_argument(
         "--text-mode",
-        choices=["redacted_source", "spoken_text", "raw"],
+        choices=["redacted_source", "spoken_text", "audio_quality", "raw"],
         default="redacted_source",
     )
     parser.add_argument("--num-step", type=int)

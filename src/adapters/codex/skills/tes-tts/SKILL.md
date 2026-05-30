@@ -149,9 +149,9 @@ compatible TES intent alias if the host reports it as an invalid slash.
   roadmap, worktree, sandbox, GitHub Actions, Docker, Kubernetes, Node.js,
   TypeScript, Playwright, and MCP server.
 - Use request-local pronunciation hints for protected terms when the active
-  provider needs them. Prefer raw redacted source text for OmniVoice because
-  local evidence shows it handles mixed PT-BR technical speech better than
-  manual respelling.
+  provider needs them. Prefer raw redacted source text for OmniVoice by default.
+  For mixed technical chunks that degrade in audio audit, test
+  `--text-mode audio_quality`; promote it only after audible review.
 - For long text, split into sensible chunks rather than dropping content.
 
 ## Safety
