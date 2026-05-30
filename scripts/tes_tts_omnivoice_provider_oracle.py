@@ -18,6 +18,7 @@ import sys
 import tempfile
 import threading
 from typing import Any
+import wave
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -92,6 +93,37 @@ REQUIRED_SERVER_DRY_RUN_KEYS = {
     "play_requested",
     "request_shape",
     "runtime_dependency",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
+}
+REQUIRED_SERVER_LONG_DRY_RUN_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "mode",
+    "server_url",
+    "server_url_source",
+    "endpoint",
+    "api_key_env",
+    "api_key_present",
+    "model",
+    "voice",
+    "text_chars",
+    "chunk_count",
+    "chunk_chars",
+    "chunk_languages",
+    "language_mode",
+    "max_chunk_chars",
+    "output_dir",
+    "result_json",
+    "play_requested",
+    "combine_requested",
+    "inter_chunk_silence_ms",
+    "request_shape",
+    "runtime_dependency",
+    "fallback_used",
+    "provider_exclusive",
     "allows_install",
     "allows_download",
     "allows_global_config_write",
@@ -699,6 +731,16 @@ def validate_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
 
 def validate_server_route_command() -> list[str]:
     failures: list[str] = []
+
+    def wav_bytes() -> bytes:
+        buffer = io.BytesIO()
+        with wave.open(buffer, "wb") as handle:
+            handle.setnchannels(1)
+            handle.setsampwidth(2)
+            handle.setframerate(24000)
+            handle.writeframes(b"\x00\x00" * 2400)
+        return buffer.getvalue()
+
     with tempfile.TemporaryDirectory() as tmp_dir:
         root = Path(tmp_dir)
         output = root / "server.wav"
@@ -758,7 +800,64 @@ def validate_server_route_command() -> list[str]:
             if dry_payload.get(key) is not False:
                 failures.append(f"speak-server dry-run must keep {key}=false")
 
+        long_dry_completed = subprocess.run(
+            [
+                sys.executable,
+                str(PROVIDER_SCRIPT),
+                "speak-long-server",
+                "--server-url",
+                "http://127.0.0.1:9999",
+                "--text",
+                (
+                    "Primeiro bloco em PT-BR com ADR e API.\n\n"
+                    "English technical terms: JSON, YAML, HTTP, Node JS, TypeScript, Python, "
+                    "Open AI API, Trie, Aho Corasick, and thresholds.\n\n"
+                    "Segundo bloco em PT-BR para fechar."
+                ),
+                "--chunk-chars",
+                "120",
+                "--output-dir",
+                str(root / "server-long"),
+                "--combine",
+                "--dry-run",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if long_dry_completed.returncode != 0:
+            failures.append(f"speak-long-server dry-run returned unexpected exit code {long_dry_completed.returncode}")
+            return failures
+        try:
+            long_dry_payload = json.loads(long_dry_completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"speak-long-server dry-run did not emit JSON: {exc}")
+            return failures
+        missing = sorted(REQUIRED_SERVER_LONG_DRY_RUN_KEYS - set(long_dry_payload))
+        extra = sorted(set(long_dry_payload) - REQUIRED_SERVER_LONG_DRY_RUN_KEYS)
+        if missing:
+            failures.append(f"speak-long-server dry-run missing keys {missing}")
+        if extra:
+            failures.append(f"speak-long-server dry-run has extra keys {extra}")
+        if long_dry_payload.get("mode") != "product_server_long_read":
+            failures.append("speak-long-server dry-run mode drifted")
+        if long_dry_payload.get("chunk_languages") != ["pt", "en", "pt"]:
+            failures.append("speak-long-server must preserve PT/EN/PT chunk language plan")
+        if long_dry_payload.get("combine_requested") is not True:
+            failures.append("speak-long-server dry-run must report combine intent")
+        if "English technical terms" in long_dry_completed.stdout:
+            failures.append("speak-long-server dry-run leaked source text")
+        if long_dry_payload.get("fallback_used") is not False:
+            failures.append("speak-long-server dry-run fallback flag drifted")
+        if long_dry_payload.get("provider_exclusive") is not True:
+            failures.append("speak-long-server dry-run provider_exclusive flag drifted")
+        for key in ("allows_install", "allows_download", "allows_global_config_write"):
+            if long_dry_payload.get(key) is not False:
+                failures.append(f"speak-long-server dry-run must keep {key}=false")
+
         received: dict[str, Any] = {}
+        requests: list[dict[str, Any]] = []
 
         class Handler(http.server.BaseHTTPRequestHandler):
             def do_POST(self) -> None:  # noqa: N802 - stdlib handler API
@@ -767,7 +866,8 @@ def validate_server_route_command() -> list[str]:
                 received["path"] = self.path
                 received["authorization"] = self.headers.get("Authorization")
                 received["body"] = json.loads(body.decode("utf-8"))
-                audio = b"RIFFfake-server-wav"
+                requests.append({"path": self.path, "body": received["body"]})
+                audio = wav_bytes()
                 self.send_response(200)
                 self.send_header("Content-Type", "audio/wav")
                 self.send_header("Content-Length", str(len(audio)))
@@ -821,9 +921,9 @@ def validate_server_route_command() -> list[str]:
             failures.append("speak-server mock request should pass")
         if payload.get("mode") != "product_server_shortcut":
             failures.append("speak-server mock request mode drifted")
-        if payload.get("bytes") != len(b"RIFFfake-server-wav"):
+        if payload.get("bytes") != len(wav_bytes()):
             failures.append("speak-server mock request must report written bytes")
-        if output.read_bytes() != b"RIFFfake-server-wav":
+        if output.read_bytes() != wav_bytes():
             failures.append("speak-server did not write the response audio bytes")
         if received.get("path") != "/v1/audio/speech":
             failures.append("speak-server must POST to /v1/audio/speech")
@@ -837,9 +937,65 @@ def validate_server_route_command() -> list[str]:
                 failures.append("speak-server request body lost model or voice")
             if body.get("input") != "Teste real do TES TTS com JSON e TypeScript.":
                 failures.append("speak-server request body lost input text")
+
+        long_output_dir = root / "server-long-real"
+        with socketserver.TCPServer(("127.0.0.1", 0), Handler) as server:
+            port = server.server_address[1]
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(PROVIDER_SCRIPT),
+                    "speak-long-server",
+                    "--server-url",
+                    f"http://127.0.0.1:{port}",
+                    "--text",
+                    "Primeiro bloco com API.\n\nEnglish technical terms: JSON, TypeScript, and thresholds.",
+                    "--chunk-chars",
+                    "80",
+                    "--output-dir",
+                    str(long_output_dir),
+                    "--combine",
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            server.shutdown()
+            thread.join(timeout=2)
+        if completed.returncode != 0:
+            failures.append(f"speak-long-server mock request returned unexpected exit code {completed.returncode}")
+            return failures
+        try:
+            long_payload = json.loads(completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"speak-long-server mock request did not emit JSON: {exc}")
+            return failures
+        if long_payload.get("status") != "PASS":
+            failures.append("speak-long-server mock request should pass")
+        if long_payload.get("mode") != "product_server_long_read":
+            failures.append("speak-long-server mock request mode drifted")
+        if long_payload.get("completed_chunk_count", 0) < 2:
+            failures.append("speak-long-server mock request should process multiple chunks")
+        combined = long_payload.get("combined_audio")
+        if not isinstance(combined, dict) or combined.get("combined_status") != "PASS":
+            failures.append("speak-long-server mock request should write combined.wav")
+        if not (long_output_dir / "result.json").exists():
+            failures.append("speak-long-server must write result.json")
+        if not (long_output_dir / "combined.wav").exists():
+            failures.append("speak-long-server must write combined.wav when requested")
+        outputs = long_payload.get("outputs")
+        if not isinstance(outputs, list) or not outputs:
+            failures.append("speak-long-server must report chunk outputs")
+        elif any(item.get("audio_duration_seconds") is None for item in outputs):
+            failures.append("speak-long-server must measure WAV duration when server returns WAV")
         for key in ("allows_install", "allows_download", "allows_global_config_write"):
             if payload.get(key) is not False:
                 failures.append(f"speak-server mock request must keep {key}=false")
+            if long_payload.get(key) is not False:
+                failures.append(f"speak-long-server mock request must keep {key}=false")
     return failures
 
 

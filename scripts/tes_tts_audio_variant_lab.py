@@ -504,35 +504,57 @@ def synthesize_session(
     latency_profile: str,
     text_mode: str,
     provider_language: str,
+    provider_route: str,
+    server_url: str | None,
+    server_voice: str,
     combine: bool,
     inter_chunk_silence_ms: int,
     chunk_edge_silence_ms: int,
 ) -> dict[str, Any]:
     text = (session / "input.txt").read_text(encoding="utf-8")
-    command = [
-        "python3",
-        "scripts/tes_tts_omnivoice_provider.py",
-        "speak-long",
-        "--latency-profile",
-        latency_profile,
-        "--language",
-        provider_language,
-        "--chunk-chars",
-        str(chunk_chars),
-        "--text-mode",
-        text_mode,
-        "--monitor-heartbeat",
-        "3",
-        "--slow-chunk-ms",
-        "20000",
-        "--output-dir",
-        str(session),
-        "--text",
-        text,
-    ]
+    if provider_route == "server":
+        command = [
+            "python3",
+            "scripts/tes_tts_omnivoice_provider.py",
+            "speak-long-server",
+            "--language",
+            provider_language,
+            "--chunk-chars",
+            str(chunk_chars),
+            "--voice",
+            server_voice,
+            "--output-dir",
+            str(session),
+            "--text",
+            text,
+        ]
+        if server_url:
+            command.extend(["--server-url", server_url])
+    else:
+        command = [
+            "python3",
+            "scripts/tes_tts_omnivoice_provider.py",
+            "speak-long",
+            "--latency-profile",
+            latency_profile,
+            "--language",
+            provider_language,
+            "--chunk-chars",
+            str(chunk_chars),
+            "--text-mode",
+            text_mode,
+            "--monitor-heartbeat",
+            "3",
+            "--slow-chunk-ms",
+            "20000",
+            "--output-dir",
+            str(session),
+            "--text",
+            text,
+        ]
     if combine:
         command.extend(["--combine", "--inter-chunk-silence-ms", str(inter_chunk_silence_ms)])
-    if chunk_edge_silence_ms:
+    if provider_route != "server" and chunk_edge_silence_ms:
         command.extend(["--chunk-edge-silence-ms", str(chunk_edge_silence_ms)])
     result = run_command(command)
     try:
@@ -810,6 +832,9 @@ def command_run(args: argparse.Namespace) -> int:
                     latency_profile=args.latency_profile,
                     text_mode=text_mode,
                     provider_language=args.provider_language,
+                    provider_route=args.provider_route,
+                    server_url=args.server_url,
+                    server_voice=args.server_voice,
                     combine=args.combine,
                     inter_chunk_silence_ms=args.inter_chunk_silence_ms,
                     chunk_edge_silence_ms=args.chunk_edge_silence_ms,
@@ -843,6 +868,9 @@ def command_run(args: argparse.Namespace) -> int:
         "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
         "chunk_edge_silence_ms": args.chunk_edge_silence_ms,
         "provider_language": args.provider_language,
+        "provider_route": args.provider_route,
+        "server_url": args.server_url,
+        "server_voice": args.server_voice if args.provider_route == "server" else None,
         "stt_language": args.stt_language,
         "results": results,
         "ranked_results": rank_results(results),
@@ -1000,6 +1028,9 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--chunk-edge-silence-ms", type=int, default=0)
     run.add_argument("--latency-profile", default="fast")
     run.add_argument("--provider-language", default="pt")
+    run.add_argument("--provider-route", choices=["resident", "server"], default="resident")
+    run.add_argument("--server-url")
+    run.add_argument("--server-voice", default="default")
     run.add_argument("--stt-language", default="portuguese")
     run.set_defaults(func=command_run)
 

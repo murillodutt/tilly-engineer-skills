@@ -193,6 +193,60 @@ def server_audio_speech_endpoint(base_url: str) -> str:
     return f"{normalized}/v1/audio/speech"
 
 
+def server_request_body(args: argparse.Namespace, text: str) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "model": args.model,
+        "input": text,
+        "voice": args.voice,
+        "response_format": "wav",
+    }
+    if getattr(args, "speed", None) is not None:
+        payload["speed"] = args.speed
+    return payload
+
+
+def server_request_shape(args: argparse.Namespace) -> dict[str, Any]:
+    shape = server_request_body(args, "<redacted>")
+    shape["input"] = "<redacted>"
+    return shape
+
+
+def post_server_speech(
+    *,
+    endpoint: str,
+    body: dict[str, Any],
+    api_key_env: str,
+    timeout: float,
+) -> tuple[bytes, int, str | None, float]:
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "audio/wav,application/octet-stream,*/*",
+    }
+    api_key = os.environ.get(api_key_env)
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    request = urllib.request.Request(
+        endpoint,
+        data=json.dumps(body, ensure_ascii=False).encode("utf-8"),
+        headers=headers,
+        method="POST",
+    )
+    started = time.perf_counter()
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        audio = response.read()
+        content_type = response.headers.get("Content-Type")
+        status_code = getattr(response, "status", response.getcode())
+    return audio, status_code, content_type, round((time.perf_counter() - started) * 1000, 3)
+
+
+def wav_duration_seconds(path: Path) -> float | None:
+    try:
+        with wave.open(str(path), "rb") as handle:
+            return round(handle.getnframes() / handle.getframerate(), 3)
+    except (wave.Error, OSError, ZeroDivisionError):
+        return None
+
+
 def default_output_path(output: str | None) -> Path:
     if output:
         return Path(output)
@@ -2368,14 +2422,7 @@ def command_speak_server(args: argparse.Namespace) -> int:
     endpoint = server_audio_speech_endpoint(server_url)
     output = default_output_path(args.output)
     api_key_present = bool(os.environ.get(args.api_key_env))
-    payload_body = {
-        "model": args.model,
-        "input": args.text,
-        "voice": args.voice,
-        "response_format": "wav",
-    }
-    if args.speed is not None:
-        payload_body["speed"] = args.speed
+    payload_body = server_request_body(args, args.text)
     if args.dry_run:
         emit(
             {
@@ -2393,13 +2440,7 @@ def command_speak_server(args: argparse.Namespace) -> int:
                 "output": str(output),
                 "text_chars": len(args.text),
                 "play_requested": args.play,
-                "request_shape": {
-                    "model": args.model,
-                    "input": "<redacted>",
-                    "voice": args.voice,
-                    "response_format": "wav",
-                    "speed": args.speed,
-                },
+                "request_shape": server_request_shape(args),
                 "runtime_dependency": "optional_local_openai_compatible_http_server",
                 "allows_install": False,
                 "allows_download": False,
@@ -2409,25 +2450,13 @@ def command_speak_server(args: argparse.Namespace) -> int:
         return 0
 
     output.parent.mkdir(parents=True, exist_ok=True)
-    started = time.perf_counter()
-    headers = {
-        "Content-Type": "application/json",
-        "Accept": "audio/wav,application/octet-stream,*/*",
-    }
-    api_key = os.environ.get(args.api_key_env)
-    if api_key:
-        headers["Authorization"] = f"Bearer {api_key}"
-    request = urllib.request.Request(
-        endpoint,
-        data=json.dumps(payload_body, ensure_ascii=False).encode("utf-8"),
-        headers=headers,
-        method="POST",
-    )
     try:
-        with urllib.request.urlopen(request, timeout=args.timeout) as response:
-            audio = response.read()
-            content_type = response.headers.get("Content-Type")
-            status_code = getattr(response, "status", response.getcode())
+        audio, status_code, content_type, generation_ms = post_server_speech(
+            endpoint=endpoint,
+            body=payload_body,
+            api_key_env=args.api_key_env,
+            timeout=args.timeout,
+        )
     except urllib.error.URLError as exc:
         emit(
             {
@@ -2447,7 +2476,6 @@ def command_speak_server(args: argparse.Namespace) -> int:
         )
         return 2
     output.write_bytes(audio)
-    generation_ms = round((time.perf_counter() - started) * 1000, 3)
     playback: dict[str, Any] = {}
     status = "PASS"
     if args.play:
@@ -2481,6 +2509,187 @@ def command_speak_server(args: argparse.Namespace) -> int:
     if status == "PLAYBACK_FAILED":
         return 4
     return 0
+
+
+def command_speak_long_server(args: argparse.Namespace) -> int:
+    server_url, server_url_source = resolve_server_url(args.server_url)
+    endpoint = server_audio_speech_endpoint(server_url)
+    output_dir = default_long_read_dir(args.output_dir)
+    result_json = output_dir / "result.json"
+    chunk_plan = build_long_read_plan(args.text, max_chars=args.chunk_chars, language=args.language)
+    api_key_present = bool(os.environ.get(args.api_key_env))
+    if not chunk_plan:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "FAIL",
+                "version": VERSION,
+                "mode": "product_server_long_read",
+                "reason": "text produced no speakable chunks",
+                "runtime_dependency": "optional_local_openai_compatible_http_server",
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 1
+    if args.dry_run:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "DRY_RUN",
+                "version": VERSION,
+                "mode": "product_server_long_read",
+                "server_url": server_url,
+                "server_url_source": server_url_source,
+                "endpoint": endpoint,
+                "api_key_env": args.api_key_env,
+                "api_key_present": api_key_present,
+                "model": args.model,
+                "voice": args.voice,
+                "text_chars": len(args.text),
+                "chunk_count": len(chunk_plan),
+                "chunk_chars": [chunk["chars"] for chunk in chunk_plan],
+                "chunk_languages": [chunk["language"] for chunk in chunk_plan],
+                "language_mode": args.language,
+                "max_chunk_chars": args.chunk_chars,
+                "output_dir": str(output_dir),
+                "result_json": str(result_json),
+                "play_requested": args.play,
+                "combine_requested": args.combine,
+                "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
+                "request_shape": server_request_shape(args),
+                "runtime_dependency": "optional_local_openai_compatible_http_server",
+                "fallback_used": False,
+                "provider_exclusive": True,
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 0
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    outputs: list[dict[str, Any]] = []
+    playback_results: list[dict[str, Any]] = []
+    status = "PASS"
+    error: str | None = None
+    total_started = time.perf_counter()
+    for index, chunk in enumerate(chunk_plan, start=1):
+        chunk_id = str(chunk["id"])
+        output = output_dir / f"{index:03d}-{chunk_id}.wav"
+        try:
+            audio, status_code, content_type, generation_ms = post_server_speech(
+                endpoint=endpoint,
+                body=server_request_body(args, str(chunk["text"])),
+                api_key_env=args.api_key_env,
+                timeout=args.timeout,
+            )
+        except urllib.error.URLError as exc:
+            status = "SERVER_UNAVAILABLE"
+            error = str(exc.reason if hasattr(exc, "reason") else exc)
+            break
+        output.write_bytes(audio)
+        duration = wav_duration_seconds(output)
+        outputs.append(
+            {
+                "provider": "omnivoice",
+                "status": "PASS",
+                "version": VERSION,
+                "mode": "server_long_read_chunk",
+                "id": chunk_id,
+                "language": chunk["language"],
+                "output": str(output),
+                "http_status": status_code,
+                "content_type": content_type,
+                "bytes": len(audio),
+                "generation_ms": generation_ms,
+                "audio_duration_seconds": duration,
+                "rtf": round(generation_ms / 1000 / duration, 4) if duration else None,
+            }
+        )
+        if args.play and not args.combine:
+            playback = playback_audio(output)
+            playback_item = {"id": chunk_id, "output": str(output), **playback}
+            playback_results.append(playback_item)
+            if playback.get("playback_status") != "played":
+                status = "PLAYBACK_FAILED"
+                error = f"{chunk_id} playback failed"
+                break
+
+    combined_result: dict[str, Any] | None = None
+    if args.combine and outputs and status == "PASS":
+        combined_result = combine_wav_files(
+            [Path(item["output"]) for item in outputs if isinstance(item.get("output"), str)],
+            output_dir / "combined.wav",
+            silence_ms=args.inter_chunk_silence_ms,
+        )
+        if combined_result.get("combined_status") != "PASS":
+            status = "COMBINE_FAILED"
+            error = str(combined_result.get("reason") or "combined WAV creation failed")
+        elif args.play:
+            playback = playback_audio(Path(str(combined_result["combined_output"])))
+            playback_item = {"id": "combined", "output": combined_result["combined_output"], **playback}
+            playback_results.append(playback_item)
+            if playback.get("playback_status") != "played":
+                status = "PLAYBACK_FAILED"
+                error = "combined playback failed"
+
+    duration_values = [
+        item.get("audio_duration_seconds") for item in outputs if isinstance(item.get("audio_duration_seconds"), (int, float))
+    ]
+    generation_values = [item.get("generation_ms") for item in outputs if isinstance(item.get("generation_ms"), (int, float))]
+    rtf_values = [item.get("rtf") for item in outputs if isinstance(item.get("rtf"), (int, float))]
+    payload = {
+        "provider": "omnivoice",
+        "status": status,
+        "version": VERSION,
+        "mode": "product_server_long_read",
+        "server_url": server_url,
+        "server_url_source": server_url_source,
+        "endpoint": endpoint,
+        "model": args.model,
+        "voice": args.voice,
+        "output_dir": str(output_dir),
+        "result_json": str(result_json),
+        "text_chars": len(args.text),
+        "chunk_count": len(chunk_plan),
+        "completed_chunk_count": len(outputs),
+        "language_mode": args.language,
+        "chunk_languages": [chunk["language"] for chunk in chunk_plan],
+        "chunk_plan": [
+            {"id": chunk["id"], "chars": chunk["chars"], "language": chunk["language"]}
+            for chunk in chunk_plan
+        ],
+        "play_requested": args.play,
+        "combine_requested": args.combine,
+        "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
+        "combined_audio": combined_result,
+        "outputs": outputs,
+        "playback_results": playback_results,
+        "summary": {
+            "chunk_count": len(chunk_plan),
+            "pass_count": sum(1 for item in outputs if item.get("status") == "PASS"),
+            "failed_count": sum(1 for item in outputs if item.get("status") != "PASS"),
+            "total_audio_duration_seconds": round(sum(duration_values), 3) if duration_values else None,
+            "total_generation_ms": round(sum(generation_values), 3) if generation_values else None,
+            "avg_rtf": round(sum(rtf_values) / len(rtf_values), 4) if rtf_values else None,
+            "wall_ms": round((time.perf_counter() - total_started) * 1000, 3),
+            "provider_timing_scope": "server_long_read_local_optional_environment_only",
+        },
+        "runtime_dependency": "optional_local_openai_compatible_http_server",
+        "fallback_used": False,
+        "provider_exclusive": True,
+        "error": error,
+        "allows_install": False,
+        "allows_download": False,
+        "allows_global_config_write": False,
+    }
+    result_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    emit(payload)
+    if status == "PLAYBACK_FAILED":
+        return 4
+    return 0 if status == "PASS" else 2 if status == "SERVER_UNAVAILABLE" else 1
 
 
 def command_bench(args: argparse.Namespace) -> int:
@@ -3459,6 +3668,23 @@ def build_parser() -> argparse.ArgumentParser:
     speak_server.add_argument("--play", action="store_true")
     speak_server.add_argument("--dry-run", action="store_true")
     speak_server.set_defaults(func=command_speak_server)
+
+    speak_long_server = subparsers.add_parser("speak-long-server")
+    speak_long_server.add_argument("--server-url")
+    speak_long_server.add_argument("--api-key-env", default=ENV_SERVER_API_KEY)
+    speak_long_server.add_argument("--model", default="omnivoice")
+    speak_long_server.add_argument("--voice", default="default")
+    speak_long_server.add_argument("--speed", type=float)
+    speak_long_server.add_argument("--language", default=AUTO_LANGUAGE)
+    speak_long_server.add_argument("--text", required=True)
+    speak_long_server.add_argument("--output-dir")
+    speak_long_server.add_argument("--chunk-chars", type=int, default=420)
+    speak_long_server.add_argument("--timeout", type=float, default=180.0)
+    speak_long_server.add_argument("--combine", action="store_true")
+    speak_long_server.add_argument("--inter-chunk-silence-ms", type=int, default=350)
+    speak_long_server.add_argument("--play", action="store_true")
+    speak_long_server.add_argument("--dry-run", action="store_true")
+    speak_long_server.set_defaults(func=command_speak_long_server)
 
     speak_long = subparsers.add_parser("speak-long")
     add_runtime_args(speak_long, ref_audio_required=False)
