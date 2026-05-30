@@ -1019,6 +1019,13 @@ documents:
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-PSO-005-oracle-partition.md
     id: roadmap.goal_prompt_tes_tts_pso_005_oracle_partition
     class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, runtime authors, provider authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-PSO-006-timing-benchmark-cleanup.md
+    id: roadmap.goal_prompt_tes_tts_pso_006_timing_benchmark_cleanup
+    class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, runtime authors, provider authors, validation authors, and execution agents
     source_of_truth: false

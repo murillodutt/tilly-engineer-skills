@@ -2872,6 +2872,23 @@ def validate_fixtures(fixtures: dict[str, Any]) -> list[str]:
     return failures
 
 
+def add_partition(
+    partitions: list[dict[str, Any]],
+    *,
+    name: str,
+    focus: str,
+    failures: list[str],
+) -> None:
+    partitions.append(
+        {
+            "name": name,
+            "focus": focus,
+            "status": "FAIL" if failures else "PASS",
+            "failure_count": len(failures),
+        }
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--self-test", action="store_true")
@@ -2880,10 +2897,19 @@ def main() -> int:
         parser.error("only --self-test is supported")
 
     failures: list[str] = []
-    failures.extend(validate_source_imports())
-    failures.extend(validate_no_reference_text_logging())
+    partitions: list[dict[str, Any]] = []
+
+    source_failures = validate_source_imports()
+    source_failures.extend(validate_no_reference_text_logging())
+    failures.extend(source_failures)
+    add_partition(
+        partitions,
+        name="source_safety",
+        focus="top-level optional imports and reference-text logging",
+        failures=source_failures,
+    )
+
     probe, probe_failures = run_probe()
-    failures.extend(probe_failures)
     (
         status_payload,
         dry_payload,
@@ -2894,30 +2920,82 @@ def main() -> int:
         package_payload,
         shortcut_failures,
     ) = run_status_and_dry_run()
-    failures.extend(shortcut_failures)
-    failures.extend(validate_status_payload(status_payload))
-    failures.extend(validate_dry_run_payload(dry_payload))
-    failures.extend(validate_server_route_command())
-    failures.extend(validate_long_read_dry_run_payload(long_read_payload))
-    failures.extend(validate_bench_dry_run_payload(bench_payload))
-    failures.extend(validate_profile_review_dry_run_payload(profile_review_payload))
-    failures.extend(validate_warm_cache_dry_run_command())
-    failures.extend(validate_session_dry_run_command())
-    failures.extend(validate_auto_latency_profile_selection())
-    failures.extend(validate_live_smoke_dry_run_command())
-    failures.extend(validate_jsonl_emitter())
-    failures.extend(validate_short_speak_in_process_boundary())
-    failures.extend(validate_review_dry_run_payload(review_payload))
-    failures.extend(validate_package_dry_run_payload(package_payload))
-    failures.extend(validate_review_html_scorecard())
-    failures.extend(validate_profile_review_html_scorecard())
-    failures.extend(validate_review_package_zip())
-    failures.extend(validate_review_decision_command())
-    failures.extend(validate_live_smoke_review_decision_command())
-    failures.extend(validate_profile_review_decision_command())
-    failures.extend(validate_product_status_command())
-    failures.extend(validate_candidate_command())
-    failures.extend(validate_fixtures(load_json(FIXTURE_PATH)))
+
+    status_failures = list(probe_failures)
+    status_failures.extend(validate_status_payload(status_payload))
+    failures.extend(status_failures)
+    add_partition(
+        partitions,
+        name="provider_status_probe",
+        focus="optional provider status and setup posture",
+        failures=status_failures,
+    )
+
+    collection_failures = list(shortcut_failures)
+    failures.extend(collection_failures)
+    add_partition(
+        partitions,
+        name="dry_run_payload_collection",
+        focus="shared dry-run payload collection without synthesis",
+        failures=collection_failures,
+    )
+
+    active_failures: list[str] = []
+    active_failures.extend(validate_dry_run_payload(dry_payload))
+    active_failures.extend(validate_long_read_dry_run_payload(long_read_payload))
+    active_failures.extend(validate_warm_cache_dry_run_command())
+    active_failures.extend(validate_session_dry_run_command())
+    active_failures.extend(validate_auto_latency_profile_selection())
+    active_failures.extend(validate_live_smoke_dry_run_command())
+    active_failures.extend(validate_jsonl_emitter())
+    active_failures.extend(validate_short_speak_in_process_boundary())
+    failures.extend(active_failures)
+    add_partition(
+        partitions,
+        name="active_direct_kernel",
+        focus="direct/resident product path, resident session, cache, and short speak boundary",
+        failures=active_failures,
+    )
+
+    server_failures = validate_server_route_command()
+    failures.extend(server_failures)
+    add_partition(
+        partitions,
+        name="legacy_server_compatibility",
+        focus="server commands retained only as legacy/lab compatibility with safety metadata",
+        failures=server_failures,
+    )
+
+    packaging_failures: list[str] = []
+    packaging_failures.extend(validate_bench_dry_run_payload(bench_payload))
+    packaging_failures.extend(validate_profile_review_dry_run_payload(profile_review_payload))
+    packaging_failures.extend(validate_review_dry_run_payload(review_payload))
+    packaging_failures.extend(validate_package_dry_run_payload(package_payload))
+    packaging_failures.extend(validate_review_html_scorecard())
+    packaging_failures.extend(validate_profile_review_html_scorecard())
+    packaging_failures.extend(validate_review_package_zip())
+    packaging_failures.extend(validate_review_decision_command())
+    packaging_failures.extend(validate_live_smoke_review_decision_command())
+    packaging_failures.extend(validate_profile_review_decision_command())
+    packaging_failures.extend(validate_product_status_command())
+    packaging_failures.extend(validate_candidate_command())
+    failures.extend(packaging_failures)
+    add_partition(
+        partitions,
+        name="dry_run_packaging",
+        focus="benchmark, review, package, candidate, and decision surfaces",
+        failures=packaging_failures,
+    )
+
+    fixture_failures = validate_fixtures(load_json(FIXTURE_PATH))
+    failures.extend(fixture_failures)
+    add_partition(
+        partitions,
+        name="fixture_contract",
+        focus="optional OmniVoice benchmark fixture contract",
+        failures=fixture_failures,
+    )
+
     print(
         json.dumps(
             {
@@ -2933,6 +3011,7 @@ def main() -> int:
                 "profile_review_dry_run": profile_review_payload.get("status") if profile_review_payload else None,
                 "review_dry_run": review_payload.get("status") if review_payload else None,
                 "package_dry_run": package_payload.get("status") if package_payload else None,
+                "partitions": partitions,
                 "failures": failures,
             },
             indent=2,

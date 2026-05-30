@@ -30,20 +30,17 @@ durable conversion cache, or proactive `speak`.
 - Version/release/sync/push/tag/publish need separate approval.
 
 ## Evidence
-- Maintainer rating: OmniVoice cloned voice `9.5`; sealed auto profile is
-  `fast`; latest live-smoke package passed with avg RTF `0.3864`.
-- Direct/resident long-read recipe `20260530-190552-healthy-reference-read`
-  was human-rated 7.5/10: `language=en`, `quality`, 420-char chunks,
-  combined WAV, 450 ms inter-chunk silence.
+- OmniVoice cloned voice reached maintainer rating `9.5`; direct/resident
+  recipe `20260530-190552-healthy-reference-read` was rated 7.5/10.
 - Python efficiency analysis targets provider/lab monoliths, not text prep.
 - Direct voice prompt cache is permitted only as protected local `tmp/**`
   runtime state, never as committed or shared artifact.
-- PSO-004 split audio-lab metadata: direct/resident runs are marked as
-  `active_direct_resident_audio_recipe`; server runs are marked as
-  `legacy_server_audio_experiment`. No audio was generated.
+- PSO-005 partitioned provider oracle checks across source safety, provider
+  status, active direct kernel, legacy server compatibility, dry-run packaging,
+  and fixture contract. No audio was generated.
 
 ## Next Cut
-Next: PSO-005 oracle partition. The exact authority pointer is in
+Next: PSO-006 timing and benchmark cleanup. The exact authority pointer is in
 the registry. Keep `tmp/**` artifacts out of commits.
 
 ## Maintenance Rules
