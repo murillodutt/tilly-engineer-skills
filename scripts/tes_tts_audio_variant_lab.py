@@ -26,6 +26,25 @@ DEFAULT_SOURCE_SESSION = (
 DEFAULT_OUTPUT_ROOT = ROOT / "tmp/tes-tts-omnivoice-provider/audio-variant-lab"
 VERSION = "0.3.147"
 MIN_CHUNK_CHARS = 80
+SERVER_CONTROL_PRESETS: dict[str, dict[str, Any]] = {
+    "manual": {},
+    "omnivoice_server_fast_nonstream": {
+        "instructions": "Leia naturalmente. Preserve termos tecnicos em ingles sem traduzir.",
+        "stream": False,
+        "num_step": 16,
+    },
+    "omnivoice_server_quality_nonstream": {
+        "instructions": "Leia em PT-BR natural. Quando o bloco estiver em ingles, use pronuncia inglesa natural.",
+        "stream": False,
+        "num_step": 32,
+    },
+    "vllm_omni_customvoice_auto": {
+        "instructions": "Use natural conversational speech; preserve English technical terms as English.",
+        "task_type": "CustomVoice",
+        "max_new_tokens": 2048,
+        "stream": False,
+    },
+}
 
 
 def safe_stem(value: str) -> str:
@@ -619,6 +638,29 @@ def discovered_preferred_voice(server_preflight: dict[str, Any] | None) -> str |
     return value if isinstance(value, str) and value else None
 
 
+def server_control_profiles(args: argparse.Namespace) -> list[dict[str, Any]]:
+    names = args.server_control_preset or ["manual"]
+    profiles: list[dict[str, Any]] = []
+    for name in names:
+        if name not in SERVER_CONTROL_PRESETS:
+            raise ValueError(f"unknown server control preset: {name}")
+        profile = {"name": name, **SERVER_CONTROL_PRESETS[name]}
+        if args.server_speaker:
+            profile["speaker"] = args.server_speaker
+        if args.server_instructions:
+            profile["instructions"] = args.server_instructions
+        if args.server_task_type:
+            profile["task_type"] = args.server_task_type
+        if args.server_max_new_tokens is not None:
+            profile["max_new_tokens"] = args.server_max_new_tokens
+        if args.server_stream is not None:
+            profile["stream"] = args.server_stream
+        if args.server_num_step is not None:
+            profile["num_step"] = args.server_num_step
+        profiles.append(profile)
+    return profiles
+
+
 def audit_session(session: Path, *, stt: bool, audit_combined: bool, stt_language: str) -> dict[str, Any]:
     command = [
         "python3",
@@ -690,6 +732,7 @@ def rank_results(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
             {
                 "source_chunk_id": result.get("source_chunk_id"),
                 "variant": result.get("variant"),
+                "server_control_preset": result.get("server_control_preset"),
                 "text_mode": result.get("text_mode"),
                 "session": result.get("session"),
                 "status": summary.get("status") or result.get("synthesize_status"),
@@ -757,6 +800,7 @@ def write_review_html(output_root: Path, payload: dict[str, Any]) -> Path:
             f"<h2>{html.escape(str(result['source_chunk_id']))} / {html.escape(result['variant'])}</h2>"
             "<dl>"
             f"<dt>Status</dt><dd>{html.escape(str(summary.get('status', 'not audited')))}</dd>"
+            f"<dt>Server preset</dt><dd>{html.escape(str(result.get('server_control_preset') or 'none'))}</dd>"
             f"<dt>Text mode</dt><dd>{html.escape(str(result.get('text_mode')))}</dd>"
             f"<dt>Max WER</dt><dd>{html.escape(str(summary.get('max_wer')))}</dd>"
             f"<dt>Min similarity</dt><dd>{html.escape(str(summary.get('min_similarity')))}</dd>"
@@ -775,6 +819,7 @@ def write_review_html(output_root: Path, payload: dict[str, Any]) -> Path:
     ranked = "\n".join(
         "<li>"
         f"{html.escape(item['variant'])}: status={html.escape(str(item['status']))}, "
+        f"server={html.escape(str(item.get('server_control_preset') or 'none'))}, "
         f"WER={html.escape(str(item['max_wer']))}, "
         f"similarity={html.escape(str(item['min_similarity']))}, "
         f"text_mode={html.escape(str(item.get('text_mode')))}"
@@ -847,6 +892,7 @@ def command_run(args: argparse.Namespace) -> int:
         "technical_oral_ptbr_small",
         "pause_newlines",
     ]
+    control_profiles = server_control_profiles(args) if args.provider_route == "server" else [{"name": "resident"}]
 
     server_preflight: dict[str, Any] | None = None
     if args.synthesize and args.provider_route == "server":
@@ -870,6 +916,7 @@ def command_run(args: argparse.Namespace) -> int:
                 "combine": args.combine,
                 "provider_route": args.provider_route,
                 "provider_language": args.provider_language,
+                "server_control_presets": [str(profile["name"]) for profile in control_profiles],
                 "server_url": args.server_url,
                 "server_health_path": args.server_health_path,
                 "server_voice": args.server_voice or "default",
@@ -918,57 +965,62 @@ def command_run(args: argparse.Namespace) -> int:
             audit_text = plan["audit_text"]
             chunk_chars = plan["chunk_chars"]
             text_mode = plan["text_mode"]
-            session = write_variant_session(
-                output_root,
-                source_id=str(source_id),
-                variant=variant,
-                text=variant_text,
-                audit_text=audit_text,
-                chunk_chars=chunk_chars,
-                text_mode=text_mode,
-            )
-            entry: dict[str, Any] = {
-                "source_chunk_id": source_id,
-                "variant": variant,
-                "text_mode": text_mode,
-                "session": str(session),
-                "chunk_chars": chunk_chars,
-                "source_chars": len(source_text),
-                "variant_chars": len(variant_text),
-            }
-            if args.synthesize:
-                synth = synthesize_session(
-                    session,
+            for control_profile in control_profiles:
+                profile_name = str(control_profile["name"])
+                session_variant = variant if profile_name in {"manual", "resident"} else f"{variant}--{profile_name}"
+                session = write_variant_session(
+                    output_root,
+                    source_id=str(source_id),
+                    variant=session_variant,
+                    text=variant_text,
+                    audit_text=audit_text,
                     chunk_chars=chunk_chars,
-                    latency_profile=args.latency_profile,
                     text_mode=text_mode,
-                    provider_language=args.provider_language,
-                    provider_route=args.provider_route,
-                    server_url=args.server_url,
-                    server_voice=resolved_server_voice,
-                    server_speaker=args.server_speaker,
-                    server_instructions=args.server_instructions,
-                    server_task_type=args.server_task_type,
-                    server_max_new_tokens=args.server_max_new_tokens,
-                    server_stream=args.server_stream,
-                    server_num_step=args.server_num_step,
-                    combine=args.combine,
-                    inter_chunk_silence_ms=args.inter_chunk_silence_ms,
-                    chunk_edge_silence_ms=args.chunk_edge_silence_ms,
                 )
-                entry["synthesize_returncode"] = synth["returncode"]
-                entry["synthesize_status"] = (synth.get("json") or {}).get("status")
-                entry["combined_audio"] = (synth.get("json") or {}).get("combined_audio")
-            if args.audit:
-                audit = audit_session(
-                    session,
-                    stt=args.stt,
-                    audit_combined=args.combine,
-                    stt_language=args.stt_language,
-                )
-                entry["audit_returncode"] = audit["returncode"]
-                entry["audit_summary"] = summarize_audit(audit.get("audit"))
-            results.append(entry)
+                entry: dict[str, Any] = {
+                    "source_chunk_id": source_id,
+                    "variant": variant,
+                    "session_variant": session_variant,
+                    "server_control_preset": profile_name if args.provider_route == "server" else None,
+                    "text_mode": text_mode,
+                    "session": str(session),
+                    "chunk_chars": chunk_chars,
+                    "source_chars": len(source_text),
+                    "variant_chars": len(variant_text),
+                }
+                if args.synthesize:
+                    synth = synthesize_session(
+                        session,
+                        chunk_chars=chunk_chars,
+                        latency_profile=args.latency_profile,
+                        text_mode=text_mode,
+                        provider_language=args.provider_language,
+                        provider_route=args.provider_route,
+                        server_url=args.server_url,
+                        server_voice=resolved_server_voice,
+                        server_speaker=control_profile.get("speaker"),
+                        server_instructions=control_profile.get("instructions"),
+                        server_task_type=control_profile.get("task_type"),
+                        server_max_new_tokens=control_profile.get("max_new_tokens"),
+                        server_stream=control_profile.get("stream"),
+                        server_num_step=control_profile.get("num_step"),
+                        combine=args.combine,
+                        inter_chunk_silence_ms=args.inter_chunk_silence_ms,
+                        chunk_edge_silence_ms=args.chunk_edge_silence_ms,
+                    )
+                    entry["synthesize_returncode"] = synth["returncode"]
+                    entry["synthesize_status"] = (synth.get("json") or {}).get("status")
+                    entry["combined_audio"] = (synth.get("json") or {}).get("combined_audio")
+                if args.audit:
+                    audit = audit_session(
+                        session,
+                        stt=args.stt,
+                        audit_combined=args.combine,
+                        stt_language=args.stt_language,
+                    )
+                    entry["audit_returncode"] = audit["returncode"]
+                    entry["audit_summary"] = summarize_audit(audit.get("audit"))
+                results.append(entry)
 
     payload = {
         "schema": "tes-tts-audio-variant-lab@1",
@@ -986,6 +1038,7 @@ def command_run(args: argparse.Namespace) -> int:
         "chunk_edge_silence_ms": args.chunk_edge_silence_ms,
         "provider_language": args.provider_language,
         "provider_route": args.provider_route,
+        "server_control_presets": [str(profile["name"]) for profile in control_profiles] if args.provider_route == "server" else [],
         "server_url": args.server_url,
         "server_health_path": args.server_health_path if args.provider_route == "server" else None,
         "server_preflight": server_preflight if args.provider_route == "server" and args.synthesize else None,
@@ -1053,6 +1106,22 @@ def command_self_test(_args: argparse.Namespace) -> int:
         failures.append("JSON hyphen transform drifted")
     if build_variant_plan(text, "audio_quality_text_mode")["text_mode"] != "audio_quality":
         failures.append("audio_quality text mode plan drifted")
+    profile_args = argparse.Namespace(
+        server_control_preset=["omnivoice_server_fast_nonstream", "vllm_omni_customvoice_auto"],
+        server_speaker="felipe-clone",
+        server_instructions=None,
+        server_task_type=None,
+        server_max_new_tokens=None,
+        server_stream=None,
+        server_num_step=None,
+    )
+    profiles = server_control_profiles(profile_args)
+    if [profile["name"] for profile in profiles] != ["omnivoice_server_fast_nonstream", "vllm_omni_customvoice_auto"]:
+        failures.append("server preset ordering drifted")
+    if profiles[0].get("speaker") != "felipe-clone" or profiles[0].get("num_step") != 16:
+        failures.append("server preset merge drifted")
+    if profiles[1].get("task_type") != "CustomVoice" or profiles[1].get("max_new_tokens") != 2048:
+        failures.append("vLLM server preset drifted")
     paused = pause_newlines(text)
     if "\n\n" not in paused:
         failures.append("pause newline transform did not add paragraph boundary")
@@ -1234,6 +1303,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--provider-route", choices=["resident", "server"], default="resident")
     run.add_argument("--server-url")
     run.add_argument("--server-voice")
+    run.add_argument("--server-control-preset", action="append", choices=sorted(SERVER_CONTROL_PRESETS))
     run.add_argument("--server-speaker")
     run.add_argument("--server-instructions")
     run.add_argument("--server-task-type")
