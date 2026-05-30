@@ -440,6 +440,124 @@ def write_benchmark_review(
     return {"result_json": str(result_json), "review_html": str(review_html)}
 
 
+def write_profile_review(
+    *,
+    payload: dict[str, Any],
+    cases_path: Path,
+    output_dir: Path,
+    locale: str,
+) -> dict[str, str]:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    result_json = output_dir / "result.json"
+    review_html = output_dir / "review.html"
+    payload["result_json"] = str(result_json)
+    payload["review_html"] = str(review_html)
+    result_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    cases_by_id = {str(case.get("id")): case for case in load_text_cases(cases_path)}
+    outputs_by_case: dict[str, list[dict[str, Any]]] = {}
+    for item in payload.get("outputs", []):
+        if isinstance(item, dict):
+            outputs_by_case.setdefault(str(item.get("id", "")), []).append(item)
+
+    sections: list[str] = []
+    for case_id, items in outputs_by_case.items():
+        case = cases_by_id.get(case_id, {})
+        source = html.escape(redacted_case_text(case, locale))
+        cards: list[str] = []
+        for item in sorted(items, key=lambda value: str(value.get("latency_profile", ""))):
+            output = item.get("output")
+            audio_src = ""
+            if isinstance(output, str):
+                audio_src = html.escape(str(Path(output).resolve().relative_to(output_dir.resolve())))
+            profile = html.escape(str(item.get("latency_profile")))
+            cards.append(
+                "\n".join(
+                    [
+                        f"<article class=\"profile\" data-case-id=\"{html.escape(case_id)}\" data-profile=\"{profile}\">",
+                        f"<h3>{profile}</h3>",
+                        f"<audio controls src=\"{audio_src}\"></audio>",
+                        "<dl>",
+                        f"<dt>RTF</dt><dd>{html.escape(str(item.get('rtf')))}</dd>",
+                        f"<dt>Duration</dt><dd>{html.escape(str(item.get('audio_duration_seconds')))}s</dd>",
+                        f"<dt>Generation</dt><dd>{html.escape(str(item.get('generation_ms')))}ms</dd>",
+                        f"<dt>Steps</dt><dd>{html.escape(str(item.get('num_step')))}</dd>",
+                        "</dl>",
+                        "<label>Nota <input data-score=\"score\" type=\"number\" min=\"0\" max=\"10\" step=\"0.5\" placeholder=\"0-10\"></label>",
+                        "<label>Notas <textarea data-score=\"notes\" rows=\"3\" placeholder=\"pronuncia, naturalidade, termos tecnicos\"></textarea></label>",
+                        "</article>",
+                    ]
+                )
+            )
+        sections.append(
+            "\n".join(
+                [
+                    f"<section class=\"case\" data-case-id=\"{html.escape(case_id)}\">",
+                    f"<h2>{html.escape(case_id)}</h2>",
+                    f"<p>{source}</p>",
+                    "<div class=\"profiles\">",
+                    *cards,
+                    "</div>",
+                    "</section>",
+                ]
+            )
+        )
+
+    summary = payload.get("benchmark_summary", {})
+    html_text = "\n".join(
+        [
+            "<!doctype html>",
+            "<html lang=\"pt-BR\">",
+            "<head>",
+            "<meta charset=\"utf-8\">",
+            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+            "<title>TES TTS OmniVoice Profile Review</title>",
+            "<style>",
+            "body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:32px;line-height:1.45;color:#1f2933;background:#f7f8fa}",
+            "main{max-width:1120px;margin:0 auto}.case{background:white;border:1px solid #d9dee7;border-radius:8px;padding:18px;margin:18px 0}",
+            ".profiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}.profile{border:1px solid #d9dee7;border-radius:8px;padding:14px;background:#fbfcfe}",
+            "audio{width:100%;margin:8px 0 12px}dl{display:grid;grid-template-columns:110px 1fr;gap:4px 10px}dt{font-weight:700}dd{margin:0}textarea,input{box-sizing:border-box;width:100%;margin-top:4px}",
+            ".actions{position:sticky;top:0;background:#111827;color:white;border-radius:8px;padding:14px 16px;margin:18px 0;z-index:1}.actions button{margin:4px 8px 4px 0;padding:8px 12px;border:0;border-radius:6px;background:#e5e7eb;color:#111827;font-weight:700;cursor:pointer}",
+            "</style>",
+            "</head>",
+            f"<body data-result-json=\"{html.escape(str(result_json))}\">",
+            "<main>",
+            "<h1>TES TTS OmniVoice Profile Review</h1>",
+            f"<p>Profiles: {html.escape(', '.join(str(item) for item in payload.get('profiles', [])))}. Timing scope: {html.escape(str(summary.get('provider_timing_scope')))}.</p>",
+            "<dl>",
+            f"<dt>Cases</dt><dd>{html.escape(str(summary.get('case_count')))}</dd>",
+            f"<dt>Outputs</dt><dd>{html.escape(str(summary.get('output_count')))}</dd>",
+            f"<dt>Total generation</dt><dd>{html.escape(str(summary.get('total_generation_ms')))}ms</dd>",
+            "</dl>",
+            "<section class=\"actions\" aria-label=\"Review actions\">",
+            "<strong id=\"decision\">PENDING_REVIEW</strong>",
+            "<div>",
+            "<button type=\"button\" id=\"saveReview\">Salvar no navegador</button>",
+            "<button type=\"button\" id=\"exportReview\">Exportar JSON</button>",
+            "<button type=\"button\" id=\"copyReview\">Copiar resumo</button>",
+            "</div>",
+            "</section>",
+            *sections,
+            "<script>",
+            "const key='tes-tts-omnivoice-profile-review:'+document.body.dataset.resultJson;",
+            "function n(v){if(v==='')return null;const x=Number(v);return Number.isFinite(x)?x:null}",
+            "function collect(){const comparisons=[...document.querySelectorAll('.profile')].map(p=>{const data={};p.querySelectorAll('[data-score]').forEach(el=>{data[el.dataset.score]=el.tagName==='TEXTAREA'?el.value:n(el.value)});return {id:p.dataset.caseId,profile:p.dataset.profile,scores:data};});const scored=comparisons.filter(c=>typeof c.scores.score==='number');let decision='PENDING_REVIEW';if(scored.length===comparisons.length&&comparisons.length){const min=Math.min(...scored.map(c=>c.scores.score));decision=min>=8?'AUDIO_CANDIDATE':min>=7?'NEEDS_TARGETED_FIX':'NEEDS_FIX';}const cases=comparisons.map(c=>({id:`${c.id}/${c.profile}`,scores:c.scores}));return {schema:'tes-tts-omnivoice-profile-review@1',created_at:new Date().toISOString(),result_json:document.body.dataset.resultJson,decision,comparisons,cases};}",
+            "function render(){document.getElementById('decision').textContent=collect().decision}",
+            "document.addEventListener('input',render);",
+            "document.getElementById('saveReview').onclick=()=>{localStorage.setItem(key,JSON.stringify(collect()));render()};",
+            "document.getElementById('exportReview').onclick=()=>{const blob=new Blob([JSON.stringify(collect(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tes-tts-omnivoice-profile-review.json';a.click();URL.revokeObjectURL(a.href)};",
+            "document.getElementById('copyReview').onclick=async()=>{const data=collect();const text=`${data.decision}: ${data.comparisons.map(c=>`${c.id}/${c.profile}=${c.scores.score??'?'}`).join('; ')}`;if(navigator.clipboard)await navigator.clipboard.writeText(text)};",
+            "try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(saved&&Array.isArray(saved.comparisons)){saved.comparisons.forEach(item=>{const p=document.querySelector(`.profile[data-case-id=\"${CSS.escape(item.id)}\"][data-profile=\"${CSS.escape(item.profile)}\"]`);if(!p)return;Object.entries(item.scores||{}).forEach(([k,v])=>{const el=p.querySelector(`[data-score=\"${k}\"]`);if(el)el.value=v??''})})}}catch{}render();",
+            "</script>",
+            "</main>",
+            "</body>",
+            "</html>",
+        ]
+    )
+    review_html.write_text(html_text, encoding="utf-8")
+    return {"result_json": str(result_json), "review_html": str(review_html)}
+
+
 def resolve_review_html(path: str | None, benchmark_dir: str | None) -> tuple[Path | None, str]:
     if path:
         candidate = Path(path)
@@ -570,14 +688,16 @@ def build_review_decision(review_html: Path, review_json: Path | None) -> dict[s
     scores_by_id = load_review_scores(review_json)
     cases: list[dict[str, Any]] = []
     minimum_scores: list[float] = []
-    required = ("overall", "pronunciation", "technical_terms", "naturalness")
+    profile_review = result_payload.get("mode") == "product_profile_review"
+    required = ("score",) if profile_review else ("overall", "pronunciation", "technical_terms", "naturalness")
     outputs = result_payload.get("outputs", [])
     output_items = outputs if isinstance(outputs, list) else []
     for item in output_items:
         if not isinstance(item, dict):
             continue
         case_id = str(item.get("id", ""))
-        scores = scores_by_id.get(case_id, {})
+        score_id = f"{case_id}/{item.get('latency_profile')}" if profile_review else case_id
+        scores = scores_by_id.get(score_id, {})
         numeric = {key: score_value(scores, key) for key in required}
         complete = all(value is not None for value in numeric.values())
         if complete:
@@ -585,6 +705,8 @@ def build_review_decision(review_html: Path, review_json: Path | None) -> dict[s
         cases.append(
             {
                 "id": case_id,
+                "score_id": score_id,
+                "latency_profile": item.get("latency_profile") if profile_review else None,
                 "audio": Path(str(item.get("output", ""))).name if item.get("output") else None,
                 "scores": numeric,
                 "notes": scores.get("notes") if isinstance(scores.get("notes"), str) else "",
@@ -1406,6 +1528,223 @@ def command_bench(args: argparse.Namespace) -> int:
     return completed.returncode
 
 
+def command_profile_review(args: argparse.Namespace) -> int:
+    provider_python, python_source = resolve_provider_python(args.python)
+    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    cases = Path(args.cases)
+    output_dir = default_benchmark_dir(args.output_dir)
+    profiles = [args.profile_a, args.profile_b]
+    if args.profile_a == args.profile_b:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "FAIL",
+                "version": VERSION,
+                "mode": "product_profile_review",
+                "reason": "profile_a and profile_b must be different",
+                "profiles": profiles,
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 1
+    if not ref_audio or not ref_audio.exists():
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "NEEDS_SETUP",
+                "version": VERSION,
+                "mode": "product_profile_review",
+                "reason": "reference audio is required for OmniVoice voice cloning",
+                "ref_audio": str(ref_audio) if ref_audio else None,
+                "ref_audio_source": ref_source,
+                "cases": str(cases),
+                "profiles": profiles,
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 2
+    if not cases.exists():
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "FAIL",
+                "version": VERSION,
+                "mode": "product_profile_review",
+                "reason": "benchmark cases file does not exist",
+                "cases": str(cases),
+                "profiles": profiles,
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 1
+
+    commands: list[list[str]] = []
+    for profile in profiles:
+        profile_args = argparse.Namespace(**vars(args))
+        profile_args.latency_profile = profile
+        profile_args.num_step = None
+        profile_output_dir = output_dir / profile
+        command = [
+            provider_python,
+            str(Path(__file__).resolve()),
+            "batch",
+            "--cases",
+            str(cases),
+            "--output-dir",
+            str(profile_output_dir),
+            *common_runtime_arg_tokens(profile_args, ref_audio),
+        ]
+        if args.ref_text:
+            command.extend(["--ref-text", args.ref_text])
+        if args.prompt_cache:
+            command.extend(["--prompt-cache", args.prompt_cache])
+        if args.refresh_prompt:
+            command.append("--refresh-prompt")
+        if args.device:
+            command.extend(["--device", args.device])
+        commands.append(command)
+
+    if args.dry_run:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "DRY_RUN",
+                "version": VERSION,
+                "mode": "product_profile_review",
+                "provider_python": provider_python,
+                "provider_python_source": python_source,
+                "ref_audio": str(ref_audio),
+                "ref_audio_source": ref_source,
+                "cases": str(cases),
+                "output_dir": str(output_dir),
+                "profiles": profiles,
+                "play_requested": args.play,
+                "open_requested": args.open,
+                "package_requested": args.package,
+                "result_json": str(output_dir / "result.json"),
+                "review_html": str(output_dir / "review.html"),
+                "package_zip": str(output_dir / "tes-tts-omnivoice-review-package.zip"),
+                "command_shapes": [redact_command_value(command, "--ref-text") for command in commands],
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 0
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    payloads: list[dict[str, Any]] = []
+    for profile, command in zip(profiles, commands, strict=True):
+        completed = subprocess.run(
+            command,
+            check=False,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        try:
+            profile_payload = json.loads(completed.stdout)
+        except json.JSONDecodeError:
+            emit(
+                {
+                    "provider": "omnivoice",
+                    "status": "FAIL",
+                    "version": VERSION,
+                    "mode": "product_profile_review",
+                    "provider_python": provider_python,
+                    "latency_profile": profile,
+                    "stdout": completed.stdout[-1000:],
+                    "stderr": completed.stderr[-1000:],
+                    "returncode": completed.returncode,
+                }
+            )
+            return 1
+        profile_payload["latency_profile"] = profile
+        profile_payload["returncode"] = completed.returncode
+        payloads.append(profile_payload)
+        if completed.returncode != 0:
+            emit(profile_payload)
+            return completed.returncode
+
+    outputs: list[dict[str, Any]] = []
+    for profile_payload in payloads:
+        profile = profile_payload.get("latency_profile")
+        for item in profile_payload.get("outputs", []):
+            if isinstance(item, dict):
+                item["latency_profile"] = profile
+                outputs.append(item)
+
+    rtfs = [item.get("rtf") for item in outputs if isinstance(item.get("rtf"), (int, float))]
+    durations = [
+        item.get("audio_duration_seconds")
+        for item in outputs
+        if isinstance(item.get("audio_duration_seconds"), (int, float))
+    ]
+    generations = [item.get("generation_ms") for item in outputs if isinstance(item.get("generation_ms"), (int, float))]
+    payload = {
+        "provider": "omnivoice",
+        "status": "PASS",
+        "version": VERSION,
+        "mode": "product_profile_review",
+        "provider_python": provider_python,
+        "provider_python_source": python_source,
+        "ref_audio": str(ref_audio),
+        "ref_audio_source": ref_source,
+        "cases": str(cases),
+        "output_dir": str(output_dir),
+        "profiles": profiles,
+        "outputs": outputs,
+        "profile_payloads": payloads,
+        "play_requested": args.play,
+        "open_requested": args.open,
+        "package_requested": args.package,
+        "benchmark_summary": {
+            "case_count": len(load_text_cases(cases)),
+            "output_count": len(outputs),
+            "avg_rtf": round(sum(rtfs) / len(rtfs), 4) if rtfs else None,
+            "total_audio_duration_seconds": round(sum(durations), 3) if durations else None,
+            "total_generation_ms": round(sum(generations), 3) if generations else None,
+            "provider_timing_scope": "local_optional_environment_only",
+        },
+        "allows_install": False,
+        "allows_download": False,
+        "allows_global_config_write": False,
+    }
+    if args.play and outputs:
+        playback_results = playback_outputs(outputs)
+        payload["playback_results"] = playback_results
+        if any(result.get("playback_status") == "failed" for result in playback_results):
+            payload["status"] = "PLAYBACK_FAILED"
+            write_profile_review(payload=payload, cases_path=cases, output_dir=output_dir, locale=args.locale)
+            emit(payload)
+            return 3
+    review_paths = write_profile_review(payload=payload, cases_path=cases, output_dir=output_dir, locale=args.locale)
+    if args.open:
+        open_result = open_local_file(Path(review_paths["review_html"]))
+        payload.update(open_result)
+        if open_result.get("open_status") == "failed":
+            payload["status"] = "OPEN_FAILED"
+            Path(review_paths["result_json"]).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+            emit(payload)
+            return 4
+        Path(review_paths["result_json"]).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    if args.package:
+        package_result = write_review_package(
+            Path(review_paths["review_html"]),
+            output_dir / "tes-tts-omnivoice-review-package.zip",
+        )
+        payload.update(package_result)
+        Path(review_paths["result_json"]).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    emit(payload)
+    return 0
+
+
 def command_review(args: argparse.Namespace) -> int:
     review_html, source = resolve_review_html(args.path, args.benchmark_dir)
     if review_html is None:
@@ -1978,6 +2317,19 @@ def build_parser() -> argparse.ArgumentParser:
     bench.add_argument("--package", action="store_true")
     bench.add_argument("--dry-run", action="store_true")
     bench.set_defaults(func=command_bench)
+
+    profile_review = subparsers.add_parser("profile-review")
+    add_runtime_args(profile_review, ref_audio_required=False)
+    profile_review.add_argument("--python")
+    profile_review.add_argument("--cases", default=str(DEFAULT_BENCHMARK_CASES))
+    profile_review.add_argument("--output-dir")
+    profile_review.add_argument("--profile-a", choices=sorted(LATENCY_PROFILES), default="fast")
+    profile_review.add_argument("--profile-b", choices=sorted(LATENCY_PROFILES), default="quality")
+    profile_review.add_argument("--play", action="store_true")
+    profile_review.add_argument("--open", action="store_true")
+    profile_review.add_argument("--package", action="store_true")
+    profile_review.add_argument("--dry-run", action="store_true")
+    profile_review.set_defaults(func=command_profile_review)
 
     review = subparsers.add_parser("review")
     review.add_argument("--path")

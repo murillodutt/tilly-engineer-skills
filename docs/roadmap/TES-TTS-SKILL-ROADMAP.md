@@ -50,13 +50,15 @@ cache, and proactive `speak`.
   cache; `session` keeps model/prompt resident for repeated utterances; `speak`
   delegates one-shot synthesis without long CLI arguments.
 - Latency profiles: `fast` = 8 steps, `balanced` = 16, `quality` = 32 default.
-- `bench --play --open --package` writes WAVs, metrics, review HTML, ZIP
-  manifest; `decide-review --review-json <json> --package` seals the decision.
+- `bench --play --open --package` writes WAVs, metrics, review HTML, ZIP manifest;
+  `decide-review --review-json <json> --package` seals the decision.
+- `profile-review --play --open --package` generates side-by-side `fast` vs
+  `quality` audio, metrics, review HTML, and package evidence.
 - `product-status --format text --strict` gates `AUDIO_CANDIDATE`; latest run:
-  `32.69s` audio, `30.19s` total, RTF `0.9422`, SHA starts `0206b249`.
+  `32.69s` audio, `30.19s` total, RTF `0.9422`.
 - `candidate --format text --strict` replays/opens sealed audio without
   regenerating it.
-- Fast profile smoke: generation `1.88s`, audio `3.81s`, RTF `0.4939`.
+- Profile-review smoke: 6 WAVs, fast total `7.79s`, quality total `28.77s`, ZIP SHA starts `d9309974`.
 
 Relevant gates: focused TTS provider/runtime/oracle suite, roadmap partition,
 materialization, TDS/doc-size/reference validators, and `npm run commit:check`
@@ -64,8 +66,7 @@ for package closure.
 
 ## Next Cut
 
-Run an audible `fast` vs `quality` review and pick the default operator profile
-for live sessions before the next audio candidate package.
+Run `profile-review` and pick the default live-session profile before the next audio candidate package.
 
 ## Maintenance Rules
 

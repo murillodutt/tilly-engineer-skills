@@ -94,6 +94,29 @@ REQUIRED_BENCH_DRY_RUN_KEYS = {
     "allows_download",
     "allows_global_config_write",
 }
+REQUIRED_PROFILE_REVIEW_DRY_RUN_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "mode",
+    "provider_python",
+    "provider_python_source",
+    "ref_audio",
+    "ref_audio_source",
+    "cases",
+    "output_dir",
+    "profiles",
+    "play_requested",
+    "open_requested",
+    "package_requested",
+    "result_json",
+    "review_html",
+    "package_zip",
+    "command_shapes",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
+}
 REQUIRED_WARM_CACHE_DRY_RUN_KEYS = {
     "provider",
     "status",
@@ -306,6 +329,7 @@ def run_status_and_dry_run() -> tuple[
     dict[str, Any] | None,
     dict[str, Any] | None,
     dict[str, Any] | None,
+    dict[str, Any] | None,
     list[str],
 ]:
     failures: list[str] = []
@@ -391,6 +415,32 @@ def run_status_and_dry_run() -> tuple[
             failures.append(f"bench dry-run did not emit JSON: {exc}")
             bench_payload = None
 
+        profile_review_completed = subprocess.run(
+            [
+                sys.executable,
+                str(PROVIDER_SCRIPT),
+                "profile-review",
+                "--ref-text",
+                "voz privada SECRET_REF_TEXT",
+                "--play",
+                "--open",
+                "--package",
+                "--dry-run",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            env=env,
+        )
+        if profile_review_completed.returncode != 0:
+            failures.append(f"profile-review dry-run returned unexpected exit code {profile_review_completed.returncode}")
+        try:
+            profile_review_payload = json.loads(profile_review_completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"profile-review dry-run did not emit JSON: {exc}")
+            profile_review_payload = None
+
         review_completed = subprocess.run(
             [
                 sys.executable,
@@ -436,7 +486,7 @@ def run_status_and_dry_run() -> tuple[
         except json.JSONDecodeError as exc:
             failures.append(f"package-review dry-run did not emit JSON: {exc}")
             package_payload = None
-    return status_payload, dry_payload, bench_payload, review_payload, package_payload, failures
+    return status_payload, dry_payload, bench_payload, profile_review_payload, review_payload, package_payload, failures
 
 
 def validate_status_payload(payload: dict[str, Any] | None) -> list[str]:
@@ -543,6 +593,63 @@ def validate_bench_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
     package_zip = payload.get("package_zip")
     if not isinstance(package_zip, str) or not package_zip.endswith("tes-tts-omnivoice-review-package.zip"):
         failures.append("bench dry-run must report review package path")
+    return failures
+
+
+def validate_profile_review_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
+    if payload is None:
+        return []
+    failures: list[str] = []
+    missing = sorted(REQUIRED_PROFILE_REVIEW_DRY_RUN_KEYS - set(payload))
+    extra = sorted(set(payload) - REQUIRED_PROFILE_REVIEW_DRY_RUN_KEYS)
+    if missing:
+        failures.append(f"profile-review dry-run missing keys {missing}")
+    if extra:
+        failures.append(f"profile-review dry-run has extra keys {extra}")
+    if payload.get("status") != "DRY_RUN":
+        failures.append("profile-review dry-run status drifted")
+    if payload.get("mode") != "product_profile_review":
+        failures.append("profile-review dry-run mode drifted")
+    if payload.get("profiles") != ["fast", "quality"]:
+        failures.append("profile-review dry-run must default to fast vs quality")
+    if payload.get("allows_install") is not False:
+        failures.append("profile-review dry-run must not install providers")
+    if payload.get("allows_download") is not False:
+        failures.append("profile-review dry-run must not download models")
+    if payload.get("allows_global_config_write") is not False:
+        failures.append("profile-review dry-run must not write global config")
+    if payload.get("play_requested") is not True:
+        failures.append("profile-review dry-run must report playback intent")
+    if payload.get("open_requested") is not True:
+        failures.append("profile-review dry-run must report review-open intent")
+    if payload.get("package_requested") is not True:
+        failures.append("profile-review dry-run must report review-package intent")
+    command_shapes = payload.get("command_shapes")
+    if not isinstance(command_shapes, list) or len(command_shapes) != 2:
+        failures.append("profile-review dry-run must emit two command shapes")
+    else:
+        joined = " ".join(str(part) for command in command_shapes for part in command)
+        if "batch" not in joined:
+            failures.append("profile-review dry-run must delegate to batch")
+        if "--latency-profile fast" not in joined or "--latency-profile quality" not in joined:
+            failures.append("profile-review dry-run must carry fast and quality profiles")
+        if "--num-step 8" not in joined or "--num-step 32" not in joined:
+            failures.append("profile-review dry-run must resolve fast and quality steps")
+        if "SECRET_REF_TEXT" in joined:
+            failures.append("profile-review dry-run leaked reference text")
+        if "--ref-text" in joined and "<redacted>" not in joined:
+            failures.append("profile-review dry-run must redact reference text")
+    cases = payload.get("cases")
+    if not isinstance(cases, str) or not cases.endswith("omnivoice-provider-cases.json"):
+        failures.append("profile-review dry-run must default to OmniVoice provider cases")
+    for key, suffix in (
+        ("result_json", "result.json"),
+        ("review_html", "review.html"),
+        ("package_zip", "tes-tts-omnivoice-review-package.zip"),
+    ):
+        value = payload.get(key)
+        if not isinstance(value, str) or not value.endswith(suffix):
+            failures.append(f"profile-review dry-run must report {key}")
     return failures
 
 
@@ -870,6 +977,82 @@ def validate_review_html_scorecard() -> list[str]:
     return failures
 
 
+def validate_profile_review_html_scorecard() -> list[str]:
+    failures: list[str] = []
+    provider = load_provider_module()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        cases = root / "cases.json"
+        cases.write_text(
+            json.dumps(
+                {
+                    "cases": [
+                        {
+                            "id": "profile-case",
+                            "language": "pt",
+                            "text": "Compare API_KEY=abc123SECRET, TypeScript e provider.",
+                        }
+                    ]
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        payload = {
+            "provider": "omnivoice",
+            "status": "PASS",
+            "version": VERSION,
+            "profiles": ["fast", "quality"],
+            "outputs": [
+                {
+                    "id": "profile-case",
+                    "output": str(root / "fast" / "profile-case.wav"),
+                    "rtf": 0.2,
+                    "audio_duration_seconds": 3.2,
+                    "generation_ms": 640,
+                    "num_step": 8,
+                    "latency_profile": "fast",
+                },
+                {
+                    "id": "profile-case",
+                    "output": str(root / "quality" / "profile-case.wav"),
+                    "rtf": 0.8,
+                    "audio_duration_seconds": 3.2,
+                    "generation_ms": 2560,
+                    "num_step": 32,
+                    "latency_profile": "quality",
+                },
+            ],
+            "benchmark_summary": {
+                "case_count": 1,
+                "output_count": 2,
+                "total_generation_ms": 3200,
+                "provider_timing_scope": "local_optional_environment_only",
+            },
+        }
+        paths = provider.write_profile_review(payload=payload, cases_path=cases, output_dir=root, locale="pt-BR")
+        html_text = Path(paths["review_html"]).read_text(encoding="utf-8")
+    required_snippets = [
+        "tes-tts-omnivoice-profile-review@1",
+        "data-profile=\"fast\"",
+        "data-profile=\"quality\"",
+        "data-score=\"score\"",
+        "Exportar JSON",
+        "Copiar resumo",
+        "cases=comparisons.map",
+        "AUDIO_CANDIDATE",
+        "NEEDS_TARGETED_FIX",
+        "NEEDS_FIX",
+        "API_KEY=[REDACTED_SECRET]",
+    ]
+    for snippet in required_snippets:
+        if snippet not in html_text:
+            failures.append(f"profile review HTML missing snippet: {snippet}")
+    if "abc123SECRET" in html_text:
+        failures.append("profile review HTML leaked secret-like fixture text")
+    return failures
+
+
 def validate_review_package_zip() -> list[str]:
     failures: list[str] = []
     provider = load_provider_module()
@@ -987,6 +1170,58 @@ def validate_review_decision_command() -> list[str]:
         manifest_paths = {item.get("path") for item in manifest.get("files", []) if isinstance(item, dict)}
         if "review-decision.json" not in manifest_paths:
             failures.append("package manifest missing review-decision.json")
+    return failures
+
+
+def validate_profile_review_decision_command() -> list[str]:
+    failures: list[str] = []
+    provider = load_provider_module()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        review = root / "review.html"
+        result = root / "result.json"
+        review_json = root / "exported-profile-review.json"
+        fast = root / "fast" / "case.wav"
+        quality = root / "quality" / "case.wav"
+        fast.parent.mkdir()
+        quality.parent.mkdir()
+        fast.write_bytes(b"fake-fast-wave")
+        quality.write_bytes(b"fake-quality-wave")
+        review.write_text("<!doctype html><audio controls src=\"fast/case.wav\"></audio>", encoding="utf-8")
+        result.write_text(
+            json.dumps(
+                {
+                    "mode": "product_profile_review",
+                    "outputs": [
+                        {"id": "case", "latency_profile": "fast", "output": str(fast)},
+                        {"id": "case", "latency_profile": "quality", "output": str(quality)},
+                    ],
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        review_json.write_text(
+            json.dumps(
+                {
+                    "schema": "tes-tts-omnivoice-profile-review@1",
+                    "cases": [
+                        {"id": "case/fast", "scores": {"score": 8, "notes": "fast ok"}},
+                        {"id": "case/quality", "scores": {"score": 9, "notes": "quality ok"}},
+                    ],
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        decision = provider.build_review_decision(review, review_json)
+    if decision.get("decision") != "AUDIO_CANDIDATE":
+        failures.append("profile review decision should support score-only profile exports")
+    if decision.get("case_count") != 2 or decision.get("scored_case_count") != 2:
+        failures.append("profile review decision should score both profile outputs")
+    score_ids = {case.get("score_id") for case in decision.get("cases", [])}
+    if score_ids != {"case/fast", "case/quality"}:
+        failures.append("profile review decision score ids drifted")
     return failures
 
 
@@ -1269,19 +1504,30 @@ def main() -> int:
     failures.extend(validate_no_reference_text_logging())
     probe, probe_failures = run_probe()
     failures.extend(probe_failures)
-    status_payload, dry_payload, bench_payload, review_payload, package_payload, shortcut_failures = run_status_and_dry_run()
+    (
+        status_payload,
+        dry_payload,
+        bench_payload,
+        profile_review_payload,
+        review_payload,
+        package_payload,
+        shortcut_failures,
+    ) = run_status_and_dry_run()
     failures.extend(shortcut_failures)
     failures.extend(validate_status_payload(status_payload))
     failures.extend(validate_dry_run_payload(dry_payload))
     failures.extend(validate_bench_dry_run_payload(bench_payload))
+    failures.extend(validate_profile_review_dry_run_payload(profile_review_payload))
     failures.extend(validate_warm_cache_dry_run_command())
     failures.extend(validate_session_dry_run_command())
     failures.extend(validate_jsonl_emitter())
     failures.extend(validate_review_dry_run_payload(review_payload))
     failures.extend(validate_package_dry_run_payload(package_payload))
     failures.extend(validate_review_html_scorecard())
+    failures.extend(validate_profile_review_html_scorecard())
     failures.extend(validate_review_package_zip())
     failures.extend(validate_review_decision_command())
+    failures.extend(validate_profile_review_decision_command())
     failures.extend(validate_product_status_command())
     failures.extend(validate_candidate_command())
     failures.extend(validate_fixtures(load_json(FIXTURE_PATH)))
@@ -1296,6 +1542,7 @@ def main() -> int:
                 "status_command": status_payload.get("status") if status_payload else None,
                 "speak_dry_run": dry_payload.get("status") if dry_payload else None,
                 "bench_dry_run": bench_payload.get("status") if bench_payload else None,
+                "profile_review_dry_run": profile_review_payload.get("status") if profile_review_payload else None,
                 "review_dry_run": review_payload.get("status") if review_payload else None,
                 "package_dry_run": package_payload.get("status") if package_payload else None,
                 "failures": failures,
