@@ -72,8 +72,8 @@ Keep this root index short and partitioned:
 - Every update must reduce ambiguity for the next executor.
 
 Roadmap partition budgets are enforced by `scripts/validate_doc_size.py`.
-Warning begins at 75% for governed roadmap partitions so maintenance happens
-before ambiguity accumulates:
+`tes-tts` also has a structural partition oracle. Warning begins at 75% for
+governed roadmap partitions so maintenance happens before ambiguity accumulates:
 
 | Partition | Limit | Purpose |
 |-----------|-------|---------|

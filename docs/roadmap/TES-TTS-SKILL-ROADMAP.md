@@ -56,9 +56,9 @@ cache, and proactive `speak`.
 - `candidate --format text --strict` replays/opens sealed audio without
   regenerating it.
 
-Relevant gates: focused TTS provider/runtime/oracle suite, materialization,
-TDS/doc-size/reference validators, and `npm run commit:check` for package
-closure.
+Relevant gates: focused TTS provider/runtime/oracle suite, roadmap partition,
+materialization, TDS/doc-size/reference validators, and `npm run commit:check`
+for package closure.
 
 ## Next Cut
 
