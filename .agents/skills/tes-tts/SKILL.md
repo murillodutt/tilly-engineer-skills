@@ -52,8 +52,10 @@ compatible TES intent alias if the host reports it as an invalid slash.
    If it returns `ready`, prefer
    `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<text>" --play`
    for premium cloned-voice reads, while preserving `say` as the local
-   fallback. For long reads, do not send the whole text as one synthesis
-   request; use
+   fallback. The canonical local OmniVoice reference voice is
+   `tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav`; do not
+   treat a person-specific profile label as the project default. For long
+   reads, do not send the whole text as one synthesis request; use
   `python3 scripts/tes_tts_omnivoice_provider.py speak-long --text "<text>" --play`,
   which splits speech into natural chunks, uses the resident OmniVoice
   session, and writes an exclusive runtime JSONL monitor log under `tmp/**`.
@@ -97,9 +99,9 @@ compatible TES intent alias if the host reports it as an invalid slash.
    Replay or inspect a sealed candidate without regenerating audio with
    `python3 scripts/tes_tts_omnivoice_provider.py candidate --format text --strict`,
    adding `--play` or `--open` for maintainer review.
-9. Use `voice: "Felipe (Enhanced)"` and `rate: 255` when the tool accepts
-   those settings. If the host rejects the voice, retry once with the default
-   voice and the same text.
+9. Use `voice: "Felipe (Enhanced)"` and `rate: 255` only for the `say`/local
+   fallback when the tool accepts those settings. If the host rejects the
+   voice, retry once with the default voice and the same text.
 10. If the user asks for a different speed, use that speed for the current
    request. For a percentage change, compute it from the last spoken rate in
    this conversation; if there is no last rate, use `255` as the base.

@@ -17,7 +17,8 @@ Partition contract: dashboard = objective state, registry = structured pointers,
 ## State
 `tes-tts` is reactive-only. PT-BR is the primary quality target. Active work
 happens in `.agents/skills/tes-tts`, then mirrors to adapters. The path is
-runtime preparation plus optional OmniVoice; `say`/Felipe remains fallback.
+runtime preparation plus optional OmniVoice with the canonical local reference
+WAV; `say`/Felipe is only a fallback when OmniVoice is unavailable.
 Unauthorized: release/sync/push/tag/publish, redistribution, global writes,
 durable cache, or proactive `speak`.
 
@@ -33,26 +34,14 @@ durable cache, or proactive `speak`.
   `fast`; latest live-smoke package passed with avg RTF `0.3864`.
 - Long-read correction passed: 12 chunks, `avg_rtf=0.2067`,
   `fallback_used=false`, monitor log under `tmp/**/runtime-logs`.
-- Audio variant review supports per-chunk STT language, `combined.wav`,
-  `language=auto`, and lab-only English-island variants.
 - Live server evidence `20260530-174724-539838` synthesized chunks 2 and 3
-  through local `omnivoice-server` clone route: 12 results, fast/quality
-  presets, combined WAVs, review HTML, and package under `tmp/**`.
-- Community scan reinforced local OpenAI-compatible OmniVoice servers,
-  Apple-Silicon MLX backends, desktop Studio workflows, and audiobook/dubbing
-  tools as the practical ecosystem. TES keeps the server path first and treats
-  UI projects as research references.
-- Tested `server-status`, `speak-server`, and `speak-long-server` now cover
-  local server health/capability discovery, JSON speech, multipart clone
-  synthesis via reference audio/text, and request-local generation controls.
-  Dry-runs redact fragile text and files; no install/download/write.
-- `audio_variant_lab --provider-route server` now preflights server readiness
-  once, records `SERVER_UNAVAILABLE` instead of repeating failed synthesis, and
-  can pass community server controls for per-chunk language, task type, speaker,
-  instructions, stream, token budget, generation parameters, and inference
-  steps through named preset matrices during chunk 2/3 review. Scenario
-  `community_server_clone_review` focuses the bad chunks with clone fast/quality
-  presets and combined WAV review.
+  through local `omnivoice-server`: 12 results, fast/quality presets, combined
+  WAVs, review HTML, and package under `tmp/**`.
+- Community scan supports the local OpenAI-compatible server path first; UI,
+  MLX, audiobook, and dubbing projects remain research references.
+- `server-status`, `speak-server`, `speak-long-server`, and audio variant lab
+  cover readiness, clone synthesis, chunked review, combined WAVs, and
+  `SERVER_UNAVAILABLE` preflight without install/download/write.
 
 ## Next Cut
 Future goal 1: create a local OmniVoice server voice profile from
