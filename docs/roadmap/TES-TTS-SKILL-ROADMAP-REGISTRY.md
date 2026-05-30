@@ -66,6 +66,7 @@ every prompt when a range is enough.
 | `docs/roadmap/TES-TTS-SKILL-ROADMAP-HISTORY.md` | Compressed evolution history. | active |
 | `docs/roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` | ADR 0004 owner acceptance record. | active |
 | `docs/roadmap/TES-TTS-RTE-006-RUNTIME-AUDIT-AND-CLOSURE.md` | Runtime-first closure audit. | active |
+| `docs/roadmap/TES-TTS-PYTHON-SCRIPT-EFFICIENCY-ANALYSIS.md` | Python script efficiency levantamento and optimization queue. | active |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | Release identity decision record. | active |
 
 ## Historical Ranges

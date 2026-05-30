@@ -974,6 +974,13 @@ documents:
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/TES-TTS-PYTHON-SCRIPT-EFFICIENCY-ANALYSIS.md
+    id: roadmap.tes_tts_python_script_efficiency_analysis
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, runtime authors, and validation authors
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md
     id: roadmap.tes_tts_cap_001_portable_capability_feasibility
     class: roadmap

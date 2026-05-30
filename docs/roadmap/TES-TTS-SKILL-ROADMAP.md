@@ -10,7 +10,7 @@ evidence_level: L2
 # TES TTS Skill Roadmap
 Dashboard for current decisions, latest evidence, and the next cut only. Dense
 pointers live in `TES-TTS-SKILL-ROADMAP-REGISTRY.md`; closed lineage lives in
-`TES-TTS-SKILL-ROADMAP-HISTORY.md`. ADR 0004 remains the boundary.
+`TES-TTS-SKILL-ROADMAP-HISTORY.md`.
 
 Partition contract: dashboard = objective state, registry = structured pointers, history = organized lineage, validators = budgets.
 
@@ -24,8 +24,7 @@ Unauthorized: release/sync/push/tag/publish, redistribution, global writes,
 durable cache, or proactive `speak`.
 
 ## Decisions
-- Source text is immutable; speech uses request-local prepared text.
-- Secrets are redacted before rendering and provider handoff.
+- Source text is immutable; speech is request-local; secrets are redacted.
 - PT-BR is platform narration; English/technical identity is preserved.
 - OmniVoice is optional local capability, not bundled dependency.
 - Version/release/sync/push/tag/publish need separate approval.
@@ -36,12 +35,13 @@ durable cache, or proactive `speak`.
 - Direct/resident long-read recipe `20260530-190552-healthy-reference-read`
   was human-rated 7.5/10: `language=en`, `quality`, 420-char chunks,
   combined WAV, 450 ms inter-chunk silence.
+- Python efficiency analysis targets provider/lab monoliths, not text prep.
 - Active `tes-tts` execution is direct/resident OmniVoice for cloned-voice
   reads; fallback remains request-local and honest.
 
 ## Next Cut
-Next: refine the direct long-read recipe and text preparation from human-rated
-audio evidence. Keep `tmp/**` audio/profile artifacts out of commits.
+Next: extract and optimize the direct/resident OmniVoice path without spending
+cycles on obsolete server execution. Keep `tmp/**` artifacts out of commits.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.
@@ -55,5 +55,5 @@ audio evidence. Keep `tmp/**` audio/profile artifacts out of commits.
   global writes.
 
 ## Closure Rule
-Close material changes after focused TTS/package gates. Commit local only until
-new order; never claim release closure without a release identity decision.
+Close after focused gates. Commit local only until new order; never claim
+release closure without a release identity decision.
