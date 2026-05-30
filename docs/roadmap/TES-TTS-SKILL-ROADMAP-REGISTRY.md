@@ -67,8 +67,8 @@ every prompt when a range is enough.
 | `docs/roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` | ADR 0004 owner acceptance record. | active |
 | `docs/roadmap/TES-TTS-RTE-006-RUNTIME-AUDIT-AND-CLOSURE.md` | Runtime-first closure audit. | active |
 | `docs/roadmap/TES-TTS-PYTHON-SCRIPT-EFFICIENCY-ANALYSIS.md` | Python script efficiency levantamento and optimization queue. | active |
-| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-python-script-optimization.md` | Active Python optimization execution authority for provider/runtime scripts. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-PSO-*.md` | Python script optimization execution prompts; preserve PSO order. | active |
+| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-python-script-optimization.md` | Closed Python optimization execution authority for provider/runtime scripts. | archived |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-PSO-*.md` | Python script optimization execution prompts; PSO-001 through PSO-007 completed in order. | archived |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | Release identity decision record. | active |
 
 ## Historical Ranges
@@ -81,6 +81,7 @@ every prompt when a range is enough.
 | `TES-TTS-CAP-*.md` and matching prompts | Capability migration and conversational rendering sequence. | historical |
 | `TES-TTS-LEX-*.md` and matching prompts | PT-BR lexical foundation sequence. | historical |
 | `TES-TTS-RTE-*.md` and matching prompts | Runtime engine and latency sequence. | historical |
+| `GOAL-PROMPT-tes-tts-PSO-*.md` | Python script optimization sequence. | historical |
 
 ## Indexing Rule
 

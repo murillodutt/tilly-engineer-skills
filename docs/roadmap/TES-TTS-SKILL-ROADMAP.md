@@ -41,10 +41,13 @@ durable conversion cache, or proactive `speak`.
 - PSO-006 clarified timing names with compatibility aliases for text
   preparation, provider synthesis, audio write, combine, playback, and total
   wall time. No audio was generated.
+- PSO-007 closed the Python optimization line locally: direct/resident
+  execution is the active product path, server remains legacy/lab, timing is
+  attributable, and voice prompt cache permissions are protected.
 
 ## Next Cut
-Next: PSO-007 final optimization audit. The exact authority pointer is in
-the registry. Keep `tmp/**` artifacts out of commits.
+PSO line closed. Open a new runtime cut only from a concrete product objective,
+not another documentation-only prompt. Keep `tmp/**` artifacts out of commits.
 
 ## Maintenance Rules
 - Hard limit: 100 lines. Review zone starts at 75 lines.

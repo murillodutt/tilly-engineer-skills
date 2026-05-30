@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_prompt_tes_tts_pso_007_final_optimization_audit
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, tes-tts maintainers, runtime authors, provider authors, validation authors, and execution agents
 source_of_truth: false
 evidence_level: L2

@@ -1,7 +1,7 @@
 ---
 tds_id: roadmap.goal_super_spec_tes_tts_python_script_optimization
 tds_class: roadmap
-status: active
+status: archived
 consumer: maintainers, tes-tts maintainers, runtime authors, provider authors, and validation authors
 source_of_truth: false
 evidence_level: L2
@@ -9,7 +9,7 @@ evidence_level: L2
 
 # GOAL Super SPEC: TES TTS Python Script Optimization
 
-Status: active implementation authority for optimizing Python scripts tied to
+Status: closed local optimization authority for Python scripts tied to
 `tes-tts`.
 
 Canonical artifact:
@@ -19,7 +19,7 @@ Input analysis:
 `docs/roadmap/TES-TTS-PYTHON-SCRIPT-EFFICIENCY-ANALYSIS.md`
 
 Ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-PSO-007-final-optimization-audit.md`
+closed after PSO-007; no next PSO prompt is active.
 
 ## Purpose
 
