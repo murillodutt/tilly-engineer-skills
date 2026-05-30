@@ -179,6 +179,7 @@ REQUIRED_LIVE_SMOKE_DRY_RUN_KEYS = {
     "case_ids",
     "output_dir",
     "result_json",
+    "review_html",
     "package_zip",
     "play_requested",
     "package_requested",
@@ -1005,7 +1006,7 @@ def validate_live_smoke_dry_run_command() -> list[str]:
             failures.append("live-smoke dry-run leaked reference text")
         if "--ref-text" in command_shape and "<redacted>" not in command_shape:
             failures.append("live-smoke dry-run must redact reference text")
-    for key in ("result_json", "package_zip"):
+    for key in ("result_json", "review_html", "package_zip"):
         value = payload.get(key)
         if not isinstance(value, str) or not value.startswith(str(output_dir)):
             failures.append(f"live-smoke dry-run must report output-local {key}")
@@ -1134,7 +1135,7 @@ def validate_review_html_scorecard() -> list[str]:
                         {
                             "id": "scorecard-case",
                             "language": "pt",
-                            "text": "Leia API_KEY=abc123SECRET com segurança e avalie TypeScript.",
+                            "source_text": "Leia API_KEY=abc123SECRET com segurança e avalie TypeScript.",
                         }
                     ]
                 },
@@ -1179,6 +1180,7 @@ def validate_review_html_scorecard() -> list[str]:
         "NEEDS_TARGETED_FIX",
         "NEEDS_FIX",
         "API_KEY=[REDACTED_SECRET]",
+        "TypeScript",
     ]
     for snippet in required_snippets:
         if snippet not in html_text:

@@ -33,12 +33,12 @@ durable cache, or proactive `speak`.
 ## Evidence
 - Maintainer live rating: OmniVoice cloned voice result `9.5`.
 - Sealed profile review selected `fast` as the current auto latency profile.
-- Latest live-smoke passed: startup under one second, request under two, RTF
-  under `0.5`.
+- Latest live-smoke review package passed: 3 WAVs, `review.html`, ZIP package,
+  avg RTF `0.3864`, package SHA starts `eafb9419`.
 
 ## Next Cut
-Expand `live-smoke` to a 3-case audible review package and compare listener
-score before adding another provider/runtime feature.
+Use exported listener scores from the 3-case review to decide whether the
+current `fast` live profile is the default product path or needs targeted fix.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.

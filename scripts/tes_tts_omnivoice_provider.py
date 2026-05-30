@@ -390,6 +390,9 @@ def wait_or_terminate(process: subprocess.Popen[str], timeout: float = 10.0) -> 
 def live_smoke_package_files(result_json: Path) -> list[Path]:
     root = result_json.parent
     files: list[Path] = [result_json.resolve()]
+    review_html = root / "review.html"
+    if review_html.is_file():
+        files.append(review_html.resolve())
     try:
         payload = json.loads(result_json.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
@@ -446,6 +449,8 @@ def write_live_smoke_package(result_json: Path, package_path: Path) -> dict[str,
 
 def redacted_case_text(case: dict[str, Any], locale: str) -> str:
     text = case.get("text")
+    if not isinstance(text, str):
+        text = case.get("source_text")
     if not isinstance(text, str):
         return ""
     return prepare_spoken_text(text, locale)["redacted_text"]
@@ -1415,6 +1420,7 @@ def command_live_smoke(args: argparse.Namespace) -> int:
     cases_path = Path(args.cases)
     output_dir = default_session_dir(args.output_dir)
     result_json = output_dir / "result.json"
+    review_html = output_dir / "review.html"
     package_zip = output_dir / "tes-tts-omnivoice-live-smoke-package.zip"
     if not ref_audio or not ref_audio.exists():
         emit(
@@ -1484,6 +1490,7 @@ def command_live_smoke(args: argparse.Namespace) -> int:
                 "case_ids": [str(case.get("id") or f"case-{index:03d}") for index, case in enumerate(selected_cases, 1)],
                 "output_dir": str(output_dir),
                 "result_json": str(result_json),
+                "review_html": str(review_html),
                 "package_zip": str(package_zip),
                 "play_requested": args.play,
                 "package_requested": args.package,
@@ -1567,6 +1574,7 @@ def command_live_smoke(args: argparse.Namespace) -> int:
         "case_count": len(selected_cases),
         "output_dir": str(output_dir),
         "result_json": str(result_json),
+        "review_html": str(review_html),
         "play_requested": args.play,
         "package_requested": args.package,
         "startup": startup_payload,
@@ -1592,13 +1600,20 @@ def command_live_smoke(args: argparse.Namespace) -> int:
         "allows_download": False,
         "allows_global_config_write": False,
     }
-    result_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    payload["benchmark_summary"] = {
+        "case_count": payload["summary"]["request_count"],
+        "avg_rtf": payload["summary"]["avg_rtf"],
+        "total_audio_duration_seconds": payload["summary"]["total_audio_duration_seconds"],
+        "total_generation_ms": payload["summary"]["total_generation_ms"],
+        "provider_timing_scope": payload["summary"]["provider_timing_scope"],
+    }
+    write_benchmark_review(payload=payload, cases_path=cases_path, output_dir=output_dir, locale=args.language)
     if args.play and audio_outputs:
         playback_results = playback_outputs(audio_outputs)
         payload["playback_results"] = playback_results
         if any(item.get("playback_status") == "failed" for item in playback_results):
             payload["status"] = "PLAYBACK_FAILED"
-        result_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        write_benchmark_review(payload=payload, cases_path=cases_path, output_dir=output_dir, locale=args.language)
     if args.package:
         payload.update(write_live_smoke_package(result_json, package_zip))
         result_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")

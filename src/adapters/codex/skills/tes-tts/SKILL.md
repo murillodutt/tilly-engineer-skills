@@ -6,7 +6,7 @@ license: MIT
 
 # TES TTS
 
-Operational contract: `tes.tts@0.1.18`.
+Operational contract: `tes.tts@0.1.19`.
 
 `/tes-tts` is the small TES text-to-speech skill. It reads user-provided text
 aloud through whatever local TTS tool the host exposes. `/tes:tts` is a
@@ -48,6 +48,8 @@ compatible TES intent alias if the host reports it as an invalid slash.
    model and voice prompt loaded until stdin closes. For a resident-session
    product smoke, run
    `python3 scripts/tes_tts_omnivoice_provider.py live-smoke --package`. The
+   command writes resident-session WAVs, `result.json`, scored `review.html`,
+   and a ZIP package for audible review. The
    default `--latency-profile auto` uses the latest sealed
    `AUDIO_CANDIDATE` profile recommendation, or falls back to `quality` when no
    candidate is sealed. Use `fast` for live iteration, `balanced` for review,
