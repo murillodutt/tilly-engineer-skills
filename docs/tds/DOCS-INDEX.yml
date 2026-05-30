@@ -197,6 +197,20 @@ documents:
     consumer: maintainers, tes-tts maintainers, adapter authors, and release reviewers
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/TES-TTS-SKILL-ROADMAP-REGISTRY.md
+    id: roadmap.tes_tts_skill_roadmap_registry
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/TES-TTS-SKILL-ROADMAP-HISTORY.md
+    id: roadmap.tes_tts_skill_roadmap_history
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
     id: roadmap.goal_super_spec_tes_tts_sequential_convergence
     class: roadmap

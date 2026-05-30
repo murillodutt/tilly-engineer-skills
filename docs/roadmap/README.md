@@ -84,6 +84,8 @@ Wave 7 local package-source closure.
 | TES TTS RTE-005 goal prompt | Historical | `GOAL-PROMPT-tes-tts-RTE-005-chunked-preparation-boundary.md` |
 | TES TTS RTE-006 goal prompt | Historical | `GOAL-PROMPT-tes-tts-RTE-006-runtime-audit-and-closure.md` |
 | TES TTS skill roadmap | Active | `TES-TTS-SKILL-ROADMAP.md` |
+| TES TTS skill roadmap registry | Active | `TES-TTS-SKILL-ROADMAP-REGISTRY.md` |
+| TES TTS skill roadmap history | Active | `TES-TTS-SKILL-ROADMAP-HISTORY.md` |
 | TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner-decision record lineage | Historical | TTS-010 through TTS-031 owner-decision records; retained for audit, not active SPECs. |
 | TES TTS normalization architecture | Proposed | `TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |

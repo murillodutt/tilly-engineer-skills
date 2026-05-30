@@ -165,6 +165,8 @@ turning the repository root into an inventory.
 | TES TTS RTE-005 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-RTE-005-chunked-preparation-boundary.md` |
 | TES TTS RTE-006 historical goal prompt | `roadmap/GOAL-PROMPT-tes-tts-RTE-006-runtime-audit-and-closure.md` |
 | TES TTS skill roadmap | `roadmap/TES-TTS-SKILL-ROADMAP.md` |
+| TES TTS skill roadmap registry | `roadmap/TES-TTS-SKILL-ROADMAP-REGISTRY.md` |
+| TES TTS skill roadmap history | `roadmap/TES-TTS-SKILL-ROADMAP-HISTORY.md` |
 | TES TTS acceptance and release decision | `roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/TES-TTS-OWNER-APPROVAL-GATE.md` |
 | TES TTS owner decision required | `roadmap/TES-TTS-OWNER-DECISION-REQUIRED.md` |
