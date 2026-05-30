@@ -36,15 +36,18 @@ durable cache, or proactive `speak`.
   avg RTF `0.3864`, package SHA starts `eafb9419`.
 - Long-read OmniVoice correction passed: 12 chunks played, `avg_rtf=0.2067`,
   `fallback_used=false`, monitor log under `tmp/**/runtime-logs`.
-- Audio variant review now packages WAVs, STT/WER, HTML review, and optional
-  `combined.wav` with 350 ms chunk pauses. Latest `chunk-002` quality evidence
-  showed `chunk-003` passing and `chunk-002` still needing review in one
-  source (`20260530-142812`); missing requested chunk IDs now fail instead of
-  silently passing.
+- Audio variant review now requires STT when requested, audits `combined.wav`,
+  rejects stale audit summaries, and flags raw STT drift even when domain
+  normalization explains protected-term drift.
+- Latest expanded evidence: `chunk-002` best candidate is
+  `technical_oral_ptbr_json_hyphen` (`20260530-144957`); mixed technical
+  phrase best candidate is `mixed_technical_clean_natural` (`20260530-150340`),
+  still `NEEDS_REVIEW` for human listening.
 
 ## Next Cut
-Listen to the latest `chunk-002`/`chunk-003` package, then decide whether the
-remaining `chunk-002` degradation is audible or only STT/proper-term drift.
+Listen to `20260530-150340` and decide whether `mixed_technical_clean_natural`
+is the new review baseline or whether pronunciation requires provider/runtime
+work beyond plain-text preparation.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.
@@ -60,5 +63,5 @@ remaining `chunk-002` degradation is audible or only STT/proper-term drift.
   provider downloads, or global config writes.
 
 ## Closure Rule
-Close material changes after focused TTS/package gates. Never claim release
-closure without a release identity decision.
+Close material changes after focused TTS/package gates. Commit local only until
+new order; never claim release closure without a release identity decision.

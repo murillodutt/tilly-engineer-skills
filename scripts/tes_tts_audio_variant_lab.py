@@ -14,6 +14,7 @@ import sys
 from typing import Any
 import zipfile
 
+from tes_tts_omnivoice_provider import split_long_text
 from tes_tts_runtime_adapter import prepare_audio_quality_text
 
 
@@ -122,6 +123,71 @@ def pause_newlines(text: str) -> str:
     return text
 
 
+def mixed_technical_spell_pause(text: str) -> str:
+    rendered = text
+    replacements = [
+        (r"\bTES-TTS\b", "T E S T T S"),
+        (r"\bOpen\.?\s*A\.?I\.?\s*A\.?P\.?I\.?\b", "Open A I A P I"),
+        (r"\bADR\b", "A D R"),
+        (r"\bAPI\b", "A P I"),
+        (r"\bSDK\b", "S D K"),
+        (r"\bCLI\b", "C L I"),
+        (r"\bMCP\b", "M C P"),
+        (r"\bSSML\b", "S S M L"),
+        (r"\bPLS\b", "P L S"),
+        (r"\bJSON\b", "J S O N"),
+        (r"\bYAML\b", "Y A M L"),
+        (r"\bHTTP\b", "H T T P"),
+        (r"\bNode\.?JS\b", "Node J S"),
+        (r"\b0004\b", "zero zero zero quatro"),
+        (r"\bG\.\s*dois\s*P\.?\b", "G dois P"),
+        (r"\bprovider\b", "prováider"),
+        (r"\bTrie\b", "trai"),
+        (r"\bAho\s+Corasick\b", "A rô Corássic"),
+        (r"\bthresholds\b", "trésholds"),
+    ]
+    for pattern, replacement in replacements:
+        rendered = re.sub(pattern, replacement, rendered, flags=re.IGNORECASE)
+    rendered = rendered.replace(".,", ",")
+    rendered = re.sub(r"\.{2,}", ".", rendered)
+    rendered = re.sub(r"\s+", " ", rendered).strip()
+    return rendered
+
+
+def mixed_technical_clean_natural(text: str) -> str:
+    rendered = text
+    replacements = [
+        (r"\bTES-TTS\b", "TES TTS"),
+        (r"\b0004\b", "zero zero zero quatro"),
+        (r"\bG\.\s*dois\s*P\.?\b", "G dois P"),
+        (r"\bNode\.?JS\b", "Node JS"),
+        (r"\bOpen\.?\s*A\.?I\.?\s*A\.?P\.?I\.?\b", "Open AI API"),
+    ]
+    for pattern, replacement in replacements:
+        rendered = re.sub(pattern, replacement, rendered, flags=re.IGNORECASE)
+    rendered = rendered.replace(".,", ",")
+    rendered = re.sub(r"\.{2,}", ".", rendered)
+    rendered = re.sub(r":\s+", ". ", rendered)
+    rendered = re.sub(r"\s+", " ", rendered).strip()
+    return rendered
+
+
+def mixed_technical_clean_chunked(text: str) -> str:
+    rendered = mixed_technical_clean_natural(text)
+    rendered = re.sub(r"(?<=TES TTS\.)\s+", "\n\n", rendered)
+    rendered = re.sub(r"(?<=MCP\.)\s+", "\n\n", rendered)
+    rendered = re.sub(r"(?<=agora\.)\s+", "\n\n", rendered)
+    return rendered
+
+
+def mixed_technical_chunked(text: str) -> str:
+    rendered = mixed_technical_spell_pause(text)
+    rendered = re.sub(r":\s+", ".\n\n", rendered)
+    rendered = re.sub(r"(?<=M C P\.)\s+", "\n\n", rendered)
+    rendered = re.sub(r"(?<=agora\.)\s+", "\n\n", rendered)
+    return rendered
+
+
 def build_variant_plan(source_text: str, variant: str) -> dict[str, Any]:
     if variant == "baseline":
         return {"text": source_text, "audit_text": source_text, "chunk_chars": 420, "text_mode": "redacted_source"}
@@ -149,6 +215,18 @@ def build_variant_plan(source_text: str, variant: str) -> dict[str, Any]:
     if variant == "pause_newlines":
         text = pause_newlines(source_text)
         return {"text": text, "audit_text": text, "chunk_chars": 240, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_spell_pause":
+        text = mixed_technical_spell_pause(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 420, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_clean_natural":
+        text = mixed_technical_clean_natural(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 420, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_clean_chunked":
+        text = mixed_technical_clean_chunked(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 180, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_chunked":
+        text = mixed_technical_chunked(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 180, "text_mode": "redacted_source"}
     raise ValueError(f"unknown variant: {variant}")
 
 
@@ -164,7 +242,7 @@ def write_variant_session(
 ) -> Path:
     session = root / f"{safe_stem(source_id)}--{safe_stem(variant)}"
     session.mkdir(parents=True, exist_ok=True)
-    chunks = split_sentence_chunks(audit_text, max_chars=chunk_chars)
+    chunks = split_long_text(audit_text, max_chars=chunk_chars)
     (session / "input.txt").write_text(text, encoding="utf-8")
     (session / "audit-reference.txt").write_text(audit_text, encoding="utf-8")
     (session / "chunk-texts.json").write_text(
@@ -250,7 +328,7 @@ def synthesize_session(
     return result
 
 
-def audit_session(session: Path, *, stt: bool) -> dict[str, Any]:
+def audit_session(session: Path, *, stt: bool, audit_combined: bool) -> dict[str, Any]:
     command = [
         "python3",
         "scripts/tes_tts_audio_audit.py",
@@ -258,10 +336,13 @@ def audit_session(session: Path, *, stt: bool) -> dict[str, Any]:
         "--session-dir",
         str(session),
     ]
-    if stt:
-        command.append("--stt")
-    result = run_command(command)
     audit_path = session / "audio-audit.json"
+    audit_path.unlink(missing_ok=True)
+    if stt:
+        command.extend(["--stt", "--require-stt"])
+    if audit_combined:
+        command.append("--audit-combined")
+    result = run_command(command)
     result["audit"] = json.loads(audit_path.read_text(encoding="utf-8")) if audit_path.exists() else None
     return result
 
@@ -272,13 +353,38 @@ def summarize_audit(audit: dict[str, Any] | None) -> dict[str, Any]:
     comparisons = [chunk.get("stt_comparison") for chunk in audit.get("chunks", []) if chunk.get("stt_comparison")]
     wers = [item["wer"] for item in comparisons if isinstance(item.get("wer"), (int, float))]
     similarities = [item["similarity"] for item in comparisons if isinstance(item.get("similarity"), (int, float))]
-    flags = sorted({flag for chunk in audit.get("chunks", []) for flag in chunk.get("flags", [])})
+    domain_comparisons = [
+        item.get("domain_normalized")
+        for item in comparisons
+        if isinstance(item.get("domain_normalized"), dict)
+    ]
+    domain_wers = [item["wer"] for item in domain_comparisons if isinstance(item.get("wer"), (int, float))]
+    domain_similarities = [
+        item["similarity"] for item in domain_comparisons if isinstance(item.get("similarity"), (int, float))
+    ]
+    interpretations = sorted(
+        {
+            item["interpretation"]
+            for item in comparisons
+            if isinstance(item.get("interpretation"), str)
+        }
+    )
+    combined = audit.get("combined_audio") if isinstance(audit.get("combined_audio"), dict) else None
+    flags = sorted(
+        {flag for chunk in audit.get("chunks", []) for flag in chunk.get("flags", [])}
+        | set(audit.get("audit_flags", []))
+        | set(combined.get("flags", []) if combined else [])
+    )
     return {
         "status": audit.get("status"),
         "chunk_count": audit.get("chunk_count"),
         "max_wer": round(max(wers), 4) if wers else None,
         "avg_wer": round(sum(wers) / len(wers), 4) if wers else None,
         "min_similarity": round(min(similarities), 4) if similarities else None,
+        "max_domain_wer": round(max(domain_wers), 4) if domain_wers else None,
+        "min_domain_similarity": round(min(domain_similarities), 4) if domain_similarities else None,
+        "interpretations": interpretations,
+        "combined_audio": combined,
         "flags": flags,
     }
 
@@ -321,6 +427,8 @@ def overall_status(results: list[dict[str, Any]]) -> str:
     ]
     if any(result.get("synthesize_returncode") not in (None, 0) for result in results):
         return "FAIL"
+    if any(result.get("audit_returncode") not in (None, 0) for result in results):
+        return "FAIL"
     if any(status in {"FAIL", "MISSING_AUDIT"} for status in statuses):
         return "FAIL"
     if any(status not in {None, "PASS"} for status in statuses):
@@ -361,6 +469,9 @@ def write_review_html(output_root: Path, payload: dict[str, Any]) -> Path:
             f"<dt>Text mode</dt><dd>{html.escape(str(result.get('text_mode')))}</dd>"
             f"<dt>Max WER</dt><dd>{html.escape(str(summary.get('max_wer')))}</dd>"
             f"<dt>Min similarity</dt><dd>{html.escape(str(summary.get('min_similarity')))}</dd>"
+            f"<dt>Domain WER</dt><dd>{html.escape(str(summary.get('max_domain_wer')))}</dd>"
+            f"<dt>Domain similarity</dt><dd>{html.escape(str(summary.get('min_domain_similarity')))}</dd>"
+            f"<dt>Interpretation</dt><dd>{html.escape(', '.join(summary.get('interpretations', [])) or 'none')}</dd>"
             f"<dt>Flags</dt><dd>{html.escape(', '.join(summary.get('flags', [])) or 'none')}</dd>"
             "</dl>"
             "<h3>Input text</h3>"
@@ -491,7 +602,7 @@ def command_run(args: argparse.Namespace) -> int:
                 entry["synthesize_status"] = (synth.get("json") or {}).get("status")
                 entry["combined_audio"] = (synth.get("json") or {}).get("combined_audio")
             if args.audit:
-                audit = audit_session(session, stt=args.stt)
+                audit = audit_session(session, stt=args.stt, audit_combined=args.combine)
                 entry["audit_returncode"] = audit["returncode"]
                 entry["audit_summary"] = summarize_audit(audit.get("audit"))
             results.append(entry)
@@ -559,6 +670,14 @@ def command_self_test(_args: argparse.Namespace) -> int:
     paused = pause_newlines(text)
     if "\n\n" not in paused:
         failures.append("pause newline transform did not add paragraph boundary")
+    mixed = mixed_technical_spell_pause("Teste real do TES-TTS: ADR. 0004 protege API., Node.JS., Open.AI. API., Trie e Aho Corasick ficam como thresholds futuros.")
+    for expected in ("T E S T T S", "A D R", "zero zero zero quatro", "A P I", "Node J S", "Open A I A P I", "trai", "A rô Corássic", "trésholds"):
+        if expected not in mixed:
+            failures.append(f"mixed technical transform missing {expected}")
+    clean = mixed_technical_clean_natural("Teste real do TES-TTS: 0004 usa G. dois P. e Open.AI. API., Node.JS.")
+    for expected in ("TES TTS", "zero zero zero quatro", "G dois P", "Open AI API", "Node JS"):
+        if expected not in clean:
+            failures.append(f"mixed clean transform missing {expected}")
     source_session = DEFAULT_SOURCE_SESSION
     if source_session.exists():
         source_ids = {chunk["id"] for chunk in load_source_chunks(source_session)}

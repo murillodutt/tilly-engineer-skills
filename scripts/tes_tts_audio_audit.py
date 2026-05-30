@@ -35,12 +35,51 @@ SILENCE_THRESHOLD = 0.005
 NEAR_CLIP_THRESHOLD = 0.95
 BAD_SIMILARITY_THRESHOLD = 0.86
 BAD_WER_THRESHOLD = 0.28
+DOMAIN_NORMALIZED_SUBSTITUTIONS = [
+    (r"\bjson[\s-]*l\b", "jsonl"),
+    (r"\bjason[\s-]*l\b", "jsonl"),
+    (r"\bomni\s+voice\b", "omnivoice"),
+    (r"\bomni\s*voyce\b", "omnivoice"),
+    (r"\bomnivoyce\b", "omnivoice"),
+    (r"\bou\s+minivoiz\b", "omnivoice"),
+    (r"\bminivoiz\b", "omnivoice"),
+    (r"\bresident\b", "residente"),
+]
 
 
 def normalize_for_compare(text: str) -> list[str]:
     text = text.lower()
     text = re.sub(r"[^\w\sáàâãéêíóôõúçü-]", " ", text, flags=re.IGNORECASE)
     return [word for word in re.sub(r"\s+", " ", text).strip().split(" ") if word]
+
+
+def strip_accents(text: str) -> str:
+    normalized = unicodedata.normalize("NFKD", text)
+    return "".join(char for char in normalized if unicodedata.category(char) != "Mn")
+
+
+def normalize_domain_terms_for_compare(text: str) -> str:
+    normalized = strip_accents(text.lower())
+    normalized = normalized.replace("-", " ")
+    for pattern, replacement in DOMAIN_NORMALIZED_SUBSTITUTIONS:
+        normalized = re.sub(pattern, replacement, normalized, flags=re.IGNORECASE)
+    normalized = re.sub(r"\b(a|o|as|os|um|uma|uns|umas)\b", " ", normalized)
+    return re.sub(r"\s+", " ", normalized).strip()
+
+
+def domain_normalized_comparison(reference: str, hypothesis: str) -> dict[str, Any]:
+    normalized_reference = normalize_domain_terms_for_compare(reference)
+    normalized_hypothesis = normalize_domain_terms_for_compare(hypothesis)
+    similarity = round(similarity_ratio(normalized_reference, normalized_hypothesis), 4)
+    wer = round(word_error_rate(normalized_reference, normalized_hypothesis), 4)
+    return {
+        "normalizer": "tes_tts_domain_terms@1",
+        "reference": normalized_reference,
+        "hypothesis": normalized_hypothesis,
+        "similarity": similarity,
+        "wer": wer,
+        "status": "PASS" if similarity >= BAD_SIMILARITY_THRESHOLD and wer <= BAD_WER_THRESHOLD else "NEEDS_REVIEW",
+    }
 
 
 def edit_distance(left: list[str], right: list[str]) -> int:
@@ -194,6 +233,30 @@ def resolve_audio_path(session_dir: Path, expected_audio: str | None, chunk_id: 
     return candidates[0] if candidates else session_dir / f"{chunk_id}.wav"
 
 
+def audit_combined_audio(session_dir: Path, args: argparse.Namespace) -> dict[str, Any] | None:
+    if not args.audit_combined:
+        return None
+    path = session_dir / "combined.wav"
+    if not path.exists():
+        return {
+            "audio": str(path),
+            "exists": False,
+            "flags": ["COMBINED_AUDIO_MISSING"],
+        }
+    metrics = audio_metrics(path)
+    flags: list[str] = []
+    if metrics["clip_ratio"] or metrics["near_clip_ratio"]:
+        flags.append("COMBINED_CLIPPING_RISK")
+    if metrics["max_sample_jump"] >= args.max_sample_jump:
+        flags.append("COMBINED_SAMPLE_JUMP_REVIEW")
+    return {
+        "audio": str(path),
+        "exists": True,
+        "audio_metrics": metrics,
+        "flags": flags,
+    }
+
+
 def load_chunks(session_dir: Path) -> list[dict[str, Any]]:
     chunk_path = session_dir / "chunk-texts.json"
     if not chunk_path.exists():
@@ -311,6 +374,7 @@ def audit_session(args: argparse.Namespace) -> dict[str, Any]:
     chunks = load_chunks(session_dir)
     stt_by_file: dict[str, str] = {}
     stt_details: dict[str, Any] = {"status": "SKIPPED"}
+    audit_flags: list[str] = []
     if args.stt:
         stt_by_file, stt_details = run_stt(
             python=Path(args.stt_python),
@@ -319,6 +383,8 @@ def audit_session(args: argparse.Namespace) -> dict[str, Any]:
             rows=chunks,
             require_stt=args.require_stt,
         )
+        if stt_details.get("status") != "PASS":
+            audit_flags.append("STT_UNAVAILABLE_REVIEW")
 
     audited_chunks: list[dict[str, Any]] = []
     status = "PASS"
@@ -335,13 +401,24 @@ def audit_session(args: argparse.Namespace) -> dict[str, Any]:
             flags.append("SAMPLE_JUMP_REVIEW")
         comparison: dict[str, Any] | None = None
         if transcript is not None:
+            raw_similarity = round(similarity_ratio(chunk["text"], transcript), 4)
+            raw_wer = round(word_error_rate(chunk["text"], transcript), 4)
+            domain_comparison = domain_normalized_comparison(chunk["text"], transcript)
             comparison = {
                 "transcription": transcript.strip(),
-                "similarity": round(similarity_ratio(chunk["text"], transcript), 4),
-                "wer": round(word_error_rate(chunk["text"], transcript), 4),
+                "similarity": raw_similarity,
+                "wer": raw_wer,
+                "domain_normalized": domain_comparison,
             }
-            if comparison["similarity"] < BAD_SIMILARITY_THRESHOLD or comparison["wer"] > BAD_WER_THRESHOLD:
+            raw_needs_review = raw_similarity < BAD_SIMILARITY_THRESHOLD or raw_wer > BAD_WER_THRESHOLD
+            domain_needs_review = domain_comparison["status"] != "PASS"
+            if raw_needs_review and domain_needs_review:
                 flags.append("STT_DEGRADATION_REVIEW")
+            elif raw_needs_review:
+                flags.append("RAW_STT_DRIFT_DOMAIN_NORMALIZED_REVIEW")
+                comparison["interpretation"] = "RAW_STT_DRIFT_DOMAIN_NORMALIZED_PASS"
+            else:
+                comparison["interpretation"] = "RAW_STT_PASS"
         if flags and status == "PASS":
             status = "NEEDS_REVIEW"
         audited_chunks.append(
@@ -356,6 +433,12 @@ def audit_session(args: argparse.Namespace) -> dict[str, Any]:
             }
         )
 
+    combined_audio = audit_combined_audio(session_dir, args)
+    if combined_audio and combined_audio.get("flags"):
+        audit_flags.extend(str(flag) for flag in combined_audio["flags"])
+    if audit_flags and status == "PASS":
+        status = "NEEDS_REVIEW"
+
     return {
         "schema": "tes-tts-audio-audit@1",
         "version": VERSION,
@@ -363,10 +446,14 @@ def audit_session(args: argparse.Namespace) -> dict[str, Any]:
         "session_dir": str(session_dir),
         "chunk_count": len(audited_chunks),
         "stt": stt_details,
+        "audit_flags": sorted(set(audit_flags)),
+        "combined_audio": combined_audio,
         "thresholds": {
             "bad_similarity_below": BAD_SIMILARITY_THRESHOLD,
             "bad_wer_above": BAD_WER_THRESHOLD,
             "max_sample_jump_review": args.max_sample_jump,
+            "domain_normalizer": "tes_tts_domain_terms@1",
+            "domain_normalizer_scope": "STT evaluation only; raw WER remains preserved",
         },
         "chunks": audited_chunks,
     }
@@ -399,7 +486,9 @@ def command_self_test(_args: argparse.Namespace) -> int:
     with tempfile.TemporaryDirectory() as temp_dir:
         root = Path(temp_dir)
         wav_path = root / "001-chunk-001.wav"
+        combined_path = root / "combined.wav"
         write_test_wav(wav_path)
+        write_test_wav(combined_path)
         (root / "chunk-texts.json").write_text(
             json.dumps(
                 {
@@ -426,6 +515,7 @@ def command_self_test(_args: argparse.Namespace) -> int:
             max_sample_jump=0.7,
             output=None,
             strict=False,
+            audit_combined=True,
         )
         payload = audit_session(args)
         failures = []
@@ -438,6 +528,14 @@ def command_self_test(_args: argparse.Namespace) -> int:
             failures.append("missing audio duration")
         if chunk["audio_metrics"]["clip_ratio"] != 0:
             failures.append("unexpected clipping")
+        if not payload.get("combined_audio"):
+            failures.append("expected combined audio audit")
+        domain = domain_normalized_comparison(
+            "usa sessão residente OmniVoice e grava um log JSONL",
+            "usa a sessão Resident e Omni Voice e grava um log Jason L",
+        )
+        if domain["status"] != "PASS":
+            failures.append("expected domain-normalized comparison to pass")
         if failures:
             print(json.dumps({"status": "FAIL", "failures": failures, "payload": payload}, ensure_ascii=False, indent=2))
             return 1
@@ -458,6 +556,7 @@ def build_parser() -> argparse.ArgumentParser:
     audit.add_argument("--stt-model", default=str(DEFAULT_STT_MODEL))
     audit.add_argument("--stt-language", default="portuguese")
     audit.add_argument("--max-sample-jump", type=float, default=0.5)
+    audit.add_argument("--audit-combined", action="store_true")
     audit.add_argument("--strict", action="store_true")
     audit.set_defaults(func=command_audit)
 

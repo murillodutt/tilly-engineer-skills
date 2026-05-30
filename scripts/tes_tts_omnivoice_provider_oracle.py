@@ -186,6 +186,8 @@ REQUIRED_LONG_READ_DRY_RUN_KEYS = {
     "utterance_timeout_seconds",
     "slow_chunk_ms",
     "play_requested",
+    "combine_requested",
+    "inter_chunk_silence_ms",
     "latency_profile",
     "requested_latency_profile",
     "latency_profile_source",
