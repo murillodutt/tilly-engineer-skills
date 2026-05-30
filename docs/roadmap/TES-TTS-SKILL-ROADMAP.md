@@ -49,7 +49,9 @@ durable cache, or proactive `speak`.
   once, records `SERVER_UNAVAILABLE` instead of repeating failed synthesis, and
   can pass community server controls for per-chunk language, task type, speaker,
   instructions, stream, token budget, generation parameters, and inference
-  steps through named preset matrices during chunk 2/3 review.
+  steps through named preset matrices during chunk 2/3 review. Scenario
+  `community_server_clone_review` focuses the bad chunks with clone fast/quality
+  presets and combined WAV review.
 
 ## Next Cut
 Run chunks 2 and 3 through `audio_variant_lab --provider-route server` with the

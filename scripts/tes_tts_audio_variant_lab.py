@@ -28,6 +28,24 @@ VERSION = "0.3.147"
 MIN_CHUNK_CHARS = 80
 SERVER_CONTROL_PRESETS: dict[str, dict[str, Any]] = {
     "manual": {},
+    "omnivoice_server_clone_fast": {
+        "num_step": 16,
+        "guidance_scale": 2.0,
+        "denoise": True,
+        "t_shift": 0.1,
+        "position_temperature": 0.0,
+        "class_temperature": 0.0,
+        "postprocess_output": True,
+    },
+    "omnivoice_server_clone_quality_repro": {
+        "num_step": 32,
+        "guidance_scale": 3.0,
+        "denoise": True,
+        "t_shift": 0.1,
+        "position_temperature": 0.0,
+        "class_temperature": 0.0,
+        "postprocess_output": True,
+    },
     "omnivoice_server_fast_nonstream": {
         "instructions": "Leia naturalmente. Preserve termos tecnicos em ingles sem traduzir.",
         "stream": False,
@@ -55,6 +73,11 @@ SERVER_CONTROL_PRESETS: dict[str, dict[str, Any]] = {
         "stream": False,
     },
 }
+COMMUNITY_SERVER_CLONE_VARIANTS = [
+    "mixed_technical_semicolon_english_chunked",
+    "mixed_technical_context_sentences",
+    "mixed_technical_problem_aliases",
+]
 
 
 def safe_stem(value: str) -> str:
@@ -715,6 +738,28 @@ def server_control_profiles(args: argparse.Namespace) -> list[dict[str, Any]]:
     return profiles
 
 
+def apply_scenario_defaults(args: argparse.Namespace) -> None:
+    if args.scenario != "community_server_clone_review":
+        return
+    if args.provider_route == "resident":
+        args.provider_route = "server"
+    if args.provider_language == "pt":
+        args.provider_language = "auto"
+    if not args.variant:
+        args.variant = list(COMMUNITY_SERVER_CLONE_VARIANTS)
+    if not args.server_control_preset:
+        args.server_control_preset = ["omnivoice_server_clone_fast", "omnivoice_server_clone_quality_repro"]
+    args.combine = True
+
+
+def select_scenario_chunk_ids(args: argparse.Namespace, available_ids: set[str]) -> set[str]:
+    selected_ids = set(args.chunk_id or [])
+    if selected_ids or args.scenario != "community_server_clone_review":
+        return selected_ids
+    degraded_ids = {"chunk-002", "chunk-003"} & available_ids
+    return degraded_ids or available_ids
+
+
 def audit_session(session: Path, *, stt: bool, audit_combined: bool, stt_language: str) -> dict[str, Any]:
     command = [
         "python3",
@@ -913,12 +958,13 @@ def write_review_package(output_root: Path, review_html: Path, payload: dict[str
 
 
 def command_run(args: argparse.Namespace) -> int:
+    apply_scenario_defaults(args)
     source_session = Path(args.source_session).resolve()
     output_root = Path(args.output_root).resolve() / dt.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
     output_root.mkdir(parents=True, exist_ok=True)
     source_chunks = load_source_chunks(source_session)
-    selected_ids = set(args.chunk_id or [])
     available_ids = {str(source.get("id")) for source in source_chunks if source.get("id")}
+    selected_ids = select_scenario_chunk_ids(args, available_ids)
     missing_ids = sorted(selected_ids - available_ids)
     if missing_ids:
         output = output_root / "variant-lab-summary.json"
@@ -929,6 +975,7 @@ def command_run(args: argparse.Namespace) -> int:
             "reason": "requested chunk id was not found in source session",
             "source_session": str(source_session),
             "output_root": str(output_root),
+            "scenario": args.scenario,
             "available_chunk_ids": sorted(available_ids),
             "missing_chunk_ids": missing_ids,
             "results": [],
@@ -962,6 +1009,7 @@ def command_run(args: argparse.Namespace) -> int:
                 "reason": "server route preflight did not prove a ready OpenAI-compatible TTS server",
                 "source_session": str(source_session),
                 "output_root": str(output_root),
+                "scenario": args.scenario,
                 "available_chunk_ids": sorted(available_ids),
                 "selected_chunk_ids": sorted(selected_ids),
                 "synthesize": args.synthesize,
@@ -1098,6 +1146,7 @@ def command_run(args: argparse.Namespace) -> int:
         "source_session": str(source_session),
         "output_root": str(output_root),
         "status": overall_status(results),
+        "scenario": args.scenario,
         "available_chunk_ids": sorted(available_ids),
         "selected_chunk_ids": sorted(selected_ids),
         "synthesize": args.synthesize,
@@ -1210,6 +1259,51 @@ def command_self_test(_args: argparse.Namespace) -> int:
         failures.append("server generation controls preset drifted")
     if profiles[1].get("task_type") != "CustomVoice" or profiles[1].get("max_new_tokens") != 2048:
         failures.append("vLLM server preset drifted")
+    clone_profile_args = argparse.Namespace(
+        server_control_preset=["omnivoice_server_clone_fast", "omnivoice_server_clone_quality_repro"],
+        server_speaker=None,
+        server_instructions=None,
+        server_clone_ref_audio="/tmp/ref.wav",
+        server_clone_ref_text="Reference transcript.",
+        server_task_type=None,
+        server_max_new_tokens=None,
+        server_guidance_scale=None,
+        server_denoise=None,
+        server_t_shift=None,
+        server_position_temperature=None,
+        server_class_temperature=None,
+        server_postprocess_output=None,
+        server_stream=None,
+        server_num_step=None,
+    )
+    clone_profiles = server_control_profiles(clone_profile_args)
+    if [profile["name"] for profile in clone_profiles] != ["omnivoice_server_clone_fast", "omnivoice_server_clone_quality_repro"]:
+        failures.append("clone server preset ordering drifted")
+    if clone_profiles[0].get("num_step") != 16 or clone_profiles[1].get("num_step") != 32:
+        failures.append("clone server preset step controls drifted")
+    if any(profile.get("clone_ref_audio") != "/tmp/ref.wav" for profile in clone_profiles):
+        failures.append("clone server presets must inherit reference audio")
+    scenario_args = argparse.Namespace(
+        scenario="community_server_clone_review",
+        provider_route="resident",
+        provider_language="pt",
+        variant=None,
+        server_control_preset=None,
+        combine=False,
+        chunk_id=None,
+    )
+    apply_scenario_defaults(scenario_args)
+    if scenario_args.provider_route != "server" or scenario_args.provider_language != "auto":
+        failures.append("community clone scenario must default to server/auto")
+    if scenario_args.variant != COMMUNITY_SERVER_CLONE_VARIANTS:
+        failures.append("community clone scenario variant defaults drifted")
+    if scenario_args.server_control_preset != ["omnivoice_server_clone_fast", "omnivoice_server_clone_quality_repro"]:
+        failures.append("community clone scenario preset defaults drifted")
+    if not scenario_args.combine:
+        failures.append("community clone scenario must default to combined review audio")
+    selected = select_scenario_chunk_ids(scenario_args, {"chunk-001", "chunk-002", "chunk-003"})
+    if selected != {"chunk-002", "chunk-003"}:
+        failures.append("community clone scenario must target degraded chunks first")
     paused = pause_newlines(text)
     if "\n\n" not in paused:
         failures.append("pause newline transform did not add paragraph boundary")
@@ -1396,6 +1490,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     run = subparsers.add_parser("run")
+    run.add_argument("--scenario", choices=["manual", "community_server_clone_review"], default="manual")
     run.add_argument("--source-session", default=str(DEFAULT_SOURCE_SESSION))
     run.add_argument("--output-root", default=str(DEFAULT_OUTPUT_ROOT))
     run.add_argument("--chunk-id", action="append")
