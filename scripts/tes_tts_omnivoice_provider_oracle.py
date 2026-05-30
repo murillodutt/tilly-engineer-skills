@@ -155,6 +155,37 @@ REQUIRED_PRODUCT_STATUS_KEYS = {
     "allows_sync",
     "allows_release",
 }
+REQUIRED_CANDIDATE_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "mode",
+    "candidate_ready",
+    "next_action",
+    "review_html",
+    "review_source",
+    "review_exists",
+    "decision_json",
+    "decision_json_exists",
+    "decision",
+    "case_count",
+    "scored_case_count",
+    "package_zip",
+    "package_zip_exists",
+    "package_sha256",
+    "audio_count",
+    "audio_files",
+    "play_requested",
+    "open_requested",
+    "dry_run",
+    "open_result",
+    "playback_results",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
+    "allows_sync",
+    "allows_release",
+}
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -859,6 +890,125 @@ def validate_product_status_command() -> list[str]:
     return failures
 
 
+def validate_candidate_command() -> list[str]:
+    failures: list[str] = []
+    provider = load_provider_module()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        review = root / "review.html"
+        result = root / "result.json"
+        decision = root / "review-decision.json"
+        wav = root / "case.wav"
+        review.write_text("<!doctype html><audio controls src=\"case.wav\"></audio>", encoding="utf-8")
+        wav.write_bytes(b"fake-wave")
+        result.write_text(
+            json.dumps(
+                {
+                    "outputs": [{"id": "case", "output": str(wav)}],
+                    "benchmark_summary": {
+                        "case_count": 1,
+                        "avg_rtf": 0.9,
+                        "total_audio_duration_seconds": 3.2,
+                        "total_generation_ms": 2880,
+                    },
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        decision.write_text(
+            json.dumps(
+                {
+                    "schema": "tes-tts-omnivoice-review-decision@1",
+                    "decision": "AUDIO_CANDIDATE",
+                    "case_count": 1,
+                    "scored_case_count": 1,
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        provider.write_review_package(review, root / "tes-tts-omnivoice-review-package.zip")
+        args = argparse.Namespace(
+            path=str(review),
+            benchmark_dir=None,
+            format="json",
+            play=True,
+            open=True,
+            dry_run=True,
+            strict=True,
+        )
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            if provider.command_candidate(args) != 0:
+                failures.append("candidate command failed for sealed local fixture")
+        payload = json.loads(stdout.getvalue())
+        text_args = argparse.Namespace(
+            path=str(review),
+            benchmark_dir=None,
+            format="text",
+            play=True,
+            open=True,
+            dry_run=True,
+            strict=True,
+        )
+        text_stdout = io.StringIO()
+        with contextlib.redirect_stdout(text_stdout):
+            if provider.command_candidate(text_args) != 0:
+                failures.append("candidate text command failed for sealed local fixture")
+        text_output = text_stdout.getvalue()
+
+    missing = sorted(REQUIRED_CANDIDATE_KEYS - set(payload))
+    extra = sorted(set(payload) - REQUIRED_CANDIDATE_KEYS)
+    if missing:
+        failures.append(f"candidate missing keys {missing}")
+    if extra:
+        failures.append(f"candidate has extra keys {extra}")
+    if payload.get("mode") != "product_candidate":
+        failures.append("candidate mode drifted")
+    if payload.get("status") != "PASS":
+        failures.append("candidate should pass for a sealed audio candidate")
+    if payload.get("candidate_ready") is not True:
+        failures.append("candidate_ready must be true for sealed AUDIO_CANDIDATE with package and audio")
+    if payload.get("decision") != "AUDIO_CANDIDATE":
+        failures.append("candidate must report sealed decision")
+    if payload.get("audio_count") != 1:
+        failures.append("candidate must discover the local WAV output")
+    if payload.get("package_zip_exists") is not True:
+        failures.append("candidate must discover packaged review")
+    if payload.get("package_sha256") is None:
+        failures.append("candidate must report package sha")
+    if payload.get("open_result") is not None:
+        failures.append("candidate dry-run must not open review files")
+    if payload.get("playback_results") != []:
+        failures.append("candidate dry-run must not play audio")
+    for snippet in ("TES TTS OmniVoice candidate: ready", "Package SHA:", "Audio files: 1", "Locks:"):
+        if snippet not in text_output:
+            failures.append(f"candidate text output missing snippet: {snippet}")
+    for key in ("allows_install", "allows_download", "allows_global_config_write", "allows_sync", "allows_release"):
+        if payload.get(key) is not False:
+            failures.append(f"candidate must keep {key}=false")
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        review = root / "review.html"
+        review.write_text("<!doctype html>", encoding="utf-8")
+        args = argparse.Namespace(
+            path=str(review),
+            benchmark_dir=None,
+            format="json",
+            play=False,
+            open=False,
+            dry_run=True,
+            strict=True,
+        )
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = provider.command_candidate(args)
+        if code == 0:
+            failures.append("candidate --strict must fail before review decision/package/audio evidence")
+    return failures
+
+
 def validate_fixtures(fixtures: dict[str, Any]) -> list[str]:
     failures: list[str] = []
     if fixtures.get("version") != VERSION:
@@ -910,6 +1060,7 @@ def main() -> int:
     failures.extend(validate_review_package_zip())
     failures.extend(validate_review_decision_command())
     failures.extend(validate_product_status_command())
+    failures.extend(validate_candidate_command())
     failures.extend(validate_fixtures(load_json(FIXTURE_PATH)))
     print(
         json.dumps(

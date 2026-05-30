@@ -49,12 +49,12 @@ cache, and proactive `speak`.
 - Optional provider probe: `provider_available`.
 - `status` auto-discovers the local OmniVoice env/reference; `speak` delegates
   synthesis without long CLI arguments.
-- `bench --play --open --package` writes WAVs, metrics, review HTML, and ZIP
-  manifest. `decide-review --review-json <exported-json> --package` seals
-  `review-decision.json`.
-- `product-status --format text --strict` gates promotion unless the sealed
-  state is `AUDIO_CANDIDATE`; latest packaged run: `32.69s` audio, `30.19s`
-  total, average RTF `0.9422`, package SHA starts `0206b249`.
+- `bench --play --open --package` writes WAVs, metrics, review HTML, ZIP
+  manifest; `decide-review --review-json <json> --package` seals the decision.
+- `product-status --format text --strict` gates `AUDIO_CANDIDATE`; latest run:
+  `32.69s` audio, `30.19s` total, RTF `0.9422`, SHA starts `0206b249`.
+- `candidate --format text --strict` replays/opens sealed audio without
+  regenerating it.
 
 Relevant gates: focused TTS provider/runtime/oracle suite, materialization,
 TDS/doc-size/reference validators, and `npm run commit:check` for package
@@ -64,8 +64,9 @@ closure.
 
 Run `bench --play --open --package`, score audible quality by fixture, export
 review JSON, seal with `decide-review --review-json <json> --package`, then
-gate with `product-status --format text --strict`. The result decides release
-identity planning or one targeted provider/runtime fix.
+gate with `product-status --format text --strict` and inspect with `candidate
+--format text --strict`. The result decides release identity planning or one
+targeted provider/runtime fix.
 
 ## Maintenance Rules
 
@@ -83,7 +84,6 @@ identity planning or one targeted provider/runtime fix.
 
 ## Closure Rule
 
-For material `tes-tts` changes, close only after the smallest relevant TTS
-oracles pass plus the package gates needed for the touched surfaces. Use
-`npm run commit:check` before claiming package closure. Do not claim release
-closure without a release identity decision.
+For material `tes-tts` changes, close after the smallest relevant TTS oracles
+plus needed package gates. Use `npm run commit:check` before package closure.
+Do not claim release closure without a release identity decision.

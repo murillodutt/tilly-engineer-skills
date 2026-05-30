@@ -762,6 +762,118 @@ def command_product_status(args: argparse.Namespace) -> int:
 
 
 
+def candidate_state_and_next_action(
+    *,
+    review_exists: bool,
+    decision: str | None,
+    package_exists: bool,
+    audio_count: int,
+) -> tuple[bool, str]:
+    if not review_exists:
+        return False, "Run bench --play --open --package to create a review page and audio evidence."
+    if decision is None:
+        return False, "Score the review page, export JSON, then seal it with decide-review --review-json <json> --package."
+    if decision != "AUDIO_CANDIDATE":
+        return False, "Apply the targeted audio/runtime fix, then rerun bench and decide-review."
+    if not package_exists:
+        return False, "Run package-review --path <review.html> or decide-review --package to create the sealed ZIP."
+    if audio_count <= 0:
+        return False, "Rerun bench because the sealed review has no local audio files to replay."
+    return True, "Replay with --play or inspect with --open; release identity still needs a separate owner decision."
+
+
+def render_candidate_text(payload: dict[str, Any]) -> str:
+    ready = "ready" if payload.get("candidate_ready") else "not ready"
+    decision = payload.get("decision") or "not sealed"
+    review = payload.get("review_html") or "not found"
+    package_sha = payload.get("package_sha256") or "not packaged"
+    return "\n".join(
+        [
+            f"TES TTS OmniVoice candidate: {ready}",
+            f"Decision: {decision}",
+            f"Review: {review}",
+            f"Package SHA: {package_sha}",
+            f"Audio files: {payload.get('audio_count')}",
+            f"Next: {payload.get('next_action')}",
+            "Locks: no install, no download, no global config write, no sync, no release.",
+        ]
+    )
+
+
+def command_candidate(args: argparse.Namespace) -> int:
+    review_html, review_source = resolve_review_html(args.path, args.benchmark_dir)
+    review_exists = bool(review_html and review_html.exists())
+    decision_json = review_html.parent / "review-decision.json" if review_exists and review_html else None
+    package_zip = review_html.parent / "tes-tts-omnivoice-review-package.zip" if review_exists and review_html else None
+    decision_payload: dict[str, Any] = {}
+    if decision_json and decision_json.exists():
+        decision_payload = json.loads(decision_json.read_text(encoding="utf-8"))
+    decision = decision_payload.get("decision") if isinstance(decision_payload.get("decision"), str) else None
+    package_files = review_package_files(review_html) if review_exists and review_html else []
+    audio_files = [
+        item
+        for item in package_files
+        if item.suffix.casefold() in {".wav", ".mp3", ".m4a", ".aiff", ".aif", ".flac", ".ogg"}
+    ]
+    package_exists = bool(package_zip and package_zip.exists())
+    candidate_ready, next_action = candidate_state_and_next_action(
+        review_exists=review_exists,
+        decision=decision,
+        package_exists=package_exists,
+        audio_count=len(audio_files),
+    )
+    open_result: dict[str, Any] | None = None
+    playback_results: list[dict[str, Any]] = []
+    playback_failed = False
+    if args.open and review_exists and review_html and not args.dry_run:
+        open_result = open_local_file(review_html)
+    if args.play and audio_files and not args.dry_run:
+        playback_results = playback_outputs(
+            [{"id": item.stem, "output": str(item)} for item in audio_files]
+        )
+        playback_failed = any(item.get("playback_status") == "failed" for item in playback_results)
+    payload = {
+        "provider": "omnivoice",
+        "status": "PASS" if candidate_ready else "NEEDS_REVIEW",
+        "version": VERSION,
+        "mode": "product_candidate",
+        "candidate_ready": candidate_ready,
+        "next_action": next_action,
+        "review_html": str(review_html) if review_html else None,
+        "review_source": review_source,
+        "review_exists": review_exists,
+        "decision_json": str(decision_json) if decision_json else None,
+        "decision_json_exists": bool(decision_json and decision_json.exists()),
+        "decision": decision,
+        "case_count": decision_payload.get("case_count"),
+        "scored_case_count": decision_payload.get("scored_case_count"),
+        "package_zip": str(package_zip) if package_zip else None,
+        "package_zip_exists": package_exists,
+        "package_sha256": sha256_path(package_zip) if package_zip and package_zip.exists() else None,
+        "audio_count": len(audio_files),
+        "audio_files": [str(item) for item in audio_files],
+        "play_requested": args.play,
+        "open_requested": args.open,
+        "dry_run": args.dry_run,
+        "open_result": open_result,
+        "playback_results": playback_results,
+        "allows_install": False,
+        "allows_download": False,
+        "allows_global_config_write": False,
+        "allows_sync": False,
+        "allows_release": False,
+    }
+    if args.format == "text":
+        print(render_candidate_text(payload))
+    else:
+        emit(payload)
+    if playback_failed:
+        return 4
+    if args.strict and not candidate_ready:
+        return 3
+    return 0 if review_exists else 2
+
+
 def command_package_review(args: argparse.Namespace) -> int:
     review_html, source = resolve_review_html(args.path, args.benchmark_dir)
     if review_html is None or not review_html.exists():
@@ -1507,6 +1619,16 @@ def build_parser() -> argparse.ArgumentParser:
     product_status.add_argument("--format", choices=["json", "text"], default="json")
     product_status.add_argument("--strict", action="store_true")
     product_status.set_defaults(func=command_product_status)
+
+    candidate = subparsers.add_parser("candidate")
+    candidate.add_argument("--path")
+    candidate.add_argument("--benchmark-dir")
+    candidate.add_argument("--format", choices=["json", "text"], default="json")
+    candidate.add_argument("--play", action="store_true")
+    candidate.add_argument("--open", action="store_true")
+    candidate.add_argument("--dry-run", action="store_true")
+    candidate.add_argument("--strict", action="store_true")
+    candidate.set_defaults(func=command_candidate)
 
     package_review = subparsers.add_parser("package-review")
     package_review.add_argument("--path")
