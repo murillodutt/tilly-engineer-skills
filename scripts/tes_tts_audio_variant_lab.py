@@ -11,6 +11,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import tempfile
 from typing import Any
 import zipfile
 
@@ -528,6 +529,10 @@ def synthesize_session(
     provider_route: str,
     server_url: str | None,
     server_voice: str,
+    server_speaker: str | None,
+    server_instructions: str | None,
+    server_stream: bool | None,
+    server_num_step: int | None,
     combine: bool,
     inter_chunk_silence_ms: int,
     chunk_edge_silence_ms: int,
@@ -551,6 +556,16 @@ def synthesize_session(
         ]
         if server_url:
             command.extend(["--server-url", server_url])
+        if server_speaker:
+            command.extend(["--speaker", server_speaker])
+        if server_instructions:
+            command.extend(["--instructions", server_instructions])
+        if server_stream is True:
+            command.append("--stream")
+        elif server_stream is False:
+            command.append("--no-stream")
+        if server_num_step is not None:
+            command.extend(["--num-step", str(server_num_step)])
     else:
         command = [
             "python3",
@@ -583,6 +598,19 @@ def synthesize_session(
     except json.JSONDecodeError:
         result["json"] = None
     return result
+
+
+def discovered_preferred_voice(server_preflight: dict[str, Any] | None) -> str | None:
+    if not isinstance(server_preflight, dict):
+        return None
+    payload = server_preflight.get("json")
+    if not isinstance(payload, dict):
+        return None
+    capabilities = payload.get("capabilities")
+    if not isinstance(capabilities, dict):
+        return None
+    value = capabilities.get("preferred_voice_id")
+    return value if isinstance(value, str) and value else None
 
 
 def audit_session(session: Path, *, stt: bool, audit_combined: bool, stt_language: str) -> dict[str, Any]:
@@ -837,6 +865,12 @@ def command_run(args: argparse.Namespace) -> int:
                 "provider_route": args.provider_route,
                 "server_url": args.server_url,
                 "server_health_path": args.server_health_path,
+                "server_voice": args.server_voice or "default",
+                "server_voice_source": "arg" if args.server_voice else "default",
+                "server_speaker": args.server_speaker,
+                "server_instructions_present": bool(args.server_instructions),
+                "server_stream": args.server_stream,
+                "server_num_step": args.server_num_step,
                 "server_preflight": server_preflight,
                 "results": [],
                 "ranked_results": [],
@@ -854,6 +888,12 @@ def command_run(args: argparse.Namespace) -> int:
                 )
             )
             return 2
+
+    resolved_server_voice = (
+        args.server_voice
+        or discovered_preferred_voice(server_preflight)
+        or "default"
+    )
 
     results: list[dict[str, Any]] = []
     for source in source_chunks:
@@ -896,7 +936,11 @@ def command_run(args: argparse.Namespace) -> int:
                     provider_language=args.provider_language,
                     provider_route=args.provider_route,
                     server_url=args.server_url,
-                    server_voice=args.server_voice,
+                    server_voice=resolved_server_voice,
+                    server_speaker=args.server_speaker,
+                    server_instructions=args.server_instructions,
+                    server_stream=args.server_stream,
+                    server_num_step=args.server_num_step,
                     combine=args.combine,
                     inter_chunk_silence_ms=args.inter_chunk_silence_ms,
                     chunk_edge_silence_ms=args.chunk_edge_silence_ms,
@@ -934,7 +978,20 @@ def command_run(args: argparse.Namespace) -> int:
         "server_url": args.server_url,
         "server_health_path": args.server_health_path if args.provider_route == "server" else None,
         "server_preflight": server_preflight if args.provider_route == "server" and args.synthesize else None,
-        "server_voice": args.server_voice if args.provider_route == "server" else None,
+        "server_voice": resolved_server_voice if args.provider_route == "server" else None,
+        "server_voice_source": (
+            "arg"
+            if args.provider_route == "server" and args.server_voice
+            else "capability_discovery"
+            if args.provider_route == "server" and discovered_preferred_voice(server_preflight)
+            else "default"
+            if args.provider_route == "server"
+            else None
+        ),
+        "server_speaker": args.server_speaker if args.provider_route == "server" else None,
+        "server_instructions_present": bool(args.server_instructions) if args.provider_route == "server" else None,
+        "server_stream": args.server_stream if args.provider_route == "server" else None,
+        "server_num_step": args.server_num_step if args.provider_route == "server" else None,
         "stt_language": args.stt_language,
         "results": results,
         "ranked_results": rank_results(results),
@@ -1074,6 +1131,61 @@ def command_self_test(_args: argparse.Namespace) -> int:
         failures.append("server preflight did not derive root health URL")
     if preflight_payload.get("status") != "DRY_RUN":
         failures.append("server preflight dry-run status drifted")
+    preferred = discovered_preferred_voice({"json": {"capabilities": {"preferred_voice_id": "felipe-clone"}}})
+    if preferred != "felipe-clone":
+        failures.append("server preferred voice discovery drifted")
+    original_run_command = run_command
+    captured: dict[str, Any] = {}
+
+    def fake_run_command(command: list[str]) -> dict[str, Any]:
+        captured["command"] = command
+        return {"command": command, "returncode": 0, "stdout": "{}", "stderr": "", "json": {}}
+
+    try:
+        globals()["run_command"] = fake_run_command
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            session = Path(tmp_dir)
+            (session / "input.txt").write_text("Teste com JSON e TypeScript.", encoding="utf-8")
+            synthesize_session(
+                session,
+                chunk_chars=120,
+                latency_profile="fast",
+                text_mode="redacted_source",
+                provider_language="pt",
+                provider_route="server",
+                server_url="http://127.0.0.1:8880/v1",
+                server_voice="felipe-clone",
+                server_speaker="felipe-clone",
+                server_instructions="Preserve English technical terms.",
+                server_stream=False,
+                server_num_step=12,
+                combine=True,
+                inter_chunk_silence_ms=350,
+                chunk_edge_silence_ms=0,
+            )
+    finally:
+        globals()["run_command"] = original_run_command
+    command = captured.get("command")
+    if not isinstance(command, list):
+        failures.append("server synthesis command capture failed")
+    else:
+        expected_parts = {
+            "--server-url",
+            "http://127.0.0.1:8880/v1",
+            "--voice",
+            "felipe-clone",
+            "--speaker",
+            "felipe-clone",
+            "--instructions",
+            "Preserve English technical terms.",
+            "--no-stream",
+            "--num-step",
+            "12",
+            "--combine",
+        }
+        missing = sorted(expected_parts - set(command))
+        if missing:
+            failures.append(f"server synthesis command missing controls {missing}")
     if failures:
         print(json.dumps({"status": "FAIL", "failures": failures}, ensure_ascii=False, indent=2))
         return 1
@@ -1102,7 +1214,11 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--provider-language", default="pt")
     run.add_argument("--provider-route", choices=["resident", "server"], default="resident")
     run.add_argument("--server-url")
-    run.add_argument("--server-voice", default="default")
+    run.add_argument("--server-voice")
+    run.add_argument("--server-speaker")
+    run.add_argument("--server-instructions")
+    run.add_argument("--server-stream", action=argparse.BooleanOptionalAction, default=None)
+    run.add_argument("--server-num-step", type=int)
     run.add_argument("--server-health-path", default="/health")
     run.add_argument("--stt-language", default="portuguese")
     run.set_defaults(func=command_run)
