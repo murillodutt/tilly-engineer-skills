@@ -6,7 +6,7 @@ license: MIT
 
 # TES TTS
 
-Operational contract: `tes.tts@0.1.8`.
+Operational contract: `tes.tts@0.1.9`.
 
 `/tes-tts` is the small TES text-to-speech skill. It reads user-provided text
 aloud through whatever local TTS tool the host exposes. `/tes:tts` is a
@@ -40,7 +40,9 @@ compatible TES intent alias if the host reports it as an invalid slash.
    If it returns `ready`, prefer
    `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<text>" --play`
    for premium cloned-voice reads, while preserving `say` as the local
-   fallback. For a product-quality smoke/latency/listening run, use
+   fallback. Use `python3 scripts/tes_tts_omnivoice_provider.py product-status`
+   as the product cockpit for provider readiness, latest review, sealed
+   decision, package SHA, and next action. For a product-quality smoke/latency/listening run, use
    `python3 scripts/tes_tts_omnivoice_provider.py bench --play --open --package`; the
    command writes `result.json` and a scored `review.html` beside the
    generated WAV files. Use the review page to score each case, export JSON

@@ -65,14 +65,13 @@ Latest local product evidence:
 - Package gate: `npm run commit:check` passed before the commit.
 - Product shortcut: `status` auto-discovers the local OmniVoice env/reference,
   and `speak` delegates synthesis without long CLI arguments.
-- Product benchmark: `bench --play --open --package` runs the three governed
-  OmniVoice fixtures through one loaded model, cached reference voice,
-  sequential playback, review page, and portable ZIP manifest. The review page
-  includes per-case audible scoring, JSON export, and copyable decision
-  summaries; `decide-review --review-json <exported-json> --package` seals a
-  `review-decision.json` into the package. Latest packaged run produced
-  `32.69s` of audio in `30.19s` total with average RTF `0.9422`; package SHA
-  starts `c594d7ee`, and the decision-sealed package starts `0206b249`.
+- Product benchmark: `bench --play --open --package` writes WAVs, metrics,
+  review HTML, and ZIP manifest. `decide-review --review-json <exported-json>
+  --package` seals `review-decision.json`. `product-status` now reports the
+  provider cockpit: readiness, latest review, sealed decision, package SHA, and
+  next action. Latest packaged run produced `32.69s` of audio in `30.19s`
+  total with average RTF `0.9422`; decision-sealed package SHA starts
+  `0206b249`.
 
 Relevant gates are the focused TTS provider/runtime/oracle suite,
 `materialize_adapter.py all --check`, TDS/doc-size/reference validators, and
@@ -90,9 +89,10 @@ Recommended next product cut:
    and score audible quality by fixture in the generated review page.
 2. Export review JSON and run
    `python3 scripts/tes_tts_omnivoice_provider.py decide-review --review-json <exported-json> --package`.
-3. Decide whether the OmniVoice provider path is ready for release identity
+3. Run `python3 scripts/tes_tts_omnivoice_provider.py product-status`.
+4. Decide whether the OmniVoice provider path is ready for release identity
    planning or needs one targeted runtime/provider fix.
-4. Keep docs limited to this dashboard, registry/history pointers, and the
+5. Keep docs limited to this dashboard, registry/history pointers, and the
    active audit result.
 
 ## Maintenance Rules

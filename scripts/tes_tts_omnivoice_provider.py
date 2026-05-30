@@ -620,6 +620,115 @@ def command_decide_review(args: argparse.Namespace) -> int:
     return 0
 
 
+def product_state_and_next_action(*, ready: bool, review_html: Path | None, decision: str | None) -> tuple[str, str]:
+    if not ready:
+        return (
+            "NEEDS_SETUP",
+            "Configure the optional OmniVoice Python environment and reference voice, or use the local say fallback.",
+        )
+    if review_html is None or not review_html.exists():
+        return (
+            "NEEDS_BENCH",
+            "Run: python3 scripts/tes_tts_omnivoice_provider.py bench --play --open --package",
+        )
+    if decision is None:
+        return (
+            "NEEDS_REVIEW_DECISION",
+            "Score the review page, export JSON, then run decide-review --review-json <exported-json> --package.",
+        )
+    if decision == "AUDIO_CANDIDATE":
+        return (
+            "AUDIO_CANDIDATE",
+            "Ask for the release identity decision; do not sync, push, tag, publish, or redistribute provider assets yet.",
+        )
+    if decision == "NEEDS_TARGETED_FIX":
+        return (
+            "NEEDS_TARGETED_FIX",
+            "Fix the lowest scored audible dimensions and rerun bench plus decide-review.",
+        )
+    if decision == "NEEDS_FIX":
+        return (
+            "NEEDS_FIX",
+            "Repair provider/runtime speech quality before release identity planning.",
+        )
+    return (
+        "PENDING_REVIEW",
+        "Complete audible scoring, export review JSON, then seal a decision with decide-review.",
+    )
+
+
+def command_product_status(args: argparse.Namespace) -> int:
+    provider_python, python_source = resolve_provider_python(args.python)
+    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    evidence = run_python_probe(provider_python)
+    provider_available = (
+        evidence.get("omnivoice_importable") is True
+        and evidence.get("torch_importable") is True
+        and evidence.get("soundfile_importable") is True
+    )
+    ref_audio_ready = bool(ref_audio and ref_audio.exists())
+    ready = provider_available and ref_audio_ready
+    review_html, review_source = resolve_review_html(args.path, args.benchmark_dir)
+    review_exists = bool(review_html and review_html.exists())
+    result_json = review_html.parent / "result.json" if review_exists and review_html else None
+    decision_json = review_html.parent / "review-decision.json" if review_exists and review_html else None
+    package_zip = review_html.parent / "tes-tts-omnivoice-review-package.zip" if review_exists and review_html else None
+    result_payload: dict[str, Any] = {}
+    decision_payload: dict[str, Any] = {}
+    if result_json and result_json.exists():
+        result_payload = json.loads(result_json.read_text(encoding="utf-8"))
+    if decision_json and decision_json.exists():
+        decision_payload = json.loads(decision_json.read_text(encoding="utf-8"))
+    decision = decision_payload.get("decision") if isinstance(decision_payload.get("decision"), str) else None
+    product_state, next_action = product_state_and_next_action(
+        ready=ready,
+        review_html=review_html if review_exists else None,
+        decision=decision,
+    )
+    summary = result_payload.get("benchmark_summary")
+    summary = summary if isinstance(summary, dict) else {}
+    emit(
+        {
+            "provider": "omnivoice",
+            "status": "PASS",
+            "version": VERSION,
+            "mode": "product_status",
+            "product_state": product_state,
+            "next_action": next_action,
+            "provider_ready": ready,
+            "provider_python": provider_python,
+            "provider_python_source": python_source,
+            "ref_audio": str(ref_audio) if ref_audio else None,
+            "ref_audio_source": ref_source,
+            "ref_audio_ready": ref_audio_ready,
+            "review_html": str(review_html) if review_html else None,
+            "review_source": review_source,
+            "review_exists": review_exists,
+            "result_json": str(result_json) if result_json else None,
+            "result_json_exists": bool(result_json and result_json.exists()),
+            "decision_json": str(decision_json) if decision_json else None,
+            "decision_json_exists": bool(decision_json and decision_json.exists()),
+            "decision": decision,
+            "case_count": decision_payload.get("case_count"),
+            "scored_case_count": decision_payload.get("scored_case_count"),
+            "avg_rtf": summary.get("avg_rtf"),
+            "total_audio_duration_seconds": summary.get("total_audio_duration_seconds"),
+            "total_generation_ms": summary.get("total_generation_ms"),
+            "package_zip": str(package_zip) if package_zip else None,
+            "package_zip_exists": bool(package_zip and package_zip.exists()),
+            "package_sha256": sha256_path(package_zip) if package_zip and package_zip.exists() else None,
+            "release_identity": "deferred_until_owner_decision",
+            "sync_status": "REMOTE_SYNC_NOT_REQUESTED",
+            "allows_install": False,
+            "allows_download": False,
+            "allows_global_config_write": False,
+            "allows_sync": False,
+            "allows_release": False,
+        }
+    )
+    return 0
+
+
 def command_package_review(args: argparse.Namespace) -> int:
     review_html, source = resolve_review_html(args.path, args.benchmark_dir)
     if review_html is None or not review_html.exists():
@@ -1356,6 +1465,13 @@ def build_parser() -> argparse.ArgumentParser:
     decide_review.add_argument("--package", action="store_true")
     decide_review.add_argument("--dry-run", action="store_true")
     decide_review.set_defaults(func=command_decide_review)
+
+    product_status = subparsers.add_parser("product-status")
+    product_status.add_argument("--python")
+    product_status.add_argument("--ref-audio")
+    product_status.add_argument("--path")
+    product_status.add_argument("--benchmark-dir")
+    product_status.set_defaults(func=command_product_status)
 
     package_review = subparsers.add_parser("package-review")
     package_review.add_argument("--path")

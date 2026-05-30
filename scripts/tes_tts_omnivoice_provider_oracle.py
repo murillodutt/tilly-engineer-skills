@@ -118,6 +118,43 @@ REQUIRED_PACKAGE_DRY_RUN_KEYS = {
     "allows_download",
     "allows_global_config_write",
 }
+REQUIRED_PRODUCT_STATUS_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "mode",
+    "product_state",
+    "next_action",
+    "provider_ready",
+    "provider_python",
+    "provider_python_source",
+    "ref_audio",
+    "ref_audio_source",
+    "ref_audio_ready",
+    "review_html",
+    "review_source",
+    "review_exists",
+    "result_json",
+    "result_json_exists",
+    "decision_json",
+    "decision_json_exists",
+    "decision",
+    "case_count",
+    "scored_case_count",
+    "avg_rtf",
+    "total_audio_duration_seconds",
+    "total_generation_ms",
+    "package_zip",
+    "package_zip_exists",
+    "package_sha256",
+    "release_identity",
+    "sync_status",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
+    "allows_sync",
+    "allows_release",
+}
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -702,6 +739,91 @@ def validate_review_decision_command() -> list[str]:
     return failures
 
 
+def validate_product_status_command() -> list[str]:
+    failures: list[str] = []
+    provider = load_provider_module()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        review = root / "review.html"
+        result = root / "result.json"
+        decision = root / "review-decision.json"
+        package_zip = root / "tes-tts-omnivoice-review-package.zip"
+        review.write_text("<!doctype html><audio controls src=\"case.wav\"></audio>", encoding="utf-8")
+        result.write_text(
+            json.dumps(
+                {
+                    "outputs": [{"id": "case", "output": str(root / "case.wav")}],
+                    "benchmark_summary": {
+                        "case_count": 1,
+                        "avg_rtf": 0.9,
+                        "total_audio_duration_seconds": 3.2,
+                        "total_generation_ms": 2880,
+                    },
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        decision.write_text(
+            json.dumps(
+                {
+                    "schema": "tes-tts-omnivoice-review-decision@1",
+                    "decision": "AUDIO_CANDIDATE",
+                    "case_count": 1,
+                    "scored_case_count": 1,
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        package_zip.write_bytes(b"fake-package")
+        args = argparse.Namespace(path=str(review), benchmark_dir=None, python=sys.executable, ref_audio=None)
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            if provider.command_product_status(args) != 0:
+                failures.append("product-status command failed for local fixture")
+        payload = json.loads(stdout.getvalue())
+    missing = sorted(REQUIRED_PRODUCT_STATUS_KEYS - set(payload))
+    extra = sorted(set(payload) - REQUIRED_PRODUCT_STATUS_KEYS)
+    if missing:
+        failures.append(f"product-status missing keys {missing}")
+    if extra:
+        failures.append(f"product-status has extra keys {extra}")
+    if payload.get("mode") != "product_status":
+        failures.append("product-status mode drifted")
+    if payload.get("status") != "PASS":
+        failures.append("product-status should be informational PASS")
+    if payload.get("review_exists") is not True:
+        failures.append("product-status must discover review fixture")
+    if payload.get("decision_json_exists") is not True:
+        failures.append("product-status must discover review-decision.json")
+    if payload.get("decision") != "AUDIO_CANDIDATE":
+        failures.append("product-status must report sealed decision")
+    if payload.get("product_state") != "NEEDS_SETUP":
+        failures.append("product-status must not overclaim readiness when provider setup is absent")
+    if payload.get("package_zip_exists") is not True:
+        failures.append("product-status must discover packaged review")
+    if payload.get("package_sha256") is None:
+        failures.append("product-status must report package sha when zip exists")
+    for key in ("allows_install", "allows_download", "allows_global_config_write", "allows_sync", "allows_release"):
+        if payload.get(key) is not False:
+            failures.append(f"product-status must keep {key}=false")
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        logic_review = Path(tmp_dir) / "review.html"
+        logic_review.write_text("<!doctype html>", encoding="utf-8")
+        state, action = provider.product_state_and_next_action(
+            ready=True,
+            review_html=logic_review,
+            decision="AUDIO_CANDIDATE",
+        )
+        if state != "AUDIO_CANDIDATE" or "release identity" not in action:
+            failures.append("product-state helper must route AUDIO_CANDIDATE to release identity decision")
+        state, _action = provider.product_state_and_next_action(ready=True, review_html=logic_review, decision=None)
+        if state != "NEEDS_REVIEW_DECISION":
+            failures.append("product-state helper must require review decision when scores are absent")
+    return failures
+
+
 def validate_fixtures(fixtures: dict[str, Any]) -> list[str]:
     failures: list[str] = []
     if fixtures.get("version") != VERSION:
@@ -752,6 +874,7 @@ def main() -> int:
     failures.extend(validate_review_html_scorecard())
     failures.extend(validate_review_package_zip())
     failures.extend(validate_review_decision_command())
+    failures.extend(validate_product_status_command())
     failures.extend(validate_fixtures(load_json(FIXTURE_PATH)))
     print(
         json.dumps(
