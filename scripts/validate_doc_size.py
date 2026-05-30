@@ -12,10 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_LIMIT = 500
 WARN_RATIO = 0.85
 LIMITS = {
-    "docs/roadmap/README.md": 180,
-    "docs/roadmap/TES-TTS-SKILL-ROADMAP.md": 180,
-    "docs/roadmap/TES-TTS-SKILL-ROADMAP-REGISTRY.md": 260,
-    "docs/roadmap/TES-TTS-SKILL-ROADMAP-HISTORY.md": 220,
+    "docs/roadmap/README.md": 160,
+    "docs/roadmap/TES-TTS-SKILL-ROADMAP.md": 150,
+    "docs/roadmap/TES-TTS-SKILL-ROADMAP-REGISTRY.md": 220,
+    "docs/roadmap/TES-TTS-SKILL-ROADMAP-HISTORY.md": 180,
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md": 1000,
     "docs/evals/EXAMPLES.md": 600,
     "docs/install/USER-MANUAL.html": 2210,

@@ -47,7 +47,9 @@ compatible TES intent alias if the host reports it as an invalid slash.
    evidence, or copy a short decision summary. Reopen the latest review with
    `python3 scripts/tes_tts_omnivoice_provider.py review`. Package the latest
    review, metrics, manifest, and WAV files with
-   `python3 scripts/tes_tts_omnivoice_provider.py package-review`.
+   `python3 scripts/tes_tts_omnivoice_provider.py package-review`. After
+   exporting review scores from the page, seal the audible decision with
+   `python3 scripts/tes_tts_omnivoice_provider.py decide-review --review-json <exported-json> --package`.
 9. Use `voice: "Felipe (Enhanced)"` and `rate: 255` when the tool accepts
    those settings. If the host rejects the voice, retry once with the default
    voice and the same text.

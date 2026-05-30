@@ -425,7 +425,7 @@ def is_relative_to(path: Path, root: Path) -> bool:
 def review_package_files(review_html: Path) -> list[Path]:
     root = review_html.parent
     files: list[Path] = []
-    for candidate in (review_html, root / "result.json"):
+    for candidate in (review_html, root / "result.json", root / "review-decision.json"):
         if candidate.is_file():
             files.append(candidate.resolve())
     result_json = root / "result.json"
@@ -491,6 +491,133 @@ def write_review_package(review_html: Path, package_path: Path) -> dict[str, Any
         "included_files": [item["path"] for item in manifest["files"]],
         "manifest_schema": manifest["schema"],
     }
+
+
+def default_review_decision_path(review_html: Path, output: str | None) -> Path:
+    if output:
+        return Path(output)
+    return review_html.parent / "review-decision.json"
+
+
+def load_review_scores(path: Path | None) -> dict[str, dict[str, Any]]:
+    if path is None:
+        return {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    cases = payload.get("cases")
+    if not isinstance(cases, list):
+        raise ValueError("review JSON must contain a cases list")
+    scores_by_id: dict[str, dict[str, Any]] = {}
+    for item in cases:
+        if not isinstance(item, dict) or not isinstance(item.get("id"), str):
+            continue
+        scores = item.get("scores")
+        if isinstance(scores, dict):
+            scores_by_id[item["id"]] = scores
+    return scores_by_id
+
+
+def score_value(scores: dict[str, Any], key: str) -> float | None:
+    value = scores.get(key)
+    if isinstance(value, (int, float)) and 0 <= float(value) <= 10:
+        return float(value)
+    return None
+
+
+def build_review_decision(review_html: Path, review_json: Path | None) -> dict[str, Any]:
+    root = review_html.parent
+    result_json = root / "result.json"
+    result_payload = json.loads(result_json.read_text(encoding="utf-8")) if result_json.exists() else {}
+    scores_by_id = load_review_scores(review_json)
+    cases: list[dict[str, Any]] = []
+    minimum_scores: list[float] = []
+    required = ("overall", "pronunciation", "technical_terms", "naturalness")
+    outputs = result_payload.get("outputs", [])
+    output_items = outputs if isinstance(outputs, list) else []
+    for item in output_items:
+        if not isinstance(item, dict):
+            continue
+        case_id = str(item.get("id", ""))
+        scores = scores_by_id.get(case_id, {})
+        numeric = {key: score_value(scores, key) for key in required}
+        complete = all(value is not None for value in numeric.values())
+        if complete:
+            minimum_scores.append(min(float(value) for value in numeric.values() if value is not None))
+        cases.append(
+            {
+                "id": case_id,
+                "audio": Path(str(item.get("output", ""))).name if item.get("output") else None,
+                "scores": numeric,
+                "notes": scores.get("notes") if isinstance(scores.get("notes"), str) else "",
+                "complete": complete,
+            }
+        )
+    if not cases or len(minimum_scores) != len(cases):
+        decision = "PENDING_REVIEW"
+    elif all(value >= 8 for value in minimum_scores):
+        decision = "AUDIO_CANDIDATE"
+    elif sum(minimum_scores) / len(minimum_scores) >= 7:
+        decision = "NEEDS_TARGETED_FIX"
+    else:
+        decision = "NEEDS_FIX"
+    return {
+        "schema": "tes-tts-omnivoice-review-decision@1",
+        "created_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "provider": "omnivoice",
+        "version": VERSION,
+        "decision": decision,
+        "review_html": str(review_html),
+        "result_json": str(result_json) if result_json.exists() else None,
+        "review_json": str(review_json) if review_json else None,
+        "case_count": len(cases),
+        "scored_case_count": len(minimum_scores),
+        "cases": cases,
+        "allows_install": False,
+        "allows_download": False,
+        "allows_global_config_write": False,
+    }
+
+
+def command_decide_review(args: argparse.Namespace) -> int:
+    review_html, source = resolve_review_html(args.path, args.benchmark_dir)
+    if review_html is None or not review_html.exists():
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "NOT_FOUND",
+                "version": VERSION,
+                "mode": "product_review_decision",
+                "review_html": str(review_html) if review_html else None,
+                "review_source": source,
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 2
+    review_json = Path(args.review_json) if args.review_json else None
+    decision_path = default_review_decision_path(review_html, args.output)
+    decision = build_review_decision(review_html, review_json)
+    decision.update(
+        {
+            "status": "DRY_RUN" if args.dry_run else "PASS",
+            "mode": "product_review_decision",
+            "review_source": source,
+            "decision_json": str(decision_path),
+            "package_requested": args.package,
+        }
+    )
+    if args.dry_run:
+        emit(decision)
+        return 0
+    decision_path.parent.mkdir(parents=True, exist_ok=True)
+    decision_path.write_text(json.dumps(decision, ensure_ascii=False, indent=2), encoding="utf-8")
+    if args.package and decision_path.resolve().parent != review_html.parent.resolve():
+        shutil.copy2(decision_path, review_html.parent / "review-decision.json")
+    if args.package:
+        package_path = default_review_package_path(review_html, None)
+        decision.update(write_review_package(review_html, package_path))
+    emit(decision)
+    return 0
 
 
 def command_package_review(args: argparse.Namespace) -> int:
@@ -1220,6 +1347,15 @@ def build_parser() -> argparse.ArgumentParser:
     review.add_argument("--benchmark-dir")
     review.add_argument("--dry-run", action="store_true")
     review.set_defaults(func=command_review)
+
+    decide_review = subparsers.add_parser("decide-review")
+    decide_review.add_argument("--path")
+    decide_review.add_argument("--benchmark-dir")
+    decide_review.add_argument("--review-json")
+    decide_review.add_argument("--output")
+    decide_review.add_argument("--package", action="store_true")
+    decide_review.add_argument("--dry-run", action="store_true")
+    decide_review.set_defaults(func=command_decide_review)
 
     package_review = subparsers.add_parser("package-review")
     package_review.add_argument("--path")

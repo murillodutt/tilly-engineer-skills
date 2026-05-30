@@ -623,6 +623,85 @@ def validate_review_package_zip() -> list[str]:
     return failures
 
 
+def validate_review_decision_command() -> list[str]:
+    failures: list[str] = []
+    provider = load_provider_module()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        review = root / "review.html"
+        result = root / "result.json"
+        wav = root / "case.wav"
+        review_json = root / "exported-review.json"
+        review.write_text("<!doctype html><audio controls src=\"case.wav\"></audio>", encoding="utf-8")
+        wav.write_bytes(b"fake-wave")
+        result.write_text(
+            json.dumps({"outputs": [{"id": "case", "output": str(wav)}]}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        review_json.write_text(
+            json.dumps(
+                {
+                    "schema": "tes-tts-omnivoice-review@1",
+                    "cases": [
+                        {
+                            "id": "case",
+                            "scores": {
+                                "overall": 9,
+                                "pronunciation": 8.5,
+                                "technical_terms": 8,
+                                "naturalness": 9,
+                                "notes": "candidate",
+                            },
+                        }
+                    ],
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        args = argparse.Namespace(
+            path=str(review),
+            benchmark_dir=None,
+            review_json=str(review_json),
+            output=None,
+            package=True,
+            dry_run=False,
+        )
+        with contextlib.redirect_stdout(io.StringIO()):
+            if provider.command_decide_review(args) != 0:
+                failures.append("decide-review command failed for local fixture")
+        decision_path = root / "review-decision.json"
+        if not decision_path.exists():
+            failures.append("decide-review did not write review-decision.json")
+            return failures
+        decision = json.loads(decision_path.read_text(encoding="utf-8"))
+        if decision.get("schema") != "tes-tts-omnivoice-review-decision@1":
+            failures.append("review decision schema drifted")
+        if decision.get("decision") != "AUDIO_CANDIDATE":
+            failures.append("review decision should classify strong scores as AUDIO_CANDIDATE")
+        if decision.get("allows_install") is not False:
+            failures.append("review decision must not install providers")
+        if decision.get("allows_download") is not False:
+            failures.append("review decision must not download models")
+        if decision.get("allows_global_config_write") is not False:
+            failures.append("review decision must not write global config")
+        package_zip = root / "tes-tts-omnivoice-review-package.zip"
+        if not package_zip.exists():
+            failures.append("decide-review --package did not write package zip")
+            return failures
+        import zipfile
+
+        with zipfile.ZipFile(package_zip) as archive:
+            names = set(archive.namelist())
+            if "review-decision.json" not in names:
+                failures.append("decision package missing review-decision.json")
+            manifest = json.loads(archive.read("review-package-manifest.json").decode("utf-8"))
+        manifest_paths = {item.get("path") for item in manifest.get("files", []) if isinstance(item, dict)}
+        if "review-decision.json" not in manifest_paths:
+            failures.append("package manifest missing review-decision.json")
+    return failures
+
+
 def validate_fixtures(fixtures: dict[str, Any]) -> list[str]:
     failures: list[str] = []
     if fixtures.get("version") != VERSION:
@@ -672,6 +751,7 @@ def main() -> int:
     failures.extend(validate_package_dry_run_payload(package_payload))
     failures.extend(validate_review_html_scorecard())
     failures.extend(validate_review_package_zip())
+    failures.extend(validate_review_decision_command())
     failures.extend(validate_fixtures(load_json(FIXTURE_PATH)))
     print(
         json.dumps(

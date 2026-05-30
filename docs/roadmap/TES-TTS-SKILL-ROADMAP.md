@@ -9,15 +9,11 @@ evidence_level: L2
 
 # TES TTS Skill Roadmap
 
-This is the active dashboard for `tes-tts`. It must stay short, current, and
-decision-oriented. Historical detail and dense artifact listings live in:
-
-- `TES-TTS-SKILL-ROADMAP-REGISTRY.md`
-- `TES-TTS-SKILL-ROADMAP-HISTORY.md`
-
-ADR 0004 remains the architectural boundary. This roadmap records current
-state, active product direction, next decisions, and the smallest evidence
-needed for a future agent to continue without chat history.
+This is the active dashboard for `tes-tts`: short, current, and
+decision-oriented. Historical detail and dense artifact listings live in
+`TES-TTS-SKILL-ROADMAP-REGISTRY.md` and
+`TES-TTS-SKILL-ROADMAP-HISTORY.md`. ADR 0004 remains the architectural
+boundary.
 
 Partition contract:
 
@@ -28,12 +24,9 @@ Partition contract:
 
 ## Current State
 
-`tes-tts` is reactive delivered behavior in TES source. It reads or narrates
-text only when explicitly requested. It must not become proactive `speak`, a
-dependency installer, a bundled provider stack, or a global voice registry.
-
 Current product position:
 
+- `tes-tts` is reactive delivered behavior only when explicitly requested.
 - Runtime-first direction is active: durable runtime slices beat
   governance-only cycles.
 - PT-BR is the primary quality target.
@@ -45,32 +38,20 @@ Current product position:
 
 ## Active Product Surfaces
 
-| Surface | Role | Status |
-|---------|------|--------|
-| `.agents/skills/tes-tts/**` | Active local workbench for live skill iteration. | active |
-| `src/adapters/codex/skills/tes-tts/**` | Codex package source. | active |
-| `src/adapters/claude/skills/tes-tts/**` | Claude package source. | active |
-| `scripts/tes_tts_runtime.py` and runtime modules | Dependency-free classify/verbalize/adapt path. | active |
-| `scripts/tes_tts_omnivoice_provider.py` | Optional OmniVoice provider probe/synthesis/batch facade. | active |
-| `scripts/tes_tts_omnivoice_provider_oracle.py` | Optional-provider safety and fixture oracle. | active |
-| `benchmarks/tes-tts/omnivoice-provider-cases.json` | Premium-provider benchmark cases. | active |
-| `docs/adr/0004-tes-tts-pronunciation-normalization-and-enrichment.md` | Normalization and pronunciation GPS. | active |
-
-Detailed registry: `TES-TTS-SKILL-ROADMAP-REGISTRY.md`.
+Active surfaces are `.agents/skills/tes-tts/**`, Codex and Claude
+`src/adapters/*/skills/tes-tts/**`, the dependency-free runtime scripts, the
+optional OmniVoice provider facade/oracle, governed TTS benchmarks, and ADR
+0004. Detailed registry: `TES-TTS-SKILL-ROADMAP-REGISTRY.md`.
 
 ## Product Decisions
 
-| Decision | Current rule | Evidence |
-|----------|--------------|----------|
-| Skill boundary | Reactive only; no proactive announcements. | ADR 0004; `SKILL.md` safety section. |
-| Source text | Immutable; speech uses request-local prepared text/provider text. | Runtime oracles. |
-| Secrets | Redaction happens before rendering and provider handoff. | Runtime and OmniVoice fixtures. |
-| Mixed PT-BR/English | Preserve technical identity; provider-specific handoff may prefer redacted source over manual aliases. | Live TTS tests; OmniVoice evidence. |
-| Runtime posture | Build executable runtime first; compact docs protect behavior. | `AGENTS.md`; RTE closure. |
-| Provider posture | OmniVoice is optional local capability, not bundled dependency. | Provider oracle and probe output. |
-| Release posture | Version/release/sync are separate owner decisions. | Release identity rule; current package state. |
-
-Historical evolution ledger: `TES-TTS-SKILL-ROADMAP-HISTORY.md`.
+- Reactive-only skill; no proactive `speak` behavior.
+- Source text is immutable; speech uses request-local prepared text.
+- Secrets are redacted before rendering and provider handoff.
+- PT-BR is platform narration; English/technical identity is preserved.
+- Runtime-first implementation beats governance-only cycles.
+- OmniVoice is optional local capability, not bundled dependency.
+- Version, release, sync, push, tag, and publish need separate approval.
 
 ## Current Evidence
 
@@ -88,40 +69,27 @@ Latest local product evidence:
   OmniVoice fixtures through one loaded model, cached reference voice,
   sequential playback, review page, and portable ZIP manifest. The review page
   includes per-case audible scoring, JSON export, and copyable decision
-  summaries. Latest packaged run produced `32.69s` of audio in `30.19s` total
-  with average RTF `0.9422`; package SHA starts `c594d7ee`.
+  summaries; `decide-review --review-json <exported-json> --package` seals a
+  `review-decision.json` into the package. Latest packaged run produced
+  `32.69s` of audio in `30.19s` total with average RTF `0.9422`; package SHA
+  starts `c594d7ee`, and the decision-sealed package starts `0206b249`.
 
-Relevant gates for the latest cut:
-
-```bash
-python3 scripts/tes_tts_omnivoice_provider_oracle.py --self-test
-python3 scripts/tes_tts_provider_probe_oracle.py --self-test
-python3 scripts/tes_tts_pronunciation_catalog_oracle.py --self-test
-python3 scripts/tes_tts_runtime_ir_oracle.py --self-test
-python3 scripts/tes_tts_live_session_utterance_oracle.py --self-test
-python3 scripts/tes_tts_runtime_latency_oracle.py --self-test
-python3 scripts/materialize_adapter.py all --check
-python3 scripts/validate_tds.py
-python3 scripts/validate_doc_size.py
-python3 scripts/validate_reference_graph.py
-python3 scripts/validate_reference_package.py
-npm run commit:check
-```
+Relevant gates are the focused TTS provider/runtime/oracle suite,
+`materialize_adapter.py all --check`, TDS/doc-size/reference validators, and
+`npm run commit:check` when package closure is claimed.
 
 ## Next Decisions
 
-| Decision | Required before |
-|----------|-----------------|
-| Release identity | Claiming package-sealed delivered behavior. |
-| Provider redistribution/license posture | Shipping model/provider artifacts beyond local optional use. |
-| Sync/push/tag/publish | Any remote or public package action. |
-| Further runtime work | A concrete audible-quality or latency target, not a new governance loop. |
+Open decisions before public claims: release identity, provider redistribution
+and license posture, sync/push/tag/publish, and the next concrete audible
+quality or latency target.
 
 Recommended next product cut:
 
 1. Run `python3 scripts/tes_tts_omnivoice_provider.py bench --play --open --package`
    and score audible quality by fixture in the generated review page.
-2. Keep `package-review` for repackaging an existing report after review.
+2. Export review JSON and run
+   `python3 scripts/tes_tts_omnivoice_provider.py decide-review --review-json <exported-json> --package`.
 3. Decide whether the OmniVoice provider path is ready for release identity
    planning or needs one targeted runtime/provider fix.
 4. Keep docs limited to this dashboard, registry/history pointers, and the
@@ -129,8 +97,7 @@ Recommended next product cut:
 
 ## Maintenance Rules
 
-- Keep this dashboard under the explicit `validate_doc_size.py` budget; if it
-  approaches the limit, partition before adding more detail.
+- Hard limit: 150 lines. Warning zone means partition before adding detail.
 - Keep only current state, active decisions, next decisions, and latest
   evidence here.
 - Move dense artifact listings to `TES-TTS-SKILL-ROADMAP-REGISTRY.md`.
