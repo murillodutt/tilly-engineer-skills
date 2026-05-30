@@ -9,8 +9,8 @@ license: MIT
 Operational contract: `tes.tts@0.1.22`.
 
 `tes-tts` is reactive read-aloud. It speaks only the text the user asked to
-hear, protects secrets, preserves meaning, and prefers the local OmniVoice
-server when it is already available.
+hear, protects secrets, preserves meaning, and prefers direct local OmniVoice
+execution when it is already configured.
 
 ## Default Path
 
@@ -24,15 +24,13 @@ Use this path inside the TES package repository when the helper scripts exist:
 3. Prepare request-local speech text:
    `python3 scripts/tes_tts_runtime.py --text "<text>" --locale pt-BR`
    and send only the returned `spoken_text` to TTS.
-4. Check the local OmniVoice server:
-   `python3 scripts/tes_tts_omnivoice_provider.py server-status --discover-capabilities`
-5. If the server is valid, speak with:
-   `python3 scripts/tes_tts_omnivoice_provider.py speak-server --text "<spoken_text>" --output <wav>`
-   The default server voice is `clone:tes-tts-local-clone`; do not re-upload the
-   reference WAV for normal reads.
-6. For long text, use:
-   `python3 scripts/tes_tts_omnivoice_provider.py speak-long-server --text "<spoken_text>" --output-dir <tmp-dir> --combine`
-7. If the server is unavailable, use the request-local provider fallback in
+4. If direct OmniVoice is configured, speak with:
+   `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<spoken_text>" --output <wav>`
+5. For long text, use direct resident chunking:
+   `python3 scripts/tes_tts_omnivoice_provider.py speak-long --text "<spoken_text>" --output-dir <tmp-dir> --combine`
+6. Use the canonical clone reference through the local direct provider defaults;
+   do not upload or recreate the reference voice for normal reads.
+7. If OmniVoice is unavailable, use the request-local provider fallback in
    `references/providers-and-fallbacks.md`. For macOS `say` fallback, use
    `Felipe (Enhanced)` at rate `255` only when accepted.
 8. Confirm briefly after playback or report `TTS_NOT_AVAILABLE`.
@@ -81,8 +79,9 @@ English phrase when that improves pronunciation.
 ## Provider Rules
 
 - Prefer OmniVoice only when already configured and verified.
-- The helper may use the operator-owned local server cache, but it must not
-  install providers, write global config, push, publish, release, or sync.
+- Use direct local OmniVoice execution as the active `tes-tts` path.
+- The helper must not install providers, write global config, push, publish,
+  release, or sync.
 - Do not persist provider failure state from a read-aloud request.
 - Do not claim provider support from fallback success.
 - Load `references/providers-and-fallbacks.md` only when provider choice,
