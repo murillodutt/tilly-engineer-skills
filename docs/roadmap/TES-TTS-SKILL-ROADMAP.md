@@ -80,9 +80,11 @@ Latest local product evidence:
   arguments.
 - Product benchmark: `bench --play` runs the three governed OmniVoice fixtures
   through one loaded model and cached reference voice, then plays the outputs
-  sequentially for immediate maintainer review. Latest local run played all
-  three WAVs via `afplay`, produced `32.59s` of audio in `29.37s` total with
-  average RTF `0.9444` under the configured local optional environment.
+  sequentially for immediate maintainer review. Each run also writes
+  `result.json` plus a local `review.html` with audio players, redacted text,
+  and metrics. Latest local report run produced `32.65s` of audio in `29.37s`
+  total with average RTF `0.9417`; the latest playback run played all three
+  WAVs via `afplay`.
 
 Relevant gates for the latest cut:
 
@@ -112,8 +114,8 @@ npm run commit:check
 
 Recommended next product cut:
 
-1. Run `python3 scripts/tes_tts_omnivoice_provider.py bench --play` and
-   classify audible quality by fixture.
+1. Run `python3 scripts/tes_tts_omnivoice_provider.py bench --play`, open the
+   generated `review.html`, and classify audible quality by fixture.
 2. Decide whether the OmniVoice provider path is ready for release identity
    planning or needs one targeted runtime/provider fix.
 3. Keep docs limited to this dashboard, registry/history pointers, and the

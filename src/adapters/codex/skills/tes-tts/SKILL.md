@@ -41,7 +41,8 @@ compatible TES intent alias if the host reports it as an invalid slash.
    `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<text>" --play`
    for premium cloned-voice reads, while preserving `say` as the local
    fallback. For a product-quality smoke/latency/listening run, use
-   `python3 scripts/tes_tts_omnivoice_provider.py bench --play`.
+   `python3 scripts/tes_tts_omnivoice_provider.py bench --play`; the command
+   writes `result.json` and `review.html` beside the generated WAV files.
 9. Use `voice: "Felipe (Enhanced)"` and `rate: 255` when the tool accepts
    those settings. If the host rejects the voice, retry once with the default
    voice and the same text.

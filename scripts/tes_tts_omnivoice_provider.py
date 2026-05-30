@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
+import html
 import importlib.util
 import json
 import os
@@ -268,6 +269,93 @@ def playback_outputs(outputs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return results
 
 
+def redacted_case_text(case: dict[str, Any], locale: str) -> str:
+    text = case.get("text")
+    if not isinstance(text, str):
+        return ""
+    return prepare_spoken_text(text, locale)["redacted_text"]
+
+
+def write_benchmark_review(
+    *,
+    payload: dict[str, Any],
+    cases_path: Path,
+    output_dir: Path,
+    locale: str,
+) -> dict[str, str]:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    result_json = output_dir / "result.json"
+    review_html = output_dir / "review.html"
+    payload["result_json"] = str(result_json)
+    payload["review_html"] = str(review_html)
+    result_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    cases_by_id = {str(case.get("id")): case for case in load_text_cases(cases_path)}
+    rows: list[str] = []
+    for item in payload.get("outputs", []):
+        if not isinstance(item, dict):
+            continue
+        case_id = str(item.get("id", ""))
+        case = cases_by_id.get(case_id, {})
+        output = item.get("output")
+        audio_name = Path(output).name if isinstance(output, str) else ""
+        source = html.escape(redacted_case_text(case, locale))
+        rows.append(
+            "\n".join(
+                [
+                    "<section class=\"case\">",
+                    f"<h2>{html.escape(case_id)}</h2>",
+                    f"<audio controls src=\"{html.escape(audio_name)}\"></audio>",
+                    "<dl>",
+                    f"<dt>RTF</dt><dd>{html.escape(str(item.get('rtf')))}</dd>",
+                    f"<dt>Duration</dt><dd>{html.escape(str(item.get('audio_duration_seconds')))}s</dd>",
+                    f"<dt>Generation</dt><dd>{html.escape(str(item.get('generation_ms')))}ms</dd>",
+                    f"<dt>Redactions</dt><dd>{html.escape(str(item.get('redaction_count')))}</dd>",
+                    "</dl>",
+                    f"<p>{source}</p>",
+                    "</section>",
+                ]
+            )
+        )
+
+    summary = payload.get("benchmark_summary", {})
+    html_text = "\n".join(
+        [
+            "<!doctype html>",
+            "<html lang=\"pt-BR\">",
+            "<head>",
+            "<meta charset=\"utf-8\">",
+            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+            "<title>TES TTS OmniVoice Review</title>",
+            "<style>",
+            "body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:32px;line-height:1.45;color:#1f2933;background:#f7f8fa}",
+            "main{max-width:960px;margin:0 auto}",
+            ".case{background:white;border:1px solid #d9dee7;border-radius:8px;padding:18px;margin:18px 0}",
+            "audio{width:100%;margin:8px 0 12px}",
+            "dl{display:grid;grid-template-columns:140px 1fr;gap:4px 12px;margin:0 0 12px}",
+            "dt{font-weight:700;color:#394655}dd{margin:0}p{white-space:pre-wrap}",
+            "</style>",
+            "</head>",
+            "<body>",
+            "<main>",
+            "<h1>TES TTS OmniVoice Review</h1>",
+            f"<p>Status: {html.escape(str(payload.get('status')))}. Provider timing scope: {html.escape(str(summary.get('provider_timing_scope')))}.</p>",
+            "<dl>",
+            f"<dt>Cases</dt><dd>{html.escape(str(summary.get('case_count')))}</dd>",
+            f"<dt>Average RTF</dt><dd>{html.escape(str(summary.get('avg_rtf')))}</dd>",
+            f"<dt>Total Audio</dt><dd>{html.escape(str(summary.get('total_audio_duration_seconds')))}s</dd>",
+            f"<dt>Total Generation</dt><dd>{html.escape(str(summary.get('total_generation_ms')))}ms</dd>",
+            "</dl>",
+            *rows,
+            "</main>",
+            "</body>",
+            "</html>",
+        ]
+    )
+    review_html.write_text(html_text, encoding="utf-8")
+    return {"result_json": str(result_json), "review_html": str(review_html)}
+
+
 def redact_command_value(tokens: list[str], option: str) -> list[str]:
     redacted = list(tokens)
     for index, token in enumerate(redacted[:-1]):
@@ -453,6 +541,8 @@ def command_bench(args: argparse.Namespace) -> int:
                 "cases": str(cases),
                 "output_dir": str(output_dir),
                 "play_requested": args.play,
+                "result_json": str(output_dir / "result.json"),
+                "review_html": str(output_dir / "review.html"),
                 "command_shape": redact_command_value(command, "--ref-text"),
                 "allows_install": False,
                 "allows_download": False,
@@ -517,8 +607,10 @@ def command_bench(args: argparse.Namespace) -> int:
             payload["playback_results"] = playback_results
             if any(result.get("playback_status") == "failed" for result in playback_results):
                 payload["status"] = "PLAYBACK_FAILED"
+                write_benchmark_review(payload=payload, cases_path=cases, output_dir=output_dir, locale=args.locale)
                 emit(payload)
                 return 3
+        write_benchmark_review(payload=payload, cases_path=cases, output_dir=output_dir, locale=args.locale)
     emit(payload)
     return completed.returncode
 

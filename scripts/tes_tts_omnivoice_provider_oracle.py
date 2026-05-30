@@ -77,6 +77,8 @@ REQUIRED_BENCH_DRY_RUN_KEYS = {
     "cases",
     "output_dir",
     "play_requested",
+    "result_json",
+    "review_html",
     "command_shape",
     "allows_install",
     "allows_download",
@@ -321,6 +323,12 @@ def validate_bench_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
     cases = payload.get("cases")
     if not isinstance(cases, str) or not cases.endswith("omnivoice-provider-cases.json"):
         failures.append("bench dry-run must default to OmniVoice provider cases")
+    result_json = payload.get("result_json")
+    review_html = payload.get("review_html")
+    if not isinstance(result_json, str) or not result_json.endswith("result.json"):
+        failures.append("bench dry-run must report result JSON path")
+    if not isinstance(review_html, str) or not review_html.endswith("review.html"):
+        failures.append("bench dry-run must report review HTML path")
     return failures
 
 
