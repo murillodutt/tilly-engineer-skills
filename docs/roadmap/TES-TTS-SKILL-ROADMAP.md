@@ -102,6 +102,7 @@ surface for release, materialization, and sync decisions.
 | `benchmarks/tes-tts/provider-probe-fixtures.json` | Mocked provider probe contract fixtures. | proposed |
 | `benchmarks/tes-tts/provider-fallback-fixtures.json` | Mocked request-local provider fallback fixtures. | proposed |
 | `benchmarks/tes-tts/provider-candidate-review.json` | Structured provider candidate review queue. | proposed |
+| `benchmarks/tes-tts/omnivoice-provider-cases.json` | Optional OmniVoice premium-provider benchmark cases. | active |
 | `docs/roadmap/TES-TTS-SKILL-ROADMAP.md` | Executive registry and evolution roadmap. | active |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` | Circular execution contract for the skill. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000*.md` through `TTS-032*.md` | Historical prompt artifacts for baseline, acceptance, and owner-decision cycles; indexed individually in TDS. | historical |
@@ -112,6 +113,8 @@ surface for release, materialization, and sync decisions.
 | `scripts/tes_tts_instruction_normalizer_oracle.py` | Dependency-free instruction normalizer oracle. | staged |
 | `scripts/tes_tts_provider_probe_oracle.py` | Mocked no-write provider probe oracle. | staged |
 | `scripts/tes_tts_provider_candidate_review_oracle.py` | Provider review queue oracle. | staged |
+| `scripts/tes_tts_omnivoice_provider.py` | Optional OmniVoice premium provider with probe, synthesis, batch mode, and voice-prompt cache. | active |
+| `scripts/tes_tts_omnivoice_provider_oracle.py` | No-required-dependency oracle for the optional OmniVoice provider surface. | active |
 | `benchmarks/tes-tts/ptbr-lexical-*.json*` and `scripts/tes_tts_ptbr_*.py` | PT-BR lexical manifest sample, schema, converter, and oracle. | staged |
 | `docs/install/COMMAND-TRIGGERS.md` | User-visible command trigger registration. | staged |
 | `docs/adapters/CODEX.md`, `docs/adapters/CLAUDE.md`, `docs/adapters/PLATFORM-DIFFERENCES.md` | Adapter-facing discoverability and parity notes. | staged |
@@ -420,32 +423,12 @@ Required closure:
 
 ## Ten-SPEC Convergence Draft Set
 
-The remaining execution path is now organized as ten draft SPECs:
-
-| SPEC | Focus | Artifact |
-|------|-------|----------|
-| 001 | Roadmap compaction and agent default language | `TES-TTS-SPEC-001-roadmap-compaction-agent-default-language.md` |
-| 002 | Complete fixture corpus | `TES-TTS-SPEC-002-fixture-corpus-complete.md` |
-| 003 | Deterministic instruction normalizer | `TES-TTS-SPEC-003-deterministic-instruction-normalizer.md` |
-| 004 | Pronunciation enrichment rules | `TES-TTS-SPEC-004-pronunciation-enrichment-rules.md` |
-| 005 | No-write provider probe | `TES-TTS-SPEC-005-provider-probe-no-write.md` |
-| 006 | Provider candidate selection | `TES-TTS-SPEC-006-provider-candidate-selection.md` |
-| 007 | Optional translation layer | `TES-TTS-SPEC-007-optional-translation-layer.md` |
-| 008 | Optional G2P/pronunciation provider layer | `TES-TTS-SPEC-008-optional-g2p-pronunciation-provider-layer.md` |
-| 009 | Release identity and sync readiness | `TES-TTS-SPEC-009-release-identity-sync-readiness.md` |
-| 010 | Final audit and closure | `TES-TTS-SPEC-010-final-audit-and-closure.md` |
-
-These drafts do not authorize sync, release, provider install, provider
-download, global config writes, or durable conversion caches.
-
-SPEC outcomes: SPEC-001 through SPEC-008 are `PASS`; SPEC-009 and SPEC-010
-exited `NEEDS_OWNER_DECISION`; OWNER-001 resolved ADR acceptance. The ten-SPEC
-technical sequence is complete for the bounded scope, ADR 0004 is `active`,
-release identity is deferred, package identity remains at `0.3.147`, provider
-claims remain optional/degraded/deferred, and sync remains unauthorized.
-Next ready prompt: none. CAP capability migration is locally closed by
-`docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md`.
-Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
+SPEC-001 through SPEC-010 remain indexed in `docs/roadmap/README.md`.
+Outcomes: SPEC-001 through SPEC-008 `PASS`; SPEC-009 and SPEC-010
+`NEEDS_OWNER_DECISION`; OWNER-001 resolved ADR acceptance. The bounded
+technical sequence is complete, ADR 0004 is `active`, release identity is
+deferred, package identity remains at `0.3.147`, provider claims remain
+optional/degraded/deferred, and sync status is `REMOTE_SYNC_NOT_REQUESTED`.
 
 Conversational rendering status: CAP-001 through CAP-009 are locally closed;
 CAP-010 is superseded by the PT-BR lexical normalization pivot.
@@ -455,6 +438,12 @@ evidence-only sequence closed, next prompt none, sync status
 `REMOTE_SYNC_NOT_REQUESTED`.
 
 Runtime status: RTE-000 through RTE-006 passed; runtime-first work uses `scripts/tes_tts_runtime.py` as CLI facade over classifier, verbalizer, adapter, and shared types modules; protected terms use a cached `regex_union` matcher with Trie/Aho-Corasick thresholds; live session utterance oracle now covers 20 real mixed PT-BR/English phrases, sync status `REMOTE_SYNC_NOT_REQUESTED`.
+
+OmniVoice provider status: local premium-provider evidence passed with cloned
+voice quality rated 9.5 by the maintainer; `scripts/tes_tts_omnivoice_provider.py`
+keeps OmniVoice as an optional external Python environment, caches reusable
+voice prompts, supports batch generation, preserves TES redaction/no-summary
+preparation before provider handoff, and keeps `say` as offline fallback.
 
 Open questions: release identity planning and sync remain owner decisions.
 

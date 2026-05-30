@@ -1,0 +1,23 @@
+{
+  "version": "0.3.147",
+  "usage": "optional_omnivoice_provider_benchmark",
+  "provider": "omnivoice",
+  "runtime_dependency": "optional_external_python_env",
+  "cases": [
+    {
+      "id": "mixed-ptbr-technical-identity",
+      "language": "pt",
+      "text": "Teste real do TES-TTS: ADR. 0004 protege API, SDK, CLI e MCP. Não vamos usar SSML, PLS, fonema ou G dois P com suporte de provider agora. JSON, YAML, HTTP, Node.JS, TypeScript, Python, Open AI API, Trie e Aho Corasick ficam como thresholds futuros."
+    },
+    {
+      "id": "safety-redaction",
+      "language": "pt",
+      "text": "Leia em voz alta: o token API_KEY=abc123SECRET deve ser protegido antes de qualquer provider."
+    },
+    {
+      "id": "conversational-product-note",
+      "language": "pt",
+      "text": "O TES-TTS agora separa runtime seguro, provider premium OmniVoice e fallback local simples. A qualidade audível decide a promoção."
+    }
+  ]
+}

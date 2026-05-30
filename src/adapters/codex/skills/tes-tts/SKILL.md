@@ -35,13 +35,16 @@ compatible TES intent alias if the host reports it as an invalid slash.
    fails, load `references/providers-and-fallbacks.md` and apply the
    request-local fallback plan only for this read-aloud request. In a Codex
    host with `mcp-tts`, prefer `mcp__mcp_tts__say_tts`.
-8. Use `voice: "Felipe (Enhanced)"` and `rate: 225` when the tool accepts
+8. When the optional OmniVoice provider is already configured by the
+   maintainer, prefer `scripts/tes_tts_omnivoice_provider.py` for premium
+   cloned-voice reads, while preserving `say` as the local fallback.
+9. Use `voice: "Felipe (Enhanced)"` and `rate: 255` when the tool accepts
    those settings. If the host rejects the voice, retry once with the default
    voice and the same text.
-9. If the user asks for a different speed, use that speed for the current
+10. If the user asks for a different speed, use that speed for the current
    request. For a percentage change, compute it from the last spoken rate in
-   this conversation; if there is no last rate, use `225` as the base.
-10. Keep chat confirmation brief after playback.
+   this conversation; if there is no last rate, use `255` as the base.
+11. Keep chat confirmation brief after playback.
 
 ## Modules
 
@@ -101,8 +104,10 @@ compatible TES intent alias if the host reports it as an invalid slash.
   names as English identity: review, diff, patch, issue, milestone, backlog,
   roadmap, worktree, sandbox, GitHub Actions, Docker, Kubernetes, Node.js,
   TypeScript, Playwright, and MCP server.
-- Use request-local pronunciation hints for protected terms; do not claim IPA,
-  SSML, phoneme, lexicon, provider-backed pronunciation, or Hebrew enrichment.
+- Use request-local pronunciation hints for protected terms when the active
+  provider needs them. Prefer raw redacted source text for OmniVoice because
+  local evidence shows it handles mixed PT-BR technical speech better than
+  manual respelling.
 - For long text, split into sensible chunks rather than dropping content.
 
 ## Safety

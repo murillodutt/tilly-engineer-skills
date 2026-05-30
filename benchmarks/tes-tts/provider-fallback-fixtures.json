@@ -1,9 +1,15 @@
 [
   {
     "id": "tts-fallback-catalog-to-say",
-    "provider_order": ["google", "openai", "elevenlabs", "say"],
+    "provider_order": ["omnivoice", "google", "openai", "elevenlabs", "say"],
     "requested_voice": null,
     "attempts": [
+      {
+        "provider": "omnivoice",
+        "outcome": "error",
+        "error_class": "PROVIDER_UNAVAILABLE",
+        "voice": null
+      },
       {
         "provider": "google",
         "outcome": "error",
@@ -38,7 +44,7 @@
     "writes_durable_cache": false,
     "certifies_provider_support": false,
     "expected_status": "fallback_ready",
-    "expected_attempted_providers": ["google", "openai", "elevenlabs", "say"],
+    "expected_attempted_providers": ["omnivoice", "google", "openai", "elevenlabs", "say"],
     "expected_selected_provider": "say",
     "expected_selected_voice": "Felipe (Enhanced)",
     "expected_voice_default_retries": [],
@@ -51,7 +57,7 @@
   },
   {
     "id": "tts-fallback-voice-default-retry",
-    "provider_order": ["google", "openai", "elevenlabs", "say"],
+    "provider_order": ["omnivoice", "google", "openai", "elevenlabs", "say"],
     "requested_voice": "Custom Voice",
     "attempts": [
       {
@@ -85,7 +91,7 @@
   },
   {
     "id": "tts-fallback-explicit-voice-preserved",
-    "provider_order": ["google", "openai", "elevenlabs", "say"],
+    "provider_order": ["omnivoice", "google", "openai", "elevenlabs", "say"],
     "requested_voice": "nova",
     "attempts": [
       {
@@ -119,9 +125,15 @@
   },
   {
     "id": "tts-fallback-all-fail-generic",
-    "provider_order": ["google", "openai", "elevenlabs", "say"],
+    "provider_order": ["omnivoice", "google", "openai", "elevenlabs", "say"],
     "requested_voice": null,
     "attempts": [
+      {
+        "provider": "omnivoice",
+        "outcome": "error",
+        "error_class": "PROVIDER_UNAVAILABLE",
+        "voice": null
+      },
       {
         "provider": "google",
         "outcome": "error",
@@ -156,13 +168,13 @@
     "writes_durable_cache": false,
     "certifies_provider_support": false,
     "expected_status": "TTS_NOT_AVAILABLE",
-    "expected_attempted_providers": ["google", "openai", "elevenlabs", "say"],
+    "expected_attempted_providers": ["omnivoice", "google", "openai", "elevenlabs", "say"],
     "expected_selected_provider": null,
     "expected_selected_voice": null,
     "expected_voice_default_retries": [],
     "expected_error_classes": [
-      "GENERIC_TTS_ERROR",
       "PROVIDER_UNAVAILABLE",
+      "GENERIC_TTS_ERROR",
       "RATE_LIMITED"
     ],
     "expected_reason": "all catalog providers failed request-locally, so audio must not be claimed"

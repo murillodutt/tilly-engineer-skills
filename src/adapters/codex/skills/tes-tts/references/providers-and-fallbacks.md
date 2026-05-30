@@ -14,7 +14,7 @@ global provider persistence, or summary-oriented planning/issue/summary modes.
 Prefer providers in this order when they are locally available:
 
 ```text
-google -> openai -> elevenlabs -> say
+omnivoice -> google -> openai -> elevenlabs -> say
 ```
 
 Provider use is opportunistic. Do not install, configure, download, or persist
@@ -25,6 +25,7 @@ provider settings from this skill. If no provider is available, report
 
 | Provider | Typical tool | Notes |
 |----------|--------------|-------|
+| OmniVoice | `scripts/tes_tts_omnivoice_provider.py` | Premium optional local cloned-voice provider when the maintainer has already configured its external Python environment and reference voice. |
 | Google TTS | `google_tts` | High-quality voices when credentials and quota exist. |
 | OpenAI TTS | `openai_tts` | Good fallback when OpenAI credentials exist. |
 | ElevenLabs | `elevenlabs_tts` | Voice-rich fallback when credentials exist. |
@@ -38,8 +39,10 @@ assuming a namespace exists.
 Fallback is a request-local execution plan, not durable provider state.
 
 1. Build a provider attempt list from the locally exposed TTS tools, preserving
-   the catalog order `google -> openai -> elevenlabs -> say`.
-2. Try the first locally available provider with the request-local `spoken_text`.
+   the catalog order `omnivoice -> google -> openai -> elevenlabs -> say`.
+2. Try the first locally available provider with the request-local provider
+   text. Use `spoken_text` for simple providers; use redacted source text for
+   OmniVoice because it handles mixed technical speech without manual aliases.
 3. If the provider fails with `AUTH_UNAVAILABLE`, `RATE_LIMITED`,
    `PROVIDER_UNAVAILABLE`, or `GENERIC_TTS_ERROR`, try the next provider for
    this request only.
@@ -78,7 +81,7 @@ Never claim audio played after every provider failed.
 - Respect an explicit user-requested voice when the provider supports it.
 - Otherwise prefer the provider or system default voice.
 - For `say_tts`, the tested TES local preference is `Felipe (Enhanced)` at
-  rate `225` when accepted; if rejected, retry with the default voice.
+  rate `255` when accepted; if rejected, retry with the default voice.
 - Do not auto-assign voices by project, task type, or speaker identity.
 - Do not create `.claude/tts-config.json`, `~/.claude/tts-assignments.json`,
   or any global unavailable-provider registry.

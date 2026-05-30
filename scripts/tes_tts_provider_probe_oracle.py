@@ -17,7 +17,7 @@ FIXTURE_PATH = ROOT / "benchmarks/tes-tts/provider-probe-fixtures.json"
 FALLBACK_FIXTURE_PATH = ROOT / "benchmarks/tes-tts/provider-fallback-fixtures.json"
 VERSION = "0.3.147"
 
-PROVIDER_ORDER = ["google", "openai", "elevenlabs", "say"]
+PROVIDER_ORDER = ["omnivoice", "google", "openai", "elevenlabs", "say"]
 PROVIDER_STATUSES = {
     "provider_available",
     "provider_not_available",

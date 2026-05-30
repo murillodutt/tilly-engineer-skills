@@ -169,7 +169,17 @@
       "term": "provider-backed",
       "class": "technical_noun",
       "default_language": "pt-BR",
-      "spoken_rendering": "com suporte de provider",
+      "spoken_rendering": "com suporte de prováider",
+      "preserve_written_identity": false,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-provider",
+      "term": "provider",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "prováider",
       "preserve_written_identity": false,
       "exact_request_behavior": "preserve_raw",
       "runtime_claim": "none"
@@ -181,6 +191,16 @@
       "default_language": "pt-BR",
       "spoken_rendering": "Open A I",
       "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-open-ai-dotted",
+      "term": "Open.AI",
+      "class": "proper_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "Open A I",
+      "preserve_written_identity": false,
       "exact_request_behavior": "preserve_raw",
       "runtime_claim": "none"
     },
@@ -279,8 +299,8 @@
       "term": "Trie",
       "class": "technical_noun",
       "default_language": "pt-BR",
-      "spoken_rendering": "Trie",
-      "preserve_written_identity": true,
+      "spoken_rendering": "trai",
+      "preserve_written_identity": false,
       "exact_request_behavior": "preserve_raw",
       "runtime_claim": "none"
     },
@@ -289,7 +309,17 @@
       "term": "Aho-Corasick",
       "class": "technical_noun",
       "default_language": "pt-BR",
-      "spoken_rendering": "Aho Corasick",
+      "spoken_rendering": "A rô Corássic",
+      "preserve_written_identity": false,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-aho-corasick-spaced",
+      "term": "Aho Corasick",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "A rô Corássic",
       "preserve_written_identity": false,
       "exact_request_behavior": "preserve_raw",
       "runtime_claim": "none"
@@ -299,8 +329,8 @@
       "term": "thresholds",
       "class": "technical_noun",
       "default_language": "pt-BR",
-      "spoken_rendering": "thresholds",
-      "preserve_written_identity": true,
+      "spoken_rendering": "trésholds",
+      "preserve_written_identity": false,
       "exact_request_behavior": "preserve_raw",
       "runtime_claim": "none"
     },
@@ -309,8 +339,8 @@
       "term": "provider fallback",
       "class": "technical_noun",
       "default_language": "pt-BR",
-      "spoken_rendering": "provider fallback",
-      "preserve_written_identity": true,
+      "spoken_rendering": "prováider fallback",
+      "preserve_written_identity": false,
       "exact_request_behavior": "preserve_raw",
       "runtime_claim": "none"
     },
@@ -339,8 +369,8 @@
       "term": "Docker",
       "class": "proper_noun",
       "default_language": "pt-BR",
-      "spoken_rendering": "Docker",
-      "preserve_written_identity": true,
+      "spoken_rendering": "dóquer",
+      "preserve_written_identity": false,
       "exact_request_behavior": "preserve_raw",
       "runtime_claim": "none"
     },
@@ -349,8 +379,8 @@
       "term": "Kubernetes",
       "class": "proper_noun",
       "default_language": "pt-BR",
-      "spoken_rendering": "Kubernetes",
-      "preserve_written_identity": true,
+      "spoken_rendering": "kubernétis",
+      "preserve_written_identity": false,
       "exact_request_behavior": "preserve_raw",
       "runtime_claim": "none"
     },
