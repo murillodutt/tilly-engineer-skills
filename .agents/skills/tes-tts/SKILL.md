@@ -6,7 +6,7 @@ license: MIT
 
 # TES TTS
 
-Operational contract: `tes.tts@0.1.15`.
+Operational contract: `tes.tts@0.1.16`.
 
 `/tes-tts` is the small TES text-to-speech skill. It reads user-provided text
 aloud through whatever local TTS tool the host exposes. `/tes:tts` is a
@@ -59,7 +59,8 @@ compatible TES intent alias if the host reports it as an invalid slash.
    `python3 scripts/tes_tts_omnivoice_provider.py bench --play --open --package`; the
    command writes `result.json` and a scored `review.html` beside the
    generated WAV files. Use the review page to score each case, export JSON
-   evidence, or copy a short decision summary. Reopen the latest review with
+   evidence, or copy a short decision summary. A sealed profile review records
+   the recommended live-session latency profile in `product-status`. Reopen the latest review with
    `python3 scripts/tes_tts_omnivoice_provider.py review`. Package the latest
    review, metrics, manifest, and WAV files with
    `python3 scripts/tes_tts_omnivoice_provider.py package-review`. After

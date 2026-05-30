@@ -58,7 +58,7 @@ cache, and proactive `speak`.
   `32.69s` audio, `30.19s` total, RTF `0.9422`.
 - `candidate --format text --strict` replays/opens sealed audio without
   regenerating it.
-- Profile-review smoke: 6 WAVs, fast total `7.79s`, quality total `28.77s`, ZIP SHA starts `d9309974`.
+- Profile-review smoke sealed `AUDIO_CANDIDATE`; recommended profile `fast`; ZIP SHA starts `e9757a4e`.
 
 Relevant gates: focused TTS provider/runtime/oracle suite, roadmap partition,
 materialization, TDS/doc-size/reference validators, and `npm run commit:check`

@@ -46,6 +46,7 @@ LATENCY_PROFILES = {
     "balanced": {"num_step": 16, "description": "middle ground for live iteration"},
     "quality": {"num_step": 32, "description": "current quality-preserving default"},
 }
+PROFILE_RECOMMENDATION_ORDER = ("fast", "balanced", "quality")
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -681,6 +682,44 @@ def score_value(scores: dict[str, Any], key: str) -> float | None:
     return None
 
 
+def build_profile_recommendation(cases: list[dict[str, Any]]) -> dict[str, Any] | None:
+    grouped: dict[str, list[float | None]] = {}
+    for case in cases:
+        profile = case.get("latency_profile")
+        if not isinstance(profile, str):
+            continue
+        scores = case.get("scores")
+        if not isinstance(scores, dict):
+            continue
+        numeric = [float(value) for value in scores.values() if isinstance(value, (int, float))]
+        grouped.setdefault(profile, []).append(min(numeric) if numeric else None)
+    if not grouped:
+        return None
+    profile_scores: dict[str, dict[str, Any]] = {}
+    for profile, values in grouped.items():
+        complete_values = [value for value in values if value is not None]
+        profile_scores[profile] = {
+            "case_count": len(values),
+            "scored_case_count": len(complete_values),
+            "min_score": min(complete_values) if complete_values else None,
+            "avg_score": round(sum(complete_values) / len(complete_values), 3) if complete_values else None,
+            "candidate": len(complete_values) == len(values) and all(value >= 8 for value in complete_values),
+        }
+    for profile in PROFILE_RECOMMENDATION_ORDER:
+        stats = profile_scores.get(profile)
+        if stats and stats["candidate"]:
+            return {
+                "recommended_latency_profile": profile,
+                "reason": "fastest_profile_meeting_audio_candidate_threshold",
+                "profile_scores": profile_scores,
+            }
+    return {
+        "recommended_latency_profile": None,
+        "reason": "no_profile_met_audio_candidate_threshold",
+        "profile_scores": profile_scores,
+    }
+
+
 def build_review_decision(review_html: Path, review_json: Path | None) -> dict[str, Any]:
     root = review_html.parent
     result_json = root / "result.json"
@@ -721,12 +760,18 @@ def build_review_decision(review_html: Path, review_json: Path | None) -> dict[s
         decision = "NEEDS_TARGETED_FIX"
     else:
         decision = "NEEDS_FIX"
+    profile_recommendation = build_profile_recommendation(cases) if profile_review else None
     return {
         "schema": "tes-tts-omnivoice-review-decision@1",
         "created_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         "provider": "omnivoice",
         "version": VERSION,
+        "review_kind": "profile_review" if profile_review else "benchmark_review",
         "decision": decision,
+        "recommended_latency_profile": (
+            profile_recommendation.get("recommended_latency_profile") if profile_recommendation else None
+        ),
+        "profile_recommendation": profile_recommendation,
         "review_html": str(review_html),
         "result_json": str(result_json) if result_json.exists() else None,
         "review_json": str(review_json) if review_json else None,
@@ -833,12 +878,14 @@ def render_product_status_text(payload: dict[str, Any]) -> str:
     if audio is not None or generation is not None or rtf is not None:
         audio_line = f"audio={audio}s generation={generation}ms avg_rtf={rtf}"
     package_sha = payload.get("package_sha256") or "not packaged"
+    profile = payload.get("recommended_latency_profile") or "not selected"
     return "\n".join(
         [
             f"TES TTS OmniVoice product state: {payload.get('product_state')}",
             f"Provider: {provider}",
             f"Review: {review}",
             f"Decision: {decision} ({score_line})",
+            f"Recommended profile: {profile}",
             f"Metrics: {audio_line}",
             f"Package SHA: {package_sha}",
             f"Next: {payload.get('next_action')}",
@@ -898,6 +945,8 @@ def command_product_status(args: argparse.Namespace) -> int:
         "decision_json": str(decision_json) if decision_json else None,
         "decision_json_exists": bool(decision_json and decision_json.exists()),
         "decision": decision,
+        "review_kind": decision_payload.get("review_kind"),
+        "recommended_latency_profile": decision_payload.get("recommended_latency_profile"),
         "case_count": decision_payload.get("case_count"),
         "scored_case_count": decision_payload.get("scored_case_count"),
         "avg_rtf": summary.get("avg_rtf"),
@@ -949,10 +998,12 @@ def render_candidate_text(payload: dict[str, Any]) -> str:
     decision = payload.get("decision") or "not sealed"
     review = payload.get("review_html") or "not found"
     package_sha = payload.get("package_sha256") or "not packaged"
+    profile = payload.get("recommended_latency_profile") or "not selected"
     return "\n".join(
         [
             f"TES TTS OmniVoice candidate: {ready}",
             f"Decision: {decision}",
+            f"Recommended profile: {profile}",
             f"Review: {review}",
             f"Package SHA: {package_sha}",
             f"Audio files: {payload.get('audio_count')}",
@@ -1007,6 +1058,8 @@ def command_candidate(args: argparse.Namespace) -> int:
         "decision_json": str(decision_json) if decision_json else None,
         "decision_json_exists": bool(decision_json and decision_json.exists()),
         "decision": decision,
+        "review_kind": decision_payload.get("review_kind"),
+        "recommended_latency_profile": decision_payload.get("recommended_latency_profile"),
         "case_count": decision_payload.get("case_count"),
         "scored_case_count": decision_payload.get("scored_case_count"),
         "package_zip": str(package_zip) if package_zip else None,

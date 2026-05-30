@@ -206,6 +206,8 @@ REQUIRED_PRODUCT_STATUS_KEYS = {
     "decision_json",
     "decision_json_exists",
     "decision",
+    "review_kind",
+    "recommended_latency_profile",
     "case_count",
     "scored_case_count",
     "avg_rtf",
@@ -235,6 +237,8 @@ REQUIRED_CANDIDATE_KEYS = {
     "decision_json",
     "decision_json_exists",
     "decision",
+    "review_kind",
+    "recommended_latency_profile",
     "case_count",
     "scored_case_count",
     "package_zip",
@@ -1217,6 +1221,13 @@ def validate_profile_review_decision_command() -> list[str]:
         decision = provider.build_review_decision(review, review_json)
     if decision.get("decision") != "AUDIO_CANDIDATE":
         failures.append("profile review decision should support score-only profile exports")
+    if decision.get("review_kind") != "profile_review":
+        failures.append("profile review decision must identify review kind")
+    if decision.get("recommended_latency_profile") != "fast":
+        failures.append("profile review decision should recommend the fastest passing profile")
+    recommendation = decision.get("profile_recommendation")
+    if not isinstance(recommendation, dict) or recommendation.get("reason") != "fastest_profile_meeting_audio_candidate_threshold":
+        failures.append("profile review decision must explain profile recommendation")
     if decision.get("case_count") != 2 or decision.get("scored_case_count") != 2:
         failures.append("profile review decision should score both profile outputs")
     score_ids = {case.get("score_id") for case in decision.get("cases", [])}
@@ -1254,7 +1265,9 @@ def validate_product_status_command() -> list[str]:
             json.dumps(
                 {
                     "schema": "tes-tts-omnivoice-review-decision@1",
+                    "review_kind": "profile_review",
                     "decision": "AUDIO_CANDIDATE",
+                    "recommended_latency_profile": "fast",
                     "case_count": 1,
                     "scored_case_count": 1,
                 },
@@ -1315,13 +1328,15 @@ def validate_product_status_command() -> list[str]:
         failures.append("product-status must discover review-decision.json")
     if payload.get("decision") != "AUDIO_CANDIDATE":
         failures.append("product-status must report sealed decision")
+    if payload.get("recommended_latency_profile") != "fast":
+        failures.append("product-status must report recommended latency profile")
     if payload.get("product_state") != "NEEDS_SETUP":
         failures.append("product-status must not overclaim readiness when provider setup is absent")
     if payload.get("package_zip_exists") is not True:
         failures.append("product-status must discover packaged review")
     if payload.get("package_sha256") is None:
         failures.append("product-status must report package sha when zip exists")
-    for snippet in ("TES TTS OmniVoice product state:", "Provider:", "Next:", "Locks:"):
+    for snippet in ("TES TTS OmniVoice product state:", "Provider:", "Recommended profile:", "Next:", "Locks:"):
         if snippet not in text_output:
             failures.append(f"product-status text output missing snippet: {snippet}")
     if strict_code == 0:
@@ -1375,7 +1390,9 @@ def validate_candidate_command() -> list[str]:
             json.dumps(
                 {
                     "schema": "tes-tts-omnivoice-review-decision@1",
+                    "review_kind": "profile_review",
                     "decision": "AUDIO_CANDIDATE",
+                    "recommended_latency_profile": "fast",
                     "case_count": 1,
                     "scored_case_count": 1,
                 },
@@ -1427,6 +1444,8 @@ def validate_candidate_command() -> list[str]:
         failures.append("candidate_ready must be true for sealed AUDIO_CANDIDATE with package and audio")
     if payload.get("decision") != "AUDIO_CANDIDATE":
         failures.append("candidate must report sealed decision")
+    if payload.get("recommended_latency_profile") != "fast":
+        failures.append("candidate must report recommended latency profile")
     if payload.get("audio_count") != 1:
         failures.append("candidate must discover the local WAV output")
     if payload.get("package_zip_exists") is not True:
@@ -1437,7 +1456,7 @@ def validate_candidate_command() -> list[str]:
         failures.append("candidate dry-run must not open review files")
     if payload.get("playback_results") != []:
         failures.append("candidate dry-run must not play audio")
-    for snippet in ("TES TTS OmniVoice candidate: ready", "Package SHA:", "Audio files: 1", "Locks:"):
+    for snippet in ("TES TTS OmniVoice candidate: ready", "Recommended profile:", "Package SHA:", "Audio files: 1", "Locks:"):
         if snippet not in text_output:
             failures.append(f"candidate text output missing snippet: {snippet}")
     for key in ("allows_install", "allows_download", "allows_global_config_write", "allows_sync", "allows_release"):
