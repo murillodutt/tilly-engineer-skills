@@ -36,8 +36,11 @@ compatible TES intent alias if the host reports it as an invalid slash.
    request-local fallback plan only for this read-aloud request. In a Codex
    host with `mcp-tts`, prefer `mcp__mcp_tts__say_tts`.
 8. When the optional OmniVoice provider is already configured by the
-   maintainer, prefer `scripts/tes_tts_omnivoice_provider.py` for premium
-   cloned-voice reads, while preserving `say` as the local fallback.
+   maintainer, run `python3 scripts/tes_tts_omnivoice_provider.py status`.
+   If it returns `ready`, prefer
+   `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<text>" --play`
+   for premium cloned-voice reads, while preserving `say` as the local
+   fallback.
 9. Use `voice: "Felipe (Enhanced)"` and `rate: 255` when the tool accepts
    those settings. If the host rejects the voice, retry once with the default
    voice and the same text.

@@ -67,14 +67,16 @@ Historical evolution ledger: `TES-TTS-SKILL-ROADMAP-HISTORY.md`.
 
 ## Current Evidence
 
-Latest local product cut:
+Latest local product evidence:
 
 - Commit: `eb44ce7 Add optional OmniVoice provider for TES TTS`
-- Worktree after commit: clean; branch ahead of `origin/main` by 3.
 - Maintainer live rating: OmniVoice cloned voice result `9.5`.
 - Local optional provider probe: `provider_available` in the configured
   OmniVoice venv; package remains dependency-optional.
 - Package gate: `npm run commit:check` passed before the commit.
+- Product shortcut: `status` auto-discovers the configured local OmniVoice
+  venv/reference voice, and `speak` delegates synthesis without long CLI
+  arguments.
 
 Relevant gates for the latest cut:
 
@@ -104,9 +106,7 @@ npm run commit:check
 
 Recommended next product cut:
 
-1. Create a product command or documented invocation path that lets `tes-tts`
-   call OmniVoice with the configured reference voice without remembering long
-   CLI arguments.
+1. Certify and commit the OmniVoice `status`/`speak` product shortcut.
 2. Measure warm and batch latency against the three provider fixtures.
 3. Keep docs limited to this dashboard, registry/history pointers, and the
    active audit result.

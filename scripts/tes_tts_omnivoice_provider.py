@@ -9,10 +9,13 @@ environment where the maintainer explicitly installed `omnivoice`.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import time
@@ -26,6 +29,12 @@ VERSION = "0.3.147"
 DEFAULT_MODEL = "k2-fsa/OmniVoice"
 DEFAULT_LANGUAGE = "pt"
 DEFAULT_CACHE_DIR = ROOT / "tmp/tes-tts-omnivoice-provider"
+DEFAULT_LOCAL_PYTHON = ROOT / "tmp/tes-tts-lab/omnivoice/.venv/bin/python"
+DEFAULT_LOCAL_REF_AUDIO = ROOT / "tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav"
+DEFAULT_OUTPUT_DIR = DEFAULT_CACHE_DIR / "audio"
+ENV_PYTHON = "TES_TTS_OMNIVOICE_PYTHON"
+ENV_REF_AUDIO = "TES_TTS_OMNIVOICE_REF_AUDIO"
+ENV_OUTPUT_DIR = "TES_TTS_OMNIVOICE_OUTPUT_DIR"
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -113,6 +122,214 @@ def command_probe(args: argparse.Namespace) -> int:
         }
     )
     return 0 if available else 2
+
+
+def resolve_provider_python(explicit: str | None) -> tuple[str, str]:
+    if explicit:
+        return explicit, "arg"
+    env_value = os.environ.get(ENV_PYTHON)
+    if env_value:
+        return env_value, "env"
+    if DEFAULT_LOCAL_PYTHON.exists():
+        return str(DEFAULT_LOCAL_PYTHON), "local_auto"
+    return sys.executable, "current_python"
+
+
+def resolve_ref_audio(explicit: str | None) -> tuple[Path | None, str]:
+    if explicit:
+        return Path(explicit), "arg"
+    env_value = os.environ.get(ENV_REF_AUDIO)
+    if env_value:
+        return Path(env_value), "env"
+    if DEFAULT_LOCAL_REF_AUDIO.exists():
+        return DEFAULT_LOCAL_REF_AUDIO, "local_auto"
+    return None, "missing"
+
+
+def default_output_path(output: str | None) -> Path:
+    if output:
+        return Path(output)
+    out_dir = Path(os.environ.get(ENV_OUTPUT_DIR, str(DEFAULT_OUTPUT_DIR)))
+    stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    return out_dir / f"tes-tts-omnivoice-{stamp}.wav"
+
+
+def command_status(args: argparse.Namespace) -> int:
+    provider_python, python_source = resolve_provider_python(args.python)
+    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    evidence = run_python_probe(provider_python)
+    provider_available = (
+        evidence.get("omnivoice_importable") is True
+        and evidence.get("torch_importable") is True
+        and evidence.get("soundfile_importable") is True
+    )
+    ref_audio_ready = bool(ref_audio and ref_audio.exists())
+    ready = provider_available and ref_audio_ready
+    emit(
+        {
+            "provider": "omnivoice",
+            "status": "ready" if ready else "needs_setup",
+            "version": VERSION,
+            "runtime_dependency": "optional_external_python_env",
+            "provider_python": provider_python,
+            "provider_python_source": python_source,
+            "ref_audio": str(ref_audio) if ref_audio else None,
+            "ref_audio_source": ref_source,
+            "ref_audio_ready": ref_audio_ready,
+            "allows_install": False,
+            "allows_download": False,
+            "allows_global_config_write": False,
+            "evidence": evidence,
+        }
+    )
+    return 0 if ready else 2
+
+
+def runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path, output: Path) -> list[str]:
+    return [
+        "--model",
+        args.model,
+        "--language",
+        args.language,
+        "--locale",
+        args.locale,
+        "--ref-audio",
+        str(ref_audio),
+        "--cache-dir",
+        args.cache_dir,
+        "--text-mode",
+        args.text_mode,
+        "--num-step",
+        str(args.num_step),
+        "--guidance-scale",
+        str(args.guidance_scale),
+        "--speed",
+        str(args.speed),
+        "--t-shift",
+        str(args.t_shift),
+        "--denoise" if args.denoise else "--no-denoise",
+        "--postprocess-output" if args.postprocess_output else "--no-postprocess-output",
+        "--output",
+        str(output),
+    ]
+
+
+def playback_audio(output: Path) -> dict[str, Any]:
+    player = shutil.which("afplay")
+    if not player:
+        return {"playback_status": "not_available", "player": None}
+    completed = subprocess.run([player, str(output)], check=False)
+    return {
+        "playback_status": "played" if completed.returncode == 0 else "failed",
+        "player": player,
+        "returncode": completed.returncode,
+    }
+
+
+def command_speak(args: argparse.Namespace) -> int:
+    provider_python, python_source = resolve_provider_python(args.python)
+    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    output = default_output_path(args.output)
+    if not ref_audio or not ref_audio.exists():
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "NEEDS_SETUP",
+                "version": VERSION,
+                "reason": "reference audio is required for OmniVoice voice cloning",
+                "ref_audio": str(ref_audio) if ref_audio else None,
+                "ref_audio_source": ref_source,
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 2
+
+    command = [
+        provider_python,
+        str(Path(__file__).resolve()),
+        "synthesize",
+        "--text",
+        args.text,
+        *runtime_arg_tokens(args, ref_audio, output),
+    ]
+    if args.ref_text:
+        command.extend(["--ref-text", args.ref_text])
+    if args.prompt_cache:
+        command.extend(["--prompt-cache", args.prompt_cache])
+    if args.refresh_prompt:
+        command.append("--refresh-prompt")
+    if args.device:
+        command.extend(["--device", args.device])
+
+    if args.dry_run:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "DRY_RUN",
+                "version": VERSION,
+                "mode": "product_shortcut",
+                "provider_python": provider_python,
+                "provider_python_source": python_source,
+                "ref_audio": str(ref_audio),
+                "ref_audio_source": ref_source,
+                "output": str(output),
+                "text_chars": len(args.text),
+                "play_requested": args.play,
+                "command_shape": [
+                    provider_python,
+                    str(Path(__file__).resolve()),
+                    "synthesize",
+                    "--text",
+                    "<redacted>",
+                    *runtime_arg_tokens(args, ref_audio, output),
+                ],
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 0
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    completed = subprocess.run(
+        command,
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "FAIL",
+                "version": VERSION,
+                "mode": "product_shortcut",
+                "provider_python": provider_python,
+                "stdout": completed.stdout[-1000:],
+                "stderr": completed.stderr[-1000:],
+                "returncode": completed.returncode,
+            }
+        )
+        return 1
+    payload["mode"] = "product_shortcut"
+    payload["provider_python"] = provider_python
+    payload["provider_python_source"] = python_source
+    payload["ref_audio_source"] = ref_source
+    payload["play_requested"] = args.play
+    if args.play and completed.returncode == 0:
+        playback = playback_audio(output)
+        payload.update(playback)
+        if playback.get("playback_status") == "failed":
+            payload["status"] = "PLAYBACK_FAILED"
+            emit(payload)
+            return 3
+    emit(payload)
+    return completed.returncode
 
 
 def normalize_ref_audio(source: Path, output: Path) -> None:
@@ -385,11 +602,11 @@ def command_batch(args: argparse.Namespace) -> int:
     return 0
 
 
-def add_runtime_args(parser: argparse.ArgumentParser) -> None:
+def add_runtime_args(parser: argparse.ArgumentParser, *, ref_audio_required: bool = True) -> None:
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--language", default=DEFAULT_LANGUAGE)
     parser.add_argument("--locale", default="pt-BR")
-    parser.add_argument("--ref-audio", required=True)
+    parser.add_argument("--ref-audio", required=ref_audio_required)
     parser.add_argument("--ref-text")
     parser.add_argument("--cache-dir", default=str(DEFAULT_CACHE_DIR))
     parser.add_argument("--prompt-cache")
@@ -416,6 +633,11 @@ def build_parser() -> argparse.ArgumentParser:
     probe.add_argument("--python", default=sys.executable)
     probe.set_defaults(func=command_probe)
 
+    status = subparsers.add_parser("status")
+    status.add_argument("--python")
+    status.add_argument("--ref-audio")
+    status.set_defaults(func=command_status)
+
     normalize = subparsers.add_parser("normalize-ref")
     normalize.add_argument("--input", required=True)
     normalize.add_argument("--output", required=True)
@@ -432,6 +654,15 @@ def build_parser() -> argparse.ArgumentParser:
     batch.add_argument("--cases", required=True)
     batch.add_argument("--output-dir", required=True)
     batch.set_defaults(func=command_batch)
+
+    speak = subparsers.add_parser("speak")
+    add_runtime_args(speak, ref_audio_required=False)
+    speak.add_argument("--python")
+    speak.add_argument("--text", required=True)
+    speak.add_argument("--output")
+    speak.add_argument("--play", action="store_true")
+    speak.add_argument("--dry-run", action="store_true")
+    speak.set_defaults(func=command_speak)
     return parser
 
 

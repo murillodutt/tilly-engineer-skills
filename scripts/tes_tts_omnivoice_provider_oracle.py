@@ -6,9 +6,11 @@ from __future__ import annotations
 import argparse
 import ast
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 from typing import Any
 
 
@@ -30,6 +32,38 @@ REQUIRED_PROBE_KEYS = {
     "certifies_provider_support",
     "evidence",
     "reason",
+}
+REQUIRED_STATUS_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "runtime_dependency",
+    "provider_python",
+    "provider_python_source",
+    "ref_audio",
+    "ref_audio_source",
+    "ref_audio_ready",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
+    "evidence",
+}
+REQUIRED_DRY_RUN_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "mode",
+    "provider_python",
+    "provider_python_source",
+    "ref_audio",
+    "ref_audio_source",
+    "output",
+    "text_chars",
+    "play_requested",
+    "command_shape",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
 }
 
 
@@ -101,6 +135,110 @@ def run_probe() -> tuple[dict[str, Any] | None, list[str]]:
     return payload, failures
 
 
+def run_status_and_dry_run() -> tuple[dict[str, Any] | None, dict[str, Any] | None, list[str]]:
+    failures: list[str] = []
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        ref = Path(tmp_dir) / "ref.wav"
+        ref.write_bytes(b"not-real-audio-for-dry-run")
+        env = os.environ.copy()
+        env["TES_TTS_OMNIVOICE_PYTHON"] = sys.executable
+        env["TES_TTS_OMNIVOICE_REF_AUDIO"] = str(ref)
+        status_completed = subprocess.run(
+            [sys.executable, str(PROVIDER_SCRIPT), "status"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            env=env,
+        )
+        if status_completed.returncode not in (0, 2):
+            failures.append(f"status returned unexpected exit code {status_completed.returncode}")
+        try:
+            status_payload = json.loads(status_completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"status did not emit JSON: {exc}")
+            status_payload = None
+
+        dry_completed = subprocess.run(
+            [
+                sys.executable,
+                str(PROVIDER_SCRIPT),
+                "speak",
+                "--text",
+                "API_KEY=abc123SECRET deve ficar fora do dry-run.",
+                "--dry-run",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            env=env,
+        )
+        if dry_completed.returncode != 0:
+            failures.append(f"speak dry-run returned unexpected exit code {dry_completed.returncode}")
+        try:
+            dry_payload = json.loads(dry_completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"speak dry-run did not emit JSON: {exc}")
+            dry_payload = None
+    return status_payload, dry_payload, failures
+
+
+def validate_status_payload(payload: dict[str, Any] | None) -> list[str]:
+    if payload is None:
+        return []
+    failures: list[str] = []
+    missing = sorted(REQUIRED_STATUS_KEYS - set(payload))
+    extra = sorted(set(payload) - REQUIRED_STATUS_KEYS)
+    if missing:
+        failures.append(f"status missing keys {missing}")
+    if extra:
+        failures.append(f"status has extra keys {extra}")
+    if payload.get("provider") != "omnivoice":
+        failures.append("status provider drifted")
+    if payload.get("runtime_dependency") != "optional_external_python_env":
+        failures.append("status must keep OmniVoice optional")
+    if payload.get("allows_install") is not False:
+        failures.append("status must not install providers")
+    if payload.get("allows_download") is not False:
+        failures.append("status must not download models")
+    if payload.get("allows_global_config_write") is not False:
+        failures.append("status must not write global config")
+    if payload.get("status") not in {"ready", "needs_setup"}:
+        failures.append("status value is invalid")
+    return failures
+
+
+def validate_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
+    if payload is None:
+        return []
+    failures: list[str] = []
+    missing = sorted(REQUIRED_DRY_RUN_KEYS - set(payload))
+    extra = sorted(set(payload) - REQUIRED_DRY_RUN_KEYS)
+    if missing:
+        failures.append(f"speak dry-run missing keys {missing}")
+    if extra:
+        failures.append(f"speak dry-run has extra keys {extra}")
+    if payload.get("status") != "DRY_RUN":
+        failures.append("speak dry-run status drifted")
+    if payload.get("mode") != "product_shortcut":
+        failures.append("speak dry-run mode drifted")
+    if payload.get("allows_install") is not False:
+        failures.append("speak dry-run must not install providers")
+    if payload.get("allows_download") is not False:
+        failures.append("speak dry-run must not download models")
+    command_shape = payload.get("command_shape")
+    if not isinstance(command_shape, list):
+        failures.append("speak dry-run command_shape must be a list")
+    else:
+        joined = " ".join(str(part) for part in command_shape)
+        if "abc123SECRET" in joined or "API_KEY=" in joined:
+            failures.append("speak dry-run leaked source text in command_shape")
+        if "<redacted>" not in command_shape:
+            failures.append("speak dry-run must redact command text")
+    return failures
+
+
 def validate_fixtures(fixtures: dict[str, Any]) -> list[str]:
     failures: list[str] = []
     if fixtures.get("version") != VERSION:
@@ -141,6 +279,10 @@ def main() -> int:
     failures.extend(validate_no_reference_text_logging())
     probe, probe_failures = run_probe()
     failures.extend(probe_failures)
+    status_payload, dry_payload, shortcut_failures = run_status_and_dry_run()
+    failures.extend(shortcut_failures)
+    failures.extend(validate_status_payload(status_payload))
+    failures.extend(validate_dry_run_payload(dry_payload))
     failures.extend(validate_fixtures(load_json(FIXTURE_PATH)))
     print(
         json.dumps(
@@ -150,6 +292,8 @@ def main() -> int:
                 "provider_script": str(PROVIDER_SCRIPT.relative_to(ROOT)),
                 "fixtures": str(FIXTURE_PATH.relative_to(ROOT)),
                 "probe_status": probe.get("status") if probe else None,
+                "status_command": status_payload.get("status") if status_payload else None,
+                "speak_dry_run": dry_payload.get("status") if dry_payload else None,
                 "failures": failures,
             },
             indent=2,
