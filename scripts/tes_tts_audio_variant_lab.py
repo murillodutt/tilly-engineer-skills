@@ -312,6 +312,22 @@ def rank_results(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return ranked
 
 
+def overall_status(results: list[dict[str, Any]]) -> str:
+    if not results:
+        return "FAIL"
+    statuses = [
+        (result.get("audit_summary") or {}).get("status") or result.get("synthesize_status")
+        for result in results
+    ]
+    if any(result.get("synthesize_returncode") not in (None, 0) for result in results):
+        return "FAIL"
+    if any(status in {"FAIL", "MISSING_AUDIT"} for status in statuses):
+        return "FAIL"
+    if any(status not in {None, "PASS"} for status in statuses):
+        return "NEEDS_REVIEW"
+    return "PASS"
+
+
 def audio_files_for_session(session: Path) -> list[Path]:
     return sorted(path for path in session.glob("*.wav") if path.is_file())
 
@@ -401,6 +417,25 @@ def command_run(args: argparse.Namespace) -> int:
     output_root.mkdir(parents=True, exist_ok=True)
     source_chunks = load_source_chunks(source_session)
     selected_ids = set(args.chunk_id or [])
+    available_ids = {str(source.get("id")) for source in source_chunks if source.get("id")}
+    missing_ids = sorted(selected_ids - available_ids)
+    if missing_ids:
+        output = output_root / "variant-lab-summary.json"
+        payload = {
+            "schema": "tes-tts-audio-variant-lab@1",
+            "version": VERSION,
+            "status": "FAIL",
+            "reason": "requested chunk id was not found in source session",
+            "source_session": str(source_session),
+            "output_root": str(output_root),
+            "available_chunk_ids": sorted(available_ids),
+            "missing_chunk_ids": missing_ids,
+            "results": [],
+            "ranked_results": [],
+        }
+        output.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(json.dumps({"status": "FAIL", "output": str(output), "missing_chunk_ids": missing_ids}, ensure_ascii=False, indent=2))
+        return 2
     variants = args.variant or [
         "baseline",
         "small_sentence_chunks",
@@ -466,6 +501,9 @@ def command_run(args: argparse.Namespace) -> int:
         "version": VERSION,
         "source_session": str(source_session),
         "output_root": str(output_root),
+        "status": overall_status(results),
+        "available_chunk_ids": sorted(available_ids),
+        "selected_chunk_ids": sorted(selected_ids),
         "synthesize": args.synthesize,
         "audit": args.audit,
         "stt": args.stt,
@@ -481,7 +519,7 @@ def command_run(args: argparse.Namespace) -> int:
     print(
         json.dumps(
             {
-                "status": "PASS",
+                "status": overall_status(results),
                 "output": str(output),
                 "review_html": str(review_html) if review_html else None,
                 "package": str(package) if package else None,
@@ -491,7 +529,7 @@ def command_run(args: argparse.Namespace) -> int:
             indent=2,
         )
     )
-    return 0
+    return 0 if results else 2
 
 
 def command_self_test(_args: argparse.Namespace) -> int:
@@ -508,6 +546,10 @@ def command_self_test(_args: argparse.Namespace) -> int:
     oral = technical_oral_ptbr(text)
     if "speak long" in oral.lower() or "chunk" in oral.lower() or "JSON L" not in oral:
         failures.append("technical oral PT-BR transform drifted")
+    if overall_status([{"audit_summary": {"status": "NEEDS_REVIEW"}}]) != "NEEDS_REVIEW":
+        failures.append("overall status did not preserve NEEDS_REVIEW")
+    if overall_status([{"synthesize_returncode": 1, "synthesize_status": "FAIL"}]) != "FAIL":
+        failures.append("overall status did not preserve synth failure")
     if "JSONL" not in technical_oral_ptbr_keep_jsonl(text):
         failures.append("keep JSONL transform drifted")
     if "JSON-L" not in technical_oral_ptbr_json_hyphen(text):
@@ -517,6 +559,11 @@ def command_self_test(_args: argparse.Namespace) -> int:
     paused = pause_newlines(text)
     if "\n\n" not in paused:
         failures.append("pause newline transform did not add paragraph boundary")
+    source_session = DEFAULT_SOURCE_SESSION
+    if source_session.exists():
+        source_ids = {chunk["id"] for chunk in load_source_chunks(source_session)}
+        if "chunk-003" in source_ids:
+            failures.append("default fixture unexpectedly contains chunk-003; update missing-id self-test")
     if failures:
         print(json.dumps({"status": "FAIL", "failures": failures}, ensure_ascii=False, indent=2))
         return 1

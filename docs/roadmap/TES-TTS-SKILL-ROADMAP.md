@@ -38,12 +38,13 @@ durable cache, or proactive `speak`.
   `fallback_used=false`, monitor log under `tmp/**/runtime-logs`.
 - Audio variant review now packages WAVs, STT/WER, HTML review, and optional
   `combined.wav` with 350 ms chunk pauses. Latest `chunk-002` quality evidence
-  passed baseline, `audio_quality`, and two-chunk `small_sentence_chunks`.
+  showed `chunk-003` passing and `chunk-002` still needing review in one
+  source (`20260530-142812`); missing requested chunk IDs now fail instead of
+  silently passing.
 
 ## Next Cut
-Listen to the packaged quality review with `combined.wav`, then decide whether
-mixed technical chunks should prefer baseline quality, smaller chunks, or
-`audio_quality`.
+Listen to the latest `chunk-002`/`chunk-003` package, then decide whether the
+remaining `chunk-002` degradation is audible or only STT/proper-term drift.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.
