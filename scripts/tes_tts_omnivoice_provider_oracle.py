@@ -165,6 +165,37 @@ REQUIRED_SESSION_DRY_RUN_KEYS = {
     "allows_download",
     "allows_global_config_write",
 }
+REQUIRED_LIVE_SMOKE_DRY_RUN_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "mode",
+    "provider_python",
+    "provider_python_source",
+    "ref_audio",
+    "ref_audio_source",
+    "cases",
+    "case_count",
+    "case_ids",
+    "output_dir",
+    "result_json",
+    "package_zip",
+    "play_requested",
+    "package_requested",
+    "startup_timeout_seconds",
+    "utterance_timeout_seconds",
+    "latency_profile",
+    "requested_latency_profile",
+    "latency_profile_source",
+    "num_step",
+    "protocol",
+    "resident_model",
+    "resident_voice_prompt",
+    "command_shape",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
+}
 REQUIRED_REVIEW_DRY_RUN_KEYS = {
     "provider",
     "status",
@@ -890,6 +921,99 @@ def validate_auto_latency_profile_selection() -> list[str]:
         joined = " ".join(str(part) for part in command_shape)
         if "--latency-profile fast" not in joined or "--num-step 8" not in joined:
             failures.append("auto profile dry-run command must carry resolved fast profile")
+    return failures
+
+
+def validate_live_smoke_dry_run_command() -> list[str]:
+    failures: list[str] = []
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        ref = root / "ref.wav"
+        output_dir = root / "live-smoke"
+        ref.write_bytes(b"not-real-audio-for-dry-run")
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(PROVIDER_SCRIPT),
+                "live-smoke",
+                "--python",
+                sys.executable,
+                "--ref-audio",
+                str(ref),
+                "--output-dir",
+                str(output_dir),
+                "--limit",
+                "2",
+                "--latency-profile",
+                "fast",
+                "--ref-text",
+                "SECRET_REF_TEXT",
+                "--play",
+                "--package",
+                "--dry-run",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+    if completed.returncode != 0:
+        failures.append(f"live-smoke dry-run returned unexpected exit code {completed.returncode}")
+        return failures
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        failures.append(f"live-smoke dry-run did not emit JSON: {exc}")
+        return failures
+    missing = sorted(REQUIRED_LIVE_SMOKE_DRY_RUN_KEYS - set(payload))
+    extra = sorted(set(payload) - REQUIRED_LIVE_SMOKE_DRY_RUN_KEYS)
+    if missing:
+        failures.append(f"live-smoke dry-run missing keys {missing}")
+    if extra:
+        failures.append(f"live-smoke dry-run has extra keys {extra}")
+    if payload.get("status") != "DRY_RUN":
+        failures.append("live-smoke dry-run status drifted")
+    if payload.get("mode") != "product_live_smoke":
+        failures.append("live-smoke dry-run mode drifted")
+    if payload.get("case_count") != 2:
+        failures.append("live-smoke dry-run must honor --limit")
+    case_ids = payload.get("case_ids")
+    if not isinstance(case_ids, list) or len(case_ids) != 2:
+        failures.append("live-smoke dry-run must report selected case ids")
+    if payload.get("play_requested") is not True:
+        failures.append("live-smoke dry-run must report playback intent")
+    if payload.get("package_requested") is not True:
+        failures.append("live-smoke dry-run must report package intent")
+    if payload.get("latency_profile") != "fast" or payload.get("num_step") != 8:
+        failures.append("live-smoke dry-run must resolve fast profile")
+    if payload.get("requested_latency_profile") != "fast":
+        failures.append("live-smoke dry-run must preserve requested profile")
+    if payload.get("protocol") != "jsonl_stdin_stdout":
+        failures.append("live-smoke dry-run must use resident JSONL protocol")
+    if payload.get("resident_model") is not True or payload.get("resident_voice_prompt") is not True:
+        failures.append("live-smoke dry-run must report resident reuse")
+    command_shape = payload.get("command_shape")
+    if not isinstance(command_shape, list):
+        failures.append("live-smoke dry-run command_shape must be a list")
+    else:
+        joined = " ".join(str(part) for part in command_shape)
+        if "serve" not in command_shape:
+            failures.append("live-smoke dry-run must delegate to serve")
+        if "--latency-profile fast" not in joined or "--num-step 8" not in joined:
+            failures.append("live-smoke dry-run command must carry resolved fast profile")
+        if "SECRET_REF_TEXT" in joined:
+            failures.append("live-smoke dry-run leaked reference text")
+        if "--ref-text" in command_shape and "<redacted>" not in command_shape:
+            failures.append("live-smoke dry-run must redact reference text")
+    for key in ("result_json", "package_zip"):
+        value = payload.get(key)
+        if not isinstance(value, str) or not value.startswith(str(output_dir)):
+            failures.append(f"live-smoke dry-run must report output-local {key}")
+    if output_dir.exists():
+        failures.append("live-smoke dry-run should not create output directory")
+    for key in ("allows_install", "allows_download", "allows_global_config_write"):
+        if payload.get(key) is not False:
+            failures.append(f"live-smoke dry-run must keep {key}=false")
     return failures
 
 
@@ -1623,6 +1747,7 @@ def main() -> int:
     failures.extend(validate_warm_cache_dry_run_command())
     failures.extend(validate_session_dry_run_command())
     failures.extend(validate_auto_latency_profile_selection())
+    failures.extend(validate_live_smoke_dry_run_command())
     failures.extend(validate_jsonl_emitter())
     failures.extend(validate_review_dry_run_payload(review_payload))
     failures.extend(validate_package_dry_run_payload(package_payload))

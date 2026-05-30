@@ -17,6 +17,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import select
 import shutil
 import subprocess
 import sys
@@ -36,6 +37,7 @@ DEFAULT_LOCAL_PYTHON = ROOT / "tmp/tes-tts-lab/omnivoice/.venv/bin/python"
 DEFAULT_LOCAL_REF_AUDIO = ROOT / "tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav"
 DEFAULT_OUTPUT_DIR = DEFAULT_CACHE_DIR / "audio"
 DEFAULT_BENCHMARK_CASES = ROOT / "benchmarks/tes-tts/omnivoice-provider-cases.json"
+DEFAULT_LIVE_SMOKE_CASES = ROOT / "benchmarks/tes-tts/live-session-utterance-fixtures.json"
 DEFAULT_BENCHMARK_DIR = DEFAULT_CACHE_DIR / "benchmarks"
 DEFAULT_SESSION_DIR = DEFAULT_CACHE_DIR / "sessions"
 ENV_PYTHON = "TES_TTS_OMNIVOICE_PYTHON"
@@ -357,6 +359,89 @@ def playback_outputs(outputs: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if playback.get("playback_status") == "failed":
             break
     return results
+
+
+def read_jsonl_payload(process: subprocess.Popen[str], timeout: float, label: str) -> dict[str, Any]:
+    if process.stdout is None:
+        raise RuntimeError(f"{label}: process stdout is unavailable")
+    ready, _, _ = select.select([process.stdout], [], [], timeout)
+    if not ready:
+        raise TimeoutError(f"{label}: timed out after {timeout}s")
+    line = process.stdout.readline()
+    if not line:
+        raise RuntimeError(f"{label}: process ended before emitting JSONL")
+    return json.loads(line)
+
+
+def wait_or_terminate(process: subprocess.Popen[str], timeout: float = 10.0) -> None:
+    if process.stdin and not process.stdin.closed:
+        process.stdin.close()
+    try:
+        process.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=5)
+
+
+def live_smoke_package_files(result_json: Path) -> list[Path]:
+    root = result_json.parent
+    files: list[Path] = [result_json.resolve()]
+    try:
+        payload = json.loads(result_json.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        payload = {}
+    outputs = payload.get("outputs")
+    if isinstance(outputs, list):
+        for item in outputs:
+            if not isinstance(item, dict) or not isinstance(item.get("output"), str):
+                continue
+            candidate = Path(item["output"])
+            if candidate.is_file() and is_relative_to(candidate, root):
+                files.append(candidate.resolve())
+    unique: dict[str, Path] = {}
+    for item in files:
+        unique[str(item.resolve())] = item
+    return [unique[key] for key in sorted(unique)]
+
+
+def write_live_smoke_package(result_json: Path, package_path: Path) -> dict[str, Any]:
+    files = live_smoke_package_files(result_json)
+    root = result_json.parent
+    manifest = {
+        "schema": "tes-tts-omnivoice-live-smoke-package@1",
+        "created_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "provider": "omnivoice",
+        "version": VERSION,
+        "result_json": result_json.name,
+        "files": [
+            {
+                "path": str(item.resolve().relative_to(root.resolve())),
+                "bytes": item.stat().st_size,
+                "sha256": sha256_path(item),
+            }
+            for item in files
+        ],
+        "allows_install": False,
+        "allows_download": False,
+        "allows_global_config_write": False,
+    }
+    package_path.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(package_path, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for item in files:
+            archive.write(item, arcname=str(item.resolve().relative_to(root.resolve())))
+        archive.writestr("live-smoke-package-manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
+    return {
+        "package_zip": str(package_path),
+        "package_sha256": sha256_path(package_path),
+        "package_bytes": package_path.stat().st_size,
+        "file_count": len(files),
+        "included_files": [item["path"] for item in manifest["files"]],
+        "manifest_schema": manifest["schema"],
+    }
 
 
 def redacted_case_text(case: dict[str, Any], locale: str) -> str:
@@ -1322,6 +1407,205 @@ def command_session(args: argparse.Namespace) -> int:
         return 0
     output_dir.mkdir(parents=True, exist_ok=True)
     return subprocess.run(command, check=False).returncode
+
+
+def command_live_smoke(args: argparse.Namespace) -> int:
+    provider_python, python_source = resolve_provider_python(args.python)
+    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    cases_path = Path(args.cases)
+    output_dir = default_session_dir(args.output_dir)
+    result_json = output_dir / "result.json"
+    package_zip = output_dir / "tes-tts-omnivoice-live-smoke-package.zip"
+    if not ref_audio or not ref_audio.exists():
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "NEEDS_SETUP",
+                "version": VERSION,
+                "mode": "product_live_smoke",
+                "reason": "reference audio is required before resident live smoke",
+                "ref_audio": str(ref_audio) if ref_audio else None,
+                "ref_audio_source": ref_source,
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 2
+    if not cases_path.exists():
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "FAIL",
+                "version": VERSION,
+                "mode": "product_live_smoke",
+                "reason": "live smoke cases file does not exist",
+                "cases": str(cases_path),
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 1
+
+    all_cases = load_text_cases(cases_path)
+    limit = max(1, args.limit)
+    selected_cases = all_cases[:limit]
+    command = [
+        provider_python,
+        str(Path(__file__).resolve()),
+        "serve",
+        *common_runtime_arg_tokens(args, ref_audio),
+        "--output-dir",
+        str(output_dir),
+    ]
+    if args.ref_text:
+        command.extend(["--ref-text", args.ref_text])
+    if args.prompt_cache:
+        command.extend(["--prompt-cache", args.prompt_cache])
+    if args.refresh_prompt:
+        command.append("--refresh-prompt")
+    if args.device:
+        command.extend(["--device", args.device])
+
+    if args.dry_run:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "DRY_RUN",
+                "version": VERSION,
+                "mode": "product_live_smoke",
+                "provider_python": provider_python,
+                "provider_python_source": python_source,
+                "ref_audio": str(ref_audio),
+                "ref_audio_source": ref_source,
+                "cases": str(cases_path),
+                "case_count": len(selected_cases),
+                "case_ids": [str(case.get("id") or f"case-{index:03d}") for index, case in enumerate(selected_cases, 1)],
+                "output_dir": str(output_dir),
+                "result_json": str(result_json),
+                "package_zip": str(package_zip),
+                "play_requested": args.play,
+                "package_requested": args.package,
+                "startup_timeout_seconds": args.startup_timeout,
+                "utterance_timeout_seconds": args.utterance_timeout,
+                "latency_profile": args.latency_profile,
+                **latency_profile_metadata(args),
+                "num_step": args.num_step,
+                "protocol": "jsonl_stdin_stdout",
+                "resident_model": True,
+                "resident_voice_prompt": True,
+                "command_shape": redact_command_value(command, "--ref-text"),
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 0
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    process = subprocess.Popen(
+        command,
+        text=True,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+    )
+    outputs: list[dict[str, Any]] = []
+    startup_payload: dict[str, Any] | None = None
+    status = "PASS"
+    error: str | None = None
+    try:
+        startup_payload = read_jsonl_payload(process, args.startup_timeout, "resident session startup")
+        if startup_payload.get("status") != "READY":
+            status = "FAIL"
+            error = "resident session did not become ready"
+        elif process.stdin is None:
+            status = "FAIL"
+            error = "resident session stdin is unavailable"
+        else:
+            for index, case in enumerate(selected_cases, start=1):
+                case_id = str(case.get("id") or f"case-{index:03d}")
+                source_text = case.get("text") if isinstance(case.get("text"), str) else case.get("source_text")
+                output = output_dir / f"{index:02d}-{safe_file_stem(case_id)}.wav"
+                request = {
+                    "id": case_id,
+                    "text": str(source_text or ""),
+                    "language": str(case.get("language") or args.language),
+                    "output": str(output),
+                }
+                process.stdin.write(json.dumps(request, ensure_ascii=False, separators=(",", ":")) + "\n")
+                process.stdin.flush()
+                response = read_jsonl_payload(process, args.utterance_timeout, f"resident utterance {case_id}")
+                outputs.append(response)
+                if response.get("status") != "PASS":
+                    status = "FAIL"
+                    break
+    except Exception as exc:
+        status = "FAIL"
+        error = str(exc)
+    finally:
+        wait_or_terminate(process)
+
+    audio_outputs = [item for item in outputs if isinstance(item.get("output"), str)]
+    generation_values = [item.get("generation_ms") for item in outputs if isinstance(item.get("generation_ms"), (int, float))]
+    request_values = [item.get("request_total_ms") for item in outputs if isinstance(item.get("request_total_ms"), (int, float))]
+    duration_values = [
+        item.get("audio_duration_seconds") for item in outputs if isinstance(item.get("audio_duration_seconds"), (int, float))
+    ]
+    rtf_values = [item.get("rtf") for item in outputs if isinstance(item.get("rtf"), (int, float))]
+    payload = {
+        "provider": "omnivoice",
+        "status": status,
+        "version": VERSION,
+        "mode": "product_live_smoke",
+        "provider_python": provider_python,
+        "provider_python_source": python_source,
+        "ref_audio": str(ref_audio),
+        "ref_audio_source": ref_source,
+        "cases": str(cases_path),
+        "case_count": len(selected_cases),
+        "output_dir": str(output_dir),
+        "result_json": str(result_json),
+        "play_requested": args.play,
+        "package_requested": args.package,
+        "startup": startup_payload,
+        "outputs": outputs,
+        "summary": {
+            "request_count": len(selected_cases),
+            "pass_count": sum(1 for item in outputs if item.get("status") == "PASS"),
+            "failed_count": sum(1 for item in outputs if item.get("status") != "PASS"),
+            "generated_audio_count": len(audio_outputs),
+            "total_audio_duration_seconds": round(sum(duration_values), 3) if duration_values else None,
+            "total_generation_ms": round(sum(generation_values), 3) if generation_values else None,
+            "total_request_ms": round(sum(request_values), 3) if request_values else None,
+            "avg_rtf": round(sum(rtf_values) / len(rtf_values), 4) if rtf_values else None,
+            "provider_timing_scope": "resident_local_optional_environment_only",
+        },
+        "latency_profile": args.latency_profile,
+        **latency_profile_metadata(args),
+        "num_step": args.num_step,
+        "resident_model": True,
+        "resident_voice_prompt": True,
+        "error": error,
+        "allows_install": False,
+        "allows_download": False,
+        "allows_global_config_write": False,
+    }
+    result_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    if args.play and audio_outputs:
+        playback_results = playback_outputs(audio_outputs)
+        payload["playback_results"] = playback_results
+        if any(item.get("playback_status") == "failed" for item in playback_results):
+            payload["status"] = "PLAYBACK_FAILED"
+        result_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    if args.package:
+        payload.update(write_live_smoke_package(result_json, package_zip))
+        result_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    emit(payload)
+    if payload["status"] == "PLAYBACK_FAILED":
+        return 4
+    return 0 if payload["status"] == "PASS" else 1
 
 
 def redact_command_value(tokens: list[str], option: str) -> list[str]:
@@ -2409,6 +2693,19 @@ def build_parser() -> argparse.ArgumentParser:
     session.add_argument("--output-dir")
     session.add_argument("--dry-run", action="store_true")
     session.set_defaults(func=command_session)
+
+    live_smoke = subparsers.add_parser("live-smoke")
+    add_runtime_args(live_smoke, ref_audio_required=False)
+    live_smoke.add_argument("--python")
+    live_smoke.add_argument("--cases", default=str(DEFAULT_LIVE_SMOKE_CASES))
+    live_smoke.add_argument("--output-dir")
+    live_smoke.add_argument("--limit", type=int, default=3)
+    live_smoke.add_argument("--startup-timeout", type=float, default=300.0)
+    live_smoke.add_argument("--utterance-timeout", type=float, default=180.0)
+    live_smoke.add_argument("--play", action="store_true")
+    live_smoke.add_argument("--package", action="store_true")
+    live_smoke.add_argument("--dry-run", action="store_true")
+    live_smoke.set_defaults(func=command_live_smoke)
 
     bench = subparsers.add_parser("bench")
     add_runtime_args(bench, ref_audio_required=False)

@@ -59,14 +59,14 @@ cache, and proactive `speak`.
 - `candidate --format text --strict` replays/opens sealed audio without
   regenerating it.
 - Profile-review smoke sealed `AUDIO_CANDIDATE`; recommended profile `fast`; ZIP SHA starts `e9757a4e`.
-- Runtime `--latency-profile auto` applies sealed recommendation; otherwise `quality`.
+- Runtime auto applies sealed `fast`; live-smoke PASS limit 1: startup `857.733ms`, request `1943.168ms`, RTF `0.4221`, ZIP SHA starts `a7e41cf6`.
 
 Relevant gates: focused TTS suite, roadmap partition, materialization, TDS,
 doc-size, reference validators, and `npm run commit:check`.
 
 ## Next Cut
 
-Use the auto-selected `fast` profile in the next live resident-session smoke.
+Expand `live-smoke` to a 3-case audible review and compare listener score.
 
 ## Maintenance Rules
 
