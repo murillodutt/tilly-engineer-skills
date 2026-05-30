@@ -205,7 +205,7 @@ class DirectOmniVoiceKernel:
         postprocess_output: bool,
     ) -> dict[str, Any]:
         output.parent.mkdir(parents=True, exist_ok=True)
-        started = time.perf_counter()
+        synthesis_started = time.perf_counter()
         with contextlib.redirect_stdout(sys.stderr):
             audios = self.model.generate(
                 text=text,
@@ -218,14 +218,18 @@ class DirectOmniVoiceKernel:
                 denoise=denoise,
                 postprocess_output=postprocess_output,
             )
-        generation_ms = round((time.perf_counter() - started) * 1000, 3)
+        provider_synthesis_ms = round((time.perf_counter() - synthesis_started) * 1000, 3)
+        write_started = time.perf_counter()
         self.soundfile.write(output, audios[0], self.model.sampling_rate)
+        audio_write_ms = round((time.perf_counter() - write_started) * 1000, 3)
         duration_seconds = round(float(len(audios[0]) / self.model.sampling_rate), 3)
         return {
             "output": str(output),
-            "generation_ms": generation_ms,
+            "generation_ms": provider_synthesis_ms,
+            "provider_synthesis_ms": provider_synthesis_ms,
+            "audio_write_ms": audio_write_ms,
             "audio_duration_seconds": duration_seconds,
-            "rtf": round(generation_ms / 1000 / duration_seconds, 4) if duration_seconds else None,
+            "rtf": round(provider_synthesis_ms / 1000 / duration_seconds, 4) if duration_seconds else None,
             "sample_rate": self.model.sampling_rate,
         }
 
@@ -239,7 +243,9 @@ class DirectOmniVoiceKernel:
         output: Path,
         args: Any,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
+        text_prepare_started = time.perf_counter()
         text_info = provider_text(source_text, locale, text_mode)
+        text_prepare_ms = round((time.perf_counter() - text_prepare_started) * 1000, 3)
         audio_metrics = self.synthesize(
             text=text_info["text"],
             language=language,
@@ -251,4 +257,5 @@ class DirectOmniVoiceKernel:
             denoise=args.denoise,
             postprocess_output=args.postprocess_output,
         )
+        audio_metrics["text_prepare_ms"] = text_prepare_ms
         return text_info, audio_metrics

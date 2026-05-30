@@ -2119,6 +2119,85 @@ def load_provider_module() -> Any:
             pass
 
 
+def load_direct_kernel_module() -> Any:
+    scripts_dir = ROOT / "scripts"
+    sys.path.insert(0, str(scripts_dir))
+    try:
+        spec = importlib.util.spec_from_file_location("tes_tts_omnivoice_direct_kernel_for_oracle", DIRECT_KERNEL_SCRIPT)
+        if spec is None or spec.loader is None:
+            raise RuntimeError("could not load direct kernel module spec")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        try:
+            sys.path.remove(str(scripts_dir))
+        except ValueError:
+            pass
+
+
+def validate_direct_kernel_timing_contract() -> list[str]:
+    failures: list[str] = []
+    kernel_module = load_direct_kernel_module()
+
+    class FakeModel:
+        sampling_rate = 24000
+        device = "cpu"
+
+        def generate(self, **_kwargs: Any) -> list[list[float]]:
+            return [[0.0] * 2400]
+
+    class FakeSoundfile:
+        def write(self, output: Path, _audio: list[float], _sample_rate: int) -> None:
+            output.write_bytes(b"fake-wave")
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        output = Path(tmp_dir) / "case.wav"
+        kernel = kernel_module.DirectOmniVoiceKernel(
+            model=FakeModel(),
+            soundfile=FakeSoundfile(),
+            voice_prompt=object(),
+            device="cpu",
+            model_load_ms=1.5,
+            prompt_metrics={"voice_prompt_prepare_ms": 2.5},
+        )
+        metrics = kernel.synthesize(
+            text="Teste com API e TypeScript.",
+            language="pt",
+            output=output,
+            num_step=8,
+            guidance_scale=2.0,
+            speed=1.0,
+            t_shift=0.1,
+            denoise=True,
+            postprocess_output=True,
+        )
+        args = argparse.Namespace(
+            num_step=8,
+            guidance_scale=2.0,
+            speed=1.0,
+            t_shift=0.1,
+            denoise=True,
+            postprocess_output=True,
+        )
+        _text_info, prepared_metrics = kernel.synthesize_prepared(
+            source_text="Teste com API e TypeScript.",
+            locale="pt-BR",
+            text_mode="spoken_text",
+            language="pt",
+            output=output,
+            args=args,
+        )
+    for key in ("generation_ms", "provider_synthesis_ms", "audio_write_ms", "audio_duration_seconds", "rtf"):
+        if key not in metrics:
+            failures.append(f"direct kernel synthesize missing timing field {key}")
+    if metrics.get("generation_ms") != metrics.get("provider_synthesis_ms"):
+        failures.append("direct kernel must keep generation_ms as compatibility alias for provider_synthesis_ms")
+    if "text_prepare_ms" not in prepared_metrics:
+        failures.append("direct kernel synthesize_prepared must report text_prepare_ms")
+    return failures
+
+
 def validate_jsonl_emitter() -> list[str]:
     failures: list[str] = []
     provider = load_provider_module()
@@ -2947,6 +3026,7 @@ def main() -> int:
     active_failures.extend(validate_session_dry_run_command())
     active_failures.extend(validate_auto_latency_profile_selection())
     active_failures.extend(validate_live_smoke_dry_run_command())
+    active_failures.extend(validate_direct_kernel_timing_contract())
     active_failures.extend(validate_jsonl_emitter())
     active_failures.extend(validate_short_speak_in_process_boundary())
     failures.extend(active_failures)

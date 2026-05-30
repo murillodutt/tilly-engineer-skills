@@ -38,9 +38,12 @@ durable conversion cache, or proactive `speak`.
 - PSO-005 partitioned provider oracle checks across source safety, provider
   status, active direct kernel, legacy server compatibility, dry-run packaging,
   and fixture contract. No audio was generated.
+- PSO-006 clarified timing names with compatibility aliases for text
+  preparation, provider synthesis, audio write, combine, playback, and total
+  wall time. No audio was generated.
 
 ## Next Cut
-Next: PSO-006 timing and benchmark cleanup. The exact authority pointer is in
+Next: PSO-007 final optimization audit. The exact authority pointer is in
 the registry. Keep `tmp/**` artifacts out of commits.
 
 ## Maintenance Rules

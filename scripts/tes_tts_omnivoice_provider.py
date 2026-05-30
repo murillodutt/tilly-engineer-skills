@@ -893,19 +893,22 @@ def prompt_cache_path_from_args(args: argparse.Namespace, ref_audio: Path) -> Pa
 
 
 def playback_audio(output: Path) -> dict[str, Any]:
+    started = time.perf_counter()
     player = shutil.which("afplay")
     if not player:
-        return {"playback_status": "not_available", "player": None}
+        return {"playback_status": "not_available", "player": None, "playback_wall_ms": 0.0}
     completed = subprocess.run([player, str(output)], check=False)
     return {
         "playback_status": "played" if completed.returncode == 0 else "failed",
         "player": player,
         "returncode": completed.returncode,
+        "playback_wall_ms": round((time.perf_counter() - started) * 1000, 3),
     }
 
 
 def combine_wav_files(inputs: list[Path], output: Path, *, silence_ms: int) -> dict[str, Any]:
     """Write one review/playback WAV from chunk WAVs with deterministic gaps."""
+    started = time.perf_counter()
     existing = [path for path in inputs if path.exists()]
     if not existing:
         return {
@@ -913,6 +916,7 @@ def combine_wav_files(inputs: list[Path], output: Path, *, silence_ms: int) -> d
             "reason": "no chunk wav files found",
             "combined_output": str(output),
             "combined_chunk_count": 0,
+            "combine_wall_ms": round((time.perf_counter() - started) * 1000, 3),
         }
 
     params: wave._wave_params | None = None
@@ -936,6 +940,7 @@ def combine_wav_files(inputs: list[Path], output: Path, *, silence_ms: int) -> d
                     "reason": f"incompatible WAV params at {path}",
                     "combined_output": str(output),
                     "combined_chunk_count": len(existing),
+                    "combine_wall_ms": round((time.perf_counter() - started) * 1000, 3),
                 }
             frames.append(handle.readframes(handle.getnframes()))
             total_frames += current_params.nframes
@@ -956,6 +961,7 @@ def combine_wav_files(inputs: list[Path], output: Path, *, silence_ms: int) -> d
         "combined_chunk_count": len(existing),
         "combined_silence_ms": max(0, silence_ms),
         "combined_duration_seconds": round(total_frames / params.framerate, 3),
+        "combine_wall_ms": round((time.perf_counter() - started) * 1000, 3),
     }
 
 
@@ -1026,6 +1032,12 @@ def playback_outputs(outputs: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if playback.get("playback_status") == "failed":
             break
     return results
+
+
+def provider_prepare_ms(kernel: direct_kernel.DirectOmniVoiceKernel) -> float:
+    prompt_ms = kernel.prompt_metrics.get("voice_prompt_prepare_ms")
+    prompt_value = prompt_ms if isinstance(prompt_ms, (int, float)) else 0
+    return round(kernel.model_load_ms + prompt_value, 3)
 
 
 def read_jsonl_payload(process: subprocess.Popen[str], timeout: float, label: str) -> dict[str, Any]:
@@ -2494,18 +2506,30 @@ def command_speak_long(args: argparse.Namespace) -> int:
                 wait_or_terminate(process)
 
     generation_values = [item.get("generation_ms") for item in outputs if isinstance(item.get("generation_ms"), (int, float))]
+    synthesis_values = [
+        item.get("provider_synthesis_ms") for item in outputs if isinstance(item.get("provider_synthesis_ms"), (int, float))
+    ]
+    text_prepare_values = [
+        item.get("text_prepare_ms") for item in outputs if isinstance(item.get("text_prepare_ms"), (int, float))
+    ]
+    audio_write_values = [
+        item.get("audio_write_ms") for item in outputs if isinstance(item.get("audio_write_ms"), (int, float))
+    ]
     request_values = [item.get("request_total_ms") for item in outputs if isinstance(item.get("request_total_ms"), (int, float))]
     duration_values = [
         item.get("audio_duration_seconds") for item in outputs if isinstance(item.get("audio_duration_seconds"), (int, float))
     ]
     rtf_values = [item.get("rtf") for item in outputs if isinstance(item.get("rtf"), (int, float))]
     combined_result: dict[str, Any] | None = None
+    combine_wall_ms: float | None = None
     if args.combine and outputs:
         combined_result = combine_wav_files(
             [Path(item["output"]) for item in outputs if isinstance(item.get("output"), str)],
             output_dir / "combined.wav",
             silence_ms=args.inter_chunk_silence_ms,
         )
+        combine_value = combined_result.get("combine_wall_ms")
+        combine_wall_ms = combine_value if isinstance(combine_value, (int, float)) else None
         monitor.record("combined_audio", **combined_result)
         if combined_result.get("combined_status") != "PASS" and status == "PASS":
             status = "COMBINE_FAILED"
@@ -2518,6 +2542,10 @@ def command_speak_long(args: argparse.Namespace) -> int:
             if playback.get("playback_status") != "played":
                 status = "PLAYBACK_FAILED"
                 error = "combined playback failed"
+    playback_values = [
+        item.get("playback_wall_ms") for item in playback_results if isinstance(item.get("playback_wall_ms"), (int, float))
+    ]
+    total_wall_ms = round((time.perf_counter() - total_started) * 1000, 3)
     monitor.record("long_read_end", status=status, error=error)
     monitor.stop(status)
     payload = {
@@ -2560,9 +2588,16 @@ def command_speak_long(args: argparse.Namespace) -> int:
             "failed_count": sum(1 for item in outputs if item.get("status") != "PASS"),
             "total_audio_duration_seconds": round(sum(duration_values), 3) if duration_values else None,
             "total_generation_ms": round(sum(generation_values), 3) if generation_values else None,
+            "total_provider_synthesis_ms": round(sum(synthesis_values), 3) if synthesis_values else None,
+            "total_text_prepare_ms": round(sum(text_prepare_values), 3) if text_prepare_values else None,
+            "total_audio_write_ms": round(sum(audio_write_values), 3) if audio_write_values else None,
             "total_request_ms": round(sum(request_values), 3) if request_values else None,
+            "total_resident_request_ms": round(sum(request_values), 3) if request_values else None,
+            "combine_wall_ms": combine_wall_ms,
+            "total_playback_wall_ms": round(sum(playback_values), 3) if playback_values else None,
             "avg_rtf": round(sum(rtf_values) / len(rtf_values), 4) if rtf_values else None,
-            "wall_ms": round((time.perf_counter() - total_started) * 1000, 3),
+            "wall_ms": total_wall_ms,
+            "total_wall_ms": total_wall_ms,
             "provider_timing_scope": "resident_long_read_local_optional_environment_only",
         },
         "latency_profile": args.latency_profile,
@@ -2858,9 +2893,12 @@ def run_short_speak_in_process(
         "summary_behavior": text_info["prepared"]["summary_behavior"],
         "command_execution": text_info["prepared"]["command_execution"],
         "model_load_ms": kernel.model_load_ms,
+        "provider_model_load_ms": kernel.model_load_ms,
+        "provider_prepare_ms": provider_prepare_ms(kernel),
         **kernel.prompt_metrics,
         **audio_metrics,
-        "total_ms": round((time.perf_counter() - total_started) * 1000, 3),
+        "total_ms": total_wall_ms,
+        "total_wall_ms": total_wall_ms,
         "provider_python": provider_python,
         "provider_python_source": python_source,
         "ref_audio_source": ref_source,
@@ -3139,6 +3177,7 @@ def command_speak_server(args: argparse.Namespace) -> int:
         "output": str(output),
         "bytes": len(audio),
         "generation_ms": generation_ms,
+        "server_request_ms": generation_ms,
         "text_chars": len(args.text),
         "play_requested": args.play,
         "runtime_dependency": "optional_local_openai_compatible_http_server",
@@ -3292,6 +3331,7 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
                 "content_type": content_type,
                 "bytes": len(audio),
                 "generation_ms": generation_ms,
+                "server_request_ms": generation_ms,
                 "audio_duration_seconds": duration,
                 "rtf": round(generation_ms / 1000 / duration, 4) if duration else None,
             }
@@ -3327,7 +3367,18 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
         item.get("audio_duration_seconds") for item in outputs if isinstance(item.get("audio_duration_seconds"), (int, float))
     ]
     generation_values = [item.get("generation_ms") for item in outputs if isinstance(item.get("generation_ms"), (int, float))]
+    server_request_values = [
+        item.get("server_request_ms") for item in outputs if isinstance(item.get("server_request_ms"), (int, float))
+    ]
     rtf_values = [item.get("rtf") for item in outputs if isinstance(item.get("rtf"), (int, float))]
+    combine_wall_ms: float | None = None
+    if combined_result is not None:
+        combine_value = combined_result.get("combine_wall_ms")
+        combine_wall_ms = combine_value if isinstance(combine_value, (int, float)) else None
+    playback_values = [
+        item.get("playback_wall_ms") for item in playback_results if isinstance(item.get("playback_wall_ms"), (int, float))
+    ]
+    total_wall_ms = round((time.perf_counter() - total_started) * 1000, 3)
     payload = {
         "provider": "omnivoice",
         "status": status,
@@ -3376,8 +3427,12 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
             "failed_count": sum(1 for item in outputs if item.get("status") != "PASS"),
             "total_audio_duration_seconds": round(sum(duration_values), 3) if duration_values else None,
             "total_generation_ms": round(sum(generation_values), 3) if generation_values else None,
+            "total_server_request_ms": round(sum(server_request_values), 3) if server_request_values else None,
+            "combine_wall_ms": combine_wall_ms,
+            "total_playback_wall_ms": round(sum(playback_values), 3) if playback_values else None,
             "avg_rtf": round(sum(rtf_values) / len(rtf_values), 4) if rtf_values else None,
-            "wall_ms": round((time.perf_counter() - total_started) * 1000, 3),
+            "wall_ms": total_wall_ms,
+            "total_wall_ms": total_wall_ms,
             "provider_timing_scope": "server_long_read_local_optional_environment_only",
         },
         "runtime_dependency": "optional_local_openai_compatible_http_server",
@@ -3530,11 +3585,31 @@ def command_bench(args: argparse.Namespace) -> int:
             for item in outputs
             if isinstance(item.get("generation_ms"), (int, float))
         ]
+        syntheses = [
+            item.get("provider_synthesis_ms")
+            for item in outputs
+            if isinstance(item.get("provider_synthesis_ms"), (int, float))
+        ]
+        text_prepares = [
+            item.get("text_prepare_ms")
+            for item in outputs
+            if isinstance(item.get("text_prepare_ms"), (int, float))
+        ]
+        audio_writes = [
+            item.get("audio_write_ms")
+            for item in outputs
+            if isinstance(item.get("audio_write_ms"), (int, float))
+        ]
         payload["benchmark_summary"] = {
             "case_count": len(outputs),
             "avg_rtf": round(sum(rtfs) / len(rtfs), 4) if rtfs else None,
             "total_audio_duration_seconds": round(sum(durations), 3) if durations else None,
             "total_generation_ms": round(sum(generations), 3) if generations else None,
+            "total_provider_synthesis_ms": round(sum(syntheses), 3) if syntheses else None,
+            "total_text_prepare_ms": round(sum(text_prepares), 3) if text_prepares else None,
+            "total_audio_write_ms": round(sum(audio_writes), 3) if audio_writes else None,
+            "provider_prepare_ms": payload.get("provider_prepare_ms"),
+            "total_wall_ms": payload.get("total_wall_ms"),
             "provider_timing_scope": "local_optional_environment_only",
         }
         if args.play and completed.returncode == 0:
@@ -3734,6 +3809,21 @@ def command_profile_review(args: argparse.Namespace) -> int:
         if isinstance(item.get("audio_duration_seconds"), (int, float))
     ]
     generations = [item.get("generation_ms") for item in outputs if isinstance(item.get("generation_ms"), (int, float))]
+    syntheses = [
+        item.get("provider_synthesis_ms") for item in outputs if isinstance(item.get("provider_synthesis_ms"), (int, float))
+    ]
+    text_prepares = [item.get("text_prepare_ms") for item in outputs if isinstance(item.get("text_prepare_ms"), (int, float))]
+    audio_writes = [item.get("audio_write_ms") for item in outputs if isinstance(item.get("audio_write_ms"), (int, float))]
+    provider_prepare_values = [
+        item.get("provider_prepare_ms")
+        for item in payloads
+        if isinstance(item.get("provider_prepare_ms"), (int, float))
+    ]
+    total_wall_values = [
+        item.get("total_wall_ms")
+        for item in payloads
+        if isinstance(item.get("total_wall_ms"), (int, float))
+    ]
     payload = {
         "provider": "omnivoice",
         "status": "PASS",
@@ -3757,6 +3847,11 @@ def command_profile_review(args: argparse.Namespace) -> int:
             "avg_rtf": round(sum(rtfs) / len(rtfs), 4) if rtfs else None,
             "total_audio_duration_seconds": round(sum(durations), 3) if durations else None,
             "total_generation_ms": round(sum(generations), 3) if generations else None,
+            "total_provider_synthesis_ms": round(sum(syntheses), 3) if syntheses else None,
+            "total_text_prepare_ms": round(sum(text_prepares), 3) if text_prepares else None,
+            "total_audio_write_ms": round(sum(audio_writes), 3) if audio_writes else None,
+            "total_provider_prepare_ms": round(sum(provider_prepare_values), 3) if provider_prepare_values else None,
+            "total_wall_ms": round(sum(total_wall_values), 3) if total_wall_values else None,
             "provider_timing_scope": "local_optional_environment_only",
         },
         "allows_install": False,
@@ -3943,6 +4038,7 @@ def command_prepare_prompt(args: argparse.Namespace) -> int:
         refresh_prompt=args.refresh_prompt,
         requested_device=args.device,
     )
+    total_wall_ms = round((time.perf_counter() - total_started) * 1000, 3)
     emit(
         {
             "provider": "omnivoice",
@@ -3956,8 +4052,11 @@ def command_prepare_prompt(args: argparse.Namespace) -> int:
             **latency_profile_metadata(args),
             "num_step": args.num_step,
             "model_load_ms": kernel.model_load_ms,
+            "provider_model_load_ms": kernel.model_load_ms,
+            "provider_prepare_ms": provider_prepare_ms(kernel),
             **kernel.prompt_metrics,
-            "total_ms": round((time.perf_counter() - total_started) * 1000, 3),
+            "total_ms": total_wall_ms,
+            "total_wall_ms": total_wall_ms,
             "allows_install": False,
             "allows_download": False,
             "allows_global_config_write": False,
@@ -3986,6 +4085,7 @@ def command_synthesize(args: argparse.Namespace) -> int:
         output=Path(args.output),
         args=args,
     )
+    total_wall_ms = round((time.perf_counter() - total_started) * 1000, 3)
     emit(
         {
             "provider": "omnivoice",
@@ -4003,9 +4103,12 @@ def command_synthesize(args: argparse.Namespace) -> int:
             "summary_behavior": text_info["prepared"]["summary_behavior"],
             "command_execution": text_info["prepared"]["command_execution"],
             "model_load_ms": kernel.model_load_ms,
+            "provider_model_load_ms": kernel.model_load_ms,
+            "provider_prepare_ms": provider_prepare_ms(kernel),
             **kernel.prompt_metrics,
             **audio_metrics,
-            "total_ms": round((time.perf_counter() - total_started) * 1000, 3),
+            "total_ms": total_wall_ms,
+            "total_wall_ms": total_wall_ms,
         }
     )
     return 0
@@ -4056,6 +4159,7 @@ def command_batch(args: argparse.Namespace) -> int:
             }
         )
 
+    total_wall_ms = round((time.perf_counter() - total_started) * 1000, 3)
     emit(
         {
             "provider": "omnivoice",
@@ -4068,9 +4172,12 @@ def command_batch(args: argparse.Namespace) -> int:
             **latency_profile_metadata(args),
             "num_step": args.num_step,
             "model_load_ms": kernel.model_load_ms,
+            "provider_model_load_ms": kernel.model_load_ms,
+            "provider_prepare_ms": provider_prepare_ms(kernel),
             **kernel.prompt_metrics,
             "outputs": outputs,
-            "total_ms": round((time.perf_counter() - total_started) * 1000, 3),
+            "total_ms": total_wall_ms,
+            "total_wall_ms": total_wall_ms,
         }
     )
     return 0
@@ -4091,6 +4198,7 @@ def command_serve(args: argparse.Namespace) -> int:
         refresh_prompt=args.refresh_prompt,
         requested_device=args.device,
     )
+    startup_wall_ms = round((time.perf_counter() - total_started) * 1000, 3)
     emit_jsonl(
         {
             "provider": "omnivoice",
@@ -4106,8 +4214,12 @@ def command_serve(args: argparse.Namespace) -> int:
             "num_step": args.num_step,
             "output_dir": str(out_dir),
             "model_load_ms": kernel.model_load_ms,
+            "provider_model_load_ms": kernel.model_load_ms,
+            "provider_prepare_ms": provider_prepare_ms(kernel),
             **kernel.prompt_metrics,
-            "startup_ms": round((time.perf_counter() - total_started) * 1000, 3),
+            "startup_ms": startup_wall_ms,
+            "provider_startup_ms": startup_wall_ms,
+            "total_wall_ms": startup_wall_ms,
             "allows_install": False,
             "allows_download": False,
             "allows_global_config_write": False,
@@ -4142,6 +4254,7 @@ def command_serve(args: argparse.Namespace) -> int:
                 output=output,
                 args=args,
             )
+            request_wall_ms = round((time.perf_counter() - request_started) * 1000, 3)
             emit_jsonl(
                 {
                     "provider": "omnivoice",
@@ -4161,10 +4274,12 @@ def command_serve(args: argparse.Namespace) -> int:
                     "model_reused": True,
                     "voice_prompt_reused": True,
                     **audio_metrics,
-                    "request_total_ms": round((time.perf_counter() - request_started) * 1000, 3),
+                    "request_total_ms": request_wall_ms,
+                    "request_wall_ms": request_wall_ms,
                 }
             )
         except Exception as exc:
+            request_wall_ms = round((time.perf_counter() - request_started) * 1000, 3)
             emit_jsonl(
                 {
                     "provider": "omnivoice",
@@ -4172,7 +4287,8 @@ def command_serve(args: argparse.Namespace) -> int:
                     "version": VERSION,
                     "mode": "resident_session_utterance",
                     "error": str(exc),
-                    "request_total_ms": round((time.perf_counter() - request_started) * 1000, 3),
+                    "request_total_ms": request_wall_ms,
+                    "request_wall_ms": request_wall_ms,
                 }
             )
         sys.stdout.flush()
