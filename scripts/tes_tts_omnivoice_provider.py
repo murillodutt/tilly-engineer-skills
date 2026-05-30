@@ -817,6 +817,10 @@ def command_bench(args: argparse.Namespace) -> int:
                 output_dir / "tes-tts-omnivoice-review-package.zip",
             )
             payload.update(package_result)
+            Path(review_paths["result_json"]).write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
     emit(payload)
     return completed.returncode
 

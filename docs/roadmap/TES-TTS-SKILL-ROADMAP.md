@@ -88,9 +88,8 @@ Latest local product evidence:
   OmniVoice fixtures through one loaded model, cached reference voice,
   sequential playback, review page, and portable ZIP manifest. The review page
   includes per-case audible scoring, JSON export, and copyable decision
-  summaries. Latest local report produced `32.65s` of audio in `29.37s` total
-  with average RTF `0.9417`; latest playback played all three WAVs via
-  `afplay`.
+  summaries. Latest packaged run produced `32.69s` of audio in `30.19s` total
+  with average RTF `0.9422`; package SHA starts `c594d7ee`.
 
 Relevant gates for the latest cut:
 
