@@ -37,11 +37,14 @@ durable cache, or proactive `speak`.
   `language=auto`, and lab-only English-island variants.
 - Latest lab evidence `20260530-162231-615943` improves target chunks 2 and 3;
   chunk 1 needs human scoring and less brittle STT term normalization.
-- Community scan produced tested `server-status` with TCP plus optional
-  `/health`, voice/model ID discovery, `speak-server`, and `speak-long-server`
-  routes for local OpenAI-compatible OmniVoice servers. Community-compatible
-  `speaker`, `instructions`, `stream`, and `num_step` controls are request-local
-  and redacted in dry-run evidence; no install/download/write.
+- Community scan reinforced local OpenAI-compatible OmniVoice servers,
+  Apple-Silicon MLX backends, desktop Studio workflows, and audiobook/dubbing
+  tools as the practical ecosystem. TES keeps the server path first and treats
+  UI projects as research references.
+- Tested `server-status`, `speak-server`, and `speak-long-server` now cover
+  local server health/capability discovery, JSON speech, multipart clone
+  synthesis via reference audio/text, and request-local generation controls.
+  Dry-runs redact fragile text and files; no install/download/write.
 - `audio_variant_lab --provider-route server` now preflights server readiness
   once, records `SERVER_UNAVAILABLE` instead of repeating failed synthesis, and
   can pass community server controls for per-chunk language, task type, speaker,
@@ -49,10 +52,10 @@ durable cache, or proactive `speak`.
   steps through named preset matrices during chunk 2/3 review.
 
 ## Next Cut
-Human-score `20260530-162231-615943` against `20260530-151743`, then run the
-same chunks through `audio_variant_lab --provider-route server` when a local
-OmniVoice server is available. Promote only audio that wins by ear; otherwise
-pivot provider/runtime strategy before adding punctuation or aliases.
+Run chunks 2 and 3 through `audio_variant_lab --provider-route server` with the
+local clone reference when a compatible OmniVoice server is available. Promote
+only audio that wins by ear; otherwise inspect server presets before adding
+punctuation or aliases.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.

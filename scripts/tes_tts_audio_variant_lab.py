@@ -560,6 +560,8 @@ def synthesize_session(
     server_voice: str,
     server_speaker: str | None,
     server_instructions: str | None,
+    server_clone_ref_audio: str | None,
+    server_clone_ref_text: str | None,
     server_task_type: str | None,
     server_max_new_tokens: int | None,
     server_guidance_scale: float | None,
@@ -597,6 +599,10 @@ def synthesize_session(
             command.extend(["--speaker", server_speaker])
         if server_instructions:
             command.extend(["--instructions", server_instructions])
+        if server_clone_ref_audio:
+            command.extend(["--clone-ref-audio", server_clone_ref_audio])
+        if server_clone_ref_text:
+            command.extend(["--clone-ref-text", server_clone_ref_text])
         if server_task_type:
             command.extend(["--task-type", server_task_type])
         if server_max_new_tokens is not None:
@@ -681,6 +687,10 @@ def server_control_profiles(args: argparse.Namespace) -> list[dict[str, Any]]:
             profile["speaker"] = args.server_speaker
         if args.server_instructions:
             profile["instructions"] = args.server_instructions
+        if args.server_clone_ref_audio:
+            profile["clone_ref_audio"] = args.server_clone_ref_audio
+        if args.server_clone_ref_text:
+            profile["clone_ref_text"] = args.server_clone_ref_text
         if args.server_task_type:
             profile["task_type"] = args.server_task_type
         if args.server_max_new_tokens is not None:
@@ -967,6 +977,8 @@ def command_run(args: argparse.Namespace) -> int:
                 "server_voice_source": "arg" if args.server_voice else "default",
                 "server_speaker": args.server_speaker,
                 "server_instructions_present": bool(args.server_instructions),
+                "server_clone_ref_audio_present": bool(args.server_clone_ref_audio),
+                "server_clone_ref_text_present": bool(args.server_clone_ref_text),
                 "server_task_type": args.server_task_type,
                 "server_max_new_tokens": args.server_max_new_tokens,
                 "server_guidance_scale": args.server_guidance_scale,
@@ -1050,6 +1062,8 @@ def command_run(args: argparse.Namespace) -> int:
                         server_voice=resolved_server_voice,
                         server_speaker=control_profile.get("speaker"),
                         server_instructions=control_profile.get("instructions"),
+                        server_clone_ref_audio=control_profile.get("clone_ref_audio"),
+                        server_clone_ref_text=control_profile.get("clone_ref_text"),
                         server_task_type=control_profile.get("task_type"),
                         server_max_new_tokens=control_profile.get("max_new_tokens"),
                         server_guidance_scale=control_profile.get("guidance_scale"),
@@ -1110,6 +1124,8 @@ def command_run(args: argparse.Namespace) -> int:
         ),
         "server_speaker": args.server_speaker if args.provider_route == "server" else None,
         "server_instructions_present": bool(args.server_instructions) if args.provider_route == "server" else None,
+        "server_clone_ref_audio_present": bool(args.server_clone_ref_audio) if args.provider_route == "server" else None,
+        "server_clone_ref_text_present": bool(args.server_clone_ref_text) if args.provider_route == "server" else None,
         "server_task_type": args.server_task_type if args.provider_route == "server" else None,
         "server_max_new_tokens": args.server_max_new_tokens if args.provider_route == "server" else None,
         "server_guidance_scale": args.server_guidance_scale if args.provider_route == "server" else None,
@@ -1172,6 +1188,8 @@ def command_self_test(_args: argparse.Namespace) -> int:
         server_control_preset=["omnivoice_server_fast_nonstream", "vllm_omni_customvoice_auto"],
         server_speaker="felipe-clone",
         server_instructions=None,
+        server_clone_ref_audio=None,
+        server_clone_ref_text=None,
         server_task_type=None,
         server_max_new_tokens=None,
         server_guidance_scale=None,
@@ -1309,6 +1327,8 @@ def command_self_test(_args: argparse.Namespace) -> int:
                 server_voice="felipe-clone",
                 server_speaker="felipe-clone",
                 server_instructions="Preserve English technical terms.",
+                server_clone_ref_audio="/tmp/ref.wav",
+                server_clone_ref_text="Reference transcript.",
                 server_task_type="CustomVoice",
                 server_max_new_tokens=2048,
                 server_guidance_scale=3.0,
@@ -1338,6 +1358,10 @@ def command_self_test(_args: argparse.Namespace) -> int:
             "felipe-clone",
             "--instructions",
             "Preserve English technical terms.",
+            "--clone-ref-audio",
+            "/tmp/ref.wav",
+            "--clone-ref-text",
+            "Reference transcript.",
             "--task-type",
             "CustomVoice",
             "--max-new-tokens",
@@ -1392,6 +1416,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--server-control-preset", action="append", choices=sorted(SERVER_CONTROL_PRESETS))
     run.add_argument("--server-speaker")
     run.add_argument("--server-instructions")
+    run.add_argument("--server-clone-ref-audio")
+    run.add_argument("--server-clone-ref-text")
     run.add_argument("--server-task-type")
     run.add_argument("--server-max-new-tokens", type=int)
     run.add_argument("--server-guidance-scale", type=float)

@@ -101,6 +101,9 @@ REQUIRED_SERVER_DRY_RUN_KEYS = {
     "postprocess_output",
     "stream_requested",
     "num_step",
+    "server_mode",
+    "clone_ref_audio_present",
+    "clone_ref_text_present",
     "output",
     "text_chars",
     "play_requested",
@@ -134,6 +137,9 @@ REQUIRED_SERVER_LONG_DRY_RUN_KEYS = {
     "postprocess_output",
     "stream_requested",
     "num_step",
+    "server_mode",
+    "clone_ref_audio_present",
+    "clone_ref_text_present",
     "text_chars",
     "chunk_count",
     "chunk_chars",
@@ -1128,8 +1134,14 @@ def validate_server_route_command() -> list[str]:
                 body = self.rfile.read(length)
                 received["path"] = self.path
                 received["authorization"] = self.headers.get("Authorization")
-                received["body"] = json.loads(body.decode("utf-8"))
-                requests.append({"path": self.path, "body": received["body"]})
+                content_type = self.headers.get("Content-Type", "")
+                if content_type.startswith("multipart/form-data"):
+                    received["content_type"] = content_type
+                    received["body"] = body
+                    requests.append({"path": self.path, "content_type": content_type, "body": body})
+                else:
+                    received["body"] = json.loads(body.decode("utf-8"))
+                    requests.append({"path": self.path, "body": received["body"]})
                 audio = wav_bytes()
                 self.send_response(200)
                 self.send_header("Content-Type", "audio/wav")
@@ -1301,6 +1313,90 @@ def validate_server_route_command() -> list[str]:
                 failures.append("speak-server request body lost stream intent")
             if body.get("num_step") != 8:
                 failures.append("speak-server request body lost num_step")
+
+        clone_ref = root / "clone-ref.wav"
+        clone_ref.write_bytes(b"fake-reference-audio")
+        clone_output = root / "server-clone.wav"
+        requests.clear()
+        received.clear()
+        with socketserver.TCPServer(("127.0.0.1", 0), Handler) as server:
+            port = server.server_address[1]
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            env = os.environ.copy()
+            env["TES_TTS_FAKE_SERVER_KEY"] = "local-test-key"
+            clone_completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(PROVIDER_SCRIPT),
+                    "speak-server",
+                    "--server-url",
+                    f"http://127.0.0.1:{port}",
+                    "--api-key-env",
+                    "TES_TTS_FAKE_SERVER_KEY",
+                    "--clone-ref-audio",
+                    str(clone_ref),
+                    "--clone-ref-text",
+                    "Reference transcript must not appear in dry-run metadata.",
+                    "--guidance-scale",
+                    "3.0",
+                    "--denoise",
+                    "--num-step",
+                    "8",
+                    "--text",
+                    "Teste real com clone local e TypeScript.",
+                    "--output",
+                    str(clone_output),
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+                env=env,
+            )
+            server.shutdown()
+            thread.join(timeout=2)
+        if clone_completed.returncode != 0:
+            failures.append(f"speak-server clone mock request returned unexpected exit code {clone_completed.returncode}")
+            return failures
+        try:
+            clone_payload = json.loads(clone_completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"speak-server clone mock request did not emit JSON: {exc}")
+            return failures
+        if clone_payload.get("status") != "PASS":
+            failures.append("speak-server clone mock request should pass")
+        if clone_payload.get("server_mode") != "clone":
+            failures.append("speak-server clone mock request must report clone mode")
+        if clone_payload.get("endpoint") != f"http://127.0.0.1:{port}/v1/audio/speech/clone":
+            failures.append("speak-server clone mock request must derive /v1/audio/speech/clone endpoint")
+        if clone_payload.get("clone_ref_audio_present") is not True:
+            failures.append("speak-server clone mock request must report reference audio presence")
+        if clone_payload.get("clone_ref_text_present") is not True:
+            failures.append("speak-server clone mock request must report reference text presence without emitting it")
+        if clone_output.read_bytes() != wav_bytes():
+            failures.append("speak-server clone mock request did not write response audio bytes")
+        if received.get("path") != "/v1/audio/speech/clone":
+            failures.append("speak-server clone mock request must POST to /v1/audio/speech/clone")
+        if received.get("authorization") != "Bearer local-test-key":
+            failures.append("speak-server clone mock request must use Bearer auth when env key is present")
+        clone_body = received.get("body")
+        clone_content_type = str(received.get("content_type", ""))
+        if not clone_content_type.startswith("multipart/form-data"):
+            failures.append("speak-server clone mock request must send multipart/form-data")
+        if not isinstance(clone_body, bytes):
+            failures.append("speak-server clone mock request did not preserve multipart body")
+        else:
+            for marker in (
+                b'name="text"',
+                b'name="ref_text"',
+                b'name="ref_audio"',
+                b'Teste real com clone local e TypeScript.',
+                b"Reference transcript must not appear in dry-run metadata.",
+                b"fake-reference-audio",
+            ):
+                if marker not in clone_body:
+                    failures.append(f"speak-server clone mock request multipart body missing {marker!r}")
 
         long_output_dir = root / "server-long-real"
         requests.clear()

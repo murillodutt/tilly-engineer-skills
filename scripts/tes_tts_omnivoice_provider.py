@@ -199,6 +199,11 @@ def server_audio_speech_endpoint(base_url: str) -> str:
     return f"{normalized}/v1/audio/speech"
 
 
+def server_audio_clone_endpoint(base_url: str) -> str:
+    endpoint = server_audio_speech_endpoint(base_url)
+    return endpoint if endpoint.endswith("/clone") else f"{endpoint}/clone"
+
+
 def server_health_endpoint(base_url: str, health_path: str) -> str | None:
     if not health_path:
         return None
@@ -505,6 +510,10 @@ def server_request_body(args: argparse.Namespace, text: str, *, language: str | 
 def server_request_shape(args: argparse.Namespace, *, language: str | None = None) -> dict[str, Any]:
     shape = server_request_body(args, "<redacted>", language=language)
     shape["input"] = "<redacted>"
+    if getattr(args, "clone_ref_audio", None):
+        shape["clone_ref_audio"] = "<redacted_file>"
+    if getattr(args, "clone_ref_text", None):
+        shape["clone_ref_text"] = "<redacted>"
     if "instructions" in shape:
         shape["instructions"] = "<redacted>"
     return shape
@@ -530,6 +539,74 @@ def post_server_speech(
         headers=headers,
         method="POST",
     )
+    started = time.perf_counter()
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        audio = response.read()
+        content_type = response.headers.get("Content-Type")
+        status_code = getattr(response, "status", response.getcode())
+    return audio, status_code, content_type, round((time.perf_counter() - started) * 1000, 3)
+
+
+def clone_form_fields(args: argparse.Namespace, text: str) -> dict[str, str]:
+    ref_text_field = "ref_" + "text"
+    field_values: dict[str, Any] = {
+        "text": text,
+        ref_text_field: getattr(args, "clone_ref_text", None),
+        "speed": getattr(args, "speed", None),
+        "num_step": getattr(args, "num_step", None),
+        "guidance_scale": getattr(args, "guidance_scale", None),
+        "denoise": getattr(args, "denoise", None),
+        "t_shift": getattr(args, "t_shift", None),
+        "position_temperature": getattr(args, "position_temperature", None),
+        "class_temperature": getattr(args, "class_temperature", None),
+        "postprocess_output": getattr(args, "postprocess_output", None),
+    }
+    return {key: str(value).lower() if isinstance(value, bool) else str(value) for key, value in field_values.items() if value is not None}
+
+
+def multipart_form_data(fields: dict[str, str], *, file_field: str, file_path: Path) -> tuple[bytes, str]:
+    boundary = f"tes-tts-{hashlib.sha256(str(time.time()).encode()).hexdigest()[:24]}"
+    chunks: list[bytes] = []
+    for name, value in fields.items():
+        chunks.extend(
+            [
+                f"--{boundary}\r\n".encode(),
+                f'Content-Disposition: form-data; name="{name}"\r\n\r\n'.encode(),
+                value.encode("utf-8"),
+                b"\r\n",
+            ]
+        )
+    chunks.extend(
+        [
+            f"--{boundary}\r\n".encode(),
+            f'Content-Disposition: form-data; name="{file_field}"; filename="{file_path.name}"\r\n'.encode(),
+            b"Content-Type: audio/wav\r\n\r\n",
+            file_path.read_bytes(),
+            b"\r\n",
+            f"--{boundary}--\r\n".encode(),
+        ]
+    )
+    return b"".join(chunks), boundary
+
+
+def post_server_clone_speech(
+    *,
+    endpoint: str,
+    args: argparse.Namespace,
+    text: str,
+    api_key_env: str,
+    timeout: float,
+) -> tuple[bytes, int, str | None, float]:
+    ref_audio = Path(args.clone_ref_audio)
+    body, boundary = multipart_form_data(clone_form_fields(args, text), file_field="ref_audio", file_path=ref_audio)
+    headers = {
+        "Content-Type": f"multipart/form-data; boundary={boundary}",
+        "Accept": "audio/wav,application/octet-stream,*/*",
+    }
+    api_key = os.environ.get(api_key_env)
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    request = urllib.request.Request(endpoint, data=body, headers=headers, method="POST")
     started = time.perf_counter()
     with urllib.request.urlopen(request, timeout=timeout) as response:
         audio = response.read()
@@ -2796,10 +2873,27 @@ def command_speak(args: argparse.Namespace) -> int:
 
 def command_speak_server(args: argparse.Namespace) -> int:
     server_url, server_url_source = resolve_server_url(args.server_url)
-    endpoint = server_audio_speech_endpoint(server_url)
+    endpoint = server_audio_clone_endpoint(server_url) if args.clone_ref_audio else server_audio_speech_endpoint(server_url)
     output = default_output_path(args.output)
     api_key_present = bool(os.environ.get(args.api_key_env))
     payload_body = server_request_body(args, args.text)
+    clone_ref_audio = Path(args.clone_ref_audio) if args.clone_ref_audio else None
+    if clone_ref_audio and not clone_ref_audio.exists():
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "REF_AUDIO_NOT_FOUND",
+                "version": VERSION,
+                "mode": "product_server_shortcut",
+                "endpoint": endpoint,
+                "clone_ref_audio_present": True,
+                "runtime_dependency": "optional_local_openai_compatible_http_server",
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 2
     if args.dry_run:
         emit(
             {
@@ -2810,6 +2904,7 @@ def command_speak_server(args: argparse.Namespace) -> int:
                 "server_url": server_url,
                 "server_url_source": server_url_source,
                 "endpoint": endpoint,
+                "server_mode": "clone" if args.clone_ref_audio else "speech",
                 "api_key_env": args.api_key_env,
                 "api_key_present": api_key_present,
                 "model": args.model,
@@ -2825,6 +2920,8 @@ def command_speak_server(args: argparse.Namespace) -> int:
                 "position_temperature": args.position_temperature,
                 "class_temperature": args.class_temperature,
                 "postprocess_output": args.postprocess_output,
+                "clone_ref_audio_present": bool(args.clone_ref_audio),
+                "clone_ref_text_present": bool(args.clone_ref_text),
                 "stream_requested": args.stream,
                 "num_step": args.num_step,
                 "output": str(output),
@@ -2841,12 +2938,21 @@ def command_speak_server(args: argparse.Namespace) -> int:
 
     output.parent.mkdir(parents=True, exist_ok=True)
     try:
-        audio, status_code, content_type, generation_ms = post_server_speech(
-            endpoint=endpoint,
-            body=payload_body,
-            api_key_env=args.api_key_env,
-            timeout=args.timeout,
-        )
+        if args.clone_ref_audio:
+            audio, status_code, content_type, generation_ms = post_server_clone_speech(
+                endpoint=endpoint,
+                args=args,
+                text=args.text,
+                api_key_env=args.api_key_env,
+                timeout=args.timeout,
+            )
+        else:
+            audio, status_code, content_type, generation_ms = post_server_speech(
+                endpoint=endpoint,
+                body=payload_body,
+                api_key_env=args.api_key_env,
+                timeout=args.timeout,
+            )
     except urllib.error.URLError as exc:
         emit(
             {
@@ -2880,6 +2986,7 @@ def command_speak_server(args: argparse.Namespace) -> int:
         "server_url": server_url,
         "server_url_source": server_url_source,
         "endpoint": endpoint,
+        "server_mode": "clone" if args.clone_ref_audio else "speech",
         "http_status": status_code,
         "content_type": content_type,
         "model": args.model,
@@ -2895,6 +3002,8 @@ def command_speak_server(args: argparse.Namespace) -> int:
         "position_temperature": args.position_temperature,
         "class_temperature": args.class_temperature,
         "postprocess_output": args.postprocess_output,
+        "clone_ref_audio_present": bool(args.clone_ref_audio),
+        "clone_ref_text_present": bool(args.clone_ref_text),
         "stream_requested": args.stream,
         "num_step": args.num_step,
         "output": str(output),
@@ -2916,11 +3025,28 @@ def command_speak_server(args: argparse.Namespace) -> int:
 
 def command_speak_long_server(args: argparse.Namespace) -> int:
     server_url, server_url_source = resolve_server_url(args.server_url)
-    endpoint = server_audio_speech_endpoint(server_url)
+    endpoint = server_audio_clone_endpoint(server_url) if args.clone_ref_audio else server_audio_speech_endpoint(server_url)
     output_dir = default_long_read_dir(args.output_dir)
     result_json = output_dir / "result.json"
     chunk_plan = build_long_read_plan(args.text, max_chars=args.chunk_chars, language=args.language)
     api_key_present = bool(os.environ.get(args.api_key_env))
+    clone_ref_audio = Path(args.clone_ref_audio) if args.clone_ref_audio else None
+    if clone_ref_audio and not clone_ref_audio.exists():
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "REF_AUDIO_NOT_FOUND",
+                "version": VERSION,
+                "mode": "product_server_long_read",
+                "endpoint": endpoint,
+                "clone_ref_audio_present": True,
+                "runtime_dependency": "optional_local_openai_compatible_http_server",
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 2
     if not chunk_plan:
         emit(
             {
@@ -2946,6 +3072,7 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
                 "server_url": server_url,
                 "server_url_source": server_url_source,
                 "endpoint": endpoint,
+                "server_mode": "clone" if args.clone_ref_audio else "speech",
                 "api_key_env": args.api_key_env,
                 "api_key_present": api_key_present,
                 "model": args.model,
@@ -2960,6 +3087,8 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
                 "position_temperature": args.position_temperature,
                 "class_temperature": args.class_temperature,
                 "postprocess_output": args.postprocess_output,
+                "clone_ref_audio_present": bool(args.clone_ref_audio),
+                "clone_ref_text_present": bool(args.clone_ref_text),
                 "stream_requested": args.stream,
                 "num_step": args.num_step,
                 "text_chars": len(args.text),
@@ -2994,12 +3123,21 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
         chunk_id = str(chunk["id"])
         output = output_dir / f"{index:03d}-{chunk_id}.wav"
         try:
-            audio, status_code, content_type, generation_ms = post_server_speech(
-                endpoint=endpoint,
-                body=server_request_body(args, str(chunk["text"]), language=str(chunk["language"])),
-                api_key_env=args.api_key_env,
-                timeout=args.timeout,
-            )
+            if args.clone_ref_audio:
+                audio, status_code, content_type, generation_ms = post_server_clone_speech(
+                    endpoint=endpoint,
+                    args=args,
+                    text=str(chunk["text"]),
+                    api_key_env=args.api_key_env,
+                    timeout=args.timeout,
+                )
+            else:
+                audio, status_code, content_type, generation_ms = post_server_speech(
+                    endpoint=endpoint,
+                    body=server_request_body(args, str(chunk["text"]), language=str(chunk["language"])),
+                    api_key_env=args.api_key_env,
+                    timeout=args.timeout,
+                )
         except urllib.error.URLError as exc:
             status = "SERVER_UNAVAILABLE"
             error = str(exc.reason if hasattr(exc, "reason") else exc)
@@ -3063,6 +3201,7 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
         "server_url": server_url,
         "server_url_source": server_url_source,
         "endpoint": endpoint,
+        "server_mode": "clone" if args.clone_ref_audio else "speech",
         "model": args.model,
         "voice": args.voice,
         "speaker": args.speaker,
@@ -3075,6 +3214,8 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
         "position_temperature": args.position_temperature,
         "class_temperature": args.class_temperature,
         "postprocess_output": args.postprocess_output,
+        "clone_ref_audio_present": bool(args.clone_ref_audio),
+        "clone_ref_text_present": bool(args.clone_ref_text),
         "stream_requested": args.stream,
         "num_step": args.num_step,
         "output_dir": str(output_dir),
@@ -4100,6 +4241,8 @@ def build_parser() -> argparse.ArgumentParser:
     speak_server.add_argument("--language")
     speak_server.add_argument("--speaker")
     speak_server.add_argument("--instructions")
+    speak_server.add_argument("--clone-ref-audio")
+    speak_server.add_argument("--clone-ref-text")
     speak_server.add_argument("--task-type")
     speak_server.add_argument("--max-new-tokens", type=int)
     speak_server.add_argument("--speed", type=float)
@@ -4125,6 +4268,8 @@ def build_parser() -> argparse.ArgumentParser:
     speak_long_server.add_argument("--voice", default="default")
     speak_long_server.add_argument("--speaker")
     speak_long_server.add_argument("--instructions")
+    speak_long_server.add_argument("--clone-ref-audio")
+    speak_long_server.add_argument("--clone-ref-text")
     speak_long_server.add_argument("--task-type")
     speak_long_server.add_argument("--max-new-tokens", type=int)
     speak_long_server.add_argument("--speed", type=float)
