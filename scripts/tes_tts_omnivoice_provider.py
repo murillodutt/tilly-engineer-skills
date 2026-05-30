@@ -251,6 +251,7 @@ def server_capability_endpoints(base_url: str) -> dict[str, str]:
         "audio_voices": f"{v1}/audio/voices",
         "audio_models": f"{v1}/audio/models",
         "voices": f"{v1}/voices",
+        "voice_profiles": f"{v1}/voices/profiles",
         "models": f"{v1}/models",
         "root_health": f"{root}/health",
     }
@@ -372,7 +373,7 @@ def check_server_json_resource(
     started = time.perf_counter()
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
-            raw = response.read(2048).decode("utf-8", errors="replace")
+            raw = response.read(65536).decode("utf-8", errors="replace")
             try:
                 parsed: Any = json.loads(raw)
                 parsed_type = type(parsed).__name__
@@ -447,7 +448,7 @@ def discover_server_capabilities(base_url: str, *, api_key_env: str, timeout: fl
             if isinstance(identifier, str)
         }
     )
-    preferred_voice = next((voice for voice in ("felipe-clone", "default", "auto", "alloy", "nova") if voice in voice_ids), None)
+    preferred_voice = next((voice for voice in ("clone:felipe-clone", "felipe-clone", "default", "auto", "alloy", "nova") if voice in voice_ids), None)
     preferred_model = next((model for model in ("omnivoice", "tts-1", "tts-1-hd") if model in model_ids), None)
     return {
         "status": "DISCOVERED" if available else "NO_CAPABILITY_ENDPOINTS",
@@ -488,6 +489,8 @@ def server_request_body(args: argparse.Namespace, text: str, *, language: str | 
         payload["max_new_tokens"] = args.max_new_tokens
     if getattr(args, "speed", None) is not None:
         payload["speed"] = args.speed
+    if getattr(args, "duration", None) is not None:
+        payload["duration"] = args.duration
     if getattr(args, "guidance_scale", None) is not None:
         payload["guidance_scale"] = args.guidance_scale
     if getattr(args, "denoise", None) is not None:
@@ -500,6 +503,16 @@ def server_request_body(args: argparse.Namespace, text: str, *, language: str | 
         payload["class_temperature"] = args.class_temperature
     if getattr(args, "postprocess_output", None) is not None:
         payload["postprocess_output"] = args.postprocess_output
+    if getattr(args, "layer_penalty_factor", None) is not None:
+        payload["layer_penalty_factor"] = args.layer_penalty_factor
+    if getattr(args, "preprocess_prompt", None) is not None:
+        payload["preprocess_prompt"] = args.preprocess_prompt
+    if getattr(args, "audio_chunk_duration", None) is not None:
+        payload["audio_chunk_duration"] = args.audio_chunk_duration
+    if getattr(args, "audio_chunk_threshold", None) is not None:
+        payload["audio_chunk_threshold"] = args.audio_chunk_threshold
+    if getattr(args, "request_timeout_s", None) is not None:
+        payload["request_timeout_s"] = args.request_timeout_s
     if getattr(args, "stream", None) is not None:
         payload["stream"] = args.stream
     if getattr(args, "num_step", None) is not None:
@@ -547,11 +560,13 @@ def post_server_speech(
     return audio, status_code, content_type, round((time.perf_counter() - started) * 1000, 3)
 
 
-def clone_form_fields(args: argparse.Namespace, text: str) -> dict[str, str]:
+def clone_form_fields(args: argparse.Namespace, text: str, *, language: str | None = None) -> dict[str, str]:
     ref_text_field = "ref_" + "text"
     field_values: dict[str, Any] = {
         "text": text,
         ref_text_field: getattr(args, "clone_ref_text", None),
+        "response_format": "wav",
+        "language": server_language_value(language or getattr(args, "language", None)),
         "speed": getattr(args, "speed", None),
         "num_step": getattr(args, "num_step", None),
         "guidance_scale": getattr(args, "guidance_scale", None),
@@ -559,8 +574,16 @@ def clone_form_fields(args: argparse.Namespace, text: str) -> dict[str, str]:
         "t_shift": getattr(args, "t_shift", None),
         "position_temperature": getattr(args, "position_temperature", None),
         "class_temperature": getattr(args, "class_temperature", None),
+        "duration": getattr(args, "duration", None),
         "postprocess_output": getattr(args, "postprocess_output", None),
+        "layer_penalty_factor": getattr(args, "layer_penalty_factor", None),
+        "preprocess_prompt": getattr(args, "preprocess_prompt", None),
+        "audio_chunk_duration": getattr(args, "audio_chunk_duration", None),
+        "audio_chunk_threshold": getattr(args, "audio_chunk_threshold", None),
+        "request_timeout_s": getattr(args, "request_timeout_s", None),
     }
+    if getattr(args, "stream", None) is not None:
+        field_values["stream"] = args.stream
     return {key: str(value).lower() if isinstance(value, bool) else str(value) for key, value in field_values.items() if value is not None}
 
 
@@ -594,11 +617,12 @@ def post_server_clone_speech(
     endpoint: str,
     args: argparse.Namespace,
     text: str,
+    language: str | None = None,
     api_key_env: str,
     timeout: float,
 ) -> tuple[bytes, int, str | None, float]:
     ref_audio = Path(args.clone_ref_audio)
-    body, boundary = multipart_form_data(clone_form_fields(args, text), file_field="ref_audio", file_path=ref_audio)
+    body, boundary = multipart_form_data(clone_form_fields(args, text, language=language), file_field="ref_audio", file_path=ref_audio)
     headers = {
         "Content-Type": f"multipart/form-data; boundary={boundary}",
         "Accept": "audio/wav,application/octet-stream,*/*",
@@ -2943,6 +2967,7 @@ def command_speak_server(args: argparse.Namespace) -> int:
                 endpoint=endpoint,
                 args=args,
                 text=args.text,
+                language=args.language,
                 api_key_env=args.api_key_env,
                 timeout=args.timeout,
             )
@@ -3128,6 +3153,7 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
                     endpoint=endpoint,
                     args=args,
                     text=str(chunk["text"]),
+                    language=str(chunk["language"]),
                     api_key_env=args.api_key_env,
                     timeout=args.timeout,
                 )
@@ -4246,12 +4272,18 @@ def build_parser() -> argparse.ArgumentParser:
     speak_server.add_argument("--task-type")
     speak_server.add_argument("--max-new-tokens", type=int)
     speak_server.add_argument("--speed", type=float)
+    speak_server.add_argument("--duration", type=float)
     speak_server.add_argument("--guidance-scale", type=float)
     speak_server.add_argument("--denoise", action=argparse.BooleanOptionalAction, default=None)
     speak_server.add_argument("--t-shift", type=float)
     speak_server.add_argument("--position-temperature", type=float)
     speak_server.add_argument("--class-temperature", type=float)
     speak_server.add_argument("--postprocess-output", action=argparse.BooleanOptionalAction, default=None)
+    speak_server.add_argument("--layer-penalty-factor", type=float)
+    speak_server.add_argument("--preprocess-prompt", action=argparse.BooleanOptionalAction, default=None)
+    speak_server.add_argument("--audio-chunk-duration", type=float)
+    speak_server.add_argument("--audio-chunk-threshold", type=float)
+    speak_server.add_argument("--request-timeout-s", type=int)
     speak_server.add_argument("--stream", action=argparse.BooleanOptionalAction, default=None)
     speak_server.add_argument("--num-step", type=int)
     speak_server.add_argument("--text", required=True)
@@ -4273,12 +4305,18 @@ def build_parser() -> argparse.ArgumentParser:
     speak_long_server.add_argument("--task-type")
     speak_long_server.add_argument("--max-new-tokens", type=int)
     speak_long_server.add_argument("--speed", type=float)
+    speak_long_server.add_argument("--duration", type=float)
     speak_long_server.add_argument("--guidance-scale", type=float)
     speak_long_server.add_argument("--denoise", action=argparse.BooleanOptionalAction, default=None)
     speak_long_server.add_argument("--t-shift", type=float)
     speak_long_server.add_argument("--position-temperature", type=float)
     speak_long_server.add_argument("--class-temperature", type=float)
     speak_long_server.add_argument("--postprocess-output", action=argparse.BooleanOptionalAction, default=None)
+    speak_long_server.add_argument("--layer-penalty-factor", type=float)
+    speak_long_server.add_argument("--preprocess-prompt", action=argparse.BooleanOptionalAction, default=None)
+    speak_long_server.add_argument("--audio-chunk-duration", type=float)
+    speak_long_server.add_argument("--audio-chunk-threshold", type=float)
+    speak_long_server.add_argument("--request-timeout-s", type=int)
     speak_long_server.add_argument("--stream", action=argparse.BooleanOptionalAction, default=None)
     speak_long_server.add_argument("--num-step", type=int)
     speak_long_server.add_argument("--language", default=AUTO_LANGUAGE)

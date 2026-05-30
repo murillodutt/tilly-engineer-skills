@@ -35,8 +35,9 @@ durable cache, or proactive `speak`.
   `fallback_used=false`, monitor log under `tmp/**/runtime-logs`.
 - Audio variant review supports per-chunk STT language, `combined.wav`,
   `language=auto`, and lab-only English-island variants.
-- Latest lab evidence `20260530-162231-615943` improves target chunks 2 and 3;
-  chunk 1 needs human scoring and less brittle STT term normalization.
+- Live server evidence `20260530-174724-539838` synthesized chunks 2 and 3
+  through local `omnivoice-server` clone route: 12 results, fast/quality
+  presets, combined WAVs, review HTML, and package under `tmp/**`.
 - Community scan reinforced local OpenAI-compatible OmniVoice servers,
   Apple-Silicon MLX backends, desktop Studio workflows, and audiobook/dubbing
   tools as the practical ecosystem. TES keeps the server path first and treats
@@ -54,10 +55,8 @@ durable cache, or proactive `speak`.
   presets and combined WAV review.
 
 ## Next Cut
-Run chunks 2 and 3 through `audio_variant_lab --provider-route server` with the
-local clone reference when a compatible OmniVoice server is available. Promote
-only audio that wins by ear; otherwise inspect server presets before adding
-punctuation or aliases.
+Human-score `20260530-174724-539838`, then promote the winning server preset or
+switch to profile-based clone synthesis to avoid repeated reference uploads.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.
