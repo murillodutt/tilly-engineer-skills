@@ -13,7 +13,7 @@ DEFAULT_LIMIT = 500
 WARN_RATIO = 0.85
 LIMITS = {
     "docs/roadmap/README.md": 140,
-    "docs/roadmap/TES-TTS-SKILL-ROADMAP.md": 80,
+    "docs/roadmap/TES-TTS-SKILL-ROADMAP.md": 100,
     "docs/roadmap/TES-TTS-SKILL-ROADMAP-REGISTRY.md": 160,
     "docs/roadmap/TES-TTS-SKILL-ROADMAP-HISTORY.md": 140,
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md": 1000,

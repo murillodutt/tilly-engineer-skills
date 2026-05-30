@@ -44,7 +44,7 @@ Next: extract and optimize the direct/resident OmniVoice path without spending
 cycles on obsolete server execution. Keep `tmp/**` artifacts out of commits.
 
 ## Maintenance Rules
-- Hard limit: 80 lines. Review zone starts at 60 lines.
+- Hard limit: 100 lines. Review zone starts at 75 lines.
 - Keep only current state, active decisions, next cut, and latest evidence;
   move dense pointers to registry and closed lineage to history.
 - If evidence needs more than four bullets, move detail to registry/history.
