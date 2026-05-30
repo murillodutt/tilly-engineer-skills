@@ -44,14 +44,14 @@ durable cache, or proactive `speak`.
   `SERVER_UNAVAILABLE` preflight without install/download/write.
 - Current `127.0.0.1:8000` check is not a valid OmniVoice server: TCP responds,
   but capability endpoints return Laravel 404 / `NO_CAPABILITY_ENDPOINTS`.
+- Verified `127.0.0.1:8880` OmniVoice server with profile
+  `clone:tes-tts-local-clone`; default profile smoke wrote WAV without
+  `clone_ref_audio` upload and with `ref_text` supplied.
 
 ## Next Cut
-Future goal 1: start or target a verified OmniVoice server, then create a local
-voice profile from
-`tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav`, then use
-`clone:<profile-id>` for synthesis so repeated reads do not upload the
-reference WAV each time. Human-score `20260530-174724-539838` before promoting
-any preset or profile workflow as default.
+Next: human-score the default-profile WAVs, then decide whether
+`clone:tes-tts-local-clone` is promoted from local default to release-facing
+behavior. Keep `tmp/**` audio/profile artifacts out of commits.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.

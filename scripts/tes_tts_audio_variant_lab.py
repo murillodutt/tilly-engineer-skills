@@ -15,7 +15,7 @@ import tempfile
 from typing import Any
 import zipfile
 
-from tes_tts_omnivoice_provider import split_long_text
+from tes_tts_omnivoice_provider import DEFAULT_SERVER_VOICE, split_long_text
 from tes_tts_runtime_adapter import prepare_audio_quality_text
 
 
@@ -1021,8 +1021,8 @@ def command_run(args: argparse.Namespace) -> int:
                 "server_control_presets": [str(profile["name"]) for profile in control_profiles],
                 "server_url": args.server_url,
                 "server_health_path": args.server_health_path,
-                "server_voice": args.server_voice or "default",
-                "server_voice_source": "arg" if args.server_voice else "default",
+                "server_voice": args.server_voice or DEFAULT_SERVER_VOICE,
+                "server_voice_source": "arg" if args.server_voice else "default_local_clone_profile",
                 "server_speaker": args.server_speaker,
                 "server_instructions_present": bool(args.server_instructions),
                 "server_clone_ref_audio_present": bool(args.server_clone_ref_audio),
@@ -1058,7 +1058,7 @@ def command_run(args: argparse.Namespace) -> int:
     resolved_server_voice = (
         args.server_voice
         or discovered_preferred_voice(server_preflight)
-        or "default"
+        or DEFAULT_SERVER_VOICE
     )
 
     results: list[dict[str, Any]] = []
@@ -1167,7 +1167,7 @@ def command_run(args: argparse.Namespace) -> int:
             if args.provider_route == "server" and args.server_voice
             else "capability_discovery"
             if args.provider_route == "server" and discovered_preferred_voice(server_preflight)
-            else "default"
+            else "default_local_clone_profile"
             if args.provider_route == "server"
             else None
         ),

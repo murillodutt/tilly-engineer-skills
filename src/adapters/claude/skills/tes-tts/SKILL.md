@@ -43,8 +43,11 @@ compatible TES intent alias if the host reports it as an invalid slash.
    This checks TCP plus a community-style `/health` endpoint when available,
    without generating audio. If it reports `SERVER_AVAILABLE`, use
    `python3 scripts/tes_tts_omnivoice_provider.py speak-server --server-url <url> --text "<text>" --output <wav>`
-   for one utterance, or `speak-long-server` for chunked review; this route
-   never installs providers, downloads models, or writes global config. When a
+   for one utterance, or `speak-long-server` for chunked review; by default the
+   server route uses `voice: "clone:tes-tts-local-clone"` when the profile is
+   available, so do not re-upload the reference WAV for normal reads. This
+   helper route never installs providers or writes global config; model and
+   server cache management is operator-owned. When a
    community server exposes compatible controls, pass request-local
    `--speaker`, `--instructions`, `--language auto`, `--task-type`,
    `--max-new-tokens`, `--stream`/`--no-stream`, and `--num-step` only for the

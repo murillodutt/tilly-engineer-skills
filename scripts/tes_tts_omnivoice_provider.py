@@ -43,6 +43,8 @@ AUTO_LANGUAGE = "auto"
 DEFAULT_CACHE_DIR = ROOT / "tmp/tes-tts-omnivoice-provider"
 DEFAULT_LOCAL_PYTHON = ROOT / "tmp/tes-tts-lab/omnivoice/.venv/bin/python"
 DEFAULT_LOCAL_REF_AUDIO = ROOT / "tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav"
+DEFAULT_SERVER_PROFILE_ID = "tes-tts-local-clone"
+DEFAULT_SERVER_VOICE = f"clone:{DEFAULT_SERVER_PROFILE_ID}"
 DEFAULT_OUTPUT_DIR = DEFAULT_CACHE_DIR / "audio"
 DEFAULT_BENCHMARK_CASES = ROOT / "benchmarks/tes-tts/omnivoice-provider-cases.json"
 DEFAULT_LIVE_SMOKE_CASES = ROOT / "benchmarks/tes-tts/live-session-utterance-fixtures.json"
@@ -469,11 +471,15 @@ def server_language_value(language: str | None) -> str | None:
     return language
 
 
+def resolved_server_voice(args: argparse.Namespace) -> str:
+    return args.voice or getattr(args, "speaker", None) or DEFAULT_SERVER_VOICE
+
+
 def server_request_body(args: argparse.Namespace, text: str, *, language: str | None = None) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "model": args.model,
         "input": text,
-        "voice": args.voice,
+        "voice": resolved_server_voice(args),
         "response_format": "wav",
     }
     resolved_language = server_language_value(language or getattr(args, "language", None))
@@ -2932,7 +2938,7 @@ def command_speak_server(args: argparse.Namespace) -> int:
                 "api_key_env": args.api_key_env,
                 "api_key_present": api_key_present,
                 "model": args.model,
-                "voice": args.voice,
+                "voice": resolved_server_voice(args),
                 "language": server_language_value(args.language),
                 "speaker": args.speaker,
                 "instructions_present": bool(args.instructions),
@@ -3015,7 +3021,7 @@ def command_speak_server(args: argparse.Namespace) -> int:
         "http_status": status_code,
         "content_type": content_type,
         "model": args.model,
-        "voice": args.voice,
+        "voice": resolved_server_voice(args),
         "language": server_language_value(args.language),
         "speaker": args.speaker,
         "instructions_present": bool(args.instructions),
@@ -3101,7 +3107,7 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
                 "api_key_env": args.api_key_env,
                 "api_key_present": api_key_present,
                 "model": args.model,
-                "voice": args.voice,
+                "voice": resolved_server_voice(args),
                 "speaker": args.speaker,
                 "instructions_present": bool(args.instructions),
                 "task_type": args.task_type,
@@ -3229,7 +3235,7 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
         "endpoint": endpoint,
         "server_mode": "clone" if args.clone_ref_audio else "speech",
         "model": args.model,
-        "voice": args.voice,
+        "voice": resolved_server_voice(args),
         "speaker": args.speaker,
         "instructions_present": bool(args.instructions),
         "task_type": args.task_type,
@@ -4263,7 +4269,7 @@ def build_parser() -> argparse.ArgumentParser:
     speak_server.add_argument("--server-url")
     speak_server.add_argument("--api-key-env", default=ENV_SERVER_API_KEY)
     speak_server.add_argument("--model", default="omnivoice")
-    speak_server.add_argument("--voice", default="default")
+    speak_server.add_argument("--voice")
     speak_server.add_argument("--language")
     speak_server.add_argument("--speaker")
     speak_server.add_argument("--instructions")
@@ -4297,7 +4303,7 @@ def build_parser() -> argparse.ArgumentParser:
     speak_long_server.add_argument("--server-url")
     speak_long_server.add_argument("--api-key-env", default=ENV_SERVER_API_KEY)
     speak_long_server.add_argument("--model", default="omnivoice")
-    speak_long_server.add_argument("--voice", default="default")
+    speak_long_server.add_argument("--voice")
     speak_long_server.add_argument("--speaker")
     speak_long_server.add_argument("--instructions")
     speak_long_server.add_argument("--clone-ref-audio")
