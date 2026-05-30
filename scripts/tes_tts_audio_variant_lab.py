@@ -504,6 +504,7 @@ def run_server_preflight(server_url: str | None, *, health_path: str, dry_run: b
         "server-status",
         "--health-path",
         health_path,
+        "--discover-capabilities",
     ]
     if server_url:
         command.extend(["--server-url", server_url])

@@ -137,6 +137,7 @@ REQUIRED_SERVER_STATUS_KEYS = {
     "server_url_source",
     "endpoint",
     "health_url",
+    "capability_endpoints",
     "api_key_env",
     "api_key_present",
     "timeout_seconds",
@@ -144,6 +145,7 @@ REQUIRED_SERVER_STATUS_KEYS = {
     "probe_scope",
     "connectivity",
     "health",
+    "capabilities",
     "allows_install",
     "allows_download",
     "allows_global_config_write",
@@ -802,6 +804,14 @@ def validate_server_route_command() -> list[str]:
             failures.append("server-status must derive OpenAI-compatible speech endpoint")
         if status_dry_payload.get("health_url") != "http://127.0.0.1:9999/health":
             failures.append("server-status must derive community health endpoint")
+        capability_endpoints = status_dry_payload.get("capability_endpoints")
+        if not isinstance(capability_endpoints, dict):
+            failures.append("server-status must emit capability endpoint plan")
+        else:
+            if capability_endpoints.get("audio_voices") != "http://127.0.0.1:9999/v1/audio/voices":
+                failures.append("server-status must derive audio voices endpoint")
+            if capability_endpoints.get("voices") != "http://127.0.0.1:9999/v1/voices":
+                failures.append("server-status must derive legacy voices endpoint")
         v1_dry_completed = subprocess.run(
             [
                 sys.executable,
@@ -809,6 +819,7 @@ def validate_server_route_command() -> list[str]:
                 "server-status",
                 "--server-url",
                 "http://127.0.0.1:9999/v1",
+                "--discover-capabilities",
                 "--dry-run",
             ],
             text=True,
@@ -828,6 +839,11 @@ def validate_server_route_command() -> list[str]:
             failures.append("server-status must not duplicate /v1 for speech endpoint")
         if v1_dry_payload.get("health_url") != "http://127.0.0.1:9999/health":
             failures.append("server-status /v1 base must derive root health endpoint")
+        v1_capability_endpoints = v1_dry_payload.get("capability_endpoints")
+        if not isinstance(v1_capability_endpoints, dict):
+            failures.append("server-status /v1 dry-run must emit capability endpoints")
+        elif v1_capability_endpoints.get("audio_models") != "http://127.0.0.1:9999/v1/audio/models":
+            failures.append("server-status /v1 base must derive audio models endpoint")
         for key in ("allows_install", "allows_download", "allows_global_config_write"):
             if status_dry_payload.get(key) is not False:
                 failures.append(f"server-status dry-run must keep {key}=false")
@@ -949,11 +965,18 @@ def validate_server_route_command() -> list[str]:
 
         class Handler(http.server.BaseHTTPRequestHandler):
             def do_GET(self) -> None:  # noqa: N802 - stdlib handler API
-                if self.path != "/health":
+                bodies = {
+                    "/health": b'{"status":"ok"}',
+                    "/v1/audio/voices": b'{"voices":[{"id":"default"},{"id":"felipe-clone"}]}',
+                    "/v1/audio/models": b'{"data":[{"id":"omnivoice"}]}',
+                    "/v1/voices": b'{"voices":[{"id":"legacy-default"}]}',
+                    "/v1/models": b'{"data":[{"id":"legacy-omnivoice"}]}',
+                }
+                body = bodies.get(self.path)
+                if body is None:
                     self.send_response(404)
                     self.end_headers()
                     return
-                body = b'{"status":"ok"}'
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Content-Length", str(len(body)))
@@ -992,6 +1015,7 @@ def validate_server_route_command() -> list[str]:
                     f"http://127.0.0.1:{port}",
                     "--api-key-env",
                     "TES_TTS_FAKE_SERVER_KEY",
+                    "--discover-capabilities",
                 ],
                 text=True,
                 stdout=subprocess.PIPE,
@@ -1041,6 +1065,11 @@ def validate_server_route_command() -> list[str]:
         health = status_payload.get("health")
         if not isinstance(health, dict) or health.get("status") != "HEALTH_OK":
             failures.append("server-status must report successful community health check")
+        capabilities = status_payload.get("capabilities")
+        if not isinstance(capabilities, dict) or capabilities.get("status") != "DISCOVERED":
+            failures.append("server-status must discover mock capability endpoints")
+        elif capabilities.get("available") != ["audio_models", "audio_voices", "models", "root_health", "voices"]:
+            failures.append("server-status capability availability list drifted")
         if status_payload.get("probe_scope") != "tcp_connect_plus_optional_health_no_synthesis":
             failures.append("server-status mock server probe scope drifted")
         if completed.returncode != 0:

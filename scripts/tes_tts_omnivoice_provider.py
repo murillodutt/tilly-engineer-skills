@@ -215,6 +215,42 @@ def server_health_endpoint(base_url: str, health_path: str) -> str | None:
     return f"{normalized}{path}"
 
 
+def server_root_url(base_url: str) -> str:
+    normalized = base_url.rstrip("/")
+    parsed = urllib.parse.urlparse(normalized)
+    path = parsed.path
+    for suffix in ("/v1/audio/speech", "/audio/speech", "/v1/audio", "/v1"):
+        if path.endswith(suffix):
+            path = path.removesuffix(suffix)
+            break
+    return urllib.parse.urlunparse(parsed._replace(path=path or ""))
+
+
+def server_v1_url(base_url: str) -> str:
+    normalized = base_url.rstrip("/")
+    parsed = urllib.parse.urlparse(normalized)
+    path = parsed.path
+    if path.endswith("/v1/audio/speech"):
+        path = path.removesuffix("/audio/speech")
+    elif path.endswith("/audio/speech"):
+        path = path.removesuffix("/audio/speech")
+    elif not path.endswith("/v1"):
+        path = f"{path}/v1" if path else "/v1"
+    return urllib.parse.urlunparse(parsed._replace(path=path))
+
+
+def server_capability_endpoints(base_url: str) -> dict[str, str]:
+    root = server_root_url(base_url).rstrip("/")
+    v1 = server_v1_url(base_url).rstrip("/")
+    return {
+        "audio_voices": f"{v1}/audio/voices",
+        "audio_models": f"{v1}/audio/models",
+        "voices": f"{v1}/voices",
+        "models": f"{v1}/models",
+        "root_health": f"{root}/health",
+    }
+
+
 def server_tcp_target(server_url: str) -> tuple[str, int, str]:
     parsed = urllib.parse.urlparse(server_url)
     scheme = parsed.scheme or "http"
@@ -295,6 +331,79 @@ def check_server_health(
             "latency_ms": round((time.perf_counter() - started) * 1000, 3),
             "reason": str(exc.reason if hasattr(exc, "reason") else exc),
         }
+
+
+def check_server_json_resource(
+    *,
+    url: str,
+    api_key_env: str,
+    timeout: float,
+) -> dict[str, Any]:
+    headers = {"Accept": "application/json,text/plain,*/*"}
+    api_key = os.environ.get(api_key_env)
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    request = urllib.request.Request(url, headers=headers, method="GET")
+    started = time.perf_counter()
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            raw = response.read(2048).decode("utf-8", errors="replace")
+            try:
+                parsed: Any = json.loads(raw)
+                parsed_type = type(parsed).__name__
+                item_count = len(parsed) if isinstance(parsed, (list, dict)) else None
+            except json.JSONDecodeError:
+                parsed_type = "text"
+                item_count = None
+            return {
+                "status": "AVAILABLE",
+                "url": url,
+                "http_status": getattr(response, "status", response.getcode()),
+                "content_type": response.headers.get("Content-Type"),
+                "body_preview": raw[:512],
+                "parsed_type": parsed_type,
+                "item_count": item_count,
+                "latency_ms": round((time.perf_counter() - started) * 1000, 3),
+            }
+    except urllib.error.HTTPError as exc:
+        body = exc.read(512).decode("utf-8", errors="replace")
+        status = "NOT_IMPLEMENTED" if exc.code in {404, 405} else "HTTP_ERROR"
+        return {
+            "status": status,
+            "url": url,
+            "http_status": exc.code,
+            "content_type": exc.headers.get("Content-Type") if exc.headers else None,
+            "body_preview": body,
+            "parsed_type": None,
+            "item_count": None,
+            "latency_ms": round((time.perf_counter() - started) * 1000, 3),
+        }
+    except urllib.error.URLError as exc:
+        return {
+            "status": "UNAVAILABLE",
+            "url": url,
+            "http_status": None,
+            "content_type": None,
+            "body_preview": None,
+            "parsed_type": None,
+            "item_count": None,
+            "latency_ms": round((time.perf_counter() - started) * 1000, 3),
+            "reason": str(exc.reason if hasattr(exc, "reason") else exc),
+        }
+
+
+def discover_server_capabilities(base_url: str, *, api_key_env: str, timeout: float) -> dict[str, Any]:
+    endpoints = server_capability_endpoints(base_url)
+    resources = {
+        name: check_server_json_resource(url=url, api_key_env=api_key_env, timeout=timeout)
+        for name, url in endpoints.items()
+    }
+    available = sorted(name for name, payload in resources.items() if payload.get("status") == "AVAILABLE")
+    return {
+        "status": "DISCOVERED" if available else "NO_CAPABILITY_ENDPOINTS",
+        "available": available,
+        "resources": resources,
+    }
 
 
 def server_request_body(args: argparse.Namespace, text: str) -> dict[str, Any]:
@@ -430,6 +539,7 @@ def command_server_status(args: argparse.Namespace) -> int:
         "server_url_source": server_url_source,
         "endpoint": endpoint,
         "health_url": health_url,
+        "capability_endpoints": server_capability_endpoints(server_url),
         "api_key_env": args.api_key_env,
         "api_key_present": api_key_present,
         "timeout_seconds": args.timeout,
@@ -440,13 +550,22 @@ def command_server_status(args: argparse.Namespace) -> int:
         "allows_global_config_write": False,
     }
     if args.dry_run:
-        emit({**base_payload, "status": "DRY_RUN", "connectivity": None, "health": None})
+        emit({**base_payload, "status": "DRY_RUN", "connectivity": None, "health": None, "capabilities": None})
         return 0
 
     try:
         available, connectivity = check_server_tcp(server_url, timeout=args.timeout)
     except ValueError as exc:
-        emit({**base_payload, "status": "NEEDS_REVIEW", "connectivity": None, "health": None, "reason": str(exc)})
+        emit(
+            {
+                **base_payload,
+                "status": "NEEDS_REVIEW",
+                "connectivity": None,
+                "health": None,
+                "capabilities": None,
+                "reason": str(exc),
+            }
+        )
         return 1
     if not available:
         emit(
@@ -455,11 +574,17 @@ def command_server_status(args: argparse.Namespace) -> int:
                 "status": "SERVER_UNAVAILABLE",
                 "connectivity": connectivity,
                 "health": None,
+                "capabilities": None,
             }
         )
         return 2
 
     health = check_server_health(health_url=health_url, api_key_env=args.api_key_env, timeout=args.timeout)
+    capabilities = (
+        discover_server_capabilities(server_url, api_key_env=args.api_key_env, timeout=args.timeout)
+        if args.discover_capabilities
+        else None
+    )
     health_status = health.get("status")
     if health_status in {"HEALTH_HTTP_ERROR", "HEALTH_UNAVAILABLE"}:
         status = "SERVER_DEGRADED"
@@ -473,6 +598,7 @@ def command_server_status(args: argparse.Namespace) -> int:
             "status": status,
             "connectivity": connectivity,
             "health": health,
+            "capabilities": capabilities,
         }
     )
     return exit_code
@@ -3785,6 +3911,7 @@ def build_parser() -> argparse.ArgumentParser:
     server_status.add_argument("--api-key-env", default=ENV_SERVER_API_KEY)
     server_status.add_argument("--timeout", type=float, default=1.0)
     server_status.add_argument("--health-path", default="/health")
+    server_status.add_argument("--discover-capabilities", action="store_true")
     server_status.add_argument("--dry-run", action="store_true")
     server_status.set_defaults(func=command_server_status)
 
