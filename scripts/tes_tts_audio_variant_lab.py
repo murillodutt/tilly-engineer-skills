@@ -1235,7 +1235,7 @@ def command_self_test(_args: argparse.Namespace) -> int:
         failures.append("audio_quality text mode plan drifted")
     profile_args = argparse.Namespace(
         server_control_preset=["omnivoice_server_fast_nonstream", "vllm_omni_customvoice_auto"],
-        server_speaker="felipe-clone",
+        server_speaker="tes-tts-local-clone",
         server_instructions=None,
         server_clone_ref_audio=None,
         server_clone_ref_text=None,
@@ -1253,7 +1253,7 @@ def command_self_test(_args: argparse.Namespace) -> int:
     profiles = server_control_profiles(profile_args)
     if [profile["name"] for profile in profiles] != ["omnivoice_server_fast_nonstream", "vllm_omni_customvoice_auto"]:
         failures.append("server preset ordering drifted")
-    if profiles[0].get("speaker") != "felipe-clone" or profiles[0].get("num_step") != 16:
+    if profiles[0].get("speaker") != "tes-tts-local-clone" or profiles[0].get("num_step") != 16:
         failures.append("server preset merge drifted")
     if profiles[0].get("guidance_scale") != 2.0 or profiles[0].get("denoise") is not True:
         failures.append("server generation controls preset drifted")
@@ -1395,8 +1395,8 @@ def command_self_test(_args: argparse.Namespace) -> int:
         failures.append("server preflight did not derive root health URL")
     if preflight_payload.get("status") != "DRY_RUN":
         failures.append("server preflight dry-run status drifted")
-    preferred = discovered_preferred_voice({"json": {"capabilities": {"preferred_voice_id": "felipe-clone"}}})
-    if preferred != "felipe-clone":
+    preferred = discovered_preferred_voice({"json": {"capabilities": {"preferred_voice_id": "tes-tts-local-clone"}}})
+    if preferred != "tes-tts-local-clone":
         failures.append("server preferred voice discovery drifted")
     original_run_command = run_command
     captured: dict[str, Any] = {}
@@ -1418,8 +1418,8 @@ def command_self_test(_args: argparse.Namespace) -> int:
                 provider_language="pt",
                 provider_route="server",
                 server_url="http://127.0.0.1:8880/v1",
-                server_voice="felipe-clone",
-                server_speaker="felipe-clone",
+                server_voice="tes-tts-local-clone",
+                server_speaker="tes-tts-local-clone",
                 server_instructions="Preserve English technical terms.",
                 server_clone_ref_audio="/tmp/ref.wav",
                 server_clone_ref_text="Reference transcript.",
@@ -1447,9 +1447,9 @@ def command_self_test(_args: argparse.Namespace) -> int:
             "--server-url",
             "http://127.0.0.1:8880/v1",
             "--voice",
-            "felipe-clone",
+            "tes-tts-local-clone",
             "--speaker",
-            "felipe-clone",
+            "tes-tts-local-clone",
             "--instructions",
             "Preserve English technical terms.",
             "--clone-ref-audio",

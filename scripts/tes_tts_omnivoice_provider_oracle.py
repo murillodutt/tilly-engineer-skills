@@ -891,11 +891,11 @@ def validate_server_route_command() -> list[str]:
                 "--model",
                 "omnivoice",
                 "--voice",
-                "felipe-clone",
+                "tes-tts-local-clone",
                 "--language",
                 "pt",
                 "--speaker",
-                "felipe-clone",
+                "tes-tts-local-clone",
                 "--instructions",
                 "Leia em PT-BR preservando termos tecnicos em ingles.",
                 "--task-type",
@@ -978,7 +978,7 @@ def validate_server_route_command() -> list[str]:
             failures.append("speak-server dry-run request shape must include task_type")
         elif request_shape.get("guidance_scale") != 3.0:
             failures.append("speak-server dry-run request shape must include guidance_scale")
-        if dry_payload.get("speaker") != "felipe-clone":
+        if dry_payload.get("speaker") != "tes-tts-local-clone":
             failures.append("speak-server dry-run must report speaker control field")
         if dry_payload.get("instructions_present") is not True:
             failures.append("speak-server dry-run must report instructions without leaking them")
@@ -1002,7 +1002,7 @@ def validate_server_route_command() -> list[str]:
                 "--server-url",
                 "http://127.0.0.1:9999",
                 "--speaker",
-                "felipe-clone",
+                "tes-tts-local-clone",
                 "--instructions",
                 "Mantenha ingles tecnico natural.",
                 "--task-type",
@@ -1057,7 +1057,7 @@ def validate_server_route_command() -> list[str]:
             failures.append(f"speak-long-server dry-run has extra keys {extra}")
         if long_dry_payload.get("mode") != "product_server_long_read":
             failures.append("speak-long-server dry-run mode drifted")
-        if long_dry_payload.get("speaker") != "felipe-clone":
+        if long_dry_payload.get("speaker") != "tes-tts-local-clone":
             failures.append("speak-long-server dry-run must report speaker control field")
         if long_dry_payload.get("instructions_present") is not True:
             failures.append("speak-long-server dry-run must report instructions without leaking them")
@@ -1113,7 +1113,7 @@ def validate_server_route_command() -> list[str]:
             def do_GET(self) -> None:  # noqa: N802 - stdlib handler API
                 bodies = {
                     "/health": b'{"status":"ok"}',
-                    "/v1/audio/voices": b'{"voices":[{"id":"default"},{"id":"felipe-clone"}]}',
+                    "/v1/audio/voices": b'{"voices":[{"id":"default"},{"id":"tes-tts-local-clone"}]}',
                     "/v1/audio/models": b'{"data":[{"id":"omnivoice"}]}',
                     "/v1/voices": b'{"voices":[{"id":"legacy-default"}]}',
                     "/v1/models": b'{"data":[{"id":"legacy-omnivoice"}]}',
@@ -1187,11 +1187,11 @@ def validate_server_route_command() -> list[str]:
                     "--model",
                     "omnivoice",
                     "--voice",
-                    "felipe-clone",
+                    "tes-tts-local-clone",
                     "--language",
                     "pt",
                     "--speaker",
-                    "felipe-clone",
+                    "tes-tts-local-clone",
                     "--instructions",
                     "Preserve JSON and TypeScript.",
                     "--task-type",
@@ -1246,16 +1246,16 @@ def validate_server_route_command() -> list[str]:
         elif capabilities.get("available") != ["audio_models", "audio_voices", "models", "root_health", "voices"]:
             failures.append("server-status capability availability list drifted")
         else:
-            if capabilities.get("voice_ids") != ["default", "felipe-clone", "legacy-default"]:
+            if capabilities.get("voice_ids") != ["default", "legacy-default", "tes-tts-local-clone"]:
                 failures.append("server-status must extract voice ids from common capability responses")
             if capabilities.get("model_ids") != ["legacy-omnivoice", "omnivoice"]:
                 failures.append("server-status must extract model ids from common capability responses")
-            if capabilities.get("preferred_voice_id") != "felipe-clone":
+            if capabilities.get("preferred_voice_id") != "tes-tts-local-clone":
                 failures.append("server-status preferred voice selection drifted")
             if capabilities.get("preferred_model_id") != "omnivoice":
                 failures.append("server-status preferred model selection drifted")
             audio_voices = (capabilities.get("resources") or {}).get("audio_voices")
-            if not isinstance(audio_voices, dict) or audio_voices.get("ids") != ["default", "felipe-clone"]:
+            if not isinstance(audio_voices, dict) or audio_voices.get("ids") != ["default", "tes-tts-local-clone"]:
                 failures.append("server-status must expose redacted audio voice ids per resource")
         if status_payload.get("probe_scope") != "tcp_connect_plus_optional_health_no_synthesis":
             failures.append("server-status mock server probe scope drifted")
@@ -1283,13 +1283,13 @@ def validate_server_route_command() -> list[str]:
         if not isinstance(body, dict):
             failures.append("speak-server mock did not receive JSON body")
         else:
-            if body.get("model") != "omnivoice" or body.get("voice") != "felipe-clone":
+            if body.get("model") != "omnivoice" or body.get("voice") != "tes-tts-local-clone":
                 failures.append("speak-server request body lost model or voice")
             if body.get("input") != "Teste real do TES TTS com JSON e TypeScript.":
                 failures.append("speak-server request body lost input text")
             if body.get("language") != "pt":
                 failures.append("speak-server request body lost language")
-            if body.get("speaker") != "felipe-clone":
+            if body.get("speaker") != "tes-tts-local-clone":
                 failures.append("speak-server request body lost speaker")
             if body.get("instructions") != "Preserve JSON and TypeScript.":
                 failures.append("speak-server request body lost instructions")
@@ -1436,7 +1436,7 @@ def validate_server_route_command() -> list[str]:
                     "--server-url",
                     f"http://127.0.0.1:{port}",
                     "--speaker",
-                    "felipe-clone",
+                    "tes-tts-local-clone",
                     "--instructions",
                     "Keep English terms stable.",
                     "--task-type",
@@ -1505,7 +1505,7 @@ def validate_server_route_command() -> list[str]:
                 if not isinstance(request_body, dict):
                     failures.append(f"speak-long-server chunk {index} did not send JSON body")
                     continue
-                if request_body.get("speaker") != "felipe-clone":
+                if request_body.get("speaker") != "tes-tts-local-clone":
                     failures.append(f"speak-long-server chunk {index} lost speaker")
                 if request_body.get("instructions") != "Keep English terms stable.":
                     failures.append(f"speak-long-server chunk {index} lost instructions")

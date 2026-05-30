@@ -448,7 +448,7 @@ def discover_server_capabilities(base_url: str, *, api_key_env: str, timeout: fl
             if isinstance(identifier, str)
         }
     )
-    preferred_voice = next((voice for voice in ("clone:felipe-clone", "felipe-clone", "default", "auto", "alloy", "nova") if voice in voice_ids), None)
+    preferred_voice = next((voice for voice in ("clone:tes-tts-local-clone", "tes-tts-local-clone", "default", "auto", "alloy", "nova") if voice in voice_ids), None)
     preferred_model = next((model for model in ("omnivoice", "tts-1", "tts-1-hd") if model in model_ids), None)
     return {
         "status": "DISCOVERED" if available else "NO_CAPABILITY_ENDPOINTS",
