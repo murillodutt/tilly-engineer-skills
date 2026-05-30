@@ -73,19 +73,20 @@ Keep this root index short and partitioned:
 
 Roadmap partition budgets are enforced by `scripts/validate_doc_size.py`.
 `tes-tts` also has a structural partition oracle. Generic roadmap warning
-starts at 75%; the `tes-tts` dashboard is stricter: 100 lines hard limit, with
-review at 90 lines.
+starts at 75%; the `tes-tts` dashboard is stricter: 80 lines hard limit, with
+review at 60 lines.
 
 | Partition | Limit | Purpose |
 |-----------|-------|---------|
 | Root index | 140 lines | Active product lines only. |
-| Active dashboard | 100 lines | Current state, decisions, latest evidence, next cut. |
+| Active dashboard | 80 lines | Current state, decisions, latest evidence, next cut. |
 | Registry | 160 lines | Stable artifact pointers and grouped ranges. |
 | History | 140 lines | Closed lineage and lessons. |
 
 When a dashboard reaches the warning zone, move detail to registry/history
-before adding new status. Ambiguous, repeated, or stale status is a defect, not
-documentation.
+before adding new status. If current evidence needs more than four bullets,
+keep only the conclusion in the dashboard and move details to partitioned
+surfaces. Ambiguous, repeated, or stale status is a defect, not documentation.
 
 Roadmap updates must classify their status clearly:
 

@@ -20,7 +20,7 @@ REGISTRY = ROOT / "docs/roadmap/TES-TTS-SKILL-ROADMAP-REGISTRY.md"
 HISTORY = ROOT / "docs/roadmap/TES-TTS-SKILL-ROADMAP-HISTORY.md"
 
 LIMITS = {
-    DASHBOARD: 100,
+    DASHBOARD: 80,
     REGISTRY: 160,
     HISTORY: 140,
 }
@@ -89,10 +89,12 @@ def validate_dashboard(text: str, failures: list[str]) -> None:
         failures.append(f"{rel} must point closed lineage to history")
     if "Partition contract:" not in text:
         failures.append(f"{rel} must state the partition contract")
-    if "Hard limit: 100 lines" not in text:
+    if "Hard limit: 80 lines" not in text:
         failures.append(f"{rel} must state its hard line limit")
-    if "Warning zone starts at 90 lines" not in text:
+    if "Review zone starts at 60 lines" not in text:
         failures.append(f"{rel} must state the roadmap warning threshold")
+    if "If evidence needs more than four bullets" not in text:
+        failures.append(f"{rel} must state the evidence compaction trigger")
 
     historical_matches = HISTORICAL_ARTIFACT_PATTERN.findall(text)
     if historical_matches:
