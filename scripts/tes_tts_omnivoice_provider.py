@@ -2789,6 +2789,83 @@ def redact_command_value(tokens: list[str], option: str) -> list[str]:
     return redacted
 
 
+def same_executable_path(left: str, right: str) -> bool:
+    left_path = Path(left)
+    right_path = Path(right)
+    try:
+        return left_path.exists() and right_path.exists() and left_path.samefile(right_path)
+    except OSError:
+        return str(left_path.resolve()) == str(right_path.resolve())
+
+
+def can_run_speak_in_process(provider_python: str) -> bool:
+    return same_executable_path(provider_python, sys.executable)
+
+
+def run_short_speak_in_process(
+    args: argparse.Namespace,
+    *,
+    provider_python: str,
+    python_source: str,
+    ref_audio: Path,
+    ref_source: str,
+    output: Path,
+) -> int:
+    apply_latency_profile(args)
+    total_started = time.perf_counter()
+    kernel = direct_kernel.DirectOmniVoiceKernel.load(
+        model_name=args.model,
+        ref_audio=ref_audio,
+        ref_text=args.ref_text,
+        cache_path=prompt_cache_path_from_args(args, ref_audio),
+        refresh_prompt=args.refresh_prompt,
+        requested_device=args.device,
+    )
+    text_info, audio_metrics = kernel.synthesize_prepared(
+        source_text=args.text,
+        locale=args.locale,
+        text_mode=args.text_mode,
+        language=args.language,
+        output=output,
+        args=args,
+    )
+    payload = {
+        "provider": "omnivoice",
+        "status": "PASS",
+        "version": VERSION,
+        "mode": "product_shortcut",
+        "model": args.model,
+        "device": kernel.device,
+        "language": args.language,
+        "latency_profile": args.latency_profile,
+        **latency_profile_metadata(args),
+        "num_step": args.num_step,
+        "text_mode": text_info["mode"],
+        "source_text_immutable": text_info["prepared"]["source_text_immutable"],
+        "redaction_count": text_info["prepared"]["redaction_count"],
+        "summary_behavior": text_info["prepared"]["summary_behavior"],
+        "command_execution": text_info["prepared"]["command_execution"],
+        "model_load_ms": kernel.model_load_ms,
+        **kernel.prompt_metrics,
+        **audio_metrics,
+        "total_ms": round((time.perf_counter() - total_started) * 1000, 3),
+        "provider_python": provider_python,
+        "provider_python_source": python_source,
+        "ref_audio_source": ref_source,
+        "play_requested": args.play,
+        "short_read_execution": "in_process_direct_kernel",
+    }
+    if args.play:
+        playback = playback_audio(output)
+        payload.update(playback)
+        if playback.get("playback_status") == "failed":
+            payload["status"] = "PLAYBACK_FAILED"
+            emit(payload)
+            return 3
+    emit(payload)
+    return 0
+
+
 def command_speak(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
     ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
@@ -2860,6 +2937,15 @@ def command_speak(args: argparse.Namespace) -> int:
         return 0
 
     output.parent.mkdir(parents=True, exist_ok=True)
+    if can_run_speak_in_process(provider_python):
+        return run_short_speak_in_process(
+            args,
+            provider_python=provider_python,
+            python_source=python_source,
+            ref_audio=ref_audio,
+            ref_source=ref_source,
+            output=output,
+        )
     completed = subprocess.run(
         command,
         check=False,

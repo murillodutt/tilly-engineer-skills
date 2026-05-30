@@ -2119,6 +2119,17 @@ def validate_jsonl_emitter() -> list[str]:
     return failures
 
 
+def validate_short_speak_in_process_boundary() -> list[str]:
+    failures: list[str] = []
+    provider = load_provider_module()
+    if provider.can_run_speak_in_process(sys.executable) is not True:
+        failures.append("short speak must detect current interpreter as in-process capable")
+    fake_python = str(ROOT / "tmp" / "missing-python-for-oracle")
+    if provider.can_run_speak_in_process(fake_python) is not False:
+        failures.append("short speak must not treat a different provider python as in-process capable")
+    return failures
+
+
 def validate_review_html_scorecard() -> list[str]:
     failures: list[str] = []
     provider = load_provider_module()
@@ -2872,6 +2883,7 @@ def main() -> int:
     failures.extend(validate_auto_latency_profile_selection())
     failures.extend(validate_live_smoke_dry_run_command())
     failures.extend(validate_jsonl_emitter())
+    failures.extend(validate_short_speak_in_process_boundary())
     failures.extend(validate_review_dry_run_payload(review_payload))
     failures.extend(validate_package_dry_run_payload(package_payload))
     failures.extend(validate_review_html_scorecard())
