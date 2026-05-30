@@ -42,9 +42,12 @@ durable cache, or proactive `speak`.
 - `server-status`, `speak-server`, `speak-long-server`, and audio variant lab
   cover readiness, clone synthesis, chunked review, combined WAVs, and
   `SERVER_UNAVAILABLE` preflight without install/download/write.
+- Current `127.0.0.1:8000` check is not a valid OmniVoice server: TCP responds,
+  but capability endpoints return Laravel 404 / `NO_CAPABILITY_ENDPOINTS`.
 
 ## Next Cut
-Future goal 1: create a local OmniVoice server voice profile from
+Future goal 1: start or target a verified OmniVoice server, then create a local
+voice profile from
 `tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav`, then use
 `clone:<profile-id>` for synthesis so repeated reads do not upload the
 reference WAV each time. Human-score `20260530-174724-539838` before promoting
