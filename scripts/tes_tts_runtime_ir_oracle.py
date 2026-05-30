@@ -19,6 +19,7 @@ FIXTURE_PATH = ROOT / "benchmarks/tes-tts/runtime-ir-fixtures.json"
 VERSION = "0.3.147"
 REPEAT_COUNT = 9
 FORBIDDEN_SPOKEN_OUTPUTS = ("ssml", "<speak", "<phoneme", "<lexicon", ".pls")
+EXPECTED_PIPELINE = ["classify", "verbalize", "adapt_plain_text"]
 
 
 def load_fixtures() -> dict[str, Any]:
@@ -91,6 +92,8 @@ def validate_case(case: dict[str, Any]) -> tuple[list[str], dict[str, Any]]:
 
     if first_result["source_text_immutable"] is not True:
         failures.append(f"{case['id']}: source text immutability changed")
+    if first_result.get("pipeline") != EXPECTED_PIPELINE:
+        failures.append(f"{case['id']}: pipeline boundary drifted")
     if spoken_text != case["expected_spoken_text"]:
         failures.append(f"{case['id']}: spoken_text drifted")
     if span_types != case["expected_span_types"]:
@@ -109,6 +112,8 @@ def validate_case(case: dict[str, Any]) -> tuple[list[str], dict[str, Any]]:
         failures.append(f"{case['id']}: command execution changed")
     if first_result["runtime_pronunciation_output"] != "none":
         failures.append(f"{case['id']}: pronunciation runtime surface leaked")
+    if any("runtime_class" not in span for span in ir):
+        failures.append(f"{case['id']}: structured span catalog metadata missing")
     if any(span["executable"] for span in ir):
         failures.append(f"{case['id']}: IR span marked executable")
     for absent in case["expected_absent_spoken_text"]:

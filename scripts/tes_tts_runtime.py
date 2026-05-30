@@ -38,6 +38,17 @@ PATH_PATTERN = re.compile(
     r"[A-Za-z0-9._~@%+:-]+(?:/[A-Za-z0-9._~@%+:-]+)*"
 )
 HASH_PATTERN = re.compile(r"\b[0-9a-fA-F]{16,}\b")
+GUID_PATTERN = re.compile(
+    r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-"
+    r"[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b"
+)
+EMAIL_PATTERN = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+IPV4_PATTERN = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+SCOPED_PACKAGE_PATTERN = re.compile(r"(?<![\w/])@[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\b")
+MENTION_PATTERN = re.compile(r"(?<![\w/.-])@([A-Za-z0-9_.-]{2,})\b")
+HASHTAG_PATTERN = re.compile(r"(?<!\w)#([A-Za-z0-9_-]{2,})\b")
+BRANCH_PATTERN = re.compile(r"\b(?:feature|fix|bugfix|hotfix|release|chore)/[A-Za-z0-9._-]+\b")
+MODEL_PATTERN = re.compile(r"\b(?:gpt|gemini|claude|llama|mistral)-[A-Za-z0-9._-]+\b", re.IGNORECASE)
 EXACT_MARKERS = ("exatamente", "literalmente", "exact", "literal", "verbatim", "raw")
 
 
@@ -69,6 +80,27 @@ class Span:
     exact_mode: bool = False
     redacted: bool = False
     executable: bool = False
+
+
+SPAN_TYPE_CATALOG: dict[str, dict[str, str]] = {
+    "secret": {"say_as": "redacted", "runtime_class": "privacy"},
+    "url": {"say_as": "alias", "runtime_class": "fragile_reference"},
+    "path": {"say_as": "alias", "runtime_class": "fragile_reference"},
+    "email": {"say_as": "alias", "runtime_class": "contact_reference"},
+    "ipv4": {"say_as": "alias", "runtime_class": "network_reference"},
+    "guid": {"say_as": "alias", "runtime_class": "identifier"},
+    "mention": {"say_as": "alias", "runtime_class": "social_reference"},
+    "hashtag": {"say_as": "alias", "runtime_class": "social_reference"},
+    "branch": {"say_as": "alias", "runtime_class": "vcs_reference"},
+    "scoped_package": {"say_as": "protected_identity", "runtime_class": "package_identity"},
+    "model": {"say_as": "protected_identity", "runtime_class": "model_identity"},
+    "hash": {"say_as": "literal", "runtime_class": "identifier"},
+    "code": {"say_as": "literal_text", "runtime_class": "code_text"},
+    "exact_island": {"say_as": "literal", "runtime_class": "exact_text"},
+    "command": {"say_as": "literal_text", "runtime_class": "code_text"},
+    "protected_phrase": {"say_as": "protected_alias", "runtime_class": "lexical_identity"},
+    "protected_term": {"say_as": "protected_alias", "runtime_class": "lexical_identity"},
+}
 
 
 def canonical(value: str) -> str:
@@ -258,6 +290,11 @@ def has_exact_marker_before(text: str, start: int) -> bool:
     return any(marker in prefix for marker in EXACT_MARKERS)
 
 
+def has_label_before(text: str, start: int, labels: tuple[str, ...]) -> bool:
+    prefix = text[max(0, start - 30) : start].casefold().rstrip()
+    return any(prefix.endswith(label.casefold()) for label in labels)
+
+
 def literal_spans(redacted_text: str) -> list[Span]:
     spans: list[Span] = []
     for match in REDACTED_SECRET_PATTERN.finditer(redacted_text):
@@ -301,6 +338,23 @@ def literal_spans(redacted_text: str) -> list[Span]:
                 preserve_identity=False,
             )
         )
+    for match in EMAIL_PATTERN.finditer(redacted_text):
+        email = match.group(0).rstrip(".,;")
+        local, domain = email.split("@", 1)
+        rendering = "email " + re.sub(r"[._%+-]+", " ", local).strip()
+        rendering += " em " + re.sub(r"[.-]+", " ", domain).strip()
+        spans.append(
+            Span(
+                start=match.start(),
+                end=match.start() + len(email),
+                kind="email",
+                text=email,
+                rendering=rendering,
+                source="email_regex",
+                priority=795,
+                preserve_identity=False,
+            )
+        )
     for match in PATH_PATTERN.finditer(redacted_text):
         text = match.group(0).rstrip(".,;")
         spans.append(
@@ -315,6 +369,62 @@ def literal_spans(redacted_text: str) -> list[Span]:
                 preserve_identity=False,
             )
         )
+    for match in SCOPED_PACKAGE_PATTERN.finditer(redacted_text):
+        package = match.group(0).rstrip(".,;")
+        spans.append(
+            Span(
+                start=match.start(),
+                end=match.start() + len(package),
+                kind="scoped_package",
+                text=package,
+                rendering=package,
+                source="scoped_package_regex",
+                priority=760,
+            )
+        )
+    for match in MODEL_PATTERN.finditer(redacted_text):
+        model = match.group(0).rstrip(".,;")
+        spans.append(
+            Span(
+                start=match.start(),
+                end=match.start() + len(model),
+                kind="model",
+                text=model,
+                rendering=model,
+                source="model_regex",
+                priority=740,
+            )
+        )
+    for match in BRANCH_PATTERN.finditer(redacted_text):
+        branch = match.group(0).rstrip(".,;")
+        branch_name = re.sub(r"[/_-]+", " ", branch).strip()
+        label_present = has_label_before(redacted_text, match.start(), ("branch", "ramo"))
+        spans.append(
+            Span(
+                start=match.start(),
+                end=match.start() + len(branch),
+                kind="branch",
+                text=branch,
+                rendering=branch_name if label_present else f"branch {branch_name}",
+                source="branch_regex",
+                priority=730,
+                preserve_identity=False,
+            )
+        )
+    for match in GUID_PATTERN.finditer(redacted_text):
+        label_present = has_label_before(redacted_text, match.start(), ("guid",))
+        spans.append(
+            Span(
+                start=match.start(),
+                end=match.end(),
+                kind="guid",
+                text=match.group(0),
+                rendering="identificador" if label_present else "GUID",
+                source="guid_regex",
+                priority=720,
+                preserve_identity=False,
+            )
+        )
     for match in HASH_PATTERN.finditer(redacted_text):
         spans.append(
             Span(
@@ -325,6 +435,55 @@ def literal_spans(redacted_text: str) -> list[Span]:
                 rendering=match.group(0),
                 source="hash_regex",
                 priority=700,
+            )
+        )
+    for match in IPV4_PATTERN.finditer(redacted_text):
+        ip_address = match.group(0)
+        if all(0 <= int(part) <= 255 for part in ip_address.split(".")):
+            label_present = has_label_before(redacted_text, match.start(), ("ip",))
+            rendered_ip = " ponto ".join(ip_address.split("."))
+            spans.append(
+                Span(
+                    start=match.start(),
+                    end=match.end(),
+                    kind="ipv4",
+                    text=ip_address,
+                    rendering=rendered_ip if label_present else "IP " + rendered_ip,
+                    source="ipv4_regex",
+                    priority=690,
+                    preserve_identity=False,
+                )
+            )
+    for match in MENTION_PATTERN.finditer(redacted_text):
+        mention = match.group(0)
+        rendering = "mencao " + re.sub(r"[_.-]+", " ", match.group(1)).strip()
+        spans.append(
+            Span(
+                start=match.start(),
+                end=match.end(),
+                kind="mention",
+                text=mention,
+                rendering=rendering,
+                source="mention_regex",
+                priority=660,
+                preserve_identity=False,
+            )
+        )
+    for match in HASHTAG_PATTERN.finditer(redacted_text):
+        hashtag = match.group(0)
+        label_present = has_label_before(redacted_text, match.start(), ("hashtag",))
+        normalized_hashtag = re.sub(r"[_-]+", " ", match.group(1)).strip()
+        rendering = normalized_hashtag if label_present else "hashtag " + normalized_hashtag
+        spans.append(
+            Span(
+                start=match.start(),
+                end=match.end(),
+                kind="hashtag",
+                text=hashtag,
+                rendering=rendering,
+                source="hashtag_regex",
+                priority=650,
+                preserve_identity=False,
             )
         )
     return spans
@@ -387,17 +546,7 @@ def match_spans(source_text: str, locale: str = "pt-BR") -> dict[str, Any]:
 
 
 def span_to_ir(span: Span) -> dict[str, Any]:
-    say_as = {
-        "secret": "redacted",
-        "url": "alias",
-        "path": "alias",
-        "hash": "literal",
-        "code": "literal_text",
-        "exact_island": "literal",
-        "command": "literal_text",
-        "protected_phrase": "protected_alias",
-        "protected_term": "protected_alias",
-    }.get(span.kind, "text")
+    catalog_entry = SPAN_TYPE_CATALOG.get(span.kind, {"say_as": "text", "runtime_class": "text"})
     return {
         "start": span.start,
         "end": span.end,
@@ -406,54 +555,84 @@ def span_to_ir(span: Span) -> dict[str, Any]:
         "spoken_alias": span.rendering,
         "language_hint": span.language_hint,
         "preserve_identity": span.preserve_identity,
-        "say_as": say_as,
+        "say_as": catalog_entry["say_as"],
+        "runtime_class": catalog_entry["runtime_class"],
         "exact_mode": span.exact_mode,
         "redacted": span.redacted,
         "executable": False,
     }
 
 
-def prepare_spoken_text(source_text: str, locale: str = "pt-BR") -> dict[str, Any]:
+def classify_text(source_text: str, locale: str = "pt-BR") -> dict[str, Any]:
     match_result = match_spans(source_text, locale)
-    redacted_text = match_result["redacted_text"]
     spans: list[Span] = match_result["spans"]
+    return {
+        "version": VERSION,
+        "locale": locale,
+        "source_text_immutable": True,
+        "redacted_text": match_result["redacted_text"],
+        "ir": [span_to_ir(span) for span in spans],
+        "span_kinds": [span.kind for span in spans],
+        "redaction_count": match_result["redaction_count"],
+        "provider_timing": "out_of_scope",
+        "summary_behavior": "none",
+        "command_execution": "not_performed",
+    }
+
+
+def verbalize_ir(redacted_text: str, ir: list[dict[str, Any]]) -> dict[str, Any]:
     memo: dict[str, str] = {}
     parts: list[str] = []
     cursor = 0
     hits = 0
     misses = 0
-    for span in spans:
-        key = f"{span.kind}:{span.text}->{span.rendering}"
+    for span in ir:
+        key = f"{span['span_type']}:{span['source']}->{span['spoken_alias']}"
         if key in memo:
             hits += 1
             rendering = memo[key]
         else:
             misses += 1
-            rendering = span.rendering
+            rendering = span["spoken_alias"]
             memo[key] = rendering
-        parts.append(redacted_text[cursor : span.start])
+        parts.append(redacted_text[cursor : span["start"]])
         parts.append(rendering)
-        cursor = span.end
+        cursor = span["end"]
     parts.append(redacted_text[cursor:])
-    spoken_text = "".join(parts).replace("`", "")
     return {
-        "version": VERSION,
-        "locale": locale,
-        "source_text_immutable": True,
-        "redacted_text": redacted_text,
-        "spoken_text": spoken_text,
-        "ir": [span_to_ir(span) for span in spans],
-        "span_kinds": [span.kind for span in spans],
-        "redaction_count": match_result["redaction_count"],
+        "spoken_text": "".join(parts).replace("`", ""),
         "memo_scope": "request_local",
         "cache_hits": hits,
         "cache_misses": misses,
+    }
+
+
+def adapt_plain_text(classified: dict[str, Any], verbalized: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "version": VERSION,
+        "locale": classified["locale"],
+        "pipeline": ["classify", "verbalize", "adapt_plain_text"],
+        "source_text_immutable": True,
+        "redacted_text": classified["redacted_text"],
+        "spoken_text": verbalized["spoken_text"],
+        "ir": classified["ir"],
+        "span_kinds": classified["span_kinds"],
+        "redaction_count": classified["redaction_count"],
+        "memo_scope": verbalized["memo_scope"],
+        "cache_hits": verbalized["cache_hits"],
+        "cache_misses": verbalized["cache_misses"],
         "provider_timing": "out_of_scope",
         "output_format": "plain_text",
         "summary_behavior": "none",
         "command_execution": "not_performed",
         "runtime_pronunciation_output": "none",
     }
+
+
+def prepare_spoken_text(source_text: str, locale: str = "pt-BR") -> dict[str, Any]:
+    classified = classify_text(source_text, locale)
+    verbalized = verbalize_ir(classified["redacted_text"], classified["ir"])
+    return adapt_plain_text(classified, verbalized)
 
 
 def main() -> int:

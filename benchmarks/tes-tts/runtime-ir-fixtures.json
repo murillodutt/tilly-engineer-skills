@@ -33,6 +33,16 @@
       "expected_aliases": ["ADR", "A D R"],
       "expected_absent_spoken_text": ["exatamente A D R"],
       "expected_redaction_count": 0
+    },
+    {
+      "id": "runtime-ir-session-technical-identifiers",
+      "source_text": "Contato ops@example.com, IP 10.0.0.7, mencione @tes-team, hashtag #release-2026, branch feature/cap-007, modelo gpt-4o-mini-tts, pacote @openai/agents e GUID 123e4567-e89b-12d3-a456-426614174000.",
+      "locale": "pt-BR",
+      "expected_spoken_text": "Contato email ops em example com, IP 10 ponto 0 ponto 0 ponto 7, mencione mencao tes team, hashtag release 2026, branch feature cap 007, modelo gpt-4o-mini-tts, pacote @openai/agents e GUID identificador.",
+      "expected_span_types": ["email", "ipv4", "mention", "hashtag", "branch", "model", "scoped_package", "guid"],
+      "expected_aliases": ["email ops em example com", "10 ponto 0 ponto 0 ponto 7", "mencao tes team", "release 2026", "feature cap 007", "gpt-4o-mini-tts", "@openai/agents", "identificador"],
+      "expected_absent_spoken_text": ["ops@example.com", "10.0.0.7", "123e4567-e89b-12d3-a456-426614174000"],
+      "expected_redaction_count": 0
     }
   ]
 }
