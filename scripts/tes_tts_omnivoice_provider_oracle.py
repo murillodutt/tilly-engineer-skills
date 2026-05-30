@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -405,6 +406,90 @@ def validate_review_dry_run_payload(payload: dict[str, Any] | None) -> list[str]
     return failures
 
 
+def load_provider_module() -> Any:
+    scripts_dir = ROOT / "scripts"
+    sys.path.insert(0, str(scripts_dir))
+    try:
+        spec = importlib.util.spec_from_file_location("tes_tts_omnivoice_provider_for_oracle", PROVIDER_SCRIPT)
+        if spec is None or spec.loader is None:
+            raise RuntimeError("could not load provider module spec")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        try:
+            sys.path.remove(str(scripts_dir))
+        except ValueError:
+            pass
+
+
+def validate_review_html_scorecard() -> list[str]:
+    failures: list[str] = []
+    provider = load_provider_module()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        cases = root / "cases.json"
+        cases.write_text(
+            json.dumps(
+                {
+                    "cases": [
+                        {
+                            "id": "scorecard-case",
+                            "language": "pt",
+                            "text": "Leia API_KEY=abc123SECRET com segurança e avalie TypeScript.",
+                        }
+                    ]
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        payload = {
+            "provider": "omnivoice",
+            "status": "PASS",
+            "version": VERSION,
+            "outputs": [
+                {
+                    "id": "scorecard-case",
+                    "output": str(root / "scorecard-case.wav"),
+                    "rtf": 0.9,
+                    "audio_duration_seconds": 3.2,
+                    "generation_ms": 2880,
+                    "redaction_count": 1,
+                }
+            ],
+            "benchmark_summary": {
+                "case_count": 1,
+                "avg_rtf": 0.9,
+                "total_audio_duration_seconds": 3.2,
+                "total_generation_ms": 2880,
+                "provider_timing_scope": "local_optional_environment_only",
+            },
+        }
+        paths = provider.write_benchmark_review(payload=payload, cases_path=cases, output_dir=root, locale="pt-BR")
+        html_text = Path(paths["review_html"]).read_text(encoding="utf-8")
+    required_snippets = [
+        "tes-tts-omnivoice-review@1",
+        "data-score=\"overall\"",
+        "data-score=\"pronunciation\"",
+        "data-score=\"technical_terms\"",
+        "data-score=\"naturalness\"",
+        "Exportar JSON",
+        "Copiar resumo",
+        "if(v==='')return null",
+        "AUDIO_CANDIDATE",
+        "NEEDS_TARGETED_FIX",
+        "NEEDS_FIX",
+        "API_KEY=[REDACTED_SECRET]",
+    ]
+    for snippet in required_snippets:
+        if snippet not in html_text:
+            failures.append(f"review HTML missing scorecard snippet: {snippet}")
+    if "abc123SECRET" in html_text:
+        failures.append("review HTML leaked secret-like fixture text")
+    return failures
+
+
 def validate_fixtures(fixtures: dict[str, Any]) -> list[str]:
     failures: list[str] = []
     if fixtures.get("version") != VERSION:
@@ -451,6 +536,7 @@ def main() -> int:
     failures.extend(validate_dry_run_payload(dry_payload))
     failures.extend(validate_bench_dry_run_payload(bench_payload))
     failures.extend(validate_review_dry_run_payload(review_payload))
+    failures.extend(validate_review_html_scorecard())
     failures.extend(validate_fixtures(load_json(FIXTURE_PATH)))
     print(
         json.dumps(

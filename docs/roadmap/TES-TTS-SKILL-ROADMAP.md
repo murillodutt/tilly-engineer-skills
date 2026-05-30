@@ -82,10 +82,11 @@ Latest local product evidence:
   fixtures through one loaded model and cached reference voice, plays the
   outputs sequentially, and opens a local review page. Each run writes
   `result.json` plus `review.html` with audio players, redacted text, and
-  metrics. The `review` subcommand reopens the latest report without
-  regenerating audio. Latest local report run produced `32.65s` of audio in
-  `29.37s` total with average RTF `0.9417`; the latest playback run played all
-  three WAVs via `afplay`.
+  metrics. The review page now includes per-case audible scoring, local JSON
+  export, and copyable decision summaries without a server. The `review`
+  subcommand reopens the latest report without regenerating audio. Latest
+  local report run produced `32.65s` of audio in `29.37s` total with average
+  RTF `0.9417`; the latest playback run played all three WAVs via `afplay`.
 
 Relevant gates for the latest cut:
 
@@ -116,7 +117,7 @@ npm run commit:check
 Recommended next product cut:
 
 1. Run `python3 scripts/tes_tts_omnivoice_provider.py bench --play --open`
-   and classify audible quality by fixture.
+   and score audible quality by fixture in the generated review page.
 2. Decide whether the OmniVoice provider path is ready for release identity
    planning or needs one targeted runtime/provider fix.
 3. Keep docs limited to this dashboard, registry/history pointers, and the
