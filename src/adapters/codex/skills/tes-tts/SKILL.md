@@ -41,29 +41,16 @@ The canonical local clone source is
 `tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav`. Profile and
 audio outputs stay under `tmp/**` and are not committed.
 
-## Rendering Rules
+## Speech Invariants
 
-- Never summarize unless the user explicitly asks for summary.
-- Keep source text immutable; `spoken_text` is request-local.
-- Redact secrets before rendering and before provider handoff.
-- Preserve PT-BR as platform narration while keeping English technical
-  identity: product names, proper nouns, package names, model names, commands,
-  code identifiers, workflow terms, and acronyms must not be translated.
-- Render common acronyms as speech in non-exact mode: `ADR` -> `A D R`,
-  `MCP` -> `M C P`, `API` -> `A P I`, `SDK` -> `S D K`, `CLI` -> `C L I`.
-- Render GitHub URLs as "pagina do GitHub" and generic URLs as "link" unless
-  exact reading is requested.
-- Render paths as useful folder/file references, for example
-  `.agents/skills/tes-tts` -> "pasta tes tts", unless exact reading is
-  requested.
-- Preserve exact islands only for the span requested literally: path, URL,
-  command, code identifier, hash, quoted term, email, IP, mention, hashtag, or
-  package/model name.
-- Code and commands are spoken as text and never executed.
-- Tables, bullets, numbered lists, and quotes become ordered oral prose without
-  dropping facts.
-- Split long text into chunks; do not send large reports as one synthesis
-  request.
+- Do not summarize unless the user asked for a summary.
+- Keep source text immutable; only `spoken_text` is sent to TTS.
+- Let `scripts/tes_tts_runtime.py` own rendering, exact islands, protected
+  terms, paths, URLs, tables, lists, and mixed-language preparation.
+- Redact secrets before TTS. Redaction overrides exact, literal, raw, and
+  verbatim requests.
+- Speak code and commands as text; never execute spoken content.
+- Split long text into chunks instead of sending large reports as one request.
 
 ## Provider Rules
 
