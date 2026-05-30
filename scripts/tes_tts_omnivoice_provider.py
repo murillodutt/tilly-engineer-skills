@@ -333,6 +333,26 @@ def check_server_health(
         }
 
 
+def extract_json_ids(payload: Any) -> list[str]:
+    ids: set[str] = set()
+
+    def visit(value: Any) -> None:
+        if isinstance(value, dict):
+            identifier = value.get("id")
+            if isinstance(identifier, str) and identifier.strip():
+                ids.add(identifier.strip())
+            for key in ("voices", "models", "profiles", "data", "items"):
+                child = value.get(key)
+                if isinstance(child, (dict, list)):
+                    visit(child)
+        elif isinstance(value, list):
+            for item in value:
+                visit(item)
+
+    visit(payload)
+    return sorted(ids)
+
+
 def check_server_json_resource(
     *,
     url: str,
@@ -352,9 +372,11 @@ def check_server_json_resource(
                 parsed: Any = json.loads(raw)
                 parsed_type = type(parsed).__name__
                 item_count = len(parsed) if isinstance(parsed, (list, dict)) else None
+                ids = extract_json_ids(parsed)
             except json.JSONDecodeError:
                 parsed_type = "text"
                 item_count = None
+                ids = []
             return {
                 "status": "AVAILABLE",
                 "url": url,
@@ -363,6 +385,7 @@ def check_server_json_resource(
                 "body_preview": raw[:512],
                 "parsed_type": parsed_type,
                 "item_count": item_count,
+                "ids": ids,
                 "latency_ms": round((time.perf_counter() - started) * 1000, 3),
             }
     except urllib.error.HTTPError as exc:
@@ -376,6 +399,7 @@ def check_server_json_resource(
             "body_preview": body,
             "parsed_type": None,
             "item_count": None,
+            "ids": [],
             "latency_ms": round((time.perf_counter() - started) * 1000, 3),
         }
     except urllib.error.URLError as exc:
@@ -387,6 +411,7 @@ def check_server_json_resource(
             "body_preview": None,
             "parsed_type": None,
             "item_count": None,
+            "ids": [],
             "latency_ms": round((time.perf_counter() - started) * 1000, 3),
             "reason": str(exc.reason if hasattr(exc, "reason") else exc),
         }
@@ -399,9 +424,33 @@ def discover_server_capabilities(base_url: str, *, api_key_env: str, timeout: fl
         for name, url in endpoints.items()
     }
     available = sorted(name for name, payload in resources.items() if payload.get("status") == "AVAILABLE")
+    voice_ids = sorted(
+        {
+            identifier
+            for name, payload in resources.items()
+            if "voice" in name
+            for identifier in payload.get("ids", [])
+            if isinstance(identifier, str)
+        }
+    )
+    model_ids = sorted(
+        {
+            identifier
+            for name, payload in resources.items()
+            if "model" in name
+            for identifier in payload.get("ids", [])
+            if isinstance(identifier, str)
+        }
+    )
+    preferred_voice = next((voice for voice in ("felipe-clone", "default", "auto", "alloy", "nova") if voice in voice_ids), None)
+    preferred_model = next((model for model in ("omnivoice", "tts-1", "tts-1-hd") if model in model_ids), None)
     return {
         "status": "DISCOVERED" if available else "NO_CAPABILITY_ENDPOINTS",
         "available": available,
+        "voice_ids": voice_ids,
+        "model_ids": model_ids,
+        "preferred_voice_id": preferred_voice or (voice_ids[0] if voice_ids else None),
+        "preferred_model_id": preferred_model or (model_ids[0] if model_ids else None),
         "resources": resources,
     }
 

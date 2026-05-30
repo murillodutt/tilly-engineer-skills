@@ -38,9 +38,8 @@ durable cache, or proactive `speak`.
 - Latest lab evidence `20260530-162231-615943` improves target chunks 2 and 3;
   chunk 1 needs human scoring and less brittle STT term normalization.
 - Community scan produced tested `server-status` with TCP plus optional
-  `/health`, capability endpoint discovery, `speak-server`, and
-  `speak-long-server` routes for local OpenAI-compatible OmniVoice servers;
-  no install/download/write.
+  `/health`, voice/model ID discovery, `speak-server`, and `speak-long-server`
+  routes for local OpenAI-compatible OmniVoice servers; no install/download/write.
 - `audio_variant_lab --provider-route server` now preflights server readiness
   once and records `SERVER_UNAVAILABLE` instead of repeating failed synthesis.
 

@@ -1070,6 +1070,18 @@ def validate_server_route_command() -> list[str]:
             failures.append("server-status must discover mock capability endpoints")
         elif capabilities.get("available") != ["audio_models", "audio_voices", "models", "root_health", "voices"]:
             failures.append("server-status capability availability list drifted")
+        else:
+            if capabilities.get("voice_ids") != ["default", "felipe-clone", "legacy-default"]:
+                failures.append("server-status must extract voice ids from common capability responses")
+            if capabilities.get("model_ids") != ["legacy-omnivoice", "omnivoice"]:
+                failures.append("server-status must extract model ids from common capability responses")
+            if capabilities.get("preferred_voice_id") != "felipe-clone":
+                failures.append("server-status preferred voice selection drifted")
+            if capabilities.get("preferred_model_id") != "omnivoice":
+                failures.append("server-status preferred model selection drifted")
+            audio_voices = (capabilities.get("resources") or {}).get("audio_voices")
+            if not isinstance(audio_voices, dict) or audio_voices.get("ids") != ["default", "felipe-clone"]:
+                failures.append("server-status must expose redacted audio voice ids per resource")
         if status_payload.get("probe_scope") != "tcp_connect_plus_optional_health_no_synthesis":
             failures.append("server-status mock server probe scope drifted")
         if completed.returncode != 0:
