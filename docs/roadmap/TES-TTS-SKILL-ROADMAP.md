@@ -78,13 +78,14 @@ Latest local product evidence:
 - Product shortcut: `status` auto-discovers the configured local OmniVoice
   venv/reference voice, and `speak` delegates synthesis without long CLI
   arguments.
-- Product benchmark: `bench --play` runs the three governed OmniVoice fixtures
-  through one loaded model and cached reference voice, then plays the outputs
-  sequentially for immediate maintainer review. Each run also writes
-  `result.json` plus a local `review.html` with audio players, redacted text,
-  and metrics. Latest local report run produced `32.65s` of audio in `29.37s`
-  total with average RTF `0.9417`; the latest playback run played all three
-  WAVs via `afplay`.
+- Product benchmark: `bench --play --open` runs the three governed OmniVoice
+  fixtures through one loaded model and cached reference voice, plays the
+  outputs sequentially, and opens a local review page. Each run writes
+  `result.json` plus `review.html` with audio players, redacted text, and
+  metrics. The `review` subcommand reopens the latest report without
+  regenerating audio. Latest local report run produced `32.65s` of audio in
+  `29.37s` total with average RTF `0.9417`; the latest playback run played all
+  three WAVs via `afplay`.
 
 Relevant gates for the latest cut:
 
@@ -114,8 +115,8 @@ npm run commit:check
 
 Recommended next product cut:
 
-1. Run `python3 scripts/tes_tts_omnivoice_provider.py bench --play`, open the
-   generated `review.html`, and classify audible quality by fixture.
+1. Run `python3 scripts/tes_tts_omnivoice_provider.py bench --play --open`
+   and classify audible quality by fixture.
 2. Decide whether the OmniVoice provider path is ready for release identity
    planning or needs one targeted runtime/provider fix.
 3. Keep docs limited to this dashboard, registry/history pointers, and the
@@ -123,11 +124,14 @@ Recommended next product cut:
 
 ## Maintenance Rules
 
-- Keep this file under 220 lines.
+- Keep this dashboard under 180 lines; if it approaches the limit, partition
+  before adding more detail.
 - Keep only current state, active decisions, next decisions, and latest
   evidence here.
 - Move dense artifact listings to `TES-TTS-SKILL-ROADMAP-REGISTRY.md`.
 - Move historical cycle detail to `TES-TTS-SKILL-ROADMAP-HISTORY.md`.
+- Keep the root roadmap index grouped by product line, not by every prompt,
+  SPEC, or audit artifact.
 - Every `tes-tts` execution cycle must update this dashboard or record an
   explicit no-change rationale in the active audit/commit message.
 - Do not use this roadmap to authorize sync, release, provider installs,

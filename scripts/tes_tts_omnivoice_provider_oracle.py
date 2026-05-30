@@ -77,9 +77,23 @@ REQUIRED_BENCH_DRY_RUN_KEYS = {
     "cases",
     "output_dir",
     "play_requested",
+    "open_requested",
     "result_json",
     "review_html",
     "command_shape",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
+}
+REQUIRED_REVIEW_DRY_RUN_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "mode",
+    "review_html",
+    "review_source",
+    "open_requested",
+    "exists",
     "allows_install",
     "allows_download",
     "allows_global_config_write",
@@ -158,12 +172,15 @@ def run_status_and_dry_run() -> tuple[
     dict[str, Any] | None,
     dict[str, Any] | None,
     dict[str, Any] | None,
+    dict[str, Any] | None,
     list[str],
 ]:
     failures: list[str] = []
     with tempfile.TemporaryDirectory() as tmp_dir:
         ref = Path(tmp_dir) / "ref.wav"
+        review = Path(tmp_dir) / "review.html"
         ref.write_bytes(b"not-real-audio-for-dry-run")
+        review.write_text("<!doctype html><audio controls></audio>", encoding="utf-8")
         env = os.environ.copy()
         env["TES_TTS_OMNIVOICE_PYTHON"] = sys.executable
         env["TES_TTS_OMNIVOICE_REF_AUDIO"] = str(ref)
@@ -214,6 +231,7 @@ def run_status_and_dry_run() -> tuple[
                 "--ref-text",
                 "voz privada SECRET_REF_TEXT",
                 "--play",
+                "--open",
                 "--dry-run",
             ],
             text=True,
@@ -229,7 +247,30 @@ def run_status_and_dry_run() -> tuple[
         except json.JSONDecodeError as exc:
             failures.append(f"bench dry-run did not emit JSON: {exc}")
             bench_payload = None
-    return status_payload, dry_payload, bench_payload, failures
+
+        review_completed = subprocess.run(
+            [
+                sys.executable,
+                str(PROVIDER_SCRIPT),
+                "review",
+                "--path",
+                str(review),
+                "--dry-run",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            env=env,
+        )
+        if review_completed.returncode != 0:
+            failures.append(f"review dry-run returned unexpected exit code {review_completed.returncode}")
+        try:
+            review_payload = json.loads(review_completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"review dry-run did not emit JSON: {exc}")
+            review_payload = None
+    return status_payload, dry_payload, bench_payload, review_payload, failures
 
 
 def validate_status_payload(payload: dict[str, Any] | None) -> list[str]:
@@ -309,6 +350,8 @@ def validate_bench_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
         failures.append("bench dry-run must not write global config")
     if payload.get("play_requested") is not True:
         failures.append("bench dry-run must report playback intent")
+    if payload.get("open_requested") is not True:
+        failures.append("bench dry-run must report review-open intent")
     command_shape = payload.get("command_shape")
     if not isinstance(command_shape, list):
         failures.append("bench dry-run command_shape must be a list")
@@ -329,6 +372,36 @@ def validate_bench_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
         failures.append("bench dry-run must report result JSON path")
     if not isinstance(review_html, str) or not review_html.endswith("review.html"):
         failures.append("bench dry-run must report review HTML path")
+    return failures
+
+
+def validate_review_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
+    if payload is None:
+        return []
+    failures: list[str] = []
+    missing = sorted(REQUIRED_REVIEW_DRY_RUN_KEYS - set(payload))
+    extra = sorted(set(payload) - REQUIRED_REVIEW_DRY_RUN_KEYS)
+    if missing:
+        failures.append(f"review dry-run missing keys {missing}")
+    if extra:
+        failures.append(f"review dry-run has extra keys {extra}")
+    if payload.get("status") != "DRY_RUN":
+        failures.append("review dry-run status drifted")
+    if payload.get("mode") != "product_review":
+        failures.append("review dry-run mode drifted")
+    if payload.get("open_requested") is not False:
+        failures.append("review dry-run must not open the browser")
+    if payload.get("exists") is not True:
+        failures.append("review dry-run must resolve an existing review")
+    if payload.get("allows_install") is not False:
+        failures.append("review dry-run must not install providers")
+    if payload.get("allows_download") is not False:
+        failures.append("review dry-run must not download models")
+    if payload.get("allows_global_config_write") is not False:
+        failures.append("review dry-run must not write global config")
+    review_html = payload.get("review_html")
+    if not isinstance(review_html, str) or not review_html.endswith("review.html"):
+        failures.append("review dry-run must report review HTML path")
     return failures
 
 
@@ -372,11 +445,12 @@ def main() -> int:
     failures.extend(validate_no_reference_text_logging())
     probe, probe_failures = run_probe()
     failures.extend(probe_failures)
-    status_payload, dry_payload, bench_payload, shortcut_failures = run_status_and_dry_run()
+    status_payload, dry_payload, bench_payload, review_payload, shortcut_failures = run_status_and_dry_run()
     failures.extend(shortcut_failures)
     failures.extend(validate_status_payload(status_payload))
     failures.extend(validate_dry_run_payload(dry_payload))
     failures.extend(validate_bench_dry_run_payload(bench_payload))
+    failures.extend(validate_review_dry_run_payload(review_payload))
     failures.extend(validate_fixtures(load_json(FIXTURE_PATH)))
     print(
         json.dumps(
@@ -389,6 +463,7 @@ def main() -> int:
                 "status_command": status_payload.get("status") if status_payload else None,
                 "speak_dry_run": dry_payload.get("status") if dry_payload else None,
                 "bench_dry_run": bench_payload.get("status") if bench_payload else None,
+                "review_dry_run": review_payload.get("status") if review_payload else None,
                 "failures": failures,
             },
             indent=2,

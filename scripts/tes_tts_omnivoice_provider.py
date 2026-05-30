@@ -242,6 +242,18 @@ def playback_audio(output: Path) -> dict[str, Any]:
     }
 
 
+def open_local_file(path: Path) -> dict[str, Any]:
+    opener = shutil.which("open")
+    if not opener:
+        return {"open_status": "not_available", "opener": None}
+    completed = subprocess.run([opener, str(path)], check=False)
+    return {
+        "open_status": "opened" if completed.returncode == 0 else "failed",
+        "opener": opener,
+        "returncode": completed.returncode,
+    }
+
+
 def playback_outputs(outputs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
     for item in outputs:
@@ -354,6 +366,20 @@ def write_benchmark_review(
     )
     review_html.write_text(html_text, encoding="utf-8")
     return {"result_json": str(result_json), "review_html": str(review_html)}
+
+
+def resolve_review_html(path: str | None, benchmark_dir: str | None) -> tuple[Path | None, str]:
+    if path:
+        candidate = Path(path)
+        if candidate.is_dir():
+            return candidate / "review.html", "arg_dir"
+        return candidate, "arg_file"
+    root = Path(benchmark_dir) if benchmark_dir else DEFAULT_BENCHMARK_DIR
+    candidates = [item for item in root.glob("*/review.html") if item.is_file()]
+    if not candidates:
+        return None, "missing"
+    candidates.sort(key=lambda item: item.stat().st_mtime, reverse=True)
+    return candidates[0], "latest"
 
 
 def redact_command_value(tokens: list[str], option: str) -> list[str]:
@@ -541,6 +567,7 @@ def command_bench(args: argparse.Namespace) -> int:
                 "cases": str(cases),
                 "output_dir": str(output_dir),
                 "play_requested": args.play,
+                "open_requested": args.open,
                 "result_json": str(output_dir / "result.json"),
                 "review_html": str(output_dir / "review.html"),
                 "command_shape": redact_command_value(command, "--ref-text"),
@@ -582,6 +609,7 @@ def command_bench(args: argparse.Namespace) -> int:
     payload["cases"] = str(cases)
     payload["output_dir"] = str(output_dir)
     payload["play_requested"] = args.play
+    payload["open_requested"] = args.open
     outputs = payload.get("outputs")
     if isinstance(outputs, list) and outputs:
         rtfs = [item.get("rtf") for item in outputs if isinstance(item.get("rtf"), (int, float))]
@@ -610,9 +638,71 @@ def command_bench(args: argparse.Namespace) -> int:
                 write_benchmark_review(payload=payload, cases_path=cases, output_dir=output_dir, locale=args.locale)
                 emit(payload)
                 return 3
-        write_benchmark_review(payload=payload, cases_path=cases, output_dir=output_dir, locale=args.locale)
+        review_paths = write_benchmark_review(payload=payload, cases_path=cases, output_dir=output_dir, locale=args.locale)
+        if args.open and completed.returncode == 0:
+            open_result = open_local_file(Path(review_paths["review_html"]))
+            payload.update(open_result)
+            if open_result.get("open_status") == "failed":
+                payload["status"] = "OPEN_FAILED"
+                Path(review_paths["result_json"]).write_text(
+                    json.dumps(payload, ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
+                emit(payload)
+                return 4
+            Path(review_paths["result_json"]).write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
     emit(payload)
     return completed.returncode
+
+
+def command_review(args: argparse.Namespace) -> int:
+    review_html, source = resolve_review_html(args.path, args.benchmark_dir)
+    if review_html is None:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "NOT_FOUND",
+                "version": VERSION,
+                "mode": "product_review",
+                "review_html": None,
+                "review_source": source,
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 2
+    payload = {
+        "provider": "omnivoice",
+        "status": "DRY_RUN" if args.dry_run else "PASS",
+        "version": VERSION,
+        "mode": "product_review",
+        "review_html": str(review_html),
+        "review_source": source,
+        "open_requested": not args.dry_run,
+        "exists": review_html.exists(),
+        "allows_install": False,
+        "allows_download": False,
+        "allows_global_config_write": False,
+    }
+    if not review_html.exists():
+        payload["status"] = "NOT_FOUND"
+        emit(payload)
+        return 2
+    if args.dry_run:
+        emit(payload)
+        return 0
+    open_result = open_local_file(review_html)
+    payload.update(open_result)
+    if open_result.get("open_status") == "failed":
+        payload["status"] = "OPEN_FAILED"
+        emit(payload)
+        return 4
+    emit(payload)
+    return 0
 
 
 def normalize_ref_audio(source: Path, output: Path) -> None:
@@ -953,8 +1043,15 @@ def build_parser() -> argparse.ArgumentParser:
     bench.add_argument("--cases", default=str(DEFAULT_BENCHMARK_CASES))
     bench.add_argument("--output-dir")
     bench.add_argument("--play", action="store_true")
+    bench.add_argument("--open", action="store_true")
     bench.add_argument("--dry-run", action="store_true")
     bench.set_defaults(func=command_bench)
+
+    review = subparsers.add_parser("review")
+    review.add_argument("--path")
+    review.add_argument("--benchmark-dir")
+    review.add_argument("--dry-run", action="store_true")
+    review.set_defaults(func=command_review)
     return parser
 
 
