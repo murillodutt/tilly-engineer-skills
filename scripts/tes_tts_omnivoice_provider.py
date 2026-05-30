@@ -611,20 +611,52 @@ def infer_long_read_chunk_language(text: str, requested_language: str) -> str:
     english_markers = {
         "and",
         "are",
+        "called",
         "english",
+        "interface",
+        "language",
+        "limits",
+        "matching",
+        "names",
+        "protocol",
+        "runtime",
+        "string",
         "technical",
         "terms",
         "the",
         "thresholds",
+        "tree",
         "provider",
+    }
+    technical_terms = {
+        "aho",
+        "api",
+        "corasick",
+        "http",
+        "json",
+        "node",
+        "open",
+        "python",
+        "thresholds",
+        "trie",
+        "typescript",
+        "yaml",
     }
     tokens = re.findall(r"[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9_.-]*", normalized)
     portuguese_score = sum(1 for token in tokens if token in portuguese_markers)
     english_score = sum(1 for token in tokens if token in english_markers)
+    technical_score = sum(1 for token in tokens if token in technical_terms)
 
-    if normalized.startswith(("english technical terms:", "the english technical terms are", "english problem terms:")):
+    if normalized.startswith((
+        "english context:",
+        "english technical terms:",
+        "the english technical terms are",
+        "english problem terms:",
+    )):
         return "en"
     if english_score >= 4 and portuguese_score == 0:
+        return "en"
+    if technical_score >= 2 and portuguese_score == 0 and english_score >= 1:
         return "en"
     return DEFAULT_LANGUAGE
 

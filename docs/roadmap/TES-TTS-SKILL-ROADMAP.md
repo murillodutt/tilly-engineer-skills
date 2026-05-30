@@ -36,21 +36,17 @@ durable cache, or proactive `speak`.
   avg RTF `0.3864`, package SHA starts `eafb9419`.
 - Long-read OmniVoice correction passed: 12 chunks played, `avg_rtf=0.2067`,
   `fallback_used=false`, monitor log under `tmp/**/runtime-logs`.
-- Audio variant review now supports per-chunk STT language when provider
-  output records chunk languages, plus `combined.wav` and optional chunk-edge
-  silence for cut/overlap experiments.
-- Research-guided audio lab supports provider/STT language selection,
-  microsecond run IDs, `language=auto`, English-island variants, and problem
-  term alias variants without promoting them to runtime defaults.
-- Latest evidence: single English phrase with global `en` remains the best STT
-  score (`20260530-151743`); per-chunk STT shows routed runs still degrade on
-  chunk 3 (`20260530-155155-872719`), so grouped/alias variants stay lab-only.
+- Audio variant review now supports per-chunk STT language, `combined.wav`,
+  `language=auto`, and lab-only English-island variants.
+- Latest lab evidence: `20260530-161021-480399` is the best routed English
+  island candidate (`chunk-003 WER=0.1481`); PT-BR acronym chunks still need
+  human scoring plus a less brittle STT term-normalization oracle.
 
 ## Next Cut
-Listen to `20260530-151743`, `20260530-153447-843321`, and
-`20260530-155155-872719`; score whether any routed `combined.wav` beats the
-global-`en` phrase before adding more aliases. If none does, focus next on
-provider/runtime strategy rather than more punctuation variants.
+Human-score `20260530-161021-480399` against `20260530-151743`. If the
+semicolon English island wins by ear, promote it as the current rendering
+candidate; otherwise pivot to provider/runtime strategy and improve STT
+normalization before adding more punctuation or alias variants.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.

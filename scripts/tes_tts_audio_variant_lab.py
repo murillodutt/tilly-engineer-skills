@@ -228,6 +228,64 @@ def mixed_technical_english_grouped(text: str) -> str:
     return rendered
 
 
+def mixed_technical_canonical_english_chunked(text: str) -> str:
+    rendered = mixed_technical_clean_natural(text)
+    rendered = re.sub(
+        r"JSON, YAML, HTTP, Node JS, TypeScript, Python, Open AI API, Trie e Aho Corasick ficam como thresholds futuros\.",
+        (
+            "The English technical terms are JSON, YAML, HTTP, Node.js, TypeScript, Python, OpenAI API, Trie, Aho-Corasick, and thresholds.\n\n"
+            "Esses ficam como thresholds futuros."
+        ),
+        rendered,
+        flags=re.IGNORECASE,
+    )
+    rendered = re.sub(r"(?<=MCP\.)\s+", "\n\n", rendered)
+    rendered = re.sub(r"(?<=agora\.)\s+", "\n\n", rendered)
+    return rendered
+
+
+def mixed_technical_spelled_acronym_canonical_english(text: str) -> str:
+    rendered = mixed_technical_canonical_english_chunked(text)
+    rendered = re.sub(r"\bADR\b", "A D R", rendered)
+    rendered = re.sub(r"\bAPI\b", "A P I", rendered)
+    rendered = re.sub(r"\bSDK\b", "S D K", rendered)
+    rendered = re.sub(r"\bCLI\b", "C L I", rendered)
+    rendered = re.sub(r"\bMCP\b", "M C P", rendered)
+    return rendered
+
+
+def mixed_technical_semicolon_english_chunked(text: str) -> str:
+    rendered = mixed_technical_clean_natural(text)
+    rendered = re.sub(
+        r"JSON, YAML, HTTP, Node JS, TypeScript, Python, Open AI API, Trie e Aho Corasick ficam como thresholds futuros\.",
+        (
+            "The English technical terms are: JSON and YAML; HTTP; Node.js, TypeScript, and Python; "
+            "the OpenAI API; Trie, the data-structure name; Aho-Corasick, the algorithm name; and thresholds.\n\n"
+            "Esses ficam como thresholds futuros."
+        ),
+        rendered,
+        flags=re.IGNORECASE,
+    )
+    rendered = re.sub(r"(?<=MCP\.)\s+", "\n\n", rendered)
+    rendered = re.sub(r"(?<=agora\.)\s+", "\n\n", rendered)
+    return rendered
+
+
+def mixed_technical_pt_letter_names_semicolon_english(text: str) -> str:
+    rendered = mixed_technical_semicolon_english_chunked(text)
+    rendered = re.sub(
+        r"Teste real do TES TTS\. ADR\. zero zero zero quatro protege API, SDK, CLI\. e MCP\.",
+        (
+            "Teste real do TES TTS.\n\n"
+            "Siglas em português. A sigla a dê érre, zero zero zero quatro, protege as siglas a pê i, "
+            "ésse dê cá, cê éle i e ême cê pê."
+        ),
+        rendered,
+        flags=re.IGNORECASE,
+    )
+    return rendered
+
+
 def mixed_technical_problem_aliases(text: str) -> str:
     rendered = mixed_technical_clean_natural(text)
     rendered = re.sub(
@@ -235,6 +293,28 @@ def mixed_technical_problem_aliases(text: str) -> str:
         (
             "English technical terms: JSON, YAML, HTTP, Node JS, TypeScript, Python, and Open AI API.\n\n"
             "English problem terms: try, A ho Corasick, and thresholds.\n\n"
+            "Esses ficam como thresholds futuros."
+        ),
+        rendered,
+        flags=re.IGNORECASE,
+    )
+    rendered = re.sub(r"(?<=MCP\.)\s+", "\n\n", rendered)
+    rendered = re.sub(r"(?<=agora\.)\s+", "\n\n", rendered)
+    return rendered
+
+
+def mixed_technical_context_sentences(text: str) -> str:
+    rendered = mixed_technical_clean_natural(text)
+    rendered = re.sub(
+        r"JSON, YAML, HTTP, Node JS, TypeScript, Python, Open AI API, Trie e Aho Corasick ficam como thresholds futuros\.",
+        (
+            "English context: JSON and YAML are data formats.\n\n"
+            "English context: HTTP is the protocol.\n\n"
+            "English context: Node JS, TypeScript, and Python are runtime and language names.\n\n"
+            "English context: Open AI API is the interface name.\n\n"
+            "English context: Trie is a prefix tree.\n\n"
+            "English context: Aho Corasick is a string matching algorithm.\n\n"
+            "English context: thresholds are future limits.\n\n"
             "Esses ficam como thresholds futuros."
         ),
         rendered,
@@ -314,9 +394,24 @@ def build_variant_plan(source_text: str, variant: str) -> dict[str, Any]:
     if variant == "mixed_technical_english_grouped":
         text = mixed_technical_english_grouped(source_text)
         return {"text": text, "audit_text": text, "chunk_chars": 180, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_canonical_english_chunked":
+        text = mixed_technical_canonical_english_chunked(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 180, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_spelled_acronym_canonical_english":
+        text = mixed_technical_spelled_acronym_canonical_english(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 180, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_semicolon_english_chunked":
+        text = mixed_technical_semicolon_english_chunked(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 220, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_pt_letter_names_semicolon_english":
+        text = mixed_technical_pt_letter_names_semicolon_english(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 220, "text_mode": "redacted_source"}
     if variant == "mixed_technical_problem_aliases":
         text = mixed_technical_problem_aliases(source_text)
         return {"text": text, "audit_text": text, "chunk_chars": 180, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_context_sentences":
+        text = mixed_technical_context_sentences(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 140, "text_mode": "redacted_source"}
     if variant == "mixed_technical_cmu_hint":
         text = mixed_technical_cmu_hint(source_text)
         return {"text": text, "audit_text": text, "chunk_chars": 420, "text_mode": "redacted_source"}
@@ -811,12 +906,42 @@ def command_self_test(_args: argparse.Namespace) -> int:
     for expected in ("first group", "second group", "third group"):
         if expected not in english_grouped:
             failures.append(f"mixed English grouped transform missing {expected}")
+    canonical_chunked = mixed_technical_canonical_english_chunked(
+        "Teste real do TES-TTS: MCP. Não vamos usar SSML com suporte de provider agora. JSON., YAML., HTTP., Node.JS., TypeScript, Python, Open.AI. API., Trie e Aho Corasick ficam como thresholds futuros."
+    )
+    for expected in ("The English technical terms are", "Node.js", "OpenAI API", "Aho-Corasick"):
+        if expected not in canonical_chunked:
+            failures.append(f"mixed canonical English chunked transform missing {expected}")
+    spelled_canonical = mixed_technical_spelled_acronym_canonical_english(
+        "Teste real do TES-TTS: ADR. 0004 protege API., SDK., CLI. e MCP. Não vamos usar SSML com suporte de provider agora. JSON., YAML., HTTP., Node.JS., TypeScript, Python, Open.AI. API., Trie e Aho Corasick ficam como thresholds futuros."
+    )
+    for expected in ("A D R", "A P I", "S D K", "C L I", "M C P", "OpenAI A P I"):
+        if expected not in spelled_canonical:
+            failures.append(f"mixed spelled acronym canonical transform missing {expected}")
+    semicolon_chunked = mixed_technical_semicolon_english_chunked(
+        "Teste real do TES-TTS: MCP. Não vamos usar SSML com suporte de provider agora. JSON., YAML., HTTP., Node.JS., TypeScript, Python, Open.AI. API., Trie e Aho Corasick ficam como thresholds futuros."
+    )
+    for expected in ("JSON and YAML; HTTP;", "the OpenAI API", "Trie, the data-structure name", "Aho-Corasick, the algorithm name"):
+        if expected not in semicolon_chunked:
+            failures.append(f"mixed semicolon English chunked transform missing {expected}")
+    pt_letters = mixed_technical_pt_letter_names_semicolon_english(
+        "Teste real do TES-TTS: ADR. 0004 protege API., SDK., CLI. e MCP. Não vamos usar SSML com suporte de provider agora. JSON., YAML., HTTP., Node.JS., TypeScript, Python, Open.AI. API., Trie e Aho Corasick ficam como thresholds futuros."
+    )
+    for expected in ("Siglas em português", "a dê érre", "a pê i", "ésse dê cá", "ême cê pê"):
+        if expected not in pt_letters:
+            failures.append(f"mixed PT letter names transform missing {expected}")
     problem_aliases = mixed_technical_problem_aliases(
         "Teste real do TES-TTS: MCP. Não vamos usar SSML com suporte de provider agora. JSON., YAML., HTTP., Node.JS., TypeScript, Python, Open.AI. API., Trie e Aho Corasick ficam como thresholds futuros."
     )
     for expected in ("English problem terms", "try", "A ho Corasick"):
         if expected not in problem_aliases:
             failures.append(f"mixed problem alias transform missing {expected}")
+    context_sentences = mixed_technical_context_sentences(
+        "Teste real do TES-TTS: MCP. Não vamos usar SSML com suporte de provider agora. JSON., YAML., HTTP., Node.JS., TypeScript, Python, Open.AI. API., Trie e Aho Corasick ficam como thresholds futuros."
+    )
+    for expected in ("English context: JSON and YAML", "Aho Corasick is a string matching algorithm", "Esses ficam"):
+        if expected not in context_sentences:
+            failures.append(f"mixed context sentence transform missing {expected}")
     cmu = mixed_technical_cmu_hint("provider, Trie, Aho Corasick e thresholds")
     for expected in ("[P R AH0 V AY1 D ER0]", "[T R AY1]", "[AA1 HH OW0]", "[TH R EH1 SH OW2 L D Z]"):
         if expected not in cmu:
