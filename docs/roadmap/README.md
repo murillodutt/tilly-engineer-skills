@@ -71,17 +71,19 @@ Keep this root index short and partitioned:
   pointers; history files carry closed lineage.
 - Every update must reduce ambiguity for the next executor.
 
-Roadmap partition budgets are enforced by `scripts/validate_doc_size.py`:
+Roadmap partition budgets are enforced by `scripts/validate_doc_size.py`.
+Warning begins at 75% for governed roadmap partitions so maintenance happens
+before ambiguity accumulates:
 
 | Partition | Limit | Purpose |
 |-----------|-------|---------|
-| Root index | 160 lines | Active product lines only. |
-| Active dashboard | 150 lines | Current state, decisions, latest evidence, next cut. |
-| Registry | 220 lines | Stable artifact pointers and grouped ranges. |
-| History | 180 lines | Closed lineage and lessons. |
+| Root index | 140 lines | Active product lines only. |
+| Active dashboard | 120 lines | Current state, decisions, latest evidence, next cut. |
+| Registry | 160 lines | Stable artifact pointers and grouped ranges. |
+| History | 140 lines | Closed lineage and lessons. |
 
 When a dashboard reaches the warning zone, move detail to registry/history
-before adding new status. Ambiguous or repeated status is a defect, not
+before adding new status. Ambiguous, repeated, or stale status is a defect, not
 documentation.
 
 Roadmap updates must classify their status clearly:

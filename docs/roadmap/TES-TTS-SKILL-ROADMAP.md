@@ -10,94 +10,66 @@ evidence_level: L2
 # TES TTS Skill Roadmap
 
 This is the active dashboard for `tes-tts`: short, current, and
-decision-oriented. Historical detail and dense artifact listings live in
-`TES-TTS-SKILL-ROADMAP-REGISTRY.md` and
-`TES-TTS-SKILL-ROADMAP-HISTORY.md`. ADR 0004 remains the architectural
-boundary.
+decision-oriented. Dense pointers live in `TES-TTS-SKILL-ROADMAP-REGISTRY.md`;
+closed lineage lives in `TES-TTS-SKILL-ROADMAP-HISTORY.md`. ADR 0004 remains
+the architectural boundary.
 
-Partition contract:
+Partition contract: dashboard for state/decisions/evidence/next cut, registry
+for dense pointers, history for closed lineage, and `validate_doc_size.py` for
+budgets plus early warnings.
 
-- Dashboard: current state, active decisions, latest evidence, and next cut.
-- Registry: durable artifact lists and grouped historical ranges.
-- History: compressed lineage and lessons from closed sequences.
-- Gates: `validate_doc_size.py` enforces the dashboard and partition budgets.
+## State
 
-## Current State
+`tes-tts` is reactive delivered behavior only when explicitly requested. PT-BR
+is the primary quality target. The durable path is runtime-first speech
+preparation plus optional OmniVoice premium local synthesis; `say` with
+`Felipe (Enhanced)` at rate `255` remains the offline fallback.
 
-Current product position:
+Active surfaces are the local `.agents` workbench, Codex/Claude skill sources,
+runtime scripts and oracles, governed TTS benchmarks, optional OmniVoice facade,
+and ADR 0004. Dense pointers stay in `TES-TTS-SKILL-ROADMAP-REGISTRY.md`.
 
-- `tes-tts` is reactive delivered behavior only when explicitly requested.
-- Runtime-first direction is active: durable runtime slices beat
-  governance-only cycles.
-- PT-BR is the primary quality target.
-- OmniVoice is the current premium local provider path when the maintainer has
-  configured the optional external Python environment and reference voice.
-- `say` with `Felipe (Enhanced)` at rate `255` remains the offline fallback.
-- Release identity, sync, push, tag, publish, provider redistribution, global
-  config writes, and durable conversion cache remain unauthorized.
+Unauthorized until separate owner decision: release identity, sync, push, tag,
+publish, provider redistribution, global config writes, durable conversion
+cache, and proactive `speak`.
 
-## Active Product Surfaces
+## Decisions
 
-Active surfaces are `.agents/skills/tes-tts/**`, Codex and Claude
-`src/adapters/*/skills/tes-tts/**`, the dependency-free runtime scripts, the
-optional OmniVoice provider facade/oracle, governed TTS benchmarks, and ADR
-0004. Detailed registry: `TES-TTS-SKILL-ROADMAP-REGISTRY.md`.
-
-## Product Decisions
-
-- Reactive-only skill; no proactive `speak` behavior.
 - Source text is immutable; speech uses request-local prepared text.
 - Secrets are redacted before rendering and provider handoff.
 - PT-BR is platform narration; English/technical identity is preserved.
-- Runtime-first implementation beats governance-only cycles.
 - OmniVoice is optional local capability, not bundled dependency.
 - Version, release, sync, push, tag, and publish need separate approval.
 
-## Current Evidence
+## Evidence
 
-Latest local product evidence:
-
-- Recent commits: `eb44ce7` optional OmniVoice provider; `62fbc4b`
-  product shortcut.
+- Recent commits: `eb44ce7` optional OmniVoice provider; `62fbc4b` product
+  shortcut.
 - Maintainer live rating: OmniVoice cloned voice result `9.5`.
-- Local optional provider probe: `provider_available`; package remains
-  dependency-optional.
-- Package gate: `npm run commit:check` passed before the commit.
-- Product shortcut: `status` auto-discovers the local OmniVoice env/reference,
-  and `speak` delegates synthesis without long CLI arguments.
-- Product benchmark: `bench --play --open --package` writes WAVs, metrics,
-  review HTML, and ZIP manifest. `decide-review --review-json <exported-json>
-  --package` seals `review-decision.json`. `product-status --format text`
-  reports the provider cockpit for humans; `product-status --strict` gates
-  promotion unless the sealed state is `AUDIO_CANDIDATE`. Latest packaged run
-  produced `32.69s` of audio in `30.19s` total with average RTF `0.9422`;
-  decision-sealed package SHA starts `0206b249`.
+- Optional provider probe: `provider_available`.
+- `status` auto-discovers the local OmniVoice env/reference; `speak` delegates
+  synthesis without long CLI arguments.
+- `bench --play --open --package` writes WAVs, metrics, review HTML, and ZIP
+  manifest. `decide-review --review-json <exported-json> --package` seals
+  `review-decision.json`.
+- `product-status --format text --strict` gates promotion unless the sealed
+  state is `AUDIO_CANDIDATE`; latest packaged run: `32.69s` audio, `30.19s`
+  total, average RTF `0.9422`, package SHA starts `0206b249`.
 
-Relevant gates are the focused TTS provider/runtime/oracle suite,
-`materialize_adapter.py all --check`, TDS/doc-size/reference validators, and
-`npm run commit:check` when package closure is claimed.
+Relevant gates: focused TTS provider/runtime/oracle suite, materialization,
+TDS/doc-size/reference validators, and `npm run commit:check` for package
+closure.
 
-## Next Decisions
+## Next Cut
 
-Open decisions before public claims: release identity, provider redistribution
-and license posture, sync/push/tag/publish, and the next concrete audible
-quality or latency target.
-
-Recommended next product cut:
-
-1. Run `python3 scripts/tes_tts_omnivoice_provider.py bench --play --open --package`
-   and score audible quality by fixture in the generated review page.
-2. Export review JSON and run
-   `python3 scripts/tes_tts_omnivoice_provider.py decide-review --review-json <exported-json> --package`.
-3. Run `python3 scripts/tes_tts_omnivoice_provider.py product-status --format text --strict`.
-4. Decide whether the OmniVoice provider path is ready for release identity
-   planning or needs one targeted runtime/provider fix.
-5. Keep docs limited to this dashboard, registry/history pointers, and the
-   active audit result.
+Run `bench --play --open --package`, score audible quality by fixture, export
+review JSON, seal with `decide-review --review-json <json> --package`, then
+gate with `product-status --format text --strict`. The result decides release
+identity planning or one targeted provider/runtime fix.
 
 ## Maintenance Rules
 
-- Hard limit: 150 lines. Warning zone means partition before adding detail.
+- Hard limit: 120 lines. Warning zone starts at 90 lines.
 - Keep only current state, active decisions, next decisions, and latest
   evidence here.
 - Move dense artifact listings to `TES-TTS-SKILL-ROADMAP-REGISTRY.md`.

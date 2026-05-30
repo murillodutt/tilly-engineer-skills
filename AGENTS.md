@@ -37,6 +37,13 @@ record the current execution authority, the audit result, the next prompt when
 the sequence is not closed, and the smallest evidence pointer required for a
 future agent to continue without chat history.
 
+Roadmaps are executive control surfaces. Keep each roadmap partition organized,
+structured, and objective: current dashboard for state and next action, registry
+for durable pointers, history for closed lineage, and audit records for evidence.
+When a roadmap approaches its warning budget, partition or compact it before
+adding status. Repeated or ambiguous roadmap text is a defect to fix in the
+same execution cycle.
+
 </documentation_runtime_focus>
 
 <runtime_first_rule>
