@@ -981,6 +981,13 @@ documents:
     consumer: maintainers, tes-tts maintainers, runtime authors, and validation authors
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-python-script-optimization.md
+    id: roadmap.goal_super_spec_tes_tts_python_script_optimization
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, runtime authors, provider authors, and validation authors
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md
     id: roadmap.tes_tts_cap_001_portable_capability_feasibility
     class: roadmap

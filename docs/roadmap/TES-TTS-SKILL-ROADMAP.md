@@ -42,8 +42,9 @@ durable conversion cache, or proactive `speak`.
   reads; fallback remains request-local and honest.
 
 ## Next Cut
-Next: extract and optimize the direct/resident OmniVoice path without spending
-cycles on obsolete server execution. Keep `tmp/**` artifacts out of commits.
+Next: execute the Python script optimization line, starting with the
+direct/resident OmniVoice kernel extraction. The exact authority pointer is in
+the registry. Keep `tmp/**` artifacts out of commits.
 
 ## Maintenance Rules
 - Hard limit: 100 lines. Review zone starts at 75 lines.
