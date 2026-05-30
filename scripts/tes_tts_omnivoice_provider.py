@@ -17,10 +17,12 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import select
 import shutil
 import subprocess
 import sys
+import threading
 import time
 from typing import Any
 import zipfile
@@ -40,6 +42,8 @@ DEFAULT_BENCHMARK_CASES = ROOT / "benchmarks/tes-tts/omnivoice-provider-cases.js
 DEFAULT_LIVE_SMOKE_CASES = ROOT / "benchmarks/tes-tts/live-session-utterance-fixtures.json"
 DEFAULT_BENCHMARK_DIR = DEFAULT_CACHE_DIR / "benchmarks"
 DEFAULT_SESSION_DIR = DEFAULT_CACHE_DIR / "sessions"
+DEFAULT_LONG_READ_DIR = DEFAULT_CACHE_DIR / "long-reads"
+DEFAULT_RUNTIME_LOG_DIR = DEFAULT_CACHE_DIR / "runtime-logs"
 ENV_PYTHON = "TES_TTS_OMNIVOICE_PYTHON"
 ENV_REF_AUDIO = "TES_TTS_OMNIVOICE_REF_AUDIO"
 ENV_OUTPUT_DIR = "TES_TTS_OMNIVOICE_OUTPUT_DIR"
@@ -186,6 +190,19 @@ def default_session_dir(output_dir: str | None) -> Path:
         return Path(output_dir)
     stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     return DEFAULT_SESSION_DIR / stamp
+
+
+def default_long_read_dir(output_dir: str | None) -> Path:
+    if output_dir:
+        return Path(output_dir)
+    stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    return DEFAULT_LONG_READ_DIR / stamp
+
+
+def default_runtime_log_path(log_path: str | None, session_id: str) -> Path:
+    if log_path:
+        return Path(log_path)
+    return DEFAULT_RUNTIME_LOG_DIR / f"{session_id}.jsonl"
 
 
 def command_status(args: argparse.Namespace) -> int:
@@ -385,6 +402,98 @@ def wait_or_terminate(process: subprocess.Popen[str], timeout: float = 10.0) -> 
         except subprocess.TimeoutExpired:
             process.kill()
             process.wait(timeout=5)
+
+
+class RuntimeMonitor:
+    """Append-only runtime monitor for one OmniVoice operation."""
+
+    def __init__(self, log_path: Path, *, heartbeat_seconds: float) -> None:
+        self.log_path = log_path
+        self.heartbeat_seconds = max(1.0, heartbeat_seconds)
+        self.started = time.perf_counter()
+        self._stop = threading.Event()
+        self._lock = threading.Lock()
+        self._thread = threading.Thread(target=self._heartbeat_loop, name="tes-tts-omnivoice-monitor", daemon=True)
+
+    def start(self) -> None:
+        self.log_path.parent.mkdir(parents=True, exist_ok=True)
+        self.record("monitor_start")
+        self._thread.start()
+
+    def record(self, event: str, **payload: Any) -> None:
+        item = {
+            "ts": dt.datetime.now(dt.timezone.utc).isoformat(),
+            "elapsed_ms": round((time.perf_counter() - self.started) * 1000, 3),
+            "event": event,
+            **payload,
+        }
+        with self._lock:
+            with self.log_path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(item, ensure_ascii=False, separators=(",", ":")) + "\n")
+
+    def stop(self, status: str) -> None:
+        self.record("monitor_stop", status=status)
+        self._stop.set()
+        self._thread.join(timeout=2)
+
+    def _heartbeat_loop(self) -> None:
+        while not self._stop.wait(self.heartbeat_seconds):
+            self.record("heartbeat")
+
+
+def split_long_text(text: str, *, max_chars: int) -> list[str]:
+    max_chars = max(120, max_chars)
+    normalized = "\n\n".join(part.strip() for part in text.strip().splitlines() if part.strip())
+    if not normalized:
+        return []
+    chunks: list[str] = []
+    current = ""
+
+    def push(value: str) -> None:
+        cleaned = value.strip()
+        if cleaned:
+            chunks.append(cleaned)
+
+    def add_piece(piece: str) -> None:
+        nonlocal current
+        piece = piece.strip()
+        if not piece:
+            return
+        if len(piece) > max_chars:
+            if current:
+                push(current)
+                current = ""
+            split_oversized_piece(piece)
+            return
+        candidate = f"{current} {piece}".strip() if current else piece
+        if len(candidate) <= max_chars:
+            current = candidate
+        else:
+            push(current)
+            current = piece
+
+    def split_oversized_piece(piece: str) -> None:
+        words = piece.split()
+        bucket = ""
+        for word in words:
+            candidate = f"{bucket} {word}".strip() if bucket else word
+            if len(candidate) <= max_chars:
+                bucket = candidate
+            else:
+                push(bucket)
+                bucket = word
+        push(bucket)
+
+    for paragraph in re.split(r"\n\s*\n+", normalized):
+        sentences = re.split(r"(?<=[.!?;:])\s+", paragraph.strip())
+        for sentence in sentences:
+            add_piece(sentence)
+        if current:
+            push(current)
+            current = ""
+    if current:
+        push(current)
+    return chunks
 
 
 def live_smoke_package_files(result_json: Path) -> list[Path]:
@@ -1434,6 +1543,254 @@ def command_session(args: argparse.Namespace) -> int:
         return 0
     output_dir.mkdir(parents=True, exist_ok=True)
     return subprocess.run(command, check=False).returncode
+
+
+def command_speak_long(args: argparse.Namespace) -> int:
+    provider_python, python_source = resolve_provider_python(args.python)
+    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    output_dir = default_long_read_dir(args.output_dir)
+    session_id = output_dir.name
+    log_path = default_runtime_log_path(args.monitor_log, session_id)
+    result_json = output_dir / "result.json"
+    stderr_log = output_dir / "resident-stderr.log"
+    chunks = split_long_text(args.text, max_chars=args.chunk_chars)
+    if not ref_audio or not ref_audio.exists():
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "NEEDS_SETUP",
+                "version": VERSION,
+                "mode": "product_long_read",
+                "reason": "reference audio is required for OmniVoice long read",
+                "ref_audio": str(ref_audio) if ref_audio else None,
+                "ref_audio_source": ref_source,
+                "fallback_used": False,
+                "provider_exclusive": True,
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 2
+    if not chunks:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "FAIL",
+                "version": VERSION,
+                "mode": "product_long_read",
+                "reason": "text produced no speakable chunks",
+                "fallback_used": False,
+                "provider_exclusive": True,
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 1
+
+    command = [
+        provider_python,
+        str(Path(__file__).resolve()),
+        "serve",
+        *common_runtime_arg_tokens(args, ref_audio),
+        "--output-dir",
+        str(output_dir),
+    ]
+    if args.ref_text:
+        command.extend(["--ref-text", args.ref_text])
+    if args.prompt_cache:
+        command.extend(["--prompt-cache", args.prompt_cache])
+    if args.refresh_prompt:
+        command.append("--refresh-prompt")
+    if args.device:
+        command.extend(["--device", args.device])
+
+    if args.dry_run:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "DRY_RUN",
+                "version": VERSION,
+                "mode": "product_long_read",
+                "provider_python": provider_python,
+                "provider_python_source": python_source,
+                "ref_audio": str(ref_audio),
+                "ref_audio_source": ref_source,
+                "text_chars": len(args.text),
+                "chunk_count": len(chunks),
+                "chunk_chars": [len(chunk) for chunk in chunks],
+                "max_chunk_chars": args.chunk_chars,
+                "output_dir": str(output_dir),
+                "result_json": str(result_json),
+                "monitor_log": str(log_path),
+                "monitor_heartbeat_seconds": args.monitor_heartbeat,
+                "startup_timeout_seconds": args.startup_timeout,
+                "utterance_timeout_seconds": args.utterance_timeout,
+                "slow_chunk_ms": args.slow_chunk_ms,
+                "play_requested": args.play,
+                "latency_profile": args.latency_profile,
+                **latency_profile_metadata(args),
+                "num_step": args.num_step,
+                "protocol": "jsonl_stdin_stdout",
+                "resident_model": True,
+                "resident_voice_prompt": True,
+                "fallback_used": False,
+                "provider_exclusive": True,
+                "command_shape": redact_command_value(command, "--ref-text"),
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 0
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    monitor = RuntimeMonitor(log_path, heartbeat_seconds=args.monitor_heartbeat)
+    monitor.start()
+    monitor.record(
+        "long_read_start",
+        chunk_count=len(chunks),
+        text_chars=len(args.text),
+        output_dir=str(output_dir),
+        latency_profile=args.latency_profile,
+        num_step=args.num_step,
+        provider_exclusive=True,
+        fallback_used=False,
+    )
+    outputs: list[dict[str, Any]] = []
+    playback_results: list[dict[str, Any]] = []
+    startup_payload: dict[str, Any] | None = None
+    status = "PASS"
+    error: str | None = None
+    total_started = time.perf_counter()
+    process: subprocess.Popen[str] | None = None
+    with stderr_log.open("w", encoding="utf-8") as stderr_handle:
+        try:
+            process = subprocess.Popen(
+                command,
+                text=True,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=stderr_handle,
+            )
+            startup_payload = read_jsonl_payload(process, args.startup_timeout, "resident long-read startup")
+            monitor.record("startup", status=startup_payload.get("status"), startup=startup_payload)
+            if startup_payload.get("status") != "READY":
+                status = "FAIL"
+                error = "resident session did not become ready"
+            elif process.stdin is None:
+                status = "FAIL"
+                error = "resident session stdin is unavailable"
+            else:
+                for index, chunk in enumerate(chunks, start=1):
+                    chunk_id = f"chunk-{index:03d}"
+                    output = output_dir / f"{index:03d}-{chunk_id}.wav"
+                    request = {
+                        "id": chunk_id,
+                        "text": chunk,
+                        "language": args.language,
+                        "output": str(output),
+                    }
+                    monitor.record(
+                        "chunk_start",
+                        id=chunk_id,
+                        index=index,
+                        chunk_chars=len(chunk),
+                        output=str(output),
+                    )
+                    process.stdin.write(json.dumps(request, ensure_ascii=False, separators=(",", ":")) + "\n")
+                    process.stdin.flush()
+                    response = read_jsonl_payload(process, args.utterance_timeout, f"resident long-read {chunk_id}")
+                    outputs.append(response)
+                    monitor.record("chunk_result", id=chunk_id, status=response.get("status"), response=response)
+                    request_ms = response.get("request_total_ms")
+                    if isinstance(request_ms, (int, float)) and request_ms > args.slow_chunk_ms:
+                        monitor.record(
+                            "runtime_warning",
+                            id=chunk_id,
+                            class_="slow_chunk",
+                            request_total_ms=request_ms,
+                            slow_chunk_ms=args.slow_chunk_ms,
+                            suggested_fix="reduce chunk size or use a faster sealed latency profile",
+                        )
+                    if response.get("status") != "PASS":
+                        status = "FAIL"
+                        error = f"{chunk_id} failed"
+                        break
+                    if args.play:
+                        playback = playback_audio(output)
+                        playback_item = {"id": chunk_id, "output": str(output), **playback}
+                        playback_results.append(playback_item)
+                        monitor.record("playback_result", **playback_item)
+                        if playback.get("playback_status") != "played":
+                            status = "PLAYBACK_FAILED"
+                            error = f"{chunk_id} playback failed"
+                            break
+        except Exception as exc:
+            status = "FAIL"
+            error = str(exc)
+            monitor.record("runtime_error", error=error)
+        finally:
+            if process is not None:
+                wait_or_terminate(process)
+            monitor.record("long_read_end", status=status, error=error)
+            monitor.stop(status)
+
+    generation_values = [item.get("generation_ms") for item in outputs if isinstance(item.get("generation_ms"), (int, float))]
+    request_values = [item.get("request_total_ms") for item in outputs if isinstance(item.get("request_total_ms"), (int, float))]
+    duration_values = [
+        item.get("audio_duration_seconds") for item in outputs if isinstance(item.get("audio_duration_seconds"), (int, float))
+    ]
+    rtf_values = [item.get("rtf") for item in outputs if isinstance(item.get("rtf"), (int, float))]
+    payload = {
+        "provider": "omnivoice",
+        "status": status,
+        "version": VERSION,
+        "mode": "product_long_read",
+        "provider_python": provider_python,
+        "provider_python_source": python_source,
+        "ref_audio": str(ref_audio),
+        "ref_audio_source": ref_source,
+        "output_dir": str(output_dir),
+        "result_json": str(result_json),
+        "monitor_log": str(log_path),
+        "stderr_log": str(stderr_log),
+        "text_chars": len(args.text),
+        "chunk_count": len(chunks),
+        "completed_chunk_count": len(outputs),
+        "play_requested": args.play,
+        "startup": startup_payload,
+        "outputs": outputs,
+        "playback_results": playback_results,
+        "summary": {
+            "chunk_count": len(chunks),
+            "pass_count": sum(1 for item in outputs if item.get("status") == "PASS"),
+            "failed_count": sum(1 for item in outputs if item.get("status") != "PASS"),
+            "total_audio_duration_seconds": round(sum(duration_values), 3) if duration_values else None,
+            "total_generation_ms": round(sum(generation_values), 3) if generation_values else None,
+            "total_request_ms": round(sum(request_values), 3) if request_values else None,
+            "avg_rtf": round(sum(rtf_values) / len(rtf_values), 4) if rtf_values else None,
+            "wall_ms": round((time.perf_counter() - total_started) * 1000, 3),
+            "provider_timing_scope": "resident_long_read_local_optional_environment_only",
+        },
+        "latency_profile": args.latency_profile,
+        **latency_profile_metadata(args),
+        "num_step": args.num_step,
+        "resident_model": True,
+        "resident_voice_prompt": True,
+        "fallback_used": False,
+        "provider_exclusive": True,
+        "error": error,
+        "allows_install": False,
+        "allows_download": False,
+        "allows_global_config_write": False,
+    }
+    result_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    emit(payload)
+    if status == "PLAYBACK_FAILED":
+        return 4
+    return 0 if status == "PASS" else 1
 
 
 def command_live_smoke(args: argparse.Namespace) -> int:
@@ -2723,6 +3080,21 @@ def build_parser() -> argparse.ArgumentParser:
     speak.add_argument("--play", action="store_true")
     speak.add_argument("--dry-run", action="store_true")
     speak.set_defaults(func=command_speak)
+
+    speak_long = subparsers.add_parser("speak-long")
+    add_runtime_args(speak_long, ref_audio_required=False)
+    speak_long.add_argument("--python")
+    speak_long.add_argument("--text", required=True)
+    speak_long.add_argument("--output-dir")
+    speak_long.add_argument("--monitor-log")
+    speak_long.add_argument("--chunk-chars", type=int, default=420)
+    speak_long.add_argument("--startup-timeout", type=float, default=300.0)
+    speak_long.add_argument("--utterance-timeout", type=float, default=180.0)
+    speak_long.add_argument("--monitor-heartbeat", type=float, default=5.0)
+    speak_long.add_argument("--slow-chunk-ms", type=float, default=45000.0)
+    speak_long.add_argument("--play", action="store_true")
+    speak_long.add_argument("--dry-run", action="store_true")
+    speak_long.set_defaults(func=command_speak_long)
 
     session = subparsers.add_parser("session")
     add_runtime_args(session, ref_audio_required=False)

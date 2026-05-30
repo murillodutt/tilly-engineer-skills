@@ -165,6 +165,41 @@ REQUIRED_SESSION_DRY_RUN_KEYS = {
     "allows_download",
     "allows_global_config_write",
 }
+REQUIRED_LONG_READ_DRY_RUN_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "mode",
+    "provider_python",
+    "provider_python_source",
+    "ref_audio",
+    "ref_audio_source",
+    "text_chars",
+    "chunk_count",
+    "chunk_chars",
+    "max_chunk_chars",
+    "output_dir",
+    "result_json",
+    "monitor_log",
+    "monitor_heartbeat_seconds",
+    "startup_timeout_seconds",
+    "utterance_timeout_seconds",
+    "slow_chunk_ms",
+    "play_requested",
+    "latency_profile",
+    "requested_latency_profile",
+    "latency_profile_source",
+    "num_step",
+    "protocol",
+    "resident_model",
+    "resident_voice_prompt",
+    "fallback_used",
+    "provider_exclusive",
+    "command_shape",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
+}
 REQUIRED_LIVE_SMOKE_DRY_RUN_KEYS = {
     "provider",
     "status",
@@ -374,6 +409,7 @@ def run_status_and_dry_run() -> tuple[
     dict[str, Any] | None,
     dict[str, Any] | None,
     dict[str, Any] | None,
+    dict[str, Any] | None,
     list[str],
 ]:
     failures: list[str] = []
@@ -432,6 +468,36 @@ def run_status_and_dry_run() -> tuple[
         except json.JSONDecodeError as exc:
             failures.append(f"speak dry-run did not emit JSON: {exc}")
             dry_payload = None
+
+        long_read_completed = subprocess.run(
+            [
+                sys.executable,
+                str(PROVIDER_SCRIPT),
+                "speak-long",
+                "--text",
+                (
+                    "Primeiro bloco com ADR e OmniVoice precisa ser preservado sem fallback. "
+                    "Segundo bloco confirma que o monitor registra eventos de runtime sem vazar texto. "
+                    "Terceiro bloco prova que a leitura longa segue pela sessão residente."
+                ),
+                "--chunk-chars",
+                "120",
+                "--play",
+                "--dry-run",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            env=env,
+        )
+        if long_read_completed.returncode != 0:
+            failures.append(f"speak-long dry-run returned unexpected exit code {long_read_completed.returncode}")
+        try:
+            long_read_payload = json.loads(long_read_completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"speak-long dry-run did not emit JSON: {exc}")
+            long_read_payload = None
 
         bench_completed = subprocess.run(
             [
@@ -530,7 +596,16 @@ def run_status_and_dry_run() -> tuple[
         except json.JSONDecodeError as exc:
             failures.append(f"package-review dry-run did not emit JSON: {exc}")
             package_payload = None
-    return status_payload, dry_payload, bench_payload, profile_review_payload, review_payload, package_payload, failures
+    return (
+        status_payload,
+        dry_payload,
+        long_read_payload,
+        bench_payload,
+        profile_review_payload,
+        review_payload,
+        package_payload,
+        failures,
+    )
 
 
 def validate_status_payload(payload: dict[str, Any] | None) -> list[str]:
@@ -585,6 +660,43 @@ def validate_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
             failures.append("speak dry-run leaked source text in command_shape")
         if "<redacted>" not in command_shape:
             failures.append("speak dry-run must redact command text")
+    return failures
+
+
+def validate_long_read_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
+    if payload is None:
+        return []
+    failures: list[str] = []
+    missing = sorted(REQUIRED_LONG_READ_DRY_RUN_KEYS - set(payload))
+    extra = sorted(set(payload) - REQUIRED_LONG_READ_DRY_RUN_KEYS)
+    if missing:
+        failures.append(f"speak-long dry-run missing keys {missing}")
+    if extra:
+        failures.append(f"speak-long dry-run has extra keys {extra}")
+    if payload.get("status") != "DRY_RUN":
+        failures.append("speak-long dry-run status drifted")
+    if payload.get("mode") != "product_long_read":
+        failures.append("speak-long dry-run mode drifted")
+    if payload.get("fallback_used") is not False:
+        failures.append("speak-long must not use fallback")
+    if payload.get("provider_exclusive") is not True:
+        failures.append("speak-long must be OmniVoice-exclusive")
+    if payload.get("resident_model") is not True or payload.get("resident_voice_prompt") is not True:
+        failures.append("speak-long must use the resident runtime path")
+    if payload.get("chunk_count", 0) < 2:
+        failures.append("speak-long fixture should prove chunking")
+    if payload.get("play_requested") is not True:
+        failures.append("speak-long dry-run must report playback intent")
+    monitor_log = payload.get("monitor_log")
+    if not isinstance(monitor_log, str) or "runtime-logs" not in monitor_log:
+        failures.append("speak-long dry-run must point to the exclusive runtime log")
+    command_shape = payload.get("command_shape")
+    if not isinstance(command_shape, list):
+        failures.append("speak-long dry-run command_shape must be a list")
+    else:
+        joined = " ".join(str(part) for part in command_shape)
+        if "Primeiro bloco" in joined or "Segundo bloco" in joined:
+            failures.append("speak-long dry-run leaked source text in command_shape")
     return failures
 
 
@@ -1856,6 +1968,7 @@ def main() -> int:
     (
         status_payload,
         dry_payload,
+        long_read_payload,
         bench_payload,
         profile_review_payload,
         review_payload,
@@ -1865,6 +1978,7 @@ def main() -> int:
     failures.extend(shortcut_failures)
     failures.extend(validate_status_payload(status_payload))
     failures.extend(validate_dry_run_payload(dry_payload))
+    failures.extend(validate_long_read_dry_run_payload(long_read_payload))
     failures.extend(validate_bench_dry_run_payload(bench_payload))
     failures.extend(validate_profile_review_dry_run_payload(profile_review_payload))
     failures.extend(validate_warm_cache_dry_run_command())
@@ -1893,6 +2007,7 @@ def main() -> int:
                 "probe_status": probe.get("status") if probe else None,
                 "status_command": status_payload.get("status") if status_payload else None,
                 "speak_dry_run": dry_payload.get("status") if dry_payload else None,
+                "speak_long_dry_run": long_read_payload.get("status") if long_read_payload else None,
                 "bench_dry_run": bench_payload.get("status") if bench_payload else None,
                 "profile_review_dry_run": profile_review_payload.get("status") if profile_review_payload else None,
                 "review_dry_run": review_payload.get("status") if review_payload else None,

@@ -34,8 +34,8 @@ durable cache, or proactive `speak`.
 - Sealed profile review selected `fast` as the current auto latency profile.
 - Latest live-smoke review package passed: 3 WAVs, `review.html`, ZIP package,
   avg RTF `0.3864`, package SHA starts `eafb9419`.
-- `decide-review --path <live review>` classifies unscored live-smoke reviews
-  as `PENDING_REVIEW` and can seal scored decisions into the live-smoke ZIP.
+- Long-read OmniVoice correction passed: 12 chunks played, `avg_rtf=0.2067`,
+  `fallback_used=false`, monitor log under `tmp/**/runtime-logs`.
 
 ## Next Cut
 Score the 3-case live review, export JSON, then seal the decision with
