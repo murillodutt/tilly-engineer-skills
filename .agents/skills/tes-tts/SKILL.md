@@ -40,7 +40,8 @@ compatible TES intent alias if the host reports it as an invalid slash.
    If a community OpenAI-compatible OmniVoice server may be running, check it
    first with
    `python3 scripts/tes_tts_omnivoice_provider.py server-status --server-url <url>`.
-   If it reports `SERVER_AVAILABLE`, use
+   This checks TCP plus a community-style `/health` endpoint when available,
+   without generating audio. If it reports `SERVER_AVAILABLE`, use
    `python3 scripts/tes_tts_omnivoice_provider.py speak-server --server-url <url> --text "<text>" --output <wav>`
    for one utterance, or `speak-long-server` for chunked review; this route
    never installs providers, downloads models, or writes global config.

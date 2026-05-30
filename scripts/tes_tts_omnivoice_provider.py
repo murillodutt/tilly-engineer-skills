@@ -192,7 +192,27 @@ def server_audio_speech_endpoint(base_url: str) -> str:
     normalized = base_url.rstrip("/")
     if normalized.endswith("/v1/audio/speech"):
         return normalized
+    if normalized.endswith("/audio/speech"):
+        return normalized
+    if normalized.endswith("/v1"):
+        return f"{normalized}/audio/speech"
     return f"{normalized}/v1/audio/speech"
+
+
+def server_health_endpoint(base_url: str, health_path: str) -> str | None:
+    if not health_path:
+        return None
+    normalized = base_url.rstrip("/")
+    if normalized.endswith("/v1/audio/speech"):
+        parsed = urllib.parse.urlparse(normalized)
+        prefix = parsed.path.removesuffix("/v1/audio/speech")
+        normalized = urllib.parse.urlunparse(parsed._replace(path=prefix or ""))
+    elif normalized.endswith("/v1"):
+        parsed = urllib.parse.urlparse(normalized)
+        prefix = parsed.path.removesuffix("/v1")
+        normalized = urllib.parse.urlunparse(parsed._replace(path=prefix or ""))
+    path = health_path if health_path.startswith("/") else f"/{health_path}"
+    return f"{normalized}{path}"
 
 
 def server_tcp_target(server_url: str) -> tuple[str, int, str]:
@@ -227,6 +247,54 @@ def check_server_tcp(server_url: str, timeout: float) -> tuple[bool, dict[str, A
         "connect_ms": round((time.perf_counter() - started) * 1000, 3),
         "reason": None,
     }
+
+
+def check_server_health(
+    *,
+    health_url: str | None,
+    api_key_env: str,
+    timeout: float,
+) -> dict[str, Any]:
+    if health_url is None:
+        return {"status": "SKIPPED", "url": None, "http_status": None, "content_type": None, "body_preview": None}
+    headers = {"Accept": "application/json,text/plain,*/*"}
+    api_key = os.environ.get(api_key_env)
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    request = urllib.request.Request(health_url, headers=headers, method="GET")
+    started = time.perf_counter()
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            body = response.read(512).decode("utf-8", errors="replace")
+            return {
+                "status": "HEALTH_OK",
+                "url": health_url,
+                "http_status": getattr(response, "status", response.getcode()),
+                "content_type": response.headers.get("Content-Type"),
+                "body_preview": body,
+                "latency_ms": round((time.perf_counter() - started) * 1000, 3),
+            }
+    except urllib.error.HTTPError as exc:
+        body = exc.read(512).decode("utf-8", errors="replace")
+        status = "HEALTH_NOT_IMPLEMENTED" if exc.code in {404, 405} else "HEALTH_HTTP_ERROR"
+        return {
+            "status": status,
+            "url": health_url,
+            "http_status": exc.code,
+            "content_type": exc.headers.get("Content-Type") if exc.headers else None,
+            "body_preview": body,
+            "latency_ms": round((time.perf_counter() - started) * 1000, 3),
+        }
+    except urllib.error.URLError as exc:
+        return {
+            "status": "HEALTH_UNAVAILABLE",
+            "url": health_url,
+            "http_status": None,
+            "content_type": None,
+            "body_preview": None,
+            "latency_ms": round((time.perf_counter() - started) * 1000, 3),
+            "reason": str(exc.reason if hasattr(exc, "reason") else exc),
+        }
 
 
 def server_request_body(args: argparse.Namespace, text: str) -> dict[str, Any]:
@@ -352,6 +420,7 @@ def command_status(args: argparse.Namespace) -> int:
 def command_server_status(args: argparse.Namespace) -> int:
     server_url, server_url_source = resolve_server_url(args.server_url)
     endpoint = server_audio_speech_endpoint(server_url)
+    health_url = server_health_endpoint(server_url, args.health_path)
     api_key_present = bool(os.environ.get(args.api_key_env))
     base_payload = {
         "provider": "omnivoice",
@@ -360,32 +429,53 @@ def command_server_status(args: argparse.Namespace) -> int:
         "server_url": server_url,
         "server_url_source": server_url_source,
         "endpoint": endpoint,
+        "health_url": health_url,
         "api_key_env": args.api_key_env,
         "api_key_present": api_key_present,
         "timeout_seconds": args.timeout,
         "runtime_dependency": "optional_local_openai_compatible_http_server",
-        "probe_scope": "tcp_connect_only_no_synthesis",
+        "probe_scope": "tcp_connect_plus_optional_health_no_synthesis",
         "allows_install": False,
         "allows_download": False,
         "allows_global_config_write": False,
     }
     if args.dry_run:
-        emit({**base_payload, "status": "DRY_RUN", "connectivity": None})
+        emit({**base_payload, "status": "DRY_RUN", "connectivity": None, "health": None})
         return 0
 
     try:
         available, connectivity = check_server_tcp(server_url, timeout=args.timeout)
     except ValueError as exc:
-        emit({**base_payload, "status": "NEEDS_REVIEW", "connectivity": None, "reason": str(exc)})
+        emit({**base_payload, "status": "NEEDS_REVIEW", "connectivity": None, "health": None, "reason": str(exc)})
         return 1
+    if not available:
+        emit(
+            {
+                **base_payload,
+                "status": "SERVER_UNAVAILABLE",
+                "connectivity": connectivity,
+                "health": None,
+            }
+        )
+        return 2
+
+    health = check_server_health(health_url=health_url, api_key_env=args.api_key_env, timeout=args.timeout)
+    health_status = health.get("status")
+    if health_status in {"HEALTH_HTTP_ERROR", "HEALTH_UNAVAILABLE"}:
+        status = "SERVER_DEGRADED"
+        exit_code = 3
+    else:
+        status = "SERVER_AVAILABLE"
+        exit_code = 0
     emit(
         {
             **base_payload,
-            "status": "SERVER_AVAILABLE" if available else "SERVER_UNAVAILABLE",
+            "status": status,
             "connectivity": connectivity,
+            "health": health,
         }
     )
-    return 0 if available else 2
+    return exit_code
 
 
 def common_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path) -> list[str]:
@@ -3694,6 +3784,7 @@ def build_parser() -> argparse.ArgumentParser:
     server_status.add_argument("--server-url")
     server_status.add_argument("--api-key-env", default=ENV_SERVER_API_KEY)
     server_status.add_argument("--timeout", type=float, default=1.0)
+    server_status.add_argument("--health-path", default="/health")
     server_status.add_argument("--dry-run", action="store_true")
     server_status.set_defaults(func=command_server_status)
 

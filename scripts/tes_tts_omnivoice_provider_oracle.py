@@ -136,12 +136,14 @@ REQUIRED_SERVER_STATUS_KEYS = {
     "server_url",
     "server_url_source",
     "endpoint",
+    "health_url",
     "api_key_env",
     "api_key_present",
     "timeout_seconds",
     "runtime_dependency",
     "probe_scope",
     "connectivity",
+    "health",
     "allows_install",
     "allows_download",
     "allows_global_config_write",
@@ -794,10 +796,38 @@ def validate_server_route_command() -> list[str]:
             failures.append(f"server-status dry-run has extra keys {extra}")
         if status_dry_payload.get("status") != "DRY_RUN":
             failures.append("server-status dry-run status drifted")
-        if status_dry_payload.get("probe_scope") != "tcp_connect_only_no_synthesis":
-            failures.append("server-status must stay a no-synthesis TCP preflight")
+        if status_dry_payload.get("probe_scope") != "tcp_connect_plus_optional_health_no_synthesis":
+            failures.append("server-status must stay a no-synthesis TCP/health preflight")
         if status_dry_payload.get("endpoint") != "http://127.0.0.1:9999/v1/audio/speech":
             failures.append("server-status must derive OpenAI-compatible speech endpoint")
+        if status_dry_payload.get("health_url") != "http://127.0.0.1:9999/health":
+            failures.append("server-status must derive community health endpoint")
+        v1_dry_completed = subprocess.run(
+            [
+                sys.executable,
+                str(PROVIDER_SCRIPT),
+                "server-status",
+                "--server-url",
+                "http://127.0.0.1:9999/v1",
+                "--dry-run",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if v1_dry_completed.returncode != 0:
+            failures.append(f"server-status /v1 dry-run returned unexpected exit code {v1_dry_completed.returncode}")
+            return failures
+        try:
+            v1_dry_payload = json.loads(v1_dry_completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"server-status /v1 dry-run did not emit JSON: {exc}")
+            return failures
+        if v1_dry_payload.get("endpoint") != "http://127.0.0.1:9999/v1/audio/speech":
+            failures.append("server-status must not duplicate /v1 for speech endpoint")
+        if v1_dry_payload.get("health_url") != "http://127.0.0.1:9999/health":
+            failures.append("server-status /v1 base must derive root health endpoint")
         for key in ("allows_install", "allows_download", "allows_global_config_write"):
             if status_dry_payload.get(key) is not False:
                 failures.append(f"server-status dry-run must keep {key}=false")
@@ -918,6 +948,18 @@ def validate_server_route_command() -> list[str]:
         requests: list[dict[str, Any]] = []
 
         class Handler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self) -> None:  # noqa: N802 - stdlib handler API
+                if self.path != "/health":
+                    self.send_response(404)
+                    self.end_headers()
+                    return
+                body = b'{"status":"ok"}'
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
             def do_POST(self) -> None:  # noqa: N802 - stdlib handler API
                 length = int(self.headers.get("Content-Length", "0"))
                 body = self.rfile.read(length)
@@ -996,7 +1038,10 @@ def validate_server_route_command() -> list[str]:
         connectivity = status_payload.get("connectivity")
         if not isinstance(connectivity, dict) or connectivity.get("port") != port:
             failures.append("server-status must report TCP connectivity details")
-        if status_payload.get("probe_scope") != "tcp_connect_only_no_synthesis":
+        health = status_payload.get("health")
+        if not isinstance(health, dict) or health.get("status") != "HEALTH_OK":
+            failures.append("server-status must report successful community health check")
+        if status_payload.get("probe_scope") != "tcp_connect_plus_optional_health_no_synthesis":
             failures.append("server-status mock server probe scope drifted")
         if completed.returncode != 0:
             failures.append(f"speak-server mock request returned unexpected exit code {completed.returncode}")
