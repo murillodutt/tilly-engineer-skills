@@ -44,7 +44,10 @@ compatible TES intent alias if the host reports it as an invalid slash.
    without generating audio. If it reports `SERVER_AVAILABLE`, use
    `python3 scripts/tes_tts_omnivoice_provider.py speak-server --server-url <url> --text "<text>" --output <wav>`
    for one utterance, or `speak-long-server` for chunked review; this route
-   never installs providers, downloads models, or writes global config.
+   never installs providers, downloads models, or writes global config. When a
+   community server exposes compatible controls, pass request-local
+   `--speaker`, `--instructions`, `--stream`/`--no-stream`, and `--num-step`
+   only for the current synthesis; dry-runs redact instructions.
    If it returns `ready`, prefer
    `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<text>" --play`
    for premium cloned-voice reads, while preserving `say` as the local

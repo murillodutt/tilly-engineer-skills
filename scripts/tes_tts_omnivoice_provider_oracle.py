@@ -88,6 +88,10 @@ REQUIRED_SERVER_DRY_RUN_KEYS = {
     "api_key_present",
     "model",
     "voice",
+    "speaker",
+    "instructions_present",
+    "stream_requested",
+    "num_step",
     "output",
     "text_chars",
     "play_requested",
@@ -109,6 +113,10 @@ REQUIRED_SERVER_LONG_DRY_RUN_KEYS = {
     "api_key_present",
     "model",
     "voice",
+    "speaker",
+    "instructions_present",
+    "stream_requested",
+    "num_step",
     "text_chars",
     "chunk_count",
     "chunk_chars",
@@ -861,6 +869,13 @@ def validate_server_route_command() -> list[str]:
                 "omnivoice",
                 "--voice",
                 "felipe-clone",
+                "--speaker",
+                "felipe-clone",
+                "--instructions",
+                "Leia em PT-BR preservando termos tecnicos em ingles.",
+                "--stream",
+                "--num-step",
+                "8",
                 "--text",
                 "API_KEY=abc123SECRET deve ficar fora do dry-run.",
                 "--output",
@@ -898,8 +913,20 @@ def validate_server_route_command() -> list[str]:
         request_shape = dry_payload.get("request_shape")
         if not isinstance(request_shape, dict) or request_shape.get("input") != "<redacted>":
             failures.append("speak-server dry-run must redact request input")
+        elif request_shape.get("instructions") != "<redacted>":
+            failures.append("speak-server dry-run must redact server instructions")
+        if dry_payload.get("speaker") != "felipe-clone":
+            failures.append("speak-server dry-run must report speaker control field")
+        if dry_payload.get("instructions_present") is not True:
+            failures.append("speak-server dry-run must report instructions without leaking them")
+        if dry_payload.get("stream_requested") is not True:
+            failures.append("speak-server dry-run must report stream intent")
+        if dry_payload.get("num_step") != 8:
+            failures.append("speak-server dry-run must report num_step control field")
         if "abc123SECRET" in dry_completed.stdout or "API_KEY=" in dry_completed.stdout:
             failures.append("speak-server dry-run leaked source text")
+        if "preservando termos tecnicos" in dry_completed.stdout:
+            failures.append("speak-server dry-run leaked instruction text")
         for key in ("allows_install", "allows_download", "allows_global_config_write"):
             if dry_payload.get(key) is not False:
                 failures.append(f"speak-server dry-run must keep {key}=false")
@@ -911,6 +938,13 @@ def validate_server_route_command() -> list[str]:
                 "speak-long-server",
                 "--server-url",
                 "http://127.0.0.1:9999",
+                "--speaker",
+                "felipe-clone",
+                "--instructions",
+                "Mantenha ingles tecnico natural.",
+                "--no-stream",
+                "--num-step",
+                "12",
                 "--text",
                 (
                     "Primeiro bloco em PT-BR com ADR e API.\n\n"
@@ -946,12 +980,25 @@ def validate_server_route_command() -> list[str]:
             failures.append(f"speak-long-server dry-run has extra keys {extra}")
         if long_dry_payload.get("mode") != "product_server_long_read":
             failures.append("speak-long-server dry-run mode drifted")
+        if long_dry_payload.get("speaker") != "felipe-clone":
+            failures.append("speak-long-server dry-run must report speaker control field")
+        if long_dry_payload.get("instructions_present") is not True:
+            failures.append("speak-long-server dry-run must report instructions without leaking them")
+        if long_dry_payload.get("stream_requested") is not False:
+            failures.append("speak-long-server dry-run must report disabled stream intent")
+        if long_dry_payload.get("num_step") != 12:
+            failures.append("speak-long-server dry-run must report num_step control field")
+        long_request_shape = long_dry_payload.get("request_shape")
+        if not isinstance(long_request_shape, dict) or long_request_shape.get("instructions") != "<redacted>":
+            failures.append("speak-long-server dry-run must redact server instructions")
         if long_dry_payload.get("chunk_languages") != ["pt", "en", "pt"]:
             failures.append("speak-long-server must preserve PT/EN/PT chunk language plan")
         if long_dry_payload.get("combine_requested") is not True:
             failures.append("speak-long-server dry-run must report combine intent")
         if "English technical terms" in long_dry_completed.stdout:
             failures.append("speak-long-server dry-run leaked source text")
+        if "Mantenha ingles tecnico" in long_dry_completed.stdout:
+            failures.append("speak-long-server dry-run leaked instruction text")
         if long_dry_payload.get("fallback_used") is not False:
             failures.append("speak-long-server dry-run fallback flag drifted")
         if long_dry_payload.get("provider_exclusive") is not True:
@@ -1036,6 +1083,13 @@ def validate_server_route_command() -> list[str]:
                     "omnivoice",
                     "--voice",
                     "felipe-clone",
+                    "--speaker",
+                    "felipe-clone",
+                    "--instructions",
+                    "Preserve JSON and TypeScript.",
+                    "--stream",
+                    "--num-step",
+                    "8",
                     "--text",
                     "Teste real do TES TTS com JSON e TypeScript.",
                     "--output",
@@ -1112,8 +1166,17 @@ def validate_server_route_command() -> list[str]:
                 failures.append("speak-server request body lost model or voice")
             if body.get("input") != "Teste real do TES TTS com JSON e TypeScript.":
                 failures.append("speak-server request body lost input text")
+            if body.get("speaker") != "felipe-clone":
+                failures.append("speak-server request body lost speaker")
+            if body.get("instructions") != "Preserve JSON and TypeScript.":
+                failures.append("speak-server request body lost instructions")
+            if body.get("stream") is not True:
+                failures.append("speak-server request body lost stream intent")
+            if body.get("num_step") != 8:
+                failures.append("speak-server request body lost num_step")
 
         long_output_dir = root / "server-long-real"
+        requests.clear()
         with socketserver.TCPServer(("127.0.0.1", 0), Handler) as server:
             port = server.server_address[1]
             thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -1125,6 +1188,13 @@ def validate_server_route_command() -> list[str]:
                     "speak-long-server",
                     "--server-url",
                     f"http://127.0.0.1:{port}",
+                    "--speaker",
+                    "felipe-clone",
+                    "--instructions",
+                    "Keep English terms stable.",
+                    "--no-stream",
+                    "--num-step",
+                    "12",
                     "--text",
                     "Primeiro bloco com API.\n\nEnglish technical terms: JSON, TypeScript, and thresholds.",
                     "--chunk-chars",
@@ -1166,6 +1236,22 @@ def validate_server_route_command() -> list[str]:
             failures.append("speak-long-server must report chunk outputs")
         elif any(item.get("audio_duration_seconds") is None for item in outputs):
             failures.append("speak-long-server must measure WAV duration when server returns WAV")
+        if not requests:
+            failures.append("speak-long-server mock did not send any chunk requests")
+        else:
+            for index, request in enumerate(requests, start=1):
+                request_body = request.get("body")
+                if not isinstance(request_body, dict):
+                    failures.append(f"speak-long-server chunk {index} did not send JSON body")
+                    continue
+                if request_body.get("speaker") != "felipe-clone":
+                    failures.append(f"speak-long-server chunk {index} lost speaker")
+                if request_body.get("instructions") != "Keep English terms stable.":
+                    failures.append(f"speak-long-server chunk {index} lost instructions")
+                if request_body.get("stream") is not False:
+                    failures.append(f"speak-long-server chunk {index} lost disabled stream intent")
+                if request_body.get("num_step") != 12:
+                    failures.append(f"speak-long-server chunk {index} lost num_step")
         for key in ("allows_install", "allows_download", "allows_global_config_write"):
             if payload.get(key) is not False:
                 failures.append(f"speak-server mock request must keep {key}=false")

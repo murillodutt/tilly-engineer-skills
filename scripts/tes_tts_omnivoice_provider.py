@@ -462,14 +462,24 @@ def server_request_body(args: argparse.Namespace, text: str) -> dict[str, Any]:
         "voice": args.voice,
         "response_format": "wav",
     }
+    if getattr(args, "speaker", None):
+        payload["speaker"] = args.speaker
+    if getattr(args, "instructions", None):
+        payload["instructions"] = args.instructions
     if getattr(args, "speed", None) is not None:
         payload["speed"] = args.speed
+    if getattr(args, "stream", None) is not None:
+        payload["stream"] = args.stream
+    if getattr(args, "num_step", None) is not None:
+        payload["num_step"] = args.num_step
     return payload
 
 
 def server_request_shape(args: argparse.Namespace) -> dict[str, Any]:
     shape = server_request_body(args, "<redacted>")
     shape["input"] = "<redacted>"
+    if "instructions" in shape:
+        shape["instructions"] = "<redacted>"
     return shape
 
 
@@ -2777,6 +2787,10 @@ def command_speak_server(args: argparse.Namespace) -> int:
                 "api_key_present": api_key_present,
                 "model": args.model,
                 "voice": args.voice,
+                "speaker": args.speaker,
+                "instructions_present": bool(args.instructions),
+                "stream_requested": args.stream,
+                "num_step": args.num_step,
                 "output": str(output),
                 "text_chars": len(args.text),
                 "play_requested": args.play,
@@ -2834,6 +2848,10 @@ def command_speak_server(args: argparse.Namespace) -> int:
         "content_type": content_type,
         "model": args.model,
         "voice": args.voice,
+        "speaker": args.speaker,
+        "instructions_present": bool(args.instructions),
+        "stream_requested": args.stream,
+        "num_step": args.num_step,
         "output": str(output),
         "bytes": len(audio),
         "generation_ms": generation_ms,
@@ -2887,6 +2905,10 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
                 "api_key_present": api_key_present,
                 "model": args.model,
                 "voice": args.voice,
+                "speaker": args.speaker,
+                "instructions_present": bool(args.instructions),
+                "stream_requested": args.stream,
+                "num_step": args.num_step,
                 "text_chars": len(args.text),
                 "chunk_count": len(chunk_plan),
                 "chunk_chars": [chunk["chars"] for chunk in chunk_plan],
@@ -2990,6 +3012,10 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
         "endpoint": endpoint,
         "model": args.model,
         "voice": args.voice,
+        "speaker": args.speaker,
+        "instructions_present": bool(args.instructions),
+        "stream_requested": args.stream,
+        "num_step": args.num_step,
         "output_dir": str(output_dir),
         "result_json": str(result_json),
         "text_chars": len(args.text),
@@ -4010,7 +4036,11 @@ def build_parser() -> argparse.ArgumentParser:
     speak_server.add_argument("--api-key-env", default=ENV_SERVER_API_KEY)
     speak_server.add_argument("--model", default="omnivoice")
     speak_server.add_argument("--voice", default="default")
+    speak_server.add_argument("--speaker")
+    speak_server.add_argument("--instructions")
     speak_server.add_argument("--speed", type=float)
+    speak_server.add_argument("--stream", action=argparse.BooleanOptionalAction, default=None)
+    speak_server.add_argument("--num-step", type=int)
     speak_server.add_argument("--text", required=True)
     speak_server.add_argument("--output")
     speak_server.add_argument("--timeout", type=float, default=180.0)
@@ -4023,7 +4053,11 @@ def build_parser() -> argparse.ArgumentParser:
     speak_long_server.add_argument("--api-key-env", default=ENV_SERVER_API_KEY)
     speak_long_server.add_argument("--model", default="omnivoice")
     speak_long_server.add_argument("--voice", default="default")
+    speak_long_server.add_argument("--speaker")
+    speak_long_server.add_argument("--instructions")
     speak_long_server.add_argument("--speed", type=float)
+    speak_long_server.add_argument("--stream", action=argparse.BooleanOptionalAction, default=None)
+    speak_long_server.add_argument("--num-step", type=int)
     speak_long_server.add_argument("--language", default=AUTO_LANGUAGE)
     speak_long_server.add_argument("--text", required=True)
     speak_long_server.add_argument("--output-dir")
