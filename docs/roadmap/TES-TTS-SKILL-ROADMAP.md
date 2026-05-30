@@ -36,10 +36,14 @@ durable cache, or proactive `speak`.
   avg RTF `0.3864`, package SHA starts `eafb9419`.
 - Long-read OmniVoice correction passed: 12 chunks played, `avg_rtf=0.2067`,
   `fallback_used=false`, monitor log under `tmp/**/runtime-logs`.
+- Audio audit loop started: preserved chunk text, WAV metrics, local Whisper
+  STT, and WER-style comparison show chunk 1 acceptable while longer mixed
+  technical chunks need targeted segmentation/rendering fixes.
 
 ## Next Cut
-Score the 3-case live review, export JSON, then seal the decision with
-`decide-review --path <review.html> --review-json <json> --package`.
+Use `scripts/tes_tts_audio_audit.py audit-session --stt` on preserved
+OmniVoice sessions, then iterate smaller chunks and mixed-language rendering
+until degraded chunks reach audible review quality.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.
