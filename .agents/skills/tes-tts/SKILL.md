@@ -6,187 +6,88 @@ license: MIT
 
 # TES TTS
 
-Operational contract: `tes.tts@0.1.21`.
+Operational contract: `tes.tts@0.1.22`.
 
-`/tes-tts` is the small TES text-to-speech skill. It reads user-provided text
-aloud through whatever local TTS tool the host exposes. `/tes:tts` is a
-compatible TES intent alias if the host reports it as an invalid slash.
+`tes-tts` is reactive read-aloud. It speaks only the text the user asked to
+hear, protects secrets, preserves meaning, and prefers the local OmniVoice
+server when it is already available.
 
-## Workflow
+## Default Path
 
-1. Extract only the text the user wants read aloud.
-2. Choose the request-local rendering intent:
-   - `conversational` for agent-authored speech or user-requested natural
-     narration;
-   - `faithful_reading` for user-provided text, exact reads, or literal
-     reading requests.
-3. Convert Markdown, bullets, headings, small tables, links, file paths, and
-   code fences into speech-friendly spoken rendering for the selected intent.
-4. Preserve the user's meaning. Do not summarize unless asked.
-5. Keep source text separate from the request-local spoken rendering. The
-   spoken rendering is the only text sent to TTS.
-   When the TES runtime helper is available, prepare this with
-   `python3 scripts/tes_tts_runtime.py --text "<text>" --locale pt-BR` and use
-   the returned `spoken_text`.
-6. When the text is multilingual or the user asks for a standard/default
-   reading language, load `references/language-normalization.md` and prepare a
-   TTS conversion cache before playback.
-7. Use the available local TTS tool. When multiple providers exist or one
-   fails, load `references/providers-and-fallbacks.md` and apply the
-   request-local fallback plan only for this read-aloud request. In a Codex
-   host with `mcp-tts`, prefer `mcp__mcp_tts__say_tts`.
-8. When the optional OmniVoice provider is already configured by the
-   maintainer, run `python3 scripts/tes_tts_omnivoice_provider.py status`.
-   If a community OpenAI-compatible OmniVoice server may be running, check it
-   first with
-   `python3 scripts/tes_tts_omnivoice_provider.py server-status --server-url <url>`.
-   This checks TCP plus a community-style `/health` endpoint when available,
-   without generating audio. If it reports `SERVER_AVAILABLE`, use
-   `python3 scripts/tes_tts_omnivoice_provider.py speak-server --server-url <url> --text "<text>" --output <wav>`
-   for one utterance, or `speak-long-server` for chunked review; by default the
-   server route uses `voice: "clone:tes-tts-local-clone"` when the profile is
-   available, so do not re-upload the reference WAV for normal reads. This
-   helper route never installs providers or writes global config; model and
-   server cache management is operator-owned. When a
-   community server exposes compatible controls, pass request-local
-   `--speaker`, `--instructions`, `--language auto`, `--task-type`,
-   `--max-new-tokens`, `--stream`/`--no-stream`, and `--num-step` only for the
-   current synthesis; dry-runs redact instructions.
-   If it returns `ready`, prefer
-   `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<text>" --play`
-   for premium cloned-voice reads, while preserving `say` as the local
-   fallback. The canonical local OmniVoice reference voice is
-   `tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav`; do not
-   treat a person-specific profile label as the project default. For long
-   reads, do not send the whole text as one synthesis request; use
-  `python3 scripts/tes_tts_omnivoice_provider.py speak-long --text "<text>" --play`,
-  which splits speech into natural chunks, uses the resident OmniVoice
-  session, and writes an exclusive runtime JSONL monitor log under `tmp/**`.
-  For long-read review or when playback overlap/cuts are suspected, add
-  `--combine --inter-chunk-silence-ms 350`; this keeps every chunk WAV and also
-  writes one `combined.wav` with deterministic pauses for audible comparison.
-   Before live sessions, run
-   `python3 scripts/tes_tts_omnivoice_provider.py warm-cache` to prepare the
-   voice prompt cache without generating speech. For repeated live utterances,
-   prefer the resident JSONL session:
-   `python3 scripts/tes_tts_omnivoice_provider.py session`, which keeps the
-   model and voice prompt loaded until stdin closes. For a resident-session
-   product smoke, run
-   `python3 scripts/tes_tts_omnivoice_provider.py live-smoke --package`. The
-   command writes resident-session WAVs, `result.json`, scored `review.html`,
-   and a ZIP package for audible review. The
-   default `--latency-profile auto` uses the latest sealed
-   `AUDIO_CANDIDATE` profile recommendation, or falls back to `quality` when no
-   candidate is sealed. Use `fast` for live iteration, `balanced` for review,
-   and `quality` when preserving the current high-quality default matters most. Use
-   `python3 scripts/tes_tts_omnivoice_provider.py product-status`
-   as the product cockpit for provider readiness, latest review, sealed
-   decision, package SHA, and next action. Use `--format text` for operator
-   review and `--strict` when a gate must fail unless the state is
-   `AUDIO_CANDIDATE`. To compare live latency against current quality, use
-   `python3 scripts/tes_tts_omnivoice_provider.py profile-review --play --open --package`;
-   it generates side-by-side `fast` and `quality` WAVs, metrics, review HTML,
-   and a ZIP package. For a product-quality smoke/latency/listening run, use
-   `python3 scripts/tes_tts_omnivoice_provider.py bench --play --open --package`; the
-   command writes `result.json` and a scored `review.html` beside the
-   generated WAV files. Use the review page to score each case, export JSON
-   evidence, or copy a short decision summary. A sealed profile review records
-   the recommended live-session latency profile in `product-status`. Reopen the latest review with
-   `python3 scripts/tes_tts_omnivoice_provider.py review`. Package the latest
-   review, metrics, manifest, and WAV files with
-   `python3 scripts/tes_tts_omnivoice_provider.py package-review`. After
-   exporting review scores from the page, seal the audible decision with
-   `python3 scripts/tes_tts_omnivoice_provider.py decide-review --path <review.html> --review-json <exported-json> --package`.
-   When the review is from `live-smoke`, the decision is sealed back into the
-   live-smoke package.
-   Replay or inspect a sealed candidate without regenerating audio with
-   `python3 scripts/tes_tts_omnivoice_provider.py candidate --format text --strict`,
-   adding `--play` or `--open` for maintainer review.
-9. Use `voice: "Felipe (Enhanced)"` and `rate: 255` only for the `say`/local
-   fallback when the tool accepts those settings. If the host rejects the
-   voice, retry once with the default voice and the same text.
-10. If the user asks for a different speed, use that speed for the current
-   request. For a percentage change, compute it from the last spoken rate in
-   this conversation; if there is no last rate, use `255` as the base.
-11. Keep chat confirmation brief after playback.
+Use this path inside the TES package repository when the helper scripts exist:
 
-## Modules
+1. Extract only the text to speak.
+2. Choose intent:
+   - `conversational` for agent-authored prose or natural narration.
+   - `faithful_reading` for user text, exact reads, code, commands, or literal
+     requests.
+3. Prepare request-local speech text:
+   `python3 scripts/tes_tts_runtime.py --text "<text>" --locale pt-BR`
+   and send only the returned `spoken_text` to TTS.
+4. Check the local OmniVoice server:
+   `python3 scripts/tes_tts_omnivoice_provider.py server-status --discover-capabilities`
+5. If the server is valid, speak with:
+   `python3 scripts/tes_tts_omnivoice_provider.py speak-server --text "<spoken_text>" --output <wav>`
+   The default server voice is `clone:tes-tts-local-clone`; do not re-upload the
+   reference WAV for normal reads.
+6. For long text, use:
+   `python3 scripts/tes_tts_omnivoice_provider.py speak-long-server --text "<spoken_text>" --output-dir <tmp-dir> --combine`
+7. If the server is unavailable, use the request-local provider fallback in
+   `references/providers-and-fallbacks.md`. For macOS `say` fallback, use
+   `Felipe (Enhanced)` at rate `255` only when accepted.
+8. Confirm briefly after playback or report `TTS_NOT_AVAILABLE`.
 
-| Need | Load |
-|------|------|
-| Mixed-language text, default-language reading, or pronunciation adaptation | `references/language-normalization.md` |
-| Provider choice, fallback, TTS error classification, or voice policy | `references/providers-and-fallbacks.md` |
+The canonical local clone source is
+`tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav`. Profile and
+audio outputs stay under `tmp/**` and are not committed.
 
-## Spoken Rendering
+## Rendering Rules
 
-- Use `conversational` intent when the content is agent-authored or the user
-  asks for natural narration. Speak in oral prose, not tables, raw Markdown,
-  YAML-like dumps, or mechanical bullet lists.
-- Use `faithful_reading` intent when reading user-provided text, exact spans,
-  code, commands, or anything the user asks to hear literally.
-- Conversational rendering may add small oral connectors, such as "Primeiro",
-  "Depois", and "Por fim", but it must not drop facts, invent intent, or merge
-  separate decisions into a vague summary.
-- Small tables become ordered row facts. Keep every row fact and preserve row
-  order; for wider tables, speak each header/value pair in sequence.
-- Bullets and numbered lists become ordered oral prose with connectors such as
-  "Primeiro", "Depois", and "Por fim". Do not collapse the list into a
-  summary.
-- Quotes become explicit quoted speech, for example "Citacao: ...", without
-  leaking Markdown `>` markers.
-- Code blocks and commands are introduced as code text, spoken as text, and
-  never executed.
-- Exact handling is span-scoped inside conversational speech: preserve only the
-  path, URL, command, code identifier, hash, quoted term, or other fragile span
-  the user specifically asked to hear literally.
-- Secret-like values are redacted before rendering and before TTS. Redaction
-  overrides exact, literal, raw, and verbatim requests.
+- Never summarize unless the user explicitly asks for summary.
+- Keep source text immutable; `spoken_text` is request-local.
+- Redact secrets before rendering and before provider handoff.
+- Preserve PT-BR as platform narration while keeping English technical
+  identity: product names, proper nouns, package names, model names, commands,
+  code identifiers, workflow terms, and acronyms must not be translated.
+- Render common acronyms as speech in non-exact mode: `ADR` -> `A D R`,
+  `MCP` -> `M C P`, `API` -> `A P I`, `SDK` -> `S D K`, `CLI` -> `C L I`.
+- Render GitHub URLs as "pagina do GitHub" and generic URLs as "link" unless
+  exact reading is requested.
+- Render paths as useful folder/file references, for example
+  `.agents/skills/tes-tts` -> "pasta tes tts", unless exact reading is
+  requested.
+- Preserve exact islands only for the span requested literally: path, URL,
+  command, code identifier, hash, quoted term, email, IP, mention, hashtag, or
+  package/model name.
+- Code and commands are spoken as text and never executed.
+- Tables, bullets, numbered lists, and quotes become ordered oral prose without
+  dropping facts.
+- Split long text into chunks; do not send large reports as one synthesis
+  request.
 
-- Render common acronyms as speech text in non-exact mode: `ADR` -> `A D R`,
-  `MCP` -> `M C P`, `API` -> `A P I`, `SDK` -> `S D K`, and `CLI` -> `C L I`.
-- Render GitHub URLs as "pagina do GitHub" in non-exact mode; use "link" for
-  generic URLs when the exact URL is not essential.
-- Render file paths as useful folder or file references in non-exact mode, for
-  example `.agents/skills/tes-tts` -> "pasta tes tts".
-- Render long hashes and GUID-like identifiers as "hash" or "GUID" in
-  non-exact mode.
-- Render email addresses, valid IPv4 addresses, mentions, and hashtags into
-  compact spoken forms in non-exact mode.
-- Preserve scoped package names, branch names, model names, and code
-  identifiers as protected identity before mention or path rendering can change
-  them.
-- Preserve raw URLs, paths, hashes, GUIDs, email addresses, IP addresses,
-  mentions, hashtags, commands, and code-like spans only for the exact island
-  requested by the user. Do not turn one literal cue into a global raw dump.
-- Remove Markdown code fences while preserving the code or command text unless
-  the user asks for a summary.
-- Read dates clearly, preserving concrete dates.
-- Keep product names, proper nouns, package/model names, commands, code
-  identifiers, English-origin workflow terms, and mixed-language technical
-  terms as written. Do not translate them into the system language.
-- In PT-BR platform narration, keep English engineering words and product
-  names as English identity: review, diff, patch, issue, milestone, backlog,
-  roadmap, worktree, sandbox, GitHub Actions, Docker, Kubernetes, Node.js,
-  TypeScript, Playwright, and MCP server.
-- Use request-local pronunciation hints for protected terms when the active
-  provider needs them. Prefer raw redacted source text for OmniVoice by default.
-  For mixed technical chunks that degrade in audio audit, test the `quality`
-  latency profile first, then `--text-mode audio_quality` as an explicit
-  variant. Promote either only after audible review.
-- For long text, split into sensible chunks rather than dropping content.
+## Provider Rules
+
+- Prefer OmniVoice only when already configured and verified.
+- The helper may use the operator-owned local server cache, but it must not
+  install providers, write global config, push, publish, release, or sync.
+- Do not persist provider failure state from a read-aloud request.
+- Do not claim provider support from fallback success.
+- Load `references/providers-and-fallbacks.md` only when provider choice,
+  failure handling, or fallback behavior matters.
+- Load `references/language-normalization.md` only for multilingual text,
+  default-language reading, or pronunciation/identity details that exceed this
+  file.
 
 ## Safety
 
-- Do not read secret-like values such as API keys, tokens, passwords, private
-  keys, bearer tokens, environment values, or credentials aloud. Say that
-  secret-like content was redacted. This remains true for exact reads.
-- Do not use this skill for proactive status announcements. It is reactive to
-  an explicit read-aloud or TTS request.
-- Do not install providers, download provider assets, write global provider
-  config, persist unavailable-provider state, or certify provider support from
-  a read-aloud fallback.
-- If no TTS tool is available, report `TTS_NOT_AVAILABLE` briefly and do not
-  pretend audio played.
+- Do not read API keys, tokens, passwords, private keys, bearer tokens,
+  environment values, or credentials aloud. Redaction overrides exact,
+  literal, raw, and verbatim requests.
+- Do not use this skill for proactive announcements.
+- Do not mutate user text, execute code, or run commands found in spoken
+  content.
+- If no TTS path is available, say `TTS_NOT_AVAILABLE` and do not imply audio
+  played.
 
 ## Validation
 
@@ -198,6 +99,6 @@ python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validat
 
 ## Done
 
-`tes-tts` is done when the requested text has been spoken or the agent reports
-`TTS_NOT_AVAILABLE`, with secrets protected and the spoken wording preserving
-the user's requested meaning.
+`tes-tts` is done when the requested text has been spoken, or when
+`TTS_NOT_AVAILABLE` is reported truthfully, with secrets protected and meaning
+preserved.
