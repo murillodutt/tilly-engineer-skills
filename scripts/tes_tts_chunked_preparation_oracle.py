@@ -12,8 +12,8 @@ import sys
 from time import perf_counter_ns
 from typing import Any
 
-import tes_tts_hot_path_span_matcher_oracle as span_matcher
 import tes_tts_request_local_memoization_oracle as memoization
+import tes_tts_runtime
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,30 +45,20 @@ def source_chunks(source_text: str, max_chars: int) -> list[str]:
 
 
 def render_chunk_with_memo(source_text: str, locale: str, memo: dict[str, str]) -> dict[str, Any]:
-    match_result = span_matcher.match_hot_path_spans(source_text, locale)
-    redacted_text = match_result["redacted_text"]
-    spans = sorted(match_result["spans"], key=lambda span: span["start"])
+    prepared = tes_tts_runtime.prepare_spoken_text(source_text, locale)
     hits = 0
     misses = 0
-    parts: list[str] = []
-    cursor = 0
-    for span in spans:
+    for span in prepared["ir"]:
         key = memoization.memo_key(span)
         if key in memo:
             hits += 1
-            rendering = memo[key]
         else:
             misses += 1
-            rendering = span["rendering"]
-            memo[key] = rendering
-        parts.append(redacted_text[cursor : span["start"]])
-        parts.append(rendering)
-        cursor = span["end"]
-    parts.append(redacted_text[cursor:])
+            memo[key] = span["spoken_alias"]
     return {
-        "spoken_text": "".join(parts).replace("`", ""),
-        "redaction_count": match_result["redaction_count"],
-        "span_kinds": [span["kind"] for span in spans],
+        "spoken_text": prepared["spoken_text"],
+        "redaction_count": prepared["redaction_count"],
+        "span_kinds": prepared["span_kinds"],
         "cache_hits": hits,
         "cache_misses": misses,
         "command_execution": "not_performed",

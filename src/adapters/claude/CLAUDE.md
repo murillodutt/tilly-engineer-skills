@@ -64,6 +64,18 @@ For multi-step tasks:
 3. [Step] -> verify: [check]
 ```
 
+## Runtime-First Product Rule
+
+TES is result-oriented: maturity, efficiency, and precision must show up in
+working behavior. Once the architecture is accepted and the active risk is
+implementation quality, build the smallest durable runtime slice on the
+intended execution path before adding more governance.
+
+Do not create governance-only cycles, long SPECs before code, evidence-only
+layers, placeholder boundaries, or temporary implementations expected to be
+removed immediately afterward. Use SPECs, fixtures, oracles, and compact docs to
+protect runtime behavior, not to delay it.
+
 ## Success Formula
 
 ```text

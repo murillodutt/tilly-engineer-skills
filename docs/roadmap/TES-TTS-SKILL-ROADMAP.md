@@ -135,6 +135,7 @@ surface for release, materialization, and sync decisions.
 | 12 | Start capability migration as a new bounded sequence, using mapped simple TTS and `speak` learning as references rather than wholesale copies. | `GOAL-SUPER-SPEC-tes-tts-capability-migration.md`. |
 | 13 | Use `.agents/skills/tes-tts` as the active development and test workbench, then mirror converged content into the canonical Codex adapter source. | This roadmap and `GOAL-SUPER-SPEC-tes-tts-capability-migration.md`. |
 | 14 | Open conversational spoken rendering as a new successor line after CAP-005 closure, focused on interlocutor-style oral prose with protected technical identity. | `GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md`; `TES-TTS-CAP-006-CONVERSATIONAL-SPOKEN-RENDERING.md`. |
+| 15 | Switch `tes-tts` to runtime-first execution: no governance-only cycles, evidence-only layers, or disposable temporary runtimes once the architecture is accepted. Build the smallest durable runtime slice on the intended path, then use fixtures, oracles, and compact docs to protect it. | `AGENTS.md` runtime-first rule; RTE closure and maintainer direction after live TTS latency/pronunciation feedback. |
 
 ## Circular Execution Control
 
@@ -453,7 +454,7 @@ PT-BR lexical normalization status: LEX-001 through LEX-005 passed; local
 evidence-only sequence closed, next prompt none, sync status
 `REMOTE_SYNC_NOT_REQUESTED`.
 
-Runtime latency status: RTE-000 through RTE-006 passed; local runtime line closed by `TES-TTS-RTE-006-RUNTIME-AUDIT-AND-CLOSURE.md`; sync status `REMOTE_SYNC_NOT_REQUESTED`.
+Runtime status: RTE-000 through RTE-006 passed, then the runtime-first rule opened a durable `classify -> IR -> spoken_text` helper in `scripts/tes_tts_runtime.py`; sync status `REMOTE_SYNC_NOT_REQUESTED`.
 
 Open questions: release identity planning and sync remain owner decisions.
 
@@ -473,6 +474,7 @@ Open questions: release identity planning and sync remain owner decisions.
   artifact.
 - Use the latest SPEC or Super SPEC plus its audit record to normalize docs;
   prefer runtime code, fixtures, and oracles over new explanatory documents.
+- Once the architecture is accepted and implementation quality is the active risk, do not open governance-only or evidence-only `tes-tts` cycles; the next unit must deliver a durable runtime slice on the intended path, with docs limited to the roadmap, active SPEC/audit pointer, and smallest continuation evidence.
 
 ## Local Oracle Set
 

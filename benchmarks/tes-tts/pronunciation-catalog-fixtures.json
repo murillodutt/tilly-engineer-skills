@@ -35,6 +35,36 @@
       "runtime_claim": "none"
     },
     {
+      "id": "pron-cat-g2p",
+      "term": "G2P",
+      "class": "acronym",
+      "default_language": "pt-BR",
+      "spoken_rendering": "G dois P",
+      "preserve_written_identity": true,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-phoneme",
+      "term": "phoneme",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "fonema",
+      "preserve_written_identity": false,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
+      "id": "pron-cat-provider-backed",
+      "term": "provider-backed",
+      "class": "technical_noun",
+      "default_language": "pt-BR",
+      "spoken_rendering": "com suporte de provider",
+      "preserve_written_identity": false,
+      "exact_request_behavior": "preserve_raw",
+      "runtime_claim": "none"
+    },
+    {
       "id": "pron-cat-github",
       "term": "GitHub",
       "class": "proper_noun",

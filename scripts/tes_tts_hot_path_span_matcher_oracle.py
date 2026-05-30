@@ -11,8 +11,7 @@ import re
 import sys
 from typing import Any
 
-import tes_tts_compiled_lexical_index_oracle as lexical_index
-import tes_tts_instruction_normalizer_oracle as normalizer
+import tes_tts_runtime
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,7 +25,7 @@ PATH_PATTERN = re.compile(
     r"[A-Za-z0-9._~@%+:-]+(?:/[A-Za-z0-9._~@%+:-]+)*"
 )
 HASH_PATTERN = re.compile(r"\b[0-9a-fA-F]{16,}\b")
-REDACTED_SECRET_PATTERN = re.compile(re.escape(normalizer.REDACTION_TOKEN))
+REDACTED_SECRET_PATTERN = re.compile(re.escape(tes_tts_runtime.REDACTION_TOKEN))
 EXACT_MARKERS = ("exatamente", "literalmente", "exact", "literal", "verbatim", "raw")
 
 
@@ -155,26 +154,15 @@ def protected_spans(redacted_text: str, locale: str, index: dict[str, Any]) -> l
 
 
 def match_hot_path_spans(source_text: str, locale: str) -> dict[str, Any]:
-    redacted_text, redactions = normalizer.redact_secret_like_values(source_text)
-    index = lexical_index.compile_index()
-    candidates = literal_spans(redacted_text)
-    candidates.extend(protected_spans(redacted_text, locale, index))
-    candidates.sort(key=lambda span: (-span.priority, -(span.end - span.start), span.start))
-
-    accepted: list[Span] = []
-    for span in candidates:
-        if overlaps(span, accepted):
-            continue
-        accepted.append(span)
-    accepted.sort(key=lambda span: span.start)
-
+    runtime_result = tes_tts_runtime.match_spans(source_text, locale)
+    runtime_spans = runtime_result["spans"]
     return {
-        "redacted_text": redacted_text,
+        "redacted_text": runtime_result["redacted_text"],
         "source_text_immutable": True,
         "provider_timing": "out_of_scope",
         "runtime_output": False,
         "command_execution": "not_performed",
-        "redaction_count": len(redactions),
+        "redaction_count": runtime_result["redaction_count"],
         "spans": [
             {
                 "start": span.start,
@@ -185,7 +173,7 @@ def match_hot_path_spans(source_text: str, locale: str) -> dict[str, Any]:
                 "source": span.source,
                 "executable": span.executable,
             }
-            for span in accepted
+            for span in runtime_spans
         ],
     }
 

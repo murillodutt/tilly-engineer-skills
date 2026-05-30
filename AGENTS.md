@@ -39,6 +39,28 @@ future agent to continue without chat history.
 
 </documentation_runtime_focus>
 
+<runtime_first_rule>
+
+TES is a product, not a governance archive. Optimize material work for result,
+maturity, efficiency, and precision. When an architecture is accepted and the
+remaining risk is implementation quality, switch to runtime-first execution. Do
+not create governance-only cycles, evidence-only layers, placeholder
+boundaries, long SPECs before code, or temporary runtimes expected to be removed
+immediately afterward.
+
+Build the smallest durable runtime slice on the intended execution path, then
+use fixtures, oracles, and compact docs to protect that behavior. Boundaries and
+SPECs are valuable only when they constrain or certify executable behavior; they
+are not progress by themselves.
+
+For `tes-tts`, the durable path is a NeMo-inspired but dependency-free pipeline:
+classify text into an intermediate representation, verbalize it into
+request-local spoken text, and adapt it to the selected provider. JSON/JSONL
+lexical data, the IR contract, redaction before speech, source immutability, and
+latency measurement are product surfaces, not exploratory paperwork.
+
+</runtime_first_rule>
+
 <success_formula>
 
 ```text

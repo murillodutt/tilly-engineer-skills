@@ -1,0 +1,38 @@
+{
+  "version": "0.3.147",
+  "usage": "runtime_ir_contract",
+  "provider_timing": "out_of_scope",
+  "output_format": "plain_text",
+  "cases": [
+    {
+      "id": "runtime-ir-mixed-ptbr-english-technical",
+      "source_text": "Eu não colocaria phoneme ou G2P provider-backed agora.",
+      "locale": "pt-BR",
+      "expected_spoken_text": "Eu não colocaria fonema ou G dois P com suporte de provider agora.",
+      "expected_span_types": ["protected_term", "protected_term", "protected_term"],
+      "expected_aliases": ["fonema", "G dois P", "com suporte de provider"],
+      "expected_absent_spoken_text": ["phoneme", "provider-backed"],
+      "expected_redaction_count": 0
+    },
+    {
+      "id": "runtime-ir-fragile-spans-and-secret",
+      "source_text": "Leia ADR, abra .agents/skills/tes-tts e oculte API_KEY=abc123SECRET.",
+      "locale": "pt-BR",
+      "expected_spoken_text": "Leia A D R, abra pasta tes tts e oculte API_KEY=[REDACTED_SECRET].",
+      "expected_span_types": ["protected_term", "path", "secret"],
+      "expected_aliases": ["A D R", "pasta tes tts", "[REDACTED_SECRET]"],
+      "expected_absent_spoken_text": ["abc123SECRET"],
+      "expected_redaction_count": 1
+    },
+    {
+      "id": "runtime-ir-exact-island-scoped",
+      "source_text": "Leia exatamente `ADR` e depois ADR.",
+      "locale": "pt-BR",
+      "expected_spoken_text": "Leia exatamente ADR e depois A D R.",
+      "expected_span_types": ["exact_island", "protected_term"],
+      "expected_aliases": ["ADR", "A D R"],
+      "expected_absent_spoken_text": ["exatamente A D R"],
+      "expected_redaction_count": 0
+    }
+  ]
+}

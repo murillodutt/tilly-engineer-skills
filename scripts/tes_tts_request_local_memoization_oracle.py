@@ -11,7 +11,7 @@ import sys
 from time import perf_counter_ns
 from typing import Any
 
-import tes_tts_hot_path_span_matcher_oracle as span_matcher
+import tes_tts_runtime
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,41 +26,21 @@ def load_fixtures() -> dict[str, Any]:
 
 
 def memo_key(span: dict[str, Any]) -> str:
-    return f"{span['kind']}:{span['text']}->{span['rendering']}"
+    return f"{span['span_type']}:{span['source']}->{span['spoken_alias']}"
 
 
 def render_request_local(source_text: str, locale: str) -> dict[str, Any]:
-    match_result = span_matcher.match_hot_path_spans(source_text, locale)
-    redacted_text = match_result["redacted_text"]
-    spans = sorted(match_result["spans"], key=lambda span: span["start"])
-    memo: dict[str, str] = {}
-    hits = 0
-    misses = 0
-    parts: list[str] = []
-    cursor = 0
-    for span in spans:
-        key = memo_key(span)
-        if key in memo:
-            hits += 1
-            rendering = memo[key]
-        else:
-            misses += 1
-            rendering = span["rendering"]
-            memo[key] = rendering
-        parts.append(redacted_text[cursor : span["start"]])
-        parts.append(rendering)
-        cursor = span["end"]
-    parts.append(redacted_text[cursor:])
+    prepared = tes_tts_runtime.prepare_spoken_text(source_text, locale)
     return {
         "source_text_immutable": True,
-        "spoken_text": "".join(parts).replace("`", ""),
-        "redacted_text": redacted_text,
-        "span_kinds": [span["kind"] for span in spans],
-        "redaction_count": match_result["redaction_count"],
+        "spoken_text": prepared["spoken_text"],
+        "redacted_text": prepared["redacted_text"],
+        "span_kinds": prepared["span_kinds"],
+        "redaction_count": prepared["redaction_count"],
         "memo_scope": "request_local",
-        "cache_hits": hits,
-        "cache_misses": misses,
-        "resolved_once_keys": sorted(memo),
+        "cache_hits": prepared["cache_hits"],
+        "cache_misses": prepared["cache_misses"],
+        "resolved_once_keys": sorted({memo_key(span) for span in prepared["ir"]}),
         "provider_timing": "out_of_scope",
         "runtime_output": False,
         "summary_behavior": "none",

@@ -25,6 +25,9 @@ compatible TES intent alias if the host reports it as an invalid slash.
 4. Preserve the user's meaning. Do not summarize unless asked.
 5. Keep source text separate from the request-local spoken rendering. The
    spoken rendering is the only text sent to TTS.
+   When the TES runtime helper is available, prepare this with
+   `python3 scripts/tes_tts_runtime.py --text "<text>" --locale pt-BR` and use
+   the returned `spoken_text`.
 6. When the text is multilingual or the user asks for a standard/default
    reading language, load `references/language-normalization.md` and prepare a
    TTS conversion cache before playback.
