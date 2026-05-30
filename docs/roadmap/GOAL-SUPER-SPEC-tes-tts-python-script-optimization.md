@@ -19,7 +19,7 @@ Input analysis:
 `docs/roadmap/TES-TTS-PYTHON-SCRIPT-EFFICIENCY-ANALYSIS.md`
 
 Ready prompt:
-`docs/roadmap/GOAL-PROMPT-tes-tts-PSO-004-lab-surface-split.md`
+`docs/roadmap/GOAL-PROMPT-tes-tts-PSO-005-oracle-partition.md`
 
 ## Purpose
 

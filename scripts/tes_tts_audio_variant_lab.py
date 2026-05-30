@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run TES TTS audio variants through synthesize-and-audit loops."""
+"""Run TES TTS direct audio recipes and legacy server lab reviews."""
 
 from __future__ import annotations
 
@@ -26,6 +26,11 @@ DEFAULT_SOURCE_SESSION = (
 DEFAULT_OUTPUT_ROOT = ROOT / "tmp/tes-tts-omnivoice-provider/audio-variant-lab"
 VERSION = "0.3.147"
 MIN_CHUNK_CHARS = 80
+ACTIVE_PRODUCT_PATH = "direct_resident_omnivoice"
+ACTIVE_LAB_SURFACE = "active_direct_resident_audio_recipe"
+LEGACY_SERVER_LAB_SURFACE = "legacy_server_audio_experiment"
+LEGACY_SERVER_ROUTE_STATUS = "legacy_lab_compatibility"
+LEGACY_SERVER_REASON = "server route is retained for lab and historical compatibility only"
 SERVER_CONTROL_PRESETS: dict[str, dict[str, Any]] = {
     "manual": {},
     "omnivoice_server_clone_fast": {
@@ -78,6 +83,22 @@ COMMUNITY_SERVER_CLONE_VARIANTS = [
     "mixed_technical_context_sentences",
     "mixed_technical_problem_aliases",
 ]
+
+
+def lab_route_metadata(provider_route: str) -> dict[str, Any]:
+    if provider_route == "server":
+        return {
+            "lab_surface": LEGACY_SERVER_LAB_SURFACE,
+            "route_status": LEGACY_SERVER_ROUTE_STATUS,
+            "product_path": ACTIVE_PRODUCT_PATH,
+            "legacy_reason": LEGACY_SERVER_REASON,
+        }
+    return {
+        "lab_surface": ACTIVE_LAB_SURFACE,
+        "route_status": "active_product_path",
+        "product_path": ACTIVE_PRODUCT_PATH,
+        "legacy_reason": None,
+    }
 
 
 def safe_stem(value: str) -> str:
@@ -500,6 +521,7 @@ def write_variant_session(
     audit_text: str,
     chunk_chars: int,
     text_mode: str,
+    route_metadata: dict[str, Any],
 ) -> Path:
     session = root / f"{safe_stem(source_id)}--{safe_stem(variant)}"
     session.mkdir(parents=True, exist_ok=True)
@@ -515,6 +537,7 @@ def write_variant_session(
                 "variant": variant,
                 "chunk_chars": chunk_chars,
                 "text_mode": text_mode,
+                **route_metadata,
                 "chunks": [
                     {
                         "id": f"chunk-{index:03d}",
@@ -831,6 +854,7 @@ def rank_results(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
             {
                 "source_chunk_id": result.get("source_chunk_id"),
                 "variant": result.get("variant"),
+                "lab_surface": result.get("lab_surface"),
                 "server_control_preset": result.get("server_control_preset"),
                 "text_mode": result.get("text_mode"),
                 "session": result.get("session"),
@@ -899,7 +923,9 @@ def write_review_html(output_root: Path, payload: dict[str, Any]) -> Path:
             f"<h2>{html.escape(str(result['source_chunk_id']))} / {html.escape(result['variant'])}</h2>"
             "<dl>"
             f"<dt>Status</dt><dd>{html.escape(str(summary.get('status', 'not audited')))}</dd>"
-            f"<dt>Server preset</dt><dd>{html.escape(str(result.get('server_control_preset') or 'none'))}</dd>"
+            f"<dt>Lab surface</dt><dd>{html.escape(str(result.get('lab_surface') or payload.get('lab_surface')))}</dd>"
+            f"<dt>Route status</dt><dd>{html.escape(str(result.get('route_status') or payload.get('route_status')))}</dd>"
+            f"<dt>Legacy server preset</dt><dd>{html.escape(str(result.get('server_control_preset') or 'none'))}</dd>"
             f"<dt>Text mode</dt><dd>{html.escape(str(result.get('text_mode')))}</dd>"
             f"<dt>Max WER</dt><dd>{html.escape(str(summary.get('max_wer')))}</dd>"
             f"<dt>Min similarity</dt><dd>{html.escape(str(summary.get('min_similarity')))}</dd>"
@@ -918,7 +944,8 @@ def write_review_html(output_root: Path, payload: dict[str, Any]) -> Path:
     ranked = "\n".join(
         "<li>"
         f"{html.escape(item['variant'])}: status={html.escape(str(item['status']))}, "
-        f"server={html.escape(str(item.get('server_control_preset') or 'none'))}, "
+        f"surface={html.escape(str(item.get('lab_surface') or 'unknown'))}, "
+        f"legacy_server={html.escape(str(item.get('server_control_preset') or 'none'))}, "
         f"WER={html.escape(str(item['max_wer']))}, "
         f"similarity={html.escape(str(item['min_similarity']))}, "
         f"text_mode={html.escape(str(item.get('text_mode')))}"
@@ -959,6 +986,7 @@ def write_review_package(output_root: Path, review_html: Path, payload: dict[str
 
 def command_run(args: argparse.Namespace) -> int:
     apply_scenario_defaults(args)
+    route_metadata = lab_route_metadata(args.provider_route)
     source_session = Path(args.source_session).resolve()
     output_root = Path(args.output_root).resolve() / dt.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
     output_root.mkdir(parents=True, exist_ok=True)
@@ -976,6 +1004,7 @@ def command_run(args: argparse.Namespace) -> int:
             "source_session": str(source_session),
             "output_root": str(output_root),
             "scenario": args.scenario,
+            **route_metadata,
             "available_chunk_ids": sorted(available_ids),
             "missing_chunk_ids": missing_ids,
             "results": [],
@@ -1010,6 +1039,7 @@ def command_run(args: argparse.Namespace) -> int:
                 "source_session": str(source_session),
                 "output_root": str(output_root),
                 "scenario": args.scenario,
+                **route_metadata,
                 "available_chunk_ids": sorted(available_ids),
                 "selected_chunk_ids": sorted(selected_ids),
                 "synthesize": args.synthesize,
@@ -1086,11 +1116,13 @@ def command_run(args: argparse.Namespace) -> int:
                     audit_text=audit_text,
                     chunk_chars=chunk_chars,
                     text_mode=text_mode,
+                    route_metadata=route_metadata,
                 )
                 entry: dict[str, Any] = {
                     "source_chunk_id": source_id,
                     "variant": variant,
                     "session_variant": session_variant,
+                    **route_metadata,
                     "server_control_preset": profile_name if args.provider_route == "server" else None,
                     "text_mode": text_mode,
                     "session": str(session),
@@ -1147,6 +1179,7 @@ def command_run(args: argparse.Namespace) -> int:
         "output_root": str(output_root),
         "status": overall_status(results),
         "scenario": args.scenario,
+        **route_metadata,
         "available_chunk_ids": sorted(available_ids),
         "selected_chunk_ids": sorted(selected_ids),
         "synthesize": args.synthesize,
@@ -1198,6 +1231,8 @@ def command_run(args: argparse.Namespace) -> int:
             {
                 "status": overall_status(results),
                 "output": str(output),
+                "lab_surface": payload["lab_surface"],
+                "route_status": payload["route_status"],
                 "review_html": str(review_html) if review_html else None,
                 "package": str(package) if package else None,
                 "result_count": len(results),
@@ -1233,6 +1268,18 @@ def command_self_test(_args: argparse.Namespace) -> int:
         failures.append("JSON hyphen transform drifted")
     if build_variant_plan(text, "audio_quality_text_mode")["text_mode"] != "audio_quality":
         failures.append("audio_quality text mode plan drifted")
+    active_metadata = lab_route_metadata("resident")
+    if active_metadata.get("lab_surface") != ACTIVE_LAB_SURFACE:
+        failures.append("resident lab route metadata must identify the active product surface")
+    if active_metadata.get("route_status") != "active_product_path":
+        failures.append("resident lab route metadata must preserve active route status")
+    server_metadata = lab_route_metadata("server")
+    if server_metadata.get("lab_surface") != LEGACY_SERVER_LAB_SURFACE:
+        failures.append("server lab route metadata must identify the legacy surface")
+    if server_metadata.get("route_status") != LEGACY_SERVER_ROUTE_STATUS:
+        failures.append("server lab route metadata must preserve legacy route status")
+    if server_metadata.get("product_path") != ACTIVE_PRODUCT_PATH:
+        failures.append("server lab route metadata must point back to the active product path")
     profile_args = argparse.Namespace(
         server_control_preset=["omnivoice_server_fast_nonstream", "vllm_omni_customvoice_auto"],
         server_speaker="tes-tts-local-clone",
