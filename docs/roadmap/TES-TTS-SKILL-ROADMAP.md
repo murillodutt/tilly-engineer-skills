@@ -78,10 +78,11 @@ Latest local product evidence:
 - Product shortcut: `status` auto-discovers the configured local OmniVoice
   venv/reference voice, and `speak` delegates synthesis without long CLI
   arguments.
-- Product benchmark: `bench` runs the three governed OmniVoice fixtures through
-  one loaded model and cached reference voice. Latest local run produced
-  `32.6s` of audio in `29.29s` total with average RTF `0.9388` under the
-  configured local optional environment.
+- Product benchmark: `bench --play` runs the three governed OmniVoice fixtures
+  through one loaded model and cached reference voice, then plays the outputs
+  sequentially for immediate maintainer review. Latest local run played all
+  three WAVs via `afplay`, produced `32.59s` of audio in `29.37s` total with
+  average RTF `0.9444` under the configured local optional environment.
 
 Relevant gates for the latest cut:
 
@@ -111,7 +112,8 @@ npm run commit:check
 
 Recommended next product cut:
 
-1. Listen to the three benchmark WAVs and classify audible quality by fixture.
+1. Run `python3 scripts/tes_tts_omnivoice_provider.py bench --play` and
+   classify audible quality by fixture.
 2. Decide whether the OmniVoice provider path is ready for release identity
    planning or needs one targeted runtime/provider fix.
 3. Keep docs limited to this dashboard, registry/history pointers, and the

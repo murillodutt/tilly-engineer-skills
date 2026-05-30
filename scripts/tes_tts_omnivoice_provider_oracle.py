@@ -76,6 +76,7 @@ REQUIRED_BENCH_DRY_RUN_KEYS = {
     "ref_audio_source",
     "cases",
     "output_dir",
+    "play_requested",
     "command_shape",
     "allows_install",
     "allows_download",
@@ -210,6 +211,7 @@ def run_status_and_dry_run() -> tuple[
                 "bench",
                 "--ref-text",
                 "voz privada SECRET_REF_TEXT",
+                "--play",
                 "--dry-run",
             ],
             text=True,
@@ -303,6 +305,8 @@ def validate_bench_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
         failures.append("bench dry-run must not download models")
     if payload.get("allows_global_config_write") is not False:
         failures.append("bench dry-run must not write global config")
+    if payload.get("play_requested") is not True:
+        failures.append("bench dry-run must report playback intent")
     command_shape = payload.get("command_shape")
     if not isinstance(command_shape, list):
         failures.append("bench dry-run command_shape must be a list")

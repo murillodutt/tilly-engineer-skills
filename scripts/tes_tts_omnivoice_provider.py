@@ -241,6 +241,33 @@ def playback_audio(output: Path) -> dict[str, Any]:
     }
 
 
+def playback_outputs(outputs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    results: list[dict[str, Any]] = []
+    for item in outputs:
+        output = item.get("output")
+        if not isinstance(output, str):
+            results.append(
+                {
+                    "id": item.get("id"),
+                    "output": output,
+                    "playback_status": "missing_output",
+                    "player": None,
+                }
+            )
+            continue
+        playback = playback_audio(Path(output))
+        results.append(
+            {
+                "id": item.get("id"),
+                "output": output,
+                **playback,
+            }
+        )
+        if playback.get("playback_status") == "failed":
+            break
+    return results
+
+
 def redact_command_value(tokens: list[str], option: str) -> list[str]:
     redacted = list(tokens)
     for index, token in enumerate(redacted[:-1]):
@@ -425,6 +452,7 @@ def command_bench(args: argparse.Namespace) -> int:
                 "ref_audio_source": ref_source,
                 "cases": str(cases),
                 "output_dir": str(output_dir),
+                "play_requested": args.play,
                 "command_shape": redact_command_value(command, "--ref-text"),
                 "allows_install": False,
                 "allows_download": False,
@@ -463,6 +491,7 @@ def command_bench(args: argparse.Namespace) -> int:
     payload["ref_audio_source"] = ref_source
     payload["cases"] = str(cases)
     payload["output_dir"] = str(output_dir)
+    payload["play_requested"] = args.play
     outputs = payload.get("outputs")
     if isinstance(outputs, list) and outputs:
         rtfs = [item.get("rtf") for item in outputs if isinstance(item.get("rtf"), (int, float))]
@@ -483,6 +512,13 @@ def command_bench(args: argparse.Namespace) -> int:
             "total_generation_ms": round(sum(generations), 3) if generations else None,
             "provider_timing_scope": "local_optional_environment_only",
         }
+        if args.play and completed.returncode == 0:
+            playback_results = playback_outputs(outputs)
+            payload["playback_results"] = playback_results
+            if any(result.get("playback_status") == "failed" for result in playback_results):
+                payload["status"] = "PLAYBACK_FAILED"
+                emit(payload)
+                return 3
     emit(payload)
     return completed.returncode
 
@@ -824,6 +860,7 @@ def build_parser() -> argparse.ArgumentParser:
     bench.add_argument("--python")
     bench.add_argument("--cases", default=str(DEFAULT_BENCHMARK_CASES))
     bench.add_argument("--output-dir")
+    bench.add_argument("--play", action="store_true")
     bench.add_argument("--dry-run", action="store_true")
     bench.set_defaults(func=command_bench)
     return parser
