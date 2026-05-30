@@ -455,17 +455,32 @@ def discover_server_capabilities(base_url: str, *, api_key_env: str, timeout: fl
     }
 
 
-def server_request_body(args: argparse.Namespace, text: str) -> dict[str, Any]:
+def server_language_value(language: str | None) -> str | None:
+    if not language:
+        return None
+    if language == AUTO_LANGUAGE:
+        return "Auto"
+    return language
+
+
+def server_request_body(args: argparse.Namespace, text: str, *, language: str | None = None) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "model": args.model,
         "input": text,
         "voice": args.voice,
         "response_format": "wav",
     }
+    resolved_language = server_language_value(language or getattr(args, "language", None))
+    if resolved_language:
+        payload["language"] = resolved_language
     if getattr(args, "speaker", None):
         payload["speaker"] = args.speaker
     if getattr(args, "instructions", None):
         payload["instructions"] = args.instructions
+    if getattr(args, "task_type", None):
+        payload["task_type"] = args.task_type
+    if getattr(args, "max_new_tokens", None) is not None:
+        payload["max_new_tokens"] = args.max_new_tokens
     if getattr(args, "speed", None) is not None:
         payload["speed"] = args.speed
     if getattr(args, "stream", None) is not None:
@@ -475,8 +490,8 @@ def server_request_body(args: argparse.Namespace, text: str) -> dict[str, Any]:
     return payload
 
 
-def server_request_shape(args: argparse.Namespace) -> dict[str, Any]:
-    shape = server_request_body(args, "<redacted>")
+def server_request_shape(args: argparse.Namespace, *, language: str | None = None) -> dict[str, Any]:
+    shape = server_request_body(args, "<redacted>", language=language)
     shape["input"] = "<redacted>"
     if "instructions" in shape:
         shape["instructions"] = "<redacted>"
@@ -2787,8 +2802,11 @@ def command_speak_server(args: argparse.Namespace) -> int:
                 "api_key_present": api_key_present,
                 "model": args.model,
                 "voice": args.voice,
+                "language": server_language_value(args.language),
                 "speaker": args.speaker,
                 "instructions_present": bool(args.instructions),
+                "task_type": args.task_type,
+                "max_new_tokens": args.max_new_tokens,
                 "stream_requested": args.stream,
                 "num_step": args.num_step,
                 "output": str(output),
@@ -2848,8 +2866,11 @@ def command_speak_server(args: argparse.Namespace) -> int:
         "content_type": content_type,
         "model": args.model,
         "voice": args.voice,
+        "language": server_language_value(args.language),
         "speaker": args.speaker,
         "instructions_present": bool(args.instructions),
+        "task_type": args.task_type,
+        "max_new_tokens": args.max_new_tokens,
         "stream_requested": args.stream,
         "num_step": args.num_step,
         "output": str(output),
@@ -2907,6 +2928,8 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
                 "voice": args.voice,
                 "speaker": args.speaker,
                 "instructions_present": bool(args.instructions),
+                "task_type": args.task_type,
+                "max_new_tokens": args.max_new_tokens,
                 "stream_requested": args.stream,
                 "num_step": args.num_step,
                 "text_chars": len(args.text),
@@ -2920,7 +2943,7 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
                 "play_requested": args.play,
                 "combine_requested": args.combine,
                 "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
-                "request_shape": server_request_shape(args),
+                "request_shape": server_request_shape(args, language=chunk_plan[0]["language"]),
                 "runtime_dependency": "optional_local_openai_compatible_http_server",
                 "fallback_used": False,
                 "provider_exclusive": True,
@@ -2943,7 +2966,7 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
         try:
             audio, status_code, content_type, generation_ms = post_server_speech(
                 endpoint=endpoint,
-                body=server_request_body(args, str(chunk["text"])),
+                body=server_request_body(args, str(chunk["text"]), language=str(chunk["language"])),
                 api_key_env=args.api_key_env,
                 timeout=args.timeout,
             )
@@ -3014,6 +3037,8 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
         "voice": args.voice,
         "speaker": args.speaker,
         "instructions_present": bool(args.instructions),
+        "task_type": args.task_type,
+        "max_new_tokens": args.max_new_tokens,
         "stream_requested": args.stream,
         "num_step": args.num_step,
         "output_dir": str(output_dir),
@@ -4036,8 +4061,11 @@ def build_parser() -> argparse.ArgumentParser:
     speak_server.add_argument("--api-key-env", default=ENV_SERVER_API_KEY)
     speak_server.add_argument("--model", default="omnivoice")
     speak_server.add_argument("--voice", default="default")
+    speak_server.add_argument("--language")
     speak_server.add_argument("--speaker")
     speak_server.add_argument("--instructions")
+    speak_server.add_argument("--task-type")
+    speak_server.add_argument("--max-new-tokens", type=int)
     speak_server.add_argument("--speed", type=float)
     speak_server.add_argument("--stream", action=argparse.BooleanOptionalAction, default=None)
     speak_server.add_argument("--num-step", type=int)
@@ -4055,6 +4083,8 @@ def build_parser() -> argparse.ArgumentParser:
     speak_long_server.add_argument("--voice", default="default")
     speak_long_server.add_argument("--speaker")
     speak_long_server.add_argument("--instructions")
+    speak_long_server.add_argument("--task-type")
+    speak_long_server.add_argument("--max-new-tokens", type=int)
     speak_long_server.add_argument("--speed", type=float)
     speak_long_server.add_argument("--stream", action=argparse.BooleanOptionalAction, default=None)
     speak_long_server.add_argument("--num-step", type=int)

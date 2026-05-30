@@ -531,6 +531,8 @@ def synthesize_session(
     server_voice: str,
     server_speaker: str | None,
     server_instructions: str | None,
+    server_task_type: str | None,
+    server_max_new_tokens: int | None,
     server_stream: bool | None,
     server_num_step: int | None,
     combine: bool,
@@ -560,6 +562,10 @@ def synthesize_session(
             command.extend(["--speaker", server_speaker])
         if server_instructions:
             command.extend(["--instructions", server_instructions])
+        if server_task_type:
+            command.extend(["--task-type", server_task_type])
+        if server_max_new_tokens is not None:
+            command.extend(["--max-new-tokens", str(server_max_new_tokens)])
         if server_stream is True:
             command.append("--stream")
         elif server_stream is False:
@@ -863,12 +869,15 @@ def command_run(args: argparse.Namespace) -> int:
                 "stt": args.stt,
                 "combine": args.combine,
                 "provider_route": args.provider_route,
+                "provider_language": args.provider_language,
                 "server_url": args.server_url,
                 "server_health_path": args.server_health_path,
                 "server_voice": args.server_voice or "default",
                 "server_voice_source": "arg" if args.server_voice else "default",
                 "server_speaker": args.server_speaker,
                 "server_instructions_present": bool(args.server_instructions),
+                "server_task_type": args.server_task_type,
+                "server_max_new_tokens": args.server_max_new_tokens,
                 "server_stream": args.server_stream,
                 "server_num_step": args.server_num_step,
                 "server_preflight": server_preflight,
@@ -939,6 +948,8 @@ def command_run(args: argparse.Namespace) -> int:
                     server_voice=resolved_server_voice,
                     server_speaker=args.server_speaker,
                     server_instructions=args.server_instructions,
+                    server_task_type=args.server_task_type,
+                    server_max_new_tokens=args.server_max_new_tokens,
                     server_stream=args.server_stream,
                     server_num_step=args.server_num_step,
                     combine=args.combine,
@@ -990,6 +1001,8 @@ def command_run(args: argparse.Namespace) -> int:
         ),
         "server_speaker": args.server_speaker if args.provider_route == "server" else None,
         "server_instructions_present": bool(args.server_instructions) if args.provider_route == "server" else None,
+        "server_task_type": args.server_task_type if args.provider_route == "server" else None,
+        "server_max_new_tokens": args.server_max_new_tokens if args.provider_route == "server" else None,
         "server_stream": args.server_stream if args.provider_route == "server" else None,
         "server_num_step": args.server_num_step if args.provider_route == "server" else None,
         "stt_language": args.stt_language,
@@ -1157,6 +1170,8 @@ def command_self_test(_args: argparse.Namespace) -> int:
                 server_voice="felipe-clone",
                 server_speaker="felipe-clone",
                 server_instructions="Preserve English technical terms.",
+                server_task_type="CustomVoice",
+                server_max_new_tokens=2048,
                 server_stream=False,
                 server_num_step=12,
                 combine=True,
@@ -1178,6 +1193,10 @@ def command_self_test(_args: argparse.Namespace) -> int:
             "felipe-clone",
             "--instructions",
             "Preserve English technical terms.",
+            "--task-type",
+            "CustomVoice",
+            "--max-new-tokens",
+            "2048",
             "--no-stream",
             "--num-step",
             "12",
@@ -1217,6 +1236,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--server-voice")
     run.add_argument("--server-speaker")
     run.add_argument("--server-instructions")
+    run.add_argument("--server-task-type")
+    run.add_argument("--server-max-new-tokens", type=int)
     run.add_argument("--server-stream", action=argparse.BooleanOptionalAction, default=None)
     run.add_argument("--server-num-step", type=int)
     run.add_argument("--server-health-path", default="/health")

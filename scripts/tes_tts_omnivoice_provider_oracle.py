@@ -88,8 +88,11 @@ REQUIRED_SERVER_DRY_RUN_KEYS = {
     "api_key_present",
     "model",
     "voice",
+    "language",
     "speaker",
     "instructions_present",
+    "task_type",
+    "max_new_tokens",
     "stream_requested",
     "num_step",
     "output",
@@ -115,6 +118,8 @@ REQUIRED_SERVER_LONG_DRY_RUN_KEYS = {
     "voice",
     "speaker",
     "instructions_present",
+    "task_type",
+    "max_new_tokens",
     "stream_requested",
     "num_step",
     "text_chars",
@@ -869,10 +874,16 @@ def validate_server_route_command() -> list[str]:
                 "omnivoice",
                 "--voice",
                 "felipe-clone",
+                "--language",
+                "pt",
                 "--speaker",
                 "felipe-clone",
                 "--instructions",
                 "Leia em PT-BR preservando termos tecnicos em ingles.",
+                "--task-type",
+                "CustomVoice",
+                "--max-new-tokens",
+                "2048",
                 "--stream",
                 "--num-step",
                 "8",
@@ -910,11 +921,21 @@ def validate_server_route_command() -> list[str]:
             failures.append("speak-server must stay optional local server route")
         if dry_payload.get("endpoint") != "http://127.0.0.1:9999/v1/audio/speech":
             failures.append("speak-server must derive OpenAI-compatible speech endpoint")
+        if dry_payload.get("language") != "pt":
+            failures.append("speak-server dry-run must report server language")
+        if dry_payload.get("task_type") != "CustomVoice":
+            failures.append("speak-server dry-run must report task_type")
+        if dry_payload.get("max_new_tokens") != 2048:
+            failures.append("speak-server dry-run must report max_new_tokens")
         request_shape = dry_payload.get("request_shape")
         if not isinstance(request_shape, dict) or request_shape.get("input") != "<redacted>":
             failures.append("speak-server dry-run must redact request input")
         elif request_shape.get("instructions") != "<redacted>":
             failures.append("speak-server dry-run must redact server instructions")
+        elif request_shape.get("language") != "pt":
+            failures.append("speak-server dry-run request shape must include language")
+        elif request_shape.get("task_type") != "CustomVoice":
+            failures.append("speak-server dry-run request shape must include task_type")
         if dry_payload.get("speaker") != "felipe-clone":
             failures.append("speak-server dry-run must report speaker control field")
         if dry_payload.get("instructions_present") is not True:
@@ -942,6 +963,10 @@ def validate_server_route_command() -> list[str]:
                 "felipe-clone",
                 "--instructions",
                 "Mantenha ingles tecnico natural.",
+                "--task-type",
+                "CustomVoice",
+                "--max-new-tokens",
+                "2048",
                 "--no-stream",
                 "--num-step",
                 "12",
@@ -984,6 +1009,10 @@ def validate_server_route_command() -> list[str]:
             failures.append("speak-long-server dry-run must report speaker control field")
         if long_dry_payload.get("instructions_present") is not True:
             failures.append("speak-long-server dry-run must report instructions without leaking them")
+        if long_dry_payload.get("task_type") != "CustomVoice":
+            failures.append("speak-long-server dry-run must report task_type")
+        if long_dry_payload.get("max_new_tokens") != 2048:
+            failures.append("speak-long-server dry-run must report max_new_tokens")
         if long_dry_payload.get("stream_requested") is not False:
             failures.append("speak-long-server dry-run must report disabled stream intent")
         if long_dry_payload.get("num_step") != 12:
@@ -991,6 +1020,10 @@ def validate_server_route_command() -> list[str]:
         long_request_shape = long_dry_payload.get("request_shape")
         if not isinstance(long_request_shape, dict) or long_request_shape.get("instructions") != "<redacted>":
             failures.append("speak-long-server dry-run must redact server instructions")
+        elif long_request_shape.get("language") != "pt":
+            failures.append("speak-long-server dry-run request shape must include first chunk language")
+        elif long_request_shape.get("task_type") != "CustomVoice":
+            failures.append("speak-long-server dry-run request shape must include task_type")
         if long_dry_payload.get("chunk_languages") != ["pt", "en", "pt"]:
             failures.append("speak-long-server must preserve PT/EN/PT chunk language plan")
         if long_dry_payload.get("combine_requested") is not True:
@@ -1083,10 +1116,16 @@ def validate_server_route_command() -> list[str]:
                     "omnivoice",
                     "--voice",
                     "felipe-clone",
+                    "--language",
+                    "pt",
                     "--speaker",
                     "felipe-clone",
                     "--instructions",
                     "Preserve JSON and TypeScript.",
+                    "--task-type",
+                    "CustomVoice",
+                    "--max-new-tokens",
+                    "2048",
                     "--stream",
                     "--num-step",
                     "8",
@@ -1166,10 +1205,16 @@ def validate_server_route_command() -> list[str]:
                 failures.append("speak-server request body lost model or voice")
             if body.get("input") != "Teste real do TES TTS com JSON e TypeScript.":
                 failures.append("speak-server request body lost input text")
+            if body.get("language") != "pt":
+                failures.append("speak-server request body lost language")
             if body.get("speaker") != "felipe-clone":
                 failures.append("speak-server request body lost speaker")
             if body.get("instructions") != "Preserve JSON and TypeScript.":
                 failures.append("speak-server request body lost instructions")
+            if body.get("task_type") != "CustomVoice":
+                failures.append("speak-server request body lost task_type")
+            if body.get("max_new_tokens") != 2048:
+                failures.append("speak-server request body lost max_new_tokens")
             if body.get("stream") is not True:
                 failures.append("speak-server request body lost stream intent")
             if body.get("num_step") != 8:
@@ -1192,6 +1237,10 @@ def validate_server_route_command() -> list[str]:
                     "felipe-clone",
                     "--instructions",
                     "Keep English terms stable.",
+                    "--task-type",
+                    "CustomVoice",
+                    "--max-new-tokens",
+                    "2048",
                     "--no-stream",
                     "--num-step",
                     "12",
@@ -1248,6 +1297,12 @@ def validate_server_route_command() -> list[str]:
                     failures.append(f"speak-long-server chunk {index} lost speaker")
                 if request_body.get("instructions") != "Keep English terms stable.":
                     failures.append(f"speak-long-server chunk {index} lost instructions")
+                if request_body.get("task_type") != "CustomVoice":
+                    failures.append(f"speak-long-server chunk {index} lost task_type")
+                if request_body.get("max_new_tokens") != 2048:
+                    failures.append(f"speak-long-server chunk {index} lost max_new_tokens")
+                if request_body.get("language") not in {"pt", "en"}:
+                    failures.append(f"speak-long-server chunk {index} lost per-chunk language")
                 if request_body.get("stream") is not False:
                     failures.append(f"speak-long-server chunk {index} lost disabled stream intent")
                 if request_body.get("num_step") != 12:

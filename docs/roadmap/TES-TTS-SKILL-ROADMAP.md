@@ -44,8 +44,8 @@ durable cache, or proactive `speak`.
   and redacted in dry-run evidence; no install/download/write.
 - `audio_variant_lab --provider-route server` now preflights server readiness
   once, records `SERVER_UNAVAILABLE` instead of repeating failed synthesis, and
-  can pass community server controls for speaker, instructions, stream, and
-  inference steps during chunk 2/3 review.
+  can pass community server controls for per-chunk language, task type, speaker,
+  instructions, stream, token budget, and inference steps during chunk 2/3 review.
 
 ## Next Cut
 Human-score `20260530-162231-615943` against `20260530-151743`, then run the
