@@ -497,6 +497,26 @@ def run_command(command: list[str]) -> dict[str, Any]:
     }
 
 
+def run_server_preflight(server_url: str | None, *, health_path: str, dry_run: bool = False) -> dict[str, Any]:
+    command = [
+        "python3",
+        "scripts/tes_tts_omnivoice_provider.py",
+        "server-status",
+        "--health-path",
+        health_path,
+    ]
+    if server_url:
+        command.extend(["--server-url", server_url])
+    if dry_run:
+        command.append("--dry-run")
+    result = run_command(command)
+    try:
+        result["json"] = json.loads(result["stdout"])
+    except json.JSONDecodeError:
+        result["json"] = None
+    return result
+
+
 def synthesize_session(
     session: Path,
     *,
@@ -793,6 +813,47 @@ def command_run(args: argparse.Namespace) -> int:
         "pause_newlines",
     ]
 
+    server_preflight: dict[str, Any] | None = None
+    if args.synthesize and args.provider_route == "server":
+        server_preflight = run_server_preflight(args.server_url, health_path=args.server_health_path)
+        preflight_payload = server_preflight.get("json") if isinstance(server_preflight.get("json"), dict) else {}
+        preflight_status = preflight_payload.get("status")
+        if server_preflight["returncode"] != 0 or preflight_status != "SERVER_AVAILABLE":
+            output = output_root / "variant-lab-summary.json"
+            payload = {
+                "schema": "tes-tts-audio-variant-lab@1",
+                "version": VERSION,
+                "status": preflight_status or "SERVER_PREFLIGHT_FAILED",
+                "reason": "server route preflight did not prove a ready OpenAI-compatible TTS server",
+                "source_session": str(source_session),
+                "output_root": str(output_root),
+                "available_chunk_ids": sorted(available_ids),
+                "selected_chunk_ids": sorted(selected_ids),
+                "synthesize": args.synthesize,
+                "audit": args.audit,
+                "stt": args.stt,
+                "combine": args.combine,
+                "provider_route": args.provider_route,
+                "server_url": args.server_url,
+                "server_health_path": args.server_health_path,
+                "server_preflight": server_preflight,
+                "results": [],
+                "ranked_results": [],
+            }
+            output.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+            print(
+                json.dumps(
+                    {
+                        "status": payload["status"],
+                        "output": str(output),
+                        "server_preflight_status": preflight_status,
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
+            return 2
+
     results: list[dict[str, Any]] = []
     for source in source_chunks:
         source_id = source.get("id")
@@ -870,6 +931,8 @@ def command_run(args: argparse.Namespace) -> int:
         "provider_language": args.provider_language,
         "provider_route": args.provider_route,
         "server_url": args.server_url,
+        "server_health_path": args.server_health_path if args.provider_route == "server" else None,
+        "server_preflight": server_preflight if args.provider_route == "server" and args.synthesize else None,
         "server_voice": args.server_voice if args.provider_route == "server" else None,
         "stt_language": args.stt_language,
         "results": results,
@@ -1002,6 +1065,14 @@ def command_self_test(_args: argparse.Namespace) -> int:
         source_ids = {chunk["id"] for chunk in load_source_chunks(source_session)}
         if "chunk-003" in source_ids:
             failures.append("default fixture unexpectedly contains chunk-003; update missing-id self-test")
+    preflight = run_server_preflight("http://127.0.0.1:9999/v1", health_path="/health", dry_run=True)
+    preflight_payload = preflight.get("json") if isinstance(preflight.get("json"), dict) else {}
+    if preflight_payload.get("endpoint") != "http://127.0.0.1:9999/v1/audio/speech":
+        failures.append("server preflight did not normalize /v1 base URL")
+    if preflight_payload.get("health_url") != "http://127.0.0.1:9999/health":
+        failures.append("server preflight did not derive root health URL")
+    if preflight_payload.get("status") != "DRY_RUN":
+        failures.append("server preflight dry-run status drifted")
     if failures:
         print(json.dumps({"status": "FAIL", "failures": failures}, ensure_ascii=False, indent=2))
         return 1
@@ -1031,6 +1102,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--provider-route", choices=["resident", "server"], default="resident")
     run.add_argument("--server-url")
     run.add_argument("--server-voice", default="default")
+    run.add_argument("--server-health-path", default="/health")
     run.add_argument("--stt-language", default="portuguese")
     run.set_defaults(func=command_run)
 

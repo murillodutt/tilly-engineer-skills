@@ -40,6 +40,8 @@ durable cache, or proactive `speak`.
 - Community scan produced tested `server-status` with TCP plus optional
   `/health`, `speak-server`, and `speak-long-server` routes for local
   OpenAI-compatible OmniVoice servers; no install/download/write.
+- `audio_variant_lab --provider-route server` now preflights server readiness
+  once and records `SERVER_UNAVAILABLE` instead of repeating failed synthesis.
 
 ## Next Cut
 Human-score `20260530-162231-615943` against `20260530-151743`, then run the
