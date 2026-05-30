@@ -19,6 +19,13 @@ ADR 0004 remains the architectural boundary. This roadmap records current
 state, active product direction, next decisions, and the smallest evidence
 needed for a future agent to continue without chat history.
 
+Partition contract:
+
+- Dashboard: current state, active decisions, latest evidence, and next cut.
+- Registry: durable artifact lists and grouped historical ranges.
+- History: compressed lineage and lessons from closed sequences.
+- Gates: `validate_doc_size.py` enforces the dashboard and partition budgets.
+
 ## Current State
 
 `tes-tts` is reactive delivered behavior in TES source. It reads or narrates
@@ -69,26 +76,21 @@ Historical evolution ledger: `TES-TTS-SKILL-ROADMAP-HISTORY.md`.
 
 Latest local product evidence:
 
-- Commit: `eb44ce7 Add optional OmniVoice provider for TES TTS`
-- Commit: `62fbc4b Add OmniVoice product shortcut`
+- Recent commits: `eb44ce7` optional OmniVoice provider; `62fbc4b`
+  product shortcut.
 - Maintainer live rating: OmniVoice cloned voice result `9.5`.
-- Local optional provider probe: `provider_available` in the configured
-  OmniVoice venv; package remains dependency-optional.
+- Local optional provider probe: `provider_available`; package remains
+  dependency-optional.
 - Package gate: `npm run commit:check` passed before the commit.
-- Product shortcut: `status` auto-discovers the configured local OmniVoice
-  venv/reference voice, and `speak` delegates synthesis without long CLI
-  arguments.
-- Product benchmark: `bench --play --open` runs the three governed OmniVoice
-  fixtures through one loaded model and cached reference voice, plays the
-  outputs sequentially, and opens a local review page. Each run writes
-  `result.json` plus `review.html` with audio players, redacted text, and
-  metrics. The review page now includes per-case audible scoring, local JSON
-  export, and copyable decision summaries without a server. The `review`
-  subcommand reopens the latest report without regenerating audio, and
-  `package-review` creates a portable ZIP with review, metrics, WAVs, and a
-  hash manifest. Latest local report run produced `32.65s` of audio in
-  `29.37s` total with average RTF `0.9417`; the latest playback run played all
-  three WAVs via `afplay`.
+- Product shortcut: `status` auto-discovers the local OmniVoice env/reference,
+  and `speak` delegates synthesis without long CLI arguments.
+- Product benchmark: `bench --play --open --package` runs the three governed
+  OmniVoice fixtures through one loaded model, cached reference voice,
+  sequential playback, review page, and portable ZIP manifest. The review page
+  includes per-case audible scoring, JSON export, and copyable decision
+  summaries. Latest local report produced `32.65s` of audio in `29.37s` total
+  with average RTF `0.9417`; latest playback played all three WAVs via
+  `afplay`.
 
 Relevant gates for the latest cut:
 
@@ -118,10 +120,9 @@ npm run commit:check
 
 Recommended next product cut:
 
-1. Run `python3 scripts/tes_tts_omnivoice_provider.py bench --play --open`
+1. Run `python3 scripts/tes_tts_omnivoice_provider.py bench --play --open --package`
    and score audible quality by fixture in the generated review page.
-2. Run `python3 scripts/tes_tts_omnivoice_provider.py package-review` to seal
-   the local audio decision package when the score is useful.
+2. Keep `package-review` for repackaging an existing report after review.
 3. Decide whether the OmniVoice provider path is ready for release identity
    planning or needs one targeted runtime/provider fix.
 4. Keep docs limited to this dashboard, registry/history pointers, and the
@@ -129,8 +130,8 @@ Recommended next product cut:
 
 ## Maintenance Rules
 
-- Keep this dashboard under 180 lines; if it approaches the limit, partition
-  before adding more detail.
+- Keep this dashboard under the explicit `validate_doc_size.py` budget; if it
+  approaches the limit, partition before adding more detail.
 - Keep only current state, active decisions, next decisions, and latest
   evidence here.
 - Move dense artifact listings to `TES-TTS-SKILL-ROADMAP-REGISTRY.md`.

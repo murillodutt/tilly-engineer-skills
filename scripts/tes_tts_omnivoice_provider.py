@@ -474,6 +474,25 @@ def default_review_package_path(review_html: Path, output: str | None) -> Path:
     return review_html.parent / "tes-tts-omnivoice-review-package.zip"
 
 
+def write_review_package(review_html: Path, package_path: Path) -> dict[str, Any]:
+    files = review_package_files(review_html)
+    manifest = review_package_manifest(review_html, files)
+    package_path.parent.mkdir(parents=True, exist_ok=True)
+    root = review_html.parent
+    with zipfile.ZipFile(package_path, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for item in files:
+            archive.write(item, arcname=str(item.resolve().relative_to(root.resolve())))
+        archive.writestr("review-package-manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
+    return {
+        "package_zip": str(package_path),
+        "package_sha256": sha256_path(package_path),
+        "package_bytes": package_path.stat().st_size,
+        "file_count": len(files),
+        "included_files": [item["path"] for item in manifest["files"]],
+        "manifest_schema": manifest["schema"],
+    }
+
+
 def command_package_review(args: argparse.Namespace) -> int:
     review_html, source = resolve_review_html(args.path, args.benchmark_dir)
     if review_html is None or not review_html.exists():
@@ -512,14 +531,7 @@ def command_package_review(args: argparse.Namespace) -> int:
     if args.dry_run:
         emit(payload)
         return 0
-    package_path.parent.mkdir(parents=True, exist_ok=True)
-    root = review_html.parent
-    with zipfile.ZipFile(package_path, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
-        for item in files:
-            archive.write(item, arcname=str(item.resolve().relative_to(root.resolve())))
-        archive.writestr("review-package-manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
-    payload["package_sha256"] = sha256_path(package_path)
-    payload["package_bytes"] = package_path.stat().st_size
+    payload.update(write_review_package(review_html, package_path))
     emit(payload)
     return 0
 
@@ -710,8 +722,10 @@ def command_bench(args: argparse.Namespace) -> int:
                 "output_dir": str(output_dir),
                 "play_requested": args.play,
                 "open_requested": args.open,
+                "package_requested": args.package,
                 "result_json": str(output_dir / "result.json"),
                 "review_html": str(output_dir / "review.html"),
+                "package_zip": str(output_dir / "tes-tts-omnivoice-review-package.zip"),
                 "command_shape": redact_command_value(command, "--ref-text"),
                 "allows_install": False,
                 "allows_download": False,
@@ -752,6 +766,7 @@ def command_bench(args: argparse.Namespace) -> int:
     payload["output_dir"] = str(output_dir)
     payload["play_requested"] = args.play
     payload["open_requested"] = args.open
+    payload["package_requested"] = args.package
     outputs = payload.get("outputs")
     if isinstance(outputs, list) and outputs:
         rtfs = [item.get("rtf") for item in outputs if isinstance(item.get("rtf"), (int, float))]
@@ -796,6 +811,12 @@ def command_bench(args: argparse.Namespace) -> int:
                 json.dumps(payload, ensure_ascii=False, indent=2),
                 encoding="utf-8",
             )
+        if args.package and completed.returncode == 0:
+            package_result = write_review_package(
+                Path(review_paths["review_html"]),
+                output_dir / "tes-tts-omnivoice-review-package.zip",
+            )
+            payload.update(package_result)
     emit(payload)
     return completed.returncode
 
@@ -1186,6 +1207,7 @@ def build_parser() -> argparse.ArgumentParser:
     bench.add_argument("--output-dir")
     bench.add_argument("--play", action="store_true")
     bench.add_argument("--open", action="store_true")
+    bench.add_argument("--package", action="store_true")
     bench.add_argument("--dry-run", action="store_true")
     bench.set_defaults(func=command_bench)
 

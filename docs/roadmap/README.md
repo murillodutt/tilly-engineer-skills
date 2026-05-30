@@ -64,7 +64,9 @@ Keep this root index short and partitioned:
 - Use one row per active product line or grouped historical family.
 - Do not list every prompt, SPEC, or audit file here when a line has its own
   dashboard, registry, or history.
-- When a roadmap exceeds 180 lines, partition it before adding more status.
+- Keep this index and active dashboards under their explicit
+  `validate_doc_size.py` budgets. When a roadmap approaches the limit,
+  partition it before adding more status.
 - Active dashboards carry current decisions; registries carry dense artifact
   pointers; history files carry closed lineage.
 - Every update must reduce ambiguity for the next executor.

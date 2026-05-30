@@ -81,8 +81,10 @@ REQUIRED_BENCH_DRY_RUN_KEYS = {
     "output_dir",
     "play_requested",
     "open_requested",
+    "package_requested",
     "result_json",
     "review_html",
+    "package_zip",
     "command_shape",
     "allows_install",
     "allows_download",
@@ -260,6 +262,7 @@ def run_status_and_dry_run() -> tuple[
                 "voz privada SECRET_REF_TEXT",
                 "--play",
                 "--open",
+                "--package",
                 "--dry-run",
             ],
             text=True,
@@ -403,6 +406,8 @@ def validate_bench_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
         failures.append("bench dry-run must report playback intent")
     if payload.get("open_requested") is not True:
         failures.append("bench dry-run must report review-open intent")
+    if payload.get("package_requested") is not True:
+        failures.append("bench dry-run must report review-package intent")
     command_shape = payload.get("command_shape")
     if not isinstance(command_shape, list):
         failures.append("bench dry-run command_shape must be a list")
@@ -423,6 +428,9 @@ def validate_bench_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
         failures.append("bench dry-run must report result JSON path")
     if not isinstance(review_html, str) or not review_html.endswith("review.html"):
         failures.append("bench dry-run must report review HTML path")
+    package_zip = payload.get("package_zip")
+    if not isinstance(package_zip, str) or not package_zip.endswith("tes-tts-omnivoice-review-package.zip"):
+        failures.append("bench dry-run must report review package path")
     return failures
 
 

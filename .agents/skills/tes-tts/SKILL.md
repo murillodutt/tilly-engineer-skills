@@ -41,7 +41,7 @@ compatible TES intent alias if the host reports it as an invalid slash.
    `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<text>" --play`
    for premium cloned-voice reads, while preserving `say` as the local
    fallback. For a product-quality smoke/latency/listening run, use
-   `python3 scripts/tes_tts_omnivoice_provider.py bench --play --open`; the
+   `python3 scripts/tes_tts_omnivoice_provider.py bench --play --open --package`; the
    command writes `result.json` and a scored `review.html` beside the
    generated WAV files. Use the review page to score each case, export JSON
    evidence, or copy a short decision summary. Reopen the latest review with
