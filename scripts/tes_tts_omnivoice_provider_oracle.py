@@ -777,12 +777,42 @@ def validate_product_status_command() -> list[str]:
             encoding="utf-8",
         )
         package_zip.write_bytes(b"fake-package")
-        args = argparse.Namespace(path=str(review), benchmark_dir=None, python=sys.executable, ref_audio=None)
+        args = argparse.Namespace(
+            path=str(review),
+            benchmark_dir=None,
+            python=sys.executable,
+            ref_audio=None,
+            format="json",
+            strict=False,
+        )
         stdout = io.StringIO()
         with contextlib.redirect_stdout(stdout):
             if provider.command_product_status(args) != 0:
                 failures.append("product-status command failed for local fixture")
         payload = json.loads(stdout.getvalue())
+        text_args = argparse.Namespace(
+            path=str(review),
+            benchmark_dir=None,
+            python=sys.executable,
+            ref_audio=None,
+            format="text",
+            strict=False,
+        )
+        text_stdout = io.StringIO()
+        with contextlib.redirect_stdout(text_stdout):
+            if provider.command_product_status(text_args) != 0:
+                failures.append("product-status text command failed for local fixture")
+        text_output = text_stdout.getvalue()
+        strict_args = argparse.Namespace(
+            path=str(review),
+            benchmark_dir=None,
+            python=sys.executable,
+            ref_audio=None,
+            format="text",
+            strict=True,
+        )
+        with contextlib.redirect_stdout(io.StringIO()):
+            strict_code = provider.command_product_status(strict_args)
     missing = sorted(REQUIRED_PRODUCT_STATUS_KEYS - set(payload))
     extra = sorted(set(payload) - REQUIRED_PRODUCT_STATUS_KEYS)
     if missing:
@@ -805,6 +835,11 @@ def validate_product_status_command() -> list[str]:
         failures.append("product-status must discover packaged review")
     if payload.get("package_sha256") is None:
         failures.append("product-status must report package sha when zip exists")
+    for snippet in ("TES TTS OmniVoice product state:", "Provider:", "Next:", "Locks:"):
+        if snippet not in text_output:
+            failures.append(f"product-status text output missing snippet: {snippet}")
+    if strict_code == 0:
+        failures.append("product-status --strict must fail when provider setup is absent")
     for key in ("allows_install", "allows_download", "allows_global_config_write", "allows_sync", "allows_release"):
         if payload.get(key) is not False:
             failures.append(f"product-status must keep {key}=false")

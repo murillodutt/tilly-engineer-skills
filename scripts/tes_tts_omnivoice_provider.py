@@ -657,6 +657,34 @@ def product_state_and_next_action(*, ready: bool, review_html: Path | None, deci
     )
 
 
+def render_product_status_text(payload: dict[str, Any]) -> str:
+    provider = "ready" if payload.get("provider_ready") else "needs setup"
+    review = payload.get("review_html") or "not found"
+    decision = payload.get("decision") or "not sealed"
+    scored = payload.get("scored_case_count")
+    cases = payload.get("case_count")
+    score_line = f"{scored}/{cases} cases scored" if scored is not None and cases is not None else "scores unavailable"
+    audio = payload.get("total_audio_duration_seconds")
+    generation = payload.get("total_generation_ms")
+    rtf = payload.get("avg_rtf")
+    audio_line = "audio metrics unavailable"
+    if audio is not None or generation is not None or rtf is not None:
+        audio_line = f"audio={audio}s generation={generation}ms avg_rtf={rtf}"
+    package_sha = payload.get("package_sha256") or "not packaged"
+    return "\n".join(
+        [
+            f"TES TTS OmniVoice product state: {payload.get('product_state')}",
+            f"Provider: {provider}",
+            f"Review: {review}",
+            f"Decision: {decision} ({score_line})",
+            f"Metrics: {audio_line}",
+            f"Package SHA: {package_sha}",
+            f"Next: {payload.get('next_action')}",
+            "Locks: no install, no download, no global config write, no sync, no release.",
+        ]
+    )
+
+
 def command_product_status(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
     ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
@@ -687,46 +715,51 @@ def command_product_status(args: argparse.Namespace) -> int:
     )
     summary = result_payload.get("benchmark_summary")
     summary = summary if isinstance(summary, dict) else {}
-    emit(
-        {
-            "provider": "omnivoice",
-            "status": "PASS",
-            "version": VERSION,
-            "mode": "product_status",
-            "product_state": product_state,
-            "next_action": next_action,
-            "provider_ready": ready,
-            "provider_python": provider_python,
-            "provider_python_source": python_source,
-            "ref_audio": str(ref_audio) if ref_audio else None,
-            "ref_audio_source": ref_source,
-            "ref_audio_ready": ref_audio_ready,
-            "review_html": str(review_html) if review_html else None,
-            "review_source": review_source,
-            "review_exists": review_exists,
-            "result_json": str(result_json) if result_json else None,
-            "result_json_exists": bool(result_json and result_json.exists()),
-            "decision_json": str(decision_json) if decision_json else None,
-            "decision_json_exists": bool(decision_json and decision_json.exists()),
-            "decision": decision,
-            "case_count": decision_payload.get("case_count"),
-            "scored_case_count": decision_payload.get("scored_case_count"),
-            "avg_rtf": summary.get("avg_rtf"),
-            "total_audio_duration_seconds": summary.get("total_audio_duration_seconds"),
-            "total_generation_ms": summary.get("total_generation_ms"),
-            "package_zip": str(package_zip) if package_zip else None,
-            "package_zip_exists": bool(package_zip and package_zip.exists()),
-            "package_sha256": sha256_path(package_zip) if package_zip and package_zip.exists() else None,
-            "release_identity": "deferred_until_owner_decision",
-            "sync_status": "REMOTE_SYNC_NOT_REQUESTED",
-            "allows_install": False,
-            "allows_download": False,
-            "allows_global_config_write": False,
-            "allows_sync": False,
-            "allows_release": False,
-        }
-    )
+    payload = {
+        "provider": "omnivoice",
+        "status": "PASS",
+        "version": VERSION,
+        "mode": "product_status",
+        "product_state": product_state,
+        "next_action": next_action,
+        "provider_ready": ready,
+        "provider_python": provider_python,
+        "provider_python_source": python_source,
+        "ref_audio": str(ref_audio) if ref_audio else None,
+        "ref_audio_source": ref_source,
+        "ref_audio_ready": ref_audio_ready,
+        "review_html": str(review_html) if review_html else None,
+        "review_source": review_source,
+        "review_exists": review_exists,
+        "result_json": str(result_json) if result_json else None,
+        "result_json_exists": bool(result_json and result_json.exists()),
+        "decision_json": str(decision_json) if decision_json else None,
+        "decision_json_exists": bool(decision_json and decision_json.exists()),
+        "decision": decision,
+        "case_count": decision_payload.get("case_count"),
+        "scored_case_count": decision_payload.get("scored_case_count"),
+        "avg_rtf": summary.get("avg_rtf"),
+        "total_audio_duration_seconds": summary.get("total_audio_duration_seconds"),
+        "total_generation_ms": summary.get("total_generation_ms"),
+        "package_zip": str(package_zip) if package_zip else None,
+        "package_zip_exists": bool(package_zip and package_zip.exists()),
+        "package_sha256": sha256_path(package_zip) if package_zip and package_zip.exists() else None,
+        "release_identity": "deferred_until_owner_decision",
+        "sync_status": "REMOTE_SYNC_NOT_REQUESTED",
+        "allows_install": False,
+        "allows_download": False,
+        "allows_global_config_write": False,
+        "allows_sync": False,
+        "allows_release": False,
+    }
+    if args.format == "text":
+        print(render_product_status_text(payload))
+    else:
+        emit(payload)
+    if args.strict and product_state != "AUDIO_CANDIDATE":
+        return 3
     return 0
+
 
 
 def command_package_review(args: argparse.Namespace) -> int:
@@ -1471,6 +1504,8 @@ def build_parser() -> argparse.ArgumentParser:
     product_status.add_argument("--ref-audio")
     product_status.add_argument("--path")
     product_status.add_argument("--benchmark-dir")
+    product_status.add_argument("--format", choices=["json", "text"], default="json")
+    product_status.add_argument("--strict", action="store_true")
     product_status.set_defaults(func=command_product_status)
 
     package_review = subparsers.add_parser("package-review")

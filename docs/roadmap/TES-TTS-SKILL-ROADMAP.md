@@ -67,11 +67,11 @@ Latest local product evidence:
   and `speak` delegates synthesis without long CLI arguments.
 - Product benchmark: `bench --play --open --package` writes WAVs, metrics,
   review HTML, and ZIP manifest. `decide-review --review-json <exported-json>
-  --package` seals `review-decision.json`. `product-status` now reports the
-  provider cockpit: readiness, latest review, sealed decision, package SHA, and
-  next action. Latest packaged run produced `32.69s` of audio in `30.19s`
-  total with average RTF `0.9422`; decision-sealed package SHA starts
-  `0206b249`.
+  --package` seals `review-decision.json`. `product-status --format text`
+  reports the provider cockpit for humans; `product-status --strict` gates
+  promotion unless the sealed state is `AUDIO_CANDIDATE`. Latest packaged run
+  produced `32.69s` of audio in `30.19s` total with average RTF `0.9422`;
+  decision-sealed package SHA starts `0206b249`.
 
 Relevant gates are the focused TTS provider/runtime/oracle suite,
 `materialize_adapter.py all --check`, TDS/doc-size/reference validators, and
@@ -89,7 +89,7 @@ Recommended next product cut:
    and score audible quality by fixture in the generated review page.
 2. Export review JSON and run
    `python3 scripts/tes_tts_omnivoice_provider.py decide-review --review-json <exported-json> --package`.
-3. Run `python3 scripts/tes_tts_omnivoice_provider.py product-status`.
+3. Run `python3 scripts/tes_tts_omnivoice_provider.py product-status --format text --strict`.
 4. Decide whether the OmniVoice provider path is ready for release identity
    planning or needs one targeted runtime/provider fix.
 5. Keep docs limited to this dashboard, registry/history pointers, and the
