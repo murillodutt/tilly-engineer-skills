@@ -20,12 +20,14 @@ from pathlib import Path
 import re
 import select
 import shutil
+import socket
 import subprocess
 import sys
 import threading
 import time
 from typing import Any
 import urllib.error
+import urllib.parse
 import urllib.request
 import wave
 import zipfile
@@ -193,6 +195,40 @@ def server_audio_speech_endpoint(base_url: str) -> str:
     return f"{normalized}/v1/audio/speech"
 
 
+def server_tcp_target(server_url: str) -> tuple[str, int, str]:
+    parsed = urllib.parse.urlparse(server_url)
+    scheme = parsed.scheme or "http"
+    if scheme not in {"http", "https"}:
+        raise ValueError(f"unsupported server URL scheme: {scheme}")
+    if not parsed.hostname:
+        raise ValueError("server URL must include a host")
+    port = parsed.port or (443 if scheme == "https" else 80)
+    return parsed.hostname, port, scheme
+
+
+def check_server_tcp(server_url: str, timeout: float) -> tuple[bool, dict[str, Any]]:
+    host, port, scheme = server_tcp_target(server_url)
+    started = time.perf_counter()
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            pass
+    except OSError as exc:
+        return False, {
+            "host": host,
+            "port": port,
+            "scheme": scheme,
+            "connect_ms": round((time.perf_counter() - started) * 1000, 3),
+            "reason": str(exc),
+        }
+    return True, {
+        "host": host,
+        "port": port,
+        "scheme": scheme,
+        "connect_ms": round((time.perf_counter() - started) * 1000, 3),
+        "reason": None,
+    }
+
+
 def server_request_body(args: argparse.Namespace, text: str) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "model": args.model,
@@ -311,6 +347,45 @@ def command_status(args: argparse.Namespace) -> int:
         }
     )
     return 0 if ready else 2
+
+
+def command_server_status(args: argparse.Namespace) -> int:
+    server_url, server_url_source = resolve_server_url(args.server_url)
+    endpoint = server_audio_speech_endpoint(server_url)
+    api_key_present = bool(os.environ.get(args.api_key_env))
+    base_payload = {
+        "provider": "omnivoice",
+        "version": VERSION,
+        "mode": "product_server_preflight",
+        "server_url": server_url,
+        "server_url_source": server_url_source,
+        "endpoint": endpoint,
+        "api_key_env": args.api_key_env,
+        "api_key_present": api_key_present,
+        "timeout_seconds": args.timeout,
+        "runtime_dependency": "optional_local_openai_compatible_http_server",
+        "probe_scope": "tcp_connect_only_no_synthesis",
+        "allows_install": False,
+        "allows_download": False,
+        "allows_global_config_write": False,
+    }
+    if args.dry_run:
+        emit({**base_payload, "status": "DRY_RUN", "connectivity": None})
+        return 0
+
+    try:
+        available, connectivity = check_server_tcp(server_url, timeout=args.timeout)
+    except ValueError as exc:
+        emit({**base_payload, "status": "NEEDS_REVIEW", "connectivity": None, "reason": str(exc)})
+        return 1
+    emit(
+        {
+            **base_payload,
+            "status": "SERVER_AVAILABLE" if available else "SERVER_UNAVAILABLE",
+            "connectivity": connectivity,
+        }
+    )
+    return 0 if available else 2
 
 
 def common_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path) -> list[str]:
@@ -3614,6 +3689,13 @@ def build_parser() -> argparse.ArgumentParser:
     status.add_argument("--python")
     status.add_argument("--ref-audio")
     status.set_defaults(func=command_status)
+
+    server_status = subparsers.add_parser("server-status")
+    server_status.add_argument("--server-url")
+    server_status.add_argument("--api-key-env", default=ENV_SERVER_API_KEY)
+    server_status.add_argument("--timeout", type=float, default=1.0)
+    server_status.add_argument("--dry-run", action="store_true")
+    server_status.set_defaults(func=command_server_status)
 
     warm_cache = subparsers.add_parser("warm-cache")
     add_runtime_args(warm_cache, ref_audio_required=False)

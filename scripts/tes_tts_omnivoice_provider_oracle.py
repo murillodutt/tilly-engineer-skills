@@ -128,6 +128,24 @@ REQUIRED_SERVER_LONG_DRY_RUN_KEYS = {
     "allows_download",
     "allows_global_config_write",
 }
+REQUIRED_SERVER_STATUS_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "mode",
+    "server_url",
+    "server_url_source",
+    "endpoint",
+    "api_key_env",
+    "api_key_present",
+    "timeout_seconds",
+    "runtime_dependency",
+    "probe_scope",
+    "connectivity",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
+}
 REQUIRED_BENCH_DRY_RUN_KEYS = {
     "provider",
     "status",
@@ -744,6 +762,46 @@ def validate_server_route_command() -> list[str]:
     with tempfile.TemporaryDirectory() as tmp_dir:
         root = Path(tmp_dir)
         output = root / "server.wav"
+        status_dry_completed = subprocess.run(
+            [
+                sys.executable,
+                str(PROVIDER_SCRIPT),
+                "server-status",
+                "--server-url",
+                "http://127.0.0.1:9999",
+                "--api-key-env",
+                "TES_TTS_FAKE_SERVER_KEY",
+                "--dry-run",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if status_dry_completed.returncode != 0:
+            failures.append(f"server-status dry-run returned unexpected exit code {status_dry_completed.returncode}")
+            return failures
+        try:
+            status_dry_payload = json.loads(status_dry_completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"server-status dry-run did not emit JSON: {exc}")
+            return failures
+        missing = sorted(REQUIRED_SERVER_STATUS_KEYS - set(status_dry_payload))
+        extra = sorted(set(status_dry_payload) - REQUIRED_SERVER_STATUS_KEYS)
+        if missing:
+            failures.append(f"server-status dry-run missing keys {missing}")
+        if extra:
+            failures.append(f"server-status dry-run has extra keys {extra}")
+        if status_dry_payload.get("status") != "DRY_RUN":
+            failures.append("server-status dry-run status drifted")
+        if status_dry_payload.get("probe_scope") != "tcp_connect_only_no_synthesis":
+            failures.append("server-status must stay a no-synthesis TCP preflight")
+        if status_dry_payload.get("endpoint") != "http://127.0.0.1:9999/v1/audio/speech":
+            failures.append("server-status must derive OpenAI-compatible speech endpoint")
+        for key in ("allows_install", "allows_download", "allows_global_config_write"):
+            if status_dry_payload.get(key) is not False:
+                failures.append(f"server-status dry-run must keep {key}=false")
+
         dry_completed = subprocess.run(
             [
                 sys.executable,
@@ -883,6 +941,22 @@ def validate_server_route_command() -> list[str]:
             thread.start()
             env = os.environ.copy()
             env["TES_TTS_FAKE_SERVER_KEY"] = "local-test-key"
+            status_completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(PROVIDER_SCRIPT),
+                    "server-status",
+                    "--server-url",
+                    f"http://127.0.0.1:{port}",
+                    "--api-key-env",
+                    "TES_TTS_FAKE_SERVER_KEY",
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+                env=env,
+            )
             completed = subprocess.run(
                 [
                     sys.executable,
@@ -909,6 +983,21 @@ def validate_server_route_command() -> list[str]:
             )
             server.shutdown()
             thread.join(timeout=2)
+        if status_completed.returncode != 0:
+            failures.append(f"server-status mock server returned unexpected exit code {status_completed.returncode}")
+            return failures
+        try:
+            status_payload = json.loads(status_completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"server-status mock server did not emit JSON: {exc}")
+            return failures
+        if status_payload.get("status") != "SERVER_AVAILABLE":
+            failures.append("server-status mock server should report SERVER_AVAILABLE")
+        connectivity = status_payload.get("connectivity")
+        if not isinstance(connectivity, dict) or connectivity.get("port") != port:
+            failures.append("server-status must report TCP connectivity details")
+        if status_payload.get("probe_scope") != "tcp_connect_only_no_synthesis":
+            failures.append("server-status mock server probe scope drifted")
         if completed.returncode != 0:
             failures.append(f"speak-server mock request returned unexpected exit code {completed.returncode}")
             return failures

@@ -37,8 +37,9 @@ durable cache, or proactive `speak`.
   `language=auto`, and lab-only English-island variants.
 - Latest lab evidence `20260530-162231-615943` improves target chunks 2 and 3;
   chunk 1 needs human scoring and less brittle STT term normalization.
-- Community scan produced tested `speak-server` and `speak-long-server` routes
-  for local OpenAI-compatible OmniVoice servers; no install/download/write.
+- Community scan produced tested `server-status`, `speak-server`, and
+  `speak-long-server` routes for local OpenAI-compatible OmniVoice servers;
+  no install/download/write.
 
 ## Next Cut
 Human-score `20260530-162231-615943` against `20260530-151743`, then run the
