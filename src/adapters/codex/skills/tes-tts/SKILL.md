@@ -41,6 +41,32 @@ The canonical local clone source is
 `tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav`. Profile and
 audio outputs stay under `tmp/**` and are not committed.
 
+## Validated Long-Read Recipe
+
+Use this human-rated recipe for long PT-BR narration with English technical
+terms when quality matters more than minimum latency:
+
+```bash
+python3 scripts/tes_tts_omnivoice_provider.py speak-long \
+  --text "<prepared text>" \
+  --output-dir "tmp/tes-tts-omnivoice-provider/audio-variant-lab/<run-id>" \
+  --latency-profile quality \
+  --language en \
+  --text-mode redacted_source \
+  --chunk-chars 420 \
+  --combine \
+  --inter-chunk-silence-ms 450 \
+  --play
+```
+
+This recipe was rated 7.5/10 for a long mixed PT-BR technical read. Preserve
+its shape unless a newer human-rated reference supersedes it: direct resident
+`speak-long`, provider language `en`, `quality` profile, combined WAV, 420-char
+chunks, and 450 ms silence between chunks. Prepare the text with natural
+Portuguese narration, keep fragile paths and URLs as useful references, redact
+secrets before speech, and group difficult English technical terms in a short
+English phrase when that improves pronunciation.
+
 ## Speech Invariants
 
 - Do not summarize unless the user asked for a summary.
