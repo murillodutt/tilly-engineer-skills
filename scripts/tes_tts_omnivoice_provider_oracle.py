@@ -65,6 +65,22 @@ REQUIRED_DRY_RUN_KEYS = {
     "allows_download",
     "allows_global_config_write",
 }
+REQUIRED_BENCH_DRY_RUN_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "mode",
+    "provider_python",
+    "provider_python_source",
+    "ref_audio",
+    "ref_audio_source",
+    "cases",
+    "output_dir",
+    "command_shape",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
+}
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -135,7 +151,12 @@ def run_probe() -> tuple[dict[str, Any] | None, list[str]]:
     return payload, failures
 
 
-def run_status_and_dry_run() -> tuple[dict[str, Any] | None, dict[str, Any] | None, list[str]]:
+def run_status_and_dry_run() -> tuple[
+    dict[str, Any] | None,
+    dict[str, Any] | None,
+    dict[str, Any] | None,
+    list[str],
+]:
     failures: list[str] = []
     with tempfile.TemporaryDirectory() as tmp_dir:
         ref = Path(tmp_dir) / "ref.wav"
@@ -181,7 +202,30 @@ def run_status_and_dry_run() -> tuple[dict[str, Any] | None, dict[str, Any] | No
         except json.JSONDecodeError as exc:
             failures.append(f"speak dry-run did not emit JSON: {exc}")
             dry_payload = None
-    return status_payload, dry_payload, failures
+
+        bench_completed = subprocess.run(
+            [
+                sys.executable,
+                str(PROVIDER_SCRIPT),
+                "bench",
+                "--ref-text",
+                "voz privada SECRET_REF_TEXT",
+                "--dry-run",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            env=env,
+        )
+        if bench_completed.returncode != 0:
+            failures.append(f"bench dry-run returned unexpected exit code {bench_completed.returncode}")
+        try:
+            bench_payload = json.loads(bench_completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"bench dry-run did not emit JSON: {exc}")
+            bench_payload = None
+    return status_payload, dry_payload, bench_payload, failures
 
 
 def validate_status_payload(payload: dict[str, Any] | None) -> list[str]:
@@ -239,6 +283,43 @@ def validate_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
     return failures
 
 
+def validate_bench_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
+    if payload is None:
+        return []
+    failures: list[str] = []
+    missing = sorted(REQUIRED_BENCH_DRY_RUN_KEYS - set(payload))
+    extra = sorted(set(payload) - REQUIRED_BENCH_DRY_RUN_KEYS)
+    if missing:
+        failures.append(f"bench dry-run missing keys {missing}")
+    if extra:
+        failures.append(f"bench dry-run has extra keys {extra}")
+    if payload.get("status") != "DRY_RUN":
+        failures.append("bench dry-run status drifted")
+    if payload.get("mode") != "product_benchmark":
+        failures.append("bench dry-run mode drifted")
+    if payload.get("allows_install") is not False:
+        failures.append("bench dry-run must not install providers")
+    if payload.get("allows_download") is not False:
+        failures.append("bench dry-run must not download models")
+    if payload.get("allows_global_config_write") is not False:
+        failures.append("bench dry-run must not write global config")
+    command_shape = payload.get("command_shape")
+    if not isinstance(command_shape, list):
+        failures.append("bench dry-run command_shape must be a list")
+    else:
+        joined = " ".join(str(part) for part in command_shape)
+        if "batch" not in command_shape:
+            failures.append("bench dry-run must delegate to batch")
+        if "abc123SECRET" in joined or "API_KEY=" in joined or "SECRET_REF_TEXT" in joined:
+            failures.append("bench dry-run leaked fixture or reference secret in command_shape")
+        if "--ref-text" in command_shape and "<redacted>" not in command_shape:
+            failures.append("bench dry-run must redact reference text")
+    cases = payload.get("cases")
+    if not isinstance(cases, str) or not cases.endswith("omnivoice-provider-cases.json"):
+        failures.append("bench dry-run must default to OmniVoice provider cases")
+    return failures
+
+
 def validate_fixtures(fixtures: dict[str, Any]) -> list[str]:
     failures: list[str] = []
     if fixtures.get("version") != VERSION:
@@ -279,10 +360,11 @@ def main() -> int:
     failures.extend(validate_no_reference_text_logging())
     probe, probe_failures = run_probe()
     failures.extend(probe_failures)
-    status_payload, dry_payload, shortcut_failures = run_status_and_dry_run()
+    status_payload, dry_payload, bench_payload, shortcut_failures = run_status_and_dry_run()
     failures.extend(shortcut_failures)
     failures.extend(validate_status_payload(status_payload))
     failures.extend(validate_dry_run_payload(dry_payload))
+    failures.extend(validate_bench_dry_run_payload(bench_payload))
     failures.extend(validate_fixtures(load_json(FIXTURE_PATH)))
     print(
         json.dumps(
@@ -294,6 +376,7 @@ def main() -> int:
                 "probe_status": probe.get("status") if probe else None,
                 "status_command": status_payload.get("status") if status_payload else None,
                 "speak_dry_run": dry_payload.get("status") if dry_payload else None,
+                "bench_dry_run": bench_payload.get("status") if bench_payload else None,
                 "failures": failures,
             },
             indent=2,

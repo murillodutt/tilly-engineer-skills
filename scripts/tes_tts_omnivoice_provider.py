@@ -32,6 +32,8 @@ DEFAULT_CACHE_DIR = ROOT / "tmp/tes-tts-omnivoice-provider"
 DEFAULT_LOCAL_PYTHON = ROOT / "tmp/tes-tts-lab/omnivoice/.venv/bin/python"
 DEFAULT_LOCAL_REF_AUDIO = ROOT / "tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav"
 DEFAULT_OUTPUT_DIR = DEFAULT_CACHE_DIR / "audio"
+DEFAULT_BENCHMARK_CASES = ROOT / "benchmarks/tes-tts/omnivoice-provider-cases.json"
+DEFAULT_BENCHMARK_DIR = DEFAULT_CACHE_DIR / "benchmarks"
 ENV_PYTHON = "TES_TTS_OMNIVOICE_PYTHON"
 ENV_REF_AUDIO = "TES_TTS_OMNIVOICE_REF_AUDIO"
 ENV_OUTPUT_DIR = "TES_TTS_OMNIVOICE_OUTPUT_DIR"
@@ -154,6 +156,13 @@ def default_output_path(output: str | None) -> Path:
     return out_dir / f"tes-tts-omnivoice-{stamp}.wav"
 
 
+def default_benchmark_dir(output_dir: str | None) -> Path:
+    if output_dir:
+        return Path(output_dir)
+    stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    return DEFAULT_BENCHMARK_DIR / stamp
+
+
 def command_status(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
     ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
@@ -185,7 +194,7 @@ def command_status(args: argparse.Namespace) -> int:
     return 0 if ready else 2
 
 
-def runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path, output: Path) -> list[str]:
+def common_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path) -> list[str]:
     return [
         "--model",
         args.model,
@@ -209,6 +218,12 @@ def runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path, output: Path) 
         str(args.t_shift),
         "--denoise" if args.denoise else "--no-denoise",
         "--postprocess-output" if args.postprocess_output else "--no-postprocess-output",
+    ]
+
+
+def synthesize_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path, output: Path) -> list[str]:
+    return [
+        *common_runtime_arg_tokens(args, ref_audio),
         "--output",
         str(output),
     ]
@@ -224,6 +239,14 @@ def playback_audio(output: Path) -> dict[str, Any]:
         "player": player,
         "returncode": completed.returncode,
     }
+
+
+def redact_command_value(tokens: list[str], option: str) -> list[str]:
+    redacted = list(tokens)
+    for index, token in enumerate(redacted[:-1]):
+        if token == option:
+            redacted[index + 1] = "<redacted>"
+    return redacted
 
 
 def command_speak(args: argparse.Namespace) -> int:
@@ -252,7 +275,7 @@ def command_speak(args: argparse.Namespace) -> int:
         "synthesize",
         "--text",
         args.text,
-        *runtime_arg_tokens(args, ref_audio, output),
+        *synthesize_runtime_arg_tokens(args, ref_audio, output),
     ]
     if args.ref_text:
         command.extend(["--ref-text", args.ref_text])
@@ -283,7 +306,7 @@ def command_speak(args: argparse.Namespace) -> int:
                     "synthesize",
                     "--text",
                     "<redacted>",
-                    *runtime_arg_tokens(args, ref_audio, output),
+                    *synthesize_runtime_arg_tokens(args, ref_audio, output),
                 ],
                 "allows_install": False,
                 "allows_download": False,
@@ -328,6 +351,138 @@ def command_speak(args: argparse.Namespace) -> int:
             payload["status"] = "PLAYBACK_FAILED"
             emit(payload)
             return 3
+    emit(payload)
+    return completed.returncode
+
+
+def command_bench(args: argparse.Namespace) -> int:
+    provider_python, python_source = resolve_provider_python(args.python)
+    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    cases = Path(args.cases)
+    output_dir = default_benchmark_dir(args.output_dir)
+    if not ref_audio or not ref_audio.exists():
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "NEEDS_SETUP",
+                "version": VERSION,
+                "mode": "product_benchmark",
+                "reason": "reference audio is required for OmniVoice voice cloning",
+                "ref_audio": str(ref_audio) if ref_audio else None,
+                "ref_audio_source": ref_source,
+                "cases": str(cases),
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 2
+    if not cases.exists():
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "FAIL",
+                "version": VERSION,
+                "mode": "product_benchmark",
+                "reason": "benchmark cases file does not exist",
+                "cases": str(cases),
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 1
+
+    command = [
+        provider_python,
+        str(Path(__file__).resolve()),
+        "batch",
+        "--cases",
+        str(cases),
+        "--output-dir",
+        str(output_dir),
+        *common_runtime_arg_tokens(args, ref_audio),
+    ]
+    if args.ref_text:
+        command.extend(["--ref-text", args.ref_text])
+    if args.prompt_cache:
+        command.extend(["--prompt-cache", args.prompt_cache])
+    if args.refresh_prompt:
+        command.append("--refresh-prompt")
+    if args.device:
+        command.extend(["--device", args.device])
+
+    if args.dry_run:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "DRY_RUN",
+                "version": VERSION,
+                "mode": "product_benchmark",
+                "provider_python": provider_python,
+                "provider_python_source": python_source,
+                "ref_audio": str(ref_audio),
+                "ref_audio_source": ref_source,
+                "cases": str(cases),
+                "output_dir": str(output_dir),
+                "command_shape": redact_command_value(command, "--ref-text"),
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 0
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    completed = subprocess.run(
+        command,
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "FAIL",
+                "version": VERSION,
+                "mode": "product_benchmark",
+                "provider_python": provider_python,
+                "stdout": completed.stdout[-1000:],
+                "stderr": completed.stderr[-1000:],
+                "returncode": completed.returncode,
+            }
+        )
+        return 1
+    payload["mode"] = "product_benchmark"
+    payload["provider_python"] = provider_python
+    payload["provider_python_source"] = python_source
+    payload["ref_audio_source"] = ref_source
+    payload["cases"] = str(cases)
+    payload["output_dir"] = str(output_dir)
+    outputs = payload.get("outputs")
+    if isinstance(outputs, list) and outputs:
+        rtfs = [item.get("rtf") for item in outputs if isinstance(item.get("rtf"), (int, float))]
+        durations = [
+            item.get("audio_duration_seconds")
+            for item in outputs
+            if isinstance(item.get("audio_duration_seconds"), (int, float))
+        ]
+        generations = [
+            item.get("generation_ms")
+            for item in outputs
+            if isinstance(item.get("generation_ms"), (int, float))
+        ]
+        payload["benchmark_summary"] = {
+            "case_count": len(outputs),
+            "avg_rtf": round(sum(rtfs) / len(rtfs), 4) if rtfs else None,
+            "total_audio_duration_seconds": round(sum(durations), 3) if durations else None,
+            "total_generation_ms": round(sum(generations), 3) if generations else None,
+            "provider_timing_scope": "local_optional_environment_only",
+        }
     emit(payload)
     return completed.returncode
 
@@ -663,6 +818,14 @@ def build_parser() -> argparse.ArgumentParser:
     speak.add_argument("--play", action="store_true")
     speak.add_argument("--dry-run", action="store_true")
     speak.set_defaults(func=command_speak)
+
+    bench = subparsers.add_parser("bench")
+    add_runtime_args(bench, ref_audio_required=False)
+    bench.add_argument("--python")
+    bench.add_argument("--cases", default=str(DEFAULT_BENCHMARK_CASES))
+    bench.add_argument("--output-dir")
+    bench.add_argument("--dry-run", action="store_true")
+    bench.set_defaults(func=command_bench)
     return parser
 
 

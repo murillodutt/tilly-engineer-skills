@@ -37,7 +37,7 @@ every prompt when a range is enough.
 | `scripts/tes_tts_runtime_latency_oracle.py` | Text-preparation latency oracle. | active |
 | `scripts/tes_tts_provider_probe_oracle.py` | Request-local provider probe and fallback oracle. | active |
 | `scripts/tes_tts_provider_candidate_review_oracle.py` | Candidate review queue oracle. | active |
-| `scripts/tes_tts_omnivoice_provider.py` | Optional OmniVoice status, speak, probe, synthesize, normalize-ref, and batch facade. | active |
+| `scripts/tes_tts_omnivoice_provider.py` | Optional OmniVoice status, speak, bench, probe, synthesize, normalize-ref, and batch facade. | active |
 | `scripts/tes_tts_omnivoice_provider_oracle.py` | Optional OmniVoice provider safety oracle. | active |
 
 ## Benchmark Fixtures
