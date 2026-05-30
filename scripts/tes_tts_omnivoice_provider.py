@@ -35,6 +35,7 @@ ROOT = Path(__file__).resolve().parents[1]
 VERSION = "0.3.147"
 DEFAULT_MODEL = "k2-fsa/OmniVoice"
 DEFAULT_LANGUAGE = "pt"
+AUTO_LANGUAGE = "auto"
 DEFAULT_CACHE_DIR = ROOT / "tmp/tes-tts-omnivoice-provider"
 DEFAULT_LOCAL_PYTHON = ROOT / "tmp/tes-tts-lab/omnivoice/.venv/bin/python"
 DEFAULT_LOCAL_REF_AUDIO = ROOT / "tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav"
@@ -550,6 +551,70 @@ def split_long_text(text: str, *, max_chars: int) -> list[str]:
     if current:
         push(current)
     return chunks
+
+
+def infer_long_read_chunk_language(text: str, requested_language: str) -> str:
+    """Resolve a synthesis language for one resident long-read chunk."""
+    if requested_language != AUTO_LANGUAGE:
+        return requested_language
+
+    normalized = re.sub(r"\s+", " ", text.strip().lower())
+    if not normalized:
+        return DEFAULT_LANGUAGE
+
+    portuguese_markers = {
+        "agora",
+        "como",
+        "com",
+        "de",
+        "do",
+        "e",
+        "esse",
+        "esses",
+        "ficam",
+        "fonema",
+        "futuros",
+        "nao",
+        "não",
+        "ou",
+        "protege",
+        "real",
+        "suporte",
+        "teste",
+        "usar",
+        "vamos",
+    }
+    english_markers = {
+        "and",
+        "are",
+        "english",
+        "technical",
+        "terms",
+        "the",
+        "thresholds",
+        "provider",
+    }
+    tokens = re.findall(r"[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9_.-]*", normalized)
+    portuguese_score = sum(1 for token in tokens if token in portuguese_markers)
+    english_score = sum(1 for token in tokens if token in english_markers)
+
+    if normalized.startswith(("english technical terms:", "the english technical terms are")):
+        return "en"
+    if english_score >= 4 and portuguese_score == 0:
+        return "en"
+    return DEFAULT_LANGUAGE
+
+
+def build_long_read_plan(text: str, *, max_chars: int, language: str) -> list[dict[str, Any]]:
+    return [
+        {
+            "id": f"chunk-{index:03d}",
+            "text": chunk,
+            "chars": len(chunk),
+            "language": infer_long_read_chunk_language(chunk, language),
+        }
+        for index, chunk in enumerate(split_long_text(text, max_chars=max_chars), start=1)
+    ]
 
 
 def live_smoke_package_files(result_json: Path) -> list[Path]:
@@ -1609,7 +1674,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
     log_path = default_runtime_log_path(args.monitor_log, session_id)
     result_json = output_dir / "result.json"
     stderr_log = output_dir / "resident-stderr.log"
-    chunks = split_long_text(args.text, max_chars=args.chunk_chars)
+    chunk_plan = build_long_read_plan(args.text, max_chars=args.chunk_chars, language=args.language)
     if not ref_audio or not ref_audio.exists():
         emit(
             {
@@ -1628,7 +1693,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
             }
         )
         return 2
-    if not chunks:
+    if not chunk_plan:
         emit(
             {
                 "provider": "omnivoice",
@@ -1674,8 +1739,10 @@ def command_speak_long(args: argparse.Namespace) -> int:
                 "ref_audio": str(ref_audio),
                 "ref_audio_source": ref_source,
                 "text_chars": len(args.text),
-                "chunk_count": len(chunks),
-                "chunk_chars": [len(chunk) for chunk in chunks],
+                "chunk_count": len(chunk_plan),
+                "chunk_chars": [chunk["chars"] for chunk in chunk_plan],
+                "chunk_languages": [chunk["language"] for chunk in chunk_plan],
+                "language_mode": args.language,
                 "max_chunk_chars": args.chunk_chars,
                 "output_dir": str(output_dir),
                 "result_json": str(result_json),
@@ -1708,9 +1775,11 @@ def command_speak_long(args: argparse.Namespace) -> int:
     monitor.start()
     monitor.record(
         "long_read_start",
-        chunk_count=len(chunks),
+        chunk_count=len(chunk_plan),
         text_chars=len(args.text),
         output_dir=str(output_dir),
+        language_mode=args.language,
+        chunk_languages=[chunk["language"] for chunk in chunk_plan],
         latency_profile=args.latency_profile,
         num_step=args.num_step,
         provider_exclusive=True,
@@ -1741,20 +1810,21 @@ def command_speak_long(args: argparse.Namespace) -> int:
                 status = "FAIL"
                 error = "resident session stdin is unavailable"
             else:
-                for index, chunk in enumerate(chunks, start=1):
-                    chunk_id = f"chunk-{index:03d}"
+                for index, chunk in enumerate(chunk_plan, start=1):
+                    chunk_id = str(chunk["id"])
                     output = output_dir / f"{index:03d}-{chunk_id}.wav"
                     request = {
                         "id": chunk_id,
-                        "text": chunk,
-                        "language": args.language,
+                        "text": chunk["text"],
+                        "language": chunk["language"],
                         "output": str(output),
                     }
                     monitor.record(
                         "chunk_start",
                         id=chunk_id,
                         index=index,
-                        chunk_chars=len(chunk),
+                        chunk_chars=chunk["chars"],
+                        language=chunk["language"],
                         output=str(output),
                     )
                     process.stdin.write(json.dumps(request, ensure_ascii=False, separators=(",", ":")) + "\n")
@@ -1834,8 +1904,18 @@ def command_speak_long(args: argparse.Namespace) -> int:
         "monitor_log": str(log_path),
         "stderr_log": str(stderr_log),
         "text_chars": len(args.text),
-        "chunk_count": len(chunks),
+        "chunk_count": len(chunk_plan),
         "completed_chunk_count": len(outputs),
+        "language_mode": args.language,
+        "chunk_languages": [chunk["language"] for chunk in chunk_plan],
+        "chunk_plan": [
+            {
+                "id": chunk["id"],
+                "chars": chunk["chars"],
+                "language": chunk["language"],
+            }
+            for chunk in chunk_plan
+        ],
         "play_requested": args.play,
         "combine_requested": args.combine,
         "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
@@ -1844,7 +1924,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
         "outputs": outputs,
         "playback_results": playback_results,
         "summary": {
-            "chunk_count": len(chunks),
+            "chunk_count": len(chunk_plan),
             "pass_count": sum(1 for item in outputs if item.get("status") == "PASS"),
             "failed_count": sum(1 for item in outputs if item.get("status") != "PASS"),
             "total_audio_duration_seconds": round(sum(duration_values), 3) if duration_values else None,
@@ -3051,6 +3131,7 @@ def command_serve(args: argparse.Namespace) -> int:
                     "version": VERSION,
                     "mode": "resident_session_utterance",
                     "id": request_id,
+                    "language": language,
                     "latency_profile": args.latency_profile,
                     **latency_profile_metadata(args),
                     "num_step": args.num_step,

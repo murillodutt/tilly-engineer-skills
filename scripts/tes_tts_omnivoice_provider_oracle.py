@@ -177,6 +177,8 @@ REQUIRED_LONG_READ_DRY_RUN_KEYS = {
     "text_chars",
     "chunk_count",
     "chunk_chars",
+    "chunk_languages",
+    "language_mode",
     "max_chunk_chars",
     "output_dir",
     "result_json",
@@ -478,12 +480,15 @@ def run_status_and_dry_run() -> tuple[
                 "speak-long",
                 "--text",
                 (
-                    "Primeiro bloco com ADR e OmniVoice precisa ser preservado sem fallback. "
-                    "Segundo bloco confirma que o monitor registra eventos de runtime sem vazar texto. "
-                    "Terceiro bloco prova que a leitura longa segue pela sessão residente."
+                    "Primeiro bloco com ADR e OmniVoice precisa ser preservado sem fallback.\n\n"
+                    "English technical terms: JSON, YAML, HTTP, Node JS, TypeScript, Python, "
+                    "Open AI API, Trie, Aho Corasick, and thresholds.\n\n"
+                    "Segundo bloco confirma que a leitura longa segue pela sessão residente."
                 ),
                 "--chunk-chars",
-                "120",
+                "180",
+                "--language",
+                "auto",
                 "--play",
                 "--dry-run",
             ],
@@ -687,6 +692,10 @@ def validate_long_read_dry_run_payload(payload: dict[str, Any] | None) -> list[s
         failures.append("speak-long must use the resident runtime path")
     if payload.get("chunk_count", 0) < 2:
         failures.append("speak-long fixture should prove chunking")
+    if payload.get("language_mode") != "auto":
+        failures.append("speak-long dry-run must preserve auto language mode")
+    if payload.get("chunk_languages") != ["pt", "en", "pt"]:
+        failures.append("speak-long auto language fixture must route PT/EN/PT chunks")
     if payload.get("play_requested") is not True:
         failures.append("speak-long dry-run must report playback intent")
     monitor_log = payload.get("monitor_log")

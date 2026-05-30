@@ -180,6 +180,49 @@ def mixed_technical_clean_chunked(text: str) -> str:
     return rendered
 
 
+def mixed_technical_english_phrase(text: str) -> str:
+    rendered = mixed_technical_clean_natural(text)
+    rendered = re.sub(
+        r"JSON, YAML, HTTP, Node JS, TypeScript, Python, Open AI API, Trie e Aho Corasick ficam como thresholds futuros\.",
+        "English technical terms: JSON, YAML, HTTP, Node JS, TypeScript, Python, Open AI API, Trie, Aho Corasick, and thresholds. Esses ficam como thresholds futuros.",
+        rendered,
+        flags=re.IGNORECASE,
+    )
+    return rendered
+
+
+def mixed_technical_english_sentence(text: str) -> str:
+    rendered = mixed_technical_clean_natural(text)
+    rendered = re.sub(
+        r"JSON, YAML, HTTP, Node JS, TypeScript, Python, Open AI API, Trie e Aho Corasick ficam como thresholds futuros\.",
+        "The English technical terms are JSON, YAML, HTTP, Node.js, TypeScript, Python, OpenAI API, Trie, Aho-Corasick, and thresholds. Esses ficam como thresholds futuros.",
+        rendered,
+        flags=re.IGNORECASE,
+    )
+    return rendered
+
+
+def mixed_technical_english_phrase_chunked(text: str) -> str:
+    rendered = mixed_technical_english_phrase(text)
+    rendered = re.sub(r"(?<=MCP\.)\s+", "\n\n", rendered)
+    rendered = re.sub(r"(?<=agora\.)\s+", "\n\n", rendered)
+    rendered = re.sub(r"(?<=thresholds\.)\s+", "\n\n", rendered)
+    return rendered
+
+
+def mixed_technical_cmu_hint(text: str) -> str:
+    rendered = mixed_technical_clean_natural(text)
+    replacements = [
+        (r"\bprovider\b", "[P R AH0 V AY1 D ER0]"),
+        (r"\bTrie\b", "[T R AY1]"),
+        (r"\bAho\s+Corasick\b", "[AA1 HH OW0] [K AO1 R AH0 S IH0 K]"),
+        (r"\bthresholds\b", "[TH R EH1 SH OW2 L D Z]"),
+    ]
+    for pattern, replacement in replacements:
+        rendered = re.sub(pattern, replacement, rendered, flags=re.IGNORECASE)
+    return rendered
+
+
 def mixed_technical_chunked(text: str) -> str:
     rendered = mixed_technical_spell_pause(text)
     rendered = re.sub(r":\s+", ".\n\n", rendered)
@@ -224,6 +267,18 @@ def build_variant_plan(source_text: str, variant: str) -> dict[str, Any]:
     if variant == "mixed_technical_clean_chunked":
         text = mixed_technical_clean_chunked(source_text)
         return {"text": text, "audit_text": text, "chunk_chars": 180, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_english_phrase":
+        text = mixed_technical_english_phrase(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 420, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_english_sentence":
+        text = mixed_technical_english_sentence(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 420, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_english_phrase_chunked":
+        text = mixed_technical_english_phrase_chunked(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 180, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_cmu_hint":
+        text = mixed_technical_cmu_hint(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 420, "text_mode": "redacted_source"}
     if variant == "mixed_technical_chunked":
         text = mixed_technical_chunked(source_text)
         return {"text": text, "audit_text": text, "chunk_chars": 180, "text_mode": "redacted_source"}
@@ -295,6 +350,7 @@ def synthesize_session(
     chunk_chars: int,
     latency_profile: str,
     text_mode: str,
+    provider_language: str,
     combine: bool,
     inter_chunk_silence_ms: int,
 ) -> dict[str, Any]:
@@ -305,6 +361,8 @@ def synthesize_session(
         "speak-long",
         "--latency-profile",
         latency_profile,
+        "--language",
+        provider_language,
         "--chunk-chars",
         str(chunk_chars),
         "--text-mode",
@@ -328,7 +386,7 @@ def synthesize_session(
     return result
 
 
-def audit_session(session: Path, *, stt: bool, audit_combined: bool) -> dict[str, Any]:
+def audit_session(session: Path, *, stt: bool, audit_combined: bool, stt_language: str) -> dict[str, Any]:
     command = [
         "python3",
         "scripts/tes_tts_audio_audit.py",
@@ -339,7 +397,7 @@ def audit_session(session: Path, *, stt: bool, audit_combined: bool) -> dict[str
     audit_path = session / "audio-audit.json"
     audit_path.unlink(missing_ok=True)
     if stt:
-        command.extend(["--stt", "--require-stt"])
+        command.extend(["--stt", "--require-stt", "--stt-language", stt_language])
     if audit_combined:
         command.append("--audit-combined")
     result = run_command(command)
@@ -524,7 +582,7 @@ def write_review_package(output_root: Path, review_html: Path, payload: dict[str
 
 def command_run(args: argparse.Namespace) -> int:
     source_session = Path(args.source_session).resolve()
-    output_root = Path(args.output_root).resolve() / dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    output_root = Path(args.output_root).resolve() / dt.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
     output_root.mkdir(parents=True, exist_ok=True)
     source_chunks = load_source_chunks(source_session)
     selected_ids = set(args.chunk_id or [])
@@ -595,6 +653,7 @@ def command_run(args: argparse.Namespace) -> int:
                     chunk_chars=chunk_chars,
                     latency_profile=args.latency_profile,
                     text_mode=text_mode,
+                    provider_language=args.provider_language,
                     combine=args.combine,
                     inter_chunk_silence_ms=args.inter_chunk_silence_ms,
                 )
@@ -602,7 +661,12 @@ def command_run(args: argparse.Namespace) -> int:
                 entry["synthesize_status"] = (synth.get("json") or {}).get("status")
                 entry["combined_audio"] = (synth.get("json") or {}).get("combined_audio")
             if args.audit:
-                audit = audit_session(session, stt=args.stt, audit_combined=args.combine)
+                audit = audit_session(
+                    session,
+                    stt=args.stt,
+                    audit_combined=args.combine,
+                    stt_language=args.stt_language,
+                )
                 entry["audit_returncode"] = audit["returncode"]
                 entry["audit_summary"] = summarize_audit(audit.get("audit"))
             results.append(entry)
@@ -620,6 +684,8 @@ def command_run(args: argparse.Namespace) -> int:
         "stt": args.stt,
         "combine": args.combine,
         "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
+        "provider_language": args.provider_language,
+        "stt_language": args.stt_language,
         "results": results,
         "ranked_results": rank_results(results),
     }
@@ -678,6 +744,25 @@ def command_self_test(_args: argparse.Namespace) -> int:
     for expected in ("TES TTS", "zero zero zero quatro", "G dois P", "Open AI API", "Node JS"):
         if expected not in clean:
             failures.append(f"mixed clean transform missing {expected}")
+    english_phrase = mixed_technical_english_phrase(
+        "Teste real do TES-TTS: JSON., YAML., HTTP., Node.JS., TypeScript, Python, Open.AI. API., Trie e Aho Corasick ficam como thresholds futuros."
+    )
+    if "English technical terms:" not in english_phrase:
+        failures.append("mixed English phrase transform missing phrase boundary")
+    english_sentence = mixed_technical_english_sentence(
+        "Teste real do TES-TTS: JSON., YAML., HTTP., Node.JS., TypeScript, Python, Open.AI. API., Trie e Aho Corasick ficam como thresholds futuros."
+    )
+    if "The English technical terms are" not in english_sentence:
+        failures.append("mixed English sentence transform missing sentence boundary")
+    english_chunked = mixed_technical_english_phrase_chunked(
+        "Teste real do TES-TTS: MCP. Não vamos usar SSML com suporte de provider agora. JSON., YAML., HTTP., Node.JS., TypeScript, Python, Open.AI. API., Trie e Aho Corasick ficam como thresholds futuros."
+    )
+    if english_chunked.count("\n\n") < 2:
+        failures.append("mixed English phrase chunked transform missing chunk boundaries")
+    cmu = mixed_technical_cmu_hint("provider, Trie, Aho Corasick e thresholds")
+    for expected in ("[P R AH0 V AY1 D ER0]", "[T R AY1]", "[AA1 HH OW0]", "[TH R EH1 SH OW2 L D Z]"):
+        if expected not in cmu:
+            failures.append(f"mixed CMU hint transform missing {expected}")
     source_session = DEFAULT_SOURCE_SESSION
     if source_session.exists():
         source_ids = {chunk["id"] for chunk in load_source_chunks(source_session)}
@@ -707,6 +792,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--combine", action="store_true")
     run.add_argument("--inter-chunk-silence-ms", type=int, default=350)
     run.add_argument("--latency-profile", default="fast")
+    run.add_argument("--provider-language", default="pt")
+    run.add_argument("--stt-language", default="portuguese")
     run.set_defaults(func=command_run)
 
     self_test = subparsers.add_parser("self-test")

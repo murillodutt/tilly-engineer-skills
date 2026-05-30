@@ -39,15 +39,18 @@ durable cache, or proactive `speak`.
 - Audio variant review now requires STT when requested, audits `combined.wav`,
   rejects stale audit summaries, and flags raw STT drift even when domain
   normalization explains protected-term drift.
-- Latest expanded evidence: `chunk-002` best candidate is
-  `technical_oral_ptbr_json_hyphen` (`20260530-144957`); mixed technical
-  phrase best candidate is `mixed_technical_clean_natural` (`20260530-150340`),
-  still `NEEDS_REVIEW` for human listening.
+- Research-guided audio lab now supports provider/STT language selection,
+  microsecond run IDs, and an OmniVoice `language=auto` long-read plan that
+  routes whole chunks only when the chunk is clearly an English island.
+- Latest evidence: single English phrase with global `en` remains the best STT
+  score (`20260530-151743`); routed PT/PT/EN/PT chunk synthesis now passes
+  audio-metric audit without STT certification (`20260530-153447-843321`).
 
 ## Next Cut
-Listen to `20260530-150340` and decide whether `mixed_technical_clean_natural`
-is the new review baseline or whether pronunciation requires provider/runtime
-work beyond plain-text preparation.
+Listen to `20260530-151743` and `20260530-153447-843321`; decide whether the
+chunk-language routed `combined.wav` improves the mixed technical phrase enough
+to promote `language=auto` into the runtime path, or keep it lab-only pending
+human scores.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.
