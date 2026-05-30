@@ -988,6 +988,13 @@ documents:
     consumer: maintainers, tes-tts maintainers, runtime authors, provider authors, and validation authors
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-PSO-001-direct-resident-kernel-extraction.md
+    id: roadmap.goal_prompt_tes_tts_pso_001_direct_resident_kernel_extraction
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, runtime authors, provider authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md
     id: roadmap.tes_tts_cap_001_portable_capability_feasibility
     class: roadmap

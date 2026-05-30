@@ -19,7 +19,7 @@ Input analysis:
 `docs/roadmap/TES-TTS-PYTHON-SCRIPT-EFFICIENCY-ANALYSIS.md`
 
 Ready prompt:
-`none yet; create only when starting the first implementation cut`
+`docs/roadmap/GOAL-PROMPT-tes-tts-PSO-001-direct-resident-kernel-extraction.md`
 
 ## Purpose
 

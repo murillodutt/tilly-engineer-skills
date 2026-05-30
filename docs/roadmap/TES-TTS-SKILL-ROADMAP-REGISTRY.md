@@ -68,6 +68,7 @@ every prompt when a range is enough.
 | `docs/roadmap/TES-TTS-RTE-006-RUNTIME-AUDIT-AND-CLOSURE.md` | Runtime-first closure audit. | active |
 | `docs/roadmap/TES-TTS-PYTHON-SCRIPT-EFFICIENCY-ANALYSIS.md` | Python script efficiency levantamento and optimization queue. | active |
 | `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-python-script-optimization.md` | Active Python optimization execution authority for provider/runtime scripts. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-PSO-*.md` | Python script optimization execution prompts; preserve PSO order. | active |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | Release identity decision record. | active |
 
 ## Historical Ranges
