@@ -483,6 +483,18 @@ def server_request_body(args: argparse.Namespace, text: str, *, language: str | 
         payload["max_new_tokens"] = args.max_new_tokens
     if getattr(args, "speed", None) is not None:
         payload["speed"] = args.speed
+    if getattr(args, "guidance_scale", None) is not None:
+        payload["guidance_scale"] = args.guidance_scale
+    if getattr(args, "denoise", None) is not None:
+        payload["denoise"] = args.denoise
+    if getattr(args, "t_shift", None) is not None:
+        payload["t_shift"] = args.t_shift
+    if getattr(args, "position_temperature", None) is not None:
+        payload["position_temperature"] = args.position_temperature
+    if getattr(args, "class_temperature", None) is not None:
+        payload["class_temperature"] = args.class_temperature
+    if getattr(args, "postprocess_output", None) is not None:
+        payload["postprocess_output"] = args.postprocess_output
     if getattr(args, "stream", None) is not None:
         payload["stream"] = args.stream
     if getattr(args, "num_step", None) is not None:
@@ -2807,6 +2819,12 @@ def command_speak_server(args: argparse.Namespace) -> int:
                 "instructions_present": bool(args.instructions),
                 "task_type": args.task_type,
                 "max_new_tokens": args.max_new_tokens,
+                "guidance_scale": args.guidance_scale,
+                "denoise": args.denoise,
+                "t_shift": args.t_shift,
+                "position_temperature": args.position_temperature,
+                "class_temperature": args.class_temperature,
+                "postprocess_output": args.postprocess_output,
                 "stream_requested": args.stream,
                 "num_step": args.num_step,
                 "output": str(output),
@@ -2871,6 +2889,12 @@ def command_speak_server(args: argparse.Namespace) -> int:
         "instructions_present": bool(args.instructions),
         "task_type": args.task_type,
         "max_new_tokens": args.max_new_tokens,
+        "guidance_scale": args.guidance_scale,
+        "denoise": args.denoise,
+        "t_shift": args.t_shift,
+        "position_temperature": args.position_temperature,
+        "class_temperature": args.class_temperature,
+        "postprocess_output": args.postprocess_output,
         "stream_requested": args.stream,
         "num_step": args.num_step,
         "output": str(output),
@@ -2930,6 +2954,12 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
                 "instructions_present": bool(args.instructions),
                 "task_type": args.task_type,
                 "max_new_tokens": args.max_new_tokens,
+                "guidance_scale": args.guidance_scale,
+                "denoise": args.denoise,
+                "t_shift": args.t_shift,
+                "position_temperature": args.position_temperature,
+                "class_temperature": args.class_temperature,
+                "postprocess_output": args.postprocess_output,
                 "stream_requested": args.stream,
                 "num_step": args.num_step,
                 "text_chars": len(args.text),
@@ -3039,6 +3069,12 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
         "instructions_present": bool(args.instructions),
         "task_type": args.task_type,
         "max_new_tokens": args.max_new_tokens,
+        "guidance_scale": args.guidance_scale,
+        "denoise": args.denoise,
+        "t_shift": args.t_shift,
+        "position_temperature": args.position_temperature,
+        "class_temperature": args.class_temperature,
+        "postprocess_output": args.postprocess_output,
         "stream_requested": args.stream,
         "num_step": args.num_step,
         "output_dir": str(output_dir),
@@ -4067,6 +4103,12 @@ def build_parser() -> argparse.ArgumentParser:
     speak_server.add_argument("--task-type")
     speak_server.add_argument("--max-new-tokens", type=int)
     speak_server.add_argument("--speed", type=float)
+    speak_server.add_argument("--guidance-scale", type=float)
+    speak_server.add_argument("--denoise", action=argparse.BooleanOptionalAction, default=None)
+    speak_server.add_argument("--t-shift", type=float)
+    speak_server.add_argument("--position-temperature", type=float)
+    speak_server.add_argument("--class-temperature", type=float)
+    speak_server.add_argument("--postprocess-output", action=argparse.BooleanOptionalAction, default=None)
     speak_server.add_argument("--stream", action=argparse.BooleanOptionalAction, default=None)
     speak_server.add_argument("--num-step", type=int)
     speak_server.add_argument("--text", required=True)
@@ -4086,6 +4128,12 @@ def build_parser() -> argparse.ArgumentParser:
     speak_long_server.add_argument("--task-type")
     speak_long_server.add_argument("--max-new-tokens", type=int)
     speak_long_server.add_argument("--speed", type=float)
+    speak_long_server.add_argument("--guidance-scale", type=float)
+    speak_long_server.add_argument("--denoise", action=argparse.BooleanOptionalAction, default=None)
+    speak_long_server.add_argument("--t-shift", type=float)
+    speak_long_server.add_argument("--position-temperature", type=float)
+    speak_long_server.add_argument("--class-temperature", type=float)
+    speak_long_server.add_argument("--postprocess-output", action=argparse.BooleanOptionalAction, default=None)
     speak_long_server.add_argument("--stream", action=argparse.BooleanOptionalAction, default=None)
     speak_long_server.add_argument("--num-step", type=int)
     speak_long_server.add_argument("--language", default=AUTO_LANGUAGE)

@@ -32,11 +32,21 @@ SERVER_CONTROL_PRESETS: dict[str, dict[str, Any]] = {
         "instructions": "Leia naturalmente. Preserve termos tecnicos em ingles sem traduzir.",
         "stream": False,
         "num_step": 16,
+        "guidance_scale": 2.0,
+        "denoise": True,
+        "t_shift": 0.1,
+        "postprocess_output": True,
     },
     "omnivoice_server_quality_nonstream": {
         "instructions": "Leia em PT-BR natural. Quando o bloco estiver em ingles, use pronuncia inglesa natural.",
         "stream": False,
         "num_step": 32,
+        "guidance_scale": 3.0,
+        "denoise": True,
+        "t_shift": 0.1,
+        "position_temperature": 0.0,
+        "class_temperature": 0.0,
+        "postprocess_output": True,
     },
     "vllm_omni_customvoice_auto": {
         "instructions": "Use natural conversational speech; preserve English technical terms as English.",
@@ -552,6 +562,12 @@ def synthesize_session(
     server_instructions: str | None,
     server_task_type: str | None,
     server_max_new_tokens: int | None,
+    server_guidance_scale: float | None,
+    server_denoise: bool | None,
+    server_t_shift: float | None,
+    server_position_temperature: float | None,
+    server_class_temperature: float | None,
+    server_postprocess_output: bool | None,
     server_stream: bool | None,
     server_num_step: int | None,
     combine: bool,
@@ -585,6 +601,22 @@ def synthesize_session(
             command.extend(["--task-type", server_task_type])
         if server_max_new_tokens is not None:
             command.extend(["--max-new-tokens", str(server_max_new_tokens)])
+        if server_guidance_scale is not None:
+            command.extend(["--guidance-scale", str(server_guidance_scale)])
+        if server_denoise is True:
+            command.append("--denoise")
+        elif server_denoise is False:
+            command.append("--no-denoise")
+        if server_t_shift is not None:
+            command.extend(["--t-shift", str(server_t_shift)])
+        if server_position_temperature is not None:
+            command.extend(["--position-temperature", str(server_position_temperature)])
+        if server_class_temperature is not None:
+            command.extend(["--class-temperature", str(server_class_temperature)])
+        if server_postprocess_output is True:
+            command.append("--postprocess-output")
+        elif server_postprocess_output is False:
+            command.append("--no-postprocess-output")
         if server_stream is True:
             command.append("--stream")
         elif server_stream is False:
@@ -653,6 +685,18 @@ def server_control_profiles(args: argparse.Namespace) -> list[dict[str, Any]]:
             profile["task_type"] = args.server_task_type
         if args.server_max_new_tokens is not None:
             profile["max_new_tokens"] = args.server_max_new_tokens
+        if args.server_guidance_scale is not None:
+            profile["guidance_scale"] = args.server_guidance_scale
+        if args.server_denoise is not None:
+            profile["denoise"] = args.server_denoise
+        if args.server_t_shift is not None:
+            profile["t_shift"] = args.server_t_shift
+        if args.server_position_temperature is not None:
+            profile["position_temperature"] = args.server_position_temperature
+        if args.server_class_temperature is not None:
+            profile["class_temperature"] = args.server_class_temperature
+        if args.server_postprocess_output is not None:
+            profile["postprocess_output"] = args.server_postprocess_output
         if args.server_stream is not None:
             profile["stream"] = args.server_stream
         if args.server_num_step is not None:
@@ -925,6 +969,12 @@ def command_run(args: argparse.Namespace) -> int:
                 "server_instructions_present": bool(args.server_instructions),
                 "server_task_type": args.server_task_type,
                 "server_max_new_tokens": args.server_max_new_tokens,
+                "server_guidance_scale": args.server_guidance_scale,
+                "server_denoise": args.server_denoise,
+                "server_t_shift": args.server_t_shift,
+                "server_position_temperature": args.server_position_temperature,
+                "server_class_temperature": args.server_class_temperature,
+                "server_postprocess_output": args.server_postprocess_output,
                 "server_stream": args.server_stream,
                 "server_num_step": args.server_num_step,
                 "server_preflight": server_preflight,
@@ -1002,6 +1052,12 @@ def command_run(args: argparse.Namespace) -> int:
                         server_instructions=control_profile.get("instructions"),
                         server_task_type=control_profile.get("task_type"),
                         server_max_new_tokens=control_profile.get("max_new_tokens"),
+                        server_guidance_scale=control_profile.get("guidance_scale"),
+                        server_denoise=control_profile.get("denoise"),
+                        server_t_shift=control_profile.get("t_shift"),
+                        server_position_temperature=control_profile.get("position_temperature"),
+                        server_class_temperature=control_profile.get("class_temperature"),
+                        server_postprocess_output=control_profile.get("postprocess_output"),
                         server_stream=control_profile.get("stream"),
                         server_num_step=control_profile.get("num_step"),
                         combine=args.combine,
@@ -1056,6 +1112,12 @@ def command_run(args: argparse.Namespace) -> int:
         "server_instructions_present": bool(args.server_instructions) if args.provider_route == "server" else None,
         "server_task_type": args.server_task_type if args.provider_route == "server" else None,
         "server_max_new_tokens": args.server_max_new_tokens if args.provider_route == "server" else None,
+        "server_guidance_scale": args.server_guidance_scale if args.provider_route == "server" else None,
+        "server_denoise": args.server_denoise if args.provider_route == "server" else None,
+        "server_t_shift": args.server_t_shift if args.provider_route == "server" else None,
+        "server_position_temperature": args.server_position_temperature if args.provider_route == "server" else None,
+        "server_class_temperature": args.server_class_temperature if args.provider_route == "server" else None,
+        "server_postprocess_output": args.server_postprocess_output if args.provider_route == "server" else None,
         "server_stream": args.server_stream if args.provider_route == "server" else None,
         "server_num_step": args.server_num_step if args.provider_route == "server" else None,
         "stt_language": args.stt_language,
@@ -1112,6 +1174,12 @@ def command_self_test(_args: argparse.Namespace) -> int:
         server_instructions=None,
         server_task_type=None,
         server_max_new_tokens=None,
+        server_guidance_scale=None,
+        server_denoise=None,
+        server_t_shift=None,
+        server_position_temperature=None,
+        server_class_temperature=None,
+        server_postprocess_output=None,
         server_stream=None,
         server_num_step=None,
     )
@@ -1120,6 +1188,8 @@ def command_self_test(_args: argparse.Namespace) -> int:
         failures.append("server preset ordering drifted")
     if profiles[0].get("speaker") != "felipe-clone" or profiles[0].get("num_step") != 16:
         failures.append("server preset merge drifted")
+    if profiles[0].get("guidance_scale") != 2.0 or profiles[0].get("denoise") is not True:
+        failures.append("server generation controls preset drifted")
     if profiles[1].get("task_type") != "CustomVoice" or profiles[1].get("max_new_tokens") != 2048:
         failures.append("vLLM server preset drifted")
     paused = pause_newlines(text)
@@ -1241,6 +1311,12 @@ def command_self_test(_args: argparse.Namespace) -> int:
                 server_instructions="Preserve English technical terms.",
                 server_task_type="CustomVoice",
                 server_max_new_tokens=2048,
+                server_guidance_scale=3.0,
+                server_denoise=True,
+                server_t_shift=0.1,
+                server_position_temperature=0.0,
+                server_class_temperature=0.0,
+                server_postprocess_output=True,
                 server_stream=False,
                 server_num_step=12,
                 combine=True,
@@ -1266,6 +1342,16 @@ def command_self_test(_args: argparse.Namespace) -> int:
             "CustomVoice",
             "--max-new-tokens",
             "2048",
+            "--guidance-scale",
+            "3.0",
+            "--denoise",
+            "--t-shift",
+            "0.1",
+            "--position-temperature",
+            "0.0",
+            "--class-temperature",
+            "0.0",
+            "--postprocess-output",
             "--no-stream",
             "--num-step",
             "12",
@@ -1308,6 +1394,12 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--server-instructions")
     run.add_argument("--server-task-type")
     run.add_argument("--server-max-new-tokens", type=int)
+    run.add_argument("--server-guidance-scale", type=float)
+    run.add_argument("--server-denoise", action=argparse.BooleanOptionalAction, default=None)
+    run.add_argument("--server-t-shift", type=float)
+    run.add_argument("--server-position-temperature", type=float)
+    run.add_argument("--server-class-temperature", type=float)
+    run.add_argument("--server-postprocess-output", action=argparse.BooleanOptionalAction, default=None)
     run.add_argument("--server-stream", action=argparse.BooleanOptionalAction, default=None)
     run.add_argument("--server-num-step", type=int)
     run.add_argument("--server-health-path", default="/health")

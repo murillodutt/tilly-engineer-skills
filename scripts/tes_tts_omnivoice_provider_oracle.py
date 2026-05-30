@@ -93,6 +93,12 @@ REQUIRED_SERVER_DRY_RUN_KEYS = {
     "instructions_present",
     "task_type",
     "max_new_tokens",
+    "guidance_scale",
+    "denoise",
+    "t_shift",
+    "position_temperature",
+    "class_temperature",
+    "postprocess_output",
     "stream_requested",
     "num_step",
     "output",
@@ -120,6 +126,12 @@ REQUIRED_SERVER_LONG_DRY_RUN_KEYS = {
     "instructions_present",
     "task_type",
     "max_new_tokens",
+    "guidance_scale",
+    "denoise",
+    "t_shift",
+    "position_temperature",
+    "class_temperature",
+    "postprocess_output",
     "stream_requested",
     "num_step",
     "text_chars",
@@ -884,6 +896,16 @@ def validate_server_route_command() -> list[str]:
                 "CustomVoice",
                 "--max-new-tokens",
                 "2048",
+                "--guidance-scale",
+                "3.0",
+                "--denoise",
+                "--t-shift",
+                "0.1",
+                "--position-temperature",
+                "0.0",
+                "--class-temperature",
+                "0.0",
+                "--postprocess-output",
                 "--stream",
                 "--num-step",
                 "8",
@@ -927,6 +949,18 @@ def validate_server_route_command() -> list[str]:
             failures.append("speak-server dry-run must report task_type")
         if dry_payload.get("max_new_tokens") != 2048:
             failures.append("speak-server dry-run must report max_new_tokens")
+        if dry_payload.get("guidance_scale") != 3.0:
+            failures.append("speak-server dry-run must report guidance_scale")
+        if dry_payload.get("denoise") is not True:
+            failures.append("speak-server dry-run must report denoise")
+        if dry_payload.get("t_shift") != 0.1:
+            failures.append("speak-server dry-run must report t_shift")
+        if dry_payload.get("position_temperature") != 0.0:
+            failures.append("speak-server dry-run must report position_temperature")
+        if dry_payload.get("class_temperature") != 0.0:
+            failures.append("speak-server dry-run must report class_temperature")
+        if dry_payload.get("postprocess_output") is not True:
+            failures.append("speak-server dry-run must report postprocess_output")
         request_shape = dry_payload.get("request_shape")
         if not isinstance(request_shape, dict) or request_shape.get("input") != "<redacted>":
             failures.append("speak-server dry-run must redact request input")
@@ -936,6 +970,8 @@ def validate_server_route_command() -> list[str]:
             failures.append("speak-server dry-run request shape must include language")
         elif request_shape.get("task_type") != "CustomVoice":
             failures.append("speak-server dry-run request shape must include task_type")
+        elif request_shape.get("guidance_scale") != 3.0:
+            failures.append("speak-server dry-run request shape must include guidance_scale")
         if dry_payload.get("speaker") != "felipe-clone":
             failures.append("speak-server dry-run must report speaker control field")
         if dry_payload.get("instructions_present") is not True:
@@ -967,6 +1003,16 @@ def validate_server_route_command() -> list[str]:
                 "CustomVoice",
                 "--max-new-tokens",
                 "2048",
+                "--guidance-scale",
+                "3.0",
+                "--denoise",
+                "--t-shift",
+                "0.1",
+                "--position-temperature",
+                "0.0",
+                "--class-temperature",
+                "0.0",
+                "--postprocess-output",
                 "--no-stream",
                 "--num-step",
                 "12",
@@ -1013,6 +1059,18 @@ def validate_server_route_command() -> list[str]:
             failures.append("speak-long-server dry-run must report task_type")
         if long_dry_payload.get("max_new_tokens") != 2048:
             failures.append("speak-long-server dry-run must report max_new_tokens")
+        if long_dry_payload.get("guidance_scale") != 3.0:
+            failures.append("speak-long-server dry-run must report guidance_scale")
+        if long_dry_payload.get("denoise") is not True:
+            failures.append("speak-long-server dry-run must report denoise")
+        if long_dry_payload.get("t_shift") != 0.1:
+            failures.append("speak-long-server dry-run must report t_shift")
+        if long_dry_payload.get("position_temperature") != 0.0:
+            failures.append("speak-long-server dry-run must report position_temperature")
+        if long_dry_payload.get("class_temperature") != 0.0:
+            failures.append("speak-long-server dry-run must report class_temperature")
+        if long_dry_payload.get("postprocess_output") is not True:
+            failures.append("speak-long-server dry-run must report postprocess_output")
         if long_dry_payload.get("stream_requested") is not False:
             failures.append("speak-long-server dry-run must report disabled stream intent")
         if long_dry_payload.get("num_step") != 12:
@@ -1024,6 +1082,8 @@ def validate_server_route_command() -> list[str]:
             failures.append("speak-long-server dry-run request shape must include first chunk language")
         elif long_request_shape.get("task_type") != "CustomVoice":
             failures.append("speak-long-server dry-run request shape must include task_type")
+        elif long_request_shape.get("guidance_scale") != 3.0:
+            failures.append("speak-long-server dry-run request shape must include guidance_scale")
         if long_dry_payload.get("chunk_languages") != ["pt", "en", "pt"]:
             failures.append("speak-long-server must preserve PT/EN/PT chunk language plan")
         if long_dry_payload.get("combine_requested") is not True:
@@ -1126,6 +1186,16 @@ def validate_server_route_command() -> list[str]:
                     "CustomVoice",
                     "--max-new-tokens",
                     "2048",
+                    "--guidance-scale",
+                    "3.0",
+                    "--denoise",
+                    "--t-shift",
+                    "0.1",
+                    "--position-temperature",
+                    "0.0",
+                    "--class-temperature",
+                    "0.0",
+                    "--postprocess-output",
                     "--stream",
                     "--num-step",
                     "8",
@@ -1215,6 +1285,18 @@ def validate_server_route_command() -> list[str]:
                 failures.append("speak-server request body lost task_type")
             if body.get("max_new_tokens") != 2048:
                 failures.append("speak-server request body lost max_new_tokens")
+            if body.get("guidance_scale") != 3.0:
+                failures.append("speak-server request body lost guidance_scale")
+            if body.get("denoise") is not True:
+                failures.append("speak-server request body lost denoise")
+            if body.get("t_shift") != 0.1:
+                failures.append("speak-server request body lost t_shift")
+            if body.get("position_temperature") != 0.0:
+                failures.append("speak-server request body lost position_temperature")
+            if body.get("class_temperature") != 0.0:
+                failures.append("speak-server request body lost class_temperature")
+            if body.get("postprocess_output") is not True:
+                failures.append("speak-server request body lost postprocess_output")
             if body.get("stream") is not True:
                 failures.append("speak-server request body lost stream intent")
             if body.get("num_step") != 8:
@@ -1241,6 +1323,16 @@ def validate_server_route_command() -> list[str]:
                     "CustomVoice",
                     "--max-new-tokens",
                     "2048",
+                    "--guidance-scale",
+                    "3.0",
+                    "--denoise",
+                    "--t-shift",
+                    "0.1",
+                    "--position-temperature",
+                    "0.0",
+                    "--class-temperature",
+                    "0.0",
+                    "--postprocess-output",
                     "--no-stream",
                     "--num-step",
                     "12",
@@ -1301,6 +1393,18 @@ def validate_server_route_command() -> list[str]:
                     failures.append(f"speak-long-server chunk {index} lost task_type")
                 if request_body.get("max_new_tokens") != 2048:
                     failures.append(f"speak-long-server chunk {index} lost max_new_tokens")
+                if request_body.get("guidance_scale") != 3.0:
+                    failures.append(f"speak-long-server chunk {index} lost guidance_scale")
+                if request_body.get("denoise") is not True:
+                    failures.append(f"speak-long-server chunk {index} lost denoise")
+                if request_body.get("t_shift") != 0.1:
+                    failures.append(f"speak-long-server chunk {index} lost t_shift")
+                if request_body.get("position_temperature") != 0.0:
+                    failures.append(f"speak-long-server chunk {index} lost position_temperature")
+                if request_body.get("class_temperature") != 0.0:
+                    failures.append(f"speak-long-server chunk {index} lost class_temperature")
+                if request_body.get("postprocess_output") is not True:
+                    failures.append(f"speak-long-server chunk {index} lost postprocess_output")
                 if request_body.get("language") not in {"pt", "en"}:
                     failures.append(f"speak-long-server chunk {index} lost per-chunk language")
                 if request_body.get("stream") is not False:
