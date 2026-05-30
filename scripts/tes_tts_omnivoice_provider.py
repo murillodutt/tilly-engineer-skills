@@ -25,6 +25,7 @@ import sys
 import threading
 import time
 from typing import Any
+import wave
 import zipfile
 
 from tes_tts_runtime_adapter import prepare_audio_quality_text, prepare_spoken_text
@@ -330,6 +331,61 @@ def playback_audio(output: Path) -> dict[str, Any]:
         "playback_status": "played" if completed.returncode == 0 else "failed",
         "player": player,
         "returncode": completed.returncode,
+    }
+
+
+def combine_wav_files(inputs: list[Path], output: Path, *, silence_ms: int) -> dict[str, Any]:
+    """Write one review/playback WAV from chunk WAVs with deterministic gaps."""
+    existing = [path for path in inputs if path.exists()]
+    if not existing:
+        return {
+            "combined_status": "SKIPPED",
+            "reason": "no chunk wav files found",
+            "combined_output": str(output),
+            "combined_chunk_count": 0,
+        }
+
+    params: wave._wave_params | None = None
+    frames: list[bytes] = []
+    total_frames = 0
+    silence_frames = 0
+    for index, path in enumerate(existing):
+        with wave.open(str(path), "rb") as handle:
+            current_params = handle.getparams()
+            if params is None:
+                params = current_params
+                silence_frames = int(current_params.framerate * max(0, silence_ms) / 1000)
+            elif (
+                current_params.nchannels != params.nchannels
+                or current_params.sampwidth != params.sampwidth
+                or current_params.framerate != params.framerate
+                or current_params.comptype != params.comptype
+            ):
+                return {
+                    "combined_status": "FAIL",
+                    "reason": f"incompatible WAV params at {path}",
+                    "combined_output": str(output),
+                    "combined_chunk_count": len(existing),
+                }
+            frames.append(handle.readframes(handle.getnframes()))
+            total_frames += current_params.nframes
+        if index < len(existing) - 1 and silence_frames:
+            frames.append(b"\x00" * silence_frames * params.nchannels * params.sampwidth)
+            total_frames += silence_frames
+
+    assert params is not None
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with wave.open(str(output), "wb") as handle:
+        handle.setnchannels(params.nchannels)
+        handle.setsampwidth(params.sampwidth)
+        handle.setframerate(params.framerate)
+        handle.writeframes(b"".join(frames))
+    return {
+        "combined_status": "PASS",
+        "combined_output": str(output),
+        "combined_chunk_count": len(existing),
+        "combined_silence_ms": max(0, silence_ms),
+        "combined_duration_seconds": round(total_frames / params.framerate, 3),
     }
 
 
@@ -1629,6 +1685,8 @@ def command_speak_long(args: argparse.Namespace) -> int:
                 "utterance_timeout_seconds": args.utterance_timeout,
                 "slow_chunk_ms": args.slow_chunk_ms,
                 "play_requested": args.play,
+                "combine_requested": args.combine,
+                "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
                 "latency_profile": args.latency_profile,
                 **latency_profile_metadata(args),
                 "num_step": args.num_step,
@@ -1718,7 +1776,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
                         status = "FAIL"
                         error = f"{chunk_id} failed"
                         break
-                    if args.play:
+                    if args.play and not args.combine:
                         playback = playback_audio(output)
                         playback_item = {"id": chunk_id, "output": str(output), **playback}
                         playback_results.append(playback_item)
@@ -1734,8 +1792,6 @@ def command_speak_long(args: argparse.Namespace) -> int:
         finally:
             if process is not None:
                 wait_or_terminate(process)
-            monitor.record("long_read_end", status=status, error=error)
-            monitor.stop(status)
 
     generation_values = [item.get("generation_ms") for item in outputs if isinstance(item.get("generation_ms"), (int, float))]
     request_values = [item.get("request_total_ms") for item in outputs if isinstance(item.get("request_total_ms"), (int, float))]
@@ -1743,6 +1799,27 @@ def command_speak_long(args: argparse.Namespace) -> int:
         item.get("audio_duration_seconds") for item in outputs if isinstance(item.get("audio_duration_seconds"), (int, float))
     ]
     rtf_values = [item.get("rtf") for item in outputs if isinstance(item.get("rtf"), (int, float))]
+    combined_result: dict[str, Any] | None = None
+    if args.combine and outputs:
+        combined_result = combine_wav_files(
+            [Path(item["output"]) for item in outputs if isinstance(item.get("output"), str)],
+            output_dir / "combined.wav",
+            silence_ms=args.inter_chunk_silence_ms,
+        )
+        monitor.record("combined_audio", **combined_result)
+        if combined_result.get("combined_status") != "PASS" and status == "PASS":
+            status = "COMBINE_FAILED"
+            error = str(combined_result.get("reason") or "combined WAV creation failed")
+        elif args.play and status == "PASS":
+            playback = playback_audio(Path(str(combined_result["combined_output"])))
+            playback_item = {"id": "combined", "output": combined_result["combined_output"], **playback}
+            playback_results.append(playback_item)
+            monitor.record("playback_result", **playback_item)
+            if playback.get("playback_status") != "played":
+                status = "PLAYBACK_FAILED"
+                error = "combined playback failed"
+    monitor.record("long_read_end", status=status, error=error)
+    monitor.stop(status)
     payload = {
         "provider": "omnivoice",
         "status": status,
@@ -1760,6 +1837,9 @@ def command_speak_long(args: argparse.Namespace) -> int:
         "chunk_count": len(chunks),
         "completed_chunk_count": len(outputs),
         "play_requested": args.play,
+        "combine_requested": args.combine,
+        "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
+        "combined_audio": combined_result,
         "startup": startup_payload,
         "outputs": outputs,
         "playback_results": playback_results,
@@ -3094,6 +3174,12 @@ def build_parser() -> argparse.ArgumentParser:
     speak_long.add_argument("--utterance-timeout", type=float, default=180.0)
     speak_long.add_argument("--monitor-heartbeat", type=float, default=5.0)
     speak_long.add_argument("--slow-chunk-ms", type=float, default=45000.0)
+    speak_long.add_argument(
+        "--combine",
+        action="store_true",
+        help="Write combined.wav from chunk WAVs for review/playback while keeping individual chunks.",
+    )
+    speak_long.add_argument("--inter-chunk-silence-ms", type=int, default=350)
     speak_long.add_argument("--play", action="store_true")
     speak_long.add_argument("--dry-run", action="store_true")
     speak_long.set_defaults(func=command_speak_long)

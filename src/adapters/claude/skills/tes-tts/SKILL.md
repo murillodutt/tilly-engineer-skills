@@ -42,9 +42,12 @@ compatible TES intent alias if the host reports it as an invalid slash.
    for premium cloned-voice reads, while preserving `say` as the local
    fallback. For long reads, do not send the whole text as one synthesis
    request; use
-   `python3 scripts/tes_tts_omnivoice_provider.py speak-long --text "<text>" --play`,
-   which splits speech into natural chunks, uses the resident OmniVoice
-   session, and writes an exclusive runtime JSONL monitor log under `tmp/**`.
+  `python3 scripts/tes_tts_omnivoice_provider.py speak-long --text "<text>" --play`,
+  which splits speech into natural chunks, uses the resident OmniVoice
+  session, and writes an exclusive runtime JSONL monitor log under `tmp/**`.
+  For long-read review or when playback overlap/cuts are suspected, add
+  `--combine --inter-chunk-silence-ms 350`; this keeps every chunk WAV and also
+  writes one `combined.wav` with deterministic pauses for audible comparison.
    Before live sessions, run
    `python3 scripts/tes_tts_omnivoice_provider.py warm-cache` to prepare the
    voice prompt cache without generating speech. For repeated live utterances,

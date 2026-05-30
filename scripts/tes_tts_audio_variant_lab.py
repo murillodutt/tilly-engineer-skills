@@ -211,7 +211,15 @@ def run_command(command: list[str]) -> dict[str, Any]:
     }
 
 
-def synthesize_session(session: Path, *, chunk_chars: int, latency_profile: str, text_mode: str) -> dict[str, Any]:
+def synthesize_session(
+    session: Path,
+    *,
+    chunk_chars: int,
+    latency_profile: str,
+    text_mode: str,
+    combine: bool,
+    inter_chunk_silence_ms: int,
+) -> dict[str, Any]:
     text = (session / "input.txt").read_text(encoding="utf-8")
     command = [
         "python3",
@@ -232,6 +240,8 @@ def synthesize_session(session: Path, *, chunk_chars: int, latency_profile: str,
         "--text",
         text,
     ]
+    if combine:
+        command.extend(["--combine", "--inter-chunk-silence-ms", str(inter_chunk_silence_ms)])
     result = run_command(command)
     try:
         result["json"] = json.loads(result["stdout"])
@@ -439,9 +449,12 @@ def command_run(args: argparse.Namespace) -> int:
                     chunk_chars=chunk_chars,
                     latency_profile=args.latency_profile,
                     text_mode=text_mode,
+                    combine=args.combine,
+                    inter_chunk_silence_ms=args.inter_chunk_silence_ms,
                 )
                 entry["synthesize_returncode"] = synth["returncode"]
                 entry["synthesize_status"] = (synth.get("json") or {}).get("status")
+                entry["combined_audio"] = (synth.get("json") or {}).get("combined_audio")
             if args.audit:
                 audit = audit_session(session, stt=args.stt)
                 entry["audit_returncode"] = audit["returncode"]
@@ -456,6 +469,8 @@ def command_run(args: argparse.Namespace) -> int:
         "synthesize": args.synthesize,
         "audit": args.audit,
         "stt": args.stt,
+        "combine": args.combine,
+        "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
         "results": results,
         "ranked_results": rank_results(results),
     }
@@ -523,6 +538,8 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--stt", action="store_true")
     run.add_argument("--review", action="store_true")
     run.add_argument("--package", action="store_true")
+    run.add_argument("--combine", action="store_true")
+    run.add_argument("--inter-chunk-silence-ms", type=int, default=350)
     run.add_argument("--latency-profile", default="fast")
     run.set_defaults(func=command_run)
 

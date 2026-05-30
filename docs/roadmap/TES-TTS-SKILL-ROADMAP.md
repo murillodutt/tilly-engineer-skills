@@ -36,13 +36,14 @@ durable cache, or proactive `speak`.
   avg RTF `0.3864`, package SHA starts `eafb9419`.
 - Long-read OmniVoice correction passed: 12 chunks played, `avg_rtf=0.2067`,
   `fallback_used=false`, monitor log under `tmp/**/runtime-logs`.
-- Audio variant review now packages WAVs, STT/WER, and HTML review. In latest
-  `chunk-002` evidence, `fast` stayed degraded while `quality` passed for both
-  baseline and `audio_quality`; human listening remains the final decision.
+- Audio variant review now packages WAVs, STT/WER, HTML review, and optional
+  `combined.wav` with 350 ms chunk pauses. Latest `chunk-002` quality evidence
+  passed baseline, `audio_quality`, and two-chunk `small_sentence_chunks`.
 
 ## Next Cut
-Listen to packaged baseline-vs-`audio_quality` reviews, then decide whether
-mixed technical chunks should prefer `quality`, `audio_quality`, or both.
+Listen to the packaged quality review with `combined.wav`, then decide whether
+mixed technical chunks should prefer baseline quality, smaller chunks, or
+`audio_quality`.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.
