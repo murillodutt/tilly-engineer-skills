@@ -36,21 +36,21 @@ durable cache, or proactive `speak`.
   avg RTF `0.3864`, package SHA starts `eafb9419`.
 - Long-read OmniVoice correction passed: 12 chunks played, `avg_rtf=0.2067`,
   `fallback_used=false`, monitor log under `tmp/**/runtime-logs`.
-- Audio variant review now requires STT when requested, audits `combined.wav`,
-  rejects stale audit summaries, and flags raw STT drift even when domain
-  normalization explains protected-term drift.
-- Research-guided audio lab now supports provider/STT language selection,
-  microsecond run IDs, and an OmniVoice `language=auto` long-read plan that
-  routes whole chunks only when the chunk is clearly an English island.
+- Audio variant review now supports per-chunk STT language when provider
+  output records chunk languages, plus `combined.wav` and optional chunk-edge
+  silence for cut/overlap experiments.
+- Research-guided audio lab supports provider/STT language selection,
+  microsecond run IDs, `language=auto`, English-island variants, and problem
+  term alias variants without promoting them to runtime defaults.
 - Latest evidence: single English phrase with global `en` remains the best STT
-  score (`20260530-151743`); routed PT/PT/EN/PT chunk synthesis now passes
-  audio-metric audit without STT certification (`20260530-153447-843321`).
+  score (`20260530-151743`); per-chunk STT shows routed runs still degrade on
+  chunk 3 (`20260530-155155-872719`), so grouped/alias variants stay lab-only.
 
 ## Next Cut
-Listen to `20260530-151743` and `20260530-153447-843321`; decide whether the
-chunk-language routed `combined.wav` improves the mixed technical phrase enough
-to promote `language=auto` into the runtime path, or keep it lab-only pending
-human scores.
+Listen to `20260530-151743`, `20260530-153447-843321`, and
+`20260530-155155-872719`; score whether any routed `combined.wav` beats the
+global-`en` phrase before adding more aliases. If none does, focus next on
+provider/runtime strategy rather than more punctuation variants.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.

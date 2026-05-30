@@ -210,6 +210,41 @@ def mixed_technical_english_phrase_chunked(text: str) -> str:
     return rendered
 
 
+def mixed_technical_english_grouped(text: str) -> str:
+    rendered = mixed_technical_clean_natural(text)
+    rendered = re.sub(
+        r"JSON, YAML, HTTP, Node JS, TypeScript, Python, Open AI API, Trie e Aho Corasick ficam como thresholds futuros\.",
+        (
+            "English technical terms, first group: JSON, YAML, and HTTP.\n\n"
+            "English technical terms, second group: Node JS, TypeScript, Python, and Open AI API.\n\n"
+            "English technical terms, third group: Trie, Aho Corasick, and thresholds.\n\n"
+            "Esses ficam como thresholds futuros."
+        ),
+        rendered,
+        flags=re.IGNORECASE,
+    )
+    rendered = re.sub(r"(?<=MCP\.)\s+", "\n\n", rendered)
+    rendered = re.sub(r"(?<=agora\.)\s+", "\n\n", rendered)
+    return rendered
+
+
+def mixed_technical_problem_aliases(text: str) -> str:
+    rendered = mixed_technical_clean_natural(text)
+    rendered = re.sub(
+        r"JSON, YAML, HTTP, Node JS, TypeScript, Python, Open AI API, Trie e Aho Corasick ficam como thresholds futuros\.",
+        (
+            "English technical terms: JSON, YAML, HTTP, Node JS, TypeScript, Python, and Open AI API.\n\n"
+            "English problem terms: try, A ho Corasick, and thresholds.\n\n"
+            "Esses ficam como thresholds futuros."
+        ),
+        rendered,
+        flags=re.IGNORECASE,
+    )
+    rendered = re.sub(r"(?<=MCP\.)\s+", "\n\n", rendered)
+    rendered = re.sub(r"(?<=agora\.)\s+", "\n\n", rendered)
+    return rendered
+
+
 def mixed_technical_cmu_hint(text: str) -> str:
     rendered = mixed_technical_clean_natural(text)
     replacements = [
@@ -275,6 +310,12 @@ def build_variant_plan(source_text: str, variant: str) -> dict[str, Any]:
         return {"text": text, "audit_text": text, "chunk_chars": 420, "text_mode": "redacted_source"}
     if variant == "mixed_technical_english_phrase_chunked":
         text = mixed_technical_english_phrase_chunked(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 180, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_english_grouped":
+        text = mixed_technical_english_grouped(source_text)
+        return {"text": text, "audit_text": text, "chunk_chars": 180, "text_mode": "redacted_source"}
+    if variant == "mixed_technical_problem_aliases":
+        text = mixed_technical_problem_aliases(source_text)
         return {"text": text, "audit_text": text, "chunk_chars": 180, "text_mode": "redacted_source"}
     if variant == "mixed_technical_cmu_hint":
         text = mixed_technical_cmu_hint(source_text)
@@ -353,6 +394,7 @@ def synthesize_session(
     provider_language: str,
     combine: bool,
     inter_chunk_silence_ms: int,
+    chunk_edge_silence_ms: int,
 ) -> dict[str, Any]:
     text = (session / "input.txt").read_text(encoding="utf-8")
     command = [
@@ -378,6 +420,8 @@ def synthesize_session(
     ]
     if combine:
         command.extend(["--combine", "--inter-chunk-silence-ms", str(inter_chunk_silence_ms)])
+    if chunk_edge_silence_ms:
+        command.extend(["--chunk-edge-silence-ms", str(chunk_edge_silence_ms)])
     result = run_command(command)
     try:
         result["json"] = json.loads(result["stdout"])
@@ -656,6 +700,7 @@ def command_run(args: argparse.Namespace) -> int:
                     provider_language=args.provider_language,
                     combine=args.combine,
                     inter_chunk_silence_ms=args.inter_chunk_silence_ms,
+                    chunk_edge_silence_ms=args.chunk_edge_silence_ms,
                 )
                 entry["synthesize_returncode"] = synth["returncode"]
                 entry["synthesize_status"] = (synth.get("json") or {}).get("status")
@@ -684,6 +729,7 @@ def command_run(args: argparse.Namespace) -> int:
         "stt": args.stt,
         "combine": args.combine,
         "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
+        "chunk_edge_silence_ms": args.chunk_edge_silence_ms,
         "provider_language": args.provider_language,
         "stt_language": args.stt_language,
         "results": results,
@@ -759,6 +805,18 @@ def command_self_test(_args: argparse.Namespace) -> int:
     )
     if english_chunked.count("\n\n") < 2:
         failures.append("mixed English phrase chunked transform missing chunk boundaries")
+    english_grouped = mixed_technical_english_grouped(
+        "Teste real do TES-TTS: MCP. Não vamos usar SSML com suporte de provider agora. JSON., YAML., HTTP., Node.JS., TypeScript, Python, Open.AI. API., Trie e Aho Corasick ficam como thresholds futuros."
+    )
+    for expected in ("first group", "second group", "third group"):
+        if expected not in english_grouped:
+            failures.append(f"mixed English grouped transform missing {expected}")
+    problem_aliases = mixed_technical_problem_aliases(
+        "Teste real do TES-TTS: MCP. Não vamos usar SSML com suporte de provider agora. JSON., YAML., HTTP., Node.JS., TypeScript, Python, Open.AI. API., Trie e Aho Corasick ficam como thresholds futuros."
+    )
+    for expected in ("English problem terms", "try", "A ho Corasick"):
+        if expected not in problem_aliases:
+            failures.append(f"mixed problem alias transform missing {expected}")
     cmu = mixed_technical_cmu_hint("provider, Trie, Aho Corasick e thresholds")
     for expected in ("[P R AH0 V AY1 D ER0]", "[T R AY1]", "[AA1 HH OW0]", "[TH R EH1 SH OW2 L D Z]"):
         if expected not in cmu:
@@ -791,6 +849,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--package", action="store_true")
     run.add_argument("--combine", action="store_true")
     run.add_argument("--inter-chunk-silence-ms", type=int, default=350)
+    run.add_argument("--chunk-edge-silence-ms", type=int, default=0)
     run.add_argument("--latency-profile", default="fast")
     run.add_argument("--provider-language", default="pt")
     run.add_argument("--stt-language", default="portuguese")

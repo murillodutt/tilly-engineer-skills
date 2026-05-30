@@ -45,6 +45,17 @@ DOMAIN_NORMALIZED_SUBSTITUTIONS = [
     (r"\bminivoiz\b", "omnivoice"),
     (r"\bresident\b", "residente"),
 ]
+STT_LANGUAGE_ALIASES = {
+    "auto": "auto",
+    "en": "english",
+    "eng": "english",
+    "english": "english",
+    "pt": "portuguese",
+    "pt-br": "portuguese",
+    "pt_br": "portuguese",
+    "por": "portuguese",
+    "portuguese": "portuguese",
+}
 
 
 def normalize_for_compare(text: str) -> list[str]:
@@ -233,6 +244,30 @@ def resolve_audio_path(session_dir: Path, expected_audio: str | None, chunk_id: 
     return candidates[0] if candidates else session_dir / f"{chunk_id}.wav"
 
 
+def provider_language_by_audio(session_dir: Path) -> dict[str, str]:
+    result_path = session_dir / "result.json"
+    if not result_path.exists():
+        return {}
+    try:
+        payload = json.loads(result_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    languages: dict[str, str] = {}
+    for output in payload.get("outputs", []):
+        if not isinstance(output, dict):
+            continue
+        output_path = output.get("output")
+        language = output.get("language")
+        if isinstance(output_path, str) and isinstance(language, str) and language:
+            languages[Path(output_path).name] = language
+    return languages
+
+
+def canonical_stt_language(language: str) -> str:
+    normalized = language.strip().lower()
+    return STT_LANGUAGE_ALIASES.get(normalized, normalized or "portuguese")
+
+
 def audit_combined_audio(session_dir: Path, args: argparse.Namespace) -> dict[str, Any] | None:
     if not args.audit_combined:
         return None
@@ -265,6 +300,7 @@ def load_chunks(session_dir: Path) -> list[dict[str, Any]]:
     chunks = payload.get("chunks")
     if not isinstance(chunks, list):
         raise ValueError("chunk-texts.json must contain a chunks list")
+    language_by_audio = provider_language_by_audio(session_dir)
     normalized: list[dict[str, Any]] = []
     for index, chunk in enumerate(chunks, start=1):
         chunk_id = chunk.get("id") or f"chunk-{index:03d}"
@@ -272,7 +308,10 @@ def load_chunks(session_dir: Path) -> list[dict[str, Any]]:
         if not isinstance(text, str):
             raise ValueError(f"{chunk_id}: text is required")
         audio = resolve_audio_path(session_dir, chunk.get("expected_audio"), chunk_id)
-        normalized.append({"id": chunk_id, "text": text, "audio": audio})
+        language = chunk.get("language")
+        if not isinstance(language, str) or not language:
+            language = language_by_audio.get(audio.name)
+        normalized.append({"id": chunk_id, "text": text, "audio": audio, "language": language})
     return normalized
 
 
@@ -295,7 +334,19 @@ def run_stt(
             raise RuntimeError(details["reason"])
         return {}, details
 
-    request = {"model": str(model), "language": language, "files": [str(row["audio"]) for row in rows]}
+    global_language = canonical_stt_language(language)
+    request_rows = []
+    for row in rows:
+        row_language = row.get("language")
+        stt_language = (
+            canonical_stt_language(str(row_language))
+            if global_language == "auto" and isinstance(row_language, str) and row_language
+            else global_language
+        )
+        if stt_language == "auto":
+            stt_language = "portuguese"
+        request_rows.append({"file": str(row["audio"]), "language": stt_language})
+    request = {"model": str(model), "language": global_language, "rows": request_rows}
     code = r"""
 import json
 import os
@@ -323,20 +374,23 @@ asr = pipeline(
 )
 load_ms = round((time.perf_counter() - started) * 1000, 3)
 rows = []
-for file_path in request["files"]:
+for item in request["rows"]:
+    file_path = item["file"]
+    language = item["language"]
     item_started = time.perf_counter()
     output = asr(
         file_path,
-        generate_kwargs={"language": request["language"], "task": "transcribe"},
+        generate_kwargs={"language": language, "task": "transcribe"},
     )
     rows.append(
         {
             "file": file_path,
+            "language": language,
             "transcription": output.get("text", ""),
             "stt_ms": round((time.perf_counter() - item_started) * 1000, 3),
         }
     )
-print(json.dumps({"status": "PASS", "device": device, "load_ms": load_ms, "rows": rows}, ensure_ascii=False))
+print(json.dumps({"status": "PASS", "device": device, "load_ms": load_ms, "language_mode": request["language"], "rows": rows}, ensure_ascii=False))
 """
     completed = subprocess.run(
         [str(python), "-c", code],
@@ -426,6 +480,7 @@ def audit_session(args: argparse.Namespace) -> dict[str, Any]:
                 "id": chunk["id"],
                 "text": chunk["text"],
                 "audio": str(chunk["audio"]),
+                "language": chunk.get("language"),
                 "text_inspection": text_report,
                 "audio_metrics": metrics,
                 "stt_comparison": comparison,
@@ -489,6 +544,13 @@ def command_self_test(_args: argparse.Namespace) -> int:
         combined_path = root / "combined.wav"
         write_test_wav(wav_path)
         write_test_wav(combined_path)
+        (root / "result.json").write_text(
+            json.dumps(
+                {"outputs": [{"id": "chunk-001", "output": str(wav_path), "language": "pt"}]},
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
         (root / "chunk-texts.json").write_text(
             json.dumps(
                 {
@@ -528,6 +590,10 @@ def command_self_test(_args: argparse.Namespace) -> int:
             failures.append("missing audio duration")
         if chunk["audio_metrics"]["clip_ratio"] != 0:
             failures.append("unexpected clipping")
+        if chunk["language"] != "pt":
+            failures.append("expected provider language from result.json")
+        if canonical_stt_language("pt-BR") != "portuguese" or canonical_stt_language("en") != "english":
+            failures.append("expected STT language alias mapping")
         if not payload.get("combined_audio"):
             failures.append("expected combined audio audit")
         domain = domain_normalized_comparison(

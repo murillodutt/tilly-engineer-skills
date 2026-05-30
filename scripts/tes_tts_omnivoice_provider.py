@@ -390,6 +390,30 @@ def combine_wav_files(inputs: list[Path], output: Path, *, silence_ms: int) -> d
     }
 
 
+def add_edge_silence_to_wav(path: Path, *, silence_ms: int) -> dict[str, Any]:
+    silence_ms = max(0, silence_ms)
+    if not silence_ms:
+        return {"edge_silence_status": "SKIPPED", "edge_silence_ms": 0}
+    if not path.exists():
+        return {"edge_silence_status": "FAIL", "reason": "WAV missing", "edge_silence_ms": silence_ms}
+
+    with wave.open(str(path), "rb") as handle:
+        params = handle.getparams()
+        frames = handle.readframes(handle.getnframes())
+    silence_frames = int(params.framerate * silence_ms / 1000)
+    silence = b"\x00" * silence_frames * params.nchannels * params.sampwidth
+    with wave.open(str(path), "wb") as handle:
+        handle.setnchannels(params.nchannels)
+        handle.setsampwidth(params.sampwidth)
+        handle.setframerate(params.framerate)
+        handle.writeframes(silence + frames + silence)
+    return {
+        "edge_silence_status": "PASS",
+        "edge_silence_ms": silence_ms,
+        "edge_silence_frames_each_side": silence_frames,
+    }
+
+
 def safe_file_stem(value: str) -> str:
     cleaned = "".join(ch if ch.isalnum() or ch in {"-", "_"} else "-" for ch in value.strip())
     cleaned = "-".join(part for part in cleaned.split("-") if part)
@@ -598,7 +622,7 @@ def infer_long_read_chunk_language(text: str, requested_language: str) -> str:
     portuguese_score = sum(1 for token in tokens if token in portuguese_markers)
     english_score = sum(1 for token in tokens if token in english_markers)
 
-    if normalized.startswith(("english technical terms:", "the english technical terms are")):
+    if normalized.startswith(("english technical terms:", "the english technical terms are", "english problem terms:")):
         return "en"
     if english_score >= 4 and portuguese_score == 0:
         return "en"
@@ -1754,6 +1778,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
                 "play_requested": args.play,
                 "combine_requested": args.combine,
                 "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
+                "chunk_edge_silence_ms": args.chunk_edge_silence_ms,
                 "latency_profile": args.latency_profile,
                 **latency_profile_metadata(args),
                 "num_step": args.num_step,
@@ -1831,6 +1856,10 @@ def command_speak_long(args: argparse.Namespace) -> int:
                     process.stdin.flush()
                     response = read_jsonl_payload(process, args.utterance_timeout, f"resident long-read {chunk_id}")
                     outputs.append(response)
+                    if response.get("status") == "PASS" and args.chunk_edge_silence_ms:
+                        edge_silence = add_edge_silence_to_wav(output, silence_ms=args.chunk_edge_silence_ms)
+                        response["edge_silence"] = edge_silence
+                        monitor.record("chunk_edge_silence", id=chunk_id, **edge_silence)
                     monitor.record("chunk_result", id=chunk_id, status=response.get("status"), response=response)
                     request_ms = response.get("request_total_ms")
                     if isinstance(request_ms, (int, float)) and request_ms > args.slow_chunk_ms:
@@ -1919,6 +1948,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
         "play_requested": args.play,
         "combine_requested": args.combine,
         "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
+        "chunk_edge_silence_ms": args.chunk_edge_silence_ms,
         "combined_audio": combined_result,
         "startup": startup_payload,
         "outputs": outputs,
@@ -3261,6 +3291,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write combined.wav from chunk WAVs for review/playback while keeping individual chunks.",
     )
     speak_long.add_argument("--inter-chunk-silence-ms", type=int, default=350)
+    speak_long.add_argument("--chunk-edge-silence-ms", type=int, default=0)
     speak_long.add_argument("--play", action="store_true")
     speak_long.add_argument("--dry-run", action="store_true")
     speak_long.set_defaults(func=command_speak_long)

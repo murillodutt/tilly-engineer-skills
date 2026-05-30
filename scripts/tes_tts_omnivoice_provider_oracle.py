@@ -190,6 +190,7 @@ REQUIRED_LONG_READ_DRY_RUN_KEYS = {
     "play_requested",
     "combine_requested",
     "inter_chunk_silence_ms",
+    "chunk_edge_silence_ms",
     "latency_profile",
     "requested_latency_profile",
     "latency_profile_source",
@@ -489,6 +490,8 @@ def run_status_and_dry_run() -> tuple[
                 "180",
                 "--language",
                 "auto",
+                "--chunk-edge-silence-ms",
+                "120",
                 "--play",
                 "--dry-run",
             ],
@@ -698,6 +701,8 @@ def validate_long_read_dry_run_payload(payload: dict[str, Any] | None) -> list[s
         failures.append("speak-long auto language fixture must route PT/EN/PT chunks")
     if payload.get("play_requested") is not True:
         failures.append("speak-long dry-run must report playback intent")
+    if payload.get("chunk_edge_silence_ms") != 120:
+        failures.append("speak-long dry-run must report chunk edge silence")
     monitor_log = payload.get("monitor_log")
     if not isinstance(monitor_log, str) or "runtime-logs" not in monitor_log:
         failures.append("speak-long dry-run must point to the exclusive runtime log")
