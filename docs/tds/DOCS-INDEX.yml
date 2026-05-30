@@ -1005,6 +1005,13 @@ documents:
   - path: docs/roadmap/GOAL-PROMPT-tes-tts-PSO-003-server-legacy-quarantine.md
     id: roadmap.goal_prompt_tes_tts_pso_003_server_legacy_quarantine
     class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, runtime authors, provider authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-PSO-004-lab-surface-split.md
+    id: roadmap.goal_prompt_tes_tts_pso_004_lab_surface_split
+    class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, runtime authors, provider authors, validation authors, and execution agents
     source_of_truth: false

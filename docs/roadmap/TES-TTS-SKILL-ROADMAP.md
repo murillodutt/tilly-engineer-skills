@@ -38,11 +38,11 @@ durable conversion cache, or proactive `speak`.
 - Python efficiency analysis targets provider/lab monoliths, not text prep.
 - Direct voice prompt cache is permitted only as protected local `tmp/**`
   runtime state, never as committed or shared artifact.
-- PSO-002 made short `speak` run through the direct kernel in-process when it
-  is already on provider Python; local short-read WAV passed under `tmp/**`.
+- PSO-003 marked server routes as legacy/lab compatibility and preserved the
+  active direct/resident product path without generating new audio.
 
 ## Next Cut
-Next: PSO-003 server legacy quarantine. The exact authority pointer is in
+Next: PSO-004 lab surface split. The exact authority pointer is in
 the registry. Keep `tmp/**` artifacts out of commits.
 
 ## Maintenance Rules

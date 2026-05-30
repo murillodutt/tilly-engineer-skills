@@ -110,6 +110,9 @@ REQUIRED_SERVER_DRY_RUN_KEYS = {
     "play_requested",
     "request_shape",
     "runtime_dependency",
+    "route_status",
+    "product_path",
+    "legacy_reason",
     "allows_install",
     "allows_download",
     "allows_global_config_write",
@@ -154,6 +157,9 @@ REQUIRED_SERVER_LONG_DRY_RUN_KEYS = {
     "inter_chunk_silence_ms",
     "request_shape",
     "runtime_dependency",
+    "route_status",
+    "product_path",
+    "legacy_reason",
     "fallback_used",
     "provider_exclusive",
     "allows_install",
@@ -174,6 +180,9 @@ REQUIRED_SERVER_STATUS_KEYS = {
     "api_key_present",
     "timeout_seconds",
     "runtime_dependency",
+    "route_status",
+    "product_path",
+    "legacy_reason",
     "probe_scope",
     "connectivity",
     "health",
@@ -785,6 +794,17 @@ def validate_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
     return failures
 
 
+def validate_server_legacy_metadata(payload: dict[str, Any], label: str) -> list[str]:
+    failures: list[str] = []
+    if payload.get("route_status") != "legacy_lab_compatibility":
+        failures.append(f"{label} must mark server route as legacy lab compatibility")
+    if payload.get("product_path") != "direct_resident_omnivoice":
+        failures.append(f"{label} must point to direct/resident OmniVoice as product path")
+    if "server route is retained" not in str(payload.get("legacy_reason")):
+        failures.append(f"{label} must explain why server route remains")
+    return failures
+
+
 def validate_server_route_command() -> list[str]:
     failures: list[str] = []
 
@@ -832,6 +852,7 @@ def validate_server_route_command() -> list[str]:
             failures.append(f"server-status dry-run has extra keys {extra}")
         if status_dry_payload.get("status") != "DRY_RUN":
             failures.append("server-status dry-run status drifted")
+        failures.extend(validate_server_legacy_metadata(status_dry_payload, "server-status dry-run"))
         if status_dry_payload.get("probe_scope") != "tcp_connect_plus_optional_health_no_synthesis":
             failures.append("server-status must stay a no-synthesis TCP/health preflight")
         if status_dry_payload.get("endpoint") != "http://127.0.0.1:9999/v1/audio/speech":
@@ -948,6 +969,7 @@ def validate_server_route_command() -> list[str]:
             failures.append("speak-server dry-run status drifted")
         if dry_payload.get("mode") != "product_server_shortcut":
             failures.append("speak-server dry-run mode drifted")
+        failures.extend(validate_server_legacy_metadata(dry_payload, "speak-server dry-run"))
         if dry_payload.get("runtime_dependency") != "optional_local_openai_compatible_http_server":
             failures.append("speak-server must stay optional local server route")
         if dry_payload.get("endpoint") != "http://127.0.0.1:9999/v1/audio/speech":
@@ -1060,6 +1082,7 @@ def validate_server_route_command() -> list[str]:
             failures.append(f"speak-long-server dry-run has extra keys {extra}")
         if long_dry_payload.get("mode") != "product_server_long_read":
             failures.append("speak-long-server dry-run mode drifted")
+        failures.extend(validate_server_legacy_metadata(long_dry_payload, "speak-long-server dry-run"))
         if long_dry_payload.get("speaker") != "tes-tts-local-clone":
             failures.append("speak-long-server dry-run must report speaker control field")
         if long_dry_payload.get("instructions_present") is not True:

@@ -64,6 +64,9 @@ LATENCY_PROFILES = {
 }
 LATENCY_PROFILE_CHOICES = ("auto", *tuple(sorted(LATENCY_PROFILES)))
 PROFILE_RECOMMENDATION_ORDER = ("fast", "balanced", "quality")
+ACTIVE_PRODUCT_PATH = "direct_resident_omnivoice"
+SERVER_LEGACY_ROUTE_STATUS = "legacy_lab_compatibility"
+SERVER_LEGACY_REASON = "server route is retained for lab and historical compatibility only"
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -72,6 +75,14 @@ def emit(payload: dict[str, Any]) -> None:
 
 def emit_jsonl(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
+
+
+def server_legacy_metadata() -> dict[str, str]:
+    return {
+        "route_status": SERVER_LEGACY_ROUTE_STATUS,
+        "product_path": ACTIVE_PRODUCT_PATH,
+        "legacy_reason": SERVER_LEGACY_REASON,
+    }
 
 
 def sha256_path(path: Path) -> str:
@@ -735,6 +746,7 @@ def command_server_status(args: argparse.Namespace) -> int:
         "api_key_present": api_key_present,
         "timeout_seconds": args.timeout,
         "runtime_dependency": "optional_local_openai_compatible_http_server",
+        **server_legacy_metadata(),
         "probe_scope": "tcp_connect_plus_optional_health_no_synthesis",
         "allows_install": False,
         "allows_download": False,
@@ -3002,6 +3014,7 @@ def command_speak_server(args: argparse.Namespace) -> int:
                 "endpoint": endpoint,
                 "clone_ref_audio_present": True,
                 "runtime_dependency": "optional_local_openai_compatible_http_server",
+                **server_legacy_metadata(),
                 "allows_install": False,
                 "allows_download": False,
                 "allows_global_config_write": False,
@@ -3043,6 +3056,7 @@ def command_speak_server(args: argparse.Namespace) -> int:
                 "play_requested": args.play,
                 "request_shape": server_request_shape(args),
                 "runtime_dependency": "optional_local_openai_compatible_http_server",
+                **server_legacy_metadata(),
                 "allows_install": False,
                 "allows_download": False,
                 "allows_global_config_write": False,
@@ -3080,6 +3094,7 @@ def command_speak_server(args: argparse.Namespace) -> int:
                 "endpoint": endpoint,
                 "reason": str(exc.reason if hasattr(exc, "reason") else exc),
                 "runtime_dependency": "optional_local_openai_compatible_http_server",
+                **server_legacy_metadata(),
                 "allows_install": False,
                 "allows_download": False,
                 "allows_global_config_write": False,
@@ -3127,6 +3142,7 @@ def command_speak_server(args: argparse.Namespace) -> int:
         "text_chars": len(args.text),
         "play_requested": args.play,
         "runtime_dependency": "optional_local_openai_compatible_http_server",
+        **server_legacy_metadata(),
         "allows_install": False,
         "allows_download": False,
         "allows_global_config_write": False,
@@ -3156,6 +3172,7 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
                 "endpoint": endpoint,
                 "clone_ref_audio_present": True,
                 "runtime_dependency": "optional_local_openai_compatible_http_server",
+                **server_legacy_metadata(),
                 "allows_install": False,
                 "allows_download": False,
                 "allows_global_config_write": False,
@@ -3171,6 +3188,7 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
                 "mode": "product_server_long_read",
                 "reason": "text produced no speakable chunks",
                 "runtime_dependency": "optional_local_openai_compatible_http_server",
+                **server_legacy_metadata(),
                 "allows_install": False,
                 "allows_download": False,
                 "allows_global_config_write": False,
@@ -3219,6 +3237,7 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
                 "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
                 "request_shape": server_request_shape(args, language=chunk_plan[0]["language"]),
                 "runtime_dependency": "optional_local_openai_compatible_http_server",
+                **server_legacy_metadata(),
                 "fallback_used": False,
                 "provider_exclusive": True,
                 "allows_install": False,
@@ -3362,6 +3381,7 @@ def command_speak_long_server(args: argparse.Namespace) -> int:
             "provider_timing_scope": "server_long_read_local_optional_environment_only",
         },
         "runtime_dependency": "optional_local_openai_compatible_http_server",
+        **server_legacy_metadata(),
         "fallback_used": False,
         "provider_exclusive": True,
         "error": error,
