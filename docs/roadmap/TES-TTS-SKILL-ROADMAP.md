@@ -15,10 +15,9 @@ pointers live in `TES-TTS-SKILL-ROADMAP-REGISTRY.md`; closed lineage lives in
 Partition contract: dashboard = objective state, registry = structured pointers, history = organized lineage, validators = budgets.
 
 ## State
-`tes-tts` is reactive-only. PT-BR is the primary quality target. The path is
+`tes-tts` is reactive-only. PT-BR is the primary quality target. Active work
+happens in `.agents/skills/tes-tts`, then mirrors to adapters. The path is
 runtime preparation plus optional OmniVoice; `say`/Felipe remains fallback.
-
-Active work happens in `.agents/skills/tes-tts`, then mirrors to adapters.
 Unauthorized: release/sync/push/tag/publish, redistribution, global writes,
 durable cache, or proactive `speak`.
 
@@ -30,36 +29,33 @@ durable cache, or proactive `speak`.
 - Version/release/sync/push/tag/publish need separate approval.
 
 ## Evidence
-- Maintainer live rating: OmniVoice cloned voice result `9.5`.
-- Sealed profile review selected `fast` as the current auto latency profile.
-- Latest live-smoke review package passed: 3 WAVs, `review.html`, ZIP package,
-  avg RTF `0.3864`, package SHA starts `eafb9419`.
-- Long-read OmniVoice correction passed: 12 chunks played, `avg_rtf=0.2067`,
+- Maintainer rating: OmniVoice cloned voice `9.5`; sealed auto profile is
+  `fast`; latest live-smoke package passed with avg RTF `0.3864`.
+- Long-read correction passed: 12 chunks, `avg_rtf=0.2067`,
   `fallback_used=false`, monitor log under `tmp/**/runtime-logs`.
-- Audio variant review now supports per-chunk STT language, `combined.wav`,
+- Audio variant review supports per-chunk STT language, `combined.wav`,
   `language=auto`, and lab-only English-island variants.
-- Latest lab evidence: `20260530-162231-615943` improves target chunks 2 and
-  3 (`domain WER=0.0` and `0.0769`); chunk 1 still needs human scoring and a
-  less brittle STT term-normalization oracle.
+- Latest lab evidence `20260530-162231-615943` improves target chunks 2 and 3;
+  chunk 1 needs human scoring and less brittle STT term normalization.
+- OmniVoice community scan points to server, MLX/Apple Silicon, realtime,
+  desktop studio, audiobook, and engine-registry paths before more alias tuning.
 
 ## Next Cut
-Human-score `20260530-162231-615943` against `20260530-151743`. If the scope
-plus semicolon English island wins by ear, promote it as the current rendering
-candidate; otherwise improve STT normalization before adding more punctuation
-or alias variants.
+Human-score `20260530-162231-615943` against `20260530-151743`, then compare
+resident CLI with a small OmniVoice server or engine-registry spike. Promote
+rendering changes only when audio wins by ear; otherwise pivot provider/runtime
+strategy before adding more punctuation or alias variants.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.
-- Keep only current state, active decisions, next cut, and latest evidence.
-- Move dense artifacts to `TES-TTS-SKILL-ROADMAP-REGISTRY.md`.
-- Move historical detail to `TES-TTS-SKILL-ROADMAP-HISTORY.md`.
-- If evidence needs more than four bullets, move it to registry/history and
-  leave only the current conclusion here.
+- Keep only current state, active decisions, next cut, and latest evidence;
+  move dense pointers to registry and closed lineage to history.
+- If evidence needs more than four bullets, move detail to registry/history.
 - Keep the root index grouped by product line, not by every prompt/SPEC/audit.
 - Every `tes-tts` cycle must update this dashboard or record no-change
   rationale; ambiguous, stale, or repeated status is a defect.
-- Do not use this roadmap to authorize sync, release, provider installs,
-  provider downloads, or global config writes.
+- This roadmap cannot authorize sync, release, provider installs, downloads, or
+  global writes.
 
 ## Closure Rule
 Close material changes after focused TTS/package gates. Commit local only until
