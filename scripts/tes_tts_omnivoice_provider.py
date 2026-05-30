@@ -25,6 +25,8 @@ import sys
 import threading
 import time
 from typing import Any
+import urllib.error
+import urllib.request
 import wave
 import zipfile
 
@@ -50,6 +52,9 @@ ENV_PYTHON = "TES_TTS_OMNIVOICE_PYTHON"
 ENV_REF_AUDIO = "TES_TTS_OMNIVOICE_REF_AUDIO"
 ENV_OUTPUT_DIR = "TES_TTS_OMNIVOICE_OUTPUT_DIR"
 ENV_BENCHMARK_DIR = "TES_TTS_OMNIVOICE_BENCHMARK_DIR"
+ENV_SERVER_URL = "TES_TTS_OMNIVOICE_SERVER_URL"
+ENV_SERVER_API_KEY = "TES_TTS_OMNIVOICE_SERVER_API_KEY"
+DEFAULT_SERVER_URL = "http://127.0.0.1:8880"
 LATENCY_PROFILES = {
     "fast": {"num_step": 8, "description": "lowest latency; audible quality must be reviewed per session"},
     "balanced": {"num_step": 16, "description": "middle ground for live iteration"},
@@ -170,6 +175,22 @@ def resolve_ref_audio(explicit: str | None) -> tuple[Path | None, str]:
     if DEFAULT_LOCAL_REF_AUDIO.exists():
         return DEFAULT_LOCAL_REF_AUDIO, "local_auto"
     return None, "missing"
+
+
+def resolve_server_url(explicit: str | None) -> tuple[str, str]:
+    if explicit:
+        return explicit.rstrip("/"), "arg"
+    env_value = os.environ.get(ENV_SERVER_URL)
+    if env_value:
+        return env_value.rstrip("/"), "env"
+    return DEFAULT_SERVER_URL, "default_localhost"
+
+
+def server_audio_speech_endpoint(base_url: str) -> str:
+    normalized = base_url.rstrip("/")
+    if normalized.endswith("/v1/audio/speech"):
+        return normalized
+    return f"{normalized}/v1/audio/speech"
 
 
 def default_output_path(output: str | None) -> Path:
@@ -2342,6 +2363,126 @@ def command_speak(args: argparse.Namespace) -> int:
     return completed.returncode
 
 
+def command_speak_server(args: argparse.Namespace) -> int:
+    server_url, server_url_source = resolve_server_url(args.server_url)
+    endpoint = server_audio_speech_endpoint(server_url)
+    output = default_output_path(args.output)
+    api_key_present = bool(os.environ.get(args.api_key_env))
+    payload_body = {
+        "model": args.model,
+        "input": args.text,
+        "voice": args.voice,
+        "response_format": "wav",
+    }
+    if args.speed is not None:
+        payload_body["speed"] = args.speed
+    if args.dry_run:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "DRY_RUN",
+                "version": VERSION,
+                "mode": "product_server_shortcut",
+                "server_url": server_url,
+                "server_url_source": server_url_source,
+                "endpoint": endpoint,
+                "api_key_env": args.api_key_env,
+                "api_key_present": api_key_present,
+                "model": args.model,
+                "voice": args.voice,
+                "output": str(output),
+                "text_chars": len(args.text),
+                "play_requested": args.play,
+                "request_shape": {
+                    "model": args.model,
+                    "input": "<redacted>",
+                    "voice": args.voice,
+                    "response_format": "wav",
+                    "speed": args.speed,
+                },
+                "runtime_dependency": "optional_local_openai_compatible_http_server",
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 0
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    started = time.perf_counter()
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "audio/wav,application/octet-stream,*/*",
+    }
+    api_key = os.environ.get(args.api_key_env)
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    request = urllib.request.Request(
+        endpoint,
+        data=json.dumps(payload_body, ensure_ascii=False).encode("utf-8"),
+        headers=headers,
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=args.timeout) as response:
+            audio = response.read()
+            content_type = response.headers.get("Content-Type")
+            status_code = getattr(response, "status", response.getcode())
+    except urllib.error.URLError as exc:
+        emit(
+            {
+                "provider": "omnivoice",
+                "status": "SERVER_UNAVAILABLE",
+                "version": VERSION,
+                "mode": "product_server_shortcut",
+                "server_url": server_url,
+                "server_url_source": server_url_source,
+                "endpoint": endpoint,
+                "reason": str(exc.reason if hasattr(exc, "reason") else exc),
+                "runtime_dependency": "optional_local_openai_compatible_http_server",
+                "allows_install": False,
+                "allows_download": False,
+                "allows_global_config_write": False,
+            }
+        )
+        return 2
+    output.write_bytes(audio)
+    generation_ms = round((time.perf_counter() - started) * 1000, 3)
+    playback: dict[str, Any] = {}
+    status = "PASS"
+    if args.play:
+        playback = playback_audio(output)
+        if playback.get("playback_status") == "failed":
+            status = "PLAYBACK_FAILED"
+    payload = {
+        "provider": "omnivoice",
+        "status": status,
+        "version": VERSION,
+        "mode": "product_server_shortcut",
+        "server_url": server_url,
+        "server_url_source": server_url_source,
+        "endpoint": endpoint,
+        "http_status": status_code,
+        "content_type": content_type,
+        "model": args.model,
+        "voice": args.voice,
+        "output": str(output),
+        "bytes": len(audio),
+        "generation_ms": generation_ms,
+        "text_chars": len(args.text),
+        "play_requested": args.play,
+        "runtime_dependency": "optional_local_openai_compatible_http_server",
+        "allows_install": False,
+        "allows_download": False,
+        "allows_global_config_write": False,
+        **playback,
+    }
+    emit(payload)
+    if status == "PLAYBACK_FAILED":
+        return 4
+    return 0
+
+
 def command_bench(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
     ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
@@ -3305,6 +3446,19 @@ def build_parser() -> argparse.ArgumentParser:
     speak.add_argument("--play", action="store_true")
     speak.add_argument("--dry-run", action="store_true")
     speak.set_defaults(func=command_speak)
+
+    speak_server = subparsers.add_parser("speak-server")
+    speak_server.add_argument("--server-url")
+    speak_server.add_argument("--api-key-env", default=ENV_SERVER_API_KEY)
+    speak_server.add_argument("--model", default="omnivoice")
+    speak_server.add_argument("--voice", default="default")
+    speak_server.add_argument("--speed", type=float)
+    speak_server.add_argument("--text", required=True)
+    speak_server.add_argument("--output")
+    speak_server.add_argument("--timeout", type=float, default=180.0)
+    speak_server.add_argument("--play", action="store_true")
+    speak_server.add_argument("--dry-run", action="store_true")
+    speak_server.set_defaults(func=command_speak_server)
 
     speak_long = subparsers.add_parser("speak-long")
     add_runtime_args(speak_long, ref_audio_required=False)

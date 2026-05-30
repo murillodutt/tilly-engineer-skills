@@ -37,6 +37,10 @@ compatible TES intent alias if the host reports it as an invalid slash.
    host with `mcp-tts`, prefer `mcp__mcp_tts__say_tts`.
 8. When the optional OmniVoice provider is already configured by the
    maintainer, run `python3 scripts/tes_tts_omnivoice_provider.py status`.
+   If a community OpenAI-compatible OmniVoice server is already running, use
+   `python3 scripts/tes_tts_omnivoice_provider.py speak-server --server-url <url> --text "<text>" --output <wav>`
+   as a provider/runtime spike; this route never installs providers, downloads
+   models, or writes global config.
    If it returns `ready`, prefer
    `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<text>" --play`
    for premium cloned-voice reads, while preserving `say` as the local

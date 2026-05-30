@@ -6,14 +6,17 @@ from __future__ import annotations
 import argparse
 import ast
 import contextlib
+import http.server
 import importlib.util
 import io
 import json
 import os
 from pathlib import Path
+import socketserver
 import subprocess
 import sys
 import tempfile
+import threading
 from typing import Any
 
 
@@ -68,6 +71,27 @@ REQUIRED_DRY_RUN_KEYS = {
     "latency_profile_source",
     "num_step",
     "command_shape",
+    "allows_install",
+    "allows_download",
+    "allows_global_config_write",
+}
+REQUIRED_SERVER_DRY_RUN_KEYS = {
+    "provider",
+    "status",
+    "version",
+    "mode",
+    "server_url",
+    "server_url_source",
+    "endpoint",
+    "api_key_env",
+    "api_key_present",
+    "model",
+    "voice",
+    "output",
+    "text_chars",
+    "play_requested",
+    "request_shape",
+    "runtime_dependency",
     "allows_install",
     "allows_download",
     "allows_global_config_write",
@@ -670,6 +694,152 @@ def validate_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
             failures.append("speak dry-run leaked source text in command_shape")
         if "<redacted>" not in command_shape:
             failures.append("speak dry-run must redact command text")
+    return failures
+
+
+def validate_server_route_command() -> list[str]:
+    failures: list[str] = []
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        output = root / "server.wav"
+        dry_completed = subprocess.run(
+            [
+                sys.executable,
+                str(PROVIDER_SCRIPT),
+                "speak-server",
+                "--server-url",
+                "http://127.0.0.1:9999",
+                "--api-key-env",
+                "TES_TTS_FAKE_SERVER_KEY",
+                "--model",
+                "omnivoice",
+                "--voice",
+                "felipe-clone",
+                "--text",
+                "API_KEY=abc123SECRET deve ficar fora do dry-run.",
+                "--output",
+                str(output),
+                "--dry-run",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if dry_completed.returncode != 0:
+            failures.append(f"speak-server dry-run returned unexpected exit code {dry_completed.returncode}")
+            return failures
+        try:
+            dry_payload = json.loads(dry_completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"speak-server dry-run did not emit JSON: {exc}")
+            return failures
+
+        missing = sorted(REQUIRED_SERVER_DRY_RUN_KEYS - set(dry_payload))
+        extra = sorted(set(dry_payload) - REQUIRED_SERVER_DRY_RUN_KEYS)
+        if missing:
+            failures.append(f"speak-server dry-run missing keys {missing}")
+        if extra:
+            failures.append(f"speak-server dry-run has extra keys {extra}")
+        if dry_payload.get("status") != "DRY_RUN":
+            failures.append("speak-server dry-run status drifted")
+        if dry_payload.get("mode") != "product_server_shortcut":
+            failures.append("speak-server dry-run mode drifted")
+        if dry_payload.get("runtime_dependency") != "optional_local_openai_compatible_http_server":
+            failures.append("speak-server must stay optional local server route")
+        if dry_payload.get("endpoint") != "http://127.0.0.1:9999/v1/audio/speech":
+            failures.append("speak-server must derive OpenAI-compatible speech endpoint")
+        request_shape = dry_payload.get("request_shape")
+        if not isinstance(request_shape, dict) or request_shape.get("input") != "<redacted>":
+            failures.append("speak-server dry-run must redact request input")
+        if "abc123SECRET" in dry_completed.stdout or "API_KEY=" in dry_completed.stdout:
+            failures.append("speak-server dry-run leaked source text")
+        for key in ("allows_install", "allows_download", "allows_global_config_write"):
+            if dry_payload.get(key) is not False:
+                failures.append(f"speak-server dry-run must keep {key}=false")
+
+        received: dict[str, Any] = {}
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def do_POST(self) -> None:  # noqa: N802 - stdlib handler API
+                length = int(self.headers.get("Content-Length", "0"))
+                body = self.rfile.read(length)
+                received["path"] = self.path
+                received["authorization"] = self.headers.get("Authorization")
+                received["body"] = json.loads(body.decode("utf-8"))
+                audio = b"RIFFfake-server-wav"
+                self.send_response(200)
+                self.send_header("Content-Type", "audio/wav")
+                self.send_header("Content-Length", str(len(audio)))
+                self.end_headers()
+                self.wfile.write(audio)
+
+            def log_message(self, _format: str, *_args: object) -> None:
+                return
+
+        with socketserver.TCPServer(("127.0.0.1", 0), Handler) as server:
+            port = server.server_address[1]
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            env = os.environ.copy()
+            env["TES_TTS_FAKE_SERVER_KEY"] = "local-test-key"
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(PROVIDER_SCRIPT),
+                    "speak-server",
+                    "--server-url",
+                    f"http://127.0.0.1:{port}",
+                    "--api-key-env",
+                    "TES_TTS_FAKE_SERVER_KEY",
+                    "--model",
+                    "omnivoice",
+                    "--voice",
+                    "felipe-clone",
+                    "--text",
+                    "Teste real do TES TTS com JSON e TypeScript.",
+                    "--output",
+                    str(output),
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+                env=env,
+            )
+            server.shutdown()
+            thread.join(timeout=2)
+        if completed.returncode != 0:
+            failures.append(f"speak-server mock request returned unexpected exit code {completed.returncode}")
+            return failures
+        try:
+            payload = json.loads(completed.stdout)
+        except json.JSONDecodeError as exc:
+            failures.append(f"speak-server mock request did not emit JSON: {exc}")
+            return failures
+        if payload.get("status") != "PASS":
+            failures.append("speak-server mock request should pass")
+        if payload.get("mode") != "product_server_shortcut":
+            failures.append("speak-server mock request mode drifted")
+        if payload.get("bytes") != len(b"RIFFfake-server-wav"):
+            failures.append("speak-server mock request must report written bytes")
+        if output.read_bytes() != b"RIFFfake-server-wav":
+            failures.append("speak-server did not write the response audio bytes")
+        if received.get("path") != "/v1/audio/speech":
+            failures.append("speak-server must POST to /v1/audio/speech")
+        if received.get("authorization") != "Bearer local-test-key":
+            failures.append("speak-server must use Bearer auth when env key is present")
+        body = received.get("body")
+        if not isinstance(body, dict):
+            failures.append("speak-server mock did not receive JSON body")
+        else:
+            if body.get("model") != "omnivoice" or body.get("voice") != "felipe-clone":
+                failures.append("speak-server request body lost model or voice")
+            if body.get("input") != "Teste real do TES TTS com JSON e TypeScript.":
+                failures.append("speak-server request body lost input text")
+        for key in ("allows_install", "allows_download", "allows_global_config_write"):
+            if payload.get(key) is not False:
+                failures.append(f"speak-server mock request must keep {key}=false")
     return failures
 
 
@@ -1994,6 +2164,7 @@ def main() -> int:
     failures.extend(shortcut_failures)
     failures.extend(validate_status_payload(status_payload))
     failures.extend(validate_dry_run_payload(dry_payload))
+    failures.extend(validate_server_route_command())
     failures.extend(validate_long_read_dry_run_payload(long_read_payload))
     failures.extend(validate_bench_dry_run_payload(bench_payload))
     failures.extend(validate_profile_review_dry_run_payload(profile_review_payload))

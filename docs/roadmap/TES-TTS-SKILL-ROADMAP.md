@@ -37,14 +37,14 @@ durable cache, or proactive `speak`.
   `language=auto`, and lab-only English-island variants.
 - Latest lab evidence `20260530-162231-615943` improves target chunks 2 and 3;
   chunk 1 needs human scoring and less brittle STT term normalization.
-- OmniVoice community scan points to server, MLX/Apple Silicon, realtime,
-  desktop studio, audiobook, and engine-registry paths before more alias tuning.
+- Community scan produced a tested `speak-server` route for local
+  OpenAI-compatible OmniVoice servers; no install, download, or global write.
 
 ## Next Cut
-Human-score `20260530-162231-615943` against `20260530-151743`, then compare
-resident CLI with a small OmniVoice server or engine-registry spike. Promote
-rendering changes only when audio wins by ear; otherwise pivot provider/runtime
-strategy before adding more punctuation or alias variants.
+Human-score `20260530-162231-615943` against `20260530-151743`, then run the
+same chunks through `speak-server` when a local OmniVoice server is available.
+Promote only audio that wins by ear; otherwise pivot provider/runtime strategy
+before adding more punctuation or alias variants.
 
 ## Maintenance Rules
 - Hard limit: 80 lines. Review zone starts at 60 lines.
