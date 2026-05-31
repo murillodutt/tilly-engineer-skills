@@ -211,6 +211,20 @@ documents:
     consumer: maintainers, tes-tts maintainers, adapter authors, and release reviewers
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/TES-TTS-RUNTIME-PYTHON-OPTIMIZATION-AUDIT.md
+    id: roadmap.tes_tts_runtime_python_optimization_audit
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-RTO-001-provider-hot-path-split.md
+    id: roadmap.goal_prompt_tes_tts_rto_001_provider_hot_path_split
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
     id: roadmap.goal_super_spec_tes_tts_sequential_convergence
     class: roadmap

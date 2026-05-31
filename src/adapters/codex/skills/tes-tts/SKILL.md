@@ -55,7 +55,7 @@ terms when quality matters more than minimum latency:
 ```bash
 python3 scripts/tes_tts_omnivoice_provider.py speak-long \
   --text "<prepared text>" \
-  --output-dir "tmp/tes-tts-omnivoice-provider/audio-variant-lab/<run-id>" \
+  --output-dir "tmp/tes-tts-omnivoice-provider/audio-reference-runs/<run-id>" \
   --latency-profile quality \
   --language en \
   --text-mode redacted_source \

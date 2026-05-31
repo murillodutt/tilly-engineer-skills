@@ -2,7 +2,7 @@
 """Direct/resident OmniVoice kernel for TES TTS.
 
 This module owns the active local OmniVoice path without importing optional
-provider dependencies at module import time. CLI, server, review, and packaging
+provider dependencies at module import time. CLI, review, and packaging
 surfaces stay in `tes_tts_omnivoice_provider.py`.
 """
 
