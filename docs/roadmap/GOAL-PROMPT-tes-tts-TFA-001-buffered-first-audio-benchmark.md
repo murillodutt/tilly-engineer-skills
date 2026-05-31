@@ -46,7 +46,7 @@ New-window bootstrap:
 - Active product route is direct/resident OmniVoice only. Server routes are
   legacy lab compatibility and must not be revived as the product path.
 - Canonical local voice reference is
-  `tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav`.
+  `.tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav`.
 - Provider artifacts, generated WAV files, prompt caches, model files, and
   benchmark payloads stay under `tmp/**` and must not be committed.
 - Use the benchmark text below for baseline and candidate runs unless a

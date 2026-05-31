@@ -10,6 +10,7 @@ tmp/
 .tes/bin/__pycache__/
 .tes/field-reports/
 .tes/legacy-retirement/
+.tes/runtime/
 .tes/cortex/*.sqlite
 .tes/cortex/*.sqlite-*
 .tes/private-vocabulary.txt

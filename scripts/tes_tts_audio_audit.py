@@ -23,10 +23,10 @@ import wave
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_STT_PYTHON = ROOT / "tmp/tes-tts-lab/omnivoice/.venv/bin/python"
+DEFAULT_STT_PYTHON = ROOT / ".tes/runtime/tes-tts/omnivoice/venv/bin/python"
 DEFAULT_STT_MODEL = (
     ROOT
-    / "tmp/tes-tts-lab/omnivoice/hf-cache/hub/"
+    / ".tes/runtime/tes-tts/omnivoice/hf-cache/hub/"
     "models--openai--whisper-large-v3-turbo/snapshots/"
     "41f01f3fe87f28c78e2fbf8b568835947dd65ed9"
 )

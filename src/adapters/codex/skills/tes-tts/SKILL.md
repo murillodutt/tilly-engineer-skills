@@ -36,13 +36,14 @@ Use this path inside the TES package repository when the helper scripts exist:
 8. Confirm briefly after playback or report `TTS_NOT_AVAILABLE`.
 
 The canonical local clone source is
-`tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav`. Profile and
-audio outputs stay under `tmp/**` and are not committed.
+`.tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav`. Runtime
+profiles, provider cache, and default audio outputs stay under
+`.tes/runtime/tes-tts/omnivoice/**` and are not committed.
 
 ## Voice Prompt Cache
 
 Direct OmniVoice may reuse a local cloned-voice prompt cache under
-`tmp/tes-tts-omnivoice-provider/voice-prompts/*.pt`. Treat this cache as
+`.tes/runtime/tes-tts/omnivoice/provider-cache/voice-prompts/*.pt`. Treat this cache as
 sensitive local runtime state: keep the directory `0700`, cache files `0600`,
 never commit it, and refresh it only when the reference WAV, reference text, or
 model changes. This voice prompt cache is not a durable text conversion cache.
@@ -55,7 +56,7 @@ terms when quality matters more than minimum latency:
 ```bash
 python3 scripts/tes_tts_omnivoice_provider.py speak-long \
   --text "<prepared text>" \
-  --output-dir "tmp/tes-tts-omnivoice-provider/audio-reference-runs/<run-id>" \
+  --output-dir ".tes/runtime/tes-tts/omnivoice/provider-cache/audio-reference-runs/<run-id>" \
   --latency-profile quality \
   --language en \
   --text-mode redacted_source \

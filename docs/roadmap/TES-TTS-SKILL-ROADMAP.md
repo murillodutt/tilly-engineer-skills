@@ -35,16 +35,17 @@ durable conversion cache, or proactive `speak`.
 - TFA-001 added opt-in buffered first-audio for long reads. Baseline
   combined-only readiness was 49.8s; candidate first audio began at 21.9s,
   a 55.94% improvement with max unplanned gap 0.073 ms.
-- Direct voice prompt cache is permitted only as protected local `tmp/**`
-  runtime state, never as committed or shared artifact.
+- Direct OmniVoice now lives under `.tes/runtime/tes-tts/omnivoice/**`; voice
+  prompt cache and default outputs are protected local runtime state, never
+  committed or shared artifacts.
 - Python cleanup removed obsolete lab execution copies from tracked source:
   the active provider surface is direct/resident only, timing is attributable,
   and voice prompt cache permissions are protected.
 
 ## Next Cut
 TFA-001 is closed locally. No next prompt is created because the benchmark
-target passed and no immediate measured defect remains. Keep `tmp/**`
-artifacts out of commits.
+target passed and no immediate measured defect remains. Keep `.tes/runtime/**`
+and `tmp/**` artifacts out of commits.
 
 ## Maintenance Rules
 - Hard limit: 100 lines. Review zone starts at 75 lines.
