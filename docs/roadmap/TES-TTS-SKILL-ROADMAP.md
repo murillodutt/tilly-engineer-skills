@@ -34,6 +34,8 @@ durable conversion cache, or proactive `speak`.
   recipe `20260530-190552-healthy-reference-read` was rated 7.5/10.
 - RTO-005 aligned instruction-normalizer coverage by collapsing duplicated
   fixture-group assertions while preserving current regression behavior.
+- Latest long-read evidence shows the next runtime target is
+  time-to-first-audio, not quality tuning.
 - Direct voice prompt cache is permitted only as protected local `tmp/**`
   runtime state, never as committed or shared artifact.
 - Python cleanup removed obsolete lab execution copies from tracked source:
@@ -41,9 +43,8 @@ durable conversion cache, or proactive `speak`.
   and voice prompt cache permissions are protected.
 
 ## Next Cut
-Runtime Python optimization line is locally closed. Resume only from a new
-runtime defect, measured latency issue, or maintainer-approved provider cut.
-Keep `tmp/**` artifacts out of commits.
+Ready prompt is indexed in registry as TFA-001. Benchmark buffered first-audio
+execution next; keep `tmp/**` artifacts out of commits.
 
 ## Maintenance Rules
 - Hard limit: 100 lines. Review zone starts at 75 lines.
