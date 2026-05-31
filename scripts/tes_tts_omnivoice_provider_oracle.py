@@ -109,6 +109,15 @@ REQUIRED_STATUS_KEYS = {
     "status",
     "version",
     "runtime_dependency",
+    "global_runtime",
+    "legacy_project_runtime",
+    "active_runtime",
+    "migration_status",
+    "migration_source",
+    "migration_destination",
+    "profile",
+    "reference_wav",
+    "cache_status",
     "provider_python",
     "provider_python_source",
     "ref_audio",
@@ -348,6 +357,15 @@ REQUIRED_PRODUCT_STATUS_KEYS = {
     "mode",
     "product_state",
     "next_action",
+    "global_runtime",
+    "legacy_project_runtime",
+    "active_runtime",
+    "migration_status",
+    "migration_source",
+    "migration_destination",
+    "profile",
+    "reference_wav",
+    "cache_status",
     "provider_ready",
     "provider_python",
     "provider_python_source",
@@ -799,8 +817,13 @@ def validate_status_payload(payload: dict[str, Any] | None) -> list[str]:
         failures.append("status must not download models")
     if payload.get("allows_global_config_write") is not False:
         failures.append("status must not write global config")
-    if payload.get("status") not in {"ready", "needs_setup"}:
+    if payload.get("status") not in {"ready", "needs_setup", "NEEDS_MIGRATION"}:
         failures.append("status value is invalid")
+    for key in ("global_runtime", "legacy_project_runtime", "profile", "reference_wav", "cache_status"):
+        if not isinstance(payload.get(key), dict):
+            failures.append(f"status {key} must be an object")
+    if payload.get("active_runtime") is not None and not isinstance(payload.get("active_runtime"), dict):
+        failures.append("status active_runtime must be an object or null")
     return failures
 
 
@@ -2039,7 +2062,7 @@ def validate_product_status_command() -> list[str]:
         failures.append("product-status must report sealed decision")
     if payload.get("recommended_latency_profile") != "fast":
         failures.append("product-status must report recommended latency profile")
-    if payload.get("product_state") != "NEEDS_SETUP":
+    if payload.get("product_state") not in {"NEEDS_SETUP", "NEEDS_MIGRATION"}:
         failures.append("product-status must not overclaim readiness when provider setup is absent")
     if payload.get("package_zip_exists") is not True:
         failures.append("product-status must discover packaged review")
@@ -2053,6 +2076,11 @@ def validate_product_status_command() -> list[str]:
     for key in ("allows_install", "allows_download", "allows_global_config_write", "allows_sync", "allows_release"):
         if payload.get(key) is not False:
             failures.append(f"product-status must keep {key}=false")
+    for key in ("global_runtime", "legacy_project_runtime", "profile", "reference_wav", "cache_status"):
+        if not isinstance(payload.get(key), dict):
+            failures.append(f"product-status {key} must be an object")
+    if payload.get("active_runtime") is not None and not isinstance(payload.get("active_runtime"), dict):
+        failures.append("product-status active_runtime must be an object or null")
     with tempfile.TemporaryDirectory() as tmp_dir:
         logic_review = Path(tmp_dir) / "review.html"
         logic_review.write_text("<!doctype html>", encoding="utf-8")

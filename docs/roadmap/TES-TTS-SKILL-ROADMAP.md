@@ -18,7 +18,9 @@ Partition contract: dashboard = objective state, registry = structured pointers,
 `tes-tts` is reactive-only. PT-BR is the primary quality target. Active work
 happens in `.agents/skills/tes-tts`, then mirrors to adapters. The path is
 runtime preparation plus optional OmniVoice with the canonical local reference
-WAV through direct/resident execution; `say`/Felipe is only a fallback when
+WAV through direct/resident execution. Heavy OmniVoice runtime now resolves
+from `~/.tes/runtime/tes-tts/omnivoice`; project `.tes/**` is lightweight
+state/log/pointer space only. `say`/Felipe is only a fallback when
 OmniVoice is unavailable.
 Unauthorized: release/sync/push/tag/publish, redistribution, global writes,
 durable conversion cache, or proactive `speak`.
@@ -35,9 +37,11 @@ durable conversion cache, or proactive `speak`.
 - TFA-001 added opt-in buffered first-audio for long reads. Baseline
   combined-only readiness was 49.8s; candidate first audio began at 21.9s,
   a 55.94% improvement with max unplanned gap 0.073 ms.
-- Direct OmniVoice now lives under `.tes/runtime/tes-tts/omnivoice/**`; voice
-  prompt cache and default outputs are protected local runtime state, never
-  committed or shared artifacts.
+- GRT-001 moved direct OmniVoice defaults to
+  `~/.tes/runtime/tes-tts/omnivoice/**`; legacy project runtime is
+  detection/migration-report only. Status now reports `global_runtime`,
+  `legacy_project_runtime`, `active_runtime`, profile, reference WAV, and cache
+  status.
 - Default voice preset `tes-tts-local-clone` now resolves the canonical
   reference audio/text, and `warm-cache` prebuilds the voice prompt cache.
 - Python cleanup removed obsolete lab execution copies from tracked source:
@@ -45,9 +49,11 @@ durable conversion cache, or proactive `speak`.
   and voice prompt cache permissions are protected.
 
 ## Next Cut
-TFA-001 is closed locally. No next prompt is created because the benchmark
-target passed and no immediate measured defect remains. Keep `.tes/runtime/**`
-and `tmp/**` artifacts out of commits.
+GRT-001 is closing locally with sync status `REMOTE_SYNC_NOT_REQUESTED`. Active
+runtime root is `~/.tes/runtime/tes-tts/omnivoice`; if only
+`.tes/runtime/tes-tts/omnivoice` exists, provider status reports
+`NEEDS_MIGRATION` and exact source/destination paths. No next prompt is created
+because migration is diagnostic-only until explicit cleanup approval.
 
 ## Maintenance Rules
 - Hard limit: 100 lines. Review zone starts at 75 lines.

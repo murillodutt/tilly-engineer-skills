@@ -45,7 +45,9 @@ VERSION = "0.3.148"
 DEFAULT_MODEL = "k2-fsa/OmniVoice"
 DEFAULT_LANGUAGE = "pt"
 AUTO_LANGUAGE = "auto"
-DEFAULT_RUNTIME_DIR = ROOT / ".tes/runtime/tes-tts/omnivoice"
+GLOBAL_RUNTIME_DIR = Path.home() / ".tes/runtime/tes-tts/omnivoice"
+LEGACY_PROJECT_RUNTIME_DIR = ROOT / ".tes/runtime/tes-tts/omnivoice"
+DEFAULT_RUNTIME_DIR = GLOBAL_RUNTIME_DIR
 DEFAULT_VOICE_PROFILE = "tes-tts-local-clone"
 DEFAULT_PROFILE_DIR = DEFAULT_RUNTIME_DIR / "profiles"
 DEFAULT_CACHE_DIR = DEFAULT_RUNTIME_DIR / "provider-cache"
@@ -170,7 +172,7 @@ def resolve_provider_python(explicit: str | None) -> tuple[str, str]:
     if env_value:
         return env_value, "env"
     if DEFAULT_LOCAL_PYTHON.exists():
-        return str(DEFAULT_LOCAL_PYTHON), "local_auto"
+        return str(DEFAULT_LOCAL_PYTHON), "global_auto"
     return sys.executable, "current_python"
 
 
@@ -218,12 +220,97 @@ def resolve_ref_audio(explicit: str | None, explicit_source: str | None = None) 
     if env_value:
         return Path(env_value), "env"
     if DEFAULT_LOCAL_REF_AUDIO.exists():
-        return DEFAULT_LOCAL_REF_AUDIO, "local_auto"
+        return DEFAULT_LOCAL_REF_AUDIO, "global_auto"
     return None, "missing"
 
 
 def resolve_runtime_ref_audio(args: argparse.Namespace) -> tuple[Path | None, str]:
     return resolve_ref_audio(getattr(args, "ref_audio", None), getattr(args, "_ref_audio_source", None))
+
+
+def octal_mode(path: Path) -> str | None:
+    try:
+        return format(path.stat().st_mode & 0o777, "04o")
+    except FileNotFoundError:
+        return None
+
+
+def runtime_cache_status(runtime_root: Path) -> dict[str, Any]:
+    cache_dir = runtime_root / "provider-cache"
+    voice_prompt_dir = cache_dir / "voice-prompts"
+    if not voice_prompt_dir.exists():
+        return {
+            "status": "missing",
+            "cache_dir": str(cache_dir),
+            "voice_prompt_cache_dir": str(voice_prompt_dir),
+            "voice_prompt_cache_dir_mode": None,
+            "voice_prompt_cache_file_count": 0,
+            "unprotected_voice_prompt_cache_files": [],
+        }
+    prompt_files = sorted(voice_prompt_dir.glob("*.pt"))
+    unprotected = [
+        str(path)
+        for path in prompt_files
+        if octal_mode(path) != "0600"
+    ]
+    dir_mode = octal_mode(voice_prompt_dir)
+    status = "protected" if dir_mode == "0700" and not unprotected else "needs_permission_review"
+    return {
+        "status": status,
+        "cache_dir": str(cache_dir),
+        "voice_prompt_cache_dir": str(voice_prompt_dir),
+        "voice_prompt_cache_dir_mode": dir_mode,
+        "voice_prompt_cache_file_count": len(prompt_files),
+        "unprotected_voice_prompt_cache_files": unprotected,
+    }
+
+
+def runtime_descriptor(runtime_root: Path, profile_name: str) -> dict[str, Any]:
+    profile_path = runtime_root / "profiles" / profile_name / "meta.json"
+    python_path = runtime_root / "venv/bin/python"
+    reference_wav = runtime_root / "refs/audio-modelo-clone-mono24k.wav"
+    return {
+        "root": str(runtime_root),
+        "present": runtime_root.exists(),
+        "valid": python_path.exists() and reference_wav.exists() and profile_path.exists(),
+        "provider_python": str(python_path),
+        "provider_python_exists": python_path.exists(),
+        "profile": profile_name,
+        "profile_meta": str(profile_path),
+        "profile_exists": profile_path.exists(),
+        "reference_wav": str(reference_wav),
+        "reference_wav_exists": reference_wav.exists(),
+        "cache_status": runtime_cache_status(runtime_root),
+    }
+
+
+def runtime_diagnostics(profile_name: str | None) -> dict[str, Any]:
+    profile = profile_name or DEFAULT_VOICE_PROFILE
+    global_runtime = runtime_descriptor(GLOBAL_RUNTIME_DIR, profile)
+    legacy_runtime = runtime_descriptor(LEGACY_PROJECT_RUNTIME_DIR, profile)
+    if global_runtime["valid"]:
+        active_runtime = global_runtime
+        migration_status = "legacy_present" if legacy_runtime["present"] else "PASS"
+    elif legacy_runtime["present"]:
+        active_runtime = None
+        migration_status = "NEEDS_MIGRATION"
+    else:
+        active_runtime = None
+        migration_status = "needs_setup"
+    return {
+        "global_runtime": global_runtime,
+        "legacy_project_runtime": legacy_runtime,
+        "active_runtime": active_runtime,
+        "migration_status": migration_status,
+        "migration_source": legacy_runtime["root"] if migration_status == "NEEDS_MIGRATION" else None,
+        "migration_destination": global_runtime["root"] if migration_status == "NEEDS_MIGRATION" else None,
+        "profile": {
+            "id": profile,
+            "default": DEFAULT_VOICE_PROFILE,
+            "active_profile_meta": active_runtime["profile_meta"] if active_runtime else None,
+        },
+        "cache_status": active_runtime["cache_status"] if active_runtime else global_runtime["cache_status"],
+    }
 
 
 def default_output_path(output: str | None) -> Path:
@@ -264,6 +351,7 @@ def default_runtime_log_path(log_path: str | None, session_id: str) -> Path:
 def command_status(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
     ref_audio, ref_source = resolve_runtime_ref_audio(args)
+    diagnostics = runtime_diagnostics(getattr(args, "voice_profile", DEFAULT_VOICE_PROFILE))
     evidence = run_python_probe(provider_python)
     provider_available = (
         evidence.get("omnivoice_importable") is True
@@ -272,12 +360,31 @@ def command_status(args: argparse.Namespace) -> int:
     )
     ref_audio_ready = bool(ref_audio and ref_audio.exists())
     ready = provider_available and ref_audio_ready
+    status = (
+        "ready"
+        if ready
+        else ("NEEDS_MIGRATION" if diagnostics["migration_status"] == "NEEDS_MIGRATION" else "needs_setup")
+    )
     emit(
         {
             "provider": "omnivoice",
-            "status": "ready" if ready else "needs_setup",
+            "status": status,
             "version": VERSION,
             "runtime_dependency": "optional_external_python_env",
+            "global_runtime": diagnostics["global_runtime"],
+            "legacy_project_runtime": diagnostics["legacy_project_runtime"],
+            "active_runtime": diagnostics["active_runtime"],
+            "migration_status": diagnostics["migration_status"],
+            "migration_source": diagnostics["migration_source"],
+            "migration_destination": diagnostics["migration_destination"],
+            "profile": diagnostics["profile"],
+            "reference_wav": {
+                "path": str(ref_audio) if ref_audio else None,
+                "source": ref_source,
+                "ready": ref_audio_ready,
+                "identity": "audio-modelo-clone-mono24k.wav",
+            },
+            "cache_status": diagnostics["cache_status"],
             "provider_python": provider_python,
             "provider_python_source": python_source,
             "ref_audio": str(ref_audio) if ref_audio else None,
@@ -992,7 +1099,19 @@ def command_decide_review(args: argparse.Namespace) -> int:
     return 0
 
 
-def product_state_and_next_action(*, ready: bool, review_html: Path | None, decision: str | None) -> tuple[str, str]:
+def product_state_and_next_action(
+    *,
+    ready: bool,
+    review_html: Path | None,
+    decision: str | None,
+    migration_status: str | None = None,
+) -> tuple[str, str]:
+    if migration_status == "NEEDS_MIGRATION":
+        return (
+            "NEEDS_MIGRATION",
+            f"Move the project-local OmniVoice runtime from {LEGACY_PROJECT_RUNTIME_DIR} "
+            f"to {GLOBAL_RUNTIME_DIR}, then rerun status.",
+        )
     if not ready:
         return (
             "NEEDS_SETUP",
@@ -1044,10 +1163,14 @@ def render_product_status_text(payload: dict[str, Any]) -> str:
         audio_line = f"audio={audio}s generation={generation}ms avg_rtf={rtf}"
     package_sha = payload.get("package_sha256") or "not packaged"
     profile = payload.get("recommended_latency_profile") or "not selected"
+    active_runtime = payload.get("active_runtime")
+    active_runtime_root = active_runtime.get("root") if isinstance(active_runtime, dict) else "not active"
     return "\n".join(
         [
             f"TES TTS OmniVoice product state: {payload.get('product_state')}",
             f"Provider: {provider}",
+            f"Runtime: {active_runtime_root}",
+            f"Migration: {payload.get('migration_status')}",
             f"Review: {review}",
             f"Decision: {decision} ({score_line})",
             f"Recommended profile: {profile}",
@@ -1062,6 +1185,7 @@ def render_product_status_text(payload: dict[str, Any]) -> str:
 def command_product_status(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
     ref_audio, ref_source = resolve_runtime_ref_audio(args)
+    diagnostics = runtime_diagnostics(getattr(args, "voice_profile", DEFAULT_VOICE_PROFILE))
     evidence = run_python_probe(provider_python)
     provider_available = (
         evidence.get("omnivoice_importable") is True
@@ -1093,6 +1217,7 @@ def command_product_status(args: argparse.Namespace) -> int:
         ready=ready,
         review_html=review_html if review_exists else None,
         decision=decision,
+        migration_status=diagnostics["migration_status"],
     )
     summary = result_payload.get("benchmark_summary")
     summary = summary if isinstance(summary, dict) else {}
@@ -1103,6 +1228,20 @@ def command_product_status(args: argparse.Namespace) -> int:
         "mode": "product_status",
         "product_state": product_state,
         "next_action": next_action,
+        "global_runtime": diagnostics["global_runtime"],
+        "legacy_project_runtime": diagnostics["legacy_project_runtime"],
+        "active_runtime": diagnostics["active_runtime"],
+        "migration_status": diagnostics["migration_status"],
+        "migration_source": diagnostics["migration_source"],
+        "migration_destination": diagnostics["migration_destination"],
+        "profile": diagnostics["profile"],
+        "reference_wav": {
+            "path": str(ref_audio) if ref_audio else None,
+            "source": ref_source,
+            "ready": ref_audio_ready,
+            "identity": "audio-modelo-clone-mono24k.wav",
+        },
+        "cache_status": diagnostics["cache_status"],
         "provider_ready": ready,
         "provider_python": provider_python,
         "provider_python_source": python_source,

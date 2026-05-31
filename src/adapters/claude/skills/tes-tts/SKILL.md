@@ -28,7 +28,7 @@ Use this path inside the TES package repository when the helper scripts exist:
    `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<spoken_text>" --output <wav>`
 5. For long text, use direct resident chunking:
    `python3 scripts/tes_tts_omnivoice_provider.py speak-long --text "<spoken_text>" --output-dir <tmp-dir> --combine`
-6. Use the canonical clone reference through the local direct provider defaults;
+6. Use the canonical clone reference through the global direct provider defaults;
    do not upload or recreate the reference voice for normal reads.
 7. If OmniVoice is unavailable, use the request-local provider fallback in
    `references/providers-and-fallbacks.md`. For macOS `say` fallback, use
@@ -36,9 +36,11 @@ Use this path inside the TES package repository when the helper scripts exist:
 8. Confirm briefly after playback or report `TTS_NOT_AVAILABLE`.
 
 The canonical local clone source is
-`.tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav`. Runtime
-profiles, provider cache, and default audio outputs stay under
-`.tes/runtime/tes-tts/omnivoice/**` and are not committed.
+`~/.tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav`. Runtime
+profiles, provider cache, default audio outputs, model artifacts, and the
+provider venv stay under `~/.tes/runtime/tes-tts/omnivoice/**` and are not
+committed. Project-local `.tes/**` is only lightweight project state, logs,
+evidence, and pointers to the global runtime.
 
 ## Voice Prompt Cache
 
@@ -47,10 +49,11 @@ canonical reference WAV and reference text before provider startup, so
 `warm-cache` can prepare the cloned-voice prompt before the first real read.
 
 Direct OmniVoice may reuse a local cloned-voice prompt cache under
-`.tes/runtime/tes-tts/omnivoice/provider-cache/voice-prompts/*.pt`. Treat this cache as
-sensitive local runtime state: keep the directory `0700`, cache files `0600`,
-never commit it, and refresh it only when the reference WAV, reference text, or
-model changes. This voice prompt cache is not a durable text conversion cache.
+`~/.tes/runtime/tes-tts/omnivoice/provider-cache/voice-prompts/*.pt`. Treat
+this cache as sensitive local runtime state: keep the directory `0700`, cache
+files `0600`, never commit it, and refresh it only when the reference WAV,
+reference text, or model changes. This voice prompt cache is not a durable text
+conversion cache.
 
 To reduce first-read delay after cache cleanup, run:
 
@@ -66,7 +69,7 @@ terms when quality matters more than minimum latency:
 ```bash
 python3 scripts/tes_tts_omnivoice_provider.py speak-long \
   --text "<prepared text>" \
-  --output-dir ".tes/runtime/tes-tts/omnivoice/provider-cache/audio-reference-runs/<run-id>" \
+  --output-dir "$HOME/.tes/runtime/tes-tts/omnivoice/provider-cache/audio-reference-runs/<run-id>" \
   --latency-profile quality \
   --language en \
   --text-mode redacted_source \
@@ -104,6 +107,9 @@ for repeated listening and comparison.
 
 - Prefer OmniVoice only when already configured and verified.
 - Use direct local OmniVoice execution as the active `tes-tts` path.
+- Resolve heavy OmniVoice runtime from `~/.tes/runtime/tes-tts/omnivoice` by
+  default. Treat project-local `.tes/runtime/tes-tts/omnivoice` only as a
+  legacy runtime that may require explicit migration.
 - The helper must not install providers, write global config, push, publish,
   release, or sync.
 - Do not persist provider failure state from a read-aloud request.

@@ -28,12 +28,14 @@ quality than platform fallback voices. The current TES product path is direct
 local execution, not a server. Runtime files live under:
 
 ```text
-.tes/runtime/tes-tts/omnivoice/
+~/.tes/runtime/tes-tts/omnivoice/
 ```
 
-That directory is ignored by Git. It may contain the Python virtual
+That user-level directory is outside package source and shared by all
+TES-enabled projects on the same machine. It may contain the Python virtual
 environment, reference audio, voice profile metadata, model caches, generated
-audio, and protected voice prompt cache files.
+audio, and protected voice prompt cache files. Project-local `.tes/**` is only
+for lightweight state, logs, evidence, locks, and pointers.
 
 The active default voice profile is:
 
@@ -81,14 +83,14 @@ TES keeps these boundaries:
 
 ## Install OmniVoice For TES
 
-Run these commands from the target repository root. Python 3.11 is the safest
-default for the current TES local path; adjust only when OmniVoice upstream
-requires a different version.
+Run these commands from any TES-enabled project. Python 3.11 is the safest
+default for the current TES global runtime path; adjust only when OmniVoice
+upstream requires a different version.
 
 ```bash
-mkdir -p .tes/runtime/tes-tts/omnivoice
-python3.11 -m venv .tes/runtime/tes-tts/omnivoice/venv
-source .tes/runtime/tes-tts/omnivoice/venv/bin/activate
+mkdir -p "$HOME/.tes/runtime/tes-tts/omnivoice"
+python3.11 -m venv "$HOME/.tes/runtime/tes-tts/omnivoice/venv"
+source "$HOME/.tes/runtime/tes-tts/omnivoice/venv/bin/activate"
 python -m pip install --upgrade pip
 ```
 
@@ -119,22 +121,22 @@ action.
 
 ## Configure The Default Voice Profile
 
-Place a short reference WAV under the local runtime. Upstream recommends a short
-reference clip; TES currently standardizes on mono 24 kHz WAV for the local
-profile.
+Place a short reference WAV under the global runtime. Upstream recommends a
+short reference clip; TES currently standardizes on mono 24 kHz WAV for the
+local profile.
 
 ```bash
-mkdir -p .tes/runtime/tes-tts/omnivoice/refs
+mkdir -p "$HOME/.tes/runtime/tes-tts/omnivoice/refs"
 python3 scripts/tes_tts_omnivoice_provider.py normalize-ref \
   --input /path/to/your-reference.wav \
-  --output .tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav
+  --output "$HOME/.tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav"
 ```
 
 Create the profile metadata:
 
 ```bash
-mkdir -p .tes/runtime/tes-tts/omnivoice/profiles/tes-tts-local-clone
-cat > .tes/runtime/tes-tts/omnivoice/profiles/tes-tts-local-clone/meta.json <<'JSON'
+mkdir -p "$HOME/.tes/runtime/tes-tts/omnivoice/profiles/tes-tts-local-clone"
+cat > "$HOME/.tes/runtime/tes-tts/omnivoice/profiles/tes-tts-local-clone/meta.json" <<'JSON'
 {
   "id": "tes-tts-local-clone",
   "provider": "omnivoice",
@@ -145,8 +147,8 @@ cat > .tes/runtime/tes-tts/omnivoice/profiles/tes-tts-local-clone/meta.json <<'J
   "latency_profile": "quality"
 }
 JSON
-chmod 700 .tes/runtime/tes-tts/omnivoice/profiles
-chmod 600 .tes/runtime/tes-tts/omnivoice/profiles/tes-tts-local-clone/meta.json
+chmod 700 "$HOME/.tes/runtime/tes-tts/omnivoice/profiles"
+chmod 600 "$HOME/.tes/runtime/tes-tts/omnivoice/profiles/tes-tts-local-clone/meta.json"
 ```
 
 The `language` value is the provider hint used for the current reference. Keep
@@ -173,7 +175,7 @@ A healthy warmed profile reports `voice_prompt_cache_exists: true` on dry run.
 The cache lives under:
 
 ```text
-.tes/runtime/tes-tts/omnivoice/provider-cache/voice-prompts/
+~/.tes/runtime/tes-tts/omnivoice/provider-cache/voice-prompts/
 ```
 
 Treat `*.pt` files there as sensitive local voice artifacts. They must not be
@@ -186,7 +188,7 @@ Short reads:
 ```bash
 python3 scripts/tes_tts_omnivoice_provider.py speak \
   --text "Teste real do TES-TTS com OmniVoice." \
-  --output .tes/runtime/tes-tts/omnivoice/provider-cache/audio/latest.wav \
+  --output "$HOME/.tes/runtime/tes-tts/omnivoice/provider-cache/audio/latest.wav" \
   --play
 ```
 
@@ -197,7 +199,7 @@ prepared.
 ```bash
 python3 scripts/tes_tts_omnivoice_provider.py speak-long \
   --text-file /path/to/text.txt \
-  --output-dir .tes/runtime/tes-tts/omnivoice/provider-cache/audio/tes-tts-run \
+  --output-dir "$HOME/.tes/runtime/tes-tts/omnivoice/provider-cache/audio/tes-tts-run" \
   --combine \
   --inter-chunk-silence-ms 450 \
   --first-audio-buffered \
@@ -218,7 +220,7 @@ The intended path is:
 user request
   -> tes_tts_runtime.py prepares request-local spoken_text
   -> direct OmniVoice provider executes local synthesis
-  -> WAV/playback is written under .tes/runtime/**
+  -> WAV/playback is written under ~/.tes/runtime/**
 ```
 
 The server route is legacy lab compatibility only. It should not be promoted as
@@ -230,8 +232,14 @@ that direction.
 If `status` reports OmniVoice missing, confirm the venv path and run:
 
 ```bash
-.tes/runtime/tes-tts/omnivoice/venv/bin/python -c "import omnivoice, torch; print(omnivoice.__version__); print(torch.__version__)"
+"$HOME/.tes/runtime/tes-tts/omnivoice/venv/bin/python" -c "import omnivoice, torch; print(omnivoice.__version__); print(torch.__version__)"
 ```
+
+If `status` reports `NEEDS_MIGRATION`, a legacy project-local runtime was found
+under `.tes/runtime/tes-tts/omnivoice/` and no valid global runtime was found.
+Move it manually to `~/.tes/runtime/tes-tts/omnivoice/` only after reviewing the
+source and destination. TES reports the exact paths but does not delete or move
+user data automatically.
 
 If the first read is slow, run `warm-cache --dry-run`. A cache miss means the
 profile has not been warmed or the reference metadata changed.
@@ -245,8 +253,8 @@ longer `--inter-chunk-silence-ms` before changing voice or reinstalling the
 provider.
 
 If generated audio or model artifacts appear in Git status, stop and move them
-back under `.tes/runtime/**` or `tmp/**`. TES package commits must not include
-audio, model weights, venvs, or local voice cache artifacts.
+back under `~/.tes/runtime/**` or `tmp/**`. TES package commits must not
+include audio, model weights, venvs, or local voice cache artifacts.
 
 ## What TES Does Not Promise
 
