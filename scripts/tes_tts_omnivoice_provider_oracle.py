@@ -81,6 +81,7 @@ REQUIRED_DRY_RUN_KEYS = {
     "latency_profile",
     "requested_latency_profile",
     "latency_profile_source",
+    "timing_attribution",
     "num_step",
     "command_shape",
     "allows_install",
@@ -151,6 +152,7 @@ REQUIRED_WARM_CACHE_DRY_RUN_KEYS = {
     "latency_profile",
     "requested_latency_profile",
     "latency_profile_source",
+    "timing_attribution",
     "num_step",
     "command_shape",
     "allows_install",
@@ -173,6 +175,7 @@ REQUIRED_SESSION_DRY_RUN_KEYS = {
     "latency_profile",
     "requested_latency_profile",
     "latency_profile_source",
+    "timing_attribution",
     "num_step",
     "latency_profiles",
     "command_shape",
@@ -209,6 +212,7 @@ REQUIRED_LONG_READ_DRY_RUN_KEYS = {
     "latency_profile",
     "requested_latency_profile",
     "latency_profile_source",
+    "timing_attribution",
     "num_step",
     "protocol",
     "resident_model",
@@ -352,6 +356,31 @@ REQUIRED_CANDIDATE_KEYS = {
     "allows_sync",
     "allows_release",
 }
+REQUIRED_TIMING_ATTRIBUTION_KEYS = {
+    "execution",
+    "text_prepare_ms",
+    "provider_prepare_ms",
+    "provider_synthesis_ms",
+    "generation_ms",
+    "audio_write_ms",
+    "combine_wall_ms",
+    "playback_wall_ms",
+    "total_wall_ms",
+}
+REQUIRED_PROVIDER_TIMING_EXECUTIONS = {
+    "dry_run_prepare_prompt",
+    "dry_run_resident_session",
+    "dry_run_resident_long_read",
+    "resident_long_read",
+    "resident_live_smoke",
+    "dry_run_short_read",
+    "direct_short_read",
+    "prepare_prompt",
+    "synthesize",
+    "batch",
+    "serve_startup",
+    "resident_utterance",
+}
 
 
 @dataclass(frozen=True)
@@ -425,6 +454,16 @@ def validate_runtime_support_boundary() -> list[str]:
     return failures
 
 
+def validate_timing_attribution_source_coverage() -> list[str]:
+    provider_source = PROVIDER_SCRIPT.read_text(encoding="utf-8")
+    failures: list[str] = []
+    for execution in sorted(REQUIRED_PROVIDER_TIMING_EXECUTIONS):
+        marker = f'timing_attribution_metadata("{execution}")'
+        if marker not in provider_source:
+            failures.append(f"provider timing attribution missing execution marker: {execution}")
+    return failures
+
+
 def run_provider_json(
     label: str,
     args: tuple[str, ...],
@@ -449,6 +488,28 @@ def run_provider_json(
         failures.append(f"{label} did not emit JSON: {exc}")
         return None, failures
     return payload, failures
+
+
+def validate_timing_attribution(payload: dict[str, Any], label: str, execution: str) -> list[str]:
+    failures: list[str] = []
+    attribution = payload.get("timing_attribution")
+    if not isinstance(attribution, dict):
+        return [f"{label} must include timing_attribution"]
+    missing = sorted(REQUIRED_TIMING_ATTRIBUTION_KEYS - set(attribution))
+    extra = sorted(set(attribution) - REQUIRED_TIMING_ATTRIBUTION_KEYS)
+    if missing:
+        failures.append(f"{label} timing_attribution missing keys {missing}")
+    if extra:
+        failures.append(f"{label} timing_attribution has extra keys {extra}")
+    if attribution.get("execution") != execution:
+        failures.append(f"{label} timing_attribution execution drifted")
+    if "excluded from provider timing" not in str(attribution.get("playback_wall_ms")):
+        failures.append(f"{label} must keep playback timing separate from provider timing")
+    if "excluded from provider timing" not in str(attribution.get("combine_wall_ms")):
+        failures.append(f"{label} must keep combine timing separate from provider timing")
+    if "TES request-local" not in str(attribution.get("text_prepare_ms")):
+        failures.append(f"{label} must identify TES text preparation separately")
+    return failures
 
 
 def run_probe() -> tuple[dict[str, Any] | None, list[str]]:
@@ -623,6 +684,7 @@ def validate_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
         failures.append("speak dry-run must not install providers")
     if payload.get("allows_download") is not False:
         failures.append("speak dry-run must not download models")
+    failures.extend(validate_timing_attribution(payload, "speak dry-run", "dry_run_short_read"))
     command_shape = payload.get("command_shape")
     if not isinstance(command_shape, list):
         failures.append("speak dry-run command_shape must be a list")
@@ -693,6 +755,7 @@ def validate_long_read_dry_run_payload(payload: dict[str, Any] | None) -> list[s
         failures.append("speak-long dry-run must report playback intent")
     if payload.get("chunk_edge_silence_ms") != 120:
         failures.append("speak-long dry-run must report chunk edge silence")
+    failures.extend(validate_timing_attribution(payload, "speak-long dry-run", "dry_run_resident_long_read"))
     monitor_log = payload.get("monitor_log")
     if not isinstance(monitor_log, str) or "runtime-logs" not in monitor_log:
         failures.append("speak-long dry-run must point to the exclusive runtime log")
@@ -851,6 +914,7 @@ def validate_warm_cache_dry_run_command() -> list[str]:
         failures.append("warm-cache dry-run status drifted")
     if payload.get("mode") != "product_warm_cache":
         failures.append("warm-cache dry-run mode drifted")
+    failures.extend(validate_timing_attribution(payload, "warm-cache dry-run", "dry_run_prepare_prompt"))
     if payload.get("refresh_requested") is not True:
         failures.append("warm-cache dry-run must report refresh intent")
     if payload.get("voice_prompt_cache_exists") is not False:
@@ -912,6 +976,7 @@ def validate_session_dry_run_command() -> list[str]:
         failures.append("session dry-run status drifted")
     if payload.get("mode") != "product_session":
         failures.append("session dry-run mode drifted")
+    failures.extend(validate_timing_attribution(payload, "session dry-run", "dry_run_resident_session"))
     if payload.get("protocol") != "jsonl_stdin_stdout":
         failures.append("session dry-run must report JSONL stdin/stdout protocol")
     if payload.get("resident_model") is not True:
@@ -2039,6 +2104,7 @@ def main() -> int:
     source_failures = validate_source_imports()
     source_failures.extend(validate_no_reference_text_logging())
     source_failures.extend(validate_runtime_support_boundary())
+    source_failures.extend(validate_timing_attribution_source_coverage())
     failures.extend(source_failures)
     add_partition(
         partitions,

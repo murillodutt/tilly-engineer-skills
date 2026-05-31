@@ -298,6 +298,22 @@ def latency_profile_metadata(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def timing_attribution_metadata(execution: str) -> dict[str, Any]:
+    return {
+        "timing_attribution": {
+            "execution": execution,
+            "text_prepare_ms": "TES request-local text preparation only",
+            "provider_prepare_ms": "local optional provider model load plus voice prompt preparation",
+            "provider_synthesis_ms": "local optional provider audio generation only",
+            "generation_ms": "compatibility alias for provider_synthesis_ms",
+            "audio_write_ms": "provider output file write only",
+            "combine_wall_ms": "post-synthesis WAV combine; excluded from provider timing",
+            "playback_wall_ms": "local playback only; excluded from provider timing",
+            "total_wall_ms": "command wall time for this local process",
+        }
+    }
+
+
 def resolve_auto_latency_profile(benchmark_dir: str | None = None) -> tuple[str, str]:
     review_html, source = resolve_review_html(None, benchmark_dir)
     if review_html is None:
@@ -1293,6 +1309,7 @@ def command_warm_cache(args: argparse.Namespace) -> int:
                 "refresh_requested": args.refresh_prompt,
                 "latency_profile": args.latency_profile,
                 **latency_profile_metadata(args),
+                **timing_attribution_metadata("dry_run_prepare_prompt"),
                 "num_step": args.num_step,
                 "command_shape": redact_command_value(command, "--ref-text"),
                 "allows_install": False,
@@ -1385,6 +1402,7 @@ def command_session(args: argparse.Namespace) -> int:
                 "resident_voice_prompt": True,
                 "latency_profile": args.latency_profile,
                 **latency_profile_metadata(args),
+                **timing_attribution_metadata("dry_run_resident_session"),
                 "num_step": args.num_step,
                 "latency_profiles": LATENCY_PROFILES,
                 "command_shape": redact_command_value(command, "--ref-text"),
@@ -1489,6 +1507,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
                 "chunk_edge_silence_ms": args.chunk_edge_silence_ms,
                 "latency_profile": args.latency_profile,
                 **latency_profile_metadata(args),
+                **timing_attribution_metadata("dry_run_resident_long_read"),
                 "num_step": args.num_step,
                 "protocol": "jsonl_stdin_stdout",
                 "resident_model": True,
@@ -1697,6 +1716,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
         },
         "latency_profile": args.latency_profile,
         **latency_profile_metadata(args),
+        **timing_attribution_metadata("resident_long_read"),
         "num_step": args.num_step,
         "resident_model": True,
         "resident_voice_prompt": True,
@@ -1892,6 +1912,7 @@ def command_live_smoke(args: argparse.Namespace) -> int:
         },
         "latency_profile": args.latency_profile,
         **latency_profile_metadata(args),
+        **timing_attribution_metadata("resident_live_smoke"),
         "num_step": args.num_step,
         "resident_model": True,
         "resident_voice_prompt": True,
@@ -1981,6 +2002,7 @@ def run_short_speak_in_process(
         "language": args.language,
         "latency_profile": args.latency_profile,
         **latency_profile_metadata(args),
+        **timing_attribution_metadata("direct_short_read"),
         "num_step": args.num_step,
         "text_mode": text_info["mode"],
         "source_text_immutable": text_info["prepared"]["source_text_immutable"],
@@ -2065,6 +2087,7 @@ def command_speak(args: argparse.Namespace) -> int:
                 "play_requested": args.play,
                 "latency_profile": args.latency_profile,
                 **latency_profile_metadata(args),
+                **timing_attribution_metadata("dry_run_short_read"),
                 "num_step": args.num_step,
                 "command_shape": [
                     provider_python,
@@ -2729,6 +2752,7 @@ def command_prepare_prompt(args: argparse.Namespace) -> int:
             "language": args.language,
             "latency_profile": args.latency_profile,
             **latency_profile_metadata(args),
+            **timing_attribution_metadata("prepare_prompt"),
             "num_step": args.num_step,
             "model_load_ms": kernel.model_load_ms,
             "provider_model_load_ms": kernel.model_load_ms,
@@ -2775,6 +2799,7 @@ def command_synthesize(args: argparse.Namespace) -> int:
             "language": args.language,
             "latency_profile": args.latency_profile,
             **latency_profile_metadata(args),
+            **timing_attribution_metadata("synthesize"),
             "num_step": args.num_step,
             "text_mode": text_info["mode"],
             "source_text_immutable": text_info["prepared"]["source_text_immutable"],
@@ -2849,6 +2874,7 @@ def command_batch(args: argparse.Namespace) -> int:
             "language": args.language,
             "latency_profile": args.latency_profile,
             **latency_profile_metadata(args),
+            **timing_attribution_metadata("batch"),
             "num_step": args.num_step,
             "model_load_ms": kernel.model_load_ms,
             "provider_model_load_ms": kernel.model_load_ms,
@@ -2890,6 +2916,7 @@ def command_serve(args: argparse.Namespace) -> int:
             "language": args.language,
             "latency_profile": args.latency_profile,
             **latency_profile_metadata(args),
+            **timing_attribution_metadata("serve_startup"),
             "num_step": args.num_step,
             "output_dir": str(out_dir),
             "model_load_ms": kernel.model_load_ms,
@@ -2944,6 +2971,7 @@ def command_serve(args: argparse.Namespace) -> int:
                     "language": language,
                     "latency_profile": args.latency_profile,
                     **latency_profile_metadata(args),
+                    **timing_attribution_metadata("resident_utterance"),
                     "num_step": args.num_step,
                     "text_mode": text_info["mode"],
                     "source_text_immutable": text_info["prepared"]["source_text_immutable"],

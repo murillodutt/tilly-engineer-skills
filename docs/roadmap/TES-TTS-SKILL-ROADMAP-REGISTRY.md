@@ -70,7 +70,8 @@ every prompt when a range is enough.
 | `docs/roadmap/TES-TTS-RUNTIME-PYTHON-OPTIMIZATION-AUDIT.md` | Provider hot-path optimization audit and target map. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-RTO-001-provider-hot-path-split.md` | Executed circular prompt for provider hot-path split. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-RTO-002-provider-oracle-partition.md` | Executed circular prompt for provider oracle partition. | historical |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-RTO-003-timing-attribution-cleanup.md` | Next circular execution prompt for provider timing attribution cleanup. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-RTO-003-timing-attribution-cleanup.md` | Executed circular prompt for provider timing attribution cleanup. | historical |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-RTO-004-direct-kernel-boundary-hardening.md` | Next circular execution prompt for direct kernel boundary hardening. | active |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | Release identity decision record. | active |
 
 ## Historical Ranges
