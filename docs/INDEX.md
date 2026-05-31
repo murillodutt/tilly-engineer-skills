@@ -33,6 +33,7 @@ turning the repository root into an inventory.
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
 | Public installer bundle | `dist/0.3.147/tilly-engineer-skills-0.3.147.zip` |
 | GitHub package-spec installation | `install/INSTALL.md` |
+| Optional TES TTS OmniVoice local provider guide | `install/TES-TTS-OMNIVOICE.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
 | Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
 | Tool-neutral engineering principles | `mesh/PRINCIPLES.md` |

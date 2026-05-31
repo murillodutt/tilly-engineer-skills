@@ -64,6 +64,13 @@ documents:
     consumer: adopters and release operators
     source_of_truth: true
     evidence_level: L2
+  - path: docs/install/TES-TTS-OMNIVOICE.md
+    id: install.tes_tts_omnivoice
+    class: adapter
+    status: active
+    consumer: adopters, installing agents, tes-tts users, and maintainers
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/install/MINI-PROMPT.md
     id: install.mini_prompt
     class: adapter
