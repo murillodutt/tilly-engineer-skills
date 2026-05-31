@@ -32,8 +32,8 @@ durable conversion cache, or proactive `speak`.
 ## Evidence
 - OmniVoice cloned voice reached maintainer rating `9.5`; direct/resident
   recipe `20260530-190552-healthy-reference-read` was rated 7.5/10.
-- RTO-003 added explicit timing attribution to active direct/resident payloads
-  while keeping playback/combine outside provider timing.
+- RTO-004 hardened direct-kernel boundary coverage: the kernel owns optional
+  loading, prompt cache, text delegation, and synthesis metrics only.
 - Direct voice prompt cache is permitted only as protected local `tmp/**`
   runtime state, never as committed or shared artifact.
 - Python cleanup removed obsolete lab execution copies from tracked source:
@@ -41,8 +41,9 @@ durable conversion cache, or proactive `speak`.
   and voice prompt cache permissions are protected.
 
 ## Next Cut
-Ready prompt is indexed in registry as RTO-004. Harden the direct kernel
-boundary next. Keep `tmp/**` artifacts out of commits.
+Ready prompt is indexed in registry as RTO-005. Align instruction-normalizer
+coverage with the current runtime IR path next. Keep `tmp/**` artifacts out of
+commits.
 
 ## Maintenance Rules
 - Hard limit: 100 lines. Review zone starts at 75 lines.

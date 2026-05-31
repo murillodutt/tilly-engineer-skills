@@ -27,6 +27,57 @@ FIXTURE_PATH = ROOT / "benchmarks/tes-tts/omnivoice-provider-cases.json"
 VERSION = "0.3.147"
 FORBIDDEN_TOP_LEVEL_IMPORTS = {"omnivoice", "torch", "soundfile"}
 PROVIDER_EXTRACTED_IMPORTS = {"select", "threading", "wave"}
+DIRECT_KERNEL_ALLOWED_IMPORTS = {
+    ("import", "contextlib", None),
+    ("import", "hashlib", None),
+    ("import", "importlib.util", None),
+    ("import", "json", None),
+    ("import", "sys", None),
+    ("import", "time", None),
+    ("from", "__future__", ("annotations",)),
+    ("from", "pathlib", ("Path",)),
+    ("from", "typing", ("Any",)),
+    ("from", "tes_tts_runtime_adapter", ("prepare_audio_quality_text", "prepare_spoken_text")),
+}
+DIRECT_KERNEL_REQUIRED_SYMBOLS = {
+    "provider_text",
+    "load_omnivoice_modules",
+    "best_device",
+    "prompt_cache_path",
+    "protect_voice_prompt_cache_path",
+    "load_or_create_voice_prompt",
+    "DirectOmniVoiceKernel",
+}
+DIRECT_KERNEL_FORBIDDEN_IDENTIFIERS = {
+    "ArgumentParser",
+    "RuntimeMonitor",
+    "add_argument",
+    "build_parser",
+    "combine_wav_files",
+    "command_bench",
+    "command_candidate",
+    "command_decide_review",
+    "command_live_smoke",
+    "command_package_review",
+    "command_product_status",
+    "command_profile_review",
+    "command_review",
+    "command_session",
+    "command_serve",
+    "emit",
+    "emit_jsonl",
+    "main",
+    "open_local_file",
+    "playback_audio",
+    "playback_outputs",
+    "read_jsonl_payload",
+    "subprocess",
+    "wait_or_terminate",
+    "write_benchmark_review",
+    "write_live_smoke_package",
+    "write_profile_review",
+    "write_review_package",
+}
 REQUIRED_RUNTIME_SUPPORT_SYMBOLS = {
     "RuntimeMonitor",
     "build_long_read_plan",
@@ -452,6 +503,80 @@ def validate_runtime_support_boundary() -> list[str]:
     if missing:
         failures.append(f"runtime support missing required product-path helpers {missing}")
     return failures
+
+
+def _parent_function_name(parents: dict[ast.AST, ast.AST], node: ast.AST) -> str | None:
+    current = node
+    while current in parents:
+        current = parents[current]
+        if isinstance(current, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            return current.name
+    return None
+
+
+def validate_direct_kernel_boundary() -> list[str]:
+    failures: list[str] = []
+    source = DIRECT_KERNEL_SCRIPT.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+
+    actual_imports: set[tuple[str, str, tuple[str, ...] | None]] = set()
+    defined = {
+        node.name
+        for node in tree.body
+        if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+    missing_symbols = sorted(DIRECT_KERNEL_REQUIRED_SYMBOLS - defined)
+    if missing_symbols:
+        failures.append(f"direct kernel missing required boundary symbols {missing_symbols}")
+
+    for node in tree.body:
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                actual_imports.add(("import", alias.name, None))
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            actual_imports.add(("from", node.module, tuple(alias.name for alias in node.names)))
+    unexpected_imports = sorted(actual_imports - DIRECT_KERNEL_ALLOWED_IMPORTS)
+    if unexpected_imports:
+        failures.append(f"direct kernel imported outside its boundary: {unexpected_imports}")
+
+    parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                root = alias.name.split(".", 1)[0]
+                if root in FORBIDDEN_TOP_LEVEL_IMPORTS and _parent_function_name(parents, node) != "load_omnivoice_modules":
+                    failures.append(f"direct kernel optional import outside load_omnivoice_modules: {alias.name}")
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            root = node.module.split(".", 1)[0]
+            if root in FORBIDDEN_TOP_LEVEL_IMPORTS and _parent_function_name(parents, node) != "load_omnivoice_modules":
+                failures.append(f"direct kernel optional import outside load_omnivoice_modules: {node.module}")
+        elif isinstance(node, ast.Name) and node.id in DIRECT_KERNEL_FORBIDDEN_IDENTIFIERS:
+            failures.append(f"direct kernel boundary leaked forbidden identifier: {node.id}")
+        elif isinstance(node, ast.Attribute) and node.attr in DIRECT_KERNEL_FORBIDDEN_IDENTIFIERS:
+            failures.append(f"direct kernel boundary leaked forbidden attribute: {node.attr}")
+
+    cache_function = next(
+        (
+            node
+            for node in tree.body
+            if isinstance(node, ast.FunctionDef) and node.name == "protect_voice_prompt_cache_path"
+        ),
+        None,
+    )
+    if cache_function is None:
+        failures.append("direct kernel missing protected voice prompt cache function")
+    else:
+        constants = {
+            node.value
+            for node in ast.walk(cache_function)
+            if isinstance(node, ast.Constant) and isinstance(node.value, int)
+        }
+        if 0o700 not in constants:
+            failures.append("direct kernel cache parent must be protected with mode 0o700")
+        if 0o600 not in constants:
+            failures.append("direct kernel prompt cache file must be protected with mode 0o600")
+
+    return sorted(set(failures))
 
 
 def validate_timing_attribution_source_coverage() -> list[str]:
@@ -2111,6 +2236,15 @@ def main() -> int:
         name="source_safety",
         focus="optional imports, reference-text logging, and runtime support boundary",
         failures=source_failures,
+    )
+
+    kernel_boundary_failures = validate_direct_kernel_boundary()
+    failures.extend(kernel_boundary_failures)
+    add_partition(
+        partitions,
+        name="direct_kernel_boundary",
+        focus="direct kernel owns optional loading, prompt cache, text delegation, and synthesis metrics only",
+        failures=kernel_boundary_failures,
     )
 
     probe, probe_failures = run_probe()
