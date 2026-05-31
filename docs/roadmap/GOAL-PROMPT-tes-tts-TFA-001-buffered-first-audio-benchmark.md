@@ -17,6 +17,9 @@ TFA-001 Buffered First-Audio Benchmark
 
 Certified context:
 - `tes-tts` is reactive-only and uses direct local OmniVoice when configured.
+- This prompt must be executable in a fresh Codex window without relying on
+  chat history. Treat this file plus the re-read artifacts below as the full
+  execution context.
 - The human-rated long-read recipe keeps quality acceptable with direct
   resident `speak-long`, `quality`, `language en`, 420-char chunks, combined
   WAV, and 450 ms inter-chunk silence.
@@ -35,6 +38,65 @@ Certified context:
 - Sync, release, push, tag, publish, provider install, provider download,
   provider certification, global config writes, durable conversion cache,
   committed audio/cache/model/venv, and proactive speak remain unauthorized.
+
+New-window bootstrap:
+- If `git status` shows pre-existing `AGENTS.md` drift, classify it as
+  inherited/unrelated unless the current TFA unit explicitly needs it. Do not
+  stage it.
+- Active product route is direct/resident OmniVoice only. Server routes are
+  legacy lab compatibility and must not be revived as the product path.
+- Canonical local voice reference is
+  `tmp/tes-tts-lab/omnivoice/refs/audio-modelo-clone-mono24k.wav`.
+- Provider artifacts, generated WAV files, prompt caches, model files, and
+  benchmark payloads stay under `tmp/**` and must not be committed.
+- Use the benchmark text below for baseline and candidate runs unless a
+  smaller deterministic dry-run fixture is needed for an oracle:
+
+```text
+Hoje vamos testar o TES-TTS em uma leitura longa, natural e técnica. Primeiro,
+o sistema deve falar em português do Brasil, sem transformar este texto em
+resumo. Depois, precisa preservar termos como ADR, API, SDK, CLI, MCP, JSON,
+YAML, HTTP, Node.js, TypeScript, Python, OpenAI, GitHub Actions, Docker e
+Kubernetes. Também deve tratar caminhos como `.agents/skills/tes-tts` apenas
+como referência de pasta, e URLs como
+`https://github.com/murillodutt/tilly-engineer-skills` como página do GitHub,
+sem soletrar cada caractere. Em seguida, precisamos validar que comandos como
+`rm -rf tmp` são lidos como texto e nunca executados. Se aparecer um segredo,
+por exemplo `API_KEY=abc123SECRET`, ele deve ser ocultado antes da fala. O
+objetivo deste teste é perceber ritmo, pausas, pronúncia de termos em inglês,
+estabilidade da voz clonada, cortes entre blocos e clareza geral. Por fim, o
+áudio gerado deve permitir escuta repetida, comparação entre versões e
+avaliação humana objetiva, sem depender de uma explicação paralela no chat.
+```
+
+Baseline command shape:
+
+```bash
+python3 scripts/tes_tts_omnivoice_provider.py speak-long \
+  --text "$TFA_TEXT" \
+  --output-dir "tmp/tes-tts-omnivoice-provider/tfa-001-baseline/<run-id>" \
+  --latency-profile quality \
+  --language en \
+  --text-mode redacted_source \
+  --chunk-chars 420 \
+  --combine \
+  --inter-chunk-silence-ms 450
+```
+
+Candidate command shape:
+
+```bash
+python3 scripts/tes_tts_omnivoice_provider.py speak-long \
+  --text "$TFA_TEXT" \
+  --output-dir "tmp/tes-tts-omnivoice-provider/tfa-001-candidate/<run-id>" \
+  --latency-profile quality \
+  --language en \
+  --text-mode redacted_source \
+  --chunk-chars 420 \
+  --combine \
+  --inter-chunk-silence-ms 450 \
+  <new first-audio or buffered-playback flags added by this unit>
+```
 
 Task:
 Execute only TFA-001 through:
