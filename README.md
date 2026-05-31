@@ -39,7 +39,8 @@ repository.
 `tes-tts` can now turn technical work into local, replayable speech. With
 optional OmniVoice, TES can use a local cloned voice while keeping secrets
 redacted, commands as text, generated audio out of Git, and the provider outside
-the core package.
+the core package. Heavy voice runtime is shared at `~/.tes/runtime`, so multiple
+TES-enabled projects do not each grow their own provider install.
 
 Start here when you want to hear the trail:
 [`docs/install/TES-TTS-OMNIVOICE.md`](docs/install/TES-TTS-OMNIVOICE.md).

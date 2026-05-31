@@ -68,6 +68,7 @@ every prompt when a range is enough.
 | `docs/roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` | ADR 0004 owner acceptance record. | active |
 | `docs/roadmap/TES-TTS-RTE-006-RUNTIME-AUDIT-AND-CLOSURE.md` | Runtime-first closure audit. | active |
 | `docs/roadmap/TES-TTS-RUNTIME-PYTHON-OPTIMIZATION-AUDIT.md` | Provider hot-path optimization audit and target map. | active |
+| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-global-runtime.md` | Global user-level OmniVoice runtime migration authority. | active |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-RTO-001-provider-hot-path-split.md` | Executed circular prompt for provider hot-path split. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-RTO-002-provider-oracle-partition.md` | Executed circular prompt for provider oracle partition. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-RTO-003-timing-attribution-cleanup.md` | Executed circular prompt for provider timing attribution cleanup. | historical |

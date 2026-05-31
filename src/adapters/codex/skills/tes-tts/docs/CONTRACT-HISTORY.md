@@ -99,6 +99,7 @@ a proactive announcement channel for normal TES status updates.
 | 2026-05-30 | Protected the direct OmniVoice voice prompt cache as local sensitive runtime state with private permissions and documented that it is not a durable text conversion cache. | Maintainer directive after confirming direct execution uses `.tes/runtime/tes-tts/omnivoice/provider-cache/voice-prompts/*.pt` cache hits. | high |
 | 2026-05-30 | Relocated the local OmniVoice runtime from lab `tmp/**` into `.tes/runtime/tes-tts/omnivoice/**` and kept it gitignored. | Maintainer directive that OmniVoice is no longer a lab install and must not exist in both old and new locations. | high |
 | 2026-05-30 | Added the `tes-tts-local-clone` voice preset as the default resolver for reference audio/text and used `warm-cache` to prebuild the voice prompt. | Maintainer directive to avoid recloning/reprocessing the voice on every first read after cache cleanup. | high |
+| 2026-05-31 | Superseded the project-local OmniVoice runtime with the user-level runtime `~/.tes/runtime/tes-tts/omnivoice`; project `.tes/**` is now lightweight state only and old project runtime is migration-report legacy. | GRT-001 commit `0c77401`; provider status reports `global_runtime`, `legacy_project_runtime`, `active_runtime`, profile, reference WAV, and cache status. | high |
 
 ## Do Not Lose
 
