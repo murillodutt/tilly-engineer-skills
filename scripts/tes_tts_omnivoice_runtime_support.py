@@ -12,6 +12,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 from pathlib import Path
+import queue
 import re
 import select
 import shutil
@@ -156,6 +157,94 @@ def playback_outputs(outputs: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if playback.get("playback_status") == "failed":
             break
     return results
+
+
+class BufferedPlaybackQueue:
+    """Play generated WAV chunks on a background thread as soon as buffered."""
+
+    def __init__(
+        self,
+        *,
+        started_at: float,
+        planned_gap_ms: int,
+        monitor: RuntimeMonitor | None = None,
+    ) -> None:
+        self.started_at = started_at
+        self.planned_gap_ms = max(0, planned_gap_ms)
+        self.monitor = monitor
+        self.results: list[dict[str, Any]] = []
+        self.first_audio_ms: float | None = None
+        self.max_unplanned_gap_ms = 0.0
+        self._queue: queue.Queue[tuple[str, Path] | None] = queue.Queue()
+        self._thread = threading.Thread(target=self._run, name="tes-tts-buffered-playback", daemon=True)
+        self._started = False
+
+    def start(self) -> None:
+        if self._started:
+            return
+        self._started = True
+        self._thread.start()
+
+    def enqueue(self, chunk_id: str, output: Path) -> None:
+        self._queue.put((chunk_id, output))
+
+    def close(self) -> None:
+        if not self._started:
+            return
+        self._queue.put(None)
+        self._thread.join()
+
+    def _record(self, event: str, **payload: Any) -> None:
+        if self.monitor is not None:
+            self.monitor.record(event, **payload)
+
+    def _run(self) -> None:
+        previous_end: float | None = None
+        while True:
+            wait_started = time.perf_counter()
+            item = self._queue.get()
+            if item is None:
+                return
+            chunk_id, output = item
+            if previous_end is not None:
+                unplanned_gap_ms = round((time.perf_counter() - wait_started) * 1000, 3)
+                self.max_unplanned_gap_ms = max(self.max_unplanned_gap_ms, unplanned_gap_ms)
+            playback_start_ms = round((time.perf_counter() - self.started_at) * 1000, 3)
+            if self.first_audio_ms is None:
+                self.first_audio_ms = playback_start_ms
+            self._record("buffered_playback_start", id=chunk_id, output=str(output), playback_start_ms=playback_start_ms)
+            playback = playback_audio(output)
+            playback_item = {
+                "id": chunk_id,
+                "output": str(output),
+                "playback_start_ms": playback_start_ms,
+                **playback,
+            }
+            self.results.append(playback_item)
+            self._record("buffered_playback_result", **playback_item)
+            previous_end = time.perf_counter()
+            if self.planned_gap_ms:
+                time.sleep(self.planned_gap_ms / 1000)
+
+    def summary(self) -> dict[str, Any]:
+        failed = any(item.get("playback_status") == "failed" for item in self.results)
+        not_available = any(item.get("playback_status") == "not_available" for item in self.results)
+        if failed:
+            status = "PLAYBACK_FAILED"
+        elif not_available:
+            status = "PLAYBACK_NOT_AVAILABLE"
+        elif self.results:
+            status = "PASS"
+        else:
+            status = "SKIPPED"
+        return {
+            "status": status,
+            "time_to_first_audio_ms": self.first_audio_ms,
+            "played_chunk_count": len(self.results),
+            "planned_gap_ms": self.planned_gap_ms,
+            "max_unplanned_gap_ms": round(self.max_unplanned_gap_ms, 3),
+            "playback_results": self.results,
+        }
 
 
 def provider_prepare_ms(kernel: Any) -> float:
@@ -376,3 +465,46 @@ def build_long_read_plan(text: str, *, max_chars: int, language: str) -> list[di
         }
         for index, chunk in enumerate(split_long_text(text, max_chars=max_chars), start=1)
     ]
+
+
+def build_first_audio_long_read_plan(
+    text: str,
+    *,
+    max_chars: int,
+    language: str,
+    first_audio_chars: int,
+) -> list[dict[str, Any]]:
+    chunks = split_long_text(text, max_chars=max_chars)
+    first_audio_chars = max(0, first_audio_chars)
+    if not chunks or not first_audio_chars:
+        speech_chunks = chunks
+    else:
+        first = chunks[0]
+        head, tail = split_first_audio_chunk(first, max_chars=first_audio_chars)
+        speech_chunks = [head]
+        if tail:
+            speech_chunks.extend(split_long_text(tail, max_chars=max_chars))
+        speech_chunks.extend(chunks[1:])
+    return [
+        {
+            "id": f"chunk-{index:03d}",
+            "text": chunk,
+            "chars": len(chunk),
+            "language": infer_long_read_chunk_language(chunk, language),
+        }
+        for index, chunk in enumerate(speech_chunks, start=1)
+    ]
+
+
+def split_first_audio_chunk(text: str, *, max_chars: int) -> tuple[str, str]:
+    max_chars = max(80, max_chars)
+    cleaned = text.strip()
+    if len(cleaned) <= max_chars:
+        return cleaned, ""
+
+    candidates: list[int] = []
+    for pattern in (r"[.!?;:]\s+", r",\s+", r"\s+"):
+        candidates.extend(match.end() for match in re.finditer(pattern, cleaned[: max_chars + 1]))
+    candidates = [index for index in candidates if 80 <= index <= max_chars]
+    cut = max(candidates) if candidates else max_chars
+    return cleaned[:cut].strip(), cleaned[cut:].strip()

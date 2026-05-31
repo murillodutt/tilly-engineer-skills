@@ -32,10 +32,9 @@ durable conversion cache, or proactive `speak`.
 ## Evidence
 - OmniVoice cloned voice reached maintainer rating `9.5`; direct/resident
   recipe `20260530-190552-healthy-reference-read` was rated 7.5/10.
-- RTO-005 aligned instruction-normalizer coverage by collapsing duplicated
-  fixture-group assertions while preserving current regression behavior.
-- Latest long-read evidence shows the next runtime target is
-  time-to-first-audio, not quality tuning.
+- TFA-001 added opt-in buffered first-audio for long reads. Baseline
+  combined-only readiness was 49.8s; candidate first audio began at 21.9s,
+  a 55.94% improvement with max unplanned gap 0.073 ms.
 - Direct voice prompt cache is permitted only as protected local `tmp/**`
   runtime state, never as committed or shared artifact.
 - Python cleanup removed obsolete lab execution copies from tracked source:
@@ -43,8 +42,9 @@ durable conversion cache, or proactive `speak`.
   and voice prompt cache permissions are protected.
 
 ## Next Cut
-Ready prompt is indexed in registry as TFA-001. Benchmark buffered first-audio
-execution next; keep `tmp/**` artifacts out of commits.
+TFA-001 is closed locally. No next prompt is created because the benchmark
+target passed and no immediate measured defect remains. Keep `tmp/**`
+artifacts out of commits.
 
 ## Maintenance Rules
 - Hard limit: 100 lines. Review zone starts at 75 lines.

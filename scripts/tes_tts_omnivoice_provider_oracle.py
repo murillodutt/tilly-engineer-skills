@@ -79,7 +79,9 @@ DIRECT_KERNEL_FORBIDDEN_IDENTIFIERS = {
     "write_review_package",
 }
 REQUIRED_RUNTIME_SUPPORT_SYMBOLS = {
+    "BufferedPlaybackQueue",
     "RuntimeMonitor",
+    "build_first_audio_long_read_plan",
     "build_long_read_plan",
     "combine_wav_files",
     "playback_outputs",
@@ -260,6 +262,10 @@ REQUIRED_LONG_READ_DRY_RUN_KEYS = {
     "combine_requested",
     "inter_chunk_silence_ms",
     "chunk_edge_silence_ms",
+    "first_audio_buffered",
+    "first_audio_chars",
+    "first_audio_buffer_chunks",
+    "first_audio_max_unplanned_gap_ms",
     "latency_profile",
     "requested_latency_profile",
     "latency_profile_source",
@@ -715,6 +721,13 @@ def run_status_and_dry_run() -> tuple[
                     "auto",
                     "--chunk-edge-silence-ms",
                     "120",
+                    "--first-audio-buffered",
+                    "--first-audio-chars",
+                    "140",
+                    "--first-audio-buffer-chunks",
+                    "2",
+                    "--first-audio-max-unplanned-gap-ms",
+                    "900",
                     "--play",
                     "--dry-run",
                 ),
@@ -880,6 +893,14 @@ def validate_long_read_dry_run_payload(payload: dict[str, Any] | None) -> list[s
         failures.append("speak-long dry-run must report playback intent")
     if payload.get("chunk_edge_silence_ms") != 120:
         failures.append("speak-long dry-run must report chunk edge silence")
+    if payload.get("first_audio_buffered") is not True:
+        failures.append("speak-long dry-run must report buffered first-audio intent")
+    if payload.get("first_audio_chars") != 140:
+        failures.append("speak-long dry-run must preserve first-audio chunk target")
+    if payload.get("first_audio_buffer_chunks") != 2:
+        failures.append("speak-long dry-run must preserve first-audio buffer policy")
+    if payload.get("first_audio_max_unplanned_gap_ms") != 900.0:
+        failures.append("speak-long dry-run must preserve first-audio gap threshold")
     failures.extend(validate_timing_attribution(payload, "speak-long dry-run", "dry_run_resident_long_read"))
     monitor_log = payload.get("monitor_log")
     if not isinstance(monitor_log, str) or "runtime-logs" not in monitor_log:

@@ -73,7 +73,8 @@ every prompt when a range is enough.
 | `docs/roadmap/GOAL-PROMPT-tes-tts-RTO-003-timing-attribution-cleanup.md` | Executed circular prompt for provider timing attribution cleanup. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-RTO-004-direct-kernel-boundary-hardening.md` | Executed circular prompt for direct kernel boundary hardening. | historical |
 | `docs/roadmap/GOAL-PROMPT-tes-tts-RTO-005-instruction-normalizer-runtime-alignment.md` | Executed circular prompt for instruction-normalizer runtime alignment and local RTO closure. | historical |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-TFA-001-buffered-first-audio-benchmark.md` | Ready circular execution prompt for buffered first-audio benchmark and implementation. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-TFA-001-buffered-first-audio-benchmark.md` | Executed circular prompt for buffered first-audio benchmark and implementation. | historical |
+| `docs/roadmap/TES-TTS-TFA-001-BUFFERED-FIRST-AUDIO-BENCHMARK.md` | TFA-001 benchmark result, first-audio metrics, and local closure. | active |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | Release identity decision record. | active |
 
 ## Historical Ranges

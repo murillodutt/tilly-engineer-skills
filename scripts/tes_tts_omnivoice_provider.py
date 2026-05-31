@@ -25,8 +25,10 @@ import zipfile
 
 import tes_tts_omnivoice_direct_kernel as direct_kernel
 from tes_tts_omnivoice_runtime_support import (
+    BufferedPlaybackQueue,
     RuntimeMonitor,
     add_edge_silence_to_wav,
+    build_first_audio_long_read_plan,
     build_long_read_plan,
     combine_wav_files,
     playback_audio,
@@ -1420,11 +1422,22 @@ def command_speak_long(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
     ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
     output_dir = default_long_read_dir(args.output_dir)
+    args.first_audio_buffer_chunks = max(1, args.first_audio_buffer_chunks)
+    args.first_audio_chars = max(80, args.first_audio_chars)
+    args.first_audio_max_unplanned_gap_ms = max(0.0, args.first_audio_max_unplanned_gap_ms)
     session_id = output_dir.name
     log_path = default_runtime_log_path(args.monitor_log, session_id)
     result_json = output_dir / "result.json"
     stderr_log = output_dir / "resident-stderr.log"
-    chunk_plan = build_long_read_plan(args.text, max_chars=args.chunk_chars, language=args.language)
+    if args.first_audio_buffered:
+        chunk_plan = build_first_audio_long_read_plan(
+            args.text,
+            max_chars=args.chunk_chars,
+            language=args.language,
+            first_audio_chars=args.first_audio_chars,
+        )
+    else:
+        chunk_plan = build_long_read_plan(args.text, max_chars=args.chunk_chars, language=args.language)
     if not ref_audio or not ref_audio.exists():
         emit(
             {
@@ -1505,6 +1518,10 @@ def command_speak_long(args: argparse.Namespace) -> int:
                 "combine_requested": args.combine,
                 "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
                 "chunk_edge_silence_ms": args.chunk_edge_silence_ms,
+                "first_audio_buffered": args.first_audio_buffered,
+                "first_audio_chars": args.first_audio_chars,
+                "first_audio_buffer_chunks": args.first_audio_buffer_chunks,
+                "first_audio_max_unplanned_gap_ms": args.first_audio_max_unplanned_gap_ms,
                 "latency_profile": args.latency_profile,
                 **latency_profile_metadata(args),
                 **timing_attribution_metadata("dry_run_resident_long_read"),
@@ -1539,6 +1556,13 @@ def command_speak_long(args: argparse.Namespace) -> int:
     )
     outputs: list[dict[str, Any]] = []
     playback_results: list[dict[str, Any]] = []
+    buffered_playback: BufferedPlaybackQueue | None = None
+    buffered_playback_started = False
+    first_audio_summary: dict[str, Any] = {
+        "enabled": args.first_audio_buffered,
+        "status": "SKIPPED",
+        "time_to_first_audio_ms": None,
+    }
     startup_payload: dict[str, Any] | None = None
     status = "PASS"
     error: str | None = None
@@ -1562,6 +1586,12 @@ def command_speak_long(args: argparse.Namespace) -> int:
                 status = "FAIL"
                 error = "resident session stdin is unavailable"
             else:
+                if args.play and args.first_audio_buffered:
+                    buffered_playback = BufferedPlaybackQueue(
+                        started_at=total_started,
+                        planned_gap_ms=args.inter_chunk_silence_ms,
+                        monitor=monitor,
+                    )
                 for index, chunk in enumerate(chunk_plan, start=1):
                     chunk_id = str(chunk["id"])
                     output = output_dir / f"{index:03d}-{chunk_id}.wav"
@@ -1602,7 +1632,25 @@ def command_speak_long(args: argparse.Namespace) -> int:
                         status = "FAIL"
                         error = f"{chunk_id} failed"
                         break
-                    if args.play and not args.combine:
+                    if buffered_playback is not None:
+                        ready_count = len(outputs)
+                        if not buffered_playback_started and ready_count >= args.first_audio_buffer_chunks:
+                            buffered_playback.start()
+                            buffered_playback_started = True
+                            monitor.record(
+                                "buffered_playback_armed",
+                                ready_chunk_count=ready_count,
+                                first_audio_buffer_chunks=args.first_audio_buffer_chunks,
+                                first_audio_chars=args.first_audio_chars,
+                            )
+                            for item in outputs:
+                                item_id = item.get("id")
+                                item_output = item.get("output")
+                                if isinstance(item_id, str) and isinstance(item_output, str):
+                                    buffered_playback.enqueue(item_id, Path(item_output))
+                        elif buffered_playback_started:
+                            buffered_playback.enqueue(chunk_id, output)
+                    if args.play and not args.combine and not args.first_audio_buffered:
                         playback = playback_audio(output)
                         playback_item = {"id": chunk_id, "output": str(output), **playback}
                         playback_results.append(playback_item)
@@ -1616,6 +1664,26 @@ def command_speak_long(args: argparse.Namespace) -> int:
             error = str(exc)
             monitor.record("runtime_error", error=error)
         finally:
+            if buffered_playback is not None:
+                buffered_playback.close()
+                first_audio_summary = {
+                    "enabled": True,
+                    "ready_after_chunks": args.first_audio_buffer_chunks,
+                    "first_audio_chars": args.first_audio_chars,
+                    "max_unplanned_gap_target_ms": args.first_audio_max_unplanned_gap_ms,
+                    **buffered_playback.summary(),
+                }
+                playback_results.extend(first_audio_summary.get("playback_results", []))
+                buffered_status = first_audio_summary.get("status")
+                if buffered_status != "PASS" and status == "PASS":
+                    status = "TTS_NOT_AVAILABLE" if buffered_status == "PLAYBACK_NOT_AVAILABLE" else "PLAYBACK_FAILED"
+                    error = f"buffered playback did not complete: {buffered_status}"
+                elif (
+                    first_audio_summary.get("max_unplanned_gap_ms", 0) > args.first_audio_max_unplanned_gap_ms
+                    and status == "PASS"
+                ):
+                    status = "DEGRADED"
+                    error = "buffered playback exceeded unplanned gap target"
             if process is not None:
                 wait_or_terminate(process)
 
@@ -1648,7 +1716,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
         if combined_result.get("combined_status") != "PASS" and status == "PASS":
             status = "COMBINE_FAILED"
             error = str(combined_result.get("reason") or "combined WAV creation failed")
-        elif args.play and status == "PASS":
+        elif args.play and status == "PASS" and not args.first_audio_buffered:
             playback = playback_audio(Path(str(combined_result["combined_output"])))
             playback_item = {"id": "combined", "output": combined_result["combined_output"], **playback}
             playback_results.append(playback_item)
@@ -1692,6 +1760,18 @@ def command_speak_long(args: argparse.Namespace) -> int:
         "combine_requested": args.combine,
         "inter_chunk_silence_ms": args.inter_chunk_silence_ms,
         "chunk_edge_silence_ms": args.chunk_edge_silence_ms,
+        "first_audio_buffered": args.first_audio_buffered,
+        "first_audio_chars": args.first_audio_chars,
+        "first_audio_buffer_chunks": args.first_audio_buffer_chunks,
+        "first_audio_max_unplanned_gap_ms": args.first_audio_max_unplanned_gap_ms,
+        "first_audio": {
+            **first_audio_summary,
+            "completed_before_full_synthesis": (
+                isinstance(first_audio_summary.get("time_to_first_audio_ms"), (int, float))
+                and bool(request_values)
+                and first_audio_summary["time_to_first_audio_ms"] < sum(request_values)
+            ),
+        },
         "combined_audio": combined_result,
         "startup": startup_payload,
         "outputs": outputs,
@@ -1709,6 +1789,8 @@ def command_speak_long(args: argparse.Namespace) -> int:
             "total_resident_request_ms": round(sum(request_values), 3) if request_values else None,
             "combine_wall_ms": combine_wall_ms,
             "total_playback_wall_ms": round(sum(playback_values), 3) if playback_values else None,
+            "time_to_first_audio_ms": first_audio_summary.get("time_to_first_audio_ms"),
+            "max_unplanned_gap_ms": first_audio_summary.get("max_unplanned_gap_ms"),
             "avg_rtf": round(sum(rtf_values) / len(rtf_values), 4) if rtf_values else None,
             "wall_ms": total_wall_ms,
             "total_wall_ms": total_wall_ms,
@@ -3103,6 +3185,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     speak_long.add_argument("--inter-chunk-silence-ms", type=int, default=350)
     speak_long.add_argument("--chunk-edge-silence-ms", type=int, default=0)
+    speak_long.add_argument(
+        "--first-audio-buffered",
+        action="store_true",
+        help="Start long-read playback after a small buffered head instead of waiting for combined.wav.",
+    )
+    speak_long.add_argument("--first-audio-chars", type=int, default=160)
+    speak_long.add_argument("--first-audio-buffer-chunks", type=int, default=2)
+    speak_long.add_argument("--first-audio-max-unplanned-gap-ms", type=float, default=1200.0)
     speak_long.add_argument("--play", action="store_true")
     speak_long.add_argument("--dry-run", action="store_true")
     speak_long.set_defaults(func=command_speak_long)

@@ -73,6 +73,11 @@ Portuguese narration, keep fragile paths and URLs as useful references, redact
 secrets before speech, and group difficult English technical terms in a short
 English phrase when that improves pronunciation.
 
+When start latency matters for long reads, keep the same quality recipe and add
+`--first-audio-buffered --first-audio-chars 160 --first-audio-buffer-chunks 2`.
+This starts playback after a small buffered head while preserving `combined.wav`
+for repeated listening and comparison.
+
 ## Speech Invariants
 
 - Do not summarize unless the user asked for a summary.
