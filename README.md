@@ -28,13 +28,21 @@ repository.
 - Versioned Markdown memory in the repo.
 - Project GPS with `/tes-map` for the current phase, blockers, proof, and next move.
 - Goal Maestro with `/tes-goal-maestro` for mature-artifact-to-execution-tree-to-`/goal` materialization with tree acceptance.
-- Optional `tes-tts` local voice narration through OmniVoice when the user
-  chooses to install the provider.
 - Mantra Gate with `[🍳 Flash-Fry]` before state-changing actions.
 - Deterministic gates before closure.
 - Retained evidence your team can inspect.
 - Cortex MCP for project recall, event inspection, and optional governed
   remember.
+
+## A Small New Voice In The Workshop
+
+`tes-tts` can now turn technical work into local, replayable speech. With
+optional OmniVoice, TES can use a local cloned voice while keeping secrets
+redacted, commands as text, generated audio out of Git, and the provider outside
+the core package.
+
+Start here when you want to hear the trail:
+[`docs/install/TES-TTS-OMNIVOICE.md`](docs/install/TES-TTS-OMNIVOICE.md).
 
 **Where to start**
 
@@ -42,8 +50,6 @@ Installation details live on the public surface where users need them:
 
 - The landing page gives the 30-second GitHub path for npx and Bun.
 - The user manual covers options, first-session setup, rollback, and audit.
-- The optional OmniVoice guide explains local `tes-tts` setup without bundling
-  the provider: [`docs/install/TES-TTS-OMNIVOICE.md`](docs/install/TES-TTS-OMNIVOICE.md).
 - This repository keeps the source, contracts, gates, and evidence.
 
 > [!IMPORTANT]
