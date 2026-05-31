@@ -53,6 +53,15 @@ Start with the smallest durable provider split:
 4. Keep generated audio, caches, reference runs, downloads, and venvs under
    `tmp/**`.
 
+## Local Closure
+
+RTO-001 through RTO-005 closed this optimization pass locally: provider hot-path
+support was split, provider oracle partitions were focused, timing attribution
+was clarified, the direct kernel boundary was guarded, and duplicated
+instruction-normalizer fixture-group assertions were collapsed. Continue this
+line only for a measured runtime defect, latency regression, or approved
+provider cut.
+
 ## Guardrails
 
 - No provider install, download, certification, sync, release, push, tag,

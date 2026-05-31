@@ -162,6 +162,91 @@ FORBIDDEN_HINT_CLAIMS = {
     "translate",
     "translation",
 }
+REQUIRED_FIXTURE_GROUPS = {
+    "translation boundary": (
+        "translation_boundary",
+        {
+            "tts-translation-redaction-first",
+            "tts-translation-protected-terms-first",
+            "tts-translation-unclear-pair-degraded",
+        },
+    ),
+    "pronunciation boundary": (
+        "pronunciation_provider_boundary",
+        {
+            "tts-pronunciation-provider-boundary",
+            "tts-pronunciation-hebrew-degraded",
+            "tts-pronunciation-provider-unclear-degraded",
+        },
+    ),
+    "spoken rendering": (
+        "spoken_rendering",
+        {
+            "tts-spoken-acronym-rendering",
+            "tts-spoken-path-rendering",
+            "tts-spoken-github-url-rendering",
+            "tts-spoken-exact-read-preserves-technical-spans",
+            "tts-spoken-url-false-positive-guard",
+            "tts-transform-markdown-entities",
+            "tts-transform-code-fence-preserves-command",
+            "tts-transform-long-hash-and-guid",
+            "tts-transform-email-ip-social-spans",
+            "tts-transform-exact-preserves-new-entities",
+        },
+    ),
+    "pronunciation hints": (
+        "pronunciation_hints",
+        {
+            "tts-pronunciation-technical-term-hints",
+            "tts-pronunciation-package-model-proper-nouns",
+            "tts-pronunciation-command-code-identifiers",
+            "tts-pronunciation-forbidden-claim-guard",
+            "tts-pronunciation-english-protected-terms",
+        },
+    ),
+    "CAP-006 conversational": (
+        "cap006",
+        {
+            "tts-cap006-interlocutor-oral-prose-ptbr",
+            "tts-cap006-faithful-reading-markdown",
+            "tts-cap006-exact-path-url-code-islands",
+            "tts-cap006-ptbr-default-english-protected-terms",
+            "tts-cap006-no-summary-long-operational-note",
+            "tts-cap006-code-block-faithful-no-execute",
+            "tts-cap006-table-to-prose-no-loss",
+            "tts-cap006-secret-redaction-beats-exact",
+        },
+    ),
+    "CAP-007 exact island": (
+        "cap007",
+        {
+            "tts-cap007-selective-exact-islands",
+            "tts-cap007-secret-redaction-over-selective-exact",
+            "tts-cap007-protect-fragile-span-classes",
+            "tts-cap007-protect-scoped-package-before-mention",
+        },
+    ),
+    "CAP-008 structure oralization": (
+        "cap008",
+        {
+            "tts-cap008-table-multicolumn-ordered-facts",
+            "tts-cap008-bullet-numbered-list-ordering",
+            "tts-cap008-quote-oralization",
+            "tts-cap008-code-block-conversational-no-execute",
+            "tts-cap008-structure-preserves-exact-and-redaction",
+        },
+    ),
+    "CAP-009 English identity": (
+        "cap009",
+        {
+            "tts-cap009-ptbr-narration-english-workflow-identity",
+            "tts-cap009-mixed-span-translation-degraded-preserves-english",
+            "tts-cap009-product-package-model-identity",
+            "tts-cap009-hebrew-degraded-keeps-english-identity",
+            "tts-cap009-structural-rendering-keeps-english-identity",
+        },
+    ),
+}
 
 
 @dataclass(frozen=True)
@@ -895,131 +980,17 @@ def validate_selector_corpus() -> list[str]:
     return failures
 
 
-def validate_translation_boundary_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
-    required = {
-        "tts-translation-redaction-first",
-        "tts-translation-protected-terms-first",
-        "tts-translation-unclear-pair-degraded",
-    }
-    seen = {fixture["id"] for fixture in fixtures if "translation_boundary" in fixture["checks"]}
-    missing = sorted(required - seen)
-    if missing:
-        return [f"missing translation boundary fixtures: {missing}"]
-    return []
-
-
-def validate_pronunciation_boundary_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
-    required = {
-        "tts-pronunciation-provider-boundary",
-        "tts-pronunciation-hebrew-degraded",
-        "tts-pronunciation-provider-unclear-degraded",
-    }
-    seen = {
-        fixture["id"]
-        for fixture in fixtures
-        if "pronunciation_provider_boundary" in fixture["checks"]
-    }
-    missing = sorted(required - seen)
-    if missing:
-        return [f"missing pronunciation boundary fixtures: {missing}"]
-    return []
-
-
-def validate_spoken_rendering_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
-    required = {
-        "tts-spoken-acronym-rendering",
-        "tts-spoken-path-rendering",
-        "tts-spoken-github-url-rendering",
-        "tts-spoken-exact-read-preserves-technical-spans",
-        "tts-spoken-url-false-positive-guard",
-        "tts-transform-markdown-entities",
-        "tts-transform-code-fence-preserves-command",
-        "tts-transform-long-hash-and-guid",
-        "tts-transform-email-ip-social-spans",
-        "tts-transform-exact-preserves-new-entities",
-    }
-    seen = {fixture["id"] for fixture in fixtures if "spoken_rendering" in fixture["checks"]}
-    missing = sorted(required - seen)
-    if missing:
-        return [f"missing spoken rendering fixtures: {missing}"]
-    return []
-
-
-def validate_pronunciation_hint_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
-    required = {
-        "tts-pronunciation-technical-term-hints",
-        "tts-pronunciation-package-model-proper-nouns",
-        "tts-pronunciation-command-code-identifiers",
-        "tts-pronunciation-forbidden-claim-guard",
-        "tts-pronunciation-english-protected-terms",
-    }
-    seen = {fixture["id"] for fixture in fixtures if "pronunciation_hints" in fixture["checks"]}
-    missing = sorted(required - seen)
-    if missing:
-        return [f"missing CAP-003 pronunciation hint fixtures: {missing}"]
-    return []
-
-
-def validate_cap006_conversational_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
-    required = {
-        "tts-cap006-interlocutor-oral-prose-ptbr",
-        "tts-cap006-faithful-reading-markdown",
-        "tts-cap006-exact-path-url-code-islands",
-        "tts-cap006-ptbr-default-english-protected-terms",
-        "tts-cap006-no-summary-long-operational-note",
-        "tts-cap006-code-block-faithful-no-execute",
-        "tts-cap006-table-to-prose-no-loss",
-        "tts-cap006-secret-redaction-beats-exact",
-    }
-    seen = {fixture["id"] for fixture in fixtures if "cap006" in fixture["id"]}
-    missing = sorted(required - seen)
-    if missing:
-        return [f"missing CAP-006 conversational fixtures: {missing}"]
-    return []
-
-
-def validate_cap007_exact_island_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
-    required = {
-        "tts-cap007-selective-exact-islands",
-        "tts-cap007-secret-redaction-over-selective-exact",
-        "tts-cap007-protect-fragile-span-classes",
-        "tts-cap007-protect-scoped-package-before-mention",
-    }
-    seen = {fixture["id"] for fixture in fixtures if "cap007" in fixture["id"]}
-    missing = sorted(required - seen)
-    if missing:
-        return [f"missing CAP-007 exact-island fixtures: {missing}"]
-    return []
-
-
-def validate_cap008_structure_oralization_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
-    required = {
-        "tts-cap008-table-multicolumn-ordered-facts",
-        "tts-cap008-bullet-numbered-list-ordering",
-        "tts-cap008-quote-oralization",
-        "tts-cap008-code-block-conversational-no-execute",
-        "tts-cap008-structure-preserves-exact-and-redaction",
-    }
-    seen = {fixture["id"] for fixture in fixtures if "cap008" in fixture["id"]}
-    missing = sorted(required - seen)
-    if missing:
-        return [f"missing CAP-008 structure oralization fixtures: {missing}"]
-    return []
-
-
-def validate_cap009_english_identity_fixtures(fixtures: list[dict[str, Any]]) -> list[str]:
-    required = {
-        "tts-cap009-ptbr-narration-english-workflow-identity",
-        "tts-cap009-mixed-span-translation-degraded-preserves-english",
-        "tts-cap009-product-package-model-identity",
-        "tts-cap009-hebrew-degraded-keeps-english-identity",
-        "tts-cap009-structural-rendering-keeps-english-identity",
-    }
-    seen = {fixture["id"] for fixture in fixtures if "cap009" in fixture["id"]}
-    missing = sorted(required - seen)
-    if missing:
-        return [f"missing CAP-009 English identity fixtures: {missing}"]
-    return []
+def validate_required_fixture_groups(fixtures: list[dict[str, Any]]) -> list[str]:
+    failures: list[str] = []
+    for label, (selector, required) in REQUIRED_FIXTURE_GROUPS.items():
+        if selector.startswith("cap"):
+            seen = {fixture["id"] for fixture in fixtures if selector in fixture["id"]}
+        else:
+            seen = {fixture["id"] for fixture in fixtures if selector in fixture["checks"]}
+        missing = sorted(required - seen)
+        if missing:
+            failures.append(f"missing {label} fixtures: {missing}")
+    return failures
 
 
 def validate_no_disk_write_surface() -> list[str]:
@@ -1050,14 +1021,7 @@ def main() -> int:
     failures = validate_no_disk_write_surface()
     failures.extend(validate_selector_corpus())
     fixtures = load_fixtures()
-    failures.extend(validate_translation_boundary_fixtures(fixtures))
-    failures.extend(validate_pronunciation_boundary_fixtures(fixtures))
-    failures.extend(validate_spoken_rendering_fixtures(fixtures))
-    failures.extend(validate_pronunciation_hint_fixtures(fixtures))
-    failures.extend(validate_cap006_conversational_fixtures(fixtures))
-    failures.extend(validate_cap007_exact_island_fixtures(fixtures))
-    failures.extend(validate_cap008_structure_oralization_fixtures(fixtures))
-    failures.extend(validate_cap009_english_identity_fixtures(fixtures))
+    failures.extend(validate_required_fixture_groups(fixtures))
     for fixture in fixtures:
         failures.extend(validate_prepared_fixture(fixture))
 
