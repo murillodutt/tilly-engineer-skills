@@ -35,19 +35,13 @@ durable conversion cache, or proactive `speak`.
 - Python efficiency analysis targets provider/lab monoliths, not text prep.
 - Direct voice prompt cache is permitted only as protected local `tmp/**`
   runtime state, never as committed or shared artifact.
-- PSO-005 partitioned provider oracle checks across source safety, provider
-  status, active direct kernel, legacy server compatibility, dry-run packaging,
-  and fixture contract. No audio was generated.
-- PSO-006 clarified timing names with compatibility aliases for text
-  preparation, provider synthesis, audio write, combine, playback, and total
-  wall time. No audio was generated.
-- PSO-007 closed the Python optimization line locally: direct/resident
-  execution is the active product path, server remains legacy/lab, timing is
-  attributable, and voice prompt cache permissions are protected.
+- Python cleanup removed obsolete lab execution copies from tracked source:
+  the active provider surface is direct/resident only, timing is attributable,
+  and voice prompt cache permissions are protected.
 
 ## Next Cut
-PSO line closed. Open a new runtime cut only from a concrete product objective,
-not another documentation-only prompt. Keep `tmp/**` artifacts out of commits.
+Next work should come from a concrete product objective, not documentation-only
+prompts. Keep `tmp/**` artifacts out of commits.
 
 ## Maintenance Rules
 - Hard limit: 100 lines. Review zone starts at 75 lines.

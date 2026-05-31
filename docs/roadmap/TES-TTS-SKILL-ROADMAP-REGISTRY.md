@@ -37,7 +37,7 @@ every prompt when a range is enough.
 | `scripts/tes_tts_runtime_latency_oracle.py` | Text-preparation latency oracle. | active |
 | `scripts/tes_tts_provider_probe_oracle.py` | Request-local provider probe and fallback oracle. | active |
 | `scripts/tes_tts_provider_candidate_review_oracle.py` | Candidate review queue oracle. | active |
-| `scripts/tes_tts_omnivoice_provider.py` | Optional OmniVoice status, warm-cache, resident session, live-smoke review packages, auto latency-profile selection from sealed profile reviews, product-status cockpit, candidate replay/open cockpit, speak, bench, review, decide-review, package-review, probe, synthesize, normalize-ref, and batch facade. | active |
+| `scripts/tes_tts_omnivoice_provider.py` | Optional OmniVoice direct/resident status, warm-cache, session, live-smoke review packages, auto latency-profile selection, product-status cockpit, candidate replay/open cockpit, speak, bench, review, decide-review, package-review, probe, synthesize, normalize-ref, and batch facade. | active |
 | `scripts/tes_tts_omnivoice_provider_oracle.py` | Optional OmniVoice provider safety oracle. | active |
 | `scripts/tes_tts_roadmap_partition_oracle.py` | Dashboard, registry, and history partition oracle. | active |
 
@@ -66,9 +66,6 @@ every prompt when a range is enough.
 | `docs/roadmap/TES-TTS-SKILL-ROADMAP-HISTORY.md` | Compressed evolution history. | active |
 | `docs/roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` | ADR 0004 owner acceptance record. | active |
 | `docs/roadmap/TES-TTS-RTE-006-RUNTIME-AUDIT-AND-CLOSURE.md` | Runtime-first closure audit. | active |
-| `docs/roadmap/TES-TTS-PYTHON-SCRIPT-EFFICIENCY-ANALYSIS.md` | Python script efficiency levantamento and optimization queue. | active |
-| `docs/roadmap/GOAL-SUPER-SPEC-tes-tts-python-script-optimization.md` | Closed Python optimization execution authority for provider/runtime scripts. | archived |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-PSO-*.md` | Python script optimization execution prompts; PSO-001 through PSO-007 completed in order. | archived |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | Release identity decision record. | active |
 
 ## Historical Ranges
@@ -81,7 +78,6 @@ every prompt when a range is enough.
 | `TES-TTS-CAP-*.md` and matching prompts | Capability migration and conversational rendering sequence. | historical |
 | `TES-TTS-LEX-*.md` and matching prompts | PT-BR lexical foundation sequence. | historical |
 | `TES-TTS-RTE-*.md` and matching prompts | Runtime engine and latency sequence. | historical |
-| `GOAL-PROMPT-tes-tts-PSO-*.md` | Python script optimization sequence. | historical |
 
 ## Indexing Rule
 

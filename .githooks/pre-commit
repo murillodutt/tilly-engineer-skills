@@ -29,6 +29,10 @@ if has_staged '^(docs/tds/|docs/INDEX\.md$|scripts/validate_tds\.py$)'; then
   run python3 scripts/validate_tds.py
 fi
 
+if has_staged '^(docs/|scripts/validate_doc_size\.py$)'; then
+  run python3 scripts/validate_doc_size.py
+fi
+
 if has_staged '^docs/roadmap/TES-TTS-SKILL-ROADMAP'; then
   run python3 scripts/tes_tts_roadmap_partition_oracle.py
 fi
@@ -52,10 +56,6 @@ fi
 
 if has_staged '^scripts/tes_tts_audio_audit\.py$'; then
   run python3 scripts/tes_tts_audio_audit.py self-test
-fi
-
-if has_staged '^scripts/tes_tts_audio_variant_lab\.py$'; then
-  run python3 scripts/tes_tts_audio_variant_lab.py self-test
 fi
 
 if has_staged '^(scripts/tes_tts_omnivoice_provider\.py|benchmarks/tes-tts/omnivoice-provider-cases\.json)'; then

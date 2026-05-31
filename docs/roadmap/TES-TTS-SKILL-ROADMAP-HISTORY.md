@@ -44,7 +44,7 @@ stay objective and maintainable.
 | LEX-001 through LEX-005 | PT-BR lexical evidence foundation closed. | Full dictionary vendoring and runtime IPA/SSML stayed forbidden. |
 | RTE-000 through RTE-006 | Runtime-first latency and preparation path closed. | Runtime is dependency-free and measured separately from provider/playback. |
 | OmniVoice product cut | Optional premium local provider added. | External env only; no redistribution or install claim. |
-| PSO-001 through PSO-007 | Python script optimization line closed locally. | Direct/resident path is active, server is legacy/lab, timing is attributable, cache permissions are protected, and no audio was regenerated in final audit. |
+| Python cleanup | Obsolete lab execution copies were removed from tracked source. | Direct/resident path is active, timing is attributable, cache permissions are protected, and no audio was regenerated. |
 
 ## Current Historical Lessons
 
