@@ -14,7 +14,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "benchmarks/tes-tts/ptbr-lexical-sample.jsonl"
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/ptbr-lexical-lookup-fixtures.json"
-VERSION = "0.3.148"
+VERSION = "0.3.149"
 
 
 def canonical_grapheme(value: str) -> str:
