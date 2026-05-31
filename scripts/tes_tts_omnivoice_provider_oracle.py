@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import ast
 import contextlib
+from dataclasses import dataclass
 import importlib.util
 import io
 import json
@@ -21,9 +22,21 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 PROVIDER_SCRIPT = ROOT / "scripts/tes_tts_omnivoice_provider.py"
 DIRECT_KERNEL_SCRIPT = ROOT / "scripts/tes_tts_omnivoice_direct_kernel.py"
+RUNTIME_SUPPORT_SCRIPT = ROOT / "scripts/tes_tts_omnivoice_runtime_support.py"
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/omnivoice-provider-cases.json"
 VERSION = "0.3.147"
 FORBIDDEN_TOP_LEVEL_IMPORTS = {"omnivoice", "torch", "soundfile"}
+PROVIDER_EXTRACTED_IMPORTS = {"select", "threading", "wave"}
+REQUIRED_RUNTIME_SUPPORT_SYMBOLS = {
+    "RuntimeMonitor",
+    "build_long_read_plan",
+    "combine_wav_files",
+    "playback_outputs",
+    "provider_prepare_ms",
+    "read_jsonl_payload",
+    "wait_or_terminate",
+    "wav_duration_seconds",
+}
 REQUIRED_PROBE_KEYS = {
     "provider",
     "status",
@@ -341,6 +354,14 @@ REQUIRED_CANDIDATE_KEYS = {
 }
 
 
+@dataclass(frozen=True)
+class ProviderJsonCommand:
+    key: str
+    label: str
+    args: tuple[str, ...]
+    expected_exit_codes: tuple[int, ...] = (0,)
+
+
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -374,21 +395,65 @@ def validate_no_reference_text_logging() -> list[str]:
     return failures
 
 
-def run_probe() -> tuple[dict[str, Any] | None, list[str]]:
+def validate_runtime_support_boundary() -> list[str]:
+    failures: list[str] = []
+    provider_source = PROVIDER_SCRIPT.read_text(encoding="utf-8")
+    if "tes_tts_omnivoice_runtime_support" not in provider_source:
+        failures.append("provider must import shared direct/resident runtime support")
+
+    provider_tree = ast.parse(provider_source)
+    for node in provider_tree.body:
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                root = alias.name.split(".", 1)[0]
+                if root in PROVIDER_EXTRACTED_IMPORTS:
+                    failures.append(f"provider reabsorbed extracted runtime import: {alias.name}")
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            root = node.module.split(".", 1)[0]
+            if root in PROVIDER_EXTRACTED_IMPORTS:
+                failures.append(f"provider reabsorbed extracted runtime import: {node.module}")
+
+    runtime_tree = ast.parse(RUNTIME_SUPPORT_SCRIPT.read_text(encoding="utf-8"))
+    defined = {
+        node.name
+        for node in runtime_tree.body
+        if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+    missing = sorted(REQUIRED_RUNTIME_SUPPORT_SYMBOLS - defined)
+    if missing:
+        failures.append(f"runtime support missing required product-path helpers {missing}")
+    return failures
+
+
+def run_provider_json(
+    label: str,
+    args: tuple[str, ...],
+    *,
+    env: dict[str, str] | None = None,
+    expected_exit_codes: tuple[int, ...] = (0,),
+) -> tuple[dict[str, Any] | None, list[str]]:
     completed = subprocess.run(
-        [sys.executable, str(PROVIDER_SCRIPT), "probe"],
+        [sys.executable, str(PROVIDER_SCRIPT), *args],
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         check=False,
+        env=env,
     )
     failures: list[str] = []
-    if completed.returncode not in (0, 2):
-        failures.append(f"probe returned unexpected exit code {completed.returncode}")
+    if completed.returncode not in expected_exit_codes:
+        failures.append(f"{label} returned unexpected exit code {completed.returncode}")
     try:
         payload = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
-        failures.append(f"probe did not emit JSON: {exc}")
+        failures.append(f"{label} did not emit JSON: {exc}")
+        return None, failures
+    return payload, failures
+
+
+def run_probe() -> tuple[dict[str, Any] | None, list[str]]:
+    payload, failures = run_provider_json("probe", ("probe",), expected_exit_codes=(0, 2))
+    if payload is None:
         return None, failures
     missing = sorted(REQUIRED_PROBE_KEYS - set(payload))
     extra = sorted(set(payload) - REQUIRED_PROBE_KEYS)
@@ -439,185 +504,78 @@ def run_status_and_dry_run() -> tuple[
         env = os.environ.copy()
         env["TES_TTS_OMNIVOICE_PYTHON"] = sys.executable
         env["TES_TTS_OMNIVOICE_REF_AUDIO"] = str(ref)
-        status_completed = subprocess.run(
-            [sys.executable, str(PROVIDER_SCRIPT), "status"],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-            env=env,
-        )
-        if status_completed.returncode not in (0, 2):
-            failures.append(f"status returned unexpected exit code {status_completed.returncode}")
-        try:
-            status_payload = json.loads(status_completed.stdout)
-        except json.JSONDecodeError as exc:
-            failures.append(f"status did not emit JSON: {exc}")
-            status_payload = None
-
-        dry_completed = subprocess.run(
-            [
-                sys.executable,
-                str(PROVIDER_SCRIPT),
+        commands = (
+            ProviderJsonCommand("status", "status", ("status",), (0, 2)),
+            ProviderJsonCommand(
                 "speak",
-                "--text",
-                "API_KEY=abc123SECRET deve ficar fora do dry-run.",
-                "--dry-run",
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-            env=env,
-        )
-        if dry_completed.returncode != 0:
-            failures.append(f"speak dry-run returned unexpected exit code {dry_completed.returncode}")
-        try:
-            dry_payload = json.loads(dry_completed.stdout)
-        except json.JSONDecodeError as exc:
-            failures.append(f"speak dry-run did not emit JSON: {exc}")
-            dry_payload = None
-
-        long_read_completed = subprocess.run(
-            [
-                sys.executable,
-                str(PROVIDER_SCRIPT),
-                "speak-long",
-                "--text",
+                "speak dry-run",
+                ("speak", "--text", "API_KEY=abc123SECRET deve ficar fora do dry-run.", "--dry-run"),
+            ),
+            ProviderJsonCommand(
+                "speak_long",
+                "speak-long dry-run",
                 (
-                    "Primeiro bloco com ADR e OmniVoice precisa ser preservado sem fallback.\n\n"
-                    "English technical terms: JSON, YAML, HTTP, Node JS, TypeScript, Python, "
-                    "Open AI API, Trie, Aho Corasick, and thresholds.\n\n"
-                    "Segundo bloco confirma que a leitura longa segue pela sessão residente."
+                    "speak-long",
+                    "--text",
+                    (
+                        "Primeiro bloco com ADR e OmniVoice precisa ser preservado sem fallback.\n\n"
+                        "English technical terms: JSON, YAML, HTTP, Node JS, TypeScript, Python, "
+                        "Open AI API, Trie, Aho Corasick, and thresholds.\n\n"
+                        "Segundo bloco confirma que a leitura longa segue pela sessão residente."
+                    ),
+                    "--chunk-chars",
+                    "180",
+                    "--language",
+                    "auto",
+                    "--chunk-edge-silence-ms",
+                    "120",
+                    "--play",
+                    "--dry-run",
                 ),
-                "--chunk-chars",
-                "180",
-                "--language",
-                "auto",
-                "--chunk-edge-silence-ms",
-                "120",
-                "--play",
-                "--dry-run",
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-            env=env,
-        )
-        if long_read_completed.returncode != 0:
-            failures.append(f"speak-long dry-run returned unexpected exit code {long_read_completed.returncode}")
-        try:
-            long_read_payload = json.loads(long_read_completed.stdout)
-        except json.JSONDecodeError as exc:
-            failures.append(f"speak-long dry-run did not emit JSON: {exc}")
-            long_read_payload = None
-
-        bench_completed = subprocess.run(
-            [
-                sys.executable,
-                str(PROVIDER_SCRIPT),
+            ),
+            ProviderJsonCommand(
                 "bench",
-                "--ref-text",
-                "voz privada SECRET_REF_TEXT",
-                "--play",
-                "--open",
-                "--package",
-                "--dry-run",
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-            env=env,
+                "bench dry-run",
+                ("bench", "--ref-text", "voz privada SECRET_REF_TEXT", "--play", "--open", "--package", "--dry-run"),
+            ),
+            ProviderJsonCommand(
+                "profile_review",
+                "profile-review dry-run",
+                (
+                    "profile-review",
+                    "--ref-text",
+                    "voz privada SECRET_REF_TEXT",
+                    "--play",
+                    "--open",
+                    "--package",
+                    "--dry-run",
+                ),
+            ),
+            ProviderJsonCommand("review", "review dry-run", ("review", "--path", str(review), "--dry-run")),
+            ProviderJsonCommand(
+                "package",
+                "package-review dry-run",
+                ("package-review", "--path", str(review), "--dry-run"),
+            ),
         )
-        if bench_completed.returncode != 0:
-            failures.append(f"bench dry-run returned unexpected exit code {bench_completed.returncode}")
-        try:
-            bench_payload = json.loads(bench_completed.stdout)
-        except json.JSONDecodeError as exc:
-            failures.append(f"bench dry-run did not emit JSON: {exc}")
-            bench_payload = None
-
-        profile_review_completed = subprocess.run(
-            [
-                sys.executable,
-                str(PROVIDER_SCRIPT),
-                "profile-review",
-                "--ref-text",
-                "voz privada SECRET_REF_TEXT",
-                "--play",
-                "--open",
-                "--package",
-                "--dry-run",
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-            env=env,
-        )
-        if profile_review_completed.returncode != 0:
-            failures.append(f"profile-review dry-run returned unexpected exit code {profile_review_completed.returncode}")
-        try:
-            profile_review_payload = json.loads(profile_review_completed.stdout)
-        except json.JSONDecodeError as exc:
-            failures.append(f"profile-review dry-run did not emit JSON: {exc}")
-            profile_review_payload = None
-
-        review_completed = subprocess.run(
-            [
-                sys.executable,
-                str(PROVIDER_SCRIPT),
-                "review",
-                "--path",
-                str(review),
-                "--dry-run",
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-            env=env,
-        )
-        if review_completed.returncode != 0:
-            failures.append(f"review dry-run returned unexpected exit code {review_completed.returncode}")
-        try:
-            review_payload = json.loads(review_completed.stdout)
-        except json.JSONDecodeError as exc:
-            failures.append(f"review dry-run did not emit JSON: {exc}")
-            review_payload = None
-
-        package_completed = subprocess.run(
-            [
-                sys.executable,
-                str(PROVIDER_SCRIPT),
-                "package-review",
-                "--path",
-                str(review),
-                "--dry-run",
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-            env=env,
-        )
-        if package_completed.returncode != 0:
-            failures.append(f"package-review dry-run returned unexpected exit code {package_completed.returncode}")
-        try:
-            package_payload = json.loads(package_completed.stdout)
-        except json.JSONDecodeError as exc:
-            failures.append(f"package-review dry-run did not emit JSON: {exc}")
-            package_payload = None
+        payloads: dict[str, dict[str, Any] | None] = {}
+        for command in commands:
+            payload, command_failures = run_provider_json(
+                command.label,
+                command.args,
+                env=env,
+                expected_exit_codes=command.expected_exit_codes,
+            )
+            payloads[command.key] = payload
+            failures.extend(command_failures)
     return (
-        status_payload,
-        dry_payload,
-        long_read_payload,
-        bench_payload,
-        profile_review_payload,
-        review_payload,
-        package_payload,
+        payloads.get("status"),
+        payloads.get("speak"),
+        payloads.get("speak_long"),
+        payloads.get("bench"),
+        payloads.get("profile_review"),
+        payloads.get("review"),
+        payloads.get("package"),
         failures,
     )
 
@@ -864,10 +822,9 @@ def validate_warm_cache_dry_run_command() -> list[str]:
         ref = root / "ref.wav"
         cache_dir = root / "cache"
         ref.write_bytes(b"not-real-audio-for-dry-run")
-        completed = subprocess.run(
-            [
-                sys.executable,
-                str(PROVIDER_SCRIPT),
+        payload, command_failures = run_provider_json(
+            "warm-cache dry-run",
+            (
                 "warm-cache",
                 "--python",
                 sys.executable,
@@ -879,19 +836,10 @@ def validate_warm_cache_dry_run_command() -> list[str]:
                 "SECRET_REF_TEXT",
                 "--refresh-prompt",
                 "--dry-run",
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
+            ),
         )
-    if completed.returncode != 0:
-        failures.append(f"warm-cache dry-run returned unexpected exit code {completed.returncode}")
-        return failures
-    try:
-        payload = json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        failures.append(f"warm-cache dry-run did not emit JSON: {exc}")
+    failures.extend(command_failures)
+    if payload is None:
         return failures
     missing = sorted(REQUIRED_WARM_CACHE_DRY_RUN_KEYS - set(payload))
     extra = sorted(set(payload) - REQUIRED_WARM_CACHE_DRY_RUN_KEYS)
@@ -934,10 +882,9 @@ def validate_session_dry_run_command() -> list[str]:
         ref = root / "ref.wav"
         output_dir = root / "session-audio"
         ref.write_bytes(b"not-real-audio-for-dry-run")
-        completed = subprocess.run(
-            [
-                sys.executable,
-                str(PROVIDER_SCRIPT),
+        payload, command_failures = run_provider_json(
+            "session dry-run",
+            (
                 "session",
                 "--python",
                 sys.executable,
@@ -950,19 +897,10 @@ def validate_session_dry_run_command() -> list[str]:
                 "--ref-text",
                 "SECRET_REF_TEXT",
                 "--dry-run",
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
+            ),
         )
-    if completed.returncode != 0:
-        failures.append(f"session dry-run returned unexpected exit code {completed.returncode}")
-        return failures
-    try:
-        payload = json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        failures.append(f"session dry-run did not emit JSON: {exc}")
+    failures.extend(command_failures)
+    if payload is None:
         return failures
     missing = sorted(REQUIRED_SESSION_DRY_RUN_KEYS - set(payload))
     extra = sorted(set(payload) - REQUIRED_SESSION_DRY_RUN_KEYS)
@@ -1044,28 +982,18 @@ def validate_auto_latency_profile_selection() -> list[str]:
         env["TES_TTS_OMNIVOICE_PYTHON"] = sys.executable
         env["TES_TTS_OMNIVOICE_REF_AUDIO"] = str(ref)
         env["TES_TTS_OMNIVOICE_BENCHMARK_DIR"] = str(root)
-        completed = subprocess.run(
-            [
-                sys.executable,
-                str(PROVIDER_SCRIPT),
+        payload, command_failures = run_provider_json(
+            "auto profile speak dry-run",
+            (
                 "speak",
                 "--text",
                 "Teste ADR e API em modo automatico.",
                 "--dry-run",
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
+            ),
             env=env,
         )
-    if completed.returncode != 0:
-        failures.append(f"auto profile speak dry-run returned unexpected exit code {completed.returncode}")
-        return failures
-    try:
-        payload = json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        failures.append(f"auto profile speak dry-run did not emit JSON: {exc}")
+    failures.extend(command_failures)
+    if payload is None:
         return failures
     if payload.get("requested_latency_profile") != "auto":
         failures.append("auto profile dry-run must preserve requested profile")
@@ -1092,10 +1020,9 @@ def validate_live_smoke_dry_run_command() -> list[str]:
         ref = root / "ref.wav"
         output_dir = root / "live-smoke"
         ref.write_bytes(b"not-real-audio-for-dry-run")
-        completed = subprocess.run(
-            [
-                sys.executable,
-                str(PROVIDER_SCRIPT),
+        payload, command_failures = run_provider_json(
+            "live-smoke dry-run",
+            (
                 "live-smoke",
                 "--python",
                 sys.executable,
@@ -1112,19 +1039,10 @@ def validate_live_smoke_dry_run_command() -> list[str]:
                 "--play",
                 "--package",
                 "--dry-run",
-            ],
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
+            ),
         )
-    if completed.returncode != 0:
-        failures.append(f"live-smoke dry-run returned unexpected exit code {completed.returncode}")
-        return failures
-    try:
-        payload = json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        failures.append(f"live-smoke dry-run did not emit JSON: {exc}")
+    failures.extend(command_failures)
+    if payload is None:
         return failures
     missing = sorted(REQUIRED_LIVE_SMOKE_DRY_RUN_KEYS - set(payload))
     extra = sorted(set(payload) - REQUIRED_LIVE_SMOKE_DRY_RUN_KEYS)
@@ -2120,11 +2038,12 @@ def main() -> int:
 
     source_failures = validate_source_imports()
     source_failures.extend(validate_no_reference_text_logging())
+    source_failures.extend(validate_runtime_support_boundary())
     failures.extend(source_failures)
     add_partition(
         partitions,
         name="source_safety",
-        focus="top-level optional imports and reference-text logging",
+        focus="optional imports, reference-text logging, and runtime support boundary",
         failures=source_failures,
     )
 

@@ -232,6 +232,13 @@ documents:
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-RTO-003-timing-attribution-cleanup.md
+    id: roadmap.goal_prompt_tes_tts_rto_003_timing_attribution_cleanup
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
     id: roadmap.goal_super_spec_tes_tts_sequential_convergence
     class: roadmap

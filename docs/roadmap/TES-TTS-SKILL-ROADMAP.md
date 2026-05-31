@@ -32,8 +32,8 @@ durable conversion cache, or proactive `speak`.
 ## Evidence
 - OmniVoice cloned voice reached maintainer rating `9.5`; direct/resident
   recipe `20260530-190552-healthy-reference-read` was rated 7.5/10.
-- RTO-001 split direct/resident runtime support from the provider monolith;
-  RTO-002 targets the provider oracle monolith next.
+- RTO-002 focused the provider oracle with shared JSON subprocess execution
+  and explicit runtime-support boundary coverage.
 - Direct voice prompt cache is permitted only as protected local `tmp/**`
   runtime state, never as committed or shared artifact.
 - Python cleanup removed obsolete lab execution copies from tracked source:
@@ -41,9 +41,8 @@ durable conversion cache, or proactive `speak`.
   and voice prompt cache permissions are protected.
 
 ## Next Cut
-Ready prompt is indexed in registry as RTO-002. Partition the provider oracle
-around the active direct/resident path next. Keep `tmp/**` artifacts out of
-commits.
+Ready prompt is indexed in registry as RTO-003. Clarify active provider timing
+attribution next. Keep `tmp/**` artifacts out of commits.
 
 ## Maintenance Rules
 - Hard limit: 100 lines. Review zone starts at 75 lines.
