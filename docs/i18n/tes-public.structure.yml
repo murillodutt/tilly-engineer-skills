@@ -36,7 +36,7 @@
       "body_class": "public-manual",
       "canonical": "https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html",
       "asset_prefix": "../",
-      "nav": ["overview", "install", "triggers", "routes", "states", "cortex", "cli", "mcp", "field_reports", "obsidian", "report", "rollback"]
+      "nav": ["overview", "install", "tts", "triggers", "routes", "states", "cortex", "cli", "mcp", "field_reports", "obsidian", "report", "rollback"]
     }
   }
 }

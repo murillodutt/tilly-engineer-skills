@@ -1208,6 +1208,7 @@
           <p class="toc-title" data-ui="contents">Contents</p>
           <ul><li><a href="#overview-en" data-nav="overview" data-label-en="Overview" data-label-es="Vista general" data-label-pt="Visao geral" data-href-en="#overview-en" data-href-es="#overview-es" data-href-pt="#overview-pt"><span class="toc-num">00</span><span class="toc-text">Overview</span></a></li>
 <li><a href="#install-en" data-nav="install" data-label-en="Quick install" data-label-es="Instalacion rapida" data-label-pt="Instalacao rapida" data-href-en="#install-en" data-href-es="#install-es" data-href-pt="#install-pt"><span class="toc-num">01</span><span class="toc-text">Quick install</span></a></li>
+<li><a href="#tts-en" data-nav="tts" data-label-en="Optional voice: tes-tts with OmniVoice" data-label-es="Voz opcional: tes-tts con OmniVoice" data-label-pt="Voz opcional: tes-tts com OmniVoice" data-href-en="#tts-en" data-href-es="#tts-es" data-href-pt="#tts-pt"><span class="toc-num">01A</span><span class="toc-text">Optional voice: tes-tts with OmniVoice</span></a></li>
 <li><a href="#triggers-en" data-nav="triggers" data-label-en="Command triggers" data-label-es="Gatillos de comando" data-label-pt="Gatilhos de comando" data-href-en="#triggers-en" data-href-es="#triggers-es" data-href-pt="#triggers-pt"><span class="toc-num">02</span><span class="toc-text">Command triggers</span></a></li>
 <li><a href="#routes-en" data-nav="routes" data-label-en="Routes" data-label-es="Rutas" data-label-pt="Rotas" data-href-en="#routes-en" data-href-es="#routes-es" data-href-pt="#routes-pt"><span class="toc-num">03</span><span class="toc-text">Routes</span></a></li>
 <li><a href="#states-en" data-nav="states" data-label-en="Project states" data-label-es="Estados del proyecto" data-label-pt="Estados do projeto" data-href-en="#states-en" data-href-es="#states-es" data-href-pt="#states-pt"><span class="toc-num">04</span><span class="toc-text">Project states</span></a></li>
@@ -1275,6 +1276,29 @@
 <p>Useful options: <code>--target &lt;path&gt;</code> installs outside the current directory; <code>--agent codex|claude|cursor|all</code> chooses hooks; <code>--yes</code> skips the wizard; <code>--dry-run</code> prints planned writes; <code>--mode preserve</code> is the default.</p>
 <p><code>#v0.3.147</code> is the intended fixed-ref form; remote certification is deferred until <code>release:check</code> passes after an authorized tag or ref. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit.</p>
 <p>Older plugin/root-skill surfaces (<code>skills/**</code>, <code>.claude-plugin/**</code>, <code>.agents/plugins/**</code>, and <code>plugins/tilly-engineer-skills/**</code>) are cleaned only when TES-owned, generated, or empty. Ambiguous or secret-like content is preserved, backed up in <code>.tes/bk/**</code>, and returned as <code>NEEDS_REVIEW</code>.</p>
+          </div>
+        </section>
+
+        <section class="chapter" id="tts-en" data-section-key="tts">
+          <div class="chapter-head">
+            <span class="chapter-num">01A</span>
+            <h2>Optional voice: tes-tts with OmniVoice</h2>
+          </div>
+          <div class="chapter-body">
+            <p class="lede"><code>tes-tts</code> can read technical work aloud. When you want a stronger local cloned voice, install OmniVoice as an optional provider; TES keeps it outside the package and inside a local ignored runtime.</p>
+            <aside class="side-note"><p class="side-note-title">What is optional</p><p>TES installs without OmniVoice. OmniVoice is chosen by the user, installed in a local Python environment, and used only when <code>/tes-tts</code> or a read-aloud request explicitly asks for speech.</p></aside>
+<div class="pre-wrap" data-label="local runtime" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>.tes/runtime/tes-tts/omnivoice/</code></pre></div>
+<ol class="steps">
+<li>Create a fresh Python 3.11 virtual environment under <code>.tes/runtime/tes-tts/omnivoice/venv</code>.</li>
+<li>Install PyTorch for your hardware first, then install OmniVoice from PyPI or the upstream GitHub source.</li>
+<li>Normalize or place the reference WAV at <code>.tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav</code>.</li>
+<li>Create the <code>tes-tts-local-clone</code> voice profile metadata with the reference audio path and faithful reference transcript.</li>
+<li>Run <code>python3 scripts/tes_tts_omnivoice_provider.py status</code>, then <code>warm-cache</code>, then <code>warm-cache --dry-run</code> to verify the protected prompt cache exists.</li>
+<li>Use <code>speak</code> for short reads and <code>speak-long --combine --first-audio-buffered</code> for longer material that needs replayable WAV output.</li>
+</ol>
+<div class="table-wrap"><table><thead><tr><th>Surface</th><th>Policy</th></tr></thead><tbody><tr><td>Provider install</td><td>User-controlled; not part of normal TES install.</td></tr><tr><td>Runtime folder</td><td><code>.tes/runtime/**</code>; ignored by Git and safe for local cache.</td></tr><tr><td>Voice profile</td><td><code>tes-tts-local-clone</code> by default when configured.</td></tr><tr><td>Voice prompt cache</td><td>Protected local state; not a committed artifact.</td></tr><tr><td>Server route</td><td>Legacy lab compatibility, not the product path.</td></tr><tr><td>Generated audio</td><td>Local review evidence under ignored runtime folders unless the user chooses otherwise.</td></tr></tbody></table></div>
+<p>Detailed setup, commands, cache policy, and troubleshooting live in <a href="TES-TTS-OMNIVOICE.md">TES-TTS-OMNIVOICE.md</a>. Follow upstream OmniVoice documentation for hardware-specific PyTorch wheels and provider changes.</p>
+<p>Responsible use is part of the contract: clone only voices you own or are authorized to use. TES still redacts secrets before speech, treats commands and code as text, avoids proactive speech, and never summarizes user text unless asked.</p>
           </div>
         </section>
 
@@ -1462,6 +1486,29 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
         </section>
 
+        <section class="chapter" id="tts-es" data-section-key="tts">
+          <div class="chapter-head">
+            <span class="chapter-num">01A</span>
+            <h2>Voz opcional: tes-tts con OmniVoice</h2>
+          </div>
+          <div class="chapter-body">
+            <p class="lede"><code>tes-tts</code> puede leer trabajo tecnico en voz alta. Cuando necesitas una voz local clonada mas fuerte, instala OmniVoice como proveedor opcional; TES lo mantiene fuera del paquete y dentro de un runtime local ignorado.</p>
+            <aside class="side-note"><p class="side-note-title">Que es opcional</p><p>TES se instala sin OmniVoice. OmniVoice lo elige el usuario, se instala en un entorno Python local y se usa solo cuando <code>/tes-tts</code> o una solicitud de lectura pide voz explicitamente.</p></aside>
+<div class="pre-wrap" data-label="runtime local" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>.tes/runtime/tes-tts/omnivoice/</code></pre></div>
+<ol class="steps">
+<li>Crea un virtualenv Python 3.11 limpio en <code>.tes/runtime/tes-tts/omnivoice/venv</code>.</li>
+<li>Instala PyTorch para tu hardware primero, luego instala OmniVoice desde PyPI o desde el source GitHub upstream.</li>
+<li>Normaliza o coloca el WAV de referencia en <code>.tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav</code>.</li>
+<li>Crea la metadata del perfil <code>tes-tts-local-clone</code> con la ruta del audio de referencia y la transcripcion fiel.</li>
+<li>Ejecuta <code>python3 scripts/tes_tts_omnivoice_provider.py status</code>, luego <code>warm-cache</code>, y despues <code>warm-cache --dry-run</code> para verificar que el cache protegido existe.</li>
+<li>Usa <code>speak</code> para lecturas cortas y <code>speak-long --combine --first-audio-buffered</code> para material largo que necesita WAV reproducible.</li>
+</ol>
+<div class="table-wrap"><table><thead><tr><th>Superficie</th><th>Politica</th></tr></thead><tbody><tr><td>Instalacion del provider</td><td>Controlada por el usuario; no forma parte de la instalacion normal de TES.</td></tr><tr><td>Carpeta runtime</td><td><code>.tes/runtime/**</code>; ignorada por Git y segura para cache local.</td></tr><tr><td>Perfil de voz</td><td><code>tes-tts-local-clone</code> por defecto cuando esta configurado.</td></tr><tr><td>Voice prompt cache</td><td>Estado local protegido; no es artefacto commiteado.</td></tr><tr><td>Ruta servidor</td><td>Compatibilidad legacy de lab, no el camino de producto.</td></tr><tr><td>Audio generado</td><td>Evidencia local de revision bajo carpetas runtime ignoradas salvo decision del usuario.</td></tr></tbody></table></div>
+<p>El setup detallado, comandos, politica de cache y troubleshooting viven en <a href="TES-TTS-OMNIVOICE.md">TES-TTS-OMNIVOICE.md</a>. Sigue la documentacion upstream de OmniVoice para wheels PyTorch especificos de hardware y cambios del proveedor.</p>
+<p>El uso responsable es parte del contrato: clona solo voces propias o autorizadas. TES sigue redactando secretos antes de hablar, trata comandos y codigo como texto, evita habla proactiva y nunca resume texto del usuario salvo pedido explicito.</p>
+          </div>
+        </section>
+
         <section class="chapter" id="triggers-es" data-section-key="triggers">
           <div class="chapter-head">
             <span class="chapter-num">02</span>
@@ -1643,6 +1690,29 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 <p>Opcoes uteis: <code>--target &lt;path&gt;</code> instala fora do diretorio atual; <code>--agent codex|claude|cursor|all</code> escolhe hooks; <code>--yes</code> pula o wizard; <code>--dry-run</code> mostra escritas planejadas; <code>--mode preserve</code> e o default.</p>
 <p><code>#v0.3.147</code> e a forma de ref fixa prevista; a certificacao remota fica deferida ate <code>release:check</code> passar depois de uma tag ou ref autorizado. Bundles runtime sao preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretorio e cache local, nao conhecimento do projeto para commit.</p>
 <p>Superficies antigas de plugin/root skills (<code>skills/**</code>, <code>.claude-plugin/**</code>, <code>.agents/plugins/**</code> e <code>plugins/tilly-engineer-skills/**</code>) sao limpas somente quando sao TES-owned, geradas ou vazias. Conteudo ambiguo ou com sinal de segredo e preservado, salvo em <code>.tes/bk/**</code> e retorna <code>NEEDS_REVIEW</code>.</p>
+          </div>
+        </section>
+
+        <section class="chapter" id="tts-pt" data-section-key="tts">
+          <div class="chapter-head">
+            <span class="chapter-num">01A</span>
+            <h2>Voz opcional: tes-tts com OmniVoice</h2>
+          </div>
+          <div class="chapter-body">
+            <p class="lede"><code>tes-tts</code> pode ler trabalho tecnico em voz alta. Quando voce quiser uma voz local clonada mais forte, instale OmniVoice como provider opcional; o TES mantem isso fora do pacote e dentro de um runtime local ignorado.</p>
+            <aside class="side-note"><p class="side-note-title">O que e opcional</p><p>TES instala sem OmniVoice. OmniVoice e escolhido pelo usuario, instalado em um ambiente Python local e usado apenas quando <code>/tes-tts</code> ou um pedido de leitura pedir fala explicitamente.</p></aside>
+<div class="pre-wrap" data-label="runtime local" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>.tes/runtime/tes-tts/omnivoice/</code></pre></div>
+<ol class="steps">
+<li>Crie um virtualenv Python 3.11 limpo em <code>.tes/runtime/tes-tts/omnivoice/venv</code>.</li>
+<li>Instale PyTorch para seu hardware primeiro, depois instale OmniVoice pelo PyPI ou pelo source GitHub upstream.</li>
+<li>Normalize ou posicione o WAV de referencia em <code>.tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav</code>.</li>
+<li>Crie a metadata do perfil <code>tes-tts-local-clone</code> com o caminho do audio de referencia e a transcricao fiel.</li>
+<li>Rode <code>python3 scripts/tes_tts_omnivoice_provider.py status</code>, depois <code>warm-cache</code>, e depois <code>warm-cache --dry-run</code> para verificar que o cache protegido existe.</li>
+<li>Use <code>speak</code> para leituras curtas e <code>speak-long --combine --first-audio-buffered</code> para material longo que precisa de WAV reproduzivel.</li>
+</ol>
+<div class="table-wrap"><table><thead><tr><th>Superficie</th><th>Politica</th></tr></thead><tbody><tr><td>Instalacao do provider</td><td>Controlada pelo usuario; nao faz parte da instalacao normal do TES.</td></tr><tr><td>Pasta runtime</td><td><code>.tes/runtime/**</code>; ignorada pelo Git e segura para cache local.</td></tr><tr><td>Perfil de voz</td><td><code>tes-tts-local-clone</code> por default quando configurado.</td></tr><tr><td>Voice prompt cache</td><td>Estado local protegido; nao e artefato commitado.</td></tr><tr><td>Rota servidor</td><td>Compatibilidade legacy de lab, nao caminho de produto.</td></tr><tr><td>Audio gerado</td><td>Evidencia local de revisao em pastas runtime ignoradas salvo decisao do usuario.</td></tr></tbody></table></div>
+<p>Setup detalhado, comandos, politica de cache e troubleshooting vivem em <a href="TES-TTS-OMNIVOICE.md">TES-TTS-OMNIVOICE.md</a>. Siga a documentacao upstream do OmniVoice para wheels PyTorch especificos de hardware e mudancas do provider.</p>
+<p>Uso responsavel faz parte do contrato: clone apenas vozes suas ou autorizadas. TES continua redigindo segredos antes da fala, trata comandos e codigo como texto, evita fala proativa e nunca resume texto do usuario sem pedido explicito.</p>
           </div>
         </section>
 

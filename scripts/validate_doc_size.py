@@ -18,7 +18,7 @@ LIMITS = {
     "docs/roadmap/TES-TTS-SKILL-ROADMAP-HISTORY.md": 140,
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md": 1000,
     "docs/evals/EXAMPLES.md": 600,
-    "docs/install/USER-MANUAL.html": 2210,
+    "docs/install/USER-MANUAL.html": 2300,
     "docs/index.html": 2800,
 }
 WARN_RATIOS = {
