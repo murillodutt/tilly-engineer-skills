@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 LEXICAL_MANIFEST_PATH = ROOT / "benchmarks/tes-tts/ptbr-lexical-sample.jsonl"
 PRONUNCIATION_CATALOG_PATH = ROOT / "benchmarks/tes-tts/pronunciation-catalog-fixtures.json"
 RUNTIME_LATENCY_FIXTURE_PATH = ROOT / "benchmarks/tes-tts/runtime-latency-fixtures.json"
-VERSION = "0.3.147"
+VERSION = "0.3.148"
 REDACTION_TOKEN = "[REDACTED_SECRET]"
 
 

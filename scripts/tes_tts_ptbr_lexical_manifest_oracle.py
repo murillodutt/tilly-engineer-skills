@@ -14,7 +14,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "benchmarks/tes-tts/ptbr-lexical-manifest.schema.json"
 SAMPLE_PATH = ROOT / "benchmarks/tes-tts/ptbr-lexical-sample.jsonl"
-VERSION = "0.3.147"
+VERSION = "0.3.148"
 
 REQUIRED_FIELDS = {
     "id",

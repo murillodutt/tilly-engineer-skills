@@ -18,7 +18,7 @@ import tes_tts_runtime
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/chunked-preparation-fixtures.json"
-VERSION = "0.3.147"
+VERSION = "0.3.148"
 REPEAT_COUNT = 9
 FORBIDDEN_RUNTIME_SURFACES = ("ipa", "phoneme", "ssml", "pls", "provider_lexicon", "g2p")
 SENTENCE_BOUNDARY = re.compile(r"(?<=[.!?])\s+")

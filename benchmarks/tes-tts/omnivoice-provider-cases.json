@@ -1,5 +1,5 @@
 {
-  "version": "0.3.147",
+  "version": "0.3.148",
   "usage": "optional_omnivoice_provider_benchmark",
   "provider": "omnivoice",
   "runtime_dependency": "optional_external_python_env",

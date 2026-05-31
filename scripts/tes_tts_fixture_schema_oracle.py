@@ -13,7 +13,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "benchmarks/tes-tts/normalization-fixture.schema.json"
 CORPUS_PATH = ROOT / "benchmarks/tes-tts/normalization-fixtures.json"
-VERSION = "0.3.147"
+VERSION = "0.3.148"
 
 REQUIRED_FIELDS = {
     "id",

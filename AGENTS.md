@@ -60,6 +60,11 @@ use fixtures, oracles, and compact docs to protect that behavior. Boundaries and
 SPECs are valuable only when they constrain or certify executable behavior; they
 are not progress by themselves.
 
+Circular execution is useful when there is a real defect or a clear incremental
+delivery. When it starts creating the next prompt by habit, it becomes noise. If
+the next unit does not improve runtime, latency, audio quality, safety, or direct
+maintenance, it must not be created.
+
 For `tes-tts`, the durable path is a NeMo-inspired but dependency-free pipeline:
 classify text into an intermediate representation, verbalize it into
 request-local spoken text, and adapt it to the selected provider. JSON/JSONL

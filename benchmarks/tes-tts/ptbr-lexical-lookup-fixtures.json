@@ -1,5 +1,5 @@
 {
-  "version": "0.3.147",
+  "version": "0.3.148",
   "manifest": "benchmarks/tes-tts/ptbr-lexical-sample.jsonl",
   "cases": [
     {
