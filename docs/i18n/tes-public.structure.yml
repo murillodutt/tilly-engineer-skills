@@ -29,7 +29,7 @@
       "body_class": "public-index",
       "canonical": "https://murillodutt.github.io/tilly-engineer-skills/",
       "asset_prefix": "",
-      "nav": ["promise", "flow", "proof", "start", "manual", "docs"]
+      "nav": ["promise", "flow", "proof", "voice", "start", "manual", "docs"]
     },
     "manual": {
       "output": "docs/install/USER-MANUAL.html",

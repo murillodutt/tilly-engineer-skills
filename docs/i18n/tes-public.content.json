@@ -269,6 +269,47 @@
         ]
       }
     },
+    "voice": {
+      "en": {
+        "num": "03A",
+        "title": "Now the trail can speak back",
+        "lede": "`tes-tts` turns technical work into local, reviewable speech. With optional OmniVoice, TES can use a local cloned voice while keeping the provider outside the package and the runtime under ignored local state.",
+        "blocks": [
+          {"type": "cards", "items": [
+            {"title": "Voice stays optional", "body": "TES does not bundle OmniVoice or require cloud speech. Users opt in, install the provider locally, and keep reference audio, generated WAV files, model cache, and voice prompt cache outside Git."},
+            {"title": "Technical speech is prepared", "body": "TES prepares request-local spoken text before synthesis: secrets are redacted, code and commands remain text, paths become useful references, and mixed engineering terms stay protected."},
+            {"title": "Audio becomes evidence", "body": "Generated WAV files make long reads inspectable: pause, replay, compare, and diagnose whether a problem came from text preparation, chunking, playback, or provider pronunciation."}
+          ]},
+          {"type": "p", "text": "Use it when reading matters: design reviews, long audit notes, release closeouts, and technical prose that benefits from a human-quality local voice. Setup lives in [TES-TTS-OMNIVOICE.md](install/TES-TTS-OMNIVOICE.md) and the full user section lives in the [manual](install/USER-MANUAL.html#tts-en)."}
+        ]
+      },
+      "es": {
+        "num": "03A",
+        "title": "Ahora el rastro tambien puede hablar",
+        "lede": "`tes-tts` convierte trabajo tecnico en habla local y revisable. Con OmniVoice opcional, TES puede usar una voz clonada local mientras mantiene el provider fuera del paquete y el runtime en estado local ignorado.",
+        "blocks": [
+          {"type": "cards", "items": [
+            {"title": "La voz sigue opcional", "body": "TES no incluye OmniVoice ni exige voz cloud. El usuario decide, instala el provider localmente y mantiene audio de referencia, WAVs generados, cache de modelo y voice prompt cache fuera de Git."},
+            {"title": "El habla tecnica se prepara", "body": "TES prepara spoken text request-local antes de sintetizar: secretos se redactan, codigo y comandos siguen como texto, paths viran referencias utiles y terminos tecnicos mixtos quedan protegidos."},
+            {"title": "El audio vira evidencia", "body": "Los WAV generados vuelven las lecturas largas inspeccionables: pausar, repetir, comparar y diagnosticar si el problema vino de preparacion de texto, chunking, playback o pronunciacion del provider."}
+          ]},
+          {"type": "p", "text": "Usalo cuando la lectura importa: revisiones de diseno, notas largas de auditoria, cierres de release y prosa tecnica que mejora con una voz local de alta calidad. El setup vive en [TES-TTS-OMNIVOICE.md](install/TES-TTS-OMNIVOICE.md) y la seccion completa vive en el [manual](install/USER-MANUAL.html#tts-es)."}
+        ]
+      },
+      "pt": {
+        "num": "03A",
+        "title": "Agora a trilha tambem pode falar",
+        "lede": "`tes-tts` transforma trabalho tecnico em fala local e revisavel. Com OmniVoice opcional, o TES pode usar uma voz clonada local mantendo o provider fora do pacote e o runtime em estado local ignorado.",
+        "blocks": [
+          {"type": "cards", "items": [
+            {"title": "A voz continua opcional", "body": "TES nao embute OmniVoice nem exige fala cloud. O usuario opta, instala o provider localmente e mantem audio de referencia, WAVs gerados, cache de modelo e voice prompt cache fora do Git."},
+            {"title": "A fala tecnica e preparada", "body": "TES prepara spoken text request-local antes da sintese: segredos sao redigidos, codigo e comandos continuam texto, paths viram referencias uteis e termos tecnicos mistos ficam protegidos."},
+            {"title": "Audio vira evidencia", "body": "WAVs gerados tornam leituras longas inspecionaveis: pausar, repetir, comparar e diagnosticar se o problema veio da preparacao do texto, chunking, playback ou pronuncia do provider."}
+          ]},
+          {"type": "p", "text": "Use quando a leitura importa: reviews de design, notas longas de auditoria, fechamentos de release e prosa tecnica que melhora com uma voz local de alta qualidade. O setup vive em [TES-TTS-OMNIVOICE.md](install/TES-TTS-OMNIVOICE.md) e a secao completa vive no [manual](install/USER-MANUAL.html#tts-pt)."}
+        ]
+      }
+    },
     "start": {
       "en": {
         "num": "04",
