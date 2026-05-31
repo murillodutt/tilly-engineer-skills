@@ -38,6 +38,8 @@ durable conversion cache, or proactive `speak`.
 - Direct OmniVoice now lives under `.tes/runtime/tes-tts/omnivoice/**`; voice
   prompt cache and default outputs are protected local runtime state, never
   committed or shared artifacts.
+- Default voice preset `tes-tts-local-clone` now resolves the canonical
+  reference audio/text, and `warm-cache` prebuilds the voice prompt cache.
 - Python cleanup removed obsolete lab execution copies from tracked source:
   the active provider surface is direct/resident only, timing is attributable,
   and voice prompt cache permissions are protected.

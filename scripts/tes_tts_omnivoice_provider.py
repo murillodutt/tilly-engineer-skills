@@ -46,6 +46,8 @@ DEFAULT_MODEL = "k2-fsa/OmniVoice"
 DEFAULT_LANGUAGE = "pt"
 AUTO_LANGUAGE = "auto"
 DEFAULT_RUNTIME_DIR = ROOT / ".tes/runtime/tes-tts/omnivoice"
+DEFAULT_VOICE_PROFILE = "tes-tts-local-clone"
+DEFAULT_PROFILE_DIR = DEFAULT_RUNTIME_DIR / "profiles"
 DEFAULT_CACHE_DIR = DEFAULT_RUNTIME_DIR / "provider-cache"
 DEFAULT_LOCAL_PYTHON = DEFAULT_RUNTIME_DIR / "venv/bin/python"
 DEFAULT_LOCAL_REF_AUDIO = DEFAULT_RUNTIME_DIR / "refs/audio-modelo-clone-mono24k.wav"
@@ -172,15 +174,56 @@ def resolve_provider_python(explicit: str | None) -> tuple[str, str]:
     return sys.executable, "current_python"
 
 
-def resolve_ref_audio(explicit: str | None) -> tuple[Path | None, str]:
+def voice_profile_dir(profile_name: str) -> Path:
+    return DEFAULT_PROFILE_DIR / profile_name
+
+
+def load_voice_profile(profile_name: str | None) -> tuple[dict[str, Any] | None, str]:
+    if not profile_name or profile_name == "none":
+        return None, "none"
+    path = voice_profile_dir(profile_name) / "meta.json"
+    if not path.exists():
+        return None, "missing"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return data, str(path)
+
+
+def apply_voice_profile_defaults(args: argparse.Namespace) -> None:
+    profile_name = getattr(args, "voice_profile", None)
+    profile, profile_source = load_voice_profile(profile_name)
+    setattr(args, "_voice_profile_source", profile_source)
+    if not profile:
+        return
+    profile_root = voice_profile_dir(str(profile_name))
+    profile_ref_audio = profile.get("ref_audio")
+    if (
+        profile_ref_audio
+        and not getattr(args, "ref_audio", None)
+        and not os.environ.get(ENV_REF_AUDIO)
+    ):
+        ref_audio = Path(str(profile_ref_audio))
+        if not ref_audio.is_absolute():
+            ref_audio = (profile_root / ref_audio).resolve()
+        args.ref_audio = str(ref_audio)
+        setattr(args, "_ref_audio_source", f"voice_profile:{profile_name}")
+    if profile.get("ref_text") and not getattr(args, "ref_text", None):
+        args.ref_text = str(profile["ref_text"])
+        setattr(args, "_ref_text_source", f"voice_profile:{profile_name}")
+
+
+def resolve_ref_audio(explicit: str | None, explicit_source: str | None = None) -> tuple[Path | None, str]:
     if explicit:
-        return Path(explicit), "arg"
+        return Path(explicit), explicit_source or "arg"
     env_value = os.environ.get(ENV_REF_AUDIO)
     if env_value:
         return Path(env_value), "env"
     if DEFAULT_LOCAL_REF_AUDIO.exists():
         return DEFAULT_LOCAL_REF_AUDIO, "local_auto"
     return None, "missing"
+
+
+def resolve_runtime_ref_audio(args: argparse.Namespace) -> tuple[Path | None, str]:
+    return resolve_ref_audio(getattr(args, "ref_audio", None), getattr(args, "_ref_audio_source", None))
 
 
 def default_output_path(output: str | None) -> Path:
@@ -220,7 +263,7 @@ def default_runtime_log_path(log_path: str | None, session_id: str) -> Path:
 
 def command_status(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
-    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    ref_audio, ref_source = resolve_runtime_ref_audio(args)
     evidence = run_python_probe(provider_python)
     provider_available = (
         evidence.get("omnivoice_importable") is True
@@ -1018,7 +1061,7 @@ def render_product_status_text(payload: dict[str, Any]) -> str:
 
 def command_product_status(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
-    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    ref_audio, ref_source = resolve_runtime_ref_audio(args)
     evidence = run_python_probe(provider_python)
     provider_available = (
         evidence.get("omnivoice_importable") is True
@@ -1263,7 +1306,7 @@ def command_package_review(args: argparse.Namespace) -> int:
 
 def command_warm_cache(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
-    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    ref_audio, ref_source = resolve_runtime_ref_audio(args)
     if not ref_audio or not ref_audio.exists():
         emit(
             {
@@ -1354,7 +1397,7 @@ def command_warm_cache(args: argparse.Namespace) -> int:
 
 def command_session(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
-    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    ref_audio, ref_source = resolve_runtime_ref_audio(args)
     output_dir = default_session_dir(args.output_dir)
     if not ref_audio or not ref_audio.exists():
         emit(
@@ -1421,7 +1464,7 @@ def command_session(args: argparse.Namespace) -> int:
 
 def command_speak_long(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
-    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    ref_audio, ref_source = resolve_runtime_ref_audio(args)
     output_dir = default_long_read_dir(args.output_dir)
     args.first_audio_buffer_chunks = max(1, args.first_audio_buffer_chunks)
     args.first_audio_chars = max(80, args.first_audio_chars)
@@ -1819,7 +1862,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
 
 def command_live_smoke(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
-    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    ref_audio, ref_source = resolve_runtime_ref_audio(args)
     cases_path = Path(args.cases)
     output_dir = default_session_dir(args.output_dir)
     result_json = output_dir / "result.json"
@@ -2118,7 +2161,7 @@ def run_short_speak_in_process(
 
 def command_speak(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
-    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    ref_audio, ref_source = resolve_runtime_ref_audio(args)
     output = default_output_path(args.output)
     if not ref_audio or not ref_audio.exists():
         emit(
@@ -2238,7 +2281,7 @@ def command_speak(args: argparse.Namespace) -> int:
 
 def command_bench(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
-    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    ref_audio, ref_source = resolve_runtime_ref_audio(args)
     cases = Path(args.cases)
     output_dir = default_benchmark_dir(args.output_dir)
     if not ref_audio or not ref_audio.exists():
@@ -2437,7 +2480,7 @@ def command_bench(args: argparse.Namespace) -> int:
 
 def command_profile_review(args: argparse.Namespace) -> int:
     provider_python, python_source = resolve_provider_python(args.python)
-    ref_audio, ref_source = resolve_ref_audio(args.ref_audio)
+    ref_audio, ref_source = resolve_runtime_ref_audio(args)
     cases = Path(args.cases)
     output_dir = default_benchmark_dir(args.output_dir)
     profiles = [args.profile_a, args.profile_b]
@@ -3089,6 +3132,7 @@ def add_runtime_args(parser: argparse.ArgumentParser, *, ref_audio_required: boo
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--language", default=DEFAULT_LANGUAGE)
     parser.add_argument("--locale", default="pt-BR")
+    parser.add_argument("--voice-profile", default=DEFAULT_VOICE_PROFILE)
     parser.add_argument("--ref-audio", required=ref_audio_required)
     parser.add_argument("--ref-text")
     parser.add_argument("--cache-dir", default=str(DEFAULT_CACHE_DIR))
@@ -3125,6 +3169,7 @@ def build_parser() -> argparse.ArgumentParser:
     status = subparsers.add_parser("status")
     status.add_argument("--python")
     status.add_argument("--ref-audio")
+    status.add_argument("--voice-profile", default=DEFAULT_VOICE_PROFILE)
     status.set_defaults(func=command_status)
 
     warm_cache = subparsers.add_parser("warm-cache")
@@ -3139,22 +3184,22 @@ def build_parser() -> argparse.ArgumentParser:
     normalize.set_defaults(func=lambda args: normalize_ref_audio(Path(args.input), Path(args.output)) or 0)
 
     prepare_prompt = subparsers.add_parser("prepare-prompt")
-    add_runtime_args(prepare_prompt)
+    add_runtime_args(prepare_prompt, ref_audio_required=False)
     prepare_prompt.set_defaults(func=command_prepare_prompt)
 
     serve = subparsers.add_parser("serve")
-    add_runtime_args(serve)
+    add_runtime_args(serve, ref_audio_required=False)
     serve.add_argument("--output-dir", required=True)
     serve.set_defaults(func=command_serve)
 
     synthesize = subparsers.add_parser("synthesize")
-    add_runtime_args(synthesize)
+    add_runtime_args(synthesize, ref_audio_required=False)
     synthesize.add_argument("--text", required=True)
     synthesize.add_argument("--output", required=True)
     synthesize.set_defaults(func=command_synthesize)
 
     batch = subparsers.add_parser("batch")
-    add_runtime_args(batch)
+    add_runtime_args(batch, ref_audio_required=False)
     batch.add_argument("--cases", required=True)
     batch.add_argument("--output-dir", required=True)
     batch.set_defaults(func=command_batch)
@@ -3260,6 +3305,7 @@ def build_parser() -> argparse.ArgumentParser:
     product_status = subparsers.add_parser("product-status")
     product_status.add_argument("--python")
     product_status.add_argument("--ref-audio")
+    product_status.add_argument("--voice-profile", default=DEFAULT_VOICE_PROFILE)
     product_status.add_argument("--path")
     product_status.add_argument("--benchmark-dir")
     product_status.add_argument("--format", choices=["json", "text"], default="json")
@@ -3288,6 +3334,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
+    if hasattr(args, "voice_profile"):
+        apply_voice_profile_defaults(args)
     try:
         return args.func(args)
     except Exception as exc:

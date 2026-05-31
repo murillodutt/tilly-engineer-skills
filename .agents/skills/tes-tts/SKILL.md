@@ -42,11 +42,21 @@ profiles, provider cache, and default audio outputs stay under
 
 ## Voice Prompt Cache
 
+The default local voice preset is `tes-tts-local-clone`. It resolves the
+canonical reference WAV and reference text before provider startup, so
+`warm-cache` can prepare the cloned-voice prompt before the first real read.
+
 Direct OmniVoice may reuse a local cloned-voice prompt cache under
 `.tes/runtime/tes-tts/omnivoice/provider-cache/voice-prompts/*.pt`. Treat this cache as
 sensitive local runtime state: keep the directory `0700`, cache files `0600`,
 never commit it, and refresh it only when the reference WAV, reference text, or
 model changes. This voice prompt cache is not a durable text conversion cache.
+
+To reduce first-read delay after cache cleanup, run:
+
+```bash
+python3 scripts/tes_tts_omnivoice_provider.py warm-cache
+```
 
 ## Validated Long-Read Recipe
 
