@@ -38,6 +38,7 @@ every prompt when a range is enough.
 | `scripts/tes_tts_provider_probe_oracle.py` | Request-local provider probe and fallback oracle. | active |
 | `scripts/tes_tts_provider_candidate_review_oracle.py` | Candidate review queue oracle. | active |
 | `scripts/tes_tts_omnivoice_provider.py` | Optional OmniVoice direct/resident status, warm-cache, session, live-smoke review packages, auto latency-profile selection, product-status cockpit, candidate replay/open cockpit, speak, bench, review, decide-review, package-review, probe, synthesize, normalize-ref, and batch facade. | active |
+| `scripts/tes_tts_omnivoice_runtime_support.py` | Direct/resident runtime helpers for playback, WAV combine, JSONL process control, chunk planning, and monitoring. | active |
 | `scripts/tes_tts_omnivoice_provider_oracle.py` | Optional OmniVoice provider safety oracle. | active |
 | `scripts/tes_tts_roadmap_partition_oracle.py` | Dashboard, registry, and history partition oracle. | active |
 
@@ -67,7 +68,8 @@ every prompt when a range is enough.
 | `docs/roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` | ADR 0004 owner acceptance record. | active |
 | `docs/roadmap/TES-TTS-RTE-006-RUNTIME-AUDIT-AND-CLOSURE.md` | Runtime-first closure audit. | active |
 | `docs/roadmap/TES-TTS-RUNTIME-PYTHON-OPTIMIZATION-AUDIT.md` | Provider hot-path optimization audit and target map. | active |
-| `docs/roadmap/GOAL-PROMPT-tes-tts-RTO-001-provider-hot-path-split.md` | Next circular execution prompt for provider hot-path split. | active |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-RTO-001-provider-hot-path-split.md` | Executed circular prompt for provider hot-path split. | historical |
+| `docs/roadmap/GOAL-PROMPT-tes-tts-RTO-002-provider-oracle-partition.md` | Next circular execution prompt for provider oracle partition. | active |
 | `docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | Release identity decision record. | active |
 
 ## Historical Ranges
