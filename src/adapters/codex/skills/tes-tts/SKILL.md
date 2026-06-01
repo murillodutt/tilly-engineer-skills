@@ -21,16 +21,17 @@ Use this path inside the TES package repository when the helper scripts exist:
    - `conversational` for agent-authored prose or natural narration.
    - `faithful_reading` for user text, exact reads, code, commands, or literal
      requests.
-3. Prepare request-local speech text:
-   `python3 scripts/tes_tts_runtime.py --text "<text>" --locale pt-BR`
-   and send only the returned `spoken_text` to TTS.
-4. If direct OmniVoice is configured, speak with:
-   `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<spoken_text>" --output <wav>`
-5. For long text, use direct resident chunking:
-   `python3 scripts/tes_tts_omnivoice_provider.py speak-long --text "<spoken_text>" --output-dir <tmp-dir> --combine`
+3. If direct OmniVoice is configured, pass the source text to the provider
+   once; do not pre-run `scripts/tes_tts_runtime.py` or pass generic
+   `spoken_text` into `redacted_source` or `audio_quality`.
+4. For short direct OmniVoice reads:
+   `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<source text>" --output <wav> --text-mode redacted_source`
+5. For long direct OmniVoice reads, use direct resident chunking:
+   `python3 scripts/tes_tts_omnivoice_provider.py speak-long --text "<source text>" --output-dir <tmp-dir> --combine --text-mode redacted_source`
 6. Use the canonical clone reference through the global direct provider defaults;
    do not upload or recreate the reference voice for normal reads.
-7. If OmniVoice is unavailable, use the request-local provider fallback in
+7. If OmniVoice is unavailable, prepare `spoken_text` with
+   `scripts/tes_tts_runtime.py` only for the fallback provider in
    `references/providers-and-fallbacks.md`. For macOS `say` fallback, use
    `Felipe (Enhanced)` at rate `255` only when accepted.
 8. Confirm briefly after playback or report `TTS_NOT_AVAILABLE`.
@@ -68,11 +69,12 @@ terms when quality matters more than minimum latency:
 
 ```bash
 python3 scripts/tes_tts_omnivoice_provider.py speak-long \
-  --text "<prepared text>" \
+  --text "<source text>" \
   --output-dir "$HOME/.tes/runtime/tes-tts/omnivoice/provider-cache/audio-reference-runs/<run-id>" \
   --latency-profile quality \
   --language en \
   --text-mode redacted_source \
+  --prosody-warmup confirmation-en \
   --chunk-chars 420 \
   --combine \
   --inter-chunk-silence-ms 450 \
@@ -81,11 +83,24 @@ python3 scripts/tes_tts_omnivoice_provider.py speak-long \
 
 The current human-rated baseline is 9.2/10 for `combined.wav` review output
 with direct resident OmniVoice, provider language `en`, `quality`/`num_step=32`,
-source redaction, safe sentence chunking, and controlled punctuation. Preserve
-this shape unless a newer human-rated reference supersedes it. Prepare the text
-with natural Portuguese narration, keep fragile paths and URLs as useful
-references, redact secrets before speech, and group difficult English technical
-terms in a short English phrase when that improves pronunciation.
+source redaction, controlled warmup, safe sentence chunking, and controlled
+punctuation. Preserve this shape unless a newer human-rated reference
+supersedes it. Prepare the text with natural Portuguese narration, keep fragile
+paths and URLs as useful references, redact secrets before speech, and group
+difficult English technical terms in a short English phrase when that improves
+pronunciation.
+
+Two quality step models are valid:
+
+- `quality` with `num_step=32` is the maximum-quality review reference.
+- `quality` with explicit `--num-step 28` is the streamer/latency candidate;
+  maintainer review found 28 acceptable and 26 already distortion-prone.
+
+`redacted_source` and `audio_quality` are source-text modes. They must receive
+the original text the user wants spoken and let the direct kernel derive
+request-local provider text. Passing output from `scripts/tes_tts_runtime.py`
+into these modes is a regression because it removes raw technical identities
+and weakens enumeration pauses.
 
 For punctuation-sensitive reads, avoid sending `:` to OmniVoice when it creates
 audible artifacts; convert it to a safe spoken pause such as `;` in the
@@ -98,18 +113,20 @@ When start latency matters for long reads, keep the same quality recipe and add
 This starts playback after a small buffered head while preserving `combined.wav`
 for repeated listening and comparison.
 
-For explicit conversational OmniVoice experiments, add one controlled warmup
-tag with `--prosody-warmup confirmation-en`, `question-en`, or `sigh`.
-Default is `none`. Warmup tags are provider-only text and must not be used for
-faithful, exact, raw, literal, quoted user text, code, or command reads unless
-the user explicitly requested a tag experiment.
+For conversational OmniVoice quality reads, use
+`--prosody-warmup confirmation-en` with provider language `en`. `question-en`
+and `sigh` remain first-tier A/B alternatives. Warmup tags are provider-only
+text and must not be used for faithful, exact, raw, literal, quoted user text,
+code, or command reads unless the user explicitly requested a tag experiment.
 
 ## Speech Invariants
 
 - Do not summarize unless the user asked for a summary.
-- Keep source text immutable; only `spoken_text` is sent to TTS.
-- Let `scripts/tes_tts_runtime.py` own rendering, exact islands, protected
-  terms, paths, URLs, tables, lists, and mixed-language preparation.
+- Keep source text immutable; only request-local provider text is sent to TTS.
+- Let the direct OmniVoice kernel own redaction, enumeration pauses, and
+  provider text for `redacted_source` and `audio_quality`.
+- Let `scripts/tes_tts_runtime.py` own generic `spoken_text` only for fallback
+  providers or explicit non-OmniVoice preparation.
 - Redact secrets before TTS. Redaction overrides exact, literal, raw, and
   verbatim requests.
 - Speak code and commands as text; never execute spoken content.

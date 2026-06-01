@@ -29,6 +29,8 @@ durable conversion cache, or proactive `speak`.
 - Source text is immutable; speech is request-local; secrets are redacted.
 - PT-BR is platform narration; English/technical identity is preserved.
 - OmniVoice is optional local capability, not bundled dependency.
+- Direct OmniVoice `redacted_source`/`audio_quality` modes consume source text
+  once; generic `spoken_text` is fallback or explicit non-OmniVoice prep only.
 - OmniVoice light provider tags may be used only as controlled prosody warmup
   for conversational narration after audio evidence; faithful reads stay
   tag-free by default.
@@ -56,11 +58,18 @@ durable conversion cache, or proactive `speak`.
 - OPW-001 exposed `--prosody-warmup none|confirmation-en|question-en|sigh`
   on the direct provider path and generated comparison WAVs at
   `~/.tes/runtime/tes-tts/omnivoice/provider-cache/audio-reference-runs/opw-001-prosody-warmup-20260531-210442/`.
+- A regression review found that pre-running `tes_tts_runtime.py` before
+  OmniVoice long reads weakened technical identity and pauses; provider oracles
+  now guard source-text quality modes and compact enumeration pauses.
+- Quality has two governed step models: `num_step=32` for maximum-quality
+  review reference and explicit `--num-step 28` for streamer latency tests; 26
+  is not accepted because human review found audible distortion.
 
 ## Next Cut
-Human review should choose whether any OPW-001 warmup becomes a recommended
-conversational recipe. Default posture remains no warmup, tag-free faithful
-reading, and sync status `REMOTE_SYNC_NOT_REQUESTED`.
+Focus the next direct/resident streamer cut on perceived latency without
+breaking source-text quality modes, enumeration pauses, controlled warmup, or
+`combined.wav` review authority. Sync status remains
+`REMOTE_SYNC_NOT_REQUESTED`.
 
 ## Maintenance Rules
 - Hard limit: 100 lines. Review zone starts at 75 lines.

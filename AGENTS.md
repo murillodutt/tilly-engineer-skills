@@ -120,6 +120,12 @@ redaction, exact islands, source immutability, no-summary behavior, playback
 path, and combined-WAV review authority. Any change to those surfaces needs a
 same-input comparison. If a regression appears, stop, revert, or gate the new
 path behind explicit opt-in instead of stacking special cases.
+For direct OmniVoice `redacted_source` and `audio_quality`, pass source text
+once and let the direct kernel prepare request-local provider text; do not
+pre-run `tes_tts_runtime.py` or feed generic `spoken_text` into those modes.
+Protect both quality step models: `num_step=32` is the maximum-quality review
+reference, while explicit `--num-step 28` is the streamer/latency candidate;
+do not collapse them into one rule or promote 26 after distortion evidence.
 
 Avoid narrow literal lists in runtime code unless they are governed data,
 schema, or contract backed. Example-specific fixes are regression seeds.

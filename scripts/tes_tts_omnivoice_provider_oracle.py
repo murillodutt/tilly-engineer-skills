@@ -1632,20 +1632,22 @@ def validate_prosody_warmup_contract() -> list[str]:
     if str(default_raw.get("text", "")).startswith("["):
         failures.append("raw provider text unexpectedly starts with a provider tag")
 
-    warmed = kernel_module.provider_text(
-        "Leia provider, Docker e Kubernetes como narração.",
-        "pt-BR",
-        "redacted_source",
-        "confirmation-en",
-    )
-    if warmed.get("prosody_warmup") != "confirmation-en":
-        failures.append("prosody warmup must preserve the selected tag id")
-    if warmed.get("prosody_warmup_tag") != "[confirmation-en]":
-        failures.append("prosody warmup must expose the whitelisted provider tag")
-    if warmed.get("provider_tag_inserted") is not True:
-        failures.append("prosody warmup must report inserted provider tag")
-    if not str(warmed.get("text", "")).startswith("[confirmation-en] "):
-        failures.append("prosody warmup must prepend the provider tag to request-local text")
+    for warmup in ("confirmation-en", "question-en", "sigh"):
+        warmed = kernel_module.provider_text(
+            "Leia provider, Docker e Kubernetes como narração.",
+            "pt-BR",
+            "redacted_source",
+            warmup,
+        )
+        expected_tag = f"[{warmup}]"
+        if warmed.get("prosody_warmup") != warmup:
+            failures.append(f"prosody warmup must preserve selected tag id {warmup!r}")
+        if warmed.get("prosody_warmup_tag") != expected_tag:
+            failures.append(f"prosody warmup must expose whitelisted provider tag {expected_tag!r}")
+        if warmed.get("provider_tag_inserted") is not True:
+            failures.append(f"prosody warmup must report inserted provider tag for {warmup!r}")
+        if not str(warmed.get("text", "")).startswith(f"{expected_tag} "):
+            failures.append(f"prosody warmup must prepend provider tag {expected_tag!r}")
 
     secret = kernel_module.provider_text(
         "Nunca leia API_KEY=abc123SECRET em voz alta.",
@@ -1663,6 +1665,110 @@ def validate_prosody_warmup_contract() -> list[str]:
     else:
         failures.append("prosody warmup must reject non-whitelisted tags")
 
+    return failures
+
+
+def validate_human_rated_quality_recipe_contract() -> list[str]:
+    failures: list[str] = []
+    kernel_module = load_direct_kernel_module()
+    source = (
+        "Codex, Claude e Cursor conseguem atuar. "
+        "Agora preservar termos como API, SDK, CLI, MCP, JSON, YAML, HTTP, "
+        "Node.js, TypeScript, Python, OpenAI, Docker e Kubernetes."
+    )
+
+    redacted = kernel_module.provider_text(source, "pt-BR", "redacted_source", "confirmation-en")
+    redacted_text = str(redacted.get("text", ""))
+    if redacted.get("input_surface") != "source_text":
+        failures.append("redacted_source provider mode must declare source_text input surface")
+    if redacted.get("prosody_warmup") != "confirmation-en":
+        failures.append("human-rated quality recipe must use confirmation-en warmup by default")
+    if not redacted_text.startswith("[confirmation-en] "):
+        failures.append("human-rated quality recipe must prepend the winning warmup tag")
+    spoken = kernel_module.provider_text(source, "pt-BR", "spoken_text")
+    if redacted_text == str(spoken.get("text", "")):
+        failures.append("human-rated quality recipe must not collapse into generic spoken_text")
+
+    def run_quality_dry_run(root: Path, num_step: int | None = None) -> dict[str, Any]:
+        command = [
+            sys.executable,
+            str(PROVIDER_SCRIPT),
+            "speak-long",
+            "--text",
+            source,
+            "--output-dir",
+            str(root / f"out-{num_step or 32}"),
+            "--monitor-log",
+            str(root / f"monitor-{num_step or 32}.jsonl"),
+            "--text-mode",
+            "redacted_source",
+            "--language",
+            "en",
+            "--prosody-warmup",
+            "confirmation-en",
+            "--latency-profile",
+            "quality",
+            "--chunk-chars",
+            "420",
+            "--inter-chunk-silence-ms",
+            "450",
+            "--combine",
+            "--dry-run",
+        ]
+        if num_step is not None:
+            command.extend(["--num-step", str(num_step)])
+        completed = subprocess.run(
+            command,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=env,
+            check=False,
+        )
+        if completed.returncode != 0:
+            raise RuntimeError(completed.stderr.strip())
+        return json.loads(completed.stdout)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+        ref = root / "ref.wav"
+        ref.write_bytes(b"not-real-audio-for-dry-run")
+        env = os.environ.copy()
+        env["TES_TTS_OMNIVOICE_PYTHON"] = sys.executable
+        env["TES_TTS_OMNIVOICE_REF_AUDIO"] = str(ref)
+        try:
+            quality_32 = run_quality_dry_run(root)
+            quality_28 = run_quality_dry_run(root, 28)
+        except RuntimeError as exc:
+            failures.append(f"human-rated quality dry-run failed: {exc}")
+            return failures
+
+    payload = quality_32
+    if quality_32.get("num_step") != 32:
+        failures.append("human-rated quality reference recipe must keep num_step=32")
+    if quality_28.get("num_step") != 28:
+        failures.append("human-rated quality streamer candidate must keep num_step=28")
+    if quality_28.get("latency_profile") != "quality":
+        failures.append("num_step=28 remains a quality-profile override, not a lower-quality profile")
+    if quality_28.get("language_mode") != "en" or quality_28.get("prosody_warmup") != "confirmation-en":
+        failures.append("num_step=28 candidate must preserve language en and confirmation-en warmup")
+    if quality_28.get("max_chunk_chars") != 420 or quality_28.get("inter_chunk_silence_ms") != 450:
+        failures.append("num_step=28 candidate must preserve chunk size 420 and silence 450 ms")
+    if quality_28.get("combine_requested") is not True:
+        failures.append("num_step=28 candidate must preserve combined WAV review authority")
+
+    if payload.get("language_mode") != "en" or payload.get("chunk_languages") != ["en"]:
+        failures.append("human-rated quality recipe must synthesize with provider language en")
+    if payload.get("prosody_warmup") != "confirmation-en":
+        failures.append("human-rated quality dry-run must preserve confirmation-en warmup")
+    if payload.get("prosody_warmup_scope") != "first_chunk_only":
+        failures.append("human-rated quality dry-run must scope warmup to the first chunk")
+    if payload.get("latency_profile") != "quality":
+        failures.append("human-rated quality recipe must keep quality latency profile")
+    if payload.get("max_chunk_chars") != 420 or payload.get("inter_chunk_silence_ms") != 450:
+        failures.append("human-rated quality recipe must keep chunk size 420 and silence 450 ms")
+    if payload.get("combine_requested") is not True:
+        failures.append("human-rated quality recipe must preserve combined WAV review authority")
     return failures
 
 
@@ -2512,6 +2618,7 @@ def main() -> int:
     active_failures.extend(validate_live_smoke_dry_run_command())
     active_failures.extend(validate_direct_kernel_timing_contract())
     active_failures.extend(validate_prosody_warmup_contract())
+    active_failures.extend(validate_human_rated_quality_recipe_contract())
     active_failures.extend(validate_sentence_aware_chunking_contract())
     active_failures.extend(validate_jsonl_emitter())
     active_failures.extend(validate_short_speak_in_process_boundary())

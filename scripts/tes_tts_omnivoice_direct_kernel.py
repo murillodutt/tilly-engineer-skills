@@ -39,14 +39,14 @@ def provider_text(source_text: str, locale: str, mode: str, prosody_warmup: str 
         warmup = apply_omnivoice_prosody_warmup(text_info["text"], prosody_warmup)
         text_info.update(warmup)
         return text_info
-    prepared = prepare_spoken_text(source_text, locale)
-    if mode == "spoken_text":
-        text = prepared["spoken_text"]
-    elif mode == "redacted_source":
+    if mode == "redacted_source":
         text_info = prepare_redacted_provider_text(source_text, locale)
         warmup = apply_omnivoice_prosody_warmup(text_info["text"], prosody_warmup)
         text_info.update(warmup)
         return text_info
+    prepared = prepare_spoken_text(source_text, locale)
+    if mode == "spoken_text":
+        text = prepared["spoken_text"]
     else:
         text = source_text
     warmup = apply_omnivoice_prosody_warmup(text, prosody_warmup)
@@ -54,6 +54,8 @@ def provider_text(source_text: str, locale: str, mode: str, prosody_warmup: str 
         "text": warmup["text"],
         "prepared": prepared,
         "mode": mode,
+        "input_surface": "source_text",
+        "provider_text_surface": mode,
         "prosody_warmup": warmup["prosody_warmup"],
         "prosody_warmup_tag": warmup["prosody_warmup_tag"],
         "provider_tag_inserted": warmup["provider_tag_inserted"],

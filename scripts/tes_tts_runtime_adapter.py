@@ -14,6 +14,12 @@ ENUMERATION_ITEM_RE = re.compile(r"^[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9_.+-]*(?:\s+[
 ENUMERATION_CONNECTOR_RE = re.compile(r"^(?:e|ou|and|or)\s+", flags=re.IGNORECASE)
 ENUMERATION_STOPWORDS = {"a", "as", "com", "de", "do", "dos", "e", "é", "o", "os", "ou", "sem"}
 ASCII_WORD_RE = re.compile(r"^[a-z]{3,}$")
+FINAL_CONNECTOR_ENUM_RE = re.compile(
+    r"^(?P<left>[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9_.+-]*(?:\s+[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9_.+-]*)?)"
+    r"\s+(?:e|ou|and|or)\s+"
+    r"(?P<right>[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9_.+-]*(?:\s+[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9_.+-]*)?)",
+    flags=re.IGNORECASE,
+)
 OMNIVOICE_PROSODY_WARMUP_TAGS = {
     "none": None,
     "confirmation-en": "[confirmation-en]",
@@ -59,12 +65,20 @@ def _right_enumeration_item(value: str) -> str:
     return head
 
 
+def _has_final_connector_item(value: str) -> bool:
+    head = re.split(r",|[;:!?]", value, maxsplit=1)[0].strip()
+    match = FINAL_CONNECTOR_ENUM_RE.search(head)
+    if not match:
+        return False
+    return _is_short_enumeration_item(match.group("left")) and _is_short_enumeration_item(match.group("right"))
+
+
 def add_enumeration_pauses(text: str) -> str:
     """Make compact comma-separated enumerations audible for local TTS providers."""
 
     parts = re.split(r"(,\s+)", text)
-    if len(parts) < 5:
-        return text
+    if len(parts) < 3:
+        return add_final_connector_pauses(text)
 
     output: list[str] = []
     for index, part in enumerate(parts):
@@ -75,12 +89,39 @@ def add_enumeration_pauses(text: str) -> str:
         right = _right_enumeration_item(parts[index + 1] if index + 1 < len(parts) else "")
         previous_left = _left_enumeration_item(parts[index - 3]) if index >= 3 and parts[index - 2].startswith(",") else ""
         next_right = _right_enumeration_item(parts[index + 3]) if index + 3 < len(parts) and parts[index + 2].startswith(",") else ""
-        in_three_item_run = _is_short_enumeration_item(previous_left) or _is_short_enumeration_item(next_right)
+        in_three_item_run = (
+            _is_short_enumeration_item(previous_left)
+            or _is_short_enumeration_item(next_right)
+            or _has_final_connector_item(parts[index + 1] if index + 1 < len(parts) else "")
+        )
         if _is_short_enumeration_item(left) and _is_short_enumeration_item(right) and in_three_item_run:
             output.append("; ")
         else:
             output.append(part)
-    return "".join(output)
+    return add_final_connector_pauses("".join(output))
+
+
+def add_final_connector_pauses(text: str) -> str:
+    """Add a final audible pause in compact enumerations like `A; B e C`."""
+
+    pattern = re.compile(
+        r"(?P<left>[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9_.+-]*(?:\s+[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9_.+-]*)?)"
+        r"\s+(?P<connector>e|ou|and|or)\s+"
+        r"(?P<right>[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9_.+-]*(?:\s+[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9_.+-]*)?)",
+        flags=re.IGNORECASE,
+    )
+
+    def replace(match: re.Match[str]) -> str:
+        left = match.group("left")
+        right = match.group("right")
+        if not (_is_short_enumeration_item(left) and _is_short_enumeration_item(right)):
+            return match.group(0)
+        clause_prefix = re.split(r"[.!?]\s+", text[: match.start()])[-1]
+        if ";" not in clause_prefix:
+            return match.group(0)
+        return f"{left}; {match.group('connector')} {right}"
+
+    return pattern.sub(replace, text)
 
 
 def apply_omnivoice_prosody_warmup(text: str, warmup: str = "none") -> dict[str, Any]:
@@ -116,6 +157,8 @@ def prepare_redacted_provider_text(source_text: str, locale: str = "pt-BR") -> d
         "text": text,
         "prepared": prepared,
         "mode": "redacted_source",
+        "input_surface": "source_text",
+        "provider_text_surface": "redacted_source",
         "strategy": "redacted_source_with_audible_enumeration_pauses",
     }
 
@@ -136,6 +179,8 @@ def prepare_audio_quality_text(source_text: str, locale: str = "pt-BR") -> dict[
         "text": text,
         "prepared": prepared,
         "mode": "audio_quality",
+        "input_surface": "source_text",
+        "provider_text_surface": "redacted_source",
         "strategy": "minimal_functional_term_oralization",
     }
 
