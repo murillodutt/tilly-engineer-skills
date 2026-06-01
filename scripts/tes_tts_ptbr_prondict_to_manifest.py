@@ -12,7 +12,7 @@ import unicodedata
 from typing import TextIO
 
 
-VERSION = "0.3.151"
+VERSION = "0.3.152"
 DEFAULT_LANGUAGE = "pt-BR"
 DEFAULT_SOURCE = "pt_br_prondict"
 DEFAULT_LICENSE_NOTE = "public dictionary reference; provenance retained"

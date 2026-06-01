@@ -23,7 +23,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.151"
+VERSION = "0.3.152"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -81,6 +81,21 @@ HELPER_FILES = (
     "command_trigger_oracle.py",
     "tes_bundle.py",
     "materialize_adapter.py",
+    "tes_tts_runtime.py",
+    "tes_tts_runtime_adapter.py",
+    "tes_tts_runtime_classifier.py",
+    "tes_tts_runtime_types.py",
+    "tes_tts_runtime_verbalizer.py",
+    "tes_tts_omnivoice_direct_kernel.py",
+    "tes_tts_omnivoice_provider.py",
+    "tes_tts_omnivoice_runtime_support.py",
+)
+TTS_RUNTIME_DATA_FILES = (
+    "ptbr-lexical-sample.jsonl",
+    "pronunciation-catalog-fixtures.json",
+    "runtime-latency-fixtures.json",
+    "omnivoice-provider-cases.json",
+    "live-session-utterance-fixtures.json",
 )
 CONTEXT_GOVERNANCE_PATHS = {
     "AGENTS.md",
@@ -543,6 +558,19 @@ def build_bundle(out: Path, adapter: str = "all") -> dict[str, Any]:
                 return {"version": VERSION, "status": "FAIL", "failures": [f"missing helper scripts/{helper}"]}
             archive_path = f"scripts/{helper}"
             entries.append(make_entry(f".tes/bin/{helper}", archive_path, source))
+            staged_files.append((source, archive_path))
+
+        for data_file in TTS_RUNTIME_DATA_FILES:
+            source = ROOT / "benchmarks/tes-tts" / data_file
+            if not source.exists():
+                return {
+                    "version": VERSION,
+                    "status": "FAIL",
+                    "failures": [f"missing TES TTS runtime data benchmarks/tes-tts/{data_file}"],
+                }
+            archive_path = f"benchmarks/tes-tts/{data_file}"
+            target_path = f".tes/bin/tes_tts_data/benchmarks/tes-tts/{data_file}"
+            entries.append(make_entry(target_path, archive_path, source))
             staged_files.append((source, archive_path))
 
         for selected in materialize_adapter.selected_adapters(adapter):
@@ -1927,6 +1955,42 @@ def self_test() -> dict[str, Any]:
             failures.append("staged manifest missing")
         if not (target / ".tes/bin/tes_open_obsidian.py").exists():
             failures.append("helper tes_open_obsidian.py missing after apply")
+        tts_runtime = target / ".tes/bin/tes_tts_runtime.py"
+        if not tts_runtime.exists():
+            failures.append("helper tes_tts_runtime.py missing after apply")
+        if not (target / ".tes/bin/tes_tts_omnivoice_provider.py").exists():
+            failures.append("helper tes_tts_omnivoice_provider.py missing after apply")
+        if not (target / ".tes/bin/tes_tts_data/benchmarks/tes-tts/ptbr-lexical-sample.jsonl").exists():
+            failures.append("TES TTS runtime data missing after apply")
+        if tts_runtime.exists():
+            tts_check = subprocess.run(
+                [
+                    sys.executable,
+                    str(tts_runtime),
+                    "--text",
+                    "Leia token=abc123 e /Users/demo/tes-tts sem resumir.",
+                    "--locale",
+                    "pt-BR",
+                ],
+                cwd=target,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if tts_check.returncode != 0:
+                failures.append("installed TES TTS runtime CLI failed")
+            else:
+                try:
+                    tts_payload = json.loads(tts_check.stdout)
+                except json.JSONDecodeError:
+                    failures.append("installed TES TTS runtime CLI did not return JSON")
+                else:
+                    if tts_payload.get("source_text_immutable") is not True:
+                        failures.append("installed TES TTS runtime did not preserve source immutability")
+                    if tts_payload.get("redaction_count") != 1:
+                        failures.append("installed TES TTS runtime did not redact secret fixture")
+                    if "pasta tes tts" not in str(tts_payload.get("spoken_text") or ""):
+                        failures.append("installed TES TTS runtime did not load packaged path pronunciation data")
         if not (target / ".agents/skills/tes-open-obsidian/SKILL.md").exists():
             failures.append("runtime tes-open-obsidian skill missing after apply")
         for relpath in (".agents/plugins", ".claude-plugin", "plugins/tilly-engineer-skills", "skills"):

@@ -7,11 +7,19 @@ from pathlib import Path
 import unicodedata
 
 
+SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT = Path(__file__).resolve().parents[1]
-LEXICAL_MANIFEST_PATH = ROOT / "benchmarks/tes-tts/ptbr-lexical-sample.jsonl"
-PRONUNCIATION_CATALOG_PATH = ROOT / "benchmarks/tes-tts/pronunciation-catalog-fixtures.json"
-RUNTIME_LATENCY_FIXTURE_PATH = ROOT / "benchmarks/tes-tts/runtime-latency-fixtures.json"
-VERSION = "0.3.151"
+SOURCE_TTS_BENCHMARK_DIR = ROOT / "benchmarks/tes-tts"
+INSTALLED_TTS_BENCHMARK_DIR = SCRIPT_DIR / "tes_tts_data/benchmarks/tes-tts"
+TTS_BENCHMARK_DIR = (
+    SOURCE_TTS_BENCHMARK_DIR
+    if SOURCE_TTS_BENCHMARK_DIR.exists()
+    else INSTALLED_TTS_BENCHMARK_DIR
+)
+LEXICAL_MANIFEST_PATH = TTS_BENCHMARK_DIR / "ptbr-lexical-sample.jsonl"
+PRONUNCIATION_CATALOG_PATH = TTS_BENCHMARK_DIR / "pronunciation-catalog-fixtures.json"
+RUNTIME_LATENCY_FIXTURE_PATH = TTS_BENCHMARK_DIR / "runtime-latency-fixtures.json"
+VERSION = "0.3.152"
 REDACTION_TOKEN = "[REDACTED_SECRET]"
 
 

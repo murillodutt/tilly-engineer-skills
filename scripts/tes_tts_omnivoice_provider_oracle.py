@@ -26,7 +26,7 @@ PROVIDER_SCRIPT = ROOT / "scripts/tes_tts_omnivoice_provider.py"
 DIRECT_KERNEL_SCRIPT = ROOT / "scripts/tes_tts_omnivoice_direct_kernel.py"
 RUNTIME_SUPPORT_SCRIPT = ROOT / "scripts/tes_tts_omnivoice_runtime_support.py"
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/omnivoice-provider-cases.json"
-VERSION = "0.3.151"
+VERSION = "0.3.152"
 FORBIDDEN_TOP_LEVEL_IMPORTS = {"omnivoice", "torch", "soundfile"}
 PROVIDER_EXTRACTED_IMPORTS = {"select", "threading", "wave"}
 DIRECT_KERNEL_ALLOWED_IMPORTS = {
@@ -1521,7 +1521,7 @@ def validate_sentence_aware_chunking_contract() -> list[str]:
     if len(technical_chunks) > 2:
         failures.append("technical micro-pause text should avoid fragmented short chunks")
 
-    decimal_text = "A versão 0.3.151 mantém 9.2 como nota humana. Depois, o benchmark continua."
+    decimal_text = "A versão 0.3.152 mantém 9.2 como nota humana. Depois, o benchmark continua."
     decimal_chunks = runtime_support.split_long_text(decimal_text, max_chars=80)
     if any(chunk.endswith("0.") for chunk in decimal_chunks):
         failures.append("sentence-aware chunking must not split decimal-like versions")

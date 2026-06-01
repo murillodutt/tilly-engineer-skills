@@ -6,6 +6,9 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import shutil
+import subprocess
+import sys
 import tempfile
 from typing import Any
 
@@ -13,7 +16,7 @@ import command_trigger_oracle
 import mantra_gate_adoption_oracle
 
 
-VERSION = "0.3.151"
+VERSION = "0.3.152"
 SCHEMA = "tes-installed-certification@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
@@ -28,7 +31,30 @@ REPAIR_ROUTES = {
     "command_trigger_parity": "Regenerate installed trigger surfaces through the TES adapter/update path, then rerun command_trigger_oracle.py.",
     "quality_gates_path": "Run tes_legacy_retirement.py or tes_update.py to replace retired discipline paths, then recertify.",
     "artifact_hygiene": "Remove OS residue from package source/materialized setup surfaces, rebuild materialization if authorized, then recertify.",
+    "tes_tts_runtime": "Rerun the TES installer/update from a bundle that includes .tes/bin/tes_tts_* runtime helpers and packaged TTS data, then recertify.",
 }
+ROOT = Path(__file__).resolve().parents[1]
+TTS_SKILL_PATHS = (
+    ".agents/skills/tes-tts/SKILL.md",
+    ".claude/skills/tes-tts/SKILL.md",
+)
+TTS_RUNTIME_HELPERS = (
+    "tes_tts_runtime.py",
+    "tes_tts_runtime_adapter.py",
+    "tes_tts_runtime_classifier.py",
+    "tes_tts_runtime_types.py",
+    "tes_tts_runtime_verbalizer.py",
+    "tes_tts_omnivoice_direct_kernel.py",
+    "tes_tts_omnivoice_provider.py",
+    "tes_tts_omnivoice_runtime_support.py",
+)
+TTS_RUNTIME_DATA_FILES = (
+    "ptbr-lexical-sample.jsonl",
+    "pronunciation-catalog-fixtures.json",
+    "runtime-latency-fixtures.json",
+    "omnivoice-provider-cases.json",
+    "live-session-utterance-fixtures.json",
+)
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -159,6 +185,94 @@ def trigger_status(target: Path) -> dict[str, Any]:
     }
 
 
+def tes_tts_skill_installed(target: Path) -> bool:
+    return any((target / relpath).exists() for relpath in TTS_SKILL_PATHS)
+
+
+def tes_tts_runtime_status(target: Path) -> dict[str, Any]:
+    if not tes_tts_skill_installed(target):
+        return {"status": "NOT_APPLIED", "failures": []}
+    failures: list[str] = []
+    for helper in TTS_RUNTIME_HELPERS:
+        path = target / ".tes/bin" / helper
+        if not path.exists():
+            failures.append(f"missing TES TTS runtime helper: .tes/bin/{helper}")
+    for data_file in TTS_RUNTIME_DATA_FILES:
+        path = target / ".tes/bin/tes_tts_data/benchmarks/tes-tts" / data_file
+        if not path.exists():
+            failures.append(f"missing TES TTS runtime data: .tes/bin/tes_tts_data/benchmarks/tes-tts/{data_file}")
+    if failures:
+        return {"status": "FAIL", "failures": failures}
+
+    runtime = target / ".tes/bin/tes_tts_runtime.py"
+    runtime_result = subprocess.run(
+        [
+            sys.executable,
+            str(runtime),
+            "--text",
+            "Leia token=abc123 e /Users/demo/tes-tts sem resumir.",
+            "--locale",
+            "pt-BR",
+        ],
+        cwd=target,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=10,
+    )
+    if runtime_result.returncode != 0:
+        failures.append("TES TTS runtime CLI failed")
+        return {"status": "FAIL", "failures": failures, "stderr": runtime_result.stderr}
+    try:
+        runtime_payload = json.loads(runtime_result.stdout)
+    except json.JSONDecodeError:
+        failures.append("TES TTS runtime CLI did not return JSON")
+        return {"status": "FAIL", "failures": failures, "stdout": runtime_result.stdout}
+    if runtime_payload.get("source_text_immutable") is not True:
+        failures.append("TES TTS runtime did not preserve source immutability")
+    if runtime_payload.get("redaction_count") != 1:
+        failures.append("TES TTS runtime did not redact the secret fixture")
+    if runtime_payload.get("summary_behavior") != "none":
+        failures.append("TES TTS runtime must not summarize requested text")
+    if runtime_payload.get("command_execution") != "not_performed":
+        failures.append("TES TTS runtime must not execute command-like text")
+    if "pasta tes tts" not in str(runtime_payload.get("spoken_text") or ""):
+        failures.append("TES TTS runtime did not load packaged pronunciation/path data")
+
+    provider = target / ".tes/bin/tes_tts_omnivoice_provider.py"
+    provider_result = subprocess.run(
+        [sys.executable, str(provider), "status"],
+        cwd=target,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=10,
+    )
+    if provider_result.returncode not in {0, 2}:
+        failures.append(f"TES TTS OmniVoice status returned unexpected code {provider_result.returncode}")
+    try:
+        provider_payload = json.loads(provider_result.stdout)
+    except json.JSONDecodeError:
+        failures.append("TES TTS OmniVoice status did not return JSON")
+        provider_payload = {}
+    for key in ("allows_install", "allows_download", "allows_global_config_write"):
+        if provider_payload.get(key) is not False:
+            failures.append(f"TES TTS OmniVoice status must keep {key}=False")
+    return {
+        "status": "FAIL" if failures else "PASS",
+        "runtime": {
+            "version": runtime_payload.get("version"),
+            "redaction_count": runtime_payload.get("redaction_count"),
+            "source_text_immutable": runtime_payload.get("source_text_immutable"),
+            "summary_behavior": runtime_payload.get("summary_behavior"),
+            "command_execution": runtime_payload.get("command_execution"),
+        },
+        "provider_status": provider_payload.get("status"),
+        "provider_returncode": provider_result.returncode,
+        "failures": failures,
+    }
+
+
 def evaluate(target: Path) -> dict[str, Any]:
     target = target.expanduser().resolve()
     quality = quality_gates_path_status(target)
@@ -167,6 +281,7 @@ def evaluate(target: Path) -> dict[str, Any]:
         "mcp_registration": mcp_registration(target),
         "mantra_gate_adoption": adoption_status(target),
         "command_trigger_parity": trigger_status(target),
+        "tes_tts_runtime": tes_tts_runtime_status(target),
         "quality_gates_path": quality,
         "artifact_hygiene": hygiene,
     }
@@ -231,6 +346,34 @@ def write_installed_trigger_surfaces(target: Path, *, include_portuguese_goal: b
     cursor = target / ".cursor/rules/tes-guidelines.mdc"
     cursor.parent.mkdir(parents=True, exist_ok=True)
     cursor.write_text(all_trigger_terms(), encoding="utf-8")
+
+
+def source_tts_helper(helper: str) -> Path:
+    for candidate in (ROOT / "scripts" / helper, Path(__file__).resolve().parent / helper):
+        if candidate.exists():
+            return candidate
+    return ROOT / "scripts" / helper
+
+
+def source_tts_data(data_file: str) -> Path:
+    for candidate in (
+        ROOT / "benchmarks/tes-tts" / data_file,
+        Path(__file__).resolve().parent / "tes_tts_data/benchmarks/tes-tts" / data_file,
+    ):
+        if candidate.exists():
+            return candidate
+    return ROOT / "benchmarks/tes-tts" / data_file
+
+
+def write_tts_runtime_fixture(target: Path) -> None:
+    bin_dir = target / ".tes/bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    for helper in TTS_RUNTIME_HELPERS:
+        shutil.copy2(source_tts_helper(helper), bin_dir / helper)
+    data_dir = bin_dir / "tes_tts_data/benchmarks/tes-tts"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    for data_file in TTS_RUNTIME_DATA_FILES:
+        shutil.copy2(source_tts_data(data_file), data_dir / data_file)
 
 
 def write_base_fixture(target: Path, *, healthy: bool) -> None:
@@ -300,6 +443,8 @@ def write_base_fixture(target: Path, *, healthy: bool) -> None:
     }
     (target / ".tes").mkdir(parents=True, exist_ok=True)
     (target / ".tes/manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if healthy:
+        write_tts_runtime_fixture(target)
     if not healthy:
         residue = target / ".tes/setup/0.0.0/adapters/codex/.agents/skills/tes-goal-maestro/__MACOSX/._SKILL.md"
         residue.parent.mkdir(parents=True, exist_ok=True)
@@ -325,8 +470,13 @@ def self_test() -> dict[str, Any]:
             failures.append("degraded fixture must expose command trigger FAIL")
         if degraded_components["quality_gates_path"]["status"] != "FAIL":
             failures.append("degraded fixture must expose stale quality-gate path")
+        if degraded_components["tes_tts_runtime"]["status"] != "FAIL":
+            failures.append("degraded fixture must expose missing TES TTS runtime")
         if degraded_components["artifact_hygiene"]["status"] != "FAIL":
             failures.append("degraded fixture must expose artifact hygiene failure")
+        healthy_components = healthy_result["components"]
+        if healthy_components["tes_tts_runtime"]["status"] != "PASS":
+            failures.append("healthy fixture must certify installed TES TTS runtime")
         if any(not item.get("repair") for item in degraded_result.get("findings", [])):
             failures.append("degraded fixture findings must include repair routes")
         if healthy_result["status"] != "PASS":

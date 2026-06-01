@@ -38,10 +38,11 @@ from tes_tts_omnivoice_runtime_support import (
     wait_or_terminate,
     wav_duration_seconds,
 )
+from tes_tts_runtime_types import TTS_BENCHMARK_DIR
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.151"
+VERSION = "0.3.152"
 DEFAULT_MODEL = "k2-fsa/OmniVoice"
 DEFAULT_LANGUAGE = "pt"
 AUTO_LANGUAGE = "auto"
@@ -54,8 +55,8 @@ DEFAULT_CACHE_DIR = DEFAULT_RUNTIME_DIR / "provider-cache"
 DEFAULT_LOCAL_PYTHON = DEFAULT_RUNTIME_DIR / "venv/bin/python"
 DEFAULT_LOCAL_REF_AUDIO = DEFAULT_RUNTIME_DIR / "refs/audio-modelo-clone-mono24k.wav"
 DEFAULT_OUTPUT_DIR = DEFAULT_CACHE_DIR / "audio"
-DEFAULT_BENCHMARK_CASES = ROOT / "benchmarks/tes-tts/omnivoice-provider-cases.json"
-DEFAULT_LIVE_SMOKE_CASES = ROOT / "benchmarks/tes-tts/live-session-utterance-fixtures.json"
+DEFAULT_BENCHMARK_CASES = TTS_BENCHMARK_DIR / "omnivoice-provider-cases.json"
+DEFAULT_LIVE_SMOKE_CASES = TTS_BENCHMARK_DIR / "live-session-utterance-fixtures.json"
 DEFAULT_BENCHMARK_DIR = DEFAULT_CACHE_DIR / "benchmarks"
 DEFAULT_SESSION_DIR = DEFAULT_CACHE_DIR / "sessions"
 DEFAULT_LONG_READ_DIR = DEFAULT_CACHE_DIR / "long-reads"
