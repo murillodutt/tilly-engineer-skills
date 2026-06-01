@@ -1824,6 +1824,11 @@ def command_speak_long(args: argparse.Namespace) -> int:
                     if buffered_playback is not None:
                         ready_count = len(outputs)
                         if not buffered_playback_started and ready_count >= args.first_audio_buffer_chunks:
+                            for item in outputs:
+                                item_id = item.get("id")
+                                item_output = item.get("output")
+                                if isinstance(item_id, str) and isinstance(item_output, str):
+                                    buffered_playback.enqueue(item_id, Path(item_output))
                             buffered_playback.start()
                             buffered_playback_started = True
                             monitor.record(
@@ -1832,11 +1837,6 @@ def command_speak_long(args: argparse.Namespace) -> int:
                                 first_audio_buffer_chunks=args.first_audio_buffer_chunks,
                                 first_audio_chars=args.first_audio_chars,
                             )
-                            for item in outputs:
-                                item_id = item.get("id")
-                                item_output = item.get("output")
-                                if isinstance(item_id, str) and isinstance(item_output, str):
-                                    buffered_playback.enqueue(item_id, Path(item_output))
                         elif buffered_playback_started:
                             buffered_playback.enqueue(chunk_id, output)
                     if args.play and not args.combine and not args.first_audio_buffered:

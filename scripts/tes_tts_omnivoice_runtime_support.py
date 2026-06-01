@@ -25,6 +25,25 @@ import wave
 
 DEFAULT_LANGUAGE = "pt"
 AUTO_LANGUAGE = "auto"
+SENTENCE_BOUNDARY_CHARS = ".!?…。！？"
+CLAUSE_BOUNDARY_CHARS = ",;:"
+CLOSING_BOUNDARY_CHARS = "\"'”’)]}>»"
+MIN_SPEECH_CHUNK_CHARS = 80
+COMMON_DOTTED_ABBREVIATIONS = {
+    "dr.",
+    "dra.",
+    "mr.",
+    "mrs.",
+    "ms.",
+    "prof.",
+    "sr.",
+    "sra.",
+    "jr.",
+    "etc.",
+    "e.g.",
+    "i.e.",
+    "vs.",
+}
 
 
 def wav_duration_seconds(path: Path) -> float | None:
@@ -178,6 +197,7 @@ class BufferedPlaybackQueue:
         self._queue: queue.Queue[tuple[str, Path] | None] = queue.Queue()
         self._thread = threading.Thread(target=self._run, name="tes-tts-buffered-playback", daemon=True)
         self._started = False
+        self._batch_index = 0
 
     def start(self) -> None:
         if self._started:
@@ -198,6 +218,30 @@ class BufferedPlaybackQueue:
         if self.monitor is not None:
             self.monitor.record(event, **payload)
 
+    def _drain_ready_batch(self, first_item: tuple[str, Path]) -> tuple[list[tuple[str, Path]], bool]:
+        items = [first_item]
+        stop_after_batch = False
+        while True:
+            try:
+                item = self._queue.get_nowait()
+            except queue.Empty:
+                break
+            if item is None:
+                stop_after_batch = True
+                break
+            items.append(item)
+        return items, stop_after_batch
+
+    def _playback_batch_output(self, items: list[tuple[str, Path]]) -> tuple[str, Path, list[str]]:
+        chunk_ids = [chunk_id for chunk_id, _output in items]
+        if len(items) == 1:
+            return chunk_ids[0], items[0][1], chunk_ids
+        self._batch_index += 1
+        batch_dir = items[0][1].parent / "buffered-playback-batches"
+        output = batch_dir / f"playback-batch-{self._batch_index:03d}.wav"
+        combine_wav_files([path for _chunk_id, path in items], output, silence_ms=self.planned_gap_ms)
+        return "+".join(chunk_ids), output, chunk_ids
+
     def _run(self) -> None:
         previous_end: float | None = None
         while True:
@@ -205,24 +249,34 @@ class BufferedPlaybackQueue:
             item = self._queue.get()
             if item is None:
                 return
-            chunk_id, output = item
             if previous_end is not None:
                 unplanned_gap_ms = round((time.perf_counter() - wait_started) * 1000, 3)
                 self.max_unplanned_gap_ms = max(self.max_unplanned_gap_ms, unplanned_gap_ms)
+            batch_items, stop_after_batch = self._drain_ready_batch(item)
+            chunk_id, output, source_chunks = self._playback_batch_output(batch_items)
             playback_start_ms = round((time.perf_counter() - self.started_at) * 1000, 3)
             if self.first_audio_ms is None:
                 self.first_audio_ms = playback_start_ms
-            self._record("buffered_playback_start", id=chunk_id, output=str(output), playback_start_ms=playback_start_ms)
+            self._record(
+                "buffered_playback_start",
+                id=chunk_id,
+                output=str(output),
+                source_chunks=source_chunks,
+                playback_start_ms=playback_start_ms,
+            )
             playback = playback_audio(output)
             playback_item = {
                 "id": chunk_id,
                 "output": str(output),
+                "source_chunks": source_chunks,
                 "playback_start_ms": playback_start_ms,
                 **playback,
             }
             self.results.append(playback_item)
             self._record("buffered_playback_result", **playback_item)
             previous_end = time.perf_counter()
+            if stop_after_batch:
+                return
             if self.planned_gap_ms:
                 time.sleep(self.planned_gap_ms / 1000)
 
@@ -316,6 +370,156 @@ class RuntimeMonitor:
             self.record("heartbeat")
 
 
+def _last_token_ending_at(text: str, end: int) -> str:
+    prefix = text[:end].rstrip()
+    if not prefix:
+        return ""
+    return prefix.split()[-1]
+
+
+def _next_non_space_char(text: str, start: int) -> str:
+    index = start
+    while index < len(text) and text[index] in CLOSING_BOUNDARY_CHARS:
+        index += 1
+    while index < len(text) and text[index].isspace():
+        index += 1
+    return text[index] if index < len(text) else ""
+
+
+def _looks_like_decimal_period(text: str, index: int) -> bool:
+    return 0 < index < len(text) - 1 and text[index - 1].isdigit() and text[index + 1].isdigit()
+
+
+def _looks_like_dotted_identity(token: str) -> bool:
+    if token.lower() in COMMON_DOTTED_ABBREVIATIONS:
+        return True
+    if re.fullmatch(r"(?:[A-Za-z]\.){1,}", token):
+        return True
+    return bool(re.fullmatch(r"(?:[A-Za-z][A-Za-z0-9]*\.){2,}", token))
+
+
+def _is_sentence_boundary(text: str, index: int) -> bool:
+    char = text[index]
+    if char not in SENTENCE_BOUNDARY_CHARS:
+        return False
+    following = text[index + 1] if index + 1 < len(text) else ""
+    if following and not following.isspace() and following not in CLOSING_BOUNDARY_CHARS and following not in ",;:":
+        return False
+    if char == ".":
+        if _looks_like_decimal_period(text, index):
+            return False
+        token = _last_token_ending_at(text, index + 1)
+        if _looks_like_dotted_identity(token):
+            return False
+        next_char = _next_non_space_char(text, index + 1)
+        if next_char in {",", ";", ":"}:
+            return False
+    return True
+
+
+def _sentence_boundary_end(text: str, index: int) -> int:
+    end = index + 1
+    while end < len(text) and text[end] in ".…":
+        end += 1
+    while end < len(text) and text[end] in CLOSING_BOUNDARY_CHARS:
+        end += 1
+    return end
+
+
+def _split_sentences(text: str) -> list[str]:
+    sentences: list[str] = []
+    start = 0
+    index = 0
+    while index < len(text):
+        if not _is_sentence_boundary(text, index):
+            index += 1
+            continue
+        end = _sentence_boundary_end(text, index)
+        piece = text[start:end].strip()
+        if piece:
+            sentences.append(piece)
+        start = end
+        while start < len(text) and text[start].isspace():
+            start += 1
+        index = start
+    tail = text[start:].strip()
+    if tail:
+        sentences.append(tail)
+    return sentences or ([text.strip()] if text.strip() else [])
+
+
+def _find_best_cut(text: str, *, ideal_chars: int, hard_chars: int, allow_forward: bool) -> int | None:
+    min_chars = min(MIN_SPEECH_CHUNK_CHARS, max(1, hard_chars // 2))
+    hard_chars = min(len(text), max(min_chars, hard_chars))
+    ideal_chars = min(max(min_chars, ideal_chars), hard_chars)
+
+    def cut_after_clause(index: int) -> int:
+        end = index + 1
+        while end < len(text) and text[end] in CLOSING_BOUNDARY_CHARS:
+            end += 1
+        return end
+
+    def candidates_before(predicate: Any, limit: int) -> list[int]:
+        values: list[int] = []
+        for index, char in enumerate(text[:limit]):
+            if index + 1 < min_chars:
+                continue
+            cut = predicate(index, char)
+            if cut:
+                values.append(cut)
+        return values
+
+    sentence_before = candidates_before(
+        lambda index, _char: _sentence_boundary_end(text, index) if _is_sentence_boundary(text, index) else None,
+        ideal_chars,
+    )
+    if sentence_before:
+        return max(sentence_before)
+
+    clause_before = candidates_before(
+        lambda index, char: cut_after_clause(index) if char in CLAUSE_BOUNDARY_CHARS else None,
+        ideal_chars,
+    )
+    if clause_before:
+        return max(clause_before)
+
+    if allow_forward:
+        forward_limit = min(len(text), max(hard_chars, ideal_chars + MIN_SPEECH_CHUNK_CHARS))
+        for index in range(ideal_chars, forward_limit):
+            if _is_sentence_boundary(text, index):
+                return _sentence_boundary_end(text, index)
+        for index in range(ideal_chars, forward_limit):
+            if text[index] in CLAUSE_BOUNDARY_CHARS:
+                return cut_after_clause(index)
+
+    whitespace = [match.end() for match in re.finditer(r"\s+", text[:ideal_chars]) if min_chars <= match.end()]
+    if whitespace:
+        return max(whitespace)
+    return hard_chars if hard_chars < len(text) else None
+
+
+def _split_overlong_sentence(text: str, *, max_chars: int) -> list[str]:
+    remaining = text.strip()
+    if len(remaining) <= max_chars:
+        return [remaining] if remaining else []
+
+    parts: list[str] = []
+    while len(remaining) > max_chars:
+        cut = _find_best_cut(
+            remaining,
+            ideal_chars=max_chars,
+            hard_chars=max_chars,
+            allow_forward=False,
+        )
+        if cut is None or cut <= 0:
+            cut = max_chars
+        parts.append(remaining[:cut].strip())
+        remaining = remaining[cut:].strip()
+    if remaining:
+        parts.append(remaining)
+    return [part for part in parts if part]
+
+
 def split_long_text(text: str, *, max_chars: int) -> list[str]:
     max_chars = max(120, max_chars)
     normalized = "\n\n".join(part.strip() for part in text.strip().splitlines() if part.strip())
@@ -323,6 +527,7 @@ def split_long_text(text: str, *, max_chars: int) -> list[str]:
         return []
     chunks: list[str] = []
     current = ""
+    min_chars = min(MIN_SPEECH_CHUNK_CHARS, max_chars)
 
     def push(value: str) -> None:
         cleaned = value.strip()
@@ -347,27 +552,29 @@ def split_long_text(text: str, *, max_chars: int) -> list[str]:
             push(current)
             current = piece
 
-    def split_oversized_piece(piece: str) -> None:
-        words = piece.split()
-        bucket = ""
-        for word in words:
-            candidate = f"{bucket} {word}".strip() if bucket else word
-            if len(candidate) <= max_chars:
-                bucket = candidate
-            else:
-                push(bucket)
-                bucket = word
-        push(bucket)
-
     for paragraph in re.split(r"\n\s*\n+", normalized):
-        sentences = re.split(r"(?<=[.!?;:])\s+", paragraph.strip())
+        sentences = _split_sentences(paragraph.strip())
         for sentence in sentences:
-            add_piece(sentence)
+            for piece in _split_overlong_sentence(sentence, max_chars=max_chars):
+                add_piece(piece)
+        if current:
+            if chunks and len(current) < min_chars:
+                candidate = f"{chunks[-1]} {current}".strip()
+                if len(candidate) <= max_chars:
+                    chunks[-1] = candidate
+                    current = ""
+            if current:
+                push(current)
+                current = ""
+    if current:
+        if chunks and len(current) < min_chars:
+            candidate = f"{chunks[-1]} {current}".strip()
+            if len(candidate) <= max_chars:
+                chunks[-1] = candidate
+                current = ""
         if current:
             push(current)
             current = ""
-    if current:
-        push(current)
     return chunks
 
 
@@ -497,20 +704,21 @@ def build_first_audio_long_read_plan(
 
 
 def split_first_audio_chunk(text: str, *, max_chars: int) -> tuple[str, str]:
-    max_chars = max(80, max_chars)
+    max_chars = max(MIN_SPEECH_CHUNK_CHARS, max_chars)
     cleaned = text.strip()
     if len(cleaned) <= max_chars:
         return cleaned, ""
 
-    for pattern in (r"[.!?;:]\s+", r",\s+", r"\s+"):
-        candidates = [
-            match.end()
-            for match in re.finditer(pattern, cleaned[: max_chars + 1])
-            if 80 <= match.end() <= max_chars
-        ]
-        if candidates:
-            cut = max(candidates)
-            break
-    else:
+    cut = _find_best_cut(
+        cleaned,
+        ideal_chars=max_chars,
+        hard_chars=min(len(cleaned), max(max_chars, max_chars + MIN_SPEECH_CHUNK_CHARS)),
+        allow_forward=True,
+    )
+    if cut is None:
         cut = max_chars
-    return cleaned[:cut].strip(), cleaned[cut:].strip()
+    head = cleaned[:cut].strip()
+    tail = cleaned[cut:].strip()
+    if tail and len(tail) < MIN_SPEECH_CHUNK_CHARS:
+        return cleaned, ""
+    return head, tail

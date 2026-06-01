@@ -16,7 +16,9 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 from typing import Any
+import wave
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -1446,6 +1448,114 @@ def load_direct_kernel_module() -> Any:
             pass
 
 
+def load_runtime_support_module() -> Any:
+    scripts_dir = ROOT / "scripts"
+    sys.path.insert(0, str(scripts_dir))
+    try:
+        spec = importlib.util.spec_from_file_location("tes_tts_omnivoice_runtime_support_for_oracle", RUNTIME_SUPPORT_SCRIPT)
+        if spec is None or spec.loader is None:
+            raise RuntimeError("could not load runtime support module spec")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        try:
+            sys.path.remove(str(scripts_dir))
+        except ValueError:
+            pass
+
+
+def validate_sentence_aware_chunking_contract() -> list[str]:
+    failures: list[str] = []
+    runtime_support = load_runtime_support_module()
+
+    phrase_text = (
+        "A ideia central do projeto é transformar boas práticas de trabalho com agentes "
+        "em comportamento instalável, auditável e repetível."
+    )
+    phrase_plan = runtime_support.build_first_audio_long_read_plan(
+        phrase_text,
+        max_chars=180,
+        language="pt",
+        first_audio_chars=120,
+    )
+    phrase_chunks = [chunk["text"] for chunk in phrase_plan]
+    if any(chunk.endswith("boas") for chunk in phrase_chunks):
+        failures.append("first-audio chunking must not split the phrase 'boas práticas'")
+    if " ".join(phrase_chunks) != phrase_text:
+        failures.append("first-audio chunking must preserve source text order and content")
+
+    technical_text = (
+        "Teste real do TES-TTS: ADR. 0004 protege API., SDK., CLI. e MCP.. "
+        "Não vamos usar SSML., PLS., fonema ou G. dois P. com suporte de provider agora. "
+        "JSON., YAML., HTTP., Node.js., TypeScript, Python, Open.AI. API., Trie e Aho Corasick "
+        "ficam como thresholds futuros."
+    )
+    technical_plan = runtime_support.build_first_audio_long_read_plan(
+        technical_text,
+        max_chars=180,
+        language="auto",
+        first_audio_chars=120,
+    )
+    technical_chunks = [chunk["text"] for chunk in technical_plan]
+    if " ".join(technical_chunks) != technical_text:
+        failures.append("technical chunking must preserve dotted technical terms and source order")
+    if any(chunk.endswith("Node.") for chunk in technical_chunks) or any(chunk.startswith("js.") for chunk in technical_chunks):
+        failures.append("sentence-aware chunking must keep Node.js together")
+    if any(chunk.endswith("Open.") for chunk in technical_chunks) or any(chunk.startswith("AI.") for chunk in technical_chunks):
+        failures.append("sentence-aware chunking must keep Open.AI together")
+    if len(technical_chunks) > 2:
+        failures.append("technical micro-pause text should avoid fragmented short chunks")
+
+    decimal_text = "A versão 0.3.149 mantém 9.2 como nota humana. Depois, o benchmark continua."
+    decimal_chunks = runtime_support.split_long_text(decimal_text, max_chars=80)
+    if any(chunk.endswith("0.") for chunk in decimal_chunks):
+        failures.append("sentence-aware chunking must not split decimal-like versions")
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        root = Path(tmp_dir)
+
+        def write_wav(path: Path) -> None:
+            with wave.open(str(path), "wb") as handle:
+                handle.setnchannels(1)
+                handle.setsampwidth(2)
+                handle.setframerate(24000)
+                handle.writeframes(b"\x00" * 2400)
+
+        first = root / "001-chunk-001.wav"
+        second = root / "002-chunk-002.wav"
+        write_wav(first)
+        write_wav(second)
+        original_playback = runtime_support.playback_audio
+        try:
+            runtime_support.playback_audio = lambda output: {
+                "playback_status": "played",
+                "player": "oracle",
+                "playback_wall_ms": 0.0,
+            }
+            queue = runtime_support.BufferedPlaybackQueue(
+                started_at=time.perf_counter(),
+                planned_gap_ms=25,
+            )
+            queue.enqueue("chunk-001", first)
+            queue.enqueue("chunk-002", second)
+            queue.start()
+            queue.close()
+        finally:
+            runtime_support.playback_audio = original_playback
+
+        if len(queue.results) != 1:
+            failures.append("buffered playback should batch already-ready chunks into one playback item")
+        else:
+            result = queue.results[0]
+            if result.get("source_chunks") != ["chunk-001", "chunk-002"]:
+                failures.append("buffered playback batch must retain ordered source chunk ids")
+            if "buffered-playback-batches" not in str(result.get("output")):
+                failures.append("buffered playback batch must write transient combined segment under the run dir")
+
+    return failures
+
+
 def validate_direct_kernel_timing_contract() -> list[str]:
     failures: list[str] = []
     kernel_module = load_direct_kernel_module()
@@ -2402,6 +2512,7 @@ def main() -> int:
     active_failures.extend(validate_live_smoke_dry_run_command())
     active_failures.extend(validate_direct_kernel_timing_contract())
     active_failures.extend(validate_prosody_warmup_contract())
+    active_failures.extend(validate_sentence_aware_chunking_contract())
     active_failures.extend(validate_jsonl_emitter())
     active_failures.extend(validate_short_speak_in_process_boundary())
     failures.extend(active_failures)
