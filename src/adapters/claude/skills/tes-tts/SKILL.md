@@ -27,7 +27,7 @@ Use this path inside the TES package repository when the helper scripts exist:
 4. For short direct OmniVoice reads:
    `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<source text>" --output <wav> --text-mode redacted_source`
 5. For long direct OmniVoice reads, use direct resident chunking:
-   `python3 scripts/tes_tts_omnivoice_provider.py speak-long --text "<source text>" --output-dir <tmp-dir> --read-profile technical-quality`
+   `python3 scripts/tes_tts_omnivoice_provider.py speak-long --text "<source text>" --output-dir <tmp-dir> --read-profile technical-live`
 6. Use the canonical clone reference through the global direct provider defaults;
    do not upload or recreate the reference voice for normal reads.
 7. If OmniVoice is unavailable, prepare `spoken_text` with
@@ -72,30 +72,33 @@ flags; use the code-defined profile so the full recipe moves together:
 python3 scripts/tes_tts_omnivoice_provider.py speak-long \
   --text "<source text>" \
   --output-dir "$HOME/.tes/runtime/tes-tts/omnivoice/provider-cache/audio-reference-runs/<run-id>" \
-  --read-profile technical-quality \
+  --read-profile technical-live \
   --play
 ```
 
 The current human-rated PT-BR baseline is the `02-sigh-once` recipe from
 `formula-light-tag-once-20260601-000635`, approved as the long-read product
 default after direct comparison. It uses direct resident OmniVoice, provider
-language `en`, `redacted_source`, `quality` with `num_step=28`, a single
-`sigh` warmup on the first chunk only, chunk size `420`, `450 ms`
-combined-WAV silence, first-audio buffering, and `combined.wav` review output.
-Preserve this shape unless a newer human-rated reference supersedes it. Prepare
-the text with natural Portuguese narration, keep fragile paths and URLs as
-useful references, redact secrets before speech, and group difficult English
-technical terms in a short English phrase when that improves pronunciation.
+language `en`, `redacted_source`, a single `sigh` warmup on the first chunk
+only, chunk size `420`, `450 ms` combined-WAV silence, first-audio buffering,
+and `combined.wav` review output. The Live profile keeps `num_step=28`; the HD
+audio profile uses the same shape with `num_step=32`. Preserve this shape
+unless a newer human-rated reference supersedes it. Prepare the text with
+natural Portuguese narration, keep fragile paths and URLs as useful references,
+redact secrets before speech, and group difficult English technical terms in a
+short English phrase when that improves pronunciation.
 
 Two code-defined long-read profiles are valid:
 
-- `technical-quality` is the default PT-BR long-read profile. It uses provider
+- `technical-live` is the default PT-BR long-read profile. It uses provider
   language `en`, `redacted_source`, `sigh` on the first chunk only,
   `quality`/`num_step=28`, chunk size `420`, `450 ms` combined-WAV silence,
   first-audio buffering, and `combined.wav` review output.
-- `technical-streamer` remains an explicit latency-test alias for the same
-  approved recipe. Maintainer review found 28 acceptable and 26 already
-  distortion-prone.
+- `technical-hd` is the high-definition audio/review profile. It preserves the
+  same PT-BR recipe with `num_step=32` and no live first-audio buffering.
+- `technical-streamer` is a compatibility alias for `technical-live`;
+  `technical-quality` is a compatibility alias for `technical-hd`.
+  Maintainer review found 28 acceptable and 26 already distortion-prone.
 
 `redacted_source` and `audio_quality` are source-text modes. They must receive
 the original text the user wants spoken and let the direct kernel derive

@@ -1749,11 +1749,13 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
         env["TES_TTS_OMNIVOICE_REF_AUDIO"] = str(ref)
         try:
             default_profile = run_profile_dry_run(root)
-            quality = run_profile_dry_run(root, "technical-quality")
+            live = run_profile_dry_run(root, "technical-live")
+            hd = run_profile_dry_run(root, "technical-hd")
+            quality_alias = run_profile_dry_run(root, "technical-quality")
             streamer = run_profile_dry_run(root, "technical-streamer")
             profile_override = run_profile_dry_run(
                 root,
-                "technical-quality",
+                "technical-hd",
                 (
                     "--language",
                     "pt",
@@ -1777,31 +1779,49 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
             failures.append(f"human-rated quality dry-run failed: {exc}")
             return failures
 
-    payload = quality
-    if default_profile.get("read_profile") != "technical-quality":
-        failures.append("speak-long must default to the human-approved technical-quality profile")
-    if quality.get("read_profile") != "technical-quality":
-        failures.append("human-rated quality reference must be a code-defined read profile")
+    payload = live
+    if default_profile.get("read_profile") != "technical-live":
+        failures.append("speak-long must default to the human-approved technical-live profile")
+    if live.get("read_profile") != "technical-live":
+        failures.append("PT-BR live reference must be a code-defined read profile")
+    if hd.get("read_profile") != "technical-hd":
+        failures.append("PT-BR HD reference must be a code-defined read profile")
+    if quality_alias.get("read_profile") != "technical-quality":
+        failures.append("technical-quality compatibility alias must remain available")
     if streamer.get("read_profile") != "technical-streamer":
-        failures.append("human-rated streamer candidate must be a code-defined read profile")
-    if quality.get("num_step") != 28:
-        failures.append("human-rated PT-BR quality reference recipe must keep num_step=28")
+        failures.append("technical-streamer compatibility alias must remain available")
+    if live.get("num_step") != 28:
+        failures.append("PT-BR live recipe must keep num_step=28")
+    if hd.get("num_step") != 32:
+        failures.append("PT-BR HD audio recipe must keep num_step=32")
+    if quality_alias.get("num_step") != 32:
+        failures.append("technical-quality alias must point to the HD num_step=32 recipe")
     if streamer.get("num_step") != 28:
-        failures.append("human-rated quality streamer candidate must keep num_step=28")
+        failures.append("technical-streamer alias must point to the live num_step=28 recipe")
     if streamer.get("latency_profile") != "quality":
-        failures.append("num_step=28 remains a quality-profile override, not a lower-quality profile")
+        failures.append("num_step=28 live remains a quality-profile override, not a lower-quality profile")
     if streamer.get("language_mode") != "en" or streamer.get("prosody_warmup") != "sigh":
-        failures.append("num_step=28 candidate must preserve language en and sigh warmup")
+        failures.append("num_step=28 live candidate must preserve language en and sigh warmup")
     if streamer.get("prosody_warmup_scope") != "first_chunk_only":
-        failures.append("num_step=28 candidate must keep warmup scoped to the first chunk only")
+        failures.append("num_step=28 live candidate must keep warmup scoped to the first chunk only")
     if streamer.get("max_chunk_chars") != 420 or streamer.get("inter_chunk_silence_ms") != 450:
-        failures.append("num_step=28 candidate must preserve chunk size 420 and silence 450 ms")
+        failures.append("num_step=28 live candidate must preserve chunk size 420 and silence 450 ms")
     if streamer.get("combine_requested") is not True:
-        failures.append("num_step=28 candidate must preserve combined WAV review authority")
+        failures.append("num_step=28 live candidate must preserve combined WAV review authority")
     if streamer.get("first_audio_buffered") is not True:
-        failures.append("num_step=28 candidate must keep first-audio buffering enabled")
+        failures.append("num_step=28 live candidate must keep first-audio buffering enabled")
     if streamer.get("first_audio_chars") != 160 or streamer.get("first_audio_buffer_chunks") != 2:
-        failures.append("num_step=28 candidate must keep buffered streamer startup settings")
+        failures.append("num_step=28 live candidate must keep buffered streamer startup settings")
+    if hd.get("language_mode") != "en" or hd.get("prosody_warmup") != "sigh":
+        failures.append("HD audio recipe must preserve language en and sigh warmup")
+    if hd.get("prosody_warmup_scope") != "first_chunk_only":
+        failures.append("HD audio recipe must keep warmup scoped to the first chunk only")
+    if hd.get("max_chunk_chars") != 420 or hd.get("inter_chunk_silence_ms") != 450:
+        failures.append("HD audio recipe must preserve chunk size 420 and silence 450 ms")
+    if hd.get("combine_requested") is not True:
+        failures.append("HD audio recipe must preserve combined WAV review authority")
+    if hd.get("first_audio_buffered") is not False:
+        failures.append("HD audio recipe must not enable live first-audio buffering by default")
 
     if (
         profile_override.get("language_mode") != "en"
@@ -1809,28 +1829,28 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
         or profile_override.get("prosody_warmup") != "sigh"
         or profile_override.get("prosody_warmup_scope") != "first_chunk_only"
         or profile_override.get("latency_profile") != "quality"
-        or profile_override.get("num_step") != 28
+        or profile_override.get("num_step") != 32
         or profile_override.get("max_chunk_chars") != 420
         or profile_override.get("inter_chunk_silence_ms") != 450
     ):
-        failures.append("technical-quality read profile must override hand-assembled conflicting recipe flags")
+        failures.append("technical-hd read profile must override hand-assembled conflicting recipe flags")
 
     if payload.get("language_mode") != "en" or payload.get("chunk_languages") != ["en"]:
-        failures.append("human-rated quality recipe must synthesize with provider language en")
+        failures.append("human-rated live recipe must synthesize with provider language en")
     if payload.get("prosody_warmup") != "sigh":
-        failures.append("human-rated quality dry-run must preserve sigh warmup")
+        failures.append("human-rated live dry-run must preserve sigh warmup")
     if payload.get("prosody_warmup_scope") != "first_chunk_only":
-        failures.append("human-rated quality dry-run must apply warmup only to the first chunk")
+        failures.append("human-rated live dry-run must apply warmup only to the first chunk")
     if payload.get("latency_profile") != "quality":
-        failures.append("human-rated quality recipe must keep quality latency profile")
+        failures.append("human-rated live recipe must keep quality latency profile")
     if payload.get("num_step") != 28:
-        failures.append("human-rated quality recipe must keep the approved num_step=28")
+        failures.append("human-rated live recipe must keep the approved num_step=28")
     if payload.get("max_chunk_chars") != 420 or payload.get("inter_chunk_silence_ms") != 450:
-        failures.append("human-rated quality recipe must keep chunk size 420 and silence 450 ms")
+        failures.append("human-rated live recipe must keep chunk size 420 and silence 450 ms")
     if payload.get("combine_requested") is not True:
-        failures.append("human-rated quality recipe must preserve combined WAV review authority")
+        failures.append("human-rated live recipe must preserve combined WAV review authority")
     if payload.get("first_audio_buffered") is not True:
-        failures.append("human-rated quality recipe must preserve first-audio buffering from the approved run")
+        failures.append("human-rated live recipe must preserve first-audio buffering from the approved run")
     return failures
 
 

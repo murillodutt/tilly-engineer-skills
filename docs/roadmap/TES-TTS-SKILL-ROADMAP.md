@@ -62,13 +62,14 @@ durable conversion cache, or proactive `speak`.
   OmniVoice long reads weakened technical identity and pauses; provider oracles
   now guard source-text quality modes and compact enumeration pauses.
 - The long-read recipe is now code-defined from the approved PT-BR baseline:
-  `technical-quality` defaults to the `02-sigh-once` shape from
+  `technical-live` defaults to the `02-sigh-once` shape from
   `formula-light-tag-once-20260601-000635`, using direct resident OmniVoice,
   provider language `en`, `redacted_source`, a single `sigh` warmup on the
   first chunk only, `num_step=28`, chunk size `420`, `450 ms` combined-WAV
   silence, first-audio buffering, and `combined.wav` review output.
-  `technical-streamer` remains an explicit latency-test alias for the same
-  recipe; 26 remains rejected.
+  `technical-hd` preserves the same recipe with `num_step=32` for HD audio
+  generation. Compatibility aliases remain: `technical-streamer` maps to Live
+  and `technical-quality` maps to HD; 26 remains rejected.
 
 ## Next Cut
 Focus the next direct/resident streamer cut on real same-input audio comparison

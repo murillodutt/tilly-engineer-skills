@@ -74,39 +74,43 @@ PROFILE_RECOMMENDATION_ORDER = ("fast", "balanced", "quality")
 ACTIVE_PRODUCT_PATH = "direct_resident_omnivoice"
 PROSODY_WARMUP_CHOICES = ("none", "confirmation-en", "question-en", "sigh")
 LONG_READ_PROSODY_WARMUP_SCOPES = ("first_chunk_only", "each_chunk")
-LONG_READ_PROFILE_CHOICES = ("manual", "technical-quality", "technical-streamer")
-DEFAULT_LONG_READ_PROFILE = "technical-quality"
+LONG_READ_PROFILE_CHOICES = ("manual", "technical-live", "technical-hd", "technical-quality", "technical-streamer")
+DEFAULT_LONG_READ_PROFILE = "technical-live"
+LONG_READ_LIVE_PROFILE = {
+    "language": "en",
+    "text_mode": "redacted_source",
+    "prosody_warmup": "sigh",
+    "prosody_warmup_scope": "first_chunk_only",
+    "latency_profile": "quality",
+    "num_step": 28,
+    "chunk_chars": 420,
+    "inter_chunk_silence_ms": 450,
+    "combine": True,
+    "first_audio_buffered": True,
+    "first_audio_chars": 160,
+    "first_audio_buffer_chunks": 2,
+    "first_audio_max_unplanned_gap_ms": 1200.0,
+}
+LONG_READ_HD_PROFILE = {
+    "language": "en",
+    "text_mode": "redacted_source",
+    "prosody_warmup": "sigh",
+    "prosody_warmup_scope": "first_chunk_only",
+    "latency_profile": "quality",
+    "num_step": 32,
+    "chunk_chars": 420,
+    "inter_chunk_silence_ms": 450,
+    "combine": True,
+    "first_audio_buffered": False,
+    "first_audio_chars": 160,
+    "first_audio_buffer_chunks": 2,
+    "first_audio_max_unplanned_gap_ms": 1200.0,
+}
 LONG_READ_PROFILES = {
-    "technical-quality": {
-        "language": "en",
-        "text_mode": "redacted_source",
-        "prosody_warmup": "sigh",
-        "prosody_warmup_scope": "first_chunk_only",
-        "latency_profile": "quality",
-        "num_step": 28,
-        "chunk_chars": 420,
-        "inter_chunk_silence_ms": 450,
-        "combine": True,
-        "first_audio_buffered": True,
-        "first_audio_chars": 160,
-        "first_audio_buffer_chunks": 2,
-        "first_audio_max_unplanned_gap_ms": 1200.0,
-    },
-    "technical-streamer": {
-        "language": "en",
-        "text_mode": "redacted_source",
-        "prosody_warmup": "sigh",
-        "prosody_warmup_scope": "first_chunk_only",
-        "latency_profile": "quality",
-        "num_step": 28,
-        "chunk_chars": 420,
-        "inter_chunk_silence_ms": 450,
-        "combine": True,
-        "first_audio_buffered": True,
-        "first_audio_chars": 160,
-        "first_audio_buffer_chunks": 2,
-        "first_audio_max_unplanned_gap_ms": 1200.0,
-    },
+    "technical-live": dict(LONG_READ_LIVE_PROFILE),
+    "technical-streamer": dict(LONG_READ_LIVE_PROFILE),
+    "technical-hd": dict(LONG_READ_HD_PROFILE),
+    "technical-quality": dict(LONG_READ_HD_PROFILE),
 }
 
 
