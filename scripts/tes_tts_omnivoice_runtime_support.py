@@ -502,9 +502,15 @@ def split_first_audio_chunk(text: str, *, max_chars: int) -> tuple[str, str]:
     if len(cleaned) <= max_chars:
         return cleaned, ""
 
-    candidates: list[int] = []
     for pattern in (r"[.!?;:]\s+", r",\s+", r"\s+"):
-        candidates.extend(match.end() for match in re.finditer(pattern, cleaned[: max_chars + 1]))
-    candidates = [index for index in candidates if 80 <= index <= max_chars]
-    cut = max(candidates) if candidates else max_chars
+        candidates = [
+            match.end()
+            for match in re.finditer(pattern, cleaned[: max_chars + 1])
+            if 80 <= match.end() <= max_chars
+        ]
+        if candidates:
+            cut = max(candidates)
+            break
+    else:
+        cut = max_chars
     return cleaned[:cut].strip(), cleaned[cut:].strip()

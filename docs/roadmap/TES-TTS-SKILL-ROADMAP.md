@@ -29,6 +29,9 @@ durable conversion cache, or proactive `speak`.
 - Source text is immutable; speech is request-local; secrets are redacted.
 - PT-BR is platform narration; English/technical identity is preserved.
 - OmniVoice is optional local capability, not bundled dependency.
+- OmniVoice light provider tags may be used only as controlled prosody warmup
+  for conversational narration after audio evidence; faithful reads stay
+  tag-free by default.
 - Version/release/sync/push/tag/publish need separate approval.
 
 ## Evidence
@@ -47,13 +50,17 @@ durable conversion cache, or proactive `speak`.
 - Python cleanup removed obsolete lab execution copies from tracked source:
   the active provider surface is direct/resident only, timing is attributable,
   and voice prompt cache permissions are protected.
+- Human A/B evidence ranked OmniVoice tag-only prosody above CMU-heavy output:
+  `03-tag-only.wav` beat `04-cmu-plus-tag.wav`; later warmup ranking placed
+  `confirmation-en`, `question-en`, and `sigh` above natural/no-tag variants.
+- OPW-001 exposed `--prosody-warmup none|confirmation-en|question-en|sigh`
+  on the direct provider path and generated comparison WAVs at
+  `~/.tes/runtime/tes-tts/omnivoice/provider-cache/audio-reference-runs/opw-001-prosody-warmup-20260531-210442/`.
 
 ## Next Cut
-GRT-001 is closing locally with sync status `REMOTE_SYNC_NOT_REQUESTED`. Active
-runtime root is `~/.tes/runtime/tes-tts/omnivoice`; if only
-`.tes/runtime/tes-tts/omnivoice` exists, provider status reports
-`NEEDS_MIGRATION` and exact source/destination paths. No next prompt is created
-because migration is diagnostic-only until explicit cleanup approval.
+Human review should choose whether any OPW-001 warmup becomes a recommended
+conversational recipe. Default posture remains no warmup, tag-free faithful
+reading, and sync status `REMOTE_SYNC_NOT_REQUESTED`.
 
 ## Maintenance Rules
 - Hard limit: 100 lines. Review zone starts at 75 lines.

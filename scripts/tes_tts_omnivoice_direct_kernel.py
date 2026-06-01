@@ -17,7 +17,12 @@ import sys
 import time
 from typing import Any
 
-from tes_tts_runtime_adapter import prepare_audio_quality_text, prepare_spoken_text
+from tes_tts_runtime_adapter import (
+    apply_omnivoice_prosody_warmup,
+    prepare_audio_quality_text,
+    prepare_redacted_provider_text,
+    prepare_spoken_text,
+)
 
 
 def sha256_path(path: Path) -> str:
@@ -28,20 +33,30 @@ def sha256_path(path: Path) -> str:
     return digest.hexdigest()
 
 
-def provider_text(source_text: str, locale: str, mode: str) -> dict[str, Any]:
+def provider_text(source_text: str, locale: str, mode: str, prosody_warmup: str = "none") -> dict[str, Any]:
     if mode == "audio_quality":
-        return prepare_audio_quality_text(source_text, locale)
+        text_info = prepare_audio_quality_text(source_text, locale)
+        warmup = apply_omnivoice_prosody_warmup(text_info["text"], prosody_warmup)
+        text_info.update(warmup)
+        return text_info
     prepared = prepare_spoken_text(source_text, locale)
     if mode == "spoken_text":
         text = prepared["spoken_text"]
     elif mode == "redacted_source":
-        text = prepared["redacted_text"].replace("`", "")
+        text_info = prepare_redacted_provider_text(source_text, locale)
+        warmup = apply_omnivoice_prosody_warmup(text_info["text"], prosody_warmup)
+        text_info.update(warmup)
+        return text_info
     else:
         text = source_text
+    warmup = apply_omnivoice_prosody_warmup(text, prosody_warmup)
     return {
-        "text": text,
+        "text": warmup["text"],
         "prepared": prepared,
         "mode": mode,
+        "prosody_warmup": warmup["prosody_warmup"],
+        "prosody_warmup_tag": warmup["prosody_warmup_tag"],
+        "provider_tag_inserted": warmup["provider_tag_inserted"],
     }
 
 
@@ -244,7 +259,7 @@ class DirectOmniVoiceKernel:
         args: Any,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         text_prepare_started = time.perf_counter()
-        text_info = provider_text(source_text, locale, text_mode)
+        text_info = provider_text(source_text, locale, text_mode, getattr(args, "prosody_warmup", "none"))
         text_prepare_ms = round((time.perf_counter() - text_prepare_started) * 1000, 3)
         audio_metrics = self.synthesize(
             text=text_info["text"],

@@ -79,18 +79,30 @@ python3 scripts/tes_tts_omnivoice_provider.py speak-long \
   --play
 ```
 
-This recipe was rated 7.5/10 for a long mixed PT-BR technical read. Preserve
-its shape unless a newer human-rated reference supersedes it: direct resident
-`speak-long`, provider language `en`, `quality` profile, combined WAV, 420-char
-chunks, and 450 ms silence between chunks. Prepare the text with natural
-Portuguese narration, keep fragile paths and URLs as useful references, redact
-secrets before speech, and group difficult English technical terms in a short
-English phrase when that improves pronunciation.
+The current human-rated baseline is 9.2/10 for `combined.wav` review output
+with direct resident OmniVoice, provider language `en`, `quality`/`num_step=32`,
+source redaction, safe sentence chunking, and controlled punctuation. Preserve
+this shape unless a newer human-rated reference supersedes it. Prepare the text
+with natural Portuguese narration, keep fragile paths and URLs as useful
+references, redact secrets before speech, and group difficult English technical
+terms in a short English phrase when that improves pronunciation.
+
+For punctuation-sensitive reads, avoid sending `:` to OmniVoice when it creates
+audible artifacts; convert it to a safe spoken pause such as `;` in the
+request-local provider text. `?` and `!` are allowed as textual punctuation
+after the 9.2 punctuation test. The `combined.wav` is the review authority;
+chunk-by-chunk `afplay` is diagnostic and may have extra player startup pauses.
 
 When start latency matters for long reads, keep the same quality recipe and add
 `--first-audio-buffered --first-audio-chars 160 --first-audio-buffer-chunks 2`.
 This starts playback after a small buffered head while preserving `combined.wav`
 for repeated listening and comparison.
+
+For explicit conversational OmniVoice experiments, add one controlled warmup
+tag with `--prosody-warmup confirmation-en`, `question-en`, or `sigh`.
+Default is `none`. Warmup tags are provider-only text and must not be used for
+faithful, exact, raw, literal, quoted user text, code, or command reads unless
+the user explicitly requested a tag experiment.
 
 ## Speech Invariants
 

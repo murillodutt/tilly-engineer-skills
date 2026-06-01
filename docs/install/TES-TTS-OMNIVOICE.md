@@ -63,6 +63,49 @@ Use the upstream project as the source for hardware-specific install decisions:
 TES only documents how to place OmniVoice behind `tes-tts` once the user chooses
 that provider.
 
+## Provider Controls Audit
+
+OmniVoice exposes provider-specific controls that can enrich speech, but TES
+does not enable them automatically. They are a candidate quality layer on top of
+the current 9.2 human-rated recipe, not a replacement for redaction, chunking,
+or request-local spoken text.
+
+Confirmed by the local OmniVoice reference and upstream documentation:
+
+| Capability | Confirmed surface | TES posture |
+|------------|-------------------|-------------|
+| Non-verbal tags | `[laughter]`, `[sigh]`, `[confirmation-en]`, `[question-en]`, `[question-ah]`, `[question-oh]`, `[question-ei]`, `[question-yi]`, `[surprise-ah]`, `[surprise-oh]`, `[surprise-wa]`, `[surprise-yo]`, `[dissatisfaction-hnn]` | Experimental. Allow only by explicit opt-in or controlled fixture; never inject into faithful user text by default. |
+| English pronunciation override | CMU bracket form such as `[B EY1 S]` | Experimental provider control. It may improve isolated English words, but it is not a generic TES pronunciation contract. |
+| Chinese pronunciation override | Pinyin with tone numbers | Out of PT-BR scope for the current default voice. |
+| Voice-design `instruct` | gender, age, pitch, `whisper`, English accents, and Chinese dialects | Useful for separate voice-design experiments. The active TES path uses cloned voice prompt, not auto voice design. |
+| Generation parameters | `num_step`, `guidance_scale`, `speed`, `duration`, `audio_chunk_duration`, and `audio_chunk_threshold` | Runtime-tuning surface. TES currently certifies `quality`/`num_step=32`; lower steps need human review. |
+
+Not certified for TES from the current local evidence: `[sniff]`, `[gasp]`,
+`singing`, `[Speaker_1]:`, `[Speaker_2]:`, and multi-speaker dialogue. They may
+exist in community wrappers, but they must not be documented as TES-supported
+until the active OmniVoice runtime proves them with local audio.
+
+Provider tags are also an injection boundary. If a user asks for faithful
+reading of text that contains bracket tags, TES should read them as text unless
+the user explicitly requests an OmniVoice tag experiment. Secret redaction still
+wins over every provider control.
+
+The active product option is intentionally narrow: `--prosody-warmup` accepts
+only `none`, `confirmation-en`, `question-en`, or `sigh`. Default is `none`.
+When enabled, TES prepends the tag only to request-local provider text. It does
+not mutate source text, does not enable CMU by default, and does not apply tags
+to faithful, exact, raw, literal, quoted user text, code, or command reads
+unless the user explicitly requested that provider-tag experiment.
+
+The most promising enrichment path is practical and narrow:
+
+1. Preserve the existing direct cloned-voice recipe.
+2. Keep sentence-aware chunking and controlled punctuation as the default.
+3. Add a small opt-in audio experiment for confirmed non-verbal tags and CMU
+   overrides.
+4. Promote only tags that improve generated WAV review without causing
+   surprise sounds, language leakage, or pronunciation regression.
+
 ## Safety Rules
 
 Use a voice you own or are authorized to clone. Do not use this path for
@@ -189,6 +232,16 @@ Short reads:
 python3 scripts/tes_tts_omnivoice_provider.py speak \
   --text "Teste real do TES-TTS com OmniVoice." \
   --output "$HOME/.tes/runtime/tes-tts/omnivoice/provider-cache/audio/latest.wav" \
+  --play
+```
+
+Optional conversational warmup, for explicit comparison runs only:
+
+```bash
+python3 scripts/tes_tts_omnivoice_provider.py speak \
+  --text "Narração técnica curta para comparação." \
+  --prosody-warmup confirmation-en \
+  --output "$HOME/.tes/runtime/tes-tts/omnivoice/provider-cache/audio/warmup.wav" \
   --play
 ```
 

@@ -1044,6 +1044,20 @@ documents:
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-omnivoice-prosody-warmup.md
+    id: roadmap.goal_super_spec_tes_tts_omnivoice_prosody_warmup
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/GOAL-PROMPT-tes-tts-OPW-001-controlled-prosody-warmup-runtime-option.md
+    id: roadmap.goal_prompt_tes_tts_opw_001_controlled_prosody_warmup_runtime_option
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md
     id: roadmap.tes_tts_cap_001_portable_capability_feasibility
     class: roadmap

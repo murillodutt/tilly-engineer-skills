@@ -37,7 +37,16 @@ DIRECT_KERNEL_ALLOWED_IMPORTS = {
     ("from", "__future__", ("annotations",)),
     ("from", "pathlib", ("Path",)),
     ("from", "typing", ("Any",)),
-    ("from", "tes_tts_runtime_adapter", ("prepare_audio_quality_text", "prepare_spoken_text")),
+    (
+        "from",
+        "tes_tts_runtime_adapter",
+        (
+            "apply_omnivoice_prosody_warmup",
+            "prepare_audio_quality_text",
+            "prepare_redacted_provider_text",
+            "prepare_spoken_text",
+        ),
+    ),
 }
 DIRECT_KERNEL_REQUIRED_SYMBOLS = {
     "provider_text",
@@ -145,6 +154,7 @@ REQUIRED_DRY_RUN_KEYS = {
     "latency_profile_source",
     "timing_attribution",
     "num_step",
+    "prosody_warmup",
     "command_shape",
     "allows_install",
     "allows_download",
@@ -280,6 +290,8 @@ REQUIRED_LONG_READ_DRY_RUN_KEYS = {
     "latency_profile_source",
     "timing_attribution",
     "num_step",
+    "prosody_warmup",
+    "prosody_warmup_scope",
     "protocol",
     "resident_model",
     "resident_voice_prompt",
@@ -841,6 +853,8 @@ def validate_dry_run_payload(payload: dict[str, Any] | None) -> list[str]:
         failures.append("speak dry-run status drifted")
     if payload.get("mode") != "product_shortcut":
         failures.append("speak dry-run mode drifted")
+    if payload.get("prosody_warmup") != "none":
+        failures.append("speak dry-run must default to no prosody warmup")
     if payload.get("allows_install") is not False:
         failures.append("speak dry-run must not install providers")
     if payload.get("allows_download") is not False:
@@ -904,6 +918,10 @@ def validate_long_read_dry_run_payload(payload: dict[str, Any] | None) -> list[s
         failures.append("speak-long must not use fallback")
     if payload.get("provider_exclusive") is not True:
         failures.append("speak-long must be OmniVoice-exclusive")
+    if payload.get("prosody_warmup") != "none":
+        failures.append("speak-long dry-run must default to no prosody warmup")
+    if payload.get("prosody_warmup_scope") != "none":
+        failures.append("speak-long dry-run must report no warmup scope by default")
     if payload.get("resident_model") is not True or payload.get("resident_voice_prompt") is not True:
         failures.append("speak-long must use the resident runtime path")
     if payload.get("chunk_count", 0) < 2:
@@ -1487,6 +1505,54 @@ def validate_direct_kernel_timing_contract() -> list[str]:
         failures.append("direct kernel must keep generation_ms as compatibility alias for provider_synthesis_ms")
     if "text_prepare_ms" not in prepared_metrics:
         failures.append("direct kernel synthesize_prepared must report text_prepare_ms")
+    return failures
+
+
+def validate_prosody_warmup_contract() -> list[str]:
+    failures: list[str] = []
+    kernel_module = load_direct_kernel_module()
+
+    default_raw = kernel_module.provider_text(
+        "Leia provider, Docker e Kubernetes como texto.",
+        "pt-BR",
+        "raw",
+    )
+    if default_raw.get("provider_tag_inserted") is not False:
+        failures.append("raw provider text must stay tag-free by default")
+    if str(default_raw.get("text", "")).startswith("["):
+        failures.append("raw provider text unexpectedly starts with a provider tag")
+
+    warmed = kernel_module.provider_text(
+        "Leia provider, Docker e Kubernetes como narração.",
+        "pt-BR",
+        "redacted_source",
+        "confirmation-en",
+    )
+    if warmed.get("prosody_warmup") != "confirmation-en":
+        failures.append("prosody warmup must preserve the selected tag id")
+    if warmed.get("prosody_warmup_tag") != "[confirmation-en]":
+        failures.append("prosody warmup must expose the whitelisted provider tag")
+    if warmed.get("provider_tag_inserted") is not True:
+        failures.append("prosody warmup must report inserted provider tag")
+    if not str(warmed.get("text", "")).startswith("[confirmation-en] "):
+        failures.append("prosody warmup must prepend the provider tag to request-local text")
+
+    secret = kernel_module.provider_text(
+        "Nunca leia API_KEY=abc123SECRET em voz alta.",
+        "pt-BR",
+        "redacted_source",
+        "question-en",
+    )
+    if "abc123SECRET" in str(secret.get("text", "")) or "[REDACTED_SECRET]" not in str(secret.get("text", "")):
+        failures.append("prosody warmup must not bypass secret redaction")
+
+    try:
+        kernel_module.provider_text("Teste.", "pt-BR", "redacted_source", "sniff")
+    except ValueError:
+        pass
+    else:
+        failures.append("prosody warmup must reject non-whitelisted tags")
+
     return failures
 
 
@@ -2335,6 +2401,7 @@ def main() -> int:
     active_failures.extend(validate_auto_latency_profile_selection())
     active_failures.extend(validate_live_smoke_dry_run_command())
     active_failures.extend(validate_direct_kernel_timing_contract())
+    active_failures.extend(validate_prosody_warmup_contract())
     active_failures.extend(validate_jsonl_emitter())
     active_failures.extend(validate_short_speak_in_process_boundary())
     failures.extend(active_failures)

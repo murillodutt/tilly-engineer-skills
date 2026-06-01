@@ -34,6 +34,49 @@ provider settings from this skill. If no provider is available, report
 Tool names are host-specific. Match by available tool capability, not by
 assuming a namespace exists.
 
+## OmniVoice Provider Controls
+
+Use OmniVoice-specific tags only as an explicit experiment or fixture-backed
+quality improvement. Do not inject them into faithful user text by default, and
+do not treat bracketed user text as a command to the provider unless the user
+asked for an OmniVoice control test.
+
+The product path exposes only one controlled prosody warmup option:
+`--prosody-warmup none|confirmation-en|question-en|sigh`. Default is `none`.
+The tag is prepended only to request-local provider text and remains forbidden
+for faithful, exact, raw, literal, quoted user text, code, and command reads
+unless the user explicitly requested a provider-tag experiment. CMU overrides
+remain experimental and are not a default TES behavior.
+
+Confirmed controls from the local OmniVoice reference:
+
+- non-verbal tags: `[laughter]`, `[sigh]`, `[confirmation-en]`,
+  `[question-en]`, `[question-ah]`, `[question-oh]`, `[question-ei]`,
+  `[question-yi]`, `[surprise-ah]`, `[surprise-oh]`, `[surprise-wa]`,
+  `[surprise-yo]`, `[dissatisfaction-hnn]`;
+- English CMU pronunciation overrides such as `[B EY1 S]`;
+- Chinese pinyin pronunciation overrides;
+- voice-design `instruct` attributes for gender, age, pitch, `whisper`,
+  English accents, and Chinese dialects;
+- generation parameters such as `num_step`, `guidance_scale`, `speed`,
+  `duration`, `audio_chunk_duration`, and `audio_chunk_threshold`.
+
+Not certified for the TES product path from the current local evidence:
+`[sniff]`, `[gasp]`, `singing`, `[Speaker_1]:`, `[Speaker_2]:`, and
+multi-speaker dialogue. Community wrappers may expose adjacent features, but
+TES must verify them against the active runtime before claiming support.
+
+Quality candidates for future tests are ordered by likely value:
+
+1. punctuation and sentence chunking, because they already raised long-read
+   quality;
+2. safe opt-in non-verbal tags for agent-authored narration;
+3. CMU overrides for a tiny list of stubborn English words;
+4. generation parameter tuning after audio review.
+
+Secret redaction, source immutability, no-summary behavior, exact islands, and
+code no-execute posture override every provider-specific control.
+
 ## Request-Local Fallback Plan
 
 Fallback is a request-local execution plan, not durable provider state.

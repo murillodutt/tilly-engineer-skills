@@ -72,6 +72,7 @@ LATENCY_PROFILES = {
 LATENCY_PROFILE_CHOICES = ("auto", *tuple(sorted(LATENCY_PROFILES)))
 PROFILE_RECOMMENDATION_ORDER = ("fast", "balanced", "quality")
 ACTIVE_PRODUCT_PATH = "direct_resident_omnivoice"
+PROSODY_WARMUP_CHOICES = ("none", "confirmation-en", "question-en", "sigh")
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -416,6 +417,8 @@ def common_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path) -> list
         args.latency_profile,
         "--text-mode",
         args.text_mode,
+        "--prosody-warmup",
+        args.prosody_warmup,
         "--num-step",
         str(args.num_step),
         "--guidance-scale",
@@ -1705,6 +1708,8 @@ def command_speak_long(args: argparse.Namespace) -> int:
                 "first_audio_chars": args.first_audio_chars,
                 "first_audio_buffer_chunks": args.first_audio_buffer_chunks,
                 "first_audio_max_unplanned_gap_ms": args.first_audio_max_unplanned_gap_ms,
+                "prosody_warmup": args.prosody_warmup,
+                "prosody_warmup_scope": "first_chunk_only" if args.prosody_warmup != "none" else "none",
                 "latency_profile": args.latency_profile,
                 **latency_profile_metadata(args),
                 **timing_attribution_metadata("dry_run_resident_long_read"),
@@ -1783,6 +1788,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
                         "text": chunk["text"],
                         "language": chunk["language"],
                         "output": str(output),
+                        "prosody_warmup": args.prosody_warmup if index == 1 else "none",
                     }
                     monitor.record(
                         "chunk_start",
@@ -2270,6 +2276,9 @@ def run_short_speak_in_process(
         **timing_attribution_metadata("direct_short_read"),
         "num_step": args.num_step,
         "text_mode": text_info["mode"],
+        "prosody_warmup": text_info.get("prosody_warmup", "none"),
+        "prosody_warmup_tag": text_info.get("prosody_warmup_tag"),
+        "provider_tag_inserted": text_info.get("provider_tag_inserted", False),
         "source_text_immutable": text_info["prepared"]["source_text_immutable"],
         "redaction_count": text_info["prepared"]["redaction_count"],
         "summary_behavior": text_info["prepared"]["summary_behavior"],
@@ -2354,6 +2363,7 @@ def command_speak(args: argparse.Namespace) -> int:
                 **latency_profile_metadata(args),
                 **timing_attribution_metadata("dry_run_short_read"),
                 "num_step": args.num_step,
+                "prosody_warmup": args.prosody_warmup,
                 "command_shape": [
                     provider_python,
                     str(Path(__file__).resolve()),
@@ -3067,6 +3077,9 @@ def command_synthesize(args: argparse.Namespace) -> int:
             **timing_attribution_metadata("synthesize"),
             "num_step": args.num_step,
             "text_mode": text_info["mode"],
+            "prosody_warmup": text_info.get("prosody_warmup", "none"),
+            "prosody_warmup_tag": text_info.get("prosody_warmup_tag"),
+            "provider_tag_inserted": text_info.get("provider_tag_inserted", False),
             "source_text_immutable": text_info["prepared"]["source_text_immutable"],
             "redaction_count": text_info["prepared"]["redaction_count"],
             "summary_behavior": text_info["prepared"]["summary_behavior"],
@@ -3123,6 +3136,9 @@ def command_batch(args: argparse.Namespace) -> int:
             {
                 "id": case_id,
                 "text_mode": text_info["mode"],
+                "prosody_warmup": text_info.get("prosody_warmup", "none"),
+                "prosody_warmup_tag": text_info.get("prosody_warmup_tag"),
+                "provider_tag_inserted": text_info.get("provider_tag_inserted", False),
                 "redaction_count": text_info["prepared"]["redaction_count"],
                 **metrics,
             }
@@ -3223,7 +3239,12 @@ def command_serve(args: argparse.Namespace) -> int:
                 text_mode=args.text_mode,
                 language=language,
                 output=output,
-                args=args,
+                args=argparse.Namespace(
+                    **{
+                        **vars(args),
+                        "prosody_warmup": str(request.get("prosody_warmup") or args.prosody_warmup),
+                    }
+                ),
             )
             request_wall_ms = round((time.perf_counter() - request_started) * 1000, 3)
             emit_jsonl(
@@ -3239,6 +3260,9 @@ def command_serve(args: argparse.Namespace) -> int:
                     **timing_attribution_metadata("resident_utterance"),
                     "num_step": args.num_step,
                     "text_mode": text_info["mode"],
+                    "prosody_warmup": text_info.get("prosody_warmup", "none"),
+                    "prosody_warmup_tag": text_info.get("prosody_warmup_tag"),
+                    "provider_tag_inserted": text_info.get("provider_tag_inserted", False),
                     "source_text_immutable": text_info["prepared"]["source_text_immutable"],
                     "redaction_count": text_info["prepared"]["redaction_count"],
                     "summary_behavior": text_info["prepared"]["summary_behavior"],
@@ -3288,6 +3312,12 @@ def add_runtime_args(parser: argparse.ArgumentParser, *, ref_audio_required: boo
         "--text-mode",
         choices=["redacted_source", "spoken_text", "audio_quality", "raw"],
         default="redacted_source",
+    )
+    parser.add_argument(
+        "--prosody-warmup",
+        choices=PROSODY_WARMUP_CHOICES,
+        default="none",
+        help="Optional OmniVoice provider-only prosody warmup tag for explicit conversational experiments.",
     )
     parser.add_argument("--num-step", type=int)
     parser.add_argument("--guidance-scale", type=float, default=2.0)
