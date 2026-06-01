@@ -13,8 +13,8 @@ a product skill, or ask the user to invoke it.
 
 This is an always-on self-consumed guard for TES repository work. Apply it at
 the start of analysis and again before writing, committing, or closing. The job
-is to prevent a useful improvement from silently destroying the thing that made
-the previous version work.
+is to prevent a useful improvement in any project surface from silently
+destroying the thing that made the previous version work.
 
 ## Contract
 
@@ -25,8 +25,9 @@ baseline -> intended delta -> protected invariants -> smallest change ->
 same-input comparison -> stop or commit
 ```
 
-No change may rely on hope, example-only word lists, or a new unverified recipe
-when the old behavior had evidence.
+No change may rely on hope, example-only word lists, a new unverified recipe, a
+fresh document, or a passing unrelated oracle when the old behavior had
+evidence.
 
 For low-risk analysis with no file writes, keep the guard implicit: identify
 the baseline and possible regression in your reasoning, then continue. Report
@@ -34,27 +35,43 @@ details only when the guard blocks, downgrades confidence, or the user asks.
 
 ## Workflow
 
-1. Identify whether the turn is analysis-only, write, runtime, oracle, commit,
-   or closeout.
+1. Identify whether the turn is analysis-only, write, runtime, oracle, docs,
+   adapter, installer, roadmap, release identity, commit, or closeout.
 2. Name the last-known-good baseline: commit, command, fixture, WAV, log,
-   oracle, human score, or docs record.
+   oracle, human score, docs record, public surface, installed behavior, or
+   adapter/materialization evidence.
 3. Classify the intended delta:
    - `preserve`: implementation changes but behavior must remain equivalent.
    - `extend`: new behavior must not alter the baseline path by default.
    - `replace`: old behavior is intentionally superseded and needs explicit
      evidence or owner approval.
-4. List protected invariants before editing. For `tes-tts`, include route
-   directness, provider, voice profile, latency profile, `num_step`, language,
-   prosody warmup, chunk recipe, redaction, source immutability, exact islands,
-   no-summary behavior, and playback/combined-WAV authority.
-5. Prefer a general mechanism over special-case literals. A hard-coded list is
+4. List protected invariants before editing:
+   - skills: trigger semantics, invocation mode, routing, locks, validation,
+     and done criteria;
+   - adapters: source/materialized parity, platform boundaries, installer
+     ownership, and target-source separation;
+   - scripts: consumer boundary, CLI contract, exit/status vocabulary, artifact
+     hygiene, and performance assumptions;
+   - docs/roadmaps: source of truth, index pointers, line ownership, no
+     ambiguity, and no governance-only detours;
+   - release/public surfaces: version identity, bundle pointers, generated docs,
+     fixed refs, and no remote claim without evidence;
+   - safety: secrets, command no-execute posture, private vocabulary, rollback,
+     and no destructive default.
+5. For `tes-tts`, also protect route directness, provider, voice profile,
+   latency profile, `num_step`, language, prosody warmup, chunk recipe,
+   redaction, source immutability, exact islands, no-summary behavior, and
+   playback/combined-WAV authority.
+6. Prefer a general mechanism over special-case literals. A hard-coded list is
    allowed only when it is data, schema, or contract backed; otherwise it is a
    regression seed.
-6. Patch the smallest surface that explains the defect.
-7. Re-run the same-input comparison against the baseline input. When quality is
-   auditory, generate comparable WAV evidence under `tmp/**` or
+7. Patch the smallest surface that explains the defect.
+8. Re-run the same-input comparison against the relevant baseline. For docs,
+   compare rendered/generated outputs or index contracts. For adapters, compare
+   materialized surfaces. For scripts, compare CLI payloads and exit behavior.
+   For audio quality, generate comparable WAV evidence under `tmp/**` or
    `~/.tes/runtime/**`; never commit audio.
-8. If the comparison regresses the baseline, stop, revert or gate the new path
+9. If the comparison regresses the baseline, stop, revert or gate the new path
    behind an opt-in flag. Do not stack compensating special cases.
 
 ## Stop Conditions
@@ -64,6 +81,9 @@ details only when the guard blocks, downgrades confidence, or the user asks.
 - The fix depends on narrow examples instead of a stable rule or data surface.
 - The comparison cannot be run for the risk being claimed.
 - A regression is observed and no rollback or opt-in gate is applied.
+- A documentation or roadmap update hides a product regression behind new
+  wording.
+- A generated or materialized surface is not checked after source changes.
 
 ## Output
 
@@ -97,4 +117,6 @@ creating a regression loop.
 - Do not create governance-only cycles.
 - Do not let a passing oracle replace human-rated audio evidence when the risk
   is speech quality.
+- Do not let a passing source check replace materialized adapter, public docs,
+  installer, or runtime evidence when those surfaces can regress.
 - Do not bury regressions under new prompts, roadmaps, or broad refactors.

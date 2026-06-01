@@ -101,10 +101,17 @@ This is an always-on local reasoning kernel, not a user-invoked skill and not a
 product command. Routine use stays implicit; report it only when it blocks,
 downgrades confidence, requires owner choice, or the user asks for audit detail.
 
-Before changing behavior that already has certified, measured, or human-rated
-evidence, name the last-known-good baseline, classify whether the change
-preserves, extends, or replaces it, and list protected invariants before
-editing.
+Before changing behavior that already has certified, installed, materialized,
+generated, measured, or human-rated evidence, name the last-known-good
+baseline, classify whether the change preserves, extends, or replaces it, and
+list protected invariants before editing.
+
+Regression is project-wide, not Python-specific. Protect skills, triggers,
+adapters, materialized outputs, installers, runtime scripts, docs, roadmaps,
+oracles, generated public pages, version identity, release surfaces, private
+vocabulary, safety behavior, and UX claims. A passing source check is not enough
+when the risk lives in an installed, generated, materialized, audio, public, or
+CLI surface; run the comparison that matches the surface that can regress.
 
 For `tes-tts`, direct OmniVoice execution is not enough to claim equivalence.
 Protect the full recipe: runtime route, voice profile, latency profile,
