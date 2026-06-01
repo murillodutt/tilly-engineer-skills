@@ -66,9 +66,9 @@ that provider.
 ## Provider Controls Audit
 
 OmniVoice exposes provider-specific controls that can enrich speech, but TES
-does not enable them automatically. They are a candidate quality layer on top of
-the current 9.2 human-rated recipe, not a replacement for redaction, chunking,
-or request-local spoken text.
+keeps them behind code-defined profiles and explicit experiments. They are a
+quality layer on top of redaction, chunking, and request-local provider text,
+not a replacement for those safety surfaces.
 
 Confirmed by the local OmniVoice reference and upstream documentation:
 
@@ -77,7 +77,7 @@ Confirmed by the local OmniVoice reference and upstream documentation:
 | Non-verbal tags | `[laughter]`, `[sigh]`, `[confirmation-en]`, `[question-en]`, `[question-ah]`, `[question-oh]`, `[question-ei]`, `[question-yi]`, `[surprise-ah]`, `[surprise-oh]`, `[surprise-wa]`, `[surprise-yo]`, `[dissatisfaction-hnn]` | Experimental. Allow only by explicit opt-in or controlled fixture; never inject into faithful user text by default. |
 | English pronunciation override | CMU bracket form such as `[B EY1 S]` | Experimental provider control. It may improve isolated English words, but it is not a generic TES pronunciation contract. |
 | Chinese pronunciation override | Pinyin with tone numbers | Out of PT-BR scope for the current default voice. |
-| Voice-design `instruct` | gender, age, pitch, `whisper`, English accents, and Chinese dialects | Useful for separate voice-design experiments. The active TES path uses cloned voice prompt, not auto voice design. |
+| Voice-design `instruct` | gender, age, pitch, `whisper`, English accents, and Chinese dialects | Active PT-BR quality surface for cloned voice. TES uses `male, middle-aged, low pitch` as a silent prosody instruction in code-defined long-read profiles. |
 | Generation parameters | `num_step`, `guidance_scale`, `speed`, `duration`, `audio_chunk_duration`, and `audio_chunk_threshold` | Runtime-tuning surface. TES fixes PT-BR Live at `num_step=28` and PT-BR HD audio at `num_step=32`; 26 was distortion-prone in maintainer review. |
 
 Not certified for TES from the current local evidence: `[sniff]`, `[gasp]`,
@@ -93,15 +93,16 @@ wins over every provider control.
 The active product option is intentionally narrow. Manual `--prosody-warmup`
 accepts only `none`, `confirmation-en`, `question-en`, or `sigh`, and defaults
 to `none`. Code-defined long-read profiles own the approved product recipe:
-`technical-live` applies a single `sigh` warmup to the first synthesis chunk
-only, uses provider language `en`, keeps `redacted_source`, uses `num_step=28`,
-and produces a combined WAV for review. `technical-hd` preserves the same
-recipe with `num_step=32` for HD audio generation. TES does not mutate source
-text, does not enable CMU by default, and does not apply tags to faithful,
-exact, raw, literal, quoted user text, code, or command reads unless the user
-explicitly requested that provider-tag experiment. Repeating `confirmation-en`
-on every chunk is preserved only as an explicit experiment pattern, not as
-product default.
+`technical-live` and `technical-hd` use provider language `en`,
+`redacted_source`, no inline provider tag, and
+`instruct="male, middle-aged, low pitch"`. Live uses `num_step=28` for lower
+latency; HD uses `num_step=32` for audio review and was human-rated 9.3 at
+`instruct-premium-hd-20260601/01-instruct-male-middle-aged-low-pitch-num-step-32.wav`.
+TES does not mutate source text, does not enable CMU by default, and does not
+apply tags to faithful, exact, raw, literal, quoted user text, code, or command
+reads unless the user explicitly requested that provider-tag experiment.
+Repeating `confirmation-en` on every chunk is preserved only as an explicit
+experiment pattern, not as product default.
 
 The most promising enrichment path is practical and narrow:
 
@@ -253,11 +254,12 @@ python3 scripts/tes_tts_omnivoice_provider.py speak \
 
 Long reads should use a code-defined read profile, chunking, and combined WAV
 output. `technical-live` is the human-approved PT-BR interactive reference:
-direct resident OmniVoice, `language=en`, `redacted_source`, one `sigh` warmup
-on the first chunk only, `num_step=28`, chunk size `420`, `450 ms` combined-WAV
-silence, and buffered first audio. `technical-hd` is the audio/review profile
-with the same recipe at `num_step=32`. Compatibility aliases remain:
-`technical-streamer` maps to Live and `technical-quality` maps to HD.
+direct resident OmniVoice, `language=en`, `redacted_source`, no inline warmup
+tag, `instruct="male, middle-aged, low pitch"`, `num_step=28`, chunk size
+`420`, `450 ms` combined-WAV silence, and buffered first audio. `technical-hd`
+is the audio/review profile with the same recipe at `num_step=32`.
+Compatibility aliases remain: `technical-streamer` maps to Live and
+`technical-quality` maps to HD.
 
 ```bash
 python3 scripts/tes_tts_omnivoice_provider.py speak-long \

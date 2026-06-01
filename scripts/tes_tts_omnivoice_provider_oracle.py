@@ -156,6 +156,7 @@ REQUIRED_DRY_RUN_KEYS = {
     "latency_profile_source",
     "timing_attribution",
     "num_step",
+    "instruct",
     "prosody_warmup",
     "command_shape",
     "allows_install",
@@ -180,6 +181,7 @@ REQUIRED_BENCH_DRY_RUN_KEYS = {
     "requested_latency_profile",
     "latency_profile_source",
     "num_step",
+    "instruct",
     "result_json",
     "review_html",
     "package_zip",
@@ -228,6 +230,7 @@ REQUIRED_WARM_CACHE_DRY_RUN_KEYS = {
     "latency_profile_source",
     "timing_attribution",
     "num_step",
+    "instruct",
     "command_shape",
     "allows_install",
     "allows_download",
@@ -251,6 +254,7 @@ REQUIRED_SESSION_DRY_RUN_KEYS = {
     "latency_profile_source",
     "timing_attribution",
     "num_step",
+    "instruct",
     "latency_profiles",
     "command_shape",
     "allows_install",
@@ -294,6 +298,7 @@ REQUIRED_LONG_READ_DRY_RUN_KEYS = {
     "latency_profile_source",
     "timing_attribution",
     "num_step",
+    "instruct",
     "prosody_warmup",
     "prosody_warmup_scope",
     "protocol",
@@ -330,6 +335,7 @@ REQUIRED_LIVE_SMOKE_DRY_RUN_KEYS = {
     "requested_latency_profile",
     "latency_profile_source",
     "num_step",
+    "instruct",
     "protocol",
     "resident_model",
     "resident_voice_prompt",
@@ -1592,6 +1598,7 @@ def validate_direct_kernel_timing_contract() -> list[str]:
         metrics = kernel.synthesize(
             text="Teste com API e TypeScript.",
             language="pt",
+            instruct=None,
             output=output,
             num_step=8,
             guidance_scale=2.0,
@@ -1607,6 +1614,7 @@ def validate_direct_kernel_timing_contract() -> list[str]:
             t_shift=0.1,
             denoise=True,
             postprocess_output=True,
+            instruct=None,
         )
         _text_info, prepared_metrics = kernel.synthesize_prepared(
             source_text="Teste com API e TypeScript.",
@@ -1686,14 +1694,14 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
         "Node.js, TypeScript, Python, OpenAI, Docker e Kubernetes."
     )
 
-    redacted = kernel_module.provider_text(source, "pt-BR", "redacted_source", "sigh")
+    redacted = kernel_module.provider_text(source, "pt-BR", "redacted_source", "none")
     redacted_text = str(redacted.get("text", ""))
     if redacted.get("input_surface") != "source_text":
         failures.append("redacted_source provider mode must declare source_text input surface")
-    if redacted.get("prosody_warmup") != "sigh":
-        failures.append("human-rated PT-BR quality recipe must use sigh warmup by default")
-    if not redacted_text.startswith("[sigh] "):
-        failures.append("human-rated PT-BR quality recipe must prepend the approved sigh tag")
+    if redacted.get("prosody_warmup") != "none":
+        failures.append("human-rated PT-BR quality recipe must keep inline warmup tags disabled by default")
+    if redacted.get("provider_tag_inserted") is not False or redacted_text.startswith("["):
+        failures.append("human-rated PT-BR quality recipe must not prepend audible provider tags")
     spoken = kernel_module.provider_text(source, "pt-BR", "spoken_text")
     if redacted_text == str(spoken.get("text", "")):
         failures.append("human-rated quality recipe must not collapse into generic spoken_text")
@@ -1762,9 +1770,11 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
                     "--text-mode",
                     "spoken_text",
                     "--prosody-warmup",
-                    "none",
+                    "sigh",
                     "--prosody-warmup-scope",
-                    "first_chunk_only",
+                    "each_chunk",
+                    "--instruct",
+                    "female, high pitch",
                     "--latency-profile",
                     "fast",
                     "--num-step",
@@ -1800,10 +1810,12 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
         failures.append("technical-streamer alias must point to the live num_step=28 recipe")
     if streamer.get("latency_profile") != "quality":
         failures.append("num_step=28 live remains a quality-profile override, not a lower-quality profile")
-    if streamer.get("language_mode") != "en" or streamer.get("prosody_warmup") != "sigh":
-        failures.append("num_step=28 live candidate must preserve language en and sigh warmup")
-    if streamer.get("prosody_warmup_scope") != "first_chunk_only":
-        failures.append("num_step=28 live candidate must keep warmup scoped to the first chunk only")
+    if streamer.get("language_mode") != "en" or streamer.get("prosody_warmup") != "none":
+        failures.append("num_step=28 live candidate must preserve language en and disable audible warmup tags")
+    if streamer.get("prosody_warmup_scope") != "none":
+        failures.append("num_step=28 live candidate must keep warmup scope disabled")
+    if streamer.get("instruct") != provider_module.PTBR_TECHNICAL_INSTRUCT:
+        failures.append("num_step=28 live candidate must preserve the silent PT-BR technical instruct")
     if streamer.get("max_chunk_chars") != 420 or streamer.get("inter_chunk_silence_ms") != 450:
         failures.append("num_step=28 live candidate must preserve chunk size 420 and silence 450 ms")
     if streamer.get("combine_requested") is not True:
@@ -1812,10 +1824,12 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
         failures.append("num_step=28 live candidate must keep first-audio buffering enabled")
     if streamer.get("first_audio_chars") != 160 or streamer.get("first_audio_buffer_chunks") != 2:
         failures.append("num_step=28 live candidate must keep buffered streamer startup settings")
-    if hd.get("language_mode") != "en" or hd.get("prosody_warmup") != "sigh":
-        failures.append("HD audio recipe must preserve language en and sigh warmup")
-    if hd.get("prosody_warmup_scope") != "first_chunk_only":
-        failures.append("HD audio recipe must keep warmup scoped to the first chunk only")
+    if hd.get("language_mode") != "en" or hd.get("prosody_warmup") != "none":
+        failures.append("HD audio recipe must preserve language en and disable audible warmup tags")
+    if hd.get("prosody_warmup_scope") != "none":
+        failures.append("HD audio recipe must keep warmup scope disabled")
+    if hd.get("instruct") != provider_module.PTBR_TECHNICAL_INSTRUCT:
+        failures.append("HD audio recipe must preserve the silent PT-BR technical instruct")
     if hd.get("max_chunk_chars") != 420 or hd.get("inter_chunk_silence_ms") != 450:
         failures.append("HD audio recipe must preserve chunk size 420 and silence 450 ms")
     if hd.get("combine_requested") is not True:
@@ -1826,8 +1840,9 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
     if (
         profile_override.get("language_mode") != "en"
         or profile_override.get("text_mode") != "redacted_source"
-        or profile_override.get("prosody_warmup") != "sigh"
-        or profile_override.get("prosody_warmup_scope") != "first_chunk_only"
+        or profile_override.get("prosody_warmup") != "none"
+        or profile_override.get("prosody_warmup_scope") != "none"
+        or profile_override.get("instruct") != provider_module.PTBR_TECHNICAL_INSTRUCT
         or profile_override.get("latency_profile") != "quality"
         or profile_override.get("num_step") != 32
         or profile_override.get("max_chunk_chars") != 420
@@ -1837,10 +1852,12 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
 
     if payload.get("language_mode") != "en" or payload.get("chunk_languages") != ["en"]:
         failures.append("human-rated live recipe must synthesize with provider language en")
-    if payload.get("prosody_warmup") != "sigh":
-        failures.append("human-rated live dry-run must preserve sigh warmup")
-    if payload.get("prosody_warmup_scope") != "first_chunk_only":
-        failures.append("human-rated live dry-run must apply warmup only to the first chunk")
+    if payload.get("prosody_warmup") != "none":
+        failures.append("human-rated live dry-run must disable audible warmup tags")
+    if payload.get("prosody_warmup_scope") != "none":
+        failures.append("human-rated live dry-run must keep warmup scope disabled")
+    if payload.get("instruct") != provider_module.PTBR_TECHNICAL_INSTRUCT:
+        failures.append("human-rated live recipe must preserve the silent PT-BR technical instruct")
     if payload.get("latency_profile") != "quality":
         failures.append("human-rated live recipe must keep quality latency profile")
     if payload.get("num_step") != 28:

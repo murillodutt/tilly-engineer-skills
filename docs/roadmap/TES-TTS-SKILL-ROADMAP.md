@@ -52,24 +52,25 @@ durable conversion cache, or proactive `speak`.
 - Python cleanup removed obsolete lab execution copies from tracked source:
   the active provider surface is direct/resident only, timing is attributable,
   and voice prompt cache permissions are protected.
-- Human A/B evidence ranked OmniVoice tag-only prosody above CMU-heavy output:
-  `03-tag-only.wav` beat `04-cmu-plus-tag.wav`; later warmup ranking placed
-  `confirmation-en`, `question-en`, and `sigh` above natural/no-tag variants.
+- Human A/B evidence first ranked OmniVoice tag-only prosody above CMU-heavy
+  output, then found the better product route: keep tags experimental and use
+  the silent voice-design channel for default prosody.
 - OPW-001 exposed `--prosody-warmup none|confirmation-en|question-en|sigh`
   on the direct provider path and generated comparison WAVs at
   `~/.tes/runtime/tes-tts/omnivoice/provider-cache/audio-reference-runs/opw-001-prosody-warmup-20260531-210442/`.
 - A regression review found that pre-running `tes_tts_runtime.py` before
   OmniVoice long reads weakened technical identity and pauses; provider oracles
   now guard source-text quality modes and compact enumeration pauses.
-- The long-read recipe is now code-defined from the approved PT-BR baseline:
-  `technical-live` defaults to the `02-sigh-once` shape from
-  `formula-light-tag-once-20260601-000635`, using direct resident OmniVoice,
-  provider language `en`, `redacted_source`, a single `sigh` warmup on the
-  first chunk only, `num_step=28`, chunk size `420`, `450 ms` combined-WAV
-  silence, first-audio buffering, and `combined.wav` review output.
-  `technical-hd` preserves the same recipe with `num_step=32` for HD audio
-  generation. Compatibility aliases remain: `technical-streamer` maps to Live
-  and `technical-quality` maps to HD; 26 remains rejected.
+- The long-read recipe is code-defined from the approved PT-BR baseline:
+  `technical-live` now uses direct resident OmniVoice, provider language `en`,
+  `redacted_source`, no inline provider tag, silent instruct
+  `male, middle-aged, low pitch`, `num_step=28`, chunk size `420`, `450 ms`
+  combined-WAV silence, first-audio buffering, and `combined.wav` review
+  output. `technical-hd` preserves the same recipe with `num_step=32`; the
+  comparison WAV
+  `~/.tes/runtime/tes-tts/omnivoice/provider-cache/audio-reference-runs/instruct-premium-hd-20260601/01-instruct-male-middle-aged-low-pitch-num-step-32.wav`
+  was human-rated 9.3. Compatibility aliases remain: `technical-streamer` maps
+  to Live and `technical-quality` maps to HD; 26 remains rejected.
 
 ## Next Cut
 Focus the next direct/resident streamer cut on real same-input audio comparison

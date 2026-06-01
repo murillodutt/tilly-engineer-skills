@@ -76,24 +76,26 @@ python3 scripts/tes_tts_omnivoice_provider.py speak-long \
   --play
 ```
 
-The current human-rated PT-BR baseline is the `02-sigh-once` recipe from
-`formula-light-tag-once-20260601-000635`, approved as the long-read product
-default after direct comparison. It uses direct resident OmniVoice, provider
-language `en`, `redacted_source`, a single `sigh` warmup on the first chunk
-only, chunk size `420`, `450 ms` combined-WAV silence, first-audio buffering,
-and `combined.wav` review output. The Live profile keeps `num_step=28`; the HD
-audio profile uses the same shape with `num_step=32`. Preserve this shape
-unless a newer human-rated reference supersedes it. Prepare the text with
-natural Portuguese narration, keep fragile paths and URLs as useful references,
-redact secrets before speech, and group difficult English technical terms in a
-short English phrase when that improves pronunciation.
+The current human-rated PT-BR baseline is the silent `instruct` recipe from
+`instruct-premium-hd-20260601`, approved after direct comparison against the
+earlier `02-sigh-once` warmup. It uses direct resident OmniVoice, provider
+language `en`, `redacted_source`, no inline provider tag, voice-design
+`instruct="male, middle-aged, low pitch"`, chunk size `420`, `450 ms`
+combined-WAV silence, and `combined.wav` review output. The Live profile keeps
+`num_step=28`; the HD audio profile uses the same shape with `num_step=32` and
+was human-rated 9.3. Preserve this shape unless a newer human-rated reference
+supersedes it. Prepare the text with natural Portuguese narration, keep fragile
+paths and URLs as useful references, redact secrets before speech, and group
+difficult English technical terms in a short English phrase when that improves
+pronunciation.
 
 Two code-defined long-read profiles are valid:
 
 - `technical-live` is the default PT-BR long-read profile. It uses provider
-  language `en`, `redacted_source`, `sigh` on the first chunk only,
-  `quality`/`num_step=28`, chunk size `420`, `450 ms` combined-WAV silence,
-  first-audio buffering, and `combined.wav` review output.
+  language `en`, `redacted_source`, no inline warmup tag, the silent instruct
+  `male, middle-aged, low pitch`, `quality`/`num_step=28`, chunk size `420`,
+  `450 ms` combined-WAV silence, first-audio buffering, and `combined.wav`
+  review output.
 - `technical-hd` is the high-definition audio/review profile. It preserves the
   same PT-BR recipe with `num_step=32` and no live first-audio buffering.
 - `technical-streamer` is a compatibility alias for `technical-live`;
@@ -112,13 +114,13 @@ request-local provider text. `?` and `!` are allowed as textual punctuation
 after the 9.2 punctuation test. The `combined.wav` is the review authority;
 chunk-by-chunk `afplay` is diagnostic and may have extra player startup pauses.
 
-For conversational OmniVoice quality reads, use the profile-managed single
-`sigh` warmup with provider language `en`. Do not repeat warmup tags on every
-chunk: the repeated `confirmation-en` path produced audible non-verbal starts
-and is no longer the product default. `confirmation-en` and `question-en`
-remain A/B alternatives for explicit experiments. Warmup tags are provider-only
-text and must not be used for faithful, exact, raw, literal, quoted user text,
-code, or command reads unless the user explicitly requested a tag experiment.
+For conversational OmniVoice quality reads, use the profile-managed silent
+`instruct` with provider language `en`. Do not use `[sigh]` as product default:
+it improved prosody but introduced an audible effect at the start of speech.
+`sigh`, `confirmation-en`, and `question-en` remain A/B alternatives for
+explicit experiments. Warmup tags are provider-only text and must not be used
+for faithful, exact, raw, literal, quoted user text, code, or command reads
+unless the user explicitly requested a tag experiment.
 
 ## Speech Invariants
 

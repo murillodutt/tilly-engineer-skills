@@ -76,11 +76,13 @@ PROSODY_WARMUP_CHOICES = ("none", "confirmation-en", "question-en", "sigh")
 LONG_READ_PROSODY_WARMUP_SCOPES = ("first_chunk_only", "each_chunk")
 LONG_READ_PROFILE_CHOICES = ("manual", "technical-live", "technical-hd", "technical-quality", "technical-streamer")
 DEFAULT_LONG_READ_PROFILE = "technical-live"
+PTBR_TECHNICAL_INSTRUCT = "male, middle-aged, low pitch"
 LONG_READ_LIVE_PROFILE = {
     "language": "en",
     "text_mode": "redacted_source",
-    "prosody_warmup": "sigh",
-    "prosody_warmup_scope": "first_chunk_only",
+    "prosody_warmup": "none",
+    "prosody_warmup_scope": "none",
+    "instruct": PTBR_TECHNICAL_INSTRUCT,
     "latency_profile": "quality",
     "num_step": 28,
     "chunk_chars": 420,
@@ -94,8 +96,9 @@ LONG_READ_LIVE_PROFILE = {
 LONG_READ_HD_PROFILE = {
     "language": "en",
     "text_mode": "redacted_source",
-    "prosody_warmup": "sigh",
-    "prosody_warmup_scope": "first_chunk_only",
+    "prosody_warmup": "none",
+    "prosody_warmup_scope": "none",
+    "instruct": PTBR_TECHNICAL_INSTRUCT,
     "latency_profile": "quality",
     "num_step": 32,
     "chunk_chars": 420,
@@ -441,7 +444,7 @@ def command_status(args: argparse.Namespace) -> int:
 
 def common_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path) -> list[str]:
     apply_latency_profile(args)
-    return [
+    tokens = [
         "--model",
         args.model,
         "--language",
@@ -469,6 +472,9 @@ def common_runtime_arg_tokens(args: argparse.Namespace, ref_audio: Path) -> list
         "--denoise" if args.denoise else "--no-denoise",
         "--postprocess-output" if args.postprocess_output else "--no-postprocess-output",
     ]
+    if getattr(args, "instruct", None):
+        tokens.extend(["--instruct", args.instruct])
+    return tokens
 
 
 def apply_latency_profile(args: argparse.Namespace) -> argparse.Namespace:
@@ -1562,6 +1568,7 @@ def command_warm_cache(args: argparse.Namespace) -> int:
                 **latency_profile_metadata(args),
                 **timing_attribution_metadata("dry_run_prepare_prompt"),
                 "num_step": args.num_step,
+                "instruct": args.instruct,
                 "command_shape": redact_command_value(command, "--ref-text"),
                 "allows_install": False,
                 "allows_download": False,
@@ -1655,6 +1662,7 @@ def command_session(args: argparse.Namespace) -> int:
                 **latency_profile_metadata(args),
                 **timing_attribution_metadata("dry_run_resident_session"),
                 "num_step": args.num_step,
+                "instruct": args.instruct,
                 "latency_profiles": LATENCY_PROFILES,
                 "command_shape": redact_command_value(command, "--ref-text"),
                 "allows_install": False,
@@ -1780,6 +1788,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
                 **latency_profile_metadata(args),
                 **timing_attribution_metadata("dry_run_resident_long_read"),
                 "num_step": args.num_step,
+                "instruct": args.instruct,
                 "protocol": "jsonl_stdin_stdout",
                 "resident_model": True,
                 "resident_voice_prompt": True,
@@ -2062,6 +2071,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
         **latency_profile_metadata(args),
         **timing_attribution_metadata("resident_long_read"),
         "num_step": args.num_step,
+        "instruct": args.instruct,
         "resident_model": True,
         "resident_voice_prompt": True,
         "fallback_used": False,
@@ -2163,6 +2173,7 @@ def command_live_smoke(args: argparse.Namespace) -> int:
                 "latency_profile": args.latency_profile,
                 **latency_profile_metadata(args),
                 "num_step": args.num_step,
+                "instruct": args.instruct,
                 "protocol": "jsonl_stdin_stdout",
                 "resident_model": True,
                 "resident_voice_prompt": True,
@@ -2258,6 +2269,7 @@ def command_live_smoke(args: argparse.Namespace) -> int:
         **latency_profile_metadata(args),
         **timing_attribution_metadata("resident_live_smoke"),
         "num_step": args.num_step,
+        "instruct": args.instruct,
         "resident_model": True,
         "resident_voice_prompt": True,
         "error": error,
@@ -2348,6 +2360,7 @@ def run_short_speak_in_process(
         **latency_profile_metadata(args),
         **timing_attribution_metadata("direct_short_read"),
         "num_step": args.num_step,
+        "instruct": args.instruct,
         "text_mode": text_info["mode"],
         "prosody_warmup": text_info.get("prosody_warmup", "none"),
         "prosody_warmup_tag": text_info.get("prosody_warmup_tag"),
@@ -2436,6 +2449,7 @@ def command_speak(args: argparse.Namespace) -> int:
                 **latency_profile_metadata(args),
                 **timing_attribution_metadata("dry_run_short_read"),
                 "num_step": args.num_step,
+                "instruct": args.instruct,
                 "prosody_warmup": args.prosody_warmup,
                 "command_shape": [
                     provider_python,
@@ -2578,6 +2592,7 @@ def command_bench(args: argparse.Namespace) -> int:
                 "latency_profile": args.latency_profile,
                 **latency_profile_metadata(args),
                 "num_step": args.num_step,
+        "instruct": args.instruct,
                 "result_json": str(output_dir / "result.json"),
                 "review_html": str(output_dir / "review.html"),
                 "package_zip": str(output_dir / "tes-tts-omnivoice-review-package.zip"),
@@ -3065,6 +3080,7 @@ def synthesize_once(
     return kernel.synthesize(
         text=text,
         language=language,
+        instruct=getattr(args, "instruct", None),
         output=output,
         num_step=args.num_step,
         guidance_scale=args.guidance_scale,
@@ -3102,6 +3118,7 @@ def command_prepare_prompt(args: argparse.Namespace) -> int:
             **latency_profile_metadata(args),
             **timing_attribution_metadata("prepare_prompt"),
             "num_step": args.num_step,
+            "instruct": args.instruct,
             "model_load_ms": kernel.model_load_ms,
             "provider_model_load_ms": kernel.model_load_ms,
             "provider_prepare_ms": provider_prepare_ms(kernel),
@@ -3149,6 +3166,7 @@ def command_synthesize(args: argparse.Namespace) -> int:
             **latency_profile_metadata(args),
             **timing_attribution_metadata("synthesize"),
             "num_step": args.num_step,
+            "instruct": args.instruct,
             "text_mode": text_info["mode"],
             "prosody_warmup": text_info.get("prosody_warmup", "none"),
             "prosody_warmup_tag": text_info.get("prosody_warmup_tag"),
@@ -3230,6 +3248,7 @@ def command_batch(args: argparse.Namespace) -> int:
             **latency_profile_metadata(args),
             **timing_attribution_metadata("batch"),
             "num_step": args.num_step,
+            "instruct": args.instruct,
             "model_load_ms": kernel.model_load_ms,
             "provider_model_load_ms": kernel.model_load_ms,
             "provider_prepare_ms": provider_prepare_ms(kernel),
@@ -3272,6 +3291,7 @@ def command_serve(args: argparse.Namespace) -> int:
             **latency_profile_metadata(args),
             **timing_attribution_metadata("serve_startup"),
             "num_step": args.num_step,
+            "instruct": args.instruct,
             "output_dir": str(out_dir),
             "model_load_ms": kernel.model_load_ms,
             "provider_model_load_ms": kernel.model_load_ms,
@@ -3332,6 +3352,7 @@ def command_serve(args: argparse.Namespace) -> int:
                     **latency_profile_metadata(args),
                     **timing_attribution_metadata("resident_utterance"),
                     "num_step": args.num_step,
+                    "instruct": args.instruct,
                     "text_mode": text_info["mode"],
                     "prosody_warmup": text_info.get("prosody_warmup", "none"),
                     "prosody_warmup_tag": text_info.get("prosody_warmup_tag"),
@@ -3391,6 +3412,10 @@ def add_runtime_args(parser: argparse.ArgumentParser, *, ref_audio_required: boo
         choices=PROSODY_WARMUP_CHOICES,
         default="none",
         help="Optional OmniVoice provider-only prosody warmup tag for explicit conversational experiments.",
+    )
+    parser.add_argument(
+        "--instruct",
+        help="Optional OmniVoice voice-design instruction; code-defined profiles use this for silent prosody.",
     )
     parser.add_argument("--num-step", type=int)
     parser.add_argument("--guidance-scale", type=float, default=2.0)

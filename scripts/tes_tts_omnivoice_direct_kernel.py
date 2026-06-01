@@ -213,6 +213,7 @@ class DirectOmniVoiceKernel:
         *,
         text: str,
         language: str,
+        instruct: str | None,
         output: Path,
         num_step: int,
         guidance_scale: float,
@@ -228,6 +229,7 @@ class DirectOmniVoiceKernel:
                 text=text,
                 language=language,
                 voice_clone_prompt=self.voice_prompt,
+                instruct=instruct,
                 num_step=num_step,
                 guidance_scale=guidance_scale,
                 speed=speed,
@@ -266,6 +268,7 @@ class DirectOmniVoiceKernel:
         audio_metrics = self.synthesize(
             text=text_info["text"],
             language=language,
+            instruct=getattr(args, "instruct", None),
             output=output,
             num_step=args.num_step,
             guidance_scale=args.guidance_scale,
