@@ -15,7 +15,7 @@ Date: 2026-05-27.
 ## Summary
 
 TES executes the four serial waves planned in
-`docs/roadmap/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md`. The Cortex MCP
+`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md`. The Cortex MCP
 installer at `scripts/install_mcp.py` becomes a host-agnostic orchestrator
 that delegates to per-host adapter modules under
 `scripts/install_mcp_hosts/**`. Each adapter owns one host's exact schema for

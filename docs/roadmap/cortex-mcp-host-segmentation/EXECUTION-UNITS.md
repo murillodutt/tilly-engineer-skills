@@ -11,7 +11,7 @@ tver: 0.1.0
 # Cortex MCP Host Segmentation Execution Units
 
 This document is the execution-detail companion to
-`docs/roadmap/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md`.
+`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md`.
 
 Read the canonical Super SPEC first. Use this file only for the current
 execution unit, so the installer can advance in small auditable waves without
@@ -24,7 +24,7 @@ implementation, not a new server authority.
 
 Allowed files:
 
-- `docs/roadmap/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md`
+- `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md`
 - `docs/roadmap/cortex-mcp-host-segmentation/EXECUTION-UNITS.md`
 - `docs/mesh/**`
 - `docs/tds/DOCS-INDEX.yml`

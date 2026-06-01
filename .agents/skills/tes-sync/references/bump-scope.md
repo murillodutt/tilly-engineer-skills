@@ -65,7 +65,7 @@ Every `/tes-sync` scope touches the source identity set:
 | Doc index | `docs/INDEX.md` | "Public installer bundle" row |
 | Codex doc | `docs/adapters/CODEX.md` | "Project version" |
 | Roadmap | `docs/roadmap/README.md` | baseline sentence |
-| RC roadmap | `docs/roadmap/RC1-READINESS-ROADMAP.md` | "Package version" |
+| RC roadmap | `docs/roadmap/product/RC1-READINESS-ROADMAP.md` | "Package version" |
 | Script constants | `scripts/**.py` | `VERSION = "<old>"` (bulk sed safe) |
 | Validator paths | `scripts/validate_reference_package.py` | `docs/dist/<old>/...` (3 entries) — see trap |
 | Oracle fixture | `scripts/project_alignment_oracle.py` | `tes_version: <old>` |

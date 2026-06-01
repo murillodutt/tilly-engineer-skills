@@ -41,7 +41,7 @@ from tes_tts_omnivoice_runtime_support import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.149"
+VERSION = "0.3.150"
 DEFAULT_MODEL = "k2-fsa/OmniVoice"
 DEFAULT_LANGUAGE = "pt"
 AUTO_LANGUAGE = "auto"

@@ -35,7 +35,7 @@ TES `0.3.137` implements two portable corrections:
 | Runtime bootloader/rule routers | `src/adapters/codex/AGENTS.md`, `src/adapters/claude/CLAUDE.md`, `src/adapters/cursor/rules/**` |
 | Installer docs | `docs/install/**` |
 | Cortex docs | `docs/mesh/CORTEX.md` |
-| Planning artifact | `docs/roadmap/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
+| Planning artifact | `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
 
 ## Release Identity
 

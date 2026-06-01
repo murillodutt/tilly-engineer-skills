@@ -1,5 +1,5 @@
 {
-  "version": "0.3.149",
+  "version": "0.3.150",
   "usage": "hot_path_span_matcher_contract",
   "runtime_output": false,
   "provider_timing": "out_of_scope",

@@ -11,7 +11,7 @@ tver: 0.1.0
 # Cortex Hardening Report
 
 This report closes the Cortex hardening sequence from
-`docs/roadmap/GOAL-SUPER-SPEC-cortex-hardening.md`.
+`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-hardening.md`.
 
 ## Claim
 

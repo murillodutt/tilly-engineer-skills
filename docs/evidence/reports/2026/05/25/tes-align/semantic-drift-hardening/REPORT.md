@@ -22,7 +22,7 @@ structural mesh completeness. Carry the mechanism in TES while leaving the
 vocabulary to the target project.
 
 Source brief:
-`docs/roadmap/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md`.
+`docs/roadmap/product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md`.
 
 ## Origin Failure Pattern
 

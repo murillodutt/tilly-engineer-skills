@@ -11,92 +11,91 @@ tver: 0.1.4
 # Roadmap Index
 
 This folder preserves roadmap lineage without turning the roadmap into the
-work. Older v1 planning documents remain auditable, but active execution must
-use the smallest current authority for each line.
+work. The root is only an index; Current package baseline: TES `0.3.150`.
 
-## Current Line
+execution authority lives in the current
+dashboard, Super SPEC, prompt, or audit record for each line.
 
-| Line | Status | Document |
-|------|--------|----------|
-| Cortex MCP capability expansion | Active | `GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md` |
-| Cortex MCP host segmentation | Active | `GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md` |
-| TES Memory Lifecycle implementation | Complete | `GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
-| Cortex memory benchmark harness | Active | `GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
-| TES anti-contamination hardening | Active | `GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md` |
-| TES postinstall and Cortex curation hardening | Active | `GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
-| TES postinstall recovery contract symmetry | Active | `GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md` |
-| TES NPX MCP convergence | Active | `GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
-| TES installed certification and Field Reports hardening | Active | `GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
-| TES TTS product line | Active | `TES-TTS-SKILL-ROADMAP.md` |
-| TES TTS registry | Active | `TES-TTS-SKILL-ROADMAP-REGISTRY.md` |
-| TES TTS history | Active | `TES-TTS-SKILL-ROADMAP-HISTORY.md` |
-| TES TTS acceptance and release decision | Active | `TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
-| TES TTS active/runtime sequences | Active/Complete | TTS, SPEC, OWNER, CAP, LEX, RTE, and OmniVoice lineage are indexed in the TES TTS roadmap registry/history, not expanded here. |
-| RC1 readiness cleanup | Active | `RC1-READINESS-ROADMAP.md` |
-| Cortex hardening sequence | Complete | `GOAL-SUPER-SPEC-cortex-hardening.md` |
-| TES Align semantic drift hardening | Proposed | `TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
-| Flash-Fry skill gap | Proposed | `FLASH-FRY-SKILL-SPEC.md` |
-| V1 convergence lineage | Historical | `V1-CONVERGENCE-LOOP.md` |
-| V1 goal checklist | Historical | `V1-GOAL-CHECKLIST.md` |
-| 2026-05-05 continuity letter | Historical | `NEXT-STEPS-LETTER-2026-05-05.md` |
-| Senior mentorship context | Historical | `SENIOR-MENTORSHIP-CONTEXT-2026-05-05.md` |
+## Folder Map
 
-## Baseline
+| Folder | Purpose |
+|--------|---------|
+| `goals/super-specs/` | Active and historical Goal Super SPECs. |
+| `goals/prompts/tes-tts/` | TES TTS circular execution prompts. |
+| `tes-tts/` | TES TTS dashboard, registry, audits, specs, and runtime records. |
+| `product/` | Product-wide roadmap proposals and readiness work. |
+| `archive/v1/` | V1 convergence lineage retained for audit. |
+| `archive/notes/` | Historical continuity notes. |
+| `cortex-*/*` | Existing Cortex execution-unit partitions. |
 
-The current release-readiness baseline is TES `0.3.149`, after ADR 0001 memory
-lifecycle implementation, postinstall/Cortex curation hardening, Cortex
-reflection slug hygiene, and ADR 0002 governed MCP remember closed locally with
-clean bundle metadata. Remote tag/ref release certification is still deferred.
+## Current Lines
 
-The next work is not to create a release. The next work is to remove obvious
-pre-RC1 friction:
+| Line | Status | Authority |
+|------|--------|-----------|
+| TES TTS | Active | `tes-tts/TES-TTS-SKILL-ROADMAP.md` |
+| TES TTS registry | Active | `tes-tts/TES-TTS-SKILL-ROADMAP-REGISTRY.md` |
+| TES TTS history | Active | `tes-tts/TES-TTS-SKILL-ROADMAP-HISTORY.md` |
+| TES TTS acceptance/release decision | Active | `tes-tts/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
+| Cortex MCP capability expansion | Active | `goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md` |
+| Cortex MCP host segmentation | Active | `goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md` |
+| Cortex memory benchmark harness | Active | `goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
+| TES anti-contamination hardening | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md` |
+| TES postinstall/Cortex hardening | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
+| TES postinstall recovery symmetry | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md` |
+| TES NPX MCP convergence | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
+| TES installed certification and Field Reports | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
+| RC1 readiness cleanup | Active | `product/RC1-READINESS-ROADMAP.md` |
+| TES Align semantic drift hardening | Proposed | `product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
+| Flash-Fry skill gap | Proposed | `product/FLASH-FRY-SKILL-SPEC.md` |
+| TES memory lifecycle | Complete | `goals/super-specs/GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
+| Cortex hardening sequence | Complete | `goals/super-specs/GOAL-SUPER-SPEC-cortex-hardening.md` |
+| V1 convergence lineage | Historical | `archive/v1/` |
+| 2026-05-05 continuity notes | Historical | `archive/notes/` |
 
-- documentation freshness;
-- root structure clarity;
-- GitHub community and security documents;
-- GitHub Pages landing;
-- no overclaim against deferred or partial surfaces.
+## TES TTS Navigation
+
+Use `tes-tts/TES-TTS-SKILL-ROADMAP.md` for current state and next action.
+Use `tes-tts/TES-TTS-SKILL-ROADMAP-REGISTRY.md` for durable pointers to
+runtime scripts, fixtures, benchmark records, and grouped prompt ranges.
+Use `tes-tts/TES-TTS-SKILL-ROADMAP-HISTORY.md` for closed lineage and lessons.
+
+TES TTS prompt artifacts are intentionally grouped under
+`goals/prompts/tes-tts/`; do not expand every prompt in this root index.
 
 ## Operating Rule
 
-Keep this root index short and partitioned:
+Keep this index short and partitioned:
 
 - Use one row per active product line or grouped historical family.
-- Do not list every prompt, SPEC, or audit file here when a line has its own
-  dashboard, registry, or history.
-- Keep this index and active dashboards under their explicit
-  `validate_doc_size.py` budgets. When a roadmap approaches the limit,
-  partition it before adding more status.
-- Active dashboards carry current decisions; registries carry dense artifact
-  pointers; history files carry closed lineage.
-- Every update must reduce ambiguity for the next executor.
+- Do not list every prompt, SPEC, audit, or owner-decision record here.
+- Active dashboards carry current decisions.
+- Registries carry dense artifact pointers.
+- History files carry closed lineage.
+- Every roadmap update must reduce ambiguity for the next executor.
 
 Roadmap partition budgets are enforced by `scripts/validate_doc_size.py`.
-`tes-tts` also has a structural partition oracle. Generic roadmap warning
-starts at 75%; the `tes-tts` dashboard has a 100-line hard limit, with review
-at 75 lines.
+`tes-tts` also has `scripts/tes_tts_roadmap_partition_oracle.py`.
 
 | Partition | Limit | Purpose |
 |-----------|-------|---------|
-| Root index | 140 lines | Active product lines only. |
+| Root index | 140 lines | Active product lines and folder map only. |
 | Active dashboard | 100 lines | Current state, decisions, latest evidence, next cut. |
 | Registry | 160 lines | Stable artifact pointers and grouped ranges. |
 | History | 140 lines | Closed lineage and lessons. |
 
 When a dashboard reaches the warning zone, move detail to registry/history
-before adding new status. If current evidence needs more than four bullets,
-keep only the conclusion in the dashboard and move details to partitioned
-surfaces. Ambiguous, repeated, or stale status is a defect, not documentation.
+before adding new status. Ambiguous, repeated, or stale roadmap text is a
+defect to fix in the same execution cycle.
 
-Roadmap updates must classify their status clearly:
+## Status Vocabulary
 
 | Status | Meaning |
 |--------|---------|
-| Active | Current planning authority |
-| Needs rewrite | Existing artifact is retained, but should be rewritten before it is reused as execution authority |
-| Historical | Retained for lineage, not the next execution source |
-| Deferred | Intentionally postponed with reason |
-| Complete | Closed by evidence or replaced by a newer source |
+| Active | Current planning authority. |
+| Proposed | Retained proposal; not execution authority without owner choice. |
+| Historical | Retained for lineage, not the next execution source. |
+| Deferred | Intentionally postponed with reason. |
+| Complete | Closed by evidence or replaced by a newer source. |
 
-Do not delete old roadmap documents merely because they are outdated. Add a
-new active document and make the lineage explicit.
+Do not delete old roadmap documents merely because they are outdated. Move
+them to the right partition and make the lineage explicit.

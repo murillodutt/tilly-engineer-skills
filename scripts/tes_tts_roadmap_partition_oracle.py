@@ -15,9 +15,9 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DASHBOARD = ROOT / "docs/roadmap/TES-TTS-SKILL-ROADMAP.md"
-REGISTRY = ROOT / "docs/roadmap/TES-TTS-SKILL-ROADMAP-REGISTRY.md"
-HISTORY = ROOT / "docs/roadmap/TES-TTS-SKILL-ROADMAP-HISTORY.md"
+DASHBOARD = ROOT / "docs/roadmap/tes-tts/TES-TTS-SKILL-ROADMAP.md"
+REGISTRY = ROOT / "docs/roadmap/tes-tts/TES-TTS-SKILL-ROADMAP-REGISTRY.md"
+HISTORY = ROOT / "docs/roadmap/tes-tts/TES-TTS-SKILL-ROADMAP-HISTORY.md"
 
 LIMITS = {
     DASHBOARD: 100,

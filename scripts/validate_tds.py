@@ -140,11 +140,14 @@ def git_visible_doc_paths() -> set[Path]:
     )
     if result.returncode != 0:
         return {path.relative_to(ROOT) for path in DOCS.rglob("*.md")}
-    return {
-        Path(raw.decode("utf-8"))
-        for raw in result.stdout.split(b"\0")
-        if raw and Path(raw.decode("utf-8")).suffix == ".md"
-    }
+    paths: set[Path] = set()
+    for raw in result.stdout.split(b"\0"):
+        if not raw:
+            continue
+        relpath = Path(raw.decode("utf-8"))
+        if relpath.suffix == ".md" and (ROOT / relpath).exists():
+            paths.add(relpath)
+    return paths
 
 
 def validate_entry(entry: dict[str, str]) -> list[str]:

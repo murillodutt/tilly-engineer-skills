@@ -37,7 +37,7 @@ level:
 | Runner | `scripts/cortex_memory_benchmark.py` |
 | Oracle | `scripts/cortex_memory_oracle.py` |
 | Compare tool | `scripts/cortex_memory_compare.py` |
-| Planning source | `docs/roadmap/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
+| Planning source | `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
 | Execution units | `docs/roadmap/cortex-memory-benchmark-harness/EXECUTION-UNITS.md` |
 
 ## Release Identity

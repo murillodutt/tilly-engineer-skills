@@ -57,8 +57,8 @@ TES adopts this architectural boundary:
 The detailed architecture and execution plan are intentionally not embedded in
 this ADR. They live in roadmap SPECs:
 
-- `docs/roadmap/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md`
-- `docs/roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md`
+- `docs/roadmap/tes-tts/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md`
+- `docs/roadmap/tes-tts/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md`
 
 ## Invariants
 

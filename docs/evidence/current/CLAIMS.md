@@ -134,7 +134,7 @@ subagents as parent-return evidence only. ADR 0002 separately governs the MCP
 remember write lane.
 
 Proof: `docs/adr/0001-tes-memory-lifecycle.md`,
-`docs/roadmap/GOAL-SUPER-SPEC-tes-memory-lifecycle.md`,
+`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-memory-lifecycle.md`,
 `docs/evidence/reports/2026/05/26/memory-lifecycle/wave7-release-canary/REPORT.md`,
 and the Wave 1-6 commits named in that report.
 
@@ -151,7 +151,7 @@ level. It preserves Cortex Markdown as durable memory truth and treats recall
 artifacts, scores, checkpoints, comparisons, and reports as evidence only.
 
 Proof: `docs/evals/CORTEX-MEMORY-BENCHMARKS.md`,
-`docs/roadmap/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md`,
+`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md`,
 `docs/roadmap/cortex-memory-benchmark-harness/EXECUTION-UNITS.md`,
 `scripts/cortex_memory_benchmark.py`, `scripts/cortex_memory_oracle.py`,
 `scripts/cortex_memory_compare.py`, and
@@ -170,7 +170,7 @@ TES `0.3.137` adds explicit first-session `needs_review` recovery and narrows
 Cortex split detection so evidence-dense cells are not blocked solely by one
 extra evidence bullet.
 
-Proof: `docs/roadmap/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md`,
+Proof: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md`,
 `scripts/tes_install.py`, `scripts/cortex.py`,
 `scripts/command_trigger_oracle.py`, and
 `docs/evidence/reports/2026/05/27/tes-postinstall-cortex-hardening/REPORT.md`.

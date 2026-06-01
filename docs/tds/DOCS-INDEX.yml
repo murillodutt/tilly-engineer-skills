@@ -1,4 +1,4 @@
-version: 0.3.149
+version: 0.3.150
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -183,959 +183,966 @@ documents:
     consumer: Continue.dev, Aider, and other installing LLMs
     source_of_truth: true
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md
+  - path: docs/roadmap/tes-tts/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md
     id: roadmap.tes_tts_normalization_architecture_spec
     class: roadmap
     status: proposed
     consumer: maintainers, tes-tts maintainers, adapter authors, and provider reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md
+  - path: docs/roadmap/tes-tts/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md
     id: roadmap.tes_tts_normalization_execution_spec
     class: roadmap
     status: proposed
     consumer: maintainers, tes-tts maintainers, adapter authors, and validation authors
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-SKILL-ROADMAP.md
+  - path: docs/roadmap/tes-tts/TES-TTS-SKILL-ROADMAP.md
     id: roadmap.tes_tts_skill_roadmap
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-SKILL-ROADMAP-REGISTRY.md
+  - path: docs/roadmap/tes-tts/TES-TTS-SKILL-ROADMAP-REGISTRY.md
     id: roadmap.tes_tts_skill_roadmap_registry
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-SKILL-ROADMAP-HISTORY.md
+  - path: docs/roadmap/tes-tts/TES-TTS-SKILL-ROADMAP-HISTORY.md
     id: roadmap.tes_tts_skill_roadmap_history
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-RUNTIME-PYTHON-OPTIMIZATION-AUDIT.md
+  - path: docs/roadmap/tes-tts/TES-TTS-RUNTIME-PYTHON-OPTIMIZATION-AUDIT.md
     id: roadmap.tes_tts_runtime_python_optimization_audit
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-RTO-001-provider-hot-path-split.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTO-001-provider-hot-path-split.md
     id: roadmap.goal_prompt_tes_tts_rto_001_provider_hot_path_split
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-RTO-002-provider-oracle-partition.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTO-002-provider-oracle-partition.md
     id: roadmap.goal_prompt_tes_tts_rto_002_provider_oracle_partition
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-RTO-003-timing-attribution-cleanup.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTO-003-timing-attribution-cleanup.md
     id: roadmap.goal_prompt_tes_tts_rto_003_timing_attribution_cleanup
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-RTO-004-direct-kernel-boundary-hardening.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTO-004-direct-kernel-boundary-hardening.md
     id: roadmap.goal_prompt_tes_tts_rto_004_direct_kernel_boundary_hardening
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-RTO-005-instruction-normalizer-runtime-alignment.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTO-005-instruction-normalizer-runtime-alignment.md
     id: roadmap.goal_prompt_tes_tts_rto_005_instruction_normalizer_runtime_alignment
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TFA-001-buffered-first-audio-benchmark.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TFA-001-buffered-first-audio-benchmark.md
     id: roadmap.goal_prompt_tes_tts_tfa_001_buffered_first_audio_benchmark
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-TFA-001-BUFFERED-FIRST-AUDIO-BENCHMARK.md
+  - path: docs/roadmap/tes-tts/TES-TTS-TFA-001-BUFFERED-FIRST-AUDIO-BENCHMARK.md
     id: roadmap.tes_tts_tfa_001_buffered_first_audio_benchmark
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L3
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
+  - path: docs/roadmap/tes-tts/TES-TTS-LAB-STREAMING-LATENCY-ROADMAP.md
+    id: roadmap.tes_tts_lab_streaming_latency_roadmap
+    class: roadmap
+    status: archived
+    consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
+    source_of_truth: false
+    evidence_level: L3
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md
     id: roadmap.goal_super_spec_tes_tts_sequential_convergence
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, oracle authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-000-preflight-and-baseline.md
     id: roadmap.goal_prompt_tes_tts_tts_000_preflight_and_baseline
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-001-roadmap-and-spec-coherence.md
     id: roadmap.goal_prompt_tes_tts_tts_001_roadmap_and_spec_coherence
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-002-default-language-selector.md
     id: roadmap.goal_prompt_tes_tts_tts_002_default_language_selector
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-003-fixture-schema.md
     id: roadmap.goal_prompt_tes_tts_tts_003_fixture_schema
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-004-fixture-corpus.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-004-fixture-corpus.md
     id: roadmap.goal_prompt_tes_tts_tts_004_fixture_corpus
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-005-instruction-normalizer-oracle.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-005-instruction-normalizer-oracle.md
     id: roadmap.goal_prompt_tes_tts_tts_005_instruction_normalizer_oracle
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-006-provider-probe-contract.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-006-provider-probe-contract.md
     id: roadmap.goal_prompt_tes_tts_tts_006_provider_probe_contract
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-007-provider-candidate-review.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-007-provider-candidate-review.md
     id: roadmap.goal_prompt_tes_tts_tts_007_provider_candidate_review
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-008-adapter-parity.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-008-adapter-parity.md
     id: roadmap.goal_prompt_tes_tts_tts_008_adapter_parity
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-009-acceptance-and-release-decision.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-009-acceptance-and-release-decision.md
     id: roadmap.goal_prompt_tes_tts_tts_009_acceptance_and_release_decision
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-010-owner-approval-gate.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-010-owner-approval-gate.md
     id: roadmap.goal_prompt_tes_tts_tts_010_owner_approval_gate
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-011-owner-decision-required.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-011-owner-decision-required.md
     id: roadmap.goal_prompt_tes_tts_tts_011_owner_decision_required
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-012-explicit-owner-decision.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-012-explicit-owner-decision.md
     id: roadmap.goal_prompt_tes_tts_tts_012_explicit_owner_decision
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-013-owner-decision-pending.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-013-owner-decision-pending.md
     id: roadmap.goal_prompt_tes_tts_tts_013_owner_decision_pending
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-014-owner-decision-still-pending.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-014-owner-decision-still-pending.md
     id: roadmap.goal_prompt_tes_tts_tts_014_owner_decision_still_pending
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-015-owner-decision-still-required.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-015-owner-decision-still-required.md
     id: roadmap.goal_prompt_tes_tts_tts_015_owner_decision_still_required
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-016-owner-decision-remains-required.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-016-owner-decision-remains-required.md
     id: roadmap.goal_prompt_tes_tts_tts_016_owner_decision_remains_required
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-017-owner-decision-open.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-017-owner-decision-open.md
     id: roadmap.goal_prompt_tes_tts_tts_017_owner_decision_open
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-018-owner-decision-unresolved.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-018-owner-decision-unresolved.md
     id: roadmap.goal_prompt_tes_tts_tts_018_owner_decision_unresolved
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-019-owner-decision-still-unresolved.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-019-owner-decision-still-unresolved.md
     id: roadmap.goal_prompt_tes_tts_tts_019_owner_decision_still_unresolved
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-020-owner-decision-continues-unresolved.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-020-owner-decision-continues-unresolved.md
     id: roadmap.goal_prompt_tes_tts_tts_020_owner_decision_continues_unresolved
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-021-owner-decision-remains-unresolved.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-021-owner-decision-remains-unresolved.md
     id: roadmap.goal_prompt_tes_tts_tts_021_owner_decision_remains_unresolved
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-022-owner-decision-still-remains-unresolved.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-022-owner-decision-still-remains-unresolved.md
     id: roadmap.goal_prompt_tes_tts_tts_022_owner_decision_still_remains_unresolved
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-023-owner-decision-unresolved-again.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-023-owner-decision-unresolved-again.md
     id: roadmap.goal_prompt_tes_tts_tts_023_owner_decision_unresolved_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-024-owner-decision-still-unresolved-again.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-024-owner-decision-still-unresolved-again.md
     id: roadmap.goal_prompt_tes_tts_tts_024_owner_decision_still_unresolved_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-025-owner-decision-continues-unresolved-again.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-025-owner-decision-continues-unresolved-again.md
     id: roadmap.goal_prompt_tes_tts_tts_025_owner_decision_continues_unresolved_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-026-owner-decision-remains-unresolved-again.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-026-owner-decision-remains-unresolved-again.md
     id: roadmap.goal_prompt_tes_tts_tts_026_owner_decision_remains_unresolved_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-027-owner-decision-still-remains-unresolved-again.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-027-owner-decision-still-remains-unresolved-again.md
     id: roadmap.goal_prompt_tes_tts_tts_027_owner_decision_still_remains_unresolved_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-028-owner-decision-remains-open-again.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-028-owner-decision-remains-open-again.md
     id: roadmap.goal_prompt_tes_tts_tts_028_owner_decision_remains_open_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-029-owner-decision-still-open-again.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-029-owner-decision-still-open-again.md
     id: roadmap.goal_prompt_tes_tts_tts_029_owner_decision_still_open_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-030-owner-decision-continues-open-again.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-030-owner-decision-continues-open-again.md
     id: roadmap.goal_prompt_tes_tts_tts_030_owner_decision_continues_open_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-031-owner-decision-remains-open-yet-again.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-031-owner-decision-remains-open-yet-again.md
     id: roadmap.goal_prompt_tes_tts_tts_031_owner_decision_remains_open_yet_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md
     id: roadmap.goal_prompt_tes_tts_tts_032_owner_decision_still_open_yet_again
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md
+  - path: docs/roadmap/tes-tts/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md
     id: roadmap.tes_tts_acceptance_and_release_decision
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-APPROVAL-GATE.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-APPROVAL-GATE.md
     id: roadmap.tes_tts_owner_approval_gate
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-REQUIRED.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-REQUIRED.md
     id: roadmap.tes_tts_owner_decision_required
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-EXPLICIT-OWNER-DECISION.md
+  - path: docs/roadmap/tes-tts/TES-TTS-EXPLICIT-OWNER-DECISION.md
     id: roadmap.tes_tts_explicit_owner_decision
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-PENDING.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-PENDING.md
     id: roadmap.tes_tts_owner_decision_pending
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-STILL-PENDING.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-PENDING.md
     id: roadmap.tes_tts_owner_decision_still_pending
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-STILL-REQUIRED.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-REQUIRED.md
     id: roadmap.tes_tts_owner_decision_still_required
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-REMAINS-REQUIRED.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-REQUIRED.md
     id: roadmap.tes_tts_owner_decision_remains_required
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-OPEN.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-OPEN.md
     id: roadmap.tes_tts_owner_decision_open
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-UNRESOLVED.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-UNRESOLVED.md
     id: roadmap.tes_tts_owner_decision_unresolved
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-STILL-UNRESOLVED.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-UNRESOLVED.md
     id: roadmap.tes_tts_owner_decision_still_unresolved
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED.md
     id: roadmap.tes_tts_owner_decision_continues_unresolved
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED.md
     id: roadmap.tes_tts_owner_decision_remains_unresolved
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED.md
     id: roadmap.tes_tts_owner_decision_still_remains_unresolved
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-UNRESOLVED-AGAIN.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-UNRESOLVED-AGAIN.md
     id: roadmap.tes_tts_owner_decision_unresolved_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-STILL-UNRESOLVED-AGAIN.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-UNRESOLVED-AGAIN.md
     id: roadmap.tes_tts_owner_decision_still_unresolved_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED-AGAIN.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED-AGAIN.md
     id: roadmap.tes_tts_owner_decision_continues_unresolved_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED-AGAIN.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED-AGAIN.md
     id: roadmap.tes_tts_owner_decision_remains_unresolved_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED-AGAIN.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED-AGAIN.md
     id: roadmap.tes_tts_owner_decision_still_remains_unresolved_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-REMAINS-OPEN-AGAIN.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-OPEN-AGAIN.md
     id: roadmap.tes_tts_owner_decision_remains_open_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-STILL-OPEN-AGAIN.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-OPEN-AGAIN.md
     id: roadmap.tes_tts_owner_decision_still_open_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-CONTINUES-OPEN-AGAIN.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-CONTINUES-OPEN-AGAIN.md
     id: roadmap.tes_tts_owner_decision_continues_open_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-DECISION-REMAINS-OPEN-YET-AGAIN.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-OPEN-YET-AGAIN.md
     id: roadmap.tes_tts_owner_decision_remains_open_yet_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md
+  - path: docs/roadmap/tes-tts/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md
     id: roadmap.tes_tts_normalization_fixture_schema
     class: roadmap
     status: proposed
     consumer: maintainers, tes-tts maintainers, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-PROVIDER-CANDIDATE-REVIEW.md
+  - path: docs/roadmap/tes-tts/TES-TTS-PROVIDER-CANDIDATE-REVIEW.md
     id: roadmap.tes_tts_provider_candidate_review
     class: roadmap
     status: proposed
     consumer: maintainers, tes-tts maintainers, provider reviewers, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md
     id: roadmap.goal_super_spec_tes_tts_ten_spec_convergence
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md
     id: roadmap.goal_super_spec_tes_tts_owner_decision_gate
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, release reviewers, and sync operators
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-capability-migration.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-capability-migration.md
     id: roadmap.goal_super_spec_tes_tts_capability_migration
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, and validation authors
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md
     id: roadmap.goal_super_spec_tes_tts_conversational_rendering
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md
     id: roadmap.goal_prompt_tes_tts_spec_001_roadmap_compaction_agent_default_language
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md
     id: roadmap.goal_prompt_tes_tts_spec_002_fixture_corpus_complete
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and validation authors
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md
     id: roadmap.goal_prompt_tes_tts_spec_003_deterministic_instruction_normalizer
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and validation authors
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md
     id: roadmap.goal_prompt_tes_tts_spec_004_pronunciation_enrichment_rules
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and validation authors
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-005-provider-probe-no-write.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-005-provider-probe-no-write.md
     id: roadmap.goal_prompt_tes_tts_spec_005_provider_probe_no_write
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and validation authors
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md
     id: roadmap.goal_prompt_tes_tts_spec_006_provider_candidate_selection
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and provider reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md
     id: roadmap.goal_prompt_tes_tts_spec_007_optional_translation_layer
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and validation authors
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md
     id: roadmap.goal_prompt_tes_tts_spec_008_optional_g2p_pronunciation_provider_layer
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and provider reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md
     id: roadmap.goal_prompt_tes_tts_spec_009_release_identity_sync_readiness
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md
     id: roadmap.goal_prompt_tes_tts_spec_010_final_audit_and_closure
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, execution agents, and final auditors
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md
     id: roadmap.goal_prompt_tes_tts_owner_001_acceptance_release_sync_decision
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, release reviewers, and sync operators
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md
     id: roadmap.goal_prompt_tes_tts_cap_001_portable_capability_migration
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-002-speech-transformation-hardening.md
     id: roadmap.goal_prompt_tes_tts_cap_002_speech_transformation_hardening
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-003-pronunciation-hints-protected-terms.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-003-pronunciation-hints-protected-terms.md
     id: roadmap.goal_prompt_tes_tts_cap_003_pronunciation_hints_protected_terms
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-004-provider-fallback-catalog-use.md
     id: roadmap.goal_prompt_tes_tts_cap_004_provider_fallback_catalog_use
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-005-adapter-parity-final-local-audit.md
     id: roadmap.goal_prompt_tes_tts_cap_005_adapter_parity_final_local_audit
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md
+  - path: docs/roadmap/tes-tts/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md
     id: roadmap.tes_tts_cap_005_final_local_audit
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-CAP-006-CONVERSATIONAL-SPOKEN-RENDERING.md
+  - path: docs/roadmap/tes-tts/TES-TTS-CAP-006-CONVERSATIONAL-SPOKEN-RENDERING.md
     id: roadmap.tes_tts_cap_006_conversational_spoken_rendering
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-006-conversational-spoken-rendering.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-006-conversational-spoken-rendering.md
     id: roadmap.goal_prompt_tes_tts_cap_006_conversational_spoken_rendering
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-007-exact-island-protected-span-hardening.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-007-exact-island-protected-span-hardening.md
     id: roadmap.goal_prompt_tes_tts_cap_007_exact_island_protected_span_hardening
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-CAP-007-EXACT-ISLAND-PROTECTED-SPAN-HARDENING.md
+  - path: docs/roadmap/tes-tts/TES-TTS-CAP-007-EXACT-ISLAND-PROTECTED-SPAN-HARDENING.md
     id: roadmap.tes_tts_cap_007_exact_island_protected_span_hardening
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-008-table-list-code-block-oralization.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-008-table-list-code-block-oralization.md
     id: roadmap.goal_prompt_tes_tts_cap_008_table_list_code_block_oralization
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-CAP-008-TABLE-LIST-CODE-BLOCK-ORALIZATION.md
+  - path: docs/roadmap/tes-tts/TES-TTS-CAP-008-TABLE-LIST-CODE-BLOCK-ORALIZATION.md
     id: roadmap.tes_tts_cap_008_table_list_code_block_oralization
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-009-mixed-language-english-identity-hardening.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-009-mixed-language-english-identity-hardening.md
     id: roadmap.goal_prompt_tes_tts_cap_009_mixed_language_english_identity_hardening
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-CAP-009-MIXED-LANGUAGE-ENGLISH-IDENTITY-HARDENING.md
+  - path: docs/roadmap/tes-tts/TES-TTS-CAP-009-MIXED-LANGUAGE-ENGLISH-IDENTITY-HARDENING.md
     id: roadmap.tes_tts_cap_009_mixed_language_english_identity_hardening
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md
     id: roadmap.goal_prompt_tes_tts_cap_010_conversational_rendering_final_audit
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md
     id: roadmap.goal_super_spec_tes_tts_ptbr_lexical_normalization
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/TES-TTS-LEX-001-PTBR-LEXICAL-DATASET-MANIFEST.md
+  - path: docs/roadmap/tes-tts/TES-TTS-LEX-001-PTBR-LEXICAL-DATASET-MANIFEST.md
     id: roadmap.tes_tts_lex_001_ptbr_lexical_dataset_manifest
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-LEX-001-ptbr-lexical-dataset-manifest.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-LEX-001-ptbr-lexical-dataset-manifest.md
     id: roadmap.goal_prompt_tes_tts_lex_001_ptbr_lexical_dataset_manifest
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-LEX-002-ptbr-lexical-lookup-oracle.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-LEX-002-ptbr-lexical-lookup-oracle.md
     id: roadmap.goal_prompt_tes_tts_lex_002_ptbr_lexical_lookup_oracle
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-LEX-002-PTBR-LEXICAL-LOOKUP-ORACLE.md
+  - path: docs/roadmap/tes-tts/TES-TTS-LEX-002-PTBR-LEXICAL-LOOKUP-ORACLE.md
     id: roadmap.tes_tts_lex_002_ptbr_lexical_lookup_oracle
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-LEX-003-spoken-rendering-integration-boundary.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-LEX-003-spoken-rendering-integration-boundary.md
     id: roadmap.goal_prompt_tes_tts_lex_003_spoken_rendering_integration_boundary
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-LEX-003-SPOKEN-RENDERING-INTEGRATION-BOUNDARY.md
+  - path: docs/roadmap/tes-tts/TES-TTS-LEX-003-SPOKEN-RENDERING-INTEGRATION-BOUNDARY.md
     id: roadmap.tes_tts_lex_003_spoken_rendering_integration_boundary
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-LEX-004-fixture-migration-from-markdown-shaped-tts-cases.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-LEX-004-fixture-migration-from-markdown-shaped-tts-cases.md
     id: roadmap.goal_prompt_tes_tts_lex_004_fixture_migration_from_markdown_shaped_tts_cases
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-LEX-004-FIXTURE-MIGRATION-FROM-MARKDOWN-SHAPED-TTS-CASES.md
+  - path: docs/roadmap/tes-tts/TES-TTS-LEX-004-FIXTURE-MIGRATION-FROM-MARKDOWN-SHAPED-TTS-CASES.md
     id: roadmap.tes_tts_lex_004_fixture_migration_from_markdown_shaped_tts_cases
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md
     id: roadmap.goal_prompt_tes_tts_lex_005_ptbr_lexical_final_audit
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-LEX-005-PTBR-LEXICAL-FINAL-AUDIT.md
+  - path: docs/roadmap/tes-tts/TES-TTS-LEX-005-PTBR-LEXICAL-FINAL-AUDIT.md
     id: roadmap.tes_tts_lex_005_ptbr_lexical_final_audit
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md
     id: roadmap.goal_super_spec_tes_tts_lexical_runtime_engine_latency_reduction
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-RTE-000-preflight-latency-baseline.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTE-000-preflight-latency-baseline.md
     id: roadmap.goal_prompt_tes_tts_rte_000_preflight_latency_baseline
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-RTE-001-compiled-lexical-index-contract.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTE-001-compiled-lexical-index-contract.md
     id: roadmap.goal_prompt_tes_tts_rte_001_compiled_lexical_index_contract
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-RTE-002-hot-path-span-matcher.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTE-002-hot-path-span-matcher.md
     id: roadmap.goal_prompt_tes_tts_rte_002_hot_path_span_matcher
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-RTE-003-fast-path-spoken-rendering.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTE-003-fast-path-spoken-rendering.md
     id: roadmap.goal_prompt_tes_tts_rte_003_fast_path_spoken_rendering
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-RTE-004-request-local-memoization.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTE-004-request-local-memoization.md
     id: roadmap.goal_prompt_tes_tts_rte_004_request_local_memoization
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-RTE-005-chunked-preparation-boundary.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTE-005-chunked-preparation-boundary.md
     id: roadmap.goal_prompt_tes_tts_rte_005_chunked_preparation_boundary
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-RTE-006-runtime-audit-and-closure.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTE-006-runtime-audit-and-closure.md
     id: roadmap.goal_prompt_tes_tts_rte_006_runtime_audit_and_closure
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-RTE-006-RUNTIME-AUDIT-AND-CLOSURE.md
+  - path: docs/roadmap/tes-tts/TES-TTS-RTE-006-RUNTIME-AUDIT-AND-CLOSURE.md
     id: roadmap.tes_tts_rte_006_runtime_audit_and_closure
     class: roadmap
     status: archived
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-global-runtime.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-global-runtime.md
     id: roadmap.goal_super_spec_tes_tts_global_runtime
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-tts-omnivoice-prosody-warmup.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-omnivoice-prosody-warmup.md
     id: roadmap.goal_super_spec_tes_tts_omnivoice_prosody_warmup
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-PROMPT-tes-tts-OPW-001-controlled-prosody-warmup-runtime-option.md
+  - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-OPW-001-controlled-prosody-warmup-runtime-option.md
     id: roadmap.goal_prompt_tes_tts_opw_001_controlled_prosody_warmup_runtime_option
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md
+  - path: docs/roadmap/tes-tts/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md
     id: roadmap.tes_tts_cap_001_portable_capability_feasibility
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md
     id: roadmap.tes_tts_owner_001_acceptance_decision
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, release reviewers, and sync operators
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-SPEC-001-roadmap-compaction-agent-default-language.md
+  - path: docs/roadmap/tes-tts/TES-TTS-SPEC-001-roadmap-compaction-agent-default-language.md
     id: roadmap.tes_tts_spec_001_roadmap_compaction_agent_default_language
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, adapter authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-SPEC-002-fixture-corpus-complete.md
+  - path: docs/roadmap/tes-tts/TES-TTS-SPEC-002-fixture-corpus-complete.md
     id: roadmap.tes_tts_spec_002_fixture_corpus_complete
     class: roadmap
     status: proposed
     consumer: maintainers, tes-tts maintainers, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-SPEC-003-deterministic-instruction-normalizer.md
+  - path: docs/roadmap/tes-tts/TES-TTS-SPEC-003-deterministic-instruction-normalizer.md
     id: roadmap.tes_tts_spec_003_deterministic_instruction_normalizer
     class: roadmap
     status: proposed
     consumer: maintainers, tes-tts maintainers, validation authors, and adapter authors
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-SPEC-004-pronunciation-enrichment-rules.md
+  - path: docs/roadmap/tes-tts/TES-TTS-SPEC-004-pronunciation-enrichment-rules.md
     id: roadmap.tes_tts_spec_004_pronunciation_enrichment_rules
     class: roadmap
     status: proposed
     consumer: maintainers, tes-tts maintainers, adapter authors, and validation authors
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-SPEC-005-provider-probe-no-write.md
+  - path: docs/roadmap/tes-tts/TES-TTS-SPEC-005-provider-probe-no-write.md
     id: roadmap.tes_tts_spec_005_provider_probe_no_write
     class: roadmap
     status: proposed
     consumer: maintainers, tes-tts maintainers, provider reviewers, and validation authors
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-SPEC-006-provider-candidate-selection.md
+  - path: docs/roadmap/tes-tts/TES-TTS-SPEC-006-provider-candidate-selection.md
     id: roadmap.tes_tts_spec_006_provider_candidate_selection
     class: roadmap
     status: proposed
     consumer: maintainers, tes-tts maintainers, provider reviewers, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-SPEC-007-optional-translation-layer.md
+  - path: docs/roadmap/tes-tts/TES-TTS-SPEC-007-optional-translation-layer.md
     id: roadmap.tes_tts_spec_007_optional_translation_layer
     class: roadmap
     status: proposed
     consumer: maintainers, tes-tts maintainers, provider reviewers, and validation authors
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-SPEC-008-optional-g2p-pronunciation-provider-layer.md
+  - path: docs/roadmap/tes-tts/TES-TTS-SPEC-008-optional-g2p-pronunciation-provider-layer.md
     id: roadmap.tes_tts_spec_008_optional_g2p_pronunciation_provider_layer
     class: roadmap
     status: proposed
     consumer: maintainers, tes-tts maintainers, provider reviewers, and validation authors
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-SPEC-009-release-identity-sync-readiness.md
+  - path: docs/roadmap/tes-tts/TES-TTS-SPEC-009-release-identity-sync-readiness.md
     id: roadmap.tes_tts_spec_009_release_identity_sync_readiness
     class: roadmap
     status: proposed
     consumer: maintainers, tes-tts maintainers, release reviewers, and sync operators
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/TES-TTS-SPEC-010-final-audit-and-closure.md
+  - path: docs/roadmap/tes-tts/TES-TTS-SPEC-010-final-audit-and-closure.md
     id: roadmap.tes_tts_spec_010_final_audit_and_closure
     class: roadmap
     status: proposed
@@ -1359,7 +1366,7 @@ documents:
     consumer: adopters and reviewers
     source_of_truth: true
     evidence_level: L1
-  - path: docs/roadmap/NEXT-STEPS-LETTER-2026-05-05.md
+  - path: docs/roadmap/archive/notes/NEXT-STEPS-LETTER-2026-05-05.md
     id: roadmap.next_steps_2026_05_05
     class: roadmap
     status: archived
@@ -1373,77 +1380,77 @@ documents:
     consumer: maintainers, release reviewers, and next-loop operators
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/RC1-READINESS-ROADMAP.md
+  - path: docs/roadmap/product/RC1-READINESS-ROADMAP.md
     id: roadmap.rc1_readiness
     class: roadmap
     status: active
     consumer: maintainers, release reviewers, and documentation operators
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/FLASH-FRY-SKILL-SPEC.md
+  - path: docs/roadmap/product/FLASH-FRY-SKILL-SPEC.md
     id: roadmap.flash_fry_skill_spec
     class: roadmap
     status: proposed
     consumer: maintainers, adapter authors, and runtime installer reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-SUPER-SPEC-cortex-hardening.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-hardening.md
     id: roadmap.goal_super_spec_cortex_hardening
     class: roadmap
     status: active
     consumer: maintainers, MCP reviewers, Cortex maintainers, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md
     id: roadmap.goal_super_spec_cortex_mcp_capability_expansion
     class: roadmap
     status: active
     consumer: maintainers, Cortex MCP authors, host integration authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md
     id: roadmap.goal_super_spec_cortex_mcp_host_segmentation
     class: roadmap
     status: active
     consumer: maintainers, Cortex MCP authors, installer authors, host integration authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md
     id: roadmap.goal_super_spec_cortex_memory_benchmark_harness
     class: roadmap
     status: active
     consumer: maintainers, Cortex maintainers, oracle authors, benchmark authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md
     id: roadmap.goal_super_spec_tes_anti_contamination_hardening
     class: roadmap
     status: active
     consumer: maintainers, Cortex maintainers, oracle authors, adapter maintainers, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md
     id: roadmap.goal_super_spec_tes_postinstall_cortex_hardening
     class: roadmap
     status: active
     consumer: maintainers, installer authors, Cortex maintainers, adapter maintainers, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md
     id: roadmap.goal_super_spec_tes_postinstall_recovery_contract_symmetry
     class: roadmap
     status: active
     consumer: maintainers, installer authors, oracle authors, adapter maintainers, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md
     id: roadmap.goal_super_spec_tes_npx_mcp_convergence
     class: roadmap
     status: active
     consumer: maintainers, installer authors, MCP maintainers, adapter maintainers, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md
     id: roadmap.goal_super_spec_tes_installed_certification_and_field_reports_hardening
     class: roadmap
     status: active
@@ -1464,35 +1471,35 @@ documents:
     consumer: maintainers, Cortex MCP authors, installer authors, host integration authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/GOAL-SUPER-SPEC-tes-memory-lifecycle.md
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-memory-lifecycle.md
     id: roadmap.goal_super_spec_tes_memory_lifecycle
     class: roadmap
     status: active
     consumer: maintainers, Cortex maintainers, adapter authors, oracle authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md
+  - path: docs/roadmap/product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md
     id: roadmap.tes_align_semantic_drift_hardening_super_prompt
     class: roadmap
     status: proposed
     consumer: maintainers, adapter authors, and TES alignment certifiers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/SENIOR-MENTORSHIP-CONTEXT-2026-05-05.md
+  - path: docs/roadmap/archive/notes/SENIOR-MENTORSHIP-CONTEXT-2026-05-05.md
     id: roadmap.senior_mentorship_context_2026_05_05
     class: roadmap
     status: archived
     consumer: next certification session
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/V1-CONVERGENCE-LOOP.md
+  - path: docs/roadmap/archive/v1/V1-CONVERGENCE-LOOP.md
     id: roadmap.v1_convergence_loop
     class: roadmap
     status: archived
     consumer: maintainers, certification reviewers, and convergence-loop operators
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/V1-GOAL-CHECKLIST.md
+  - path: docs/roadmap/archive/v1/V1-GOAL-CHECKLIST.md
     id: roadmap.v1_goal_checklist
     class: roadmap
     status: archived

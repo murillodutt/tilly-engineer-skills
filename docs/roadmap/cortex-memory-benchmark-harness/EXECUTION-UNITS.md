@@ -11,7 +11,7 @@ tver: 0.1.0
 # Cortex Memory Benchmark Harness Execution Units
 
 This document is the execution-detail companion to
-`docs/roadmap/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md`.
+`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md`.
 
 Read the canonical Super SPEC first. Use this file only for the current
 execution unit, so the harness can advance in small auditable waves without
@@ -24,7 +24,7 @@ new memory authority.
 
 Allowed files:
 
-- `docs/roadmap/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md`
+- `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md`
 - `docs/roadmap/cortex-memory-benchmark-harness/EXECUTION-UNITS.md`
 - `docs/evals/**`
 - `docs/mesh/**`

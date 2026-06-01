@@ -13,8 +13,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 REVIEW_PATH = ROOT / "benchmarks/tes-tts/provider-candidate-review.json"
-DOC_PATH = ROOT / "docs/roadmap/TES-TTS-PROVIDER-CANDIDATE-REVIEW.md"
-VERSION = "0.3.149"
+DOC_PATH = ROOT / "docs/roadmap/tes-tts/TES-TTS-PROVIDER-CANDIDATE-REVIEW.md"
+VERSION = "0.3.150"
 
 REQUIRED_FIELDS = {
     "rank",

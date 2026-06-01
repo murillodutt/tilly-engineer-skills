@@ -117,7 +117,7 @@ together (verified this session):
 - [ ] `docs/INDEX.md` `Public installer bundle` row.
 - [ ] `docs/adapters/CODEX.md` `Project version`.
 - [ ] `docs/roadmap/README.md` baseline line.
-- [ ] `docs/roadmap/RC1-READINESS-ROADMAP.md` `Package version` row.
+- [ ] `docs/roadmap/product/RC1-READINESS-ROADMAP.md` `Package version` row.
 - [ ] All `scripts/**.py` `VERSION = "<old>"` constants.
 - [ ] `scripts/validate_reference_package.py` `REQUIRED_PATHS` `docs/dist/<old>/...`
   entries.

@@ -110,7 +110,7 @@ they must also prevent false green claims when installed adapter surfaces are
 stale.
 
 The derived execution plan is:
-`docs/roadmap/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md`.
+`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md`.
 
 ## Rejected Alternatives
 

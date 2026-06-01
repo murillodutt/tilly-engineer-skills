@@ -212,7 +212,7 @@ The installer at `scripts/install_mcp.py` delegates to one adapter module per
 host under `scripts/install_mcp_hosts/`. Each adapter owns the host's exact
 schema for stdio, opt-in localhost HTTP, and bearer-env authenticated HTTP.
 The plan that introduced this segmentation lives at
-`docs/roadmap/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md`.
+`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md`.
 
 Authoritative field matrix per host:
 

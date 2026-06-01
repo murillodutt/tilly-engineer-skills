@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.149"
+VERSION = "0.3.150"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -29,9 +29,9 @@ REQUIRED_PATHS = (
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/adr/0001-tes-memory-lifecycle.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.149/index.json",
-    "docs/dist/0.3.149/tilly-engineer-skills-0.3.149.zip",
-    "docs/dist/0.3.149/tilly-engineer-skills-0.3.149.zip.sha256",
+    "docs/dist/0.3.150/index.json",
+    "docs/dist/0.3.150/tilly-engineer-skills-0.3.150.zip",
+    "docs/dist/0.3.150/tilly-engineer-skills-0.3.150.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -64,7 +64,7 @@ REQUIRED_PATHS = (
     "docs/mesh/GIT-SAFETY.md",
     "docs/mesh/SCORECARD.md",
     "docs/roadmap/README.md",
-    "docs/roadmap/RC1-READINESS-ROADMAP.md",
+    "docs/roadmap/product/RC1-READINESS-ROADMAP.md",
     "docs/evals/EVALS.md",
     "docs/evals/EXAMPLES.md",
     "docs/evidence/INDEX.md",
