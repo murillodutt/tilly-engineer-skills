@@ -11,7 +11,7 @@ tver: 0.1.4
 # Roadmap Index
 
 This folder preserves roadmap lineage without turning the roadmap into the
-work. The root is only an index; Current package baseline: TES `0.3.153`.
+work. The root is only an index; Current package baseline: TES `0.3.154`.
 
 execution authority lives in the current
 dashboard, Super SPEC, prompt, or audit record for each line.
@@ -44,6 +44,7 @@ dashboard, Super SPEC, prompt, or audit record for each line.
 | TES postinstall recovery symmetry | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md` |
 | TES NPX MCP convergence | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
 | TES installed certification and Field Reports | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
+| TES root context composition | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md` |
 | RC1 readiness cleanup | Active | `product/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening | Proposed | `product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
 | Flash-Fry skill gap | Proposed | `product/FLASH-FRY-SKILL-SPEC.md` |

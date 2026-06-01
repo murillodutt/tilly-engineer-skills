@@ -31,7 +31,7 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.153/tilly-engineer-skills-0.3.153.zip` |
+| Public installer bundle | `dist/0.3.154/tilly-engineer-skills-0.3.154.zip` |
 | GitHub package-spec installation | `install/INSTALL.md` |
 | Optional TES TTS OmniVoice local provider guide | `install/TES-TTS-OMNIVOICE.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
@@ -79,6 +79,7 @@ turning the repository root into an inventory.
 | TES Postinstall Recovery Contract Symmetry Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md` |
 | TES NPX MCP Convergence Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
 | TES Installed Certification And Field Reports Hardening Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
+| TES Root Context Composition Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md` |
 | TES TTS Sequential Convergence Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` |
 | TES TTS Ten-SPEC Convergence Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md` |
 | TES TTS Owner Decision Gate Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md` |

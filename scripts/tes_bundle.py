@@ -20,10 +20,11 @@ from pathlib import Path
 from typing import Any
 
 import materialize_adapter
+import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.153"
+VERSION = "0.3.154"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -1463,6 +1464,13 @@ def plan_target(target: Path) -> dict[str, Any]:
         target_path = target / entry["path"]
         if layer in {"project_alignment", "evidence", "cache"}:
             action = "skip-layer"
+        elif layer == "context_governance":
+            text = target_path.read_text(encoding="utf-8") if target_path.exists() and target_path.is_file() else ""
+            core = root_context.extract_core(text) if text else None
+            if target_path.exists() and (core or {}).get("sha256") == entry["sha256"]:
+                action = "compose-root-context-current-core"
+            else:
+                action = "compose-root-context"
         elif target_path.exists() and sha256_file(target_path) == entry["sha256"]:
             action = "skip-identical"
         elif policy == "clean-overwrite-with-backup" and target_path.exists():
@@ -1497,6 +1505,59 @@ def copy_from_staged(target: Path, entry: dict[str, Any], dry_run: bool, backup_
     result = {"path": entry["path"], "layer": entry["layer"], "action": action}
     if backup_id and action == "clean-overwrite":
         result["backup_id"] = backup_id
+    return result
+
+
+def previous_entry_sha(target: Path, relpath: str) -> str | None:
+    previous = read_installed_manifest(target)
+    for entry in previous.get("entries", []):
+        if isinstance(entry, dict) and entry.get("path") == relpath:
+            value = entry.get("sha256")
+            return str(value) if value else None
+    return None
+
+
+def compose_context_from_staged(
+    target: Path,
+    entry: dict[str, Any],
+    dry_run: bool,
+    backup_id: str | None,
+) -> dict[str, str]:
+    source = target / SETUP_ROOT / VERSION / entry["archive_path"]
+    dest = target / entry["path"]
+    core_text = source.read_text(encoding="utf-8")
+    existing_text = dest.read_text(encoding="utf-8") if dest.exists() and dest.is_file() else ""
+    composed = root_context.compose_root_context(
+        relpath=str(entry["path"]),
+        core_text=core_text,
+        existing_text=existing_text,
+        version=VERSION,
+        previous_core_sha256=previous_entry_sha(target, str(entry["path"])),
+    )
+    action = "would-compose-root-context" if dry_run else "compose-root-context"
+    result = {
+        "path": str(entry["path"]),
+        "layer": str(entry["layer"]),
+        "action": action,
+        "composition_status": str(composed.get("status")),
+        "core_sha256": str(composed.get("core_sha256") or ""),
+        "overlay_sha256": str(composed.get("overlay_sha256") or ""),
+        "overlay_source": str(composed.get("overlay_source") or ""),
+    }
+    if backup_id:
+        result["backup_id"] = backup_id
+    if composed.get("status") != "COMPOSED":
+        result["action"] = "needs-review-root-context-composition"
+        result["failure"] = "; ".join(composed.get("failures") or ["root context composition failed"])
+        return result
+    if dry_run:
+        return result
+    text = str(composed["text"])
+    if dest.exists() and dest.read_text(encoding="utf-8") == text:
+        result["action"] = "skip-composed-identical"
+        return result
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(text, encoding="utf-8")
     return result
 
 
@@ -1778,6 +1839,7 @@ def apply_staged_bundle(
     mode: str = "clean-runtime",
     backup_id: str | None = None,
     adapter: str = "all",
+    root_context_only: bool = False,
 ) -> dict[str, Any]:
     target = target.resolve()
     manifest = read_staged_manifest(target)
@@ -1802,12 +1864,22 @@ def apply_staged_bundle(
 
     obsolete_cleanup = cleanup_obsolete_runtime(target, manifest, dry_run)
     actions = list(obsolete_cleanup.get("actions", []))
+    composition_failures: list[str] = []
     for entry in manifest.get("entries", []):
         layer = entry["layer"]
         policy = entry["install_policy"]
         dest = target / entry["path"]
+        if root_context_only and layer != "context_governance":
+            actions.append({"path": entry["path"], "layer": layer, "action": "skip-root-context-only"})
+            continue
         if layer in {"project_alignment", "evidence", "cache"}:
             actions.append({"path": entry["path"], "layer": layer, "action": "skip-layer"})
+            continue
+        if layer == "context_governance":
+            action = compose_context_from_staged(target, entry, dry_run, backup_id)
+            actions.append(action)
+            if action.get("failure"):
+                composition_failures.append(f"{entry['path']}: {action['failure']}")
             continue
         if mode == "preserve" and policy in {"preserve-if-exists", "clean-overwrite-with-backup"} and dest.exists():
             actions.append({"path": entry["path"], "layer": layer, "action": "preserve-context"})
@@ -1826,19 +1898,20 @@ def apply_staged_bundle(
         installed_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     status = "DRY-RUN" if dry_run else ("CLEAN_APPLIED" if mode == "clean-runtime" else "APPLIED")
-    if obsolete_cleanup.get("status") == "NEEDS_REVIEW":
+    if obsolete_cleanup.get("status") == "NEEDS_REVIEW" or composition_failures:
         status = "NEEDS_REVIEW"
 
     return {
         "version": VERSION,
         "status": status,
         "mode": mode,
+        "root_context_only": root_context_only,
         "backup_id": backup_id,
         "clean_backup": clean_backup_result,
         "obsolete_cleanup": obsolete_cleanup,
         "actions": actions,
         "installed_manifest": rel(target / INSTALLED_MANIFEST, target),
-        "failures": obsolete_cleanup.get("failures", []),
+        "failures": [*obsolete_cleanup.get("failures", []), *composition_failures],
     }
 
 
@@ -1935,11 +2008,31 @@ def self_test() -> dict[str, Any]:
         )
         if downloaded.get("status") != "STAGED":
             failures.extend(downloaded.get("failures", ["download stage failed"]))
+        root_only_target = temp / "root-context-only-target"
+        root_only_target.mkdir()
+        subprocess.run(["git", "init"], cwd=root_only_target, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+        (root_only_target / "AGENTS.md").write_text("# Project Root\n\nproject-owned guardrail\n", encoding="utf-8")
+        root_only_stage = stage_bundle(bundle, root_only_target)
+        if root_only_stage.get("status") != "STAGED":
+            failures.extend(root_only_stage.get("failures", ["root-context-only stage failed"]))
+        root_only_apply = apply_staged_bundle(
+            root_only_target,
+            yes=True,
+            mode="preserve",
+            root_context_only=True,
+        )
+        if root_only_apply.get("status") != "APPLIED":
+            failures.extend(root_only_apply.get("failures", ["root-context-only apply failed"]))
+        root_only_agents = (root_only_target / "AGENTS.md").read_text(encoding="utf-8")
+        if "TES:CORE BEGIN" not in root_only_agents or "project-owned guardrail" not in root_only_agents:
+            failures.append("root-context-only apply must update core and preserve overlay")
+        if (root_only_target / ".tes/bin/tes_update.py").exists():
+            failures.append("root-context-only apply must not install helper runtime")
         planned = plan_target(target)
         if planned.get("status") != "PASS":
             failures.extend(planned.get("failures", ["plan failed"]))
-        if not any(action.get("action") == "clean-overwrite-with-backup" for action in planned.get("actions", [])):
-            failures.append("plan must mark existing context as clean-overwrite-with-backup")
+        if not any(action.get("action") == "compose-root-context" for action in planned.get("actions", [])):
+            failures.append("plan must route existing context through root-context composition")
         backed_up = clean_backup(target, adapter="all", project_state="existing", backup_id="selftest")
         if backed_up.get("status") != "BACKED_UP":
             failures.extend(backed_up.get("failures", ["backup failed"]))
@@ -1967,8 +2060,13 @@ def self_test() -> dict[str, Any]:
         installed_metadata = installed.get("metadata") if isinstance(installed.get("metadata"), dict) else {}
         if installed_metadata.get("source_commit") != metadata.get("source_commit"):
             failures.append("installed manifest source_commit metadata drifted")
-        if "project-owned" in (target / "AGENTS.md").read_text(encoding="utf-8"):
-            failures.append("clean runtime did not replace project-owned AGENTS.md")
+        installed_agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+        if "TES:CORE BEGIN" not in installed_agents:
+            failures.append("clean runtime did not install marked TES core in AGENTS.md")
+        if "TES:PROJECT-OVERLAY BEGIN" not in installed_agents:
+            failures.append("clean runtime did not preserve project overlay boundary in AGENTS.md")
+        if "project-owned" not in installed_agents:
+            failures.append("clean runtime lost project-owned AGENTS.md overlay")
         backup_id = str(applied.get("backup_id") or "")
         if not backup_id or not (target / ".tes/bk" / backup_id / "manifest.json").exists():
             failures.append("clean apply did not create central backup")
@@ -2135,6 +2233,7 @@ def main() -> int:
     apply_parser.add_argument("--mode", default="clean-runtime", choices=["clean-runtime", "preserve"])
     apply_parser.add_argument("--backup-id")
     apply_parser.add_argument("--adapter", default="all", choices=["all", *sorted(materialize_adapter.ADAPTERS)])
+    apply_parser.add_argument("--root-context-only", action="store_true")
 
     recover_parser = subparsers.add_parser("recover-plan")
     recover_parser.add_argument("--target", type=Path, default=Path.cwd())
@@ -2186,6 +2285,7 @@ def main() -> int:
             mode=args.mode,
             backup_id=args.backup_id,
             adapter=args.adapter,
+            root_context_only=args.root_context_only,
         )
     elif args.command == "recover-plan":
         if args.apply_safe and not args.dry_run and not args.yes:

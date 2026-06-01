@@ -10,6 +10,7 @@ from pathlib import Path
 import sys
 import zipfile
 
+import root_context
 import tes_bundle
 
 
@@ -240,8 +241,19 @@ def certify_public_bundle() -> dict[str, object]:
         backup_id = str(applied.get("backup_id") or "")
         if not backup_id or not (target / ".tes/bk" / backup_id / "manifest.json").exists():
             failures.append("public bundle apply did not create central clean backup")
-        if "project-owned" in (target / "AGENTS.md").read_text(encoding="utf-8"):
-            failures.append("public bundle apply did not replace project-owned AGENTS.md")
+        agents_text = (target / "AGENTS.md").read_text(encoding="utf-8")
+        agents_core = root_context.extract_core(agents_text)
+        agents_overlay = root_context.extract_overlay(agents_text)
+        if not agents_core:
+            failures.append("public bundle apply did not install marked TES core in AGENTS.md")
+        elif agents_core.get("sha256") != root_context.text_sha256(
+            (ROOT / "src/adapters/codex/AGENTS.md").read_text(encoding="utf-8")
+        ):
+            failures.append("public bundle apply installed stale TES core in AGENTS.md")
+        if not agents_overlay:
+            failures.append("public bundle apply did not create project overlay in AGENTS.md")
+        elif "project-owned" not in str(agents_overlay.get("text") or ""):
+            failures.append("public bundle apply did not preserve project-owned AGENTS.md overlay")
         for relpath in (
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",
             ".tes/bin/install_mcp.py",

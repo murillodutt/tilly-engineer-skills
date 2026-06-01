@@ -42,7 +42,7 @@ from tes_tts_runtime_types import TTS_BENCHMARK_DIR
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.153"
+VERSION = "0.3.154"
 DEFAULT_MODEL = "k2-fsa/OmniVoice"
 DEFAULT_LANGUAGE = "pt"
 AUTO_LANGUAGE = "auto"

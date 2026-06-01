@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.153"
+VERSION = "0.3.154"
 EVIDENCE_DIR = Path("docs/agents/evidence")
 BACKUP_ROOT = Path(".tes/bk")
 ROOT_FILES = (
@@ -25,6 +25,11 @@ ROOT_FILES = (
     ("cursor", ".cursor/rules/tes-guidelines.mdc", "src/adapters/cursor/rules/tes-guidelines.mdc"),
     ("cursor", ".cursorrules", None),
 )
+ROOT_CONTEXT_PATHS = {relpath for _, relpath, _ in ROOT_FILES}
+CORE_BEGIN_RE = re.compile(r"<!-- TES:CORE BEGIN(?P<meta>[^>]*)-->\n?")
+CORE_END = "<!-- TES:CORE END -->"
+OVERLAY_BEGIN_RE = re.compile(r"<!-- TES:PROJECT-OVERLAY BEGIN(?P<meta>[^>]*)-->\n?")
+OVERLAY_END = "<!-- TES:PROJECT-OVERLAY END -->"
 IGNORE_TERMS = (
     "tilly",
     "cortex",
@@ -77,6 +82,130 @@ def source_sha(source_rel: str | None) -> str | None:
         return None
     source = ROOT / source_rel
     return sha256(source) if source.exists() else None
+
+
+def text_sha256(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def final_newline(text: str) -> str:
+    return text if not text or text.endswith("\n") else f"{text}\n"
+
+
+def marker_attrs(raw: str) -> dict[str, str]:
+    attrs: dict[str, str] = {}
+    for key, value in re.findall(r"([A-Za-z0-9_-]+)=([^\s>]+)", raw):
+        attrs[key] = value.strip('"')
+    return attrs
+
+
+def marked_block(text: str, begin_re: re.Pattern[str], end_marker: str) -> dict[str, Any] | None:
+    begin = begin_re.search(text)
+    if not begin:
+        return None
+    end = text.find(end_marker, begin.end())
+    if end < 0:
+        return None
+    return {
+        "text": text[begin.end():end],
+        "attrs": marker_attrs(begin.group("meta") or ""),
+        "start": begin.start(),
+        "end": end + len(end_marker),
+    }
+
+
+def extract_core(text: str) -> dict[str, Any] | None:
+    block = marked_block(text, CORE_BEGIN_RE, CORE_END)
+    if not block:
+        return None
+    core_text = str(block["text"])
+    return {**block, "sha256": text_sha256(core_text)}
+
+
+def extract_overlay(text: str) -> dict[str, Any] | None:
+    block = marked_block(text, OVERLAY_BEGIN_RE, OVERLAY_END)
+    if not block:
+        return None
+    overlay_text = str(block["text"])
+    return {**block, "sha256": text_sha256(overlay_text)}
+
+
+def root_context_adapter(relpath: str) -> str:
+    for adapter, candidate, _ in ROOT_FILES:
+        if relpath == candidate:
+            return adapter
+    return "unknown"
+
+
+def is_root_context_path(relpath: str) -> bool:
+    return relpath in ROOT_CONTEXT_PATHS
+
+
+def compose_root_context(
+    *,
+    relpath: str,
+    core_text: str,
+    existing_text: str = "",
+    version: str = VERSION,
+    previous_core_sha256: str | None = None,
+) -> dict[str, Any]:
+    """Compose current TES core with preserved project overlay."""
+
+    core = final_newline(core_text)
+    core_sha = text_sha256(core)
+    existing_core = extract_core(existing_text) if existing_text else None
+    existing_overlay = extract_overlay(existing_text) if existing_text else None
+    existing_sha = text_sha256(existing_text) if existing_text else None
+    overlay_text = ""
+    overlay_source = "none"
+
+    if existing_overlay is not None:
+        overlay_text = final_newline(str(existing_overlay["text"]))
+        overlay_source = "marked-overlay"
+    elif existing_text and existing_sha not in {core_sha, previous_core_sha256}:
+        overlay_text = final_newline(existing_text)
+        overlay_source = "legacy-unmarked-root"
+
+    adapter = root_context_adapter(relpath)
+    core_begin = f"<!-- TES:CORE BEGIN version={version} sha256={core_sha} adapter={adapter} path={relpath} -->"
+    overlay_sha = text_sha256(overlay_text)
+    overlay_begin = (
+        f"<!-- TES:PROJECT-OVERLAY BEGIN source={overlay_source} "
+        f"sha256={overlay_sha} path={relpath} -->"
+    )
+    composed = "\n".join(
+        [
+            core_begin,
+            core.rstrip("\n"),
+            CORE_END,
+            "",
+            overlay_begin,
+            overlay_text.rstrip("\n"),
+            OVERLAY_END,
+            "",
+        ]
+    )
+    if core.endswith("\n"):
+        # The join above strips only boundary newlines; keep core hash stable by
+        # comparing extracted core through the helper instead of the visual body.
+        composed = composed.replace(f"{core.rstrip(chr(10))}\n{CORE_END}", f"{core}{CORE_END}", 1)
+
+    extracted = extract_core(composed)
+    status = "COMPOSED" if extracted and extracted.get("sha256") == core_sha else "NEEDS_REVIEW_CONFLICT"
+    return {
+        "status": status,
+        "path": relpath,
+        "adapter": adapter,
+        "text": composed,
+        "core_sha256": core_sha,
+        "existing_core_sha256": existing_core.get("sha256") if existing_core else None,
+        "overlay_sha256": overlay_sha,
+        "overlay_source": overlay_source,
+        "overlay_preserved": overlay_source in {"marked-overlay", "legacy-unmarked-root"} or not existing_text,
+        "had_existing": bool(existing_text),
+        "has_existing_markers": bool(existing_core or existing_overlay),
+        "failures": [] if status == "COMPOSED" else ["composed core hash mismatch"],
+    }
 
 
 def package_source_available() -> bool:
@@ -147,11 +276,17 @@ def classify_file(target: Path, adapter: str, path: Path, source_rel: str | None
     current_sha = sha256(path)
     expected_sha = source_sha(source_rel)
     line_count = len(text.splitlines())
-    snippets = project_context_lines(text)
+    core = extract_core(text)
+    overlay = extract_overlay(text)
+    classified_text = str(overlay["text"]) if overlay else text
+    snippets = project_context_lines(classified_text)
     has_tes = any(term in text.lower() for term in ("tilly", "docs/agents", ".agents/skills", "/tilly"))
 
     if expected_sha and current_sha == expected_sha:
         state = "current-tes-root"
+        requires = False
+    elif expected_sha and core and core.get("sha256") == expected_sha:
+        state = "composed-tes-root"
         requires = False
     elif snippets:
         state = "mixed-or-project-root-context" if has_tes else "project-root-context"
@@ -173,6 +308,8 @@ def classify_file(target: Path, adapter: str, path: Path, source_rel: str | None
         "requires_structure_gate": requires,
         "line_count": line_count,
         "sha256": current_sha,
+        "core_sha256": core.get("sha256") if core else None,
+        "overlay_sha256": overlay.get("sha256") if overlay else None,
         "source": source_rel,
         "source_sha256": expected_sha,
         "signals": snippets,
@@ -284,6 +421,43 @@ def self_test() -> dict[str, Any]:
         backup = analyze(target, backup_id="selftest")
         if backup["source"] != "backup:selftest" or backup["status"] != "NEEDS_REVIEW":
             failures.append("backup root context analysis must inspect .tes/bk/<id>/files")
+
+        core_v1 = "# TES Core\n\nUse `/tes-update`.\n"
+        core_v2 = "# TES Core\n\nUse `/tes-update` and `/tes-map`.\n"
+        overlay = "# Project Rules\n\nPreserve project release gates.\n"
+        composed_v1 = compose_root_context(
+            relpath="AGENTS.md",
+            core_text=core_v1,
+            existing_text=overlay,
+            version=VERSION,
+        )
+        if composed_v1["status"] != "COMPOSED" or "Preserve project release gates" not in composed_v1["text"]:
+            failures.append("composer must preserve legacy project overlay")
+        composed_v2 = compose_root_context(
+            relpath="AGENTS.md",
+            core_text=core_v2,
+            existing_text=str(composed_v1["text"]),
+            version=VERSION,
+            previous_core_sha256=str(composed_v1["core_sha256"]),
+        )
+        if composed_v2["status"] != "COMPOSED":
+            failures.append("composer must update marked root context")
+        extracted_v2 = extract_core(str(composed_v2["text"]))
+        if not extracted_v2 or extracted_v2.get("sha256") != text_sha256(final_newline(core_v2)):
+            failures.append("composer must expose current core hash")
+        if "Preserve project release gates" not in str(composed_v2["text"]):
+            failures.append("composer must preserve overlay during core update")
+        composed_clean = compose_root_context(
+            relpath="AGENTS.md",
+            core_text=core_v2,
+            existing_text=core_v1,
+            version=VERSION,
+            previous_core_sha256=text_sha256(final_newline(core_v1)),
+        )
+        if "TES:PROJECT-OVERLAY" not in str(composed_clean["text"]):
+            failures.append("composer must always emit overlay boundary")
+        if "Use `/tes-update`.\n<!-- TES:PROJECT-OVERLAY" in str(composed_clean["text"]):
+            failures.append("previous TES core must not become project overlay")
 
     return {
         "version": VERSION,

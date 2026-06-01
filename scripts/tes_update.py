@@ -21,7 +21,7 @@ except Exception:  # pragma: no cover - installed helper may be inspected alone.
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.153"
+VERSION = "0.3.154"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -72,7 +72,7 @@ CONTEXT_CORE_PATHS = (
     ".cursor/rules/tes-guidelines.mdc",
     ".cursorrules",
 )
-UPDATE_SCOPES = ("none", "helpers-only", "adapter-config", "project-context", "full-convergence")
+UPDATE_SCOPES = ("none", "helpers-only", "root-context", "adapter-config", "project-context", "full-convergence")
 PREFERRED_INTENT_TRIGGERS = (
     "/tes-init",
     "/tes-update",
@@ -170,7 +170,7 @@ POST_LAYER_ZERO_FINAL_PROBE_CONTRACT = (
 PROJECT_START_GATE_CONTRACT = (
     "required_when_active_intent=/tes-init",
     "preflight_context_pass_replaces_execution=False",
-    "run_after=helpers-only|adapter-config|project-context|full-convergence",
+    "run_after=helpers-only|root-context|adapter-config|project-context|full-convergence",
     "init_command=tes_init.py --target . --yes",
     "oracle_command=project_context_oracle.py --target .",
     "alignment_oracle_command=project_alignment_oracle.py --target .",
@@ -852,8 +852,10 @@ def recommended_update_scope(
         return "full-convergence"
     if helper_status == "STALE_HELPERS":
         return "helpers-only"
-    if trigger_status == "DRIFT" or governance_status == "DRIFT":
+    if trigger_status == "DRIFT":
         return "adapter-config"
+    if governance_status == "DRIFT":
+        return "root-context"
     if project_context_status in {"DRIFT", "BLOCKED"} or project_alignment_status in {"DRIFT", "BLOCKED"}:
         return "project-context"
     if update_available:
@@ -866,6 +868,8 @@ def recommended_intent(state: str, update_status: str, route: str, update_scope:
         return "/tes-init"
     if update_scope == "helpers-only":
         return f"/tes-update {route} --helpers-only"
+    if update_scope == "root-context":
+        return f"/tes-update {route}"
     if update_scope == "project-context":
         return "/tes-init"
     if update_scope in {"adapter-config", "full-convergence"}:
@@ -920,6 +924,7 @@ def project_start_gate(target: Path) -> dict[str, Any]:
         "preflight_context_pass_replaces_execution": False,
         "run_after": [
             "helpers-only",
+            "root-context",
             "adapter-config",
             "project-context",
             "full-convergence",
@@ -965,8 +970,18 @@ def context_core_contract(target: Path) -> dict[str, Any]:
             record["status"] = "DRIFT"
             record["failures"] = ["context core file missing"]
         else:
-            actual_sha = sha256_file(path)
+            text = read_text(path)
+            core = None
+            if root_context_helper is not None:
+                try:
+                    core = root_context_helper.extract_core(text)
+                except Exception:
+                    core = None
+            actual_sha = str((core or {}).get("sha256") or sha256_file(path))
             record["sha256"] = actual_sha
+            if core:
+                record["core_sha256"] = actual_sha
+                record["composition"] = "marked-core"
             if expected_sha and actual_sha != expected_sha:
                 record["status"] = "DRIFT"
                 record["failures"] = ["context core differs from installed bundle manifest"]
@@ -1064,9 +1079,10 @@ def continuation_plan(
 ) -> dict[str, Any]:
     helper_required = helper_status == "STALE_HELPERS"
     adapter_required = trigger_status == "DRIFT" or update_scope in {"adapter-config", "full-convergence"}
+    root_context_required = update_scope == "root-context"
     context_required = context_status in {"DRIFT", "BLOCKED"} or alignment_status in {"DRIFT", "BLOCKED"}
     legacy_required = bool(legacy_retirement_required)
-    final_required = update_scope != "none" or helper_required or adapter_required or context_required or legacy_required
+    final_required = update_scope != "none" or helper_required or adapter_required or root_context_required or context_required or legacy_required
     phases = [
         {
             "name": "step_zero",
@@ -1117,6 +1133,22 @@ def continuation_plan(
                 "python3 .tes/bin/tes_update.py plan --target . --json-only",
             ],
             "goal": "restore TES-owned runtime capabilities and active bootloaders from the canonical bundle after central backup",
+        },
+        {
+            "name": "root_context_composition",
+            "required": root_context_required,
+            "approval_required": root_context_required,
+            "writes": [
+                "AGENTS.md",
+                "CLAUDE.md",
+                "CURSOR.md",
+                ".cursor/rules/**",
+            ] if root_context_required else [],
+            "commands": [
+                f"python3 <tes-package>/scripts/tes_bundle.py apply --target {target} --mode preserve --root-context-only --yes",
+                "python3 .tes/bin/tes_update.py plan --target . --json-only",
+            ],
+            "goal": "compose current TES core with preserved project overlay without adapter/runtime overwrite",
         },
         {
             "name": "mcp_config_refresh",
@@ -1173,7 +1205,9 @@ def continuation_plan(
         "approval_required": any(phase["required"] and phase["approval_required"] for phase in phases),
         "migration_class": "old_meshed_project_convergence" if final_required else "current",
         "summary": (
-            "Old meshed project migration requires approval-gated continuation."
+            "Root context composition requires approval-gated continuation."
+            if root_context_required and not adapter_required
+            else "Old meshed project migration requires approval-gated continuation."
             if final_required
             else "No continuation required."
         ),
@@ -1304,6 +1338,7 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "context_core_failures": (governance.get("core") or {}).get("failures", []),
         "context_governance_failures": governance["failures"],
         "adapter_refresh_required": update_scope in {"adapter-config", "full-convergence"},
+        "root_context_composition_required": update_scope == "root-context",
         "runtime_capability_refresh_required": trigger_drift or update_scope in {"adapter-config", "full-convergence"},
         "semantic_recovery_required": governance["status"] in {"RECOVERED", "NEEDS_REVIEW", "DRIFT"}
         and (trigger_drift or update_scope in {"adapter-config", "full-convergence"}),
@@ -1828,12 +1863,14 @@ def self_test() -> dict[str, Any]:
             failures.append("context core mismatch must report DRIFT")
         if "context_core_drift" not in result["update_reasons"]:
             failures.append("context core mismatch must add context_core_drift reason")
-        if result["recommended_update_scope"] != "adapter-config":
-            failures.append("context core drift must recommend adapter-config scope")
+        if result["recommended_update_scope"] != "root-context":
+            failures.append("context core drift must recommend root-context scope")
         if result["recommended_intent"] != "/tes-update codex":
             failures.append("context core drift must recommend /tes-update codex")
-        if result["adapter_refresh_required"] is not True:
-            failures.append("context core drift must require adapter refresh")
+        if result["adapter_refresh_required"] is not False:
+            failures.append("context core drift must not require adapter refresh")
+        if result.get("root_context_composition_required") is not True:
+            failures.append("context core drift must require root context composition")
         if (result.get("post_layer_zero_final_probe") or {}).get("status") != "PENDING":
             failures.append("context core drift must block final probe readiness")
         drift_plan = result.get("continuation_plan") or {}
@@ -1842,12 +1879,63 @@ def self_test() -> dict[str, Any]:
             for phase in drift_plan.get("phases", [])
             if phase.get("required")
         }
-        runtime_phase = drift_phases.get("runtime_capability_refresh") or {}
-        if not runtime_phase:
-            failures.append("context core drift continuation plan must require runtime capability refresh")
-        if "AGENTS.md" not in runtime_phase.get("writes", []):
+        root_phase = drift_phases.get("root_context_composition") or {}
+        if not root_phase:
+            failures.append("context core drift continuation plan must require root context composition")
+        if "AGENTS.md" not in root_phase.get("writes", []):
             failures.append("context core drift continuation plan must name AGENTS.md writes")
         assert_project_start_gate(result, failures, "context core drift fixture")
+
+    with tempfile.TemporaryDirectory(prefix="tes-update-composed-root-current-") as tempdir:
+        target = Path(tempdir)
+        write(target / "docs/agents/PROJECT-REGISTER.md", "Generated by Tilly\n")
+        core_text = trigger_fixture_text()
+        composed = root_context_helper.compose_root_context(
+            relpath="AGENTS.md",
+            core_text=core_text,
+            existing_text="# Project Overlay\n\nPreserve project-specific governance.\n",
+            version=VERSION,
+        ) if root_context_helper is not None else {"text": core_text, "core_sha256": sha256_text(core_text)}
+        write(target / "AGENTS.md", str(composed["text"]))
+        write(target / ".agents/skills/tes-init/SKILL.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-update/SKILL.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-engineering-discipline/SKILL.md", trigger_fixture_text())
+        write(target / ".tes/bin/tes_update.py", helper_source_text("tes_update.py"))
+        write(
+            target / ".tes/manifest.json",
+            json.dumps(
+                {
+                    "schema": "tes-bundle-manifest@1",
+                    "version": VERSION,
+                    "entries": [
+                        {
+                            "path": "AGENTS.md",
+                            "layer": "context_governance",
+                            "sha256": composed["core_sha256"],
+                        }
+                    ],
+                },
+                indent=2,
+            ) + "\n",
+        )
+        write_alignment_fixture(target)
+        args = argparse.Namespace(
+            target=target,
+            remote_version=VERSION,
+            remote_commit="g" * 40,
+            remote_helper_manifest=None,
+            local_package_helpers=True,
+            runtime="codex",
+            offline=False,
+            timeout=0.1,
+        )
+        result = analyze(args)
+        if result["context_core_status"] != "PASS":
+            failures.append("composed root context must pass context core")
+        if result["update_available"] is not False:
+            failures.append("composed root context with current core must not report update available")
+        if result["recommended_update_scope"] != "none":
+            failures.append("composed root context with current core must recommend no update scope")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-stale-helper-") as tempdir:
         target = Path(tempdir)

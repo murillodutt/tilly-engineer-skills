@@ -1,4 +1,4 @@
-version: 0.3.153
+version: 0.3.154
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -1450,6 +1450,13 @@ documents:
     consumer: maintainers, installer authors, MCP maintainers, adapter maintainers, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md
+    id: roadmap.goal_super_spec_tes_root_context_composition
+    class: roadmap
+    status: active
+    consumer: maintainers, installer authors, adapter authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md
     id: roadmap.goal_super_spec_tes_installed_certification_and_field_reports_hardening
     class: roadmap

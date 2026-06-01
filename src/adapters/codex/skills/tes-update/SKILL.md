@@ -37,16 +37,21 @@ The engine is `tes_update.py`. Do not reimplement update planning in the skill.
    `recommended_update_scope=helpers-only`, repair only TES-owned
    `.tes/bin/**` helpers through the helper-only Layer Zero route, then rerun
    the plan before any adapter or MCP config refresh.
-6. If the plan reports adapter/runtime drift, refresh adapter configuration and
+6. If the plan reports `recommended_update_scope=root-context`, run only the
+   root-context composition route named by the planner. This updates the TES
+   core block while preserving project overlay; do not perform whole-file
+   bootloader overwrite and do not treat project overlay as adapter drift.
+7. If the plan reports adapter/runtime drift, refresh adapter configuration and
    selected TES adapter MCP config only after helper parity is `PASS`.
-7. Do not rerun `/tes-init` by default. Route to `/tes-init` only when the
+8. Do not rerun `/tes-init` by default. Route to `/tes-init` only when the
    planner declares Project-Start, missing context, evidence drift, or the user
    explicitly asks to recertify/reinitialize.
-8. After any write, run the final recorded probe before claiming `PASS`:
+9. After any write, run the final recorded probe before claiming `PASS`:
    `python3 .tes/bin/tes_update.py plan --target . --json-only --record-field-report`
    The final probe must show:
    - `helper_contract_status=PASS`
    - `runtime_trigger_status=PASS` or `NOT_APPLIED`
+   - `context_core_status=PASS`
    - `update_available=False`
    - `recommended_update_scope=none`
 

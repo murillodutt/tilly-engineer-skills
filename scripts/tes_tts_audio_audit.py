@@ -30,7 +30,7 @@ DEFAULT_STT_MODEL = (
     "models--openai--whisper-large-v3-turbo/snapshots/"
     "41f01f3fe87f28c78e2fbf8b568835947dd65ed9"
 )
-VERSION = "0.3.153"
+VERSION = "0.3.154"
 SILENCE_THRESHOLD = 0.005
 NEAR_CLIP_THRESHOLD = 0.95
 BAD_SIMILARITY_THRESHOLD = 0.86
