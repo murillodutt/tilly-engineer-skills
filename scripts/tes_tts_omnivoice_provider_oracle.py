@@ -26,7 +26,7 @@ PROVIDER_SCRIPT = ROOT / "scripts/tes_tts_omnivoice_provider.py"
 DIRECT_KERNEL_SCRIPT = ROOT / "scripts/tes_tts_omnivoice_direct_kernel.py"
 RUNTIME_SUPPORT_SCRIPT = ROOT / "scripts/tes_tts_omnivoice_runtime_support.py"
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/omnivoice-provider-cases.json"
-VERSION = "0.3.152"
+VERSION = "0.3.153"
 FORBIDDEN_TOP_LEVEL_IMPORTS = {"omnivoice", "torch", "soundfile"}
 PROVIDER_EXTRACTED_IMPORTS = {"select", "threading", "wave"}
 DIRECT_KERNEL_ALLOWED_IMPORTS = {
@@ -43,6 +43,7 @@ DIRECT_KERNEL_ALLOWED_IMPORTS = {
         "from",
         "tes_tts_runtime_adapter",
         (
+            "apply_completion_cadence",
             "apply_omnivoice_prosody_warmup",
             "prepare_audio_quality_text",
             "prepare_redacted_provider_text",
@@ -1521,7 +1522,7 @@ def validate_sentence_aware_chunking_contract() -> list[str]:
     if len(technical_chunks) > 2:
         failures.append("technical micro-pause text should avoid fragmented short chunks")
 
-    decimal_text = "A versão 0.3.152 mantém 9.2 como nota humana. Depois, o benchmark continua."
+    decimal_text = "A versão 1.2.3 mantém 9.2 como nota humana. Depois, o benchmark continua."
     decimal_chunks = runtime_support.split_long_text(decimal_text, max_chars=80)
     if any(chunk.endswith("0.") for chunk in decimal_chunks):
         failures.append("sentence-aware chunking must not split decimal-like versions")
@@ -1680,6 +1681,44 @@ def validate_prosody_warmup_contract() -> list[str]:
         pass
     else:
         failures.append("prosody warmup must reject non-whitelisted tags")
+
+    return failures
+
+
+def validate_completion_cadence_contract() -> list[str]:
+    failures: list[str] = []
+    kernel_module = load_direct_kernel_module()
+
+    source = "This is a short read to evaluate the closing."
+    closed = kernel_module.provider_text(source, "en-US", "redacted_source")
+    closed_text = str(closed.get("text", ""))
+    if "[calm]" in closed_text:
+        failures.append("completion cadence must not inject unsupported inline [calm] token")
+    if closed.get("completion_cadence") != "terminal-ellipsis-marker":
+        failures.append("completion cadence must report the terminal-ellipsis-marker strategy")
+    if closed.get("completion_cadence_tail") != "":
+        failures.append("completion cadence must not repeat a lexical tail")
+    if not closed_text.endswith("closing... [...]"):
+        failures.append("completion cadence must end with terminal ellipsis plus the silence marker")
+    if closed_text.count("closing") != 1:
+        failures.append("completion cadence must not echo the final word")
+    if closed_text.count("[...]") != 1:
+        failures.append("completion cadence must include exactly one silence marker")
+    premarked = kernel_module.provider_text(
+        "This is a short read to evaluate the closing... [...]",
+        "en-US",
+        "redacted_source",
+    )
+    if str(premarked.get("text", "")).count("[...]") != 1:
+        failures.append("completion cadence must not duplicate a preexisting silence marker")
+    if closed.get("prepared", {}).get("spoken_text") != source:
+        failures.append("completion cadence must not mutate request-local spoken_text")
+
+    raw = kernel_module.provider_text(source, "en-US", "raw")
+    if raw.get("completion_cadence_inserted") is not False:
+        failures.append("raw provider mode must not receive completion cadence")
+    if str(raw.get("text", "")) != source:
+        failures.append("raw provider mode must preserve source text exactly")
 
     return failures
 
@@ -1956,8 +1995,8 @@ def validate_review_html_scorecard() -> list[str]:
         "data-score=\"pronunciation\"",
         "data-score=\"technical_terms\"",
         "data-score=\"naturalness\"",
-        "Exportar JSON",
-        "Copiar resumo",
+        "Export JSON",
+        "Copy summary",
         "if(v==='')return null",
         "AUDIO_CANDIDATE",
         "NEEDS_TARGETED_FIX",
@@ -2033,8 +2072,8 @@ def validate_profile_review_html_scorecard() -> list[str]:
         "data-profile=\"fast\"",
         "data-profile=\"quality\"",
         "data-score=\"score\"",
-        "Exportar JSON",
-        "Copiar resumo",
+        "Export JSON",
+        "Copy summary",
         "cases=comparisons.map",
         "AUDIO_CANDIDATE",
         "NEEDS_TARGETED_FIX",
@@ -2717,6 +2756,7 @@ def main() -> int:
     active_failures.extend(validate_live_smoke_dry_run_command())
     active_failures.extend(validate_direct_kernel_timing_contract())
     active_failures.extend(validate_prosody_warmup_contract())
+    active_failures.extend(validate_completion_cadence_contract())
     active_failures.extend(validate_human_rated_quality_recipe_contract())
     active_failures.extend(validate_sentence_aware_chunking_contract())
     active_failures.extend(validate_jsonl_emitter())

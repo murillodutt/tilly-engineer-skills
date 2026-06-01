@@ -18,11 +18,35 @@ import time
 from typing import Any
 
 from tes_tts_runtime_adapter import (
+    apply_completion_cadence,
     apply_omnivoice_prosody_warmup,
     prepare_audio_quality_text,
     prepare_redacted_provider_text,
     prepare_spoken_text,
 )
+
+
+def apply_provider_text_finish(
+    text_info: dict[str, Any],
+    prosody_warmup: str,
+    *,
+    completion_cadence: bool = True,
+) -> dict[str, Any]:
+    warmup = apply_omnivoice_prosody_warmup(text_info["text"], prosody_warmup)
+    text_info.update(warmup)
+    if not completion_cadence:
+        text_info.update(
+            {
+                "completion_cadence": "none",
+                "completion_cadence_tag": None,
+                "completion_cadence_tail": "",
+                "completion_cadence_inserted": False,
+            }
+        )
+        return text_info
+    cadence = apply_completion_cadence(warmup["text"])
+    text_info.update(cadence)
+    return text_info
 
 
 def sha256_path(path: Path) -> str:
@@ -36,30 +60,23 @@ def sha256_path(path: Path) -> str:
 def provider_text(source_text: str, locale: str, mode: str, prosody_warmup: str = "none") -> dict[str, Any]:
     if mode == "audio_quality":
         text_info = prepare_audio_quality_text(source_text, locale)
-        warmup = apply_omnivoice_prosody_warmup(text_info["text"], prosody_warmup)
-        text_info.update(warmup)
-        return text_info
+        return apply_provider_text_finish(text_info, prosody_warmup)
     if mode == "redacted_source":
         text_info = prepare_redacted_provider_text(source_text, locale)
-        warmup = apply_omnivoice_prosody_warmup(text_info["text"], prosody_warmup)
-        text_info.update(warmup)
-        return text_info
+        return apply_provider_text_finish(text_info, prosody_warmup)
     prepared = prepare_spoken_text(source_text, locale)
     if mode == "spoken_text":
         text = prepared["spoken_text"]
     else:
         text = source_text
-    warmup = apply_omnivoice_prosody_warmup(text, prosody_warmup)
-    return {
-        "text": warmup["text"],
+    text_info = {
+        "text": text,
         "prepared": prepared,
         "mode": mode,
         "input_surface": "source_text",
         "provider_text_surface": mode,
-        "prosody_warmup": warmup["prosody_warmup"],
-        "prosody_warmup_tag": warmup["prosody_warmup_tag"],
-        "provider_tag_inserted": warmup["provider_tag_inserted"],
     }
+    return apply_provider_text_finish(text_info, prosody_warmup, completion_cadence=mode != "raw")
 
 
 def load_omnivoice_modules() -> dict[str, Any]:

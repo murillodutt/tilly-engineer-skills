@@ -16,7 +16,7 @@ import tes_tts_instruction_normalizer_oracle as normalizer
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/runtime-latency-fixtures.json"
-VERSION = "0.3.152"
+VERSION = "0.3.153"
 REPEAT_COUNT = 9
 
 

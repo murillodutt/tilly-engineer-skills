@@ -23,7 +23,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.152"
+VERSION = "0.3.153"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -35,6 +35,15 @@ SETUP_IGNORE_COMMENT = "# TES installer staging cache"
 BACKUP_IGNORE_COMMENT = "# TES clean install local backups"
 BACKUP_SCHEMA = "tes-clean-backup@1"
 RECOVERY_SCHEMA = "tes-root-governance-recovery@1"
+PACKAGE_SOURCE_NAME = "tilly-engineer-skills"
+PACKAGE_SOURCE_MARKERS = (
+    Path("src/adapters/codex/AGENTS.md"),
+    Path("src/adapters/claude/CLAUDE.md"),
+    Path("src/adapters/cursor/rules/tes-guidelines.mdc"),
+    Path("scripts/tes_install.py"),
+    Path("scripts/tes_bundle.py"),
+    Path("docs/governance/MAINTAINER-CORRELATION-RULE.md"),
+)
 OS_RESIDUE_NAMES = {".DS_Store", ".AppleDouble", ".LSOverride", "__MACOSX"}
 OS_RESIDUE_PREFIXES = ("._",)
 
@@ -990,6 +999,32 @@ def read_json(path: Path) -> dict[str, Any]:
     except (OSError, json.JSONDecodeError):
         return {}
     return data if isinstance(data, dict) else {}
+
+
+def package_source_markers(target: Path) -> list[str]:
+    return [marker.as_posix() for marker in PACKAGE_SOURCE_MARKERS if (target / marker).exists()]
+
+
+def is_package_source_target(target: Path) -> bool:
+    markers = package_source_markers(target)
+    package = read_json(target / "package.json")
+    name_matches = package.get("name") == PACKAGE_SOURCE_NAME
+    return (name_matches and len(markers) >= 2) or len(markers) >= 4
+
+
+def package_source_block(target: Path, command: str) -> dict[str, Any] | None:
+    if not is_package_source_target(target):
+        return None
+    return {
+        "version": VERSION,
+        "status": "BLOCKED",
+        "target": str(target),
+        "command": command,
+        "reason": "target is the TES package source, not an adopter project",
+        "detected_markers": package_source_markers(target),
+        "failures": ["refusing to install TES into its own package source root"],
+        "recovery": "Run TES install from a separate adopter project, or pass --target to that project path.",
+    }
 
 
 def read_staged_manifest(target: Path) -> dict[str, Any]:

@@ -25,7 +25,7 @@ if str(SCRIPT_PATH.parent) not in sys.path:
     sys.path.insert(0, str(SCRIPT_PATH.parent))
 
 from install_mcp_hosts import HOSTS  # noqa: E402
-VERSION = "0.3.152"
+VERSION = "0.3.153"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (
@@ -281,6 +281,12 @@ def install(args: argparse.Namespace) -> int:
         print("[install-mcp] FAIL")
         print(f"- target is not a directory: {target}")
         return 1
+    blocked = tes_bundle.package_source_block(target, "install_mcp")
+    if blocked:
+        print(json.dumps(blocked, indent=2))
+        if not args.json_only:
+            print("[install-mcp] BLOCKED")
+        return 2
 
     if not require_confirmation(args):
         return 1

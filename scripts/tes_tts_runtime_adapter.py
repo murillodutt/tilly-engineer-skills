@@ -26,6 +26,9 @@ OMNIVOICE_PROSODY_WARMUP_TAGS = {
     "question-en": "[question-en]",
     "sigh": "[sigh]",
 }
+COMPLETION_CADENCE_STYLE = "terminal-ellipsis-marker"
+COMPLETION_CADENCE_MARKER = "[...]"
+COMPLETION_CADENCE_TERMINAL_PUNCTUATION = ".,;:!?…"
 
 
 def _looks_like_technical_item_word(word: str) -> bool:
@@ -102,7 +105,7 @@ def add_enumeration_pauses(text: str) -> str:
 
 
 def add_final_connector_pauses(text: str) -> str:
-    """Add a final audible pause in compact enumerations like `A; B e C`."""
+    """Add a final audible pause in compact enumerations like `A; B and C`."""
 
     pattern = re.compile(
         r"(?P<left>[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9_.+-]*(?:\s+[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9_.+-]*)?)"
@@ -147,6 +150,37 @@ def apply_omnivoice_prosody_warmup(text: str, warmup: str = "none") -> dict[str,
         "prosody_warmup": warmup,
         "prosody_warmup_tag": tag,
         "provider_tag_inserted": True,
+    }
+
+
+def apply_completion_cadence(text: str) -> dict[str, Any]:
+    """Append a provider-only closing cadence without changing source text."""
+
+    stripped = text.rstrip()
+    if not stripped:
+        return {
+            "text": text,
+            "completion_cadence": "none",
+            "completion_cadence_tag": None,
+            "completion_cadence_tail": "",
+            "completion_cadence_inserted": False,
+        }
+    if stripped.endswith(COMPLETION_CADENCE_MARKER):
+        return {
+            "text": stripped,
+            "completion_cadence": COMPLETION_CADENCE_STYLE,
+            "completion_cadence_tag": COMPLETION_CADENCE_MARKER,
+            "completion_cadence_tail": "",
+            "completion_cadence_inserted": False,
+        }
+    base = stripped.rstrip(COMPLETION_CADENCE_TERMINAL_PUNCTUATION)
+    text_with_cadence = f"{base}... {COMPLETION_CADENCE_MARKER}"
+    return {
+        "text": text_with_cadence,
+        "completion_cadence": COMPLETION_CADENCE_STYLE,
+        "completion_cadence_tag": COMPLETION_CADENCE_MARKER,
+        "completion_cadence_tail": "",
+        "completion_cadence_inserted": True,
     }
 
 

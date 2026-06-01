@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.152"
+VERSION = "0.3.153"
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -129,6 +129,12 @@ def source_root() -> Path:
 
 def target_root(path: Path) -> Path:
     return path.expanduser().resolve()
+
+
+def package_source_block(target: Path, command: str) -> dict[str, Any] | None:
+    import tes_bundle
+
+    return tes_bundle.package_source_block(target, command)
 
 
 def require_confirmation(args: argparse.Namespace, label: str) -> bool:
@@ -736,6 +742,11 @@ def install(args: argparse.Namespace) -> int:
         print("[tes-install] FAIL")
         print(f"- target is not a directory: {target}")
         return 1
+    blocked = package_source_block(target, "install")
+    if blocked:
+        print(json.dumps(blocked, indent=2, sort_keys=True))
+        print("[tes-install] BLOCKED")
+        return 2
     if not require_confirmation(args, "tes-install"):
         return 1
 
@@ -937,6 +948,9 @@ def append_run_record(target: Path, payload: dict[str, Any], dry_run: bool) -> d
 
 def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = None) -> tuple[int, dict[str, Any]]:
     target = target_root(args.target)
+    blocked = package_source_block(target, "postinstall")
+    if blocked:
+        return 2, blocked
     sentinel_path = target / POSTINSTALL_PATH
     sentinel = read_json(sentinel_path)
     state = str(sentinel.get("state") or "")
@@ -1192,8 +1206,22 @@ def hook(args: argparse.Namespace) -> int:
         inferred = hook_input.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR")
         if inferred:
             args.target = Path(str(inferred))
+    target = target_root(args.target)
+    blocked = package_source_block(target, "hook")
+    if blocked:
+        if args.agent == "claude":
+            if args.rewake_on_complete:
+                print("TES install is blocked for the TES package source root.", file=sys.stderr)
+                return 2
+            print(json.dumps(claude_hook_output(blocked, hook_input), sort_keys=True))
+            return 0
+        if args.agent == "cursor":
+            print("{}")
+            return 2
+        print(json.dumps(blocked, indent=2, sort_keys=True))
+        return 2
     if args.agent == "claude" and args.announce_start:
-        print(json.dumps(claude_start_notice_output(target_root(args.target), hook_input), sort_keys=True))
+        print(json.dumps(claude_start_notice_output(target, hook_input), sort_keys=True))
         return 0
     code, result = postinstall(args, hook_input=hook_input)
     if args.agent == "claude":
@@ -1809,6 +1837,129 @@ def self_test() -> int:
             failures.append("thin dry-run failed")
         if (target / ".tes").exists() or (target / ".codex").exists():
             failures.append("thin dry-run wrote target files")
+
+    with tempfile.TemporaryDirectory(prefix="tes-source-target-block-") as tempdir:
+        target = Path(tempdir)
+        (target / "package.json").write_text(
+            json.dumps({"name": "tilly-engineer-skills"}, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        for marker in (
+            Path("src/adapters/codex/AGENTS.md"),
+            Path("scripts/tes_install.py"),
+            Path("scripts/tes_bundle.py"),
+        ):
+            marker_path = target / marker
+            marker_path.parent.mkdir(parents=True, exist_ok=True)
+            marker_path.write_text("source marker\n", encoding="utf-8")
+        blocked_result = subprocess.run(
+            [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "install",
+                "--target",
+                str(target),
+                "--agent",
+                "all",
+                "--dry-run",
+            ],
+            cwd=source_root(),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        blocked_payload = parse_json_output(blocked_result.stdout)
+        if blocked_result.returncode != 2:
+            failures.append("source package target install must return BLOCKED")
+            failures.extend(blocked_result.stdout.splitlines())
+            failures.extend(blocked_result.stderr.splitlines())
+        if blocked_payload.get("status") != "BLOCKED":
+            failures.append("source package target install must report BLOCKED status")
+        if "TES package source" not in str(blocked_payload.get("reason", "")):
+            failures.append("source package target install must explain package-source boundary")
+
+        blocked_entrypoints = [
+            (
+                "source package target postinstall",
+                [
+                    sys.executable,
+                    str(Path(__file__).resolve()),
+                    "postinstall",
+                    "--target",
+                    str(target),
+                    "--dry-run",
+                ],
+            ),
+            (
+                "source package target hook",
+                [
+                    sys.executable,
+                    str(Path(__file__).resolve()),
+                    "hook",
+                    "--agent",
+                    "codex",
+                    "--target",
+                    str(target),
+                ],
+            ),
+            (
+                "source package target update planner",
+                [
+                    sys.executable,
+                    str(source_root() / "scripts/tes_update.py"),
+                    "plan",
+                    "--target",
+                    str(target),
+                    "--offline",
+                    "--json-only",
+                ],
+            ),
+            (
+                "source package target MCP installer",
+                [
+                    sys.executable,
+                    str(source_root() / "scripts/install_mcp.py"),
+                    "--target",
+                    str(target),
+                    "--adapter",
+                    "all",
+                    "--dry-run",
+                    "--json-only",
+                ],
+            ),
+            (
+                "source package target adapter installer",
+                [
+                    sys.executable,
+                    str(source_root() / "scripts/install_adapter.py"),
+                    "--target",
+                    str(target),
+                    "--adapter",
+                    "all",
+                    "--dry-run",
+                ],
+            ),
+        ]
+        for label, command in blocked_entrypoints:
+            entrypoint_result = subprocess.run(
+                command,
+                cwd=source_root(),
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            entrypoint_payload = parse_json_output(entrypoint_result.stdout)
+            if entrypoint_result.returncode != 2:
+                failures.append(f"{label} must return BLOCKED")
+                failures.extend(entrypoint_result.stdout.splitlines())
+                failures.extend(entrypoint_result.stderr.splitlines())
+            if entrypoint_payload.get("status") != "BLOCKED":
+                failures.append(f"{label} must report BLOCKED status")
+        if any(
+            (target / relpath).exists()
+            for relpath in (".tes", ".codex", ".claude", ".cursor", ".mcp.json")
+        ):
+            failures.append("source package target block must not create install artifacts")
 
     result = {
         "version": VERSION,

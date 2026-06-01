@@ -16,7 +16,7 @@ import tes_tts_runtime
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/live-session-utterance-fixtures.json"
-VERSION = "0.3.152"
+VERSION = "0.3.153"
 REPEAT_COUNT = 5
 EXPECTED_PIPELINE = ["classify", "verbalize", "adapt_plain_text"]
 

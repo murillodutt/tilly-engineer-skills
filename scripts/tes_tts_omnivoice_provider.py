@@ -42,7 +42,7 @@ from tes_tts_runtime_types import TTS_BENCHMARK_DIR
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.152"
+VERSION = "0.3.153"
 DEFAULT_MODEL = "k2-fsa/OmniVoice"
 DEFAULT_LANGUAGE = "pt"
 AUTO_LANGUAGE = "auto"
@@ -701,12 +701,12 @@ def write_benchmark_review(
                     "</dl>",
                     f"<p>{source}</p>",
                     "<fieldset class=\"scorecard\">",
-                    "<legend>Avaliacao audivel</legend>",
-                    "<label>Geral <input data-score=\"overall\" type=\"number\" min=\"0\" max=\"10\" step=\"0.5\" placeholder=\"0-10\"></label>",
-                    "<label>Pronuncia <input data-score=\"pronunciation\" type=\"number\" min=\"0\" max=\"10\" step=\"0.5\" placeholder=\"0-10\"></label>",
-                    "<label>Termos tecnicos <input data-score=\"technical_terms\" type=\"number\" min=\"0\" max=\"10\" step=\"0.5\" placeholder=\"0-10\"></label>",
-                    "<label>Naturalidade <input data-score=\"naturalness\" type=\"number\" min=\"0\" max=\"10\" step=\"0.5\" placeholder=\"0-10\"></label>",
-                    "<label class=\"notes\">Notas <textarea data-score=\"notes\" rows=\"3\" placeholder=\"O que ficou bom, ruim ou precisa repetir\"></textarea></label>",
+                    "<legend>Audible Evaluation</legend>",
+                    "<label>Overall <input data-score=\"overall\" type=\"number\" min=\"0\" max=\"10\" step=\"0.5\" placeholder=\"0-10\"></label>",
+                    "<label>Pronunciation <input data-score=\"pronunciation\" type=\"number\" min=\"0\" max=\"10\" step=\"0.5\" placeholder=\"0-10\"></label>",
+                    "<label>Technical Terms <input data-score=\"technical_terms\" type=\"number\" min=\"0\" max=\"10\" step=\"0.5\" placeholder=\"0-10\"></label>",
+                    "<label>Naturalness <input data-score=\"naturalness\" type=\"number\" min=\"0\" max=\"10\" step=\"0.5\" placeholder=\"0-10\"></label>",
+                    "<label class=\"notes\">Notes <textarea data-score=\"notes\" rows=\"3\" placeholder=\"What worked, what failed, or what needs another pass\"></textarea></label>",
                     "</fieldset>",
                     "</section>",
                 ]
@@ -717,7 +717,7 @@ def write_benchmark_review(
     html_text = "\n".join(
         [
             "<!doctype html>",
-            "<html lang=\"pt-BR\">",
+            "<html lang=\"en\">",
             "<head>",
             "<meta charset=\"utf-8\">",
             "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
@@ -748,9 +748,9 @@ def write_benchmark_review(
             "<section class=\"actions\" aria-label=\"Review actions\">",
             "<strong id=\"decision\">PENDING_REVIEW</strong>",
             "<div>",
-            "<button type=\"button\" id=\"saveReview\">Salvar no navegador</button>",
-            "<button type=\"button\" id=\"exportReview\">Exportar JSON</button>",
-            "<button type=\"button\" id=\"copyReview\">Copiar resumo</button>",
+            "<button type=\"button\" id=\"saveReview\">Save in browser</button>",
+            "<button type=\"button\" id=\"exportReview\">Export JSON</button>",
+            "<button type=\"button\" id=\"copyReview\">Copy summary</button>",
             "</div>",
             "</section>",
             *rows,
@@ -762,7 +762,7 @@ def write_benchmark_review(
             "document.addEventListener('input',render);",
             "document.getElementById('saveReview').onclick=()=>{const data=collect();localStorage.setItem(key,JSON.stringify(data));render()};",
             "document.getElementById('exportReview').onclick=()=>{const blob=new Blob([JSON.stringify(collect(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tes-tts-omnivoice-review.json';a.click();URL.revokeObjectURL(a.href)};",
-            "document.getElementById('copyReview').onclick=async()=>{const data=collect();const text=`${data.decision}: ${data.cases.map(c=>`${c.id} geral=${c.scores.overall??'?'}`).join('; ')}`;if(navigator.clipboard)await navigator.clipboard.writeText(text)};",
+            "document.getElementById('copyReview').onclick=async()=>{const data=collect();const text=`${data.decision}: ${data.cases.map(c=>`${c.id} overall=${c.scores.overall??'?'}`).join('; ')}`;if(navigator.clipboard)await navigator.clipboard.writeText(text)};",
             "try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(saved&&Array.isArray(saved.cases)){saved.cases.forEach(item=>{const c=document.querySelector(`.case[data-case-id=\"${CSS.escape(item.id)}\"]`);if(!c)return;Object.entries(item.scores||{}).forEach(([k,v])=>{const el=c.querySelector(`[data-score=\"${k}\"]`);if(el)el.value=v??''})})}}catch{}render();",
             "</script>",
             "</main>",
@@ -817,8 +817,8 @@ def write_profile_review(
                         f"<dt>Generation</dt><dd>{html.escape(str(item.get('generation_ms')))}ms</dd>",
                         f"<dt>Steps</dt><dd>{html.escape(str(item.get('num_step')))}</dd>",
                         "</dl>",
-                        "<label>Nota <input data-score=\"score\" type=\"number\" min=\"0\" max=\"10\" step=\"0.5\" placeholder=\"0-10\"></label>",
-                        "<label>Notas <textarea data-score=\"notes\" rows=\"3\" placeholder=\"pronuncia, naturalidade, termos tecnicos\"></textarea></label>",
+                        "<label>Score <input data-score=\"score\" type=\"number\" min=\"0\" max=\"10\" step=\"0.5\" placeholder=\"0-10\"></label>",
+                        "<label>Notes <textarea data-score=\"notes\" rows=\"3\" placeholder=\"pronunciation, naturalness, technical terms\"></textarea></label>",
                         "</article>",
                     ]
                 )
@@ -841,7 +841,7 @@ def write_profile_review(
     html_text = "\n".join(
         [
             "<!doctype html>",
-            "<html lang=\"pt-BR\">",
+            "<html lang=\"en\">",
             "<head>",
             "<meta charset=\"utf-8\">",
             "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
@@ -866,9 +866,9 @@ def write_profile_review(
             "<section class=\"actions\" aria-label=\"Review actions\">",
             "<strong id=\"decision\">PENDING_REVIEW</strong>",
             "<div>",
-            "<button type=\"button\" id=\"saveReview\">Salvar no navegador</button>",
-            "<button type=\"button\" id=\"exportReview\">Exportar JSON</button>",
-            "<button type=\"button\" id=\"copyReview\">Copiar resumo</button>",
+            "<button type=\"button\" id=\"saveReview\">Save in browser</button>",
+            "<button type=\"button\" id=\"exportReview\">Export JSON</button>",
+            "<button type=\"button\" id=\"copyReview\">Copy summary</button>",
             "</div>",
             "</section>",
             *sections,

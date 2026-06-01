@@ -21,7 +21,7 @@ import tes_bundle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.152"
+VERSION = "0.3.153"
 RETROFIT_DIR = ".tes/retrofit"
 
 
@@ -309,6 +309,11 @@ def install(args: argparse.Namespace) -> int:
         print("[install-adapter] FAIL")
         print(f"- target is not a directory: {target_root}")
         return 1
+    blocked = tes_bundle.package_source_block(target_root, "install_adapter")
+    if blocked:
+        print(json.dumps(blocked, indent=2))
+        print("[install-adapter] BLOCKED")
+        return 2
 
     with tempfile.TemporaryDirectory(prefix="tes-install-") as tempdir:
         out_root = Path(tempdir) / "adapters"

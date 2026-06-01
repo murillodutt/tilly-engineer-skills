@@ -15,7 +15,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/provider-probe-fixtures.json"
 FALLBACK_FIXTURE_PATH = ROOT / "benchmarks/tes-tts/provider-fallback-fixtures.json"
-VERSION = "0.3.152"
+VERSION = "0.3.153"
 
 PROVIDER_ORDER = ["omnivoice", "google", "openai", "elevenlabs", "say"]
 PROVIDER_STATUSES = {

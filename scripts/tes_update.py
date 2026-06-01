@@ -21,7 +21,7 @@ except Exception:  # pragma: no cover - installed helper may be inspected alone.
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.152"
+VERSION = "0.3.153"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -65,6 +65,13 @@ HELPER_CONTRACT_MARKERS = {
     "field_reports.py": ('SCHEMA = "tes-field-report@2"',),
     "mantra_gate_adoption_oracle.py": ('SCHEMA = "tes-mantra-gate-adoption@1"',),
 }
+CONTEXT_CORE_PATHS = (
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CURSOR.md",
+    ".cursor/rules/tes-guidelines.mdc",
+    ".cursorrules",
+)
 UPDATE_SCOPES = ("none", "helpers-only", "adapter-config", "project-context", "full-convergence")
 PREFERRED_INTENT_TRIGGERS = (
     "/tes-init",
@@ -153,6 +160,7 @@ CLAUDE_TRIGGER_SKILLS = (
 POST_LAYER_ZERO_FINAL_PROBE_CONTRACT = (
     "helper_contract_status=PASS",
     "runtime_trigger_status=PASS|NOT_APPLIED",
+    "context_core_status=PASS|NOT_APPLIED|UNKNOWN",
     "project_context_status=PASS|NOT_APPLIED",
     "project_alignment_status=PASS|NOT_APPLIED",
     "project_quality_gates=PASS|BLOCKED_WITH_REASON|NOT_APPLIED",
@@ -189,6 +197,16 @@ def read_bytes(path: Path) -> bytes:
         return path.read_bytes()
     except OSError:
         return b""
+
+
+def read_json(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -826,6 +844,7 @@ def recommended_update_scope(
     update_available: bool,
     helper_status: str,
     trigger_status: str,
+    governance_status: str,
     project_context_status: str,
     project_alignment_status: str,
 ) -> str:
@@ -833,7 +852,7 @@ def recommended_update_scope(
         return "full-convergence"
     if helper_status == "STALE_HELPERS":
         return "helpers-only"
-    if trigger_status == "DRIFT":
+    if trigger_status == "DRIFT" or governance_status == "DRIFT":
         return "adapter-config"
     if project_context_status in {"DRIFT", "BLOCKED"} or project_alignment_status in {"DRIFT", "BLOCKED"}:
         return "project-context"
@@ -858,6 +877,7 @@ def post_layer_zero_final_probe(result: dict[str, Any]) -> dict[str, Any]:
     ready = (
         result.get("helper_contract_status") == "PASS"
         and result.get("runtime_trigger_status") in {"PASS", "NOT_APPLIED"}
+        and result.get("context_core_status") in {"PASS", "NOT_APPLIED", "UNKNOWN"}
         and result.get("project_context_status") in {"PASS", "NOT_APPLIED"}
         and result.get("project_alignment_status") in {"PASS", "NOT_APPLIED"}
         and result.get("update_available") is False
@@ -917,35 +937,84 @@ def project_start_gate(target: Path) -> dict[str, Any]:
     }
 
 
-def context_governance_contract(target: Path) -> dict[str, Any]:
-    roots = [
-        "AGENTS.md",
-        "CLAUDE.md",
-        "CURSOR.md",
-        ".cursor/rules/tes-guidelines.mdc",
-        ".cursorrules",
+def context_core_contract(target: Path) -> dict[str, Any]:
+    manifest = read_json(target / ".tes/manifest.json")
+    entries = [
+        entry
+        for entry in manifest.get("entries", [])
+        if isinstance(entry, dict)
+        and entry.get("layer") == "context_governance"
+        and str(entry.get("path") or "") in CONTEXT_CORE_PATHS
     ]
+    if not entries:
+        return {"status": "UNKNOWN", "records": [], "failures": []}
+
+    records: list[dict[str, Any]] = []
+    failures: list[str] = []
+    for entry in entries:
+        relpath = str(entry.get("path") or "")
+        expected_sha = str(entry.get("sha256") or "")
+        path = target / relpath
+        record: dict[str, Any] = {
+            "path": relpath,
+            "expected_sha256": expected_sha,
+            "status": "PASS",
+            "failures": [],
+        }
+        if not path.exists() or not path.is_file():
+            record["status"] = "DRIFT"
+            record["failures"] = ["context core file missing"]
+        else:
+            actual_sha = sha256_file(path)
+            record["sha256"] = actual_sha
+            if expected_sha and actual_sha != expected_sha:
+                record["status"] = "DRIFT"
+                record["failures"] = ["context core differs from installed bundle manifest"]
+            elif not expected_sha:
+                record["status"] = "UNKNOWN"
+                record["failures"] = ["manifest context core hash missing"]
+        if record["failures"]:
+            failures.append(f"{relpath}: {'; '.join(record['failures'])}")
+        records.append(record)
+
+    statuses = {str(record["status"]) for record in records}
+    status = "DRIFT" if "DRIFT" in statuses else "UNKNOWN" if "UNKNOWN" in statuses else "PASS"
+    return {"status": status, "records": records, "failures": failures}
+
+
+def context_governance_contract(target: Path) -> dict[str, Any]:
+    roots = list(CONTEXT_CORE_PATHS)
     existing = [root for root in roots if (target / root).exists()]
     if not existing:
-        return {"status": "NOT_APPLIED", "roots": [], "failures": []}
+        return {"status": "NOT_APPLIED", "roots": [], "core": context_core_contract(target), "failures": []}
+    core = context_core_contract(target)
     if root_context_helper is None:
-        return {"status": "RECOVERED", "roots": existing, "failures": []}
+        return {
+            "status": "DRIFT" if core["status"] == "DRIFT" else "RECOVERED",
+            "roots": existing,
+            "core": core,
+            "failures": core["failures"],
+        }
     try:
         analysis = root_context_helper.analyze(target)
     except Exception as exc:  # pragma: no cover - defensive installed-helper path.
-        return {"status": "NEEDS_REVIEW", "roots": existing, "failures": [str(exc)]}
+        return {"status": "NEEDS_REVIEW", "roots": existing, "core": core, "failures": [str(exc), *core["failures"]]}
     status = str(analysis.get("status") or "")
-    if status == "NEEDS_REVIEW":
+    if core["status"] == "DRIFT":
+        contract_status = "DRIFT"
+    elif status == "NEEDS_REVIEW":
         contract_status = "RECOVERED"
     elif status == "PASS":
         contract_status = "PASS"
     else:
         contract_status = "NEEDS_REVIEW"
+    analysis_failures = list(analysis.get("failures", [])) if isinstance(analysis.get("failures"), list) else []
     return {
         "status": contract_status,
         "roots": existing,
+        "core": core,
         "analysis_status": status,
-        "failures": list(analysis.get("failures", [])) if isinstance(analysis.get("failures"), list) else [],
+        "failures": [*analysis_failures, *core["failures"]],
     }
 
 
@@ -1036,6 +1105,10 @@ def continuation_plan(
             "required": adapter_required,
             "approval_required": adapter_required,
             "writes": [
+                "AGENTS.md",
+                "CLAUDE.md",
+                "CURSOR.md",
+                ".cursor/rules/**",
                 ".agents/skills/**",
                 ".claude/skills/**",
             ] if adapter_required else [],
@@ -1112,6 +1185,14 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
     target = args.target.expanduser().resolve()
     if not target.exists() or not target.is_dir():
         return {"version": VERSION, "status": "FAIL", "failures": [f"target is not a directory: {target}"]}
+    try:
+        import tes_bundle  # type: ignore
+    except Exception:
+        tes_bundle = None  # type: ignore[assignment]
+    if tes_bundle is not None:
+        blocked = tes_bundle.package_source_block(target, "tes_update")
+        if blocked:
+            return blocked
 
     records = version_records(target)
     surface_map = surfaces(target)
@@ -1133,7 +1214,15 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
     governance = context_governance_contract(target)
     context_drift = context["status"] in {"DRIFT", "BLOCKED"}
     alignment_drift = alignment["status"] in {"DRIFT", "BLOCKED"}
-    update_available = True if (cmp_result is not None and cmp_result < 0) or helper_stale or trigger_drift or context_drift or alignment_drift else False
+    governance_drift = governance["status"] == "DRIFT"
+    update_available = True if (
+        (cmp_result is not None and cmp_result < 0)
+        or helper_stale
+        or trigger_drift
+        or governance_drift
+        or context_drift
+        or alignment_drift
+    ) else False
     update_reasons: list[str] = []
     if cmp_result is not None and cmp_result < 0:
         update_reasons.append("installed_version_behind")
@@ -1141,6 +1230,8 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         update_reasons.append("helper_contract_drift")
     if trigger_drift:
         update_reasons.append("runtime_trigger_drift")
+    if governance_drift:
+        update_reasons.append("context_core_drift")
     if context["status"] == "DRIFT":
         update_reasons.append("project_context_drift")
     if context["status"] == "BLOCKED":
@@ -1158,11 +1249,20 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         if cmp_result == 0
         and helper["status"] in {"PASS", "NOT_INSTALLED"}
         and triggers["status"] in {"PASS", "NOT_APPLIED"}
+        and governance["status"] in {"PASS", "RECOVERED", "NOT_APPLIED"}
         and context["status"] in {"PASS", "NOT_APPLIED"}
         and alignment["status"] in {"PASS", "NOT_APPLIED"}
         else "UNKNOWN"
     )
-    update_scope = recommended_update_scope(state, update_available, helper["status"], triggers["status"], context["status"], alignment["status"])
+    update_scope = recommended_update_scope(
+        state,
+        update_available,
+        helper["status"],
+        triggers["status"],
+        governance["status"],
+        context["status"],
+        alignment["status"],
+    )
     intent = recommended_intent(state, update_status, route, update_scope)
 
     result: dict[str, Any] = {
@@ -1199,10 +1299,14 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "project_alignment_warnings": alignment["warnings"],
         "context_governance_status": governance["status"],
         "context_governance_roots": governance["roots"],
+        "context_core_status": (governance.get("core") or {}).get("status"),
+        "context_core_records": (governance.get("core") or {}).get("records", []),
+        "context_core_failures": (governance.get("core") or {}).get("failures", []),
         "context_governance_failures": governance["failures"],
         "adapter_refresh_required": update_scope in {"adapter-config", "full-convergence"},
         "runtime_capability_refresh_required": trigger_drift or update_scope in {"adapter-config", "full-convergence"},
-        "semantic_recovery_required": governance["status"] in {"RECOVERED", "NEEDS_REVIEW"} and trigger_drift,
+        "semantic_recovery_required": governance["status"] in {"RECOVERED", "NEEDS_REVIEW", "DRIFT"}
+        and (trigger_drift or update_scope in {"adapter-config", "full-convergence"}),
         "next_probe_required": update_scope != "none",
         "helper_contract_status": helper["status"],
         "installed_helper_records": helper["records"],
@@ -1254,6 +1358,7 @@ def record_field_report(target: Path, result: dict[str, Any]) -> dict[str, Any] 
                 "update_reasons": ",".join(result.get("update_reasons") or []),
                 "helper_contract_status": result.get("helper_contract_status"),
                 "runtime_trigger_status": result.get("runtime_trigger_status"),
+                "context_core_status": result.get("context_core_status"),
                 "update_scope": result.get("recommended_update_scope"),
                 "recommended_update_scope": result.get("recommended_update_scope"),
                 "route": result.get("recommended_route"),
@@ -1678,6 +1783,72 @@ def self_test() -> dict[str, Any]:
         if (result.get("project_start_gate") or {}).get("status") != "READY":
             failures.append("current fixture with installed init helpers must mark Project-Start Gate ready")
 
+    with tempfile.TemporaryDirectory(prefix="tes-update-context-core-drift-") as tempdir:
+        target = Path(tempdir)
+        write(target / "docs/agents/PROJECT-REGISTER.md", "Generated by Tilly\n")
+        write(target / "AGENTS.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-init/SKILL.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-update/SKILL.md", trigger_fixture_text())
+        write(target / ".agents/skills/tes-engineering-discipline/SKILL.md", trigger_fixture_text())
+        write(target / ".tes/bin/tes_update.py", helper_source_text("tes_update.py"))
+        write(
+            target / ".tes/manifest.json",
+            json.dumps(
+                {
+                    "schema": "tes-bundle-manifest@1",
+                    "version": VERSION,
+                    "entries": [
+                        {
+                            "path": "AGENTS.md",
+                            "layer": "context_governance",
+                            "sha256": "0" * 64,
+                        }
+                    ],
+                },
+                indent=2,
+            ) + "\n",
+        )
+        write_alignment_fixture(target)
+        args = argparse.Namespace(
+            target=target,
+            remote_version=VERSION,
+            remote_commit="g" * 40,
+            remote_helper_manifest=None,
+            local_package_helpers=True,
+            runtime="codex",
+            offline=False,
+            timeout=0.1,
+        )
+        result = analyze(args)
+        if result["update_status"] != "AVAILABLE":
+            failures.append("context core drift must report update available")
+        if result["runtime_trigger_status"] != "PASS":
+            failures.append("context core drift fixture must keep runtime triggers PASS")
+        if result["context_core_status"] != "DRIFT":
+            failures.append("context core mismatch must report DRIFT")
+        if "context_core_drift" not in result["update_reasons"]:
+            failures.append("context core mismatch must add context_core_drift reason")
+        if result["recommended_update_scope"] != "adapter-config":
+            failures.append("context core drift must recommend adapter-config scope")
+        if result["recommended_intent"] != "/tes-update codex":
+            failures.append("context core drift must recommend /tes-update codex")
+        if result["adapter_refresh_required"] is not True:
+            failures.append("context core drift must require adapter refresh")
+        if (result.get("post_layer_zero_final_probe") or {}).get("status") != "PENDING":
+            failures.append("context core drift must block final probe readiness")
+        drift_plan = result.get("continuation_plan") or {}
+        drift_phases = {
+            phase.get("name"): phase
+            for phase in drift_plan.get("phases", [])
+            if phase.get("required")
+        }
+        runtime_phase = drift_phases.get("runtime_capability_refresh") or {}
+        if not runtime_phase:
+            failures.append("context core drift continuation plan must require runtime capability refresh")
+        if "AGENTS.md" not in runtime_phase.get("writes", []):
+            failures.append("context core drift continuation plan must name AGENTS.md writes")
+        assert_project_start_gate(result, failures, "context core drift fixture")
+
     with tempfile.TemporaryDirectory(prefix="tes-update-stale-helper-") as tempdir:
         target = Path(tempdir)
         write(target / "docs/agents/PROJECT-REGISTER.md", "Generated by Tilly\n")
@@ -1871,6 +2042,33 @@ def self_test() -> dict[str, Any]:
             failures.append("new fixture must route to /tes-init")
         assert_project_start_gate(result, failures, "new fixture")
 
+    with tempfile.TemporaryDirectory(prefix="tes-update-source-target-block-") as tempdir:
+        target = Path(tempdir)
+        write(target / "package.json", json.dumps({"name": "tilly-engineer-skills"}, indent=2) + "\n")
+        for marker in (
+            Path("src/adapters/codex/AGENTS.md"),
+            Path("scripts/tes_install.py"),
+            Path("scripts/tes_bundle.py"),
+        ):
+            write(target / marker, "source marker\n")
+        args = argparse.Namespace(
+            target=target,
+            remote_version=VERSION,
+            remote_commit="h" * 40,
+            remote_helper_manifest=None,
+            local_package_helpers=True,
+            runtime="codex",
+            offline=False,
+            timeout=0.1,
+        )
+        result = analyze(args)
+        if result["status"] != "BLOCKED":
+            failures.append("tes_update must block TES package source targets")
+        if "TES package source" not in str(result.get("reason", "")):
+            failures.append("tes_update source target block must explain package-source boundary")
+        if (target / ".tes/setup").exists() or (target / ".codex").exists():
+            failures.append("tes_update source target block must not create install artifacts")
+
     with tempfile.TemporaryDirectory(prefix="tes-update-field-report-") as tempdir:
         target = Path(tempdir)
         subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
@@ -2063,7 +2261,9 @@ def main() -> int:
     print(json.dumps(result, indent=2, sort_keys=True))
     if not args.json_only:
         print("[tes-update] " + result["status"])
-    return 0 if result["status"] == "PASS" else 1
+    if result["status"] == "PASS":
+        return 0
+    return 2 if result["status"] == "BLOCKED" else 1
 
 
 if __name__ == "__main__":
