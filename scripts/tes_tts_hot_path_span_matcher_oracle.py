@@ -16,7 +16,7 @@ import tes_tts_runtime
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/hot-path-span-matcher-fixtures.json"
-VERSION = "0.3.154"
+VERSION = "0.3.155"
 
 INLINE_CODE_PATTERN = re.compile(r"`([^`]+)`")
 URL_PATTERN = re.compile(r"https?://[^\s),;]+")

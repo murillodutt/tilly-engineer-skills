@@ -17,7 +17,7 @@ import cortex
 import scope_contract
 
 
-VERSION = "0.3.154"
+VERSION = "0.3.155"
 SCHEMA = "tes-consolidation-gate@1"
 LOCK_ROOT = Path(".tes/cortex/consolidation")
 SAFE_TOKEN = re.compile(r"[^a-zA-Z0-9_.:-]+")

@@ -12,9 +12,9 @@
         "og_description": "Un registro de servicio para trabajo de agentes: reglas, contexto, checks, evidencia y rollback dentro del repo."
       },
       "pt": {
-        "title": "Tilly Engineer Skills - Camada local de confianca para agentes de codigo",
-        "description": "Instale TES com npx direto do GitHub e transforme o trabalho de agentes em um registro local inspecionavel.",
-        "og_description": "Um registro de servico para trabalho de agentes: regras, contexto, checks, evidencia e rollback dentro do repo."
+        "title": "Tilly Engineer Skills - Camada local de confiança para agentes de código",
+        "description": "Instale TES com npx direto do GitHub e transforme o trabalho de agentes em um registro local inspecionável.",
+        "og_description": "Um registro de serviço para trabalho de agentes: regras, contexto, checks, evidência e rollback dentro do repositório."
       }
     },
     "manual": {
@@ -29,9 +29,9 @@
         "og_description": "Instala TES desde GitHub con npx, luego actualiza, audita y revierte con evidencia local."
       },
       "pt": {
-        "title": "Tilly Engineer Skills - Manual do usuario",
+        "title": "Tilly Engineer Skills - Manual do usuário",
         "description": "Manual trilingue para instalar TES com npx direto do GitHub, atualizar, auditar e reverter.",
-        "og_description": "Instale TES do GitHub com npx, depois atualize, audite e reverta com evidencia local."
+        "og_description": "Instale TES do GitHub com npx, depois atualize, audite e reverta com evidência local."
       }
     }
   },
@@ -42,9 +42,9 @@
       "contents": "Contents",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.154 · local bundle certified",
-      "manual_meta": "User manual · v0.3.154",
-      "version": "v0.3.154",
+      "release_meta": "v0.3.155 · local bundle certified",
+      "manual_meta": "User manual · v0.3.155",
+      "version": "v0.3.155",
       "source_note": "Generated from TDS.",
       "github": "GitHub",
       "read_manual": "Read the manual",
@@ -56,27 +56,27 @@
       "contents": "Indice",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.154 · bundle local certificado",
-      "manual_meta": "Manual de usuario · v0.3.154",
-      "version": "v0.3.154",
+      "release_meta": "v0.3.155 · bundle local certificado",
+      "manual_meta": "Manual de usuario · v0.3.155",
+      "version": "v0.3.155",
       "source_note": "Generado desde TDS.",
       "github": "GitHub",
       "read_manual": "Leer el manual",
       "start": "Empezar con seguridad"
     },
     "pt": {
-      "skip": "Pular para o conteudo",
+      "skip": "Pular para o conteúdo",
       "language": "Idioma",
-      "contents": "Sumario",
+      "contents": "Sumário",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.154 · bundle local certificado",
-      "manual_meta": "Manual do usuario · v0.3.154",
-      "version": "v0.3.154",
+      "release_meta": "v0.3.155 · bundle local certificado",
+      "manual_meta": "Manual do usuário · v0.3.155",
+      "version": "v0.3.155",
       "source_note": "Gerado a partir do TDS.",
       "github": "GitHub",
       "read_manual": "Ler o manual",
-      "start": "Comecar com seguranca"
+      "start": "Começar com segurança"
     }
   },
   "hero": {
@@ -108,15 +108,15 @@
         ]
       },
       "pt": {
-        "eyebrow": "Um registro de servico para trabalho de IA",
-        "title": "Seu agente alterou o repo. Sua equipe consegue provar *por que*?",
-        "lead": "TES transforma sessoes de agentes em registros locais inspecionaveis: regras usadas, contexto carregado, checks executados, evidencia retida e rota de rollback ficam dentro do repositorio.",
+        "eyebrow": "Um registro de serviço para trabalho de IA",
+        "title": "Seu agente alterou o repositório. Sua equipe consegue provar *por quê*?",
+        "lead": "TES transforma sessões de agentes em registros locais inspecionáveis: regras usadas, contexto carregado, checks executados, evidência retida e rota de rollback ficam dentro do repositório.",
         "primary": "Instalar com GitHub npx",
         "secondary": "Ler o manual",
         "facts": [
-          {"label": "Registro", "value": "Evidencia retida"},
+          {"label": "Registro", "value": "Evidência retida"},
           {"label": "Painel", "value": "Resultado dos gates"},
-          {"label": "Memoria", "value": "Markdown versionado"},
+          {"label": "Memória", "value": "Markdown versionado"},
           {"label": "Instalar", "value": "GitHub npx"}
         ]
       }
@@ -133,9 +133,9 @@
         "lead": "Una guia practica para instalar, actualizar y auditar Tilly Engineer Skills en proyectos reales sin copia ciega de archivos."
       },
       "pt": {
-        "eyebrow": "Manual do usuario",
-        "title": "Um manual de campo para agentes de codigo *governados*.",
-        "lead": "Um guia pratico para instalar, atualizar e auditar Tilly Engineer Skills em projetos reais sem copia cega de arquivos."
+        "eyebrow": "Manual do usuário",
+        "title": "Um manual de campo para agentes de código *governados*.",
+        "lead": "Um guia prático para instalar, atualizar e auditar Tilly Engineer Skills em projetos reais sem cópia cega de arquivos."
       }
     }
   },
@@ -173,15 +173,15 @@
       },
       "pt": {
         "num": "01",
-        "title": "Nao compre o chat log",
-        "lede": "Uma transcricao nao e painel, historico de servico, inspecao nem plano de recuperacao. Se um agente altera um repositorio real, a equipe precisa de mais que uma resposta confiante.",
+        "title": "Não compre o chat log",
+        "lede": "Uma transcrição não é painel, histórico de serviço, inspeção nem plano de recuperação. Se um agente altera um repositório real, a equipe precisa de mais que uma resposta confiante.",
         "blocks": [
           {
             "type": "cards",
             "items": [
-              {"title": "O risco", "body": "O agente muda codigo e o motivo desaparece em uma janela de chat."},
-              {"title": "A exigencia", "body": "A equipe precisa ver quais regras, contexto, checks e limites governaram o trabalho."},
-              {"title": "A virada", "body": "TES preserva esse registro operacional dentro do repositorio, nao na memoria nem no folklore."}
+              {"title": "O risco", "body": "O agente muda código e o motivo desaparece em uma janela de chat."},
+              {"title": "A exigência", "body": "A equipe precisa ver quais regras, contexto, checks e limites governaram o trabalho."},
+              {"title": "A virada", "body": "TES preserva esse registro operacional dentro do repositório, não na memória nem no folclore."}
             ]
           }
         ]
@@ -224,17 +224,17 @@
       },
       "pt": {
         "num": "02",
-        "title": "O que o sistema deixa para tras",
-        "lede": "A venda e simples porque a mecanica e local: cada parte util da execucao tem um lugar inspecionavel para ficar.",
+        "title": "O que o sistema deixa para trás",
+        "lede": "A proposta é simples porque a mecânica é local: cada parte útil da execução tem um lugar inspecionável para ficar.",
         "blocks": [
           {
             "type": "cards",
             "items": [
-              {"title": "Registro de servico", "body": "Evidencia retida, inventario de arquivos alterados, resultado dos gates e rollback."},
+              {"title": "Registro de serviço", "body": "Evidência retida, inventário de arquivos alterados, resultado dos gates e rollback."},
               {"title": "Painel", "body": "Estados como PASS, BLOCKED, DEGRADED, NEEDS_REVIEW e contexto recuperado."},
-              {"title": "Memoria", "body": "Markdown versionado em `docs/agents/**`, com Cortex recall como acesso derivado."},
-              {"title": "Mantra Gate", "body": "Antes de trabalho permitido que muda estado, `[🍳 Flash-Fry]` é o marcador visível, retém evidencia completa e detecta bypass."},
-              {"title": "Faixa segura", "body": "Sem push, publish, mutacao remota, marketplace ou escritas MCP nao governadas."}
+              {"title": "Memória", "body": "Markdown versionado em `docs/agents/**`, com Cortex recall como acesso derivado."},
+              {"title": "Mantra Gate", "body": "Antes de trabalho permitido que muda estado, `[🍳 Flash-Fry]` é o marcador visível, retém evidência completa e detecta bypass."},
+              {"title": "Faixa segura", "body": "Sem push, publish, mutação remota, marketplace ou escritas MCP não governadas."}
             ]
           }
         ]
@@ -262,10 +262,10 @@
       "pt": {
         "num": "03",
         "title": "Prova sem teatro",
-        "lede": "Um bom vendedor mostra o relatorio de inspecao. TES mantem claims estreitos o bastante para serem confiaveis e verificaveis.",
+        "lede": "Um bom vendedor mostra o relatório de inspeção. TES mantém claims estreitos o bastante para serem confiáveis e verificáveis.",
         "blocks": [
-          {"type": "list", "items": ["A evidencia v1 retida mostra ate **6x baseline disciplined behavior em evals Claude CLI escopados**.", "Codex tem evidencia comportamental retida e escopada para o run, backend, modelo e contrato de instrucao nomeados.", "Cursor e apenas paridade estrutural/contratual. Certificacao de comportamento do Cursor nao e afirmada.", "O repositorio mantem relatorios retidos em `docs/evidence/reports/**`; a pagina evita contagens fixas que derivam."]},
-          {"type": "note", "text": "Nao ha claim de comportamento universal de modelos, paridade universal entre adapters, ROI garantido, autonomia sem risco, marketplace, live UI ou escrita MCP automatica ou nao governada."}
+          {"type": "list", "items": ["A evidência v1 retida mostra até **6x baseline disciplined behavior em evals Claude CLI escopados**.", "Codex tem evidência comportamental retida e escopada para o run, backend, modelo e contrato de instrução nomeados.", "Cursor é apenas paridade estrutural/contratual. Certificação de comportamento do Cursor não é afirmada.", "O repositório mantém relatórios retidos em `docs/evidence/reports/**`; a página evita contagens fixas que derivam."]},
+          {"type": "note", "text": "Não há claim de comportamento universal de modelos, paridade universal entre adapters, ROI garantido, autonomia sem risco, marketplace, live UI ou escrita MCP automática ou não governada."}
         ]
       }
     },
@@ -298,15 +298,15 @@
       },
       "pt": {
         "num": "03A",
-        "title": "Agora a trilha tambem pode falar",
-        "lede": "`tes-tts` transforma trabalho tecnico em fala local e revisavel. Com OmniVoice opcional, o TES pode usar uma voz clonada local mantendo o provider fora do pacote e o runtime pesado em `~/.tes/runtime`.",
+        "title": "Agora a trilha também pode falar",
+        "lede": "`tes-tts` transforma trabalho técnico em fala local e revisável. Com OmniVoice opcional, o TES pode usar uma voz clonada local mantendo o provider fora do pacote e o runtime pesado em `~/.tes/runtime`.",
         "blocks": [
           {"type": "cards", "items": [
-            {"title": "A voz continua opcional", "body": "TES nao embute OmniVoice nem exige fala cloud. O usuario opta, instala o provider no runtime TES de usuario e mantem audio de referencia, WAVs gerados, cache de modelo e voice prompt cache fora do Git."},
-            {"title": "A fala tecnica e preparada", "body": "TES prepara spoken text request-local antes da sintese: segredos sao redigidos, codigo e comandos continuam texto, paths viram referencias uteis e termos tecnicos mistos ficam protegidos."},
-            {"title": "Audio vira evidencia", "body": "WAVs gerados tornam leituras longas inspecionaveis: pausar, repetir, comparar e diagnosticar se o problema veio da preparacao do texto, chunking, playback ou pronuncia do provider."}
+            {"title": "A voz continua opcional", "body": "TES não embute OmniVoice nem exige fala cloud. O usuário opta, instala o provider no runtime TES de usuário e mantém áudio de referência, WAVs gerados, cache de modelo e voice prompt cache fora do Git."},
+            {"title": "A fala técnica é preparada", "body": "TES prepara spoken text request-local antes da síntese: segredos são redigidos, código e comandos continuam texto, paths viram referências úteis e termos técnicos mistos ficam protegidos."},
+            {"title": "Áudio vira evidência", "body": "WAVs gerados tornam leituras longas inspecionáveis: pausar, repetir, comparar e diagnosticar se o problema veio da preparação do texto, chunking, playback ou pronúncia do provider."}
           ]},
-          {"type": "p", "text": "Use quando a leitura importa: reviews de design, notas longas de auditoria, fechamentos de release e prosa tecnica que melhora com uma voz local de alta qualidade. O setup vive em [TES-TTS-OMNIVOICE.md](install/TES-TTS-OMNIVOICE.md) e a secao completa vive no [manual](install/USER-MANUAL.html#tts-pt)."}
+          {"type": "p", "text": "Use quando a leitura importa: reviews de design, notas longas de auditoria, fechamentos de release e prosa técnica que melhora com uma voz local de alta qualidade. O setup vive em [TES-TTS-OMNIVOICE.md](install/TES-TTS-OMNIVOICE.md) e a seção completa vive no [manual](install/USER-MANUAL.html#tts-pt)."}
         ]
       }
     },
@@ -316,12 +316,12 @@
         "title": "GitHub npx quickstart",
         "lede": "Installation is not the dream; it is the controlled path to the dream. Start with one GitHub package-spec command, then let the first agent session finish setup with evidence.",
         "blocks": [
-          {"type": "code", "label": "fixed ref form", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add"},
-          {"type": "code", "label": "bun runtime", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add"},
-          {"type": "code", "label": "non-interactive", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "fixed ref form", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add"},
+          {"type": "code", "label": "bun runtime", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add"},
+          {"type": "code", "label": "non-interactive", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add --agent all --yes"},
           {"type": "steps", "items": ["Run from the target repository with Node.js 18+ and npx, or Bun 1.0+ and bunx. TES also requires Python 3.11+ for local setup oracles.", "Interactive mode lets you confirm target, agent hooks, and install mode before TES writes files.", "Use `--agent all --yes` when you want Codex, Claude Code, and Cursor hooks plus their project MCP configs prepared non-interactively.", "Codex: open Settings > Hooks, then Trust and enable the Session Start hook if it is marked needs review.", "Claude Code: open or reopen Claude Code, wait for the TES completion notice, then run `/tes-setup`.", "Cursor: reopen the workspace, let first-session setup complete, then run `/tes-setup` for the report.", "Use `/tes-mcp` for explicit VS Code MCP registration or host-recognition repair.", "After `/tes-setup` reports complete, run `/tes-align`, then use `/tes-map` for the current GPS view before starting project work.", "Read the final report before approving commit, push, or rollout."]},
           {"type": "aside", "title": "Important: agent follow-up is host-specific", "text": "The first run is not the same in every host. Codex: open Settings > Hooks, then Trust and enable Session Start if it is marked needs review. Claude Code: reopen Claude Code, wait for the TES completion notice, then run `/tes-setup`. Cursor: reopen the workspace, let first-session setup complete, then run `/tes-setup`. Only after the report is complete, run `/tes-align`, then use `/tes-map` for the current GPS view before project work."},
-          {"type": "p", "text": "`#v0.3.154` is the intended fixed-ref form. Treat the remote ref as certified only after the tag is published and `npm run release:check` passes."},
+          {"type": "p", "text": "`#v0.3.155` is the intended fixed-ref form. Treat the remote ref as certified only after the tag is published and `npm run release:check` passes."},
           {"type": "p", "text": "`--loglevel=error` keeps package-runner warnings out of the first-run screen while preserving real command failures. For Bun-only machines, use the `bunx --silent --bun` command. If neither runtime is installed, install Node.js LTS or Bun before running TES."}
         ]
       },
@@ -330,27 +330,27 @@
         "title": "Quickstart con GitHub npx",
         "lede": "La instalacion no es el sueno; es el camino controlado hacia el sueno. Empieza con un comando GitHub package-spec y deja que la primera sesion del agente termine el setup con evidencia.",
         "blocks": [
-          {"type": "code", "label": "ref fija", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add"},
-          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add"},
-          {"type": "code", "label": "no interactivo", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "ref fija", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add"},
+          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add"},
+          {"type": "code", "label": "no interactivo", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add --agent all --yes"},
           {"type": "steps", "items": ["Ejecuta desde el repositorio objetivo con Node.js 18+ y npx, o Bun 1.0+ y bunx. TES tambien requiere Python 3.11+ para los oraculos locales de setup.", "El modo interactivo te deja confirmar target, hooks de agentes y modo de instalacion antes de escribir archivos.", "Usa `--agent all --yes` cuando quieras preparar hooks y configs MCP de proyecto para Codex, Claude Code y Cursor de forma no interactiva.", "Codex: abre Settings > Hooks, luego usa Trust y activa el hook Session Start si aparece como needs review.", "Claude Code: abre o reabre Claude Code, espera el aviso de finalizacion de TES y ejecuta `/tes-setup`.", "Cursor: reabre el workspace, deja que el setup de primera sesion termine y ejecuta `/tes-setup` para el reporte.", "Usa `/tes-mcp` para registro MCP explicito de VS Code o reparacion de reconocimiento del host.", "Despues de que `/tes-setup` reporte complete, ejecuta `/tes-align` y usa `/tes-map` para la vista GPS actual antes de empezar trabajo de proyecto.", "Lee el reporte final antes de aprobar commit, push o rollout."]},
           {"type": "aside", "title": "Importante: el seguimiento del agente depende del host", "text": "La primera ejecucion no es igual en todos los hosts. Codex: abre Settings > Hooks, luego usa Trust y activa Session Start si aparece como needs review. Claude Code: reabre Claude Code, espera el aviso de finalizacion de TES y ejecuta `/tes-setup`. Cursor: reabre el workspace, deja que el setup termine y ejecuta `/tes-setup`. Solo despues del reporte completo, ejecuta `/tes-align` y usa `/tes-map` para la vista GPS actual antes del trabajo de proyecto."},
-          {"type": "p", "text": "`#v0.3.154` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de publicar el tag y de que `npm run release:check` pase."},
+          {"type": "p", "text": "`#v0.3.155` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de publicar el tag y de que `npm run release:check` pase."},
           {"type": "p", "text": "`--loglevel=error` mantiene los avisos del package runner fuera de la primera pantalla sin ocultar fallas reales del comando. En maquinas solo con Bun, usa `bunx --silent --bun`. Si no hay runtime instalado, instala Node.js LTS o Bun antes de ejecutar TES."}
         ]
       },
       "pt": {
         "num": "04",
         "title": "Quickstart com GitHub npx",
-        "lede": "Instalacao nao e o sonho; e o caminho controlado ate o sonho. Comece com um comando GitHub package-spec e deixe a primeira sessao do agente terminar o setup com evidencia.",
+        "lede": "Instalação não é o sonho; é o caminho controlado até o sonho. Comece com um comando GitHub package-spec e deixe a primeira sessão do agente terminar o setup com evidência.",
         "blocks": [
-          {"type": "code", "label": "ref fixa", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add"},
-          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add"},
-          {"type": "code", "label": "nao interativo", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add --agent all --yes"},
-          {"type": "steps", "items": ["Rode a partir do repositorio alvo com Node.js 18+ e npx, ou Bun 1.0+ e bunx. O TES tambem exige Python 3.11+ para os oraculos locais de setup.", "O modo interativo deixa confirmar target, hooks de agentes e modo de instalacao antes de escrever arquivos.", "Use `--agent all --yes` quando quiser preparar hooks e configs MCP de projeto para Codex, Claude Code e Cursor de forma nao interativa.", "Codex: abra Settings > Hooks, depois use Trust e ative o hook Session Start se ele aparecer como needs review.", "Claude Code: abra ou reabra o Claude Code, aguarde o aviso de conclusao do TES e rode `/tes-setup`.", "Cursor: reabra o workspace, deixe o setup de primeira sessao terminar e rode `/tes-setup` para o relatorio.", "Use `/tes-mcp` para registro MCP explicito do VS Code ou reparo de reconhecimento do host.", "Depois que `/tes-setup` reportar complete, rode `/tes-align` e use `/tes-map` para a visao GPS atual antes de iniciar trabalho no projeto.", "Leia o relatorio final antes de aprovar commit, push ou rollout."]},
-          {"type": "aside", "title": "Importante: o follow-up do agente depende do host", "text": "A primeira execucao nao e igual em todos os hosts. Codex: abra Settings > Hooks, depois use Trust e ative Session Start se aparecer como needs review. Claude Code: reabra o Claude Code, aguarde o aviso de conclusao do TES e rode `/tes-setup`. Cursor: reabra o workspace, deixe o setup terminar e rode `/tes-setup`. So depois do relatorio completo, rode `/tes-align` e use `/tes-map` para a visao GPS atual antes do trabalho no projeto."},
-          {"type": "p", "text": "`#v0.3.154` e a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de publicar a tag e de `npm run release:check` passar."},
-          {"type": "p", "text": "`--loglevel=error` mantem avisos do package runner fora da primeira tela sem esconder falhas reais do comando. Em maquinas somente com Bun, use `bunx --silent --bun`. Se nenhum runtime estiver instalado, instale Node.js LTS ou Bun antes de executar o TES."}
+          {"type": "code", "label": "ref fixa", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add"},
+          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add"},
+          {"type": "code", "label": "não interativo", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add --agent all --yes"},
+          {"type": "steps", "items": ["Rode a partir do repositório alvo com Node.js 18+ e npx, ou Bun 1.0+ e bunx. O TES também exige Python 3.11+ para os oráculos locais de setup.", "O modo interativo deixa confirmar target, hooks de agentes e modo de instalação antes de escrever arquivos.", "Use `--agent all --yes` quando quiser preparar hooks e configs MCP de projeto para Codex, Claude Code e Cursor de forma não interativa.", "Codex: abra Settings > Hooks, depois use Trust e ative o hook Session Start se ele aparecer como needs review.", "Claude Code: abra ou reabra o Claude Code, aguarde o aviso de conclusão do TES e rode `/tes-setup`.", "Cursor: reabra o workspace, deixe o setup de primeira sessão terminar e rode `/tes-setup` para o relatório.", "Use `/tes-mcp` para registro MCP explícito do VS Code ou reparo de reconhecimento do host.", "Depois que `/tes-setup` reportar complete, rode `/tes-align` e use `/tes-map` para a visão GPS atual antes de iniciar trabalho no projeto.", "Leia o relatório final antes de aprovar commit, push ou rollout."]},
+          {"type": "aside", "title": "Importante: o follow-up do agente depende do host", "text": "A primeira execução não é igual em todos os hosts. Codex: abra Settings > Hooks, depois use Trust e ative Session Start se aparecer como needs review. Claude Code: reabra o Claude Code, aguarde o aviso de conclusão do TES e rode `/tes-setup`. Cursor: reabra o workspace, deixe o setup terminar e rode `/tes-setup`. Só depois do relatório completo, rode `/tes-align` e use `/tes-map` para a visão GPS atual antes do trabalho no projeto."},
+          {"type": "p", "text": "`#v0.3.155` é a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de publicar a tag e de `npm run release:check` passar."},
+          {"type": "p", "text": "`--loglevel=error` mantém avisos do package runner fora da primeira tela sem esconder falhas reais do comando. Em máquinas somente com Bun, use `bunx --silent --bun`. Se nenhum runtime estiver instalado, instale Node.js LTS ou Bun antes de executar o TES."}
         ]
       }
     },
@@ -381,13 +381,13 @@
       },
       "pt": {
         "num": "05",
-        "title": "Quando voce quer as chaves",
-        "lede": "A landing convence. O manual entrega o caminho operacional: instalacao, update, auditoria, revisao de relatorios e rollback sem copia cega.",
+        "title": "Quando você quer as chaves",
+        "lede": "A página inicial convence. O manual entrega o caminho operacional: instalação, update, auditoria, revisão de relatórios e rollback sem cópia cega.",
         "blocks": [
           {"type": "cards", "items": [
-            {"title": "Testar", "body": "Rode o comando GitHub npx a partir do repositorio alvo, abra seu agente, aguarde o hook, rode `/tes-setup`, depois `/tes-align` e use `/tes-map` para a visao GPS atual antes do trabalho no projeto."},
+            {"title": "Testar", "body": "Rode o comando GitHub npx a partir do repositório alvo, abra seu agente, aguarde o hook, rode `/tes-setup`, depois `/tes-align` e use `/tes-map` para a visão GPS atual antes do trabalho no projeto."},
             {"title": "Operar", "body": "Use o manual para rotas, estados, Mantra Gate, rollback, MCP, Field Reports ou Obsidian."},
-            {"title": "Auditar", "body": "Use o mapa de fontes quando um claim precisar de evidencia, escopo ou documento governado."}
+            {"title": "Auditar", "body": "Use o mapa de fontes quando um claim precisar de evidência, escopo ou documento governado."}
           ]}
         ]
       }
@@ -427,7 +427,7 @@
                 {"label": "Command triggers", "href": "install/COMMAND-TRIGGERS.md", "body": "Post-install `/tes-*` vocabulary, aliases, routers, and write behavior."},
                 {"label": "Git safety", "href": "mesh/GIT-SAFETY.md", "body": "Local baseline, backup, rollback, no push, no publish, and artifact hygiene."},
                 {"label": "Local quality recipe", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Staged-file routing, local hooks, and `commit:check` as closure gate."},
-                {"label": "Public bundle manifest", "href": "dist/0.3.154/index.json", "body": "Versioned ZIP, source commit, SHA-256, and GitHub Pages distribution URLs.", "meta": "artifact"}
+                {"label": "Public bundle manifest", "href": "dist/0.3.155/index.json", "body": "Versioned ZIP, source commit, SHA-256, and GitHub Pages distribution URLs.", "meta": "artifact"}
               ]
             },
             {
@@ -495,7 +495,7 @@
                 {"label": "Gatillos de comando", "href": "install/COMMAND-TRIGGERS.md", "body": "Vocabulario post-install `/tes-*`, aliases, routers y comportamiento de escritura."},
                 {"label": "Seguridad Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sin push, sin publish e higiene de artefactos."},
                 {"label": "Receta de calidad local", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Ruteo por staged files, hooks locales y `commit:check` como gate de cierre."},
-                {"label": "Manifest del bundle publico", "href": "dist/0.3.154/index.json", "body": "ZIP versionado, source commit, SHA-256 y URLs de distribucion GitHub Pages.", "meta": "artefacto"}
+                {"label": "Manifest del bundle publico", "href": "dist/0.3.155/index.json", "body": "ZIP versionado, source commit, SHA-256 y URLs de distribucion GitHub Pages.", "meta": "artefacto"}
               ]
             },
             {
@@ -531,67 +531,67 @@
       },
       "pt": {
         "num": "06",
-        "title": "Mapa de fontes canonicas",
-        "lede": "O manual do usuario ja e o CTA principal. Este mapa liga cada promessa publica de TES a fonte governada que prova, delimita ou opera aquela promessa.",
+        "title": "Mapa de fontes canônicas",
+        "lede": "O manual do usuário já é o CTA principal. Este mapa liga cada promessa pública de TES à fonte governada que prova, delimita ou opera aquela promessa.",
         "blocks": [
           {"type": "source_map", "groups": [
             {
-              "title": "Metodo",
-              "body": "Por que regras de agentes viram comportamento de engenharia mensuravel, nao folklore de regras.",
+              "title": "Método",
+              "body": "Por que regras de agentes viram comportamento de engenharia mensurável, não folclore de regras.",
               "items": [
-                {"label": "Principios de engenharia", "href": "mesh/PRINCIPLES.md", "body": "Quatro gates, contexto convergido por evidencia e `E = A * S * C * V`."},
-                {"label": "Mantra Gate", "href": "mesh/MANTRA-GATE.md", "body": "Micro-gate antes da acao: `[🍳 Flash-Fry]` no modo compacto, evidencia completa retida e saude de adocao verificada."},
-                {"label": "Metodo context mesh", "href": "mesh/CONTEXT-MESH-METHOD.md", "body": "Camadas de narrativa, instrucao, execucao, verificacao e retorno."},
-                {"label": "Scorecard de adocao", "href": "mesh/SCORECARD.md", "body": "Como uma regra copiada vira comportamento, oraculo, governanca e reentrada estavel."}
+                {"label": "Princípios de engenharia", "href": "mesh/PRINCIPLES.md", "body": "Quatro gates, contexto convergido por evidência e `E = A * S * C * V`."},
+                {"label": "Mantra Gate", "href": "mesh/MANTRA-GATE.md", "body": "Micro-gate antes da ação: `[🍳 Flash-Fry]` no modo compacto, evidência completa retida e saúde de adoção verificada."},
+                {"label": "Método context mesh", "href": "mesh/CONTEXT-MESH-METHOD.md", "body": "Camadas de narrativa, instrução, execução, verificação e retorno."},
+                {"label": "Scorecard de adoção", "href": "mesh/SCORECARD.md", "body": "Como uma regra copiada vira comportamento, oráculo, governança e reentrada estável."}
               ]
             },
             {
-              "title": "Superficies runtime",
-              "body": "Como Codex, Claude Code e Cursor compartilham um contrato sem fingir que sao identicos.",
+              "title": "Superfícies runtime",
+              "body": "Como Codex, Claude Code e Cursor compartilham um contrato sem fingir que são idênticos.",
               "items": [
-                {"label": "Matriz de capacidades dos adapters", "href": "adapters/ADAPTER-CAPABILITY-MATRIX.md", "body": "Superficies certificadas, paridade estrutural e escopo comportamental por adapter."},
-                {"label": "Diferencas de plataforma", "href": "adapters/PLATFORM-DIFFERENCES.md", "body": "Arquivos nativos, skills, rules, plugins, hooks e limites MCP."},
-                {"label": "Gatilhos de comando", "href": "install/COMMAND-TRIGGERS.md", "body": "Vocabulario `/tes-*`, aliases, routers e comportamento de escrita."},
-                {"label": "Manual do agente", "href": "install/AGENT-MANUAL.md", "body": "Modelo de execucao do agente, gates, estados de retorno e contrato de rollback."}
+                {"label": "Matriz de capacidades dos adapters", "href": "adapters/ADAPTER-CAPABILITY-MATRIX.md", "body": "Superfícies certificadas, paridade estrutural e escopo comportamental por adapter."},
+                {"label": "Diferenças de plataforma", "href": "adapters/PLATFORM-DIFFERENCES.md", "body": "Arquivos nativos, skills, rules, plugins, hooks e limites MCP."},
+                {"label": "Gatilhos de comando", "href": "install/COMMAND-TRIGGERS.md", "body": "Vocabulário `/tes-*`, aliases, routers e comportamento de escrita."},
+                {"label": "Manual do agente", "href": "install/AGENT-MANUAL.md", "body": "Modelo de execução do agente, gates, estados de retorno e contrato de rollback."}
               ]
             },
             {
-              "title": "Instalacao e seguranca",
-              "body": "Como TES entra em um repositorio real por npx direto do GitHub com registro local de instalacao, hooks de primeira sessao e evidencia de rollback.",
+              "title": "Instalação e segurança",
+              "body": "Como TES entra em um repositório real por npx direto do GitHub com registro local de instalação, hooks de primeira sessão e evidência de rollback.",
               "items": [
-                {"label": "Instalacao GitHub package-spec", "href": "install/INSTALL.md", "body": "Forma de comando com ref fixa, hooks de primeira sessao e limite de certificacao remota deferida."},
-                {"label": "Gatilhos de comando", "href": "install/COMMAND-TRIGGERS.md", "body": "Vocabulario post-install `/tes-*`, aliases, routers e comportamento de escrita."},
-                {"label": "Seguranca Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sem push, sem publish e higiene de artefatos."},
+                {"label": "Instalação GitHub package-spec", "href": "install/INSTALL.md", "body": "Forma de comando com ref fixa, hooks de primeira sessão e limite de certificação remota deferida."},
+                {"label": "Gatilhos de comando", "href": "install/COMMAND-TRIGGERS.md", "body": "Vocabulário post-install `/tes-*`, aliases, routers e comportamento de escrita."},
+                {"label": "Segurança Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sem push, sem publish e higiene de artefatos."},
                 {"label": "Receita de qualidade local", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Roteamento por staged files, hooks locais e `commit:check` como gate de fechamento."},
-                {"label": "Manifest do bundle publico", "href": "dist/0.3.154/index.json", "body": "ZIP versionado, source commit, SHA-256 e URLs de distribuicao GitHub Pages.", "meta": "artefato"}
+                {"label": "Manifest do bundle público", "href": "dist/0.3.155/index.json", "body": "ZIP versionado, source commit, SHA-256 e URLs de distribuição GitHub Pages.", "meta": "artefato"}
               ]
             },
             {
-              "title": "Memoria e feedback",
-              "body": "Como o rastro sobrevive a uma janela de chat e retorna como contexto inspecionavel.",
+              "title": "Memória e feedback",
+              "body": "Como o rastro sobrevive a uma janela de chat e retorna como contexto inspecionável.",
               "items": [
-                {"label": "Continuidade Cortex", "href": "mesh/CORTEX.md", "body": "Memoria Markdown filesystem-first; SQLite, MCP e Obsidian sao superficies derivadas."},
-                {"label": "Cortex MCP", "href": "mesh/CORTEX-MCP.md", "body": "Recall, inspecao, status de eventos e remember governado opcional com escopo de projeto."},
-                {"label": "Checkpoints", "href": "mesh/CHECKPOINTS.md", "body": "Estado TTL de retomada que nao pode virar memoria Cortex duravel nem evidencia de certificacao."},
+                {"label": "Continuidade Cortex", "href": "mesh/CORTEX.md", "body": "Memória Markdown filesystem-first; SQLite, MCP e Obsidian são superfícies derivadas."},
+                {"label": "Cortex MCP", "href": "mesh/CORTEX-MCP.md", "body": "Recall, inspeção, status de eventos e remember governado opcional com escopo de projeto."},
+                {"label": "Checkpoints", "href": "mesh/CHECKPOINTS.md", "body": "Estado TTL de retomada que não pode virar memória Cortex durável nem evidência de certificação."},
                 {"label": "Field Reports", "href": "mesh/FIELD-REPORTS.md", "body": "Feedback operacional local sanitizado, drain GitHub opcional e regras de quarentena."}
               ]
             },
             {
               "title": "Prova e limites",
-              "body": "Onde TES declara o que passou, o que e escopado e o que nao deve ser afirmado.",
+              "body": "Onde TES declara o que passou, o que e escopado e o que não deve ser afirmado.",
               "items": [
-                {"label": "Metodo de eval e ablation", "href": "evals/EVALS.md", "body": "Full, none, drop, distractor, evidencia raw e classes de certificacao."},
-                {"label": "Relatorio final de certificacao", "href": "evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md", "body": "Escopo comportamental Claude e Codex, escopo estrutural Cursor e non-claims explicitos."},
+                {"label": "Método de eval e ablation", "href": "evals/EVALS.md", "body": "Full, none, drop, distractor, evidência raw e classes de certificação."},
+                {"label": "Relatório final de certificação", "href": "evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md", "body": "Escopo comportamental Claude e Codex, escopo estrutural Cursor e non-claims explícitos."},
                 {"label": "Gate de paridade", "href": "evals/PARITY-GATE.md", "body": "Como a paridade cross-adapter e verificada sem fabricar falsa simetria."}
               ]
             },
             {
-              "title": "Governanca de fonte",
-              "body": "Como a pagina publica, o mapa machine-readable e os docs governados seguem rastreaveis.",
+              "title": "Governança de fonte",
+              "body": "Como a página pública, o mapa machine-readable e os docs governados seguem rastreaveis.",
               "items": [
-                {"label": "Indice de docs", "href": "INDEX.md", "body": "Mapa humano de docs ativos, superficies publicas, artefatos de distribuicao e limites de fonte."},
-                {"label": "Spec TDS", "href": "tds/TDS-SPEC.md", "body": "Classes documentais, niveis de evidencia, regras source-of-truth e contrato de validacao."},
-                {"label": "Mapa machine-readable", "href": "llms.txt", "body": "Mapa publico opcional para ferramentas e answer engines.", "meta": "machine map"}
+                {"label": "Índice de docs", "href": "INDEX.md", "body": "Mapa humano de docs ativos, superfícies públicas, artefatos de distribuição e limites de fonte."},
+                {"label": "Spec TDS", "href": "tds/TDS-SPEC.md", "body": "Classes documentais, niveis de evidência, regras source-of-truth e contrato de validação."},
+                {"label": "Mapa machine-readable", "href": "llms.txt", "body": "Mapa público opcional para ferramentas e answer engines.", "meta": "machine map"}
               ]
             }
           ]}
@@ -623,13 +623,13 @@
       },
       "pt": {
         "num": "00",
-        "title": "Visao geral",
-        "lede": "Tilly Engineer Skills instala uma malha de governanca para agentes de codigo. Codex, Claude Code e Cursor passam por superficies especificas enquanto a verdade do projeto vive em Markdown versionado.",
+        "title": "Visão geral",
+        "lede": "Tilly Engineer Skills instala uma malha de governança para agentes de código. Codex, Claude Code e Cursor passam por superfícies específicas enquanto a verdade do projeto vive em Markdown versionado.",
         "blocks": [
-          {"type": "aside", "title": "Como comecar", "text": "Caminho obrigatorio da primeira execucao: `install -> hook -> /tes-setup -> /tes-align -> /tes-map`. Instale a partir do repositorio alvo, abra o agente, aguarde o hook, rode `/tes-setup`, depois `/tes-align` e use `/tes-map` para a visao GPS atual antes do trabalho no projeto. Use `/tes-update` para atualizar e `/tes-doctor` para reparar."},
-          {"type": "aside", "title": "Mantra Gate", "text": "Quando um agente esta prestes a mudar estado, o TES usa Mantra Gate. Acoes permitidas mostram `[🍳 Flash-Fry]`; o gate completo fica registrado e ausencia vira BYPASS_SUSPECTED."},
-          {"type": "aside", "title": "O que continua sendo seu", "text": "Arquivos existentes como `AGENTS.md`, `CLAUDE.md`, `CURSOR.md` e regras do Cursor sao primeiro salvos em `.tes/bk/<timestamp>/`. TES instala um runtime limpo e recupera semântica útil em `docs/agents/**`."},
-          {"type": "aside", "title": "Contrato do operador", "text": "Este manual e para usuarios que instalam, auditam e revertem TES. O contrato do agente vive em `docs/install/AGENT-MANUAL.md`."}
+          {"type": "aside", "title": "Como começar", "text": "Caminho obrigatorio da primeira execução: `install -> hook -> /tes-setup -> /tes-align -> /tes-map`. Instale a partir do repositório alvo, abra o agente, aguarde o hook, rode `/tes-setup`, depois `/tes-align` e use `/tes-map` para a visão GPS atual antes do trabalho no projeto. Use `/tes-update` para atualizar e `/tes-doctor` para reparar."},
+          {"type": "aside", "title": "Mantra Gate", "text": "Quando um agente está prestes a mudar estado, o TES usa Mantra Gate. Acoes permitidas mostram `[🍳 Flash-Fry]`; o gate completo fica registrado e ausencia vira BYPASS_SUSPECTED."},
+          {"type": "aside", "title": "O que continua sendo seu", "text": "Arquivos existentes como `AGENTS.md`, `CLAUDE.md`, `CURSOR.md` e regras do Cursor são primeiro salvos em `.tes/bk/<timestamp>/`. TES instala um runtime limpo e recupera semântica útil em `docs/agents/**`."},
+          {"type": "aside", "title": "Contrato do operador", "text": "Este manual é para usuários que instalam, auditam e revertem TES. O contrato do agente vive em `docs/install/AGENT-MANUAL.md`."}
         ]
       }
     },
@@ -639,12 +639,12 @@
         "title": "Quick install",
         "lede": "Start from the target repository with GitHub npx. The command installs TES locally, prepares selected agent hooks, and records the first-session setup path.",
         "blocks": [
-          {"type": "code", "label": "fixed ref form", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add --agent all --yes"},
-          {"type": "code", "label": "bun runtime", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "fixed ref form", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "bun runtime", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add --agent all --yes"},
           {"type": "steps", "items": ["Run the command from the target repository with Node.js 18+ or Bun 1.0+, plus Python 3.11+.", "Interactive mode asks for target, agents, install mode, and final confirmation.", "Codex: open Settings > Hooks, then Trust and enable the Session Start hook if it is marked needs review.", "Claude Code: open or reopen Claude Code, wait for the TES completion notice, then run `/tes-setup`.", "Cursor: reopen the workspace, let first-session setup complete, then run `/tes-setup` for the report.", "The first-session hook starts setup, project context, and alignment gates once; repeated complete hooks exit quickly.", "Please, run `/tes-setup` for the report before asking for commit or push."]},
           {"type": "aside", "title": "Important: agent follow-up is host-specific", "text": "Do not start project work immediately after install. Codex needs hook review in Settings > Hooks when marked needs review; Claude Code needs the TES completion notice; Cursor needs a workspace reopen and `/tes-setup` report. Only after `/tes-setup` reports complete, run `/tes-align`, then use `/tes-map` for the current GPS view before project work."},
           {"type": "p", "text": "Useful options: `--target <path>` installs outside the current directory; `--agent codex|claude|cursor|all` chooses hooks; `--yes` skips the wizard; `--dry-run` prints planned writes; `--mode preserve` is the default."},
-          {"type": "p", "text": "`#v0.3.154` is the intended fixed-ref form; remote certification exists only after `release:check` passes for the published tag. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit."},
+          {"type": "p", "text": "`#v0.3.155` is the intended fixed-ref form; remote certification exists only after `release:check` passes for the published tag. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit."},
           {"type": "p", "text": "Older plugin/root-skill surfaces (`skills/**`, `.claude-plugin/**`, `.agents/plugins/**`, and `plugins/tilly-engineer-skills/**`) are cleaned only when TES-owned, generated, or empty. Ambiguous or secret-like content is preserved, backed up in `.tes/bk/**`, and returned as `NEEDS_REVIEW`."}
         ]
       },
@@ -653,27 +653,27 @@
         "title": "Instalacion rapida",
         "lede": "Empieza desde el repositorio objetivo con npx desde GitHub. El comando instala TES localmente, prepara los hooks de agentes seleccionados y registra el camino de setup de primera sesion.",
         "blocks": [
-          {"type": "code", "label": "ref fija", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add --agent all --yes"},
-          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "ref fija", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add --agent all --yes"},
           {"type": "steps", "items": ["Ejecuta el comando desde el repositorio objetivo con Node.js 18+ o Bun 1.0+, mas Python 3.11+.", "El modo interactivo pregunta target, agentes, modo de instalacion y confirmacion final.", "Codex: abre Settings > Hooks, luego usa Trust y activa el hook Session Start si aparece como needs review.", "Claude Code: abre o reabre Claude Code, espera el aviso de finalizacion de TES y ejecuta `/tes-setup`.", "Cursor: reabre el workspace, deja que el setup de primera sesion termine y ejecuta `/tes-setup` para el reporte.", "El hook de primera sesion inicia setup, contexto de proyecto y gates de alineacion una vez; los hooks completos repetidos salen rapido.", "Lee el reporte final antes de pedir commit o push."]},
           {"type": "aside", "title": "Importante: el seguimiento del agente depende del host", "text": "No empieces trabajo de proyecto inmediatamente despues de instalar. Codex necesita revisar el hook en Settings > Hooks cuando aparezca needs review; Claude Code necesita el aviso de finalizacion de TES; Cursor necesita reabrir el workspace y el reporte de `/tes-setup`. Solo despues de que `/tes-setup` reporte complete, ejecuta `/tes-align` y usa `/tes-map` para la vista GPS actual antes del trabajo de proyecto."},
           {"type": "p", "text": "Opciones utiles: `--target <path>` instala fuera del directorio actual; `--agent codex|claude|cursor|all` elige hooks; `--yes` salta el wizard; `--dry-run` muestra escrituras planificadas; `--mode preserve` es el default."},
-          {"type": "p", "text": "`#v0.3.154` es la forma de ref fija prevista; la certificacion remota existe solo despues de que `release:check` pase para el tag publicado. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear."},
+          {"type": "p", "text": "`#v0.3.155` es la forma de ref fija prevista; la certificacion remota existe solo despues de que `release:check` pase para el tag publicado. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear."},
           {"type": "p", "text": "Las superficies antiguas de plugin/root skills (`skills/**`, `.claude-plugin/**`, `.agents/plugins/**` y `plugins/tilly-engineer-skills/**`) se limpian solo cuando son TES-owned, generadas o vacias. El contenido ambiguo o parecido a secreto se preserva, se respalda en `.tes/bk/**` y retorna `NEEDS_REVIEW`."}
         ]
       },
       "pt": {
         "num": "01",
-        "title": "Instalacao rapida",
-        "lede": "Comece pelo repositorio alvo com npx direto do GitHub. O comando instala TES localmente, prepara os hooks dos agentes escolhidos e registra o caminho de setup da primeira sessao.",
+        "title": "Instalação rápida",
+        "lede": "Comece pelo repositório alvo com npx direto do GitHub. O comando instala TES localmente, prepara os hooks dos agentes escolhidos e registra o caminho de setup da primeira sessão.",
         "blocks": [
-          {"type": "code", "label": "ref fixa", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add --agent all --yes"},
-          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.154 tilly-engineer-skills add --agent all --yes"},
-          {"type": "steps", "items": ["Rode o comando a partir do repositorio alvo com Node.js 18+ ou Bun 1.0+, mais Python 3.11+.", "O modo interativo pergunta target, agentes, modo de instalacao e confirmacao final.", "Codex: abra Settings > Hooks, depois use Trust e ative o hook Session Start se ele aparecer como needs review.", "Claude Code: abra ou reabra o Claude Code, aguarde o aviso de conclusao do TES e rode `/tes-setup`.", "Cursor: reabra o workspace, deixe o setup de primeira sessao terminar e rode `/tes-setup` para o relatorio.", "O hook de primeira sessao inicia setup, contexto do projeto e gates de alinhamento uma vez; hooks completos repetidos saem rapido.", "Leia o relatorio final antes de pedir commit ou push."]},
-          {"type": "aside", "title": "Importante: o follow-up do agente depende do host", "text": "Nao inicie trabalho no projeto imediatamente depois de instalar. Codex precisa revisar o hook em Settings > Hooks quando aparecer needs review; Claude Code precisa do aviso de conclusao do TES; Cursor precisa reabrir o workspace e ver o relatorio de `/tes-setup`. So depois que `/tes-setup` reportar complete, rode `/tes-align` e use `/tes-map` para a visao GPS atual antes do trabalho no projeto."},
-          {"type": "p", "text": "Opcoes uteis: `--target <path>` instala fora do diretorio atual; `--agent codex|claude|cursor|all` escolhe hooks; `--yes` pula o wizard; `--dry-run` mostra escritas planejadas; `--mode preserve` e o default."},
-          {"type": "p", "text": "`#v0.3.154` e a forma de ref fixa prevista; a certificacao remota existe somente depois de `release:check` passar para a tag publicada. Bundles runtime sao preparados em `.tes/setup/<version>/`; esse diretorio e cache local, nao conhecimento do projeto para commit."},
-          {"type": "p", "text": "Superficies antigas de plugin/root skills (`skills/**`, `.claude-plugin/**`, `.agents/plugins/**` e `plugins/tilly-engineer-skills/**`) sao limpas somente quando sao TES-owned, geradas ou vazias. Conteudo ambiguo ou com sinal de segredo e preservado, salvo em `.tes/bk/**` e retorna `NEEDS_REVIEW`."}
+          {"type": "code", "label": "ref fixa", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.155 tilly-engineer-skills add --agent all --yes"},
+          {"type": "steps", "items": ["Rode o comando a partir do repositório alvo com Node.js 18+ ou Bun 1.0+, mais Python 3.11+.", "O modo interativo pergunta target, agentes, modo de instalação e confirmacao final.", "Codex: abra Settings > Hooks, depois use Trust e ative o hook Session Start se ele aparecer como needs review.", "Claude Code: abra ou reabra o Claude Code, aguarde o aviso de conclusão do TES e rode `/tes-setup`.", "Cursor: reabra o workspace, deixe o setup de primeira sessão terminar e rode `/tes-setup` para o relatório.", "O hook de primeira sessão inicia setup, contexto do projeto e gates de alinhamento uma vez; hooks completos repetidos saem rápido.", "Leia o relatório final antes de pedir commit ou push."]},
+          {"type": "aside", "title": "Importante: o follow-up do agente depende do host", "text": "Não inicie trabalho no projeto imediatamente depois de instalar. Codex precisa revisar o hook em Settings > Hooks quando aparecer needs review; Claude Code precisa do aviso de conclusão do TES; Cursor precisa reabrir o workspace e ver o relatório de `/tes-setup`. Só depois que `/tes-setup` reportar complete, rode `/tes-align` e use `/tes-map` para a visão GPS atual antes do trabalho no projeto."},
+          {"type": "p", "text": "Opções úteis: `--target <path>` instala fora do diretório atual; `--agent codex|claude|cursor|all` escolhe hooks; `--yes` pula o wizard; `--dry-run` mostra escritas planejadas; `--mode preserve` e o padrão."},
+          {"type": "p", "text": "`#v0.3.155` e a forma de ref fixa prevista; a certificação remota existe somente depois de `release:check` passar para a tag publicada. Bundles runtime são preparados em `.tes/setup/<version>/`; esse diretório e cache local, não conhecimento do projeto para commit."},
+          {"type": "p", "text": "Superfícies antigas de plugin/root skills (`skills/**`, `.claude-plugin/**`, `.agents/plugins/**` e `plugins/tilly-engineer-skills/**`) são limpas somente quando são TES-owned, geradas ou vazias. Conteúdo ambiguo ou com sinal de segredo e preservado, salvo em `.tes/bk/**` e retorna `NEEDS_REVIEW`."}
         ]
       }
     },
@@ -707,14 +707,14 @@
       "pt": {
         "num": "01A",
         "title": "Voz opcional: tes-tts com OmniVoice",
-        "lede": "`tes-tts` pode ler trabalho tecnico em voz alta. Quando voce quiser uma voz local clonada mais forte, instale OmniVoice como provider opcional; o TES mantem isso fora do pacote e dentro do runtime de usuario.",
+        "lede": "`tes-tts` pode ler trabalho técnico em voz alta. Quando você quiser uma voz local clonada mais forte, instale OmniVoice como provider opcional; o TES mantém isso fora do pacote e dentro do runtime de usuário.",
         "blocks": [
-          {"type": "aside", "title": "O que e opcional", "text": "TES instala sem OmniVoice. OmniVoice e escolhido pelo usuario, instalado em um ambiente Python local e usado apenas quando `/tes-tts` ou um pedido de leitura pedir fala explicitamente."},
+          {"type": "aside", "title": "O que é opcional", "text": "TES instala sem OmniVoice. OmniVoice e escolhido pelo usuário, instalado em um ambiente Python local e usado apenas quando `/tes-tts` ou um pedido de leitura pedir fala explicitamente."},
           {"type": "code", "label": "runtime global", "text": "~/.tes/runtime/tes-tts/omnivoice/"},
-          {"type": "steps", "items": ["Crie um virtualenv Python 3.11 limpo em `~/.tes/runtime/tes-tts/omnivoice/venv`.", "Instale PyTorch para seu hardware primeiro, depois instale OmniVoice pelo PyPI ou pelo source GitHub upstream.", "Normalize ou posicione o WAV de referencia em `~/.tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav`.", "Crie a metadata do perfil `tes-tts-local-clone` com o caminho do audio de referencia e a transcricao fiel.", "Rode `python3 scripts/tes_tts_omnivoice_provider.py status`, depois `warm-cache`, e depois `warm-cache --dry-run` para verificar que o cache protegido existe.", "Use `speak` para leituras curtas e `speak-long --combine --first-audio-buffered` para material longo que precisa de WAV reproduzivel."]},
-          {"type": "table", "headers": ["Superficie", "Politica"], "rows": [["Instalacao do provider", "Controlada pelo usuario; nao faz parte da instalacao normal do TES."], ["Pasta runtime", "`~/.tes/runtime/**`; runtime compartilhado de usuario, fora dos commits do pacote."], ["Projeto `.tes/**`", "Estado leve, logs, locks, evidencia e ponteiros apenas."], ["Perfil de voz", "`tes-tts-local-clone` por default quando configurado."], ["Voice prompt cache", "Estado local protegido; nao e artefato commitado."], ["Rota servidor", "Compatibilidade legacy de lab, nao caminho de produto."], ["Audio gerado", "Evidencia local de revisao em pastas runtime ignoradas salvo decisao do usuario."]]},
-          {"type": "p", "text": "Setup detalhado, comandos, politica de cache e troubleshooting vivem em [TES-TTS-OMNIVOICE.md](TES-TTS-OMNIVOICE.md). Siga a documentacao upstream do OmniVoice para wheels PyTorch especificos de hardware e mudancas do provider."},
-          {"type": "p", "text": "Uso responsavel faz parte do contrato: clone apenas vozes suas ou autorizadas. TES continua redigindo segredos antes da fala, trata comandos e codigo como texto, evita fala proativa e nunca resume texto do usuario sem pedido explicito."}
+          {"type": "steps", "items": ["Crie um virtualenv Python 3.11 limpo em `~/.tes/runtime/tes-tts/omnivoice/venv`.", "Instale PyTorch para seu hardware primeiro, depois instale OmniVoice pelo PyPI ou pelo source GitHub upstream.", "Normalize ou posicione o WAV de referência em `~/.tes/runtime/tes-tts/omnivoice/refs/áudio-modelo-clone-mono24k.wav`.", "Crie a metadata do perfil `tes-tts-local-clone` com o caminho do áudio de referência e a transcrição fiel.", "Rode `python3 scripts/tes_tts_omnivoice_provider.py status`, depois `warm-cache`, e depois `warm-cache --dry-run` para verificar que o cache protegido existe.", "Use `speak` para leituras curtas e `speak-long --combine --first-áudio-buffered` para material longo que precisa de WAV reproduzivel."]},
+          {"type": "table", "headers": ["Superfície", "Política"], "rows": [["Instalação do provider", "Controlada pelo usuário; não faz parte da instalação normal do TES."], ["Pasta runtime", "`~/.tes/runtime/**`; runtime compartilhado de usuário, fora dos commits do pacote."], ["Projeto `.tes/**`", "Estado leve, logs, locks, evidência e ponteiros apenas."], ["Perfil de voz", "`tes-tts-local-clone` por padrão quando configurado."], ["Voice prompt cache", "Estado local protegido; não é artefato commitado."], ["Rota servidor", "Compatibilidade legacy de lab, não caminho de produto."], ["Áudio gerado", "Evidência local de revisão em pastas runtime ignoradas, salvo decisão do usuário."]]},
+          {"type": "p", "text": "Setup detalhado, comandos, política de cache e troubleshooting vivem em [TES-TTS-OMNIVOICE.md](TES-TTS-OMNIVOICE.md). Siga a documentacao upstream do OmniVoice para wheels PyTorch especificos de hardware e mudanças do provider."},
+          {"type": "p", "text": "Uso responsavel faz parte do contrato: clone apenas vozes suas ou autorizadas. TES continua redigindo segredos antes da fala, trata comandos e código como texto, evita fala proativa e nunca resume texto do usuário sem pedido explícito."}
         ]
       }
     },
@@ -780,29 +780,29 @@
       "pt": {
         "num": "02",
         "title": "Gatilhos de comando",
-        "lede": "Gatilhos sao texto de intencao para o agente ativo. Nao sao comandos de shell.",
+        "lede": "Gatilhos são texto de intencao para o agente ativo. Não são comandos de shell.",
         "blocks": [
           {"type": "table", "headers": ["Intencao", "Uso", "Escrita"], "rows": [
-            ["`/tes-init` / `/tes-setup`", "Instalar, recertificar, inicializar contexto ou mostrar o relatorio de primeira sessao.", "Pode escrever runtime TES e `docs/agents/**` depois dos gates."],
-            ["`/tes-update` / `/tes:update`", "Atualizar um mesh existente por `tes_update.py`.", "Comeca com helper-only Layer Zero e depois adapter-config se gates passarem."],
-            ["`/tes-align`", "Aprofundar estado, gates, glossario e decisoes.", "Escreve a malha operacional em `docs/agents/**`."],
-            ["`/tes-map` / `/tes:gps`", "Mostra o Project GPS atual: posicao, bloqueios, prova e proximo movimento.", "Atualiza apenas o bloco gerenciado `TES-MAP` em `PROJECT-ROADMAP.md`."],
-            ["`/tes-goal-maestro`", "Gerar uma arvore de execucao e um prompt `/goal` maestral a partir de uma SPEC madura, Super SPEC, PRD, plano relacional de projeto ou arvore de execucao aceita.", "Escreve Super SPECs geradas em `GOAL-SUPER-SPEC-*.md`; o restante e chat-first salvo pedido explicito de salvar."],
-            ["`/tes-prospect`", "Estressar explicitamente um plano ou design com pressao preditiva de projeto.", "Nao escreve arquivos; o freio cognitivo pausa a pressao."],
-            ["`/tes-mine`", "Minerar explicitamente codigo, terminologia, contexto e candidatos ADR.", "Pode escrever `CONTEXT.md` ou ADRs apenas quando resolvidos e sem freio ativo."],
-            ["`/tes-cortex`", "Inspecionar, lembrar, auditar, aprender ou refletir no Cortex.", "Escritas de memoria exigem autorizacao explicita e evidencia."],
-            ["`/tes-mcp`", "Ativar, reparar ou verificar Cortex MCP explicitamente depois da instalacao, incluindo VS Code MCP.", "Pode escrever config MCP com escopo de projeto e helpers TES; remember governado e default e exige aprovacao exata."],
-            ["`/tes-field-reports`", "Inspecionar, drenar, desativar ou ativar relatorios sanitizados.", "Pode atualizar `.tes/field-reports/**` e o hook pre-push local."],
-            ["`/tes-doctor` / `/tes:doctor`", "Validar, fazer health-check, certificar, preparar commit ou testar/reparar/instalar MCP como fallback quando MCP e a falha.", "Read-only por padrao; o fallback MCP pode escrever `.tes/bin/**` e config MCP do projeto apenas apos autorizacao de reparo/instalacao."],
-            ["`/tes-adapter` / `/tes:adapter`", "Materializar, instalar, dry-run, retrofit, validar ou certificar adapters Codex, Claude, Cursor ou todos.", "Escreve arvores de adapter geradas e instalacoes de target apenas com autorizacao explicita (ex. `--yes`); padrao dry-run."],
-            ["`/tes-bench` / `/tes:bench`", "Planejar, rodar, convergir, inspecionar ou certificar benchmarks do context-mesh TES e evidencia de comportamento.", "Escreve fixtures de benchmark e artefatos de convergencia no pacote fonte; sem escritas de projeto em targets instalados."],
-            ["`/tes-bump` / `/tes:bump`", "Governar, planejar ou aplicar bump SemVer nos targets gerenciados pelo TES ao preparar commit ou release.", "Planeja bumps em dry-run; escreve arquivos de versao em targets ordenados apenas com autorizacao explicita."],
-            ["`/tes-open-obsidian` / `/tes:open-obsidian`", "Abrir o projeto atual como vault Obsidian depois que `/tes-init` e `/tes-align` produzirem o mesh Markdown em `docs/agents/**`.", "Nao escreve arquivos do projeto; apenas invoca o host Obsidian local sobre o vault existente."],
-            ["`tes-guidelines` (Claude, Cursor) / `tes-engineering-discipline` (Codex)", "Overlay de disciplina de engenharia comportamental: assuncoes visiveis, escopo menor, edicoes cirurgicas e sucesso falsificavel em trabalho nao trivial.", "Overlay passivo; nao escreve por si so. Restringe outras skills que escrevem."],
-            ["`tes-runtime-capabilities` (regra Cursor)", "Regra Cursor sempre ativa que mapeia as capacidades de comando do runtime TES apos instalacao limpa ou recuperacao semantica.", "Capacidade runtime de propriedade do TES; atualizada pelo instalador deterministico, nunca escrita por slashes do usuario."]
+            ["`/tes-init` / `/tes-setup`", "Instalar, recertificar, inicializar contexto ou mostrar o relatório de primeira sessão.", "Pode escrever runtime TES é `docs/agents/**` depois dos gates."],
+            ["`/tes-update` / `/tes:update`", "Atualizar um mesh existente por `tes_update.py`.", "Começa com helper-only Layer Zero e depois adapter-config se gates passarem."],
+            ["`/tes-align`", "Aprofundar estado, gates, glossário e decisões.", "Escreve a malha operacional em `docs/agents/**`."],
+            ["`/tes-map` / `/tes:gps`", "Mostra o Project GPS atual: posição, bloqueios, prova e próximo movimento.", "Atualiza apenas o bloco gerenciado `TES-MAP` em `PROJECT-ROADMAP.md`."],
+            ["`/tes-goal-maestro`", "Gerar uma árvore de execução e um prompt `/goal` maestral a partir de uma SPEC madura, Super SPEC, PRD, plano relacional de projeto ou árvore de execução aceita.", "Escreve Super SPECs geradas em `GOAL-SUPER-SPEC-*.md`; o restante e chat-first salvo pedido explícito de salvar."],
+            ["`/tes-prospect`", "Estressar explicitamente um plano ou design com pressão preditiva de projeto.", "Não escreve arquivos; o freio cognitivo pausa a pressão."],
+            ["`/tes-mine`", "Minerar explicitamente código, terminologia, contexto e candidatos ADR.", "Pode escrever `CONTEXT.md` ou ADRs apenas quando resolvidos e sem freio ativo."],
+            ["`/tes-cortex`", "Inspecionar, lembrar, auditar, aprender ou refletir no Cortex.", "Escritas de memória exigem autorização explícita e evidência."],
+            ["`/tes-mcp`", "Ativar, reparar ou verificar Cortex MCP explicitamente depois da instalação, incluindo VS Code MCP.", "Pode escrever config MCP com escopo de projeto e helpers TES; remember governado e padrão e exige aprovação exata."],
+            ["`/tes-field-reports`", "Inspecionar, drenar, desativar ou ativar relatórios sanitizados.", "Pode atualizar `.tes/field-reports/**` e o hook pre-push local."],
+            ["`/tes-doctor` / `/tes:doctor`", "Validar, fazer health-check, certificar, preparar commit ou testar/reparar/instalar MCP como fallback quando MCP e a falha.", "Read-only por padrão; o fallback MCP pode escrever `.tes/bin/**` e config MCP do projeto apenas após autorização de reparo/instalação."],
+            ["`/tes-adapter` / `/tes:adapter`", "Materializar, instalar, dry-run, retrofit, validar ou certificar adapters Codex, Claude, Cursor ou todos.", "Escreve árvores de adapter geradas e instalações de target apenas com autorização explícita (ex. `--yes`); padrão dry-run."],
+            ["`/tes-bench` / `/tes:bench`", "Planejar, rodar, convergir, inspecionar ou certificar benchmarks do context-mesh TES é evidência de comportamento.", "Escreve fixtures de benchmark e artefatos de convergencia no pacote fonte; sem escritas de projeto em targets instalados."],
+            ["`/tes-bump` / `/tes:bump`", "Governar, planejar ou aplicar bump SemVer nos targets gerenciados pelo TES ao preparar commit ou release.", "Planeja bumps em dry-run; escreve arquivos de versão em targets ordenados apenas com autorização explícita."],
+            ["`/tes-open-obsidian` / `/tes:open-obsidian`", "Abrir o projeto atual como vault Obsidian depois que `/tes-init` e `/tes-align` produzirem o mesh Markdown em `docs/agents/**`.", "Não escreve arquivos do projeto; apenas invoca o host Obsidian local sobre o vault existente."],
+            ["`tes-guidelines` (Claude, Cursor) / `tes-engineering-discipline` (Codex)", "Overlay de disciplina de engenharia comportamental: assunções visíveis, escopo menor, edicoes cirúrgicas e sucesso falsificavel em trabalho não trivial.", "Overlay passivo; não escreve por si só. Restringe outras skills que escrevem."],
+            ["`tes-runtime-capabilities` (regra Cursor)", "Regra Cursor sempre ativa que mapeia as capacidades de comando do runtime TES após instalação limpa ou recuperação semântica.", "Capacidade runtime de propriedade do TES; atualizada pelo instalador determinístico, nunca escrita por slashes do usuário."]
           ]},
-          {"type": "p", "text": "`/tes-update` e uma skill visivel de update no Codex e no Claude Code. Comeca com o probe read-only `tes_update.py plan --json-only`, informa `No project work started` em inspecoes sem escrita e so deriva para `/tes-init` quando o planner exige Project-Start ou recertificacao explicita."},
-          {"type": "p", "text": "`/tes-goal-maestro`, `/tes-prospect` e `/tes-mine` sao skills explicitas. Goal maestro transforma uma SPEC madura, Super SPEC, PRD, plano relacional de projeto ou arvore de execucao aceita em uma arvore de execucao, preserva unidades declaradas, valida a arvore internamente, escreve o conteudo de Super SPEC gerado em `GOAL-SUPER-SPEC-*.md` em vez de colar no chat, exige evidencia de diff material, continuacao material, negative grep semantico, ownership sequencial e status de sync, e depois emite um prompt `/goal` endurecido quando os gates passam. Prospeccao e mineracao ficam dormentes ate serem nomeadas, depois podem conduzir proativamente prospeccao de estresse de projeto ou mineracao de codigo. Use o freio cognitivo (`pausa`, `freia`, `resuma onde estamos`) para parar a pressao e receber o estado atual antes de retomar."},
+          {"type": "p", "text": "`/tes-update` e uma skill visivel de update no Codex e no Claude Code. Comeca com o probe read-only `tes_update.py plan --json-only`, informa `No project work started` em inspecoes sem escrita e só deriva para `/tes-init` quando o planner exige Project-Start ou recertificacao explícita."},
+          {"type": "p", "text": "`/tes-goal-maestro`, `/tes-prospect` e `/tes-mine` são skills explícitas. Goal maestro transforma uma SPEC madura, Super SPEC, PRD, plano relacional de projeto ou árvore de execução aceita em uma árvore de execução, preserva unidades declaradas, valida a árvore internamente, escreve o conteúdo de Super SPEC gerado em `GOAL-SUPER-SPEC-*.md` em vez de colar no chat, exige evidência de diff material, continuação material, negative grep semântico, ownership sequencial e status de sync, e depois emite um prompt `/goal` endurecido quando os gates passam. Prospecção e mineração ficam dormentes até serem nomeadas, depois podem conduzir proativamente prospecção de estresse de projeto ou mineração de código. Use o freio cognitivo (`pausa`, `freia`, `resuma onde estamos`) para parar a pressão e receber o estado atual antes de retomar."},
           {"type": "p", "text": "Contrato completo: [COMMAND-TRIGGERS.md](COMMAND-TRIGGERS.md)."}
         ]
       }
@@ -843,15 +843,15 @@
       "pt": {
         "num": "03",
         "title": "Rotas",
-        "lede": "A rota decide quais superficies se movem.",
+        "lede": "A rota decide quais superfícies se movem.",
         "blocks": [
           {"type": "table", "headers": ["Rota", "Quando usar"], "rows": [
-            ["`current`", "Atualizar o runtime detectado e sua config Cortex MCP governada por padrao."],
+            ["`current`", "Atualizar o runtime detectado e sua config Cortex MCP governada por padrão."],
             ["`codex`", "Preparar `AGENTS.md`, skills Codex e `.codex/config.toml`."],
             ["`claude`", "Preparar `CLAUDE.md`, `.claude/skills/**` e `.mcp.json`."],
             ["`cursor`", "Preparar `.cursor/rules/**` e `.cursor/mcp.json`."],
-            ["`vscode`", "Rota explicita apenas MCP para VS Code em `.vscode/mcp.json`."],
-            ["`all`", "Preparar Codex, Claude Code, Cursor e suas configs MCP de projeto; VS Code fica explicito."],
+            ["`vscode`", "Rota explícita apenas MCP para VS Code em `.vscode/mcp.json`."],
+            ["`all`", "Preparar Codex, Claude Code, Cursor e suas configs MCP de projeto; VS Code fica explícito."],
             ["`audit`", "Inspecionar sem modificar arquivos."]
           ]}
         ]
@@ -890,11 +890,11 @@
         "lede": "O estado decide se o run instala, atualiza, audita ou recupera.",
         "blocks": [
           {"type": "table", "headers": ["Estado", "Significado"], "rows": [
-            ["`new`", "Sem instrucoes relevantes de agente. TES cria a malha minima."],
-            ["`existing`", "Ja existem regras locais. TES cria backup, instala runtime limpo e recupera semântica útil."],
-            ["`meshed`", "TES ja existe. A execucao vira update ou convergence."]
+            ["`new`", "Sem instruções relevantes de agente. TES cria a malha minima."],
+            ["`existing`", "Já existem regras locais. TES cria backup, instala runtime limpo e recupera semântica útil."],
+            ["`meshed`", "TES já existe. A execução vira update ou convergence."]
           ]},
-          {"type": "p", "text": "Instrucoes existentes sao salvas em backup e a semântica útil e recuperada, nao descartada."}
+          {"type": "p", "text": "Instrucoes existentes são salvas em backup e a semântica útil e recuperada, não descartada."}
         ]
       }
     },
@@ -919,11 +919,11 @@
       },
       "pt": {
         "num": "04",
-        "title": "Limites de seguranca",
-        "lede": "TES e local e inspecionavel por padrao. Ela recusa release, remotes e marketplace sem autorizacao explicita.",
+        "title": "Limites de segurança",
+        "lede": "TES é local e inspecionável por padrão. Ela recusa release, remotes e marketplace sem autorização explícita.",
         "blocks": [
-          {"type": "list", "items": ["Sem push, publish, tag, amend, mudanca de remote, instalacao de dependencias ou marketplace por padrao.", "Sem escritas em `.obsidian/**`. Obsidian e visualizacao opcional sobre Markdown.", "Sem codigo, diffs, entradas do agente, conteudo de arquivos, segredos, dados pessoais, paths absolutos, stack traces crus, nomes de branch ou remotes em Field Reports.", "O gate de contexto raiz usa `root_context.py` para inspecionar `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/**` e `docs/agents/**` antes de sobrescrever ou recuperar."]},
-          {"type": "p", "text": "O update compara versão instalada e versão na nuvem, paridade de contrato dos helpers, `runtime_trigger_status`, `recommended_route`, `recommended_update_scope`, `legacy_retirement_required` e `self_test_mode`. Um no-op limpo reporta `update_available=False`, `recommended_update_scope=none`, `helper_contract_status=PASS` e o evento final Field Reports `tes_update` se reports estiverem ativos. `STALE_HELPERS` bloqueia adapter-config ate reparar helpers."}
+          {"type": "list", "items": ["Sem push, publish, tag, amend, mudança de remote, instalação de dependências ou marketplace por padrão.", "Sem escritas em `.obsidian/**`. Obsidian é visualização opcional sobre Markdown.", "Sem código, diffs, entradas do agente, conteúdo de arquivos, segredos, dados pessoais, paths absolutos, stack traces crus, nomes de branch ou remotes em Field Reports.", "O gate de contexto raiz usa `root_context.py` para inspecionar `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/**` e `docs/agents/**` antes de sobrescrever ou recuperar."]},
+          {"type": "p", "text": "O update compara versão instalada e versão na nuvem, paridade de contrato dos helpers, `runtime_trigger_status`, `recommended_route`, `recommended_update_scope`, `legacy_retirement_required` e `self_test_mode`. Um no-op limpo reporta `update_available=False`, `recommended_update_scope=none`, `helper_contract_status=PASS` e o evento final Field Reports `tes_update` se reports estiverem ativos. `STALE_HELPERS` bloqueia adapter-config até reparar helpers."}
         ]
       }
     },
@@ -949,10 +949,10 @@
       "pt": {
         "num": "05",
         "title": "Cortex",
-        "lede": "Cortex e memoria filesystem-first. Markdown e o contrato; recall SQLite e um acesso derivado.",
+        "lede": "Cortex é memória filesystem-first. Markdown é o contrato; recall SQLite e um acesso derivado.",
         "blocks": [
-          {"type": "p", "text": "Cortex vive em `docs/agents/cortex/**`. Todo claim duravel precisa de evidencia. Comandos operadores classificam mutabilidade: `health`, `peek` e `review` sao somente leitura; `checkpoint` escreve apenas estado TTL de retomada; `remember` exige autorizacao e evidencia; `forget` fica bloqueado ate existir evidencia de consolidacao."},
-          {"type": "p", "text": "Voce le o Cortex como qualquer documento do repositorio, revisa em pull requests e reverte com Git."}
+          {"type": "p", "text": "Cortex vive em `docs/agents/cortex/**`. Todo claim durável precisa de evidência. Comandos operadores classificam mutabilidade: `health`, `peek` e `review` são somente leitura; `checkpoint` escreve apenas estado TTL de retomada; `remember` exige autorização e evidência; `forget` fica bloqueado até existir evidência de consolidacao."},
+          {"type": "p", "text": "Você le o Cortex como qualquer documento do repositório, revisa em pull requests e reverte com Git."}
         ]
       }
     },
@@ -978,9 +978,9 @@
       "pt": {
         "num": "06",
         "title": "O que o agente executa",
-        "lede": "O usuario pede em linguagem natural; o agente executa o menor oraculo seguro e reporta o resultado.",
+        "lede": "O usuário pede em linguagem natural; o agente executa o menor oráculo seguro e reporta o resultado.",
         "blocks": [
-          {"type": "list", "items": ["Step Zero roda primeiro e registra o baseline antes de qualquer escrita.", "Comandos inseguros ou indisponiveis aparecem como `BLOCKED` ou `NEEDS_REVIEW`, nao ficam escondidos.", "O relatorio final e o contrato. Leia antes de aprovar commit ou push."]},
+          {"type": "list", "items": ["Step Zero roda primeiro e registra o baseline antes de qualquer escrita.", "Comandos inseguros ou indisponíveis aparecem como `BLOCKED` ou `NEEDS_REVIEW`, não ficam escondidos.", "O relatório final é o contrato. Leia antes de aprovar commit ou push."]},
           {"type": "p", "text": "`/tes-update` repara primeiro os helpers do bundle e depois toca adapter-config apenas se os checks post-Layer Zero passarem. O probe compara versão instalada e versão na nuvem, paridade de contrato dos helpers, `runtime_trigger_status`, `recommended_route`, `recommended_update_scope`, `legacy_retirement_required` e `self_test_mode` antes de qualquer GO."}
         ]
       }
@@ -1007,10 +1007,10 @@
       "pt": {
         "num": "07",
         "title": "MCP",
-        "lede": "Cortex MCP tem escopo de projeto. Remember governado e default; read-only e opt-out. npx `--agent all` registra Codex, Claude Code e Cursor; VS Code usa registro MCP explicito.",
+        "lede": "Cortex MCP tem escopo de projeto. Remember governado é o padrão; read-only e opt-out. npx `--agent all` registra Codex, Claude Code e Cursor; VS Code usa registro MCP explícito.",
         "blocks": [
           {"type": "table", "headers": ["Runtime", "Config"], "rows": [["Codex", "`.codex/config.toml`"], ["Claude Code", "`.mcp.json`"], ["Cursor", "`.cursor/mcp.json`"], ["VS Code", "`.vscode/mcp.json`"]]},
-          {"type": "p", "text": "A superficie MCP pode verificar, auditar, lembrar, ler cells, planejar absorbs, planejar curadoria, refletir, inspecionar eventos, executar operadores somente leitura de health, peek e review, e executar `cortex_remember_plan` mais `cortex_remember` para uma nova cell fundamentada depois de aprovacao exata. Use `--read-only` para ocultar as ferramentas de remember governado."}
+          {"type": "p", "text": "A superfície MCP pode verificar, auditar, lembrar, ler cells, planejar absorbs, planejar curadoria, refletir, inspecionar eventos, executar operadores somente leitura de health, peek e review, e executar `cortex_remember_plan` mais `cortex_remember` para uma nova cell fundamentada depois de aprovação exata. Use `--read-only` para ocultar as ferramentas de remember governado."}
         ]
       }
     },
@@ -1038,9 +1038,9 @@
       "pt": {
         "num": "08",
         "title": "Field Reports",
-        "lede": "Field Reports ajuda TES a aprender com instalacoes reais sem exportar conteudo do projeto.",
+        "lede": "Field Reports ajuda TES a aprender com instalações reais sem exportar conteúdo do projeto.",
         "blocks": [
-          {"type": "p", "text": "Os relatorios capturam fatos operacionais sanitizados e drenam apenas durante `git push` quando GitHub CLI, autenticacao e rede estao disponiveis. Se faltar qualquer elo, nada sai da maquina e o push continua."},
+          {"type": "p", "text": "Os relatórios capturam fatos operacionais sanitizados e drenam apenas durante `git push` quando GitHub CLI, autenticação e rede estão disponíveis. Se faltar qualquer elo, nada sai da máquina e o push continua."},
           {"type": "code", "label": "desativar", "text": "/tes:field-reports:disable"},
           {"type": "code", "label": "ativar", "text": "/tes:field-reports:enable"}
         ]
@@ -1066,9 +1066,9 @@
       "pt": {
         "num": "09",
         "title": "Obsidian",
-        "lede": "Obsidian e uma bancada visual opcional sobre Markdown. Nao e dependencia de runtime nem prova por si so.",
+        "lede": "Obsidian é uma bancada visual opcional sobre Markdown. Não é dependência de runtime nem prova por si só.",
         "blocks": [
-          {"type": "list", "items": ["Abra `docs/agents/` como vault para a malha completa.", "Abra `docs/agents/cortex/` para trabalho focado de memoria.", "Mantenha links Markdown legiveis fora do Obsidian e evite prova que so existe no Obsidian."]}
+          {"type": "list", "items": ["Abra `docs/agents/` como vault para a malha completa.", "Abra `docs/agents/cortex/` para trabalho focado de memória.", "Mantenha links Markdown legíveis fora do Obsidian é evite prova que só existe no Obsidian."]}
         ]
       }
     },
@@ -1093,11 +1093,11 @@
       },
       "pt": {
         "num": "10",
-        "title": "Relatorio final",
-        "lede": "O relatorio final e o contrato visivel para o usuario. Leia antes de aprovar commit ou push.",
+        "title": "Relatório final",
+        "lede": "O relatório final é o contrato visivel para o usuário. Leia antes de aprovar commit ou push.",
         "blocks": [
           {"type": "p", "text": "Ele registra status, frescor do snapshot fonte, `source_package_commit`, `source_remote_head`, `source_freshness`, `STALE_SOURCE`, Current public bundles, helper set instalado, estado do Field Reports, gate de contexto raiz, arquivos alterados, resumo de rollback e se o run foi certificado contra o snapshot registrado."},
-          {"type": "p", "text": "Estados importantes incluem `RECOVERED`, `NEEDS_REVIEW`, `BLOCKED`, `DEGRADED`, `PASS` e `STALE_SOURCE`. Um backup em `.tes/bk/<timestamp>` e evidencia de rollback, nao uma nova superficie TES."}
+          {"type": "p", "text": "Estados importantes incluem `RECOVERED`, `NEEDS_REVIEW`, `BLOCKED`, `DEGRADED`, `PASS` e `STALE_SOURCE`. Um backup em `.tes/bk/<timestamp>` e evidência de rollback, não uma nova superfície TES."}
         ]
       }
     },
@@ -1123,10 +1123,10 @@
       "pt": {
         "num": "11",
         "title": "Rollback",
-        "lede": "Rollback deve ser entediante. TES informa o baseline e os arquivos criados pelo instalador para voce desfazer com Git.",
+        "lede": "Rollback deve ser entediante. TES informa o baseline e os arquivos criados pelo instalador para você desfazer com Git.",
         "blocks": [
           {"type": "code", "label": "rollback", "text": "git reset --hard <baseline-head>\ngit clean -fd -- .tes/setup/<version>"},
-          {"type": "p", "text": "Nao faca reset as cegas se houver trabalho de usuario nao relacionado. Peca ao agente o inventario de arquivos alterados e o clean backup primeiro."}
+          {"type": "p", "text": "Não faça reset às cegas se houver trabalho de usuário não relacionado. Peça ao agente o inventário de arquivos alterados e o clean backup primeiro."}
         ]
       }
     }

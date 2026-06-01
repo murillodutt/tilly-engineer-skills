@@ -1,5 +1,5 @@
 {
-  "version": "0.3.154",
+  "version": "0.3.155",
   "schema": "tes-public-docs@1",
   "generated_outputs": [
     "docs/index.html",
@@ -20,8 +20,8 @@
   },
   "evidence": {
     "final_report": "evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md",
-    "bundle_index": "dist/0.3.154/index.json",
-    "bundle_sha256": "2f20f7d843e0dfc4b9fa955840825af0e202512b19286156ebd3f75c5a2ba941"
+    "bundle_index": "dist/0.3.155/index.json",
+    "bundle_sha256": "0a21049eaf1e162c2d7526c17eaa5a5f9593df3f22f3dde9b9d818ddd5044b81"
   },
   "pages": {
     "index": {
