@@ -17,7 +17,7 @@ LEXICAL_MANIFEST_PATH = ROOT / "benchmarks/tes-tts/ptbr-lexical-sample.jsonl"
 PRONUNCIATION_CATALOG_PATH = ROOT / "benchmarks/tes-tts/pronunciation-catalog-fixtures.json"
 RUNTIME_LATENCY_FIXTURE_PATH = ROOT / "benchmarks/tes-tts/runtime-latency-fixtures.json"
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/compiled-lexical-index-fixtures.json"
-VERSION = "0.3.150"
+VERSION = "0.3.151"
 FORBIDDEN_RUNTIME_OUTPUTS = {"ipa", "phoneme", "ssml", "pls", "provider_lexicon", "g2p"}
 
 

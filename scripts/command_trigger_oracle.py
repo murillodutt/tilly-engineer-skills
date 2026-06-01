@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.150"
+VERSION = "0.3.151"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -292,6 +292,8 @@ VISIBLE_SKILL_ROUTES = {
         "tes-goal-maestro": (
             "/tes-goal-maestro",
             "/tes:goal-maestro",
+            "generate a maestral /goal prompt",
+            "gerar um /goal maestral",
             "NEEDS_SPEC_MATURITY",
             "NEEDS_EXECUTION_UNIT_FIDELITY",
             "DRAFT_MATERIALIZATION_TREE",
@@ -323,6 +325,8 @@ VISIBLE_SKILL_ROUTES = {
         "tes-goal-maestro": (
             "/tes-goal-maestro",
             "/tes:goal-maestro",
+            "generate a maestral /goal prompt",
+            "gerar um /goal maestral",
             "NEEDS_SPEC_MATURITY",
             "NEEDS_EXECUTION_UNIT_FIDELITY",
             "DRAFT_MATERIALIZATION_TREE",
@@ -378,8 +382,8 @@ def missing_exact(text: str, terms: tuple[str, ...]) -> list[str]:
 
 
 def missing_natural(text: str) -> list[str]:
-    folded = text.casefold()
-    return [term for term in NATURAL_INTENTS if term.casefold() not in folded]
+    folded = normalized(text).casefold()
+    return [term for term in NATURAL_INTENTS if normalized(term).casefold() not in folded]
 
 
 def normalized(text: str) -> str:
@@ -727,6 +731,15 @@ def run_fixture_tests() -> list[str]:
     bad_natural = good_text.replace("recertificar TES", "")
     if not any("recertificar TES" in item for item in check_text("fixture_bad_natural", bad_natural)):
         failures.append("bad natural fixture must fail when a natural intent is absent")
+
+    wrapped_natural = (
+        good_text.replace("gerar um /goal maestral", "gerar um /goal\nmaestral")
+        .replace("mapa TES", "mapa\nTES")
+        .replace("leia em voz alta", "leia em voz\nalta")
+    )
+    wrapped_failures = check_text("fixture_wrapped_natural", wrapped_natural)
+    if any("natural intent" in item for item in wrapped_failures):
+        failures.append("wrapped natural intents must tolerate formatting line breaks")
 
     with tempfile.TemporaryDirectory(prefix="tes-trigger-oracle-target-source-") as tempdir:
         target = Path(tempdir)
