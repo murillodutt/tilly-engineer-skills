@@ -73,6 +73,40 @@ LATENCY_PROFILE_CHOICES = ("auto", *tuple(sorted(LATENCY_PROFILES)))
 PROFILE_RECOMMENDATION_ORDER = ("fast", "balanced", "quality")
 ACTIVE_PRODUCT_PATH = "direct_resident_omnivoice"
 PROSODY_WARMUP_CHOICES = ("none", "confirmation-en", "question-en", "sigh")
+LONG_READ_PROSODY_WARMUP_SCOPES = ("first_chunk_only", "each_chunk")
+LONG_READ_PROFILE_CHOICES = ("manual", "technical-quality", "technical-streamer")
+LONG_READ_PROFILES = {
+    "technical-quality": {
+        "language": "en",
+        "text_mode": "redacted_source",
+        "prosody_warmup": "confirmation-en",
+        "prosody_warmup_scope": "each_chunk",
+        "latency_profile": "quality",
+        "num_step": 32,
+        "chunk_chars": 420,
+        "inter_chunk_silence_ms": 450,
+        "combine": True,
+        "first_audio_buffered": False,
+        "first_audio_chars": 160,
+        "first_audio_buffer_chunks": 2,
+        "first_audio_max_unplanned_gap_ms": 1200.0,
+    },
+    "technical-streamer": {
+        "language": "en",
+        "text_mode": "redacted_source",
+        "prosody_warmup": "confirmation-en",
+        "prosody_warmup_scope": "each_chunk",
+        "latency_profile": "quality",
+        "num_step": 28,
+        "chunk_chars": 420,
+        "inter_chunk_silence_ms": 450,
+        "combine": True,
+        "first_audio_buffered": True,
+        "first_audio_chars": 160,
+        "first_audio_buffer_chunks": 2,
+        "first_audio_max_unplanned_gap_ms": 1200.0,
+    },
+}
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -445,6 +479,30 @@ def apply_latency_profile(args: argparse.Namespace) -> argparse.Namespace:
     if getattr(args, "num_step", None) is None:
         args.num_step = LATENCY_PROFILES[profile]["num_step"]
     return args
+
+
+def apply_long_read_profile(args: argparse.Namespace) -> argparse.Namespace:
+    profile = getattr(args, "read_profile", "manual")
+    if profile == "manual":
+        return args
+    values = LONG_READ_PROFILES[profile]
+    for key, value in values.items():
+        setattr(args, key, value)
+    return args
+
+
+def effective_prosody_warmup_scope(args: argparse.Namespace) -> str:
+    if getattr(args, "prosody_warmup", "none") == "none":
+        return "none"
+    return getattr(args, "prosody_warmup_scope", "first_chunk_only")
+
+
+def prosody_warmup_for_chunk(args: argparse.Namespace, index: int) -> str:
+    if getattr(args, "prosody_warmup", "none") == "none":
+        return "none"
+    if effective_prosody_warmup_scope(args) == "each_chunk":
+        return args.prosody_warmup
+    return args.prosody_warmup if index == 1 else "none"
 
 
 def latency_profile_metadata(args: argparse.Namespace) -> dict[str, Any]:
@@ -1605,6 +1663,7 @@ def command_session(args: argparse.Namespace) -> int:
 
 
 def command_speak_long(args: argparse.Namespace) -> int:
+    apply_long_read_profile(args)
     provider_python, python_source = resolve_provider_python(args.python)
     ref_audio, ref_source = resolve_runtime_ref_audio(args)
     output_dir = default_long_read_dir(args.output_dir)
@@ -1692,6 +1751,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
                 "chunk_chars": [chunk["chars"] for chunk in chunk_plan],
                 "chunk_languages": [chunk["language"] for chunk in chunk_plan],
                 "language_mode": args.language,
+                "text_mode": args.text_mode,
                 "max_chunk_chars": args.chunk_chars,
                 "output_dir": str(output_dir),
                 "result_json": str(result_json),
@@ -1708,8 +1768,9 @@ def command_speak_long(args: argparse.Namespace) -> int:
                 "first_audio_chars": args.first_audio_chars,
                 "first_audio_buffer_chunks": args.first_audio_buffer_chunks,
                 "first_audio_max_unplanned_gap_ms": args.first_audio_max_unplanned_gap_ms,
+                "read_profile": args.read_profile,
                 "prosody_warmup": args.prosody_warmup,
-                "prosody_warmup_scope": "first_chunk_only" if args.prosody_warmup != "none" else "none",
+                "prosody_warmup_scope": effective_prosody_warmup_scope(args),
                 "latency_profile": args.latency_profile,
                 **latency_profile_metadata(args),
                 **timing_attribution_metadata("dry_run_resident_long_read"),
@@ -1737,6 +1798,9 @@ def command_speak_long(args: argparse.Namespace) -> int:
         output_dir=str(output_dir),
         language_mode=args.language,
         chunk_languages=[chunk["language"] for chunk in chunk_plan],
+        read_profile=args.read_profile,
+        prosody_warmup=args.prosody_warmup,
+        prosody_warmup_scope=effective_prosody_warmup_scope(args),
         latency_profile=args.latency_profile,
         num_step=args.num_step,
         provider_exclusive=True,
@@ -1788,7 +1852,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
                         "text": chunk["text"],
                         "language": chunk["language"],
                         "output": str(output),
-                        "prosody_warmup": args.prosody_warmup if index == 1 else "none",
+                        "prosody_warmup": prosody_warmup_for_chunk(args, index),
                     }
                     monitor.record(
                         "chunk_start",
@@ -1936,6 +2000,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
         "chunk_count": len(chunk_plan),
         "completed_chunk_count": len(outputs),
         "language_mode": args.language,
+        "text_mode": args.text_mode,
         "chunk_languages": [chunk["language"] for chunk in chunk_plan],
         "chunk_plan": [
             {
@@ -1953,6 +2018,9 @@ def command_speak_long(args: argparse.Namespace) -> int:
         "first_audio_chars": args.first_audio_chars,
         "first_audio_buffer_chunks": args.first_audio_buffer_chunks,
         "first_audio_max_unplanned_gap_ms": args.first_audio_max_unplanned_gap_ms,
+        "read_profile": args.read_profile,
+        "prosody_warmup": args.prosody_warmup,
+        "prosody_warmup_scope": effective_prosody_warmup_scope(args),
         "first_audio": {
             **first_audio_summary,
             "completed_before_full_synthesis": (
@@ -3388,6 +3456,12 @@ def build_parser() -> argparse.ArgumentParser:
     speak_long.add_argument("--text", required=True)
     speak_long.add_argument("--output-dir")
     speak_long.add_argument("--monitor-log")
+    speak_long.add_argument(
+        "--read-profile",
+        choices=LONG_READ_PROFILE_CHOICES,
+        default="manual",
+        help="Apply a fixed TES-TTS long-read recipe instead of hand-assembling quality flags.",
+    )
     speak_long.add_argument("--chunk-chars", type=int, default=420)
     speak_long.add_argument("--startup-timeout", type=float, default=300.0)
     speak_long.add_argument("--utterance-timeout", type=float, default=180.0)
@@ -3408,6 +3482,12 @@ def build_parser() -> argparse.ArgumentParser:
     speak_long.add_argument("--first-audio-chars", type=int, default=160)
     speak_long.add_argument("--first-audio-buffer-chunks", type=int, default=2)
     speak_long.add_argument("--first-audio-max-unplanned-gap-ms", type=float, default=1200.0)
+    speak_long.add_argument(
+        "--prosody-warmup-scope",
+        choices=LONG_READ_PROSODY_WARMUP_SCOPES,
+        default="first_chunk_only",
+        help="Apply conversational warmup to the first chunk only or to every independent synthesis chunk.",
+    )
     speak_long.add_argument("--play", action="store_true")
     speak_long.add_argument("--dry-run", action="store_true")
     speak_long.set_defaults(func=command_speak_long)

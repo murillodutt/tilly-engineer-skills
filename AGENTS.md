@@ -117,9 +117,10 @@ For `tes-tts`, direct OmniVoice execution is not enough to claim equivalence.
 Protect the full recipe: runtime route, voice profile, latency profile,
 `num_step`, language, prosody warmup, chunking, punctuation treatment,
 redaction, exact islands, source immutability, no-summary behavior, playback
-path, and combined-WAV review authority. Any change to those surfaces needs a
-same-input comparison. If a regression appears, stop, revert, or gate the new
-path behind explicit opt-in instead of stacking special cases.
+path, and combined-WAV review authority. Use the code-defined long-read
+profiles instead of hand-assembling quality flags. Any change to those surfaces
+needs a same-input comparison. If a regression appears, stop, revert, or gate
+the new path behind explicit opt-in instead of stacking special cases.
 For direct OmniVoice `redacted_source` and `audio_quality`, pass source text
 once and let the direct kernel prepare request-local provider text; do not
 pre-run `tes_tts_runtime.py` or feed generic `spoken_text` into those modes.

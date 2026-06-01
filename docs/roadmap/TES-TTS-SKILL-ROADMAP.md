@@ -61,15 +61,16 @@ durable conversion cache, or proactive `speak`.
 - A regression review found that pre-running `tes_tts_runtime.py` before
   OmniVoice long reads weakened technical identity and pauses; provider oracles
   now guard source-text quality modes and compact enumeration pauses.
-- Quality has two governed step models: `num_step=32` for maximum-quality
-  review reference and explicit `--num-step 28` for streamer latency tests; 26
-  is not accepted because human review found audible distortion.
+- The long-read recipe is now code-defined: `technical-quality` fixes the
+  9.2/10 reference shape at `num_step=32`, while `technical-streamer` preserves
+  the same recipe with `num_step=28` and first-audio buffering. Both apply the
+  winning `confirmation-en` warmup to each synthesis chunk; 26 remains rejected.
 
 ## Next Cut
-Focus the next direct/resident streamer cut on perceived latency without
-breaking source-text quality modes, enumeration pauses, controlled warmup, or
-`combined.wav` review authority. Sync status remains
-`REMOTE_SYNC_NOT_REQUESTED`.
+Focus the next direct/resident streamer cut on real same-input audio comparison
+using the code-defined profiles, without breaking source-text quality modes,
+enumeration pauses, controlled warmup, or `combined.wav` authority. Sync status
+remains `REMOTE_SYNC_NOT_REQUESTED`.
 
 ## Maintenance Rules
 - Hard limit: 100 lines. Review zone starts at 75 lines.

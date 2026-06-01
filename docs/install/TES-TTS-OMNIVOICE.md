@@ -78,7 +78,7 @@ Confirmed by the local OmniVoice reference and upstream documentation:
 | English pronunciation override | CMU bracket form such as `[B EY1 S]` | Experimental provider control. It may improve isolated English words, but it is not a generic TES pronunciation contract. |
 | Chinese pronunciation override | Pinyin with tone numbers | Out of PT-BR scope for the current default voice. |
 | Voice-design `instruct` | gender, age, pitch, `whisper`, English accents, and Chinese dialects | Useful for separate voice-design experiments. The active TES path uses cloned voice prompt, not auto voice design. |
-| Generation parameters | `num_step`, `guidance_scale`, `speed`, `duration`, `audio_chunk_duration`, and `audio_chunk_threshold` | Runtime-tuning surface. TES currently certifies `quality`/`num_step=32`; lower steps need human review. |
+| Generation parameters | `num_step`, `guidance_scale`, `speed`, `duration`, `audio_chunk_duration`, and `audio_chunk_threshold` | Runtime-tuning surface. TES currently fixes `technical-quality` at `num_step=32` and `technical-streamer` at `num_step=28`; lower steps need human review. |
 
 Not certified for TES from the current local evidence: `[sniff]`, `[gasp]`,
 `singing`, `[Speaker_1]:`, `[Speaker_2]:`, and multi-speaker dialogue. They may
@@ -90,12 +90,14 @@ reading of text that contains bracket tags, TES should read them as text unless
 the user explicitly requests an OmniVoice tag experiment. Secret redaction still
 wins over every provider control.
 
-The active product option is intentionally narrow: `--prosody-warmup` accepts
-only `none`, `confirmation-en`, `question-en`, or `sigh`. Default is `none`.
-When enabled, TES prepends the tag only to request-local provider text. It does
-not mutate source text, does not enable CMU by default, and does not apply tags
-to faithful, exact, raw, literal, quoted user text, code, or command reads
-unless the user explicitly requested that provider-tag experiment.
+The active product option is intentionally narrow. Manual `--prosody-warmup`
+accepts only `none`, `confirmation-en`, `question-en`, or `sigh`, and defaults
+to `none`. Code-defined long-read profiles own the approved product recipe:
+`technical-quality` and `technical-streamer` apply `confirmation-en` to each
+request-local synthesis chunk. TES does not mutate source text, does not enable
+CMU by default, and does not apply tags to faithful, exact, raw, literal,
+quoted user text, code, or command reads unless the user explicitly requested
+that provider-tag experiment.
 
 The most promising enrichment path is practical and narrow:
 
@@ -245,19 +247,16 @@ python3 scripts/tes_tts_omnivoice_provider.py speak \
   --play
 ```
 
-Long reads should use chunking and combined WAV output. The buffered first-audio
-path reduces the wait before the first audible chunk while later chunks are
-prepared.
+Long reads should use a code-defined read profile, chunking, and combined WAV
+output. `technical-quality` is the 9.2/10 review reference. `technical-streamer`
+uses the same recipe with `num_step=28` and buffered first audio, reducing the
+wait before the first audible chunk while later chunks are prepared.
 
 ```bash
 python3 scripts/tes_tts_omnivoice_provider.py speak-long \
-  --text-file /path/to/text.txt \
+  --text "$(cat /path/to/text.txt)" \
   --output-dir "$HOME/.tes/runtime/tes-tts/omnivoice/provider-cache/audio/tes-tts-run" \
-  --combine \
-  --inter-chunk-silence-ms 450 \
-  --first-audio-buffered \
-  --first-audio-chars 160 \
-  --first-audio-buffer-chunks 2 \
+  --read-profile technical-streamer \
   --play
 ```
 

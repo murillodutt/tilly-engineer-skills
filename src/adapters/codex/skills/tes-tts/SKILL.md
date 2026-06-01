@@ -27,7 +27,7 @@ Use this path inside the TES package repository when the helper scripts exist:
 4. For short direct OmniVoice reads:
    `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<source text>" --output <wav> --text-mode redacted_source`
 5. For long direct OmniVoice reads, use direct resident chunking:
-   `python3 scripts/tes_tts_omnivoice_provider.py speak-long --text "<source text>" --output-dir <tmp-dir> --combine --text-mode redacted_source`
+   `python3 scripts/tes_tts_omnivoice_provider.py speak-long --text "<source text>" --output-dir <tmp-dir> --read-profile technical-quality`
 6. Use the canonical clone reference through the global direct provider defaults;
    do not upload or recreate the reference voice for normal reads.
 7. If OmniVoice is unavailable, prepare `spoken_text` with
@@ -65,35 +65,34 @@ python3 scripts/tes_tts_omnivoice_provider.py warm-cache
 ## Validated Long-Read Recipe
 
 Use this human-rated recipe for long PT-BR narration with English technical
-terms when quality matters more than minimum latency:
+terms when quality matters more than minimum latency. Do not hand-assemble the
+flags; use the code-defined profile so the full recipe moves together:
 
 ```bash
 python3 scripts/tes_tts_omnivoice_provider.py speak-long \
   --text "<source text>" \
   --output-dir "$HOME/.tes/runtime/tes-tts/omnivoice/provider-cache/audio-reference-runs/<run-id>" \
-  --latency-profile quality \
-  --language en \
-  --text-mode redacted_source \
-  --prosody-warmup confirmation-en \
-  --chunk-chars 420 \
-  --combine \
-  --inter-chunk-silence-ms 450 \
+  --read-profile technical-quality \
   --play
 ```
 
 The current human-rated baseline is 9.2/10 for `combined.wav` review output
 with direct resident OmniVoice, provider language `en`, `quality`/`num_step=32`,
-source redaction, controlled warmup, safe sentence chunking, and controlled
-punctuation. Preserve this shape unless a newer human-rated reference
+source redaction, `confirmation-en` on every synthesis chunk, safe sentence
+chunking, and controlled punctuation. Preserve this shape unless a newer
+human-rated reference
 supersedes it. Prepare the text with natural Portuguese narration, keep fragile
 paths and URLs as useful references, redact secrets before speech, and group
 difficult English technical terms in a short English phrase when that improves
 pronunciation.
 
-Two quality step models are valid:
+Two code-defined long-read profiles are valid:
 
-- `quality` with `num_step=32` is the maximum-quality review reference.
-- `quality` with explicit `--num-step 28` is the streamer/latency candidate;
+- `technical-quality` uses provider language `en`, `redacted_source`,
+  `confirmation-en` on each chunk, `quality`/`num_step=32`, chunk size `420`,
+  `450 ms` combined-WAV silence, and `combined.wav` review output.
+- `technical-streamer` preserves the same formula but uses `num_step=28` and
+  first-audio buffering for perceived-latency tests;
   maintainer review found 28 acceptable and 26 already distortion-prone.
 
 `redacted_source` and `audio_quality` are source-text modes. They must receive
@@ -108,16 +107,16 @@ request-local provider text. `?` and `!` are allowed as textual punctuation
 after the 9.2 punctuation test. The `combined.wav` is the review authority;
 chunk-by-chunk `afplay` is diagnostic and may have extra player startup pauses.
 
-When start latency matters for long reads, keep the same quality recipe and add
-`--first-audio-buffered --first-audio-chars 160 --first-audio-buffer-chunks 2`.
-This starts playback after a small buffered head while preserving `combined.wav`
-for repeated listening and comparison.
+When start latency matters for long reads, use `--read-profile
+technical-streamer`. This starts playback after a small buffered head while
+preserving `combined.wav` for repeated listening and comparison.
 
 For conversational OmniVoice quality reads, use
-`--prosody-warmup confirmation-en` with provider language `en`. `question-en`
-and `sigh` remain first-tier A/B alternatives. Warmup tags are provider-only
-text and must not be used for faithful, exact, raw, literal, quoted user text,
-code, or command reads unless the user explicitly requested a tag experiment.
+the profile-managed `confirmation-en` warmup with provider language `en`.
+`question-en` and `sigh` remain first-tier A/B alternatives for explicit
+experiments. Warmup tags are provider-only text and must not be used for
+faithful, exact, raw, literal, quoted user text, code, or command reads unless
+the user explicitly requested a tag experiment.
 
 ## Speech Invariants
 
