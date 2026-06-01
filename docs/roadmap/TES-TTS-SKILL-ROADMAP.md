@@ -61,10 +61,14 @@ durable conversion cache, or proactive `speak`.
 - A regression review found that pre-running `tes_tts_runtime.py` before
   OmniVoice long reads weakened technical identity and pauses; provider oracles
   now guard source-text quality modes and compact enumeration pauses.
-- The long-read recipe is now code-defined: `technical-quality` fixes the
-  9.2/10 reference shape at `num_step=32`, while `technical-streamer` preserves
-  the same recipe with `num_step=28` and first-audio buffering. Both apply the
-  winning `confirmation-en` warmup to each synthesis chunk; 26 remains rejected.
+- The long-read recipe is now code-defined from the approved PT-BR baseline:
+  `technical-quality` defaults to the `02-sigh-once` shape from
+  `formula-light-tag-once-20260601-000635`, using direct resident OmniVoice,
+  provider language `en`, `redacted_source`, a single `sigh` warmup on the
+  first chunk only, `num_step=28`, chunk size `420`, `450 ms` combined-WAV
+  silence, first-audio buffering, and `combined.wav` review output.
+  `technical-streamer` remains an explicit latency-test alias for the same
+  recipe; 26 remains rejected.
 
 ## Next Cut
 Focus the next direct/resident streamer cut on real same-input audio comparison

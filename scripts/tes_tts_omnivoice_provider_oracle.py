@@ -742,6 +742,8 @@ def run_status_and_dry_run() -> tuple[
                 "speak-long dry-run",
                 (
                     "speak-long",
+                    "--read-profile",
+                    "manual",
                     "--text",
                     (
                         "Primeiro bloco com ADR e OmniVoice precisa ser preservado sem fallback.\n\n"
@@ -923,11 +925,11 @@ def validate_long_read_dry_run_payload(payload: dict[str, Any] | None) -> list[s
     if payload.get("provider_exclusive") is not True:
         failures.append("speak-long must be OmniVoice-exclusive")
     if payload.get("prosody_warmup") != "none":
-        failures.append("speak-long dry-run must default to no prosody warmup")
+        failures.append("manual speak-long dry-run must preserve no prosody warmup")
     if payload.get("prosody_warmup_scope") != "none":
-        failures.append("speak-long dry-run must report no warmup scope by default")
+        failures.append("manual speak-long dry-run must report no warmup scope")
     if payload.get("read_profile") != "manual":
-        failures.append("speak-long dry-run must default to manual read profile for compatibility")
+        failures.append("speak-long dry-run must preserve explicit manual read profile for compatibility")
     if payload.get("resident_model") is not True or payload.get("resident_voice_prompt") is not True:
         failures.append("speak-long must use the resident runtime path")
     if payload.get("chunk_count", 0) < 2:
@@ -1684,14 +1686,14 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
         "Node.js, TypeScript, Python, OpenAI, Docker e Kubernetes."
     )
 
-    redacted = kernel_module.provider_text(source, "pt-BR", "redacted_source", "confirmation-en")
+    redacted = kernel_module.provider_text(source, "pt-BR", "redacted_source", "sigh")
     redacted_text = str(redacted.get("text", ""))
     if redacted.get("input_surface") != "source_text":
         failures.append("redacted_source provider mode must declare source_text input surface")
-    if redacted.get("prosody_warmup") != "confirmation-en":
-        failures.append("human-rated quality recipe must use confirmation-en warmup by default")
-    if not redacted_text.startswith("[confirmation-en] "):
-        failures.append("human-rated quality recipe must prepend the winning warmup tag")
+    if redacted.get("prosody_warmup") != "sigh":
+        failures.append("human-rated PT-BR quality recipe must use sigh warmup by default")
+    if not redacted_text.startswith("[sigh] "):
+        failures.append("human-rated PT-BR quality recipe must prepend the approved sigh tag")
     spoken = kernel_module.provider_text(source, "pt-BR", "spoken_text")
     if redacted_text == str(spoken.get("text", "")):
         failures.append("human-rated quality recipe must not collapse into generic spoken_text")
@@ -1701,16 +1703,16 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
         "confirmation-en",
         "confirmation-en",
     ]:
-        failures.append("each_chunk warmup scope must apply the winning tag to every independent synthesis chunk")
-    first_chunk_args = argparse.Namespace(prosody_warmup="confirmation-en", prosody_warmup_scope="first_chunk_only")
+        failures.append("each_chunk warmup scope must remain available for explicit experiments")
+    first_chunk_args = argparse.Namespace(prosody_warmup="sigh", prosody_warmup_scope="first_chunk_only")
     if [provider_module.prosody_warmup_for_chunk(first_chunk_args, index) for index in range(1, 4)] != [
-        "confirmation-en",
+        "sigh",
         "none",
         "none",
     ]:
-        failures.append("first_chunk_only warmup scope must preserve legacy scoped behavior")
+        failures.append("first_chunk_only warmup scope must apply the approved tag only once")
 
-    def run_profile_dry_run(root: Path, profile: str, extra: tuple[str, ...] = ()) -> dict[str, Any]:
+    def run_profile_dry_run(root: Path, profile: str | None = None, extra: tuple[str, ...] = ()) -> dict[str, Any]:
         command = [
             sys.executable,
             str(PROVIDER_SCRIPT),
@@ -1721,11 +1723,11 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
             str(root / f"out-{profile}"),
             "--monitor-log",
             str(root / f"monitor-{profile}.jsonl"),
-            "--read-profile",
-            profile,
             *extra,
             "--dry-run",
         ]
+        if profile is not None:
+            command.extend(["--read-profile", profile])
         completed = subprocess.run(
             command,
             text=True,
@@ -1746,8 +1748,9 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
         env["TES_TTS_OMNIVOICE_PYTHON"] = sys.executable
         env["TES_TTS_OMNIVOICE_REF_AUDIO"] = str(ref)
         try:
-            quality_32 = run_profile_dry_run(root, "technical-quality")
-            quality_28 = run_profile_dry_run(root, "technical-streamer")
+            default_profile = run_profile_dry_run(root)
+            quality = run_profile_dry_run(root, "technical-quality")
+            streamer = run_profile_dry_run(root, "technical-streamer")
             profile_override = run_profile_dry_run(
                 root,
                 "technical-quality",
@@ -1774,37 +1777,39 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
             failures.append(f"human-rated quality dry-run failed: {exc}")
             return failures
 
-    payload = quality_32
-    if quality_32.get("read_profile") != "technical-quality":
+    payload = quality
+    if default_profile.get("read_profile") != "technical-quality":
+        failures.append("speak-long must default to the human-approved technical-quality profile")
+    if quality.get("read_profile") != "technical-quality":
         failures.append("human-rated quality reference must be a code-defined read profile")
-    if quality_28.get("read_profile") != "technical-streamer":
+    if streamer.get("read_profile") != "technical-streamer":
         failures.append("human-rated streamer candidate must be a code-defined read profile")
-    if quality_32.get("num_step") != 32:
-        failures.append("human-rated quality reference recipe must keep num_step=32")
-    if quality_28.get("num_step") != 28:
+    if quality.get("num_step") != 28:
+        failures.append("human-rated PT-BR quality reference recipe must keep num_step=28")
+    if streamer.get("num_step") != 28:
         failures.append("human-rated quality streamer candidate must keep num_step=28")
-    if quality_28.get("latency_profile") != "quality":
+    if streamer.get("latency_profile") != "quality":
         failures.append("num_step=28 remains a quality-profile override, not a lower-quality profile")
-    if quality_28.get("language_mode") != "en" or quality_28.get("prosody_warmup") != "confirmation-en":
-        failures.append("num_step=28 candidate must preserve language en and confirmation-en warmup")
-    if quality_28.get("max_chunk_chars") != 420 or quality_28.get("inter_chunk_silence_ms") != 450:
+    if streamer.get("language_mode") != "en" or streamer.get("prosody_warmup") != "sigh":
+        failures.append("num_step=28 candidate must preserve language en and sigh warmup")
+    if streamer.get("prosody_warmup_scope") != "first_chunk_only":
+        failures.append("num_step=28 candidate must keep warmup scoped to the first chunk only")
+    if streamer.get("max_chunk_chars") != 420 or streamer.get("inter_chunk_silence_ms") != 450:
         failures.append("num_step=28 candidate must preserve chunk size 420 and silence 450 ms")
-    if quality_28.get("combine_requested") is not True:
+    if streamer.get("combine_requested") is not True:
         failures.append("num_step=28 candidate must preserve combined WAV review authority")
-    if quality_28.get("first_audio_buffered") is not True:
+    if streamer.get("first_audio_buffered") is not True:
         failures.append("num_step=28 candidate must keep first-audio buffering enabled")
-    if quality_28.get("first_audio_chars") != 160 or quality_28.get("first_audio_buffer_chunks") != 2:
+    if streamer.get("first_audio_chars") != 160 or streamer.get("first_audio_buffer_chunks") != 2:
         failures.append("num_step=28 candidate must keep buffered streamer startup settings")
-    if quality_28.get("prosody_warmup_scope") != "each_chunk":
-        failures.append("num_step=28 candidate must apply warmup to every synthesis chunk")
 
     if (
         profile_override.get("language_mode") != "en"
         or profile_override.get("text_mode") != "redacted_source"
-        or profile_override.get("prosody_warmup") != "confirmation-en"
-        or profile_override.get("prosody_warmup_scope") != "each_chunk"
+        or profile_override.get("prosody_warmup") != "sigh"
+        or profile_override.get("prosody_warmup_scope") != "first_chunk_only"
         or profile_override.get("latency_profile") != "quality"
-        or profile_override.get("num_step") != 32
+        or profile_override.get("num_step") != 28
         or profile_override.get("max_chunk_chars") != 420
         or profile_override.get("inter_chunk_silence_ms") != 450
     ):
@@ -1812,16 +1817,20 @@ def validate_human_rated_quality_recipe_contract() -> list[str]:
 
     if payload.get("language_mode") != "en" or payload.get("chunk_languages") != ["en"]:
         failures.append("human-rated quality recipe must synthesize with provider language en")
-    if payload.get("prosody_warmup") != "confirmation-en":
-        failures.append("human-rated quality dry-run must preserve confirmation-en warmup")
-    if payload.get("prosody_warmup_scope") != "each_chunk":
-        failures.append("human-rated quality dry-run must apply warmup to every synthesis chunk")
+    if payload.get("prosody_warmup") != "sigh":
+        failures.append("human-rated quality dry-run must preserve sigh warmup")
+    if payload.get("prosody_warmup_scope") != "first_chunk_only":
+        failures.append("human-rated quality dry-run must apply warmup only to the first chunk")
     if payload.get("latency_profile") != "quality":
         failures.append("human-rated quality recipe must keep quality latency profile")
+    if payload.get("num_step") != 28:
+        failures.append("human-rated quality recipe must keep the approved num_step=28")
     if payload.get("max_chunk_chars") != 420 or payload.get("inter_chunk_silence_ms") != 450:
         failures.append("human-rated quality recipe must keep chunk size 420 and silence 450 ms")
     if payload.get("combine_requested") is not True:
         failures.append("human-rated quality recipe must preserve combined WAV review authority")
+    if payload.get("first_audio_buffered") is not True:
+        failures.append("human-rated quality recipe must preserve first-audio buffering from the approved run")
     return failures
 
 

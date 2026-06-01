@@ -76,24 +76,26 @@ python3 scripts/tes_tts_omnivoice_provider.py speak-long \
   --play
 ```
 
-The current human-rated baseline is 9.2/10 for `combined.wav` review output
-with direct resident OmniVoice, provider language `en`, `quality`/`num_step=32`,
-source redaction, `confirmation-en` on every synthesis chunk, safe sentence
-chunking, and controlled punctuation. Preserve this shape unless a newer
-human-rated reference
-supersedes it. Prepare the text with natural Portuguese narration, keep fragile
-paths and URLs as useful references, redact secrets before speech, and group
-difficult English technical terms in a short English phrase when that improves
-pronunciation.
+The current human-rated PT-BR baseline is the `02-sigh-once` recipe from
+`formula-light-tag-once-20260601-000635`, approved as the long-read product
+default after direct comparison. It uses direct resident OmniVoice, provider
+language `en`, `redacted_source`, `quality` with `num_step=28`, a single
+`sigh` warmup on the first chunk only, chunk size `420`, `450 ms`
+combined-WAV silence, first-audio buffering, and `combined.wav` review output.
+Preserve this shape unless a newer human-rated reference supersedes it. Prepare
+the text with natural Portuguese narration, keep fragile paths and URLs as
+useful references, redact secrets before speech, and group difficult English
+technical terms in a short English phrase when that improves pronunciation.
 
 Two code-defined long-read profiles are valid:
 
-- `technical-quality` uses provider language `en`, `redacted_source`,
-  `confirmation-en` on each chunk, `quality`/`num_step=32`, chunk size `420`,
-  `450 ms` combined-WAV silence, and `combined.wav` review output.
-- `technical-streamer` preserves the same formula but uses `num_step=28` and
-  first-audio buffering for perceived-latency tests;
-  maintainer review found 28 acceptable and 26 already distortion-prone.
+- `technical-quality` is the default PT-BR long-read profile. It uses provider
+  language `en`, `redacted_source`, `sigh` on the first chunk only,
+  `quality`/`num_step=28`, chunk size `420`, `450 ms` combined-WAV silence,
+  first-audio buffering, and `combined.wav` review output.
+- `technical-streamer` remains an explicit latency-test alias for the same
+  approved recipe. Maintainer review found 28 acceptable and 26 already
+  distortion-prone.
 
 `redacted_source` and `audio_quality` are source-text modes. They must receive
 the original text the user wants spoken and let the direct kernel derive
@@ -107,16 +109,13 @@ request-local provider text. `?` and `!` are allowed as textual punctuation
 after the 9.2 punctuation test. The `combined.wav` is the review authority;
 chunk-by-chunk `afplay` is diagnostic and may have extra player startup pauses.
 
-When start latency matters for long reads, use `--read-profile
-technical-streamer`. This starts playback after a small buffered head while
-preserving `combined.wav` for repeated listening and comparison.
-
-For conversational OmniVoice quality reads, use
-the profile-managed `confirmation-en` warmup with provider language `en`.
-`question-en` and `sigh` remain first-tier A/B alternatives for explicit
-experiments. Warmup tags are provider-only text and must not be used for
-faithful, exact, raw, literal, quoted user text, code, or command reads unless
-the user explicitly requested a tag experiment.
+For conversational OmniVoice quality reads, use the profile-managed single
+`sigh` warmup with provider language `en`. Do not repeat warmup tags on every
+chunk: the repeated `confirmation-en` path produced audible non-verbal starts
+and is no longer the product default. `confirmation-en` and `question-en`
+remain A/B alternatives for explicit experiments. Warmup tags are provider-only
+text and must not be used for faithful, exact, raw, literal, quoted user text,
+code, or command reads unless the user explicitly requested a tag experiment.
 
 ## Speech Invariants
 

@@ -75,18 +75,19 @@ ACTIVE_PRODUCT_PATH = "direct_resident_omnivoice"
 PROSODY_WARMUP_CHOICES = ("none", "confirmation-en", "question-en", "sigh")
 LONG_READ_PROSODY_WARMUP_SCOPES = ("first_chunk_only", "each_chunk")
 LONG_READ_PROFILE_CHOICES = ("manual", "technical-quality", "technical-streamer")
+DEFAULT_LONG_READ_PROFILE = "technical-quality"
 LONG_READ_PROFILES = {
     "technical-quality": {
         "language": "en",
         "text_mode": "redacted_source",
-        "prosody_warmup": "confirmation-en",
-        "prosody_warmup_scope": "each_chunk",
+        "prosody_warmup": "sigh",
+        "prosody_warmup_scope": "first_chunk_only",
         "latency_profile": "quality",
-        "num_step": 32,
+        "num_step": 28,
         "chunk_chars": 420,
         "inter_chunk_silence_ms": 450,
         "combine": True,
-        "first_audio_buffered": False,
+        "first_audio_buffered": True,
         "first_audio_chars": 160,
         "first_audio_buffer_chunks": 2,
         "first_audio_max_unplanned_gap_ms": 1200.0,
@@ -94,8 +95,8 @@ LONG_READ_PROFILES = {
     "technical-streamer": {
         "language": "en",
         "text_mode": "redacted_source",
-        "prosody_warmup": "confirmation-en",
-        "prosody_warmup_scope": "each_chunk",
+        "prosody_warmup": "sigh",
+        "prosody_warmup_scope": "first_chunk_only",
         "latency_profile": "quality",
         "num_step": 28,
         "chunk_chars": 420,
@@ -3459,8 +3460,8 @@ def build_parser() -> argparse.ArgumentParser:
     speak_long.add_argument(
         "--read-profile",
         choices=LONG_READ_PROFILE_CHOICES,
-        default="manual",
-        help="Apply a fixed TES-TTS long-read recipe instead of hand-assembling quality flags.",
+        default=DEFAULT_LONG_READ_PROFILE,
+        help="Apply a fixed TES-TTS long-read recipe; use manual to preserve hand-assembled flags.",
     )
     speak_long.add_argument("--chunk-chars", type=int, default=420)
     speak_long.add_argument("--startup-timeout", type=float, default=300.0)
