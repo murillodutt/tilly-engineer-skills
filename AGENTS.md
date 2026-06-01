@@ -93,6 +93,32 @@ gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 
 </diamond_build_test_fail_fix>
 
+<regression_guard>
+
+For every TES package analysis, write, runtime change, oracle change, commit,
+or closeout, self-consume `.agents/skills/tes-regression-guard/SKILL.md`.
+This is an always-on local reasoning kernel, not a user-invoked skill and not a
+product command. Routine use stays implicit; report it only when it blocks,
+downgrades confidence, requires owner choice, or the user asks for audit detail.
+
+Before changing behavior that already has certified, measured, or human-rated
+evidence, name the last-known-good baseline, classify whether the change
+preserves, extends, or replaces it, and list protected invariants before
+editing.
+
+For `tes-tts`, direct OmniVoice execution is not enough to claim equivalence.
+Protect the full recipe: runtime route, voice profile, latency profile,
+`num_step`, language, prosody warmup, chunking, punctuation treatment,
+redaction, exact islands, source immutability, no-summary behavior, playback
+path, and combined-WAV review authority. Any change to those surfaces needs a
+same-input comparison. If a regression appears, stop, revert, or gate the new
+path behind explicit opt-in instead of stacking special cases.
+
+Avoid narrow literal lists in runtime code unless they are governed data,
+schema, or contract backed. Example-specific fixes are regression seeds.
+
+</regression_guard>
+
 <mantra_gate>
 
 Before state-changing actions, use the TES Mantra Gate. When the gate permits
