@@ -42,6 +42,17 @@ every prompt when a range is enough.
 | `scripts/tes_tts_omnivoice_provider_oracle.py` | Optional OmniVoice provider safety oracle. | active |
 | `scripts/tes_tts_roadmap_partition_oracle.py` | Dashboard, registry, and history partition oracle. | active |
 
+## SUB-001 Subtitle Emission (opt-in)
+
+| Item | Detail |
+|------|--------|
+| Surface | `scripts/tes_tts_omnivoice_provider.py` `serve` request field `emit_subtitle` (default false). |
+| Response | Adds `subtitle_text` = `prepared.redacted_text` (secret-free spoken text), only when requested. |
+| Privacy | Honors `source_text_immutable`: raw source is never emitted; only the post-redaction version that was spoken. |
+| Consumer | External `~/Dev/tes-tts-player` (separate project); player writes its own align mirror, never the producer tree. |
+| Live evidence | Request with `sk-…SECRET` returned `My key is [REDACTED_SECRET] here.` (redaction_count 1); default request emitted no subtitle field. 20 tes-tts oracles PASS. |
+| Release | Delivered behavior; version bump 0.3.158 → 0.3.159 + `docs/dist/0.3.159/**` intentionally deferred to the next release cycle (owner decision). |
+
 ## Benchmark Fixtures
 
 | Surface | Role | Status |

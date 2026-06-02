@@ -74,12 +74,15 @@ durable conversion cache, or proactive `speak`.
   `TES-TTS-LAB-STREAMING-LATENCY-ROADMAP.md`; MLX/streaming lab artifacts are
   obsolete and removed. The canonical direct OmniVoice runtime remains
   required when the optional provider is configured.
+- SUB-001: `serve` opt-in `emit_subtitle` returns redacted `subtitle_text` for the external player's captions; verified live. Registry holds detail.
 
 ## Next Cut
 No active OmniVoice lab cut. A future round must start from fresh community
 evidence, reinstall in disposable runtime space, and beat the documented
 PyTorch/MPS quality baseline by same-input human review. Sync status remains
-`REMOTE_SYNC_NOT_REQUESTED`.
+`REMOTE_SYNC_NOT_REQUESTED`. SUB-001 is delivered behavior with the version
+bump intentionally deferred (owner decision): committed at the current version;
+the next release cycle must advance 0.3.158 → 0.3.159 with `docs/dist/0.3.159/**`.
 
 ## Maintenance Rules
 - Hard limit: 100 lines. Review zone starts at 75 lines.

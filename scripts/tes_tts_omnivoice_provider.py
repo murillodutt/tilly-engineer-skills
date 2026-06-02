@@ -3341,6 +3341,10 @@ def command_serve(args: argparse.Namespace) -> int:
                 raise ValueError("request.text must be a non-empty string")
             request_id = str(request.get("id") or f"utterance-{served:04d}")
             language = str(request.get("language") or args.language)
+            # Opt-in: when the caller asks for subtitle data, the response carries
+            # the already-redacted spoken text (never the raw source) so a consumer
+            # can render synced captions. Default stays text-free.
+            emit_subtitle = bool(request.get("emit_subtitle", False))
             output_value = request.get("output")
             output = (
                 Path(output_value)
@@ -3385,6 +3389,14 @@ def command_serve(args: argparse.Namespace) -> int:
                     "model_reused": True,
                     "voice_prompt_reused": True,
                     **audio_metrics,
+                    # Opt-in subtitle payload: redacted (secret-free) spoken text
+                    # only. Honors source_text_immutable — the raw source is never
+                    # emitted; this is the post-redaction version that was spoken.
+                    **(
+                        {"subtitle_text": text_info["prepared"]["redacted_text"]}
+                        if emit_subtitle
+                        else {}
+                    ),
                     "request_total_ms": request_wall_ms,
                     "request_wall_ms": request_wall_ms,
                 }
