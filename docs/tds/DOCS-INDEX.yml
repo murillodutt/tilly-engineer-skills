@@ -533,148 +533,8 @@ documents:
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-REQUIRED.md
-    id: roadmap.tes_tts_owner_decision_required
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
   - path: docs/roadmap/tes-tts/TES-TTS-EXPLICIT-OWNER-DECISION.md
     id: roadmap.tes_tts_explicit_owner_decision
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-PENDING.md
-    id: roadmap.tes_tts_owner_decision_pending
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-PENDING.md
-    id: roadmap.tes_tts_owner_decision_still_pending
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-REQUIRED.md
-    id: roadmap.tes_tts_owner_decision_still_required
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-REQUIRED.md
-    id: roadmap.tes_tts_owner_decision_remains_required
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-OPEN.md
-    id: roadmap.tes_tts_owner_decision_open
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-UNRESOLVED.md
-    id: roadmap.tes_tts_owner_decision_unresolved
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-UNRESOLVED.md
-    id: roadmap.tes_tts_owner_decision_still_unresolved
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED.md
-    id: roadmap.tes_tts_owner_decision_continues_unresolved
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED.md
-    id: roadmap.tes_tts_owner_decision_remains_unresolved
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED.md
-    id: roadmap.tes_tts_owner_decision_still_remains_unresolved
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-UNRESOLVED-AGAIN.md
-    id: roadmap.tes_tts_owner_decision_unresolved_again
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-UNRESOLVED-AGAIN.md
-    id: roadmap.tes_tts_owner_decision_still_unresolved_again
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED-AGAIN.md
-    id: roadmap.tes_tts_owner_decision_continues_unresolved_again
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED-AGAIN.md
-    id: roadmap.tes_tts_owner_decision_remains_unresolved_again
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED-AGAIN.md
-    id: roadmap.tes_tts_owner_decision_still_remains_unresolved_again
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-OPEN-AGAIN.md
-    id: roadmap.tes_tts_owner_decision_remains_open_again
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-OPEN-AGAIN.md
-    id: roadmap.tes_tts_owner_decision_still_open_again
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-CONTINUES-OPEN-AGAIN.md
-    id: roadmap.tes_tts_owner_decision_continues_open_again
-    class: roadmap
-    status: active
-    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
-    source_of_truth: false
-    evidence_level: L2
-  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-OPEN-YET-AGAIN.md
-    id: roadmap.tes_tts_owner_decision_remains_open_yet_again
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
@@ -1119,6 +979,13 @@ documents:
     class: roadmap
     status: active
     consumer: maintainers, tes-tts maintainers, release reviewers, and sync operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/tes-tts/TES-TTS-OWNER-DECISION-HISTORY.md
+    id: roadmap.tes_tts_owner_decision_history
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-tts maintainers, execution agents, and release reviewers
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/tes-tts/TES-TTS-SPEC-001-roadmap-compaction-agent-default-language.md

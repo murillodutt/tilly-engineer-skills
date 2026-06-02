@@ -442,6 +442,10 @@ def literal_spans(redacted_text: str) -> list[Span]:
         )
     for match in IPV4_PATTERN.finditer(redacted_text):
         ip_address = match.group(0)
+        # A dotted-quad preceded by a version label is a version number, not an
+        # IP — do not verbalize "1.2.3.4" as "IP 1 ponto 2..." (audit P-LOW).
+        if has_label_before(redacted_text, match.start(), ("versao", "versão", "version", "v")):
+            continue
         if all(0 <= int(part) <= 255 for part in ip_address.split(".")):
             label_present = has_label_before(redacted_text, match.start(), ("ip",))
             rendered_ip = " ponto ".join(ip_address.split("."))

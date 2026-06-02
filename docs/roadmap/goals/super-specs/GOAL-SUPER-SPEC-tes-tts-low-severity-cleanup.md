@@ -17,10 +17,40 @@ Canonical artifact:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-low-severity-cleanup.md`
 
 Current execution unit:
-`LSC-001`
+`closed locally — CONVERGENCE`
 
 Ready prompt:
-`LSC-001 (analise → correção → certificação → local commit)`
+`none — remediation sequence converged`
+
+## Execution Record (2026-06-02)
+
+Triaged each low-severity item: fix when objective and safe, justify otherwise.
+
+Fixed (objective):
+- IPv4-vs-version (`classifier.py`): a dotted-quad preceded by a version label
+  (`versao`/`versão`/`version`/`v`) is no longer verbalized as an IP. Guarded by
+  a regression case in `runtime-ir-fixtures.json` (`runtime-ir-version-not-ip`).
+  Verified `IP 10.0.0.7` still renders as an IP (no regression). Suite 20/20.
+- OWNER-DECISION doc bloat (W-LOW): the 20 redundant `TES-TTS-OWNER-DECISION-*`
+  records (TTS-011..031, ~85-90% identical) were consolidated into a single
+  `TES-TTS-OWNER-DECISION-HISTORY.md` lineage table; 20 files removed, 20 TDS
+  index entries removed + 1 added, INDEX.md table reduced 20→1. tds, ref-graph,
+  roadmap-partition all PASS (the prior cross-references were backticks, not
+  markdown links, so nothing broke). OWNER-001/APPROVAL/EXPLICIT preserved.
+
+Justified (left as-is, no forced change):
+- PATH accent truncation: the final `spoken_text` preserves the accented path
+  intact (`/home/joão/config.txt`); the truncation is internal to the span and
+  does not corrupt the spoken result. Not a defect in the delivered output.
+- `verbalize_ir` ordering, `combine_wav_files` silent drop, read-profile flag
+  override, `torch.load(weights_only=False)`: contract/edge fragilities with no
+  observed manifestation on the real path; changing them risks regression for
+  marginal benefit. Recorded, not changed.
+- dead code in `hot_path_span_matcher_oracle` (`literal_spans`/`protected_spans`
+  unused, would NameError if called): inert; the oracle uses
+  `tes_tts_runtime.match_spans`. Cascade removal disproportionate to a LOW.
+- AST guard in `candidate_review_oracle`: scans only its own source, no attacker
+  vector — info-level, left as-is.
 
 Prior line:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-audio-audit-resolver.md`

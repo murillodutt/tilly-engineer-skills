@@ -171,27 +171,8 @@ turning the repository root into an inventory.
 | TES TTS skill roadmap history | `roadmap/tes-tts/TES-TTS-SKILL-ROADMAP-HISTORY.md` |
 | TES TTS acceptance and release decision | `roadmap/tes-tts/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | TES TTS owner approval gate | `roadmap/tes-tts/TES-TTS-OWNER-APPROVAL-GATE.md` |
-| TES TTS owner decision required | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-REQUIRED.md` |
+| TES TTS owner decision history (TTS-011..031) | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-HISTORY.md` |
 | TES TTS explicit owner decision | `roadmap/tes-tts/TES-TTS-EXPLICIT-OWNER-DECISION.md` |
-| TES TTS owner decision pending | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-PENDING.md` |
-| TES TTS owner decision still pending | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-PENDING.md` |
-| TES TTS owner decision still required | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-REQUIRED.md` |
-| TES TTS owner decision remains required | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-REQUIRED.md` |
-| TES TTS owner decision open | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-OPEN.md` |
-| TES TTS owner decision unresolved | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-UNRESOLVED.md` |
-| TES TTS owner decision still unresolved | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-UNRESOLVED.md` |
-| TES TTS owner decision continues unresolved | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED.md` |
-| TES TTS owner decision remains unresolved | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED.md` |
-| TES TTS owner decision still remains unresolved | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED.md` |
-| TES TTS owner decision unresolved again | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-UNRESOLVED-AGAIN.md` |
-| TES TTS owner decision still unresolved again | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-UNRESOLVED-AGAIN.md` |
-| TES TTS owner decision continues unresolved again | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-CONTINUES-UNRESOLVED-AGAIN.md` |
-| TES TTS owner decision remains unresolved again | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-UNRESOLVED-AGAIN.md` |
-| TES TTS owner decision still remains unresolved again | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-REMAINS-UNRESOLVED-AGAIN.md` |
-| TES TTS owner decision remains open again | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-OPEN-AGAIN.md` |
-| TES TTS owner decision still open again | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-STILL-OPEN-AGAIN.md` |
-| TES TTS owner decision continues open again | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-CONTINUES-OPEN-AGAIN.md` |
-| TES TTS owner decision remains open yet again | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-REMAINS-OPEN-YET-AGAIN.md` |
 | TES TTS normalization architecture SPEC | `roadmap/tes-tts/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
 | TES TTS normalization execution SPEC | `roadmap/tes-tts/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
 | TES TTS normalization fixture schema | `roadmap/tes-tts/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` |
