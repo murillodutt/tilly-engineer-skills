@@ -1016,6 +1016,13 @@ documents:
     consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-audio-audit-resolver.md
+    id: roadmap.goal_super_spec_tes_tts_audio_audit_resolver
+    class: roadmap
+    status: proposed
+    consumer: maintainers, tes-tts maintainers, adapter authors, validation authors, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTE-000-preflight-latency-baseline.md
     id: roadmap.goal_prompt_tes_tts_rte_000_preflight_latency_baseline
     class: roadmap

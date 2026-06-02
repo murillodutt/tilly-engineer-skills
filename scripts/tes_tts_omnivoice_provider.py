@@ -216,7 +216,12 @@ def command_probe(args: argparse.Namespace) -> int:
             "allows_install": False,
             "allows_download": False,
             "allows_global_config_write": False,
-            "certifies_provider_support": available,
+            # `environment_usable` reports what the probe actually measures (the
+            # optional local OmniVoice env works). `certifies_provider_support`
+            # is a distinct claim — "certified for redistribution" — which TES
+            # never asserts (ADR 0004), so it stays False regardless of the env.
+            "environment_usable": available,
+            "certifies_provider_support": False,
             "evidence": evidence,
             "reason": reason,
         }

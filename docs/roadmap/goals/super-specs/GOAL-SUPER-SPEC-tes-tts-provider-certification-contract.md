@@ -17,10 +17,32 @@ Canonical artifact:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-provider-certification-contract.md`
 
 Current execution unit:
-`PCC-001`
+`closed locally`
 
 Ready prompt:
-`PCC-001 (analise → owner decision → correção → certificação → local commit)`
+`next line: audio-audit-resolver (W-3)`
+
+## Execution Record (2026-06-02)
+
+- PCC-001 DONE: surfaced the decision. Confirmed the same key meant two things:
+  the live probe emitted `certifies_provider_support = available` (true when the
+  optional env is usable), while the oracle/ADR require `false` (certified for
+  redistribution). **Owner decision: rename the probe key** — report what the
+  probe measures separately from the certification claim.
+- PCC-002 DONE: the probe (`tes_tts_omnivoice_provider.py:223-224`) now emits
+  `environment_usable` (the real measurement) and a fixed
+  `certifies_provider_support: False` (ADR-aligned). The
+  `omnivoice_provider_oracle` now asserts the live value
+  (`certifies_provider_support is not False` fails; `environment_usable` must be
+  bool) — closing the gap that let P-3 hide. `environment_usable` added to
+  `REQUIRED_PROBE_KEYS`.
+- PCC-003 CERTIFY: live probe now reports `certifies_provider_support=False`,
+  `environment_usable=True`, `status=provider_available`. provider oracle PASS,
+  provider_probe oracle PASS, full suite PASS 20/20. No skill doc referenced the
+  key (no documental drift); the `status` command does not emit it. Governed
+  gates (materialize/tds) PASS.
+- Release identity: provider is a bundled helper; same `DELIVERED_BEHAVIOR_GLOBS`
+  condition as P-1 — bump/bundle DEFERRED to an owner decision.
 
 Prior line:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-language-inference-hardening.md`

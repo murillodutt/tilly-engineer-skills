@@ -119,6 +119,7 @@ REQUIRED_PROBE_KEYS = {
     "allows_install",
     "allows_download",
     "allows_global_config_write",
+    "environment_usable",
     "certifies_provider_support",
     "evidence",
     "reason",
@@ -752,6 +753,12 @@ def run_probe() -> tuple[dict[str, Any] | None, list[str]]:
         failures.append("probe must not download models")
     if payload.get("allows_global_config_write") is not False:
         failures.append("probe must not write global config")
+    # P-3: the live probe must never certify provider support, even when the
+    # optional environment is usable. Usability is reported via environment_usable.
+    if payload.get("certifies_provider_support") is not False:
+        failures.append("probe must not certify provider support (ADR 0004)")
+    if not isinstance(payload.get("environment_usable"), bool):
+        failures.append("probe must report environment_usable as a bool")
     if payload.get("status") not in {"provider_available", "provider_not_available"}:
         failures.append("probe status is invalid")
     return payload, failures
