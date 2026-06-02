@@ -138,4 +138,4 @@ config writes, version bump, or proactive `speak` behavior.
 ## Next Prompt
 
 Ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-007-exact-island-protected-span-hardening.md`
+Prompt artifact purged from tracked source on 2026-06-02

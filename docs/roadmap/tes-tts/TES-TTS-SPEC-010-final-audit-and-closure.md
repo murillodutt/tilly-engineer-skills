@@ -103,7 +103,7 @@ Next decision gate:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md`
 
 Next ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md`
+Prompt artifact purged from tracked source on 2026-06-02
 
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 

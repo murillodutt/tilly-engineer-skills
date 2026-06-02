@@ -18,7 +18,7 @@ Current execution unit:
 `OPW-001 Controlled Prosody Warmup Runtime Option`
 
 Ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-OPW-001-controlled-prosody-warmup-runtime-option.md`
+Prompt artifact purged from tracked source on 2026-06-02
 
 ## Purpose
 

@@ -57,7 +57,7 @@ link, path, and code fence. No provider, dependency, global state, durable
 cache, release, or sync action was introduced.
 
 Next ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md`.
+Prompt artifact purged from tracked source on 2026-06-02.
 
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 

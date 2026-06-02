@@ -83,7 +83,7 @@ No provider was installed, downloaded, bundled, certified, or claimed as
 supported.
 
 Next ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md`.
+Prompt artifact purged from tracked source on 2026-06-02.
 
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 

@@ -77,7 +77,7 @@ Closure evidence:
   this cycle; running it would include the same unrelated `.agents/**` drift.
 
 Next ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md`.
+Prompt artifact purged from tracked source on 2026-06-02.
 
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 

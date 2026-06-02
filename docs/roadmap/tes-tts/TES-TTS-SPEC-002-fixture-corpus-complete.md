@@ -54,7 +54,7 @@ schema expansion was needed.
 `no_summary: true` remains mandatory for every corpus entry.
 
 Next ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md`.
+Prompt artifact purged from tracked source on 2026-06-02.
 
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 

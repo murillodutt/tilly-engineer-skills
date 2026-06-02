@@ -270,10 +270,9 @@ and remaining release identity decision instead.
 
 ## Current Ready /goal Prompt
 
-Prompt artifact:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md`
-
-Use this prompt to start the next sequential execution cycle:
+No tracked ready prompt remains. Prompt artifacts were purged from tracked
+source on 2026-06-02 because they are execution residue, not package
+governance. Use this archived text only as historical context:
 
 ```text
 /goal Continue TES TTS sequential convergence.
@@ -301,8 +300,8 @@ Certified evidence from prior cycle:
 - TTS-031 made no provider certification claim and performed no sync, release,
   push, tag, publish, provider install, provider download, real provider probe,
   global config write, durable conversion cache, or proactive `speak` behavior.
-- Ready prompt artifact exists but must be rewritten before reuse:
-  docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-032-owner-decision-still-open-yet-again.md.
+- The former ready prompt artifact was purged from tracked source on
+  2026-06-02 and must not be recreated as package governance.
 - TTS-031 focused oracles passed:
   - `python3 scripts/tes_tts_fixture_schema_oracle.py --self-test`
   - `python3 scripts/tes_tts_instruction_normalizer_oracle.py --self-test`

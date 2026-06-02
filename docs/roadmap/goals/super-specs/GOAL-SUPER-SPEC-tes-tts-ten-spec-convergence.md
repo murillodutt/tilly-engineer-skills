@@ -104,19 +104,12 @@ Next owner-decision gate:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md`
 
 Next ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md`
+none. Prompt artifacts were purged from tracked source on 2026-06-02; the
+durable continuation authority is the owner-decision gate Super SPEC above.
 
-SPEC-001 through SPEC-010 prompts are retained as historical execution evidence:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-001-roadmap-compaction-agent-default-language.md`
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-002-fixture-corpus-complete.md`
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-003-deterministic-instruction-normalizer.md`
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-004-pronunciation-enrichment-rules.md`
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-005-provider-probe-no-write.md`
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md`
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-007-optional-translation-layer.md`
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-008-optional-g2p-pronunciation-provider-layer.md`
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md`
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-010-final-audit-and-closure.md`
+SPEC-001 through SPEC-010 prompt artifacts were purged from tracked source on
+2026-06-02. Their durable outcomes remain in the SPEC result documents and
+roadmap history.
 
 ## Subagent Ownership
 

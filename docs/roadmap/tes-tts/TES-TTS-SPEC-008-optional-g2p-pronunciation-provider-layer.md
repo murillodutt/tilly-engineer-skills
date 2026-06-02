@@ -80,7 +80,7 @@ No provider was installed, downloaded, bundled, certified, or claimed as
 supported.
 
 Next ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-009-release-identity-sync-readiness.md`.
+Prompt artifact purged from tracked source on 2026-06-02.
 
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 

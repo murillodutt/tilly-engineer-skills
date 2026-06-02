@@ -48,7 +48,7 @@ IPA, SSML, phoneme, provider-backed, and translation claims inside hints.
 Hebrew and provider-backed pronunciation remain explicitly degraded.
 
 Next ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-005-provider-probe-no-write.md`.
+Prompt artifact purged from tracked source on 2026-06-02.
 
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 

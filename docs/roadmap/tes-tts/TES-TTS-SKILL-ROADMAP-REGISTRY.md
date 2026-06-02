@@ -70,13 +70,7 @@ every prompt when a range is enough.
 | `docs/roadmap/tes-tts/TES-TTS-RUNTIME-PYTHON-OPTIMIZATION-AUDIT.md` | Provider hot-path optimization audit and target map. | active |
 | `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-global-runtime.md` | Global user-level OmniVoice runtime migration authority. | active |
 | `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-omnivoice-prosody-warmup.md` | Controlled OmniVoice prosody warmup quality line. | active |
-| `docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-OPW-001-controlled-prosody-warmup-runtime-option.md` | Ready circular prompt for the first provider-tag warmup runtime option. | active |
-| `docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTO-001-provider-hot-path-split.md` | Executed circular prompt for provider hot-path split. | historical |
-| `docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTO-002-provider-oracle-partition.md` | Executed circular prompt for provider oracle partition. | historical |
-| `docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTO-003-timing-attribution-cleanup.md` | Executed circular prompt for provider timing attribution cleanup. | historical |
-| `docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTO-004-direct-kernel-boundary-hardening.md` | Executed circular prompt for direct kernel boundary hardening. | historical |
-| `docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-RTO-005-instruction-normalizer-runtime-alignment.md` | Executed circular prompt for instruction-normalizer runtime alignment and local RTO closure. | historical |
-| `docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TFA-001-buffered-first-audio-benchmark.md` | Executed circular prompt for buffered first-audio benchmark and implementation. | historical |
+| Purged tes-tts prompt artifacts | Execution prompts are local run residue and no longer package governance. | purged 2026-06-02 |
 | `docs/roadmap/tes-tts/TES-TTS-TFA-001-BUFFERED-FIRST-AUDIO-BENCHMARK.md` | TFA-001 benchmark result, first-audio metrics, and local closure. | active |
 | `docs/roadmap/tes-tts/TES-TTS-LAB-STREAMING-LATENCY-ROADMAP.md` | Archived lab roadmap for Apple Silicon scheduling, cross-fade, and TypeScript queue player evidence. | historical |
 | `docs/roadmap/tes-tts/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` | Release identity decision record. | active |
@@ -85,12 +79,12 @@ every prompt when a range is enough.
 
 | Range | Meaning | Status |
 |-------|---------|--------|
-| `GOAL-PROMPT-tes-tts-TTS-000*.md` through `TTS-032*.md` | Baseline, acceptance, and owner-decision prompts. | historical |
+| Prompt lineage TTS-000 through TTS-032 | Baseline, acceptance, and owner-decision execution prompts purged from tracked source. | purged 2026-06-02 |
 | `TES-TTS-OWNER-*.md` | Owner-decision records TTS-010 through TTS-031. | historical |
 | `TES-TTS-SPEC-001-*.md` through `TES-TTS-SPEC-010-*.md` | Ten-SPEC convergence draft/result set. | historical |
-| `TES-TTS-CAP-*.md` and matching prompts | Capability migration and conversational rendering sequence. | historical |
-| `TES-TTS-LEX-*.md` and matching prompts | PT-BR lexical foundation sequence. | historical |
-| `TES-TTS-RTE-*.md` and matching prompts | Runtime engine and latency sequence. | historical |
+| `TES-TTS-CAP-*.md` | Capability migration and conversational rendering sequence. | historical |
+| `TES-TTS-LEX-*.md` | PT-BR lexical foundation sequence. | historical |
+| `TES-TTS-RTE-*.md` | Runtime engine and latency sequence. | historical |
 
 ## Indexing Rule
 

@@ -37,7 +37,7 @@ in:
 
 - `docs/roadmap/tes-tts/TES-TTS-SKILL-ROADMAP.md`
 - `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md`
-- `docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-TTS-012-explicit-owner-decision.md`
+- Prompt artifact purged from tracked source on 2026-06-02
 
 Future cycles must either update the roadmap with the current unit status,
 ready prompt pointer, and evidence artifact, or record an explicit no-change
@@ -52,7 +52,7 @@ rationale in the roadmap before closure.
 | Sync | Still forbidden. |
 | Provider behavior | Still mocked/no-write and non-certifying. |
 | Roadmap update | Mandatory for every future `tes-tts` cycle. |
-| Next prompt | `GOAL-PROMPT-tes-tts-TTS-013-owner-decision-pending.md`. |
+| Next prompt | Prompt artifact purged from tracked source on 2026-06-02. |
 
 ## Next Owner Decision
 

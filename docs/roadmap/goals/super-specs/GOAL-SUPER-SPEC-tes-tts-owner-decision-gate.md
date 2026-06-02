@@ -51,7 +51,7 @@ Next execution gate:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-capability-migration.md`
 
 Next ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-001-portable-capability-migration.md`
+Prompt artifact purged from tracked source on 2026-06-02
 
 ## Execution Rule
 
@@ -71,4 +71,4 @@ exists to receive a decision, not to loop.
 ## Ready Prompt
 
 Archived prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-OWNER-001-acceptance-release-sync-decision.md`
+Prompt artifact purged from tracked source on 2026-06-02

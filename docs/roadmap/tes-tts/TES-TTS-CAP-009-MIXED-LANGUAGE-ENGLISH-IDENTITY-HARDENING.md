@@ -72,4 +72,4 @@ CAP-009 introduced these required fixtures:
 ## Next Prompt
 
 Ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md`
+Prompt artifact purged from tracked source on 2026-06-02

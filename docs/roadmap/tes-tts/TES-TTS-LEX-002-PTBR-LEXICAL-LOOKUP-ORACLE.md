@@ -37,4 +37,4 @@ did not vendor the full dictionary; and did not perform release, sync, push,
 tag, publish, provider install, provider download, or provider certification.
 
 Next prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-LEX-003-spoken-rendering-integration-boundary.md`.
+Prompt artifact purged from tracked source on 2026-06-02.

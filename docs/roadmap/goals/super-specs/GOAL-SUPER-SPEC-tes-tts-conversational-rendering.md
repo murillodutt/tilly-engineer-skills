@@ -21,7 +21,7 @@ First execution unit:
 `docs/roadmap/tes-tts/TES-TTS-CAP-006-CONVERSATIONAL-SPOKEN-RENDERING.md`
 
 Ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-010-conversational-rendering-final-audit.md`
+Prompt artifact purged from tracked source on 2026-06-02
 
 ADR boundary:
 `docs/adr/0004-tes-tts-pronunciation-normalization-and-enrichment.md`

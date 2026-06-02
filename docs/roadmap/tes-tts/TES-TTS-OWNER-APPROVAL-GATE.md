@@ -33,7 +33,7 @@ Therefore the correct state remains `NEEDS_OWNER_DECISION`.
 | Release identity | Not authorized. |
 | Sync | Still forbidden. |
 | Provider behavior | Still mocked/no-write and non-certifying. |
-| Next prompt | `GOAL-PROMPT-tes-tts-TTS-011-owner-decision-required.md`. |
+| Next prompt | Prompt artifact purged from tracked source on 2026-06-02. |
 
 ## Next Owner Decision
 

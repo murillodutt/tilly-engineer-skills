@@ -52,7 +52,7 @@ limited to local evidence: provider, status, version, languages, license note,
 and reason.
 
 Next ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-SPEC-006-provider-candidate-selection.md`.
+Prompt artifact purged from tracked source on 2026-06-02.
 
 Sync status: `REMOTE_SYNC_NOT_REQUESTED`.
 

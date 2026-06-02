@@ -65,4 +65,4 @@ CAP-008 introduced these required fixtures:
 ## Next Prompt
 
 Ready prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-CAP-009-mixed-language-english-identity-hardening.md`
+Prompt artifact purged from tracked source on 2026-06-02

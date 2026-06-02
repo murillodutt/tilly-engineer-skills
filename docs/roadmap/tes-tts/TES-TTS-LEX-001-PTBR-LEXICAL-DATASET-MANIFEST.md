@@ -102,4 +102,4 @@ no runtime IPA, phoneme, SSML, provider-backed pronunciation claim, full
 dictionary vendoring, release, sync, push, tag, or publish was performed.
 
 Next prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-LEX-002-ptbr-lexical-lookup-oracle.md`.
+Prompt artifact purged from tracked source on 2026-06-02.

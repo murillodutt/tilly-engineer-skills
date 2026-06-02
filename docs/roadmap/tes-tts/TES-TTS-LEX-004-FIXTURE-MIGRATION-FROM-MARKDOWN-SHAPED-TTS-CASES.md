@@ -36,4 +36,4 @@ provider-backed pronunciation, release, sync, push, tag, publish, provider
 install, provider download, or provider certification.
 
 Next prompt:
-`docs/roadmap/goals/prompts/tes-tts/GOAL-PROMPT-tes-tts-LEX-005-ptbr-lexical-final-audit.md`.
+Prompt artifact purged from tracked source on 2026-06-02.
