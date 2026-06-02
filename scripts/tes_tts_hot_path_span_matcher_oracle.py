@@ -12,11 +12,11 @@ import sys
 from typing import Any
 
 import tes_tts_runtime
+from tes_tts_runtime_types import VERSION
 
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/hot-path-span-matcher-fixtures.json"
-VERSION = "0.3.157"
 
 INLINE_CODE_PATTERN = re.compile(r"`([^`]+)`")
 URL_PATTERN = re.compile(r"https?://[^\s),;]+")
@@ -262,7 +262,8 @@ def validate_case(case: dict[str, Any]) -> tuple[list[str], dict[str, Any]]:
 def validate_fixtures(fixtures: dict[str, Any]) -> tuple[list[str], list[dict[str, Any]]]:
     failures = validate_fixture_shape(fixtures)
     observed: list[dict[str, Any]] = []
-    if failures:
+    structural = [f for f in failures if f != "fixture version drifted"]
+    if structural:
         return failures, observed
     proved_kinds: set[str] = set()
     for case in fixtures["cases"]:

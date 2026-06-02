@@ -17,10 +17,28 @@ Canonical artifact:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-oracle-gate-restoration.md`
 
 Current execution unit:
-`OGR-001`
+`closed locally`
 
 Ready prompt:
-`OGR-001 (analise → correção → certificação → local commit)`
+`next line: language-inference-hardening (P-2)`
+
+## Execution Record (2026-06-02)
+
+- OGR-001 DONE: 17 oracles now import `VERSION` from `tes_tts_runtime_types`
+  (single source; 0 hardcoded remain). The version-gate is de-masked — a version
+  drift is reported but no longer skips the behavior cases (`validate_fixtures`
+  filters structural failures from the drift), so a real regression can no
+  longer hide behind drift. Verified: oracles run their cases (observed > 0)
+  even while drifted.
+- OGR-002 DONE: the 11 drifted fixtures re-pinned `0.3.150 → 0.3.157` (version
+  field only; behavioral content unchanged). All oracles go green — proving the
+  behavior was always correct and the red was pure drift.
+- OGR-003 DONE: `scripts/tes_tts_oracles_suite.py` runs all 19 `tes_tts_*_oracle`
+  with `--self-test`; added `tes-tts:oracles` to `package.json` and wired it into
+  `commit:check` after the roadmap-partition oracle. Suite is now gated.
+- Certification: suite PASS 19/19; full `commit:check` green.
+- Protected invariants intact: no runtime helper behavior changed; the P-1
+  `secret_redaction` oracle still passes; fixtures kept their assertions.
 
 Prior line:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-secret-redaction-hardening.md`

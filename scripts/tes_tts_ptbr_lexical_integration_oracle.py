@@ -11,12 +11,12 @@ import sys
 from typing import Any
 
 from tes_tts_ptbr_lexical_lookup_oracle import load_jsonl, lookup_grapheme
+from tes_tts_runtime_types import VERSION
 
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "benchmarks/tes-tts/ptbr-lexical-sample.jsonl"
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/ptbr-lexical-integration-fixtures.json"
-VERSION = "0.3.157"
 SECRET_PATTERN = re.compile(r"\b(?:sk|pk|ghp|gho|ghu|ghs|github_pat)-[A-Za-z0-9_-]{10,}\b")
 TOKEN_PATTERN = re.compile(r"[\wÀ-ÿ]+(?:-[\wÀ-ÿ]+)*", re.UNICODE)
 

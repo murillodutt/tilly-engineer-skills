@@ -12,11 +12,11 @@ from time import perf_counter_ns
 from typing import Any
 
 import tes_tts_instruction_normalizer_oracle as normalizer
+from tes_tts_runtime_types import VERSION
 
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/runtime-latency-fixtures.json"
-VERSION = "0.3.157"
 REPEAT_COUNT = 9
 
 
@@ -147,7 +147,9 @@ def validate_case(case: dict[str, Any]) -> tuple[list[str], dict[str, Any]]:
 def validate_fixtures(fixtures: dict[str, Any]) -> tuple[list[str], list[dict[str, Any]]]:
     failures = validate_shape(fixtures)
     metrics: list[dict[str, Any]] = []
-    if failures:
+    # De-mask the version gate: drift is reported but does not skip the cases.
+    structural = [f for f in failures if f != "fixture version drifted"]
+    if structural:
         return failures, metrics
     for case in fixtures["cases"]:
         case_failures, case_metrics = validate_case(case)

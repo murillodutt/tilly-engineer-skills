@@ -12,11 +12,11 @@ from time import perf_counter_ns
 from typing import Any
 
 import tes_tts_runtime
+from tes_tts_runtime_types import VERSION
 
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/runtime-ir-fixtures.json"
-VERSION = "0.3.157"
 REPEAT_COUNT = 9
 FORBIDDEN_SPOKEN_OUTPUTS = ("ssml", "<speak", "<phoneme", "<lexicon", ".pls")
 EXPECTED_PIPELINE = ["classify", "verbalize", "adapt_plain_text"]
@@ -151,7 +151,11 @@ def validate_case(case: dict[str, Any]) -> tuple[list[str], dict[str, Any]]:
 def validate_fixtures(fixtures: dict[str, Any]) -> tuple[list[str], list[dict[str, Any]]]:
     failures = validate_shape(fixtures)
     observed: list[dict[str, Any]] = []
-    if failures:
+    # De-mask the version gate: a version drift is reported as a failure but must
+    # not skip the behavior cases — otherwise a real regression is hidden behind
+    # the drift. Only a structural failure other than version drift aborts.
+    structural = [f for f in failures if f != "fixture version drifted"]
+    if structural:
         return failures, observed
     for case in fixtures["cases"]:
         case_failures, result = validate_case(case)

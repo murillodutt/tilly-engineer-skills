@@ -8,12 +8,12 @@ import json
 from pathlib import Path
 import sys
 from typing import Any
+from tes_tts_runtime_types import VERSION
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "benchmarks/tes-tts/normalization-fixture.schema.json"
 CORPUS_PATH = ROOT / "benchmarks/tes-tts/normalization-fixtures.json"
-VERSION = "0.3.157"
 
 REQUIRED_FIELDS = {
     "id",

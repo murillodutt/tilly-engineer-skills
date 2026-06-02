@@ -9,12 +9,12 @@ from pathlib import Path
 import sys
 import unicodedata
 from typing import Any
+from tes_tts_runtime_types import VERSION
 
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "benchmarks/tes-tts/ptbr-lexical-sample.jsonl"
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/ptbr-lexical-lookup-fixtures.json"
-VERSION = "0.3.157"
 
 
 def canonical_grapheme(value: str) -> str:

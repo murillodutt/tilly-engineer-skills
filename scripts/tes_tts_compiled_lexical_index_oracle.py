@@ -10,6 +10,7 @@ from pathlib import Path
 import sys
 import unicodedata
 from typing import Any
+from tes_tts_runtime_types import VERSION
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,7 +18,6 @@ LEXICAL_MANIFEST_PATH = ROOT / "benchmarks/tes-tts/ptbr-lexical-sample.jsonl"
 PRONUNCIATION_CATALOG_PATH = ROOT / "benchmarks/tes-tts/pronunciation-catalog-fixtures.json"
 RUNTIME_LATENCY_FIXTURE_PATH = ROOT / "benchmarks/tes-tts/runtime-latency-fixtures.json"
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/compiled-lexical-index-fixtures.json"
-VERSION = "0.3.157"
 FORBIDDEN_RUNTIME_OUTPUTS = {"ipa", "phoneme", "ssml", "pls", "provider_lexicon", "g2p"}
 
 
@@ -343,10 +343,17 @@ def main() -> int:
 
     fixtures = load_json(FIXTURE_PATH)
     index = compile_index()
-    failures = validate_fixture_shape(fixtures)
+    shape_failures = validate_fixture_shape(fixtures)
     observed: list[dict[str, Any]] = []
-    if not failures:
-        failures, observed = validate_index(fixtures, index)
+    # De-mask the version gate: drift is reported but does not skip the index
+    # cases — only a structural failure other than drift aborts them.
+    structural = [f for f in shape_failures if f != "fixture version drifted"]
+    if structural:
+        failures = shape_failures
+    else:
+        index_failures, observed = validate_index(fixtures, index)
+        drift = [f for f in shape_failures if f == "fixture version drifted"]
+        failures = drift + index_failures
     status = "FAIL" if failures else "PASS"
     print(
         json.dumps(

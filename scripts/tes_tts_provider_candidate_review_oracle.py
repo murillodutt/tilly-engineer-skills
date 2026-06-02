@@ -9,12 +9,12 @@ import json
 from pathlib import Path
 import sys
 from typing import Any
+from tes_tts_runtime_types import VERSION
 
 
 ROOT = Path(__file__).resolve().parents[1]
 REVIEW_PATH = ROOT / "benchmarks/tes-tts/provider-candidate-review.json"
 DOC_PATH = ROOT / "docs/roadmap/tes-tts/TES-TTS-PROVIDER-CANDIDATE-REVIEW.md"
-VERSION = "0.3.157"
 
 REQUIRED_FIELDS = {
     "rank",

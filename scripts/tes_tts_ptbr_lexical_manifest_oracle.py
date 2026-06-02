@@ -9,12 +9,12 @@ from pathlib import Path
 import re
 import sys
 from typing import Any
+from tes_tts_runtime_types import VERSION
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "benchmarks/tes-tts/ptbr-lexical-manifest.schema.json"
 SAMPLE_PATH = ROOT / "benchmarks/tes-tts/ptbr-lexical-sample.jsonl"
-VERSION = "0.3.157"
 
 REQUIRED_FIELDS = {
     "id",

@@ -8,11 +8,11 @@ import json
 from pathlib import Path
 import sys
 from typing import Any
+from tes_tts_runtime_types import VERSION
 
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/pronunciation-catalog-fixtures.json"
-VERSION = "0.3.157"
 REQUIRED_ENTRY_KEYS = {
     "id",
     "term",
