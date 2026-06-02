@@ -1,0 +1,189 @@
+# Subagents And Oracles
+
+Use this reference when a materialization tree or `/goal` prompt needs
+specialized ownership, review loops or stronger verification.
+
+## Subagent Rules
+
+Only include subagents when the user asks for delegation, the work is complex,
+or parallel independent ownership materially improves execution.
+
+When included:
+
+1. give each subagent a concrete ownership scope;
+2. keep write scopes disjoint;
+3. tell workers they are not alone in the codebase;
+4. keep reviewer read-only;
+5. keep evidence/oracle tracking separate from implementation;
+6. avoid assigning the immediate blocking task to a subagent;
+7. for strict commit-per-unit queues, prefer centralized material edits and
+   read-only reviewer/oracle subagents unless write scopes are genuinely
+   disjoint;
+8. when write subagents are used in a strict sequence, name the serialized
+   integration point and require the parent executor to certify one unit before
+   the next starts;
+9. close subagents after their bounded task is complete.
+
+## Reusable Roles
+
+### Contracts Senior
+
+Owns schemas, types, fixtures and contract tests.
+
+Use when the slice creates or changes canonical artifacts, DTOs, validation
+rules or fixture matrices.
+
+### Runtime Senior
+
+Owns runtime modules and integration boundaries.
+
+Use when the slice implements behavior after contracts are established.
+
+### Tests Senior
+
+Owns focused tests, adversarial cases, fixtures and regression selection.
+
+Use when behavior must be certified before broader gates.
+
+### Reviewer Senior
+
+Read-only.
+
+Reviews:
+
+1. scope inflation;
+2. forbidden moves;
+3. missing oracles;
+4. public surface drift;
+5. storage or runtime entering the wrong phase;
+6. hidden external access;
+7. uncommitted multi-slice accumulation;
+8. empty commits used as material execution evidence;
+9. broad commits that hide multiple declared units;
+10. missing per-unit sync status;
+11. prior commits or closeouts being treated as execution credit without
+    explicit authorization;
+12. lexical negative greps that confuse valid blocked-state vocabulary with
+    forbidden executable behavior.
+
+### Evidence/Oracle Senior
+
+Owns checklists, commands run, results, gaps, closeout reports and final status.
+
+Use for long or high-stakes goals.
+
+### Storage Senior
+
+Owns persistence, migrations, repositories, idempotency and replay.
+
+Use only when storage is explicitly in phase.
+
+### Docs Senior
+
+Owns specs, reports, documentation lint, indexes and traceability.
+
+Use for documentation-heavy or baseline phases.
+
+### Security/Boundary Senior
+
+Owns authorization boundaries, sensitive data handling, secrets avoidance,
+unsafe access checks and negative grep for safety leakage.
+
+Use when the task touches external access, secrets, auth, privacy, production,
+destructive commands or public surfaces.
+
+## Ownership Template
+
+```text
+<Role> Senior
+Ownership:
+- <path or responsibility>
+Mission:
+- <bounded task>
+Forbidden:
+- <paths/actions out of scope>
+Oracles:
+- <focused checks>
+```
+
+## Oracle Patterns
+
+Prefer focused checks first, then broader checks.
+
+Common oracles:
+
+1. unit or contract tests for changed behavior;
+2. fixture parse or schema validation;
+3. lint on changed files;
+4. typecheck when type surface changes;
+5. markdownlint for docs;
+6. contract verification when contracts change;
+7. migration or DB harness only when storage is in phase;
+8. `git diff --check`;
+9. negative grep for forbidden patterns;
+10. `git show --stat --oneline <commit>` for material-diff proof;
+11. post-commit `git status --short --branch --untracked-files=all`;
+12. final status report.
+
+## Negative Grep Patterns
+
+Use task-specific forbidden words and APIs. Common categories:
+
+1. hidden network execution;
+2. unauthorized storage writes;
+3. public-surface exports;
+4. forbidden providers;
+5. secrets or tokens;
+6. raw payload export;
+7. final interpretation leakage;
+8. bypass or destructive operations.
+
+Example shape:
+
+```text
+rg -n "fetch|getFetcher|service\\.run" <scope>
+rg -n "rawPayloadExported: true|finalInterpretationExported: true" <scope>
+rg -n "password|token|secret|privateKey" <scope>
+```
+
+When a term is valid as a blocked-state enum, reason code or policy field, do
+not use a broad lexical grep that treats the vocabulary itself as a violation.
+Write checks that separate allowed vocabulary from forbidden behavior.
+
+Example:
+
+```text
+# Allowed as policy vocabulary:
+# BLOCKED_BYPASS_REQUIRED, requiresBypass, bypassRequired
+
+# Forbidden as behavior:
+rg -n "solveCaptcha|captchaSolver|bypassAttempted: true|residentialProxy|fakeCredential" <scope>
+```
+
+## Closeout Requirements
+
+For complex goals, require closeout with:
+
+1. execution units executed;
+2. subagents used;
+3. commits;
+4. material-diff evidence for each material unit;
+5. sync status for each unit;
+6. files changed;
+7. oracles run;
+8. failures found and fixed;
+9. boundaries preserved;
+10. pending owner decisions;
+11. final status.
+
+## When Not To Use Subagents
+
+Avoid subagents when:
+
+1. the task is a tiny single-file edit;
+2. the next local step depends immediately on the delegated result;
+3. the write scope cannot be separated;
+4. the work is too ambiguous to delegate safely;
+5. delegation would create more integration risk than value;
+6. the execution contract requires one material commit at a time and the
+   subagent would need to edit overlapping files in parallel.
