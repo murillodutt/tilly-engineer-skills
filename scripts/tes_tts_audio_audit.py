@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 from pathlib import Path
 import re
 import struct
@@ -23,13 +24,36 @@ import wave
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_STT_PYTHON = ROOT / ".tes/runtime/tes-tts/omnivoice/venv/bin/python"
-DEFAULT_STT_MODEL = (
-    ROOT
-    / ".tes/runtime/tes-tts/omnivoice/hf-cache/hub/"
-    "models--openai--whisper-large-v3-turbo/snapshots/"
+_WHISPER_SNAPSHOT = (
+    "hub/models--openai--whisper-large-v3-turbo/snapshots/"
     "41f01f3fe87f28c78e2fbf8b568835947dd65ed9"
 )
+
+
+def _resolve_stt_python() -> Path:
+    """Resolve the STT interpreter: env override, then global $HOME/.tes runtime
+    (where the provider installs OmniVoice), then the legacy project path (W-3)."""
+    env = os.environ.get("TES_TTS_OMNIVOICE_PYTHON")
+    if env:
+        return Path(env)
+    glob = Path.home() / ".tes/runtime/tes-tts/omnivoice/venv/bin/python"
+    legacy = ROOT / ".tes/runtime/tes-tts/omnivoice/venv/bin/python"
+    return glob if glob.exists() else legacy
+
+
+def _resolve_stt_model() -> Path:
+    """Resolve the Whisper model: the standard HuggingFace cache first (where it
+    actually lives), then the global runtime hf-cache, then the legacy path."""
+    hf = Path.home() / ".cache/huggingface" / _WHISPER_SNAPSHOT
+    if hf.exists():
+        return hf
+    glob = Path.home() / ".tes/runtime/tes-tts/omnivoice/hf-cache" / _WHISPER_SNAPSHOT
+    legacy = ROOT / ".tes/runtime/tes-tts/omnivoice/hf-cache" / _WHISPER_SNAPSHOT
+    return glob if glob.exists() else legacy
+
+
+DEFAULT_STT_PYTHON = _resolve_stt_python()
+DEFAULT_STT_MODEL = _resolve_stt_model()
 VERSION = "0.3.157"
 SILENCE_THRESHOLD = 0.005
 NEAR_CLIP_THRESHOLD = 0.95
@@ -460,6 +484,23 @@ def audit_session(args: argparse.Namespace) -> dict[str, Any]:
     audited_chunks: list[dict[str, Any]] = []
     status = "PASS"
     for chunk in chunks:
+        # A missing chunk audio is a flagged finding, not a crash: report it and
+        # move on so the rest of the session still audits (W-3).
+        if not chunk["audio"].exists():
+            status = "NEEDS_REVIEW"
+            audited_chunks.append(
+                {
+                    "id": chunk["id"],
+                    "text": chunk["text"],
+                    "audio": str(chunk["audio"]),
+                    "language": chunk.get("language"),
+                    "text_inspection": inspect_text(chunk["text"]),
+                    "audio_metrics": None,
+                    "stt_comparison": None,
+                    "flags": ["MISSING_CHUNK_AUDIO"],
+                }
+            )
+            continue
         metrics = audio_metrics(chunk["audio"])
         text_report = inspect_text(chunk["text"])
         transcript = stt_by_file.get(chunk["audio"].name)
@@ -625,6 +666,35 @@ def command_self_test(_args: argparse.Namespace) -> int:
         )
         if mixed_domain["status"] != "PASS":
             failures.append("expected mixed technical domain-normalized comparison to pass")
+        # W-3: a missing chunk audio must be a flagged finding, not a crash.
+        missing_root = root / "missing-session"
+        missing_root.mkdir()
+        write_test_wav(missing_root / "combined.wav")
+        missing_wav = missing_root / "001-chunk-missing.wav"  # never written
+        (missing_root / "result.json").write_text(
+            json.dumps({"outputs": [{"id": "chunk-001", "output": str(missing_wav), "language": "pt"}]}),
+            encoding="utf-8",
+        )
+        (missing_root / "chunk-texts.json").write_text(
+            json.dumps({"schema": "tes-tts-test@1", "chunks": [
+                {"id": "chunk-001", "text": "Teste.", "expected_audio": str(missing_wav)}]}),
+            encoding="utf-8",
+        )
+        missing_args = argparse.Namespace(
+            session_dir=str(missing_root), stt=False, stt_python=str(DEFAULT_STT_PYTHON),
+            stt_model=str(DEFAULT_STT_MODEL), stt_language="portuguese", require_stt=False,
+            max_sample_jump=0.7, output=None, strict=False, audit_combined=True,
+        )
+        try:
+            missing_payload = audit_session(missing_args)
+        except FileNotFoundError:
+            failures.append("missing chunk audio must not crash audit_session")
+            missing_payload = None
+        if missing_payload is not None:
+            if missing_payload["status"] != "NEEDS_REVIEW":
+                failures.append("missing chunk audio must flag NEEDS_REVIEW")
+            if "MISSING_CHUNK_AUDIO" not in missing_payload["chunks"][0]["flags"]:
+                failures.append("missing chunk audio must raise MISSING_CHUNK_AUDIO flag")
         if failures:
             print(json.dumps({"status": "FAIL", "failures": failures, "payload": payload}, ensure_ascii=False, indent=2))
             return 1

@@ -17,10 +17,26 @@ Canonical artifact:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-audio-audit-resolver.md`
 
 Current execution unit:
-`AAR-001`
+`closed locally`
 
 Ready prompt:
-`AAR-001 (analise → correção → certificação → local commit)`
+`next line: low-severity-cleanup (P-LOW / W-LOW) — final line`
+
+## Execution Record (2026-06-02)
+
+- AAR-001 DONE: reproduced the crash — a session whose chunk audio is missing
+  raised `FileNotFoundError` in `audit_session`. Extended `command_self_test`
+  with a missing-chunk case (observed failure).
+- AAR-002 DONE: (1) the audited-chunks loop now treats a missing chunk audio as
+  a flagged finding (`MISSING_CHUNK_AUDIO` + `NEEDS_REVIEW`) and continues
+  instead of crashing; (2) `DEFAULT_STT_PYTHON`/`DEFAULT_STT_MODEL` are now
+  resolved (`_resolve_stt_python`/`_resolve_stt_model`): env
+  `TES_TTS_OMNIVOICE_PYTHON` → global `$HOME/.tes` runtime → legacy `ROOT/.tes`,
+  and the model from the real HuggingFace cache first. Added `import os`.
+- AAR-003 CERTIFY: `audio_audit self-test` PASS (missing chunk handled); the STT
+  resolver now finds the global `$HOME/.tes` interpreter (verified present);
+  full suite PASS 20/20.
+- Camada de trabalho: `audio_audit` is not bundled — no `release_identity` bump.
 
 Prior line:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-provider-certification-contract.md`
