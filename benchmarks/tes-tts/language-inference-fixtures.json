@@ -1,5 +1,5 @@
 {
-  "version": "0.3.157",
+  "version": "0.3.158",
   "usage": "language_inference_contract",
   "runtime_output": false,
   "description": "Behavior fixtures for infer_long_read_chunk_language under requested_language='auto'. Asserts mixed pt/en chunk-language inference. The pt default fallback is intentional for genuinely ambiguous chunks (see ambiguous cases).",

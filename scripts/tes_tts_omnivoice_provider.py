@@ -44,7 +44,7 @@ from tes_tts_runtime_types import TTS_BENCHMARK_DIR
 SCRIPT_PATH = Path(__file__).resolve()
 SCRIPT_DIR = SCRIPT_PATH.parent
 ROOT = SCRIPT_DIR.parent.parent if SCRIPT_DIR.name == "bin" and SCRIPT_DIR.parent.name == ".tes" else SCRIPT_PATH.parents[1]
-VERSION = "0.3.157"
+VERSION = "0.3.158"
 DEFAULT_MODEL = "k2-fsa/OmniVoice"
 DEFAULT_LANGUAGE = "pt"
 AUTO_LANGUAGE = "auto"

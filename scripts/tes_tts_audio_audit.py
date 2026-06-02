@@ -54,7 +54,7 @@ def _resolve_stt_model() -> Path:
 
 DEFAULT_STT_PYTHON = _resolve_stt_python()
 DEFAULT_STT_MODEL = _resolve_stt_model()
-VERSION = "0.3.157"
+VERSION = "0.3.158"
 SILENCE_THRESHOLD = 0.005
 NEAR_CLIP_THRESHOLD = 0.95
 BAD_SIMILARITY_THRESHOLD = 0.86
