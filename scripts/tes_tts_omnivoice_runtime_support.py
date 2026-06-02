@@ -588,46 +588,24 @@ def infer_long_read_chunk_language(text: str, requested_language: str) -> str:
         return DEFAULT_LANGUAGE
 
     portuguese_markers = {
-        "agora",
-        "como",
-        "com",
-        "de",
-        "do",
-        "e",
-        "esse",
-        "esses",
-        "ficam",
-        "fonema",
-        "futuros",
-        "nao",
-        "não",
-        "ou",
-        "protege",
-        "real",
-        "suporte",
-        "teste",
-        "usar",
-        "vamos",
+        # high-frequency PT function words (governed stopword data) plus the
+        # original fixture markers, so common Portuguese prose is recognized.
+        "a", "ao", "aos", "agora", "as", "à", "às", "com", "como", "da", "das",
+        "de", "depois", "do", "dos", "e", "em", "essa", "esse", "esses", "está",
+        "eu", "ficam", "foi", "fonema", "futuros", "isso", "já", "mais", "na",
+        "nao", "não", "nas", "no", "nos", "o", "os", "ou", "para", "pela", "pelo",
+        "por", "protege", "que", "real", "são", "se", "ser", "seu", "sistema",
+        "sua", "suporte", "teste", "um", "uma", "usar", "vamos", "é",
     }
     english_markers = {
-        "and",
-        "are",
-        "called",
-        "english",
-        "interface",
-        "language",
-        "limits",
-        "matching",
-        "names",
-        "protocol",
-        "runtime",
-        "string",
-        "technical",
-        "terms",
-        "the",
-        "thresholds",
-        "tree",
-        "provider",
+        # high-frequency EN function words (governed stopword data) plus the
+        # original fixture markers, so common English prose is recognized.
+        "a", "across", "after", "an", "and", "any", "are", "as", "at", "be",
+        "by", "called", "can", "english", "every", "from", "for", "in",
+        "interface", "is", "it", "language", "limits", "matching", "more",
+        "names", "of", "on", "or", "protocol", "provider", "run", "runtime",
+        "string", "technical", "terms", "that", "the", "then", "these",
+        "this", "those", "thresholds", "to", "tree", "was", "will", "with",
     }
     technical_terms = {
         "aho",
@@ -658,6 +636,11 @@ def infer_long_read_chunk_language(text: str, requested_language: str) -> str:
     if english_score >= 4 and portuguese_score == 0:
         return "en"
     if technical_score >= 2 and portuguese_score == 0 and english_score >= 1:
+        return "en"
+    # Proportional signal: when English function words clearly outweigh
+    # Portuguese ones, the chunk is English prose even without technical terms.
+    # Ambiguous or Portuguese-leaning chunks still fall through to the pt default.
+    if english_score >= 2 and english_score > portuguese_score:
         return "en"
     return DEFAULT_LANGUAGE
 

@@ -17,10 +17,30 @@ Canonical artifact:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-language-inference-hardening.md`
 
 Current execution unit:
-`LIH-001`
+`closed locally`
 
 Ready prompt:
-`LIH-001 (analise → correção → certificação → local commit)`
+`next line: provider-certification-contract (P-3)`
+
+## Execution Record (2026-06-02)
+
+- LIH-001 DONE: `benchmarks/tes-tts/language-inference-fixtures.json` (10 cases)
+  and `scripts/tes_tts_language_inference_oracle.py` created; observed FAIL — 3
+  plain-English cases misclassified as `pt`.
+- LIH-002 DONE: `infer_long_read_chunk_language`
+  (`scripts/tes_tts_omnivoice_runtime_support.py`) hardened — marker sets
+  extended with high-frequency PT/EN function words (governed stopword data, not
+  example-specific) and a proportional rule (`english_score >= 2 and
+  english_score > portuguese_score → en`). The technical-term and prefix rules
+  are preserved, so the existing PT/EN/PT technical routing still holds.
+- LIH-003 CERTIFY: new oracle PASS; the `omnivoice_provider_oracle` (authority
+  for the `[pt, en, pt]` and `[en]` chunk-language fixtures) PASS — no
+  regression; full suite PASS 20/20. The runner discovers the new oracle by glob.
+  Governed gates (materialize/tds) PASS.
+- STOP STATE / release: `runtime_support` is a bundled helper, but
+  `DELIVERED_BEHAVIOR_GLOBS` does not list `tes_tts_*` helpers, so
+  `governance-check` reports no bump — same condition as the P-1 line. Version
+  bump/bundle is DEFERRED to an owner decision (release_identity exception).
 
 Prior line:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-oracle-gate-restoration.md`
