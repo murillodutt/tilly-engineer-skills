@@ -67,8 +67,11 @@ Os problemas são localizados, não estruturais.
 2. **🟨🟠 Suíte de oracles vermelha, sem gate e auto-mascarante (W-1).** 11/18
    oracles falham por version drift; nenhum está no `commit:check`; e o
    version-gate faz uma regressão real ficar indistinguível do drift. É grave
-   para a **confiabilidade do desenvolvimento**, mas é camada de trabalho — o
-   adotante não recebe os oracles.
+   para a **confiabilidade do desenvolvimento**, mas é camada de trabalho: os
+   oracles não estão em `HELPER_FILES`/`.tes/bin` nem são runtime instalado, então
+   não falam áudio nem alteram o runtime do adotante. (Nuance de empacotamento:
+   `package.json` não declara `files`, então a fronteira do pacote-fonte é mais
+   frouxa que o bundle; isso não muda a prioridade — W-1 segue gate/dev.)
 
 A inversão a corrigir versus a primeira passada deste report: a regressão de
 oracles fora rotulada "CRÍTICO nº 1". Pela classificação por camada, **o
@@ -105,7 +108,7 @@ sk-proj-ABC… / ghp_… / AKIA… / -----BEGIN PRIVATE KEY-----  →  (intactos
 # Controles que redigem: api_key=, MY_PASSWORD=, APIKEY=, Bearer <token>
 ```
 
-**Mecanismo (3 causas no regex):**
+**Mecanismo (4 causas no regex):**
 1. `_` é caractere de palavra → não há `\b` antes de `token`/`secret`/`password`
    em nomes compostos (`access_token=`, `client_secret=`).
 2. ramo maiúsculo `[A-Z][A-Z0-9_]*(?:KEY|TOKEN|…)` exige ≥1 char antes do sufixo
