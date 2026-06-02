@@ -133,9 +133,11 @@ TES keeps these boundaries:
 
 ## Install OmniVoice For TES
 
-Run these commands from any TES-enabled project. Python 3.11 is the safest
-default for the current TES global runtime path; adjust only when OmniVoice
-upstream requires a different version.
+Run these commands from any TES-enabled project. Installed TES helpers live in
+`.tes/bin/**`; use `scripts/**` only when you are operating inside the TES
+package source tree. Python 3.11 is the safest default for the current TES
+global runtime path; adjust only when OmniVoice upstream requires a different
+version.
 
 ```bash
 mkdir -p "$HOME/.tes/runtime/tes-tts/omnivoice"
@@ -176,8 +178,11 @@ short reference clip; TES currently standardizes on mono 24 kHz WAV for the
 local profile.
 
 ```bash
+TES_TTS_PROVIDER=".tes/bin/tes_tts_omnivoice_provider.py"
+test -f "$TES_TTS_PROVIDER" || TES_TTS_PROVIDER="scripts/tes_tts_omnivoice_provider.py"
+
 mkdir -p "$HOME/.tes/runtime/tes-tts/omnivoice/refs"
-python3 scripts/tes_tts_omnivoice_provider.py normalize-ref \
+python3 "$TES_TTS_PROVIDER" normalize-ref \
   --input /path/to/your-reference.wav \
   --output "$HOME/.tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav"
 ```
@@ -210,15 +215,19 @@ increase latency because the provider has less reliable voice conditioning.
 After installation and profile setup, verify status:
 
 ```bash
-python3 scripts/tes_tts_omnivoice_provider.py status
-python3 scripts/tes_tts_omnivoice_provider.py product-status
+TES_TTS_PROVIDER=".tes/bin/tes_tts_omnivoice_provider.py"
+test -f "$TES_TTS_PROVIDER" || TES_TTS_PROVIDER="scripts/tes_tts_omnivoice_provider.py"
+
+python3 "$TES_TTS_PROVIDER" probe
+python3 "$TES_TTS_PROVIDER" status
+python3 "$TES_TTS_PROVIDER" product-status
 ```
 
 Warm the cache once:
 
 ```bash
-python3 scripts/tes_tts_omnivoice_provider.py warm-cache
-python3 scripts/tes_tts_omnivoice_provider.py warm-cache --dry-run
+python3 "$TES_TTS_PROVIDER" warm-cache
+python3 "$TES_TTS_PROVIDER" warm-cache --dry-run
 ```
 
 A healthy warmed profile reports `voice_prompt_cache_exists: true` on dry run.
@@ -236,7 +245,7 @@ committed, copied into public docs, or treated as portable fixtures.
 Short reads:
 
 ```bash
-python3 scripts/tes_tts_omnivoice_provider.py speak \
+python3 "$TES_TTS_PROVIDER" speak \
   --text "Teste real do TES-TTS com OmniVoice." \
   --output "$HOME/.tes/runtime/tes-tts/omnivoice/provider-cache/audio/latest.wav" \
   --play
@@ -245,7 +254,7 @@ python3 scripts/tes_tts_omnivoice_provider.py speak \
 Optional conversational warmup, for explicit comparison runs only:
 
 ```bash
-python3 scripts/tes_tts_omnivoice_provider.py speak \
+python3 "$TES_TTS_PROVIDER" speak \
   --text "Narração técnica curta para comparação." \
   --prosody-warmup confirmation-en \
   --output "$HOME/.tes/runtime/tes-tts/omnivoice/provider-cache/audio/warmup.wav" \
@@ -262,7 +271,7 @@ Compatibility aliases remain: `technical-streamer` maps to Live and
 `technical-quality` maps to HD.
 
 ```bash
-python3 scripts/tes_tts_omnivoice_provider.py speak-long \
+python3 "$TES_TTS_PROVIDER" speak-long \
   --text "$(cat /path/to/text.txt)" \
   --output-dir "$HOME/.tes/runtime/tes-tts/omnivoice/provider-cache/audio/tes-tts-run" \
   --read-profile technical-live \
@@ -290,7 +299,11 @@ that direction.
 
 ## Troubleshooting
 
-If `status` reports OmniVoice missing, confirm the venv path and run:
+`probe` and `status` auto-resolve
+`~/.tes/runtime/tes-tts/omnivoice/venv/bin/python` before declaring provider
+availability. Pass `--python` only for explicit diagnostics or overrides. If an
+explicit `--python` run reports `provider_runtime_present_but_wrong_interpreter`,
+rerun without `--python` or point it at the runtime venv:
 
 ```bash
 "$HOME/.tes/runtime/tes-tts/omnivoice/venv/bin/python" -c "import omnivoice, torch; print(omnivoice.__version__); print(torch.__version__)"

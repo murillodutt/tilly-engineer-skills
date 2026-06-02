@@ -41,8 +41,10 @@ from tes_tts_omnivoice_runtime_support import (
 from tes_tts_runtime_types import TTS_BENCHMARK_DIR
 
 
-ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.155"
+SCRIPT_PATH = Path(__file__).resolve()
+SCRIPT_DIR = SCRIPT_PATH.parent
+ROOT = SCRIPT_DIR.parent.parent if SCRIPT_DIR.name == "bin" and SCRIPT_DIR.parent.name == ".tes" else SCRIPT_PATH.parents[1]
+VERSION = "0.3.156"
 DEFAULT_MODEL = "k2-fsa/OmniVoice"
 DEFAULT_LANGUAGE = "pt"
 AUTO_LANGUAGE = "auto"
@@ -183,13 +185,23 @@ print(json.dumps(result))
 
 
 def command_probe(args: argparse.Namespace) -> int:
-    evidence = run_python_probe(args.python)
+    provider_python, python_source = resolve_provider_python(args.python)
+    evidence = run_python_probe(provider_python)
     available = (
         evidence.get("omnivoice_importable") is True
         and evidence.get("torch_importable") is True
         and evidence.get("soundfile_importable") is True
     )
     status = "provider_available" if available else "provider_not_available"
+    runtime_present = DEFAULT_LOCAL_PYTHON.exists()
+    reason = "optional OmniVoice environment is usable" if available else "optional OmniVoice environment is not usable"
+    if (
+        not available
+        and runtime_present
+        and python_source == "arg"
+        and not same_executable_path(provider_python, str(DEFAULT_LOCAL_PYTHON))
+    ):
+        reason = "provider_runtime_present_but_wrong_interpreter"
     emit(
         {
             "provider": "omnivoice",
@@ -198,12 +210,15 @@ def command_probe(args: argparse.Namespace) -> int:
             "languages": ["pt", "en"] if available else [],
             "license_note": "OmniVoice package is Apache-2.0; model/license review remains required before redistribution.",
             "runtime_dependency": "optional_external_python_env",
+            "provider_python": provider_python,
+            "provider_python_source": python_source,
+            "provider_runtime_present": runtime_present,
             "allows_install": False,
             "allows_download": False,
             "allows_global_config_write": False,
             "certifies_provider_support": available,
             "evidence": evidence,
-            "reason": "optional OmniVoice environment is usable" if available else "optional OmniVoice environment is not usable",
+            "reason": reason,
         }
     )
     return 0 if available else 2
@@ -1193,7 +1208,7 @@ def product_state_and_next_action(
     if review_html is None or not review_html.exists():
         return (
             "NEEDS_BENCH",
-            "Run: python3 scripts/tes_tts_omnivoice_provider.py bench --play --open --package",
+            "Run: python3 .tes/bin/tes_tts_omnivoice_provider.py bench --play --open --package",
         )
     if decision is None:
         return (
@@ -3431,7 +3446,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     probe = subparsers.add_parser("probe")
-    probe.add_argument("--python", default=sys.executable)
+    probe.add_argument("--python")
     probe.set_defaults(func=command_probe)
 
     status = subparsers.add_parser("status")

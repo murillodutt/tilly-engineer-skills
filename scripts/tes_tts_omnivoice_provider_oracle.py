@@ -26,7 +26,11 @@ PROVIDER_SCRIPT = ROOT / "scripts/tes_tts_omnivoice_provider.py"
 DIRECT_KERNEL_SCRIPT = ROOT / "scripts/tes_tts_omnivoice_direct_kernel.py"
 RUNTIME_SUPPORT_SCRIPT = ROOT / "scripts/tes_tts_omnivoice_runtime_support.py"
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/omnivoice-provider-cases.json"
-VERSION = "0.3.155"
+ADAPTER_TTS_SKILL_DIRS = (
+    ROOT / "src/adapters/codex/skills/tes-tts",
+    ROOT / "src/adapters/claude/skills/tes-tts",
+)
+VERSION = "0.3.156"
 FORBIDDEN_TOP_LEVEL_IMPORTS = {"omnivoice", "torch", "soundfile"}
 PROVIDER_EXTRACTED_IMPORTS = {"select", "threading", "wave"}
 DIRECT_KERNEL_ALLOWED_IMPORTS = {
@@ -109,6 +113,9 @@ REQUIRED_PROBE_KEYS = {
     "languages",
     "license_note",
     "runtime_dependency",
+    "provider_python",
+    "provider_python_source",
+    "provider_runtime_present",
     "allows_install",
     "allows_download",
     "allows_global_config_write",
@@ -636,6 +643,43 @@ def validate_timing_attribution_source_coverage() -> list[str]:
     return failures
 
 
+def validate_adapter_skill_installed_invocation_contract() -> list[str]:
+    failures: list[str] = []
+    forbidden_operational_snippets = (
+        "python3 scripts/tes_tts_omnivoice_provider.py",
+        "`scripts/tes_tts_omnivoice_provider.py status`",
+        "`scripts/tes_tts_runtime.py` only for the fallback provider",
+        "Let `scripts/tes_tts_runtime.py` own generic `spoken_text`",
+    )
+    required_snippets = (
+        ".tes/bin/tes_tts_omnivoice_provider.py probe",
+        ".tes/bin/tes_tts_omnivoice_provider.py speak",
+        ".tes/bin/tes_tts_omnivoice_provider.py speak-long",
+        ".tes/bin/tes_tts_runtime.py",
+        "Installed helpers live under",
+        "use `scripts/**` only while working inside the TES package",
+    )
+    for skill_dir in ADAPTER_TTS_SKILL_DIRS:
+        skill = skill_dir / "SKILL.md"
+        reference = skill_dir / "references/providers-and-fallbacks.md"
+        history = skill_dir / "docs/CONTRACT-HISTORY.md"
+        skill_text = skill.read_text(encoding="utf-8")
+        reference_text = reference.read_text(encoding="utf-8")
+        history_text = history.read_text(encoding="utf-8")
+        combined = f"{skill_text}\n{reference_text}"
+        for snippet in forbidden_operational_snippets:
+            if snippet in combined:
+                failures.append(f"{skill.relative_to(ROOT)} keeps installed-host-invalid helper command: {snippet}")
+        for snippet in required_snippets:
+            if snippet not in combined:
+                failures.append(f"{skill.relative_to(ROOT)} missing installed helper guidance: {snippet}")
+        if "scripts/tes_tts_omnivoice_provider.py` only inside the TES package source tree" not in reference_text:
+            failures.append(f"{reference.relative_to(ROOT)} must preserve source-tree-only exception wording")
+        if "Corrected installed `tes-tts` helper invocation to `.tes/bin/**`" not in history_text:
+            failures.append(f"{history.relative_to(ROOT)} missing installed invocation correction history")
+    return failures
+
+
 def run_provider_json(
     label: str,
     args: tuple[str, ...],
@@ -698,6 +742,10 @@ def run_probe() -> tuple[dict[str, Any] | None, list[str]]:
         failures.append("probe provider drifted")
     if payload.get("runtime_dependency") != "optional_external_python_env":
         failures.append("probe must keep OmniVoice optional")
+    if payload.get("provider_python_source") not in {"arg", "env", "global_auto", "current_python"}:
+        failures.append("probe provider_python_source is invalid")
+    if not isinstance(payload.get("provider_runtime_present"), bool):
+        failures.append("probe must report whether the global runtime python is present")
     if payload.get("allows_install") is not False:
         failures.append("probe must not install providers")
     if payload.get("allows_download") is not False:
@@ -707,6 +755,80 @@ def run_probe() -> tuple[dict[str, Any] | None, list[str]]:
     if payload.get("status") not in {"provider_available", "provider_not_available"}:
         failures.append("probe status is invalid")
     return payload, failures
+
+
+def validate_probe_runtime_resolution_contract() -> list[str]:
+    failures: list[str] = []
+    provider = load_provider_module()
+    original_python = provider.DEFAULT_LOCAL_PYTHON
+    original_probe = provider.run_python_probe
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        fake_python = Path(tmp_dir) / "venv/bin/python"
+        fake_python.parent.mkdir(parents=True)
+        fake_python.write_text("# oracle fake provider python\n", encoding="utf-8")
+        calls: list[str] = []
+
+        def available_probe(python: str) -> dict[str, Any]:
+            calls.append(python)
+            return {
+                "python": python,
+                "omnivoice_importable": True,
+                "torch_importable": True,
+                "soundfile_importable": True,
+                "omnivoice_version": "oracle",
+                "torch_version": "oracle",
+                "mps_available": False,
+                "cuda_available": False,
+            }
+
+        try:
+            provider.DEFAULT_LOCAL_PYTHON = fake_python
+            provider.run_python_probe = available_probe
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = provider.command_probe(argparse.Namespace(python=None))
+            payload = json.loads(stdout.getvalue())
+            if exit_code != 0:
+                failures.append("probe must pass when auto-resolved provider python reports available")
+            if calls != [str(fake_python)]:
+                failures.append("probe must auto-resolve the global runtime python before probing")
+            if payload.get("provider_python") != str(fake_python):
+                failures.append("probe payload must report the resolved runtime python")
+            if payload.get("provider_python_source") != "global_auto":
+                failures.append("probe must report global_auto for the default runtime venv")
+            if payload.get("provider_runtime_present") is not True:
+                failures.append("probe must report present runtime when global runtime python exists")
+
+            calls.clear()
+
+            def unavailable_probe(python: str) -> dict[str, Any]:
+                calls.append(python)
+                return {
+                    "python": python,
+                    "omnivoice_importable": False,
+                    "torch_importable": False,
+                    "soundfile_importable": False,
+                    "omnivoice_version": None,
+                    "torch_version": None,
+                    "mps_available": False,
+                    "cuda_available": False,
+                }
+
+            provider.run_python_probe = unavailable_probe
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = provider.command_probe(argparse.Namespace(python=sys.executable))
+            payload = json.loads(stdout.getvalue())
+            if exit_code != 2:
+                failures.append("probe must return unavailable exit code for an explicit wrong interpreter")
+            if calls != [sys.executable]:
+                failures.append("probe must respect explicit --python for diagnostic checks")
+            if payload.get("reason") != "provider_runtime_present_but_wrong_interpreter":
+                failures.append("probe must distinguish an explicit wrong interpreter from missing provider setup")
+        finally:
+            provider.DEFAULT_LOCAL_PYTHON = original_python
+            provider.run_python_probe = original_probe
+    return failures
 
 
 def run_status_and_dry_run() -> tuple[
@@ -2699,6 +2821,7 @@ def main() -> int:
     source_failures.extend(validate_no_reference_text_logging())
     source_failures.extend(validate_runtime_support_boundary())
     source_failures.extend(validate_timing_attribution_source_coverage())
+    source_failures.extend(validate_adapter_skill_installed_invocation_contract())
     failures.extend(source_failures)
     add_partition(
         partitions,
@@ -2729,6 +2852,7 @@ def main() -> int:
     ) = run_status_and_dry_run()
 
     status_failures = list(probe_failures)
+    status_failures.extend(validate_probe_runtime_resolution_contract())
     status_failures.extend(validate_status_payload(status_payload))
     failures.extend(status_failures)
     add_partition(

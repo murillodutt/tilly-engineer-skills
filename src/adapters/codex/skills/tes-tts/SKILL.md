@@ -14,7 +14,9 @@ execution when it is already configured.
 
 ## Default Path
 
-Use this path inside the TES package repository when the helper scripts exist:
+Use this path from a TES-enabled project. Installed helpers live under
+`.tes/bin/**`; use `scripts/**` only while working inside the TES package
+source tree.
 
 1. Extract only the text to speak.
 2. Choose intent:
@@ -22,16 +24,16 @@ Use this path inside the TES package repository when the helper scripts exist:
    - `faithful_reading` for user text, exact reads, code, commands, or literal
      requests.
 3. If direct OmniVoice is configured, pass the source text to the provider
-   once; do not pre-run `scripts/tes_tts_runtime.py` or pass generic
+   once; do not pre-run `tes_tts_runtime.py` or pass generic
    `spoken_text` into `redacted_source` or `audio_quality`.
 4. For short direct OmniVoice reads:
-   `python3 scripts/tes_tts_omnivoice_provider.py speak --text "<source text>" --output <wav> --text-mode redacted_source`
+   `python3 .tes/bin/tes_tts_omnivoice_provider.py speak --text "<source text>" --output <wav> --text-mode redacted_source`
 5. For long direct OmniVoice reads, use direct resident chunking:
-   `python3 scripts/tes_tts_omnivoice_provider.py speak-long --text "<source text>" --output-dir <tmp-dir> --read-profile technical-live`
+   `python3 .tes/bin/tes_tts_omnivoice_provider.py speak-long --text "<source text>" --output-dir <tmp-dir> --read-profile technical-live`
 6. Use the canonical clone reference through the global direct provider defaults;
    do not upload or recreate the reference voice for normal reads.
 7. If OmniVoice is unavailable, prepare `spoken_text` with
-   `scripts/tes_tts_runtime.py` only for the fallback provider in
+   `.tes/bin/tes_tts_runtime.py` only for the fallback provider in
    `references/providers-and-fallbacks.md`. For macOS `say` fallback, use
    `Felipe (Enhanced)` at rate `255` only when accepted.
 8. Confirm briefly after playback or report `TTS_NOT_AVAILABLE`.
@@ -59,7 +61,7 @@ conversion cache.
 To reduce first-read delay after cache cleanup, run:
 
 ```bash
-python3 scripts/tes_tts_omnivoice_provider.py warm-cache
+python3 .tes/bin/tes_tts_omnivoice_provider.py warm-cache
 ```
 
 ## Validated Long-Read Recipe
@@ -69,7 +71,7 @@ terms when quality matters more than minimum latency. Do not hand-assemble the
 flags; use the code-defined profile so the full recipe moves together:
 
 ```bash
-python3 scripts/tes_tts_omnivoice_provider.py speak-long \
+python3 .tes/bin/tes_tts_omnivoice_provider.py speak-long \
   --text "<source text>" \
   --output-dir "$HOME/.tes/runtime/tes-tts/omnivoice/provider-cache/audio-reference-runs/<run-id>" \
   --read-profile technical-live \
@@ -104,9 +106,9 @@ Two code-defined long-read profiles are valid:
 
 `redacted_source` and `audio_quality` are source-text modes. They must receive
 the original text the user wants spoken and let the direct kernel derive
-request-local provider text. Passing output from `scripts/tes_tts_runtime.py`
-into these modes is a regression because it removes raw technical identities
-and weakens enumeration pauses.
+request-local provider text. Passing output from `tes_tts_runtime.py` into
+these modes is a regression because it removes raw technical identities and
+weakens enumeration pauses.
 
 For punctuation-sensitive reads, avoid sending `:` to OmniVoice when it creates
 audible artifacts; convert it to a safe spoken pause such as `;` in the
@@ -128,7 +130,7 @@ unless the user explicitly requested a tag experiment.
 - Keep source text immutable; only request-local provider text is sent to TTS.
 - Let the direct OmniVoice kernel own redaction, enumeration pauses, and
   provider text for `redacted_source` and `audio_quality`.
-- Let `scripts/tes_tts_runtime.py` own generic `spoken_text` only for fallback
+- Let `tes_tts_runtime.py` own generic `spoken_text` only for fallback
   providers or explicit non-OmniVoice preparation.
 - Redact secrets before TTS. Redaction overrides exact, literal, raw, and
   verbatim requests.
@@ -139,6 +141,10 @@ unless the user explicitly requested a tag experiment.
 
 - Prefer OmniVoice only when already configured and verified.
 - Use direct local OmniVoice execution as the active `tes-tts` path.
+- Use `.tes/bin/tes_tts_omnivoice_provider.py probe` or `status` for health
+  checks in installed projects. Those commands must auto-resolve the global
+  runtime venv before reporting OmniVoice unavailable; pass `--python` only for
+  explicit diagnostics or overrides.
 - Resolve heavy OmniVoice runtime from `~/.tes/runtime/tes-tts/omnivoice` by
   default. Treat project-local `.tes/runtime/tes-tts/omnivoice` only as a
   legacy runtime that may require explicit migration.

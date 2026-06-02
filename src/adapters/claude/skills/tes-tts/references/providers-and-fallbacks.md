@@ -25,7 +25,7 @@ provider settings from this skill. If no provider is available, report
 
 | Provider | Typical tool | Notes |
 |----------|--------------|-------|
-| OmniVoice | `scripts/tes_tts_omnivoice_provider.py status`, then `speak`, `speak-long`, or `bench` | Premium optional local cloned-voice provider when the maintainer has already configured its external Python environment/reference voice. |
+| OmniVoice | `.tes/bin/tes_tts_omnivoice_provider.py status`, then `speak`, `speak-long`, or `bench` | Premium optional local cloned-voice provider when the maintainer has already configured its external Python environment/reference voice. Use `scripts/tes_tts_omnivoice_provider.py` only inside the TES package source tree. |
 | Google TTS | `google_tts` | High-quality voices when credentials and quota exist. |
 | OpenAI TTS | `openai_tts` | Good fallback when OpenAI credentials exist. |
 | ElevenLabs | `elevenlabs_tts` | Voice-rich fallback when credentials exist. |

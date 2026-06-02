@@ -100,6 +100,7 @@ a proactive announcement channel for normal TES status updates.
 | 2026-05-30 | Relocated the local OmniVoice runtime from lab `tmp/**` into `.tes/runtime/tes-tts/omnivoice/**` and kept it gitignored. | Maintainer directive that OmniVoice is no longer a lab install and must not exist in both old and new locations. | high |
 | 2026-05-30 | Added the `tes-tts-local-clone` voice preset as the default resolver for reference audio/text and used `warm-cache` to prebuild the voice prompt. | Maintainer directive to avoid recloning/reprocessing the voice on every first read after cache cleanup. | high |
 | 2026-05-31 | Superseded the project-local OmniVoice runtime with the user-level runtime `~/.tes/runtime/tes-tts/omnivoice`; project `.tes/**` is now lightweight state only and old project runtime is migration-report legacy. | GRT-001 commit `0c77401`; provider status reports `global_runtime`, `legacy_project_runtime`, `active_runtime`, profile, reference WAV, and cache status. | high |
+| 2026-06-02 | Corrected installed `tes-tts` helper invocation to `.tes/bin/**` and required `probe` to auto-resolve the global OmniVoice runtime venv before reporting provider availability. | Private canary field report showed a false `provider_not_available` when `python3` resolved to a system interpreter while the global OmniVoice venv was healthy. | high |
 
 ## Do Not Lose
 
