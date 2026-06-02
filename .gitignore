@@ -18,7 +18,7 @@ tmp/
 .env.*
 
 # Execution prompts are local run residue, not governed package material.
-/docs/roadmap/goals/prompts/tes-tts/
+/docs/roadmap/goals/prompts/
 
 # Local execution diaries, canary sandboxes, and scratch run layers.
 # Governed evidence under docs/evidence/** stays versionable by design.

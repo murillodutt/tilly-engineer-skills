@@ -390,26 +390,6 @@ Stop and report `BLOCKED`, `DEGRADED`, or `NEEDS_REVIEW` when:
 - per-host validation passes silently when the registered server object on
   disk does not match the host adapter contract.
 
-## Execution Prompt
-
-Use this prompt to start the implementation run:
-
-```text
-Execute the Cortex MCP Host Segmentation plan through
-docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md.
-
-Operate as TES maestro. Start with SPEC-000 only. Preserve ADR 0001 and ADR
-0003: Markdown is durable memory truth, MCP is transport, stdio is default,
-HTTP is opt-in and localhost-only without explicit override, and the
-cortex_remember plan-then-apply lane is the only write path. Use specialists
-only for bounded read-only audits or disjoint write scopes. Do not implement
-later units until the current unit has owned files, focused oracles, release
-identity classification, and explicit done criteria. Keep TES generic and
-stop on private vocabulary, non-localhost HTTP without override, exposure of
-bearer secret values, server-contract drift, or any attempt to expand MCP
-authority through an installer flag.
-```
-
 ## Definition Of Complete Host Segmentation
 
 The segmentation is complete only when:

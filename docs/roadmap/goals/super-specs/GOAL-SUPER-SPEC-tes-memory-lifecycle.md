@@ -395,24 +395,6 @@ when delivered behavior changes.
 Exception rule: if the owner explicitly defers the bump, state the deferral in
 the closeout and do not call the package sealed by version identity.
 
-## Execution Prompt
-
-Use this prompt to start the implementation run:
-
-```text
-Execute ADR 0001 through
-docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-memory-lifecycle.md.
-
-Operate as TES maestro. Start with Wave 0 only. Use specialists for bounded
-read-only audits or disjoint write scopes. Do not implement later waves until
-the current wave has a focused oracle, release identity decision, and explicit
-done criteria. Preserve Markdown as durable source of truth, MCP as read-only,
-Field Reports as operational transport, checkpoints as TTL resumability, and
-subagents as parent-return evidence only. Keep TES generic and stop on private
-vocabulary, stale adapter sources, ambiguous release identity, or missing
-oracles.
-```
-
 ## Definition Of Complete ADR Implementation
 
 The ADR is fully implemented only when:

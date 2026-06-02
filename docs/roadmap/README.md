@@ -11,22 +11,28 @@ tver: 0.1.4
 # Roadmap Index
 
 This folder preserves roadmap lineage without turning the roadmap into the
-work. The root is only an index; Current package baseline: TES `0.3.158`.
-
-execution authority lives in the current
-dashboard, Super SPEC, prompt, or audit record for each line.
+work. Current package baseline: TES `0.3.158`. Execution authority lives in the
+current dashboard, Super SPEC, audit record, or runtime oracle for each line.
 
 ## Folder Map
 
 | Folder | Purpose |
 |--------|---------|
 | `goals/super-specs/` | Active and historical Goal Super SPECs. |
-| `goals/prompts/tes-tts/` | TES TTS circular execution prompts. |
+| `goals/prompts/` | Local execution prompts; ignored and not package governance. |
 | `tes-tts/` | TES TTS dashboard, registry, audits, specs, and runtime records. |
 | `product/` | Product-wide roadmap proposals and readiness work. |
 | `archive/v1/` | V1 convergence lineage retained for audit. |
 | `archive/notes/` | Historical continuity notes. |
 | `cortex-*/*` | Existing Cortex execution-unit partitions. |
+
+## Goal Artifact Policy
+
+`docs/roadmap/goals/super-specs/` remains tracked because Super SPECs are
+execution contracts or durable lineage. The 2026-06-02 audit found 26 tracked
+Super SPECs: 15 active, 6 proposed, and 5 archived. `goals/prompts/` is ignored
+because generated goal prompts are execution residue; durable outcomes belong
+in dashboards, registries, history, audits, fixtures, or oracles.
 
 ## Current Lines
 
@@ -55,23 +61,17 @@ dashboard, Super SPEC, prompt, or audit record for each line.
 
 ## TES TTS Navigation
 
-Use `tes-tts/TES-TTS-SKILL-ROADMAP.md` for current state and next action.
-Use `tes-tts/TES-TTS-SKILL-ROADMAP-REGISTRY.md` for durable pointers to
-runtime scripts, fixtures, benchmark records, and grouped prompt ranges.
-Use `tes-tts/TES-TTS-SKILL-ROADMAP-HISTORY.md` for closed lineage and lessons.
-
-TES TTS prompt artifacts are intentionally grouped under
-`goals/prompts/tes-tts/`; do not expand every prompt in this root index.
+Use the TES TTS dashboard for current state, registry for durable pointers, and
+history for closed lineage. TES TTS prompt artifacts were purged from tracked
+source on 2026-06-02; do not recreate prompt files as roadmap governance.
 
 ## Operating Rule
 
 Keep this index short and partitioned:
 
-- Use one row per active product line or grouped historical family.
+- Use one row per active line or grouped historical family.
 - Do not list every prompt, SPEC, audit, or owner-decision record here.
-- Active dashboards carry current decisions.
-- Registries carry dense artifact pointers.
-- History files carry closed lineage.
+- Dashboards carry decisions; registries carry pointers; history carries closed lineage.
 - Every roadmap update must reduce ambiguity for the next executor.
 
 Roadmap partition budgets are enforced by `scripts/validate_doc_size.py`.

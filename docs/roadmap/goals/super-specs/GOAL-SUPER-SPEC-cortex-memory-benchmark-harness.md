@@ -225,26 +225,6 @@ Stop and report `BLOCKED`, `DEGRADED`, or `NEEDS_REVIEW` when:
 - release identity is required but unresolved;
 - a UI or backend is added before the CLI contract is proven.
 
-## Execution Prompt
-
-Use this prompt to start the implementation run:
-
-```text
-Execute the Cortex Memory Benchmark Harness through
-docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md.
-
-Operate as TES maestro. Start with SPEC-000 only. Preserve ADR 0001: Markdown
-is durable memory truth, indexes and benchmark outputs are derived evidence,
-MCP remains read-only, checkpoints are resumability, and no benchmark artifact
-writes Cortex memory. Use specialists only for bounded read-only audits or
-disjoint write scopes. Do not implement later units until the current unit has
-owned files, focused oracles, release identity classification, and explicit
-done criteria. Keep TES generic and stop on private vocabulary, missing recall
-evidence, hidden writes, external dataset import, unresolved release identity,
-or any attempt to make a registry, model output, score, checkpoint, or index
-the memory source of truth.
-```
-
 ## Definition Of Complete Harness Implementation
 
 The harness is complete only when:
