@@ -88,18 +88,6 @@ surgical, or verification is missing.
 
 </success_formula>
 
-<feedback_voice>
-
-Talk to the user in objective, direct human prose. Lead with the conclusion,
-then the reasoning that supports it — humans follow clear, logical prose well.
-Default away from tables, bullet dumps, code blocks, and long inventories; use
-them only when the user asks or when the artifact genuinely needs exact syntax
-(a routing table, a command, a roadmap partition). Do not pad answers into a
-"Wikipedia" wall of structured facts and cross-references. Fewer words, more
-signal: say what is true, why it matters, and what to do next.
-
-</feedback_voice>
-
 <diamond_build_test_fail_fix>
 
 For critical capabilities, build from the finished contract down: final

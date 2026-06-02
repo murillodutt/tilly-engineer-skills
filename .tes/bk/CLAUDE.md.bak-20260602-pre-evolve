@@ -46,9 +46,8 @@ without chat history.
 
 Roadmaps are executive control surfaces — keep each partition organized and
 objective: dashboard for state/next action, registry for durable pointers,
-history for closed lineage, audit records for evidence. When a roadmap reaches
-its size-warning threshold (`scripts/validate_doc_size.py`, default 85% of the
-line limit), partition or compact before adding status. Repeated or ambiguous
+history for closed lineage, audit records for evidence. When a roadmap nears its
+warning budget, partition or compact before adding status. Repeated or ambiguous
 roadmap text is a defect to fix in the same cycle.
 
 </documentation_runtime_focus>
@@ -87,18 +86,6 @@ Success is zero if assumptions are hidden, scope is inflated, changes are not
 surgical, or verification is missing.
 
 </success_formula>
-
-<feedback_voice>
-
-Talk to the user in objective, direct human prose. Lead with the conclusion,
-then the reasoning that supports it — humans follow clear, logical prose well.
-Default away from tables, bullet dumps, code blocks, and long inventories; use
-them only when the user asks or when the artifact genuinely needs exact syntax
-(a routing table, a command, a roadmap partition). Do not pad answers into a
-"Wikipedia" wall of structured facts and cross-references. Fewer words, more
-signal: say what is true, why it matters, and what to do next.
-
-</feedback_voice>
 
 <diamond_build_test_fail_fix>
 
@@ -178,9 +165,7 @@ drift:
 1. Treat the finding as TES product evidence.
 2. Classify the failure before fixing it.
 3. Patch TES source, oracle, docs, adapter, installer, or governance as needed.
-4. Return to the TES canary workspace (`~/Dev/tes-canaries`, the TES project's
-   own named test area — not a client project, so it is allowed in tracked
-   content) and certify the fix with a durable run record.
+4. Return to `~/Dev/tes-canaries` and certify the fix with a durable run record.
 5. Re-run the original project canary to prove the fix.
 6. Repeat on two additional real projects before any commercial-use claim.
 
@@ -220,20 +205,16 @@ evidence, fixtures, commit messages, and tag annotations must use neutral
 placeholder vocabulary only: `target-project`, `canary-project`, `real-project`,
 `<project-A>`, `<storage-backend>`, `<archive-format>`, and similar.
 
-Anything identifying a specific real client/adopter project, product,
-internal-service, repository path under `~/Dev/<client-name>`, or private
-codebase vocabulary belongs in the maintainer's local notes, not in TES tracked
-content. (The TES project's own infrastructure names, such as the
-`~/Dev/tes-canaries` workspace, are not client names and are allowed.) When
-citing a private canary for traceability, use a generic form such as "a private
-canary project (source-of-record kept off TES repository)" and keep the
-identifier local.
+Anything identifying a specific real project, product, internal-service,
+repository path under `~/Dev/<name>`, or private codebase vocabulary belongs in
+the maintainer's local notes, not in TES tracked content. When citing a private
+canary for traceability, use a generic form such as "a private canary project
+(source-of-record kept off TES repository)" and keep the identifier local.
 
-`docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md` defines the mechanism that lets target
-projects declare and enforce their own vocabulary without it being known to TES.
-`scripts/private_vocabulary_oracle.py` runs on every `npm run commit:check`
-against the local allowlist at `.tes/private-vocabulary.txt` (gitignored, never
-committed) and fails the gate if any listed name appears in tracked content.
+`docs/agents/contracts/SEMANTIC-RESIDUE.yml` lets target projects declare and
+enforce their own vocabulary without it being known to TES. A package gate runs
+on every `npm run commit:check` against a local, gitignored allowlist of names to
+exclude from tracked content; the allowlist file itself is never committed.
 
 When in doubt, prefer the placeholder — placeholders are always reversible in
 private notes.
