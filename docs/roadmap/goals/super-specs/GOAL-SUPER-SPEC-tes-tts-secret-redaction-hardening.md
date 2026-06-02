@@ -208,3 +208,15 @@ This line is locally closed when SRH-003 records a `PASS`, the bundle reflects
 the hardened helper, and the `release_identity` version/bundle decision is
 written into the closeout. Closure does not authorize push, tag, publish, or
 sync; those remain a separate owner decision.
+
+Closing this line is not the end of the remediation loop — it creates the next
+one. The fix landed locally (commit `af46c1c`), but the runtime oracle suite
+could not auto-confirm it because the version-gate is red and masking (audit
+finding W-1): regression had to be proven by bypassing the gate by hand. That is
+the next line.
+
+Next line:
+`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-oracle-gate-restoration.md`
+(W-1: re-pin fixtures, single-source VERSION, de-mask the version-gate, add the
+oracles to `commit:check`). The remediation sequence continues — each closed
+Super SPEC names the next one — until the 2026-06-02 audit findings converge.
