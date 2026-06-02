@@ -29,8 +29,12 @@ from tes_tts_runtime_types import (
 
 SECRET_PATTERN = re.compile(
     r"(?i)(?<![\w-])[\w-]*"
-    r"(?:api_?key|access_?key|secret|token|password|passwd|pwd|\bkey)="
+    r"(?:api_?key|access_?key|private_?key|ssh_?private_?key|secret|token|password|passwd|pwd|\bkey)="
     r"(\S+)"
+)
+PEM_PRIVATE_KEY_PATTERN = re.compile(
+    r"-----BEGIN [A-Z ]*PRIVATE KEY-----"
+    r"(?:[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----)?"
 )
 PREFIX_SECRET_PATTERN = re.compile(
     r"(?<![\w-])("
@@ -82,13 +86,19 @@ def split_trailing_punctuation(value: str) -> tuple[str, str]:
 def redact_secret_like_values(source_text: str) -> tuple[str, list[dict[str, str]]]:
     redactions: list[dict[str, str]] = []
 
+    def replace_pem_private_key(match: re.Match[str]) -> str:
+        redactions.append({"kind": "secret", "value": match.group(0)})
+        return REDACTION_TOKEN
+
+    redacted = PEM_PRIVATE_KEY_PATTERN.sub(replace_pem_private_key, source_text)
+
     def replace_secret(match: re.Match[str]) -> str:
         value, trailing = split_trailing_punctuation(match.group(1))
         redactions.append({"kind": "secret", "value": value})
         prefix = match.group(0)[: match.start(1) - match.start(0)]
         return prefix + REDACTION_TOKEN + trailing
 
-    redacted = SECRET_PATTERN.sub(replace_secret, source_text)
+    redacted = SECRET_PATTERN.sub(replace_secret, redacted)
 
     def replace_bearer(match: re.Match[str]) -> str:
         value, trailing = split_trailing_punctuation(match.group(1))

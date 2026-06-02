@@ -9,18 +9,19 @@ evidence_level: L1
 
 # GOAL Super SPEC: TES TTS Secret Redaction Hardening
 
-Status: open product-security line. Closes the P-1 finding from the
-2026-06-02 systematic audit — the redaction boundary leaks real credential
-values into delivered runtime.
+Status: locally closed product-security line. Closes the P-1 finding from the
+2026-06-02 systematic audit — the redaction boundary no longer leaks governed
+credential formats into delivered runtime. Release identity remains a separate
+owner decision.
 
 Canonical artifact:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-secret-redaction-hardening.md`
 
 Current execution unit:
-`SRH-003 (paused at NEEDS_OWNER_DECISION: version/bundle for delivered helper)`
+`closed locally after residual private-key/PEM hardening`
 
 Ready prompt:
-`owner decision on bump/bundle, then local commit`
+`none; release identity remains separately deferred`
 
 Audit source:
 `TES-TTS-SYSTEMATIC-ANALYSIS-2026-06-02.md`, finding P-1.
@@ -41,12 +42,19 @@ Audit source:
   All governed gates PASS (materialize/tds/doc-size/ref-graph/ref-package/git
   diff). Protected invariants intact: `api_key=`, `token=`, `MY_PASSWORD=`,
   `Bearer`, and the non-secret negative case still behave as before.
-- STOP STATE `NEEDS_OWNER_DECISION`: `tes_bump --governance-check` returns "no
+- HISTORICAL STOP STATE `NEEDS_OWNER_DECISION`: `tes_bump --governance-check` returns "no
   bump-triggering change" because `DELIVERED_BEHAVIOR_GLOBS` (`tes_bump.py:50`)
   does not list the `tes_tts_*` helpers, even though `tes_bundle.py:94-101`
   ships the classifier to `.tes/bin/**`. Owner must decide: (a) treat this as
   delivered behavior and bump/bundle, or (b) accept the helper as non-bumping
-  and record the deferral. Local commit is held until that decision.
+  and record the deferral. The residual closure keeps release identity deferred
+  and allows local commit only; push/tag/publish/sync remain unauthorized.
+- RESIDUAL CLOSURE: the senior audit found remaining leaks for `private_key=`,
+  `ssh_private_key=`, `PRIVATE_KEY=`, and PEM private-key blocks. The fixture
+  corpus now has 23 cases; `PEM_PRIVATE_KEY_PATTERN` and the governed key-name
+  pattern close that gap. Observed red failure first, then `secret_redaction`,
+  `runtime_ir`, `hot_path_span_matcher`, and `fast_path_spoken_rendering` all
+  PASS. No push/tag/publish/sync.
 
 ## Mantra Gate Snapshot
 
@@ -204,19 +212,7 @@ not this one — but SRH-002 must not regress any case those oracles cover.
 
 ## Closure
 
-This line is locally closed when SRH-003 records a `PASS`, the bundle reflects
-the hardened helper, and the `release_identity` version/bundle decision is
-written into the closeout. Closure does not authorize push, tag, publish, or
-sync; those remain a separate owner decision.
-
-Closing this line is not the end of the remediation loop — it creates the next
-one. The fix landed locally (commit `af46c1c`), but the runtime oracle suite
-could not auto-confirm it because the version-gate is red and masking (audit
-finding W-1): regression had to be proven by bypassing the gate by hand. That is
-the next line.
-
-Next line:
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-oracle-gate-restoration.md`
-(W-1: re-pin fixtures, single-source VERSION, de-mask the version-gate, add the
-oracles to `commit:check`). The remediation sequence continues — each closed
-Super SPEC names the next one — until the 2026-06-02 audit findings converge.
+This line is locally closed when the residual private-key/PEM cases, the full
+TTS oracle suite, and `commit:check` pass, and the local commit records the
+convergence. Closure does not authorize push, tag, publish, or sync; those
+remain separate owner decisions.
