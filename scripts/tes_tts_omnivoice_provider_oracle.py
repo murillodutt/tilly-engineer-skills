@@ -30,7 +30,7 @@ ADAPTER_TTS_SKILL_DIRS = (
     ROOT / "src/adapters/codex/skills/tes-tts",
     ROOT / "src/adapters/claude/skills/tes-tts",
 )
-VERSION = "0.3.156"
+VERSION = "0.3.157"
 FORBIDDEN_TOP_LEVEL_IMPORTS = {"omnivoice", "torch", "soundfile"}
 PROVIDER_EXTRACTED_IMPORTS = {"select", "threading", "wave"}
 DIRECT_KERNEL_ALLOWED_IMPORTS = {

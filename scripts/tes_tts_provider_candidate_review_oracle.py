@@ -14,7 +14,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 REVIEW_PATH = ROOT / "benchmarks/tes-tts/provider-candidate-review.json"
 DOC_PATH = ROOT / "docs/roadmap/tes-tts/TES-TTS-PROVIDER-CANDIDATE-REVIEW.md"
-VERSION = "0.3.156"
+VERSION = "0.3.157"
 
 REQUIRED_FIELDS = {
     "rank",

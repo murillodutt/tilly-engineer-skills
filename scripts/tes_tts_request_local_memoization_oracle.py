@@ -16,7 +16,7 @@ import tes_tts_runtime
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = ROOT / "benchmarks/tes-tts/request-local-memoization-fixtures.json"
-VERSION = "0.3.156"
+VERSION = "0.3.157"
 REPEAT_COUNT = 9
 FORBIDDEN_RUNTIME_SURFACES = ("ipa", "phoneme", "ssml", "pls", "provider_lexicon", "g2p")
 
