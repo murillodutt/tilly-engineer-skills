@@ -13,7 +13,7 @@ tver: 0.5.3
 This document describes the Codex-native derivation of Tilly Engineering
 Discipline.
 
-Project version: `0.3.158`.
+Project version: `0.3.159`.
 
 It follows the Codex customization order:
 
@@ -118,7 +118,6 @@ deterministic oracles or agent-led codebase exploration:
 | `/tes-adapter`, `/tes:adapter` | `tes-adapter` |
 | `/tes-bench`, `/tes:bench` | `tes-bench` |
 | `/tes-bump`, `/tes:bump` | `tes-bump` |
-| `/tes-tts`, `/tes:tts` | `tes-tts` |
 
 This keeps the four gates available without bloating every context window.
 

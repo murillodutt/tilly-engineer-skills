@@ -16,7 +16,7 @@ from typing import Any
 import scope_contract
 
 
-VERSION = "0.3.158"
+VERSION = "0.3.159"
 SCHEMA = "tes-checkpoint@1"
 CHECKPOINT_ROOT = Path(".tes/checkpoints")
 DEFAULT_TTL_SECONDS = 24 * 60 * 60

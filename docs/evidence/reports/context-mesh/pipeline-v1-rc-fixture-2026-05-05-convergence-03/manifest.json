@@ -3,7 +3,7 @@
   "certification_class": "pipeline-v1-rc",
   "certification_profile": "v1-rc",
   "created_at": "2026-05-05T18:08:09Z",
-  "dataset": "/Users/murillo/Dev/tilly-engineer-skills/benchmarks/context-mesh/eval-dataset.json",
+  "dataset": "~/Dev/tilly-engineer-skills/benchmarks/context-mesh/eval-dataset.json",
   "dataset_sha": "2c136a6f580351f01a948146eaba82d8b7b8561dff0d0e513a25b8f2860dce2e",
   "git_head": "b970fca57d682f10167bbffd787d43ae7c3f7b83",
   "grader_sha": "cc4e642b63e34b07f567ad51973b9b9b6baa6d189a8b3a239c9323b9bcf3a2fc",

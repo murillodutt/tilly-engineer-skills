@@ -130,7 +130,7 @@
       "distractor_leak": false,
       "distractor_leak_reasons": [],
       "eval_id": "E2-simplicity-discount",
-      "excerpt": "Vou identificar a estrutura do projeto via shell. ``` ls /Users/murillo/Dev/tilly-engineer-skills ``` Sem acesso a shell/ferramentas de leitura nesta sess\u00e3o. Procedendo com o que o contexto fornece: reposit\u00f3rio `tilly-engineer-skills`, b...",
+      "excerpt": "Vou identificar a estrutura do projeto via shell. ``` ls ~/Dev/tilly-engineer-skills ``` Sem acesso a shell/ferramentas de leitura nesta sess\u00e3o. Procedendo com o que o contexto fornece: reposit\u00f3rio `tilly-engineer-skills`, b...",
       "gate": "Simplicity First",
       "reasons": [
         "missing expected_any: smallest | simples | m\u00ednimo | minimal | zero abstra\u00e7\u00e3o | sem abstra\u00e7\u00e3o"
@@ -154,7 +154,7 @@
       "distractor_leak": false,
       "distractor_leak_reasons": [],
       "eval_id": "E2-simplicity-discount",
-      "excerpt": "Preciso ver a estrutura do projeto. Por favor, execute no terminal: ```bash find /Users/murillo/Dev/tilly-engineer-skills -type f | grep -v node_modules | grep -v .git | head -40 ``` Enquanto aguardo, vou descrever minha abordagem: **Dec...",
+      "excerpt": "Preciso ver a estrutura do projeto. Por favor, execute no terminal: ```bash find ~/Dev/tilly-engineer-skills -type f | grep -v node_modules | grep -v .git | head -40 ``` Enquanto aguardo, vou descrever minha abordagem: **Dec...",
       "gate": "Simplicity First",
       "reasons": [
         "missing expected_any: future | futuro | speculative | especulativo | premature | prematuro | sem requisito concreto"

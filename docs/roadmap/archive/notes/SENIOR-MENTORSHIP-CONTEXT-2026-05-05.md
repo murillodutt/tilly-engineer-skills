@@ -10,7 +10,7 @@ evidence_level: L2
 # Senior Mentorship Context 2026-05-05
 
 This context is for the next engineering window working on
-`/Users/murillo/Dev/tilly-engineer-skills`.
+`~/Dev/tilly-engineer-skills`.
 
 It aligns the current repository state with the senior feedback: stop expanding
 surface area, freeze what exists, and certify the package responsibly before
@@ -124,7 +124,7 @@ The simpler path is commit first.
 Recommended first commands:
 
 ```bash
-cd /Users/murillo/Dev/tilly-engineer-skills
+cd ~/Dev/tilly-engineer-skills
 git status --short --branch --untracked-files=all
 npm run commit:check
 git diff --cached --stat

@@ -174,8 +174,7 @@ Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
 `/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
 `/tes-doctor`, `/tes:doctor`, `/tes:check`, `/tes:certify`, `/tes-adapter`,
 `/tes:adapter`, `/tes-bench`, `/tes:bench`, `/tes-bump`, `/tes:bump`,
-`/tes-tts`, `/tes:tts`, `tes tts`, `read this text aloud`,
-`leia em voz alta`, `narrar este texto`, `/tes:recall`, `/tes:learn`, and
+`/tes:recall`, `/tes:learn`, and
 `/tes:reflect`
 as intent shortcuts. Choose the smallest safe oracle behind
 the scenes and report skipped or blocked commands honestly.

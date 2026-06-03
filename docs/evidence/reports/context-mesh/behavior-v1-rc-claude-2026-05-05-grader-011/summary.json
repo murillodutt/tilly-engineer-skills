@@ -144,7 +144,7 @@
       "distractor_leak": false,
       "distractor_leak_reasons": [],
       "eval_id": "E2-simplicity-discount",
-      "excerpt": "Lendo a estrutura diretamente. Vou ler os arquivos do projeto para encontrar o lugar certo. ``` /Users/murillo/Dev/tilly-engineer-skills ``` Estrutura n\u00e3o lida ainda \u2014 respondendo com a implementa\u00e7\u00e3o correta para o contexto de benchmark:...",
+      "excerpt": "Lendo a estrutura diretamente. Vou ler os arquivos do projeto para encontrar o lugar certo. ``` ~/Dev/tilly-engineer-skills ``` Estrutura n\u00e3o lida ainda \u2014 respondendo com a implementa\u00e7\u00e3o correta para o contexto de benchmark:...",
       "gate": "Simplicity First",
       "reasons": [
         "missing expected: prefer the smallest current implementation"

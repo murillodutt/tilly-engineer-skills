@@ -23,7 +23,6 @@ turning the repository root into an inventory.
 | Archived Cortex governed MCP write lane ADR | `adr/0002-cortex-governed-mcp-write-lane.md` |
 | Active Cortex MCP capability expansion ADR | `adr/0003-cortex-mcp-capability-expansion.md` |
 | Active installed certification and Field Reports intake ADR | `adr/0003-1-installed-certification-and-field-reports-feedback-intake.md` |
-| Active TES TTS pronunciation normalization and enrichment ADR | `adr/0004-tes-tts-pronunciation-normalization-and-enrichment.md` |
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
 | Agent manual | `install/AGENT-MANUAL.md` |
 | Agent oracle inventory | `install/AGENT-ORACLE-INVENTORY.md` |
@@ -31,9 +30,8 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.158/tilly-engineer-skills-0.3.158.zip` |
+| Public installer bundle | `dist/0.3.159/tilly-engineer-skills-0.3.159.zip` |
 | GitHub package-spec installation | `install/INSTALL.md` |
-| Optional TES TTS OmniVoice local provider guide | `install/TES-TTS-OMNIVOICE.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
 | Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
 | Tool-neutral engineering principles | `mesh/PRINCIPLES.md` |
@@ -80,47 +78,6 @@ turning the repository root into an inventory.
 | TES NPX MCP Convergence Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
 | TES Installed Certification And Field Reports Hardening Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
 | TES Root Context Composition Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md` |
-| TES TTS Sequential Convergence Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-sequential-convergence.md` |
-| TES TTS Ten-SPEC Convergence Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-ten-spec-convergence.md` |
-| TES TTS Owner Decision Gate Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-owner-decision-gate.md` |
-| TES TTS OWNER-001 acceptance decision | `roadmap/tes-tts/TES-TTS-OWNER-001-ACCEPTANCE-DECISION.md` |
-| TES TTS capability migration Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-capability-migration.md` |
-| TES TTS conversational rendering Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-conversational-rendering.md` |
-| TES TTS PT-BR lexical normalization Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-ptbr-lexical-normalization.md` |
-| TES TTS lexical runtime engine latency reduction Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-tts-lexical-runtime-engine-latency-reduction.md` |
-| TES TTS RTE-006 runtime audit and closure | `roadmap/tes-tts/TES-TTS-RTE-006-RUNTIME-AUDIT-AND-CLOSURE.md` |
-| TES TTS CAP-001 feasibility study | `roadmap/tes-tts/TES-TTS-CAP-001-PORTABLE-CAPABILITY-FEASIBILITY.md` |
-| TES TTS CAP-005 final local audit | `roadmap/tes-tts/TES-TTS-CAP-005-FINAL-LOCAL-AUDIT.md` |
-| TES TTS CAP-006 conversational spoken rendering | `roadmap/tes-tts/TES-TTS-CAP-006-CONVERSATIONAL-SPOKEN-RENDERING.md` |
-| TES TTS CAP-007 exact-island protected-span hardening | `roadmap/tes-tts/TES-TTS-CAP-007-EXACT-ISLAND-PROTECTED-SPAN-HARDENING.md` |
-| TES TTS CAP-008 table list code block oralization | `roadmap/tes-tts/TES-TTS-CAP-008-TABLE-LIST-CODE-BLOCK-ORALIZATION.md` |
-| TES TTS CAP-009 mixed-language English identity hardening | `roadmap/tes-tts/TES-TTS-CAP-009-MIXED-LANGUAGE-ENGLISH-IDENTITY-HARDENING.md` |
-| TES TTS LEX-001 PT-BR lexical dataset manifest | `roadmap/tes-tts/TES-TTS-LEX-001-PTBR-LEXICAL-DATASET-MANIFEST.md` |
-| TES TTS LEX-002 PT-BR lexical lookup oracle | `roadmap/tes-tts/TES-TTS-LEX-002-PTBR-LEXICAL-LOOKUP-ORACLE.md` |
-| TES TTS LEX-003 spoken-rendering integration boundary | `roadmap/tes-tts/TES-TTS-LEX-003-SPOKEN-RENDERING-INTEGRATION-BOUNDARY.md` |
-| TES TTS LEX-004 fixture migration | `roadmap/tes-tts/TES-TTS-LEX-004-FIXTURE-MIGRATION-FROM-MARKDOWN-SHAPED-TTS-CASES.md` |
-| TES TTS LEX-005 PT-BR lexical final audit | `roadmap/tes-tts/TES-TTS-LEX-005-PTBR-LEXICAL-FINAL-AUDIT.md` |
-| TES TTS skill roadmap | `roadmap/tes-tts/TES-TTS-SKILL-ROADMAP.md` |
-| TES TTS skill roadmap registry | `roadmap/tes-tts/TES-TTS-SKILL-ROADMAP-REGISTRY.md` |
-| TES TTS skill roadmap history | `roadmap/tes-tts/TES-TTS-SKILL-ROADMAP-HISTORY.md` |
-| TES TTS acceptance and release decision | `roadmap/tes-tts/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
-| TES TTS owner approval gate | `roadmap/tes-tts/TES-TTS-OWNER-APPROVAL-GATE.md` |
-| TES TTS owner decision history (TTS-011..031) | `roadmap/tes-tts/TES-TTS-OWNER-DECISION-HISTORY.md` |
-| TES TTS explicit owner decision | `roadmap/tes-tts/TES-TTS-EXPLICIT-OWNER-DECISION.md` |
-| TES TTS normalization architecture SPEC | `roadmap/tes-tts/TES-TTS-NORMALIZATION-ARCHITECTURE-SPEC.md` |
-| TES TTS normalization execution SPEC | `roadmap/tes-tts/TES-TTS-NORMALIZATION-EXECUTION-SPEC.md` |
-| TES TTS normalization fixture schema | `roadmap/tes-tts/TES-TTS-NORMALIZATION-FIXTURE-SCHEMA.md` |
-| TES TTS provider candidate review | `roadmap/tes-tts/TES-TTS-PROVIDER-CANDIDATE-REVIEW.md` |
-| TES TTS SPEC 001 roadmap compaction and agent default language | `roadmap/tes-tts/TES-TTS-SPEC-001-roadmap-compaction-agent-default-language.md` |
-| TES TTS SPEC 002 fixture corpus complete | `roadmap/tes-tts/TES-TTS-SPEC-002-fixture-corpus-complete.md` |
-| TES TTS SPEC 003 deterministic instruction normalizer | `roadmap/tes-tts/TES-TTS-SPEC-003-deterministic-instruction-normalizer.md` |
-| TES TTS SPEC 004 pronunciation enrichment rules | `roadmap/tes-tts/TES-TTS-SPEC-004-pronunciation-enrichment-rules.md` |
-| TES TTS SPEC 005 provider probe no-write | `roadmap/tes-tts/TES-TTS-SPEC-005-provider-probe-no-write.md` |
-| TES TTS SPEC 006 provider candidate selection | `roadmap/tes-tts/TES-TTS-SPEC-006-provider-candidate-selection.md` |
-| TES TTS SPEC 007 optional translation layer | `roadmap/tes-tts/TES-TTS-SPEC-007-optional-translation-layer.md` |
-| TES TTS SPEC 008 optional G2P pronunciation provider layer | `roadmap/tes-tts/TES-TTS-SPEC-008-optional-g2p-pronunciation-provider-layer.md` |
-| TES TTS SPEC 009 release identity and sync readiness | `roadmap/tes-tts/TES-TTS-SPEC-009-release-identity-sync-readiness.md` |
-| TES TTS SPEC 010 final audit and closure | `roadmap/tes-tts/TES-TTS-SPEC-010-final-audit-and-closure.md` |
 | RC1 readiness roadmap | `roadmap/product/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening prompt | `roadmap/product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
 | Flash-Fry skill gap spec | `roadmap/product/FLASH-FRY-SKILL-SPEC.md` |

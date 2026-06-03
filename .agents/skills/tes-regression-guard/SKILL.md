@@ -58,20 +58,14 @@ details only when the guard blocks, downgrades confidence, or the user asks.
      fixed refs, and no remote claim without evidence;
    - safety: secrets, command no-execute posture, private vocabulary, rollback,
      and no destructive default.
-5. For `tes-tts`, also protect route directness, provider, voice profile,
-   latency profile, `num_step`, language, prosody warmup, chunk recipe,
-   redaction, source immutability, exact islands, no-summary behavior, and
-   playback/combined-WAV authority.
-6. Prefer a general mechanism over special-case literals. A hard-coded list is
+5. Prefer a general mechanism over special-case literals. A hard-coded list is
    allowed only when it is data, schema, or contract backed; otherwise it is a
    regression seed.
-7. Patch the smallest surface that explains the defect.
-8. Re-run the same-input comparison against the relevant baseline. For docs,
+6. Patch the smallest surface that explains the defect.
+7. Re-run the same-input comparison against the relevant baseline. For docs,
    compare rendered/generated outputs or index contracts. For adapters, compare
    materialized surfaces. For scripts, compare CLI payloads and exit behavior.
-   For audio quality, generate comparable WAV evidence under `tmp/**` or
-   `~/.tes/runtime/**`; never commit audio.
-9. If the comparison regresses the baseline, stop, revert or gate the new path
+8. If the comparison regresses the baseline, stop, revert or gate the new path
    behind an opt-in flag. Do not stack compensating special cases.
 
 ## Stop Conditions
@@ -100,7 +94,7 @@ Use compact prose only when useful or when the guard changes the decision:
 When this skill changes, run:
 
 ```bash
-python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/tes-regression-guard
+python3 $CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/tes-regression-guard
 ```
 
 ## Done

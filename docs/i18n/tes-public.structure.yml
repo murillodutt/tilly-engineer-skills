@@ -1,5 +1,5 @@
 {
-  "version": "0.3.158",
+  "version": "0.3.159",
   "schema": "tes-public-docs@1",
   "generated_outputs": [
     "docs/index.html",
@@ -20,8 +20,8 @@
   },
   "evidence": {
     "final_report": "evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md",
-    "bundle_index": "dist/0.3.158/index.json",
-    "bundle_sha256": "e10ade8a92ac8fd8a031e602d1f8533c94456a6bdb9b28b744af5a1667ce1269"
+    "bundle_index": "dist/0.3.159/index.json",
+    "bundle_sha256": "f18e5a49e98e853595b2908e4fe2ede8e98d7c3bd39de97d3693020b8ad4d65b"
   },
   "pages": {
     "index": {
@@ -29,14 +29,14 @@
       "body_class": "public-index",
       "canonical": "https://murillodutt.github.io/tilly-engineer-skills/",
       "asset_prefix": "",
-      "nav": ["promise", "flow", "proof", "voice", "start", "manual", "docs"]
+      "nav": ["promise", "flow", "proof", "start", "manual", "docs"]
     },
     "manual": {
       "output": "docs/install/USER-MANUAL.html",
       "body_class": "public-manual",
       "canonical": "https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html",
       "asset_prefix": "../",
-      "nav": ["overview", "install", "tts", "triggers", "routes", "states", "cortex", "cli", "mcp", "field_reports", "obsidian", "report", "rollback"]
+      "nav": ["overview", "install", "triggers", "routes", "states", "cortex", "cli", "mcp", "field_reports", "obsidian", "report", "rollback"]
     }
   }
 }

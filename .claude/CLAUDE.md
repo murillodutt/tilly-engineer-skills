@@ -69,12 +69,6 @@ or a clear incremental delivery; once it creates the next prompt by habit it is
 noise. If the next unit does not improve runtime, latency, audio quality,
 safety, or direct maintenance, do not create it.
 
-For `tes-tts`, the durable path is a NeMo-inspired but dependency-free pipeline:
-classify text into an intermediate representation, verbalize it into
-request-local spoken text, and adapt it to the selected provider. JSON/JSONL
-lexical data, the IR contract, redaction before speech, source immutability, and
-latency measurement are product surfaces, not exploratory paperwork.
-
 </runtime_first_rule>
 
 <success_formula>
@@ -128,21 +122,6 @@ oracles, generated public pages, version identity, release surfaces, private
 vocabulary, safety behavior, and UX claims. A passing source check is not enough
 when the risk lives in an installed, generated, materialized, audio, public, or
 CLI surface; run the comparison matching the surface that can regress.
-
-For `tes-tts`, direct OmniVoice execution alone does not prove equivalence.
-Protect the full recipe: runtime route, voice profile, latency profile,
-`num_step`, language, prosody warmup, chunking, punctuation treatment, redaction,
-exact islands, source immutability, no-summary behavior, playback path, and
-combined-WAV review authority. Use the code-defined long-read profiles instead
-of hand-assembling quality flags. Any change to those surfaces needs a same-input
-comparison; on regression, stop, revert, or gate the new path behind explicit
-opt-in instead of stacking special cases. For direct OmniVoice `redacted_source`
-and `audio_quality`, pass source text once and let the direct kernel prepare
-request-local provider text — do not pre-run `tes_tts_runtime.py` or feed generic
-`spoken_text` into those modes. Protect both quality step models: `num_step=32`
-is the maximum-quality review reference, explicit `--num-step 28` is the
-streamer/latency candidate; do not collapse them into one rule or promote 26
-after distortion evidence.
 
 Avoid narrow literal lists in runtime code unless they are governed data, schema,
 or contract backed. Example-specific fixes are regression seeds.

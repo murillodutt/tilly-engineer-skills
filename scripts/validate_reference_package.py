@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.158"
+VERSION = "0.3.159"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -29,9 +29,9 @@ REQUIRED_PATHS = (
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/adr/0001-tes-memory-lifecycle.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.158/index.json",
-    "docs/dist/0.3.158/tilly-engineer-skills-0.3.158.zip",
-    "docs/dist/0.3.158/tilly-engineer-skills-0.3.158.zip.sha256",
+    "docs/dist/0.3.159/index.json",
+    "docs/dist/0.3.159/tilly-engineer-skills-0.3.159.zip",
+    "docs/dist/0.3.159/tilly-engineer-skills-0.3.159.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -130,11 +130,6 @@ REQUIRED_PATHS = (
     "src/adapters/codex/skills/tes-bump/SKILL.md",
     "src/adapters/codex/skills/tes-bump/agents/openai.yaml",
     "src/adapters/codex/skills/tes-bump/docs/CONTRACT-HISTORY.md",
-    "src/adapters/codex/skills/tes-tts/SKILL.md",
-    "src/adapters/codex/skills/tes-tts/agents/openai.yaml",
-    "src/adapters/codex/skills/tes-tts/docs/CONTRACT-HISTORY.md",
-    "src/adapters/codex/skills/tes-tts/references/language-normalization.md",
-    "src/adapters/codex/skills/tes-tts/references/providers-and-fallbacks.md",
     "src/adapters/claude/CLAUDE.md",
     "src/adapters/claude/plugin/plugin.json",
     "src/adapters/claude/plugin/marketplace.json",
@@ -178,11 +173,6 @@ REQUIRED_PATHS = (
     "src/adapters/claude/skills/tes-bump/SKILL.md",
     "src/adapters/claude/skills/tes-bump/agents/openai.yaml",
     "src/adapters/claude/skills/tes-bump/docs/CONTRACT-HISTORY.md",
-    "src/adapters/claude/skills/tes-tts/SKILL.md",
-    "src/adapters/claude/skills/tes-tts/agents/openai.yaml",
-    "src/adapters/claude/skills/tes-tts/docs/CONTRACT-HISTORY.md",
-    "src/adapters/claude/skills/tes-tts/references/language-normalization.md",
-    "src/adapters/claude/skills/tes-tts/references/providers-and-fallbacks.md",
     "src/adapters/cursor/CURSOR.md",
     "src/adapters/cursor/rules/tes-guidelines.mdc",
     "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",

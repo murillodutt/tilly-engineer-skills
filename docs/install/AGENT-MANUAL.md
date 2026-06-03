@@ -58,7 +58,6 @@ User-facing intent typed in the agent window — never a shell command.
 | `/tes-adapter` | Materialize, dry-run, retrofit, or install adapter surfaces | `/tes:adapter` |
 | `/tes-bench` | Plan, run, or converge context-mesh benchmarks | `/tes:bench` |
 | `/tes-bump` | Govern, plan, and apply bounded project version bumps | `/tes:bump` |
-| `/tes-tts` | Read user-provided text aloud through an available local TTS tool | `/tes:tts` |
 `/tes-update` is a direct visible skill in Codex and Claude Code. It starts
 with the read-only `tes_update.py plan --json-only` probe and must not rerun
 `/tes-init` unless the planner declares Project-Start, missing context, evidence

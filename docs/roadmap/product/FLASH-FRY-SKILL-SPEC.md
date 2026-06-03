@@ -273,9 +273,9 @@ The smallest useful oracle sequence is:
 1. Skill source validation:
 
    ```bash
-   python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py \
+   python3 $CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py \
      src/adapters/codex/skills/flash-fry
-   python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py \
+   python3 $CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py \
      src/adapters/claude/skills/flash-fry
    ```
 

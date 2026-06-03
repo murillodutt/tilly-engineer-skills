@@ -11,7 +11,7 @@ tver: 0.1.4
 # Roadmap Index
 
 This folder preserves roadmap lineage without turning the roadmap into the
-work. Current package baseline: TES `0.3.158`. Execution authority lives in the
+work. Current package baseline: TES `0.3.159`. Execution authority lives in the
 current dashboard, Super SPEC, audit record, or runtime oracle for each line.
 
 ## Folder Map
@@ -20,7 +20,6 @@ current dashboard, Super SPEC, audit record, or runtime oracle for each line.
 |--------|---------|
 | `goals/super-specs/` | Active and historical Goal Super SPECs. |
 | `goals/prompts/` | Local execution prompts; ignored and not package governance. |
-| `tes-tts/` | TES TTS dashboard, registry, audits, specs, and runtime records. |
 | `product/` | Product-wide roadmap proposals and readiness work. |
 | `archive/v1/` | V1 convergence lineage retained for audit. |
 | `archive/notes/` | Historical continuity notes. |
@@ -38,10 +37,6 @@ in dashboards, registries, history, audits, fixtures, or oracles.
 
 | Line | Status | Authority |
 |------|--------|-----------|
-| TES TTS | Active | `tes-tts/TES-TTS-SKILL-ROADMAP.md` |
-| TES TTS registry | Active | `tes-tts/TES-TTS-SKILL-ROADMAP-REGISTRY.md` |
-| TES TTS history | Active | `tes-tts/TES-TTS-SKILL-ROADMAP-HISTORY.md` |
-| TES TTS acceptance/release decision | Active | `tes-tts/TES-TTS-ACCEPTANCE-AND-RELEASE-DECISION.md` |
 | Cortex MCP capability expansion | Active | `goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md` |
 | Cortex MCP host segmentation | Active | `goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md` |
 | Cortex memory benchmark harness | Active | `goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
@@ -59,12 +54,6 @@ in dashboards, registries, history, audits, fixtures, or oracles.
 | V1 convergence lineage | Historical | `archive/v1/` |
 | 2026-05-05 continuity notes | Historical | `archive/notes/` |
 
-## TES TTS Navigation
-
-Use the TES TTS dashboard for current state, registry for durable pointers, and
-history for closed lineage. TES TTS prompt artifacts were purged from tracked
-source on 2026-06-02; do not recreate prompt files as roadmap governance.
-
 ## Operating Rule
 
 Keep this index short and partitioned:
@@ -75,7 +64,6 @@ Keep this index short and partitioned:
 - Every roadmap update must reduce ambiguity for the next executor.
 
 Roadmap partition budgets are enforced by `scripts/validate_doc_size.py`.
-`tes-tts` also has `scripts/tes_tts_roadmap_partition_oracle.py`.
 
 | Partition | Limit | Purpose |
 |-----------|-------|---------|

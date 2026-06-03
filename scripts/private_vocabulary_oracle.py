@@ -22,10 +22,16 @@ an explicit regex pattern.
 
 Scope (scanned by default):
 
-- Tracked `*.md`, `*.mdc`, `*.py`, `*.json`, `*.yml`, `*.yaml`, `*.html`,
-  `*.txt`, `*.js`, `*.ts` under the repository root.
-- Excluded: `.git/`, `node_modules/`, `.tes/`, `docs/dist/`,
-  `dist/`, `<workspace>/tes-sync-workspace/` and other workspace dirs.
+- Tracked `*.md`, `*.mdc`, `*.py`, `*.json`, `*.jsonl`, `*.ndjson`,
+  `*.yml`, `*.yaml`, `*.html`, `*.txt`, `*.js`, `*.ts` under the
+  repository root.
+- Excluded: `.git/`, `node_modules/`, `dist/`, `docs-archive/`,
+  `docs/dist/`, `<workspace>/tes-sync-workspace/`, the local-runtime
+  subpaths of `.tes/` (`runtime/`, `cortex/`, `runs/`, `canaries/`,
+  `field-reports/`, `legacy-retirement/`, `bin/`, `bk/`), and the oracle's
+  own allowlist input `.tes/private-vocabulary.txt`.
+- `.tes/` is NOT excluded wholesale: source-bearing `.tes/` content is
+  scanned so a leak landing there cannot pass blind-green.
 - Non-Git fixture roots fall back to scanning the filesystem with the same
   suffix and exclusion rules.
 
@@ -47,13 +53,15 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.158"
+VERSION = "0.3.159"
 DEFAULT_ALLOWLIST_PATH = Path(".tes/private-vocabulary.txt")
 SCAN_SUFFIXES = {
     ".md",
     ".mdc",
     ".py",
     ".json",
+    ".jsonl",
+    ".ndjson",
     ".yml",
     ".yaml",
     ".html",
@@ -64,13 +72,30 @@ SCAN_SUFFIXES = {
 EXCLUDE_DIR_NAMES = {
     ".git",
     "node_modules",
-    ".tes",
     "dist",
     "docs-archive",
 }
+# `.tes/` holds a mix of source-bearing material (skill/runtime helpers) and
+# genuinely-local artifacts. It must NOT be excluded wholesale: a blanket skip
+# turns the gate blind to any leak landing in tracked `.tes/` content. Exclude
+# only the local-runtime and allowlist subpaths (the latter is the oracle's own
+# private input and is gitignored, but the filesystem fallback would otherwise
+# read it). Everything else under `.tes/` is scanned like normal source.
 EXCLUDE_PATH_PREFIXES = (
     "docs/dist/",
     ".claude/skills/tes-sync-workspace/",
+    ".tes/runtime/",
+    ".tes/cortex/",
+    ".tes/runs/",
+    ".tes/canaries/",
+    ".tes/field-reports/",
+    ".tes/legacy-retirement/",
+    ".tes/bin/",
+    ".tes/bk/",
+)
+# Exact-path exclusions (the oracle's own private allowlist input).
+EXCLUDE_EXACT_PATHS = (
+    ".tes/private-vocabulary.txt",
 )
 
 
@@ -111,6 +136,8 @@ def _should_scan(path: Path, root: Path) -> bool:
     try:
         relpath = path.relative_to(root).as_posix()
     except ValueError:
+        return False
+    if relpath in EXCLUDE_EXACT_PATHS:
         return False
     for prefix in EXCLUDE_PATH_PREFIXES:
         if relpath.startswith(prefix):
@@ -311,6 +338,59 @@ def self_test() -> dict[str, Any]:
         result = analyze(root, allow)
         if result["status"] != "FAIL" or not result["findings"]:
             failures.append("git-tracked leak fixture must FAIL")
+
+    # Fixture 9: NDJSON/JSONL evidence is in scope. A leak inside a tracked
+    # `.ndjson` record must be detected — this is the suffix gap that let
+    # private names hide in context-mesh raw evidence.
+    with tempfile.TemporaryDirectory(prefix="priv-vocab-ndjson-") as tempdir:
+        root = Path(tempdir)
+        allow = root / DEFAULT_ALLOWLIST_PATH
+        allow.parent.mkdir(parents=True, exist_ok=True)
+        allow.write_text("banned-word\n", encoding="utf-8")
+        (root / "raw.ndjson").write_text(
+            '{"output": "mentions banned-word here"}\n', encoding="utf-8"
+        )
+        (root / "data.jsonl").write_text(
+            '{"excerpt": "clean line"}\n', encoding="utf-8"
+        )
+        result = analyze(root, allow)
+        if result["status"] != "FAIL" or not any(
+            f["path"] == "raw.ndjson" for f in result["findings"]
+        ):
+            failures.append("ndjson fixture must FAIL and name raw.ndjson")
+
+    # Fixture 10: `.tes/` source is scanned, but the oracle's own allowlist
+    # input and local-runtime subpaths stay excluded. This proves the
+    # blind-green fix: a leak in tracked `.tes/` source fails, while the
+    # gitignored allowlist file (which legitimately contains the names) and
+    # runtime artifacts do not produce findings.
+    with tempfile.TemporaryDirectory(prefix="priv-vocab-tes-scope-") as tempdir:
+        root = Path(tempdir)
+        allow = root / DEFAULT_ALLOWLIST_PATH
+        allow.parent.mkdir(parents=True, exist_ok=True)
+        allow.write_text("banned-word\n", encoding="utf-8")
+        # Allowlist file itself contains the token by design → must be excluded.
+        # Runtime artifact also contains the token → must be excluded.
+        (root / ".tes" / "runtime").mkdir(parents=True, exist_ok=True)
+        (root / ".tes" / "runtime" / "scratch.md").write_text(
+            "banned-word in runtime scratch\n", encoding="utf-8"
+        )
+        result = analyze(root, allow)
+        if result["status"] != "PASS":
+            failures.append(
+                "allowlist + .tes runtime fixture must PASS (excluded paths)"
+            )
+        # Source-bearing `.tes/` content is in scope → a leak there must FAIL.
+        (root / ".tes" / "notes.md").write_text(
+            "banned-word in tracked .tes source\n", encoding="utf-8"
+        )
+        result = analyze(root, allow)
+        if result["status"] != "FAIL" or not any(
+            f["path"] == ".tes/notes.md" for f in result["findings"]
+        ):
+            failures.append(
+                "tracked .tes source fixture must FAIL and name .tes/notes.md"
+            )
 
     return {
         "version": VERSION,

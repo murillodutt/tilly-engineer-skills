@@ -7,7 +7,7 @@ lost before the team chooses an implementation window.
 
 ## Scope
 
-- Source: local inspection of `/Users/murillo/Dev/tilly-engineer-skills`.
+- Source: local inspection of `~/Dev/tilly-engineer-skills`.
 - Status: deferred; no implementation is authorized by this note.
 - Closure rule: each item needs its own focused change, evidence, and the
   smallest relevant oracle before it can be marked complete.

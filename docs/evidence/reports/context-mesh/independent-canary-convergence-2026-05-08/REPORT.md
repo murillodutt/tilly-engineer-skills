@@ -16,7 +16,7 @@ evidence_level: L3
 | Prompt path | `docs/install/INDEPENDENT-CANARY-CONVERGENCE.prompt.md` |
 | Prompt version | `0.1.0` |
 | Prompt SHA-256 | `d38f4b3fb469b0ccf1c186c9b96b896c1ea35a50d269c416fecffb42407b2eaf` |
-| Run root | `/Users/murillo/Dev/tes-canaries/runs/20260508T135126Z/` |
+| Run root | `~/Dev/tes-canaries/runs/20260508T135126Z/` |
 | Journal | `docs/evidence/reports/context-mesh/independent-canary-convergence-2026-05-08/JOURNAL.md` |
 | Starting TES HEAD | `2026990417787f85960ff70dc06852c98863b0a4` |
 | Final TES HEAD | `2026990417787f85960ff70dc06852c98863b0a4` before evidence commit |

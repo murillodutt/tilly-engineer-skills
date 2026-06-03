@@ -9,7 +9,7 @@ evidence_level: L3
 
 # Independent Canary Convergence Journal - 2026-05-08
 
-Run root: `/Users/murillo/Dev/tes-canaries/runs/20260508T135126Z/`
+Run root: `~/Dev/tes-canaries/runs/20260508T135126Z/`
 
 Prompt path: `docs/install/INDEPENDENT-CANARY-CONVERGENCE.prompt.md`
 
@@ -71,7 +71,7 @@ Starting worktree: clean; branch ahead of upstream by one commit.
 ## [2026-05-08T13:55:18Z] loop | Adapter materialization with project-owned governance
 
 - Hypothesis: TES can add non-conflicting Codex, Claude, and Cursor assets while preserving project-owned root governance.
-- Canary or fixture: `/Users/murillo/Dev/tes-canaries/runs/20260508T135126Z/owned-bootloaders`.
+- Canary or fixture: `~/Dev/tes-canaries/runs/20260508T135126Z/owned-bootloaders`.
 - TES commit: `2026990417787f85960ff70dc06852c98863b0a4`
 - Prompt version: `0.1.0`
 - Command(s): `python3 scripts/install_adapter.py --adapter all --target <owned> --yes`; `python3 scripts/project_context_oracle.py --target <owned>`; `python3 <owned>/.tes/bin/tes_update.py plan --target <owned> --json-only --timeout 15`; `python3 scripts/root_context.py analyze --target <owned>`.

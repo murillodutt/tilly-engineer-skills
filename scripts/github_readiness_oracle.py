@@ -12,7 +12,7 @@ import tempfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.158"
+VERSION = "0.3.159"
 
 NPM_MANIFESTS = {
     "package.json",

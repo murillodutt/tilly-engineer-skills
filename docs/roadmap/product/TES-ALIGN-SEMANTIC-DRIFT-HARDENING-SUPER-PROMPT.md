@@ -22,7 +22,7 @@ retired.
 
 ## Copy-Paste Execution Prompt
 
-You are operating inside `/Users/murillo/Dev/tilly-engineer-skills`.
+You are operating inside `~/Dev/tilly-engineer-skills`.
 
 Your mission is to harden `/tes-align` across adapter skill surfaces and
 project-alignment oracles so TES can detect and correct project-specific

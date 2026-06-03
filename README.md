@@ -4,7 +4,7 @@
 
 # Tilly Engineer Skills (TES)
 
-[![Version](https://img.shields.io/badge/version-0.3.158-1f6feb)](package.json)
+[![Version](https://img.shields.io/badge/version-0.3.159-1f6feb)](package.json)
 [![License](https://img.shields.io/github/license/murillodutt/tilly-engineer-skills)](LICENSE)
 [![Live Landing](https://img.shields.io/badge/live--landing-GitHub%20Pages-0969da)](https://murillodutt.github.io/tilly-engineer-skills/)
 
@@ -33,17 +33,6 @@ repository.
 - Retained evidence your team can inspect.
 - Cortex MCP for project recall, event inspection, and optional governed
   remember.
-
-## A Small New Voice In The Workshop
-
-`tes-tts` can now turn technical work into local, replayable speech. With
-optional OmniVoice, TES can use a local cloned voice while keeping secrets
-redacted, commands as text, generated audio out of Git, and the provider outside
-the core package. Heavy voice runtime is shared at `~/.tes/runtime`, so multiple
-TES-enabled projects do not each grow their own provider install.
-
-Start here when you want to hear the trail:
-[`docs/install/TES-TTS-OMNIVOICE.md`](docs/install/TES-TTS-OMNIVOICE.md).
 
 **Where to start**
 

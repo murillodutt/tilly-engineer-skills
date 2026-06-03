@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.158"
+VERSION = "0.3.159"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -32,7 +32,6 @@ PREFERRED_TRIGGERS = (
     "/tes-adapter",
     "/tes-bench",
     "/tes-bump",
-    "/tes-tts",
 )
 
 COMPATIBLE_ALIASES = (
@@ -51,7 +50,6 @@ COMPATIBLE_ALIASES = (
     "/tes:adapter",
     "/tes:bench",
     "/tes:bump",
-    "/tes:tts",
     "/tes:check",
     "/tes:certify",
     "/tes:recall",
@@ -72,10 +70,6 @@ NATURAL_INTENTS = (
     "mapa TES",
     "tes open obsidian",
     "tes bump",
-    "tes tts",
-    "read this text aloud",
-    "leia em voz alta",
-    "narrar este texto",
     "align TES",
     "align this project",
     "map this project",
@@ -182,7 +176,6 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/codex/skills/tes-adapter/SKILL.md",
         "src/adapters/codex/skills/tes-bench/SKILL.md",
         "src/adapters/codex/skills/tes-bump/SKILL.md",
-        "src/adapters/codex/skills/tes-tts/SKILL.md",
     ),
     "claude": (
         "src/adapters/claude/CLAUDE.md",
@@ -202,7 +195,6 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/claude/skills/tes-adapter/SKILL.md",
         "src/adapters/claude/skills/tes-bench/SKILL.md",
         "src/adapters/claude/skills/tes-bump/SKILL.md",
-        "src/adapters/claude/skills/tes-tts/SKILL.md",
     ),
     "cursor": (
         "src/adapters/cursor/rules/tes-guidelines.mdc",
@@ -263,7 +255,6 @@ CLAUDE_PROJECT_SKILLS = (
     "tes-adapter",
     "tes-bench",
     "tes-bump",
-    "tes-tts",
 )
 CODEX_PROJECT_SKILLS = (
     "tes-engineering-discipline",
@@ -283,7 +274,6 @@ CODEX_PROJECT_SKILLS = (
     "tes-adapter",
     "tes-bench",
     "tes-bump",
-    "tes-tts",
 )
 
 VISIBLE_SKILL_ROUTES = {
@@ -318,7 +308,6 @@ VISIBLE_SKILL_ROUTES = {
         ),
         "tes-field-reports": ("/tes-field-reports", "/tes:field-reports", "field_reports.py"),
         "tes-bump": ("/tes-bump", "/tes:bump", "tes_bump.py", "governance-check", "NEEDS_VERSION_DECISION"),
-        "tes-tts": ("/tes-tts", "/tes:tts", "TTS_NOT_AVAILABLE", "secret-like"),
     },
     "claude": {
         "tes-prospect": ("/tes-prospect", "/tes:prospect", "cognitive brake"),
@@ -351,7 +340,6 @@ VISIBLE_SKILL_ROUTES = {
         ),
         "tes-field-reports": ("/tes-field-reports", "/tes:field-reports", "field_reports.py"),
         "tes-bump": ("/tes-bump", "/tes:bump", "tes_bump.py", "governance-check", "NEEDS_VERSION_DECISION"),
-        "tes-tts": ("/tes-tts", "/tes:tts", "TTS_NOT_AVAILABLE", "secret-like"),
     },
 }
 
@@ -565,7 +553,6 @@ def required_installed_files(platform: str) -> tuple[str, ...]:
             ".agents/skills/tes-mine/SKILL.md",
             ".agents/skills/tes-field-reports/SKILL.md",
             ".agents/skills/tes-bump/SKILL.md",
-            ".agents/skills/tes-tts/SKILL.md",
         )
     if platform == "claude":
         return (
@@ -579,7 +566,6 @@ def required_installed_files(platform: str) -> tuple[str, ...]:
             ".claude/skills/tes-mine/SKILL.md",
             ".claude/skills/tes-field-reports/SKILL.md",
             ".claude/skills/tes-bump/SKILL.md",
-            ".claude/skills/tes-tts/SKILL.md",
         )
     if platform == "cursor":
         return (".cursor/rules/*.mdc",)
@@ -735,7 +721,7 @@ def run_fixture_tests() -> list[str]:
     wrapped_natural = (
         good_text.replace("gerar um /goal maestral", "gerar um /goal\nmaestral")
         .replace("mapa TES", "mapa\nTES")
-        .replace("leia em voz alta", "leia em voz\nalta")
+        .replace("tes open obsidian", "tes open\nobsidian")
     )
     wrapped_failures = check_text("fixture_wrapped_natural", wrapped_natural)
     if any("natural intent" in item for item in wrapped_failures):
@@ -768,7 +754,6 @@ def run_fixture_tests() -> list[str]:
         (target / ".claude/skills/tes-mine").mkdir(parents=True)
         (target / ".claude/skills/tes-field-reports").mkdir(parents=True)
         (target / ".claude/skills/tes-bump").mkdir(parents=True)
-        (target / ".claude/skills/tes-tts").mkdir(parents=True)
         (target / "CLAUDE.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-guidelines/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-init/SKILL.md").write_text(good_text, encoding="utf-8")
@@ -779,7 +764,6 @@ def run_fixture_tests() -> list[str]:
         (target / ".claude/skills/tes-mine/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-field-reports/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-bump/SKILL.md").write_text(good_text, encoding="utf-8")
-        (target / ".claude/skills/tes-tts/SKILL.md").write_text(good_text, encoding="utf-8")
         if check_installed_target(target)["status"] != "PASS":
             failures.append("good installed Claude fixture must pass")
 

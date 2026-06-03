@@ -3,7 +3,7 @@
   "certification_class": "behavior-v1-rc",
   "certification_profile": "v1-rc",
   "created_at": "2026-05-05T17:34:17Z",
-  "dataset": "/Users/murillo/Dev/tilly-engineer-skills/benchmarks/context-mesh/eval-dataset.json",
+  "dataset": "~/Dev/tilly-engineer-skills/benchmarks/context-mesh/eval-dataset.json",
   "dataset_sha": "aa86ccf7e83ae41d9d8dfa0037ee2d6a6734ab0b27b1e67b65c43abbda2522c0",
   "git_head": "08ba5a34cc4aa262f033d061bd903797be99c85f",
   "grader_sha": "e7ed21af3d9877858b33209104b43180f200b5b24ac2747d6dbea1cf18aa2c6c",

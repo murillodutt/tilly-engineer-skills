@@ -41,13 +41,13 @@ Each independent run must create:
 
 Each run may also create local disposable files under:
 
-- `/Users/murillo/Dev/tes-canaries/runs/YYYYMMDDTHHMMSSZ/`
+- `~/Dev/tes-canaries/runs/YYYYMMDDTHHMMSSZ/`
 
 The durable journal/report live in the TES repository. The local canary run
 root is disposable and must not become product truth.
 
 Before creating canary clones, create or update the sandbox `.gitignore` at
-`/Users/murillo/Dev/tes-canaries/.gitignore` so local journals, run indexes,
+`~/Dev/tes-canaries/.gitignore` so local journals, run indexes,
 logs, clones, and transient tool layers remain untracked by default. Do not
 ignore governed evidence under `docs/evidence/**`; promotion into that tree is
 the explicit audit boundary.
@@ -64,11 +64,11 @@ agent product. Do not assume the current package is correct. Prove, refute, or
 improve it through real Build-Test-Fail-Fix loops in disposable sandboxes.
 
 Repository and sandbox:
-- TES repository: /Users/murillo/Dev/tilly-engineer-skills
-- Canary sandbox root: /Users/murillo/Dev/tes-canaries
+- TES repository: ~/Dev/tilly-engineer-skills
+- Canary sandbox root: ~/Dev/tes-canaries
 - Put all new canary clones under:
-  /Users/murillo/Dev/tes-canaries/runs/<UTC_RUN_ID>/
-- Before cloning, ensure `/Users/murillo/Dev/tes-canaries/.gitignore` ignores
+  ~/Dev/tes-canaries/runs/<UTC_RUN_ID>/
+- Before cloning, ensure `~/Dev/tes-canaries/.gitignore` ignores
   `RUN-INDEX.md`, local `JOURNAL.md`/`REPORT.md`, `_logs/`, `runs/`, `.tes/`,
   `.codex/`, `.claude/`, `.cursor/`, `.vscode/`, and `.mcp.json`.
 - Do not commit or push from canary repositories.

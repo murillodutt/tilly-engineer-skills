@@ -42,9 +42,9 @@
       "contents": "Contents",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.158 · local bundle certified",
-      "manual_meta": "User manual · v0.3.158",
-      "version": "v0.3.158",
+      "release_meta": "v0.3.159 · local bundle certified",
+      "manual_meta": "User manual · v0.3.159",
+      "version": "v0.3.159",
       "source_note": "Generated from TDS.",
       "github": "GitHub",
       "read_manual": "Read the manual",
@@ -56,9 +56,9 @@
       "contents": "Indice",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.158 · bundle local certificado",
-      "manual_meta": "Manual de usuario · v0.3.158",
-      "version": "v0.3.158",
+      "release_meta": "v0.3.159 · bundle local certificado",
+      "manual_meta": "Manual de usuario · v0.3.159",
+      "version": "v0.3.159",
       "source_note": "Generado desde TDS.",
       "github": "GitHub",
       "read_manual": "Leer el manual",
@@ -70,9 +70,9 @@
       "contents": "Sumário",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.158 · bundle local certificado",
-      "manual_meta": "Manual do usuário · v0.3.158",
-      "version": "v0.3.158",
+      "release_meta": "v0.3.159 · bundle local certificado",
+      "manual_meta": "Manual do usuário · v0.3.159",
+      "version": "v0.3.159",
       "source_note": "Gerado a partir do TDS.",
       "github": "GitHub",
       "read_manual": "Ler o manual",
@@ -269,59 +269,18 @@
         ]
       }
     },
-    "voice": {
-      "en": {
-        "num": "03A",
-        "title": "Now the trail can speak back",
-        "lede": "`tes-tts` turns technical work into local, reviewable speech. With optional OmniVoice, TES can use a local cloned voice while keeping the provider outside the package and the heavy runtime under `~/.tes/runtime`.",
-        "blocks": [
-          {"type": "cards", "items": [
-            {"title": "Voice stays optional", "body": "TES does not bundle OmniVoice or require cloud speech. Users opt in, install the provider under the user-level TES runtime, and keep reference audio, generated WAV files, model cache, and voice prompt cache outside Git."},
-            {"title": "Technical speech is prepared", "body": "TES prepares request-local spoken text before synthesis: secrets are redacted, code and commands remain text, paths become useful references, and mixed engineering terms stay protected."},
-            {"title": "Audio becomes evidence", "body": "Generated WAV files make long reads inspectable: pause, replay, compare, and diagnose whether a problem came from text preparation, chunking, playback, or provider pronunciation."}
-          ]},
-          {"type": "p", "text": "Use it when reading matters: design reviews, long audit notes, release closeouts, and technical prose that benefits from a human-quality local voice. Setup lives in [TES-TTS-OMNIVOICE.md](install/TES-TTS-OMNIVOICE.md) and the full user section lives in the [manual](install/USER-MANUAL.html#tts-en)."}
-        ]
-      },
-      "es": {
-        "num": "03A",
-        "title": "Ahora el rastro tambien puede hablar",
-        "lede": "`tes-tts` convierte trabajo tecnico en habla local y revisable. Con OmniVoice opcional, TES puede usar una voz clonada local mientras mantiene el provider fuera del paquete y el runtime pesado bajo `~/.tes/runtime`.",
-        "blocks": [
-          {"type": "cards", "items": [
-            {"title": "La voz sigue opcional", "body": "TES no incluye OmniVoice ni exige voz cloud. El usuario decide, instala el provider bajo el runtime TES de usuario y mantiene audio de referencia, WAVs generados, cache de modelo y voice prompt cache fuera de Git."},
-            {"title": "El habla tecnica se prepara", "body": "TES prepara spoken text request-local antes de sintetizar: secretos se redactan, codigo y comandos siguen como texto, paths viran referencias utiles y terminos tecnicos mixtos quedan protegidos."},
-            {"title": "El audio vira evidencia", "body": "Los WAV generados vuelven las lecturas largas inspeccionables: pausar, repetir, comparar y diagnosticar si el problema vino de preparacion de texto, chunking, playback o pronunciacion del provider."}
-          ]},
-          {"type": "p", "text": "Usalo cuando la lectura importa: revisiones de diseno, notas largas de auditoria, cierres de release y prosa tecnica que mejora con una voz local de alta calidad. El setup vive en [TES-TTS-OMNIVOICE.md](install/TES-TTS-OMNIVOICE.md) y la seccion completa vive en el [manual](install/USER-MANUAL.html#tts-es)."}
-        ]
-      },
-      "pt": {
-        "num": "03A",
-        "title": "Agora a trilha também pode falar",
-        "lede": "`tes-tts` transforma trabalho técnico em fala local e revisável. Com OmniVoice opcional, o TES pode usar uma voz clonada local mantendo o provider fora do pacote e o runtime pesado em `~/.tes/runtime`.",
-        "blocks": [
-          {"type": "cards", "items": [
-            {"title": "A voz continua opcional", "body": "TES não embute OmniVoice nem exige fala cloud. O usuário opta, instala o provider no runtime TES de usuário e mantém áudio de referência, WAVs gerados, cache de modelo e voice prompt cache fora do Git."},
-            {"title": "A fala técnica é preparada", "body": "TES prepara spoken text request-local antes da síntese: segredos são redigidos, código e comandos continuam texto, paths viram referências úteis e termos técnicos mistos ficam protegidos."},
-            {"title": "Áudio vira evidência", "body": "WAVs gerados tornam leituras longas inspecionáveis: pausar, repetir, comparar e diagnosticar se o problema veio da preparação do texto, chunking, playback ou pronúncia do provider."}
-          ]},
-          {"type": "p", "text": "Use quando a leitura importa: reviews de design, notas longas de auditoria, fechamentos de release e prosa técnica que melhora com uma voz local de alta qualidade. O setup vive em [TES-TTS-OMNIVOICE.md](install/TES-TTS-OMNIVOICE.md) e a seção completa vive no [manual](install/USER-MANUAL.html#tts-pt)."}
-        ]
-      }
-    },
     "start": {
       "en": {
         "num": "04",
         "title": "GitHub npx quickstart",
         "lede": "Installation is not the dream; it is the controlled path to the dream. Start with one GitHub package-spec command, then let the first agent session finish setup with evidence.",
         "blocks": [
-          {"type": "code", "label": "fixed ref form", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add"},
-          {"type": "code", "label": "bun runtime", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add"},
-          {"type": "code", "label": "non-interactive", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "fixed ref form", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add"},
+          {"type": "code", "label": "bun runtime", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add"},
+          {"type": "code", "label": "non-interactive", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes"},
           {"type": "steps", "items": ["Run from the target repository with Node.js 18+ and npx, or Bun 1.0+ and bunx. TES also requires Python 3.11+ for local setup oracles.", "Interactive mode lets you confirm target, agent hooks, and install mode before TES writes files.", "Use `--agent all --yes` when you want Codex, Claude Code, and Cursor hooks plus their project MCP configs prepared non-interactively.", "Codex: open Settings > Hooks, then Trust and enable the Session Start hook if it is marked needs review.", "Claude Code: open or reopen Claude Code, wait for the TES completion notice, then run `/tes-setup`.", "Cursor: reopen the workspace, let first-session setup complete, then run `/tes-setup` for the report.", "Use `/tes-mcp` for explicit VS Code MCP registration or host-recognition repair.", "After `/tes-setup` reports complete, run `/tes-align`, then use `/tes-map` for the current GPS view before starting project work.", "Read the final report before approving commit, push, or rollout."]},
           {"type": "aside", "title": "Important: agent follow-up is host-specific", "text": "The first run is not the same in every host. Codex: open Settings > Hooks, then Trust and enable Session Start if it is marked needs review. Claude Code: reopen Claude Code, wait for the TES completion notice, then run `/tes-setup`. Cursor: reopen the workspace, let first-session setup complete, then run `/tes-setup`. Only after the report is complete, run `/tes-align`, then use `/tes-map` for the current GPS view before project work."},
-          {"type": "p", "text": "`#v0.3.158` is the intended fixed-ref form. Treat the remote ref as certified only after the tag is published and `npm run release:check` passes."},
+          {"type": "p", "text": "`#v0.3.159` is the intended fixed-ref form. Treat the remote ref as certified only after the tag is published and `npm run release:check` passes."},
           {"type": "p", "text": "`--loglevel=error` keeps package-runner warnings out of the first-run screen while preserving real command failures. For Bun-only machines, use the `bunx --silent --bun` command. If neither runtime is installed, install Node.js LTS or Bun before running TES."}
         ]
       },
@@ -330,12 +289,12 @@
         "title": "Quickstart con GitHub npx",
         "lede": "La instalacion no es el sueno; es el camino controlado hacia el sueno. Empieza con un comando GitHub package-spec y deja que la primera sesion del agente termine el setup con evidencia.",
         "blocks": [
-          {"type": "code", "label": "ref fija", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add"},
-          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add"},
-          {"type": "code", "label": "no interactivo", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "ref fija", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add"},
+          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add"},
+          {"type": "code", "label": "no interactivo", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes"},
           {"type": "steps", "items": ["Ejecuta desde el repositorio objetivo con Node.js 18+ y npx, o Bun 1.0+ y bunx. TES tambien requiere Python 3.11+ para los oraculos locales de setup.", "El modo interactivo te deja confirmar target, hooks de agentes y modo de instalacion antes de escribir archivos.", "Usa `--agent all --yes` cuando quieras preparar hooks y configs MCP de proyecto para Codex, Claude Code y Cursor de forma no interactiva.", "Codex: abre Settings > Hooks, luego usa Trust y activa el hook Session Start si aparece como needs review.", "Claude Code: abre o reabre Claude Code, espera el aviso de finalizacion de TES y ejecuta `/tes-setup`.", "Cursor: reabre el workspace, deja que el setup de primera sesion termine y ejecuta `/tes-setup` para el reporte.", "Usa `/tes-mcp` para registro MCP explicito de VS Code o reparacion de reconocimiento del host.", "Despues de que `/tes-setup` reporte complete, ejecuta `/tes-align` y usa `/tes-map` para la vista GPS actual antes de empezar trabajo de proyecto.", "Lee el reporte final antes de aprobar commit, push o rollout."]},
           {"type": "aside", "title": "Importante: el seguimiento del agente depende del host", "text": "La primera ejecucion no es igual en todos los hosts. Codex: abre Settings > Hooks, luego usa Trust y activa Session Start si aparece como needs review. Claude Code: reabre Claude Code, espera el aviso de finalizacion de TES y ejecuta `/tes-setup`. Cursor: reabre el workspace, deja que el setup termine y ejecuta `/tes-setup`. Solo despues del reporte completo, ejecuta `/tes-align` y usa `/tes-map` para la vista GPS actual antes del trabajo de proyecto."},
-          {"type": "p", "text": "`#v0.3.158` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de publicar el tag y de que `npm run release:check` pase."},
+          {"type": "p", "text": "`#v0.3.159` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de publicar el tag y de que `npm run release:check` pase."},
           {"type": "p", "text": "`--loglevel=error` mantiene los avisos del package runner fuera de la primera pantalla sin ocultar fallas reales del comando. En maquinas solo con Bun, usa `bunx --silent --bun`. Si no hay runtime instalado, instala Node.js LTS o Bun antes de ejecutar TES."}
         ]
       },
@@ -344,12 +303,12 @@
         "title": "Quickstart com GitHub npx",
         "lede": "Instalação não é o sonho; é o caminho controlado até o sonho. Comece com um comando GitHub package-spec e deixe a primeira sessão do agente terminar o setup com evidência.",
         "blocks": [
-          {"type": "code", "label": "ref fixa", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add"},
-          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add"},
-          {"type": "code", "label": "não interativo", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "ref fixa", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add"},
+          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add"},
+          {"type": "code", "label": "não interativo", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes"},
           {"type": "steps", "items": ["Rode a partir do repositório alvo com Node.js 18+ e npx, ou Bun 1.0+ e bunx. O TES também exige Python 3.11+ para os oráculos locais de setup.", "O modo interativo deixa confirmar target, hooks de agentes e modo de instalação antes de escrever arquivos.", "Use `--agent all --yes` quando quiser preparar hooks e configs MCP de projeto para Codex, Claude Code e Cursor de forma não interativa.", "Codex: abra Settings > Hooks, depois use Trust e ative o hook Session Start se ele aparecer como needs review.", "Claude Code: abra ou reabra o Claude Code, aguarde o aviso de conclusão do TES e rode `/tes-setup`.", "Cursor: reabra o workspace, deixe o setup de primeira sessão terminar e rode `/tes-setup` para o relatório.", "Use `/tes-mcp` para registro MCP explícito do VS Code ou reparo de reconhecimento do host.", "Depois que `/tes-setup` reportar complete, rode `/tes-align` e use `/tes-map` para a visão GPS atual antes de iniciar trabalho no projeto.", "Leia o relatório final antes de aprovar commit, push ou rollout."]},
           {"type": "aside", "title": "Importante: o follow-up do agente depende do host", "text": "A primeira execução não é igual em todos os hosts. Codex: abra Settings > Hooks, depois use Trust e ative Session Start se aparecer como needs review. Claude Code: reabra o Claude Code, aguarde o aviso de conclusão do TES e rode `/tes-setup`. Cursor: reabra o workspace, deixe o setup terminar e rode `/tes-setup`. Só depois do relatório completo, rode `/tes-align` e use `/tes-map` para a visão GPS atual antes do trabalho no projeto."},
-          {"type": "p", "text": "`#v0.3.158` é a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de publicar a tag e de `npm run release:check` passar."},
+          {"type": "p", "text": "`#v0.3.159` é a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de publicar a tag e de `npm run release:check` passar."},
           {"type": "p", "text": "`--loglevel=error` mantém avisos do package runner fora da primeira tela sem esconder falhas reais do comando. Em máquinas somente com Bun, use `bunx --silent --bun`. Se nenhum runtime estiver instalado, instale Node.js LTS ou Bun antes de executar o TES."}
         ]
       }
@@ -427,7 +386,7 @@
                 {"label": "Command triggers", "href": "install/COMMAND-TRIGGERS.md", "body": "Post-install `/tes-*` vocabulary, aliases, routers, and write behavior."},
                 {"label": "Git safety", "href": "mesh/GIT-SAFETY.md", "body": "Local baseline, backup, rollback, no push, no publish, and artifact hygiene."},
                 {"label": "Local quality recipe", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Staged-file routing, local hooks, and `commit:check` as closure gate."},
-                {"label": "Public bundle manifest", "href": "dist/0.3.158/index.json", "body": "Versioned ZIP, source commit, SHA-256, and GitHub Pages distribution URLs.", "meta": "artifact"}
+                {"label": "Public bundle manifest", "href": "dist/0.3.159/index.json", "body": "Versioned ZIP, source commit, SHA-256, and GitHub Pages distribution URLs.", "meta": "artifact"}
               ]
             },
             {
@@ -495,7 +454,7 @@
                 {"label": "Gatillos de comando", "href": "install/COMMAND-TRIGGERS.md", "body": "Vocabulario post-install `/tes-*`, aliases, routers y comportamiento de escritura."},
                 {"label": "Seguridad Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sin push, sin publish e higiene de artefactos."},
                 {"label": "Receta de calidad local", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Ruteo por staged files, hooks locales y `commit:check` como gate de cierre."},
-                {"label": "Manifest del bundle publico", "href": "dist/0.3.158/index.json", "body": "ZIP versionado, source commit, SHA-256 y URLs de distribucion GitHub Pages.", "meta": "artefacto"}
+                {"label": "Manifest del bundle publico", "href": "dist/0.3.159/index.json", "body": "ZIP versionado, source commit, SHA-256 y URLs de distribucion GitHub Pages.", "meta": "artefacto"}
               ]
             },
             {
@@ -563,7 +522,7 @@
                 {"label": "Gatilhos de comando", "href": "install/COMMAND-TRIGGERS.md", "body": "Vocabulário post-install `/tes-*`, aliases, routers e comportamento de escrita."},
                 {"label": "Segurança Git", "href": "mesh/GIT-SAFETY.md", "body": "Baseline local, backup, rollback, sem push, sem publish e higiene de artefatos."},
                 {"label": "Receita de qualidade local", "href": "mesh/LOCAL-QUALITY-RECIPE.md", "body": "Roteamento por staged files, hooks locais e `commit:check` como gate de fechamento."},
-                {"label": "Manifest do bundle público", "href": "dist/0.3.158/index.json", "body": "ZIP versionado, source commit, SHA-256 e URLs de distribuição GitHub Pages.", "meta": "artefato"}
+                {"label": "Manifest do bundle público", "href": "dist/0.3.159/index.json", "body": "ZIP versionado, source commit, SHA-256 e URLs de distribuição GitHub Pages.", "meta": "artefato"}
               ]
             },
             {
@@ -639,12 +598,12 @@
         "title": "Quick install",
         "lede": "Start from the target repository with GitHub npx. The command installs TES locally, prepares selected agent hooks, and records the first-session setup path.",
         "blocks": [
-          {"type": "code", "label": "fixed ref form", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes"},
-          {"type": "code", "label": "bun runtime", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "fixed ref form", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "bun runtime", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes"},
           {"type": "steps", "items": ["Run the command from the target repository with Node.js 18+ or Bun 1.0+, plus Python 3.11+.", "Interactive mode asks for target, agents, install mode, and final confirmation.", "Codex: open Settings > Hooks, then Trust and enable the Session Start hook if it is marked needs review.", "Claude Code: open or reopen Claude Code, wait for the TES completion notice, then run `/tes-setup`.", "Cursor: reopen the workspace, let first-session setup complete, then run `/tes-setup` for the report.", "The first-session hook starts setup, project context, and alignment gates once; repeated complete hooks exit quickly.", "Please, run `/tes-setup` for the report before asking for commit or push."]},
           {"type": "aside", "title": "Important: agent follow-up is host-specific", "text": "Do not start project work immediately after install. Codex needs hook review in Settings > Hooks when marked needs review; Claude Code needs the TES completion notice; Cursor needs a workspace reopen and `/tes-setup` report. Only after `/tes-setup` reports complete, run `/tes-align`, then use `/tes-map` for the current GPS view before project work."},
           {"type": "p", "text": "Useful options: `--target <path>` installs outside the current directory; `--agent codex|claude|cursor|all` chooses hooks; `--yes` skips the wizard; `--dry-run` prints planned writes; `--mode preserve` is the default."},
-          {"type": "p", "text": "`#v0.3.158` is the intended fixed-ref form; remote certification exists only after `release:check` passes for the published tag. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit."},
+          {"type": "p", "text": "`#v0.3.159` is the intended fixed-ref form; remote certification exists only after `release:check` passes for the published tag. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit."},
           {"type": "p", "text": "Older plugin/root-skill surfaces (`skills/**`, `.claude-plugin/**`, `.agents/plugins/**`, and `plugins/tilly-engineer-skills/**`) are cleaned only when TES-owned, generated, or empty. Ambiguous or secret-like content is preserved, backed up in `.tes/bk/**`, and returned as `NEEDS_REVIEW`."}
         ]
       },
@@ -653,12 +612,12 @@
         "title": "Instalacion rapida",
         "lede": "Empieza desde el repositorio objetivo con npx desde GitHub. El comando instala TES localmente, prepara los hooks de agentes seleccionados y registra el camino de setup de primera sesion.",
         "blocks": [
-          {"type": "code", "label": "ref fija", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes"},
-          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "ref fija", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes"},
           {"type": "steps", "items": ["Ejecuta el comando desde el repositorio objetivo con Node.js 18+ o Bun 1.0+, mas Python 3.11+.", "El modo interactivo pregunta target, agentes, modo de instalacion y confirmacion final.", "Codex: abre Settings > Hooks, luego usa Trust y activa el hook Session Start si aparece como needs review.", "Claude Code: abre o reabre Claude Code, espera el aviso de finalizacion de TES y ejecuta `/tes-setup`.", "Cursor: reabre el workspace, deja que el setup de primera sesion termine y ejecuta `/tes-setup` para el reporte.", "El hook de primera sesion inicia setup, contexto de proyecto y gates de alineacion una vez; los hooks completos repetidos salen rapido.", "Lee el reporte final antes de pedir commit o push."]},
           {"type": "aside", "title": "Importante: el seguimiento del agente depende del host", "text": "No empieces trabajo de proyecto inmediatamente despues de instalar. Codex necesita revisar el hook en Settings > Hooks cuando aparezca needs review; Claude Code necesita el aviso de finalizacion de TES; Cursor necesita reabrir el workspace y el reporte de `/tes-setup`. Solo despues de que `/tes-setup` reporte complete, ejecuta `/tes-align` y usa `/tes-map` para la vista GPS actual antes del trabajo de proyecto."},
           {"type": "p", "text": "Opciones utiles: `--target <path>` instala fuera del directorio actual; `--agent codex|claude|cursor|all` elige hooks; `--yes` salta el wizard; `--dry-run` muestra escrituras planificadas; `--mode preserve` es el default."},
-          {"type": "p", "text": "`#v0.3.158` es la forma de ref fija prevista; la certificacion remota existe solo despues de que `release:check` pase para el tag publicado. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear."},
+          {"type": "p", "text": "`#v0.3.159` es la forma de ref fija prevista; la certificacion remota existe solo despues de que `release:check` pase para el tag publicado. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear."},
           {"type": "p", "text": "Las superficies antiguas de plugin/root skills (`skills/**`, `.claude-plugin/**`, `.agents/plugins/**` y `plugins/tilly-engineer-skills/**`) se limpian solo cuando son TES-owned, generadas o vacias. El contenido ambiguo o parecido a secreto se preserva, se respalda en `.tes/bk/**` y retorna `NEEDS_REVIEW`."}
         ]
       },
@@ -667,54 +626,13 @@
         "title": "Instalação rápida",
         "lede": "Comece pelo repositório alvo com npx direto do GitHub. O comando instala TES localmente, prepara os hooks dos agentes escolhidos e registra o caminho de setup da primeira sessão.",
         "blocks": [
-          {"type": "code", "label": "ref fixa", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes"},
-          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "ref fixa", "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes"},
+          {"type": "code", "label": "runtime bun", "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes"},
           {"type": "steps", "items": ["Rode o comando a partir do repositório alvo com Node.js 18+ ou Bun 1.0+, mais Python 3.11+.", "O modo interativo pergunta target, agentes, modo de instalação e confirmacao final.", "Codex: abra Settings > Hooks, depois use Trust e ative o hook Session Start se ele aparecer como needs review.", "Claude Code: abra ou reabra o Claude Code, aguarde o aviso de conclusão do TES e rode `/tes-setup`.", "Cursor: reabra o workspace, deixe o setup de primeira sessão terminar e rode `/tes-setup` para o relatório.", "O hook de primeira sessão inicia setup, contexto do projeto e gates de alinhamento uma vez; hooks completos repetidos saem rápido.", "Leia o relatório final antes de pedir commit ou push."]},
           {"type": "aside", "title": "Importante: o follow-up do agente depende do host", "text": "Não inicie trabalho no projeto imediatamente depois de instalar. Codex precisa revisar o hook em Settings > Hooks quando aparecer needs review; Claude Code precisa do aviso de conclusão do TES; Cursor precisa reabrir o workspace e ver o relatório de `/tes-setup`. Só depois que `/tes-setup` reportar complete, rode `/tes-align` e use `/tes-map` para a visão GPS atual antes do trabalho no projeto."},
           {"type": "p", "text": "Opções úteis: `--target <path>` instala fora do diretório atual; `--agent codex|claude|cursor|all` escolhe hooks; `--yes` pula o wizard; `--dry-run` mostra escritas planejadas; `--mode preserve` e o padrão."},
-          {"type": "p", "text": "`#v0.3.158` e a forma de ref fixa prevista; a certificação remota existe somente depois de `release:check` passar para a tag publicada. Bundles runtime são preparados em `.tes/setup/<version>/`; esse diretório e cache local, não conhecimento do projeto para commit."},
+          {"type": "p", "text": "`#v0.3.159` e a forma de ref fixa prevista; a certificação remota existe somente depois de `release:check` passar para a tag publicada. Bundles runtime são preparados em `.tes/setup/<version>/`; esse diretório e cache local, não conhecimento do projeto para commit."},
           {"type": "p", "text": "Superfícies antigas de plugin/root skills (`skills/**`, `.claude-plugin/**`, `.agents/plugins/**` e `plugins/tilly-engineer-skills/**`) são limpas somente quando são TES-owned, geradas ou vazias. Conteúdo ambiguo ou com sinal de segredo e preservado, salvo em `.tes/bk/**` e retorna `NEEDS_REVIEW`."}
-        ]
-      }
-    },
-    "tts": {
-      "en": {
-        "num": "01A",
-        "title": "Optional voice: tes-tts with OmniVoice",
-        "lede": "`tes-tts` can read technical work aloud. When you want a stronger local cloned voice, install OmniVoice as an optional provider; TES keeps it outside the package and inside the user-level runtime.",
-        "blocks": [
-          {"type": "aside", "title": "What is optional", "text": "TES installs without OmniVoice. OmniVoice is chosen by the user, installed in a local Python environment, and used only when `/tes-tts` or a read-aloud request explicitly asks for speech."},
-          {"type": "code", "label": "global runtime", "text": "~/.tes/runtime/tes-tts/omnivoice/"},
-          {"type": "steps", "items": ["Create a fresh Python 3.11 virtual environment under `~/.tes/runtime/tes-tts/omnivoice/venv`.", "Install PyTorch for your hardware first, then install OmniVoice from PyPI or the upstream GitHub source.", "Normalize or place the reference WAV at `~/.tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav`.", "Create the `tes-tts-local-clone` voice profile metadata with the reference audio path and faithful reference transcript.", "Run `python3 .tes/bin/tes_tts_omnivoice_provider.py probe`, then `status`, then `warm-cache --dry-run`; installed `probe/status` auto-resolve the runtime venv before declaring OmniVoice unavailable.", "Use `speak` for short reads and `speak-long --combine --first-audio-buffered` for longer material that needs replayable WAV output."]},
-          {"type": "table", "headers": ["Surface", "Policy"], "rows": [["Provider install", "User-controlled; not part of normal TES install."], ["Runtime folder", "`~/.tes/runtime/**`; shared user runtime, outside package commits."], ["Project `.tes/**`", "Lightweight state, logs, locks, evidence, and pointers only."], ["Voice profile", "`tes-tts-local-clone` by default when configured."], ["Voice prompt cache", "Protected local state; not a committed artifact."], ["Server route", "Legacy lab compatibility, not the product path."], ["Generated audio", "Local review evidence under ignored runtime folders unless the user chooses otherwise."]]},
-          {"type": "p", "text": "Detailed setup, commands, cache policy, and troubleshooting live in [TES-TTS-OMNIVOICE.md](TES-TTS-OMNIVOICE.md). Follow upstream OmniVoice documentation for hardware-specific PyTorch wheels and provider changes."},
-          {"type": "p", "text": "Responsible use is part of the contract: clone only voices you own or are authorized to use. TES still redacts secrets before speech, treats commands and code as text, avoids proactive speech, and never summarizes user text unless asked."}
-        ]
-      },
-      "es": {
-        "num": "01A",
-        "title": "Voz opcional: tes-tts con OmniVoice",
-        "lede": "`tes-tts` puede leer trabajo tecnico en voz alta. Cuando necesitas una voz local clonada mas fuerte, instala OmniVoice como proveedor opcional; TES lo mantiene fuera del paquete y dentro del runtime de usuario.",
-        "blocks": [
-          {"type": "aside", "title": "Que es opcional", "text": "TES se instala sin OmniVoice. OmniVoice lo elige el usuario, se instala en un entorno Python local y se usa solo cuando `/tes-tts` o una solicitud de lectura pide voz explicitamente."},
-          {"type": "code", "label": "runtime global", "text": "~/.tes/runtime/tes-tts/omnivoice/"},
-          {"type": "steps", "items": ["Crea un virtualenv Python 3.11 limpio en `~/.tes/runtime/tes-tts/omnivoice/venv`.", "Instala PyTorch para tu hardware primero, luego instala OmniVoice desde PyPI o desde el source GitHub upstream.", "Normaliza o coloca el WAV de referencia en `~/.tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav`.", "Crea la metadata del perfil `tes-tts-local-clone` con la ruta del audio de referencia y la transcripcion fiel.", "Ejecuta `python3 .tes/bin/tes_tts_omnivoice_provider.py probe`, luego `status`, y despues `warm-cache --dry-run`; `probe/status` instalados auto-resuelven el venv runtime antes de declarar OmniVoice no disponible.", "Usa `speak` para lecturas cortas y `speak-long --combine --first-audio-buffered` para material largo que necesita WAV reproducible."]},
-          {"type": "table", "headers": ["Superficie", "Politica"], "rows": [["Instalacion del provider", "Controlada por el usuario; no forma parte de la instalacion normal de TES."], ["Carpeta runtime", "`~/.tes/runtime/**`; runtime compartido de usuario, fuera de commits del paquete."], ["Proyecto `.tes/**`", "Estado ligero, logs, locks, evidencia y punteros solamente."], ["Perfil de voz", "`tes-tts-local-clone` por defecto cuando esta configurado."], ["Voice prompt cache", "Estado local protegido; no es artefacto commiteado."], ["Ruta servidor", "Compatibilidad legacy de lab, no el camino de producto."], ["Audio generado", "Evidencia local de revision bajo carpetas runtime ignoradas salvo decision del usuario."]]},
-          {"type": "p", "text": "El setup detallado, comandos, politica de cache y troubleshooting viven en [TES-TTS-OMNIVOICE.md](TES-TTS-OMNIVOICE.md). Sigue la documentacion upstream de OmniVoice para wheels PyTorch especificos de hardware y cambios del proveedor."},
-          {"type": "p", "text": "El uso responsable es parte del contrato: clona solo voces propias o autorizadas. TES sigue redactando secretos antes de hablar, trata comandos y codigo como texto, evita habla proactiva y nunca resume texto del usuario salvo pedido explicito."}
-        ]
-      },
-      "pt": {
-        "num": "01A",
-        "title": "Voz opcional: tes-tts com OmniVoice",
-        "lede": "`tes-tts` pode ler trabalho técnico em voz alta. Quando você quiser uma voz local clonada mais forte, instale OmniVoice como provider opcional; o TES mantém isso fora do pacote e dentro do runtime de usuário.",
-        "blocks": [
-          {"type": "aside", "title": "O que é opcional", "text": "TES instala sem OmniVoice. OmniVoice e escolhido pelo usuário, instalado em um ambiente Python local e usado apenas quando `/tes-tts` ou um pedido de leitura pedir fala explicitamente."},
-          {"type": "code", "label": "runtime global", "text": "~/.tes/runtime/tes-tts/omnivoice/"},
-          {"type": "steps", "items": ["Crie um virtualenv Python 3.11 limpo em `~/.tes/runtime/tes-tts/omnivoice/venv`.", "Instale PyTorch para seu hardware primeiro, depois instale OmniVoice pelo PyPI ou pelo source GitHub upstream.", "Normalize ou posicione o WAV de referência em `~/.tes/runtime/tes-tts/omnivoice/refs/áudio-modelo-clone-mono24k.wav`.", "Crie a metadata do perfil `tes-tts-local-clone` com o caminho do áudio de referência e a transcrição fiel.", "Rode `python3 .tes/bin/tes_tts_omnivoice_provider.py probe`, depois `status`, e depois `warm-cache --dry-run`; `probe/status` instalados auto-resolvem o venv runtime antes de declarar OmniVoice indisponível.", "Use `speak` para leituras curtas e `speak-long --combine --first-áudio-buffered` para material longo que precisa de WAV reproduzivel."]},
-          {"type": "table", "headers": ["Superfície", "Política"], "rows": [["Instalação do provider", "Controlada pelo usuário; não faz parte da instalação normal do TES."], ["Pasta runtime", "`~/.tes/runtime/**`; runtime compartilhado de usuário, fora dos commits do pacote."], ["Projeto `.tes/**`", "Estado leve, logs, locks, evidência e ponteiros apenas."], ["Perfil de voz", "`tes-tts-local-clone` por padrão quando configurado."], ["Voice prompt cache", "Estado local protegido; não é artefato commitado."], ["Rota servidor", "Compatibilidade legacy de lab, não caminho de produto."], ["Áudio gerado", "Evidência local de revisão em pastas runtime ignoradas, salvo decisão do usuário."]]},
-          {"type": "p", "text": "Setup detalhado, comandos, política de cache e troubleshooting vivem em [TES-TTS-OMNIVOICE.md](TES-TTS-OMNIVOICE.md). Siga a documentacao upstream do OmniVoice para wheels PyTorch especificos de hardware e mudanças do provider."},
-          {"type": "p", "text": "Uso responsavel faz parte do contrato: clone apenas vozes suas ou autorizadas. TES continua redigindo segredos antes da fala, trata comandos e código como texto, evita fala proativa e nunca resume texto do usuário sem pedido explícito."}
         ]
       }
     },

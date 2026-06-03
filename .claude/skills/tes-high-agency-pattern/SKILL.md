@@ -57,7 +57,7 @@ Load references only when needed:
 When this skill changes, run:
 
 ```bash
-python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/tes-high-agency-pattern
+python3 $CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/tes-high-agency-pattern
 ```
 
 ## Done

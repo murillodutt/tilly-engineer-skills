@@ -13,7 +13,7 @@ evidence_level: L3
 
 Validate `/tes-init` as a useful project-start ritual, not only a TES runtime
 installer. Canaries were disposable local sandboxes under
-`/Users/murillo/Dev/tes-canaries/**`; no canary repository was committed or
+`~/Dev/tes-canaries/**`; no canary repository was committed or
 pushed.
 
 ## Canaries

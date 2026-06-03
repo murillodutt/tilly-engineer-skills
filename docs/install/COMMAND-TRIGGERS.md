@@ -19,7 +19,7 @@ All adapters share the same preferred user triggers: `/tes-init`,
 `/tes-prospect`, `/tes-mine`,
 `/tes-open-obsidian`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
 `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, and
-`/tes-bump`, and `/tes-tts`. Treat
+`/tes-bump`. Treat
 `/tes:*` forms as compatible TES intent aliases; if a host reports one as an
 invalid slash, continue through the matching `tes-*` skill/rule/spec instead of
 asking the user to restate the route.
@@ -64,7 +64,6 @@ mode of `/tes-init`.
 | `/tes-adapter` | `tes-adapter` | visible skill |
 | `/tes-bench` | `tes-bench` | visible skill |
 | `/tes-bump` | `tes-bump` | visible version-governance guard |
-| `/tes-tts` | `tes-tts` | visible reactive text-to-speech skill |
 
 ## Trigger Matrix
 
@@ -86,7 +85,6 @@ mode of `/tes-init`.
 | `/tes-adapter` or `/tes:adapter` | materialize, dry-run, retrofit, or install adapter surfaces | `materialize_adapter.py`, `install_adapter.py`, adapter oracles | adapter files only after review or approval |
 | `/tes-bench` or `/tes:bench` | plan, run, or converge context-mesh benchmarks | benchmark plan/run/converge scripts | temporal benchmark evidence artifacts under `docs/evidence/reports/YYYY/MM/DD/**` |
 | `/tes-bump` or `/tes:bump` | govern, plan, and apply bounded project version bumps | `tes_bump.py --governance-check`; `tes_bump.py --dry-run`, then `tes_bump.py --yes` after write authorization | governance check is read-only; writes only discovered version targets; no commits, tags, pushes, remotes, package locks, or publishing |
-| `/tes-tts` or `/tes:tts` | read user-provided text aloud through an available local TTS tool | host TTS tool when available | no file writes; reports `TTS_NOT_AVAILABLE` when unavailable and redacts secret-like content |
 
 Aliases:
 
@@ -111,8 +109,6 @@ inicializar TES / instalar TES / recertificar TES -> /tes-init
 /tes:certify -> /tes-doctor
 /tes:bump    -> /tes-bump
 tes bump     -> /tes-bump
-/tes:tts     -> /tes-tts
-tes tts / read this text aloud / leia em voz alta / narrar este texto -> /tes-tts
 ```
 
 ## Classification
@@ -121,7 +117,7 @@ tes tts / read this text aloud / leia em voz alta / narrar este texto -> /tes-tt
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-source alias for the same oracles; not a target-project guarantee |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | project-scoped Cortex surface, preferred for recall/read/curation/reflection and governed remember |
 | MCP host recognition | separate state after file registration: `config_present`, `server_self_test_pass`, `protocol_handshake_pass`, `host_listed`, `host_connected`, or `session_restart_required` |

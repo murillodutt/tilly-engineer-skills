@@ -1,7 +1,7 @@
 # TES Sync Plan — Closeout for `project_alignment_oracle` new gate
 
 Status: PLAN ONLY (no writes will be executed).
-Repo: `/Users/murillo/Dev/tilly-engineer-skills`
+Repo: `~/Dev/tilly-engineer-skills`
 Branch: `main` (clean working tree at moment of inspection; the planned scope below presumes the diff scope you described).
 Current package version: `0.3.125` (from `package.json`, `bin/tes.js` `TES_VERSION`, `scripts/project_alignment_oracle.py` `VERSION`).
 Latest tag: `v0.3.125`.
@@ -68,12 +68,12 @@ for this change. I will not move the tag or publish under those conditions.
 ## 2. Pre-flight (read-only commands I will run before any write)
 
 ```bash
-git -C /Users/murillo/Dev/tilly-engineer-skills status -sb
-git -C /Users/murillo/Dev/tilly-engineer-skills diff --stat
-git -C /Users/murillo/Dev/tilly-engineer-skills diff scripts/project_alignment_oracle.py
-git -C /Users/murillo/Dev/tilly-engineer-skills diff src/adapters/codex/skills/tes-align/SKILL.md
-git -C /Users/murillo/Dev/tilly-engineer-skills diff src/adapters/claude/skills/tes-align/SKILL.md
-git -C /Users/murillo/Dev/tilly-engineer-skills diff docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md
+git -C ~/Dev/tilly-engineer-skills status -sb
+git -C ~/Dev/tilly-engineer-skills diff --stat
+git -C ~/Dev/tilly-engineer-skills diff scripts/project_alignment_oracle.py
+git -C ~/Dev/tilly-engineer-skills diff src/adapters/codex/skills/tes-align/SKILL.md
+git -C ~/Dev/tilly-engineer-skills diff src/adapters/claude/skills/tes-align/SKILL.md
+git -C ~/Dev/tilly-engineer-skills diff docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md
 ls docs/evidence/reports/2026/05/26/tes-align/
 ```
 
@@ -285,7 +285,7 @@ ls docs/dist/
 ## 10. Final gate (`npm run commit:check`)
 
 ```bash
-git -C /Users/murillo/Dev/tilly-engineer-skills add -A
+git -C ~/Dev/tilly-engineer-skills add -A
 npm run commit:check
 ```
 
@@ -340,7 +340,7 @@ Do **not** proceed to commit until both `commit:check` is green and
 Only after green:
 
 ```bash
-git -C /Users/murillo/Dev/tilly-engineer-skills diff --cached --stat | tail -3
+git -C ~/Dev/tilly-engineer-skills diff --cached --stat | tail -3
 ```
 
 Confirm:
@@ -378,8 +378,8 @@ create a new commit (per the `Git Safety Protocol` and the checklist
 After commit:
 
 ```bash
-git -C /Users/murillo/Dev/tilly-engineer-skills status
-git -C /Users/murillo/Dev/tilly-engineer-skills log -1 --stat
+git -C ~/Dev/tilly-engineer-skills status
+git -C ~/Dev/tilly-engineer-skills log -1 --stat
 ```
 
 Must show clean tree and the expected file set.
@@ -389,10 +389,10 @@ Must show clean tree and the expected file set.
 ## 12. Push
 
 ```bash
-git -C /Users/murillo/Dev/tilly-engineer-skills status -sb
+git -C ~/Dev/tilly-engineer-skills status -sb
 # expect: ## main...origin/main [ahead 1]
-git -C /Users/murillo/Dev/tilly-engineer-skills push origin main
-git -C /Users/murillo/Dev/tilly-engineer-skills status -sb
+git -C ~/Dev/tilly-engineer-skills push origin main
+git -C ~/Dev/tilly-engineer-skills status -sb
 # expect: ## main...origin/main (no ahead)
 ```
 
@@ -405,8 +405,8 @@ No `--force`, no `--no-verify`.
 This is the trap area. Pre-checks:
 
 ```bash
-git -C /Users/murillo/Dev/tilly-engineer-skills tag -l v0.3.126
-git -C /Users/murillo/Dev/tilly-engineer-skills ls-remote --tags origin v0.3.126
+git -C ~/Dev/tilly-engineer-skills tag -l v0.3.126
+git -C ~/Dev/tilly-engineer-skills ls-remote --tags origin v0.3.126
 ```
 
 Branches:
@@ -427,13 +427,13 @@ Branches:
 Create and push the tag (annotated):
 
 ```bash
-git -C /Users/murillo/Dev/tilly-engineer-skills tag -a v0.3.126 \
+git -C ~/Dev/tilly-engineer-skills tag -a v0.3.126 \
   -m "tes-align: add <gate-name> gate; evidence docs/evidence/reports/2026/05/26/tes-align/<run-id>/REPORT.md"
-git -C /Users/murillo/Dev/tilly-engineer-skills rev-list -n 1 v0.3.126
-git -C /Users/murillo/Dev/tilly-engineer-skills rev-parse HEAD
+git -C ~/Dev/tilly-engineer-skills rev-list -n 1 v0.3.126
+git -C ~/Dev/tilly-engineer-skills rev-parse HEAD
 # both must match
-git -C /Users/murillo/Dev/tilly-engineer-skills push origin v0.3.126
-git -C /Users/murillo/Dev/tilly-engineer-skills ls-remote --tags origin v0.3.126^{}
+git -C ~/Dev/tilly-engineer-skills push origin v0.3.126
+git -C ~/Dev/tilly-engineer-skills ls-remote --tags origin v0.3.126^{}
 # must resolve to the HEAD commit
 ```
 

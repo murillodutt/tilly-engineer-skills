@@ -8,8 +8,8 @@ allowing runtime-first engineering to continue.
 
 ## Why This Skill Exists
 
-TES-TTS latency and audio-quality work exposed the immediate failure mode, but
-the risk is project-wide: an improvement in one dimension can silently remove
+A prior latency and audio-quality work line exposed the immediate failure mode,
+but the risk is project-wide: an improvement in one dimension can silently remove
 the contract that made a previous result good. The same pattern can affect
 skills, docs, adapters, installers, runtime scripts, oracles, roadmap lines,
 generated public surfaces, release identity, and user-facing behavior.
@@ -20,15 +20,15 @@ generated public surfaces, release identity, and user-facing behavior.
 |--------|--------|------------|
 | Maintainer directive, 2026-05-31 | Regression loops are dangerous and waste hours; create a development-layer skill and reinforce `AGENTS.md` before returning to the correction line. | High |
 | Maintainer directive, 2026-05-31 | The guard must be auto-loaded/self-consumed permanently for every analysis and writing condition, not invoked by the user. | High |
-| Maintainer directive, 2026-05-31 | Regression is not exclusive to Python or TTS; it must be treated broadly across the whole TES project. | High |
-| TES-TTS OmniVoice tests | Human-rated audio quality depended on direct execution, voice profile, chunking, punctuation, and light prosody choices. | High |
+| Maintainer directive, 2026-05-31 | Regression is not exclusive to Python or one capability; it must be treated broadly across the whole TES project. | High |
+| Prior audio-quality tests | Human-rated audio quality depended on direct execution, voice profile, chunking, punctuation, and light prosody choices. | High |
 | Local runtime evidence | A later direct run used optimized scripts but omitted the winning prosody recipe and exposed fragile hard-coded heuristics. | High |
 
 ## Source Search Ledger
 
 | Window | Query | Occurrences | Meaning |
 |--------|-------|-------------|---------|
-| Creation | `tes_tts_omnivoice_runtime_support.py` line review | Specific lists and heuristics found in runtime path. | Example-bound fixes can become future regressions. |
+| Creation | runtime support line review | Specific lists and heuristics found in runtime path. | Example-bound fixes can become future regressions. |
 | Creation | `result.json` from live latency test | Prosody `none` for all chunks. | Same route can still regress quality if recipe invariants are lost. |
 | Generalization | Project-surface review from maintainer directive | Applies to source, docs, adapters, installer, runtime, roadmap, release identity, and generated outputs. | Regression guard must protect TES as a product, not one code path. |
 
@@ -55,7 +55,6 @@ generated public surfaces, release identity, and user-facing behavior.
 
 ## Relationship To Other Skills
 
-- `tes-tts`: one target skill that needs this guard during audio work.
 - `tes-sync`: release/bump/publish line must not hide regressions behind
   package closure.
 - `tes-goal-maestro`: prompts and Super SPECs must not create circular drift
@@ -68,13 +67,14 @@ generated public surfaces, release identity, and user-facing behavior.
 
 | Date | Change | Evidence | Confidence |
 |------|--------|----------|------------|
-| 2026-05-31 | Created local anti-regression guard for TES development changes. | Maintainer directive in current session; live TES-TTS regression analysis. | High |
+| 2026-05-31 | Created local anti-regression guard for TES development changes. | Maintainer directive in current session; live runtime regression analysis. | High |
 | 2026-05-31 | Promoted guard from risky-change-only to always-on self-consumed analysis/write kernel. | Maintainer directive in current session. | High |
-| 2026-05-31 | Generalized guard from TTS/Python-centered regression to whole-project regression protection. | Maintainer directive in current session. | High |
+| 2026-05-31 | Generalized guard from capability/Python-centered regression to whole-project regression protection. | Maintainer directive in current session. | High |
 
 ## Do Not Lose
 
-The baseline recipe is part of the product, and this applies beyond TTS. A
+The baseline recipe is part of the product, and this applies across every
+capability. A
 change that preserves one visible command while changing triggers, routing,
 docs, materialization, generated public pages, release identity, safety,
 latency, audio, or comparison evidence is not equivalent.

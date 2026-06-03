@@ -1197,7 +1197,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark" data-ui="brand">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.158</span>
+          <span class="brand-meta">User manual · v0.3.159</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1208,7 +1208,6 @@
           <p class="toc-title" data-ui="contents">Contents</p>
           <ul><li><a href="#overview-en" data-nav="overview" data-label-en="Overview" data-label-es="Vista general" data-label-pt="Visão geral" data-href-en="#overview-en" data-href-es="#overview-es" data-href-pt="#overview-pt"><span class="toc-num">00</span><span class="toc-text">Overview</span></a></li>
 <li><a href="#install-en" data-nav="install" data-label-en="Quick install" data-label-es="Instalacion rapida" data-label-pt="Instalação rápida" data-href-en="#install-en" data-href-es="#install-es" data-href-pt="#install-pt"><span class="toc-num">01</span><span class="toc-text">Quick install</span></a></li>
-<li><a href="#tts-en" data-nav="tts" data-label-en="Optional voice: tes-tts with OmniVoice" data-label-es="Voz opcional: tes-tts con OmniVoice" data-label-pt="Voz opcional: tes-tts com OmniVoice" data-href-en="#tts-en" data-href-es="#tts-es" data-href-pt="#tts-pt"><span class="toc-num">01A</span><span class="toc-text">Optional voice: tes-tts with OmniVoice</span></a></li>
 <li><a href="#triggers-en" data-nav="triggers" data-label-en="Command triggers" data-label-es="Gatillos de comando" data-label-pt="Gatilhos de comando" data-href-en="#triggers-en" data-href-es="#triggers-es" data-href-pt="#triggers-pt"><span class="toc-num">02</span><span class="toc-text">Command triggers</span></a></li>
 <li><a href="#routes-en" data-nav="routes" data-label-en="Routes" data-label-es="Rutas" data-label-pt="Rotas" data-href-en="#routes-en" data-href-es="#routes-es" data-href-pt="#routes-pt"><span class="toc-num">03</span><span class="toc-text">Routes</span></a></li>
 <li><a href="#states-en" data-nav="states" data-label-en="Project states" data-label-es="Estados del proyecto" data-label-pt="Estados do projeto" data-href-en="#states-en" data-href-es="#states-es" data-href-pt="#states-pt"><span class="toc-num">04</span><span class="toc-text">Project states</span></a></li>
@@ -1261,8 +1260,8 @@
           </div>
           <div class="chapter-body">
             <p class="lede">Start from the target repository with GitHub npx. The command installs TES locally, prepares selected agent hooks, and records the first-session setup path.</p>
-            <div class="pre-wrap" data-label="fixed ref form" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="bun runtime" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="fixed ref form" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="bun runtime" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Run the command from the target repository with Node.js 18+ or Bun 1.0+, plus Python 3.11+.</li>
 <li>Interactive mode asks for target, agents, install mode, and final confirmation.</li>
@@ -1274,31 +1273,8 @@
 </ol>
 <aside class="side-note"><p class="side-note-title">Important: agent follow-up is host-specific</p><p>Do not start project work immediately after install. Codex needs hook review in Settings &gt; Hooks when marked needs review; Claude Code needs the TES completion notice; Cursor needs a workspace reopen and <code>/tes-setup</code> report. Only after <code>/tes-setup</code> reports complete, run <code>/tes-align</code>, then use <code>/tes-map</code> for the current GPS view before project work.</p></aside>
 <p>Useful options: <code>--target &lt;path&gt;</code> installs outside the current directory; <code>--agent codex|claude|cursor|all</code> chooses hooks; <code>--yes</code> skips the wizard; <code>--dry-run</code> prints planned writes; <code>--mode preserve</code> is the default.</p>
-<p><code>#v0.3.158</code> is the intended fixed-ref form; remote certification exists only after <code>release:check</code> passes for the published tag. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit.</p>
+<p><code>#v0.3.159</code> is the intended fixed-ref form; remote certification exists only after <code>release:check</code> passes for the published tag. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit.</p>
 <p>Older plugin/root-skill surfaces (<code>skills/**</code>, <code>.claude-plugin/**</code>, <code>.agents/plugins/**</code>, and <code>plugins/tilly-engineer-skills/**</code>) are cleaned only when TES-owned, generated, or empty. Ambiguous or secret-like content is preserved, backed up in <code>.tes/bk/**</code>, and returned as <code>NEEDS_REVIEW</code>.</p>
-          </div>
-        </section>
-
-        <section class="chapter" id="tts-en" data-section-key="tts">
-          <div class="chapter-head">
-            <span class="chapter-num">01A</span>
-            <h2>Optional voice: tes-tts with OmniVoice</h2>
-          </div>
-          <div class="chapter-body">
-            <p class="lede"><code>tes-tts</code> can read technical work aloud. When you want a stronger local cloned voice, install OmniVoice as an optional provider; TES keeps it outside the package and inside the user-level runtime.</p>
-            <aside class="side-note"><p class="side-note-title">What is optional</p><p>TES installs without OmniVoice. OmniVoice is chosen by the user, installed in a local Python environment, and used only when <code>/tes-tts</code> or a read-aloud request explicitly asks for speech.</p></aside>
-<div class="pre-wrap" data-label="global runtime" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>~/.tes/runtime/tes-tts/omnivoice/</code></pre></div>
-<ol class="steps">
-<li>Create a fresh Python 3.11 virtual environment under <code>~/.tes/runtime/tes-tts/omnivoice/venv</code>.</li>
-<li>Install PyTorch for your hardware first, then install OmniVoice from PyPI or the upstream GitHub source.</li>
-<li>Normalize or place the reference WAV at <code>~/.tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav</code>.</li>
-<li>Create the <code>tes-tts-local-clone</code> voice profile metadata with the reference audio path and faithful reference transcript.</li>
-<li>Run <code>python3 .tes/bin/tes_tts_omnivoice_provider.py probe</code>, then <code>status</code>, then <code>warm-cache --dry-run</code>; installed <code>probe/status</code> auto-resolve the runtime venv before declaring OmniVoice unavailable.</li>
-<li>Use <code>speak</code> for short reads and <code>speak-long --combine --first-audio-buffered</code> for longer material that needs replayable WAV output.</li>
-</ol>
-<div class="table-wrap"><table><thead><tr><th>Surface</th><th>Policy</th></tr></thead><tbody><tr><td>Provider install</td><td>User-controlled; not part of normal TES install.</td></tr><tr><td>Runtime folder</td><td><code>~/.tes/runtime/**</code>; shared user runtime, outside package commits.</td></tr><tr><td>Project <code>.tes/**</code></td><td>Lightweight state, logs, locks, evidence, and pointers only.</td></tr><tr><td>Voice profile</td><td><code>tes-tts-local-clone</code> by default when configured.</td></tr><tr><td>Voice prompt cache</td><td>Protected local state; not a committed artifact.</td></tr><tr><td>Server route</td><td>Legacy lab compatibility, not the product path.</td></tr><tr><td>Generated audio</td><td>Local review evidence under ignored runtime folders unless the user chooses otherwise.</td></tr></tbody></table></div>
-<p>Detailed setup, commands, cache policy, and troubleshooting live in <a href="TES-TTS-OMNIVOICE.md">TES-TTS-OMNIVOICE.md</a>. Follow upstream OmniVoice documentation for hardware-specific PyTorch wheels and provider changes.</p>
-<p>Responsible use is part of the contract: clone only voices you own or are authorized to use. TES still redacts secrets before speech, treats commands and code as text, avoids proactive speech, and never summarizes user text unless asked.</p>
           </div>
         </section>
 
@@ -1468,8 +1444,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Empieza desde el repositorio objetivo con npx desde GitHub. El comando instala TES localmente, prepara los hooks de agentes seleccionados y registra el camino de setup de primera sesion.</p>
-            <div class="pre-wrap" data-label="ref fija" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="ref fija" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Ejecuta el comando desde el repositorio objetivo con Node.js 18+ o Bun 1.0+, mas Python 3.11+.</li>
 <li>El modo interactivo pregunta target, agentes, modo de instalacion y confirmacion final.</li>
@@ -1481,31 +1457,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 </ol>
 <aside class="side-note"><p class="side-note-title">Importante: el seguimiento del agente depende del host</p><p>No empieces trabajo de proyecto inmediatamente despues de instalar. Codex necesita revisar el hook en Settings &gt; Hooks cuando aparezca needs review; Claude Code necesita el aviso de finalizacion de TES; Cursor necesita reabrir el workspace y el reporte de <code>/tes-setup</code>. Solo despues de que <code>/tes-setup</code> reporte complete, ejecuta <code>/tes-align</code> y usa <code>/tes-map</code> para la vista GPS actual antes del trabajo de proyecto.</p></aside>
 <p>Opciones utiles: <code>--target &lt;path&gt;</code> instala fuera del directorio actual; <code>--agent codex|claude|cursor|all</code> elige hooks; <code>--yes</code> salta el wizard; <code>--dry-run</code> muestra escrituras planificadas; <code>--mode preserve</code> es el default.</p>
-<p><code>#v0.3.158</code> es la forma de ref fija prevista; la certificacion remota existe solo despues de que <code>release:check</code> pase para el tag publicado. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; ese directorio es cache local, no conocimiento del proyecto para commitear.</p>
+<p><code>#v0.3.159</code> es la forma de ref fija prevista; la certificacion remota existe solo despues de que <code>release:check</code> pase para el tag publicado. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; ese directorio es cache local, no conocimiento del proyecto para commitear.</p>
 <p>Las superficies antiguas de plugin/root skills (<code>skills/**</code>, <code>.claude-plugin/**</code>, <code>.agents/plugins/**</code> y <code>plugins/tilly-engineer-skills/**</code>) se limpian solo cuando son TES-owned, generadas o vacias. El contenido ambiguo o parecido a secreto se preserva, se respalda en <code>.tes/bk/**</code> y retorna <code>NEEDS_REVIEW</code>.</p>
-          </div>
-        </section>
-
-        <section class="chapter" id="tts-es" data-section-key="tts">
-          <div class="chapter-head">
-            <span class="chapter-num">01A</span>
-            <h2>Voz opcional: tes-tts con OmniVoice</h2>
-          </div>
-          <div class="chapter-body">
-            <p class="lede"><code>tes-tts</code> puede leer trabajo tecnico en voz alta. Cuando necesitas una voz local clonada mas fuerte, instala OmniVoice como proveedor opcional; TES lo mantiene fuera del paquete y dentro del runtime de usuario.</p>
-            <aside class="side-note"><p class="side-note-title">Que es opcional</p><p>TES se instala sin OmniVoice. OmniVoice lo elige el usuario, se instala en un entorno Python local y se usa solo cuando <code>/tes-tts</code> o una solicitud de lectura pide voz explicitamente.</p></aside>
-<div class="pre-wrap" data-label="runtime global" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>~/.tes/runtime/tes-tts/omnivoice/</code></pre></div>
-<ol class="steps">
-<li>Crea un virtualenv Python 3.11 limpio en <code>~/.tes/runtime/tes-tts/omnivoice/venv</code>.</li>
-<li>Instala PyTorch para tu hardware primero, luego instala OmniVoice desde PyPI o desde el source GitHub upstream.</li>
-<li>Normaliza o coloca el WAV de referencia en <code>~/.tes/runtime/tes-tts/omnivoice/refs/audio-modelo-clone-mono24k.wav</code>.</li>
-<li>Crea la metadata del perfil <code>tes-tts-local-clone</code> con la ruta del audio de referencia y la transcripcion fiel.</li>
-<li>Ejecuta <code>python3 .tes/bin/tes_tts_omnivoice_provider.py probe</code>, luego <code>status</code>, y despues <code>warm-cache --dry-run</code>; <code>probe/status</code> instalados auto-resuelven el venv runtime antes de declarar OmniVoice no disponible.</li>
-<li>Usa <code>speak</code> para lecturas cortas y <code>speak-long --combine --first-audio-buffered</code> para material largo que necesita WAV reproducible.</li>
-</ol>
-<div class="table-wrap"><table><thead><tr><th>Superficie</th><th>Politica</th></tr></thead><tbody><tr><td>Instalacion del provider</td><td>Controlada por el usuario; no forma parte de la instalacion normal de TES.</td></tr><tr><td>Carpeta runtime</td><td><code>~/.tes/runtime/**</code>; runtime compartido de usuario, fuera de commits del paquete.</td></tr><tr><td>Proyecto <code>.tes/**</code></td><td>Estado ligero, logs, locks, evidencia y punteros solamente.</td></tr><tr><td>Perfil de voz</td><td><code>tes-tts-local-clone</code> por defecto cuando esta configurado.</td></tr><tr><td>Voice prompt cache</td><td>Estado local protegido; no es artefacto commiteado.</td></tr><tr><td>Ruta servidor</td><td>Compatibilidad legacy de lab, no el camino de producto.</td></tr><tr><td>Audio generado</td><td>Evidencia local de revision bajo carpetas runtime ignoradas salvo decision del usuario.</td></tr></tbody></table></div>
-<p>El setup detallado, comandos, politica de cache y troubleshooting viven en <a href="TES-TTS-OMNIVOICE.md">TES-TTS-OMNIVOICE.md</a>. Sigue la documentacion upstream de OmniVoice para wheels PyTorch especificos de hardware y cambios del proveedor.</p>
-<p>El uso responsable es parte del contrato: clona solo voces propias o autorizadas. TES sigue redactando secretos antes de hablar, trata comandos y codigo como texto, evita habla proactiva y nunca resume texto del usuario salvo pedido explicito.</p>
           </div>
         </section>
 
@@ -1675,8 +1628,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Comece pelo repositório alvo com npx direto do GitHub. O comando instala TES localmente, prepara os hooks dos agentes escolhidos e registra o caminho de setup da primeira sessão.</p>
-            <div class="pre-wrap" data-label="ref fixa" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.158 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="ref fixa" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.159 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Rode o comando a partir do repositório alvo com Node.js 18+ ou Bun 1.0+, mais Python 3.11+.</li>
 <li>O modo interativo pergunta target, agentes, modo de instalação e confirmacao final.</li>
@@ -1688,31 +1641,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 </ol>
 <aside class="side-note"><p class="side-note-title">Importante: o follow-up do agente depende do host</p><p>Não inicie trabalho no projeto imediatamente depois de instalar. Codex precisa revisar o hook em Settings &gt; Hooks quando aparecer needs review; Claude Code precisa do aviso de conclusão do TES; Cursor precisa reabrir o workspace e ver o relatório de <code>/tes-setup</code>. Só depois que <code>/tes-setup</code> reportar complete, rode <code>/tes-align</code> e use <code>/tes-map</code> para a visão GPS atual antes do trabalho no projeto.</p></aside>
 <p>Opções úteis: <code>--target &lt;path&gt;</code> instala fora do diretório atual; <code>--agent codex|claude|cursor|all</code> escolhe hooks; <code>--yes</code> pula o wizard; <code>--dry-run</code> mostra escritas planejadas; <code>--mode preserve</code> e o padrão.</p>
-<p><code>#v0.3.158</code> e a forma de ref fixa prevista; a certificação remota existe somente depois de <code>release:check</code> passar para a tag publicada. Bundles runtime são preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretório e cache local, não conhecimento do projeto para commit.</p>
+<p><code>#v0.3.159</code> e a forma de ref fixa prevista; a certificação remota existe somente depois de <code>release:check</code> passar para a tag publicada. Bundles runtime são preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretório e cache local, não conhecimento do projeto para commit.</p>
 <p>Superfícies antigas de plugin/root skills (<code>skills/**</code>, <code>.claude-plugin/**</code>, <code>.agents/plugins/**</code> e <code>plugins/tilly-engineer-skills/**</code>) são limpas somente quando são TES-owned, geradas ou vazias. Conteúdo ambiguo ou com sinal de segredo e preservado, salvo em <code>.tes/bk/**</code> e retorna <code>NEEDS_REVIEW</code>.</p>
-          </div>
-        </section>
-
-        <section class="chapter" id="tts-pt" data-section-key="tts">
-          <div class="chapter-head">
-            <span class="chapter-num">01A</span>
-            <h2>Voz opcional: tes-tts com OmniVoice</h2>
-          </div>
-          <div class="chapter-body">
-            <p class="lede"><code>tes-tts</code> pode ler trabalho técnico em voz alta. Quando você quiser uma voz local clonada mais forte, instale OmniVoice como provider opcional; o TES mantém isso fora do pacote e dentro do runtime de usuário.</p>
-            <aside class="side-note"><p class="side-note-title">O que é opcional</p><p>TES instala sem OmniVoice. OmniVoice e escolhido pelo usuário, instalado em um ambiente Python local e usado apenas quando <code>/tes-tts</code> ou um pedido de leitura pedir fala explicitamente.</p></aside>
-<div class="pre-wrap" data-label="runtime global" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>~/.tes/runtime/tes-tts/omnivoice/</code></pre></div>
-<ol class="steps">
-<li>Crie um virtualenv Python 3.11 limpo em <code>~/.tes/runtime/tes-tts/omnivoice/venv</code>.</li>
-<li>Instale PyTorch para seu hardware primeiro, depois instale OmniVoice pelo PyPI ou pelo source GitHub upstream.</li>
-<li>Normalize ou posicione o WAV de referência em <code>~/.tes/runtime/tes-tts/omnivoice/refs/áudio-modelo-clone-mono24k.wav</code>.</li>
-<li>Crie a metadata do perfil <code>tes-tts-local-clone</code> com o caminho do áudio de referência e a transcrição fiel.</li>
-<li>Rode <code>python3 .tes/bin/tes_tts_omnivoice_provider.py probe</code>, depois <code>status</code>, e depois <code>warm-cache --dry-run</code>; <code>probe/status</code> instalados auto-resolvem o venv runtime antes de declarar OmniVoice indisponível.</li>
-<li>Use <code>speak</code> para leituras curtas e <code>speak-long --combine --first-áudio-buffered</code> para material longo que precisa de WAV reproduzivel.</li>
-</ol>
-<div class="table-wrap"><table><thead><tr><th>Superfície</th><th>Política</th></tr></thead><tbody><tr><td>Instalação do provider</td><td>Controlada pelo usuário; não faz parte da instalação normal do TES.</td></tr><tr><td>Pasta runtime</td><td><code>~/.tes/runtime/**</code>; runtime compartilhado de usuário, fora dos commits do pacote.</td></tr><tr><td>Projeto <code>.tes/**</code></td><td>Estado leve, logs, locks, evidência e ponteiros apenas.</td></tr><tr><td>Perfil de voz</td><td><code>tes-tts-local-clone</code> por padrão quando configurado.</td></tr><tr><td>Voice prompt cache</td><td>Estado local protegido; não é artefato commitado.</td></tr><tr><td>Rota servidor</td><td>Compatibilidade legacy de lab, não caminho de produto.</td></tr><tr><td>Áudio gerado</td><td>Evidência local de revisão em pastas runtime ignoradas, salvo decisão do usuário.</td></tr></tbody></table></div>
-<p>Setup detalhado, comandos, política de cache e troubleshooting vivem em <a href="TES-TTS-OMNIVOICE.md">TES-TTS-OMNIVOICE.md</a>. Siga a documentacao upstream do OmniVoice para wheels PyTorch especificos de hardware e mudanças do provider.</p>
-<p>Uso responsavel faz parte do contrato: clone apenas vozes suas ou autorizadas. TES continua redigindo segredos antes da fala, trata comandos e código como texto, evita fala proativa e nunca resume texto do usuário sem pedido explícito.</p>
           </div>
         </section>
 
@@ -1849,7 +1779,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
       <footer class="footer">
 
         <div class="footer-meta">
-          <span>v0.3.158 - Generated from TDS.</span>
+          <span>v0.3.159 - Generated from TDS.</span>
           <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         </div>
       </footer>

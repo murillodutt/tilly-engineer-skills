@@ -27,7 +27,7 @@ authority.
 Future Codex,
 
 you are entering a project that has just crossed an important threshold. Treat
-`/Users/murillo/Dev/tilly-engineer-skills` as an independent v0.1.0 reference
+`~/Dev/tilly-engineer-skills` as an independent v0.1.0 reference
 package, not as an extracted guideline folder. The working thesis is now
 concrete: source lives in `src/**`, explanation and governance live in
 `docs/**`, generated install trees live in ignored `dist/**`, and local gates
@@ -44,11 +44,11 @@ it instead of reshuffling it.
 Begin the new window with a quiet reentry:
 
 ```bash
-cd /Users/murillo/Dev/tilly-engineer-skills
+cd ~/Dev/tilly-engineer-skills
 git status --short --branch --untracked-files=all
 git log -5 --oneline
 npm run commit:check
-python3 /Users/murillo/.codex/skills/.system/skill-creator/scripts/quick_validate.py src/adapters/codex/skills/tes-engineering-discipline
+python3 $CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py src/adapters/codex/skills/tes-engineering-discipline
 git diff --cached --stat
 ```
 

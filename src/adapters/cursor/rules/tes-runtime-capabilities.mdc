@@ -30,7 +30,6 @@ Use these exact TES intents when the user asks for Tilly Engineering Skills:
 - `/tes-adapter`
 - `/tes-bench`
 - `/tes-bump`
-- `/tes-tts`
 
 Compatible aliases:
 
@@ -49,7 +48,6 @@ Compatible aliases:
 - `/tes:adapter`
 - `/tes:bench`
 - `/tes:bump`
-- `/tes:tts`
 - `/tes:check`
 - `/tes:certify`
 - `/tes:recall`
@@ -60,8 +58,7 @@ Compatible aliases:
 Natural intents include: tes init, tes setup, tes update, tes align, tes map,
 generate a maestral /goal prompt, generate a /goal from a PRD,
 gerar um /goal maestral, gerar /goal de um PRD, project GPS, mapa TES,
-tes open obsidian, tes bump, tes tts, read this text aloud,
-leia em voz alta, narrar este texto, align TES, align this project,
+tes open obsidian, tes bump, align TES, align this project,
 map this project, open Obsidian, open this project in Obsidian, Atualizar TES,
 atualizar TES, alinhar TES, alinhar projeto, mapear TES, mapear projeto,
 abrir Obsidian, abrir no Obsidian, initialize TES, install TES, recertify TES,

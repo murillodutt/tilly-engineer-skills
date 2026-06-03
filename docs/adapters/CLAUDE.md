@@ -73,7 +73,7 @@ dedicated decision.
   `/tes-align`, `/tes-open-obsidian`,
   `/tes-goal-maestro`, `/tes-prospect`, `/tes-mine`, `/tes-cortex`, `/tes-mcp`,
   `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, and
-  `/tes-bump`, and `/tes-tts`;
+  `/tes-bump`;
   grouped triggers such as `/tes-curate` route through their owning skills
   instead of a one-file-per-command package.
   `/tes:*` forms remain compatible TES intent aliases. If Claude receives

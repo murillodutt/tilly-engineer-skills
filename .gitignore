@@ -8,6 +8,7 @@ tmp/
 !docs/dist/**
 .tes/bin/*.bak-*
 .tes/bin/__pycache__/
+.tes/bk/
 .tes/field-reports/
 .tes/legacy-retirement/
 .tes/runtime/

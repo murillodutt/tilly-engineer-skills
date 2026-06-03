@@ -386,7 +386,7 @@ This contract is based on:
 
 | Source | Reference | Signal |
 |--------|-----------|--------|
-| TES Wave 1-6 canary convergence | `/Users/murillo/Dev/tes-canaries/RUN-INDEX.md` and retained run reports | Real Build-Test-Fail-Fix loops showed that context must be proven by canaries, not prose. |
+| TES Wave 1-6 canary convergence | `~/Dev/tes-canaries/RUN-INDEX.md` and retained run reports | Real Build-Test-Fail-Fix loops showed that context must be proven by canaries, not prose. |
 | `/tes-init` project-start gate | `docs/install/COMMAND-TRIGGERS.md` | Initial context generation is necessary but not enough for deep alignment. |
 | Context mesh method | `docs/mesh/CONTEXT-MESH-METHOD.md` and `docs/mesh/CONTEXT-MESH-CONVERGENCE.md` | Context becomes contract only when linked to execution, verification, evidence, and transfer. |
 | User project-wiki thesis | Conversation directive captured before this source-of-truth document | Durable Markdown, immutable sources, schema, index, log, crosslinks, lint, Git, and Obsidian visualization are core principles. |
