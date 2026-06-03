@@ -31,6 +31,7 @@ from tes_tts_omnivoice_runtime_support import (
     build_first_audio_long_read_plan,
     build_long_read_plan,
     combine_wav_files,
+    handoff_to_player,
     playback_audio,
     playback_outputs,
     provider_prepare_ms,
@@ -1841,6 +1842,16 @@ def command_speak_long(args: argparse.Namespace) -> int:
         provider_exclusive=True,
         fallback_used=False,
     )
+    # Opt-in: hand reproduction to the external player, which observes this dir
+    # and plays progressively. When delegated, the built-in afplay/buffered path
+    # is suppressed; on failure or when absent we keep the afplay path below.
+    player_handoff = (
+        handoff_to_player(output_dir) if getattr(args, "player_handoff", False) else None
+    )
+    handed_off_to_player = bool(player_handoff and player_handoff.get("handoff_status") == "delegated")
+    if player_handoff is not None:
+        monitor.record("player_handoff", **player_handoff)
+
     outputs: list[dict[str, Any]] = []
     playback_results: list[dict[str, Any]] = []
     buffered_playback: BufferedPlaybackQueue | None = None
@@ -1873,7 +1884,7 @@ def command_speak_long(args: argparse.Namespace) -> int:
                 status = "FAIL"
                 error = "resident session stdin is unavailable"
             else:
-                if args.play and args.first_audio_buffered:
+                if args.play and args.first_audio_buffered and not handed_off_to_player:
                     buffered_playback = BufferedPlaybackQueue(
                         started_at=total_started,
                         planned_gap_ms=args.inter_chunk_silence_ms,
@@ -1938,7 +1949,12 @@ def command_speak_long(args: argparse.Namespace) -> int:
                             )
                         elif buffered_playback_started:
                             buffered_playback.enqueue(chunk_id, output)
-                    if args.play and not args.combine and not args.first_audio_buffered:
+                    if (
+                        args.play
+                        and not args.combine
+                        and not args.first_audio_buffered
+                        and not handed_off_to_player
+                    ):
                         playback = playback_audio(output)
                         playback_item = {"id": chunk_id, "output": str(output), **playback}
                         playback_results.append(playback_item)
@@ -2004,7 +2020,12 @@ def command_speak_long(args: argparse.Namespace) -> int:
         if combined_result.get("combined_status") != "PASS" and status == "PASS":
             status = "COMBINE_FAILED"
             error = str(combined_result.get("reason") or "combined WAV creation failed")
-        elif args.play and status == "PASS" and not args.first_audio_buffered:
+        elif (
+            args.play
+            and status == "PASS"
+            and not args.first_audio_buffered
+            and not handed_off_to_player
+        ):
             playback = playback_audio(Path(str(combined_result["combined_output"])))
             playback_item = {"id": "combined", "output": combined_result["combined_output"], **playback}
             playback_results.append(playback_item)
@@ -3445,6 +3466,15 @@ def add_runtime_args(parser: argparse.ArgumentParser, *, ref_audio_required: boo
         choices=PROSODY_WARMUP_CHOICES,
         default="none",
         help="Optional OmniVoice provider-only prosody warmup tag for explicit conversational experiments.",
+    )
+    parser.add_argument(
+        "--player-handoff",
+        action="store_true",
+        help=(
+            "Opt-in: hand reproduction to the external tes-tts-player "
+            "(TES_TTS_PLAYER_BIN) which observes the session and plays progressively "
+            "with human narration controls. Falls back to afplay when unavailable."
+        ),
     )
     parser.add_argument(
         "--instruct",

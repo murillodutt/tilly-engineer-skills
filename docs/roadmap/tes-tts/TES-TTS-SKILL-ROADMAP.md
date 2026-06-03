@@ -74,7 +74,7 @@ durable conversion cache, or proactive `speak`.
   `TES-TTS-LAB-STREAMING-LATENCY-ROADMAP.md`; MLX/streaming lab artifacts are
   obsolete and removed. The canonical direct OmniVoice runtime remains
   required when the optional provider is configured.
-- SUB-001: `serve` opt-in `emit_subtitle` returns redacted `subtitle_text` for the external player's captions; verified live. Registry holds detail.
+- SUB-001/PLH-001: opt-in external-player integration. `serve` `emit_subtitle` returns redacted `subtitle_text`; `speak-long --player-handoff` hands progressive playback to `TES_TTS_PLAYER_BIN` (afplay fallback). Verified live. Registry holds detail.
 
 ## Next Cut
 No active OmniVoice lab cut. A future round must start from fresh community

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import os
 from pathlib import Path
 import queue
 import re
@@ -65,6 +66,47 @@ def playback_audio(output: Path) -> dict[str, Any]:
         "player": player,
         "returncode": completed.returncode,
         "playback_wall_ms": round((time.perf_counter() - started) * 1000, 3),
+    }
+
+
+def tes_tts_player_binary() -> str | None:
+    """Resolve the external tes-tts-player binary, if the adopter installed one.
+
+    Opt-in only: returns the path from `TES_TTS_PLAYER_BIN` when it points at an
+    existing executable, else None. Absence means the producer keeps using afplay,
+    so there is zero regression for anyone without the player.
+    """
+    candidate = os.environ.get("TES_TTS_PLAYER_BIN")
+    if candidate and Path(candidate).is_file() and os.access(candidate, os.X_OK):
+        return candidate
+    return None
+
+
+def handoff_to_player(session_dir: Path) -> dict[str, Any]:
+    """Hand reproduction off to the external player once per session.
+
+    Launches `tes-tts-player ttp stream <session_dir>` detached so the player
+    observes the chunk WAVs as they are written and plays progressively, with the
+    human controlling the narration. Returns a status dict; on any failure the
+    caller falls back to the built-in afplay path.
+    """
+    started = time.perf_counter()
+    binary = tes_tts_player_binary()
+    if not binary:
+        return {"handoff_status": "not_available", "player": None}
+    try:
+        subprocess.Popen(  # noqa: S603 — detached, fixed argv, opt-in binary
+            [binary, "ttp", "stream", str(session_dir)],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except OSError as exc:
+        return {"handoff_status": "failed", "player": binary, "error": str(exc)}
+    return {
+        "handoff_status": "delegated",
+        "player": binary,
+        "handoff_wall_ms": round((time.perf_counter() - started) * 1000, 3),
     }
 
 

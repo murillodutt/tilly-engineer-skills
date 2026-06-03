@@ -53,6 +53,17 @@ every prompt when a range is enough.
 | Live evidence | Request with `sk-…SECRET` returned `My key is [REDACTED_SECRET] here.` (redaction_count 1); default request emitted no subtitle field. 20 tes-tts oracles PASS. |
 | Release | Delivered behavior; version bump 0.3.158 → 0.3.159 + `docs/dist/0.3.159/**` intentionally deferred to the next release cycle (owner decision). |
 
+## PLH-001 External Player Handoff (opt-in)
+
+| Item | Detail |
+|------|--------|
+| Surface | `command_speak_long` flag `--player-handoff` (default off) + `handoff_to_player` / `tes_tts_player_binary` in `tes_tts_omnivoice_runtime_support.py`. |
+| Behavior | When on AND `TES_TTS_PLAYER_BIN` points at an executable, launches `<bin> ttp stream <session_dir>` once (detached); the external player observes the WAVs and plays progressively with human narration controls. The built-in `BufferedPlaybackQueue`/afplay paths are suppressed only when delegation succeeds. |
+| Boundary | `BufferedPlaybackQueue` is untouched in code (control flow is gated, not rewritten). Player is a separate project; producer tree stays read-only. |
+| Fallback | Flag off, binary absent, or launch error → afplay path unchanged (zero regression). |
+| Live evidence | Without env → `not_available`; with `TES_TTS_PLAYER_BIN` → `delegated` (launches `ttp stream`). Full `commit:check` (57 validators) PASS. |
+| Release | Delivered behavior; same deferred bump as SUB-001 (0.3.158 → 0.3.159 + bundle) to the next release cycle. |
+
 ## Benchmark Fixtures
 
 | Surface | Role | Status |
