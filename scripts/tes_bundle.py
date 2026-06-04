@@ -1382,6 +1382,118 @@ def restore_backup(target: Path, backup_id: str, *, dry_run: bool = False, yes: 
     }
 
 
+def latest_backup_id(target: Path) -> str | None:
+    backup_root = target / BACKUP_ROOT
+    if not backup_root.is_dir():
+        return None
+    candidates = sorted(
+        (p.name for p in backup_root.iterdir() if p.is_dir() and (p / "manifest.json").is_file()),
+        reverse=True,
+    )
+    return candidates[0] if candidates else None
+
+
+def uninstall_capsule(target: Path, *, dry_run: bool = False, yes: bool = False) -> dict[str, Any]:
+    """ADR 0004 SPEC-003: reverse a TES installation and prove zero residue.
+
+    Order: restore project-owned files from the latest backup, remove TES-owned
+    surfaces per the manifest uninstall_action, then remove the capsule. Inherits
+    the sha256-fail-safe from cleanup_obsolete_runtime: a file whose checksum
+    diverges from the manifest is preserved and reported as needs-review, never
+    silently deleted.
+    """
+    target = target.resolve()
+    if not dry_run and not yes:
+        return {"version": VERSION, "status": "FAIL", "failures": ["uninstall requires --yes"]}
+    manifest = read_installed_manifest(target)
+    if not manifest:
+        return {"version": VERSION, "status": "SKIP", "reason": "no installed manifest", "target": str(target)}
+
+    actions: list[dict[str, str]] = []
+    review_items: list[dict[str, str]] = []
+
+    # 1. Restore project-owned files from the latest backup.
+    backup_id = latest_backup_id(target)
+    restore = (
+        restore_backup(target, backup_id, dry_run=dry_run, yes=yes)
+        if backup_id
+        else {"status": "NO_BACKUP", "actions": []}
+    )
+
+    # 2. Remove TES-owned surfaces per uninstall_action, sha256-fail-safe.
+    for entry in manifest.get("entries", []):
+        if not isinstance(entry, dict):
+            continue
+        relpath = str(entry.get("path") or "")
+        if not relpath:
+            continue
+        layer = str(entry.get("layer") or "")
+        action = str(entry.get("uninstall_action") or uninstall_action_for(layer, str(entry.get("owner") or "")))
+        dest = target / relpath
+        if action == "preserve":
+            actions.append({"path": relpath, "action": "preserve-project-owned"})
+            continue
+        if not dest.exists():
+            actions.append({"path": relpath, "action": "already-absent"})
+            continue
+        # Capsule paths are removed wholesale in step 3; skip here.
+        if relpath.startswith(".tes/"):
+            continue
+        # Root bootloaders are composed (TES:CORE + PROJECT-OVERLAY). Decompose:
+        # strip the TES block and keep the project's overlay content; delete the
+        # file only when it held no project content.
+        if layer == "context_governance" and dest.is_file():
+            stripped = root_context.strip_tes_blocks(dest.read_text(encoding="utf-8"))
+            if not stripped["had_tes"]:
+                actions.append({"path": relpath, "action": "no-tes-block-skip"})
+                continue
+            if stripped["project_text"]:
+                actions.append({"path": relpath, "action": "would-strip-tes-block" if dry_run else "strip-tes-block"})
+                if not dry_run:
+                    dest.write_text(stripped["project_text"], encoding="utf-8")
+            else:
+                actions.append({"path": relpath, "action": "would-remove" if dry_run else "remove"})
+                if not dry_run:
+                    dest.unlink()
+            continue
+        expected = str(entry.get("sha256") or "")
+        if dest.is_file() and expected and sha256_file(dest) != expected:
+            review_items.append({"path": relpath, "action": "preserve-modified-needs-review", "reason": "manifest-sha256-mismatch"})
+            continue
+        actions.append({"path": relpath, "action": "would-remove" if dry_run else "remove"})
+        if not dry_run:
+            if dest.is_dir():
+                shutil.rmtree(dest)
+            else:
+                dest.unlink()
+
+    # 3. Remove the capsule last.
+    capsule = target / ".tes"
+    if capsule.exists():
+        actions.append({"path": ".tes", "action": "would-remove-capsule" if dry_run else "remove-capsule"})
+        if not dry_run:
+            shutil.rmtree(capsule)
+
+    status = "DRY-RUN" if dry_run else ("NEEDS_REVIEW" if review_items else "UNINSTALLED")
+    return {
+        "version": VERSION,
+        "status": status,
+        "target": str(target),
+        "backup_id": backup_id,
+        "restore": summarize_restore(restore),
+        "actions": actions,
+        "review_items": review_items,
+    }
+
+
+def summarize_restore(restore: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "status": restore.get("status"),
+        "backup_id": restore.get("backup_id"),
+        "restored": len([a for a in restore.get("actions", []) if str(a.get("action")).endswith("restore")]),
+    }
+
+
 def public_index_data(index: Path | None = None) -> dict[str, Any]:
     if index is None:
         return {}

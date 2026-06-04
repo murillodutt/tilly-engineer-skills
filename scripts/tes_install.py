@@ -753,6 +753,51 @@ def resolve_attach(attach: list[str] | None) -> set[str]:
     return {"capsule", *(s for s in requested if s in ALL_ATTACH_SURFACES)}
 
 
+def uninstall(args: argparse.Namespace) -> int:
+    """ADR 0004 SPEC-003: reverse a TES installation and certify zero residue."""
+    target = target_root(args.target)
+    if not target.exists() or not target.is_dir():
+        print(json.dumps({"version": VERSION, "status": "FAIL", "failures": [f"target is not a directory: {target}"]}, indent=2))
+        print("[tes-uninstall] FAIL")
+        return 1
+    blocked = package_source_block(target, "uninstall")
+    if blocked:
+        print(json.dumps(blocked, indent=2, sort_keys=True))
+        print("[tes-uninstall] BLOCKED")
+        return 2
+
+    import tes_bundle
+
+    result = tes_bundle.uninstall_capsule(target, dry_run=args.dry_run, yes=args.yes)
+
+    # Fold the residue oracle verdict in (skip on dry-run; nothing was removed).
+    residue: dict[str, Any] = {"status": "SKIP", "reason": "dry-run"}
+    if not args.dry_run and result.get("status") in {"UNINSTALLED", "NEEDS_REVIEW"}:
+        import capsule_residue_oracle
+
+        residue = capsule_residue_oracle.evaluate(target)
+    result["residue"] = residue
+
+    status = str(result.get("status") or "")
+    if status == "FAIL":
+        verdict = "FAIL"
+    elif status == "SKIP":
+        verdict = "SKIP"
+    elif status == "DRY-RUN":
+        verdict = "DRY-RUN"
+    elif status == "NEEDS_REVIEW" or residue.get("status") == "FAIL":
+        # Either modified files were preserved, or active residue remains.
+        verdict = "NEEDS_REVIEW"
+        result["status"] = "NEEDS_REVIEW"
+    else:
+        verdict = "PASS"
+        result["status"] = "PASS"
+
+    print(json.dumps(result, indent=2, sort_keys=True))
+    print("[tes-uninstall] " + verdict)
+    return 0 if verdict in {"PASS", "DRY-RUN", "SKIP"} else 1
+
+
 def install(args: argparse.Namespace) -> int:
     target = target_root(args.target)
     if not target.exists() or not target.is_dir():
@@ -2072,6 +2117,12 @@ def main() -> int:
     status_parser = subparsers.add_parser("status")
     status_parser.add_argument("--target", type=Path, default=Path.cwd())
 
+    # ADR 0004 SPEC-003: reverse a TES installation and prove zero active residue.
+    uninstall_parser = subparsers.add_parser("uninstall")
+    uninstall_parser.add_argument("--target", type=Path, default=Path.cwd())
+    uninstall_parser.add_argument("--dry-run", action="store_true")
+    uninstall_parser.add_argument("--yes", action="store_true")
+
     args = parser.parse_args()
     if sys.version_info < MIN_PYTHON:
         return python_runtime_block(args.command)
@@ -2084,6 +2135,8 @@ def main() -> int:
         print(json.dumps(result, indent=2, sort_keys=True))
         print("[tes-postinstall] " + result["status"])
         return code
+    if args.command == "uninstall":
+        return uninstall(args)
     if args.command == "hook":
         return hook(args)
     if args.command == "status":
