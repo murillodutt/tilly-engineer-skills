@@ -26,6 +26,12 @@ STATUS_NEEDS_ALIGN = "NEEDS_ALIGN"
 STATUS_NEEDS_CONTEXT = "NEEDS_CONTEXT"
 STATUS_BLOCKED = "BLOCKED"
 STATUS_NOT_AVAILABLE = "NOT_AVAILABLE"
+# ADR 0004 L4: capsule-mode GPS. The internal projection is the default GPS
+# state; docs/agents/** is an export surface attached via docs-mesh.
+GPS_STATE_REL = Path(".tes/gps/state.json")
+CONTEXT_REL = Path(".tes/context")
+STATUS_CAPSULE_PASS = "CAPSULE_PASS"
+STATUS_CAPSULE_NEEDS_EVIDENCE = "CAPSULE_NEEDS_EVIDENCE"
 SCRIPT_PATH = Path(__file__).resolve()
 PACKAGE_MODE = (SCRIPT_PATH.parents[1] / "package.json").exists() and SCRIPT_PATH.parent.name == "scripts"
 
@@ -194,6 +200,18 @@ def detect_gate(target: Path) -> str:
     return "project_alignment_oracle.py --target ."
 
 
+def docs_mesh_attached(target: Path) -> bool:
+    """ADR 0004 L4: docs-mesh is attached when docs/agents/** exists with content.
+
+    Mirrors how the residue/attach-health detectors treat the docs-mesh surface.
+    In capsule mode (no docs-mesh) GPS runs from the internal projection.
+    """
+    agents_root = target / AGENTS_REL
+    if not agents_root.exists():
+        return False
+    return any(p.is_file() for p in agents_root.rglob("*"))
+
+
 def classify_status(target: Path) -> tuple[str, list[str]]:
     agents_root = target / AGENTS_REL
     roadmap = target / ROADMAP_REL
@@ -206,6 +224,91 @@ def classify_status(target: Path) -> tuple[str, list[str]]:
         limits.append("PROJECT-ROADMAP.md is missing; run /tes-align first.")
         return STATUS_NEEDS_ALIGN, limits
     return STATUS_PASS, limits
+
+
+def build_capsule_projection(target: Path) -> dict[str, Any]:
+    """ADR 0004 L4 SPEC-001: GPS state from capsule state + repo scan only.
+
+    No dependency on docs/agents/**. Position comes from postinstall/lock capsule
+    state plus a git scan and the install manifest. Persisted under .tes/gps/**.
+    """
+    target = target.resolve()
+    postinstall = read_json(target / ".tes/postinstall.json")
+    lock = read_json(target / ".tes/tes-install-lock.json")
+    manifest = read_json(target / ".tes/manifest.json")
+    git = git_info(target)
+    gate = detect_gate(target)
+
+    last_status = str(postinstall.get("last_status") or postinstall.get("state") or "").upper()
+    version = str(postinstall.get("version") or lock.get("version") or VERSION)
+    installed = bool(postinstall or lock or manifest)
+
+    if last_status in {"PASS", "COMPLETE"}:
+        position = f"TES {version} capsule installed and certified"
+        phase = "Capsule runtime active"
+        confidence = "high"
+        status = STATUS_CAPSULE_PASS
+    elif installed:
+        position = f"TES {version} capsule present"
+        phase = "Capsule runtime present; setup evidence incomplete"
+        confidence = "medium"
+        status = STATUS_CAPSULE_PASS
+    else:
+        position = "No capsule state found"
+        phase = "Capsule not installed"
+        confidence = "low"
+        status = STATUS_CAPSULE_NEEDS_EVIDENCE
+
+    evidence: list[str] = []
+    if postinstall:
+        evidence.append(".tes/postinstall.json")
+    if lock:
+        evidence.append(".tes/tes-install-lock.json")
+    if manifest:
+        evidence.append(".tes/manifest.json")
+    if git.available and git.head:
+        evidence.append(f"git:{git.branch or 'HEAD'}@{git.head}")
+
+    limits: list[str] = []
+    if not git.available and git.limit:
+        limits.append(git.limit)
+    elif git.dirty:
+        limits.append("Git worktree has uncommitted changes; map is a position report, not a release claim.")
+
+    next_step = (
+        "Attach docs-mesh to export the roadmap block, or continue capsule work."
+        if status == STATUS_CAPSULE_PASS
+        else "Run the TES installer to create capsule state."
+    )
+
+    return {
+        "version": VERSION,
+        "mode": "capsule",
+        "status": status,
+        "target": str(target),
+        "position": position,
+        "current_phase": phase,
+        "next_step": next_step,
+        "proof_gate": gate,
+        "confidence": confidence,
+        "evidence": evidence,
+        "limits": limits,
+        "git": {"available": git.available, "branch": git.branch, "head": git.head, "dirty": git.dirty},
+    }
+
+
+def write_capsule_projection(target: Path, projection: dict[str, Any]) -> dict[str, Any]:
+    """Persist the GPS projection under .tes/gps/** (capsule-scoped)."""
+    state_path = target / GPS_STATE_REL
+    context_dir = target / CONTEXT_REL
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    context_dir.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(projection, indent=2, sort_keys=True) + "\n"
+    changed = write_text_if_changed(state_path, payload)
+    # A compact human-readable position pointer in the context dir.
+    pointer = f"# TES GPS Position\n\n{projection['position']}\n\nNext: {projection['next_step']}\n"
+    write_text_if_changed(context_dir / "POSITION.md", pointer)
+    return {"changed": changed, "path": relpath(target, state_path)}
 
 
 def build_model(target: Path) -> dict[str, Any]:
