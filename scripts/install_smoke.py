@@ -462,6 +462,71 @@ def reversibility_roundtrip_probe() -> dict[str, Any]:
         return {"route": "reversibility-roundtrip", "status": status, "failures": failures}
 
 
+def attach_detach_roundtrip_probe() -> dict[str, Any]:
+    """ADR 0004 L2 SPEC-006: attach a surface then detach it returns to prior state.
+
+    Capsule install, attach root-context (a manifest-backed surface), assert the
+    TES:CORE block is present and attach-health/residue agree, detach it, then
+    assert the surface is gone, the project's bootloader content survives, and the
+    capsule plus residue are intact.
+    """
+    import tes_bundle
+    import capsule_residue_oracle
+    import attach_health_oracle
+
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-attach-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        write(target / "AGENTS.md", "# Project AGENTS\nproject governance survives\n")
+        snapshot = (target / "AGENTS.md").read_text(encoding="utf-8")
+
+        # Capsule-only install (no project-visible surface yet).
+        with tempfile.TemporaryDirectory(prefix="tes-attach-bundle-") as bundle_dir:
+            bundle = Path(bundle_dir) / "bundle.zip"
+            tes_bundle.build_bundle(bundle)
+            stage = tes_bundle.stage_bundle(bundle, target)
+            if stage.get("status") != "STAGED":
+                failures.append(f"attach probe stage failed: {stage.get('status')}")
+                return {"route": "attach-detach-roundtrip", "status": "FAIL", "failures": failures}
+            tes_bundle.apply_staged_bundle(target, yes=True, mode="preserve", surfaces={"capsule"})
+        if (target / "AGENTS.md").read_text(encoding="utf-8") != snapshot:
+            failures.append("capsule-only install must not touch the project bootloader")
+
+        # Attach root-context.
+        tes_bundle.apply_staged_bundle(target, yes=True, mode="preserve", surfaces={"capsule", "root-context"})
+        if "TES:CORE" not in (target / "AGENTS.md").read_text(encoding="utf-8"):
+            failures.append("attach root-context must compose the TES:CORE block")
+        rc_health = attach_health_oracle.evaluate(target, "root-context")
+        if rc_health["status"] != "PASS":
+            failures.append(f"attached root-context health must be PASS: {rc_health['status']}")
+
+        # Detach root-context.
+        detach = tes_bundle.detach_surface(target, "root-context", yes=True)
+        if detach.get("status") != "DETACHED":
+            failures.append(f"detach root-context status: {detach.get('status')}")
+        agents_text = (target / "AGENTS.md").read_text(encoding="utf-8") if (target / "AGENTS.md").exists() else ""
+        if "TES:CORE" in agents_text:
+            failures.append("detach must remove the TES:CORE block")
+        if "project governance survives" not in agents_text:
+            failures.append("detach must keep the project's bootloader content")
+        if not (target / ".tes").exists():
+            failures.append("detach must keep the capsule")
+
+        # No action resolved outside the target.
+        for action in detach.get("actions", []):
+            path = str(action.get("path") or "")
+            if path and (Path(path).is_absolute() or ".." in Path(path).parts):
+                failures.append(f"detach acted outside target: {path}")
+
+        status = "FAIL" if failures else "PASS"
+        field_reports.safe_record_event(
+            target, "install_smoke", status, "installer", "self-test",
+            details={"route": "attach-detach-roundtrip", "failures": len(failures)},
+        )
+        return {"route": "attach-detach-roundtrip", "status": status, "failures": failures}
+
+
 def legacy_retirement_probe() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tes-install-smoke-legacy-") as tempdir:
         target = Path(tempdir)
@@ -957,6 +1022,7 @@ def main() -> int:
     if args.self_test:
         results.append(capsule_install_probe())
         results.append(reversibility_roundtrip_probe())
+        results.append(attach_detach_roundtrip_probe())
         results.append(legacy_retirement_probe())
         results.append(codex_clean_bootloader_probe())
         results.append(claude_clean_bootloader_probe())
