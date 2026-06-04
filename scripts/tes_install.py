@@ -913,19 +913,34 @@ def attach(args: argparse.Namespace) -> int:
 
     import tes_bundle
 
-    # The bundle only carries capsule and root-context entries; surfaces produced
-    # by runtime writers (mcp, hooks, docs-mesh) are not bundle-applied here.
-    if surface not in tes_bundle.MANIFEST_BACKED_SURFACES:
-        result = {
-            "version": VERSION,
-            "status": "NEEDS_REVIEW",
-            "target": str(target),
-            "surface": surface,
-            "reason": "surface is produced by a runtime writer (mcp/hooks/docs-mesh); its attach path is owned by a later unit",
-        }
+    # Runtime-writer surfaces (mcp, hooks, docs-mesh) are not bundle-applied; run
+    # their writers, then verify via the attach-health oracle (ADR 0004 L3 SPEC-005).
+    if surface in {"mcp", "hooks", "docs-mesh"}:
+        if surface == "mcp":
+            import install_mcp  # type: ignore
+            actions, failures = install_mcp.install_configs(
+                target, selected_agents(args.agent), args.dry_run, False, True, False,
+            )
+            writer = {"actions": actions, "failures": failures}
+        elif surface == "hooks":
+            writer = {"actions": install_hooks(target, selected_agents(args.agent), args.dry_run)}
+        else:  # docs-mesh
+            if args.dry_run:
+                writer = {"status": "DRY-RUN", "action": "would-run-tes-init"}
+            else:
+                writer = run_helper(target, "tes_init.py", ("--target", "{target}", "--yes"), args.timeout)
+        health = {"status": "SKIP", "reason": "dry-run"}
+        if not args.dry_run:
+            import attach_health_oracle  # type: ignore
+            health = attach_health_oracle.evaluate(target, surface)
+        status = "DRY-RUN" if args.dry_run else (
+            "ATTACHED" if health.get("status") in {"PASS", "PENDING_TRUST", "PENDING_HOST_RESTART", "HOST_UNOBSERVABLE", "NOT_APPLIED"}
+            else str(health.get("status"))
+        )
+        result = {"version": VERSION, "status": status, "target": str(target), "surface": surface, "writer": writer, "health": health}
         print(json.dumps(result, indent=2, sort_keys=True))
-        print("[tes-attach] NEEDS_REVIEW")
-        return 1
+        print("[tes-attach] " + status)
+        return 0 if status in {"ATTACHED", "DRY-RUN"} else 1
 
     if not tes_bundle.read_staged_manifest(target):
         if tes_bundle.source_package_available():
