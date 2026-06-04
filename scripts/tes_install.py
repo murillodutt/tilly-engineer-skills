@@ -332,6 +332,101 @@ def remove_tes_claude_sessionstart_hooks(data: dict[str, Any]) -> None:
     hooks["SessionStart"] = retained_groups
 
 
+def is_tes_hook_command(value: Any) -> bool:
+    """True for a hook command string that invokes the TES hook entrypoint."""
+    text = value if isinstance(value, str) else json.dumps(value, sort_keys=True)
+    return ".tes/bin/tes_install.py" in text and "hook" in text
+
+
+def remove_tes_cursor_hooks(data: dict[str, Any]) -> None:
+    """Inverse of install_cursor_hook (ADR 0004 L3 SPEC-002).
+
+    Remove only TES handlers from each event array, preserving non-TES hooks.
+    """
+    hooks = data.get("hooks")
+    if not isinstance(hooks, dict):
+        return
+    for event, items in list(hooks.items()):
+        if not isinstance(items, list):
+            continue
+        hooks[event] = [
+            item for item in items
+            if not (isinstance(item, dict) and is_tes_hook_command(item.get("command")))
+        ]
+
+
+def remove_tes_codex_hook_text(text: str) -> str:
+    """Inverse of install_codex_hook: drop the TES SessionStart hook block and the
+    codex_hooks feature flag, preserving any other Codex config (L3 SPEC-002).
+    """
+    lines = text.splitlines()
+    # Remove the marked TES hook block: from the marker comment to the next
+    # top-level section header (or EOF).
+    marker = "# TES first-session post-install hook."
+    try:
+        start = next(i for i, line in enumerate(lines) if line.strip() == marker)
+    except StopIteration:
+        start = None
+    if start is not None:
+        end = len(lines)
+        for idx in range(start + 1, len(lines)):
+            stripped = lines[idx].strip()
+            # Next top-level [section] or [[array.table]] that is not part of the
+            # TES hook block ends the block. The TES block's own sub-tables start
+            # with [[hooks.SessionStart...]]; stop at the first header that does
+            # not belong to hooks.SessionStart.
+            if (stripped.startswith("[") and stripped.endswith("]")
+                    and not stripped.lstrip("[").startswith("hooks.SessionStart")
+                    and not stripped.lstrip("[").startswith("hooks.SessionStart.hooks")):
+                end = idx
+                break
+        lines = [*lines[:start], *lines[end:]]
+    # Remove the codex_hooks feature flag line.
+    lines = [line for line in lines if line.strip() != "codex_hooks = true"]
+    body = "\n".join(lines).strip()
+    return (body + "\n") if body else ""
+
+
+def remove_tes_hooks(target: Path, agent: str, dry_run: bool = False) -> dict[str, str]:
+    """Unified hook remover (ADR 0004 L3 SPEC-002). Writer-inverse per agent;
+    preserves non-TES hooks; removes a TES-only file when it becomes empty."""
+    if agent == "claude":
+        path = target / ".claude/settings.json"
+        if not path.exists():
+            return {"agent": agent, "action": "already-absent"}
+        data = read_json(path)
+        remove_tes_claude_sessionstart_hooks(data)
+        text = json.dumps(data, indent=2, sort_keys=True) + "\n"
+        return {**write_text_if_changed(path, text, target, dry_run), "agent": agent}
+    if agent == "cursor":
+        path = target / ".cursor/hooks.json"
+        if not path.exists():
+            return {"agent": agent, "action": "already-absent"}
+        data = read_json(path)
+        remove_tes_cursor_hooks(data)
+        hooks = data.get("hooks")
+        # If only TES hooks existed and all event arrays are now empty, and the
+        # file holds nothing but version+hooks, remove the TES-only file.
+        only_empty = isinstance(hooks, dict) and all(not v for v in hooks.values())
+        if only_empty and set(data.keys()) <= {"version", "hooks"}:
+            if not dry_run:
+                path.unlink()
+            return {"agent": agent, "path": rel(path, target), "action": "would-remove-file" if dry_run else "remove-file"}
+        text = json.dumps(data, indent=2, sort_keys=True) + "\n"
+        return {**write_text_if_changed(path, text, target, dry_run), "agent": agent}
+    if agent == "codex":
+        path = target / ".codex/config.toml"
+        if not path.exists():
+            return {"agent": agent, "action": "already-absent"}
+        stripped = remove_tes_codex_hook_text(path.read_text(encoding="utf-8"))
+        if not stripped.strip():
+            if not dry_run:
+                path.unlink()
+            return {"agent": agent, "path": rel(path, target), "action": "would-remove-file" if dry_run else "remove-file"}
+        return {**write_text_if_changed(path, stripped, target, dry_run), "agent": agent}
+    return {"agent": agent, "action": "unsupported"}
+
+
 def install_claude_hook(target: Path, dry_run: bool) -> dict[str, str]:
     path = target / ".claude/settings.json"
     data = read_json(path)
