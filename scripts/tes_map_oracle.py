@@ -145,15 +145,23 @@ def self_test() -> dict[str, Any]:
         if (capsule / "docs/agents").exists():
             failures.append("capsule write leaked docs/agents (export must be gated)")
 
-        # Coexistence: both capsule state and docs/agents present -> capsule is the
-        # source of truth (mode reported), project roadmap content untouched.
+        # Coexistence: both capsule state and docs/agents present. Attached mode is
+        # used for the block, but the CAPSULE is the authoritative position source,
+        # and project roadmap content outside the managed markers is untouched.
         coexist = Path(tmp) / "coexist"
         tes_map.create_fixture(coexist)  # creates docs/agents AND .tes capsule state
+        roadmap_co = coexist / tes_map.ROADMAP_REL
+        # Inject a project-authored line outside the managed markers.
+        sentinel = "PROJECT-AUTHORED-LINE-must-survive"
+        roadmap_co.write_text(roadmap_co.read_text(encoding="utf-8") + f"\n## Project Notes\n\n- {sentinel}\n", encoding="utf-8")
         coexist_model = tes_map.build_model(coexist)
-        if coexist_model.get("mode") == "capsule":
-            failures.append("coexistence with docs-mesh attached must use attached mode")
+        if coexist_model.get("authoritative_source") != "capsule":
+            failures.append("coexistence must report capsule as the authoritative source")
         if coexist_model["status"] != tes_map.STATUS_PASS:
             failures.append("coexistence attached model did not pass")
+        tes_map.update_roadmap(coexist, coexist_model)
+        if sentinel not in roadmap_co.read_text(encoding="utf-8"):
+            failures.append("coexistence write removed project-authored content outside markers")
 
         return {
             "status": "FAIL" if failures else "PASS",

@@ -409,8 +409,22 @@ def build_model(target: Path) -> dict[str, Any]:
     else:
         confidence = "unknown"
 
+    # ADR 0004 L4 SPEC-005 coexistence: when both docs-mesh and capsule state are
+    # present, the capsule is the authoritative source of position; the managed
+    # docs block is a projection of it. The project's roadmap content outside the
+    # managed markers is never touched (replace_or_insert_block only edits between
+    # markers). Report which source was authoritative.
+    capsule_present = bool(postinstall or lock or (target / GPS_STATE_REL).exists())
+    authoritative_source = "capsule" if capsule_present else "docs-mesh"
+    if capsule_present:
+        projection = build_capsule_projection(target)
+        if projection["status"] == STATUS_CAPSULE_PASS:
+            last_proven = projection["position"]
+
     return {
         "version": VERSION,
+        "mode": "attached",
+        "authoritative_source": authoritative_source,
         "status": status,
         "target": str(target),
         "roadmap": str(roadmap_path),
