@@ -798,6 +798,83 @@ def uninstall(args: argparse.Namespace) -> int:
     return 0 if verdict in {"PASS", "DRY-RUN", "SKIP"} else 1
 
 
+def attach(args: argparse.Namespace) -> int:
+    """ADR 0004 SPEC-002: attach one project-visible surface to an installed capsule."""
+    target = target_root(args.target)
+    if not target.exists() or not target.is_dir():
+        print(json.dumps({"version": VERSION, "status": "FAIL", "failures": [f"target is not a directory: {target}"]}, indent=2))
+        print("[tes-attach] FAIL")
+        return 1
+    blocked = package_source_block(target, "attach")
+    if blocked:
+        print(json.dumps(blocked, indent=2, sort_keys=True))
+        print("[tes-attach] BLOCKED")
+        return 2
+    surface = args.surface
+    if surface == "capsule" or surface not in ALL_ATTACH_SURFACES:
+        print(json.dumps({"version": VERSION, "status": "FAIL", "failures": [f"attach surface must be one of {', '.join(ALL_ATTACH_SURFACES)}"]}, indent=2))
+        print("[tes-attach] FAIL")
+        return 1
+
+    import tes_bundle
+
+    # The bundle only carries capsule and root-context entries; surfaces produced
+    # by runtime writers (mcp, hooks, docs-mesh) are not bundle-applied here.
+    if surface not in tes_bundle.MANIFEST_BACKED_SURFACES:
+        result = {
+            "version": VERSION,
+            "status": "NEEDS_REVIEW",
+            "target": str(target),
+            "surface": surface,
+            "reason": "surface is produced by a runtime writer (mcp/hooks/docs-mesh); its attach path is owned by a later unit",
+        }
+        print(json.dumps(result, indent=2, sort_keys=True))
+        print("[tes-attach] NEEDS_REVIEW")
+        return 1
+
+    if not tes_bundle.read_staged_manifest(target):
+        if tes_bundle.source_package_available():
+            stage = tes_bundle.stage_source_bundle(target, adapter=args.agent)
+        else:
+            stage = tes_bundle.stage_preferred_bundle(target, adapter=args.agent, timeout=args.timeout)
+        if stage.get("status") not in {"STAGED", "DRY-RUN"}:
+            print(json.dumps({"version": VERSION, "status": "FAIL", "stage": stage, "failures": stage.get("failures", ["bundle stage failed"])}, indent=2))
+            print("[tes-attach] FAIL")
+            return 1
+
+    apply_result = tes_bundle.apply_staged_bundle(
+        target, dry_run=args.dry_run, yes=args.yes, mode="preserve", adapter=args.agent, surfaces={"capsule", surface},
+    )
+    status = "DRY-RUN" if args.dry_run else ("ATTACHED" if apply_result.get("status") in {"APPLIED", "CLEAN_APPLIED"} else str(apply_result.get("status")))
+    result = {"version": VERSION, "status": status, "target": str(target), "surface": surface, "apply": apply_result}
+    print(json.dumps(result, indent=2, sort_keys=True))
+    print("[tes-attach] " + status)
+    return 0 if status in {"ATTACHED", "DRY-RUN"} else 1
+
+
+def detach(args: argparse.Namespace) -> int:
+    """ADR 0004 SPEC-002: detach one surface, keep the capsule and other surfaces."""
+    target = target_root(args.target)
+    if not target.exists() or not target.is_dir():
+        print(json.dumps({"version": VERSION, "status": "FAIL", "failures": [f"target is not a directory: {target}"]}, indent=2))
+        print("[tes-detach] FAIL")
+        return 1
+    blocked = package_source_block(target, "detach")
+    if blocked:
+        print(json.dumps(blocked, indent=2, sort_keys=True))
+        print("[tes-detach] BLOCKED")
+        return 2
+
+    import tes_bundle
+
+    result = tes_bundle.detach_surface(target, args.surface, dry_run=args.dry_run, yes=args.yes)
+    status = str(result.get("status") or "")
+    verdict = "PASS" if status == "DETACHED" else status
+    print(json.dumps(result, indent=2, sort_keys=True))
+    print("[tes-detach] " + verdict)
+    return 0 if verdict in {"PASS", "DRY-RUN", "SKIP"} else 1
+
+
 def install(args: argparse.Namespace) -> int:
     target = target_root(args.target)
     if not target.exists() or not target.is_dir():
@@ -2123,6 +2200,21 @@ def main() -> int:
     uninstall_parser.add_argument("--dry-run", action="store_true")
     uninstall_parser.add_argument("--yes", action="store_true")
 
+    # ADR 0004 SPEC-002: attach/detach one project-visible surface.
+    attach_parser = subparsers.add_parser("attach")
+    attach_parser.add_argument("surface", choices=list(ALL_ATTACH_SURFACES))
+    attach_parser.add_argument("--target", type=Path, default=Path.cwd())
+    attach_parser.add_argument("--agent", default="all", choices=["all", *AGENTS])
+    attach_parser.add_argument("--timeout", type=float, default=120.0)
+    attach_parser.add_argument("--dry-run", action="store_true")
+    attach_parser.add_argument("--yes", action="store_true")
+
+    detach_parser = subparsers.add_parser("detach")
+    detach_parser.add_argument("surface", choices=list(ALL_ATTACH_SURFACES))
+    detach_parser.add_argument("--target", type=Path, default=Path.cwd())
+    detach_parser.add_argument("--dry-run", action="store_true")
+    detach_parser.add_argument("--yes", action="store_true")
+
     args = parser.parse_args()
     if sys.version_info < MIN_PYTHON:
         return python_runtime_block(args.command)
@@ -2137,6 +2229,10 @@ def main() -> int:
         return code
     if args.command == "uninstall":
         return uninstall(args)
+    if args.command == "attach":
+        return attach(args)
+    if args.command == "detach":
+        return detach(args)
     if args.command == "hook":
         return hook(args)
     if args.command == "status":
