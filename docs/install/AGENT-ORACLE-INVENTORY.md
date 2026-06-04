@@ -150,6 +150,10 @@ python3 scripts/tes_install.py uninstall --target /path/to/project --dry-run
 python3 scripts/tes_install.py uninstall --target /path/to/project --yes
 python3 scripts/capsule_residue_oracle.py --target /path/to/project
 python3 scripts/capsule_residue_oracle.py --self-test
+python3 scripts/tes_install.py attach mcp --target /path/to/project --yes
+python3 scripts/tes_install.py detach root-context --target /path/to/project --yes
+python3 scripts/attach_health_oracle.py --target /path/to/project --surface mcp
+python3 scripts/attach_health_oracle.py --self-test
 ```
 
 ## Validation Gates
