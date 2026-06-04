@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.159"
+VERSION = "0.3.163"
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -330,6 +330,101 @@ def remove_tes_claude_sessionstart_hooks(data: dict[str, Any]) -> None:
         elif len(retained_handlers) == len(handlers):
             retained_groups.append(group)
     hooks["SessionStart"] = retained_groups
+
+
+def is_tes_hook_command(value: Any) -> bool:
+    """True for a hook command string that invokes the TES hook entrypoint."""
+    text = value if isinstance(value, str) else json.dumps(value, sort_keys=True)
+    return ".tes/bin/tes_install.py" in text and "hook" in text
+
+
+def remove_tes_cursor_hooks(data: dict[str, Any]) -> None:
+    """Inverse of install_cursor_hook (ADR 0004 L3 SPEC-002).
+
+    Remove only TES handlers from each event array, preserving non-TES hooks.
+    """
+    hooks = data.get("hooks")
+    if not isinstance(hooks, dict):
+        return
+    for event, items in list(hooks.items()):
+        if not isinstance(items, list):
+            continue
+        hooks[event] = [
+            item for item in items
+            if not (isinstance(item, dict) and is_tes_hook_command(item.get("command")))
+        ]
+
+
+def remove_tes_codex_hook_text(text: str) -> str:
+    """Inverse of install_codex_hook: drop the TES SessionStart hook block and the
+    codex_hooks feature flag, preserving any other Codex config (L3 SPEC-002).
+    """
+    lines = text.splitlines()
+    # Remove the marked TES hook block: from the marker comment to the next
+    # top-level section header (or EOF).
+    marker = "# TES first-session post-install hook."
+    try:
+        start = next(i for i, line in enumerate(lines) if line.strip() == marker)
+    except StopIteration:
+        start = None
+    if start is not None:
+        end = len(lines)
+        for idx in range(start + 1, len(lines)):
+            stripped = lines[idx].strip()
+            # Next top-level [section] or [[array.table]] that is not part of the
+            # TES hook block ends the block. The TES block's own sub-tables start
+            # with [[hooks.SessionStart...]]; stop at the first header that does
+            # not belong to hooks.SessionStart.
+            if (stripped.startswith("[") and stripped.endswith("]")
+                    and not stripped.lstrip("[").startswith("hooks.SessionStart")
+                    and not stripped.lstrip("[").startswith("hooks.SessionStart.hooks")):
+                end = idx
+                break
+        lines = [*lines[:start], *lines[end:]]
+    # Remove the codex_hooks feature flag line.
+    lines = [line for line in lines if line.strip() != "codex_hooks = true"]
+    body = "\n".join(lines).strip()
+    return (body + "\n") if body else ""
+
+
+def remove_tes_hooks(target: Path, agent: str, dry_run: bool = False) -> dict[str, str]:
+    """Unified hook remover (ADR 0004 L3 SPEC-002). Writer-inverse per agent;
+    preserves non-TES hooks; removes a TES-only file when it becomes empty."""
+    if agent == "claude":
+        path = target / ".claude/settings.json"
+        if not path.exists():
+            return {"agent": agent, "action": "already-absent"}
+        data = read_json(path)
+        remove_tes_claude_sessionstart_hooks(data)
+        text = json.dumps(data, indent=2, sort_keys=True) + "\n"
+        return {**write_text_if_changed(path, text, target, dry_run), "agent": agent}
+    if agent == "cursor":
+        path = target / ".cursor/hooks.json"
+        if not path.exists():
+            return {"agent": agent, "action": "already-absent"}
+        data = read_json(path)
+        remove_tes_cursor_hooks(data)
+        hooks = data.get("hooks")
+        # If only TES hooks existed and all event arrays are now empty, and the
+        # file holds nothing but version+hooks, remove the TES-only file.
+        only_empty = isinstance(hooks, dict) and all(not v for v in hooks.values())
+        if only_empty and set(data.keys()) <= {"version", "hooks"}:
+            if not dry_run:
+                path.unlink()
+            return {"agent": agent, "path": rel(path, target), "action": "would-remove-file" if dry_run else "remove-file"}
+        text = json.dumps(data, indent=2, sort_keys=True) + "\n"
+        return {**write_text_if_changed(path, text, target, dry_run), "agent": agent}
+    if agent == "codex":
+        path = target / ".codex/config.toml"
+        if not path.exists():
+            return {"agent": agent, "action": "already-absent"}
+        stripped = remove_tes_codex_hook_text(path.read_text(encoding="utf-8"))
+        if not stripped.strip():
+            if not dry_run:
+                path.unlink()
+            return {"agent": agent, "path": rel(path, target), "action": "would-remove-file" if dry_run else "remove-file"}
+        return {**write_text_if_changed(path, stripped, target, dry_run), "agent": agent}
+    return {"agent": agent, "action": "unsupported"}
 
 
 def install_claude_hook(target: Path, dry_run: bool) -> dict[str, str]:
@@ -736,6 +831,160 @@ def aggregate_install_status(dry_run: bool, apply_status: str, certification_sta
     return "NEEDS_REVIEW"
 
 
+# ADR 0004 capsule-first install. The capsule (.tes/**) is always written.
+# Project-visible surfaces are attached only when explicitly requested.
+ALL_ATTACH_SURFACES = ("mcp", "docs-mesh", "root-context", "hooks", "field-reports", "gps", "goals", "mantra")
+
+
+def resolve_attach(attach: list[str] | None) -> set[str]:
+    """Translate the --attach flag into the set of attachment surfaces to write.
+
+    None -> capsule-only (default). 'all' -> capsule plus every project-visible
+    surface (legacy install-all). Otherwise capsule plus the named surfaces.
+    """
+    requested = set(attach or [])
+    if "all" in requested:
+        return {"capsule", *ALL_ATTACH_SURFACES}
+    return {"capsule", *(s for s in requested if s in ALL_ATTACH_SURFACES)}
+
+
+def uninstall(args: argparse.Namespace) -> int:
+    """ADR 0004 SPEC-003: reverse a TES installation and certify zero residue."""
+    target = target_root(args.target)
+    if not target.exists() or not target.is_dir():
+        print(json.dumps({"version": VERSION, "status": "FAIL", "failures": [f"target is not a directory: {target}"]}, indent=2))
+        print("[tes-uninstall] FAIL")
+        return 1
+    blocked = package_source_block(target, "uninstall")
+    if blocked:
+        print(json.dumps(blocked, indent=2, sort_keys=True))
+        print("[tes-uninstall] BLOCKED")
+        return 2
+
+    import tes_bundle
+
+    result = tes_bundle.uninstall_capsule(target, dry_run=args.dry_run, yes=args.yes)
+
+    # Fold the residue oracle verdict in (skip on dry-run; nothing was removed).
+    residue: dict[str, Any] = {"status": "SKIP", "reason": "dry-run"}
+    if not args.dry_run and result.get("status") in {"UNINSTALLED", "NEEDS_REVIEW"}:
+        import capsule_residue_oracle
+
+        residue = capsule_residue_oracle.evaluate(target)
+    result["residue"] = residue
+
+    status = str(result.get("status") or "")
+    if status == "FAIL":
+        verdict = "FAIL"
+    elif status == "SKIP":
+        verdict = "SKIP"
+    elif status == "DRY-RUN":
+        verdict = "DRY-RUN"
+    elif status == "NEEDS_REVIEW" or residue.get("status") == "FAIL":
+        # Either modified files were preserved, or active residue remains.
+        verdict = "NEEDS_REVIEW"
+        result["status"] = "NEEDS_REVIEW"
+    else:
+        verdict = "PASS"
+        result["status"] = "PASS"
+
+    print(json.dumps(result, indent=2, sort_keys=True))
+    print("[tes-uninstall] " + verdict)
+    return 0 if verdict in {"PASS", "DRY-RUN", "SKIP"} else 1
+
+
+def attach(args: argparse.Namespace) -> int:
+    """ADR 0004 SPEC-002: attach one project-visible surface to an installed capsule."""
+    target = target_root(args.target)
+    if not target.exists() or not target.is_dir():
+        print(json.dumps({"version": VERSION, "status": "FAIL", "failures": [f"target is not a directory: {target}"]}, indent=2))
+        print("[tes-attach] FAIL")
+        return 1
+    blocked = package_source_block(target, "attach")
+    if blocked:
+        print(json.dumps(blocked, indent=2, sort_keys=True))
+        print("[tes-attach] BLOCKED")
+        return 2
+    surface = args.surface
+    if surface == "capsule" or surface not in ALL_ATTACH_SURFACES:
+        print(json.dumps({"version": VERSION, "status": "FAIL", "failures": [f"attach surface must be one of {', '.join(ALL_ATTACH_SURFACES)}"]}, indent=2))
+        print("[tes-attach] FAIL")
+        return 1
+
+    import tes_bundle
+
+    # Runtime-writer surfaces (mcp, hooks, docs-mesh) are not bundle-applied; run
+    # their writers, then verify via the attach-health oracle (ADR 0004 L3 SPEC-005).
+    if surface in {"mcp", "hooks", "docs-mesh"}:
+        if surface == "mcp":
+            import install_mcp  # type: ignore
+            actions, failures = install_mcp.install_configs(
+                target, selected_agents(args.agent), args.dry_run, False, True, False,
+            )
+            writer = {"actions": actions, "failures": failures}
+        elif surface == "hooks":
+            writer = {"actions": install_hooks(target, selected_agents(args.agent), args.dry_run)}
+        else:  # docs-mesh
+            if args.dry_run:
+                writer = {"status": "DRY-RUN", "action": "would-run-tes-init"}
+            else:
+                writer = run_helper(target, "tes_init.py", ("--target", "{target}", "--yes"), args.timeout)
+        health = {"status": "SKIP", "reason": "dry-run"}
+        if not args.dry_run:
+            import attach_health_oracle  # type: ignore
+            health = attach_health_oracle.evaluate(target, surface)
+        status = "DRY-RUN" if args.dry_run else (
+            "ATTACHED" if health.get("status") in {"PASS", "PENDING_TRUST", "PENDING_HOST_RESTART", "HOST_UNOBSERVABLE", "NOT_APPLIED"}
+            else str(health.get("status"))
+        )
+        result = {"version": VERSION, "status": status, "target": str(target), "surface": surface, "writer": writer, "health": health}
+        print(json.dumps(result, indent=2, sort_keys=True))
+        print("[tes-attach] " + status)
+        return 0 if status in {"ATTACHED", "DRY-RUN"} else 1
+
+    if not tes_bundle.read_staged_manifest(target):
+        if tes_bundle.source_package_available():
+            stage = tes_bundle.stage_source_bundle(target, adapter=args.agent)
+        else:
+            stage = tes_bundle.stage_preferred_bundle(target, adapter=args.agent, timeout=args.timeout)
+        if stage.get("status") not in {"STAGED", "DRY-RUN"}:
+            print(json.dumps({"version": VERSION, "status": "FAIL", "stage": stage, "failures": stage.get("failures", ["bundle stage failed"])}, indent=2))
+            print("[tes-attach] FAIL")
+            return 1
+
+    apply_result = tes_bundle.apply_staged_bundle(
+        target, dry_run=args.dry_run, yes=args.yes, mode="preserve", adapter=args.agent, surfaces={"capsule", surface},
+    )
+    status = "DRY-RUN" if args.dry_run else ("ATTACHED" if apply_result.get("status") in {"APPLIED", "CLEAN_APPLIED"} else str(apply_result.get("status")))
+    result = {"version": VERSION, "status": status, "target": str(target), "surface": surface, "apply": apply_result}
+    print(json.dumps(result, indent=2, sort_keys=True))
+    print("[tes-attach] " + status)
+    return 0 if status in {"ATTACHED", "DRY-RUN"} else 1
+
+
+def detach(args: argparse.Namespace) -> int:
+    """ADR 0004 SPEC-002: detach one surface, keep the capsule and other surfaces."""
+    target = target_root(args.target)
+    if not target.exists() or not target.is_dir():
+        print(json.dumps({"version": VERSION, "status": "FAIL", "failures": [f"target is not a directory: {target}"]}, indent=2))
+        print("[tes-detach] FAIL")
+        return 1
+    blocked = package_source_block(target, "detach")
+    if blocked:
+        print(json.dumps(blocked, indent=2, sort_keys=True))
+        print("[tes-detach] BLOCKED")
+        return 2
+
+    import tes_bundle
+
+    result = tes_bundle.detach_surface(target, args.surface, dry_run=args.dry_run, yes=args.yes)
+    status = str(result.get("status") or "")
+    verdict = "PASS" if status == "DETACHED" else status
+    print(json.dumps(result, indent=2, sort_keys=True))
+    print("[tes-detach] " + verdict)
+    return 0 if verdict in {"PASS", "DRY-RUN", "SKIP"} else 1
+
+
 def install(args: argparse.Namespace) -> int:
     target = target_root(args.target)
     if not target.exists() or not target.is_dir():
@@ -751,6 +1000,8 @@ def install(args: argparse.Namespace) -> int:
         return 1
 
     agents = selected_agents(args.agent)
+    surfaces = resolve_attach(getattr(args, "attach", None))
+    attached = sorted(surfaces - {"capsule"})
     stage: dict[str, Any]
     apply_result: dict[str, Any]
     if args.dry_run:
@@ -799,6 +1050,7 @@ def install(args: argparse.Namespace) -> int:
             yes=True,
             mode=args.mode,
             adapter=args.agent,
+            surfaces=surfaces,
         )
         if apply_result.get("status") not in {"APPLIED", "CLEAN_APPLIED", "DRY-RUN", "NEEDS_REVIEW"}:
             result = {
@@ -812,8 +1064,20 @@ def install(args: argparse.Namespace) -> int:
             print("[tes-install] FAIL")
             return 1
 
-    hook_actions = [] if args.no_hooks else install_hooks(target, agents, args.dry_run)
-    mcp_result = run_mcp_bootstrap(target, args.agent, args.dry_run, args.timeout)
+    # ADR 0004: hooks and MCP are project-visible attachments. Capsule-only
+    # install leaves them off. --no-hooks still forces hooks off when attached.
+    hooks_attached = "hooks" in surfaces
+    mcp_attached = "mcp" in surfaces
+    hook_actions = (
+        install_hooks(target, agents, args.dry_run)
+        if hooks_attached and not args.no_hooks
+        else [{"action": "skip-capsule-only" if not hooks_attached else "skip-disabled", "surface": "hooks"}]
+    )
+    mcp_result = (
+        run_mcp_bootstrap(target, args.agent, args.dry_run, args.timeout)
+        if mcp_attached
+        else {"status": "SKIP", "reason": "capsule-only: mcp not attached", "surface": "mcp"}
+    )
     if mcp_result.get("status") == "FAIL":
         result = {
             "version": VERSION,
@@ -832,9 +1096,12 @@ def install(args: argparse.Namespace) -> int:
         print("[tes-install] FAIL")
         return 1
     certification_result = run_installed_certification(target, args.dry_run, args.timeout)
+    # ADR 0004: postinstall materializes project-visible surfaces (docs/agents
+    # via tes_init, plus MCP bootstrap). Skip scheduling it in capsule-only mode.
+    postinstall_disabled = args.no_postinstall or not ("docs-mesh" in surfaces or "mcp" in surfaces)
     sentinel_action = (
-        {"path": rel(target / POSTINSTALL_PATH, target), "action": "skip-disabled"}
-        if args.no_postinstall
+        {"path": rel(target / POSTINSTALL_PATH, target), "action": "skip-capsule-only" if not args.no_postinstall else "skip-disabled"}
+        if postinstall_disabled
         else (
             write_review_sentinel(target, args.agent, agents, args.postinstall_mode, apply_result, args.dry_run)
             if apply_result.get("status") == "NEEDS_REVIEW"
@@ -1200,6 +1467,29 @@ def claude_rewake_message(result: dict[str, Any]) -> str:
     return ""
 
 
+HOOK_SENTINEL_PATH = Path(".tes/hooks/executed.jsonl")
+
+
+def record_hook_execution(target: Path, agent: str, hook_input: dict[str, Any]) -> None:
+    """ADR 0004 SPEC-005: prove the hook actually fired.
+
+    Append a capsule-scoped sentinel record on every real hook invocation. The
+    attach-health oracle reads this to certify a hook fired (vs config-written
+    only) and to detect duplicate handlers per (agent, event, session). Best
+    effort: a sentinel write must never break the hook itself.
+    """
+    try:
+        event = str(hook_input.get("hookEventName") or hook_input.get("event") or "SessionStart")
+        session = str(hook_input.get("session_id") or hook_input.get("sessionId") or os.getpid())
+        sentinel = target / HOOK_SENTINEL_PATH
+        sentinel.parent.mkdir(parents=True, exist_ok=True)
+        record = {"agent": agent, "event": event, "session": session, "ts": utc_stamp()}
+        with sentinel.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, sort_keys=True) + "\n")
+    except OSError:
+        pass
+
+
 def hook(args: argparse.Namespace) -> int:
     hook_input = parse_hook_input()
     if args.target == Path("."):
@@ -1220,6 +1510,8 @@ def hook(args: argparse.Namespace) -> int:
             return 2
         print(json.dumps(blocked, indent=2, sort_keys=True))
         return 2
+    # SPEC-005: the hook fired for real — record the execution sentinel.
+    record_hook_execution(target, args.agent, hook_input)
     if args.agent == "claude" and args.announce_start:
         print(json.dumps(claude_start_notice_output(target, hook_input), sort_keys=True))
         return 0
@@ -1350,6 +1642,8 @@ def self_test() -> int:
                 sys.executable,
                 str(Path(__file__).resolve()),
                 "install",
+                "--attach",
+                "all",
                 "--target",
                 str(target),
                 "--agent",
@@ -1412,6 +1706,8 @@ def self_test() -> int:
                 sys.executable,
                 str(Path(__file__).resolve()),
                 "install",
+                "--attach",
+                "all",
                 "--target",
                 str(partial_target),
                 "--agent",
@@ -1649,6 +1945,8 @@ def self_test() -> int:
                     sys.executable,
                     str(Path(__file__).resolve()),
                     "install",
+                    "--attach",
+                    "all",
                     "--target",
                     str(claude_target),
                     "--agent",
@@ -1766,6 +2064,8 @@ def self_test() -> int:
                     sys.executable,
                     str(Path(__file__).resolve()),
                     "install",
+                    "--attach",
+                    "all",
                     "--target",
                     str(claude_partial_target),
                     "--agent",
@@ -1822,6 +2122,8 @@ def self_test() -> int:
                 sys.executable,
                 str(Path(__file__).resolve()),
                 "install",
+                "--attach",
+                "all",
                 "--target",
                 str(target),
                 "--agent",
@@ -1857,6 +2159,8 @@ def self_test() -> int:
                 sys.executable,
                 str(Path(__file__).resolve()),
                 "install",
+                "--attach",
+                "all",
                 "--target",
                 str(target),
                 "--agent",
@@ -1990,6 +2294,16 @@ def main() -> int:
     install_parser.add_argument("--yes", action="store_true")
     install_parser.add_argument("--no-hooks", action="store_true")
     install_parser.add_argument("--no-postinstall", action="store_true")
+    # ADR 0004: capsule-first install. Default writes only .tes/** (the capsule).
+    # Project-visible surfaces are explicit reversible attachments. Pass
+    # --attach <surface> (repeatable) or --attach all for legacy install-all.
+    install_parser.add_argument(
+        "--attach",
+        action="append",
+        default=None,
+        choices=["all", "mcp", "docs-mesh", "root-context", "hooks", "field-reports", "gps", "goals", "mantra"],
+        help="attach a project-visible surface; default is capsule-only",
+    )
 
     postinstall_parser = subparsers.add_parser("postinstall")
     postinstall_parser.add_argument("--target", type=Path, default=Path.cwd())
@@ -2015,6 +2329,27 @@ def main() -> int:
     status_parser = subparsers.add_parser("status")
     status_parser.add_argument("--target", type=Path, default=Path.cwd())
 
+    # ADR 0004 SPEC-003: reverse a TES installation and prove zero active residue.
+    uninstall_parser = subparsers.add_parser("uninstall")
+    uninstall_parser.add_argument("--target", type=Path, default=Path.cwd())
+    uninstall_parser.add_argument("--dry-run", action="store_true")
+    uninstall_parser.add_argument("--yes", action="store_true")
+
+    # ADR 0004 SPEC-002: attach/detach one project-visible surface.
+    attach_parser = subparsers.add_parser("attach")
+    attach_parser.add_argument("surface", choices=list(ALL_ATTACH_SURFACES))
+    attach_parser.add_argument("--target", type=Path, default=Path.cwd())
+    attach_parser.add_argument("--agent", default="all", choices=["all", *AGENTS])
+    attach_parser.add_argument("--timeout", type=float, default=120.0)
+    attach_parser.add_argument("--dry-run", action="store_true")
+    attach_parser.add_argument("--yes", action="store_true")
+
+    detach_parser = subparsers.add_parser("detach")
+    detach_parser.add_argument("surface", choices=list(ALL_ATTACH_SURFACES))
+    detach_parser.add_argument("--target", type=Path, default=Path.cwd())
+    detach_parser.add_argument("--dry-run", action="store_true")
+    detach_parser.add_argument("--yes", action="store_true")
+
     args = parser.parse_args()
     if sys.version_info < MIN_PYTHON:
         return python_runtime_block(args.command)
@@ -2027,6 +2362,12 @@ def main() -> int:
         print(json.dumps(result, indent=2, sort_keys=True))
         print("[tes-postinstall] " + result["status"])
         return code
+    if args.command == "uninstall":
+        return uninstall(args)
+    if args.command == "attach":
+        return attach(args)
+    if args.command == "detach":
+        return detach(args)
     if args.command == "hook":
         return hook(args)
     if args.command == "status":

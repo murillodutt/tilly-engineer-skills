@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.159"
+VERSION = "0.3.163"
 ROUTES = ("current", "codex", "claude", "cursor", "vscode", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -335,6 +335,324 @@ def probe_route(route: str) -> dict[str, Any]:
         return finish()
 
 
+def capsule_install_probe() -> dict[str, Any]:
+    """ADR 0004 SPEC-002/005: a default (capsule-only) install writes only .tes/**.
+
+    Build the source bundle, stage it, apply with surfaces={"capsule"}, and assert
+    that no project-visible surface (root bootloaders, MCP configs, docs/agents,
+    hooks) was written, while the capsule helpers and manifest were.
+    """
+    import tes_bundle
+
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-capsule-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        with tempfile.TemporaryDirectory(prefix="tes-capsule-bundle-") as bundle_dir:
+            bundle = Path(bundle_dir) / "bundle.zip"
+            built = tes_bundle.build_bundle(bundle)
+            if built.get("status") not in {"PASS", "BUILT", None} and not bundle.exists():
+                failures.append(f"capsule probe could not build bundle: {built.get('status')}")
+                return {"route": "capsule-install", "status": "FAIL", "failures": failures}
+            stage = tes_bundle.stage_bundle(bundle, target)
+            if stage.get("status") != "STAGED":
+                failures.append(f"capsule probe stage failed: {stage.get('status')}")
+                return {"route": "capsule-install", "status": "FAIL", "failures": failures}
+            apply_result = tes_bundle.apply_staged_bundle(
+                target, yes=True, mode="preserve", surfaces={"capsule"}
+            )
+        if apply_result.get("status") not in {"APPLIED", "CLEAN_APPLIED"}:
+            failures.append(f"capsule apply unexpected status: {apply_result.get('status')}")
+
+        # Capsule must be present.
+        if not (target / ".tes").exists():
+            failures.append("capsule-only install did not write .tes/**")
+
+        # No project-visible surface may be written by a capsule-only install.
+        forbidden = ("AGENTS.md", "CLAUDE.md", "CURSOR.md", ".mcp.json", ".cursor/mcp.json",
+                     ".vscode/mcp.json", ".codex/config.toml", ".claude/settings.json",
+                     ".cursor/hooks.json", "docs/agents")
+        for relpath in forbidden:
+            if (target / relpath).exists():
+                failures.append(f"capsule-only install leaked project-visible surface: {relpath}")
+
+        # Every applied write must resolve inside the target (inbound isolation guard).
+        for action in apply_result.get("actions", []):
+            path = str(action.get("path") or "")
+            if path and (Path(path).is_absolute() or ".." in Path(path).parts):
+                failures.append(f"capsule apply wrote outside target: {path}")
+
+        status = "FAIL" if failures else "PASS"
+        field_reports.safe_record_event(
+            target, "install_smoke", status, "installer", "self-test",
+            details={"route": "capsule-install", "failures": len(failures)},
+        )
+        return {"route": "capsule-install", "status": status, "failures": failures}
+
+
+def reversibility_roundtrip_probe() -> dict[str, Any]:
+    """ADR 0004 SPEC-005: install (all surfaces) then uninstall returns to pre-install.
+
+    Snapshot project-owned files, install with every surface attached, uninstall,
+    then assert: project-owned files are byte-identical, the residue oracle reports
+    PASS (zero active residue), .tes/** is gone, and no write resolved outside the
+    target (inbound isolation guard).
+    """
+    import tes_bundle
+    import capsule_residue_oracle
+
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-roundtrip-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+
+        # Project-owned files, including a pre-existing bootloader with project content.
+        owned = {
+            "README.md": "# Roundtrip Project\nimportant project content\n",
+            "src/app.py": "print('hello')\n",
+            "AGENTS.md": "# Project AGENTS\nproject-owned governance must survive\n",
+        }
+        for relpath, text in owned.items():
+            write(target / relpath, text)
+        snapshot = {relpath: (target / relpath).read_text(encoding="utf-8") for relpath in owned}
+
+        all_surfaces = {"capsule", "mcp", "docs-mesh", "root-context", "hooks",
+                        "field-reports", "gps", "goals", "mantra"}
+        with tempfile.TemporaryDirectory(prefix="tes-roundtrip-bundle-") as bundle_dir:
+            bundle = Path(bundle_dir) / "bundle.zip"
+            tes_bundle.build_bundle(bundle)
+            stage = tes_bundle.stage_bundle(bundle, target)
+            if stage.get("status") != "STAGED":
+                failures.append(f"roundtrip stage failed: {stage.get('status')}")
+                return {"route": "reversibility-roundtrip", "status": "FAIL", "failures": failures}
+            tes_bundle.apply_staged_bundle(target, yes=True, mode="preserve", surfaces=all_surfaces)
+
+        uninstall = tes_bundle.uninstall_capsule(target, yes=True)
+        if uninstall.get("status") not in {"UNINSTALLED"}:
+            failures.append(f"roundtrip uninstall status: {uninstall.get('status')}; review={uninstall.get('review_items')}")
+
+        # No write resolved outside the target.
+        for action in uninstall.get("actions", []):
+            path = str(action.get("path") or "")
+            if path and (Path(path).is_absolute() or ".." in Path(path).parts):
+                failures.append(f"uninstall acted outside target: {path}")
+
+        # Project-owned files byte-identical (AGENTS.md keeps project content, no TES block).
+        for relpath in ("README.md", "src/app.py"):
+            if not (target / relpath).exists() or (target / relpath).read_text(encoding="utf-8") != snapshot[relpath]:
+                failures.append(f"roundtrip did not restore project-owned file byte-identical: {relpath}")
+        agents_text = (target / "AGENTS.md").read_text(encoding="utf-8") if (target / "AGENTS.md").exists() else ""
+        if "TES:CORE" in agents_text:
+            failures.append("roundtrip left a TES:CORE block in AGENTS.md")
+        if "project-owned governance must survive" not in agents_text:
+            failures.append("roundtrip destroyed project content in AGENTS.md")
+
+        # Zero active residue and capsule removed.
+        residue = capsule_residue_oracle.evaluate(target)
+        if residue["status"] != "PASS":
+            failures.append(f"roundtrip left active residue: {residue['active_residue']}")
+        if (target / ".tes").exists():
+            failures.append("roundtrip did not remove the capsule (.tes/**)")
+
+        status = "FAIL" if failures else "PASS"
+        field_reports.safe_record_event(
+            target, "install_smoke", status, "installer", "self-test",
+            details={"route": "reversibility-roundtrip", "failures": len(failures)},
+        )
+        return {"route": "reversibility-roundtrip", "status": status, "failures": failures}
+
+
+def attach_detach_roundtrip_probe() -> dict[str, Any]:
+    """ADR 0004 L2 SPEC-006: attach a surface then detach it returns to prior state.
+
+    Capsule install, attach root-context (a manifest-backed surface), assert the
+    TES:CORE block is present and attach-health/residue agree, detach it, then
+    assert the surface is gone, the project's bootloader content survives, and the
+    capsule plus residue are intact.
+    """
+    import tes_bundle
+    import capsule_residue_oracle
+    import attach_health_oracle
+
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-attach-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        write(target / "AGENTS.md", "# Project AGENTS\nproject governance survives\n")
+        snapshot = (target / "AGENTS.md").read_text(encoding="utf-8")
+
+        # Capsule-only install (no project-visible surface yet).
+        with tempfile.TemporaryDirectory(prefix="tes-attach-bundle-") as bundle_dir:
+            bundle = Path(bundle_dir) / "bundle.zip"
+            tes_bundle.build_bundle(bundle)
+            stage = tes_bundle.stage_bundle(bundle, target)
+            if stage.get("status") != "STAGED":
+                failures.append(f"attach probe stage failed: {stage.get('status')}")
+                return {"route": "attach-detach-roundtrip", "status": "FAIL", "failures": failures}
+            tes_bundle.apply_staged_bundle(target, yes=True, mode="preserve", surfaces={"capsule"})
+        if (target / "AGENTS.md").read_text(encoding="utf-8") != snapshot:
+            failures.append("capsule-only install must not touch the project bootloader")
+
+        # Attach root-context.
+        tes_bundle.apply_staged_bundle(target, yes=True, mode="preserve", surfaces={"capsule", "root-context"})
+        if "TES:CORE" not in (target / "AGENTS.md").read_text(encoding="utf-8"):
+            failures.append("attach root-context must compose the TES:CORE block")
+        rc_health = attach_health_oracle.evaluate(target, "root-context")
+        if rc_health["status"] != "PASS":
+            failures.append(f"attached root-context health must be PASS: {rc_health['status']}")
+
+        # Detach root-context.
+        detach = tes_bundle.detach_surface(target, "root-context", yes=True)
+        if detach.get("status") != "DETACHED":
+            failures.append(f"detach root-context status: {detach.get('status')}")
+        agents_text = (target / "AGENTS.md").read_text(encoding="utf-8") if (target / "AGENTS.md").exists() else ""
+        if "TES:CORE" in agents_text:
+            failures.append("detach must remove the TES:CORE block")
+        if "project governance survives" not in agents_text:
+            failures.append("detach must keep the project's bootloader content")
+        if not (target / ".tes").exists():
+            failures.append("detach must keep the capsule")
+
+        # No action resolved outside the target.
+        for action in detach.get("actions", []):
+            path = str(action.get("path") or "")
+            if path and (Path(path).is_absolute() or ".." in Path(path).parts):
+                failures.append(f"detach acted outside target: {path}")
+
+        status = "FAIL" if failures else "PASS"
+        field_reports.safe_record_event(
+            target, "install_smoke", status, "installer", "self-test",
+            details={"route": "attach-detach-roundtrip", "failures": len(failures)},
+        )
+        return {"route": "attach-detach-roundtrip", "status": status, "failures": failures}
+
+
+def runtime_surface_roundtrip_probe() -> dict[str, Any]:
+    """ADR 0004 L3 SPEC-006: attach then detach each runtime surface returns to prior state.
+
+    For mcp and hooks: install the writer alongside a user-owned neighbor, detach
+    via detach_surface, assert the TES surface is gone and the neighbor survived.
+    For docs-mesh: attach (tes_init), detach (preserve), assert project content
+    survives.
+    """
+    import tes_bundle
+    import tes_install
+    import install_mcp
+
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-runtime-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        (target / ".tes/bin").mkdir(parents=True)
+        (target / ".tes/bin/cortex_mcp.py").write_text("# server\n", encoding="utf-8")
+        write(target / ".tes/manifest.json",
+              json.dumps({"schema": "tes-bundle-manifest@2", "entries": []}))
+
+        # MCP: install alongside a user server, detach, assert neighbor survives.
+        write(target / ".mcp.json", json.dumps({"mcpServers": {"user-srv": {"command": "u"}}}))
+        install_mcp.install_configs(target, ["claude"], False, True, True, False)
+        if "tes-cortex" not in (target / ".mcp.json").read_text(encoding="utf-8"):
+            failures.append("mcp attach did not write tes-cortex")
+        d_mcp = tes_bundle.detach_surface(target, "mcp", yes=True)
+        if d_mcp.get("status") != "DETACHED":
+            failures.append(f"mcp detach status: {d_mcp.get('status')}")
+        mcp_text = (target / ".mcp.json").read_text(encoding="utf-8") if (target / ".mcp.json").exists() else ""
+        if "tes-cortex" in mcp_text:
+            failures.append("mcp detach left tes-cortex")
+        if "user-srv" not in mcp_text:
+            failures.append("mcp detach dropped the user server (not writer-inverse)")
+
+        # Hooks: install alongside a user cursor hook, detach, assert it survives.
+        tes_install.install_cursor_hook(target, False)
+        cj = json.loads((target / ".cursor/hooks.json").read_text(encoding="utf-8"))
+        cj["hooks"].setdefault("sessionStart", []).append({"command": "user-hook", "timeout": 5})
+        write(target / ".cursor/hooks.json", json.dumps(cj, indent=2, sort_keys=True) + "\n")
+        d_hooks = tes_bundle.detach_surface(target, "hooks", yes=True)
+        if d_hooks.get("status") != "DETACHED":
+            failures.append(f"hooks detach status: {d_hooks.get('status')}")
+        cj_text = (target / ".cursor/hooks.json").read_text(encoding="utf-8") if (target / ".cursor/hooks.json").exists() else ""
+        if "tes_install.py hook --agent cursor" in cj_text:
+            failures.append("hooks detach left the TES cursor hook")
+        if "user-hook" not in cj_text:
+            failures.append("hooks detach dropped the user hook (not writer-inverse)")
+
+        # docs-mesh: a project-authored file plus a generated file; detach preserves
+        # by default; purge removes only generated.
+        (target / "docs/agents/evidence").mkdir(parents=True)
+        write(target / "docs/agents/PROJECT-CONTEXT.md", "# ctx\n")
+        write(target / "docs/agents/MY-NOTES.md", "# project authored\n")
+        d_docs = tes_bundle.detach_surface(target, "docs-mesh", yes=True)
+        if d_docs.get("status") != "DETACHED":
+            failures.append(f"docs-mesh detach status: {d_docs.get('status')}")
+        if not (target / "docs/agents/MY-NOTES.md").exists():
+            failures.append("docs-mesh default detach removed project content")
+        purged = tes_bundle.detach_docs_mesh(target, yes=True, purge=True)
+        if not (target / "docs/agents/MY-NOTES.md").exists():
+            failures.append("docs-mesh purge removed project-authored content")
+        if (target / "docs/agents/PROJECT-CONTEXT.md").exists():
+            failures.append("docs-mesh purge did not remove the generated file")
+
+        status = "FAIL" if failures else "PASS"
+        field_reports.safe_record_event(
+            target, "install_smoke", status, "installer", "self-test",
+            details={"route": "runtime-surface-roundtrip", "failures": len(failures)},
+        )
+        return {"route": "runtime-surface-roundtrip", "status": status, "failures": failures}
+
+
+def gps_capsule_mode_probe() -> dict[str, Any]:
+    """ADR 0004 L4 SPEC-006: GPS works in capsule mode and exports when attached.
+
+    Capsule-only: map yields a useful CAPSULE_PASS position and writes .tes/gps/**
+    with no docs/agents export. Attach docs-mesh (a populated docs/agents): export
+    the managed block. Detach docs/agents: capsule projection still works.
+    """
+    import tes_map
+
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-gps-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        write(target / ".tes/postinstall.json",
+              json.dumps({"state": "complete", "last_status": "PASS", "version": tes_map.VERSION}))
+
+        # Capsule-only: useful position, .tes/gps written, no docs export.
+        model = tes_map.build_model(target)
+        if model.get("mode") != "capsule" or model["status"] != tes_map.STATUS_CAPSULE_PASS:
+            failures.append(f"capsule-only map not CAPSULE_PASS: mode={model.get('mode')} status={model['status']}")
+        if not model["position"]:
+            failures.append("capsule-only map produced no position")
+        tes_map.write_capsule_projection(target, tes_map.build_capsule_projection(target))
+        if not (target / tes_map.GPS_STATE_REL).exists():
+            failures.append("capsule map did not write .tes/gps/state.json")
+        if (target / "docs/agents").exists():
+            failures.append("capsule map leaked docs/agents (export must be gated)")
+
+        # Attached: populated docs/agents -> attached mode + export the block.
+        tes_map.create_fixture(target)  # writes docs/agents + roadmap
+        attached_model = tes_map.build_model(target)
+        if attached_model.get("mode") != "attached":
+            failures.append("populated docs/agents did not switch to attached mode")
+        export = tes_map.update_roadmap(target, attached_model)
+        roadmap_text = (target / tes_map.ROADMAP_REL).read_text(encoding="utf-8")
+        if tes_map.START_MARKER not in roadmap_text:
+            failures.append("attached export did not write the managed TES-MAP block")
+
+        # Detach docs/agents: capsule projection still produces a useful position.
+        import shutil as _shutil
+        _shutil.rmtree(target / "docs/agents")
+        after_detach = tes_map.build_model(target)
+        if after_detach.get("mode") != "capsule" or after_detach["status"] != tes_map.STATUS_CAPSULE_PASS:
+            failures.append("after docs detach, capsule map did not stay useful")
+
+        status = "FAIL" if failures else "PASS"
+        field_reports.safe_record_event(
+            target, "install_smoke", status, "installer", "self-test",
+            details={"route": "gps-capsule-mode", "failures": len(failures)},
+        )
+        return {"route": "gps-capsule-mode", "status": status, "failures": failures}
+
+
 def legacy_retirement_probe() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tes-install-smoke-legacy-") as tempdir:
         target = Path(tempdir)
@@ -589,6 +907,8 @@ def legacy_obsolete_cleanup_probe() -> dict[str, Any]:
         write(target / ".agents/plugins/marketplace.json", '{"plugins":[{"id":"tilly-engineer-skills","version":"0.3.112"}]}\n')
         write(target / "plugins/tilly-engineer-skills/.codex-plugin/plugin.json", '{"name":"tilly-engineer-skills","version":"0.3.112","skills":"./skills/"}\n')
 
+        # ADR 0004: this probe certifies the legacy install-all obsolete-cleanup
+        # flow, which is now the explicit --attach all profile.
         code, stdout, stderr = run(
             [
                 sys.executable,
@@ -597,6 +917,8 @@ def legacy_obsolete_cleanup_probe() -> dict[str, Any]:
                 "--target",
                 str(target),
                 "--agent",
+                "all",
+                "--attach",
                 "all",
                 "--yes",
             ]
@@ -630,6 +952,8 @@ def ambiguous_obsolete_review_probe() -> dict[str, Any]:
         write(target / "README.md", "# Ambiguous Legacy TES Install\n")
         write(target / "skills/custom/SKILL.md", "# Custom Skill\n\n" + "USER_" + "TOKEN=keep-me\n")
 
+        # ADR 0004: certifies the legacy install-all ambiguous-obsolete review
+        # flow (sentinel + review backup), now the explicit --attach all profile.
         code, stdout, stderr = run(
             [
                 sys.executable,
@@ -638,6 +962,8 @@ def ambiguous_obsolete_review_probe() -> dict[str, Any]:
                 "--target",
                 str(target),
                 "--agent",
+                "all",
+                "--attach",
                 "all",
                 "--yes",
             ]
@@ -820,6 +1146,11 @@ def main() -> int:
     routes = ROUTES if args.self_test else (args.route,)
     results = [probe_route(route) for route in routes]
     if args.self_test:
+        results.append(capsule_install_probe())
+        results.append(reversibility_roundtrip_probe())
+        results.append(attach_detach_roundtrip_probe())
+        results.append(runtime_surface_roundtrip_probe())
+        results.append(gps_capsule_mode_probe())
         results.append(legacy_retirement_probe())
         results.append(codex_clean_bootloader_probe())
         results.append(claude_clean_bootloader_probe())

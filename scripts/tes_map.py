@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.159"
+VERSION = "0.3.163"
 START_MARKER = "<!-- TES-MAP:START -->"
 END_MARKER = "<!-- TES-MAP:END -->"
 ROADMAP_REL = Path("docs/agents/PROJECT-ROADMAP.md")
@@ -26,6 +26,12 @@ STATUS_NEEDS_ALIGN = "NEEDS_ALIGN"
 STATUS_NEEDS_CONTEXT = "NEEDS_CONTEXT"
 STATUS_BLOCKED = "BLOCKED"
 STATUS_NOT_AVAILABLE = "NOT_AVAILABLE"
+# ADR 0004 L4: capsule-mode GPS. The internal projection is the default GPS
+# state; docs/agents/** is an export surface attached via docs-mesh.
+GPS_STATE_REL = Path(".tes/gps/state.json")
+CONTEXT_REL = Path(".tes/context")
+STATUS_CAPSULE_PASS = "CAPSULE_PASS"
+STATUS_CAPSULE_NEEDS_EVIDENCE = "CAPSULE_NEEDS_EVIDENCE"
 SCRIPT_PATH = Path(__file__).resolve()
 PACKAGE_MODE = (SCRIPT_PATH.parents[1] / "package.json").exists() and SCRIPT_PATH.parent.name == "scripts"
 
@@ -194,6 +200,18 @@ def detect_gate(target: Path) -> str:
     return "project_alignment_oracle.py --target ."
 
 
+def docs_mesh_attached(target: Path) -> bool:
+    """ADR 0004 L4: docs-mesh is attached when docs/agents/** exists with content.
+
+    Mirrors how the residue/attach-health detectors treat the docs-mesh surface.
+    In capsule mode (no docs-mesh) GPS runs from the internal projection.
+    """
+    agents_root = target / AGENTS_REL
+    if not agents_root.exists():
+        return False
+    return any(p.is_file() for p in agents_root.rglob("*"))
+
+
 def classify_status(target: Path) -> tuple[str, list[str]]:
     agents_root = target / AGENTS_REL
     roadmap = target / ROADMAP_REL
@@ -208,8 +226,132 @@ def classify_status(target: Path) -> tuple[str, list[str]]:
     return STATUS_PASS, limits
 
 
+def build_capsule_projection(target: Path) -> dict[str, Any]:
+    """ADR 0004 L4 SPEC-001: GPS state from capsule state + repo scan only.
+
+    No dependency on docs/agents/**. Position comes from postinstall/lock capsule
+    state plus a git scan and the install manifest. Persisted under .tes/gps/**.
+    """
+    target = target.resolve()
+    postinstall = read_json(target / ".tes/postinstall.json")
+    lock = read_json(target / ".tes/tes-install-lock.json")
+    manifest = read_json(target / ".tes/manifest.json")
+    git = git_info(target)
+    gate = detect_gate(target)
+
+    last_status = str(postinstall.get("last_status") or postinstall.get("state") or "").upper()
+    version = str(postinstall.get("version") or lock.get("version") or VERSION)
+    installed = bool(postinstall or lock or manifest)
+
+    if last_status in {"PASS", "COMPLETE"}:
+        position = f"TES {version} capsule installed and certified"
+        phase = "Capsule runtime active"
+        confidence = "high"
+        status = STATUS_CAPSULE_PASS
+    elif installed:
+        position = f"TES {version} capsule present"
+        phase = "Capsule runtime present; setup evidence incomplete"
+        confidence = "medium"
+        status = STATUS_CAPSULE_PASS
+    else:
+        position = "No capsule state found"
+        phase = "Capsule not installed"
+        confidence = "low"
+        status = STATUS_CAPSULE_NEEDS_EVIDENCE
+
+    evidence: list[str] = []
+    if postinstall:
+        evidence.append(".tes/postinstall.json")
+    if lock:
+        evidence.append(".tes/tes-install-lock.json")
+    if manifest:
+        evidence.append(".tes/manifest.json")
+    if git.available and git.head:
+        evidence.append(f"git:{git.branch or 'HEAD'}@{git.head}")
+
+    limits: list[str] = []
+    if not git.available and git.limit:
+        limits.append(git.limit)
+    elif git.dirty:
+        limits.append("Git worktree has uncommitted changes; map is a position report, not a release claim.")
+
+    next_step = (
+        "Attach docs-mesh to export the roadmap block, or continue capsule work."
+        if status == STATUS_CAPSULE_PASS
+        else "Run the TES installer to create capsule state."
+    )
+
+    return {
+        "version": VERSION,
+        "mode": "capsule",
+        "status": status,
+        "target": str(target),
+        "position": position,
+        "current_phase": phase,
+        "next_step": next_step,
+        "proof_gate": gate,
+        "confidence": confidence,
+        "evidence": evidence,
+        "limits": limits,
+        "git": {"available": git.available, "branch": git.branch, "head": git.head, "dirty": git.dirty},
+    }
+
+
+def write_capsule_projection(target: Path, projection: dict[str, Any]) -> dict[str, Any]:
+    """Persist the GPS projection under .tes/gps/** (capsule-scoped)."""
+    state_path = target / GPS_STATE_REL
+    context_dir = target / CONTEXT_REL
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    context_dir.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(projection, indent=2, sort_keys=True) + "\n"
+    changed = write_text_if_changed(state_path, payload)
+    # A compact human-readable position pointer in the context dir.
+    pointer = f"# TES GPS Position\n\n{projection['position']}\n\nNext: {projection['next_step']}\n"
+    write_text_if_changed(context_dir / "POSITION.md", pointer)
+    return {"changed": changed, "path": relpath(target, state_path)}
+
+
+def capsule_model(target: Path) -> dict[str, Any]:
+    """ADR 0004 L4 SPEC-002: GPS model in capsule mode (no docs/agents required).
+
+    Built from the internal projection. Mirrors the build_model shape so callers
+    and the report/export paths work uniformly, but carries mode='capsule'.
+    """
+    projection = build_capsule_projection(target)
+    return {
+        "version": VERSION,
+        "mode": "capsule",
+        "status": projection["status"],
+        "target": str(target),
+        "roadmap": str(target / ROADMAP_REL),
+        "managed_block_present": False,
+        "position": projection["position"],
+        "current_phase": projection["current_phase"],
+        "last_proven_point": projection["position"],
+        "next_irreversible_step": projection["next_step"],
+        "next_safe_move": projection["next_step"],
+        "blocking_items": [],
+        "unknowns": [],
+        "confidence": projection["confidence"],
+        "proof_gate": projection["proof_gate"],
+        "evidence": projection["evidence"][:6],
+        "done_items": [],
+        "active_items": [],
+        "next_items": [],
+        "later_items": [],
+        "deferred_items": [],
+        "limits": projection["limits"],
+        "git": projection["git"],
+    }
+
+
 def build_model(target: Path) -> dict[str, Any]:
     target = target.resolve()
+    # ADR 0004 L4: in capsule mode (docs-mesh not attached) GPS runs from the
+    # internal projection; docs/agents/** is not required and missing it is not
+    # NEEDS_ALIGN. Attached mode keeps the certified docs/agents-anchored path.
+    if not docs_mesh_attached(target):
+        return capsule_model(target)
     status, limits = classify_status(target)
     roadmap_path = target / ROADMAP_REL
     roadmap_text = read_text(roadmap_path)
@@ -267,8 +409,22 @@ def build_model(target: Path) -> dict[str, Any]:
     else:
         confidence = "unknown"
 
+    # ADR 0004 L4 SPEC-005 coexistence: when both docs-mesh and capsule state are
+    # present, the capsule is the authoritative source of position; the managed
+    # docs block is a projection of it. The project's roadmap content outside the
+    # managed markers is never touched (replace_or_insert_block only edits between
+    # markers). Report which source was authoritative.
+    capsule_present = bool(postinstall or lock or (target / GPS_STATE_REL).exists())
+    authoritative_source = "capsule" if capsule_present else "docs-mesh"
+    if capsule_present:
+        projection = build_capsule_projection(target)
+        if projection["status"] == STATUS_CAPSULE_PASS:
+            last_proven = projection["position"]
+
     return {
         "version": VERSION,
+        "mode": "attached",
+        "authoritative_source": authoritative_source,
         "status": status,
         "target": str(target),
         "roadmap": str(roadmap_path),
@@ -587,19 +743,29 @@ def run(args: argparse.Namespace) -> int:
 
     target = Path(args.target).expanduser().resolve()
     model = build_model(target)
-    write_result = update_roadmap(target, model) if args.write else None
+    capsule = model.get("mode") == "capsule"
+    export = bool(getattr(args, "export", False))
+    write_result = None
+    if args.write:
+        if capsule and not export:
+            # Capsule mode: default --write updates the internal projection only.
+            write_result = write_capsule_projection(target, build_capsule_projection(target))
+        else:
+            # Attached mode, or explicit --export: update the docs/agents block.
+            write_result = update_roadmap(target, model)
     result = {"status": model["status"], "model": model, "write": write_result}
     if args.json:
         print(json.dumps(result, indent=2, sort_keys=True))
     else:
         print(human_report(model, write_result))
-    return 0 if model["status"] in {STATUS_PASS, STATUS_NOT_AVAILABLE} else 1
+    return 0 if model["status"] in {STATUS_PASS, STATUS_NOT_AVAILABLE, STATUS_CAPSULE_PASS} else 1
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Update the TES Project GPS block.")
     parser.add_argument("--target", default=".", help="target project root")
-    parser.add_argument("--write", action="store_true", help="update the managed TES Map block")
+    parser.add_argument("--write", action="store_true", help="update the GPS projection (capsule) or managed block (attached)")
+    parser.add_argument("--export", action="store_true", help="export the managed TES Map block to docs/agents even in capsule mode")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     parser.add_argument("--self-test", action="store_true", help="run built-in self-test")
     return parser

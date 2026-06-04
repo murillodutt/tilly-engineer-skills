@@ -1,4 +1,4 @@
-version: 0.3.159
+version: 0.3.163
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -50,6 +50,13 @@ documents:
     consumer: maintainers, installer authors, Field Reports maintainers, adapter authors, and release operators
     source_of_truth: true
     evidence_level: L1
+  - path: docs/adr/0004-tes-capsule-isolation-and-reversible-installation.md
+    id: architecture.adr_0004_tes_capsule_isolation_and_reversible_installation
+    class: architecture
+    status: active
+    consumer: maintainers, installer authors, MCP authors, hook authors, GPS/MAP authors, Goal Maestro authors, Mantra Gate authors, and release operators
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/install/INSTALL.md
     id: install.adapter_installer
     class: adapter
@@ -447,6 +454,34 @@ documents:
     class: roadmap
     status: active
     consumer: maintainers, Cortex maintainers, oracle authors, adapter maintainers, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-capsule-install-and-uninstall.md
+    id: roadmap.goal_super_spec_tes_capsule_install_and_uninstall
+    class: roadmap
+    status: proposed
+    consumer: maintainers, installer authors, manifest authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-attach-detach-and-attach-health.md
+    id: roadmap.goal_super_spec_tes_attach_detach_and_attach_health
+    class: roadmap
+    status: proposed
+    consumer: maintainers, installer authors, MCP authors, hook authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-runtime-surface-attach-detach.md
+    id: roadmap.goal_super_spec_tes_runtime_surface_attach_detach
+    class: roadmap
+    status: proposed
+    consumer: maintainers, installer authors, MCP authors, hook authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-gps-capsule-mode.md
+    id: roadmap.goal_super_spec_tes_gps_capsule_mode
+    class: roadmap
+    status: proposed
+    consumer: maintainers, GPS/MAP authors, oracle authors, installer authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md

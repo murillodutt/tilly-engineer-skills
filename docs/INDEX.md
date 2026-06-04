@@ -23,6 +23,7 @@ turning the repository root into an inventory.
 | Archived Cortex governed MCP write lane ADR | `adr/0002-cortex-governed-mcp-write-lane.md` |
 | Active Cortex MCP capability expansion ADR | `adr/0003-cortex-mcp-capability-expansion.md` |
 | Active installed certification and Field Reports intake ADR | `adr/0003-1-installed-certification-and-field-reports-feedback-intake.md` |
+| Active TES capsule isolation and reversible installation ADR | `adr/0004-tes-capsule-isolation-and-reversible-installation.md` |
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
 | Agent manual | `install/AGENT-MANUAL.md` |
 | Agent oracle inventory | `install/AGENT-ORACLE-INVENTORY.md` |
@@ -30,7 +31,7 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.159/tilly-engineer-skills-0.3.159.zip` |
+| Public installer bundle | `dist/0.3.163/tilly-engineer-skills-0.3.163.zip` |
 | GitHub package-spec installation | `install/INSTALL.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
 | Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
@@ -73,6 +74,10 @@ turning the repository root into an inventory.
 | TES Memory Lifecycle Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
 | Cortex Memory Benchmark Harness Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
 | TES Anti-Contamination Hardening Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md` |
+| TES Capsule Install And Uninstall Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-capsule-install-and-uninstall.md` |
+| TES Attach/Detach And Attach-Health Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-attach-detach-and-attach-health.md` |
+| TES Runtime-Surface Attach/Detach Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-runtime-surface-attach-detach.md` |
+| TES GPS Capsule Mode Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-gps-capsule-mode.md` |
 | TES Postinstall And Cortex Curation Hardening Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
 | TES Postinstall Recovery Contract Symmetry Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md` |
 | TES NPX MCP Convergence Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |

@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.159"
+VERSION = "0.3.163"
 EVIDENCE_DIR = Path("docs/agents/evidence")
 BACKUP_ROOT = Path(".tes/bk")
 ROOT_FILES = (
@@ -128,6 +128,25 @@ def extract_overlay(text: str) -> dict[str, Any] | None:
         return None
     overlay_text = str(block["text"])
     return {**block, "sha256": text_sha256(overlay_text)}
+
+
+def strip_tes_blocks(text: str) -> dict[str, Any]:
+    """Reverse root-context composition for uninstall (ADR 0004).
+
+    Return the project's own content (the PROJECT-OVERLAY body) with the TES:CORE
+    block and composition wrappers removed. `had_tes` is True when a TES:CORE
+    block was present. `project_text` is empty when the file held no project
+    content (it was a pure TES bootloader and can be deleted).
+    """
+    core = extract_core(text)
+    overlay = extract_overlay(text)
+    if core is None:
+        # No TES block; leave the file untouched.
+        return {"had_tes": False, "project_text": text}
+    project_text = str(overlay["text"]).strip("\n") if overlay is not None else ""
+    if project_text:
+        project_text = project_text + "\n"
+    return {"had_tes": True, "project_text": project_text}
 
 
 def root_context_adapter(relpath: str) -> str:

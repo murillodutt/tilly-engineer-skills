@@ -24,7 +24,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.159"
+VERSION = "0.3.163"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -192,6 +192,9 @@ class BundleEntry:
     owner: str
     install_policy: str
     obsolete_policy: str
+    attachment_surface: str
+    restore_policy: str
+    uninstall_action: str
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -458,6 +461,55 @@ def obsolete_policy_for(layer: str, owner: str) -> str:
     return "preserve"
 
 
+# ADR 0004: reversibility fields. Every write declares which attachment surface
+# it belongs to, how it is restored on detach/uninstall, and what uninstall does
+# to it. Capsule paths (`.tes/**`) are the runtime ownership authority; every
+# project-visible path is an explicit, reversible attachment surface.
+ATTACHMENT_SURFACES = {
+    "capsule",
+    "mcp",
+    "docs-mesh",
+    "root-context",
+    "hooks",
+    "field-reports",
+    "gps",
+    "goals",
+    "mantra",
+}
+
+
+def attachment_surface_for(path: str, layer: str) -> str:
+    if path.startswith(".tes/"):
+        return "capsule"
+    if layer == "mcp_config":
+        return "mcp"
+    if path.startswith("docs/agents/"):
+        return "docs-mesh"
+    if layer == "context_governance":
+        return "root-context"
+    # Installed runtime skills/plugins are TES-owned capsule runtime; they are
+    # removed with the capsule, not preserved as project files.
+    return "capsule"
+
+
+def restore_policy_for(owner: str) -> str:
+    # Project-owned and generated surfaces have a pre-write backup to restore.
+    # Derived caches are rebuildable and need no restore.
+    if owner == "derived":
+        return "rebuildable-no-restore"
+    return "restore-from-backup"
+
+
+def uninstall_action_for(layer: str, owner: str) -> str:
+    # TES-owned runtime is removed. Project alignment and evidence are the
+    # project's content even when TES generated a starter; preserve them.
+    if owner in {"project-owned", "generated"} and layer in {"project_alignment", "evidence"}:
+        return "preserve"
+    if owner == "tes-owned":
+        return "remove"
+    return "remove-if-generated"
+
+
 def make_entry(target_path: str, archive_path: str, source: Path) -> BundleEntry:
     layer = layer_for_path(target_path)
     owner = owner_for_layer(layer)
@@ -469,13 +521,16 @@ def make_entry(target_path: str, archive_path: str, source: Path) -> BundleEntry
         owner=owner,
         install_policy=install_policy_for(layer),
         obsolete_policy=obsolete_policy_for(layer, owner),
+        attachment_surface=attachment_surface_for(target_path, layer),
+        restore_policy=restore_policy_for(owner),
+        uninstall_action=uninstall_action_for(layer, owner),
     )
 
 
 def manifest_payload(entries: list[BundleEntry]) -> dict[str, Any]:
     metadata = bundle_metadata()
     return {
-        "schema": "tes-bundle-manifest@1",
+        "schema": "tes-bundle-manifest@2",
         "version": VERSION,
         "metadata": metadata,
         "source_repository": metadata["source_repository"],
@@ -490,8 +545,13 @@ def manifest_payload(entries: list[BundleEntry]) -> dict[str, Any]:
 
 def validate_manifest(data: dict[str, Any]) -> list[str]:
     failures: list[str] = []
-    if data.get("schema") != "tes-bundle-manifest@1":
-        failures.append("manifest schema must be tes-bundle-manifest@1")
+    # @2 is current (carries ADR 0004 reversibility fields). @1 is still
+    # readable so previously installed manifests migrate forward on the next
+    # install/update instead of breaking.
+    schema = data.get("schema")
+    is_v2 = schema == "tes-bundle-manifest@2"
+    if schema not in {"tes-bundle-manifest@1", "tes-bundle-manifest@2"}:
+        failures.append("manifest schema must be tes-bundle-manifest@1 or @2")
     if data.get("version") != VERSION:
         failures.append(f"manifest version must be {VERSION}")
     metadata = data.get("metadata")
@@ -529,6 +589,13 @@ def validate_manifest(data: dict[str, Any]) -> list[str]:
             failures.append(f"{path}: invalid owner {entry.get('owner')}")
         if not entry.get("sha256"):
             failures.append(f"{path}: missing sha256")
+        if is_v2:
+            if entry.get("attachment_surface") not in ATTACHMENT_SURFACES:
+                failures.append(f"{path}: invalid attachment_surface {entry.get('attachment_surface')}")
+            if not entry.get("restore_policy"):
+                failures.append(f"{path}: missing restore_policy")
+            if not entry.get("uninstall_action"):
+                failures.append(f"{path}: missing uninstall_action")
     return failures
 
 
@@ -1315,6 +1382,275 @@ def restore_backup(target: Path, backup_id: str, *, dry_run: bool = False, yes: 
     }
 
 
+def latest_backup_id(target: Path) -> str | None:
+    backup_root = target / BACKUP_ROOT
+    if not backup_root.is_dir():
+        return None
+    candidates = sorted(
+        (p.name for p in backup_root.iterdir() if p.is_dir() and (p / "manifest.json").is_file()),
+        reverse=True,
+    )
+    return candidates[0] if candidates else None
+
+
+def remove_manifest_entry(
+    target: Path,
+    entry: dict[str, Any],
+    dry_run: bool,
+    actions: list[dict[str, str]],
+    review_items: list[dict[str, str]],
+) -> None:
+    """Reverse one manifest entry per its uninstall_action (sha256-fail-safe).
+
+    Shared by uninstall (all surfaces) and detach (one surface). Preserves
+    project-owned content, decomposes composed root bootloaders (TES:CORE strip,
+    keep overlay), and preserves user-modified files as needs-review.
+    """
+    relpath = str(entry.get("path") or "")
+    layer = str(entry.get("layer") or "")
+    action = str(entry.get("uninstall_action") or uninstall_action_for(layer, str(entry.get("owner") or "")))
+    dest = target / relpath
+    if action == "preserve":
+        actions.append({"path": relpath, "action": "preserve-project-owned"})
+        return
+    if not dest.exists():
+        actions.append({"path": relpath, "action": "already-absent"})
+        return
+    if layer == "context_governance" and dest.is_file():
+        stripped = root_context.strip_tes_blocks(dest.read_text(encoding="utf-8"))
+        if not stripped["had_tes"]:
+            actions.append({"path": relpath, "action": "no-tes-block-skip"})
+            return
+        if stripped["project_text"]:
+            actions.append({"path": relpath, "action": "would-strip-tes-block" if dry_run else "strip-tes-block"})
+            if not dry_run:
+                dest.write_text(stripped["project_text"], encoding="utf-8")
+        else:
+            actions.append({"path": relpath, "action": "would-remove" if dry_run else "remove"})
+            if not dry_run:
+                dest.unlink()
+        return
+    expected = str(entry.get("sha256") or "")
+    if dest.is_file() and expected and sha256_file(dest) != expected:
+        review_items.append({"path": relpath, "action": "preserve-modified-needs-review", "reason": "manifest-sha256-mismatch"})
+        return
+    actions.append({"path": relpath, "action": "would-remove" if dry_run else "remove"})
+    if not dry_run:
+        if dest.is_dir():
+            shutil.rmtree(dest)
+        else:
+            dest.unlink()
+
+
+# Surfaces whose files are bundle manifest entries (detach removes them
+# deterministically). Other surfaces are produced by runtime writers outside the
+# bundle (mcp via install_mcp, hooks via the hook writers, docs-mesh via
+# tes_init) and need their own removers, owned by later units.
+MANIFEST_BACKED_SURFACES = {"root-context"}
+
+
+def detach_surface(target: Path, surface: str, *, dry_run: bool = False, yes: bool = False) -> dict[str, Any]:
+    """ADR 0004 SPEC-001/002: remove one attachment surface, keep the capsule.
+
+    The inverse of attach, scoped to a single surface. For manifest-backed
+    surfaces it reuses the per-entry removal machine (uninstall_action,
+    sha256-fail-safe, TES:CORE decomposition) filtered by attachment_surface, so
+    the capsule and other surfaces are untouched.
+
+    Surfaces produced by runtime writers outside the bundle (mcp, hooks,
+    docs-mesh, and the still-conceptual field-reports/gps/goals/mantra) are not
+    bundle manifest entries. Their removers are owned by later units. Until then,
+    detach reports NEEDS_REVIEW for such a surface rather than silently skipping
+    (no false green) or guessing a removal.
+    """
+    target = target.resolve()
+    if surface == "capsule":
+        return {"version": VERSION, "status": "FAIL", "failures": ["cannot detach the capsule; use uninstall"]}
+    if surface not in ATTACHMENT_SURFACES:
+        return {"version": VERSION, "status": "FAIL", "failures": [f"unknown surface: {surface}"]}
+    if not dry_run and not yes:
+        return {"version": VERSION, "status": "FAIL", "failures": ["detach requires --yes"]}
+    manifest = read_installed_manifest(target)
+    if not manifest:
+        return {"version": VERSION, "status": "SKIP", "reason": "no installed manifest", "target": str(target), "surface": surface, "actions": []}
+
+    actions: list[dict[str, str]] = []
+    review_items: list[dict[str, str]] = []
+
+    # Runtime-writer surfaces are reversed by their writer-inverse removers
+    # (ADR 0004 L3). docs-mesh preserves project content by default.
+    if surface == "mcp":
+        import install_mcp  # type: ignore
+        removed, failures = install_mcp.remove_configs(target, ["codex", "claude", "cursor", "vscode"], dry_run, True)
+        status = "DRY-RUN" if dry_run else ("NEEDS_REVIEW" if failures else "DETACHED")
+        return {"version": VERSION, "status": status, "target": str(target), "surface": surface, "actions": removed, "failures": failures}
+    if surface == "hooks":
+        import tes_install  # type: ignore
+        removed = [tes_install.remove_tes_hooks(target, agent, dry_run) for agent in ("codex", "claude", "cursor")]
+        status = "DRY-RUN" if dry_run else "DETACHED"
+        return {"version": VERSION, "status": status, "target": str(target), "surface": surface, "actions": removed}
+    if surface == "docs-mesh":
+        return detach_docs_mesh(target, dry_run=dry_run, yes=yes)
+    if surface not in MANIFEST_BACKED_SURFACES:
+        # field-reports/gps/goals/mantra: still produced by no detachable writer.
+        return {
+            "version": VERSION,
+            "status": "NEEDS_REVIEW",
+            "target": str(target),
+            "surface": surface,
+            "actions": [],
+            "review_items": [{
+                "surface": surface,
+                "action": "no-remover",
+                "reason": "surface has no detachable writer yet; owned by a later unit",
+            }],
+        }
+
+    matched = 0
+    for entry in manifest.get("entries", []):
+        if not isinstance(entry, dict):
+            continue
+        relpath = str(entry.get("path") or "")
+        if not relpath or relpath.startswith(".tes/"):
+            continue
+        entry_surface = str(entry.get("attachment_surface") or attachment_surface_for(relpath, str(entry.get("layer") or "")))
+        if entry_surface != surface:
+            continue
+        matched += 1
+        remove_manifest_entry(target, entry, dry_run, actions, review_items)
+
+    if matched == 0:
+        return {"version": VERSION, "status": "SKIP", "reason": f"surface not attached: {surface}", "target": str(target), "surface": surface, "actions": []}
+    status = "DRY-RUN" if dry_run else ("NEEDS_REVIEW" if review_items else "DETACHED")
+    return {
+        "version": VERSION,
+        "status": status,
+        "target": str(target),
+        "surface": surface,
+        "actions": actions,
+        "review_items": review_items,
+    }
+
+
+# docs/agents/** files that tes_init generates (project-content otherwise).
+# Names mirror tes_init.REGISTER / PROJECT_CONTEXT and the timestamped evidence
+# artifacts (*-tes-initialization.md, *-tes-project-manifest.json).
+DOCS_MESH_ROOT = "docs/agents"
+DOCS_MESH_GENERATED = ("docs/agents/PROJECT-REGISTER.md", "docs/agents/PROJECT-CONTEXT.md")
+DOCS_MESH_EVIDENCE_DIR = "docs/agents/evidence"
+DOCS_MESH_EVIDENCE_SUFFIXES = ("-tes-initialization.md", "-tes-project-manifest.json")
+
+
+def detach_docs_mesh(target: Path, *, dry_run: bool = False, yes: bool = False, purge: bool = False) -> dict[str, Any]:
+    """ADR 0004 L3 SPEC-003: detach docs-mesh, project-content-safe.
+
+    docs/agents/** is project-owned content. Default detach PRESERVES it (reports
+    it as preserved). With purge=True, remove ONLY files TES generated (the known
+    register/context files and timestamped tes-* evidence artifacts), never files
+    the project authored under docs/agents/**.
+    """
+    target = target.resolve()
+    if not dry_run and not yes:
+        return {"version": VERSION, "status": "FAIL", "failures": ["detach requires --yes"]}
+    root = target / DOCS_MESH_ROOT
+    if not root.exists():
+        return {"version": VERSION, "status": "SKIP", "reason": "docs-mesh not present", "surface": "docs-mesh"}
+
+    preserved: list[str] = []
+    removed: list[str] = []
+
+    def is_generated(relpath: str) -> bool:
+        if relpath in DOCS_MESH_GENERATED:
+            return True
+        if relpath.startswith(DOCS_MESH_EVIDENCE_DIR + "/"):
+            return any(relpath.endswith(suffix) for suffix in DOCS_MESH_EVIDENCE_SUFFIXES)
+        return False
+
+    for path in sorted(p for p in root.rglob("*") if p.is_file()):
+        relpath = rel(path, target)
+        if purge and is_generated(relpath):
+            removed.append(relpath)
+            if not dry_run:
+                path.unlink()
+        else:
+            preserved.append(relpath)
+
+    status = "DRY-RUN" if dry_run else ("DETACHED" if (removed or not purge) else "DETACHED")
+    return {
+        "version": VERSION,
+        "status": status,
+        "target": str(target),
+        "surface": "docs-mesh",
+        "purge": purge,
+        "preserved": preserved,
+        "removed": removed,
+    }
+
+
+def uninstall_capsule(target: Path, *, dry_run: bool = False, yes: bool = False) -> dict[str, Any]:
+    """ADR 0004 SPEC-003: reverse a TES installation and prove zero residue.
+
+    Order: restore project-owned files from the latest backup, remove TES-owned
+    surfaces per the manifest uninstall_action, then remove the capsule. Inherits
+    the sha256-fail-safe from cleanup_obsolete_runtime: a file whose checksum
+    diverges from the manifest is preserved and reported as needs-review, never
+    silently deleted.
+    """
+    target = target.resolve()
+    if not dry_run and not yes:
+        return {"version": VERSION, "status": "FAIL", "failures": ["uninstall requires --yes"]}
+    manifest = read_installed_manifest(target)
+    if not manifest:
+        return {"version": VERSION, "status": "SKIP", "reason": "no installed manifest", "target": str(target)}
+
+    actions: list[dict[str, str]] = []
+    review_items: list[dict[str, str]] = []
+
+    # 1. Restore project-owned files from the latest backup.
+    backup_id = latest_backup_id(target)
+    restore = (
+        restore_backup(target, backup_id, dry_run=dry_run, yes=yes)
+        if backup_id
+        else {"status": "NO_BACKUP", "actions": []}
+    )
+
+    # 2. Remove TES-owned surfaces per uninstall_action, sha256-fail-safe.
+    for entry in manifest.get("entries", []):
+        if not isinstance(entry, dict):
+            continue
+        relpath = str(entry.get("path") or "")
+        if not relpath or relpath.startswith(".tes/"):
+            # Capsule paths are removed wholesale in step 3; skip here.
+            continue
+        remove_manifest_entry(target, entry, dry_run, actions, review_items)
+
+    # 3. Remove the capsule last.
+    capsule = target / ".tes"
+    if capsule.exists():
+        actions.append({"path": ".tes", "action": "would-remove-capsule" if dry_run else "remove-capsule"})
+        if not dry_run:
+            shutil.rmtree(capsule)
+
+    status = "DRY-RUN" if dry_run else ("NEEDS_REVIEW" if review_items else "UNINSTALLED")
+    return {
+        "version": VERSION,
+        "status": status,
+        "target": str(target),
+        "backup_id": backup_id,
+        "restore": summarize_restore(restore),
+        "actions": actions,
+        "review_items": review_items,
+    }
+
+
+def summarize_restore(restore: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "status": restore.get("status"),
+        "backup_id": restore.get("backup_id"),
+        "restored": len([a for a in restore.get("actions", []) if str(a.get("action")).endswith("restore")]),
+    }
+
+
 def public_index_data(index: Path | None = None) -> dict[str, Any]:
     if index is None:
         return {}
@@ -1812,7 +2148,11 @@ def apply_staged_bundle(
     backup_id: str | None = None,
     adapter: str = "all",
     root_context_only: bool = False,
+    surfaces: set[str] | None = None,
 ) -> dict[str, Any]:
+    # ADR 0004: `surfaces` restricts which attachment surfaces are applied.
+    # Capsule-only install passes {"capsule"} so no project-visible surface is
+    # written by default. None means apply every surface (legacy install-all).
     target = target.resolve()
     manifest = read_staged_manifest(target)
     if not manifest:
@@ -1844,6 +2184,11 @@ def apply_staged_bundle(
         if root_context_only and layer != "context_governance":
             actions.append({"path": entry["path"], "layer": layer, "action": "skip-root-context-only"})
             continue
+        if surfaces is not None:
+            entry_surface = str(entry.get("attachment_surface") or attachment_surface_for(entry["path"], layer))
+            if entry_surface not in surfaces:
+                actions.append({"path": entry["path"], "layer": layer, "surface": entry_surface, "action": "skip-not-attached"})
+                continue
         if layer in {"project_alignment", "evidence", "cache"}:
             actions.append({"path": entry["path"], "layer": layer, "action": "skip-layer"})
             continue

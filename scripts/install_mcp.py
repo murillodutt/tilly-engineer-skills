@@ -25,7 +25,7 @@ if str(SCRIPT_PATH.parent) not in sys.path:
     sys.path.insert(0, str(SCRIPT_PATH.parent))
 
 from install_mcp_hosts import HOSTS  # noqa: E402
-VERSION = "0.3.159"
+VERSION = "0.3.163"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (
@@ -253,6 +253,26 @@ def install_configs(
             transport=transport, url=url, bearer_token_env_var=bearer_token_env_var,
             auth_block=auth_block if adapter == "cursor" else None,
         )
+        if failure:
+            failures.append(failure)
+        if action:
+            action["adapter"] = adapter
+            actions.append(action)
+    return actions, failures
+
+
+def remove_configs(
+    target: Path,
+    adapters: list[str],
+    dry_run: bool,
+    backup: bool,
+) -> tuple[list[dict[str, str]], list[str]]:
+    """Inverse of install_configs (ADR 0004 L3 SPEC-001): remove the TES MCP
+    server entry from each adapter, preserving user-owned servers and config."""
+    actions: list[dict[str, str]] = []
+    failures: list[str] = []
+    for adapter in adapters:
+        action, failure = HOSTS[adapter].remove_registration(target, dry_run, backup)
         if failure:
             failures.append(failure)
         if action:

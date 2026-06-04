@@ -13,7 +13,7 @@ from typing import Any
 import tes_map
 
 
-VERSION = "0.3.159"
+VERSION = "0.3.163"
 SCRIPT_PATH = Path(__file__).resolve()
 PACKAGE_MODE = (SCRIPT_PATH.parents[1] / "package.json").exists() and SCRIPT_PATH.parent.name == "scripts"
 REQUIRED_BLOCK_TERMS = (
@@ -105,6 +105,10 @@ def self_test() -> dict[str, Any]:
         target_result = validate_target(target)
         failures.extend(f"target: {failure}" for failure in target_result["failures"])
 
+        # ADR 0004 L4: two-mode contract. ATTACHED mode (docs-mesh present) keeps
+        # the certified behavior; CAPSULE mode (no docs-mesh) uses the projection.
+
+        # Attached, missing roadmap -> still NEEDS_ALIGN (last-known-good preserved).
         missing_roadmap = Path(tmp) / "missing-roadmap"
         (missing_roadmap / "docs/agents").mkdir(parents=True)
         (missing_roadmap / "docs/agents/PROJECT-CONTEXT.md").write_text(
@@ -112,13 +116,52 @@ def self_test() -> dict[str, Any]:
         )
         missing_model = tes_map.build_model(missing_roadmap)
         if missing_model["status"] != tes_map.STATUS_NEEDS_ALIGN:
-            failures.append("missing roadmap did not return NEEDS_ALIGN")
+            failures.append("attached missing roadmap did not return NEEDS_ALIGN")
 
-        missing_context = Path(tmp) / "missing-context"
-        missing_context.mkdir()
-        context_model = tes_map.build_model(missing_context)
-        if context_model["status"] != tes_map.STATUS_NEEDS_CONTEXT:
-            failures.append("missing context did not return NEEDS_CONTEXT")
+        # Capsule mode, no capsule state -> CAPSULE_NEEDS_EVIDENCE (was NEEDS_CONTEXT
+        # in the pre-inversion contract; an empty target is now capsule mode).
+        empty_capsule = Path(tmp) / "empty-capsule"
+        empty_capsule.mkdir()
+        empty_model = tes_map.build_model(empty_capsule)
+        if empty_model["status"] != tes_map.STATUS_CAPSULE_NEEDS_EVIDENCE:
+            failures.append("empty capsule target did not return CAPSULE_NEEDS_EVIDENCE")
+
+        # Capsule mode, with capsule state -> CAPSULE_PASS, useful position, and a
+        # --write updates .tes/gps/** WITHOUT creating docs/agents (no export).
+        capsule = Path(tmp) / "capsule"
+        (capsule / ".tes").mkdir(parents=True)
+        (capsule / ".tes/postinstall.json").write_text(
+            json.dumps({"state": "complete", "last_status": "PASS", "version": tes_map.VERSION}),
+            encoding="utf-8",
+        )
+        capsule_model = tes_map.build_model(capsule)
+        if capsule_model["status"] != tes_map.STATUS_CAPSULE_PASS:
+            failures.append("capsule target did not return CAPSULE_PASS")
+        if not capsule_model["position"]:
+            failures.append("capsule target produced no position")
+        tes_map.write_capsule_projection(capsule, tes_map.build_capsule_projection(capsule))
+        if not (capsule / tes_map.GPS_STATE_REL).exists():
+            failures.append("capsule write did not create .tes/gps/state.json")
+        if (capsule / "docs/agents").exists():
+            failures.append("capsule write leaked docs/agents (export must be gated)")
+
+        # Coexistence: both capsule state and docs/agents present. Attached mode is
+        # used for the block, but the CAPSULE is the authoritative position source,
+        # and project roadmap content outside the managed markers is untouched.
+        coexist = Path(tmp) / "coexist"
+        tes_map.create_fixture(coexist)  # creates docs/agents AND .tes capsule state
+        roadmap_co = coexist / tes_map.ROADMAP_REL
+        # Inject a project-authored line outside the managed markers.
+        sentinel = "PROJECT-AUTHORED-LINE-must-survive"
+        roadmap_co.write_text(roadmap_co.read_text(encoding="utf-8") + f"\n## Project Notes\n\n- {sentinel}\n", encoding="utf-8")
+        coexist_model = tes_map.build_model(coexist)
+        if coexist_model.get("authoritative_source") != "capsule":
+            failures.append("coexistence must report capsule as the authoritative source")
+        if coexist_model["status"] != tes_map.STATUS_PASS:
+            failures.append("coexistence attached model did not pass")
+        tes_map.update_roadmap(coexist, coexist_model)
+        if sentinel not in roadmap_co.read_text(encoding="utf-8"):
+            failures.append("coexistence write removed project-authored content outside markers")
 
         return {
             "status": "FAIL" if failures else "PASS",
@@ -129,8 +172,10 @@ def self_test() -> dict[str, Any]:
             "first": first,
             "second": second,
             "target_result": target_result,
-            "missing_roadmap_status": missing_model["status"],
-            "missing_context_status": context_model["status"],
+            "attached_missing_roadmap_status": missing_model["status"],
+            "empty_capsule_status": empty_model["status"],
+            "capsule_status": capsule_model["status"],
+            "coexistence_mode": coexist_model.get("mode", "attached"),
         }
 
 

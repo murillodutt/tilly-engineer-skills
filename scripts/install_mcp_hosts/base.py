@@ -70,6 +70,19 @@ class HostAdapter(ABC):
     ) -> tuple[dict[str, str], str | None]:
         """Validate the registered server entry on disk."""
 
+    def remove_registration(
+        self,
+        target: Path,
+        dry_run: bool = False,
+        backup: bool = True,
+    ) -> tuple[dict[str, str] | None, str | None]:
+        """Inverse of merge_into_existing: remove only the TES server entry.
+
+        Default implementation is the JSON path (claude/cursor/vscode). The Codex
+        TOML host overrides this. Preserves all user-owned servers and config.
+        """
+        return remove_json_server(target, self.config_path, self.server_key, dry_run, backup)
+
     def allowed_fields(self, transport: str = "stdio") -> set[str]:
         """Return the closed set of fields the host accepts for the given transport."""
         return set()
@@ -156,6 +169,48 @@ def merge_json_server(
     text = json.dumps(data, indent=2, sort_keys=True) + "\n"
     action = write_text_file(path, text, dry_run, backup)
     action["path"] = rel(path, target)
+    return action, None
+
+
+def remove_json_server(
+    target: Path,
+    config_path: Path,
+    server_key: str,
+    dry_run: bool,
+    backup: bool,
+) -> tuple[dict[str, str] | None, str | None]:
+    """Inverse of merge_json_server (ADR 0004 L3 SPEC-001).
+
+    Remove only the tes-cortex entry from the host server map, preserving every
+    other server and the rest of the file. Delete the file only if TES created a
+    config that is now empty. A user-modified file shape is left untouched.
+    """
+    from install_mcp import rel, write_text_file  # type: ignore
+
+    path = target / config_path
+    if not path.exists():
+        return {"path": rel(path, target), "action": "already-absent"}, None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return None, f"invalid JSON in {rel(path, target)}: {exc}"
+    if not isinstance(data, dict):
+        return None, f"{rel(path, target)} must contain a JSON object"
+    servers = data.get(server_key)
+    if not isinstance(servers, dict) or SERVER_NAME not in servers:
+        return {"path": rel(path, target), "action": "no-tes-server"}, None
+    del servers[SERVER_NAME]
+    # If removing tes-cortex leaves an empty server map and the file holds nothing
+    # else, the file was TES-only: remove it. Otherwise preserve the user's file.
+    other_keys = [k for k in data if k != server_key]
+    if not servers and not other_keys:
+        if not dry_run:
+            path.unlink()
+        return {"path": rel(path, target), "action": "would-remove-file" if dry_run else "remove-file"}, None
+    text = json.dumps(data, indent=2, sort_keys=True) + "\n"
+    action = write_text_file(path, text, dry_run, backup)
+    action["path"] = rel(path, target)
+    action["action"] = "would-remove-server" if dry_run else "remove-server"
     return action, None
 
 
