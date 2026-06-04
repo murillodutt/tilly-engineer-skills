@@ -14,7 +14,7 @@ import field_reports
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.161"
+VERSION = "0.3.162"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 SCHEMA = "tes-field-report@2"
 MAX_BODY_CHARS = 48000

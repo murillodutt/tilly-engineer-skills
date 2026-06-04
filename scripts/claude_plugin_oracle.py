@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.161"
+VERSION = "0.3.162"
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 PLUGIN_SOURCE_ROOT = ROOT / "src/adapters/claude/plugin"
 TARGET_PLUGIN_PATHS = (
