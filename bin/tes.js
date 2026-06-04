@@ -12,7 +12,7 @@ const BOOL_OPTIONS = new Set(["--yes", "--dry-run", "--no-hooks", "--no-postinst
 const MIN_NODE_MAJOR = 18;
 const MIN_BUN_VERSION = [1, 0, 0];
 const MIN_PYTHON_VERSION = [3, 11, 0];
-const TES_VERSION = "0.3.163";
+const TES_VERSION = "0.3.164";
 const ANSI = {
   reset: "\x1b[0m",
   bold: "\x1b[1m",
@@ -79,6 +79,10 @@ Options:
   --url <url>                 Use a remote TES bundle.
   --sha256 <hash>             Expected hash for --url.
   --timeout <seconds>         Bundle download or postinstall timeout.
+  --attach <surface>          Attach a project-visible surface. Repeatable.
+                              Defaults to MCP + hooks; use --attach all for
+                              bootloaders, project skills, docs mesh, MCP,
+                              and hooks.
   --help                      Show this help.
 
 Runtime:
@@ -598,6 +602,14 @@ function printCompletionNotice(parsed, summary, dryRun) {
     return;
   }
   console.log(color("TES is ready for this project.", ANSI.bold, ANSI.green));
+  if (summary?.postinstall?.action === "skip-capsule-only") {
+    console.log(`\n${color("IMPORTANT", ANSI.bold, ANSI.yellow)}`);
+    console.log("TES installed as a project-safe capsule with MCP and startup hooks only.");
+    console.log("Project-visible bootloaders, skills, and docs mesh were not installed.");
+    console.log("Codex, Claude Code, and Cursor may ask you to trust the project hook before it fires.");
+    console.log("Use an explicit --attach selection when you want TES governance or project skills materialized.");
+    return;
+  }
   if (parsed.noHooks || parsed.noPostinstall) {
     console.log(`\n${color("IMPORTANT", ANSI.bold, ANSI.yellow)}`);
     console.log("Agent startup was not fully prepared. Run /tes-init or /tes-setup inside your agent to finish setup.");
@@ -695,12 +707,12 @@ async function main() {
   if (!installOptions.yes && !installOptions.dryRun) {
     passthrough.push("--yes");
   }
-  // ADR 0004: the engine is capsule-first (capsule-only by default). The
-  // commercial npx entrypoint is the "install TES fully for me" experience, so
-  // it attaches all project-visible surfaces unless the caller already passed an
-  // explicit --attach selection.
+  // ADR 0004: the public installer must not turn the target project into a TES
+  // governance surface by default. It attaches only the reversible tool
+  // integration layer (MCP + hooks); root bootloaders, project skills, and docs
+  // mesh require explicit --attach all or named --attach selections.
   if (!passthrough.includes("--attach")) {
-    passthrough.push("--attach", "all");
+    passthrough.push("--attach", "mcp", "--attach", "hooks");
   }
 
   const args = [

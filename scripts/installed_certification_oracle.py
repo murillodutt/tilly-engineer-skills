@@ -13,7 +13,7 @@ import command_trigger_oracle
 import mantra_gate_adoption_oracle
 
 
-VERSION = "0.3.163"
+VERSION = "0.3.164"
 SCHEMA = "tes-installed-certification@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
@@ -143,6 +143,8 @@ def artifact_hygiene(target: Path) -> dict[str, Any]:
 
 
 def adoption_status(target: Path) -> dict[str, Any]:
+    if not any((target / relpath).exists() for relpath in ("AGENTS.md", "CLAUDE.md", "CURSOR.md")):
+        return {"status": "NOT_APPLIED", "reason": "root-context not attached"}
     result = mantra_gate_adoption_oracle.evaluate(target)
     return {
         "status": result.get("status"),
@@ -152,6 +154,18 @@ def adoption_status(target: Path) -> dict[str, Any]:
 
 
 def trigger_status(target: Path) -> dict[str, Any]:
+    if not any(
+        (target / relpath).exists()
+        for relpath in (
+            "AGENTS.md",
+            "CLAUDE.md",
+            "CURSOR.md",
+            ".agents/skills/tes-engineering-discipline/SKILL.md",
+            ".claude/skills/tes-guidelines/SKILL.md",
+            ".cursor/rules/tes-guidelines.mdc",
+        )
+    ):
+        return {"status": "NOT_APPLIED", "checked": [], "failures": [], "reason": "root-context not attached"}
     result = command_trigger_oracle.check_installed_target(target)
     return {
         "status": result.get("status"),

@@ -23,7 +23,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.163"
+VERSION = "0.3.164"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -240,14 +240,6 @@ def claude_hook_contract_failures(target: Path) -> list[str]:
             failures.append("Claude SessionStart hook must use native asyncRewake completion")
         if CLAUDE_SETUP_RUNNING_MESSAGE not in str(setup.get("statusMessage", "")):
             failures.append("Claude SessionStart hook must display setup status while running")
-    setup_skill = target / ".claude/skills/tes-setup/SKILL.md"
-    if not setup_skill.exists():
-        failures.append("Claude install must deliver /tes-setup as a project skill")
-    else:
-        setup_text = setup_skill.read_text(encoding="utf-8")
-        for term in ("name: tes-setup", "/tes-init", ".tes/postinstall.json"):
-            if term not in setup_text:
-                failures.append(f"Claude /tes-setup skill missing contract term: {term}")
     return failures
 
 
@@ -691,7 +683,6 @@ def self_test() -> int:
             failures.extend(commercial_output_failures("interactive accept", accept_output))
         for relpath in (
             ".tes/bin/tes_install.py",
-            ".tes/postinstall.json",
             ".codex/config.toml",
             ".mcp.json",
             ".cursor/mcp.json",
@@ -772,14 +763,10 @@ def self_test() -> int:
                 if "TES is ready for this project." not in exec_result.stdout:
                     failures.append("npm exec package add must finish with a human success message")
                 required_followup_terms = (
-                    "Agent follow-up is host-specific",
-                    "Codex: open Settings > Hooks",
-                    "Trust and enable the Session Start hook",
-                    "Claude Code: open or reopen Claude Code",
-                    "wait for the TES completion notice",
-                    "Cursor: reopen the workspace",
-                    "let first-session setup complete",
-                    "Please, run /tes-setup for the report before starting project work.",
+                    "project-safe capsule with MCP and startup hooks only",
+                    "Project-visible bootloaders, skills, and docs mesh were not installed.",
+                    "may ask you to trust the project hook before it fires",
+                    "Use an explicit --attach selection",
                 )
                 for term in required_followup_terms:
                     if term not in exec_result.stdout:
@@ -787,20 +774,29 @@ def self_test() -> int:
             for relpath in (
                 ".tes/bin/tes_install.py",
                 ".tes/tes-install-lock.json",
-                ".tes/postinstall.json",
                 ".codex/config.toml",
                 ".mcp.json",
                 ".cursor/mcp.json",
                 ".claude/settings.json",
-                ".claude/skills/tes-setup/SKILL.md",
                 ".cursor/hooks.json",
             ):
                 if not (install_target / relpath).exists():
                     failures.append(f"npm exec install missing path: {relpath}")
+            for relpath in (
+                ".tes/postinstall.json",
+                "AGENTS.md",
+                "CLAUDE.md",
+                "CURSOR.md",
+                ".agents/skills/tes-setup/SKILL.md",
+                ".claude/skills/tes-setup/SKILL.md",
+                ".cursor/rules/tes-runtime-capabilities.mdc",
+            ):
+                if (install_target / relpath).exists():
+                    failures.append(f"npm exec default install must not materialize project-visible path: {relpath}")
             failures.extend(mcp_all_contract_failures(install_target, "npm exec install"))
             sentinel = load_json(install_target / ".tes/postinstall.json") if (install_target / ".tes/postinstall.json").exists() else {}
-            if sentinel.get("state") != "pending":
-                failures.append("npm exec install must leave pending postinstall sentinel")
+            if sentinel:
+                failures.append("npm exec default install must not leave a postinstall sentinel")
             if (install_target / ".claude/settings.json").exists():
                 failures.extend(claude_hook_contract_failures(install_target))
             claude_start_result = run(
@@ -827,14 +823,11 @@ def self_test() -> int:
                 except json.JSONDecodeError:
                     start_payload = {}
                     failures.append("installed Claude start notice hook must emit structured JSON")
-                if start_payload.get("systemMessage") != CLAUDE_SETUP_RUNNING_MESSAGE:
-                    failures.append("installed Claude start notice must show the visible running message")
-                hook_output = start_payload.get("hookSpecificOutput") if isinstance(start_payload, dict) else None
-                if not isinstance(hook_output, dict) or hook_output.get("hookEventName") != "SessionStart":
-                    failures.append("installed Claude start notice must include SessionStart hook context")
+                if start_payload:
+                    failures.append("installed Claude start notice must stay quiet when no postinstall sentinel exists")
             sentinel = load_json(install_target / ".tes/postinstall.json") if (install_target / ".tes/postinstall.json").exists() else {}
-            if sentinel.get("state") != "pending":
-                failures.append("installed Claude start notice must not run postinstall")
+            if sentinel:
+                failures.append("installed Claude start notice must not create postinstall state")
 
             hook_result = run(
                 [
@@ -854,8 +847,8 @@ def self_test() -> int:
                 failures.extend(hook_result.stdout.splitlines())
                 failures.extend(hook_result.stderr.splitlines())
             sentinel = load_json(install_target / ".tes/postinstall.json") if (install_target / ".tes/postinstall.json").exists() else {}
-            if sentinel.get("state") != "complete":
-                failures.append("installed hook must complete postinstall sentinel")
+            if sentinel:
+                failures.append("installed default hook must not create postinstall sentinel")
             claude_hook_result = run(
                 [
                     sys.executable,
@@ -917,8 +910,8 @@ def self_test() -> int:
                 failures.append("npm exec Claude-only package add failed")
                 failures.extend(first_claude_install.stdout.splitlines())
                 failures.extend(first_claude_install.stderr.splitlines())
-            if not (first_claude_target / ".claude/skills/tes-setup/SKILL.md").exists():
-                failures.append("npm exec Claude-only package add must install /tes-setup skill")
+            if (first_claude_target / ".claude/skills/tes-setup/SKILL.md").exists():
+                failures.append("npm exec Claude-only default add must not install /tes-setup skill")
             if (first_claude_target / ".claude/settings.json").exists():
                 failures.extend(claude_hook_contract_failures(first_claude_target))
             first_start_notice = run(
@@ -938,15 +931,9 @@ def self_test() -> int:
             if first_start_notice.returncode != 0:
                 failures.append("installed Claude first-session start notice failed")
                 failures.extend(first_start_notice.stdout.splitlines())
+            elif first_start_notice.stdout.strip() not in {"", "{}"}:
+                failures.append("installed Claude first-session start notice must stay quiet without postinstall sentinel")
                 failures.extend(first_start_notice.stderr.splitlines())
-            else:
-                try:
-                    first_start_payload = json.loads(first_start_notice.stdout)
-                except json.JSONDecodeError:
-                    first_start_payload = {}
-                    failures.append("installed Claude first-session start notice must emit structured JSON")
-                if first_start_payload.get("systemMessage") != CLAUDE_SETUP_RUNNING_MESSAGE:
-                    failures.append("installed Claude first-session start notice must show the visible running message")
             first_claude_hook = run(
                 [
                     sys.executable,
@@ -961,27 +948,16 @@ def self_test() -> int:
                 work,
                 timeout=300.0,
             )
-            if first_claude_hook.returncode != 2:
-                failures.append("installed Claude first-session asyncRewake hook failed")
+            if first_claude_hook.returncode != 0:
+                failures.append("installed Claude default asyncRewake hook failed")
                 failures.extend(first_claude_hook.stdout.splitlines())
                 failures.extend(first_claude_hook.stderr.splitlines())
             else:
-                if first_claude_hook.stdout.strip():
-                    failures.append("installed Claude asyncRewake must not emit JSON stdout on exit 2")
-                if (
-                    "TES first-session setup completed." not in first_claude_hook.stderr
-                    or "Please, run /tes-setup for the report." not in first_claude_hook.stderr
-                ):
-                    failures.append("installed Claude first-session asyncRewake must wake with /tes-setup guidance")
+                if first_claude_hook.stdout.strip() or first_claude_hook.stderr.strip():
+                    failures.append("installed Claude default asyncRewake hook must stay quiet without postinstall sentinel")
                 first_sentinel_path = first_claude_target / ".tes/postinstall.json"
-                if not first_sentinel_path.exists():
-                    failures.append("installed Claude asyncRewake postinstall sentinel missing after completion message")
-                else:
-                    first_sentinel = load_json(first_sentinel_path)
-                    if first_sentinel.get("state") != "complete":
-                        failures.append("installed Claude asyncRewake postinstall must complete before completion message")
-                    if first_sentinel.get("last_status") != "PASS":
-                        failures.append("installed Claude asyncRewake postinstall must record PASS before completion message")
+                if first_sentinel_path.exists():
+                    failures.append("installed Claude default asyncRewake hook must not create postinstall sentinel")
             first_complete_notice = run(
                 [
                     sys.executable,
@@ -1199,7 +1175,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.163 or main.",
+        help="Git ref to test, e.g. v0.3.164 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()

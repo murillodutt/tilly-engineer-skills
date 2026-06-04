@@ -24,7 +24,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.163"
+VERSION = "0.3.164"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -91,6 +91,7 @@ HELPER_FILES = (
     "command_trigger_oracle.py",
     "tes_bundle.py",
     "materialize_adapter.py",
+    "capsule_residue_oracle.py",
 )
 CONTEXT_GOVERNANCE_PATHS = {
     "AGENTS.md",
@@ -485,10 +486,15 @@ def attachment_surface_for(path: str, layer: str) -> str:
         return "mcp"
     if path.startswith("docs/agents/"):
         return "docs-mesh"
+    if path.startswith(".agents/skills/") or path.startswith(".claude/skills/"):
+        return "root-context"
+    if path.startswith(".cursor/rules/"):
+        return "root-context"
     if layer == "context_governance":
         return "root-context"
-    # Installed runtime skills/plugins are TES-owned capsule runtime; they are
-    # removed with the capsule, not preserved as project files.
+    # Remaining project-visible runtime capabilities require an explicit
+    # attachment. They are not part of the capsule because hosts can discover
+    # them as project behavior.
     return "capsule"
 
 
@@ -1605,6 +1611,35 @@ def uninstall_capsule(target: Path, *, dry_run: bool = False, yes: bool = False)
 
     actions: list[dict[str, str]] = []
     review_items: list[dict[str, str]] = []
+    surface_actions: list[dict[str, Any]] = []
+
+    # 0. Remove runtime-writer surfaces first. These files are not bundle
+    # manifest entries because their writers merge into host config formats.
+    # Uninstall is the user's exit path, so avoid secondary .bak-* residue here.
+    try:
+        import install_mcp  # type: ignore
+
+        removed_mcp, mcp_failures = install_mcp.remove_configs(
+            target, ["codex", "claude", "cursor", "vscode"], dry_run, False
+        )
+        surface_actions.append({"surface": "mcp", "actions": removed_mcp, "failures": mcp_failures})
+        review_items.extend(
+            {"path": "mcp", "action": "remove-config-needs-review", "reason": failure}
+            for failure in mcp_failures
+        )
+    except Exception as exc:  # pragma: no cover - defensive for damaged installs
+        review_items.append({"path": "mcp", "action": "remove-config-needs-review", "reason": str(exc)})
+
+    try:
+        import tes_install  # type: ignore
+
+        hook_actions = [
+            tes_install.remove_tes_hooks(target, agent, dry_run, backup=False)
+            for agent in ("codex", "claude", "cursor")
+        ]
+        surface_actions.append({"surface": "hooks", "actions": hook_actions, "failures": []})
+    except Exception as exc:  # pragma: no cover - defensive for damaged installs
+        review_items.append({"path": "hooks", "action": "remove-hooks-needs-review", "reason": str(exc)})
 
     # 1. Restore project-owned files from the latest backup.
     backup_id = latest_backup_id(target)
@@ -1631,6 +1666,9 @@ def uninstall_capsule(target: Path, *, dry_run: bool = False, yes: bool = False)
         if not dry_run:
             shutil.rmtree(capsule)
 
+    shell_cleanup = cleanup_tes_shells(target, dry_run=dry_run)
+    actions.extend(shell_cleanup)
+
     status = "DRY-RUN" if dry_run else ("NEEDS_REVIEW" if review_items else "UNINSTALLED")
     return {
         "version": VERSION,
@@ -1638,9 +1676,69 @@ def uninstall_capsule(target: Path, *, dry_run: bool = False, yes: bool = False)
         "target": str(target),
         "backup_id": backup_id,
         "restore": summarize_restore(restore),
+        "surfaces": surface_actions,
         "actions": actions,
         "review_items": review_items,
     }
+
+
+def cleanup_tes_shells(target: Path, *, dry_run: bool = False) -> list[dict[str, str]]:
+    """Remove TES-created empty/trivial shell files and empty tool dirs.
+
+    Writer-inverse removers may leave syntactically valid empty host config
+    shells, e.g. `[features]` or `{"hooks":{"SessionStart":[]}}`. Those are not
+    useful project files after uninstall and should not force manual cleanup.
+    """
+    actions: list[dict[str, str]] = []
+
+    trivial_files = {
+        ".codex/config.toml": lambda text: text.strip() in {"", "[features]"},
+        ".claude/settings.json": lambda text: _json_is_empty_hooks(text),
+        ".cursor/hooks.json": lambda text: _json_is_empty_hooks(text),
+    }
+    for relpath, predicate in trivial_files.items():
+        path = target / relpath
+        if not path.is_file():
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if not predicate(text):
+            continue
+        actions.append({"path": relpath, "action": "would-remove-trivial-shell" if dry_run else "remove-trivial-shell"})
+        if not dry_run:
+            path.unlink()
+
+    for root_rel in (".agents", ".claude", ".cursor", ".codex"):
+        root = target / root_rel
+        if not root.is_dir():
+            continue
+        if any(candidate.is_file() for candidate in root.rglob("*")):
+            continue
+        actions.append({"path": root_rel, "action": "would-remove-empty-dir" if dry_run else "remove-empty-dir"})
+        if not dry_run:
+            shutil.rmtree(root)
+
+    return actions
+
+
+def _json_is_empty_hooks(text: str) -> bool:
+    try:
+        data = json.loads(text or "{}")
+    except json.JSONDecodeError:
+        return False
+    if not isinstance(data, dict):
+        return False
+    hooks = data.get("hooks")
+    if hooks in ({}, None):
+        return set(data.keys()) <= {"hooks", "version"}
+    if not isinstance(hooks, dict):
+        return False
+    return set(data.keys()) <= {"hooks", "version"} and all(
+        (not value) or (isinstance(value, list) and not value)
+        for value in hooks.values()
+    )
 
 
 def summarize_restore(restore: dict[str, Any]) -> dict[str, Any]:

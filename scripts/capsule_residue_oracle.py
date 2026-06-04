@@ -26,14 +26,20 @@ from typing import Any
 import root_context
 
 
-VERSION = "0.3.163"
+VERSION = "0.3.164"
 
 # Governed surface markers (kept in sync with the installer writers).
 MCP_SERVER_NAME = "tes-cortex"
-HOOK_COMMAND_TOKEN = "tes_install.py hook"
+HOOK_COMMAND_TOKENS = ("tes_install.py hook", ".tes/bin/tes_install.py")
 ROOT_BOOTLOADERS = ("AGENTS.md", "CLAUDE.md", "CURSOR.md")
 MCP_CONFIG_PATHS = (".mcp.json", ".cursor/mcp.json", ".vscode/mcp.json", ".codex/config.toml")
 HOOK_CONFIG_PATHS = (".codex/config.toml", ".claude/settings.json", ".cursor/hooks.json")
+PROJECT_VISIBLE_RUNTIME_ROOTS = (
+    ".agents/skills",
+    ".claude/skills",
+    ".cursor/rules",
+)
+SHELL_DIRS = (".agents", ".claude", ".cursor", ".codex")
 # docs-mesh is the only project-visible surface outside the capsule besides root
 # bootloaders. field-reports and mantra-gates live inside .tes/** (covered by the
 # capsule detector). gps/goals are not yet produced by any writer.
@@ -49,6 +55,31 @@ def read_text(path: Path) -> str:
         return path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
         return ""
+
+
+def rel(path: Path, root: Path) -> str:
+    try:
+        return path.relative_to(root).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def _json_is_empty_hooks(text: str) -> bool:
+    try:
+        data = json.loads(text or "{}")
+    except json.JSONDecodeError:
+        return False
+    if not isinstance(data, dict):
+        return False
+    hooks = data.get("hooks")
+    if hooks in ({}, None):
+        return set(data.keys()) <= {"hooks", "version"}
+    if not isinstance(hooks, dict):
+        return False
+    return set(data.keys()) <= {"hooks", "version"} and all(
+        (not value) or (isinstance(value, list) and not value)
+        for value in hooks.values()
+    )
 
 
 def retained_exports(target: Path) -> set[str]:
@@ -99,8 +130,51 @@ def detect_hooks(target: Path) -> list[str]:
     found: list[str] = []
     for rel in HOOK_CONFIG_PATHS:
         text = read_text(target / rel)
-        if text and HOOK_COMMAND_TOKEN in text:
+        if text and any(token in text for token in HOOK_COMMAND_TOKENS) and " hook" in text:
             found.append(f"{rel} (TES hook entry)")
+    git_pre_push = target / ".git/hooks/pre-push"
+    text = read_text(git_pre_push)
+    if text and "TES_FIELD_REPORTS_PRE_PUSH" in text:
+        found.append(".git/hooks/pre-push (TES field reports hook)")
+    return found
+
+
+def detect_project_visible_runtime(target: Path) -> list[str]:
+    found: list[str] = []
+    for rel in PROJECT_VISIBLE_RUNTIME_ROOTS:
+        root = target / rel
+        if not root.exists():
+            continue
+        files = [
+            path
+            for path in root.rglob("*")
+            if path.is_file() and (path.name.startswith("tes-") or "/tes-" in path.as_posix() or "TES" in read_text(path))
+        ]
+        if files:
+            found.append(f"{rel}/** (TES project-visible runtime, {len(files)} files)")
+    return found
+
+
+def detect_hygiene_residue(target: Path) -> list[str]:
+    found: list[str] = []
+    for root_rel in SHELL_DIRS:
+        root = target / root_rel
+        if not root.exists():
+            continue
+        backup_files = sorted(path for path in root.rglob("*.bak-*") if path.is_file())
+        if backup_files:
+            found.extend(f"{rel(path, target)} (TES backup residue)" for path in backup_files)
+        if root.is_dir() and not any(path.is_file() for path in root.rglob("*")):
+            found.append(f"{root_rel}/ (empty TES shell directory)")
+    for relpath in (".codex/config.toml", ".claude/settings.json", ".cursor/hooks.json"):
+        path = target / relpath
+        if not path.is_file():
+            continue
+        text = read_text(path)
+        if relpath == ".codex/config.toml" and text.strip() in {"", "[features]"}:
+            found.append(f"{relpath} (empty TES shell config)")
+        if relpath in {".claude/settings.json", ".cursor/hooks.json"} and _json_is_empty_hooks(text):
+            found.append(f"{relpath} (empty TES shell config)")
     return found
 
 
@@ -127,6 +201,8 @@ def evaluate(target: Path) -> dict[str, Any]:
         "bootloader": detect_bootloader_blocks(target),
         "mcp": detect_mcp(target),
         "hooks": detect_hooks(target),
+        "project-visible-runtime": detect_project_visible_runtime(target),
+        "hygiene": detect_hygiene_residue(target),
     }
     inert_surfaces = {
         "docs-mesh": detect_docs_mesh(target),
@@ -218,6 +294,39 @@ def self_test() -> int:
             failures.append(f"docs-mesh must be inert (PASS), not active residue: {r6['status']}")
         if not any("docs/agents" in item for item in r6["retained_exports"]):
             failures.append("docs-mesh must be reported under retained_exports")
+
+        # Fixture 7: project-visible TES skills/rules are active residue.
+        runtime = root / "project-visible-runtime"
+        (runtime / ".agents/skills/tes-map").mkdir(parents=True)
+        (runtime / ".agents/skills/tes-map/SKILL.md").write_text("# TES Map\n", encoding="utf-8")
+        r7 = evaluate(runtime)
+        if r7["status"] != "FAIL" or not any("project-visible" in item for item in r7["active_residue"]):
+            failures.append(f"project-visible TES runtime must FAIL: {r7['status']} {r7['active_residue']}")
+
+        # Fixture 8: uninstall backup/shell residue is not clean.
+        hygiene = root / "hygiene"
+        (hygiene / ".codex").mkdir(parents=True)
+        (hygiene / ".codex/config.toml").write_text("[features]\n", encoding="utf-8")
+        (hygiene / ".codex/config.toml.bak-20260604T000000Z").write_text("tes\n", encoding="utf-8")
+        r8 = evaluate(hygiene)
+        if r8["status"] != "FAIL" or not any("backup residue" in item or "shell config" in item for item in r8["active_residue"]):
+            failures.append(f"backup/shell residue must FAIL: {r8['status']} {r8['active_residue']}")
+
+        # Fixture 9: Codex hook command can survive without the marker comment.
+        codex_hook = root / "codex-hook"
+        (codex_hook / ".codex").mkdir(parents=True)
+        (codex_hook / ".codex/config.toml").write_text(
+            "[features]\n\n"
+            "[[hooks.SessionStart]]\n"
+            "matcher = \"startup|resume\"\n\n"
+            "[[hooks.SessionStart.hooks]]\n"
+            "type = \"command\"\n"
+            "command = \"python3 \\\"$(git rev-parse --show-toplevel)/.tes/bin/tes_install.py\\\" hook --agent codex\"\n",
+            encoding="utf-8",
+        )
+        r9 = evaluate(codex_hook)
+        if r9["status"] != "FAIL" or not any(".codex/config.toml" in item for item in r9["active_residue"]):
+            failures.append(f"unmarked Codex TES hook must FAIL: {r9['status']} {r9['active_residue']}")
 
     result = {"version": VERSION, "status": "FAIL" if failures else "PASS", "failures": failures}
     print(json.dumps(result, indent=2, sort_keys=True))

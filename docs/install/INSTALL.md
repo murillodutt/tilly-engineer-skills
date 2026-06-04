@@ -11,7 +11,7 @@ tver: 0.9.8
 # Adapter Installation
 
 The public installer path is the GitHub package-spec command through npx or Bun after a fixed ref is authorized and release-certified.
-Version `0.3.163` is the fixed release identity for this install surface; treat the remote ref as certified only after the tag is published and `npm run release:check` passes.
+Version `0.3.164` is the fixed release identity for this install surface; treat the remote ref as certified only after the tag is published and `npm run release:check` passes.
 
 User-facing walkthrough:
 
@@ -24,11 +24,11 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 ## GitHub Package-Spec Form
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.163 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.164 tilly-engineer-skills add
 ```
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.163 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.164 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -40,10 +40,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.163 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.164 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.163` is the intended fixed-ref form for a release-certified install
+`#v0.3.164` is the intended fixed-ref form for a release-certified install
 channel. Do not call that remote ref certified until `npm run release:check`
 passes after the tag or fixed ref is authorized and available.
 
@@ -116,12 +116,9 @@ The installer follows current adapter surfaces:
 
 | Tool | Install Surface |
 |------|-----------------|
-| Codex | `AGENTS.md` and `.agents/skills/**` |
-| Claude Code | `CLAUDE.md` and `.claude/skills/**` |
-| Cursor | `.cursor/rules/tes-guidelines.mdc` plus TES-owned `.cursor/rules/tes-runtime-capabilities.mdc` |
-
-The common pattern is file-based installation into the target repository, but
-project-specific governance belongs in `docs/agents/**`.
+| Codex | Default: `.codex/config.toml` MCP + hook config. Explicit `--attach all`/`root-context`: `AGENTS.md` and `.agents/skills/**` |
+| Claude Code | Default: `.mcp.json` + `.claude/settings.json`. Explicit `--attach all`/`root-context`: `CLAUDE.md` and `.claude/skills/**` |
+| Cursor | Default: `.cursor/mcp.json` + `.cursor/hooks.json`. Explicit `--attach all`/`root-context`: Cursor TES rules |
 
 Cortex is the default compiled memory layer under `docs/agents/cortex/**`.
 Memory lives in versioned artifacts: immutable `sources/**`, compiled
@@ -255,13 +252,13 @@ knowledge lifecycle, glossary, decisions, and evidence.
 `project_context_oracle.py` and `project_alignment_oracle.py` must pass or the
 installer must close as `NEEDS_REVIEW` with a concrete blocker.
 
-For an existing project, the installer migrates durable rules from existing
-agent files and docs into `docs/agents/**`, then turns `AGENTS.md`, `CLAUDE.md`,
-`.cursor/rules/**`, `.claude/**`, and `.agents/**` into runtime assets that
-route to the mesh. It should read strong anchors such as README, package
-manifests, architecture docs, root agent instructions, local validation
-scripts, source entrypoints, and test roots, then synthesize the initial
-project map in `PROJECT-CONTEXT.md`.
+For an existing project, the default public installer keeps TES as `.tes/**`
+plus MCP and startup hooks only; project governance materialization is explicit.
+When `docs-mesh` or `root-context` is attached, TES migrates durable rules from
+agent files/docs into `docs/agents/**`, then composes `AGENTS.md`, `CLAUDE.md`,
+`.cursor/rules/**`, `.claude/**`, and `.agents/**` as runtime assets that route
+to the mesh. It should read strong anchors and synthesize the initial project
+map in `PROJECT-CONTEXT.md`.
 
 The deterministic initializer creates the scaffold. The active agent must then
 open strong anchors before claiming deep project understanding, and either

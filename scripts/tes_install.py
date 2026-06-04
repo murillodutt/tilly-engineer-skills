@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.163"
+VERSION = "0.3.164"
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -180,15 +180,16 @@ def write_text_if_changed(path: Path, text: str, target: Path, dry_run: bool, ba
     encoded = text.encode("utf-8")
     if path.exists() and path.read_bytes() == encoded:
         return {"path": rel(path, target), "action": "skip-identical"}
+    had_existing = path.exists()
     if dry_run:
-        return {"path": rel(path, target), "action": "would-update" if path.exists() else "would-create"}
+        return {"path": rel(path, target), "action": "would-update" if had_existing else "would-create"}
     backup_path = None
-    if path.exists() and backup:
+    if had_existing and backup:
         backup_path = path.with_name(f"{path.name}.bak-{file_stamp()}")
         shutil.copy2(path, backup_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
-    result = {"path": rel(path, target), "action": "update" if backup_path else "create"}
+    result = {"path": rel(path, target), "action": "update" if had_existing else "create"}
     if backup_path:
         result["backup"] = rel(backup_path, target)
     return result
@@ -218,7 +219,17 @@ def install_codex_hook(target: Path, dry_run: bool) -> dict[str, str]:
     snippet = codex_hook_snippet().strip()
     if "TES first-session post-install hook" not in updated:
         updated = updated.rstrip() + "\n\n" + snippet + "\n"
-    return write_text_if_changed(path, updated, target, dry_run)
+    backup = not is_codex_tes_only_mcp_config(existing)
+    return write_text_if_changed(path, updated, target, dry_run, backup=backup)
+
+
+def is_codex_tes_only_mcp_config(text: str) -> bool:
+    stripped = text.strip()
+    if not stripped or "[mcp_servers.tes-cortex]" not in stripped:
+        return False
+    lines = [line.strip() for line in stripped.splitlines() if line.strip() and not line.strip().startswith("#")]
+    headers = [line for line in lines if line.startswith("[") and line.endswith("]")]
+    return headers == ["[mcp_servers.tes-cortex]"]
 
 
 CLAUDE_SETUP_RUNNING_MESSAGE = "IMPORTANT: TES setup is running. Please wait; do not start project work."
@@ -381,13 +392,33 @@ def remove_tes_codex_hook_text(text: str) -> str:
                 end = idx
                 break
         lines = [*lines[:start], *lines[end:]]
+    else:
+        for index, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped != "[[hooks.SessionStart]]":
+                continue
+            end = len(lines)
+            for idx in range(index + 1, len(lines)):
+                next_stripped = lines[idx].strip()
+                if (
+                    next_stripped.startswith("[")
+                    and next_stripped.endswith("]")
+                    and not next_stripped.lstrip("[").startswith("hooks.SessionStart")
+                    and not next_stripped.lstrip("[").startswith("hooks.SessionStart.hooks")
+                ):
+                    end = idx
+                    break
+            block = "\n".join(lines[index:end])
+            if ".tes/bin/tes_install.py" in block and " hook" in block:
+                lines = [*lines[:index], *lines[end:]]
+                break
     # Remove the codex_hooks feature flag line.
     lines = [line for line in lines if line.strip() != "codex_hooks = true"]
     body = "\n".join(lines).strip()
     return (body + "\n") if body else ""
 
 
-def remove_tes_hooks(target: Path, agent: str, dry_run: bool = False) -> dict[str, str]:
+def remove_tes_hooks(target: Path, agent: str, dry_run: bool = False, backup: bool = True) -> dict[str, str]:
     """Unified hook remover (ADR 0004 L3 SPEC-002). Writer-inverse per agent;
     preserves non-TES hooks; removes a TES-only file when it becomes empty."""
     if agent == "claude":
@@ -397,7 +428,7 @@ def remove_tes_hooks(target: Path, agent: str, dry_run: bool = False) -> dict[st
         data = read_json(path)
         remove_tes_claude_sessionstart_hooks(data)
         text = json.dumps(data, indent=2, sort_keys=True) + "\n"
-        return {**write_text_if_changed(path, text, target, dry_run), "agent": agent}
+        return {**write_text_if_changed(path, text, target, dry_run, backup=backup), "agent": agent}
     if agent == "cursor":
         path = target / ".cursor/hooks.json"
         if not path.exists():
@@ -413,7 +444,7 @@ def remove_tes_hooks(target: Path, agent: str, dry_run: bool = False) -> dict[st
                 path.unlink()
             return {"agent": agent, "path": rel(path, target), "action": "would-remove-file" if dry_run else "remove-file"}
         text = json.dumps(data, indent=2, sort_keys=True) + "\n"
-        return {**write_text_if_changed(path, text, target, dry_run), "agent": agent}
+        return {**write_text_if_changed(path, text, target, dry_run, backup=backup), "agent": agent}
     if agent == "codex":
         path = target / ".codex/config.toml"
         if not path.exists():
@@ -423,7 +454,7 @@ def remove_tes_hooks(target: Path, agent: str, dry_run: bool = False) -> dict[st
             if not dry_run:
                 path.unlink()
             return {"agent": agent, "path": rel(path, target), "action": "would-remove-file" if dry_run else "remove-file"}
-        return {**write_text_if_changed(path, stripped, target, dry_run), "agent": agent}
+        return {**write_text_if_changed(path, stripped, target, dry_run, backup=backup), "agent": agent}
     return {"agent": agent, "action": "unsupported"}
 
 
@@ -566,6 +597,7 @@ def write_install_lock(
     mcp_result: dict[str, Any],
     certification_result: dict[str, Any],
     dry_run: bool,
+    attached_surfaces: list[str] | None = None,
 ) -> dict[str, str]:
     manifest = read_json(target / ".tes/manifest.json")
     metadata = manifest.get("metadata") if isinstance(manifest.get("metadata"), dict) else {}
@@ -580,6 +612,7 @@ def write_install_lock(
         "source_repository": metadata.get("source_repository"),
         "source_commit": metadata.get("source_commit"),
         "stage": summarize_result(stage),
+        "attached_surfaces": attached_surfaces or ["capsule"],
         "apply": summarize_result(apply_result),
         "hooks": hook_actions,
         "mcp": summarize_mcp_result(mcp_result),
@@ -862,15 +895,29 @@ def uninstall(args: argparse.Namespace) -> int:
         return 2
 
     import tes_bundle
+    residue_oracle: Any = None
+    residue_import_failure: str | None = None
+    if not args.dry_run:
+        try:
+            import capsule_residue_oracle
+        except ModuleNotFoundError as exc:
+            residue_import_failure = str(exc)
+        else:
+            residue_oracle = capsule_residue_oracle
 
     result = tes_bundle.uninstall_capsule(target, dry_run=args.dry_run, yes=args.yes)
 
     # Fold the residue oracle verdict in (skip on dry-run; nothing was removed).
     residue: dict[str, Any] = {"status": "SKIP", "reason": "dry-run"}
     if not args.dry_run and result.get("status") in {"UNINSTALLED", "NEEDS_REVIEW"}:
-        import capsule_residue_oracle
-
-        residue = capsule_residue_oracle.evaluate(target)
+        if residue_oracle is None:
+            residue = {
+                "status": "FAIL",
+                "active_residue": [f"capsule_residue_oracle.py unavailable before uninstall: {residue_import_failure}"],
+                "surfaces": {},
+            }
+        else:
+            residue = residue_oracle.evaluate(target)
     result["residue"] = residue
 
     status = str(result.get("status") or "")
@@ -1068,15 +1115,15 @@ def install(args: argparse.Namespace) -> int:
     # install leaves them off. --no-hooks still forces hooks off when attached.
     hooks_attached = "hooks" in surfaces
     mcp_attached = "mcp" in surfaces
-    hook_actions = (
-        install_hooks(target, agents, args.dry_run)
-        if hooks_attached and not args.no_hooks
-        else [{"action": "skip-capsule-only" if not hooks_attached else "skip-disabled", "surface": "hooks"}]
-    )
     mcp_result = (
         run_mcp_bootstrap(target, args.agent, args.dry_run, args.timeout)
         if mcp_attached
         else {"status": "SKIP", "reason": "capsule-only: mcp not attached", "surface": "mcp"}
+    )
+    hook_actions = (
+        install_hooks(target, agents, args.dry_run)
+        if hooks_attached and not args.no_hooks
+        else [{"action": "skip-capsule-only" if not hooks_attached else "skip-disabled", "surface": "hooks"}]
     )
     if mcp_result.get("status") == "FAIL":
         result = {
@@ -1096,9 +1143,10 @@ def install(args: argparse.Namespace) -> int:
         print("[tes-install] FAIL")
         return 1
     certification_result = run_installed_certification(target, args.dry_run, args.timeout)
-    # ADR 0004: postinstall materializes project-visible surfaces (docs/agents
-    # via tes_init, plus MCP bootstrap). Skip scheduling it in capsule-only mode.
-    postinstall_disabled = args.no_postinstall or not ("docs-mesh" in surfaces or "mcp" in surfaces)
+    # ADR 0004: postinstall materializes project-visible docs/agents context via
+    # tes_init. MCP and hooks are tool integrations and must not implicitly
+    # promote the project into a TES-governed workspace.
+    postinstall_disabled = args.no_postinstall or "docs-mesh" not in surfaces
     sentinel_action = (
         {"path": rel(target / POSTINSTALL_PATH, target), "action": "skip-capsule-only" if not args.no_postinstall else "skip-disabled"}
         if postinstall_disabled
@@ -1120,6 +1168,7 @@ def install(args: argparse.Namespace) -> int:
         mcp_result,
         certification_result,
         args.dry_run,
+        sorted(surfaces),
     )
     status = aggregate_install_status(
         args.dry_run,
