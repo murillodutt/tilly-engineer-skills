@@ -1477,7 +1477,22 @@ def detach_surface(target: Path, surface: str, *, dry_run: bool = False, yes: bo
     actions: list[dict[str, str]] = []
     review_items: list[dict[str, str]] = []
 
+    # Runtime-writer surfaces are reversed by their writer-inverse removers
+    # (ADR 0004 L3). docs-mesh preserves project content by default.
+    if surface == "mcp":
+        import install_mcp  # type: ignore
+        removed, failures = install_mcp.remove_configs(target, ["codex", "claude", "cursor", "vscode"], dry_run, True)
+        status = "DRY-RUN" if dry_run else ("NEEDS_REVIEW" if failures else "DETACHED")
+        return {"version": VERSION, "status": status, "target": str(target), "surface": surface, "actions": removed, "failures": failures}
+    if surface == "hooks":
+        import tes_install  # type: ignore
+        removed = [tes_install.remove_tes_hooks(target, agent, dry_run) for agent in ("codex", "claude", "cursor")]
+        status = "DRY-RUN" if dry_run else "DETACHED"
+        return {"version": VERSION, "status": status, "target": str(target), "surface": surface, "actions": removed}
+    if surface == "docs-mesh":
+        return detach_docs_mesh(target, dry_run=dry_run, yes=yes)
     if surface not in MANIFEST_BACKED_SURFACES:
+        # field-reports/gps/goals/mantra: still produced by no detachable writer.
         return {
             "version": VERSION,
             "status": "NEEDS_REVIEW",
@@ -1486,8 +1501,8 @@ def detach_surface(target: Path, surface: str, *, dry_run: bool = False, yes: bo
             "actions": [],
             "review_items": [{
                 "surface": surface,
-                "action": "no-manifest-remover",
-                "reason": "surface is produced by a runtime writer outside the bundle; its remover is owned by a later unit",
+                "action": "no-remover",
+                "reason": "surface has no detachable writer yet; owned by a later unit",
             }],
         }
 
