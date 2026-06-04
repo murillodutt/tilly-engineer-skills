@@ -390,6 +390,78 @@ def capsule_install_probe() -> dict[str, Any]:
         return {"route": "capsule-install", "status": status, "failures": failures}
 
 
+def reversibility_roundtrip_probe() -> dict[str, Any]:
+    """ADR 0004 SPEC-005: install (all surfaces) then uninstall returns to pre-install.
+
+    Snapshot project-owned files, install with every surface attached, uninstall,
+    then assert: project-owned files are byte-identical, the residue oracle reports
+    PASS (zero active residue), .tes/** is gone, and no write resolved outside the
+    target (inbound isolation guard).
+    """
+    import tes_bundle
+    import capsule_residue_oracle
+
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-roundtrip-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+
+        # Project-owned files, including a pre-existing bootloader with project content.
+        owned = {
+            "README.md": "# Roundtrip Project\nimportant project content\n",
+            "src/app.py": "print('hello')\n",
+            "AGENTS.md": "# Project AGENTS\nproject-owned governance must survive\n",
+        }
+        for relpath, text in owned.items():
+            write(target / relpath, text)
+        snapshot = {relpath: (target / relpath).read_text(encoding="utf-8") for relpath in owned}
+
+        all_surfaces = {"capsule", "mcp", "docs-mesh", "root-context", "hooks",
+                        "field-reports", "gps", "goals", "mantra"}
+        with tempfile.TemporaryDirectory(prefix="tes-roundtrip-bundle-") as bundle_dir:
+            bundle = Path(bundle_dir) / "bundle.zip"
+            tes_bundle.build_bundle(bundle)
+            stage = tes_bundle.stage_bundle(bundle, target)
+            if stage.get("status") != "STAGED":
+                failures.append(f"roundtrip stage failed: {stage.get('status')}")
+                return {"route": "reversibility-roundtrip", "status": "FAIL", "failures": failures}
+            tes_bundle.apply_staged_bundle(target, yes=True, mode="preserve", surfaces=all_surfaces)
+
+        uninstall = tes_bundle.uninstall_capsule(target, yes=True)
+        if uninstall.get("status") not in {"UNINSTALLED"}:
+            failures.append(f"roundtrip uninstall status: {uninstall.get('status')}; review={uninstall.get('review_items')}")
+
+        # No write resolved outside the target.
+        for action in uninstall.get("actions", []):
+            path = str(action.get("path") or "")
+            if path and (Path(path).is_absolute() or ".." in Path(path).parts):
+                failures.append(f"uninstall acted outside target: {path}")
+
+        # Project-owned files byte-identical (AGENTS.md keeps project content, no TES block).
+        for relpath in ("README.md", "src/app.py"):
+            if not (target / relpath).exists() or (target / relpath).read_text(encoding="utf-8") != snapshot[relpath]:
+                failures.append(f"roundtrip did not restore project-owned file byte-identical: {relpath}")
+        agents_text = (target / "AGENTS.md").read_text(encoding="utf-8") if (target / "AGENTS.md").exists() else ""
+        if "TES:CORE" in agents_text:
+            failures.append("roundtrip left a TES:CORE block in AGENTS.md")
+        if "project-owned governance must survive" not in agents_text:
+            failures.append("roundtrip destroyed project content in AGENTS.md")
+
+        # Zero active residue and capsule removed.
+        residue = capsule_residue_oracle.evaluate(target)
+        if residue["status"] != "PASS":
+            failures.append(f"roundtrip left active residue: {residue['active_residue']}")
+        if (target / ".tes").exists():
+            failures.append("roundtrip did not remove the capsule (.tes/**)")
+
+        status = "FAIL" if failures else "PASS"
+        field_reports.safe_record_event(
+            target, "install_smoke", status, "installer", "self-test",
+            details={"route": "reversibility-roundtrip", "failures": len(failures)},
+        )
+        return {"route": "reversibility-roundtrip", "status": status, "failures": failures}
+
+
 def legacy_retirement_probe() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tes-install-smoke-legacy-") as tempdir:
         target = Path(tempdir)
@@ -884,6 +956,7 @@ def main() -> int:
     results = [probe_route(route) for route in routes]
     if args.self_test:
         results.append(capsule_install_probe())
+        results.append(reversibility_roundtrip_probe())
         results.append(legacy_retirement_probe())
         results.append(codex_clean_bootloader_probe())
         results.append(claude_clean_bootloader_probe())
