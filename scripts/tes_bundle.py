@@ -192,6 +192,9 @@ class BundleEntry:
     owner: str
     install_policy: str
     obsolete_policy: str
+    attachment_surface: str
+    restore_policy: str
+    uninstall_action: str
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -458,6 +461,55 @@ def obsolete_policy_for(layer: str, owner: str) -> str:
     return "preserve"
 
 
+# ADR 0004: reversibility fields. Every write declares which attachment surface
+# it belongs to, how it is restored on detach/uninstall, and what uninstall does
+# to it. Capsule paths (`.tes/**`) are the runtime ownership authority; every
+# project-visible path is an explicit, reversible attachment surface.
+ATTACHMENT_SURFACES = {
+    "capsule",
+    "mcp",
+    "docs-mesh",
+    "root-context",
+    "hooks",
+    "field-reports",
+    "gps",
+    "goals",
+    "mantra",
+}
+
+
+def attachment_surface_for(path: str, layer: str) -> str:
+    if path.startswith(".tes/"):
+        return "capsule"
+    if layer == "mcp_config":
+        return "mcp"
+    if path.startswith("docs/agents/"):
+        return "docs-mesh"
+    if layer == "context_governance":
+        return "root-context"
+    # Installed runtime skills/plugins are TES-owned capsule runtime; they are
+    # removed with the capsule, not preserved as project files.
+    return "capsule"
+
+
+def restore_policy_for(owner: str) -> str:
+    # Project-owned and generated surfaces have a pre-write backup to restore.
+    # Derived caches are rebuildable and need no restore.
+    if owner == "derived":
+        return "rebuildable-no-restore"
+    return "restore-from-backup"
+
+
+def uninstall_action_for(layer: str, owner: str) -> str:
+    # TES-owned runtime is removed. Project alignment and evidence are the
+    # project's content even when TES generated a starter; preserve them.
+    if owner in {"project-owned", "generated"} and layer in {"project_alignment", "evidence"}:
+        return "preserve"
+    if owner == "tes-owned":
+        return "remove"
+    return "remove-if-generated"
+
+
 def make_entry(target_path: str, archive_path: str, source: Path) -> BundleEntry:
     layer = layer_for_path(target_path)
     owner = owner_for_layer(layer)
@@ -469,13 +521,16 @@ def make_entry(target_path: str, archive_path: str, source: Path) -> BundleEntry
         owner=owner,
         install_policy=install_policy_for(layer),
         obsolete_policy=obsolete_policy_for(layer, owner),
+        attachment_surface=attachment_surface_for(target_path, layer),
+        restore_policy=restore_policy_for(owner),
+        uninstall_action=uninstall_action_for(layer, owner),
     )
 
 
 def manifest_payload(entries: list[BundleEntry]) -> dict[str, Any]:
     metadata = bundle_metadata()
     return {
-        "schema": "tes-bundle-manifest@1",
+        "schema": "tes-bundle-manifest@2",
         "version": VERSION,
         "metadata": metadata,
         "source_repository": metadata["source_repository"],
@@ -490,8 +545,13 @@ def manifest_payload(entries: list[BundleEntry]) -> dict[str, Any]:
 
 def validate_manifest(data: dict[str, Any]) -> list[str]:
     failures: list[str] = []
-    if data.get("schema") != "tes-bundle-manifest@1":
-        failures.append("manifest schema must be tes-bundle-manifest@1")
+    # @2 is current (carries ADR 0004 reversibility fields). @1 is still
+    # readable so previously installed manifests migrate forward on the next
+    # install/update instead of breaking.
+    schema = data.get("schema")
+    is_v2 = schema == "tes-bundle-manifest@2"
+    if schema not in {"tes-bundle-manifest@1", "tes-bundle-manifest@2"}:
+        failures.append("manifest schema must be tes-bundle-manifest@1 or @2")
     if data.get("version") != VERSION:
         failures.append(f"manifest version must be {VERSION}")
     metadata = data.get("metadata")
@@ -529,6 +589,13 @@ def validate_manifest(data: dict[str, Any]) -> list[str]:
             failures.append(f"{path}: invalid owner {entry.get('owner')}")
         if not entry.get("sha256"):
             failures.append(f"{path}: missing sha256")
+        if is_v2:
+            if entry.get("attachment_surface") not in ATTACHMENT_SURFACES:
+                failures.append(f"{path}: invalid attachment_surface {entry.get('attachment_surface')}")
+            if not entry.get("restore_policy"):
+                failures.append(f"{path}: missing restore_policy")
+            if not entry.get("uninstall_action"):
+                failures.append(f"{path}: missing uninstall_action")
     return failures
 
 
