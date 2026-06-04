@@ -463,6 +463,13 @@ documents:
     consumer: maintainers, installer authors, manifest authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-attach-detach-and-attach-health.md
+    id: roadmap.goal_super_spec_tes_attach_detach_and_attach_health
+    class: roadmap
+    status: proposed
+    consumer: maintainers, installer authors, MCP authors, hook authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md
     id: roadmap.goal_super_spec_tes_postinstall_cortex_hardening
     class: roadmap
