@@ -335,6 +335,61 @@ def probe_route(route: str) -> dict[str, Any]:
         return finish()
 
 
+def capsule_install_probe() -> dict[str, Any]:
+    """ADR 0004 SPEC-002/005: a default (capsule-only) install writes only .tes/**.
+
+    Build the source bundle, stage it, apply with surfaces={"capsule"}, and assert
+    that no project-visible surface (root bootloaders, MCP configs, docs/agents,
+    hooks) was written, while the capsule helpers and manifest were.
+    """
+    import tes_bundle
+
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-capsule-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        with tempfile.TemporaryDirectory(prefix="tes-capsule-bundle-") as bundle_dir:
+            bundle = Path(bundle_dir) / "bundle.zip"
+            built = tes_bundle.build_bundle(bundle)
+            if built.get("status") not in {"PASS", "BUILT", None} and not bundle.exists():
+                failures.append(f"capsule probe could not build bundle: {built.get('status')}")
+                return {"route": "capsule-install", "status": "FAIL", "failures": failures}
+            stage = tes_bundle.stage_bundle(bundle, target)
+            if stage.get("status") != "STAGED":
+                failures.append(f"capsule probe stage failed: {stage.get('status')}")
+                return {"route": "capsule-install", "status": "FAIL", "failures": failures}
+            apply_result = tes_bundle.apply_staged_bundle(
+                target, yes=True, mode="preserve", surfaces={"capsule"}
+            )
+        if apply_result.get("status") not in {"APPLIED", "CLEAN_APPLIED"}:
+            failures.append(f"capsule apply unexpected status: {apply_result.get('status')}")
+
+        # Capsule must be present.
+        if not (target / ".tes").exists():
+            failures.append("capsule-only install did not write .tes/**")
+
+        # No project-visible surface may be written by a capsule-only install.
+        forbidden = ("AGENTS.md", "CLAUDE.md", "CURSOR.md", ".mcp.json", ".cursor/mcp.json",
+                     ".vscode/mcp.json", ".codex/config.toml", ".claude/settings.json",
+                     ".cursor/hooks.json", "docs/agents")
+        for relpath in forbidden:
+            if (target / relpath).exists():
+                failures.append(f"capsule-only install leaked project-visible surface: {relpath}")
+
+        # Every applied write must resolve inside the target (inbound isolation guard).
+        for action in apply_result.get("actions", []):
+            path = str(action.get("path") or "")
+            if path and (Path(path).is_absolute() or ".." in Path(path).parts):
+                failures.append(f"capsule apply wrote outside target: {path}")
+
+        status = "FAIL" if failures else "PASS"
+        field_reports.safe_record_event(
+            target, "install_smoke", status, "installer", "self-test",
+            details={"route": "capsule-install", "failures": len(failures)},
+        )
+        return {"route": "capsule-install", "status": status, "failures": failures}
+
+
 def legacy_retirement_probe() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tes-install-smoke-legacy-") as tempdir:
         target = Path(tempdir)
@@ -589,6 +644,8 @@ def legacy_obsolete_cleanup_probe() -> dict[str, Any]:
         write(target / ".agents/plugins/marketplace.json", '{"plugins":[{"id":"tilly-engineer-skills","version":"0.3.112"}]}\n')
         write(target / "plugins/tilly-engineer-skills/.codex-plugin/plugin.json", '{"name":"tilly-engineer-skills","version":"0.3.112","skills":"./skills/"}\n')
 
+        # ADR 0004: this probe certifies the legacy install-all obsolete-cleanup
+        # flow, which is now the explicit --attach all profile.
         code, stdout, stderr = run(
             [
                 sys.executable,
@@ -597,6 +654,8 @@ def legacy_obsolete_cleanup_probe() -> dict[str, Any]:
                 "--target",
                 str(target),
                 "--agent",
+                "all",
+                "--attach",
                 "all",
                 "--yes",
             ]
@@ -630,6 +689,8 @@ def ambiguous_obsolete_review_probe() -> dict[str, Any]:
         write(target / "README.md", "# Ambiguous Legacy TES Install\n")
         write(target / "skills/custom/SKILL.md", "# Custom Skill\n\n" + "USER_" + "TOKEN=keep-me\n")
 
+        # ADR 0004: certifies the legacy install-all ambiguous-obsolete review
+        # flow (sentinel + review backup), now the explicit --attach all profile.
         code, stdout, stderr = run(
             [
                 sys.executable,
@@ -638,6 +699,8 @@ def ambiguous_obsolete_review_probe() -> dict[str, Any]:
                 "--target",
                 str(target),
                 "--agent",
+                "all",
+                "--attach",
                 "all",
                 "--yes",
             ]
@@ -820,6 +883,7 @@ def main() -> int:
     routes = ROUTES if args.self_test else (args.route,)
     results = [probe_route(route) for route in routes]
     if args.self_test:
+        results.append(capsule_install_probe())
         results.append(legacy_retirement_probe())
         results.append(codex_clean_bootloader_probe())
         results.append(claude_clean_bootloader_probe())

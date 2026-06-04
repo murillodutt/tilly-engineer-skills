@@ -736,6 +736,23 @@ def aggregate_install_status(dry_run: bool, apply_status: str, certification_sta
     return "NEEDS_REVIEW"
 
 
+# ADR 0004 capsule-first install. The capsule (.tes/**) is always written.
+# Project-visible surfaces are attached only when explicitly requested.
+ALL_ATTACH_SURFACES = ("mcp", "docs-mesh", "root-context", "hooks", "field-reports", "gps", "goals", "mantra")
+
+
+def resolve_attach(attach: list[str] | None) -> set[str]:
+    """Translate the --attach flag into the set of attachment surfaces to write.
+
+    None -> capsule-only (default). 'all' -> capsule plus every project-visible
+    surface (legacy install-all). Otherwise capsule plus the named surfaces.
+    """
+    requested = set(attach or [])
+    if "all" in requested:
+        return {"capsule", *ALL_ATTACH_SURFACES}
+    return {"capsule", *(s for s in requested if s in ALL_ATTACH_SURFACES)}
+
+
 def install(args: argparse.Namespace) -> int:
     target = target_root(args.target)
     if not target.exists() or not target.is_dir():
@@ -751,6 +768,8 @@ def install(args: argparse.Namespace) -> int:
         return 1
 
     agents = selected_agents(args.agent)
+    surfaces = resolve_attach(getattr(args, "attach", None))
+    attached = sorted(surfaces - {"capsule"})
     stage: dict[str, Any]
     apply_result: dict[str, Any]
     if args.dry_run:
@@ -799,6 +818,7 @@ def install(args: argparse.Namespace) -> int:
             yes=True,
             mode=args.mode,
             adapter=args.agent,
+            surfaces=surfaces,
         )
         if apply_result.get("status") not in {"APPLIED", "CLEAN_APPLIED", "DRY-RUN", "NEEDS_REVIEW"}:
             result = {
@@ -812,8 +832,20 @@ def install(args: argparse.Namespace) -> int:
             print("[tes-install] FAIL")
             return 1
 
-    hook_actions = [] if args.no_hooks else install_hooks(target, agents, args.dry_run)
-    mcp_result = run_mcp_bootstrap(target, args.agent, args.dry_run, args.timeout)
+    # ADR 0004: hooks and MCP are project-visible attachments. Capsule-only
+    # install leaves them off. --no-hooks still forces hooks off when attached.
+    hooks_attached = "hooks" in surfaces
+    mcp_attached = "mcp" in surfaces
+    hook_actions = (
+        install_hooks(target, agents, args.dry_run)
+        if hooks_attached and not args.no_hooks
+        else [{"action": "skip-capsule-only" if not hooks_attached else "skip-disabled", "surface": "hooks"}]
+    )
+    mcp_result = (
+        run_mcp_bootstrap(target, args.agent, args.dry_run, args.timeout)
+        if mcp_attached
+        else {"status": "SKIP", "reason": "capsule-only: mcp not attached", "surface": "mcp"}
+    )
     if mcp_result.get("status") == "FAIL":
         result = {
             "version": VERSION,
@@ -832,9 +864,12 @@ def install(args: argparse.Namespace) -> int:
         print("[tes-install] FAIL")
         return 1
     certification_result = run_installed_certification(target, args.dry_run, args.timeout)
+    # ADR 0004: postinstall materializes project-visible surfaces (docs/agents
+    # via tes_init, plus MCP bootstrap). Skip scheduling it in capsule-only mode.
+    postinstall_disabled = args.no_postinstall or not ("docs-mesh" in surfaces or "mcp" in surfaces)
     sentinel_action = (
-        {"path": rel(target / POSTINSTALL_PATH, target), "action": "skip-disabled"}
-        if args.no_postinstall
+        {"path": rel(target / POSTINSTALL_PATH, target), "action": "skip-capsule-only" if not args.no_postinstall else "skip-disabled"}
+        if postinstall_disabled
         else (
             write_review_sentinel(target, args.agent, agents, args.postinstall_mode, apply_result, args.dry_run)
             if apply_result.get("status") == "NEEDS_REVIEW"
@@ -1350,6 +1385,8 @@ def self_test() -> int:
                 sys.executable,
                 str(Path(__file__).resolve()),
                 "install",
+                "--attach",
+                "all",
                 "--target",
                 str(target),
                 "--agent",
@@ -1412,6 +1449,8 @@ def self_test() -> int:
                 sys.executable,
                 str(Path(__file__).resolve()),
                 "install",
+                "--attach",
+                "all",
                 "--target",
                 str(partial_target),
                 "--agent",
@@ -1649,6 +1688,8 @@ def self_test() -> int:
                     sys.executable,
                     str(Path(__file__).resolve()),
                     "install",
+                    "--attach",
+                    "all",
                     "--target",
                     str(claude_target),
                     "--agent",
@@ -1766,6 +1807,8 @@ def self_test() -> int:
                     sys.executable,
                     str(Path(__file__).resolve()),
                     "install",
+                    "--attach",
+                    "all",
                     "--target",
                     str(claude_partial_target),
                     "--agent",
@@ -1822,6 +1865,8 @@ def self_test() -> int:
                 sys.executable,
                 str(Path(__file__).resolve()),
                 "install",
+                "--attach",
+                "all",
                 "--target",
                 str(target),
                 "--agent",
@@ -1857,6 +1902,8 @@ def self_test() -> int:
                 sys.executable,
                 str(Path(__file__).resolve()),
                 "install",
+                "--attach",
+                "all",
                 "--target",
                 str(target),
                 "--agent",
@@ -1990,6 +2037,16 @@ def main() -> int:
     install_parser.add_argument("--yes", action="store_true")
     install_parser.add_argument("--no-hooks", action="store_true")
     install_parser.add_argument("--no-postinstall", action="store_true")
+    # ADR 0004: capsule-first install. Default writes only .tes/** (the capsule).
+    # Project-visible surfaces are explicit reversible attachments. Pass
+    # --attach <surface> (repeatable) or --attach all for legacy install-all.
+    install_parser.add_argument(
+        "--attach",
+        action="append",
+        default=None,
+        choices=["all", "mcp", "docs-mesh", "root-context", "hooks", "field-reports", "gps", "goals", "mantra"],
+        help="attach a project-visible surface; default is capsule-only",
+    )
 
     postinstall_parser = subparsers.add_parser("postinstall")
     postinstall_parser.add_argument("--target", type=Path, default=Path.cwd())

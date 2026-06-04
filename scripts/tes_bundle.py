@@ -1879,7 +1879,11 @@ def apply_staged_bundle(
     backup_id: str | None = None,
     adapter: str = "all",
     root_context_only: bool = False,
+    surfaces: set[str] | None = None,
 ) -> dict[str, Any]:
+    # ADR 0004: `surfaces` restricts which attachment surfaces are applied.
+    # Capsule-only install passes {"capsule"} so no project-visible surface is
+    # written by default. None means apply every surface (legacy install-all).
     target = target.resolve()
     manifest = read_staged_manifest(target)
     if not manifest:
@@ -1911,6 +1915,11 @@ def apply_staged_bundle(
         if root_context_only and layer != "context_governance":
             actions.append({"path": entry["path"], "layer": layer, "action": "skip-root-context-only"})
             continue
+        if surfaces is not None:
+            entry_surface = str(entry.get("attachment_surface") or attachment_surface_for(entry["path"], layer))
+            if entry_surface not in surfaces:
+                actions.append({"path": entry["path"], "layer": layer, "surface": entry_surface, "action": "skip-not-attached"})
+                continue
         if layer in {"project_alignment", "evidence", "cache"}:
             actions.append({"path": entry["path"], "layer": layer, "action": "skip-layer"})
             continue
