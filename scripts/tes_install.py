@@ -1357,6 +1357,29 @@ def claude_rewake_message(result: dict[str, Any]) -> str:
     return ""
 
 
+HOOK_SENTINEL_PATH = Path(".tes/hooks/executed.jsonl")
+
+
+def record_hook_execution(target: Path, agent: str, hook_input: dict[str, Any]) -> None:
+    """ADR 0004 SPEC-005: prove the hook actually fired.
+
+    Append a capsule-scoped sentinel record on every real hook invocation. The
+    attach-health oracle reads this to certify a hook fired (vs config-written
+    only) and to detect duplicate handlers per (agent, event, session). Best
+    effort: a sentinel write must never break the hook itself.
+    """
+    try:
+        event = str(hook_input.get("hookEventName") or hook_input.get("event") or "SessionStart")
+        session = str(hook_input.get("session_id") or hook_input.get("sessionId") or os.getpid())
+        sentinel = target / HOOK_SENTINEL_PATH
+        sentinel.parent.mkdir(parents=True, exist_ok=True)
+        record = {"agent": agent, "event": event, "session": session, "ts": utc_stamp()}
+        with sentinel.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, sort_keys=True) + "\n")
+    except OSError:
+        pass
+
+
 def hook(args: argparse.Namespace) -> int:
     hook_input = parse_hook_input()
     if args.target == Path("."):
@@ -1377,6 +1400,8 @@ def hook(args: argparse.Namespace) -> int:
             return 2
         print(json.dumps(blocked, indent=2, sort_keys=True))
         return 2
+    # SPEC-005: the hook fired for real — record the execution sentinel.
+    record_hook_execution(target, args.agent, hook_input)
     if args.agent == "claude" and args.announce_start:
         print(json.dumps(claude_start_notice_output(target, hook_input), sort_keys=True))
         return 0
