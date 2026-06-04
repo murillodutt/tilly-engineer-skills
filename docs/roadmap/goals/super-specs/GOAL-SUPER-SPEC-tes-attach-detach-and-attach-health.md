@@ -139,14 +139,28 @@ machine plus residue detectors are confirmed as the baseline to reuse.
 
 Owned files: `scripts/tes_bundle.py`.
 
+Execution finding (evidence-based, not assumed): the bundle manifest only
+carries entries for the `capsule` and `root-context` surfaces. The `mcp`, `hooks`,
+and `docs-mesh` surfaces are produced by runtime writers outside the bundle
+(`install_mcp.py`, the hook writers in `tes_install.py`, and `tes_init.py`), and
+`field-reports`/`gps`/`goals`/`mantra` are still conceptual. There is no MCP
+config remover today (`install_mcp.py` only installs/merges); only Claude has a
+hook remover (`remove_tes_claude_sessionstart_hooks`). Therefore SPEC-001
+delivers deterministic detach for manifest-backed surfaces, and reports
+`NEEDS_REVIEW` (not a false-green skip, not a guessed removal) for runtime-writer
+surfaces. Their removers are owned by later units (hooks by SPEC-005; an mcp/docs
+remover is added where SPEC-006 extends coverage).
+
 Implementation:
 
-1. Add `detach_surface(target, surface, *, dry_run, yes)` reusing the
-   `uninstall_capsule` ordering but scoped to entries whose
-   `attachment_surface == surface`.
+1. Add `detach_surface(target, surface, *, dry_run, yes)` reusing a shared
+   per-entry removal helper (`remove_manifest_entry`, also used by
+   `uninstall_capsule`) scoped to entries whose `attachment_surface == surface`.
 2. Reuse TES:CORE decomposition for `root-context` and the sha256-fail-safe for
    modified files; never touch capsule paths or other surfaces.
-3. Return surface-scoped actions, review items, and a status using the ADR
+3. For surfaces not backed by the manifest, return `NEEDS_REVIEW` naming the
+   missing remover; guard `capsule` (use uninstall) and unknown surfaces.
+4. Return surface-scoped actions, review items, and a status using the ADR
    0003.1 vocabulary.
 
 Release identity impact: delivered behavior; patch bump decided at SPEC-007.

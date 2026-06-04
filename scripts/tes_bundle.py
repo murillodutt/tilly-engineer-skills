@@ -1393,6 +1393,130 @@ def latest_backup_id(target: Path) -> str | None:
     return candidates[0] if candidates else None
 
 
+def remove_manifest_entry(
+    target: Path,
+    entry: dict[str, Any],
+    dry_run: bool,
+    actions: list[dict[str, str]],
+    review_items: list[dict[str, str]],
+) -> None:
+    """Reverse one manifest entry per its uninstall_action (sha256-fail-safe).
+
+    Shared by uninstall (all surfaces) and detach (one surface). Preserves
+    project-owned content, decomposes composed root bootloaders (TES:CORE strip,
+    keep overlay), and preserves user-modified files as needs-review.
+    """
+    relpath = str(entry.get("path") or "")
+    layer = str(entry.get("layer") or "")
+    action = str(entry.get("uninstall_action") or uninstall_action_for(layer, str(entry.get("owner") or "")))
+    dest = target / relpath
+    if action == "preserve":
+        actions.append({"path": relpath, "action": "preserve-project-owned"})
+        return
+    if not dest.exists():
+        actions.append({"path": relpath, "action": "already-absent"})
+        return
+    if layer == "context_governance" and dest.is_file():
+        stripped = root_context.strip_tes_blocks(dest.read_text(encoding="utf-8"))
+        if not stripped["had_tes"]:
+            actions.append({"path": relpath, "action": "no-tes-block-skip"})
+            return
+        if stripped["project_text"]:
+            actions.append({"path": relpath, "action": "would-strip-tes-block" if dry_run else "strip-tes-block"})
+            if not dry_run:
+                dest.write_text(stripped["project_text"], encoding="utf-8")
+        else:
+            actions.append({"path": relpath, "action": "would-remove" if dry_run else "remove"})
+            if not dry_run:
+                dest.unlink()
+        return
+    expected = str(entry.get("sha256") or "")
+    if dest.is_file() and expected and sha256_file(dest) != expected:
+        review_items.append({"path": relpath, "action": "preserve-modified-needs-review", "reason": "manifest-sha256-mismatch"})
+        return
+    actions.append({"path": relpath, "action": "would-remove" if dry_run else "remove"})
+    if not dry_run:
+        if dest.is_dir():
+            shutil.rmtree(dest)
+        else:
+            dest.unlink()
+
+
+# Surfaces whose files are bundle manifest entries (detach removes them
+# deterministically). Other surfaces are produced by runtime writers outside the
+# bundle (mcp via install_mcp, hooks via the hook writers, docs-mesh via
+# tes_init) and need their own removers, owned by later units.
+MANIFEST_BACKED_SURFACES = {"root-context"}
+
+
+def detach_surface(target: Path, surface: str, *, dry_run: bool = False, yes: bool = False) -> dict[str, Any]:
+    """ADR 0004 SPEC-001/002: remove one attachment surface, keep the capsule.
+
+    The inverse of attach, scoped to a single surface. For manifest-backed
+    surfaces it reuses the per-entry removal machine (uninstall_action,
+    sha256-fail-safe, TES:CORE decomposition) filtered by attachment_surface, so
+    the capsule and other surfaces are untouched.
+
+    Surfaces produced by runtime writers outside the bundle (mcp, hooks,
+    docs-mesh, and the still-conceptual field-reports/gps/goals/mantra) are not
+    bundle manifest entries. Their removers are owned by later units. Until then,
+    detach reports NEEDS_REVIEW for such a surface rather than silently skipping
+    (no false green) or guessing a removal.
+    """
+    target = target.resolve()
+    if surface == "capsule":
+        return {"version": VERSION, "status": "FAIL", "failures": ["cannot detach the capsule; use uninstall"]}
+    if surface not in ATTACHMENT_SURFACES:
+        return {"version": VERSION, "status": "FAIL", "failures": [f"unknown surface: {surface}"]}
+    if not dry_run and not yes:
+        return {"version": VERSION, "status": "FAIL", "failures": ["detach requires --yes"]}
+    manifest = read_installed_manifest(target)
+    if not manifest:
+        return {"version": VERSION, "status": "SKIP", "reason": "no installed manifest", "target": str(target), "surface": surface, "actions": []}
+
+    actions: list[dict[str, str]] = []
+    review_items: list[dict[str, str]] = []
+
+    if surface not in MANIFEST_BACKED_SURFACES:
+        return {
+            "version": VERSION,
+            "status": "NEEDS_REVIEW",
+            "target": str(target),
+            "surface": surface,
+            "actions": [],
+            "review_items": [{
+                "surface": surface,
+                "action": "no-manifest-remover",
+                "reason": "surface is produced by a runtime writer outside the bundle; its remover is owned by a later unit",
+            }],
+        }
+
+    matched = 0
+    for entry in manifest.get("entries", []):
+        if not isinstance(entry, dict):
+            continue
+        relpath = str(entry.get("path") or "")
+        if not relpath or relpath.startswith(".tes/"):
+            continue
+        entry_surface = str(entry.get("attachment_surface") or attachment_surface_for(relpath, str(entry.get("layer") or "")))
+        if entry_surface != surface:
+            continue
+        matched += 1
+        remove_manifest_entry(target, entry, dry_run, actions, review_items)
+
+    if matched == 0:
+        return {"version": VERSION, "status": "SKIP", "reason": f"surface not attached: {surface}", "target": str(target), "surface": surface, "actions": []}
+    status = "DRY-RUN" if dry_run else ("NEEDS_REVIEW" if review_items else "DETACHED")
+    return {
+        "version": VERSION,
+        "status": status,
+        "target": str(target),
+        "surface": surface,
+        "actions": actions,
+        "review_items": review_items,
+    }
+
+
 def uninstall_capsule(target: Path, *, dry_run: bool = False, yes: bool = False) -> dict[str, Any]:
     """ADR 0004 SPEC-003: reverse a TES installation and prove zero residue.
 
@@ -1425,47 +1549,10 @@ def uninstall_capsule(target: Path, *, dry_run: bool = False, yes: bool = False)
         if not isinstance(entry, dict):
             continue
         relpath = str(entry.get("path") or "")
-        if not relpath:
+        if not relpath or relpath.startswith(".tes/"):
+            # Capsule paths are removed wholesale in step 3; skip here.
             continue
-        layer = str(entry.get("layer") or "")
-        action = str(entry.get("uninstall_action") or uninstall_action_for(layer, str(entry.get("owner") or "")))
-        dest = target / relpath
-        if action == "preserve":
-            actions.append({"path": relpath, "action": "preserve-project-owned"})
-            continue
-        if not dest.exists():
-            actions.append({"path": relpath, "action": "already-absent"})
-            continue
-        # Capsule paths are removed wholesale in step 3; skip here.
-        if relpath.startswith(".tes/"):
-            continue
-        # Root bootloaders are composed (TES:CORE + PROJECT-OVERLAY). Decompose:
-        # strip the TES block and keep the project's overlay content; delete the
-        # file only when it held no project content.
-        if layer == "context_governance" and dest.is_file():
-            stripped = root_context.strip_tes_blocks(dest.read_text(encoding="utf-8"))
-            if not stripped["had_tes"]:
-                actions.append({"path": relpath, "action": "no-tes-block-skip"})
-                continue
-            if stripped["project_text"]:
-                actions.append({"path": relpath, "action": "would-strip-tes-block" if dry_run else "strip-tes-block"})
-                if not dry_run:
-                    dest.write_text(stripped["project_text"], encoding="utf-8")
-            else:
-                actions.append({"path": relpath, "action": "would-remove" if dry_run else "remove"})
-                if not dry_run:
-                    dest.unlink()
-            continue
-        expected = str(entry.get("sha256") or "")
-        if dest.is_file() and expected and sha256_file(dest) != expected:
-            review_items.append({"path": relpath, "action": "preserve-modified-needs-review", "reason": "manifest-sha256-mismatch"})
-            continue
-        actions.append({"path": relpath, "action": "would-remove" if dry_run else "remove"})
-        if not dry_run:
-            if dest.is_dir():
-                shutil.rmtree(dest)
-            else:
-                dest.unlink()
+        remove_manifest_entry(target, entry, dry_run, actions, review_items)
 
     # 3. Remove the capsule last.
     capsule = target / ".tes"
