@@ -1,18 +1,26 @@
 ---
 tds_id: architecture.adr_0004_tes_capsule_isolation_and_reversible_installation
 tds_class: architecture
-status: proposed
+status: active
 consumer: maintainers, installer authors, MCP authors, hook authors, GPS/MAP authors, Goal Maestro authors, Mantra Gate authors, and release operators
-source_of_truth: false
+source_of_truth: true
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # ADR 0004: TES Capsule Isolation And Reversible Installation
 
-Status: proposed. This ADR is a planning decision; it changes no runtime
-behavior by itself. Acceptance and the first runtime slice carry the release
-identity decision recorded under Release Identity below.
+Accepted on 2026-06-04. The first execution line (capsule install + uninstall,
+SPEC-000..006) is delivered in package release `0.3.160`, which proved the
+capsule-first foundation: capsule-only install, manifest `@2` reversibility
+fields, reversible uninstall with a sha256-fail-safe and TES:CORE decomposition,
+the capsule residue oracle, and an install/uninstall reversibility round-trip.
+
+The remaining decided surfaces — `attach`/`detach` subcommands, the MCP/hook
+attach-health contract, GPS/MAP capsule mode, Goal Maestro capsule destination,
+and Mantra Gate capsule/attached modes — are accepted decisions whose execution
+lines follow. Acceptance binds the contract; each line carries its own release
+identity decision.
 
 ## Lineage
 

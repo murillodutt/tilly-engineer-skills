@@ -53,9 +53,9 @@ documents:
   - path: docs/adr/0004-tes-capsule-isolation-and-reversible-installation.md
     id: architecture.adr_0004_tes_capsule_isolation_and_reversible_installation
     class: architecture
-    status: proposed
+    status: active
     consumer: maintainers, installer authors, MCP authors, hook authors, GPS/MAP authors, Goal Maestro authors, Mantra Gate authors, and release operators
-    source_of_truth: false
+    source_of_truth: true
     evidence_level: L2
   - path: docs/install/INSTALL.md
     id: install.adapter_installer
