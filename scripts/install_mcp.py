@@ -261,6 +261,26 @@ def install_configs(
     return actions, failures
 
 
+def remove_configs(
+    target: Path,
+    adapters: list[str],
+    dry_run: bool,
+    backup: bool,
+) -> tuple[list[dict[str, str]], list[str]]:
+    """Inverse of install_configs (ADR 0004 L3 SPEC-001): remove the TES MCP
+    server entry from each adapter, preserving user-owned servers and config."""
+    actions: list[dict[str, str]] = []
+    failures: list[str] = []
+    for adapter in adapters:
+        action, failure = HOSTS[adapter].remove_registration(target, dry_run, backup)
+        if failure:
+            failures.append(failure)
+        if action:
+            action["adapter"] = adapter
+            actions.append(action)
+    return actions, failures
+
+
 def require_confirmation(args: argparse.Namespace) -> bool:
     if args.dry_run or args.yes:
         return True

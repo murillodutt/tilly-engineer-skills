@@ -131,6 +131,32 @@ enabled = true
         action["path"] = rel(path, target)
         return action, None
 
+    def remove_registration(self, target, dry_run=False, backup=True):  # type: ignore[override]
+        """Inverse of the TOML merge: remove the [mcp_servers.tes-cortex] section,
+        preserving other servers and the rest of config.toml (ADR 0004 L3 SPEC-001).
+        """
+        from install_mcp import rel, write_text_file  # type: ignore
+
+        path = target / self.config_path
+        if not path.exists():
+            return {"path": rel(path, target), "action": "already-absent"}, None
+        text = path.read_text(encoding="utf-8")
+        if "[mcp_servers.tes-cortex]" in text:
+            stripped = _remove_toml_section(text, "[mcp_servers.tes-cortex]")
+        elif "[mcp_servers.tes-cortex]" not in text:
+            return {"path": rel(path, target), "action": "no-tes-server"}, None
+        else:
+            stripped = text
+        # If the file is now effectively empty (TES-only), remove it.
+        if not stripped.strip():
+            if not dry_run:
+                path.unlink()
+            return {"path": rel(path, target), "action": "would-remove-file" if dry_run else "remove-file"}, None
+        action = write_text_file(path, stripped, dry_run, backup)
+        action["path"] = rel(path, target)
+        action["action"] = "would-remove-server" if dry_run else "remove-server"
+        return action, None
+
     def validate_registered(  # type: ignore[override]
         self, target, read_only,
         transport="stdio", url=None, bearer_token_env_var=None, auth_block=None,
@@ -216,3 +242,24 @@ def _replace_toml_section(text: str, header: str, replacement: str) -> str:
             end = idx
             break
     return "\n".join([*lines[:start], replacement.rstrip(), *lines[end:]]).rstrip() + "\n"
+
+
+def _remove_toml_section(text: str, header: str) -> str:
+    """Remove a TOML section (header through the line before the next section).
+
+    Inverse of _replace_toml_section: drop the section entirely, preserving every
+    other section and the file's leading content (ADR 0004 L3 SPEC-001).
+    """
+    lines = text.splitlines()
+    try:
+        start = next(i for i, line in enumerate(lines) if line.strip() == header)
+    except StopIteration:
+        return text
+    end = len(lines)
+    for idx in range(start + 1, len(lines)):
+        if lines[idx].startswith("[") and lines[idx].endswith("]"):
+            end = idx
+            break
+    remaining = [*lines[:start], *lines[end:]]
+    body = "\n".join(remaining).strip()
+    return (body + "\n") if body else ""
