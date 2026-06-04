@@ -1517,6 +1517,61 @@ def detach_surface(target: Path, surface: str, *, dry_run: bool = False, yes: bo
     }
 
 
+# docs/agents/** files that tes_init generates (project-content otherwise).
+# Names mirror tes_init.REGISTER / PROJECT_CONTEXT and the timestamped evidence
+# artifacts (*-tes-initialization.md, *-tes-project-manifest.json).
+DOCS_MESH_ROOT = "docs/agents"
+DOCS_MESH_GENERATED = ("docs/agents/PROJECT-REGISTER.md", "docs/agents/PROJECT-CONTEXT.md")
+DOCS_MESH_EVIDENCE_DIR = "docs/agents/evidence"
+DOCS_MESH_EVIDENCE_SUFFIXES = ("-tes-initialization.md", "-tes-project-manifest.json")
+
+
+def detach_docs_mesh(target: Path, *, dry_run: bool = False, yes: bool = False, purge: bool = False) -> dict[str, Any]:
+    """ADR 0004 L3 SPEC-003: detach docs-mesh, project-content-safe.
+
+    docs/agents/** is project-owned content. Default detach PRESERVES it (reports
+    it as preserved). With purge=True, remove ONLY files TES generated (the known
+    register/context files and timestamped tes-* evidence artifacts), never files
+    the project authored under docs/agents/**.
+    """
+    target = target.resolve()
+    if not dry_run and not yes:
+        return {"version": VERSION, "status": "FAIL", "failures": ["detach requires --yes"]}
+    root = target / DOCS_MESH_ROOT
+    if not root.exists():
+        return {"version": VERSION, "status": "SKIP", "reason": "docs-mesh not present", "surface": "docs-mesh"}
+
+    preserved: list[str] = []
+    removed: list[str] = []
+
+    def is_generated(relpath: str) -> bool:
+        if relpath in DOCS_MESH_GENERATED:
+            return True
+        if relpath.startswith(DOCS_MESH_EVIDENCE_DIR + "/"):
+            return any(relpath.endswith(suffix) for suffix in DOCS_MESH_EVIDENCE_SUFFIXES)
+        return False
+
+    for path in sorted(p for p in root.rglob("*") if p.is_file()):
+        relpath = rel(path, target)
+        if purge and is_generated(relpath):
+            removed.append(relpath)
+            if not dry_run:
+                path.unlink()
+        else:
+            preserved.append(relpath)
+
+    status = "DRY-RUN" if dry_run else ("DETACHED" if (removed or not purge) else "DETACHED")
+    return {
+        "version": VERSION,
+        "status": status,
+        "target": str(target),
+        "surface": "docs-mesh",
+        "purge": purge,
+        "preserved": preserved,
+        "removed": removed,
+    }
+
+
 def uninstall_capsule(target: Path, *, dry_run: bool = False, yes: bool = False) -> dict[str, Any]:
     """ADR 0004 SPEC-003: reverse a TES installation and prove zero residue.
 
