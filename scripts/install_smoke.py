@@ -600,6 +600,59 @@ def runtime_surface_roundtrip_probe() -> dict[str, Any]:
         return {"route": "runtime-surface-roundtrip", "status": status, "failures": failures}
 
 
+def gps_capsule_mode_probe() -> dict[str, Any]:
+    """ADR 0004 L4 SPEC-006: GPS works in capsule mode and exports when attached.
+
+    Capsule-only: map yields a useful CAPSULE_PASS position and writes .tes/gps/**
+    with no docs/agents export. Attach docs-mesh (a populated docs/agents): export
+    the managed block. Detach docs/agents: capsule projection still works.
+    """
+    import tes_map
+
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-gps-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        write(target / ".tes/postinstall.json",
+              json.dumps({"state": "complete", "last_status": "PASS", "version": tes_map.VERSION}))
+
+        # Capsule-only: useful position, .tes/gps written, no docs export.
+        model = tes_map.build_model(target)
+        if model.get("mode") != "capsule" or model["status"] != tes_map.STATUS_CAPSULE_PASS:
+            failures.append(f"capsule-only map not CAPSULE_PASS: mode={model.get('mode')} status={model['status']}")
+        if not model["position"]:
+            failures.append("capsule-only map produced no position")
+        tes_map.write_capsule_projection(target, tes_map.build_capsule_projection(target))
+        if not (target / tes_map.GPS_STATE_REL).exists():
+            failures.append("capsule map did not write .tes/gps/state.json")
+        if (target / "docs/agents").exists():
+            failures.append("capsule map leaked docs/agents (export must be gated)")
+
+        # Attached: populated docs/agents -> attached mode + export the block.
+        tes_map.create_fixture(target)  # writes docs/agents + roadmap
+        attached_model = tes_map.build_model(target)
+        if attached_model.get("mode") != "attached":
+            failures.append("populated docs/agents did not switch to attached mode")
+        export = tes_map.update_roadmap(target, attached_model)
+        roadmap_text = (target / tes_map.ROADMAP_REL).read_text(encoding="utf-8")
+        if tes_map.START_MARKER not in roadmap_text:
+            failures.append("attached export did not write the managed TES-MAP block")
+
+        # Detach docs/agents: capsule projection still produces a useful position.
+        import shutil as _shutil
+        _shutil.rmtree(target / "docs/agents")
+        after_detach = tes_map.build_model(target)
+        if after_detach.get("mode") != "capsule" or after_detach["status"] != tes_map.STATUS_CAPSULE_PASS:
+            failures.append("after docs detach, capsule map did not stay useful")
+
+        status = "FAIL" if failures else "PASS"
+        field_reports.safe_record_event(
+            target, "install_smoke", status, "installer", "self-test",
+            details={"route": "gps-capsule-mode", "failures": len(failures)},
+        )
+        return {"route": "gps-capsule-mode", "status": status, "failures": failures}
+
+
 def legacy_retirement_probe() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tes-install-smoke-legacy-") as tempdir:
         target = Path(tempdir)
@@ -1097,6 +1150,7 @@ def main() -> int:
         results.append(reversibility_roundtrip_probe())
         results.append(attach_detach_roundtrip_probe())
         results.append(runtime_surface_roundtrip_probe())
+        results.append(gps_capsule_mode_probe())
         results.append(legacy_retirement_probe())
         results.append(codex_clean_bootloader_probe())
         results.append(claude_clean_bootloader_probe())
