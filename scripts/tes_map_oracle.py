@@ -105,6 +105,10 @@ def self_test() -> dict[str, Any]:
         target_result = validate_target(target)
         failures.extend(f"target: {failure}" for failure in target_result["failures"])
 
+        # ADR 0004 L4: two-mode contract. ATTACHED mode (docs-mesh present) keeps
+        # the certified behavior; CAPSULE mode (no docs-mesh) uses the projection.
+
+        # Attached, missing roadmap -> still NEEDS_ALIGN (last-known-good preserved).
         missing_roadmap = Path(tmp) / "missing-roadmap"
         (missing_roadmap / "docs/agents").mkdir(parents=True)
         (missing_roadmap / "docs/agents/PROJECT-CONTEXT.md").write_text(
@@ -112,13 +116,44 @@ def self_test() -> dict[str, Any]:
         )
         missing_model = tes_map.build_model(missing_roadmap)
         if missing_model["status"] != tes_map.STATUS_NEEDS_ALIGN:
-            failures.append("missing roadmap did not return NEEDS_ALIGN")
+            failures.append("attached missing roadmap did not return NEEDS_ALIGN")
 
-        missing_context = Path(tmp) / "missing-context"
-        missing_context.mkdir()
-        context_model = tes_map.build_model(missing_context)
-        if context_model["status"] != tes_map.STATUS_NEEDS_CONTEXT:
-            failures.append("missing context did not return NEEDS_CONTEXT")
+        # Capsule mode, no capsule state -> CAPSULE_NEEDS_EVIDENCE (was NEEDS_CONTEXT
+        # in the pre-inversion contract; an empty target is now capsule mode).
+        empty_capsule = Path(tmp) / "empty-capsule"
+        empty_capsule.mkdir()
+        empty_model = tes_map.build_model(empty_capsule)
+        if empty_model["status"] != tes_map.STATUS_CAPSULE_NEEDS_EVIDENCE:
+            failures.append("empty capsule target did not return CAPSULE_NEEDS_EVIDENCE")
+
+        # Capsule mode, with capsule state -> CAPSULE_PASS, useful position, and a
+        # --write updates .tes/gps/** WITHOUT creating docs/agents (no export).
+        capsule = Path(tmp) / "capsule"
+        (capsule / ".tes").mkdir(parents=True)
+        (capsule / ".tes/postinstall.json").write_text(
+            json.dumps({"state": "complete", "last_status": "PASS", "version": tes_map.VERSION}),
+            encoding="utf-8",
+        )
+        capsule_model = tes_map.build_model(capsule)
+        if capsule_model["status"] != tes_map.STATUS_CAPSULE_PASS:
+            failures.append("capsule target did not return CAPSULE_PASS")
+        if not capsule_model["position"]:
+            failures.append("capsule target produced no position")
+        tes_map.write_capsule_projection(capsule, tes_map.build_capsule_projection(capsule))
+        if not (capsule / tes_map.GPS_STATE_REL).exists():
+            failures.append("capsule write did not create .tes/gps/state.json")
+        if (capsule / "docs/agents").exists():
+            failures.append("capsule write leaked docs/agents (export must be gated)")
+
+        # Coexistence: both capsule state and docs/agents present -> capsule is the
+        # source of truth (mode reported), project roadmap content untouched.
+        coexist = Path(tmp) / "coexist"
+        tes_map.create_fixture(coexist)  # creates docs/agents AND .tes capsule state
+        coexist_model = tes_map.build_model(coexist)
+        if coexist_model.get("mode") == "capsule":
+            failures.append("coexistence with docs-mesh attached must use attached mode")
+        if coexist_model["status"] != tes_map.STATUS_PASS:
+            failures.append("coexistence attached model did not pass")
 
         return {
             "status": "FAIL" if failures else "PASS",
@@ -129,8 +164,10 @@ def self_test() -> dict[str, Any]:
             "first": first,
             "second": second,
             "target_result": target_result,
-            "missing_roadmap_status": missing_model["status"],
-            "missing_context_status": context_model["status"],
+            "attached_missing_roadmap_status": missing_model["status"],
+            "empty_capsule_status": empty_model["status"],
+            "capsule_status": capsule_model["status"],
+            "coexistence_mode": coexist_model.get("mode", "attached"),
         }
 
 

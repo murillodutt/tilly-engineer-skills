@@ -311,8 +311,47 @@ def write_capsule_projection(target: Path, projection: dict[str, Any]) -> dict[s
     return {"changed": changed, "path": relpath(target, state_path)}
 
 
+def capsule_model(target: Path) -> dict[str, Any]:
+    """ADR 0004 L4 SPEC-002: GPS model in capsule mode (no docs/agents required).
+
+    Built from the internal projection. Mirrors the build_model shape so callers
+    and the report/export paths work uniformly, but carries mode='capsule'.
+    """
+    projection = build_capsule_projection(target)
+    return {
+        "version": VERSION,
+        "mode": "capsule",
+        "status": projection["status"],
+        "target": str(target),
+        "roadmap": str(target / ROADMAP_REL),
+        "managed_block_present": False,
+        "position": projection["position"],
+        "current_phase": projection["current_phase"],
+        "last_proven_point": projection["position"],
+        "next_irreversible_step": projection["next_step"],
+        "next_safe_move": projection["next_step"],
+        "blocking_items": [],
+        "unknowns": [],
+        "confidence": projection["confidence"],
+        "proof_gate": projection["proof_gate"],
+        "evidence": projection["evidence"][:6],
+        "done_items": [],
+        "active_items": [],
+        "next_items": [],
+        "later_items": [],
+        "deferred_items": [],
+        "limits": projection["limits"],
+        "git": projection["git"],
+    }
+
+
 def build_model(target: Path) -> dict[str, Any]:
     target = target.resolve()
+    # ADR 0004 L4: in capsule mode (docs-mesh not attached) GPS runs from the
+    # internal projection; docs/agents/** is not required and missing it is not
+    # NEEDS_ALIGN. Attached mode keeps the certified docs/agents-anchored path.
+    if not docs_mesh_attached(target):
+        return capsule_model(target)
     status, limits = classify_status(target)
     roadmap_path = target / ROADMAP_REL
     roadmap_text = read_text(roadmap_path)
@@ -690,19 +729,29 @@ def run(args: argparse.Namespace) -> int:
 
     target = Path(args.target).expanduser().resolve()
     model = build_model(target)
-    write_result = update_roadmap(target, model) if args.write else None
+    capsule = model.get("mode") == "capsule"
+    export = bool(getattr(args, "export", False))
+    write_result = None
+    if args.write:
+        if capsule and not export:
+            # Capsule mode: default --write updates the internal projection only.
+            write_result = write_capsule_projection(target, build_capsule_projection(target))
+        else:
+            # Attached mode, or explicit --export: update the docs/agents block.
+            write_result = update_roadmap(target, model)
     result = {"status": model["status"], "model": model, "write": write_result}
     if args.json:
         print(json.dumps(result, indent=2, sort_keys=True))
     else:
         print(human_report(model, write_result))
-    return 0 if model["status"] in {STATUS_PASS, STATUS_NOT_AVAILABLE} else 1
+    return 0 if model["status"] in {STATUS_PASS, STATUS_NOT_AVAILABLE, STATUS_CAPSULE_PASS} else 1
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Update the TES Project GPS block.")
     parser.add_argument("--target", default=".", help="target project root")
-    parser.add_argument("--write", action="store_true", help="update the managed TES Map block")
+    parser.add_argument("--write", action="store_true", help="update the GPS projection (capsule) or managed block (attached)")
+    parser.add_argument("--export", action="store_true", help="export the managed TES Map block to docs/agents even in capsule mode")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     parser.add_argument("--self-test", action="store_true", help="run built-in self-test")
     return parser
