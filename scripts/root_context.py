@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.159"
+VERSION = "0.3.160"
 EVIDENCE_DIR = Path("docs/agents/evidence")
 BACKUP_ROOT = Path(".tes/bk")
 ROOT_FILES = (

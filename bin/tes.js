@@ -7,12 +7,12 @@ import { fileURLToPath } from "node:url";
 
 const AGENTS = new Set(["codex", "claude", "cursor", "all"]);
 const MODES = new Set(["preserve", "clean-runtime"]);
-const VALUE_OPTIONS = new Set(["--target", "--agent", "--mode", "--bundle", "--url", "--sha256", "--timeout"]);
+const VALUE_OPTIONS = new Set(["--target", "--agent", "--mode", "--bundle", "--url", "--sha256", "--timeout", "--attach"]);
 const BOOL_OPTIONS = new Set(["--yes", "--dry-run", "--no-hooks", "--no-postinstall"]);
 const MIN_NODE_MAJOR = 18;
 const MIN_BUN_VERSION = [1, 0, 0];
 const MIN_PYTHON_VERSION = [3, 11, 0];
-const TES_VERSION = "0.3.159";
+const TES_VERSION = "0.3.160";
 const ANSI = {
   reset: "\x1b[0m",
   bold: "\x1b[1m",
@@ -460,7 +460,16 @@ function formatHooks(hooks, parsed) {
   if (!Array.isArray(hooks) || hooks.length === 0) {
     return parsed.passthrough.includes("--no-hooks") ? "disabled" : "no hook changes";
   }
-  return hooks.map((hook) => `${agentName(hook.agent)} ${hookActionLabel(hook.action)}`).join("; ");
+  // ADR 0004: capsule-only install reports hooks as a skip entry without an
+  // agent (e.g. {action: "skip-capsule-only", surface: "hooks"}). Render the
+  // surface-level skip plainly; render per-agent hook actions otherwise.
+  return hooks
+    .map((hook) =>
+      hook.agent
+        ? `${agentName(hook.agent)} ${hookActionLabel(hook.action)}`
+        : `${hook.surface || "hooks"} ${hookActionLabel(hook.action)}`,
+    )
+    .join("; ");
 }
 
 function formatStage(summary) {
@@ -685,6 +694,13 @@ async function main() {
   const passthrough = [...installOptions.passthrough];
   if (!installOptions.yes && !installOptions.dryRun) {
     passthrough.push("--yes");
+  }
+  // ADR 0004: the engine is capsule-first (capsule-only by default). The
+  // commercial npx entrypoint is the "install TES fully for me" experience, so
+  // it attaches all project-visible surfaces unless the caller already passed an
+  // explicit --attach selection.
+  if (!passthrough.includes("--attach")) {
+    passthrough.push("--attach", "all");
   }
 
   const args = [
