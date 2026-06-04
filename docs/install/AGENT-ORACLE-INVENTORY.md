@@ -141,6 +141,17 @@ python3 scripts/materialize_adapter.py all --check
 python3 scripts/materialize_adapter.py all
 ```
 
+## Capsule Isolation And Reversibility (ADR 0004)
+
+```bash
+python3 scripts/tes_install.py install --target /path/to/project --yes          # capsule-only by default
+python3 scripts/tes_install.py install --target /path/to/project --attach all --yes
+python3 scripts/tes_install.py uninstall --target /path/to/project --dry-run
+python3 scripts/tes_install.py uninstall --target /path/to/project --yes
+python3 scripts/capsule_residue_oracle.py --target /path/to/project
+python3 scripts/capsule_residue_oracle.py --self-test
+```
+
 ## Validation Gates
 
 ```bash
