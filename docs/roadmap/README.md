@@ -41,6 +41,7 @@ in dashboards, registries, history, audits, fixtures, or oracles.
 | Cortex MCP host segmentation | Active | `goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md` |
 | Cortex memory benchmark harness | Active | `goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
 | TES anti-contamination hardening | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md` |
+| TES capsule install and uninstall | Proposed | `goals/super-specs/GOAL-SUPER-SPEC-tes-capsule-install-and-uninstall.md` |
 | TES postinstall/Cortex hardening | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
 | TES postinstall recovery symmetry | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md` |
 | TES NPX MCP convergence | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |

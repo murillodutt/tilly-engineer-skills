@@ -23,6 +23,7 @@ turning the repository root into an inventory.
 | Archived Cortex governed MCP write lane ADR | `adr/0002-cortex-governed-mcp-write-lane.md` |
 | Active Cortex MCP capability expansion ADR | `adr/0003-cortex-mcp-capability-expansion.md` |
 | Active installed certification and Field Reports intake ADR | `adr/0003-1-installed-certification-and-field-reports-feedback-intake.md` |
+| Proposed TES capsule isolation and reversible installation ADR | `adr/0004-tes-capsule-isolation-and-reversible-installation.md` |
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
 | Agent manual | `install/AGENT-MANUAL.md` |
 | Agent oracle inventory | `install/AGENT-ORACLE-INVENTORY.md` |
@@ -73,6 +74,7 @@ turning the repository root into an inventory.
 | TES Memory Lifecycle Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
 | Cortex Memory Benchmark Harness Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md` |
 | TES Anti-Contamination Hardening Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md` |
+| TES Capsule Install And Uninstall Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-capsule-install-and-uninstall.md` |
 | TES Postinstall And Cortex Curation Hardening Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
 | TES Postinstall Recovery Contract Symmetry Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md` |
 | TES NPX MCP Convergence Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
