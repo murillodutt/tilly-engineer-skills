@@ -470,6 +470,13 @@ documents:
     consumer: maintainers, installer authors, MCP authors, hook authors, oracle authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-runtime-surface-attach-detach.md
+    id: roadmap.goal_super_spec_tes_runtime_surface_attach_detach
+    class: roadmap
+    status: proposed
+    consumer: maintainers, installer authors, MCP authors, hook authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md
     id: roadmap.goal_super_spec_tes_postinstall_cortex_hardening
     class: roadmap
