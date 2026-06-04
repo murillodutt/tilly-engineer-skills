@@ -527,6 +527,79 @@ def attach_detach_roundtrip_probe() -> dict[str, Any]:
         return {"route": "attach-detach-roundtrip", "status": status, "failures": failures}
 
 
+def runtime_surface_roundtrip_probe() -> dict[str, Any]:
+    """ADR 0004 L3 SPEC-006: attach then detach each runtime surface returns to prior state.
+
+    For mcp and hooks: install the writer alongside a user-owned neighbor, detach
+    via detach_surface, assert the TES surface is gone and the neighbor survived.
+    For docs-mesh: attach (tes_init), detach (preserve), assert project content
+    survives.
+    """
+    import tes_bundle
+    import tes_install
+    import install_mcp
+
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-runtime-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+        (target / ".tes/bin").mkdir(parents=True)
+        (target / ".tes/bin/cortex_mcp.py").write_text("# server\n", encoding="utf-8")
+        write(target / ".tes/manifest.json",
+              json.dumps({"schema": "tes-bundle-manifest@2", "entries": []}))
+
+        # MCP: install alongside a user server, detach, assert neighbor survives.
+        write(target / ".mcp.json", json.dumps({"mcpServers": {"user-srv": {"command": "u"}}}))
+        install_mcp.install_configs(target, ["claude"], False, True, True, False)
+        if "tes-cortex" not in (target / ".mcp.json").read_text(encoding="utf-8"):
+            failures.append("mcp attach did not write tes-cortex")
+        d_mcp = tes_bundle.detach_surface(target, "mcp", yes=True)
+        if d_mcp.get("status") != "DETACHED":
+            failures.append(f"mcp detach status: {d_mcp.get('status')}")
+        mcp_text = (target / ".mcp.json").read_text(encoding="utf-8") if (target / ".mcp.json").exists() else ""
+        if "tes-cortex" in mcp_text:
+            failures.append("mcp detach left tes-cortex")
+        if "user-srv" not in mcp_text:
+            failures.append("mcp detach dropped the user server (not writer-inverse)")
+
+        # Hooks: install alongside a user cursor hook, detach, assert it survives.
+        tes_install.install_cursor_hook(target, False)
+        cj = json.loads((target / ".cursor/hooks.json").read_text(encoding="utf-8"))
+        cj["hooks"].setdefault("sessionStart", []).append({"command": "user-hook", "timeout": 5})
+        write(target / ".cursor/hooks.json", json.dumps(cj, indent=2, sort_keys=True) + "\n")
+        d_hooks = tes_bundle.detach_surface(target, "hooks", yes=True)
+        if d_hooks.get("status") != "DETACHED":
+            failures.append(f"hooks detach status: {d_hooks.get('status')}")
+        cj_text = (target / ".cursor/hooks.json").read_text(encoding="utf-8") if (target / ".cursor/hooks.json").exists() else ""
+        if "tes_install.py hook --agent cursor" in cj_text:
+            failures.append("hooks detach left the TES cursor hook")
+        if "user-hook" not in cj_text:
+            failures.append("hooks detach dropped the user hook (not writer-inverse)")
+
+        # docs-mesh: a project-authored file plus a generated file; detach preserves
+        # by default; purge removes only generated.
+        (target / "docs/agents/evidence").mkdir(parents=True)
+        write(target / "docs/agents/PROJECT-CONTEXT.md", "# ctx\n")
+        write(target / "docs/agents/MY-NOTES.md", "# project authored\n")
+        d_docs = tes_bundle.detach_surface(target, "docs-mesh", yes=True)
+        if d_docs.get("status") != "DETACHED":
+            failures.append(f"docs-mesh detach status: {d_docs.get('status')}")
+        if not (target / "docs/agents/MY-NOTES.md").exists():
+            failures.append("docs-mesh default detach removed project content")
+        purged = tes_bundle.detach_docs_mesh(target, yes=True, purge=True)
+        if not (target / "docs/agents/MY-NOTES.md").exists():
+            failures.append("docs-mesh purge removed project-authored content")
+        if (target / "docs/agents/PROJECT-CONTEXT.md").exists():
+            failures.append("docs-mesh purge did not remove the generated file")
+
+        status = "FAIL" if failures else "PASS"
+        field_reports.safe_record_event(
+            target, "install_smoke", status, "installer", "self-test",
+            details={"route": "runtime-surface-roundtrip", "failures": len(failures)},
+        )
+        return {"route": "runtime-surface-roundtrip", "status": status, "failures": failures}
+
+
 def legacy_retirement_probe() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tes-install-smoke-legacy-") as tempdir:
         target = Path(tempdir)
@@ -1023,6 +1096,7 @@ def main() -> int:
         results.append(capsule_install_probe())
         results.append(reversibility_roundtrip_probe())
         results.append(attach_detach_roundtrip_probe())
+        results.append(runtime_surface_roundtrip_probe())
         results.append(legacy_retirement_probe())
         results.append(codex_clean_bootloader_probe())
         results.append(claude_clean_bootloader_probe())
