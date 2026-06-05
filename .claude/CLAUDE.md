@@ -289,6 +289,28 @@ next release/bundle cycle must know the bump was intentionally deferred.
 
 </release_identity>
 
+<maintainer_operating_discipline>
+
+Operating calibration for working in this repository (maintainer/dev memory only;
+never Cortex, never `src/**`, never delivered).
+
+- Commit locally by default. Apply commits to the local repository and stop there
+  until the owner explicitly asks to sync/push. "push it" is not a standing
+  grant; each push needs its own request (this strengthens the remote-action lock
+  in `<locks>`).
+- Smart pre-commit, scoped to what changed. Do not run the full `commit:check`
+  suite for every change. Run only the focused oracles relevant to the modified
+  files; reserve the full suite for release/sync. This saves significant time and
+  compute. The full suite remains mandatory before a sync/bump/push.
+- The `/goal` Stop hook is a guardrail, not a throttle. It keeps the agent on the
+  line — on task, on the current SPEC, minimizing invention and drift — rather
+  than pushing for speed. When the agent is being creative, that hook is what
+  closes the drift valve; treat it as alignment pressure, not deadline pressure.
+  For large-surface changes, close each increment green before advancing; a
+  forced march produced this session's reverts and tracking slips.
+
+</maintainer_operating_discipline>
+
 <locks>
 
 - Do not put full source packages back in the repository root.
