@@ -1051,6 +1051,13 @@ documents:
     consumer: maintainers, adapter authors, and release reviewers
     source_of_truth: false
     evidence_level: L2
+  - path: docs/evidence/reports/system-analysis/bootloader-concept-inventory-2026-06-04.md
+    id: evidence.bootloader_concept_inventory_20260604
+    class: evidence
+    status: active
+    consumer: maintainers, adapter authors, skill authors, and the parity oracle
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/evidence/reports/2026/05/25/tes-align/semantic-drift-hardening/REPORT.md
     id: evidence.tes_align_semantic_drift_hardening_20260525
     class: evidence
