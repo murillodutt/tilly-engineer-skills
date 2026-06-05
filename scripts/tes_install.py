@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.167"
+VERSION = "0.3.168"
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -1186,10 +1186,13 @@ def install(args: argparse.Namespace) -> int:
         print("[tes-install] FAIL")
         return 1
     certification_result = run_installed_certification(target, args.dry_run, args.timeout)
-    # ADR 0004: postinstall materializes project-visible docs/agents context via
-    # tes_init. MCP and hooks are tool integrations and must not implicitly
-    # promote the project into a TES-governed workspace.
-    postinstall_disabled = args.no_postinstall or "docs-mesh" not in surfaces
+    # The first-session post-install sentinel (.tes/postinstall.json) is what the
+    # installed SessionStart hook reads to announce setup and trigger first-run
+    # work. It must be written whenever the hook surface is attached — otherwise
+    # the hook fires into an empty state and does nothing. It is gated on `hooks`,
+    # not on docs-mesh: the sentinel records install state for the hook; it does
+    # not by itself materialize docs/agents (that stays the docs-mesh attachment).
+    postinstall_disabled = args.no_postinstall or "hooks" not in surfaces
     sentinel_action = (
         {"path": rel(target / POSTINSTALL_PATH, target), "action": "skip-capsule-only" if not args.no_postinstall else "skip-disabled"}
         if postinstall_disabled

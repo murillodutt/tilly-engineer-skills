@@ -23,7 +23,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.167"
+VERSION = "0.3.168"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -861,18 +861,24 @@ def self_test() -> int:
                 if not (install_target / relpath).exists():
                     failures.append(f"npm exec install missing path: {relpath}")
             # docs-mesh stays opt-in (it authors project docs), so the default must
-            # NOT write docs/agents/** nor leave the docs-mesh postinstall sentinel.
+            # NOT write docs/agents/**. The postinstall sentinel is NOT docs-mesh —
+            # it records first-session state for the installed hook and IS expected
+            # in the functional default (which attaches hooks).
             for relpath in (
-                ".tes/postinstall.json",
                 "docs/agents/PROJECT-CONTEXT.md",
                 "docs/agents/PROJECT-REGISTER.md",
             ):
                 if (install_target / relpath).exists():
                     failures.append(f"npm exec default install must not materialize docs-mesh path: {relpath}")
             failures.extend(mcp_all_contract_failures(install_target, "npm exec install"))
+            # The functional default attaches hooks, so it must leave a pending
+            # postinstall sentinel for the SessionStart hook to read; without it the
+            # hook fires into an empty state and the post-install flow is dead.
             sentinel = load_json(install_target / ".tes/postinstall.json") if (install_target / ".tes/postinstall.json").exists() else {}
-            if sentinel:
-                failures.append("npm exec default install must not leave a postinstall sentinel")
+            if not sentinel:
+                failures.append("npm exec default install must leave a pending postinstall sentinel for the hook")
+            elif sentinel.get("state") != "pending":
+                failures.append(f"default postinstall sentinel must start pending, got {sentinel.get('state')}")
             if (install_target / ".claude/settings.json").exists():
                 failures.extend(claude_hook_contract_failures(install_target))
             claude_start_result = run(
@@ -899,11 +905,12 @@ def self_test() -> int:
                 except json.JSONDecodeError:
                     start_payload = {}
                     failures.append("installed Claude start notice hook must emit structured JSON")
-                if start_payload:
-                    failures.append("installed Claude start notice must stay quiet when no postinstall sentinel exists")
-            sentinel = load_json(install_target / ".tes/postinstall.json") if (install_target / ".tes/postinstall.json").exists() else {}
-            if sentinel:
-                failures.append("installed Claude start notice must not create postinstall state")
+                # With a pending sentinel present, the start notice must announce
+                # the running setup (not stay silent).
+                if not start_payload:
+                    failures.append("installed Claude start notice must announce while postinstall is pending")
+                elif "systemMessage" not in start_payload:
+                    failures.append("installed Claude start notice must carry the setup-running systemMessage")
 
             hook_result = run(
                 [
@@ -922,9 +929,11 @@ def self_test() -> int:
                 failures.append("installed first-session hook failed")
                 failures.extend(hook_result.stdout.splitlines())
                 failures.extend(hook_result.stderr.splitlines())
+            # The install-time pending sentinel must persist; the codex hook reads
+            # it (and may advance it), it does not erase it.
             sentinel = load_json(install_target / ".tes/postinstall.json") if (install_target / ".tes/postinstall.json").exists() else {}
-            if sentinel:
-                failures.append("installed default hook must not create postinstall sentinel")
+            if not sentinel:
+                failures.append("postinstall sentinel must persist for the first-session hook to read")
             claude_hook_result = run(
                 [
                     sys.executable,
@@ -1012,8 +1021,10 @@ def self_test() -> int:
             if first_start_notice.returncode != 0:
                 failures.append("installed Claude first-session start notice failed")
                 failures.extend(first_start_notice.stdout.splitlines())
-            elif first_start_notice.stdout.strip() not in {"", "{}"}:
-                failures.append("installed Claude first-session start notice must stay quiet without postinstall sentinel")
+            elif first_start_notice.stdout.strip() in {"", "{}"}:
+                # Claude-only default attaches hooks, so the pending sentinel exists
+                # and the start notice must announce the running setup.
+                failures.append("installed Claude first-session start notice must announce while postinstall is pending")
                 failures.extend(first_start_notice.stderr.splitlines())
             first_claude_hook = run(
                 [
@@ -1029,16 +1040,25 @@ def self_test() -> int:
                 work,
                 timeout=300.0,
             )
-            if first_claude_hook.returncode != 0:
+            # --rewake-on-complete runs the post-install flow, marks the sentinel
+            # complete, and exits 2 — the SessionStart rewake signal Claude Code
+            # uses to reprocess the session. Exit 2 here is success, not failure.
+            if first_claude_hook.returncode not in {0, 2}:
                 failures.append("installed Claude default asyncRewake hook failed")
                 failures.extend(first_claude_hook.stdout.splitlines())
                 failures.extend(first_claude_hook.stderr.splitlines())
             else:
-                if first_claude_hook.stdout.strip() or first_claude_hook.stderr.strip():
-                    failures.append("installed Claude default asyncRewake hook must stay quiet without postinstall sentinel")
-                first_sentinel_path = first_claude_target / ".tes/postinstall.json"
-                if first_sentinel_path.exists():
-                    failures.append("installed Claude default asyncRewake hook must not create postinstall sentinel")
+                # On exit 2 the SessionStart rewake message goes to stderr (that is
+                # what Claude Code surfaces to the user); on exit 0 it may be stdout.
+                rewake_text = first_claude_hook.stderr + first_claude_hook.stdout
+                if "setup completed" not in rewake_text:
+                    failures.append("asyncRewake completion must announce setup completion")
+                # The sentinel must persist and have advanced to complete.
+                first_sentinel = load_json(first_claude_target / ".tes/postinstall.json") if (first_claude_target / ".tes/postinstall.json").exists() else {}
+                if not first_sentinel:
+                    failures.append("postinstall sentinel must persist for the Claude first-session lifecycle")
+                elif first_sentinel.get("state") != "complete":
+                    failures.append(f"asyncRewake must advance the sentinel to complete, got {first_sentinel.get('state')}")
             first_complete_notice = run(
                 [
                     sys.executable,
@@ -1261,7 +1281,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.167 or main.",
+        help="Git ref to test, e.g. v0.3.168 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()
