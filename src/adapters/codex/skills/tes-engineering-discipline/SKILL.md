@@ -164,6 +164,22 @@ Each factor is binary at closure:
 
 If any factor is missing, success is zero and the work must stop or be repaired.
 
+## Memory Lifecycle Boundary
+
+When Cortex is the durable memory surface, keep the lifecycle boundary explicit:
+
+- recall stays read-only unless a specific TES skill or oracle authorizes more;
+- scope normalization is handled by the parent context until the shared
+  normalizer exists;
+- write gate means durable Cortex writes require explicit parent authorization;
+- checkpoint state is resumability, not durable memory;
+- closeout is proven by TES oracles and repository Git hooks;
+- subagent return is evidence return only.
+
+Parent owns durable memory. Agents may inspect, patch, or report findings inside
+their assigned scope, but they must not perform durable Cortex writes or promote
+checkpoint/event state into memory directly.
+
 ## Validation
 
 Run the bundled self-test when changing this skill:

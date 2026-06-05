@@ -92,6 +92,7 @@ concepts:
     label: "Core contract (assumptions visible / scope smaller / surgical / falsifiable)"
     hosts: [claude, codex, cursor]
     disposition: keep-as-anchor
+    expansion_required: false
     anchor: "Core contract: Assumptions visible. Scope smaller. Edits surgical. Success falsifiable."
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
@@ -102,6 +103,7 @@ concepts:
     label: "Four principles: Think Before Coding / Simplicity First / Surgical Changes / Goal-Driven Execution"
     hosts: [claude, codex, cursor]
     disposition: keep-as-anchor
+    expansion_required: true
     anchor: "Four gates: Think Before Coding; Simplicity First; Surgical Changes; Goal-Driven Execution."
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
@@ -112,6 +114,7 @@ concepts:
     label: "Runtime-First Product Rule"
     hosts: [claude, codex, cursor]
     disposition: keep-as-anchor
+    expansion_required: false
     anchor: "Runtime-first: build the smallest durable runtime slice; no governance-only cycles, long SPECs before code, placeholder boundaries, or throwaway implementations."
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
@@ -122,6 +125,7 @@ concepts:
     label: "Success Formula E = A * S * C * V"
     hosts: [claude, codex, cursor]
     disposition: keep-as-anchor
+    expansion_required: false
     anchor: "Success formula: E = A * S * C * V (assumptions, scope, change, verification); any zero means stop."
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
@@ -132,6 +136,7 @@ concepts:
     label: "Skill/intent routing map (/tes-* canonical + /tes:* aliases)"
     hosts: [claude, codex, cursor]
     disposition: keep-as-anchor
+    expansion_required: true
     anchor: "Route /tes-* intents to the matching host skill/rule; /tes:* are compatible aliases; not shell commands."
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
@@ -142,6 +147,7 @@ concepts:
     label: "Private project confidentiality (placeholder vocabulary only)"
     hosts: [claude, codex, cursor]
     disposition: keep-as-anchor
+    expansion_required: false
     anchor: "Confidentiality: use neutral placeholder vocabulary only; no real project/product/path names in tracked content."
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
@@ -152,6 +158,7 @@ concepts:
     label: "Feedback voice (short frank prose, avoid table/dump bloat)"
     hosts: [claude, codex, cursor]
     disposition: keep-as-anchor
+    expansion_required: false
     anchor: "Feedback voice: short, frank prose; avoid tables/dumps unless asked or syntax requires."
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
@@ -162,6 +169,7 @@ concepts:
     label: "Bootloader locks (no inventory bloat, no unauthorized remote/secrets/destructive ops)"
     hosts: [claude, codex, cursor]
     disposition: keep-as-anchor
+    expansion_required: false
     anchor: "Locks: keep the bootloader thin; no remote/publish/secret/destructive actions without explicit project authorization."
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
@@ -233,9 +241,9 @@ concepts:
     hosts: [claude, codex, cursor]
     disposition_by_host:
       claude: already-in-skill
-      codex: move-to-skill
+      codex: already-in-skill
       cursor: already-in-skill
-    note: "Claude tes-guidelines Workflow step 6 carries it; Cursor tes-guidelines.mdc carries it; Codex tes-engineering-discipline Workflow step 6 carries it. Codex AGENTS.md <cortex_reflex> duplicate must be deleted; skill already has it, so effectively already-in-skill. Confirm during SPEC-001 that the skill copy is complete and current."
+    note: "Verified at SPEC-001: Claude tes-guidelines Workflow step 6, Codex tes-engineering-discipline Workflow step 6 (lines 120-129), and Cursor tes-guidelines.mdc all carry the full reflex (reflect + curate-plan + no-write-without-authorization). The bootloader copies are duplicates to delete in SPEC-002..004."
     anchor: ""
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
