@@ -1,43 +1,40 @@
 # AGENTS.md
 
-Portable Codex bootloader for repositories adopting Tilly Engineering
-Discipline.
+Portable Codex bootloader for repositories adopting Tilly Engineering Discipline.
+This is the always-on anchor; Codex loads only a skill's name, description, and
+path until needed, so detailed workflows live in `.agents/skills/tes-*/**`.
 
-Keep this file small. Put detailed workflows in
-`.agents/skills/tes-*/**`.
+<core_contract>
+
+```text
+Assumptions visible. Scope smaller. Edits surgical. Success falsifiable.
+```
+
+</core_contract>
 
 <instructions>
 
-Apply this overlay to non-trivial coding, review, refactor, or
-instruction-migration work:
+Apply to non-trivial coding, review, refactor, or instruction-migration work:
 
-1. Think Before Coding
-   - State assumptions, ambiguity, tradeoffs, and blockers before acting.
-   - Do not pick a risky interpretation silently.
-2. Simplicity First
-   - Solve the requested problem only.
-   - Delete speculative scope before adding abstractions or configuration.
-3. Surgical Changes
-   - Touch only request-traceable lines.
-   - Clean only orphans created by the current change.
-   - Leave unrelated code, comments, formatting, and dead code alone.
-4. Goal-Driven Execution
-   - Define a falsifiable oracle before closure.
-   - Run the smallest relevant check first, then broader gates when needed.
+1. Think Before Coding — state assumptions, ambiguity, tradeoffs, and blockers
+   before acting; do not pick a risky interpretation silently.
+2. Simplicity First — solve the requested problem only; delete speculative scope
+   before adding abstractions or configuration.
+3. Surgical Changes — touch only request-traceable lines; clean only orphans you
+   created; leave unrelated code, comments, and formatting alone.
+4. Goal-Driven Execution — define a falsifiable oracle before closure; run the
+   smallest relevant check first.
+
+Full gate tables, Diamond, Mantra Gate, and the Infrastructure Decision Gate
+live in `.agents/skills/tes-engineering-discipline/SKILL.md`.
 
 </instructions>
 
 <runtime_first_product_rule>
 
-TES is result-oriented: maturity, efficiency, and precision must show up in
-working behavior. Once the architecture is accepted and the active risk is
-implementation quality, build the smallest durable runtime slice on the
-intended execution path before adding more governance.
-
-Do not create governance-only cycles, long SPECs before code, evidence-only
-layers, placeholder boundaries, or temporary implementations expected to be
-removed immediately afterward. Use SPECs, fixtures, oracles, and compact docs to
-protect runtime behavior, not to delay it.
+Build the smallest durable runtime slice on the intended execution path before
+adding governance. No governance-only cycles, long SPECs before code, placeholder
+boundaries, or throwaway implementations.
 
 </runtime_first_product_rule>
 
@@ -52,201 +49,43 @@ surgical, or verification is missing.
 
 </success_formula>
 
-<diamond_build_test_fail_fix>
-
-For critical capabilities, build from the finished contract down: final
-behavior, adversarial fixture, observed failure, smallest repair, and green
-gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
-`not available`, `certified`, or `fail`.
-
-</diamond_build_test_fail_fix>
-
-<mantra_gate>
-
-For state-changing actions, route to the TES Mantra Gate defined in
-`.agents/skills/tes-engineering-discipline/SKILL.md`. The skill owns the gate
-schema, compact marker, escalation rule, and adoption-oracle stop states.
-
-Keep this bootloader as routing only. Do not reintroduce a project-local or
-duplicated Mantra Gate protocol block here.
-
-</mantra_gate>
-
 <feedback_voice>
 
-Default to short, frank prose. Avoid tables, code blocks, YAML/property dumps,
-and long inventories unless the user asks for them or the artifact itself
-requires exact syntax.
+Short, frank prose. Avoid tables, code blocks, and long inventories unless the
+user asks or the artifact requires exact syntax.
 
 </feedback_voice>
 
+<confidentiality>
+
+Use neutral placeholder vocabulary only; no real project, product,
+internal-service names, or `~/Dev/<name>` paths in tracked content.
+
+</confidentiality>
+
 <routing>
 
-| Need | Source |
-|------|--------|
-| Reusable workflow | `.agents/skills/tes-engineering-discipline/SKILL.md` |
-| Tilly initialization shortcut | `.agents/skills/tes-init/SKILL.md` |
-| Tilly setup alias | `.agents/skills/tes-setup/SKILL.md` |
-| Tilly update shortcut | `.agents/skills/tes-update/SKILL.md` |
-| Project semantic alignment | `.agents/skills/tes-align/SKILL.md` |
-| Project GPS map | `.agents/skills/tes-map/SKILL.md` |
-| Maestral goal materialization | `.agents/skills/tes-goal-maestro/SKILL.md` |
-| Project-stress prospecting | `.agents/skills/tes-prospect/SKILL.md` |
-| Code and domain mining | `.agents/skills/tes-mine/SKILL.md` |
-| Obsidian open gate | `.agents/skills/tes-open-obsidian/SKILL.md` |
-| Cortex memory operations | `.agents/skills/tes-cortex/SKILL.md` |
-| MCP activation and checks | `.agents/skills/tes-mcp/SKILL.md` |
-| Field Reports operations | `.agents/skills/tes-field-reports/SKILL.md` |
-| Health and certification gates | `.agents/skills/tes-doctor/SKILL.md` |
-| Adapter materialization | `.agents/skills/tes-adapter/SKILL.md` |
-| Benchmark evidence | `.agents/skills/tes-bench/SKILL.md` |
-| Version bump release action | `.agents/skills/tes-bump/SKILL.md` |
-| Failure examples | `.agents/skills/tes-engineering-discipline/references/failure-patterns.md` |
-| Tool migration | `.agents/skills/tes-engineering-discipline/references/source-portability.md` |
-| Skill self-test | `python3 .agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test` |
+`/tes-*` are canonical intents and `/tes:*` are compatible aliases — intent
+shortcuts, not shell commands. Route each to its `.agents/skills/tes-*/SKILL.md`
+(engineering-discipline, init, setup, update, align, map, cortex, mcp,
+field-reports, doctor, adapter, bench, bump, open-obsidian, goal-maestro,
+prospect, mine), or to `docs/install/COMMAND-TRIGGERS.md` plus the smallest safe
+oracle when no skill applies. Bilingual natural intents route the same way.
+
+The engineering-discipline skill owns the Mantra Gate; its self-test is
+`python3 .agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test`.
+`/tes-prospect`, `/tes-mine`, and `/tes-goal-maestro` require explicit invocation
+— never from broad natural language — and honor the cognitive brake.
 
 </routing>
-
-<tes_init>
-
-Treat `/tes-init`, `/tes-setup`, `/tes:init`,
-`tes init`, `tes setup`, `initialize TES`, `install TES`, `recertify TES`,
-`inicializar TES`, `instalar TES`, `recertificar TES`, and natural
-command/prompts such as `TES, initialize this project`,
-`TES, inicialize este projeto`, `Atualizar TES`, or `atualizar TES` as
-installer intents.
-For `/tes-init`, initialize the project as well as TES: read the strongest
-project anchors available and leave `docs/agents/PROJECT-CONTEXT.md` as the
-initial durable project map for future agents.
-Route `/tes-init` through two read-only gates before choosing writes:
-**Install/Update Gate** checks whether TES install/update work is needed, and
-**Project Context Gate** checks whether `PROJECT-CONTEXT.md` exists and passes
-the context oracle. Step Zero protects installer/update writes; it must not
-block project-context initialization when TES is already installed/current and
-only the Project Context Gate fails.
-Then run the **Project-Start Gate** before the final `/tes-init` report:
-execute the installed `tes_init.py --target . --yes`, open strong anchors, and
-run `project_context_oracle.py --target .`. A preflight context PASS does not
-replace project-start execution; after helper-only repairs, rerun this gate.
-If `.tes/postinstall.json` is already `complete` from the first-session hook
-and the user asks plain `/tes-init` or `/tes-setup`, read the sentinel and
-`last_run`, summarize the completed run, and do not rerun Project-Start unless
-the user explicitly asks to recertify/update, the sentinel is not `complete`,
-the planner reports drift, or evidence is missing.
-If `.tes/postinstall.json` is `needs_review`, route `/tes-init` as recovery:
-inspect the latest run, repair the focused blocker, then run
-`python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`
-to rerun Project-Start, verify selected MCP config, record the recovery run,
-and clear the sentinel only on PASS.
-If `.tes/postinstall.json` is `running`, report that first-session setup is
-still in progress, ask the user to wait for the completion notice, and do not
-start project work or run duplicate setup commands; the next `/tes-setup` should
-summarize the run after the sentinel becomes `complete`.
-`tes_init.py` creates the scaffold; the active agent must open strong anchors
-before claiming deep project understanding and refine the context or report
-`Project context: NEEDS_REVIEW`.
-Route `/tes-update`, `/tes:update`, `tes update`, `Atualizar TES`, and
-`atualizar TES` to `.agents/skills/tes-update/SKILL.md`. `/tes-update` first
-checks installed version, cloud version, helper contract parity, applied IDE
-surfaces, recommended route, and `recommended_update_scope`. Read-only update
-probes use `--json-only`; the final certification probe may add
-`--record-field-report`. `recommended_update_scope=helpers-only` or
-`STALE_HELPERS` is repaired first through the helper-only Layer Zero route
-before adapter or MCP config refresh. When adapter runtime drift remains after
-helper parity passes, refresh selected TES adapter MCP config as part of the
-update plan. After any helper overwrite, the final recorded probe is required
-before GO, commit, or push and must show
-`helper_contract_status=PASS`, `runtime_trigger_status=PASS` or `NOT_APPLIED`,
-`update_available=False`, and `recommended_update_scope=none`.
-Also treat `/tes-align`, `/tes:align`, `tes align`, `align TES`,
-`align this project`, `alinhar TES`, `alinhar projeto`, `/tes-map`,
-`/tes:gps`, `tes map`, `project GPS`, `mapa TES`, `map this project`,
-`mapear TES`, `mapear projeto`,
-`/tes-goal-maestro`, `/tes:goal-maestro`,
-`generate a maestral /goal prompt`, `generate a /goal from a PRD`,
-`gerar um /goal maestral`, `gerar /goal de um PRD`,
-`/tes-prospect`, `/tes:prospect`, `/tes-mine`, `/tes:mine`,
-`/tes-open-obsidian`, `/tes:open-obsidian`, `open Obsidian`,
-`open this project in Obsidian`, `abrir Obsidian`, `abrir no Obsidian`,
-`/tes-cortex`,
-`/tes:cortex`, `/tes-curate`, `/tes:curate`,
-`/tes-mcp`, `/tes:mcp`, `/tes-field-reports`, `/tes:field-reports`,
-`/tes-doctor`, `/tes:doctor`, `/tes-adapter`, `/tes:adapter`, `/tes-bench`,
-`/tes:bench`, `/tes-bump`, `/tes:bump` as intent
-shortcuts. Load the
-matching TES skill when one exists, otherwise route through
-`docs/install/COMMAND-TRIGGERS.md` and the smallest safe oracle. These are not
-shell commands.
-Do not activate `/tes-prospect`, `/tes-mine`, or `/tes-goal-maestro` from broad
-natural language. They require explicit invocation;
-`tes-goal-maestro` may also route from a direct request for a maestral `/goal`
-prompt from a mature SPEC, Super SPEC, PRD, relational project plan, or
-accepted execution tree. It must preserve declared execution units, validate
-the tree internally, require material-diff, material-continuation, semantic
-negative-grep, sequential ownership and sync-status evidence, and emit `/goal`
-when gates pass. `tes-bump` is a version governance guard: direct bump/sync
-requests route to it, and commit, release, delivered-behavior, or gate-reported
-bump conditions auto-activate its read-only `--governance-check`. It must
-dry-run target discovery before any write and must not commit, tag, push,
-publish, or edit remotes.
-`/tes-prospect` and `/tes-mine` must honor the cognitive brake.
-
-</tes_init>
-
-<cortex_reflex>
-
-If `docs/agents/cortex/CONTRACT.md` exists, treat Cortex as the durable memory
-surface. Before the final response for material work, run the read-only MCP
-tool `cortex_reflect` when available, or:
-
-```bash
-python3 .tes/bin/cortex.py reflect --target . "<decision or lesson>"
-```
-
-Report the proposal only when it is useful. Do not write Cortex cells unless
-the user explicitly authorizes promotion.
-If `curation_due=true`, run read-only `cortex_curate_plan` when available, or:
-
-```bash
-python3 .tes/bin/cortex.py curate-plan --target . --backend lexical
-```
-
-</cortex_reflex>
-
-<field_reports>
-
-TES Field Reports is active by default. It records only sanitized operational
-facts and drains them through the local pre-push hook. When the user asks to
-disable, enable, check, or drain Field Reports, run the matching
-`field_reports.py` oracle and never expand collection levels or schema.
-
-</field_reports>
-
-<memory_lifecycle_boundary>
-
-TES Memory Lifecycle Boundary:
-
-- recall stays read-only unless a specific TES skill or oracle authorizes more;
-- scope normalization is handled by the parent context until the shared
-  normalizer exists;
-- write gate means durable Cortex writes require explicit parent authorization;
-- checkpoint state is resumability, not durable memory;
-- closeout is proven by TES oracles and repository Git hooks;
-- subagent return is evidence return only.
-
-Parent owns durable memory. Subagents may inspect, patch, or report findings
-inside their assigned scope, but they must not perform durable Cortex writes or
-promote checkpoint/event state into memory directly.
-
-</memory_lifecycle_boundary>
 
 <locks>
 
 - Do not import Cursor or Claude packaging as Codex runtime truth.
-- Do not expand this bootloader into a full inventory.
-- Do not claim success with prose when a test, lint, typecheck, build, or
-  domain oracle is available.
-- Do not add features, public surface, remote actions, secrets, or destructive
+- Keep this bootloader thin; do not restate skill detail here.
+- Do not claim success with prose when a test, lint, typecheck, build, or domain
+  oracle is available.
+- No features, public surface, remote actions, secrets, or destructive
   operations unless the target project explicitly authorizes them.
 
 </locks>
