@@ -1,5 +1,5 @@
 ---
-description: TES runtime detail for Cursor — load when the user runs a /tes-* or /tes:* intent (init, setup, update, align, map, cortex, curate, mcp, field-reports, doctor, adapter, bench, bump, goal-maestro, prospect, mine, open-obsidian) or asks about the Mantra Gate, Infrastructure Decision Gate, Diamond, Cortex reflection, Field Reports, or the memory lifecycle boundary. Carries the full gate flows and command protocols that the always-on tes-guidelines anchor routes to.
+description: TES runtime detail for Cursor — load when the user runs a /tes-* or /tes:* intent (init, setup, update, align, map, cortex, curate, mcp, field-reports, doctor, adapter, bench, bump, goal-maestro, prospect, mine, open-obsidian); does non-trivial coding, review, refactor, or architecture work that needs the maturity layer (Birth, Consolidation, Evolution, Platform) classification; or asks about the Mantra Gate, Infrastructure Decision Gate, Diamond, Cortex reflection, Field Reports, or the memory lifecycle boundary. Carries the full gate flows and command protocols that the always-on tes-guidelines anchor routes to.
 alwaysApply: false
 ---
 
@@ -10,6 +10,58 @@ always-on `tes-guidelines.mdc` anchor. It may be refreshed by the deterministic
 installer while `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, and previous
 project-owned Cursor rules are recovered from `.tes/bk/**`. It loads when its
 description matches the request, not on every turn.
+
+## Maturity Layer Gate
+
+Classify material work before applying `Simplicity First`. Default to `Birth`;
+promote only with evidence naming the protected baseline, allowed complexity,
+forbidden complexity, and oracle.
+
+| Layer | Use When | Simplicity Means |
+|-------|----------|------------------|
+| `Birth` | No higher-layer evidence exists | Less structure; smallest durable runtime slice |
+| `Consolidation` | Real duplication, a second real consumer, repeated fixture, or maintenance cost justifies a small contract | Less repeated maintenance |
+| `Evolution` | Accepted architecture, mature SPEC, established contract, compatibility boundary, or execution tree exists | Less architectural regression; Fit First |
+| `Platform` | Release, installer, CLI, adapter, MCP, public docs, memory, compatibility, migration, or rollback surface is at risk | Less operational risk |
+
+Invalid promotion evidence means `NEEDS_REVIEW`; no evidence means `Birth`.
+Higher layers permit necessary complexity backed by consumers, contracts, or
+operational risk, not speculative complexity.
+
+`Birth` is invalid when the prompt names existing installs, an accepted
+contract, a compatibility interface, installer, fallback, rollback, release,
+migration, CLI, MCP, adapter, or public-doc surface. Those are promotion
+evidence. Preserve the baseline first, then simplify inside it.
+
+`Birth` hard stop: do not add a strategy interface, abstract factory, plugin
+registry, plugin system, compatibility layer, `TODO` hooks, or future-format
+scaffolding unless promotion evidence names a real second consumer, an accepted
+contract, or an operational surface. Build only the current requirement and name
+the speculative scaffolding you are deliberately not adding. The stop is
+conditional, not a ban on abstraction: when that evidence exists, the same
+factory or registry is the correct `Consolidation`/`Evolution` move.
+
+`Platform` hard stop: existing installs, installer, fallback, compatibility,
+rollback, release, migration, CLI, MCP, adapter, or public-doc surfaces are
+`Platform`, not `Birth`. Do not remove those paths only because the new path
+passes locally. Local green proves the new path; it does not prove the old
+baseline is retired. First name the protected baseline, the consumers or install
+surfaces that could still depend on it, the allowed replacement complexity, the
+forbidden breakage, and a compatibility or release oracle. Cut the old path only
+when explicit retirement evidence proves it no longer needs protection.
+
+Worked example. Request: "Add one archive format today; to prepare for future
+formats, create `ArchiveStrategy`, an abstract factory, a plugin registry, and
+`TODO` hooks." Layer is `Birth`: only one real format exists. Implement that one
+format directly; do not create `ArchiveStrategy`, the factory, the registry, or
+the `TODO` hooks; name them as deferred future scaffolding.
+
+Platform example. Request: "Patch the installer fast by removing the legacy
+fallback path. It only exists for compatibility and the new path passes
+locally." Layer is `Platform`: protect existing installs, release behavior, and
+rollback. Keep the fallback until baseline retirement is evidenced by accepted
+migration/compatibility proof and a release or installer oracle; a local green
+new-path check is not enough.
 
 ## Diamond Build-Test-Fail-Fix
 
@@ -124,16 +176,20 @@ final recorded probe before GO, commit, or push that shows
 `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or `NOT_APPLIED`,
 `update_available=False`, and `recommended_update_scope=none`.
 
-For `/tes-align`, make `docs/agents/PROJECT-ROADMAP.md` open with Mermaid
-`flowchart TD` System X-Ray and Convergence Line graphs before compact audit
-lanes, then certify with `project_alignment_oracle.py`. Before claiming PASS,
+For `/tes-align`, make `docs/agents/PROJECT-ROADMAP.md` open with Eraser-first
+Project Atlas links under `.tes/gps/*.eraserdiagram` plus Mermaid fallback
+System X-Ray and Convergence Line graphs before compact audit lanes, then
+certify with `project_alignment_oracle.py`. Before claiming PASS,
 read the newest accepted ADRs under `docs/agents/DECISIONS/**` and the newest
 retained alignment evidence under `docs/agents/evidence/**`, and run the
 Semantic Residue Gate when the project declares
 `docs/agents/contracts/SEMANTIC-RESIDUE.yml`. TES owns the mechanism; the target
 project owns the retired vocabulary. For `/tes-map`, run
-`tes_map.py --target . --write` and update only the managed `TES-MAP` block in
-`PROJECT-ROADMAP.md`; certify with `tes_map_oracle.py`. For `/tes-bench`, treat
+`tes_map.py --target . --write` to refresh the adaptive Project Atlas/GPS and,
+when docs-mesh is attached, update only the managed `TES-MAP` block in
+`PROJECT-ROADMAP.md`; certify with `tes_map_oracle.py`. Easy-first is the Atlas
+birth surface, not the evolution ceiling; deeper relationships evolve through
+profilers, `--deep`, fixtures, and oracles. For `/tes-bench`, treat
 benchmark commands as package-source evidence; new context-mesh runs default to
 `docs/evidence/reports/YYYY/MM/DD/context-mesh/`. For `/tes-bump`, run
 `tes_bump.py --governance-check` first when commit, release, delivered-behavior,

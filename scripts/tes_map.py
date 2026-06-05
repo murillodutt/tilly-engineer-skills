@@ -14,8 +14,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import tes_project_atlas
 
-VERSION = "0.3.168"
+
+VERSION = "0.3.169"
 START_MARKER = "<!-- TES-MAP:START -->"
 END_MARKER = "<!-- TES-MAP:END -->"
 ROADMAP_REL = Path("docs/agents/PROJECT-ROADMAP.md")
@@ -345,13 +347,30 @@ def capsule_model(target: Path) -> dict[str, Any]:
     }
 
 
-def build_model(target: Path) -> dict[str, Any]:
+def atlas_view_paths() -> dict[str, str]:
+    return {
+        name: str(tes_project_atlas.GPS_DIR_REL / filename)
+        for name, filename in tes_project_atlas.VIEW_FILES.items()
+    }
+
+
+def attach_atlas(model: dict[str, Any], target: Path, *, deep: bool = False) -> dict[str, Any]:
+    atlas = tes_project_atlas.build_atlas(target, gps_model=model, deep=deep)
+    model["atlas"] = atlas
+    model["atlas_summary"] = atlas["summary"]
+    model["atlas_views"] = atlas_view_paths()
+    model["primary_renderer"] = "eraser"
+    model["fallback_renderer"] = "mermaid"
+    return model
+
+
+def build_model(target: Path, *, deep: bool = False) -> dict[str, Any]:
     target = target.resolve()
     # ADR 0004 L4: in capsule mode (docs-mesh not attached) GPS runs from the
     # internal projection; docs/agents/** is not required and missing it is not
     # NEEDS_ALIGN. Attached mode keeps the certified docs/agents-anchored path.
     if not docs_mesh_attached(target):
-        return capsule_model(target)
+        return attach_atlas(capsule_model(target), target, deep=deep)
     status, limits = classify_status(target)
     roadmap_path = target / ROADMAP_REL
     roadmap_text = read_text(roadmap_path)
@@ -421,7 +440,7 @@ def build_model(target: Path) -> dict[str, Any]:
         if projection["status"] == STATUS_CAPSULE_PASS:
             last_proven = projection["position"]
 
-    return {
+    return attach_atlas({
         "version": VERSION,
         "mode": "attached",
         "authoritative_source": authoritative_source,
@@ -452,7 +471,7 @@ def build_model(target: Path) -> dict[str, Any]:
             "dirty": git.dirty,
             "limit": git.limit,
         },
-    }
+    }, target, deep=deep)
 
 
 def build_mermaid(model: dict[str, Any]) -> str:
@@ -496,7 +515,43 @@ def build_mermaid(model: dict[str, Any]) -> str:
     )
 
 
-def build_block(model: dict[str, Any]) -> str:
+def build_atlas_links(model: dict[str, Any]) -> str:
+    views = model.get("atlas_views") or {}
+    labels = {
+        "project_overview": "Project overview",
+        "module_tree": "Module tree",
+        "dependency_map": "Dependency map",
+        "data_map": "Data map",
+        "runtime_integrations": "Runtime integrations",
+        "gates_evidence": "Gates and evidence",
+        "project_gps": "Project GPS",
+    }
+    lines = [
+        "### Project Atlas",
+        "",
+        "Eraser is the primary visual surface; Mermaid remains the inline fallback.",
+        "",
+    ]
+    for key, label in labels.items():
+        path = views.get(key)
+        if path:
+            lines.append(f"- [{label}]({path})")
+    summary = model.get("atlas_summary") or {}
+    if summary:
+        stacks = ", ".join(summary.get("stacks") or []) or "none detected"
+        lines.extend(
+            [
+                "",
+                f"- Atlas nodes: `{summary.get('node_count', 0)}`",
+                f"- Atlas relationships: `{summary.get('edge_count', 0)}`",
+                f"- Detected stacks: {stacks}",
+                f"- Atlas confidence: `{summary.get('confidence', 'unknown')}`",
+            ]
+        )
+    return "\n".join(lines)
+
+
+def build_block(model: dict[str, Any], *, renderer: str = "eraser") -> str:
     status_table = "\n".join(
         [
             "| Signal | Value |",
@@ -520,6 +575,10 @@ def build_block(model: dict[str, Any]) -> str:
             "`tes-align` owns the map. `tes-map` updates the position.",
             "",
             status_table,
+            "",
+            build_atlas_links(model) if renderer == "eraser" else "### Project Atlas\n\n- Renderer: `mermaid` fallback mode.",
+            "",
+            "### Mermaid Fallback",
             "",
             build_mermaid(model),
             "",
@@ -561,14 +620,17 @@ def replace_or_insert_block(original: str, block: str) -> tuple[str, str]:
     return original.rstrip() + "\n" + section, "inserted"
 
 
-def update_roadmap(target: Path, model: dict[str, Any]) -> dict[str, Any]:
+def update_roadmap(target: Path, model: dict[str, Any], *, renderer: str = "eraser") -> dict[str, Any]:
     roadmap = target / ROADMAP_REL
     if model["status"] != STATUS_PASS:
         return {"changed": False, "action": "skipped", "path": relpath(target, roadmap)}
     original = read_text(roadmap)
     if not original:
         return {"changed": False, "action": "missing", "path": relpath(target, roadmap)}
-    block = build_block(model)
+    atlas_write = None
+    if renderer == "eraser" and model.get("atlas"):
+        atlas_write = tes_project_atlas.write_views(target, model["atlas"], gps_model=model)
+    block = build_block(model, renderer=renderer)
     updated, action = replace_or_insert_block(original, block)
     changed = write_text_if_changed(roadmap, updated)
     return {
@@ -576,6 +638,7 @@ def update_roadmap(target: Path, model: dict[str, Any]) -> dict[str, Any]:
         "action": action if changed else "unchanged",
         "path": relpath(target, roadmap),
         "block_sha256": hashlib.sha256(block.encode("utf-8")).hexdigest(),
+        "atlas": atlas_write,
     }
 
 
@@ -593,9 +656,21 @@ def human_report(model: dict[str, Any], write_result: dict[str, Any] | None) -> 
         f"Unknown               {table_value(model['unknowns'])}",
         f"Proof                 {model['proof_gate']}",
         f"Confidence            {model['confidence']}",
+        f"Primary renderer      {model.get('primary_renderer', 'eraser')}",
+        f"Fallback renderer     {model.get('fallback_renderer', 'mermaid')}",
     ]
+    summary = model.get("atlas_summary") or {}
+    if summary:
+        lines.extend(
+            [
+                f"Atlas nodes           {summary.get('node_count', 0)}",
+                f"Atlas relationships   {summary.get('edge_count', 0)}",
+            ]
+        )
     if write_result:
-        lines.extend(["", f"Roadmap               {write_result['action']} {write_result['path']}"])
+        lines.extend(["", f"Roadmap               {write_result.get('action', 'updated')} {write_result.get('path', '')}"])
+        if write_result.get("atlas"):
+            lines.append(f"Atlas                 {write_result['atlas']['atlas']}")
     if model["status"] == STATUS_NEEDS_CONTEXT:
         lines.extend(["", "Run /tes-init first, then /tes-align when the setup report is complete."])
     elif model["status"] == STATUS_NEEDS_ALIGN:
@@ -721,9 +796,14 @@ def self_test() -> dict[str, Any]:
             failures.append("second write was not idempotent")
         if before != after:
             failures.append("roadmap content changed on second write")
-        for term in ("Project GPS", START_MARKER, END_MARKER, "flowchart LR", "You are here"):
+        for term in ("Project GPS", "Project Atlas", START_MARKER, END_MARKER, "flowchart LR", "You are here", ".eraserdiagram"):
             if term not in after:
                 failures.append(f"missing term: {term}")
+        atlas_write = tes_project_atlas.write_views(target, model["atlas"], gps_model=model)
+        if atlas_write["changed"]:
+            # The first explicit write should be clean because update flow writes
+            # sidecars before roadmap certification.
+            failures.append("atlas views were not written during roadmap update")
         return {
             "status": "FAIL" if failures else "PASS",
             "version": VERSION,
@@ -742,18 +822,23 @@ def run(args: argparse.Namespace) -> int:
         return 0 if result["status"] == "PASS" else 1
 
     target = Path(args.target).expanduser().resolve()
-    model = build_model(target)
+    model = build_model(target, deep=args.deep)
     capsule = model.get("mode") == "capsule"
     export = bool(getattr(args, "export", False))
     write_result = None
     if args.write:
+        atlas_write = None
+        if args.renderer == "eraser" and capsule and not export:
+            atlas_write = tes_project_atlas.write_views(target, model["atlas"], gps_model=model)
         if capsule and not export:
             # Capsule mode: default --write updates the internal projection only.
             write_result = write_capsule_projection(target, build_capsule_projection(target))
         else:
             # Attached mode, or explicit --export: update the docs/agents block.
-            write_result = update_roadmap(target, model)
-    result = {"status": model["status"], "model": model, "write": write_result}
+            write_result = update_roadmap(target, model, renderer=args.renderer)
+        if write_result is not None and atlas_write is not None and not write_result.get("atlas"):
+            write_result["atlas"] = atlas_write
+    result = {"status": model["status"], "model": model, "write": write_result, "renderer": args.renderer}
     if args.json:
         print(json.dumps(result, indent=2, sort_keys=True))
     else:
@@ -766,6 +851,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--target", default=".", help="target project root")
     parser.add_argument("--write", action="store_true", help="update the GPS projection (capsule) or managed block (attached)")
     parser.add_argument("--export", action="store_true", help="export the managed TES Map block to docs/agents even in capsule mode")
+    parser.add_argument("--renderer", choices=("eraser", "mermaid"), default="eraser", help="primary diagram renderer")
+    parser.add_argument("--deep", action="store_true", help="enrich Atlas with deeper local relationship extraction")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     parser.add_argument("--self-test", action="store_true", help="run built-in self-test")
     return parser

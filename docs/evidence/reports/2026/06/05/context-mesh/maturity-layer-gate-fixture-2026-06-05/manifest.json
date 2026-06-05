@@ -1,0 +1,16 @@
+{
+  "backend": "fixture",
+  "certification_class": "pipeline-v1-rc",
+  "certification_profile": "v1-rc",
+  "created_at": "2026-06-05T17:43:17Z",
+  "dataset": "/Users/murillo/Dev/tilly-engineer-skills/benchmarks/context-mesh/eval-dataset.json",
+  "dataset_sha": "5d0d8a2f298dccfc44d457757d98a5689c36bb3f7c62bfbf42e025f17bbc6487",
+  "git_head": "d816954202632b2505e5915036eb1607f7ba1a6a",
+  "grader_sha": "f34aaa526793dd107cd55d49a700f31a72c2cba0253eebc556f629d03bdf9e69",
+  "grader_version": "deterministic-substring@0.1.7",
+  "model": "fixture-v0",
+  "planned_calls": 98,
+  "retention_status": "retained",
+  "run_id": "maturity-layer-gate-fixture-2026-06-05",
+  "runner_version": "0.1.8"
+}

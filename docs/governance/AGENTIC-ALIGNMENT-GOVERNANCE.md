@@ -39,7 +39,7 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 
 | Layer | Source | Rule |
 |-------|--------|------|
-| Behavioral truth | `docs/mesh/PRINCIPLES.md` | Defines the four gates and success formula |
+| Behavioral truth | `docs/mesh/PRINCIPLES.md` | Defines the maturity-aware gates and success formula |
 | Evidence convergence | `docs/mesh/CONTEXT-MESH-CONVERGENCE.md` | Defines when context becomes contract |
 | Documentation contract | `docs/tds/TDS-SPEC.md` | Defines classes, index rules, and evidence levels |
 | Cross-tool governance | This document | Defines alignment, boundaries, and no-go rules |

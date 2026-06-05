@@ -59,14 +59,53 @@ Do not assume silently. Before acting on non-trivial work:
 
 Failure blocked: silent wrong interpretation.
 
+## Maturity Layer Gate
+
+Default every material task to `Birth`. Promote only when evidence shows that
+the work is no longer a birth slice. Invalid or missing promotion evidence means
+`NEEDS_REVIEW`; no evidence means `Birth`.
+
+| Layer | Governing move | Promotion evidence |
+|-------|----------------|--------------------|
+| `Birth` | Build the smallest durable runtime slice; reject speculative abstraction. | Default when no higher-layer evidence exists. |
+| `Consolidation` | Add the smallest abstraction that removes observed repetition. | Real duplication, a second real consumer, repeated fixture, or maintenance cost now exceeds a small contract. |
+| `Evolution` | Make the smallest architecture-preserving change. Fit First: protect accepted architecture instead of flattening it. | Accepted architecture, mature SPEC, established contract, compatibility boundary, or execution tree. |
+| `Platform` | Choose the lowest verified operational risk. | Release, installer, CLI, adapter, MCP, public docs, memory, compatibility, migration, or rollback surface. |
+
+Promotion evidence must name the protected baseline, allowed complexity,
+forbidden complexity, and oracle. Higher layers do not permit speculative
+complexity; they permit necessary complexity backed by consumers, contracts, or
+operational risk.
+
+`Birth` is invalid when the prompt names existing installs, an accepted
+contract, a compatibility interface, installer, fallback, rollback, release,
+migration, CLI, MCP, adapter, or public-doc surface. Those are promotion
+evidence. Preserve the baseline first, then simplify inside it.
+
+`Platform` baseline retirement is a separate proof, not a local cleanup
+preference. Existing installs, installer, fallback, compatibility, rollback,
+release, migration, CLI, MCP, adapter, or public-doc surfaces are `Platform`,
+not `Birth`. A green local check does not authorize removing those paths. Remove
+them only after explicit retirement evidence proves the protected baseline no
+longer has consumers, the migration or rollback story is accepted, and a
+compatibility or release oracle protects existing installs.
+
+Failure blocked: flattening mature architecture under the banner of simplicity,
+or inflating birth work by claiming maturity without evidence.
+
 ## 2. Simplicity First
 
-Solve today's problem with the smallest useful shape.
+Solve today's problem with the smallest useful shape for the selected maturity
+layer.
 
 - Do not add unrequested features.
 - Do not add one-use abstractions.
 - Do not add configurability without a real consumer.
 - Delete speculative scope before adding machinery.
+- In `Birth`, simplicity means less structure.
+- In `Consolidation`, simplicity means less repeated maintenance.
+- In `Evolution`, simplicity means less architectural regression.
+- In `Platform`, simplicity means less operational risk.
 
 Failure blocked: overbuilt code and API bloat.
 
@@ -160,8 +199,13 @@ Use this compact packet when a tool supports structured instructions:
 engineering_discipline:
   assumptions:
   ambiguity:
+  maturity_layer:
+  promotion_evidence:
+  protected_baseline:
   stack_surface:
   simplest_path:
+  allowed_complexity:
+  forbidden_complexity:
   deleted_scope:
   no_touch_paths:
   oracle:

@@ -1,4 +1,4 @@
-version: 0.1.0
+version: 0.1.1
 name: Tilly Engineering Discipline Behavioral Contract
 purpose: >
   Provide one tool-neutral behavioral contract for adapter materialization,
@@ -18,13 +18,22 @@ gates:
       - silent assumptions
       - hidden confusion
       - action before local evidence is checked
+  - id: maturity-layer-gate
+    name: Maturity Layer Gate
+    invariant: Material work defaults to Birth and promotes only with evidence naming baseline, allowed complexity, forbidden complexity, and oracle; Platform baselines retire only with explicit retirement evidence and compatibility or release proof.
+    blocks:
+      - flattening mature architecture as local simplification
+      - claiming Evolution or Platform without promotion evidence
+      - adding birth-slice complexity without real consumers or contracts
+      - removing fallback or compatibility paths because a new path passes locally
   - id: simplicity-first
     name: Simplicity First
-    invariant: Complexity is added only when needed now.
+    invariant: Complexity is added only when needed now for the selected maturity layer.
     blocks:
       - speculative framework surface
       - duplicate source copies
       - premature configurability
+      - treating code minimalism as safer than an accepted contract
   - id: surgical-changes
     name: Surgical Changes
     invariant: Every touched line traces to the request or self-created orphan.

@@ -106,8 +106,8 @@ on their own.
 
 | Overlay | Host surface | Role |
 |---------|--------------|------|
-| `tes-guidelines` | Claude `SKILL.md`, Cursor `.cursor/rules/tes-guidelines.mdc` | Behavioral engineering discipline: assumptions visible, scope smaller, edits surgical, success falsifiable. Activates on non-trivial coding, review, refactor, or instruction-migration work. |
-| `tes-engineering-discipline` | Codex `SKILL.md` | Codex-side equivalent of `tes-guidelines` with the same four-gate discipline contract. |
+| `tes-guidelines` | Claude `SKILL.md`, Cursor `.cursor/rules/tes-guidelines.mdc` | Behavioral engineering discipline: assumptions visible, maturity layer selected before simplicity, scope smaller, edits surgical, success falsifiable. Activates on non-trivial coding, review, refactor, or instruction-migration work. |
+| `tes-engineering-discipline` | Codex `SKILL.md` | Codex-side equivalent of `tes-guidelines` with the same maturity-aware discipline contract. |
 | `tes-runtime-capabilities` | Cursor `.cursor/rules/tes-runtime-capabilities.mdc` | Always-on Cursor rule that maps TES runtime command capabilities after clean install or semantic recovery. Refreshed only by the deterministic installer. |
 
 Overlays are not selected by user intent. Adapter certification and `/tes-doctor`

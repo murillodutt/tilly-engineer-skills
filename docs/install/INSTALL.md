@@ -11,7 +11,7 @@ tver: 0.9.8
 # Adapter Installation
 
 The public installer path is the GitHub package-spec command through npx or Bun after a fixed ref is authorized and release-certified.
-Version `0.3.168` is the fixed release identity for this install surface; treat the remote ref as certified only after the tag is published and `npm run release:check` passes.
+Version `0.3.169` is the fixed release identity for this install surface; treat the remote ref as certified only after the tag is published and `npm run release:check` passes.
 
 User-facing walkthrough:
 
@@ -24,11 +24,11 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 ## GitHub Package-Spec Form
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add
 ```
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -40,10 +40,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.168` is the intended fixed-ref form for a release-certified install
+`#v0.3.169` is the intended fixed-ref form for a release-certified install
 channel. Do not call that remote ref certified until `npm run release:check`
 passes after the tag or fixed ref is authorized and available.
 
@@ -112,28 +112,35 @@ include the public bundle `source_commit`, and dry-run through npm/npx and Bun.
 
 ## Compatibility Basis
 
-Per ADR 0004 (capsule isolation), `install` is capsule-first: the default writes
-only `.tes/**`. Each host surface is an explicit, reversible attachment via
-`--attach <surface>` (`mcp`, `hooks`, `root-context`, `docs-mesh`, `gps`,
-`goals`, `mantra`, `field-reports`, `all`); `detach` restores that file,
-`uninstall` removes every TES surface and the capsule with zero residue.
+Per ADR 0004 as amended by the skills-surface line, `install` delivers a
+**functional default**: capsule (`.tes/**`) plus skills (`root-context` + `skills`),
+`mcp`, and startup `hooks`. The capsule is a reversible-ownership and
+non-contamination guarantee, not a materialization cap — every project-visible write
+is manifest-recorded and reversible (`detach <surface>` restores from backup;
+`uninstall` removes every surface and the capsule with zero residue). `docs-mesh`
+stays opt-in. For a minimal install pass an explicit selection (`--attach capsule`
+for capsule-only). Full surface list: `mcp`, `hooks`, `root-context`, `skills`,
+`docs-mesh`, `gps`, `goals`, `mantra`, `field-reports`, `all`. The canonical
+maintainer map of this machinery is `docs/architecture/INSTALLATION-FRAMEWORK.md`
+(source of truth); any older "capsule-first, `.tes/**`-only default" description
+predates the skills-surface amendment and is superseded.
 
-| Tool | Default | `--attach` surfaces (`mcp` / `hooks` / `root-context`) |
-|------|---------|--------------------------------------------------------|
-| Codex | `.tes/**` only | `.codex/config.toml` / SessionStart / `AGENTS.md` + `.agents/skills/**` |
-| Claude Code | `.tes/**` only | `.mcp.json` / `.claude/settings.json` / `CLAUDE.md` + `.claude/skills/**` |
-| Cursor | `.tes/**` only | `.cursor/mcp.json` / `.cursor/hooks.json` / `.cursor/rules/**` |
+| Tool | Functional default | Capsule-only (`--attach capsule`) |
+|------|--------------------|------------------------------------|
+| Codex | `.tes/**` + `AGENTS.md` + `.agents/skills/**` + `.codex/config.toml` + SessionStart | `.tes/**` only |
+| Claude Code | `.tes/**` + `CLAUDE.md` + `.claude/skills/**` + `.mcp.json` + `.claude/settings.json` | `.tes/**` only |
+| Cursor | `.tes/**` + `.cursor/rules/**` + `.cursor/mcp.json` + `.cursor/hooks.json` | `.tes/**` only |
 
-Attach health is verified per surface, never assumed from config presence: MCP
-and hook attachments report `PENDING_HOST_RESTART` / `PENDING_TRUST` /
-`HOST_UNOBSERVABLE` rather than a false `PASS` (ADR 0004 attach-health). In
-capsule mode GPS/MAP runs from `.tes/gps/**` / `.tes/context/**`; the
-`docs/agents/**` mesh below materializes only when `docs-mesh` is attached.
+Attach health is verified per surface by execution proof, never assumed from
+config presence (`PENDING_HOST_RESTART` / `PENDING_TRUST` / `HOST_UNOBSERVABLE`
+instead of a false `PASS`). Detaching a surface, uninstalling with proof of zero
+residue, backups, and the full attach-health state table are in
+[`REVERSIBILITY.md`](REVERSIBILITY.md). In capsule mode GPS/MAP runs from
+`.tes/gps/**` / `.tes/context/**`; the `docs/agents/**` mesh below materializes
+only when `docs-mesh` is attached.
 Memory lives in versioned plain-Markdown artifacts (`sources/**`, `cells/**`,
-`MAP.md`, `TRAIL.md`, `LINKS.md`, `CONTRACT.md`); the SQLite indexes under
-`.tes/cortex/**` are derived recall/curation, never memory. The full operator
-contract (`curate-plan`, `learn`/`reflect` proposal-only, `health`/`peek`/
-`review` read-only, `checkpoint`, `remember`, gated `forget`) lives in
+`MAP.md`, `TRAIL.md`, `LINKS.md`, `CONTRACT.md`); the SQLite under `.tes/cortex/**`
+is derived recall/curation, never memory. The full operator contract lives in
 `docs/mesh/CORTEX.md`.
 
 Cortex is Obsidian-compatible plain Markdown. The installer does not create
@@ -144,34 +151,27 @@ skills; Goal maestro emits `/goal` after maturity, internal tree,
 material-diff, material-continuation, semantic negative-grep, sequential ownership, and sync-status gates, while prospecting and mining keep the cognitive brake.
 
 Cortex MCP is activated by default for selected runtime routes. It is
-project-scoped and exposes only the governed `cortex_remember_plan` and
-`cortex_remember` write lane; operators may choose inspection-only activation
-with `--read-only`.
-The installer may write `.tes/bin/install_mcp.py`, `.tes/bin/cortex.py`, `.tes/bin/cortex_mcp.py`, `.tes/bin/cortex_embed.mjs`, `.tes/bin/field_reports.py`, `.tes/bin/tes_update.py`, `.tes/bin/tes_legacy_retirement.py`, `.tes/bin/root_context.py`, `.codex/config.toml`, `.mcp.json`, `.cursor/mcp.json`, and `.vscode/mcp.json`; MCP activation must not edit global MCP configuration, secrets, hooks, or ungoverned write-capable MCP tools.
-Generated MCP entries use absolute command, script, target, and Codex `cwd` paths.
-The MCP self-test covers negative malformed and write-like calls, governed
-remember approval checks, event inspection, and target-boundary rejection.
-`cortex_health`, `cortex_peek`, `cortex_review`, event tools, and
-`cortex_curate_plan` over MCP must not create the derived semantic index or
-write memory.
-Activation reports distinguish file registration from host recognition, from
-`config_present` through `host_connected` or `session_restart_required`.
+project-scoped and exposes only the governed `cortex_remember_plan` /
+`cortex_remember` write lane (`--read-only` for inspection-only). MCP activation
+writes the `.tes/bin/**` helpers plus per-host config (`.mcp.json`,
+`.codex/config.toml`, `.cursor/mcp.json`, `.vscode/mcp.json`) with absolute paths,
+and must not touch global MCP config, secrets, hooks, or ungoverned write-capable
+tools. Read-only Cortex tools never create the derived semantic index or write
+memory. The MCP self-test and the exact helper/config inventory live in
+`docs/architecture/INSTALLATION-FRAMEWORK.md` and `docs/mesh/CORTEX.md`; activation
+reports distinguish `config_present`, `host_connected`, and
+`session_restart_required`.
 
-TES Field Reports is active by default. The initializer installs a local
-`pre-push` drain for sanitized operational facts, stores pending state under
-`.tes/field-reports/**`, never sends project code or private paths, and
-documents opt-out and reactivation commands in the user manual. Certification
-covers local capture/drain, fake `gh` transport, and receiver quarantine. Real
-GitHub issue publication depends on local `gh`, authentication, and network and
-remains a partial surface until explicitly authorized and replayed against the
-live transport. Drains report explicit transport states such as suppressed,
-blocked, invalid, sent, disabled, and empty; blocked/invalid drains keep
-pending events and write payload-free receipts.
-
-When the target is a Git repository, Tilly also maintains local artifact hygiene
-in `.git/info/exclude`. Rollback backups, Python bytecode, Field Reports state,
-and Cortex SQLite caches are excluded from normal staging; `.tes/bin/*.py`
-helpers are not excluded because they are the installed runtime surface.
+TES Field Reports is active by default: a local `pre-push` drain for sanitized
+operational facts under `.tes/field-reports/**`, never sending project code or
+private paths, with opt-out/reactivation in the user manual. Real GitHub
+publication depends on local `gh`, auth, and network and stays a partial surface
+until authorized and replayed. Drains report explicit transport states
+(suppressed, blocked, invalid, sent, disabled, empty); blocked/invalid drains
+keep pending events and write payload-free receipts. On a Git repository, Tilly
+maintains artifact hygiene in `.git/info/exclude` (rollback backups, bytecode,
+Field Reports state, Cortex caches excluded; `.tes/bin/*.py` helpers are not,
+since they are the installed runtime).
 
 When this package is available locally, `tes_init.py` is the project
 initialization and recertification command. It verifies package health, scans
@@ -254,13 +254,16 @@ knowledge lifecycle, glossary, decisions, and evidence.
 `project_context_oracle.py` and `project_alignment_oracle.py` must pass or the
 installer must close as `NEEDS_REVIEW` with a concrete blocker.
 
-For an existing project, the capsule-first default keeps TES as `.tes/**` only;
-MCP, hooks, root context, and docs mesh are explicit attachments, not defaults.
-When `docs-mesh` or `root-context` is attached, TES migrates durable rules from
-agent files/docs into `docs/agents/**`, then composes `AGENTS.md`, `CLAUDE.md`,
-`.cursor/rules/**`, `.claude/**`, and `.agents/**` as runtime assets that route
-to the mesh. It should read strong anchors and synthesize the initial project
-map in `PROJECT-CONTEXT.md`.
+For an existing project, the functional default materializes the capsule
+(`.tes/**`) plus skills, root context, `mcp`, and startup `hooks`; only `docs-mesh`
+stays opt-in because it authors project docs. For a minimal, isolation-only
+install, pass an explicit selection (`--attach capsule` for capsule-only `.tes/**`).
+Existing context is treated as recovery evidence and every surface is reversible
+via `detach`/`uninstall`. When `docs-mesh` is attached (or `root-context` on a
+capsule-only install), TES migrates durable rules from agent files/docs into
+`docs/agents/**`, then composes `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/**`,
+`.claude/**`, and `.agents/**` as runtime assets that route to the mesh, reading
+strong anchors and synthesizing the initial project map in `PROJECT-CONTEXT.md`.
 
 The deterministic initializer creates the scaffold. The active agent must then
 open strong anchors before claiming deep project understanding, and either
@@ -471,11 +474,10 @@ constraints, and existing agent rules.
 - Project-scoped Cortex MCP config is allowed only through the selected route
   and explicit installer report; governed remember is default and `--read-only`
   is the inspection-only opt-out.
-- No runtime overwrite before `.tes/bk/<timestamp>/manifest.json` exists.
-- `.tes/bk/**` is local rollback/recovery history and must stay out of Git.
-- No non-interactive writes without `--yes`.
-- Compatibility `.bak-*` files are secondary artifacts only; the clean route
-  depends on the central backup manifest.
+- No runtime overwrite before `.tes/bk/<timestamp>/manifest.json` exists;
+  `.tes/bk/**` is local rollback history and stays out of Git. No non-interactive
+  writes without `--yes`. Backup/restore and uninstall detail: [`REVERSIBILITY.md`](REVERSIBILITY.md).
+
 ## Validation
 
 ```bash

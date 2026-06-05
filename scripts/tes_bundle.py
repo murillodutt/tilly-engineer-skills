@@ -24,7 +24,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.168"
+VERSION = "0.3.169"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -84,6 +84,7 @@ HELPER_FILES = (
     "tes_init.py",
     "project_context_oracle.py",
     "project_alignment_oracle.py",
+    "tes_project_atlas.py",
     "tes_map.py",
     "tes_map_oracle.py",
     "tes_open_obsidian.py",

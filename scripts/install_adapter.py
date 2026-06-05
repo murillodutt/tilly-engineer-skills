@@ -21,7 +21,7 @@ import tes_bundle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.168"
+VERSION = "0.3.169"
 RETROFIT_DIR = ".tes/retrofit"
 
 
@@ -93,6 +93,7 @@ def is_tes_owned_cursor_rule(relpath: str, target: Path) -> bool:
     markers = (
         "Tilly Engineering",
         "Think Before Coding",
+        "Maturity Layer Gate",
         "Goal-Driven Execution",
         "/tes-init",
     )
@@ -183,9 +184,10 @@ def build_retrofit_plan(
                 "without deleting existing project-specific instructions. Preserve local",
                 "commands, test oracles, paths, security constraints, and ownership notes.",
                 "",
-                "Keep the four behavioral gates visible:",
+                "Keep the maturity-aware behavioral gates visible:",
                 "",
                 "- Think Before Coding",
+                "- Maturity Layer Gate",
                 "- Simplicity First",
                 "- Surgical Changes",
                 "- Goal-Driven Execution",

@@ -15,6 +15,7 @@ DEFAULT_REPORT_ROOT = ROOT / "docs/evidence/reports"
 
 GATE_FIX_HINTS = {
     "Think Before Coding": "add adversarial prompts where acting before naming ambiguity is clearly wrong",
+    "Maturity Layer Gate": "add paired prompts for premature complexity and simplification regression with promotion evidence",
     "Simplicity First": "tighten current-scope signals and forbid future-type scaffolding",
     "Surgical Changes": "require explicit deferral of unrelated cleanup and request-traceable scope",
     "Goal-Driven Execution": "require a named reproducer, oracle, or test before any patch claim",

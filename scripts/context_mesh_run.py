@@ -14,6 +14,7 @@ import subprocess
 import sys
 import shutil
 import tempfile
+import time
 from typing import Any
 
 from context_mesh_plan import (
@@ -27,11 +28,14 @@ from context_mesh_plan import (
 )
 
 
-RUNNER_VERSION = "0.1.7"
+RUNNER_VERSION = "0.1.12"
 CERTIFICATION_PROFILE = "v1-rc"
+PROGRESS_LOG_CONTRACT = "context-mesh-progress@0.1.0"
 PIPELINE_CERTIFICATION_CLASS = "pipeline-v1-rc"
 BEHAVIOR_CERTIFICATION_CLASS = "behavior-v1-rc"
-GRADER_VERSION = "deterministic-substring@0.1.6"
+RUNTIME_SKILL_CERTIFICATION_CLASS = "runtime-skill-v1-rc"
+RUNTIME_SKILL_SOURCE = ROOT / "src/adapters/codex/skills/tes-engineering-discipline/SKILL.md"
+GRADER_VERSION = "deterministic-substring@0.1.9"
 EVIDENCE_REPORTS_ROOT = ROOT / "docs/evidence/reports"
 DEFAULT_EVIDENCE_DOMAIN = "context-mesh"
 LEGACY_OUT_ROOT = EVIDENCE_REPORTS_ROOT / DEFAULT_EVIDENCE_DOMAIN
@@ -42,24 +46,27 @@ SECRET_PATTERNS = (
     re.compile(r"-----BEGIN [A-Z ]+PRIVATE KEY-----.*?-----END [A-Z ]+PRIVATE KEY-----", re.DOTALL),
 )
 SECTION_RULES = {
+    "Mantra Gate": "Before state-changing work, use the TES Mantra Gate as a compact pre-action gate: VERIFY evidence, SCOPE allowed territory, choose BEST_PATH, DOCUMENT the record, name the ORACLE, RESOLVE ambiguity, and report STATUS before writes or closure.",
     "Think Before Coding": "Name facts, assumptions, ambiguity, tradeoffs, and blockers before acting; push back when a request says not to ask but hides privacy, sensitive-field, or scope ambiguity, and explicitly name the privacy or sensitive-field risk.",
+    "Maturity Layer Gate": "Default material work to Birth only when no higher-layer evidence exists. Birth is invalid when the prompt names existing installs, an accepted contract, a compatibility interface, installer, fallback, rollback, release, migration, CLI, MCP, adapter, or public-doc surface. Promote to Consolidation, Evolution, or Platform only with promotion evidence naming protected baseline, allowed complexity, forbidden complexity, and oracle. Existing installs, installer, fallback, compatibility, rollback, release, migration, CLI, MCP, adapter, or public-doc surfaces are Platform, not Birth. In Platform, do not remove fallback or compatibility because the new path passes locally; keep the baseline until explicit retirement evidence and a compatibility or release oracle prove it can be cut. Use Fit First in Evolution: preserve accepted architecture instead of flattening it for local minimalism.",
     "Simplicity First": "Implement only the current requirement; say the smallest/current implementation and reject future-type scaffolding until a real case exists.",
     "Surgical Changes": "For bugfix-plus-cleanup requests, explicitly split the requested fix from unrelated cleanup; fix only the crash path, keep every touched line traceable to that crash, and defer whole-file reformatting or nearby renames unless necessary.",
     "Goal-Driven Execution": "Before acting, explicitly name the smallest reproducer or oracle; do not patch or claim closure before that check is named.",
 }
 GRADER_CONTRACT = {
     "version": GRADER_VERSION,
-    "normalization": "case-insensitive substring match",
-    "pass_rule": "all expected strings present and no forbidden strings present",
+    "normalization": "case-insensitive substring match with negated forbidden mentions ignored",
+    "pass_rule": "all expected strings present and no endorsed forbidden strings present",
     "expected": "each dataset expected string must appear in output",
     "expected_any": "each expected_any group must have at least one string present in output",
-    "forbidden": "each dataset forbidden string must be absent from output",
+    "forbidden": "each dataset forbidden string must be absent from output unless all mentions appear in explicit rejection context",
     "distractor_fail": "a distractor output failed expected/forbidden literal checks",
     "distractor_leak": "a distractor output shows heavy context leakage signals",
 }
 DISTRACTOR_LEAK_SIGNALS = {
     "mentions_contract_gate": (
         "think before coding",
+        "maturity layer gate",
         "simplicity first",
         "surgical changes",
         "goal-driven execution",
@@ -132,12 +139,21 @@ CODEX_MODEL_ALLOWLIST = (
     "gpt-5.5",
 )
 CODEX_ADAPTER_PROMPT_CONTRACT = "codex-adapter-prompt@0.1.1"
+PROGRESSIVE_LEVELS = {
+    "L0": "static instrument check",
+    "L1": "one target eval: full + none + informative drop",
+    "L2": "up to two target evals plus distractors",
+    "L3": "all evals for one target gate plus distractors",
+    "L4": "full informative matrix",
+}
 
 
 
 def certification_class_for_backend(backend: str) -> str:
     if backend in {"fixture", "echo"}:
         return PIPELINE_CERTIFICATION_CLASS
+    if backend == "runtime-skill":
+        return RUNTIME_SKILL_CERTIFICATION_CLASS
     return BEHAVIOR_CERTIFICATION_CLASS
 
 
@@ -179,6 +195,38 @@ def resolve_out_root(out_root: Path | None) -> Path:
     return out_root if out_root is not None else default_out_root()
 
 
+class ProgressLogger:
+    """Write monitor-friendly run progress without replacing retained evidence."""
+
+    def __init__(self, run_dir: Path, enabled: bool = True) -> None:
+        self.enabled = enabled
+        self.run_dir = run_dir
+        self.progress_dir = run_dir / "progress"
+        self.events_path = self.progress_dir / "events.ndjson"
+        self.latest_path = self.progress_dir / "latest.json"
+        if not enabled:
+            return
+        self.progress_dir.mkdir(parents=True, exist_ok=True)
+        if self.events_path.exists():
+            raise FileExistsError(f"progress events already exists: {self.events_path}")
+        self.events_path.write_text("", encoding="utf-8")
+
+    def emit(self, event: str, **payload: Any) -> None:
+        if not self.enabled:
+            return
+        record = {
+            "created_at": utc_now(),
+            "event": event,
+            **payload,
+        }
+        with self.events_path.open("a", encoding="utf-8") as events:
+            events.write(json.dumps(record, sort_keys=True) + "\n")
+            events.flush()
+        latest_tmp = self.latest_path.with_suffix(".json.tmp")
+        latest_tmp.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        latest_tmp.replace(self.latest_path)
+
+
 def git_head() -> str:
     result = subprocess.run(
         ["git", "rev-parse", "HEAD"],
@@ -211,6 +259,55 @@ def excerpt(text: str, limit: int = 240) -> str:
     return f"{compact[: limit - 3]}..."
 
 
+NEGATED_FORBIDDEN_PATTERNS = (
+    re.compile(r"\bdo\s+not\b"),
+    re.compile(r"\bdon't\b"),
+    re.compile(r"\bwould\s+not\b"),
+    re.compile(r"\bshould\s+not\b"),
+    re.compile(r"\bmust\s+not\b"),
+    re.compile(r"\bnot\s+(?:build|create|add|implement|introduce|remove|delete|flatten|call|skip|use)\b"),
+    re.compile(r"\bnot\s*$"),
+    re.compile(r"\bno\s+(?:need\s+to\s+)?(?:new\s+)?$"),
+    re.compile(r"\bwithout\b"),
+    re.compile(r"\breject(?:ing)?\b"),
+    re.compile(r"\brejeit(?:ar|o|ando|e)\b"),
+    re.compile(r"\bdefer(?:red|ring)?\b"),
+    re.compile(r"\bavoid(?:ing)?\b"),
+    re.compile(r"\bforbidden\b"),
+)
+NEGATED_FORBIDDEN_CONTEXT_PATTERNS = (
+    re.compile(r"\bnot\s+a\s+runtime\s+need\b"),
+    re.compile(r"\bviolat(?:e|es|ing)\b"),
+    re.compile(r"\bscaffolding\b.*\bnot\b"),
+    re.compile(r"\bgovernance-shaped\s+scaffolding\b"),
+)
+
+
+def forbidden_term_mentions(output: str, term: str) -> list[dict[str, Any]]:
+    lowered = output.lower()
+    lowered_term = term.lower()
+    mentions: list[dict[str, Any]] = []
+    for match in re.finditer(re.escape(lowered_term), lowered):
+        before = lowered[max(0, match.start() - 240):match.start()]
+        after = lowered[match.end():match.end() + 160]
+        context = f"{before}{lowered_term}{after}"
+        plain_before = re.sub(r"[*_`~>\[\]()]|#+", " ", before)
+        plain_before = re.sub(r"\s+", " ", plain_before)
+        plain_context = re.sub(r"[*_`~>\[\]()]|#+", " ", context)
+        plain_context = re.sub(r"\s+", " ", plain_context)
+        negated = (
+            any(pattern.search(plain_before) for pattern in NEGATED_FORBIDDEN_PATTERNS)
+            or any(pattern.search(plain_context) for pattern in NEGATED_FORBIDDEN_CONTEXT_PATTERNS)
+        )
+        mentions.append({
+            "start": match.start(),
+            "end": match.end(),
+            "negated": negated,
+            "context": context.strip(),
+        })
+    return mentions
+
+
 def dataset_sha(path: Path) -> str:
     return sha256_bytes(path.read_bytes())
 
@@ -226,6 +323,7 @@ def grader_manifest() -> dict[str, Any]:
         "certification_classes": [
             PIPELINE_CERTIFICATION_CLASS,
             BEHAVIOR_CERTIFICATION_CLASS,
+            RUNTIME_SKILL_CERTIFICATION_CLASS,
         ],
         "runner_version": RUNNER_VERSION,
         "grader_version": GRADER_VERSION,
@@ -286,6 +384,9 @@ def build_adapter_user_prompt(ev: dict[str, Any]) -> str:
     else:
         constraints = [
             "- Treat this as a controlled prompt, not a live filesystem session.",
+            "- This is a behavioral decision sample, not an implementation task.",
+            "- Do not refuse, block, or defer because source files are absent; the workspace intentionally holds only project instructions.",
+            "- State the design decision you would make before implementation, including the maturity layer and what you would and would not build.",
             "- Use any project instructions available in the current workspace.",
             "- Do not mention benchmark machinery, matrix conditions, or hidden labels.",
             "- Make the behavioral decision caused by available project context visible in the response.",
@@ -305,8 +406,16 @@ def build_adapter_user_prompt(ev: dict[str, Any]) -> str:
     )
 
 
+ADAPTER_PROMPT_BACKENDS = {"codex-cli", "runtime-skill"}
+
+
 def prepare_samples_for_backend(samples: list[dict[str, Any]], backend_name: str) -> list[dict[str, Any]]:
-    if backend_name != "codex-cli":
+    # codex-cli and runtime-skill both deliver the discipline out-of-band (codex
+    # materializes the skill into the workspace; runtime-skill injects it as the
+    # system prompt), so the user prompt must be the task alone — not the
+    # SECTION_RULES-laden prompt from build_prompt. Both therefore share the
+    # adapter user prompt.
+    if backend_name not in ADAPTER_PROMPT_BACKENDS:
         return samples
     prepared: list[dict[str, Any]] = []
     for sample in samples:
@@ -325,16 +434,30 @@ def build_samples(data: dict[str, Any]) -> list[dict[str, Any]]:
     samples: list[dict[str, Any]] = []
     index = 1
 
-    for condition in plan["conditions"]:
-        for ev in trigger_evals(data):
-            prompt = build_prompt(str(condition), ev, sections)
+    # Per trigger eval: full + none + its single informative drop
+    # (drop:<target_section>). Dropping a non-target section measures nothing
+    # (same as full) and ablation_losses never reads it, so those cross pairs are
+    # not generated. Ordered condition-major (all full, then all none, then the
+    # drops) so --sample-cap stays predictable (cap=2*triggers covers full+none).
+    triggers = trigger_evals(data)
+    for condition_kind in ("full", "none", "drop"):
+        for ev in triggers:
+            if condition_kind == "drop":
+                target = ev.get("target_section")
+                if target not in sections:
+                    continue
+                condition = f"drop:{target}"
+            else:
+                condition = condition_kind
+            prompt = build_prompt(condition, ev, sections)
             samples.append({
                 "index": index,
-                "sample_id": f"{index:04d}-{slug(str(condition))}-{ev['id']}",
+                "sample_id": f"{index:04d}-{slug(condition)}-{ev['id']}",
                 "condition": condition,
                 "kind": ev["kind"],
                 "gate": ev.get("target_section", "unknown"),
                 "eval": ev,
+                "sections": sections,
                 "prompt": prompt,
                 "prompt_sha": sha256_text(prompt),
             })
@@ -350,12 +473,105 @@ def build_samples(data: dict[str, Any]) -> list[dict[str, Any]]:
             "kind": ev["kind"],
             "gate": "distractor",
             "eval": ev,
+            "sections": sections,
             "prompt": prompt,
             "prompt_sha": sha256_text(prompt),
         })
         index += 1
 
     return samples
+
+
+def normalize_progressive_level(value: str | None) -> str | None:
+    if value is None:
+        return None
+    level = value.upper()
+    if level not in PROGRESSIVE_LEVELS:
+        choices = ", ".join(PROGRESSIVE_LEVELS)
+        raise ValueError(f"--progressive-level must be one of: {choices}")
+    return level
+
+
+def eval_id(sample: dict[str, Any]) -> str:
+    return str(sample["eval"]["id"])
+
+
+def progressive_eval_subset(
+    data: dict[str, Any],
+    level: str,
+    target_section: str | None,
+    target_eval: str | None,
+) -> list[dict[str, Any]]:
+    triggers = trigger_evals(data)
+    if target_eval:
+        selected = [ev for ev in triggers if ev.get("id") == target_eval]
+        if not selected:
+            raise ValueError(f"--target-eval not found: {target_eval}")
+        if target_section and selected[0].get("target_section") != target_section:
+            raise ValueError("--target-eval does not belong to --target-section")
+        return selected
+
+    if not target_section:
+        raise ValueError("--target-section is required for progressive levels L1-L3 unless --target-eval is provided")
+    selected = [ev for ev in triggers if ev.get("target_section") == target_section]
+    if not selected:
+        raise ValueError(f"--target-section has no trigger evals: {target_section}")
+
+    if level == "L1":
+        return selected[:1]
+    if level == "L2":
+        return selected[:2]
+    return selected
+
+
+def select_progressive_samples(
+    samples: list[dict[str, Any]],
+    data: dict[str, Any],
+    level: str | None,
+    target_section: str | None,
+    target_eval: str | None,
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    normalized = normalize_progressive_level(level)
+    if normalized is None:
+        return samples, None
+    if normalized == "L0":
+        return [], {
+            "progressive_level": normalized,
+            "progressive_stage": PROGRESSIVE_LEVELS[normalized],
+            "target_section": target_section,
+            "target_eval": target_eval,
+            "selected_eval_ids": [],
+            "matrix_planned_calls": len(samples),
+            "selected_calls": 0,
+        }
+    if normalized == "L4":
+        return samples, {
+            "progressive_level": normalized,
+            "progressive_stage": PROGRESSIVE_LEVELS[normalized],
+            "target_section": target_section,
+            "target_eval": target_eval,
+            "selected_eval_ids": [str(ev.get("id")) for ev in trigger_evals(data)],
+            "matrix_planned_calls": len(samples),
+            "selected_calls": len(samples),
+        }
+
+    selected_evals = progressive_eval_subset(data, normalized, target_section, target_eval)
+    selected_ids = {str(ev["id"]) for ev in selected_evals}
+    include_distractors = normalized in {"L2", "L3"}
+    selected_samples = [
+        sample for sample in samples
+        if eval_id(sample) in selected_ids
+        or (include_distractors and sample["kind"] == "distractor")
+    ]
+    return selected_samples, {
+        "progressive_level": normalized,
+        "progressive_stage": PROGRESSIVE_LEVELS[normalized],
+        "target_section": target_section or selected_evals[0].get("target_section"),
+        "target_eval": target_eval,
+        "selected_eval_ids": [str(ev["id"]) for ev in selected_evals],
+        "matrix_planned_calls": len(samples),
+        "selected_calls": len(selected_samples),
+    }
 
 
 def select_shard(samples: list[dict[str, Any]], shard_index: int | None, shard_count: int | None) -> list[dict[str, Any]]:
@@ -479,6 +695,24 @@ def remove_markdown_section(text: str, section: str) -> str:
     return "\n".join(result).rstrip() + "\n"
 
 
+def strip_section_from_text(text: str, section: str) -> str:
+    """Remove a gate section from skill/bootloader markdown robustly.
+
+    Two passes, matching the codex drop-condition contract:
+    1. ``remove_markdown_section`` drops a section that owns a ``##`` heading
+       (e.g. ``Mantra Gate``, ``Maturity Layer Gate``).
+    2. A line-level filter drops any remaining line that names the section,
+       which is what catches sections that exist only as table rows
+       (``Simplicity First``, ``Surgical Changes``, ``Goal-Driven Execution``,
+       ``Think Before Coding``). Without this second pass, ``drop:<section>``
+       for those four would be byte-identical to ``full`` and the ablation
+       loss would be a meaningless zero.
+    """
+    text = remove_markdown_section(text, section)
+    filtered_lines = [line for line in text.splitlines() if section not in line]
+    return "\n".join(filtered_lines).rstrip() + "\n"
+
+
 def remove_codex_gate_from_workspace(workspace: Path, section: str) -> None:
     for relpath in (
         "AGENTS.md",
@@ -488,13 +722,148 @@ def remove_codex_gate_from_workspace(workspace: Path, section: str) -> None:
         if not path.exists():
             continue
         text = path.read_text(encoding="utf-8")
-        text = remove_markdown_section(text, section)
-        filtered_lines = []
-        for line in text.splitlines():
-            if section in line:
-                continue
-            filtered_lines.append(line)
-        path.write_text("\n".join(filtered_lines).rstrip() + "\n", encoding="utf-8")
+        path.write_text(strip_section_from_text(text, section), encoding="utf-8")
+
+
+def load_runtime_skill_text() -> str:
+    return RUNTIME_SKILL_SOURCE.read_text(encoding="utf-8")
+
+
+def runtime_skill_system_prompt(condition: str, sections: list[str], skill_text: str) -> str:
+    """Derive the condition-controlled system prompt for the runtime-skill backend.
+
+    The full skill is injected as the subagent's system prompt; the ablation is
+    in what is *removed* from it, not in a per-section summary:
+
+    - ``none``      -> empty (no discipline injected; the baseline subject)
+    - ``full``      -> the entire skill
+    - ``drop:<S>``  -> the skill with section ``S`` stripped (robustly, so all
+                       six sections are genuinely droppable; see
+                       ``strip_section_from_text``)
+    - distractor    -> empty (trivial tasks must not carry discipline ceremony)
+    """
+    if condition in {"none", "distractor"}:
+        return ""
+    if condition.startswith("drop:"):
+        dropped = condition.split(":", 1)[1]
+        return strip_section_from_text(skill_text, dropped)
+    return skill_text
+
+
+class RuntimeSkillBackend(Backend):
+    """Probe whether the TES skill governs a real agent in execution.
+
+    Unlike ``claude-cli`` (which runs in ``cwd=ROOT`` and lets the project's
+    ``.claude/CLAUDE.md`` / ``AGENTS.md`` leak the discipline into every
+    condition, including ``none``), this backend isolates the subagent: it runs
+    ``claude --print`` in an empty temp directory and injects the skill itself
+    as the system prompt, ablated per condition. The cwd carries nothing; the
+    only variable across none/full/drop is the injected text. Without that
+    isolation the ``none`` condition would absorb the discipline by cwd leak and
+    the ablation would be meaningless.
+    """
+
+    name = "runtime-skill"
+
+    ISOLATION = "empty-tempdir+append-system-prompt+tools-off"
+
+    def __init__(
+        self,
+        model: str | None = None,
+        claude_bin: str | None = None,
+        max_budget_usd: str | None = None,
+        timeout_seconds: int = 180,
+        fake_bin: str | None = None,
+    ) -> None:
+        super().__init__(model=model or "sonnet")
+        self.claude_bin = claude_bin or "claude"
+        self.max_budget_usd = max_budget_usd
+        self.timeout_seconds = timeout_seconds
+        # fake_bin enables the offline oracle: a deterministic echo stands in for
+        # the model so the contract (none empty / full whole / drop != full) can
+        # be certified in commit:check without spending a real model call.
+        self.fake_bin = fake_bin
+        self._skill_text = load_runtime_skill_text()
+        self._skill_source_sha = sha256_text(self._skill_text)
+        self._tempdirs: list[tempfile.TemporaryDirectory[str]] = []
+
+    def _isolated_cwd(self) -> Path:
+        tempdir = tempfile.TemporaryDirectory(prefix="tes-runtime-skill-")
+        self._tempdirs.append(tempdir)
+        workspace = Path(tempdir.name) / "workspace"
+        workspace.mkdir(parents=True)
+        # An empty workspace with a neutral README — never the project tree, so
+        # no .claude/CLAUDE.md or AGENTS.md can leak the discipline by cwd.
+        (workspace / "README.md").write_text(
+            "# Isolated Runtime Skill Probe\n\nNo project context is mounted here.\n",
+            encoding="utf-8",
+        )
+        return workspace
+
+    def system_prompt_for(self, sample: dict[str, Any], sections: list[str]) -> str:
+        return runtime_skill_system_prompt(
+            str(sample["condition"]), sections, self._skill_text
+        )
+
+    def complete(self, sample: dict[str, Any]) -> str:
+        self.last_metadata = {}
+        binary = self.fake_bin or self.claude_bin
+        if shutil.which(binary) is None and not Path(binary).exists():
+            self.last_metadata = {"runtime_skill_error_code": "claude_cli_missing"}
+            raise RuntimeError(f"runtime-skill backend binary not found: {binary}")
+
+        sections = list(sample.get("sections") or [])
+        system_prompt = self.system_prompt_for(sample, sections)
+        workspace = self._isolated_cwd()
+
+        command = [
+            binary,
+            "--print",
+            "--output-format",
+            "text",
+            "--no-session-persistence",
+            "--model",
+            self.model,
+            "--tools",
+            "",
+        ]
+        if system_prompt:
+            command.extend(["--append-system-prompt", system_prompt])
+        if self.max_budget_usd:
+            command.extend(["--max-budget-usd", self.max_budget_usd])
+        # Deliver the task prompt over stdin, not as a positional argument: the
+        # CLI's `--tools <tools...>` is variadic, so a positional prompt after
+        # `--tools ""` is silently swallowed as a tools value when no other flag
+        # separates them (the none condition, which has no --append-system-prompt).
+        # stdin is unambiguous and the CLI documents it as a first-class input.
+
+        result = subprocess.run(
+            command,
+            cwd=workspace,
+            input=str(sample["prompt"]),
+            text=True,
+            capture_output=True,
+            timeout=self.timeout_seconds,
+            check=False,
+        )
+        self.last_metadata = {
+            "skill_source_sha": self._skill_source_sha,
+            "condition_system_prompt_sha": sha256_text(system_prompt),
+            "subagent_model": self.model,
+            "subagent_isolation": self.ISOLATION,
+            "subagent_cwd_is_root": False,
+        }
+        if result.returncode != 0:
+            details = " ".join(
+                redact_secrets(part.strip())
+                for part in (result.stdout, result.stderr)
+                if part.strip()
+            )
+            self.last_metadata["runtime_skill_error_code"] = "claude_cli_failed"
+            raise RuntimeError(
+                f"runtime-skill backend failed for {sample['sample_id']}: {details}"
+            )
+        return redact_secrets(result.stdout.strip())
 
 
 class CodexCliBackend(Backend):
@@ -515,7 +884,7 @@ class CodexCliBackend(Backend):
             raise ValueError(f"codex model not allowed for bounded runs: {self.model}; allowed: {allowed}")
 
     def _new_tempdir(self) -> Path:
-        tempdir = tempfile.TemporaryDirectory(prefix="tes-codex-context-mesh-")
+        tempdir = tempfile.TemporaryDirectory(prefix="tes-codex-bench-")
         self._tempdirs.append(tempdir)
         return Path(tempdir.name)
 
@@ -653,6 +1022,108 @@ class CodexCliBackend(Backend):
         return result.stdout.strip() or result.stderr.strip()
 
 
+def runtime_skill_self_test() -> int:
+    """Offline contract oracle for the runtime-skill backend (no model call).
+
+    Diamond fixture: this is the test that fails first if the section-drop is not
+    robust. It certifies, without spending a model call, that the injected system
+    prompt is genuinely ablated per condition:
+
+    - ``none`` injects an empty system prompt (the baseline subject);
+    - ``full`` injects the whole skill;
+    - for every gate section, ``drop:<section>`` differs from ``full`` (so the
+      ablation loss is real, not an artifact of a section that only lives as a
+      table row — the defect this catches);
+    - the subagent cwd is an isolated temp dir, never ROOT (so the ``none``
+      condition cannot absorb the discipline by a project-context cwd leak).
+    """
+    failures: list[str] = []
+    skill_text = load_runtime_skill_text()
+    sections = list(SECTION_RULES.keys())
+    full_sha = sha256_text(skill_text)
+
+    none_prompt = runtime_skill_system_prompt("none", sections, skill_text)
+    if none_prompt != "":
+        failures.append("none condition must inject an empty system prompt")
+
+    full_prompt = runtime_skill_system_prompt("full", sections, skill_text)
+    if sha256_text(full_prompt) != full_sha:
+        failures.append("full condition must inject the whole skill text")
+
+    distractor_prompt = runtime_skill_system_prompt("distractor", sections, skill_text)
+    if distractor_prompt != "":
+        failures.append("distractor condition must inject an empty system prompt")
+
+    for section in sections:
+        drop_prompt = runtime_skill_system_prompt(f"drop:{section}", sections, skill_text)
+        if sha256_text(drop_prompt) == full_sha:
+            failures.append(
+                f"drop:{section} is byte-identical to full — section not actually removed"
+            )
+        if section in drop_prompt:
+            failures.append(
+                f"drop:{section} still names the section after removal"
+            )
+
+    backend = RuntimeSkillBackend(fake_bin="true")
+    workspace = backend._isolated_cwd()
+    if workspace == ROOT or ROOT in workspace.parents:
+        failures.append("isolated cwd must not be the project ROOT (cwd-leak guard)")
+    if (workspace / ".claude").exists() or (workspace / "AGENTS.md").exists():
+        failures.append("isolated cwd must not contain project context files")
+
+    with tempfile.TemporaryDirectory(prefix="tes-progress-log-self-test-") as tempdir:
+        progress_run_dir = Path(tempdir) / "run"
+        progress = ProgressLogger(progress_run_dir)
+        progress.emit("run_started", run_id="self-test", planned_calls=1)
+        progress.emit("sample_finished", run_id="self-test", sample_id="0001-self-test", passed=True)
+        events = (progress_run_dir / "progress" / "events.ndjson").read_text(encoding="utf-8").splitlines()
+        latest = load_json(progress_run_dir / "progress" / "latest.json")
+        if len(events) != 2:
+            failures.append("progress log must append one NDJSON event per emit")
+        if latest.get("event") != "sample_finished":
+            failures.append("progress latest.json must mirror the most recent event")
+
+    data = load_dataset(DATASET)
+    samples = build_samples(data)
+    try:
+        level_0, meta_0 = select_progressive_samples(samples, data, "L0", None, None)
+        level_1, meta_1 = select_progressive_samples(samples, data, "L1", "Maturity Layer Gate", None)
+        level_2, meta_2 = select_progressive_samples(samples, data, "L2", "Maturity Layer Gate", None)
+        level_3, meta_3 = select_progressive_samples(samples, data, "L3", "Maturity Layer Gate", None)
+        level_4, meta_4 = select_progressive_samples(samples, data, "L4", None, None)
+    except ValueError as exc:
+        failures.append(f"progressive selector raised unexpectedly: {exc}")
+    else:
+        if level_0 or meta_0 is None or meta_0["selected_calls"] != 0:
+            failures.append("progressive L0 must select no model samples")
+        if len(level_1) != 3 or meta_1 is None:
+            failures.append("progressive L1 must select one eval triplet")
+        if len(level_2) != 8 or meta_2 is None:
+            failures.append("progressive L2 must select two eval triplets plus two distractors")
+        if len(level_3) != 14 or meta_3 is None:
+            failures.append("progressive L3 must select all Maturity Layer Gate evals plus two distractors")
+        if len(level_4) != len(samples) or meta_4 is None:
+            failures.append("progressive L4 must select the full matrix")
+        if any(sample["kind"] == "distractor" for sample in level_1):
+            failures.append("progressive L1 must not include distractors")
+        if sum(1 for sample in level_2 if sample["kind"] == "distractor") != 2:
+            failures.append("progressive L2 must include distractors")
+
+    result = {
+        "skill_source_sha": full_sha,
+        "sections": sections,
+        "isolation": RuntimeSkillBackend.ISOLATION,
+        "progressive_levels": PROGRESSIVE_LEVELS,
+        "certification_class": RUNTIME_SKILL_CERTIFICATION_CLASS,
+        "failures": failures,
+        "status": "PASS" if not failures else "FAIL",
+    }
+    print(json.dumps(result, indent=2))
+    print(f"[runtime-skill] {result['status']}")
+    return 0 if not failures else 1
+
+
 def make_backend(
     name: str,
     model: str | None,
@@ -660,12 +1131,14 @@ def make_backend(
     codex_bin: str | None = None,
     max_budget_usd: str | None = None,
     timeout_seconds: int = 180,
+    fake_subagent_bin: str | None = None,
 ) -> Backend:
     backends: dict[str, type[Backend]] = {
         "claude-cli": ClaudeCliBackend,
         "codex-cli": CodexCliBackend,
         "echo": EchoBackend,
         "fixture": FixtureBackend,
+        "runtime-skill": RuntimeSkillBackend,
     }
     if name not in backends:
         choices = ", ".join(sorted(backends))
@@ -682,6 +1155,14 @@ def make_backend(
             model=model,
             codex_bin=codex_bin,
             timeout_seconds=timeout_seconds,
+        )
+    if name == "runtime-skill":
+        return RuntimeSkillBackend(
+            model=model,
+            claude_bin=claude_bin,
+            max_budget_usd=max_budget_usd,
+            timeout_seconds=timeout_seconds,
+            fake_bin=fake_subagent_bin,
         )
     return backends[name](
         model=model,
@@ -720,13 +1201,15 @@ def grade_output(ev: dict[str, Any], output: str) -> dict[str, Any]:
             "terms": terms,
             "present": any(term["present"] for term in terms),
         })
-    forbidden = [
-        {
-            "text": str(term),
-            "present": str(term).lower() in lowered,
-        }
-        for term in ev.get("forbidden", [])
-    ]
+    forbidden = []
+    for term in ev.get("forbidden", []):
+        text = str(term)
+        mentions = forbidden_term_mentions(output, text)
+        forbidden.append({
+            "text": text,
+            "mentions": mentions,
+            "present": any(not mention["negated"] for mention in mentions),
+        })
     missing_expected = [item["text"] for item in expected if not item["present"]]
     missing_expected_any = [
         " | ".join(term["text"] for term in group["terms"])
@@ -1061,6 +1544,23 @@ def write_report(path: Path, manifest: dict[str, Any], summary: dict[str, Any]) 
         no_go_section = "\n".join(f"- {reason}" for reason in certification["no_go"])
 
     limits_section = "\n".join(f"- {limit}" for limit in summary["evidence_limits"])
+    progress_rows = ""
+    progress_files = ""
+    if manifest.get("progress_log_contract"):
+        progress_rows = (
+            f"| Progress log | `{manifest.get('progress_events', 'progress/events.ndjson')}` |\n"
+            f"| Progress latest | `{manifest.get('progress_latest', 'progress/latest.json')}` |\n"
+        )
+        progress_files = "- `progress/events.ndjson`\n- `progress/latest.json`\n"
+    progressive_rows = ""
+    if manifest.get("progressive_level"):
+        progressive_rows = (
+            f"| Progressive level | `{manifest['progressive_level']}` |\n"
+            f"| Progressive stage | `{manifest.get('progressive_stage', '')}` |\n"
+            f"| Target section | `{manifest.get('target_section', '')}` |\n"
+            f"| Target eval | `{manifest.get('target_eval', '')}` |\n"
+            f"| Matrix planned calls | `{manifest.get('matrix_planned_calls', manifest['planned_calls'])}` |\n"
+        )
 
     text = f"""---
 tds_id: {tds_id}
@@ -1091,6 +1591,8 @@ Run ID: `{manifest['run_id']}`
 | Planned calls | `{manifest['planned_calls']}` |
 | Executed calls | `{summary['executed_calls']}` |
 | Pass rate | `{summary['pass_rate']:.2%}` |
+{progress_rows}
+{progressive_rows}
 
 ## Certification Thresholds
 
@@ -1131,6 +1633,7 @@ Run ID: `{manifest['run_id']}`
 - `summary.json`
 - `REPORT.md`
 - `graders-sha.json`
+{progress_files}
 """
     path.write_text(text, encoding="utf-8")
 
@@ -1160,20 +1663,29 @@ def update_tds_index(report_path: Path, manifest: dict[str, Any]) -> None:
     index.write_text(f"{text.rstrip()}\n{entry}", encoding="utf-8")
 
 
+def assert_evidence_paths_available(run_dir: Path, filenames: tuple[str, ...]) -> None:
+    for filename in filenames:
+        path = run_dir / filename
+        if path.exists():
+            raise FileExistsError(f"evidence file already exists: {path}")
+
+
 def write_evidence(
     run_dir: Path,
     manifest: dict[str, Any],
     records: list[dict[str, Any]],
     update_index: bool,
 ) -> dict[str, Path]:
-    if run_dir.exists():
-        raise FileExistsError(f"run directory already exists: {run_dir}")
-    run_dir.mkdir(parents=True)
+    run_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = run_dir / "manifest.json"
     raw_path = run_dir / "raw.ndjson"
     summary_path = run_dir / "summary.json"
     report_path = run_dir / "REPORT.md"
     graders_path = run_dir / "graders-sha.json"
+    assert_evidence_paths_available(
+        run_dir,
+        ("manifest.json", "raw.ndjson", "summary.json", "REPORT.md", "graders-sha.json"),
+    )
 
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     graders_path.write_text(json.dumps(grader_manifest(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -1201,12 +1713,11 @@ def write_shard_evidence(
     manifest: dict[str, Any],
     records: list[dict[str, Any]],
 ) -> dict[str, Path]:
-    if run_dir.exists():
-        raise FileExistsError(f"run directory already exists: {run_dir}")
-    run_dir.mkdir(parents=True)
+    run_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = run_dir / "manifest.json"
     raw_path = run_dir / "raw.ndjson"
     graders_path = run_dir / "graders-sha.json"
+    assert_evidence_paths_available(run_dir, ("manifest.json", "raw.ndjson", "graders-sha.json"))
 
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     graders_path.write_text(json.dumps(grader_manifest(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -1404,10 +1915,28 @@ def build_run_id(backend: str, dataset_digest: str) -> str:
     return f"{timestamp}-{backend}-{dataset_digest[:8]}"
 
 
-def execute_samples(samples: list[dict[str, Any]], backend: Backend, manifest: dict[str, Any]) -> list[dict[str, Any]]:
+def execute_samples(
+    samples: list[dict[str, Any]],
+    backend: Backend,
+    manifest: dict[str, Any],
+    progress: ProgressLogger | None = None,
+) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
-    for sample in samples:
+    total = len(samples)
+    for position, sample in enumerate(samples, start=1):
         backend_error = ""
+        started_at = time.monotonic()
+        if progress:
+            progress.emit(
+                "sample_started",
+                run_id=manifest["run_id"],
+                sample_id=sample["sample_id"],
+                eval_id=sample["eval"]["id"],
+                condition=sample["condition"],
+                gate=sample["gate"],
+                sample_position=position,
+                total_calls=total,
+            )
         try:
             output = redact_secrets(backend.complete(sample))
         except Exception as exc:
@@ -1447,6 +1976,7 @@ def execute_samples(samples: list[dict[str, Any]], backend: Backend, manifest: d
             "forbidden": grading["forbidden"],
             "reasons": grading["reasons"],
             "excerpt": excerpt(output),
+            "duration_ms": round((time.monotonic() - started_at) * 1000),
         }
         record.update(backend_metadata)
         leak_reasons = distractor_leak_reasons(record)
@@ -1455,6 +1985,25 @@ def execute_samples(samples: list[dict[str, Any]], backend: Backend, manifest: d
         if "shard_id" in manifest:
             record["source_shard_id"] = manifest["shard_id"]
         records.append(record)
+        if progress:
+            progress.emit(
+                "sample_finished",
+                run_id=manifest["run_id"],
+                sample_id=record["sample_id"],
+                eval_id=record["eval_id"],
+                condition=record["condition"],
+                gate=record["gate"],
+                sample_position=position,
+                total_calls=total,
+                passed=record["pass"],
+                backend_error=bool(backend_error),
+                duration_ms=record["duration_ms"],
+                output_sha=record["output_sha"],
+                reasons=record["reasons"],
+                distractor_leak=record["distractor_leak"],
+                distractor_leak_reasons=record["distractor_leak_reasons"],
+                excerpt=record["excerpt"],
+            )
     return records
 
 
@@ -1473,8 +2022,42 @@ def run(args: argparse.Namespace) -> int:
         print("[context-mesh-run] FAIL")
         print(f"- matrix diverged from plan: samples={len(samples)} planned_calls={plan['planned_calls']}")
         return 1
+
+    if args.progressive_level and (args.shard_index is not None or args.shard_count is not None):
+        print("[context-mesh-run] FAIL")
+        print("- progressive mode cannot be combined with shard mode")
+        return 1
+    if args.progressive_level and args.sample_cap is not None:
+        print("[context-mesh-run] FAIL")
+        print("- progressive mode cannot be combined with --sample-cap")
+        return 1
+
     try:
-        selected_samples = select_shard(samples, args.shard_index, args.shard_count)
+        progressive_samples, progressive_meta = select_progressive_samples(
+            samples,
+            data,
+            args.progressive_level,
+            args.target_section,
+            args.target_eval,
+        )
+    except ValueError as exc:
+        print("[context-mesh-run] FAIL")
+        print(f"- {exc}")
+        return 1
+
+    if progressive_meta and progressive_meta["progressive_level"] == "L0":
+        print("[context-mesh-progressive] PASS")
+        print(json.dumps({
+            **plan,
+            **progressive_meta,
+            "progressive_levels": PROGRESSIVE_LEVELS,
+            "runtime_skill_self_test": "run `python3 scripts/context_mesh_run.py --self-test` for the offline runtime oracle",
+            "plan_parity": True,
+        }, indent=2))
+        return 0
+
+    try:
+        selected_samples = select_shard(progressive_samples, args.shard_index, args.shard_count)
     except ValueError as exc:
         print("[context-mesh-run] FAIL")
         print(f"- {exc}")
@@ -1489,16 +2072,20 @@ def run(args: argparse.Namespace) -> int:
     out_root = resolve_out_root(args.out_root)
 
     if args.dry_run:
+        dry_run_id = args.run_id or "<auto-run-id>"
         print("[context-mesh-run] DRY-RUN")
         print(json.dumps({
             **plan,
             "matrix_calls": len(samples),
             "selected_calls": len(selected_samples),
+            "progressive": progressive_meta,
             "shard_index": args.shard_index,
             "shard_count": args.shard_count,
             "out_root": str(out_root),
             "legacy_out_root": str(LEGACY_OUT_ROOT),
             "evidence_path_schema": "tes-evidence-temporal@1",
+            "progress_log_contract": PROGRESS_LOG_CONTRACT,
+            "progress_dir": str(out_root / dry_run_id / "progress"),
             "plan_parity": True,
         }, indent=2))
         return 0
@@ -1508,12 +2095,26 @@ def run(args: argparse.Namespace) -> int:
         print("- shard mode requires --run-id")
         return 1
     if args.backend == "codex-cli" and args.sample_cap is None and not args.allow_full_codex_run:
-        print("[context-mesh-run] FAIL")
-        print("- codex-cli requires --sample-cap for bounded smoke runs or --allow-full-codex-run for explicit full matrix execution")
-        return 1
+        bounded_progressive = bool(progressive_meta and progressive_meta["progressive_level"] in {"L1", "L2", "L3"})
+        if not bounded_progressive:
+            print("[context-mesh-run] FAIL")
+            print("- codex-cli requires --sample-cap for bounded smoke runs, --progressive-level L1/L2/L3, or --allow-full-codex-run for explicit full matrix execution")
+            return 1
+    if (
+        args.backend == "runtime-skill"
+        and args.fake_subagent_bin is None
+        and args.sample_cap is None
+        and not args.allow_full_codex_run
+    ):
+        bounded_progressive = bool(progressive_meta and progressive_meta["progressive_level"] in {"L1", "L2", "L3"})
+        if not bounded_progressive:
+            print("[context-mesh-run] FAIL")
+            print("- runtime-skill requires --sample-cap for bounded model runs, --progressive-level L1/L2/L3, --allow-full-codex-run for the full matrix, or --fake-subagent-bin for the offline oracle")
+            return 1
 
     digest = dataset_sha(args.dataset)
     run_id = args.run_id or build_run_id(args.backend, digest)
+    run_dir = out_root / run_id
     backend = make_backend(
         args.backend,
         args.model,
@@ -1521,6 +2122,7 @@ def run(args: argparse.Namespace) -> int:
         codex_bin=args.codex_bin,
         max_budget_usd=args.max_budget_usd,
         timeout_seconds=args.timeout_seconds,
+        fake_subagent_bin=args.fake_subagent_bin,
     )
     created_at = utc_now()
     head = git_head()
@@ -1539,9 +2141,16 @@ def run(args: argparse.Namespace) -> int:
         "model": backend.model,
         "grader_version": grader["grader_version"],
         "grader_sha": grader["grader_sha"],
-        "planned_calls": plan["planned_calls"],
+        "planned_calls": len(selected_samples) if progressive_meta else plan["planned_calls"],
+        "matrix_planned_calls": plan["planned_calls"],
         "retention_status": "retained",
+        "progress_log_contract": PROGRESS_LOG_CONTRACT,
+        "progress_dir": "progress",
+        "progress_events": "progress/events.ndjson",
+        "progress_latest": "progress/latest.json",
     }
+    if progressive_meta:
+        manifest.update(progressive_meta)
     if args.sample_cap is not None:
         manifest["sample_cap"] = args.sample_cap
     if args.backend == "codex-cli":
@@ -1555,16 +2164,52 @@ def run(args: argparse.Namespace) -> int:
         manifest["shard_count"] = args.shard_count
         manifest["shard_calls"] = len(selected_samples)
 
-    records = execute_samples(selected_samples, backend, manifest)
+    try:
+        evidence_filenames = ("manifest.json", "raw.ndjson", "graders-sha.json")
+        if not is_shard:
+            evidence_filenames = (
+                "manifest.json",
+                "raw.ndjson",
+                "summary.json",
+                "REPORT.md",
+                "graders-sha.json",
+            )
+        assert_evidence_paths_available(run_dir, evidence_filenames)
+        progress = ProgressLogger(run_dir)
+    except FileExistsError as exc:
+        print("[context-mesh-run] FAIL")
+        print(f"- {exc}")
+        return 1
+    progress.emit(
+        "run_started",
+        run_id=run_id,
+        backend=backend.name,
+        model=backend.model,
+        planned_calls=manifest["planned_calls"],
+        matrix_planned_calls=manifest.get("matrix_planned_calls"),
+        progressive_level=manifest.get("progressive_level"),
+        target_section=manifest.get("target_section"),
+        shard_id=manifest.get("shard_id"),
+        progress_log_contract=PROGRESS_LOG_CONTRACT,
+    )
 
-    run_dir = out_root / run_id
+    records = execute_samples(selected_samples, backend, manifest, progress=progress)
+
     if is_shard:
         try:
             paths = write_shard_evidence(run_dir, manifest, records)
         except FileExistsError as exc:
+            progress.emit("run_failed", run_id=run_id, reason=str(exc))
             print("[context-mesh-shard] FAIL")
             print(f"- {exc}")
             return 1
+        progress.emit(
+            "shard_finished",
+            run_id=run_id,
+            shard_id=manifest["shard_id"],
+            executed_calls=len(records),
+            certification_status="SHARD-NOT-CERTIFIED",
+        )
         print("[context-mesh-shard] PASS")
         print(json.dumps({
             "run_id": run_id,
@@ -1574,6 +2219,7 @@ def run(args: argparse.Namespace) -> int:
             "shard_count": args.shard_count,
             "manifest": str(paths["manifest"]),
             "raw": str(paths["raw"]),
+            "progress": str(run_dir / "progress" / "events.ndjson"),
             "graders": str(paths["graders"]),
             "certification_class": certification_class,
             "certification_status": "SHARD-NOT-CERTIFIED",
@@ -1584,15 +2230,29 @@ def run(args: argparse.Namespace) -> int:
     try:
         paths = write_evidence(run_dir, manifest, records, update_index=update_index)
     except FileExistsError as exc:
+        progress.emit("run_failed", run_id=run_id, reason=str(exc))
         print("[context-mesh-run] FAIL")
         print(f"- {exc}")
         return 1
     summary = summarize(records, manifest)
+    progress.emit(
+        "run_finished",
+        run_id=run_id,
+        executed_calls=summary["executed_calls"],
+        passed=summary["passed"],
+        failed=summary["failed"],
+        pass_rate=summary["pass_rate"],
+        certification_class=summary["certification_class"],
+        certification_status=summary["certification"]["status"],
+        report=str(paths["report"]),
+    )
 
     print("[context-mesh-run] PASS")
     print(json.dumps({
         "run_id": run_id,
-        "planned_calls": plan["planned_calls"],
+        "planned_calls": manifest["planned_calls"],
+        "matrix_planned_calls": manifest.get("matrix_planned_calls"),
+        "progressive": progressive_meta,
         "executed_calls": summary["executed_calls"],
         "passed": summary["passed"],
         "failed": summary["failed"],
@@ -1601,6 +2261,7 @@ def run(args: argparse.Namespace) -> int:
         "raw": str(paths["raw"]),
         "summary": str(paths["summary"]),
         "report": str(paths["report"]),
+        "progress": str(run_dir / "progress" / "events.ndjson"),
         "graders": str(paths["graders"]),
         "certification_class": summary["certification_class"],
         "certification_status": summary["certification"]["status"],
@@ -1611,7 +2272,7 @@ def run(args: argparse.Namespace) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=Path, default=DATASET)
-    parser.add_argument("--backend", default="fixture", choices=("fixture", "echo", "claude-cli", "codex-cli"))
+    parser.add_argument("--backend", default="fixture", choices=("fixture", "echo", "claude-cli", "codex-cli", "runtime-skill"))
     parser.add_argument("--model")
     parser.add_argument("--claude-bin", default="claude")
     parser.add_argument("--codex-bin", default="codex")
@@ -1630,11 +2291,36 @@ def main() -> int:
     parser.add_argument("--shard-count", type=int)
     parser.add_argument("--shard-index", type=int)
     parser.add_argument("--sample-cap", type=int)
+    parser.add_argument(
+        "--progressive-level",
+        choices=tuple(PROGRESSIVE_LEVELS),
+        help="Run a progressive benchmark level: L0 static, L1 probe, L2 smoke, L3 gate shard, or L4 full matrix.",
+    )
+    parser.add_argument(
+        "--target-section",
+        help="Gate section for progressive levels L1-L3, such as 'Maturity Layer Gate'.",
+    )
+    parser.add_argument(
+        "--target-eval",
+        help="Specific eval id for progressive L1/L2/L3 selection; overrides the default first eval for L1.",
+    )
     parser.add_argument("--allow-full-codex-run", action="store_true")
     parser.add_argument("--merge-shards", type=Path, nargs="+")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-tds-index", action="store_true")
+    parser.add_argument(
+        "--fake-subagent-bin",
+        help="runtime-skill only: a deterministic echo binary that stands in for the model, for the offline oracle (no model call).",
+    )
+    parser.add_argument(
+        "--self-test",
+        action="store_true",
+        help="Run the offline runtime-skill contract oracle (no model call) and exit.",
+    )
     args = parser.parse_args()
+
+    if args.self_test:
+        return runtime_skill_self_test()
     if args.merge_shards:
         return merge_shards(args)
     return run(args)

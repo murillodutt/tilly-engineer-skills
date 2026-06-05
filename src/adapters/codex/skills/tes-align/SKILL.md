@@ -32,10 +32,11 @@ PROJECT-CONTEXT -> PROJECT-STATE -> PROJECT-ROADMAP x-ray/convergence -> EXECUTI
 ```
 
 The goal is operational legibility, not prettier documentation.
-`PROJECT-ROADMAP.md` should present a System X-Ray and Convergence Line first
-so the project organism and future path are visible before the audit lanes.
-`tes-align` owns the map. `/tes-map` only updates the current GPS position
-inside the managed `TES-MAP` block after this roadmap exists.
+`PROJECT-ROADMAP.md` should present Eraser-first Atlas links plus Mermaid
+fallback System X-Ray and Convergence Line views first, so the project organism
+and future path are visible before the audit lanes. `tes-align` owns the map.
+`/tes-map` updates the Atlas projection and current GPS position inside the
+managed `TES-MAP` block after this roadmap exists.
 
 ## Workflow
 
@@ -57,12 +58,16 @@ inside the managed `TES-MAP` block after this roadmap exists.
    `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`,
    `GLOSSARY.md`, `DECISIONS/**` or a link to an existing decision system,
    and `evidence/<timestamp>-project-alignment.md`.
-6. In `PROJECT-ROADMAP.md`, make the first human scan path two Mermaid
-   `flowchart TD` graphs:
+6. In `PROJECT-ROADMAP.md`, make the first human scan path Eraser-first with
+   local `.tes/gps/*.eraserdiagram` Atlas sidecars and Mermaid fallback graphs:
    - System X-Ray: Git state, delivered behavior, validation mesh, and release
      boundary.
    - Convergence Line: done/current/next/later/deferred/blocked/unknown/final
      states.
+   Easy-first is the Atlas birth surface, not the evolution ceiling: the
+   initial output must be useful and certified, and deeper project-specific
+   relationships should evolve through profilers, `--deep`, fixtures, and
+   oracles.
    Keep Done, Active, Next, Later, Deferred, Blocked, and Unknown as compact
    audit lanes.
 7. Keep the mesh Obsidian-native and Git-portable: use Markdown, YAML
@@ -105,7 +110,7 @@ Project alignment: PASS, with explicit limits.
 - Do not overwrite active governance before `.tes/bk/<timestamp>/manifest.json` exists.
 - Do not recreate docs that already exist under stronger project-owned paths.
 - Do not invent architecture, roadmap items, or decisions.
-- Do not replace the System X-Ray and Convergence Line with only a textual roadmap.
+- Do not replace the Atlas/System X-Ray/Convergence Line with only a textual roadmap.
 - Do not call scaffold output deep alignment.
 - Do not write `.obsidian/**`.
 - Do not claim PASS without retained evidence and a passing oracle.

@@ -11,9 +11,10 @@ from pathlib import Path
 from typing import Any
 
 import tes_map
+import tes_project_atlas
 
 
-VERSION = "0.3.168"
+VERSION = "0.3.169"
 SCRIPT_PATH = Path(__file__).resolve()
 PACKAGE_MODE = (SCRIPT_PATH.parents[1] / "package.json").exists() and SCRIPT_PATH.parent.name == "scripts"
 REQUIRED_BLOCK_TERMS = (
@@ -28,6 +29,9 @@ REQUIRED_BLOCK_TERMS = (
     "Blocking items",
     "Unknowns",
     "Confidence",
+    "Project Atlas",
+    "Mermaid Fallback",
+    ".eraserdiagram",
     "flowchart LR",
     "classDef done",
     "classDef current",
@@ -63,6 +67,12 @@ def validate_target(target: Path, require_block: bool = True) -> dict[str, Any]:
         for term in REQUIRED_BLOCK_TERMS:
             if term not in text:
                 failures.append(f"missing managed block term: {term}")
+        for view, filename in tes_project_atlas.VIEW_FILES.items():
+            sidecar = target / tes_project_atlas.GPS_DIR_REL / filename
+            if not sidecar.exists():
+                failures.append(f"missing Eraser Atlas sidecar: {view} {sidecar.relative_to(target)}")
+            elif not sidecar.read_text(encoding="utf-8").startswith("flow-chart\n"):
+                failures.append(f"invalid Eraser Atlas sidecar header: {sidecar.relative_to(target)}")
     if ".obsidian/" in text or ".obsidian\\" in text:
         failures.append("roadmap block must not depend on .obsidian")
     if text.count(tes_map.START_MARKER) > 1 or text.count(tes_map.END_MARKER) > 1:
@@ -75,6 +85,10 @@ def validate_target(target: Path, require_block: bool = True) -> dict[str, Any]:
         "failures": failures,
         "model_status": model["status"],
         "managed_block_present": tes_map.START_MARKER in text and tes_map.END_MARKER in text,
+        "atlas_views": {
+            view: (target / tes_project_atlas.GPS_DIR_REL / filename).exists()
+            for view, filename in tes_project_atlas.VIEW_FILES.items()
+        },
     }
 
 
@@ -139,9 +153,12 @@ def self_test() -> dict[str, Any]:
             failures.append("capsule target did not return CAPSULE_PASS")
         if not capsule_model["position"]:
             failures.append("capsule target produced no position")
+        tes_project_atlas.write_views(capsule, capsule_model["atlas"], gps_model=capsule_model)
         tes_map.write_capsule_projection(capsule, tes_map.build_capsule_projection(capsule))
         if not (capsule / tes_map.GPS_STATE_REL).exists():
             failures.append("capsule write did not create .tes/gps/state.json")
+        if not all((capsule / tes_project_atlas.GPS_DIR_REL / filename).exists() for filename in tes_project_atlas.VIEW_FILES.values()):
+            failures.append("capsule write did not create all Eraser Atlas sidecars")
         if (capsule / "docs/agents").exists():
             failures.append("capsule write leaked docs/agents (export must be gated)")
 

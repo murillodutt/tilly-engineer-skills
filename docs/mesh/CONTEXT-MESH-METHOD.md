@@ -57,7 +57,7 @@ This is the core test: does the instruction change a real agent decision?
 ## Pre-Write Versus Post-Write
 
 Tests, linters, typecheckers, and gates protect the project after the agent has
-already acted. Tilly's four gates protect before the first edit.
+already acted. Tilly's maturity-aware gates protect before the first edit.
 
 That matters because many LLM coding failures are direction failures, not syntax
 failures:

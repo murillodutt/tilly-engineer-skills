@@ -23,6 +23,14 @@ truth only after it produces retained lift, survives distractors, shows
 ablation loss, and converges through Build-Test-Fail-Fix. The operational loop
 is defined in `docs/mesh/CONTEXT-MESH-CONVERGENCE.md`.
 
+The Maturity Layer Gate must prove two opposite behaviors: `Birth` work rejects
+premature complexity, while `Evolution` and `Platform` work reject destructive
+local simplification of accepted contracts or operational compatibility.
+At minimum the dataset must include one adversarial `Birth` prompt that asks for
+future-type scaffolding without promotion evidence, one `Consolidation` prompt
+that resists redesign pressure while accepting a small shared contract, and one
+`Evolution` or `Platform` prompt that rejects flattening an accepted boundary.
+
 ## Conditions
 
 Run at least these conditions:
@@ -60,6 +68,11 @@ Each eval should declare:
 }
 ```
 
+Maturity-layer evals should assert the promotion evidence, not just the layer
+name. A valid `Evolution` or `Platform` sample must name a protected baseline,
+allowed complexity, forbidden complexity, and an oracle. A valid `Birth` sample
+must reject promotion when that evidence is missing.
+
 Distractors use `kind: "distractor"` and should assert that the agent does not
 over-activate heavyweight guidance.
 
@@ -93,15 +106,69 @@ the runner works. The question is whether the evidence proves that context
 changes the right behavior without leaking into wrong tasks, hiding cost, or
 drifting across adapters.
 
-Use two certification classes:
+Use three certification classes:
 
 | Class | Meaning |
 |-------|---------|
 | `pipeline-v1-rc` | Planner, runner, raw evidence, reports, thresholds, TDS indexing, and NO-GO mechanics work |
-| `behavior-v1-rc` | A real backend shows the context mesh changes behavior correctly without distractor leaks |
+| `behavior-v1-rc` | A real backend (a clean model answering an isolated prompt, e.g. `codex-cli`) shows the context mesh changes behavior correctly without distractor leaks |
+| `runtime-skill-v1-rc` | The skill governs a real agent in execution: a subagent (`runtime-skill` backend) with the skill injected as its system prompt, ablated per condition, shows the discipline changes its decisions |
 
 Fixture and echo backends may only produce `pipeline-v1-rc` evidence. They must
 not be described as live-model behavioral certification.
+
+The `runtime-skill` backend isolates the subagent's working directory so the
+project's `.claude/CLAUDE.md` / `AGENTS.md` cannot leak the discipline into the
+`none` condition; without that isolation the ablation is meaningless and the run
+must not be certified. Its offline contract (none empty / full whole / every
+`drop:<section>` differs from full / cwd is not ROOT) is certified without a
+model call by `python3 scripts/context_mesh_run.py --self-test`. A `runtime-skill`
+run is non-deterministic (it calls a real model); reproducibility is in the
+provenance (`dataset_sha`, `skill_source_sha`, `condition_system_prompt_sha`,
+`grader_sha`), not in the output.
+
+## Progressive Runtime Skill Benchmark
+
+Use progressive levels for live `runtime-skill` iteration. The full matrix
+remains the certification surface; earlier levels are cheaper gates that decide
+whether a patch deserves broader evidence.
+
+| Level | Purpose | Model calls |
+|-------|---------|-------------|
+| `L0` | Static instrument check: dataset, plan, selector, and offline runtime self-test pointer | `0` |
+| `L1` | One target eval under `full`, `none`, and its informative `drop:<section>` | `3` |
+| `L2` | Up to two target evals plus distractors | `8` for two target evals |
+| `L3` | All evals for one target gate plus distractors | Gate-sized |
+| `L4` | Full informative matrix | Full matrix |
+
+Progression rule: advance only when the current level has raw evidence, no
+backend errors, no confirmed distractor leak, and no regression against the
+previous passing sample set. A lower level can guide a patch, but only `L4`
+supports a full certification claim.
+
+Every non-dry-run execution writes active monitoring logs inside the run
+directory:
+
+```text
+<run-id>/progress/
+  events.ndjson
+  latest.json
+```
+
+Use `events.ndjson` for `tail -f` during long live runs. Use `latest.json` for a
+compact monitor or dashboard pointer. These progress files are operational
+telemetry; `raw.ndjson`, `summary.json`, and `REPORT.md` remain the retained
+evidence contract.
+
+Examples:
+
+```bash
+python3 scripts/context_mesh_run.py --backend runtime-skill \
+  --progressive-level L1 --target-section "Maturity Layer Gate" --model sonnet
+
+python3 scripts/context_mesh_run.py --backend runtime-skill \
+  --progressive-level L3 --target-section "Think Before Coding" --model sonnet
+```
 
 Minimum v1-rc thresholds:
 
@@ -206,6 +273,9 @@ Default evidence shape:
 
 ```text
 docs/evidence/reports/YYYY/MM/DD/context-mesh/<run-id>/
+  progress/
+    events.ndjson
+    latest.json
   manifest.json
   raw.ndjson
   summary.json

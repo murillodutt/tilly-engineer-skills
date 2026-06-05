@@ -21,6 +21,7 @@ import cortex
 import field_reports
 import project_context_oracle
 import root_context
+import tes_project_atlas
 
 
 MARKDOWN_HEADING_RE = re.compile(r"^#{1,3}\s+(.+?)\s*$")
@@ -36,7 +37,7 @@ SOURCE_PACKAGE_MODE = (
 )
 BUNDLE_MODE = SOURCE_ROOT.name == "scripts" and not SOURCE_PACKAGE_MODE
 PACKAGE_MODE = SOURCE_PACKAGE_MODE
-VERSION = "0.3.168"
+VERSION = "0.3.169"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 EVIDENCE_DIR = Path("docs/agents/evidence")
@@ -1402,7 +1403,14 @@ def first_anchor(anchors: list[str]) -> str:
 
 
 def initial_system_xray() -> str:
-    return """```mermaid
+    return """### Eraser Atlas View
+
+- Primary visual: `.tes/gps/project-overview.eraserdiagram`
+- Related views: `.tes/gps/module-tree.eraserdiagram`, `.tes/gps/runtime-integrations.eraserdiagram`
+
+### Mermaid Fallback
+
+```mermaid
 flowchart TD
   A["Project system<br/>real operating map"] --> B["Git state"]
   A --> C["Delivered behavior"]
@@ -1433,7 +1441,14 @@ flowchart TD
 
 
 def initial_convergence_line() -> str:
-    return """```mermaid
+    return """### Eraser Atlas View
+
+- Primary visual: `.tes/gps/project-gps.eraserdiagram`
+- Related views: `.tes/gps/gates-evidence.eraserdiagram`, `.tes/gps/dependency-map.eraserdiagram`, `.tes/gps/data-map.eraserdiagram`
+
+### Mermaid Fallback
+
+```mermaid
 flowchart TD
   A["Done: project identity detected"] --> B["Done: context and register created"]
   B --> C["Current: semantic alignment"]
@@ -1788,6 +1803,19 @@ def ensure_initial_alignment_mesh(
 ) -> list[str]:
     rewritable = rewrite_paths or set()
     writes: list[str] = []
+    atlas = tes_project_atlas.build_atlas(target, deep=False)
+    atlas_write = tes_project_atlas.write_views(
+        target,
+        atlas,
+        gps_model={
+            "position": "Initial project atlas",
+            "next_safe_move": "Run /tes-align after reading strong anchors",
+            "proof_gate": "project_alignment_oracle.py --target .",
+        },
+    )
+    writes.extend(view["path"] for view in atlas_write["views"].values() if view.get("changed"))
+    if atlas_write.get("changed"):
+        writes.append(atlas_write["atlas"])
     for relpath, text in initial_alignment_texts(
         target,
         scan,

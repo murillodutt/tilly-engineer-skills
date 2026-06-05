@@ -19,7 +19,7 @@ import project_context_oracle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.168"
+VERSION = "0.3.169"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -234,7 +234,7 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing Codex agent bootloader: {codex_agent}")
     else:
         text = read(codex_agent)
-        for term in ("Think Before Coding", "Simplicity First"):
+        for term in ("Think Before Coding", "Maturity Layer Gate", "Simplicity First"):
             if term not in text:
                 failures.append(f"{codex_agent} missing {term}")
     if exists(codex_discipline_skill):
@@ -284,7 +284,7 @@ def analyze() -> dict[str, Any]:
         failures.append(f"missing Claude bootloader: {claude_agent}")
     else:
         text = read(claude_agent)
-        for term in ("Think Before Coding", "Simplicity First"):
+        for term in ("Think Before Coding", "Maturity Layer Gate", "Simplicity First"):
             if term not in text:
                 failures.append(f"{claude_agent} missing {term}")
     if exists(claude_guidelines_skill):

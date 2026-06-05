@@ -1,0 +1,16 @@
+{
+  "backend": "runtime-skill",
+  "certification_class": "runtime-skill-v1-rc",
+  "certification_profile": "v1-rc",
+  "created_at": "2026-06-05T20:55:33Z",
+  "dataset": "benchmarks/context-mesh/eval-dataset.json",
+  "dataset_sha": "c28397fba9e45e3ea86a77ed693d1458f36dc841cdac098267b3293f0fee6e65",
+  "git_head": "d816954202632b2505e5915036eb1607f7ba1a6a",
+  "grader_sha": "2b8b27ff72fed914a68ded3bf878237e04196a53e84f15b4bed01eeaf314a209",
+  "grader_version": "deterministic-substring@0.1.9",
+  "model": "sonnet",
+  "planned_calls": 41,
+  "retention_status": "retained",
+  "run_id": "runtime-skill-iter1-2026-06-05",
+  "runner_version": "0.1.10"
+}

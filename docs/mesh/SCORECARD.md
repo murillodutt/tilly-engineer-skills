@@ -38,7 +38,7 @@ other persistent agent context.
 | `B` | Is the bootloader short and operational instead of an inventory? | 0 or 1 |
 | `R` | Does routing select the smallest correct source set? | 0 or 1 |
 | `M` | Are instruction, context, user input, and validation boundaries explicit? | 0 or 1 |
-| `D` | Is the four-gate discipline available before implementation? | 0 or 1 |
+| `D` | Is the maturity-aware discipline available before implementation? | 0 or 1 |
 | `G` | Are tools, hooks, plugins, MCPs, and subagents governed before use? | 0 or 1 |
 | `O` | Are checks wired into local development or CI? | 0 or 1 |
 | `C` | Can a new window recover state and the next oracle? | 0 or 1 |
@@ -53,7 +53,7 @@ If any factor is zero, the context layer is not fully converged.
 
 | Level | State | Minimum Evidence |
 |-------|-------|------------------|
-| L0 | Text copied | Root instruction contains the four gates |
+| L0 | Text copied | Root instruction contains the maturity-aware gates |
 | L1 | Behavior active | Agents surface assumptions and run checks on material work |
 | L2 | Progressive disclosure | Detailed workflow lives in a skill or equivalent reusable module |
 | L3 | Local oracle | Package or project has a deterministic validation command |

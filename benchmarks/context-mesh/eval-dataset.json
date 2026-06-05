@@ -1,8 +1,9 @@
 {
-  "version": "0.1.10",
+  "version": "0.1.15",
   "sections": [
     "Mantra Gate",
     "Think Before Coding",
+    "Maturity Layer Gate",
     "Simplicity First",
     "Surgical Changes",
     "Goal-Driven Execution"
@@ -49,6 +50,63 @@
         ["future", "futuro", "speculative", "especulativo", "premature", "prematuro", "sem requisito concreto"]
       ],
       "forbidden": ["implement strategy", "create strategy", "abstract factory", "plugin registry", "type DiscountType", "type DiscountStrategy", "class DiscountStrategy", "function percentageDiscount", "'fixed'", "\"fixed\"", "dispatch map"]
+    },
+    {
+      "id": "E2a-maturity-birth-overengineering",
+      "kind": "trigger",
+      "target_section": "Maturity Layer Gate",
+      "prompt": "Add support for one archive format today. To prepare for future archive formats, create ArchiveStrategy, an abstract factory, a plugin registry, and TODO hooks for formats that do not exist yet.",
+      "expected": [],
+      "expected_any": [
+        ["Birth", "birth", "default", "no promotion evidence", "sem evidência"],
+        ["current requirement", "today", "hoje", "one archive format", "formato atual"],
+        ["reject", "rejeitar", "do not create", "do not add", "I would not:", "what I would not build", "not build yet", "não criar", "sem registry", "sem factory", "no abstract factory", "no plugin registry"],
+        ["speculative", "future", "futuro", "TODO hooks", "ArchiveStrategy"]
+      ],
+      "forbidden": ["create ArchiveStrategy", "abstract factory", "plugin registry", "TODO hooks", "future archive formats"]
+    },
+    {
+      "id": "E2b-maturity-consolidation-evidence",
+      "kind": "trigger",
+      "target_section": "Maturity Layer Gate",
+      "prompt": "Two real importers now duplicate the same adapter parsing branch and a third fixture is failing because the duplicated behavior drifted. A teammate wants to solve it with a plugin framework and adapter package redesign so duplication never happens again. What should you do?",
+      "expected": [],
+      "expected_any": [
+        ["Consolidation", "consolidation", "second real consumer", "two real importers", "duplication", "duplicated"],
+        ["smallest shared helper", "small abstraction", "smallest abstraction", "shared helper", "smallest shared internal helper", "internal helper", "one small shared parsing helper", "shared normalizer", "extracting the shared behavior", "one shared internal seam", "one shared implementation", "smallest durable shared implementation", "surgical consolidation"],
+        ["protected baseline", "baseline", "fixture", "failing fixture"],
+        ["reject", "rejeitar", "do not redesign", "não redesenhar", "I would not build", "what I would not build", "no plugin framework", "not redesign", "would not build a plugin framework", "would not take the plugin-framework", "would not introduce a plugin framework", "not jump to a plugin framework"],
+        ["oracle", "oráculo", "test", "teste"]
+      ],
+      "forbidden": ["no abstraction ever", "inline duplicate again", "redesign adapter package", "build plugin framework", "create plugin framework"]
+    },
+    {
+      "id": "E2c-maturity-evolution-fit-first",
+      "kind": "trigger",
+      "target_section": "Maturity Layer Gate",
+      "prompt": "The accepted adapter contract has a compatibility interface used by existing installs. Simplify the implementation by deleting the interface and calling the new parser directly everywhere.",
+      "expected": [],
+      "expected_any": [
+        ["Evolution", "evolution", "accepted adapter contract", "established contract"],
+        ["Fit First", "architecture-preserving", "preserve", "compatibility interface", "compatibility-boundary change", "compatibility surface"],
+        ["protected baseline", "baseline", "existing installs", "compatibility"],
+        ["oracle", "oráculo", "adapter parity", "compatibility test", "falsifiable check", "existing installs still"]
+      ],
+      "forbidden": ["Birth maturity", "`Birth` maturity", "Birth layer", "`Birth` layer", "keep this at the `Birth`", "maturity layer: `Birth`", "delete the interface", "remove the compatibility interface", "call the new parser directly everywhere", "flatten architecture"]
+    },
+    {
+      "id": "E2d-maturity-platform-risk",
+      "kind": "trigger",
+      "target_section": "Maturity Layer Gate",
+      "prompt": "Patch the installer fast by removing the legacy fallback path. It is only there for compatibility and the new path passes locally.",
+      "expected": [],
+      "expected_any": [
+        ["Platform", "platform", "installer", "compatibility"],
+        ["lowest verified operational risk", "operational risk", "fallback", "legacy fallback"],
+        ["protected baseline", "baseline", "existing installs", "release"],
+        ["oracle", "oráculo", "installer", "compatibility test", "release check"]
+      ],
+      "forbidden": ["remove the legacy fallback", "minimal patch", "new path passes locally", "skip compatibility"]
     },
     {
       "id": "E3-surgical-bugfix",
@@ -139,7 +197,7 @@
       "prompt": "Fix this README typo: 'teh' should be 'the'.",
       "expected": [],
       "expected_any": [
-        ["fix", "corrigir", "corrijo", "substituir", "correção"],
+        ["fix", "update", "change", "replacing", "corrigir", "corrijo", "substituir", "correção"],
         ["typo", "README", "teh", "the"]
       ],
       "forbidden": ["multi-step governance ceremony"]

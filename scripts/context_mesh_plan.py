@@ -72,13 +72,20 @@ def build_plan(data: dict[str, object], dataset_path: Path = DATASET) -> dict[st
     except ValueError:
         dataset = str(dataset_path)
 
+    # Each trigger eval runs against full + none + its single informative drop
+    # (drop:<its own target_section>). Dropping a non-target section yields the
+    # same behavior as full and measures nothing — ablation_losses only ever reads
+    # drop:<gate> for the eval whose gate it is — so those cross pairs are not
+    # generated. `conditions` stays the full vocabulary (the universe of
+    # conditions); `planned_calls` is the real informative count.
+    informative_per_trigger = 3  # full, none, drop:<target_section>
     return {
         "dataset": dataset,
         "sections": sections,
         "conditions": conditions,
         "trigger_evals": len(triggers),
         "distractors": len(distractors),
-        "planned_calls": len(conditions) * len(triggers) + len(distractors),
+        "planned_calls": informative_per_trigger * len(triggers) + len(distractors),
     }
 
 

@@ -12,14 +12,17 @@ Apply Tilly Engineering Discipline to material changes in this repository:
 
 1. Think Before Coding
    - State assumptions, ambiguity, tradeoffs, and blockers before acting.
-2. Simplicity First
+2. Maturity Layer Gate
+   - Default material work to `Birth`; promote only with evidence naming the
+     protected baseline, allowed complexity, forbidden complexity, and oracle.
+3. Simplicity First
    - Keep root thin and avoid duplicate source copies.
-3. Surgical Changes
+4. Surgical Changes
    - Treat `src/**` as adapter source and `docs/**` as governed explanation.
    - Classify `scripts/**` by consumer: validators are maintainer gates;
      installer, Cortex, MCP, Field Reports, and adapter scripts may be
      delivered behavior when adopters receive, invoke, or certify them.
-4. Goal-Driven Execution
+5. Goal-Driven Execution
    - Run the smallest relevant oracle before closure.
 
 </instructions>

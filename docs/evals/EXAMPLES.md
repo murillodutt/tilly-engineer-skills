@@ -10,10 +10,11 @@ evidence_level: L1
 # Examples
 
 This file is optional reference material. Do not load it by default in root
-agent instructions. Use it only when a task needs concrete examples of the four
+agent instructions. Use it only when a task needs concrete examples of the core
 failure patterns.
 
-Real-world code examples demonstrating the four principles. Each example shows what LLMs commonly do wrong and how to fix it.
+Real-world code examples demonstrating the maturity-aware principles. Each
+example shows what LLMs commonly do wrong and how to fix it.
 
 ---
 
@@ -232,6 +233,30 @@ def save_preferences(db, user_id: int, preferences: dict):
 ```
 
 **Add later if needed:** Caching (when performance matters), validation (when bad data appears), merging (when requirement emerges).
+
+### Maturity Layer Counterexample: Destructive Simplification
+
+**User Request:** "This adapter has an accepted compatibility interface used by existing installs. Simplify it by deleting the interface and calling the new parser directly."
+
+**❌ What LLMs Do (Flatten Mature Architecture)**
+
+```text
+I removed the interface and wired the parser directly. The code is shorter.
+```
+
+**✅ What Should Happen (Fit First)**
+
+```text
+Layer: Evolution.
+Promotion evidence: accepted adapter contract and existing installs.
+Protected baseline: compatibility interface behavior.
+Allowed complexity: keep the interface while simplifying internals behind it.
+Forbidden complexity: new framework or broad adapter redesign.
+Oracle: adapter parity or compatibility test.
+```
+
+Simplicity still applies, but now it means less architectural regression, not
+fewer lines at the expense of an accepted contract.
 
 ---
 
@@ -513,6 +538,7 @@ def sort_scores(scores):
 | Principle | Anti-Pattern | Fix |
 |-----------|-------------|-----|
 | Think Before Coding | Silently assumes file format, fields, scope | List assumptions explicitly, ask for clarification |
+| Maturity Layer Gate | Deletes accepted compatibility structure to simplify mature code | Default to Birth; promote only with baseline, allowed complexity, forbidden complexity, and oracle |
 | Simplicity First | Strategy pattern for single discount calculation | One function until complexity is actually needed |
 | Surgical Changes | Reformats quotes, adds type hints while fixing bug | Only change lines that fix the reported issue |
 | Goal-Driven | "I'll review and improve the code" | "Write test for bug X → make it pass → verify no regressions" |

@@ -71,8 +71,8 @@ mode of `/tes-init`.
 |---------|-------------|-----------------|--------|
 | `/tes-init`, `/tes-setup`, or `/tes:init` | finish setup, recertify, initialize project context, and create first-pass project alignment for TES in a project | `tes_install.py`, `root_context.py`, `tes_init.py`, `project_context_oracle.py`, `project_alignment_oracle.py`, install smoke, MCP install | `.tes/tes-install-lock.json`, `.tes/postinstall.json`, first-session hooks, `docs/agents/**`, `docs/agents/PROJECT-CONTEXT.md`, initial operating mesh with System X-Ray and Convergence Line, Cortex, runtime bootloaders, project MCP config |
 | `/tes-update` or `/tes:update` | update an already meshed project with the lowest-friction route | `tes_update.py`, `root_context.py`, `tes_legacy_retirement.py`, install smoke, MCP install | only selected TES surfaces after Step Zero and legacy retirement |
-| `/tes-align` or `/tes:align` | semantically align a TES-initialized project into an operating mesh with a System X-Ray and Convergence Line | `project_alignment_oracle.py`, `project_context_oracle.py`, project gates | `docs/agents/PROJECT-STATE.md`, `PROJECT-ROADMAP.md` Mermaid X-Ray and convergence graphs, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`, `DECISIONS/**`, evidence |
-| `/tes-map` or `/tes:gps` | refresh the Project GPS position; in capsule mode from the internal projection, in attached mode also into the roadmap | `tes_map.py`, `tes_map_oracle.py`, `project_alignment_oracle.py` when needed | capsule mode: `.tes/gps/**` / `.tes/context/**` projection, no docs export and no `NEEDS_ALIGN` when `docs/agents/**` is absent; when `docs-mesh` is attached, also the managed `TES-MAP` block inside `docs/agents/PROJECT-ROADMAP.md` (capsule state is the source of truth) |
+| `/tes-align` or `/tes:align` | semantically align a TES-initialized project into an operating mesh with an Eraser-first Atlas, System X-Ray, and Convergence Line | `project_alignment_oracle.py`, `project_context_oracle.py`, project gates | `docs/agents/PROJECT-STATE.md`, `PROJECT-ROADMAP.md` Eraser Atlas links plus Mermaid fallback X-Ray/convergence graphs, `.tes/gps/*.eraserdiagram`, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`, `DECISIONS/**`, evidence |
+| `/tes-map` or `/tes:gps` | refresh the adaptive Project Atlas and GPS position; in capsule mode from the internal projection, in attached mode also into the roadmap | `tes_project_atlas.py`, `tes_map.py`, `tes_map_oracle.py`, `project_alignment_oracle.py` when needed | capsule mode: `.tes/gps/**` Eraser Atlas sidecars + `.tes/context/**` projection, no docs export and no `NEEDS_ALIGN` when `docs/agents/**` is absent; when `docs-mesh` is attached, also the managed `TES-MAP` block inside `docs/agents/PROJECT-ROADMAP.md` with Mermaid fallback (capsule state is the source of truth) |
 | `/tes-goal-maestro` or `/tes:goal-maestro` | materialize a mature SPEC, Super SPEC, PRD, relational project plan, or accepted execution tree into an execution-grade tree and a ready maestral `/goal` prompt when internal gates pass | active agent artifact review; `NEEDS_SPEC_MATURITY`, `NEEDS_EXECUTION_UNIT_FIDELITY`, `NEEDS_TREE_REPAIR`, `DRAFT_MATERIALIZATION_TREE`, `NEEDS_TREE_ACCEPTANCE`, `SUPER_SPEC_MATERIALIZED`, or `READY_GOAL_PROMPT` status | generated Super SPECs are written to `GOAL-SUPER-SPEC-*.md`; prompt/tree output stays chat-first unless explicitly saved |
 | `/tes-prospect` or `/tes:prospect` | explicitly invoke project-stress prospecting to pressure a plan or design, expose hidden dependencies, and ask one question at a time | active agent codebase exploration; cognitive brake state snapshot when paused | no project writes |
 | `/tes-mine` or `/tes:mine` | explicitly invoke code and domain mining to extract terms, contradictions, decisions, context, and ADR candidates | active agent code/doc exploration; cognitive brake state snapshot when paused | `CONTEXT.md` and ADRs only when the mining contract resolves terms or decisions and the brake is not active |
@@ -117,7 +117,7 @@ tes bump     -> /tes-bump
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-source alias for the same oracles; not a target-project guarantee |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | project-scoped Cortex surface, preferred for recall/read/curation/reflection and governed remember |
 | MCP host recognition | separate state after file registration: `config_present`, `server_self_test_pass`, `protocol_handshake_pass`, `host_listed`, `host_connected`, or `session_restart_required` |
@@ -132,7 +132,7 @@ tes bump     -> /tes-bump
 | project-context oracle | target gate that checks `/tes-init` left a useful, evidenced project map |
 | project-alignment oracle | target gate that checks `/tes-align` left an evidenced operating mesh |
 | Obsidian open gate | target gate that checks context/alignment before visible local Obsidian launch |
-| behavioral overlay | always-on, never-invoked discipline that constrains how other skills write (assumptions visible, scope smaller, edits surgical, success falsifiable) |
+| behavioral overlay | always-on, never-invoked discipline that constrains how other skills write (assumptions visible, maturity layer selected, scope smaller, edits surgical, success falsifiable) |
 | runtime capability rule | always-on Cursor rule that maps TES runtime command capabilities after clean install or semantic recovery |
 
 ## Passive Overlays
@@ -143,8 +143,8 @@ on their own.
 
 | Overlay | Host surface | Role |
 |---------|--------------|------|
-| `tes-guidelines` | Claude `SKILL.md`, Cursor `.cursor/rules/tes-guidelines.mdc` | Behavioral engineering discipline: assumptions visible, scope smaller, edits surgical, success falsifiable. Activates on non-trivial coding, review, refactor, or instruction-migration work. |
-| `tes-engineering-discipline` | Codex `SKILL.md` | Codex-side equivalent of `tes-guidelines` with the same four-gate discipline contract. |
+| `tes-guidelines` | Claude `SKILL.md`, Cursor `.cursor/rules/tes-guidelines.mdc` | Behavioral engineering discipline: assumptions visible, maturity layer selected before simplicity, scope smaller, edits surgical, success falsifiable. Activates on non-trivial coding, review, refactor, or instruction-migration work. |
+| `tes-engineering-discipline` | Codex `SKILL.md` | Codex-side equivalent of `tes-guidelines` with the same maturity-aware discipline contract. |
 | `tes-runtime-capabilities` | Cursor `.cursor/rules/tes-runtime-capabilities.mdc` | Always-on Cursor rule that maps TES runtime command capabilities after clean install or semantic recovery. Refreshed only by the deterministic installer. |
 
 Overlays do not appear in the `Trigger Matrix` because users never invoke
@@ -301,12 +301,17 @@ The final probe must show `helper_contract_status=PASS`,
 `runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and
 `recommended_update_scope=none`.
 
-## `/tes-map` Project GPS Contract
+## `/tes-map` Project Atlas And GPS Contract
 
-`/tes-align` owns the project map. `/tes-map` updates the current position.
+`/tes-align` owns the project map. `/tes-map` updates the adaptive Project
+Atlas and current position. Easy-first is the Atlas birth surface, not the
+evolution ceiling: the first output is certified and useful, while deeper
+project-specific relationships evolve through profilers, `--deep`, fixtures,
+and oracles.
 
-`/tes-map` reads the existing mesh and refreshes only this managed block in
-`docs/agents/PROJECT-ROADMAP.md`:
+`/tes-map` reads the existing mesh, writes local Eraser `.eraserdiagram`
+sidecars under `.tes/gps/**`, and refreshes only this managed block in
+`docs/agents/PROJECT-ROADMAP.md` when docs-mesh is attached:
 
 ```md
 ## TES Map
@@ -316,13 +321,15 @@ The final probe must show `helper_contract_status=PASS`,
 <!-- TES-MAP:END -->
 ```
 
-The helper is `tes_map.py`; the oracle is `tes_map_oracle.py`. If
+The helpers are `tes_project_atlas.py` and `tes_map.py`; the oracle is
+`tes_map_oracle.py`. If
 `PROJECT-CONTEXT.md` is missing, return `NEEDS_CONTEXT` and route the user to
 `/tes-init`. If `PROJECT-ROADMAP.md` is missing, return `NEEDS_ALIGN` and route
 the user to `/tes-align`. Do not write `.obsidian/**`, do not rewrite the whole
 roadmap, and do not invent phases, blockers, or proof gates. The user-facing
-report should stay short: `You are here`, `Next safe move`, `Blocked by`, and
-`Proof`.
+report should stay short: `Atlas`, `You are here`, `Next safe move`,
+`Blocked by`, and `Proof`. Mermaid is the Markdown fallback, not the primary
+visual language.
 
 ## No-Go
 

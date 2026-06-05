@@ -17,11 +17,15 @@ Apply to non-trivial coding, review, refactor, or instruction-migration work:
 
 1. **Think Before Coding** — state assumptions, ambiguity, tradeoffs, and
    blockers before acting; never pick a risky interpretation silently.
-2. **Simplicity First** — solve only the requested problem; delete speculative
-   scope before adding abstractions or configurability.
-3. **Surgical Changes** — touch only request-traceable lines; clean only orphans
+2. **Maturity Layer Gate** — default material work to `Birth`; promote only with
+   evidence that names the protected baseline, allowed complexity, forbidden
+   complexity, and oracle.
+3. **Simplicity First** — solve only the requested problem for the selected
+   maturity layer; delete speculative scope before adding abstractions or
+   configurability.
+4. **Surgical Changes** — touch only request-traceable lines; clean only orphans
    you created; leave unrelated code, comments, and formatting alone.
-4. **Goal-Driven Execution** — define a falsifiable oracle before closure and
+5. **Goal-Driven Execution** — define a falsifiable oracle before closure and
    verify before claiming success.
 
 The full gate tables, Diamond Build-Test-Fail-Fix, and Infrastructure Decision

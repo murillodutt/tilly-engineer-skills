@@ -23,7 +23,7 @@ Decision equivalence is required.
 | Level | Criterion |
 |-------|-----------|
 | Structural parity | All declared adapter pipelines materialize without error. |
-| Contract parity | All declared adapter pipelines load or point to the four gates in `docs/mesh/CONTRACT-MANIFEST.yml`. |
+| Contract parity | All declared adapter pipelines load or point to the maturity-aware gates in `docs/mesh/CONTRACT-MANIFEST.yml`. |
 | Eval parity | The same dataset runs where a behavior backend exists. |
 | Behavioral parity | Decisions are equivalent per gate for comparable runs. |
 | Evidence parity | Each certified run has `manifest.json`, `raw.ndjson`, `summary.json`, `REPORT.md`, and `graders-sha.json`. |

@@ -1,4 +1,4 @@
-version: 0.3.168
+version: 0.3.169
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -91,6 +91,13 @@ documents:
     status: active
     consumer: installing agents and runtime adapters
     source_of_truth: true
+    evidence_level: L2
+  - path: docs/install/REVERSIBILITY.md
+    id: install.reversibility
+    class: adapter
+    status: active
+    consumer: adopters uninstalling or reshaping a TES install, and agents driving detach/uninstall
+    source_of_truth: false
     evidence_level: L2
   - path: docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
     id: install.assisted_context_installer
@@ -386,6 +393,13 @@ documents:
     consumer: adopters, installing agents, and package maintainers
     source_of_truth: true
     evidence_level: L2
+  - path: docs/mesh/MATURITY-LAYER-GATE-EVIDENCE.md
+    id: mesh.maturity_layer_gate_evidence
+    class: mesh
+    status: active
+    consumer: adapter authors and benchmark authors
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/mesh/PRINCIPLES.md
     id: mesh.principles
     class: mesh
@@ -1107,3 +1121,31 @@ documents:
     consumer: TES maintainers, Cortex maintainers, and release reviewers
     source_of_truth: false
     evidence_level: L2
+  - path: docs/evidence/reports/2026/06/05/context-mesh/maturity-layer-gate-fixture-2026-06-05/REPORT.md
+    id: evidence.context_mesh.maturity_layer_gate_fixture_2026_06_05
+    class: evidence
+    status: active
+    consumer: benchmark reviewers
+    source_of_truth: false
+    evidence_level: L4
+  - path: docs/evidence/reports/2026/06/05/context-mesh/maturity-layer-gate-semantic-fixture-2026-06-05/REPORT.md
+    id: evidence.context_mesh.maturity_layer_gate_semantic_fixture_2026_06_05
+    class: evidence
+    status: active
+    consumer: benchmark reviewers
+    source_of_truth: false
+    evidence_level: L4
+  - path: docs/evidence/reports/2026/06/05/context-mesh/maturity-layer-gate-platform-grader-fixture-2026-06-05/REPORT.md
+    id: evidence.context_mesh.maturity_layer_gate_platform_grader_fixture_2026_06_05
+    class: evidence
+    status: active
+    consumer: benchmark reviewers
+    source_of_truth: false
+    evidence_level: L4
+  - path: docs/evidence/reports/2026/06/05/context-mesh/runtime-skill-iter1-2026-06-05/REPORT.md
+    id: evidence.context_mesh.runtime_skill_iter1_2026_06_05
+    class: evidence
+    status: active
+    consumer: benchmark reviewers
+    source_of_truth: false
+    evidence_level: L4

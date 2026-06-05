@@ -1,5 +1,5 @@
 ---
-description: Behavioral engineering discipline to reduce ambiguity, overcomplication, drive-by edits, and false completion in coding agents.
+description: Maturity-aware behavioral engineering discipline to reduce ambiguity, overcomplication, simplification regression, drive-by edits, and false completion in coding agents.
 alwaysApply: true
 ---
 
@@ -20,11 +20,15 @@ Apply to non-trivial coding, review, refactor, or instruction-migration work:
 
 1. **Think Before Coding** — state facts, assumptions, ambiguity, tradeoffs, and
    blockers before acting; do not pick a risky interpretation silently.
-2. **Simplicity First** — solve today's problem only; no speculative features,
-   one-use abstractions, or configurability without a real consumer.
-3. **Surgical Changes** — touch only request-traceable lines; match existing
+2. **Maturity Layer Gate** — default material work to `Birth`; promote only with
+   evidence that names the protected baseline, allowed complexity, forbidden
+   complexity, and oracle.
+3. **Simplicity First** — solve today's problem for the selected maturity layer;
+   no speculative features, one-use abstractions, or configurability without a
+   real consumer.
+4. **Surgical Changes** — touch only request-traceable lines; match existing
    style; remove only orphans your change created; leave unrelated code alone.
-4. **Goal-Driven Execution** — define a falsifiable oracle before closure;
+5. **Goal-Driven Execution** — define a falsifiable oracle before closure;
    reproduce a bug first when practical; claim success only after it passes.
 
 The Diamond and Infrastructure Decision Gate live in
@@ -45,6 +49,15 @@ detail.
 Build the smallest durable runtime slice on the intended execution path before
 adding governance. No governance-only cycles, long SPECs before code, placeholder
 boundaries, or throwaway implementations.
+
+`Birth` hard stop: do not add a strategy interface, abstract factory, plugin
+registry, plugin system, compatibility layer, `TODO` hooks, or future-format
+scaffolding unless promotion evidence names a real second consumer, an accepted
+contract, or an operational surface — build only the current requirement and name
+the deferred scaffolding. The stop is conditional, not a ban on abstraction: when
+that evidence exists the same seam is the correct `Consolidation`/`Evolution`
+move, and Fit First in `Evolution` means preserving accepted architecture rather
+than flattening it. The four-layer table is in `tes-runtime-capabilities.mdc`.
 
 ## Success Formula
 

@@ -156,7 +156,17 @@ python3 scripts/tes_bundle.py --self-test
 Stop condition: if any existing layer needs a non-`remove` uninstall action that
 is not yet defined, stop with `NEEDS_REVIEW` rather than guessing.
 
-## SPEC-002: Capsule-Only Install Default
+## SPEC-002: Capsule-Only Install (explicit --attach capsule)
+
+> **Superseded default (reconciled with the ADR 0004 amendment, 2026-06-05).**
+> This SPEC originally made capsule-only the *documented default*. The
+> skills-surface line (0.3.167) amended ADR 0004 so the public `install` default
+> now materializes a full functional TES — capsule + skills + root-context + mcp +
+> hooks, with only `docs-mesh` opt-in. Capsule-only is now the **explicit
+> `--attach capsule` mode**, not the default. The capsule-only-default framing
+> below is retained as execution-line history; it is no longer the current
+> contract. The live default is owned by
+> `docs/architecture/INSTALLATION-FRAMEWORK.md` and `docs/install/INSTALL.md`.
 
 Owned files: `scripts/tes_install.py`, `scripts/tes_init.py`; `bin/` only for
 flag parsing.
@@ -170,7 +180,9 @@ Implementation:
    the gate is simply "off unless explicitly requested"; the named attach
    profiles arrive in a later line.
 3. Preserve existing flags as compatibility shims where a maintainer relies on
-   them, but the documented default is capsule-only.
+   them. (Reconciled: capsule-only is the explicit `--attach capsule` opt-in, not
+   the documented public default — see the amendment note above and ADR 0004
+   amendment 2026-06-05.)
 
 Release identity impact: delivered installer behavior; adopter-visible; patch
 bump decided at SPEC-006.

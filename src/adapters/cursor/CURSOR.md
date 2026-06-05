@@ -10,9 +10,10 @@ The rules are the runtime authority; this file is only an outward pointer.
 
 Back up existing Cursor rules under `.tes/bk/**`, then copy both rules into the
 target project's rule set. If the target already has rules, recover useful local
-semantics into `docs/agents/**` rather than duplicating runtime prose. The four
-principles — Think Before Coding, Simplicity First, Surgical Changes,
-Goal-Driven Execution — live in the discipline anchor.
+semantics into `docs/agents/**` rather than duplicating runtime prose. The
+maturity-aware principles — Think Before Coding, Maturity Layer Gate,
+Simplicity First, Surgical Changes, Goal-Driven Execution — live in the
+discipline anchor.
 
 ## TES Intents
 

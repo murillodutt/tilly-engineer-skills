@@ -29,7 +29,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.168"
+VERSION = "0.3.169"
 PACKAGE_MODE = (ROOT / "scripts").exists()
 AGENTS = Path("docs/agents")
 EVIDENCE = AGENTS / "evidence"
@@ -96,6 +96,9 @@ FRONTMATTER_KEYS = ("tes_doc", "status", "updated", "confidence", "tags", "evide
 ROADMAP_TERMS = ("Done", "Active", "Next", "Later", "Deferred", "Blocked", "Unknown")
 ROADMAP_FRAME_TERMS = ("System X-Ray", "Convergence Line", "Current Claim", "Next Irreversible Step")
 SYSTEM_XRAY_TERMS = (
+    "Eraser Atlas View",
+    ".tes/gps/project-overview.eraserdiagram",
+    "Mermaid Fallback",
     "Git state",
     "Delivered behavior",
     "Validation mesh",
@@ -103,6 +106,9 @@ SYSTEM_XRAY_TERMS = (
     "classDef system",
 )
 CONVERGENCE_LINE_TERMS = (
+    "Eraser Atlas View",
+    ".tes/gps/project-gps.eraserdiagram",
+    "Mermaid Fallback",
     "```mermaid",
     "flowchart TD",
     "classDef done",
@@ -820,7 +826,13 @@ related:
 
 
 def fixture_system_xray() -> str:
-    return """```mermaid
+    return """### Eraser Atlas View
+
+- Primary visual: `.tes/gps/project-overview.eraserdiagram`
+
+### Mermaid Fallback
+
+```mermaid
 flowchart TD
   A["Project system"] --> B["Git state"]
   A --> C["Delivered behavior"]
@@ -845,7 +857,13 @@ flowchart TD
 
 
 def fixture_convergence_line() -> str:
-    return """```mermaid
+    return """### Eraser Atlas View
+
+- Primary visual: `.tes/gps/project-gps.eraserdiagram`
+
+### Mermaid Fallback
+
+```mermaid
 flowchart TD
   A["Done: scaffold exists"] --> B["Current: stabilize quality gates"]
   B --> C["Next: add CI evidence"]
@@ -961,7 +979,7 @@ def write_good_fixture(target: Path) -> None:
         "# Project Alignment Evidence\n\n"
         + "```yaml\nalignment_evidence:\n"
         + "  target: fixture\n"
-        + "  tes_version: 0.3.168\n"
+        + "  tes_version: 0.3.169\n"
         + "  anchors_read:\n"
         + "    - README.md\n"
         + "    - package.json\n"

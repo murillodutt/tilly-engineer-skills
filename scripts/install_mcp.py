@@ -25,7 +25,7 @@ if str(SCRIPT_PATH.parent) not in sys.path:
     sys.path.insert(0, str(SCRIPT_PATH.parent))
 
 from install_mcp_hosts import HOSTS  # noqa: E402
-VERSION = "0.3.168"
+VERSION = "0.3.169"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (
@@ -53,6 +53,7 @@ SERVER_FILES = (
     "tes_init.py",
     "project_context_oracle.py",
     "project_alignment_oracle.py",
+    "tes_project_atlas.py",
     "tes_map.py",
     "tes_map_oracle.py",
     "tes_open_obsidian.py",
@@ -590,6 +591,7 @@ def self_test() -> int:
             ".tes/bin/tes_init.py",
             ".tes/bin/project_context_oracle.py",
             ".tes/bin/project_alignment_oracle.py",
+            ".tes/bin/tes_project_atlas.py",
             ".tes/bin/tes_map.py",
             ".tes/bin/tes_map_oracle.py",
             ".tes/bin/tes_open_obsidian.py",
@@ -1030,6 +1032,7 @@ def self_test() -> int:
             "tes_init.py",
             "project_context_oracle.py",
             "project_alignment_oracle.py",
+            "tes_project_atlas.py",
             "tes_map.py",
             "tes_map_oracle.py",
             "tes_open_obsidian.py",

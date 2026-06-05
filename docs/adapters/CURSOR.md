@@ -41,8 +41,8 @@ Official references: [Rules](https://docs.cursor.com/en/context/rules),
 | `src/adapters/cursor/rules/tes-runtime-capabilities.mdc` | Lazy capability rule source (`alwaysApply: false` + `description`) |
 | `src/adapters/cursor/CURSOR.md` | User adapter note |
 
-The discipline anchor uses `alwaysApply: true` because the four gates are a
-general behavioral overlay for non-trivial coding, review, refactor, and
+The discipline anchor uses `alwaysApply: true` because the maturity-aware gates
+are a general behavioral overlay for non-trivial coding, review, refactor, and
 instruction migration work, so they must stay loaded every turn. The capability
 rule uses `alwaysApply: false` with a `description` (the Cursor-native Apply
 Intelligently mode, verified against the official Cursor rule-loading model):

@@ -144,7 +144,8 @@ python3 scripts/materialize_adapter.py all
 ## Capsule Isolation And Reversibility (ADR 0004)
 
 ```bash
-python3 scripts/tes_install.py install --target /path/to/project --yes          # capsule-only by default
+python3 scripts/tes_install.py install --target /path/to/project --yes          # functional default: capsule + skills + root-context + mcp + hooks (docs-mesh opt-in)
+python3 scripts/tes_install.py install --target /path/to/project --attach capsule --yes   # explicit capsule-only (.tes/** isolation)
 python3 scripts/tes_install.py install --target /path/to/project --attach all --yes
 python3 scripts/tes_install.py uninstall --target /path/to/project --dry-run
 python3 scripts/tes_install.py uninstall --target /path/to/project --yes

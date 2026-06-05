@@ -19,9 +19,14 @@ try:
 except Exception:  # pragma: no cover - installed helper may be inspected alone.
     root_context_helper = None  # type: ignore[assignment]
 
+try:
+    import tes_project_atlas
+except Exception:  # pragma: no cover - installed helper may be inspected alone.
+    tes_project_atlas = None  # type: ignore[assignment]
+
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.168"
+VERSION = "0.3.169"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -1589,6 +1594,10 @@ def write_alignment_fixture(target: Path) -> None:
         alignment_frontmatter("project-roadmap")
         + "# Project Roadmap\n\n"
         + "## System X-Ray\n\n"
+        + "### Eraser Atlas View\n\n"
+        + "- Primary visual: `.tes/gps/project-overview.eraserdiagram`\n"
+        + "- Related views: `.tes/gps/module-tree.eraserdiagram`, `.tes/gps/runtime-integrations.eraserdiagram`\n\n"
+        + "### Mermaid Fallback\n\n"
         + "```mermaid\n"
         + "flowchart TD\n"
         + "  A[\"Project system\"] --> B[\"Git state\"]\n"
@@ -1609,6 +1618,10 @@ def write_alignment_fixture(target: Path) -> None:
         + "  class E2 pending;\n"
         + "```\n\n"
         + "## Convergence Line\n\n"
+        + "### Eraser Atlas View\n\n"
+        + "- Primary visual: `.tes/gps/project-gps.eraserdiagram`\n"
+        + "- Related views: `.tes/gps/gates-evidence.eraserdiagram`, `.tes/gps/dependency-map.eraserdiagram`, `.tes/gps/data-map.eraserdiagram`\n\n"
+        + "### Mermaid Fallback\n\n"
         + "```mermaid\n"
         + "flowchart TD\n"
         + "  A[\"Done: TES fixture exists\"] --> B[\"Current: validate migration gates\"]\n"
@@ -1642,6 +1655,17 @@ def write_alignment_fixture(target: Path) -> None:
         + "## Blocked\n- External deployment target.\n"
         + "## Unknown\n- Runtime support matrix.\n",
     )
+    if tes_project_atlas is not None:
+        atlas = tes_project_atlas.build_atlas(target, deep=False)
+        tes_project_atlas.write_views(
+            target,
+            atlas,
+            gps_model={
+                "position": "TES fixture update",
+                "next_safe_move": "Re-run adapter proof",
+                "proof_gate": "project_alignment_oracle.py --target .",
+            },
+        )
     write(
         target / "docs/agents/EXECUTION-LINE.md",
         alignment_frontmatter("execution-line")

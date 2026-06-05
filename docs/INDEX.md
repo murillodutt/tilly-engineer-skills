@@ -31,11 +31,13 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.165/tilly-engineer-skills-0.3.165.zip` |
+| Public installer bundle | `dist/0.3.169/tilly-engineer-skills-0.3.169.zip` |
 | GitHub package-spec installation | `install/INSTALL.md` |
+| Install reversibility (detach/uninstall/attach-health) | `install/REVERSIBILITY.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
 | Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
 | Tool-neutral engineering principles | `mesh/PRINCIPLES.md` |
+| Maturity Layer Gate evidence | `mesh/MATURITY-LAYER-GATE-EVIDENCE.md` |
 | Neutral behavioral contract manifest | `mesh/CONTRACT-MANIFEST.yml` |
 | Context mesh method | `mesh/CONTEXT-MESH-METHOD.md` |
 | TES Align skill source of truth | `mesh/TES-ALIGN-SKILL-SOURCE-OF-TRUTH.md` |

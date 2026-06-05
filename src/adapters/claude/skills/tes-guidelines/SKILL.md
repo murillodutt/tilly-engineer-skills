@@ -1,6 +1,6 @@
 ---
 name: tes-guidelines
-description: Behavioral engineering discipline to reduce ambiguity, overcomplication, drive-by edits, and false completion. Use when writing, reviewing, refactoring, or migrating code/instructions and the work is non-trivial.
+description: Maturity-aware behavioral engineering discipline to reduce ambiguity, overcomplication, simplification regression, drive-by edits, and false completion. Use when writing, reviewing, refactoring, or migrating code/instructions and the work is non-trivial.
 license: MIT
 ---
 
@@ -49,9 +49,65 @@ one-liners.
 | Gate | Rule | Failure Blocked |
 |------|------|-----------------|
 | Think Before Coding | State assumptions, ambiguity, tradeoffs, and blockers before acting | Silent wrong interpretation |
-| Simplicity First | Solve only the requested problem with the smallest useful shape | Overbuilt code and API bloat |
+| Maturity Layer Gate | Default to `Birth`; promote only with evidence naming baseline, allowed complexity, forbidden complexity, and oracle | Flattening mature architecture or inflating birth work |
+| Simplicity First | Solve only the requested problem with the smallest useful shape for the selected maturity layer | Overbuilt code and API bloat |
 | Surgical Changes | Touch only request-traceable lines and self-created orphans | Drive-by refactors and hidden churn |
 | Goal-Driven Execution | Define a falsifiable oracle and verify before closure | False completion |
+
+## Maturity Layer Gate
+
+Default material work to `Birth`. Promote only with evidence:
+
+| Layer | Use When | Simplicity Means |
+|-------|----------|------------------|
+| `Birth` | No higher-layer evidence exists | Less structure; smallest durable runtime slice |
+| `Consolidation` | Real duplication, a second real consumer, repeated fixture, or maintenance cost justifies a small contract | Less repeated maintenance |
+| `Evolution` | Accepted architecture, mature SPEC, established contract, compatibility boundary, or execution tree exists | Less architectural regression; Fit First |
+| `Platform` | Release, installer, CLI, adapter, MCP, public docs, memory, compatibility, migration, or rollback surface is at risk | Less operational risk |
+
+Invalid promotion evidence means `NEEDS_REVIEW`; no evidence means `Birth`.
+Higher layers permit necessary complexity backed by consumers, contracts, or
+operational risk, not speculative complexity.
+
+`Birth` is invalid when the prompt names existing installs, an accepted
+contract, a compatibility interface, installer, fallback, rollback, release,
+migration, CLI, MCP, adapter, or public-doc surface. Those are promotion
+evidence. Preserve the baseline first, then simplify inside it.
+
+`Birth` hard stop: do not add a strategy interface, abstract factory, plugin
+registry, plugin system, compatibility layer, `TODO` hooks, or future-format
+scaffolding unless promotion evidence names a real second consumer, an accepted
+contract, or an operational surface. Build only the current requirement and name
+the speculative scaffolding you are deliberately not adding.
+
+The stop is conditional, not a ban on abstraction. When a second real consumer,
+an accepted contract, or an operational surface exists, that same factory or
+registry is the correct `Consolidation`/`Evolution` move — promote and build it.
+Rejecting necessary abstraction because it "looks complex" is the inverse error.
+
+`Platform` hard stop: existing installs, installer, fallback, compatibility,
+rollback, release, migration, CLI, MCP, adapter, or public-doc surfaces are
+`Platform`, not `Birth`. Do not remove those paths only because the new path
+passes locally. Local green proves the new path; it does not prove the old
+baseline is retired. First name the protected baseline, the consumers or install
+surfaces that could still depend on it, the allowed replacement complexity, the
+forbidden breakage, and a compatibility or release oracle. Cut the old path only
+when explicit retirement evidence proves it no longer needs protection.
+
+Worked example. Request: "Add one archive format today; to prepare for future
+formats, create `ArchiveStrategy`, an abstract factory, a plugin registry, and
+`TODO` hooks." Layer is `Birth`: only one real format exists, no second consumer
+or contract. Implement that one format directly; do not create `ArchiveStrategy`,
+the factory, the registry, or the `TODO` hooks; name them as deferred future
+scaffolding. If a second real format later lands, that is promotion evidence and
+the shared seam becomes correct.
+
+Platform example. Request: "Patch the installer fast by removing the legacy
+fallback path. It only exists for compatibility and the new path passes
+locally." Layer is `Platform`: protect existing installs, release behavior, and
+rollback. Keep the fallback until baseline retirement is evidenced by accepted
+migration/compatibility proof and a release or installer oracle; a local green
+new-path check is not enough.
 
 ## Diamond Build-Test-Fail-Fix
 
@@ -105,12 +161,17 @@ alternatives, chosen path, and smallest runtime oracle before implementation.
 
 1. Classify the task.
    - For trivial typo-level work, proceed with judgment.
-   - For coding, review, refactor, or instruction migration, use the four gates.
+   - For coding, review, refactor, or instruction migration, use the
+     maturity-aware gates.
 2. Make assumptions visible.
    - Separate facts from guesses.
    - Ask only when the answer changes material scope, authorization, or risk.
 3. Delete scope.
+   - Select the maturity layer first; use `Birth` unless promotion evidence
+     names baseline, allowed complexity, forbidden complexity, and oracle.
    - Remove speculative features and one-use abstractions before implementation.
+   - In `Evolution`, use Fit First: preserve accepted architecture instead of
+     flattening it for local minimalism.
 4. Keep the diff surgical.
    - Match existing style.
    - Do not clean unrelated code.

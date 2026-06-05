@@ -42,9 +42,9 @@
       "contents": "Contents",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.168 · local bundle certified",
-      "manual_meta": "User manual · v0.3.168",
-      "version": "v0.3.168",
+      "release_meta": "v0.3.169 · local bundle certified",
+      "manual_meta": "User manual · v0.3.169",
+      "version": "v0.3.169",
       "source_note": "Generated from TDS.",
       "github": "GitHub",
       "read_manual": "Read the manual",
@@ -56,9 +56,9 @@
       "contents": "Indice",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.168 · bundle local certificado",
-      "manual_meta": "Manual de usuario · v0.3.168",
-      "version": "v0.3.168",
+      "release_meta": "v0.3.169 · bundle local certificado",
+      "manual_meta": "Manual de usuario · v0.3.169",
+      "version": "v0.3.169",
       "source_note": "Generado desde TDS.",
       "github": "GitHub",
       "read_manual": "Leer el manual",
@@ -70,9 +70,9 @@
       "contents": "Sumário",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.168 · bundle local certificado",
-      "manual_meta": "Manual do usuário · v0.3.168",
-      "version": "v0.3.168",
+      "release_meta": "v0.3.169 · bundle local certificado",
+      "manual_meta": "Manual do usuário · v0.3.169",
+      "version": "v0.3.169",
       "source_note": "Gerado a partir do TDS.",
       "github": "GitHub",
       "read_manual": "Ler o manual",
@@ -422,17 +422,17 @@
           {
             "type": "code",
             "label": "fixed ref form",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "bun runtime",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "non-interactive",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -455,7 +455,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.168` is the intended fixed-ref form. Treat the remote ref as certified only after the tag is published and `npm run release:check` passes."
+            "text": "`#v0.3.169` is the intended fixed-ref form. Treat the remote ref as certified only after the tag is published and `npm run release:check` passes."
           },
           {
             "type": "p",
@@ -471,17 +471,17 @@
           {
             "type": "code",
             "label": "ref fija",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "no interactivo",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -504,7 +504,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.168` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de publicar el tag y de que `npm run release:check` pase."
+            "text": "`#v0.3.169` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de publicar el tag y de que `npm run release:check` pase."
           },
           {
             "type": "p",
@@ -520,17 +520,17 @@
           {
             "type": "code",
             "label": "ref fixa",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "não interativo",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -553,7 +553,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.168` é a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de publicar a tag e de `npm run release:check` passar."
+            "text": "`#v0.3.169` é a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de publicar a tag e de `npm run release:check` passar."
           },
           {
             "type": "p",
@@ -723,7 +723,7 @@
                   },
                   {
                     "label": "Public bundle manifest",
-                    "href": "dist/0.3.168/index.json",
+                    "href": "dist/0.3.169/index.json",
                     "body": "Versioned ZIP, source commit, SHA-256, and GitHub Pages distribution URLs.",
                     "meta": "artifact"
                   }
@@ -888,7 +888,7 @@
                   },
                   {
                     "label": "Manifest del bundle publico",
-                    "href": "dist/0.3.168/index.json",
+                    "href": "dist/0.3.169/index.json",
                     "body": "ZIP versionado, source commit, SHA-256 y URLs de distribucion GitHub Pages.",
                     "meta": "artefacto"
                   }
@@ -1053,7 +1053,7 @@
                   },
                   {
                     "label": "Manifest do bundle público",
-                    "href": "dist/0.3.168/index.json",
+                    "href": "dist/0.3.169/index.json",
                     "body": "ZIP versionado, source commit, SHA-256 e URLs de distribuição GitHub Pages.",
                     "meta": "artefato"
                   }
@@ -1225,12 +1225,12 @@
           {
             "type": "code",
             "label": "fixed ref form",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "bun runtime",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -1255,7 +1255,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.168` is the intended fixed-ref form; remote certification exists only after `release:check` passes for the published tag. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit."
+            "text": "`#v0.3.169` is the intended fixed-ref form; remote certification exists only after `release:check` passes for the published tag. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit."
           },
           {
             "type": "p",
@@ -1263,7 +1263,7 @@
           },
           {
             "type": "p",
-            "text": "Install model (ADR 0004): the default is capsule-first. A plain `install` writes only the `.tes/**` capsule, with no root files, hooks, MCP config, or docs mesh until you select them with `--attach`. Attach health is observed, never assumed from config presence — MCP certifies through a real out-of-process JSON-RPC handshake and hooks through an execution sentinel, reporting `PENDING_HOST_RESTART` / `PENDING_TRUST` / `HOST_UNOBSERVABLE` rather than a false `PASS` when host action cannot be observed. Inbound isolation is a protected invariant: Cortex stores per-target under `.tes/cortex/**` and the MCP server refuses a runtime `target`, so no global cross-project state path exists."
+            "text": "Install model (ADR 0004, amended by the skills-surface line): the default is a functional install. A plain `install` materializes the `.tes/**` capsule plus the project skills (`root-context` + `skills`), `mcp`, and startup `hooks`; only `docs-mesh` stays opt-in via `--attach` because it authors project docs. The capsule is a reversible-ownership and non-contamination guarantee, not a materialization cap. For a minimal, isolation-only install pass an explicit selection (`--attach capsule`). Attach health is observed, never assumed from config presence — MCP certifies through a real out-of-process JSON-RPC handshake and hooks through an execution sentinel, reporting `PENDING_HOST_RESTART` / `PENDING_TRUST` / `HOST_UNOBSERVABLE` rather than a false `PASS` when host action cannot be observed. Inbound isolation is a protected invariant: Cortex stores per-target under `.tes/cortex/**` and the MCP server refuses a runtime `target`, so no global cross-project state path exists."
           }
         ]
       },
@@ -1275,12 +1275,12 @@
           {
             "type": "code",
             "label": "ref fija",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -1305,7 +1305,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.168` es la forma de ref fija prevista; la certificacion remota existe solo despues de que `release:check` pase para el tag publicado. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear."
+            "text": "`#v0.3.169` es la forma de ref fija prevista; la certificacion remota existe solo despues de que `release:check` pase para el tag publicado. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear."
           },
           {
             "type": "p",
@@ -1313,7 +1313,7 @@
           },
           {
             "type": "p",
-            "text": "Modelo de instalación (ADR 0004): el valor por defecto es capsule-first. Un `install` simple escribe solo la cápsula `.tes/**`, sin archivos raíz, hooks, configuración MCP ni docs mesh hasta que los selecciones con `--attach`. La salud del attachment se observa, nunca se asume por presencia de configuración — MCP se certifica con un handshake JSON-RPC real fuera de proceso y los hooks con un sentinel de ejecución, reportando `PENDING_HOST_RESTART` / `PENDING_TRUST` / `HOST_UNOBSERVABLE` en vez de un falso `PASS` cuando la acción del host no se puede observar. El aislamiento inbound es un invariante protegido: Cortex guarda por destino bajo `.tes/cortex/**` y el servidor MCP rechaza un `target` en runtime, así que no hay ruta de estado global entre proyectos."
+            "text": "Modelo de instalación (ADR 0004, enmendado por la línea de superficie de skills): el valor por defecto es una instalación funcional. Un `install` simple materializa la cápsula `.tes/**` más las skills del proyecto (`root-context` + `skills`), `mcp` y los `hooks` de arranque; solo `docs-mesh` permanece opt-in vía `--attach` porque escribe documentación del proyecto. La cápsula es una garantía de propiedad reversible y de no contaminación, no un tope de materialización. Para una instalación mínima de solo aislamiento usa una selección explícita (`--attach capsule`). La salud del attachment se observa, nunca se asume por presencia de configuración — MCP se certifica con un handshake JSON-RPC real fuera de proceso y los hooks con un sentinel de ejecución, reportando `PENDING_HOST_RESTART` / `PENDING_TRUST` / `HOST_UNOBSERVABLE` en vez de un falso `PASS` cuando la acción del host no se puede observar. El aislamiento inbound es un invariante protegido: Cortex guarda por destino bajo `.tes/cortex/**` y el servidor MCP rechaza un `target` en runtime, así que no hay ruta de estado global entre proyectos."
           }
         ]
       },
@@ -1325,12 +1325,12 @@
           {
             "type": "code",
             "label": "ref fixa",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.168 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.169 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -1355,7 +1355,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.168` e a forma de ref fixa prevista; a certificação remota existe somente depois de `release:check` passar para a tag publicada. Bundles runtime são preparados em `.tes/setup/<version>/`; esse diretório e cache local, não conhecimento do projeto para commit."
+            "text": "`#v0.3.169` e a forma de ref fixa prevista; a certificação remota existe somente depois de `release:check` passar para a tag publicada. Bundles runtime são preparados em `.tes/setup/<version>/`; esse diretório e cache local, não conhecimento do projeto para commit."
           },
           {
             "type": "p",
@@ -1363,7 +1363,7 @@
           },
           {
             "type": "p",
-            "text": "Modelo de instalação (ADR 0004): o padrão é capsule-first. Um `install` simples escreve apenas a cápsula `.tes/**`, sem arquivos raiz, hooks, configuração MCP ou docs mesh até você selecioná-los com `--attach`. A saúde do attachment é observada, nunca presumida pela presença de configuração — MCP certifica por um handshake JSON-RPC real fora de processo e os hooks por um sentinel de execução, reportando `PENDING_HOST_RESTART` / `PENDING_TRUST` / `HOST_UNOBSERVABLE` em vez de um falso `PASS` quando a ação do host não pode ser observada. O isolamento inbound é um invariante protegido: o Cortex armazena por destino sob `.tes/cortex/**` e o servidor MCP recusa um `target` em runtime, então não há caminho de estado global entre projetos."
+            "text": "Modelo de instalação (ADR 0004, emendado pela linha de superfície de skills): o padrão é uma instalação funcional. Um `install` simples materializa a cápsula `.tes/**` mais as skills do projeto (`root-context` + `skills`), `mcp` e os `hooks` de inicialização; apenas `docs-mesh` permanece opt-in via `--attach` porque escreve documentação do projeto. A cápsula é uma garantia de propriedade reversível e de não contaminação, não um teto de materialização. Para uma instalação mínima, só de isolamento, passe uma seleção explícita (`--attach capsule`). A saúde do attachment é observada, nunca presumida pela presença de configuração — MCP certifica por um handshake JSON-RPC real fora de processo e os hooks por um sentinel de execução, reportando `PENDING_HOST_RESTART` / `PENDING_TRUST` / `HOST_UNOBSERVABLE` em vez de um falso `PASS` quando a ação do host não pode ser observada. O isolamento inbound é um invariante protegido: o Cortex armazena por destino sob `.tes/cortex/**` e o servidor MCP recusa um `target` em runtime, então não há caminho de estado global entre projetos."
           }
         ]
       }
@@ -1459,7 +1459,7 @@
               ],
               [
                 "`tes-guidelines` (Claude, Cursor) / `tes-engineering-discipline` (Codex)",
-                "Behavioral engineering discipline overlay: keep assumptions visible, scope small, edits surgical, and success falsifiable on non-trivial work.",
+                "Behavioral engineering discipline overlay: keep assumptions visible, select maturity before simplicity, keep scope small, edits surgical, and success falsifiable on non-trivial work.",
                 "Passive overlay; no writes of its own. Constrains other skills that do write."
               ],
               [
@@ -1573,7 +1573,7 @@
               ],
               [
                 "`tes-guidelines` (Claude, Cursor) / `tes-engineering-discipline` (Codex)",
-                "Overlay de disciplina de ingenieria conductual: asunciones visibles, alcance reducido, ediciones quirurgicas y exito falsificable en trabajo no trivial.",
+                "Overlay de disciplina de ingenieria conductual: asunciones visibles, madurez seleccionada antes de simplicidad, alcance reducido, ediciones quirurgicas y exito falsificable en trabajo no trivial.",
                 "Overlay pasivo; no escribe por si solo. Restringe a otras skills que si escriben."
               ],
               [
@@ -1687,7 +1687,7 @@
               ],
               [
                 "`tes-guidelines` (Claude, Cursor) / `tes-engineering-discipline` (Codex)",
-                "Overlay de disciplina de engenharia comportamental: assunções visíveis, escopo menor, edicoes cirúrgicas e sucesso falsificavel em trabalho não trivial.",
+                "Overlay de disciplina de engenharia comportamental: assunções visíveis, maturidade selecionada antes da simplicidade, escopo menor, edições cirúrgicas e sucesso falsificável em trabalho não trivial.",
                 "Overlay passivo; não escreve por si só. Restringe outras skills que escrevem."
               ],
               [
@@ -1731,15 +1731,15 @@
               ],
               [
                 "`codex`",
-                "Default: prepare `.codex/config.toml` MCP and hook config; explicit root-context attaches `AGENTS.md` and Codex skills."
+                "Default: materialize `AGENTS.md`, Codex skills (`.agents/skills/**`), and `.codex/config.toml` MCP + SessionStart hook. `--attach capsule` writes `.tes/**` only."
               ],
               [
                 "`claude`",
-                "Default: prepare `.mcp.json` and `.claude/settings.json`; explicit root-context attaches `CLAUDE.md` and `.claude/skills/**`."
+                "Default: materialize `CLAUDE.md`, `.claude/skills/**`, `.mcp.json`, and `.claude/settings.json` (MCP + hooks). `--attach capsule` writes `.tes/**` only."
               ],
               [
                 "`cursor`",
-                "Default: prepare `.cursor/mcp.json` and `.cursor/hooks.json`; explicit root-context attaches Cursor TES rules."
+                "Default: materialize Cursor TES rules (`.cursor/rules/**`), `.cursor/mcp.json`, and `.cursor/hooks.json`. `--attach capsule` writes `.tes/**` only."
               ],
               [
                 "`vscode`",
@@ -2398,7 +2398,7 @@
           },
           {
             "type": "p",
-            "text": "Beyond Git rollback, ADR 0004 makes the install itself reversible. `install` is capsule-only — it writes the `.tes/**` capsule and no project-visible surface; root bootloaders, hooks, MCP config, and docs mesh are explicit `--attach <surface>` attachments recorded in the `tes-bundle-manifest@2` with a `restore_policy` and `uninstall_action`. `detach <surface>` removes one attachment and restores the project-owned file from backup; `uninstall` restores project-owned files, removes every TES-owned surface, removes the capsule, and proves zero active residue. Each remover is the precise inverse of its writer, and a sha256 fail-safe preserves a file you modified as `needs-review` instead of deleting it. This reversibility is certified by the residue oracle and the install/uninstall round-trip in `commit:check`; it is not yet field-proven against a live host session."
+            "text": "Beyond Git rollback, ADR 0004 makes the install itself reversible. The default `install` materializes a full functional TES — the `.tes/**` capsule plus the project-visible surfaces (skills, root bootloaders, MCP config, and hooks); only docs mesh stays opt-in, and `install --attach capsule` writes the minimal capsule-only runtime with no project-visible surface. Every project-visible surface is recorded in the `tes-bundle-manifest@2` with a `restore_policy` and `uninstall_action`. `detach <surface>` removes one attachment and restores the project-owned file from backup; `uninstall` restores project-owned files, removes every TES-owned surface, removes the capsule, and proves zero active residue. Each remover is the precise inverse of its writer, and a sha256 fail-safe preserves a file you modified as `needs-review` instead of deleting it. This reversibility is certified by the residue oracle and the install/uninstall round-trip in `commit:check`; it is not yet field-proven against a live host session."
           }
         ]
       },
@@ -2418,7 +2418,7 @@
           },
           {
             "type": "p",
-            "text": "Más allá del rollback con Git, ADR 0004 hace reversible la propia instalación. `install` es solo cápsula — escribe la cápsula `.tes/**` y ninguna superficie visible del proyecto; bootloaders raíz, hooks, configuración MCP y docs mesh son attachments explícitos `--attach <surface>` registrados en el `tes-bundle-manifest@2` con `restore_policy` y `uninstall_action`. `detach <surface>` retira un attachment y restaura el archivo propio desde el backup; `uninstall` restaura los archivos propios, elimina toda superficie de TES, elimina la cápsula y prueba residuo activo cero. Cada removedor es el inverso preciso de su escritor, y un fail-safe sha256 preserva como `needs-review` un archivo que modificaste en vez de borrarlo. Esta reversibilidad está certificada por el oráculo de residuo y el round-trip install/uninstall en `commit:check`; aún no está probada en campo contra una sesión de host real."
+            "text": "Más allá del rollback con Git, ADR 0004 hace reversible la propia instalación. El `install` por defecto materializa un TES completo y funcional — la cápsula `.tes/**` más las superficies visibles del proyecto (skills, bootloaders raíz, configuración MCP y hooks); solo docs mesh queda opt-in, e `install --attach capsule` escribe el runtime mínimo de solo cápsula sin superficie visible del proyecto. Cada superficie visible del proyecto se registra en el `tes-bundle-manifest@2` con `restore_policy` y `uninstall_action`. `detach <surface>` retira un attachment y restaura el archivo propio desde el backup; `uninstall` restaura los archivos propios, elimina toda superficie de TES, elimina la cápsula y prueba residuo activo cero. Cada removedor es el inverso preciso de su escritor, y un fail-safe sha256 preserva como `needs-review` un archivo que modificaste en vez de borrarlo. Esta reversibilidad está certificada por el oráculo de residuo y el round-trip install/uninstall en `commit:check`; aún no está probada en campo contra una sesión de host real."
           }
         ]
       },
@@ -2438,7 +2438,7 @@
           },
           {
             "type": "p",
-            "text": "Além do rollback com Git, o ADR 0004 torna a própria instalação reversível. `install` é só cápsula — escreve a cápsula `.tes/**` e nenhuma superfície visível do projeto; bootloaders raiz, hooks, configuração MCP e docs mesh são attachments explícitos `--attach <surface>` registrados no `tes-bundle-manifest@2` com `restore_policy` e `uninstall_action`. `detach <surface>` remove um attachment e restaura o arquivo do projeto a partir do backup; `uninstall` restaura os arquivos do projeto, remove toda superfície do TES, remove a cápsula e prova resíduo ativo zero. Cada removedor é o inverso preciso do seu escritor, e um fail-safe sha256 preserva como `needs-review` um arquivo que você modificou em vez de apagá-lo. Essa reversibilidade é certificada pelo oráculo de resíduo e pelo round-trip install/uninstall no `commit:check`; ainda não foi comprovada em campo contra uma sessão de host real."
+            "text": "Além do rollback com Git, o ADR 0004 torna a própria instalação reversível. O `install` padrão materializa um TES completo e funcional — a cápsula `.tes/**` mais as superfícies visíveis do projeto (skills, bootloaders raiz, configuração MCP e hooks); apenas o docs mesh permanece opt-in, e `install --attach capsule` escreve o runtime mínimo só de cápsula, sem superfície visível do projeto. Cada superfície visível do projeto é registrada no `tes-bundle-manifest@2` com `restore_policy` e `uninstall_action`. `detach <surface>` remove um attachment e restaura o arquivo do projeto a partir do backup; `uninstall` restaura os arquivos do projeto, remove toda superfície do TES, remove a cápsula e prova resíduo ativo zero. Cada removedor é o inverso preciso do seu escritor, e um fail-safe sha256 preserva como `needs-review` um arquivo que você modificou em vez de apagá-lo. Essa reversibilidade é certificada pelo oráculo de resíduo e pelo round-trip install/uninstall no `commit:check`; ainda não foi comprovada em campo contra uma sessão de host real."
           }
         ]
       }
