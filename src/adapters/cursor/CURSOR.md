@@ -1,99 +1,42 @@
 # Using This Repo With Cursor
 
-This target repository includes a Cursor project rule for Tilly Engineering
-Discipline.
-
-## In This Repository
-
-Cursor loads `.cursor/rules/tes-guidelines.mdc` for governance and
-`.cursor/rules/tes-runtime-capabilities.mdc` for TES command routing.
+Thin pointer to the Cursor rule layer. Cursor loads
+`.cursor/rules/tes-guidelines.mdc` as the always-on discipline anchor and
+`.cursor/rules/tes-runtime-capabilities.mdc` as the lazy capability rule (Apply
+Intelligently) that carries the full gate flows and `/tes-*` command protocols.
+The rules are the runtime authority; this file is only an outward pointer.
 
 ## Use In Another Project
 
-Back up existing Cursor rules under `.tes/bk/**`, then copy
-`.cursor/rules/tes-guidelines.mdc` and
-`.cursor/rules/tes-runtime-capabilities.mdc` into the target project's rule set.
+Back up existing Cursor rules under `.tes/bk/**`, then copy both rules into the
+target project's rule set. If the target already has rules, recover useful local
+semantics into `docs/agents/**` rather than duplicating runtime prose. The four
+principles — Think Before Coding, Simplicity First, Surgical Changes,
+Goal-Driven Execution — live in the discipline anchor.
 
-If the target project already has rules, recover useful local semantics into
-`docs/agents/**` rather than duplicating long runtime prose:
+## TES Intents
 
-- Think Before Coding
-- Simplicity First
-- Surgical Changes
-- Goal-Driven Execution
+`/tes-*` are canonical intents and `/tes:*` are compatible aliases — intent
+shortcuts, not shell commands. The full list and protocol live in
+`tes-runtime-capabilities.mdc`; common ones are `/tes-init`, `/tes-update`,
+`/tes-align`, `/tes-map`, `/tes-cortex`, `/tes-mcp`, `/tes-doctor`, and
+`/tes-bump`. Bilingual natural intents (tes init, align this project,
+alinhar projeto, map this project, mapear projeto, Atualizar TES,
+open Obsidian, abrir Obsidian) route the same way. `/tes-prospect`, `/tes-mine`,
+and `/tes-goal-maestro` require explicit invocation and honor the cognitive
+brake.
 
-## TES Command Intents
+## Confidentiality
 
-Use these exact TES intents when the project rule is unavailable, preserved, or
-owned by the target project:
-
-- `/tes-init`
-- `/tes-update`
-- `/tes-align`
-- `/tes-map`
-- `/tes-open-obsidian`
-- `/tes-cortex`
-- `/tes-curate`
-- `/tes-mcp`
-- `/tes-field-reports`
-- `/tes-doctor`
-- `/tes-adapter`
-- `/tes-bench`
-- `/tes-bump`
-
-Compatible aliases:
-
-- `/tes:init`
-- `/tes:update`
-- `/tes:align`
-- `/tes:gps`
-- `/tes:open-obsidian`
-- `/tes:cortex`
-- `/tes:mcp`
-- `/tes:field-reports`
-- `/tes:doctor`
-- `/tes:adapter`
-- `/tes:bench`
-- `/tes:bump`
-- `/tes:check`
-- `/tes:certify`
-- `/tes:recall`
-- `/tes:learn`
-- `/tes:reflect`
-- `/tes:curate`
-
-Natural intents include: tes init, tes update, tes align, tes map, project GPS,
-mapa TES, tes open obsidian, tes bump, align TES, align this project, map this project,
-open Obsidian, open this project in Obsidian, Atualizar TES, atualizar TES,
-alinhar TES, alinhar projeto, mapear TES, mapear projeto, abrir Obsidian,
-abrir no Obsidian, initialize TES, install TES, recertify TES, inicializar TES,
-instalar TES, and recertificar TES.
+Use neutral placeholder vocabulary only; no real project, product,
+internal-service names, or `~/Dev/<name>` paths in tracked content.
 
 ## Behavioral Source Of Truth
 
 Keep Cursor, Claude, and Codex variants synchronized at the behavioral level:
 visible assumptions, smaller scope, surgical edits, and falsifiable closure.
 
-## Runtime-First Product Rule
-
-TES is result-oriented: maturity, efficiency, and precision must show up in
-working behavior. Once the architecture is accepted and the active risk is
-implementation quality, build the smallest durable runtime slice on the
-intended execution path before adding more governance.
-
-Do not create governance-only cycles, long SPECs before code, evidence-only
-layers, placeholder boundaries, or temporary implementations expected to be
-removed immediately afterward. Use SPECs, fixtures, oracles, and compact docs to
-protect runtime behavior, not to delay it.
-
-## Codex And Claude
-
-- Codex: use `AGENTS.md` plus `.agents/skills/tes-engineering-discipline/`.
-- Claude Code: use `CLAUDE.md` plus `.claude/skills/**`.
+- Codex: `AGENTS.md` plus `.agents/skills/tes-*/**`.
+- Claude Code: `CLAUDE.md` plus `.claude/skills/**`.
 
 Do not copy `.cursor/**` into Codex or Claude runtime as authoritative context.
-Natural alignment prompts such as `tes align`, `align TES`, `align this project`,
-`alinhar TES`, and `alinhar projeto` route to `/tes-align`.
-Obsidian opening prompts such as `open Obsidian`,
-`open this project in Obsidian`, `abrir Obsidian`, and `abrir no Obsidian`
-route to `/tes-open-obsidian`.

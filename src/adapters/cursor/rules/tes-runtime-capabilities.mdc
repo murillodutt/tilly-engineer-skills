@@ -1,68 +1,79 @@
 ---
-description: TES runtime command capability routing for Cursor after clean runtime install and semantic recovery.
-alwaysApply: true
+description: TES runtime detail for Cursor — load when the user runs a /tes-* or /tes:* intent (init, setup, update, align, map, cortex, curate, mcp, field-reports, doctor, adapter, bench, bump, goal-maestro, prospect, mine, open-obsidian) or asks about the Mantra Gate, Infrastructure Decision Gate, Diamond, Cortex reflection, Field Reports, or the memory lifecycle boundary. Carries the full gate flows and command protocols that the always-on tes-guidelines anchor routes to.
+alwaysApply: false
 ---
 
 # TES Runtime Capabilities
 
-This rule is TES-owned runtime capability, not project-owned governance. It may
-be refreshed by the deterministic installer while `AGENTS.md`, `CLAUDE.md`,
-`CURSOR.md`, and previous project-owned Cursor rules are recovered from `.tes/bk/**`.
+This rule is TES-owned runtime detail, the Cursor-native lazy layer behind the
+always-on `tes-guidelines.mdc` anchor. It may be refreshed by the deterministic
+installer while `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, and previous
+project-owned Cursor rules are recovered from `.tes/bk/**`. It loads when its
+description matches the request, not on every turn.
+
+## Diamond Build-Test-Fail-Fix
+
+For critical capabilities, build from the finished contract down: final
+behavior, adversarial fixture, observed failure, smallest repair, and green
+gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
+`not available`, `certified`, or `fail`.
+
+## Mantra Gate
+
+Before state-changing actions, use the TES Mantra Gate. For routine writes,
+commits, generated artifacts, spec execution, high-risk work, or project-state
+updates, show only `[🍳 Flash-Fry]` to the user when the gate permits
+proceeding; the full gate is still retained as evidence.
+
+Full gate fields are `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`,
+`RESOLVE`, and `STATUS`. Report gate detail only when the gate returns
+`BLOCKED` or `NEEDS_REVIEW`, approval is required, or the user explicitly asks
+for audit detail.
+
+For closure, commit, or push claims, the adoption oracle may check that a gate
+record exists near the state change. If it reports `BYPASS_SUSPECTED`,
+`NEEDS_REVIEW`, or `BLOCKED`, stop and recover before claiming progress.
+
+## Infrastructure Decision Gate
+
+Before any infrastructure decision, run a Stack Surface Scan. This applies to
+native wrappers, deployment targets, database clients, queues, crypto
+primitives, build tools, hosting assumptions, and runtime-bound dependencies.
+
+Inspect the target project's actual stack evidence before choosing: package and
+lock files, framework config, runtime config, deployment preset, existing
+adapters, generated output contracts, and project governance. Then check
+Context7 or official documentation for the framework, runtime, or cloud surface
+that owns the behavior. If evidence is missing, stale, or contradictory, stop
+as `NEEDS_REVIEW` instead of guessing.
+
+For Nuxt or Nitro projects, Nitro changes the runtime surface. Inspect the
+Nitro preset, `node` target, and deployment runtime before choosing a native
+OpenSSL wrapper, a pure Node DER builder, Web Crypto, or another runtime-bound
+implementation. A Node-looking repository can still target edge, worker,
+serverless, or compatibility layers.
+
+The decision must name the stack evidence, documentation source, rejected
+alternatives, chosen path, and smallest runtime oracle before implementation.
 
 ## TES Command Intents
 
-Use these exact TES intents when the user asks for Tilly Engineering Skills:
+`/tes-*` are canonical intents and `/tes:*` are compatible aliases — intent
+shortcuts, not shell commands:
 
-- `/tes-init`
-- `/tes-setup`
-- `/tes-update`
-- `/tes-align`
-- `/tes-map`
-- `/tes-goal-maestro`
-- `/tes-prospect`
-- `/tes-mine`
-- `/tes-open-obsidian`
-- `/tes-cortex`
-- `/tes-curate`
-- `/tes-mcp`
-- `/tes-field-reports`
-- `/tes-doctor`
-- `/tes-adapter`
-- `/tes-bench`
-- `/tes-bump`
+- `/tes-init`, `/tes-setup`, `/tes-update`
+- `/tes-align`, `/tes-map`
+- `/tes-goal-maestro`, `/tes-prospect`, `/tes-mine`
+- `/tes-open-obsidian`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
+  `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, `/tes-bump`
 
-Compatible aliases:
-
-- `/tes:init`
-- `/tes:update`
-- `/tes:align`
-- `/tes:gps`
-- `/tes:goal-maestro`
-- `/tes:prospect`
-- `/tes:mine`
-- `/tes:open-obsidian`
-- `/tes:cortex`
-- `/tes:mcp`
-- `/tes:field-reports`
-- `/tes:doctor`
-- `/tes:adapter`
-- `/tes:bench`
-- `/tes:bump`
-- `/tes:check`
-- `/tes:certify`
-- `/tes:recall`
-- `/tes:learn`
-- `/tes:reflect`
-- `/tes:curate`
-
-Natural intents include: tes init, tes setup, tes update, tes align, tes map,
-generate a maestral /goal prompt, generate a /goal from a PRD,
-gerar um /goal maestral, gerar /goal de um PRD, project GPS, mapa TES,
-tes open obsidian, tes bump, align TES, align this project,
-map this project, open Obsidian, open this project in Obsidian, Atualizar TES,
-atualizar TES, alinhar TES, alinhar projeto, mapear TES, mapear projeto,
-abrir Obsidian, abrir no Obsidian, initialize TES, install TES, recertify TES,
-inicializar TES, instalar TES, and recertificar TES.
+Compatible aliases include the `/tes:*` forms plus `/tes:gps`, `/tes:check`,
+`/tes:certify`, `/tes:recall`, `/tes:learn`, and `/tes:reflect`. Bilingual
+natural intents (tes init, tes update, tes align, project GPS, mapa TES,
+align this project, alinhar projeto, mapear projeto, open Obsidian,
+abrir Obsidian, Atualizar TES, atualizar TES, inicializar TES, instalar TES,
+recertificar TES) route the same way. Choose the smallest safe oracle behind
+the scenes and report skipped or blocked commands honestly.
 
 Do not activate `/tes-prospect`, `/tes-mine`, or `/tes-goal-maestro` from broad
 natural language. They require explicit invocation by trigger, alias, or skill
@@ -72,30 +83,103 @@ plan, or accepted execution tree. It must preserve declared execution units,
 validate the tree internally, require material-diff, material-continuation,
 semantic negative-grep, sequential ownership and sync-status evidence, write
 generated Super SPEC content to `GOAL-SUPER-SPEC-*.md` instead of pasting it
-into chat, and emit `/goal` when gates pass. `tes-bump` is a version
-governance guard: direct
-bump/sync requests route to it, and commit, release, delivered-behavior, or
-gate-reported bump conditions auto-activate its read-only `--governance-check`.
-It must dry-run target discovery before any write and must not commit, tag,
-push, publish, or edit remotes. After prospecting or
-mining invocation, they may operate proactively and must honor the cognitive
-brake: pause, pausa, freia,
-segura, para, hold, step back, or resuma onde estamos.
+into chat, and emit `/goal` when gates pass. After prospecting or mining
+invocation, they may operate proactively and must honor the cognitive brake:
+pause, pausa, freia, segura, para, hold, step back, or resuma onde estamos.
+`tes-bump` is a version governance guard: direct bump/sync requests route to it,
+and commit, release, delivered-behavior, or gate-reported bump conditions
+auto-activate its read-only `--governance-check`. It must dry-run target
+discovery before any write and must not commit, tag, push, publish, or edit
+remotes.
+
+## tes-init Gate Flow
 
 Route `/tes-init` through the Install/Update Gate, Project Context Gate, and
-Project-Start Gate. Step Zero protects installer/update writes and must not
-block project-context initialization when TES is already installed/current and
-only the Project Context Gate fails. A preflight context PASS does not replace
-project-start execution; after helper-only or adapter repairs, rerun this gate.
-If `.tes/postinstall.json` is already `complete` from the first-session hook
-and the user asks plain `/tes-init` or `/tes-setup`, read the sentinel and
+Project-Start Gate. The Install/Update Gate checks installed/cloud version,
+helper contract, adapter/runtime drift, MCP activation, and legacy retirement.
+The Project Context Gate checks whether `docs/agents/PROJECT-CONTEXT.md` exists
+and passes the project-context oracle. Step Zero protects installer/update
+writes; it must not block project-context initialization when TES is already
+installed/current and only the Project Context Gate fails. A preflight context
+PASS does not replace project-start execution: run the Project-Start Gate before
+the final report by executing the installed `tes_init.py --target . --yes`,
+opening strong anchors, and certifying with `project_context_oracle.py --target .`;
+after helper-only or adapter repairs, rerun this gate.
+
+If `.tes/postinstall.json` is already `complete` from the first-session hook and
+the user asks plain `/tes-init` or `/tes-setup`, read the sentinel and
 `last_run`, summarize the completed run, and do not rerun Project-Start unless
 the user explicitly asks to recertify/update, the sentinel is not `complete`,
-the planner reports drift, or evidence is missing.
-If `.tes/postinstall.json` is `needs_review`, inspect the latest run, repair
-the focused blocker, then run
+the planner reports drift, or evidence is missing. If `.tes/postinstall.json` is
+`needs_review`, inspect the latest run, repair the focused blocker, then run
 `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`
-to rerun Project-Start, verify selected MCP config, record the recovery run,
-and clear the sentinel only on PASS.
-The target `docs/agents/PROJECT-CONTEXT.md` must analyze source anchors before
-TES claims durable project understanding.
+to rerun Project-Start, verify selected MCP config, record the recovery run, and
+clear the sentinel only on PASS. Treat `tes_init.py` as scaffold generation; the
+active agent must open strong anchors before claiming deep understanding, refine
+`PROJECT-CONTEXT.md` when evidence supports it, or report
+`Project context: NEEDS_REVIEW`.
+
+For `/tes-update` or `/tes:update`, first check installed version, cloud
+version, applied IDE surfaces, helper contract parity, recommended route, and
+`recommended_update_scope`. Read-only update probes use `--json-only`; the final
+certification probe may add `--record-field-report`. Repair
+`recommended_update_scope=helpers-only` or `STALE_HELPERS` through the
+helper-only Layer Zero route before adapter or MCP config refresh, then require a
+final recorded probe before GO, commit, or push that shows
+`helper_contract_status=PASS`, `runtime_trigger_status=PASS` or `NOT_APPLIED`,
+`update_available=False`, and `recommended_update_scope=none`.
+
+For `/tes-align`, make `docs/agents/PROJECT-ROADMAP.md` open with Mermaid
+`flowchart TD` System X-Ray and Convergence Line graphs before compact audit
+lanes, then certify with `project_alignment_oracle.py`. Before claiming PASS,
+read the newest accepted ADRs under `docs/agents/DECISIONS/**` and the newest
+retained alignment evidence under `docs/agents/evidence/**`, and run the
+Semantic Residue Gate when the project declares
+`docs/agents/contracts/SEMANTIC-RESIDUE.yml`. TES owns the mechanism; the target
+project owns the retired vocabulary. For `/tes-map`, run
+`tes_map.py --target . --write` and update only the managed `TES-MAP` block in
+`PROJECT-ROADMAP.md`; certify with `tes_map_oracle.py`. For `/tes-bench`, treat
+benchmark commands as package-source evidence; new context-mesh runs default to
+`docs/evidence/reports/YYYY/MM/DD/context-mesh/`. For `/tes-bump`, run
+`tes_bump.py --governance-check` first when commit, release, delivered-behavior,
+or gate-reported bump conditions are present, run `tes_bump.py --dry-run` before
+actual version writes, and apply only with write authorization.
+
+## Cortex Reflection
+
+If `docs/agents/cortex/CONTRACT.md` exists, use Cortex as durable memory. Before
+the final response for material work, call read-only `cortex_reflect` when
+available, or run:
+
+```bash
+python3 .tes/bin/cortex.py reflect --target . "<decision or lesson>"
+```
+
+Surface useful proposals only. Do not write Cortex cells without explicit user
+authorization. If `curation_due=true`, run read-only `cortex_curate_plan` when
+available, or:
+
+```bash
+python3 .tes/bin/cortex.py curate-plan --target . --backend lexical
+```
+
+## Field Reports
+
+TES Field Reports is active by default. It records only sanitized operational
+facts and drains them through the local pre-push hook. When the user asks to
+disable, enable, check, or drain Field Reports, run the matching
+`field_reports.py` oracle and never expand collection levels or schema.
+
+## TES Memory Lifecycle Boundary
+
+- recall stays read-only unless a specific TES skill or oracle authorizes more;
+- scope normalization is handled by the parent context until the shared
+  normalizer exists;
+- write gate means durable Cortex writes require explicit parent authorization;
+- checkpoint state is resumability, not durable memory;
+- closeout is proven by TES oracles and repository Git hooks;
+- subagent return is evidence return only.
+
+Parent owns durable memory. Agents may inspect, patch, or report findings inside
+their assigned scope, but they must not perform durable Cortex writes or promote
+checkpoint/event state into memory directly.
