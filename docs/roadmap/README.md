@@ -47,6 +47,7 @@ in dashboards, registries, history, audits, fixtures, or oracles.
 | TES GPS capsule mode | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-gps-capsule-mode.md` |
 | TES NPX command surface parity | Complete | `goals/super-specs/GOAL-SUPER-SPEC-tes-npx-command-surface-parity.md` |
 | TES skills surface and functional default | Complete | `goals/super-specs/GOAL-SUPER-SPEC-tes-skills-surface-and-functional-default.md` |
+| TES installation topology | Proposed | `goals/super-specs/GOAL-SUPER-SPEC-tes-installation-topology.md` |
 | TES bootloader-to-skill migration | Complete | `goals/super-specs/GOAL-SUPER-SPEC-tes-bootloader-skill-migration.md` |
 | TES postinstall/Cortex hardening | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
 | TES postinstall recovery symmetry | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md` |

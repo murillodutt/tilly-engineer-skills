@@ -15,6 +15,13 @@ documents:
     consumer: maintainers and adapter authors
     source_of_truth: true
     evidence_level: L2
+  - path: docs/architecture/INSTALLATION-FRAMEWORK.md
+    id: architecture.installation_framework
+    class: architecture
+    status: active
+    consumer: maintainers, installer authors, hook authors, MCP authors, and oracle authors
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/architecture/TES-NAMING-MIGRATION-CATALOG.md
     id: architecture.tes_naming_migration_catalog
     class: architecture
@@ -489,6 +496,13 @@ documents:
     class: roadmap
     status: proposed
     consumer: maintainers, installer authors, oracle authors, adapter authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-installation-topology.md
+    id: roadmap.goal_super_spec_tes_installation_topology
+    class: roadmap
+    status: proposed
+    consumer: maintainers, installer authors, hook authors, MCP authors, oracle authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-gps-capsule-mode.md
