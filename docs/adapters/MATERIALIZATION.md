@@ -43,9 +43,12 @@ check builds all adapters in a temporary directory and verifies:
 
 - each expected target path exists;
 - Codex skill self-test passes after materialization;
-- Cursor keeps `.mdc` frontmatter with `description` and `alwaysApply: true`;
-- Cursor separates governance (`tes-guidelines.mdc`) from TES-owned command
-  capability routing (`tes-runtime-capabilities.mdc`);
+- Cursor keeps `.mdc` frontmatter with a `description` on both rules, the
+  always-on discipline anchor `tes-guidelines.mdc` at `alwaysApply: true`, and
+  the lazy capability rule `tes-runtime-capabilities.mdc` at `alwaysApply: false`
+  (Apply Intelligently), so capability detail loads only when relevant;
+- Cursor separates the always-on governance anchor (`tes-guidelines.mdc`) from
+  the lazy TES-owned command/capability layer (`tes-runtime-capabilities.mdc`);
 - Claude project skills materialize under `.claude/skills/**`;
 - plugin metadata under `src/adapters/**/plugin/**` remains source-only and is
   not materialized into target projects;

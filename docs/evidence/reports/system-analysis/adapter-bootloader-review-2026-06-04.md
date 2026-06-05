@@ -1,14 +1,23 @@
 ---
 tds_id: evidence.adapter_bootloader_review_20260604
 tds_class: evidence
-status: active
+status: archived
 consumer: maintainers, adapter authors, and release reviewers
 source_of_truth: false
 evidence_level: L2
-tver: 0.1.0
+tver: 0.1.1
 ---
 
 # Adapter Bootloader Review — Cursor, Codex, Claude Code
+
+> Superseded snapshot. This review describes the bootloaders at their pre-migration
+> sizes (CLAUDE.md 248, AGENTS.md 252, CURSOR.md 99 lines) and recorded two
+> divergences to revisit: the uneven confidentiality statement and the GPS wording
+> lagging the ADR 0004 capsule mode. The bootloader-to-skill migration (TES 0.3.165)
+> acted on both — bootloaders were thinned to lazy-anchor form and confidentiality
+> was made even across all three. The current contract is
+> `bootloader-concept-inventory-2026-06-04.md` plus the migration Super SPEC
+> closeout. Retained as the pre-migration baseline, not the current state.
 
 Read-only review of the three adapter context bootloaders. No file was changed.
 Each platform's particularity is respected; this document records what each file

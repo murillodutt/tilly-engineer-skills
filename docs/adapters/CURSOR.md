@@ -19,8 +19,8 @@ rules under `.cursor/rules/**`; `CURSOR.md` is a user handoff note only.
 
 | Surface | Role | Package Status |
 |---------|------|----------------|
-| `.cursor/rules/tes-guidelines.mdc` | Governance overlay with frontmatter | Included |
-| `.cursor/rules/tes-runtime-capabilities.mdc` | TES-owned command router refreshed after central backup and clean runtime install | Included |
+| `.cursor/rules/tes-guidelines.mdc` | Always-on discipline anchor (`alwaysApply: true`) | Included |
+| `.cursor/rules/tes-runtime-capabilities.mdc` | Lazy capability rule (`alwaysApply: false` + `description`, Apply Intelligently); loads the full command/gate detail only when relevant | Included |
 | `AGENTS.md` | Simple root-only alternative context | Not materialized by default |
 | `.cursorrules` | Legacy rule file | Forbidden |
 | MCP | Project-scoped Cortex access | Installer route only |
@@ -37,13 +37,19 @@ Official references: [Rules](https://docs.cursor.com/en/context/rules),
 
 | Source | Purpose |
 |--------|---------|
-| `src/adapters/cursor/rules/tes-guidelines.mdc` | Always-on Cursor rule source |
-| `src/adapters/cursor/rules/tes-runtime-capabilities.mdc` | TES-owned runtime capability router |
+| `src/adapters/cursor/rules/tes-guidelines.mdc` | Always-on discipline anchor source (`alwaysApply: true`) |
+| `src/adapters/cursor/rules/tes-runtime-capabilities.mdc` | Lazy capability rule source (`alwaysApply: false` + `description`) |
 | `src/adapters/cursor/CURSOR.md` | User adapter note |
 
-The base discipline uses `alwaysApply: true` because the four gates are a
+The discipline anchor uses `alwaysApply: true` because the four gates are a
 general behavioral overlay for non-trivial coding, review, refactor, and
-instruction migration work.
+instruction migration work, so they must stay loaded every turn. The capability
+rule uses `alwaysApply: false` with a `description` (the Cursor-native Apply
+Intelligently mode, verified against the official Cursor rule-loading model):
+the full command protocols, gate flows, Cortex reflex, Field Reports, and memory
+lifecycle boundary load only when the description matches the request. This is
+the three-layer contract — short always-on anchor, lazy expansion — that the
+bootloader-to-skill migration established and `materialize_adapter.py` enforces.
 
 Cursor does not receive a separate skill package. The rules treat
 `/tes-init`, `/tes-update`, `/tes:init`, `/tes:update`, `tes init`, natural
@@ -73,13 +79,17 @@ and generate the final `/goal` when gates pass.
 `tes-bump` must dry-run target discovery before writes and never commit, tag,
 push, publish, or edit remotes.
 
-Future workflow-specific rules should be separate `Agent Requested` or
-manual rules instead of expanding the always-on rule.
+Capability and workflow detail belongs in the lazy `tes-runtime-capabilities.mdc`
+rule (Apply Intelligently), not in the always-on anchor. Future workflow-specific
+rules should likewise be separate `Agent Requested` or manual rules, so the
+always-on layer stays thin.
 
 ## Packaging Rules
 
 - Do not reintroduce `.cursorrules`.
-- Keep `.mdc` frontmatter with `description` and `alwaysApply: true`.
+- Keep `.mdc` frontmatter with a `description` on both rules:
+  `tes-guidelines.mdc` at `alwaysApply: true` (always-on anchor) and
+  `tes-runtime-capabilities.mdc` at `alwaysApply: false` (lazy capability rule).
 - Do not materialize `AGENTS.md` for Cursor without an explicit decision,
   because it can duplicate `.cursor/rules/**`.
 - Back up project-owned Cursor governance rules, apply clean TES rules, and

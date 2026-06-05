@@ -11,7 +11,7 @@ tver: 0.9.8
 # Adapter Installation
 
 The public installer path is the GitHub package-spec command through npx or Bun after a fixed ref is authorized and release-certified.
-Version `0.3.165` is the fixed release identity for this install surface; treat the remote ref as certified only after the tag is published and `npm run release:check` passes.
+Version `0.3.166` is the fixed release identity for this install surface; treat the remote ref as certified only after the tag is published and `npm run release:check` passes.
 
 User-facing walkthrough:
 
@@ -24,11 +24,11 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 ## GitHub Package-Spec Form
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.165 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.166 tilly-engineer-skills add
 ```
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.165 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.166 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -40,10 +40,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.165 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.166 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.165` is the intended fixed-ref form for a release-certified install
+`#v0.3.166` is the intended fixed-ref form for a release-certified install
 channel. Do not call that remote ref certified until `npm run release:check`
 passes after the tag or fixed ref is authorized and available.
 
@@ -112,27 +112,29 @@ include the public bundle `source_commit`, and dry-run through npm/npx and Bun.
 
 ## Compatibility Basis
 
-The installer follows current adapter surfaces:
+Per ADR 0004 (capsule isolation), `install` is capsule-first: the default writes
+only `.tes/**`. Each host surface is an explicit, reversible attachment via
+`--attach <surface>` (`mcp`, `hooks`, `root-context`, `docs-mesh`, `gps`,
+`goals`, `mantra`, `field-reports`, `all`); `detach` restores that file,
+`uninstall` removes every TES surface and the capsule with zero residue.
 
-| Tool | Install Surface |
-|------|-----------------|
-| Codex | Default: `.codex/config.toml` MCP + hook config. Explicit `--attach all`/`root-context`: `AGENTS.md` and `.agents/skills/**` |
-| Claude Code | Default: `.mcp.json` + `.claude/settings.json`. Explicit `--attach all`/`root-context`: `CLAUDE.md` and `.claude/skills/**` |
-| Cursor | Default: `.cursor/mcp.json` + `.cursor/hooks.json`. Explicit `--attach all`/`root-context`: Cursor TES rules |
+| Tool | Default | `--attach` surfaces (`mcp` / `hooks` / `root-context`) |
+|------|---------|--------------------------------------------------------|
+| Codex | `.tes/**` only | `.codex/config.toml` / SessionStart / `AGENTS.md` + `.agents/skills/**` |
+| Claude Code | `.tes/**` only | `.mcp.json` / `.claude/settings.json` / `CLAUDE.md` + `.claude/skills/**` |
+| Cursor | `.tes/**` only | `.cursor/mcp.json` / `.cursor/hooks.json` / `.cursor/rules/**` |
 
-Cortex is the default compiled memory layer under `docs/agents/cortex/**`.
-Memory lives in versioned artifacts: immutable `sources/**`, compiled
-`cells/**`, `MAP.md`, `TRAIL.md`, `LINKS.md`, and `CONTRACT.md`. SQLite FTS5 at
-`.tes/cortex/recall.sqlite` is a derived recall index, never memory, and `rg`
-is the fallback. `.tes/cortex/semantic.sqlite` is a derived curation index,
-also never memory, rebuilt by `curate-plan` from `cells/**`.
-`curate-plan` reports actionable candidates with rationale and next step.
-`learn` and `reflect` remain proposal-only and return explicit evidence-gap or
-no-capture reasons for weak generic inputs.
-The Cortex operator layer adds `health`, `peek`, and `review` as mechanically
-read-only commands, `checkpoint` as TTL resumability state, `remember` as the
-authorized durable-memory spelling, and `forget` as blocked until the
-consolidation gate exists.
+Attach health is verified per surface, never assumed from config presence: MCP
+and hook attachments report `PENDING_HOST_RESTART` / `PENDING_TRUST` /
+`HOST_UNOBSERVABLE` rather than a false `PASS` (ADR 0004 attach-health). In
+capsule mode GPS/MAP runs from `.tes/gps/**` / `.tes/context/**`; the
+`docs/agents/**` mesh below materializes only when `docs-mesh` is attached.
+Memory lives in versioned plain-Markdown artifacts (`sources/**`, `cells/**`,
+`MAP.md`, `TRAIL.md`, `LINKS.md`, `CONTRACT.md`); the SQLite indexes under
+`.tes/cortex/**` are derived recall/curation, never memory. The full operator
+contract (`curate-plan`, `learn`/`reflect` proposal-only, `health`/`peek`/
+`review` read-only, `checkpoint`, `remember`, gated `forget`) lives in
+`docs/mesh/CORTEX.md`.
 
 Cortex is Obsidian-compatible plain Markdown. The installer does not create
 `.obsidian/**`, require community plugins, or depend on Obsidian state. After
@@ -252,8 +254,8 @@ knowledge lifecycle, glossary, decisions, and evidence.
 `project_context_oracle.py` and `project_alignment_oracle.py` must pass or the
 installer must close as `NEEDS_REVIEW` with a concrete blocker.
 
-For an existing project, the default public installer keeps TES as `.tes/**`
-plus MCP and startup hooks only; project governance materialization is explicit.
+For an existing project, the capsule-first default keeps TES as `.tes/**` only;
+MCP, hooks, root context, and docs mesh are explicit attachments, not defaults.
 When `docs-mesh` or `root-context` is attached, TES migrates durable rules from
 agent files/docs into `docs/agents/**`, then composes `AGENTS.md`, `CLAUDE.md`,
 `.cursor/rules/**`, `.claude/**`, and `.agents/**` as runtime assets that route

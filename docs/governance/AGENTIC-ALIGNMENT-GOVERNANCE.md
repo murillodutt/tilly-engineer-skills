@@ -93,7 +93,7 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 |---------|---------------|-------------|
 | Codex | Thin `AGENTS.md`, repo skill in `.agents/skills/**`, progressive disclosure | Treat plugin cache or user runtime as source |
 | Claude | Short `CLAUDE.md`, project skills in `.claude/skills/**`, Cortex MCP only through project config | Install root `skills/**` or `.claude-plugin/**` into targets by default; delete ambiguous legacy copies without `.tes/bk/**` backup and `NEEDS_REVIEW` |
-| Cursor | `.cursor/rules/*.mdc`, `alwaysApply: true` for the base discipline, no `.cursorrules` | Treat `CURSOR.md` as the primary operative context |
+| Cursor | `.cursor/rules/*.mdc`: `alwaysApply: true` for the base-discipline anchor and `alwaysApply: false` for the lazy capability rule, no `.cursorrules` | Treat `CURSOR.md` as the primary operative context; make the capability rule always-on |
 
 ## Current Certification State
 
