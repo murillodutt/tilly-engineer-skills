@@ -88,12 +88,17 @@ hosts:
     anchor_rule: src/adapters/cursor/rules/tes-guidelines.mdc
     lazy_rule: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
 concepts:
+  # keep-as-anchor: short anchor in the bootloader; expansion (if required) once
+  # in the skill/rule. anchor_markers must appear in the bootloader; when
+  # expansion_required, skill_markers must appear in the host skill/rule.
   - id: core-contract
     label: "Core contract (assumptions visible / scope smaller / surgical / falsifiable)"
     hosts: [claude, codex, cursor]
     disposition: keep-as-anchor
     expansion_required: false
     anchor: "Core contract: Assumptions visible. Scope smaller. Edits surgical. Success falsifiable."
+    anchor_markers: ["Assumptions visible", "Edits surgical", "falsifiable"]
+    skill_markers: ["Assumptions visible", "Edits surgical", "falsifiable"]
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
@@ -105,10 +110,12 @@ concepts:
     disposition: keep-as-anchor
     expansion_required: true
     anchor: "Four gates: Think Before Coding; Simplicity First; Surgical Changes; Goal-Driven Execution."
+    anchor_markers: ["Think Before Coding", "Simplicity First", "Surgical Changes", "Goal-Driven Execution"]
+    skill_markers: ["Think Before Coding", "Simplicity First", "Surgical Changes", "Goal-Driven Execution"]
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
-      cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
+      cursor: src/adapters/cursor/rules/tes-guidelines.mdc
 
   - id: runtime-first
     label: "Runtime-First Product Rule"
@@ -116,10 +123,12 @@ concepts:
     disposition: keep-as-anchor
     expansion_required: false
     anchor: "Runtime-first: build the smallest durable runtime slice; no governance-only cycles, long SPECs before code, placeholder boundaries, or throwaway implementations."
+    anchor_markers: ["smallest durable runtime slice", "governance-only"]
+    skill_markers: ["smallest durable runtime slice", "governance-only"]
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
-      cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
+      cursor: src/adapters/cursor/rules/tes-guidelines.mdc
 
   - id: success-formula
     label: "Success Formula E = A * S * C * V"
@@ -127,10 +136,12 @@ concepts:
     disposition: keep-as-anchor
     expansion_required: false
     anchor: "Success formula: E = A * S * C * V (assumptions, scope, change, verification); any zero means stop."
+    anchor_markers: ["E = A * S * C * V"]
+    skill_markers: ["E = A * S * C * V"]
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
-      cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
+      cursor: src/adapters/cursor/rules/tes-guidelines.mdc
 
   - id: skill-routing-map
     label: "Skill/intent routing map (/tes-* canonical + /tes:* aliases)"
@@ -138,8 +149,10 @@ concepts:
     disposition: keep-as-anchor
     expansion_required: true
     anchor: "Route /tes-* intents to the matching host skill/rule; /tes:* are compatible aliases; not shell commands."
+    anchor_markers: ["/tes-", "/tes:", "not shell commands"]
+    skill_markers: ["/tes-", "/tes:"]
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
+      claude: src/adapters/claude/CLAUDE.md
       codex: src/adapters/codex/AGENTS.md
       cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
 
@@ -149,10 +162,12 @@ concepts:
     disposition: keep-as-anchor
     expansion_required: false
     anchor: "Confidentiality: use neutral placeholder vocabulary only; no real project/product/path names in tracked content."
+    anchor_markers: ["placeholder vocabulary"]
+    skill_markers: ["placeholder vocabulary"]
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
-      codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
-      cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
+      claude: src/adapters/claude/CLAUDE.md
+      codex: src/adapters/codex/AGENTS.md
+      cursor: src/adapters/cursor/rules/tes-guidelines.mdc
 
   - id: feedback-voice
     label: "Feedback voice (short frank prose, avoid table/dump bloat)"
@@ -160,10 +175,12 @@ concepts:
     disposition: keep-as-anchor
     expansion_required: false
     anchor: "Feedback voice: short, frank prose; avoid tables/dumps unless asked or syntax requires."
+    anchor_markers: ["frank prose"]
+    skill_markers: ["frank prose"]
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
-      codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
-      cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
+      claude: src/adapters/claude/CLAUDE.md
+      codex: src/adapters/codex/AGENTS.md
+      cursor: src/adapters/cursor/rules/tes-guidelines.mdc
 
   - id: locks
     label: "Bootloader locks (no inventory bloat, no unauthorized remote/secrets/destructive ops)"
@@ -171,16 +188,22 @@ concepts:
     disposition: keep-as-anchor
     expansion_required: false
     anchor: "Locks: keep the bootloader thin; no remote/publish/secret/destructive actions without explicit project authorization."
+    anchor_markers: ["destructive"]
+    skill_markers: ["destructive"]
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
+      claude: src/adapters/claude/CLAUDE.md
       codex: src/adapters/codex/AGENTS.md
       cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
 
+  # already-in-skill / move-to-skill: detail lives only in the skill/rule. The
+  # oracle asserts skill_markers are present in the host skill/rule and that the
+  # bootloader does NOT re-duplicate the full block (anchor is empty or a pointer).
   - id: diamond
     label: "Diamond Build-Test-Fail-Fix"
     hosts: [claude, codex, cursor]
     disposition: already-in-skill
     anchor: ""
+    skill_markers: ["Diamond Build-Test-Fail-Fix", "adversarial fixture"]
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
@@ -191,6 +214,7 @@ concepts:
     hosts: [claude, codex, cursor]
     disposition: already-in-skill
     anchor: ""
+    skill_markers: ["Mantra Gate", "VERIFY", "Flash-Fry"]
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
@@ -201,6 +225,7 @@ concepts:
     hosts: [claude, codex, cursor]
     disposition: already-in-skill
     anchor: ""
+    skill_markers: ["Infrastructure Decision Gate", "Stack Surface Scan"]
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
@@ -211,6 +236,7 @@ concepts:
     hosts: [claude, codex, cursor]
     disposition: already-in-skill
     anchor: ""
+    skill_markers: ["Install/Update Gate", "Project Context Gate", "Project-Start"]
     expansion_in:
       claude: src/adapters/claude/skills/tes-init/SKILL.md
       codex: src/adapters/codex/skills/tes-init/SKILL.md
@@ -221,6 +247,7 @@ concepts:
     hosts: [claude, codex, cursor]
     disposition: already-in-skill
     anchor: ""
+    skill_markers: ["recommended_update_scope", "helper_contract_status"]
     expansion_in:
       claude: src/adapters/claude/skills/tes-update/SKILL.md
       codex: src/adapters/codex/skills/tes-update/SKILL.md
@@ -231,9 +258,10 @@ concepts:
     hosts: [claude, codex, cursor]
     disposition: already-in-skill
     anchor: ""
+    skill_markers: ["require explicit", "cognitive brake"]
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
-      codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
+      claude: src/adapters/claude/CLAUDE.md
+      codex: src/adapters/codex/AGENTS.md
       cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
 
   - id: cortex-reflex
@@ -243,8 +271,9 @@ concepts:
       claude: already-in-skill
       codex: already-in-skill
       cursor: already-in-skill
-    note: "Verified at SPEC-001: Claude tes-guidelines Workflow step 6, Codex tes-engineering-discipline Workflow step 6 (lines 120-129), and Cursor tes-guidelines.mdc all carry the full reflex (reflect + curate-plan + no-write-without-authorization). The bootloader copies are duplicates to delete in SPEC-002..004."
+    note: "Verified at SPEC-001: Claude tes-guidelines Workflow step 6, Codex tes-engineering-discipline Workflow step 6 (lines 120-129), and Cursor tes-runtime-capabilities.mdc all carry the full reflex (reflect + curate-plan + no-write-without-authorization). The bootloader copies were deleted in SPEC-002..004."
     anchor: ""
+    skill_markers: ["cortex_reflect", "curate-plan"]
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
@@ -257,8 +286,9 @@ concepts:
       claude: already-in-skill
       codex: already-in-skill
       cursor: already-in-skill
-    note: "Claude tes-guidelines Workflow step 7; Codex tes-engineering-discipline Workflow step 7; Cursor tes-guidelines.mdc Field Reports section. Bootloader copies are duplicates to delete."
+    note: "Claude tes-guidelines Workflow step 7; Codex tes-engineering-discipline Workflow step 7; Cursor tes-runtime-capabilities.mdc Field Reports section. Bootloader copies were deleted in SPEC-002..004."
     anchor: ""
+    skill_markers: ["Field Reports", "sanitized", "pre-push"]
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
@@ -266,12 +296,14 @@ concepts:
 
   - id: memory-lifecycle-boundary
     label: "TES Memory Lifecycle Boundary (recall read-only, write gate, checkpoint != memory, subagent return is evidence-only)"
-    hosts: [claude, codex]
+    hosts: [claude, codex, cursor]
     disposition_by_host:
       claude: move-to-skill
       codex: move-to-skill
-    note: "CRITICAL: this block lives ONLY in CLAUDE.md and AGENTS.md today. The Claude tes-guidelines skill and the Codex tes-engineering-discipline skill do NOT carry it. SPEC-001 must move it into each host skill before SPEC-002/003 deletes it from the bootloader. Cursor tes-guidelines.mdc already carries the block; for Cursor it is already-in-rule (move to lazy rule in SPEC-004)."
+      cursor: already-in-skill
+    note: "Moved into the Claude and Codex skills in SPEC-001 (it previously lived only in the bootloaders). For Cursor it moved with the capability detail into tes-runtime-capabilities.mdc in SPEC-004. The bootloader copies were deleted in SPEC-002..004."
     anchor: ""
+    skill_markers: ["Memory Lifecycle Boundary", "recall stays read-only", "subagent return"]
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md

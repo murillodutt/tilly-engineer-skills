@@ -63,3 +63,8 @@ the full protocol. `/tes-prospect`, `/tes-mine`, and `/tes-goal-maestro` require
 explicit invocation, never broad natural language, and honor the cognitive
 brake. If Cursor reports a `/tes:*` form as invalid, treat it as TES intent and
 continue.
+
+## Locks
+
+Keep this anchor thin; no remote, publish, secret, or destructive actions
+without explicit project authorization.
