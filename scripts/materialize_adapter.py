@@ -298,10 +298,15 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
             adapter_root,
             ".cursor/rules/tes-guidelines.mdc",
         ))
-        for relpath in (
-            ".cursor/rules/tes-guidelines.mdc",
-            ".cursor/rules/tes-runtime-capabilities.mdc",
-        ):
+        # Rule-mode contract (bootloader-to-skill migration): the discipline
+        # anchor is always-on; the capability rule is the Cursor-native lazy
+        # layer (Apply Intelligently), so it must be alwaysApply:false with a
+        # description, per the official Cursor rule-loading model.
+        cursor_rule_modes = {
+            ".cursor/rules/tes-guidelines.mdc": "true",
+            ".cursor/rules/tes-runtime-capabilities.mdc": "false",
+        }
+        for relpath, mode in cursor_rule_modes.items():
             rule = adapter_root / relpath
             text = rule.read_text(encoding="utf-8") if rule.exists() else ""
             if not rule.exists():
@@ -309,8 +314,8 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
                 continue
             if "description:" not in text:
                 failures.append(f"cursor: {relpath} must keep description frontmatter")
-            if "alwaysApply: true" not in text:
-                failures.append(f"cursor: {relpath} must keep alwaysApply: true")
+            if f"alwaysApply: {mode}" not in text:
+                failures.append(f"cursor: {relpath} must be alwaysApply: {mode}")
 
     if adapter == "claude":
         failures.extend(thin_bootloader_failures(

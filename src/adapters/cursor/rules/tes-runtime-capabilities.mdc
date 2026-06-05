@@ -18,21 +18,8 @@ behavior, adversarial fixture, observed failure, smallest repair, and green
 gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 `not available`, `certified`, or `fail`.
 
-## Mantra Gate
-
-Before state-changing actions, use the TES Mantra Gate. For routine writes,
-commits, generated artifacts, spec execution, high-risk work, or project-state
-updates, show only `[🍳 Flash-Fry]` to the user when the gate permits
-proceeding; the full gate is still retained as evidence.
-
-Full gate fields are `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`,
-`RESOLVE`, and `STATUS`. Report gate detail only when the gate returns
-`BLOCKED` or `NEEDS_REVIEW`, approval is required, or the user explicitly asks
-for audit detail.
-
-For closure, commit, or push claims, the adoption oracle may check that a gate
-record exists near the state change. If it reports `BYPASS_SUSPECTED`,
-`NEEDS_REVIEW`, or `BLOCKED`, stop and recover before claiming progress.
+The Mantra Gate is the always-on `tes-guidelines.mdc` anchor's responsibility
+(state-changing actions need it on every turn). This rule does not restate it.
 
 ## Infrastructure Decision Gate
 
@@ -67,13 +54,21 @@ shortcuts, not shell commands:
 - `/tes-open-obsidian`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
   `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, `/tes-bump`
 
-Compatible aliases include the `/tes:*` forms plus `/tes:gps`, `/tes:check`,
-`/tes:certify`, `/tes:recall`, `/tes:learn`, and `/tes:reflect`. Bilingual
-natural intents (tes init, tes update, tes align, project GPS, mapa TES,
-align this project, alinhar projeto, mapear projeto, open Obsidian,
-abrir Obsidian, Atualizar TES, atualizar TES, inicializar TES, instalar TES,
-recertificar TES) route the same way. Choose the smallest safe oracle behind
-the scenes and report skipped or blocked commands honestly.
+Compatible aliases: `/tes:init`, `/tes:update`, `/tes:align`, `/tes:gps`,
+`/tes:goal-maestro`, `/tes:prospect`, `/tes:mine`, `/tes:open-obsidian`,
+`/tes:cortex`, `/tes:curate`, `/tes:mcp`, `/tes:field-reports`, `/tes:doctor`,
+`/tes:adapter`, `/tes:bench`, `/tes:bump`, `/tes:check`, `/tes:certify`,
+`/tes:recall`, `/tes:learn`, `/tes:reflect`.
+
+Bilingual natural intents route the same way: tes init, tes setup, tes update,
+tes align, tes map, generate a maestral /goal prompt, gerar um /goal maestral,
+project GPS, mapa TES, tes open obsidian, tes bump, align TES,
+align this project, alinhar TES, alinhar projeto, map this project, mapear TES,
+mapear projeto, open Obsidian, open this project in Obsidian, abrir Obsidian,
+abrir no Obsidian, Atualizar TES, atualizar TES, initialize TES, install TES,
+recertify TES, inicializar TES, instalar TES, recertificar TES. Choose the
+smallest safe oracle behind the scenes and report skipped or blocked commands
+honestly.
 
 Do not activate `/tes-prospect`, `/tes-mine`, or `/tes-goal-maestro` from broad
 natural language. They require explicit invocation by trigger, alias, or skill
@@ -115,8 +110,8 @@ the planner reports drift, or evidence is missing. If `.tes/postinstall.json` is
 `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`
 to rerun Project-Start, verify selected MCP config, record the recovery run, and
 clear the sentinel only on PASS. Treat `tes_init.py` as scaffold generation; the
-active agent must open strong anchors before claiming deep understanding, refine
-`PROJECT-CONTEXT.md` when evidence supports it, or report
+active agent must open and analyze strong project anchors before claiming deep
+understanding, refine `PROJECT-CONTEXT.md` when evidence supports it, or report
 `Project context: NEEDS_REVIEW`.
 
 For `/tes-update` or `/tes:update`, first check installed version, cloud

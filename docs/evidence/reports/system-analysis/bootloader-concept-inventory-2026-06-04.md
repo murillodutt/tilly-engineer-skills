@@ -214,11 +214,12 @@ concepts:
     hosts: [claude, codex, cursor]
     disposition: already-in-skill
     anchor: ""
-    skill_markers: ["Mantra Gate", "VERIFY", "Flash-Fry"]
+    skill_markers: ["Mantra Gate", "Flash-Fry"]
+    note: "Cursor owner is the always-on tes-guidelines.mdc anchor: the Mantra Gate is a state-change gate that must be available every turn, so it stays always-loaded (not the lazy rule). Claude/Codex own it in their lazy skill. The full VERIFY..STATUS field list lives in the owner surfaces; the Cursor anchor carries the compact Flash-Fry form."
     expansion_in:
       claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
-      cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
+      cursor: src/adapters/cursor/rules/tes-guidelines.mdc
 
   - id: infrastructure-gate
     label: "Infrastructure Decision Gate / Stack Surface Scan"

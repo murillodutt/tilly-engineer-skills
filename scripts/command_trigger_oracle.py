@@ -179,6 +179,7 @@ PLATFORM_SOURCE_GROUPS = {
     ),
     "claude": (
         "src/adapters/claude/CLAUDE.md",
+        "src/adapters/claude/skills/tes-guidelines/SKILL.md",
         "src/adapters/claude/skills/tes-init/SKILL.md",
         "src/adapters/claude/skills/tes-setup/SKILL.md",
         "src/adapters/claude/skills/tes-update/SKILL.md",
@@ -202,16 +203,27 @@ PLATFORM_SOURCE_GROUPS = {
     ),
 }
 
+# Lazy surfaces own the full init-router protocol (the dense 8 terms). The
+# always-on bootloaders only need a short init anchor + route to the lazy
+# surface (bootloader-to-skill migration, three-layer contract): anchor in the
+# bootloader, expansion in the lazy skill/rule, oracle proves both.
 INIT_ROUTER_SOURCE_PATHS = (
     "docs/install/COMMAND-TRIGGERS.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
-    "src/adapters/codex/AGENTS.md",
     "src/adapters/codex/skills/tes-init/SKILL.md",
-    "src/adapters/claude/CLAUDE.md",
     "src/adapters/claude/skills/tes-init/SKILL.md",
-    "src/adapters/cursor/rules/tes-guidelines.mdc",
     "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",
 )
+
+# Each always-on bootloader must carry a short init anchor that routes to its
+# lazy init surface. It must NOT restate the full gate protocol (that is the
+# dense detail the migration moved to the lazy layer).
+INIT_ROUTER_BOOTLOADERS = (
+    "src/adapters/codex/AGENTS.md",
+    "src/adapters/claude/CLAUDE.md",
+    "src/adapters/cursor/rules/tes-guidelines.mdc",
+)
+INIT_ROUTER_ANCHOR_TERMS = ("/tes-init",)
 
 REPORT_GOVERNANCE_SOURCE_PATHS = (
     "docs/install/COMMAND-TRIGGERS.md",
@@ -400,6 +412,7 @@ def check_claude_invalid_slash(text: str) -> list[str]:
 def check_init_router(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
     checked: list[dict[str, Any]] = []
     failures: list[str] = []
+    # Lazy surfaces and docs own the full init-router protocol.
     for relpath in INIT_ROUTER_SOURCE_PATHS:
         path = root / relpath
         if not path.exists():
@@ -411,6 +424,25 @@ def check_init_router(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
         missing = [term for term in INIT_ROUTER_TERMS if term.casefold() not in normalized_text]
         failures.extend(f"{relpath} missing init router term: {term}" for term in missing)
         checked.append({"path": relpath, "status": "PASS" if not missing else "FAIL"})
+    # Always-on bootloaders carry only a short init anchor + route, never the
+    # full protocol. Missing anchor is FAIL (no route to the lazy surface);
+    # restating the full dense protocol would be the bloat the migration cured.
+    for relpath in INIT_ROUTER_BOOTLOADERS:
+        path = root / relpath
+        if not path.exists():
+            failures.append(f"missing init bootloader: {relpath}")
+            checked.append({"path": relpath, "status": "MISSING"})
+            continue
+        text = path.read_text(encoding="utf-8")
+        normalized_text = normalized(text).casefold()
+        missing_anchor = [t for t in INIT_ROUTER_ANCHOR_TERMS if t.casefold() not in normalized_text]
+        failures.extend(
+            f"{relpath} missing init anchor term: {term}" for term in missing_anchor
+        )
+        checked.append(
+            {"path": relpath, "kind": "bootloader-anchor",
+             "status": "PASS" if not missing_anchor else "FAIL"}
+        )
     return checked, failures
 
 

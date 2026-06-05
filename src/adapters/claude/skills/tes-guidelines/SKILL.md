@@ -154,7 +154,7 @@ Each factor is binary at closure:
 
 If any factor is zero, stop or repair before claiming success.
 
-## Memory Lifecycle Boundary
+## TES Memory Lifecycle Boundary
 
 When Cortex is the durable memory surface, keep the lifecycle boundary explicit:
 

@@ -24,8 +24,11 @@ Apply to non-trivial coding, review, refactor, or instruction-migration work:
 4. **Goal-Driven Execution** — define a falsifiable oracle before closure and
    verify before claiming success.
 
-The full gate tables, Diamond Build-Test-Fail-Fix, Mantra Gate, and
-Infrastructure Decision Gate live in `.claude/skills/tes-guidelines/SKILL.md`.
+The full gate tables, Diamond Build-Test-Fail-Fix, and Infrastructure Decision
+Gate live in `.claude/skills/tes-guidelines/SKILL.md`. For state-changing
+actions, route to the TES Mantra Gate defined in
+`.claude/skills/tes-guidelines/SKILL.md`. Do not reintroduce a duplicated gate
+protocol here.
 
 ## Runtime-First
 
@@ -56,7 +59,8 @@ internal-service names, or `~/Dev/<name>` paths in tracked content.
 
 `/tes-*` are canonical intents and `/tes:*` are compatible aliases — intent
 shortcuts, not shell commands. Route each to its matching `.claude/skills/tes-*`
-skill (init, setup, update, align, map, cortex, curate, mcp, field-reports,
+skill; `/tes-init` routes to `tes-init` for the full install/update gate flow.
+Skills: (init, setup, update, align, map, cortex, curate, mcp, field-reports,
 doctor, adapter, bench, bump, open-obsidian, prospect, mine, goal-maestro), or
 the local helper spec when no skill is present. Bilingual natural intents (e.g.
 `inicializar TES`, `alinhar projeto`, `mapear projeto`, `Atualizar TES`) route

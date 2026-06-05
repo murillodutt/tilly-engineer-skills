@@ -27,8 +27,18 @@ Apply to non-trivial coding, review, refactor, or instruction-migration work:
 4. **Goal-Driven Execution** — define a falsifiable oracle before closure;
    reproduce a bug first when practical; claim success only after it passes.
 
-The Diamond, Mantra Gate, and Infrastructure Decision Gate live in
+The Diamond and Infrastructure Decision Gate live in
 `tes-runtime-capabilities.mdc`.
+
+## Mantra Gate
+
+Before state-changing actions, use the TES Mantra Gate (state changes need it on
+every turn, so it stays in this always-on anchor). For routine writes, commits,
+generated artifacts, spec execution, high-risk work, or project-state updates,
+show only `[🍳 Flash-Fry]` to the user when the gate permits proceeding; the
+full gate is still retained as evidence. Report gate detail only on `BLOCKED` or
+`NEEDS_REVIEW`, when approval is required, or when the user asks for audit
+detail.
 
 ## Runtime-First
 
@@ -59,10 +69,10 @@ internal-service names, or `~/Dev/<name>` paths in tracked content.
 
 `/tes-*` are canonical intents and `/tes:*` are compatible aliases — intent
 shortcuts, not shell commands. They route to `tes-runtime-capabilities.mdc` for
-the full protocol. `/tes-prospect`, `/tes-mine`, and `/tes-goal-maestro` require
-explicit invocation, never broad natural language, and honor the cognitive
-brake. If Cursor reports a `/tes:*` form as invalid, treat it as TES intent and
-continue.
+the full protocol; `/tes-init` routes there for the install/update gate flow.
+`/tes-prospect`, `/tes-mine`, and `/tes-goal-maestro` require explicit
+invocation, never broad natural language, and honor the cognitive brake. If
+Cursor reports a `/tes:*` form as invalid, treat it as TES intent and continue.
 
 ## Locks
 

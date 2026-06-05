@@ -25,8 +25,11 @@ Apply to non-trivial coding, review, refactor, or instruction-migration work:
 4. Goal-Driven Execution — define a falsifiable oracle before closure; run the
    smallest relevant check first.
 
-Full gate tables, Diamond, Mantra Gate, and the Infrastructure Decision Gate
-live in `.agents/skills/tes-engineering-discipline/SKILL.md`.
+Full gate tables, Diamond, and the Infrastructure Decision Gate live in
+`.agents/skills/tes-engineering-discipline/SKILL.md`. For state-changing
+actions, route to the TES Mantra Gate defined in
+`.agents/skills/tes-engineering-discipline/SKILL.md`. Do not reintroduce a
+duplicated gate protocol here.
 
 </instructions>
 
@@ -66,7 +69,8 @@ internal-service names, or `~/Dev/<name>` paths in tracked content.
 <routing>
 
 `/tes-*` are canonical intents and `/tes:*` are compatible aliases — intent
-shortcuts, not shell commands. Route each to its `.agents/skills/tes-*/SKILL.md`
+shortcuts, not shell commands. Route each to its `.agents/skills/tes-*/SKILL.md`;
+`/tes-init` routes to `tes-init` for the full install/update gate flow. Skills:
 (engineering-discipline, init, setup, update, align, map, cortex, mcp,
 field-reports, doctor, adapter, bench, bump, open-obsidian, goal-maestro,
 prospect, mine), or to `docs/install/COMMAND-TRIGGERS.md` plus the smallest safe

@@ -225,15 +225,22 @@ def analyze() -> dict[str, Any]:
         )
 
     # Codex
+    # Bootloader keeps the behavioral anchors always-on; the dense Cortex reflex
+    # and memory lifecycle boundary live in the lazy skill (three-layer
+    # contract). The bootloader is not required to restate them.
     codex_agent = "src/adapters/codex/AGENTS.md"
+    codex_discipline_skill = "src/adapters/codex/skills/tes-engineering-discipline/SKILL.md"
     if not exists(codex_agent):
         failures.append(f"missing Codex agent bootloader: {codex_agent}")
     else:
         text = read(codex_agent)
-        for term in ("Think Before Coding", "Simplicity First", "cortex_reflex"):
+        for term in ("Think Before Coding", "Simplicity First"):
             if term not in text:
                 failures.append(f"{codex_agent} missing {term}")
-        failures.extend(check_lifecycle_boundary(codex_agent))
+    if exists(codex_discipline_skill):
+        if "cortex_reflect" not in read(codex_discipline_skill):
+            failures.append(f"{codex_discipline_skill} missing Cortex reflex (lazy owner)")
+        failures.extend(check_lifecycle_boundary(codex_discipline_skill))
     for skill in CODEX_SKILLS:
         failures.extend(check_skill(
             f"src/adapters/codex/skills/{skill}/SKILL.md",
@@ -269,15 +276,21 @@ def analyze() -> dict[str, Any]:
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
 
     # Claude
+    # Bootloader keeps the behavioral anchors always-on; the dense Cortex reflex
+    # and memory lifecycle boundary live in the lazy tes-guidelines skill.
     claude_agent = "src/adapters/claude/CLAUDE.md"
+    claude_guidelines_skill = "src/adapters/claude/skills/tes-guidelines/SKILL.md"
     if not exists(claude_agent):
         failures.append(f"missing Claude bootloader: {claude_agent}")
     else:
         text = read(claude_agent)
-        for term in ("Think Before Coding", "Simplicity First", "Cortex Reflection"):
+        for term in ("Think Before Coding", "Simplicity First"):
             if term not in text:
                 failures.append(f"{claude_agent} missing {term}")
-        failures.extend(check_lifecycle_boundary(claude_agent))
+    if exists(claude_guidelines_skill):
+        if "cortex_reflect" not in read(claude_guidelines_skill):
+            failures.append(f"{claude_guidelines_skill} missing Cortex reflex (lazy owner)")
+        failures.extend(check_lifecycle_boundary(claude_guidelines_skill))
     for skill in CLAUDE_SKILLS:
         failures.extend(check_skill(f"src/adapters/claude/skills/{skill}/SKILL.md", skill))
     for relpath in (
@@ -296,20 +309,24 @@ def analyze() -> dict[str, Any]:
     surface("claude", "rules", "not-native", "Claude uses CLAUDE.md, permissions, hooks, skills, plugins, and MCP.")
     surface("claude", "mcp", "certified", "scripts/install_mcp.py writes .mcp.json")
 
-    # Cursor
+    # Cursor: the discipline anchor is always-on; the capability rule is the
+    # Cursor-native lazy layer (Apply Intelligently), so it is alwaysApply:false
+    # with a description (official Cursor rule-loading model). The memory
+    # lifecycle boundary moved with the capability detail into the lazy rule.
     cursor_rule = "src/adapters/cursor/rules/tes-guidelines.mdc"
     cursor_runtime_rule = "src/adapters/cursor/rules/tes-runtime-capabilities.mdc"
-    for rule in (cursor_rule, cursor_runtime_rule):
+    cursor_rule_modes = {cursor_rule: "true", cursor_runtime_rule: "false"}
+    for rule, mode in cursor_rule_modes.items():
         if not exists(rule):
             failures.append(f"missing Cursor rule: {rule}")
             continue
         text = read(rule)
-        if "alwaysApply: true" not in text:
-            failures.append(f"{rule} must keep alwaysApply: true")
+        if f"alwaysApply: {mode}" not in text:
+            failures.append(f"{rule} must be alwaysApply: {mode}")
         if "description:" not in text:
             failures.append(f"{rule} missing description")
-    if exists(cursor_rule):
-        failures.extend(check_lifecycle_boundary(cursor_rule))
+    if exists(cursor_runtime_rule):
+        failures.extend(check_lifecycle_boundary(cursor_runtime_rule))
     if not exists("src/adapters/cursor/CURSOR.md"):
         failures.append("missing Cursor bootloader: src/adapters/cursor/CURSOR.md")
     surface("cursor", "agent", "certified", "src/adapters/cursor/CURSOR.md")
@@ -391,10 +408,11 @@ def analyze() -> dict[str, Any]:
     ):
         if term not in init_text:
             failures.append(f"scripts/tes_init.py missing project context term: {term}")
+    # Init-context detail lives in the lazy surfaces (tes-init skills and the
+    # Cursor capability rule), not the always-on Cursor discipline anchor.
     for relpath in (
         "src/adapters/codex/skills/tes-init/SKILL.md",
         "src/adapters/claude/skills/tes-init/SKILL.md",
-        "src/adapters/cursor/rules/tes-guidelines.mdc",
         "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",
     ):
         text = read(relpath)
