@@ -1,4 +1,4 @@
-version: 0.3.166
+version: 0.3.167
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -475,6 +475,20 @@ documents:
     class: roadmap
     status: proposed
     consumer: maintainers, installer authors, MCP authors, hook authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-npx-command-surface-parity.md
+    id: roadmap.goal_super_spec_tes_npx_command_surface_parity
+    class: roadmap
+    status: proposed
+    consumer: maintainers, installer authors, NPX/BunX authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-skills-surface-and-functional-default.md
+    id: roadmap.goal_super_spec_tes_skills_surface_and_functional_default
+    class: roadmap
+    status: proposed
+    consumer: maintainers, installer authors, oracle authors, adapter authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-gps-capsule-mode.md

@@ -18,7 +18,7 @@ except Exception:  # noqa: BLE001 - installed copies may audit without package c
     field_reports = None  # type: ignore[assignment]
 
 
-VERSION = "0.3.166"
+VERSION = "0.3.167"
 LEGACY_FIELD_ROOT = Path(".tilly/field-reports")
 FIELD_ROOT = Path(".tes/field-reports")
 LEGACY_RETROFIT_ROOT = Path(".tilly/retrofit")

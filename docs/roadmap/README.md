@@ -11,7 +11,7 @@ tver: 0.1.4
 # Roadmap Index
 
 This folder preserves roadmap lineage without turning the roadmap into the
-work. Current package baseline: TES `0.3.166`. Execution authority lives in the
+work. Current package baseline: TES `0.3.167`. Execution authority lives in the
 current dashboard, Super SPEC, audit record, or runtime oracle for each line.
 
 ## Folder Map
@@ -45,6 +45,8 @@ in dashboards, registries, history, audits, fixtures, or oracles.
 | TES attach/detach and attach-health | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-attach-detach-and-attach-health.md` |
 | TES runtime-surface attach/detach | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-runtime-surface-attach-detach.md` |
 | TES GPS capsule mode | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-gps-capsule-mode.md` |
+| TES NPX command surface parity | Complete | `goals/super-specs/GOAL-SUPER-SPEC-tes-npx-command-surface-parity.md` |
+| TES skills surface and functional default | Complete | `goals/super-specs/GOAL-SUPER-SPEC-tes-skills-surface-and-functional-default.md` |
 | TES bootloader-to-skill migration | Complete | `goals/super-specs/GOAL-SUPER-SPEC-tes-bootloader-skill-migration.md` |
 | TES postinstall/Cortex hardening | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
 | TES postinstall recovery symmetry | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md` |

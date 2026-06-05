@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -36,10 +37,10 @@ from typing import Any
 import capsule_residue_oracle as residue
 
 
-VERSION = "0.3.166"
+VERSION = "0.3.167"
 
 # Surface set mirrors tes_install ALL_ATTACH_SURFACES.
-SURFACES = ("mcp", "docs-mesh", "root-context", "hooks", "field-reports", "gps", "goals", "mantra")
+SURFACES = ("mcp", "docs-mesh", "root-context", "skills", "hooks", "field-reports", "gps", "goals", "mantra")
 
 # Installed MCP server entrypoint the host spawns (install_mcp_hosts args).
 INSTALLED_MCP_ENTRYPOINT = ".tes/bin/cortex_mcp.py"
@@ -83,14 +84,18 @@ def mcp_handshake(target: Path, *, timeout: float = HANDSHAKE_TIMEOUT_S) -> dict
     tools_list = {"jsonrpc": "2.0", "id": 2, "method": "tools/list"}
     stdin_payload = "\n".join(json.dumps(m) for m in (init, initialized, tools_list)) + "\n"
 
+    # Health probing is read-only: spawn the server with bytecode writing off so
+    # the diagnostic never leaves __pycache__/*.pyc residue in the target.
+    probe_env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
     try:
         proc = subprocess.run(
-            [python, str(entrypoint), "--target", str(target)],
+            [python, "-B", str(entrypoint), "--target", str(target)],
             input=stdin_payload,
             capture_output=True,
             text=True,
             timeout=timeout,
             check=False,
+            env=probe_env,
         )
     except subprocess.TimeoutExpired:
         return {"status": "PENDING_HOST_RESTART", "reason": "server did not respond within timeout"}
@@ -177,6 +182,9 @@ def evaluate(target: Path, surface: str, *, mcp_timeout: float = HANDSHAKE_TIMEO
         health = hook_health(target)
     elif surface == "root-context":
         present = residue.detect_bootloader_blocks(target)
+        health = {"status": "PASS" if present else "NOT_APPLIED", "present": present}
+    elif surface == "skills":
+        present = residue.detect_skills(target)
         health = {"status": "PASS" if present else "NOT_APPLIED", "present": present}
     elif surface == "docs-mesh":
         present = (target / "docs/agents").exists()

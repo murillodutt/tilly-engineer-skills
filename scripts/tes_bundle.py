@@ -24,7 +24,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.166"
+VERSION = "0.3.167"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -471,6 +471,7 @@ ATTACHMENT_SURFACES = {
     "mcp",
     "docs-mesh",
     "root-context",
+    "skills",
     "hooks",
     "field-reports",
     "gps",
@@ -486,8 +487,12 @@ def attachment_surface_for(path: str, layer: str) -> str:
         return "mcp"
     if path.startswith("docs/agents/"):
         return "docs-mesh"
+    # ADR 0004 amendment (skills-surface line): project skills are their own
+    # first-class attachment surface, decoupled from the root bootloaders. This
+    # lets an adopter materialize the `/tes-*` command set without injecting
+    # bootloader governance, and vice versa.
     if path.startswith(".agents/skills/") or path.startswith(".claude/skills/"):
-        return "root-context"
+        return "skills"
     if path.startswith(".cursor/rules/"):
         return "root-context"
     if layer == "context_governance":
@@ -1399,6 +1404,33 @@ def latest_backup_id(target: Path) -> str | None:
     return candidates[0] if candidates else None
 
 
+def prune_empty_parents(target: Path, removed: Path) -> None:
+    """Remove now-empty parent directories of a removed file, up to (not
+    including) the target root. Stops at the first non-empty directory, never
+    ascends past the target, and never touches the capsule (.tes/**). This keeps
+    detach/uninstall residue-clean for surfaces with nested trees (e.g. skills:
+    .claude/skills/<name>/SKILL.md) instead of leaving empty directory shells.
+    """
+    target = target.resolve()
+    parent = removed.parent.resolve()
+    while parent != target and target in parent.parents:
+        # Never prune capsule paths; they are the runtime ownership authority.
+        if (target / ".tes") == parent or (target / ".tes") in parent.parents:
+            return
+        try:
+            next(parent.iterdir())
+            return  # directory not empty; stop ascending
+        except StopIteration:
+            pass
+        except OSError:
+            return
+        try:
+            parent.rmdir()
+        except OSError:
+            return
+        parent = parent.parent.resolve()
+
+
 def remove_manifest_entry(
     target: Path,
     entry: dict[str, Any],
@@ -1446,13 +1478,15 @@ def remove_manifest_entry(
             shutil.rmtree(dest)
         else:
             dest.unlink()
+        # Leave no empty directory shells behind (e.g. .claude/skills/<name>/).
+        prune_empty_parents(target, dest)
 
 
 # Surfaces whose files are bundle manifest entries (detach removes them
 # deterministically). Other surfaces are produced by runtime writers outside the
 # bundle (mcp via install_mcp, hooks via the hook writers, docs-mesh via
 # tes_init) and need their own removers, owned by later units.
-MANIFEST_BACKED_SURFACES = {"root-context"}
+MANIFEST_BACKED_SURFACES = {"root-context", "skills"}
 
 
 def detach_surface(target: Path, surface: str, *, dry_run: bool = False, yes: bool = False) -> dict[str, Any]:

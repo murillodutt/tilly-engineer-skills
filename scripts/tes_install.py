@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.166"
+VERSION = "0.3.167"
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -866,7 +866,7 @@ def aggregate_install_status(dry_run: bool, apply_status: str, certification_sta
 
 # ADR 0004 capsule-first install. The capsule (.tes/**) is always written.
 # Project-visible surfaces are attached only when explicitly requested.
-ALL_ATTACH_SURFACES = ("mcp", "docs-mesh", "root-context", "hooks", "field-reports", "gps", "goals", "mantra")
+ALL_ATTACH_SURFACES = ("mcp", "docs-mesh", "root-context", "skills", "hooks", "field-reports", "gps", "goals", "mantra")
 
 
 def resolve_attach(attach: list[str] | None) -> set[str]:
@@ -1032,6 +1032,49 @@ def detach(args: argparse.Namespace) -> int:
     return 0 if verdict in {"PASS", "DRY-RUN", "SKIP"} else 1
 
 
+def doctor(args: argparse.Namespace) -> int:
+    """ADR 0004 installer model: report capsule health and per-surface attachment
+    health separately. Read-only — doctor reports, it never mutates the target.
+
+    This is the diagnostic counterpart to the `/tes-doctor` repair skill: this
+    command observes and reports; repair routes stay a separate concern.
+    """
+    target = target_root(args.target)
+    if not target.exists() or not target.is_dir():
+        print(json.dumps({"version": VERSION, "status": "FAIL", "failures": [f"target is not a directory: {target}"]}, indent=2))
+        print("[tes-doctor] FAIL")
+        return 1
+
+    import capsule_residue_oracle  # type: ignore
+    import attach_health_oracle  # type: ignore
+
+    capsule_present = bool(capsule_residue_oracle.detect_capsule(target))
+    capsule_health = {"status": "PASS" if capsule_present else "NOT_APPLIED", "present": capsule_present}
+
+    # Per-surface attachment health, read-only. Surfaces not materialized report
+    # NOT_APPLIED; mcp/hooks carry real PENDING_*/HOST_UNOBSERVABLE evidence.
+    attachments: dict[str, Any] = {}
+    for surface in attach_health_oracle.SURFACES:
+        attachments[surface] = attach_health_oracle.evaluate(target, surface)
+
+    attached = sorted(s for s, h in attachments.items() if str(h.get("status")) not in {"NOT_APPLIED", "FAIL"})
+    # doctor is a report, never a failure verdict on its own; FAIL is reserved for
+    # a bad invocation (handled above). An unhealthy attachment surfaces in its
+    # own per-surface status, not by failing the whole report.
+    status = "PASS" if capsule_present else "NOT_INSTALLED"
+    result = {
+        "version": VERSION,
+        "status": status,
+        "target": str(target),
+        "capsule": capsule_health,
+        "attachments": attachments,
+        "attached_surfaces": attached,
+    }
+    print(json.dumps(result, indent=2, sort_keys=True))
+    print("[tes-doctor] " + status)
+    return 0
+
+
 def install(args: argparse.Namespace) -> int:
     target = target_root(args.target)
     if not target.exists() or not target.is_dir():
@@ -1182,6 +1225,11 @@ def install(args: argparse.Namespace) -> int:
         "agent": args.agent,
         "agents": agents,
         "mode": args.mode,
+        # Project-visible surfaces actually materialized this run (capsule is the
+        # always-present runtime authority, not a project-visible attachment).
+        # The bin renderer reads this to describe the install truthfully instead
+        # of inferring materialization from the docs-mesh postinstall sentinel.
+        "attached_surfaces": sorted(surfaces - {"capsule"}),
         "stage": summarize_result(stage),
         "apply": summarize_result(apply_result),
         "hooks": hook_actions,
@@ -2350,7 +2398,11 @@ def main() -> int:
         "--attach",
         action="append",
         default=None,
-        choices=["all", "mcp", "docs-mesh", "root-context", "hooks", "field-reports", "gps", "goals", "mantra"],
+        # Derive choices from ALL_ATTACH_SURFACES so the parser and resolve_attach
+        # can never diverge; "all" is the install-all meta-selection and "capsule"
+        # is the explicit minimal/isolation selection (capsule-only, no
+        # project-visible surface).
+        choices=["all", "capsule", *ALL_ATTACH_SURFACES],
         help="attach a project-visible surface; default is capsule-only",
     )
 
@@ -2399,6 +2451,10 @@ def main() -> int:
     detach_parser.add_argument("--dry-run", action="store_true")
     detach_parser.add_argument("--yes", action="store_true")
 
+    # ADR 0004 installer model: read-only capsule + attachment health report.
+    doctor_parser = subparsers.add_parser("doctor")
+    doctor_parser.add_argument("--target", type=Path, default=Path.cwd())
+
     args = parser.parse_args()
     if sys.version_info < MIN_PYTHON:
         return python_runtime_block(args.command)
@@ -2417,6 +2473,8 @@ def main() -> int:
         return attach(args)
     if args.command == "detach":
         return detach(args)
+    if args.command == "doctor":
+        return doctor(args)
     if args.command == "hook":
         return hook(args)
     if args.command == "status":

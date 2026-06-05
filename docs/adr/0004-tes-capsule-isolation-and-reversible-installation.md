@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, installer authors, MCP authors, hook authors, GPS/MAP authors, Goal Maestro authors, Mantra Gate authors, and release operators
 source_of_truth: true
 evidence_level: L2
-tver: 0.2.0
+tver: 0.3.0
 ---
 
 # ADR 0004: TES Capsule Isolation And Reversible Installation
@@ -22,6 +22,16 @@ and Mantra Gate capsule/attached modes — are accepted decisions whose executio
 lines follow. Acceptance binds the contract; each line carries its own release
 identity decision.
 
+Amended 2026-06-05 (tver 0.3.0) by the skills-surface-and-functional-default
+execution line. The amendment ratifies an already-proven runtime behavior: the
+public `install` default materializes a full, functional TES (capsule + skills +
+bootloaders + MCP + hooks), with `skills` added as a first-class attachment
+surface and every project-visible write still manifest-backed and reversible. It
+corrects the original draft's conflation of reversible *ownership* with an empty
+materialization *default* — the latter being the "reduced TES" this ADR already
+rejected. The ownership, reversibility, inbound-isolation, and certification
+invariants are unchanged.
+
 ## Lineage
 
 ADR 0004 extends ADR 0003 (Cortex MCP capability) and amends ADR 0003.1
@@ -37,9 +47,13 @@ ADR 0003.1 already established, and ADR 0004 reuses without redefining:
 - the rule that `INSTALLED` is an operation status for a completed write, not a
   certification verdict.
 
-ADR 0004 supersedes only the prior installation *defaults* where they conflict
-with capsule-first ownership, namely: project-visible writes on by default. The
-status vocabulary, the non-inference rule, and the certification model from
+ADR 0004 supersedes only the prior installation model where it conflicts with
+capsule-first *ownership*, namely: project-visible writes that were *irreversible*
+(install-all with no real opt-out, no manifest-backed detach, no uninstall). It
+does not mandate an empty default. Capsule-first changes how writes are owned and
+reversed, not whether TES delivers its capability; the default still materializes
+a full, functional TES (see `### Materialization default`). The status
+vocabulary, the non-inference rule, and the certification model from
 0003.1 stay authoritative.
 
 ADR 0004 also consumes the active planning line
@@ -99,15 +113,30 @@ outward only through reversible attachments the user explicitly enabled.
 
 | Command | Behavior |
 |---------|----------|
-| `install` | Capsule only. Writes `.tes/**`. No root files, no hooks, no MCP config, no `docs/agents/**`, no Field Reports hook unless an attach profile is explicitly selected. |
-| `attach <surface>` | Explicit host/project attachment. Surfaces: `gps`, `goals`, `mantra`, `mcp`, `field-reports`, `docs-mesh`, `root-context`, `hooks`. Each write is manifest-recorded and health-checked. |
+| `install` (public default) | Materializes a full, functional TES: the capsule (`.tes/**`, always the runtime ownership authority) plus the project skill command set (`skills`), the engineering-discipline bootloaders (`root-context`), `mcp`, and `hooks`. Every project-visible write is manifest-recorded and reversible via `detach`/`uninstall`. `docs/agents/**` (docs-mesh) stays opt-in because it authors project documentation. A minimal capsule-only install is the explicit opt-in `--attach capsule`. The capsule is the reversibility-and-non-contamination guarantee that makes a full default safe; it is not a materialization cap (see `### Materialization default`). |
+| `attach <surface>` | Explicit host/project attachment. Surfaces: `gps`, `goals`, `mantra`, `mcp`, `field-reports`, `docs-mesh`, `root-context`, `skills`, `hooks`. Each write is manifest-recorded and health-checked. |
 | `detach <surface>` | Remove an active attachment and restore project-owned files from backup; capsule state is kept. |
 | `uninstall` | Restore project-owned files, remove TES-owned surfaces, remove the capsule, and prove zero active residue. |
 | `doctor` | Report capsule health and attachment health separately. |
 
+### Materialization default
+
+The capsule is reversibility and non-contamination, not a materialization cap.
+TES is a context-and-method platform; its value to the user and the agent is the
+full capability working in alignment, with the capsule guaranteeing that every
+project-visible write is owned, recorded, and reversible. The default therefore
+materializes a full, functional TES (skills, bootloaders, MCP, hooks). Withholding
+materialization by default would be the "reduced TES" this ADR rejects
+(`## Rejected Alternatives`), in direct conflict with the capability-preservation
+invariant (`## Invariants`). Isolation-sensitive adopters opt into a minimal
+capsule-only install explicitly; isolation is never achieved by a silently empty
+default. `docs/agents/**` is the one exception kept opt-in because it authors
+project documentation rather than enabling TES capability.
+
 ### Capsule storage layout
 
-Default writes live only under `.tes/**`. Capsule-mode destinations:
+Capsule-mode (`--attach capsule`) writes live only under `.tes/**`. Capsule
+destinations:
 
 - GPS/MAP internal projection: `.tes/gps/**` (and `.tes/context/**` for read
   state), new construction;
@@ -243,8 +272,12 @@ push, tag, publish, or marketplace action is authorized by this ADR.
 
 ## Test Plan
 
-- Fresh target: `install` capsule only; assert no root files, no
-  `docs/agents/**`, no MCP configs, no hooks, no Field Reports hook.
+- Fresh target (public default): `install` materializes a full functional TES;
+  assert the project skills, the `root-context` bootloaders, MCP configs, and
+  hooks are present, that `docs/agents/**` is NOT written (docs-mesh stays
+  opt-in), and that every project-visible write is manifest-backed and reversible.
+- Fresh target (minimal opt-in): `install --attach capsule` writes only `.tes/**`;
+  assert no root files, no skills, no MCP configs, no hooks, no `docs/agents/**`.
 - GPS capsule: run map/alignment in capsule mode; assert useful output plus
   `.tes/gps/**` state with no docs export.
 - GPS attached: attach `docs-mesh`, update the managed `TES-MAP` block, detach,

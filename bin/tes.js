@@ -7,12 +7,23 @@ import { fileURLToPath } from "node:url";
 
 const AGENTS = new Set(["codex", "claude", "cursor", "all"]);
 const MODES = new Set(["preserve", "clean-runtime"]);
+// Install-style commands run the interactive/default flow; management commands
+// delegate a reversible engine subcommand and only need --target / --yes /
+// --dry-run. Both keep all removal/attach/health logic in the Python engine.
+const INSTALL_COMMANDS = new Set(["add", "install"]);
+const MANAGE_COMMANDS = new Set(["uninstall", "attach", "detach", "doctor"]);
+// Surfaces accepted by attach/detach. "capsule" is valid for attach (minimal
+// selection) but never for detach (use uninstall); the engine enforces the rest.
+const ATTACH_SURFACES = new Set([
+  "capsule", "mcp", "docs-mesh", "root-context", "skills", "hooks",
+  "field-reports", "gps", "goals", "mantra",
+]);
 const VALUE_OPTIONS = new Set(["--target", "--agent", "--mode", "--bundle", "--url", "--sha256", "--timeout", "--attach"]);
 const BOOL_OPTIONS = new Set(["--yes", "--dry-run", "--no-hooks", "--no-postinstall"]);
 const MIN_NODE_MAJOR = 18;
 const MIN_BUN_VERSION = [1, 0, 0];
 const MIN_PYTHON_VERSION = [3, 11, 0];
-const TES_VERSION = "0.3.166";
+const TES_VERSION = "0.3.167";
 const ANSI = {
   reset: "\x1b[0m",
   bold: "\x1b[1m",
@@ -66,6 +77,20 @@ function printHelp() {
 Usage:
   tilly-engineer-skills add [options]
   tilly-engineer-skills install [options]
+  tilly-engineer-skills attach <surface> [--target <path>] [--yes] [--dry-run]
+  tilly-engineer-skills detach <surface> [--target <path>] [--yes] [--dry-run]
+  tilly-engineer-skills uninstall [--target <path>] [--yes] [--dry-run]
+  tilly-engineer-skills doctor [--target <path>]
+
+Commands:
+  add, install                Install TES (full functional default; reversible).
+  attach <surface>            Add one project-visible surface to an install.
+                              Surfaces: skills, root-context, mcp, hooks,
+                              docs-mesh, gps, goals, mantra, field-reports.
+  detach <surface>            Remove one surface; the capsule and the rest stay.
+  uninstall                   Remove TES and restore the project (proves zero
+                              residue). Requires --yes; --dry-run previews.
+  doctor                      Report capsule and attachment health (read-only).
 
 Options:
   --target <path>             Target project. Defaults to the current directory.
@@ -80,9 +105,11 @@ Options:
   --sha256 <hash>             Expected hash for --url.
   --timeout <seconds>         Bundle download or postinstall timeout.
   --attach <surface>          Attach a project-visible surface. Repeatable.
-                              Defaults to MCP + hooks; use --attach all for
-                              bootloaders, project skills, docs mesh, MCP,
-                              and hooks.
+                              Default installs a full functional TES: project
+                              skills (/tes-* commands), bootloaders, MCP, and
+                              hooks, all reversible. Use --attach all to also
+                              add the docs mesh, or --attach capsule for a
+                              minimal capsule-only install.
   --help                      Show this help.
 
 Runtime:
@@ -259,8 +286,11 @@ function parse(argv) {
   }
 
   const command = argv[0];
-  if (!["add", "install"].includes(command)) {
-    return { error: `unknown command "${command}". Use "add" or "install".` };
+  if (MANAGE_COMMANDS.has(command)) {
+    return parseManage(command, argv.slice(1));
+  }
+  if (!INSTALL_COMMANDS.has(command)) {
+    return { error: `unknown command "${command}". Use add, install, attach, detach, uninstall, or doctor.` };
   }
 
   const options = {
@@ -315,6 +345,66 @@ function parse(argv) {
       options.mode = value;
     } else {
       options.passthrough.push(item, value);
+    }
+  }
+
+  return options;
+}
+
+// Management commands (uninstall/attach/detach/doctor) delegate to the engine.
+// The bin validates shape and surface, then passes a fixed argv through; it never
+// reimplements removal, attach, or health logic.
+function parseManage(command, rest) {
+  const options = {
+    command,
+    kind: "manage",
+    target: process.cwd(),
+    surface: null,
+    yes: false,
+    dryRun: false,
+    passthrough: [],
+  };
+  const needsSurface = command === "attach" || command === "detach";
+
+  for (let index = 0; index < rest.length; index += 1) {
+    const item = rest[index];
+    if (item === "--yes") {
+      options.yes = true;
+      continue;
+    }
+    if (item === "--dry-run") {
+      options.dryRun = true;
+      continue;
+    }
+    if (item === "--target") {
+      const value = rest[index + 1];
+      if (!value || value.startsWith("--")) {
+        return { error: `--target requires a value.` };
+      }
+      options.target = value;
+      index += 1;
+      continue;
+    }
+    if (item.startsWith("--")) {
+      return { error: `unknown option "${item}" for "${command}".` };
+    }
+    // A bare positional argument: the surface name for attach/detach.
+    if (needsSurface && options.surface === null) {
+      options.surface = item;
+      continue;
+    }
+    return { error: `unexpected argument "${item}" for "${command}".` };
+  }
+
+  if (needsSurface) {
+    if (options.surface === null) {
+      return { error: `"${command}" requires a surface, e.g. ${command} mcp.` };
+    }
+    if (!ATTACH_SURFACES.has(options.surface)) {
+      return { error: `unknown surface "${options.surface}". Choose one of: ${[...ATTACH_SURFACES].join(", ")}.` };
+    }
+    if (command === "detach" && options.surface === "capsule") {
+      return { error: `cannot detach the capsule; use "uninstall" to remove TES entirely.` };
     }
   }
 
@@ -602,12 +692,29 @@ function printCompletionNotice(parsed, summary, dryRun) {
     return;
   }
   console.log(color("TES is ready for this project.", ANSI.bold, ANSI.green));
-  if (summary?.postinstall?.action === "skip-capsule-only") {
+  const attached = Array.isArray(summary?.attached_surfaces) ? summary.attached_surfaces : [];
+  if (attached.length === 0) {
+    // Explicit minimal/isolation install: only the reversible capsule was written.
     console.log(`\n${color("IMPORTANT", ANSI.bold, ANSI.yellow)}`);
-    console.log("TES installed as a project-safe capsule with MCP and startup hooks only.");
-    console.log("Project-visible bootloaders, skills, and docs mesh were not installed.");
+    console.log("TES installed as a capsule-only runtime. No project-visible surface was materialized.");
+    console.log("Attach surfaces when you want them: tilly-engineer-skills add --attach all");
+    return;
+  }
+  if (attached.includes("skills") || attached.includes("root-context")) {
+    // Functional default (or a selection that includes the command set / bootloaders).
+    console.log(`\n${color("IMPORTANT", ANSI.bold, ANSI.yellow)}`);
+    console.log("TES is materialized as a full, reversible workspace: project skills (/tes-* commands),");
+    console.log("engineering-discipline bootloaders, MCP, and startup hooks.");
     console.log("Codex, Claude Code, and Cursor may ask you to trust the project hook before it fires.");
-    console.log("Use an explicit --attach selection when you want TES governance or project skills materialized.");
+    console.log("Every write is recorded and reversible: tilly-engineer-skills uninstall (or detach <surface>).");
+    return;
+  }
+  if (summary?.postinstall?.action === "skip-capsule-only") {
+    // A partial selection (e.g. mcp/hooks only) without the command set or bootloaders.
+    console.log(`\n${color("IMPORTANT", ANSI.bold, ANSI.yellow)}`);
+    console.log(`TES attached only: ${attached.join(", ")}. Project skills and bootloaders were not materialized.`);
+    console.log("Codex, Claude Code, and Cursor may ask you to trust the project hook before it fires.");
+    console.log("Add the command set with: tilly-engineer-skills add --attach skills --attach root-context");
     return;
   }
   if (parsed.noHooks || parsed.noPostinstall) {
@@ -672,6 +779,118 @@ function renderFailure(summary, output) {
   }
 }
 
+function renderReviewItems(summary) {
+  const items = Array.isArray(summary?.review_items) ? summary.review_items : [];
+  if (items.length === 0) {
+    return;
+  }
+  console.log(color("\nNeeds review (preserved, not removed):", ANSI.yellow));
+  for (const item of items.slice(0, 12)) {
+    const path = item.path || item.surface || "";
+    const reason = item.reason || item.action || "";
+    console.log(`  - ${path}${reason ? ` (${reason})` : ""}`);
+  }
+}
+
+function renderManageSummary(parsed, summary, rawOutput) {
+  if (!summary) {
+    // The engine returned success but no JSON we could parse; show its text.
+    console.log(String(rawOutput || "").trim());
+    return;
+  }
+  const status = String(summary.status || "");
+  const headerColor = status === "PASS" || status === "UNINSTALLED" || status === "ATTACHED" || status === "DETACHED" || status === "DRY-RUN"
+    ? ANSI.green
+    : (status === "NEEDS_REVIEW" ? ANSI.yellow : ANSI.red);
+  console.log(`\n${color(`TES ${parsed.command}`, ANSI.bold, ANSI.cyan)}  ${statusColor(status, status)}`);
+
+  if (parsed.command === "uninstall") {
+    const residue = summary.residue && typeof summary.residue === "object" ? String(summary.residue.status || "") : "";
+    if (residue) {
+      console.log(`Residue   ${statusColor(residue, residue)}${residue === "PASS" ? " (zero active residue)" : ""}`);
+    }
+    if (summary.restore && typeof summary.restore === "object" && summary.restore.status) {
+      console.log(`Restore   ${summary.restore.status}`);
+    }
+  } else if (parsed.command === "attach" || parsed.command === "detach") {
+    console.log(`Surface   ${summary.surface || parsed.surface}`);
+    const health = summary.health && typeof summary.health === "object" ? String(summary.health.status || "") : "";
+    if (health) {
+      console.log(`Health    ${statusColor(health, health)}`);
+    }
+  } else if (parsed.command === "doctor") {
+    const capsule = summary.capsule && typeof summary.capsule === "object" ? String(summary.capsule.status || "") : "";
+    console.log(`Capsule   ${statusColor(capsule, capsule)}`);
+    const attachments = summary.attachments && typeof summary.attachments === "object" ? summary.attachments : {};
+    console.log("Attachments:");
+    for (const surface of Object.keys(attachments)) {
+      const sstatus = String(attachments[surface]?.status || "");
+      console.log(`  ${surface.padEnd(14)} ${statusColor(sstatus, sstatus)}`);
+    }
+  }
+  renderReviewItems(summary);
+  void headerColor;
+}
+
+function renderManageFailure(parsed, summary, rawOutput) {
+  console.error(`\n${color(`TES ${parsed.command} failed`, ANSI.bold, ANSI.red)}\n`);
+  const failures = (summary && Array.isArray(summary.failures)) ? summary.failures : [];
+  if (failures.length > 0) {
+    for (const item of failures.slice(0, 8)) {
+      console.error(`- ${item}`);
+    }
+    renderReviewItems(summary);
+    return;
+  }
+  const lines = String(rawOutput || "").split(/\r?\n/).filter((item) => {
+    const trimmed = item.trim();
+    return trimmed && trimmed !== "{" && trimmed !== "}" && !trimmed.startsWith("\"") && !trimmed.startsWith("[tes-");
+  });
+  for (const line of lines.slice(0, 12)) {
+    console.error(line);
+  }
+}
+
+function manageEngineArgs(parsed) {
+  // Build the engine argv for a management subcommand. The engine owns all
+  // removal/attach/health logic; the bin only forwards a validated shape.
+  const args = [enginePath, parsed.command];
+  if (parsed.command === "attach" || parsed.command === "detach") {
+    args.push(parsed.surface);
+  }
+  args.push("--target", parsed.target);
+  if (parsed.command !== "doctor") {
+    if (parsed.dryRun) {
+      args.push("--dry-run");
+    }
+    if (parsed.yes) {
+      args.push("--yes");
+    }
+  }
+  return args;
+}
+
+async function runManageCommand(python, parsed) {
+  // Destructive commands require an explicit --yes (or --dry-run to preview),
+  // matching the engine's non-interactive safety contract.
+  const destructive = parsed.command === "uninstall" || parsed.command === "detach";
+  if (destructive && !parsed.yes && !parsed.dryRun) {
+    return fail(`"${parsed.command}" changes files. Re-run with --yes to proceed, or --dry-run to preview.`);
+  }
+
+  const args = manageEngineArgs(parsed);
+  const result = await runPythonInstaller(python, args);
+  const status = result.status === null ? 1 : result.status;
+  const combinedOutput = `${result.stdout || ""}\n${result.stderr || ""}`;
+  const summary = extractJson(combinedOutput);
+  if (status !== 0) {
+    renderManageFailure(parsed, summary, combinedOutput);
+    return status;
+  }
+  renderManageSummary(parsed, summary, combinedOutput);
+  return 0;
+}
+
 async function main() {
   const runtime = detectRuntime();
   if (!runtime.supported) {
@@ -697,6 +916,10 @@ async function main() {
     return pythonFailure(python);
   }
 
+  if (parsed.kind === "manage") {
+    return await runManageCommand(python, parsed);
+  }
+
   const configured = await configureInteractively(parsed);
   if (!configured.ok) {
     return fail("installation cancelled.", 130);
@@ -707,12 +930,21 @@ async function main() {
   if (!installOptions.yes && !installOptions.dryRun) {
     passthrough.push("--yes");
   }
-  // ADR 0004: the public installer must not turn the target project into a TES
-  // governance surface by default. It attaches only the reversible tool
-  // integration layer (MCP + hooks); root bootloaders, project skills, and docs
-  // mesh require explicit --attach all or named --attach selections.
+  // ADR 0004 (amended, skills-surface line): the capsule is reversible ownership
+  // and non-contamination, not a materialization cap. A fresh public install
+  // therefore delivers a full, functional TES — project skills (the /tes-*
+  // command set), the engineering-discipline bootloaders, MCP, and startup hooks
+  // — with every project-visible write recorded in the manifest and reversible
+  // via uninstall/detach. docs-mesh stays opt-in (it authors project docs). For a
+  // minimal, isolation-only install, pass an explicit --attach selection (e.g.
+  // --attach mcp) or --attach capsule for capsule-only.
   if (!passthrough.includes("--attach")) {
-    passthrough.push("--attach", "mcp", "--attach", "hooks");
+    passthrough.push(
+      "--attach", "skills",
+      "--attach", "root-context",
+      "--attach", "mcp",
+      "--attach", "hooks",
+    );
   }
 
   const args = [

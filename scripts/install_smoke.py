@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.166"
+VERSION = "0.3.167"
 ROUTES = ("current", "codex", "claude", "cursor", "vscode", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -371,7 +371,7 @@ def capsule_install_probe() -> dict[str, Any]:
         # No project-visible surface may be written by a capsule-only install.
         forbidden = ("AGENTS.md", "CLAUDE.md", "CURSOR.md", ".mcp.json", ".cursor/mcp.json",
                      ".vscode/mcp.json", ".codex/config.toml", ".claude/settings.json",
-                     ".cursor/hooks.json", "docs/agents")
+                     ".cursor/hooks.json", "docs/agents", ".claude/skills", ".agents/skills")
         for relpath in forbidden:
             if (target / relpath).exists():
                 failures.append(f"capsule-only install leaked project-visible surface: {relpath}")
@@ -416,7 +416,7 @@ def reversibility_roundtrip_probe() -> dict[str, Any]:
             write(target / relpath, text)
         snapshot = {relpath: (target / relpath).read_text(encoding="utf-8") for relpath in owned}
 
-        all_surfaces = {"capsule", "mcp", "docs-mesh", "root-context", "hooks",
+        all_surfaces = {"capsule", "mcp", "docs-mesh", "root-context", "skills", "hooks",
                         "field-reports", "gps", "goals", "mantra"}
         with tempfile.TemporaryDirectory(prefix="tes-roundtrip-bundle-") as bundle_dir:
             bundle = Path(bundle_dir) / "bundle.zip"
@@ -525,6 +525,79 @@ def attach_detach_roundtrip_probe() -> dict[str, Any]:
             details={"route": "attach-detach-roundtrip", "failures": len(failures)},
         )
         return {"route": "attach-detach-roundtrip", "status": status, "failures": failures}
+
+
+def skills_surface_probe() -> dict[str, Any]:
+    """ADR 0004 (skills-surface line) SPEC-005: skills are a decoupled, reversible
+    surface.
+
+    Three proofs in one round-trip:
+    1. Decoupling: attaching only `skills` materializes the project skill command
+       set but NOT the root bootloaders (skills are not root-context).
+    2. Health: the skills surface reports PASS once materialized.
+    3. Reversibility: detaching `skills` removes the skill tree residue-clean
+       (no empty directory shells) and keeps the capsule and other surfaces.
+    """
+    import tes_bundle
+    import capsule_residue_oracle
+    import attach_health_oracle
+
+    skill_marker = ".claude/skills/tes-map/SKILL.md"
+    with tempfile.TemporaryDirectory(prefix="tes-install-smoke-skills-") as tempdir:
+        target = Path(tempdir)
+        failures: list[str] = []
+        failures.extend(init_git(target))
+
+        with tempfile.TemporaryDirectory(prefix="tes-skills-bundle-") as bundle_dir:
+            bundle = Path(bundle_dir) / "bundle.zip"
+            tes_bundle.build_bundle(bundle)
+            stage = tes_bundle.stage_bundle(bundle, target)
+            if stage.get("status") != "STAGED":
+                failures.append(f"skills probe stage failed: {stage.get('status')}")
+                return {"route": "skills-surface", "status": "FAIL", "failures": failures}
+            # Attach ONLY skills (plus the always-present capsule).
+            tes_bundle.apply_staged_bundle(target, yes=True, mode="preserve", surfaces={"capsule", "skills"})
+
+        # 1. Decoupling: skills present, bootloaders/rules absent.
+        if not (target / skill_marker).exists():
+            failures.append("attach skills must materialize the project skill command set")
+        for bootloader in ("CLAUDE.md", "AGENTS.md", "CURSOR.md", ".cursor/rules/tes-guidelines.mdc"):
+            if (target / bootloader).exists():
+                failures.append(f"attach skills must NOT materialize a root-context surface: {bootloader}")
+
+        # 2. Health: skills surface reports PASS.
+        sk_health = attach_health_oracle.evaluate(target, "skills")
+        if sk_health["status"] != "PASS":
+            failures.append(f"attached skills health must be PASS: {sk_health['status']}")
+
+        # 3. Reversibility: detach skills, residue-clean, capsule kept.
+        detach = tes_bundle.detach_surface(target, "skills", yes=True)
+        if detach.get("status") != "DETACHED":
+            failures.append(f"detach skills status: {detach.get('status')}")
+        for skills_root in (".claude/skills", ".agents/skills"):
+            root = target / skills_root
+            if root.exists() and any(p.is_file() for p in root.rglob("*")):
+                failures.append(f"detach skills left files under {skills_root}")
+            if root.exists():
+                failures.append(f"detach skills left an empty directory shell: {skills_root}")
+        if not (target / ".tes").exists():
+            failures.append("detach skills must keep the capsule")
+        sk_health_after = attach_health_oracle.evaluate(target, "skills")
+        if sk_health_after["status"] != "NOT_APPLIED":
+            failures.append(f"detached skills health must be NOT_APPLIED: {sk_health_after['status']}")
+
+        # No action resolved outside the target.
+        for action in detach.get("actions", []):
+            path = str(action.get("path") or "")
+            if path and (Path(path).is_absolute() or ".." in Path(path).parts):
+                failures.append(f"detach skills acted outside target: {path}")
+
+        status = "FAIL" if failures else "PASS"
+        field_reports.safe_record_event(
+            target, "install_smoke", status, "installer", "self-test",
+            details={"route": "skills-surface", "failures": len(failures)},
+        )
+        return {"route": "skills-surface", "status": status, "failures": failures}
 
 
 def runtime_surface_roundtrip_probe() -> dict[str, Any]:
@@ -1149,6 +1222,7 @@ def main() -> int:
         results.append(capsule_install_probe())
         results.append(reversibility_roundtrip_probe())
         results.append(attach_detach_roundtrip_probe())
+        results.append(skills_surface_probe())
         results.append(runtime_surface_roundtrip_probe())
         results.append(gps_capsule_mode_probe())
         results.append(legacy_retirement_probe())

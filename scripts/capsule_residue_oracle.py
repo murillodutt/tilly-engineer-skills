@@ -26,7 +26,7 @@ from typing import Any
 import root_context
 
 
-VERSION = "0.3.166"
+VERSION = "0.3.167"
 
 # Governed surface markers (kept in sync with the installer writers).
 MCP_SERVER_NAME = "tes-cortex"
@@ -136,6 +136,31 @@ def detect_hooks(target: Path) -> list[str]:
     text = read_text(git_pre_push)
     if text and "TES_FIELD_REPORTS_PRE_PUSH" in text:
         found.append(".git/hooks/pre-push (TES field reports hook)")
+    return found
+
+
+SKILLS_ROOTS = (".agents/skills", ".claude/skills")
+
+
+def detect_skills(target: Path) -> list[str]:
+    """Detect materialized TES project skills (the /tes-* command set).
+
+    Skills are their own attachment surface (ADR 0004 amendment), distinct from
+    the root bootloaders. This detector lets attach-health and detach agree on
+    exactly what the `skills` surface owns.
+    """
+    found: list[str] = []
+    for rel in SKILLS_ROOTS:
+        root = target / rel
+        if not root.exists():
+            continue
+        skill_files = [
+            path
+            for path in root.rglob("SKILL.md")
+            if path.is_file() and ("/tes-" in path.as_posix() or path.parent.name.startswith("tes-"))
+        ]
+        if skill_files:
+            found.append(f"{rel}/** (TES project skills, {len(skill_files)} skills)")
     return found
 
 

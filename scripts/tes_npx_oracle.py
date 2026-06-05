@@ -23,7 +23,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.166"
+VERSION = "0.3.167"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -530,6 +530,72 @@ def github_package_self_test(
     return exit_code
 
 
+def manage_roundtrip_failures(work: Path) -> list[str]:
+    """NPX-level reversibility round-trip through bin/tes.js (the entrypoint
+    adopters use): minimal install -> attach skills -> detach skills -> uninstall,
+    plus a read-only doctor report. Asserts the project returns to a clean state
+    with zero residue and that each command surfaces the engine verdict.
+    """
+    failures: list[str] = []
+    target = fixture(work, "npx-manage-roundtrip-target")
+
+    # Minimal capsule-only install via the bin.
+    install = run(["node", "bin/tes.js", "add", "--target", str(target),
+                   "--agent", "claude", "--yes", "--attach", "capsule"], ROOT)
+    if install.returncode != 0:
+        failures.append("npx minimal install failed")
+        return failures
+    if (target / ".claude/skills").exists():
+        failures.append("minimal capsule install must not materialize skills")
+
+    # Attach skills via the bin.
+    attach = run(["node", "bin/tes.js", "attach", "skills", "--target", str(target), "--yes"], ROOT)
+    if attach.returncode != 0:
+        failures.append("npx attach skills failed")
+        failures.extend(attach.stderr.splitlines()[:4])
+    if not (target / ".claude/skills/tes-map/SKILL.md").exists():
+        failures.append("npx attach skills did not materialize the skill command set")
+    if "ATTACHED" not in attach.stdout:
+        failures.append("npx attach must surface the ATTACHED verdict")
+
+    # Doctor: read-only health report; must not mutate the target.
+    before = sorted(p.name for p in target.rglob("*") if p.is_file())
+    doc = run(["node", "bin/tes.js", "doctor", "--target", str(target)], ROOT)
+    after = sorted(p.name for p in target.rglob("*") if p.is_file())
+    if doc.returncode != 0:
+        failures.append("npx doctor failed")
+    if before != after:
+        failures.append("npx doctor must be read-only (it changed files)")
+    if "skills" not in doc.stdout:
+        failures.append("npx doctor must report the skills attachment")
+
+    # Detach skills via the bin.
+    detach = run(["node", "bin/tes.js", "detach", "skills", "--target", str(target), "--yes"], ROOT)
+    if detach.returncode != 0:
+        failures.append("npx detach skills failed")
+    if (target / ".claude/skills").exists():
+        failures.append("npx detach skills left a residue (skill tree not removed)")
+    if "DETACHED" not in detach.stdout:
+        failures.append("npx detach must surface the DETACHED verdict")
+
+    # Destructive commands require --yes.
+    no_yes = run(["node", "bin/tes.js", "uninstall", "--target", str(target)], ROOT)
+    if no_yes.returncode == 0:
+        failures.append("npx uninstall without --yes must not proceed")
+
+    # Uninstall via the bin: zero residue.
+    uninstall = run(["node", "bin/tes.js", "uninstall", "--target", str(target), "--yes"], ROOT)
+    if uninstall.returncode != 0:
+        failures.append("npx uninstall failed")
+    if (target / ".tes").exists():
+        failures.append("npx uninstall did not remove the capsule")
+    leftover = [p for p in (".claude/skills", "CLAUDE.md", ".mcp.json", ".claude/settings.json")
+                if (target / p).exists()]
+    if leftover:
+        failures.append(f"npx uninstall left project-visible residue: {leftover}")
+    return failures
+
+
 def self_test() -> int:
     failures = package_contract_failures()
     if not shutil.which("node"):
@@ -762,15 +828,20 @@ def self_test() -> int:
                 failures.extend(commercial_output_failures("npm exec package add", exec_result.stdout))
                 if "TES is ready for this project." not in exec_result.stdout:
                     failures.append("npm exec package add must finish with a human success message")
+                # ADR 0004 (amended): the public default delivers a full,
+                # reversible TES. The follow-up must describe full materialization
+                # and the reversibility path, not a capsule-only install.
                 required_followup_terms = (
-                    "project-safe capsule with MCP and startup hooks only",
-                    "Project-visible bootloaders, skills, and docs mesh were not installed.",
+                    "full, reversible workspace",
                     "may ask you to trust the project hook before it fires",
-                    "Use an explicit --attach selection",
+                    "uninstall",
                 )
                 for term in required_followup_terms:
                     if term not in exec_result.stdout:
                         failures.append(f"npm exec package add missing platform follow-up term: {term}")
+            # The functional default materializes the full TES: capsule runtime,
+            # MCP, hooks, the engineering-discipline bootloaders, and the project
+            # skill command set. Every one of these must be present.
             for relpath in (
                 ".tes/bin/tes_install.py",
                 ".tes/tes-install-lock.json",
@@ -779,20 +850,25 @@ def self_test() -> int:
                 ".cursor/mcp.json",
                 ".claude/settings.json",
                 ".cursor/hooks.json",
-            ):
-                if not (install_target / relpath).exists():
-                    failures.append(f"npm exec install missing path: {relpath}")
-            for relpath in (
-                ".tes/postinstall.json",
                 "AGENTS.md",
                 "CLAUDE.md",
                 "CURSOR.md",
-                ".agents/skills/tes-setup/SKILL.md",
-                ".claude/skills/tes-setup/SKILL.md",
+                ".agents/skills/tes-map/SKILL.md",
+                ".claude/skills/tes-map/SKILL.md",
+                ".cursor/rules/tes-guidelines.mdc",
                 ".cursor/rules/tes-runtime-capabilities.mdc",
             ):
+                if not (install_target / relpath).exists():
+                    failures.append(f"npm exec install missing path: {relpath}")
+            # docs-mesh stays opt-in (it authors project docs), so the default must
+            # NOT write docs/agents/** nor leave the docs-mesh postinstall sentinel.
+            for relpath in (
+                ".tes/postinstall.json",
+                "docs/agents/PROJECT-CONTEXT.md",
+                "docs/agents/PROJECT-REGISTER.md",
+            ):
                 if (install_target / relpath).exists():
-                    failures.append(f"npm exec default install must not materialize project-visible path: {relpath}")
+                    failures.append(f"npm exec default install must not materialize docs-mesh path: {relpath}")
             failures.extend(mcp_all_contract_failures(install_target, "npm exec install"))
             sentinel = load_json(install_target / ".tes/postinstall.json") if (install_target / ".tes/postinstall.json").exists() else {}
             if sentinel:
@@ -910,8 +986,13 @@ def self_test() -> int:
                 failures.append("npm exec Claude-only package add failed")
                 failures.extend(first_claude_install.stdout.splitlines())
                 failures.extend(first_claude_install.stderr.splitlines())
-            if (first_claude_target / ".claude/skills/tes-setup/SKILL.md").exists():
-                failures.append("npm exec Claude-only default add must not install /tes-setup skill")
+            # ADR 0004 (amended): the functional default materializes the project
+            # skill command set for the selected agent, so Claude-only must install
+            # its skills (tes-setup among them) and the discipline bootloader.
+            if not (first_claude_target / ".claude/skills/tes-setup/SKILL.md").exists():
+                failures.append("npm exec Claude-only default add must install the project skill set")
+            if not (first_claude_target / "CLAUDE.md").exists():
+                failures.append("npm exec Claude-only default add must install the discipline bootloader")
             if (first_claude_target / ".claude/settings.json").exists():
                 failures.extend(claude_hook_contract_failures(first_claude_target))
             first_start_notice = run(
@@ -983,6 +1064,10 @@ def self_test() -> int:
                 if "systemMessage" in first_complete_payload:
                     failures.append("installed Claude start notice must stay quiet after postinstall is complete")
 
+        # NPX-level reversibility: install -> attach -> detach -> uninstall + doctor
+        # through bin/tes.js (the command surface this line adds).
+        failures.extend(manage_roundtrip_failures(work))
+
     result = {
         "version": VERSION,
         "status": "PASS" if not failures else "FAIL",
@@ -996,6 +1081,7 @@ def self_test() -> int:
             "node bin/tes.js add --target <fixture> --agent all # interactive accept via pty",
             f"npm exec --yes --package <tarball> -- {BIN_NAME} add --target <fixture> --agent all --yes",
             f"bunx --silent --bun --package <tarball> {BIN_NAME} add --dry-run --target <fixture> --agent all --yes",
+            "node bin/tes.js attach skills / detach skills / uninstall / doctor --target <fixture>",
             "python3 <fixture>/.tes/bin/tes_install.py hook --agent codex --target <fixture>",
             "python3 <fixture>/.tes/bin/tes_install.py hook --agent claude --announce-start --target <fixture>",
             "old Python fixture fails with Python 3.11+ guidance",
@@ -1175,7 +1261,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.166 or main.",
+        help="Git ref to test, e.g. v0.3.167 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()
