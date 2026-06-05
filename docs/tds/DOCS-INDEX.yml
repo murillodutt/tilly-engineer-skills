@@ -484,6 +484,13 @@ documents:
     consumer: maintainers, GPS/MAP authors, oracle authors, installer authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-bootloader-skill-migration.md
+    id: roadmap.goal_super_spec_tes_bootloader_skill_migration
+    class: roadmap
+    status: proposed
+    consumer: maintainers, adapter authors, skill authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md
     id: roadmap.goal_super_spec_tes_postinstall_cortex_hardening
     class: roadmap
@@ -1037,6 +1044,13 @@ documents:
     consumer: TES maintainers, adapter authors, and certification reviewers
     source_of_truth: false
     evidence_level: L3
+  - path: docs/evidence/reports/system-analysis/adapter-bootloader-review-2026-06-04.md
+    id: evidence.adapter_bootloader_review_20260604
+    class: evidence
+    status: active
+    consumer: maintainers, adapter authors, and release reviewers
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/evidence/reports/2026/05/25/tes-align/semantic-drift-hardening/REPORT.md
     id: evidence.tes_align_semantic_drift_hardening_20260525
     class: evidence

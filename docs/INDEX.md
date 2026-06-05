@@ -78,6 +78,7 @@ turning the repository root into an inventory.
 | TES Attach/Detach And Attach-Health Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-attach-detach-and-attach-health.md` |
 | TES Runtime-Surface Attach/Detach Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-runtime-surface-attach-detach.md` |
 | TES GPS Capsule Mode Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-gps-capsule-mode.md` |
+| TES Bootloader-To-Skill Migration Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-bootloader-skill-migration.md` |
 | TES Postinstall And Cortex Curation Hardening Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
 | TES Postinstall Recovery Contract Symmetry Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md` |
 | TES NPX MCP Convergence Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
