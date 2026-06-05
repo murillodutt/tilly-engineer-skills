@@ -30,6 +30,10 @@ ADAPTER_SOURCE_PATHS = {
     "cursor": (
         "src/adapters/cursor/CURSOR.md",
         "src/adapters/cursor/rules/tes-guidelines.mdc",
+        # Cursor's lazy capability rule is the contract owner of the expanded
+        # detail (memory lifecycle, Cortex, gate flows) after the migration,
+        # mirroring the bootloader+skill pair used for Claude and Codex.
+        "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",
     ),
 }
 
@@ -45,6 +49,7 @@ ADAPTER_MATERIALIZED_PATHS = {
     "cursor": (
         "CURSOR.md",
         ".cursor/rules/tes-guidelines.mdc",
+        ".cursor/rules/tes-runtime-capabilities.mdc",
     ),
 }
 
