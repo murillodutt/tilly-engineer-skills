@@ -15,7 +15,7 @@ import tempfile
 from typing import Any
 
 
-VERSION = "0.3.164"
+VERSION = "0.3.165"
 SCHEMA = "tes-scope@1"
 SAFE_TOKEN = re.compile(r"[^a-zA-Z0-9_.:-]+")
 ISO_UTC = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
