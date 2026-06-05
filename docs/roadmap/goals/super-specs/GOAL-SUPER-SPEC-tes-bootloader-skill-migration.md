@@ -1,20 +1,49 @@
 ---
 tds_id: roadmap.goal_super_spec_tes_bootloader_skill_migration
 tds_class: roadmap
-status: proposed
+status: archived
 consumer: maintainers, adapter authors, skill authors, oracle authors, release reviewers, and execution agents
 source_of_truth: false
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # GOAL Super SPEC: Bootloader-To-Skill Migration (Lazy Context)
 
-Status: proposed execution contract. Reduce each adapter bootloader
-(`CURSOR.md` / `AGENTS.md` / `CLAUDE.md`) to ~50 lines of always-loaded anchor
-and move certified detail into each host's lazy, progressively-disclosed skill
-layer. The behavioral core that drove the measured 7-day gains stays in the
-always-loaded anchor; everything else loads on demand.
+Status: COMPLETE / archived for lineage (executed 2026-06-04, TES 0.3.165).
+Reduce each adapter
+bootloader (`CURSOR.md` / `AGENTS.md` / `CLAUDE.md`) to a thin always-loaded
+anchor and move certified detail into each host's lazy, progressively-disclosed
+skill layer. The behavioral core that drove the measured 7-day gains stays in
+the always-loaded anchor; everything else loads on demand.
+
+## Execution Record (closeout)
+
+All seven units executed and committed; `npm run commit:check` PASS (43 gates,
+exit 0). Anchor content lines after migration: CLAUDE.md 58, AGENTS.md 66
+(XML-tagged), CURSOR.md 31, Cursor `tes-guidelines.mdc` 57 — all within the
+parity oracle budget (70).
+
+| Unit | Commit | Result |
+|------|--------|--------|
+| SPEC-000 inventory | `73afee5` | Persistent concept inventory + baseline |
+| SPEC-001 skill single-source | `3d03a4c` | Memory Lifecycle moved into Claude/Codex skills |
+| SPEC-002 thin Claude | `b1b4a92` | CLAUDE.md 247 -> 75 lines |
+| SPEC-003 thin Codex | `3d21ca0` | AGENTS.md 252 -> 91 lines |
+| SPEC-004 thin Cursor + rule modes | `6e0413a` | Lazy `alwaysApply:false` capability rule |
+| SPEC-005 parity oracle | `780c38f` | `context_skill_parity_oracle.py` (byte + semantic) |
+| SPEC-006 materialize/install/release | `491514f`, `8885e4a`, `690c4cc6` | Three-layer parity contract; 0.3.165 bundle |
+
+The accepted contract was renegotiated mid-execution by owner decision: not a
+bare ~50-line thinning, but a three-layer contract — short anchor + route in the
+bootloader, full expansion in the lazy skill/rule, oracle proving both — so no
+oracle protection was deleted and no certified knowledge was dropped.
+
+Certified (self-test, smoke, composition, parity), not yet field-proven: no real
+host loaded the thinned anchors and exercised lazy loading. The
+`real_project_learning_standard` canary replay across three hosts remains the
+open follow-up before any field claim. Remote sync (push, tag v0.3.165,
+`release:check`, `public_pages_oracle`) was deferred by owner decision.
 
 Capability: a thin, always-loaded discipline anchor per host plus a single-source
 lazy skill layer, so the first context layer of every adopting project carries

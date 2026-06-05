@@ -45,7 +45,7 @@ in dashboards, registries, history, audits, fixtures, or oracles.
 | TES attach/detach and attach-health | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-attach-detach-and-attach-health.md` |
 | TES runtime-surface attach/detach | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-runtime-surface-attach-detach.md` |
 | TES GPS capsule mode | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-gps-capsule-mode.md` |
-| TES bootloader-to-skill migration | Proposed | `goals/super-specs/GOAL-SUPER-SPEC-tes-bootloader-skill-migration.md` |
+| TES bootloader-to-skill migration | Complete | `goals/super-specs/GOAL-SUPER-SPEC-tes-bootloader-skill-migration.md` |
 | TES postinstall/Cortex hardening | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md` |
 | TES postinstall recovery symmetry | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md` |
 | TES NPX MCP convergence | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
