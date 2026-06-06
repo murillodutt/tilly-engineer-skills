@@ -607,8 +607,122 @@ def install(args: argparse.Namespace) -> int:
         return 0
 
 
+def self_test() -> dict[str, Any]:
+    """SPEC-007 regression fixture: exercise route_inherited_context_roots, the
+    installer seam that turns the default for context_governance roots. This
+    covers the integration (read target root, merge canonical source, write the
+    three artifacts, drop from blind copy), not just the pure decision in the
+    oracle. Adversarial fixtures: rich root inherits, coverage failure falls back
+    to preserve, idempotent re-route, and non-routed paths pass through.
+    """
+    failures: list[str] = []
+    rich_root = (
+        "# Project Rules\n"
+        "Never commit directly to main; open a pull request instead.\n"
+        "Always run `npm test` before closeout.\n"
+        "Do not touch the legacy/ directory.\n"
+        "API docs live in docs/api/.\n"
+    )
+    core_text = "# TES Core\n\nRoute project context to docs/agents/**. Use `/tes-update`.\n"
+
+    def make_item(target_root: Path, relpath: str) -> dict[str, str]:
+        source = target_root / "_src" / relpath
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(core_text, encoding="utf-8")
+        return {
+            "source": str(source),
+            "target": str(target_root / relpath),
+            "relpath": relpath,
+            "layer": "context_governance",
+        }
+
+    with tempfile.TemporaryDirectory(prefix="tes-spec007-") as tempdir:
+        target_root = Path(tempdir)
+
+        # Case 1: a rich CLAUDE.md in conflict inherits — three artifacts written.
+        (target_root / "CLAUDE.md").write_text(rich_root, encoding="utf-8")
+        item = make_item(target_root, "CLAUDE.md")
+        routed, remaining = route_inherited_context_roots([item], target_root, dry_run=False)
+        if not routed or routed[0].get("action") != "inherit":
+            failures.append(f"rich CLAUDE.md must route to inherit, got {routed and routed[0].get('action')}")
+        if remaining:
+            failures.append("inherited root must be removed from the blind-copy list")
+        root_after = (target_root / "CLAUDE.md").read_text(encoding="utf-8")
+        if "<!-- TES:CORE BEGIN" not in root_after or "@docs/agents/PROJECT-CONTEXT.md" not in root_after:
+            failures.append("inherited CLAUDE.md must be the thin core + @ pointer render")
+        source_path = target_root / CANONICAL_SOURCE_REL
+        if not source_path.exists():
+            failures.append("inherit must create the canonical source")
+        else:
+            src = source_path.read_text(encoding="utf-8")
+            for unit in ("npm test", "legacy", "docs/api"):
+                if unit not in src:
+                    failures.append(f"canonical source missing inherited unit: {unit}")
+        baks = list(target_root.glob("CLAUDE.md.bak-*"))
+        if not baks:
+            failures.append("inherit must archive the original root as .bak")
+        elif baks[0].read_text(encoding="utf-8") != rich_root:
+            failures.append("archived .bak must be byte-faithful to the original")
+
+        # Case 2: re-routing the now-inherited root is ALREADY_INHERITED, no new .bak.
+        item2 = make_item(target_root, "CLAUDE.md")
+        routed2, _ = route_inherited_context_roots([item2], target_root, dry_run=False)
+        if not routed2 or routed2[0].get("route_status") != "ALREADY_INHERITED":
+            failures.append("re-routing an inherited root must be ALREADY_INHERITED")
+        if len(list(target_root.glob("CLAUDE.md.bak-*"))) != len(baks):
+            failures.append("already-inherited routing must not create another .bak")
+
+        # Case 3: coverage failure falls back to preserve — root NOT overwritten.
+        # A discards-free drop is simulated by routing a root whose units cannot
+        # all be covered; here we force it via a monkeypatched decision.
+        with tempfile.TemporaryDirectory(prefix="tes-spec007-cov-") as cov_dir:
+            cov_root = Path(cov_dir)
+            (cov_root / "CLAUDE.md").write_text(rich_root, encoding="utf-8")
+            cov_item = {
+                "source": str(make_item(cov_root, "CLAUDE.md")["source"]),
+                "target": str(cov_root / "CLAUDE.md"),
+                "relpath": "CLAUDE.md",
+                "layer": "context_governance",
+            }
+            original = context_distill.route_context_governance_root
+            try:
+                context_distill.route_context_governance_root = (  # type: ignore[assignment]
+                    lambda **kw: {"status": "NEEDS_REVIEW_COVERAGE", "bak_name": ".bak-x",
+                                  "source_text": "", "root_text": None, "coverage": {"status": "NEEDS_REVIEW_COVERAGE"}}
+                )
+                cov_routed, _ = route_inherited_context_roots([cov_item], cov_root, dry_run=False)
+            finally:
+                context_distill.route_context_governance_root = original  # type: ignore[assignment]
+            if not cov_routed or cov_routed[0].get("action") != "preserve-conflict":
+                failures.append("coverage failure must fall back to preserve-conflict")
+            if (cov_root / "CLAUDE.md").read_text(encoding="utf-8") != rich_root:
+                failures.append("coverage failure must NOT overwrite the human root")
+
+        # Case 4: a non-routed context_governance path (Cursor) passes through.
+        cursor_item = {"source": "x", "target": "y", "relpath": ".cursorrules", "layer": "context_governance"}
+        c_routed, c_remaining = route_inherited_context_roots([cursor_item], target_root, dry_run=False)
+        if c_routed or len(c_remaining) != 1:
+            failures.append(".cursorrules must pass through to the legacy copy path, not route")
+
+        # Case 5: dry-run never writes and reports would-inherit.
+        with tempfile.TemporaryDirectory(prefix="tes-spec007-dry-") as dry_dir:
+            dry_root = Path(dry_dir)
+            (dry_root / "AGENTS.md").write_text(rich_root, encoding="utf-8")
+            dry_item = make_item(dry_root, "AGENTS.md")
+            dry_routed, _ = route_inherited_context_roots([dry_item], dry_root, dry_run=True)
+            if not dry_routed or dry_routed[0].get("action") != "would-inherit":
+                failures.append("dry-run must report would-inherit")
+            if (dry_root / "AGENTS.md").read_text(encoding="utf-8") != rich_root:
+                failures.append("dry-run must not modify the root")
+            if (dry_root / CANONICAL_SOURCE_REL).exists():
+                failures.append("dry-run must not write the canonical source")
+
+    return {"status": "PASS" if not failures else "FAIL", "failures": failures, "version": VERSION}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--adapter", default="all", choices=["all", *sorted(materialize_adapter.ADAPTERS)])
     parser.add_argument("--target", type=Path, default=Path.cwd())
     parser.add_argument("--dry-run", action="store_true")
@@ -619,6 +733,12 @@ def main() -> int:
     parser.add_argument("--no-backup", action="store_true", help="do not create .bak-* files before overwrite")
     parser.add_argument("--retrofit-plan", action="store_true", help="write an LLM merge plan for conflicts")
     args = parser.parse_args()
+
+    if args.self_test:
+        result = self_test()
+        print(json.dumps(result, indent=2))
+        print(f"[install-adapter] {result['status']}")
+        return 0 if result["status"] == "PASS" else 1
 
     return install(args)
 
