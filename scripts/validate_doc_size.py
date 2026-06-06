@@ -15,7 +15,12 @@ LIMITS = {
     "docs/roadmap/README.md": 140,
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md": 1000,
     "docs/evals/EXAMPLES.md": 600,
-    "docs/install/USER-MANUAL.html": 2300,
+    # Raised from 2300 to 2500 (2026-06-06): the user manual gained Requirements,
+    # Updating, Removing, and Troubleshooting/FAQ sections so it answers real
+    # user questions (Diataxis getting-started queue) as one coherent document.
+    # Content was already trimmed of governance/architecture leakage; the growth
+    # is legitimate per-section overhead x3 languages, not padding.
+    "docs/install/USER-MANUAL.html": 2500,
     "docs/index.html": 2800,
 }
 WARN_RATIOS = {

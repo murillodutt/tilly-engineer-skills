@@ -468,26 +468,21 @@ INSTALLER_REPORT_REQUIRED_TERMS = (
     "Summary: reset baseline plus clean installer-created files",
 )
 
+# User-facing behavior the manual must still surface, stated as things the user
+# sees and acts on. Internal implementation vocabulary (source snapshot
+# freshness, installed helper set, Field Reports state, rollback summary, root
+# context gate, etc.) was intentionally removed during the 2026-06-06 tone
+# rewrite — that jargon made the manual read like a report and lives in the
+# governed docs (AGENT-MANUAL.md, REVERSIBILITY.md, the report-hardening report)
+# rather than in the user manual. Keep this list to observable states and the
+# safety net, not to fossilized wording.
 USER_MANUAL_REPORT_REQUIRED_TERMS = (
-    "source snapshot freshness",
     "STALE_SOURCE",
-    "Current public bundles",
-    ".tes/setup/&lt;version&gt;/",
-    "certified against the recorded snapshot",
-    "frescor do snapshot fonte",
-    "certificado contra o snapshot registrado",
-    "installed helper set",
-    "Field Reports state",
-    "helper set instalado",
-    "estado do Field Reports",
-    "rollback summary",
-    "resumo de rollback",
-    "root context gate",
-    "gate de contexto raiz",
+    "NEEDS_REVIEW",
+    "BLOCKED",
     "RECOVERED",
-    ".tes/bk/&lt;timestamp&gt;",
+    ".tes/bk/",
     "backup",
-    "semântica útil",
 )
 
 UPDATE_ROUTINE_REQUIRED_TERMS = (
@@ -507,8 +502,11 @@ UPDATE_ROUTINE_REQUIRED_TERMS = (
     "recommended_update_scope=none",
     "final Field Reports `tes_update` event",
     "STALE_HELPERS",
-    "versão instalada e versão na nuvem",
-    "paridade de contrato dos helpers",
+    # PT jargon strings dropped 2026-06-06: these only ever lived in the user
+    # manual and were internal probe vocabulary; the user manual now says
+    # "confere se há uma versão mais nova e se a instalação está saudável". The
+    # technical update terms above still live in tes_update.py and
+    # COMMAND-TRIGGERS.md, which are the correct sources for them.
     "recommended_route",
     "self_test_mode",
     "legacy_retirement_required",

@@ -5,7 +5,7 @@ status: active
 consumer: agents, maintainers, and certification reviewers
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.2
+tver: 0.1.3
 ---
 
 # Current Evidence Claims
@@ -196,5 +196,34 @@ Boundary: this changes proposal naming only. `reflect` remains no-write,
 certification, package publishing, marketplace action, automatic Cortex writes,
 and commercial-use certification remain outside the claim; MCP writes are
 governed by ADR 0002.
+
+Retention status: `current`.
+
+## Claude CLI Disciplined-Behavior Lift Claim
+
+The public landing page states "up to 6x baseline disciplined behavior in
+scoped Claude CLI evals". That number is the ratio of trigger pass rates between
+the full-context condition and the no-context (`none`) ablation in one retained
+v1-rc run: `trigger_pass_rate_full = 0.8571` (6 of 7) divided by
+`trigger_pass_rate_none = 0.1429` (1 of 7) equals `5.998`, which rounds to `6x`.
+It is a same-dataset ablation ratio, not an absolute accuracy figure (run pass
+rate was `0.5682`) and not a universal model-quality measurement.
+
+Proof:
+`docs/evidence/reports/context-mesh/behavior-v1-rc-claude-2026-05-05-convergence-08/REPORT.md`
+(`trigger_pass_rate_full=0.8571`, `trigger_pass_rate_none=0.1429`,
+`behavioral_lift=0.7142`, certification status `GO`), and the closure record at
+`docs/evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md`.
+
+Boundary: scoped to one retained Claude CLI run. Backend `claude-cli` (Claude
+Code without `--bare`, so default Claude Code context may influence outputs);
+model `sonnet` (not claimed for Opus, Haiku, the bare API, or other models or
+backends); dataset SHA
+`c47a7b4be0604350c688f48d8088e944dc4b929804f2d6fe094626f5c902e5c6`; grader
+`deterministic-substring@0.1.6`, intentionally strict and wording-sensitive.
+Fixture and echo backends prove pipeline behavior, not live model quality. Two
+gates (Simplicity First, Goal-Driven Execution) show `loss=1` and remain open to
+adversarial follow-up. The figure is evidence-scoped, not universal; the public
+text must not exceed this scope.
 
 Retention status: `current`.
