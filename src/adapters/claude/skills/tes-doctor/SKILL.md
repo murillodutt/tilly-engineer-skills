@@ -127,6 +127,34 @@ same detected fact, status word, repair route, and Field Report hint aligned:
 | missing Mantra Gate route | Run `mantra_gate_adoption_oracle.py`; repair bootloader-to-owner-skill routing through the TES adapter/update route, then recertify. |
 | trigger parity drift | Run `command_trigger_oracle.py`; refresh TES-owned trigger surfaces through the adapter/update route, not by hand-editing installed mirrors. |
 | residue | Run installed certification artifact hygiene; remove OS residue from source/materialized setup surfaces and rebuild only when authorized. |
+| inherited-context state | See Inherited Context Recovery below. |
+
+## Inherited Context Recovery
+
+When install inherited a pre-existing `CLAUDE.md` / `AGENTS.md`, the root is a
+thin TES-rendered root (a `TES:CORE` block plus an `@docs/agents/PROJECT-CONTEXT.md`
+import for Claude, or a materialized `TES:PROJECT-OVERLAY` block for Codex), the
+human context lives in `docs/agents/PROJECT-CONTEXT.md`, and the original is
+archived as `<root>.bak-<stamp>`. Explain this state instead of telling the user
+to hand-overwrite the thin root.
+
+Routes:
+
+- **Verify non-loss.** The archive is the source of truth. Run
+  `python3 .tes/bin/context_distill_coverage_oracle.py --bak <root>.bak-<stamp> --source docs/agents/PROJECT-CONTEXT.md`.
+  `OVERLAY_COVERED` means every human unit is covered or discarded-with-reason;
+  `NEEDS_REVIEW_COVERAGE` names the lost unit — repair the canonical source, do
+  not overwrite the root.
+- **Optimize the overlay.** For an opt-in condense/sanitize pass, route to
+  `/tes-context-distill` (the judgment phase); never hand-edit a materialized
+  overlay block — the next render overwrites it.
+- **Recover the original.** The pre-inheritance root is restored on uninstall
+  (`tes_install.py uninstall` restores `<root>.bak-<stamp>` byte-faithful). To
+  recover it without uninstalling, copy the latest `<root>.bak-<stamp>` back over
+  the root only after the user confirms they want the thin render gone.
+- **Do not** treat the thin root as drift to overwrite, or delete the
+  `<root>.bak-<stamp>` archive — it is both the non-loss oracle and the restore
+  source.
 
 ## Rules
 

@@ -64,9 +64,9 @@ internal-service names, or `~/Dev/<name>` paths in tracked content.
 `/tes-*` are canonical intents and `/tes:*` are compatible aliases — intent
 shortcuts, not shell commands. Route each to its matching `.claude/skills/tes-*`
 skill; `/tes-init` routes to `tes-init` for the full install/update gate flow.
-Skills: (init, setup, update, align, map, cortex, curate, mcp, field-reports,
-doctor, adapter, bench, bump, open-obsidian, prospect, mine, goal-maestro), or
-the local helper spec when no skill is present. Bilingual natural intents (e.g.
+Skills: (init, setup, context-distill, update, align, map, cortex, curate, mcp,
+field-reports, doctor, adapter, bench, bump, open-obsidian, prospect, mine,
+goal-maestro), or the local helper spec when no skill is present. Bilingual natural intents (e.g.
 `inicializar TES`, `alinhar projeto`, `mapear projeto`, `Atualizar TES`) route
 the same way; if Claude reports a `/tes:*` form as invalid, treat it as TES
 intent and continue.

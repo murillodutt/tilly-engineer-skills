@@ -74,9 +74,9 @@ internal-service names, or `~/Dev/<name>` paths in tracked content.
 `/tes-*` are canonical intents and `/tes:*` are compatible aliases — intent
 shortcuts, not shell commands. Route each to its `.agents/skills/tes-*/SKILL.md`;
 `/tes-init` routes to `tes-init` for the full install/update gate flow. Skills:
-(engineering-discipline, init, setup, update, align, map, cortex, mcp,
-field-reports, doctor, adapter, bench, bump, open-obsidian, goal-maestro,
-prospect, mine), or to `docs/install/COMMAND-TRIGGERS.md` plus the smallest safe
+(engineering-discipline, init, setup, context-distill, update, align, map,
+cortex, mcp, field-reports, doctor, adapter, bench, bump, open-obsidian,
+goal-maestro, prospect, mine), or to `docs/install/COMMAND-TRIGGERS.md` plus the smallest safe
 oracle when no skill applies. Bilingual natural intents route the same way.
 
 The engineering-discipline skill owns the Mantra Gate; its self-test is

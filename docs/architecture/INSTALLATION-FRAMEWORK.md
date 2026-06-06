@@ -79,7 +79,7 @@ file imported by `tes_bundle` (directly or transitively) must be a HELPER_FILE,
 because every context that imports `tes_bundle` — including the installed runtime
 — needs it.
 
-## Asset placement (current topology, 0.3.171)
+## Asset placement (current topology, 0.3.172)
 
 Today everything lives under `<repo>/.tes/`. The installation-topology Super SPEC
 (`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-installation-topology.md`)
@@ -122,7 +122,7 @@ The sentinel `.tes/postinstall.json` is what the hook reads. It is gated on the
 `hooks` surface being attached (`postinstall_disabled = ... or "hooks" not in
 surfaces`). Gating it on anything else (it was once gated on `docs-mesh`) leaves
 the hook firing into an empty state — a real defect shipped in 0.3.167 and fixed
-in 0.3.171.
+in 0.3.172.
 
 ## MCP registration
 

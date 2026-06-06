@@ -1,20 +1,26 @@
 ---
 tds_id: roadmap.goal_super_spec_tes_inherited_context_canonical_source
 tds_class: roadmap
-status: proposed
+status: active
 consumer: maintainers, installer authors, adapter authors, skill authors, oracle authors, release reviewers, and execution agents
 source_of_truth: false
 evidence_level: L2
-tver: 0.1.0
+tver: 0.2.0
 ---
 
 # GOAL Super SPEC: TES Inherited Context Canonical Source
 
-Status: proposed execution contract. Derived line, dependent on the active
-`GOAL-SUPER-SPEC-tes-root-context-composition.md`. This Super SPEC assumes the
-core+overlay composition contract as given and delivers only the missing layer
-above it: a single canonical overlay source, two asymmetric root renderings, and
-a non-lossy distillation of pre-existing human context into that source.
+Status: active execution contract, partially delivered. Derived line, dependent
+on the active `GOAL-SUPER-SPEC-tes-root-context-composition.md`. This Super SPEC
+assumes the core+overlay composition contract as given and delivers only the
+missing layer above it: a single canonical overlay source, two asymmetric root
+renderings, and a non-lossy distillation of pre-existing human context into that
+source.
+
+Execution status (as of 0.3.172): P0 (SPEC-000/001/002), P1 (SPEC-004/005/006),
+and P2 SPEC-007 (installer routing) + SPEC-008 (uninstall restore) + SPEC-003
+(`tes-context-distill` skill) + SPEC-009 (`/tes-doctor` recovery) are delivered
+with self-test fixtures. Open: SPEC-010 (real-project canary replay).
 
 Capability: when a project already owns rich `CLAUDE.md` / `AGENTS.md` context,
 install distills that context into the existing canonical overlay

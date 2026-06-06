@@ -1,4 +1,4 @@
-version: 0.3.171
+version: 0.3.172
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -578,7 +578,7 @@ documents:
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-inherited-context-canonical-source.md
     id: roadmap.goal_super_spec_tes_inherited_context_canonical_source
     class: roadmap
-    status: proposed
+    status: active
     consumer: maintainers, installer authors, adapter authors, skill authors, oracle authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
