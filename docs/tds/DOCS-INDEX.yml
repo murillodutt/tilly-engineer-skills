@@ -575,6 +575,13 @@ documents:
     consumer: maintainers, installer authors, adapter authors, oracle authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-inherited-context-canonical-source.md
+    id: roadmap.goal_super_spec_tes_inherited_context_canonical_source
+    class: roadmap
+    status: proposed
+    consumer: maintainers, installer authors, adapter authors, skill authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: false
+    evidence_level: L2
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md
     id: roadmap.goal_super_spec_tes_installed_certification_and_field_reports_hardening
     class: roadmap

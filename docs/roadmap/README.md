@@ -54,6 +54,7 @@ in dashboards, registries, history, audits, fixtures, or oracles.
 | TES NPX MCP convergence | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-npx-mcp-convergence.md` |
 | TES installed certification and Field Reports | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
 | TES root context composition | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md` |
+| TES inherited context canonical source | Proposed | `goals/super-specs/GOAL-SUPER-SPEC-tes-inherited-context-canonical-source.md` |
 | RC1 readiness cleanup | Active | `product/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening | Proposed | `product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
 | TES skill benchmark convergence | Proposed | `product/TES-SKILL-BENCHMARK-CONVERGENCE-ROADMAP.md` |
