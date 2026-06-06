@@ -11,19 +11,28 @@ either Covered (traceable to a canonical-source section) or
 Discarded-with-reason (recorded with a reason from a closed set). A unit that is
 neither is a coverage failure.
 
-This module carries the P0 units of the Super SPEC:
+This module carries the P0 and P1 units of the Super SPEC:
 
+P0 — non-loss canonical-source contract:
 - SPEC-001: the context-unit model (`detect_units`) and the coverage diff
   (`coverage_map`), classifying each `.bak` unit as Covered / Discarded /
   Uncovered, and emitting the coverage map as evidence.
 - SPEC-002: the canonical-source section map (`CANONICAL_SECTIONS`,
   `home_section_for`) — every unit kind has a home among the 17 governed
   sections; no new schema is invented.
-- SPEC-004 Phase 1: deterministic extract + archive (`phase1_distill`) — archive
-  the original intact and extract units verbatim. No rewriting of meaning.
+- SPEC-004 Phase 1: deterministic extract + archive (`phase1_distill`,
+  `archive_root`) — archive the original intact and extract units verbatim.
 
-It does NOT render roots (P1) or touch the installer (P2). The asymmetric Claude
-`@`-import / Codex materialized-block renderers are out of scope here by design.
+P1 — two asymmetric renderings + idempotency:
+- SPEC-004: `render_claude_root` — thin TES:CORE block + an eager `@` import of
+  the canonical source.
+- SPEC-005: `render_codex_root` / `condense_source` — thin TES:CORE block + a
+  materialized TES:PROJECT-OVERLAY block with `src-sha`, no `@`, under 32 KiB.
+- SPEC-006: `is_already_inherited` — a thin root skips distillation; re-render is
+  stable.
+
+It does NOT touch the installer or uninstall (P2: SPEC-007/008). The parent
+root-context-composition contract is reused (marker shape) but not redefined.
 
 Usage:
 
@@ -44,6 +53,7 @@ Exit status: 0 when coverage holds (OVERLAY_COVERED), 1 otherwise
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -54,6 +64,16 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = "0.3.170"
+
+# Parent (root-context-composition) marker shape, reused verbatim. This line
+# does not redefine the markers; it renders within them. Kept in sync with
+# scripts/root_context.py CORE_BEGIN_RE / OVERLAY_BEGIN_RE.
+CORE_BEGIN_RE = re.compile(r"<!-- TES:CORE BEGIN(?P<meta>[^>]*)-->")
+CORE_END = "<!-- TES:CORE END -->"
+OVERLAY_BEGIN_RE = re.compile(r"<!-- TES:PROJECT-OVERLAY BEGIN(?P<meta>[^>]*)-->")
+OVERLAY_END = "<!-- TES:PROJECT-OVERLAY END -->"
+CANONICAL_SOURCE_REL = "docs/agents/PROJECT-CONTEXT.md"
+CODEX_CHAIN_BYTE_CAP = 32 * 1024  # RULES-FILE-ENGINEERING.md Codex hard cap.
 
 # SPEC-002 — the 17 governed sections of docs/agents/PROJECT-CONTEXT.md, mirrored
 # from scripts/project_context_oracle.py REQUIRED_SECTIONS. The canonical source
@@ -307,6 +327,113 @@ def archive_root(root_path: Path, stamp: str) -> Path:
 
 
 # ---------------------------------------------------------------------------
+# P1 — two asymmetric renderings + idempotency (SPEC-004 / SPEC-005 / SPEC-006).
+# Both render a thin TES:CORE block; Claude points with @, Codex materializes.
+# The parent marker shape is reused, never redefined.
+# ---------------------------------------------------------------------------
+
+
+def text_sha256(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _core_block(core_text: str, version: str, adapter: str) -> str:
+    core = core_text if core_text.endswith("\n") else core_text + "\n"
+    core_sha = text_sha256(core)
+    begin = f"<!-- TES:CORE BEGIN version={version} sha256={core_sha} adapter={adapter} -->"
+    return f"{begin}\n{core.rstrip(chr(10))}\n{CORE_END}\n"
+
+
+def render_claude_root(core_text: str, *, version: str = VERSION) -> str:
+    """SPEC-004 — thin TES:CORE block + an eager @ import of the canonical
+    source. Claude reads the overlay by reference; the import loads in full."""
+    return f"{_core_block(core_text, version, 'claude')}\n@{CANONICAL_SOURCE_REL}\n"
+
+
+def condense_source(source_text: str, *, max_items_per_section: int = 12) -> str:
+    """Produce the lean, objective Codex materialization of the canonical source.
+
+    Not the full source verbatim — a structured condensation: section headings
+    plus their bullet/directive lines, trivia and prose padding dropped, sized to
+    stay well below the Codex chain byte cap.
+    """
+    lines: list[str] = []
+    current_items = 0
+    for raw in source_text.splitlines():
+        stripped = raw.strip()
+        if not stripped:
+            continue
+        if stripped.startswith("#"):
+            lines.append(stripped)
+            current_items = 0
+            continue
+        candidate = _strip_markup(raw)
+        if not candidate or is_trivial(candidate):
+            continue
+        # Keep substantive bullets/directives only.
+        if raw.lstrip().startswith(("-", "*", "+")) or classify_line(candidate) is not None:
+            if current_items < max_items_per_section:
+                lines.append(f"- {candidate}")
+                current_items += 1
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_codex_root(core_text: str, source_text: str, *, version: str = VERSION) -> str:
+    """SPEC-005 — thin TES:CORE block + a materialized TES:PROJECT-OVERLAY block
+    condensed from the canonical source, stamped with src-sha. No @ (Codex
+    cannot import). The overlay block is generated, never hand-authored."""
+    src_sha = text_sha256(source_text)
+    overlay_body = condense_source(source_text).rstrip("\n")
+    overlay_begin = f"<!-- TES:PROJECT-OVERLAY BEGIN source={CANONICAL_SOURCE_REL} sha256={src_sha} -->"
+    block = "\n".join([overlay_begin, overlay_body, OVERLAY_END])
+    return f"{_core_block(core_text, version, 'codex')}\n{block}\n"
+
+
+def render_status(adapter: str, root_text: str, source_text: str | None) -> dict[str, Any]:
+    """Verify a rendered root and return its status (SPEC-004 / SPEC-005)."""
+    has_core = CORE_BEGIN_RE.search(root_text) is not None and CORE_END in root_text
+    if adapter == "claude":
+        has_pointer = f"@{CANONICAL_SOURCE_REL}" in root_text
+        # A thin Claude root must not carry an inline overlay block.
+        inline_overlay = OVERLAY_BEGIN_RE.search(root_text) is not None
+        ok = has_core and has_pointer and not inline_overlay
+        return {"status": "RENDER_CLAUDE_OK" if ok else "NEEDS_REVIEW_RENDER",
+                "has_core": has_core, "has_pointer": has_pointer, "inline_overlay": inline_overlay}
+    if adapter == "codex":
+        begin = OVERLAY_BEGIN_RE.search(root_text)
+        has_block = begin is not None and OVERLAY_END in root_text
+        attrs = dict(re.findall(r"(\w+)=(\S+)", begin.group("meta")) if begin else [])
+        src_sha_ok = source_text is not None and attrs.get("sha256") == text_sha256(source_text)
+        no_at = f"@{CANONICAL_SOURCE_REL}" not in root_text
+        within_cap = len(root_text.encode("utf-8")) < CODEX_CHAIN_BYTE_CAP
+        ok = has_core and has_block and src_sha_ok and no_at and within_cap
+        return {"status": "RENDER_CODEX_OK" if ok else "NEEDS_REVIEW_RENDER",
+                "has_core": has_core, "has_block": has_block, "src_sha_ok": src_sha_ok,
+                "no_at": no_at, "within_cap": within_cap}
+    return {"status": "NEEDS_REVIEW_RENDER", "reason": f"unknown adapter {adapter!r}"}
+
+
+def is_already_inherited(adapter: str, root_text: str) -> bool:
+    """SPEC-006 — a root whose only non-core content is the @ pointer (Claude)
+    or the materialized overlay block (Codex) is already a TES thin root, so
+    distillation must be skipped (no recursion, no emptied source)."""
+    core = CORE_BEGIN_RE.search(root_text)
+    if core is None or CORE_END not in root_text:
+        return False
+    # Remove the core block, then check what non-trivial content remains.
+    after_core = root_text[root_text.find(CORE_END) + len(CORE_END):]
+    remainder = after_core
+    if adapter == "claude":
+        remainder = remainder.replace(f"@{CANONICAL_SOURCE_REL}", "")
+    elif adapter == "codex":
+        begin = OVERLAY_BEGIN_RE.search(remainder)
+        if begin is not None and OVERLAY_END in remainder:
+            end = remainder.find(OVERLAY_END) + len(OVERLAY_END)
+            remainder = remainder[:begin.start()] + remainder[end:]
+    return remainder.strip() == ""
+
+
+# ---------------------------------------------------------------------------
 # SPEC-000 — neutral rich-root fixtures (generic identity only).
 # ---------------------------------------------------------------------------
 
@@ -413,6 +540,47 @@ def self_test() -> dict[str, Any]:
         if bad_reason["status"] != "NEEDS_REVIEW_COVERAGE":
             failures.append("an out-of-set discard reason must fail the gate")
 
+        # --- P1 renderings (SPEC-004 / SPEC-005 / SPEC-006) ---
+        core = "# TES Core\n\nRoute project context to docs/agents/**. Use `/tes-update`.\n"
+        source = faithful_source(bak_text)
+
+        # SPEC-004: Claude renders thin core + @ pointer, no inline overlay.
+        claude_root = render_claude_root(core)
+        claude_status = render_status("claude", claude_root, source)
+        if claude_status["status"] != "RENDER_CLAUDE_OK":
+            failures.append(f"Claude render must be RENDER_CLAUDE_OK, got {claude_status}")
+        if f"@{CANONICAL_SOURCE_REL}" not in claude_root:
+            failures.append("Claude root must carry the @ pointer to the canonical source")
+
+        # NEGATIVE: an @ directive must never appear in a Codex root.
+        # SPEC-005: Codex materializes a condensed overlay block with src-sha.
+        codex_root = render_codex_root(core, source)
+        codex_status = render_status("codex", codex_root, source)
+        if codex_status["status"] != "RENDER_CODEX_OK":
+            failures.append(f"Codex render must be RENDER_CODEX_OK, got {codex_status}")
+        if f"@{CANONICAL_SOURCE_REL}" in codex_root:
+            failures.append("Codex root must NOT contain an @ import directive")
+        if len(codex_root.encode("utf-8")) >= CODEX_CHAIN_BYTE_CAP:
+            failures.append("Codex root must stay below the 32 KiB chain cap")
+        # src-sha parity: a stale source must fail Codex render.
+        stale = render_status("codex", codex_root, source + "\n- extra drift line\n")
+        if stale["status"] == "RENDER_CODEX_OK":
+            failures.append("Codex render must fail src-sha parity when the source drifted")
+
+        # SPEC-006: idempotency — already-rendered thin roots are ALREADY_INHERITED.
+        if not is_already_inherited("claude", claude_root):
+            failures.append("a thin Claude root must be detected as already inherited")
+        if not is_already_inherited("codex", codex_root):
+            failures.append("a thin Codex root must be detected as already inherited")
+        # A rich, un-rendered root must NOT be already-inherited.
+        if is_already_inherited("claude", bak_text):
+            failures.append("a rich un-rendered root must not be treated as already inherited")
+        # Re-rendering an already-inherited root is stable (same bytes out).
+        if render_claude_root(core) != claude_root:
+            failures.append("Claude re-render is not stable (idempotency broken)")
+        if render_codex_root(core, source) != codex_root:
+            failures.append("Codex re-render is not stable (idempotency broken)")
+
     return {
         "status": "PASS" if not failures else "FAIL",
         "failures": failures,
@@ -430,11 +598,13 @@ def _load_discards(path: Path | None) -> list[dict[str, str]]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Context distill coverage oracle (P0).")
+    parser = argparse.ArgumentParser(description="Context distill coverage oracle + renderers (P0+P1).")
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--bak", type=Path, help="Path to the archived original root (<root>.bak-<stamp>).")
     parser.add_argument("--source", type=Path, help="Path to the canonical source (docs/agents/PROJECT-CONTEXT.md).")
     parser.add_argument("--discards", type=Path, help="Optional JSON list of {unit, reason} discards.")
+    parser.add_argument("--render", choices=["claude", "codex"], help="Emit a thin rendered root for the adapter (P1).")
+    parser.add_argument("--core", type=Path, help="Path to the thin TES core text (required with --render).")
     parser.add_argument("--json-only", action="store_true")
     args = parser.parse_args()
 
@@ -444,8 +614,26 @@ def main() -> int:
         print(f"[context-distill-coverage] {result['status']}")
         return 0 if result["status"] == "PASS" else 1
 
+    if args.render:
+        if not args.core or not args.source:
+            parser.error("--render requires --core and --source")
+        try:
+            core_text = args.core.read_text(encoding="utf-8")
+            source_text = args.source.read_text(encoding="utf-8")
+        except OSError as exc:
+            print(f"[context-distill-coverage] ERROR: {exc}", file=sys.stderr)
+            return 1
+        if args.render == "claude":
+            rendered = render_claude_root(core_text)
+        else:
+            rendered = render_codex_root(core_text, source_text)
+        status = render_status(args.render, rendered, source_text)
+        sys.stdout.write(rendered)
+        print(f"[context-distill-coverage] {status['status']}", file=sys.stderr)
+        return 0 if status["status"].endswith("_OK") else 1
+
     if not args.bak or not args.source:
-        parser.error("either --self-test, or both --bak and --source are required")
+        parser.error("either --self-test, --render, or both --bak and --source are required")
 
     try:
         bak_text = args.bak.read_text(encoding="utf-8")
