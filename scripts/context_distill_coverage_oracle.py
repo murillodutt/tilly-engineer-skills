@@ -709,6 +709,49 @@ def self_test() -> dict[str, Any]:
         if codex_routed["root_text"] and f"@{CANONICAL_SOURCE_REL}" in codex_routed["root_text"]:
             failures.append("Codex routed root must not contain an @ directive")
 
+        # --- SPEC-002: cross-check against the overlay oracle ---
+        # (a) every unit-kind's home section is one of the 17 governed sections.
+        for kind, section in HOME_SECTION_FOR_KIND.items():
+            if section not in CANONICAL_SECTIONS:
+                failures.append(f"SPEC-002: home section for {kind!r} is not a governed section: {section}")
+
+        # (b) merging distilled units into a complete PROJECT-CONTEXT.md must NOT
+        # break the existing overlay oracle. The distillation contributes human
+        # units; it must not destroy the governed structure tes_init produced.
+        try:
+            import project_context_oracle as overlay
+        except Exception as exc:  # pragma: no cover - import guard
+            failures.append(f"SPEC-002: could not import project_context_oracle: {exc}")
+            overlay = None
+        if overlay is not None:
+            import tempfile as _tf
+            with _tf.TemporaryDirectory(prefix="tes-spec002-") as s2:
+                s2t = Path(s2)
+                overlay.make_fixture(s2t)  # a complete, oracle-passing target
+                pc = s2t / "docs/agents/PROJECT-CONTEXT.md"
+                complete = pc.read_text(encoding="utf-8")
+                # Baseline: the fixture passes before any merge.
+                if overlay.analyze(s2t)["status"] != "PASS":
+                    failures.append("SPEC-002: baseline overlay fixture must PASS before merge")
+                # Merge distilled human units the way the route does, into a home
+                # section that already exists, then re-run the overlay oracle. All
+                # bullets are merged — the contract never truncates human units.
+                human_units = phase1_distill(bak_text)
+                bullets = [ln for ln in human_units.splitlines() if ln.startswith("- ")]
+                merged = complete.replace(
+                    "## Next Work Guidance",
+                    "## Next Work Guidance\n\n" + "\n".join(bullets),
+                    1,
+                )
+                pc.write_text(merged, encoding="utf-8")
+                after = overlay.analyze(s2t)
+                if after["status"] != "PASS":
+                    failures.append(f"SPEC-002: merging distilled units must keep overlay oracle PASS, got {after['status']}: {after['failures'][:3]}")
+                # And the merged units stay coverage-traceable.
+                cov = coverage_map(bak_text, merged)
+                if cov["status"] != "OVERLAY_COVERED":
+                    failures.append(f"SPEC-002: merged units must remain OVERLAY_COVERED, got {cov['status']}")
+
     return {
         "status": "PASS" if not failures else "FAIL",
         "failures": failures,
