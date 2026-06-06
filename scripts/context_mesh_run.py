@@ -28,14 +28,14 @@ from context_mesh_plan import (
 )
 
 
-RUNNER_VERSION = "0.1.12"
+RUNNER_VERSION = "0.1.15"
 CERTIFICATION_PROFILE = "v1-rc"
 PROGRESS_LOG_CONTRACT = "context-mesh-progress@0.1.0"
 PIPELINE_CERTIFICATION_CLASS = "pipeline-v1-rc"
 BEHAVIOR_CERTIFICATION_CLASS = "behavior-v1-rc"
 RUNTIME_SKILL_CERTIFICATION_CLASS = "runtime-skill-v1-rc"
-RUNTIME_SKILL_SOURCE = ROOT / "src/adapters/codex/skills/tes-engineering-discipline/SKILL.md"
-GRADER_VERSION = "deterministic-substring@0.1.9"
+DEFAULT_RUNTIME_SKILL_SOURCE = ROOT / "src/adapters/codex/skills/tes-engineering-discipline/SKILL.md"
+GRADER_VERSION = "deterministic-substring@0.1.11"
 EVIDENCE_REPORTS_ROOT = ROOT / "docs/evidence/reports"
 DEFAULT_EVIDENCE_DOMAIN = "context-mesh"
 LEGACY_OUT_ROOT = EVIDENCE_REPORTS_ROOT / DEFAULT_EVIDENCE_DOMAIN
@@ -268,7 +268,12 @@ NEGATED_FORBIDDEN_PATTERNS = (
     re.compile(r"\bnot\s+(?:build|create|add|implement|introduce|remove|delete|flatten|call|skip|use)\b"),
     re.compile(r"\bnot\s*$"),
     re.compile(r"\bno\s+(?:need\s+to\s+)?(?:new\s+)?$"),
+    re.compile(r"\bsem\s*$"),
+    re.compile(r"\baus[eê]ncia\s+de\s*$"),
+    re.compile(r"\bnenhum(?:a)?(?:\s+(?:refer[eê]ncia\s+a|evid[eê]ncia\s+de))?\s*$"),
+    re.compile(r"\bzero\s+(?:arquivos\s+)?(?:staged\s+ou\s+)?$"),
     re.compile(r"\bwithout\b"),
+    re.compile(r"\bn[ãa]o\s+(?:vou\s+)?(?:criar|construir|adicionar|implementar|introduzir|usar)\b"),
     re.compile(r"\breject(?:ing)?\b"),
     re.compile(r"\brejeit(?:ar|o|ando|e)\b"),
     re.compile(r"\bdefer(?:red|ring)?\b"),
@@ -280,6 +285,27 @@ NEGATED_FORBIDDEN_CONTEXT_PATTERNS = (
     re.compile(r"\bviolat(?:e|es|ing)\b"),
     re.compile(r"\bscaffolding\b.*\bnot\b"),
     re.compile(r"\bgovernance-shaped\s+scaffolding\b"),
+    re.compile(r"\bo\s+que\b.*\bn[ãa]o\b.*\b(?:construir|criaria|criar)\b"),
+    re.compile(r"\bpor\s+qu[eê]\s+n[ãa]o\b"),
+    re.compile(r"\bnegative\s+(?:checks|grep)\b"),
+    re.compile(r"\bgrep\s+negativo\b"),
+    re.compile(r"\bcandidatos?\s+a\s+negative-grep\b"),
+    re.compile(r"\bforbidden\s+as\s+(?:an\s+)?(?:executed\s+)?action\b"),
+    re.compile(r"\bproibido\s+como\s+a[cç][aã]o\s+(?:executada|realizada)\b"),
+    re.compile(r"\bproibid[oa]s?\b"),
+    re.compile(r"\bpara\s+atingir\b"),
+    re.compile(r"\bviol(?:a|am|ar|ando|ou|aria|ação|a[cç][aã]o)\b"),
+    re.compile(r"\bcolaps(?:a|am|ar|ando|ou|aria|ad[ao]s?)\b"),
+    re.compile(r"\brecusad[ao]\b"),
+    re.compile(r"\bcaso\s+de\s+falha\b"),
+    re.compile(r"\bcobrindo\s+os\s+casos\b"),
+    re.compile(r"\bfixtures?\s+cobr(?:e|em|indo)\b"),
+    re.compile(r"\bpermitidos?\s+como\s+vocabul[aá]rio\s+de\s+pol[ií]tica\b"),
+    re.compile(r"\bvocabul[aá]rio\s+de\s+pol[ií]tica\b"),
+    re.compile(r"\bvocabul[aá]rio\s+de\s+policy\b"),
+    re.compile(r"\bvocabul[aá]rio\s+v[aá]lido\b"),
+    re.compile(r"\bn[ãa]o\s+deve\s+falhar\b"),
+    re.compile(r"\bcontexto\s+proibido\b"),
 )
 
 
@@ -295,9 +321,22 @@ def forbidden_term_mentions(output: str, term: str) -> list[dict[str, Any]]:
         plain_before = re.sub(r"\s+", " ", plain_before)
         plain_context = re.sub(r"[*_`~>\[\]()]|#+", " ", context)
         plain_context = re.sub(r"\s+", " ", plain_context)
+        line_start = lowered.rfind("\n", 0, match.start()) + 1
+        line_end = lowered.find("\n", match.end())
+        if line_end == -1:
+            line_end = len(lowered)
+        line_after = lowered[match.end():line_end]
+        table_rejection = bool(
+            "|" in lowered[line_start:line_end]
+            and re.search(
+                r"\|\s*(?:[*_`~ ]*)?(?:não|nao|nenhum|nenhuma|no|not|zero|reject(?:ed|ing)?|deletado|deleted)\b",
+                line_after,
+            )
+        )
         negated = (
             any(pattern.search(plain_before) for pattern in NEGATED_FORBIDDEN_PATTERNS)
             or any(pattern.search(plain_context) for pattern in NEGATED_FORBIDDEN_CONTEXT_PATTERNS)
+            or table_rejection
         )
         mentions.append({
             "start": match.start(),
@@ -372,7 +411,10 @@ def build_prompt(condition: str, ev: dict[str, Any], sections: list[str]) -> str
 
 
 def build_adapter_user_prompt(ev: dict[str, Any]) -> str:
-    if ev.get("kind") == "distractor":
+    custom_constraints = ev.get("response_constraints")
+    if isinstance(custom_constraints, list) and all(isinstance(item, str) for item in custom_constraints):
+        constraints = custom_constraints
+    elif ev.get("kind") == "distractor":
         constraints = [
             "- Treat this as a controlled prompt, not a live filesystem session.",
             "- Use project instructions only when they are necessary to answer the request.",
@@ -496,6 +538,30 @@ def eval_id(sample: dict[str, Any]) -> str:
     return str(sample["eval"]["id"])
 
 
+def progressive_default_eval_id(data: dict[str, Any], target_section: str) -> str | None:
+    defaults = data.get("progressive_defaults", {})
+    if not isinstance(defaults, dict):
+        return None
+    value = defaults.get(target_section)
+    return str(value) if value else None
+
+
+def order_progressive_evals(
+    data: dict[str, Any],
+    selected: list[dict[str, Any]],
+    level: str,
+    target_section: str,
+) -> list[dict[str, Any]]:
+    default_id = progressive_default_eval_id(data, target_section)
+    if level not in {"L1", "L2"} or not default_id:
+        return selected
+    by_id = {str(ev.get("id")): ev for ev in selected}
+    default = by_id.get(default_id)
+    if default is None:
+        return selected
+    return [default, *[ev for ev in selected if str(ev.get("id")) != default_id]]
+
+
 def progressive_eval_subset(
     data: dict[str, Any],
     level: str,
@@ -516,6 +582,7 @@ def progressive_eval_subset(
     selected = [ev for ev in triggers if ev.get("target_section") == target_section]
     if not selected:
         raise ValueError(f"--target-section has no trigger evals: {target_section}")
+    selected = order_progressive_evals(data, selected, level, target_section)
 
     if level == "L1":
         return selected[:1]
@@ -725,8 +792,8 @@ def remove_codex_gate_from_workspace(workspace: Path, section: str) -> None:
         path.write_text(strip_section_from_text(text, section), encoding="utf-8")
 
 
-def load_runtime_skill_text() -> str:
-    return RUNTIME_SKILL_SOURCE.read_text(encoding="utf-8")
+def load_runtime_skill_text(source: Path = DEFAULT_RUNTIME_SKILL_SOURCE) -> str:
+    return source.read_text(encoding="utf-8")
 
 
 def runtime_skill_system_prompt(condition: str, sections: list[str], skill_text: str) -> str:
@@ -774,16 +841,18 @@ class RuntimeSkillBackend(Backend):
         max_budget_usd: str | None = None,
         timeout_seconds: int = 180,
         fake_bin: str | None = None,
+        skill_source: Path = DEFAULT_RUNTIME_SKILL_SOURCE,
     ) -> None:
         super().__init__(model=model or "sonnet")
         self.claude_bin = claude_bin or "claude"
         self.max_budget_usd = max_budget_usd
         self.timeout_seconds = timeout_seconds
+        self.skill_source = skill_source
         # fake_bin enables the offline oracle: a deterministic echo stands in for
         # the model so the contract (none empty / full whole / drop != full) can
         # be certified in commit:check without spending a real model call.
         self.fake_bin = fake_bin
-        self._skill_text = load_runtime_skill_text()
+        self._skill_text = load_runtime_skill_text(skill_source)
         self._skill_source_sha = sha256_text(self._skill_text)
         self._tempdirs: list[tempfile.TemporaryDirectory[str]] = []
 
@@ -1084,6 +1153,19 @@ def runtime_skill_self_test() -> int:
         if latest.get("event") != "sample_finished":
             failures.append("progress latest.json must mirror the most recent event")
 
+    table_rejection_grade = grade_output(
+        {"expected": [], "expected_any": [], "forbidden": ["abstract factory"]},
+        "| Artifact | Decision |\n|---|---|\n| abstract factory | **Não** |\n",
+    )
+    if not table_rejection_grade["pass"]:
+        failures.append("forbidden table rows marked Não must be treated as rejected, not endorsed")
+    table_reason_rejection_grade = grade_output(
+        {"expected": [], "expected_any": [], "forbidden": ["abstract factory"]},
+        "| Artifact | Por quê não |\n|---|---|\n| abstract factory | Uma fábrica com um único produto é ruído |\n",
+    )
+    if not table_reason_rejection_grade["pass"]:
+        failures.append("forbidden table rows under Por quê não must be treated as rejected")
+
     data = load_dataset(DATASET)
     samples = build_samples(data)
     try:
@@ -1099,8 +1181,12 @@ def runtime_skill_self_test() -> int:
             failures.append("progressive L0 must select no model samples")
         if len(level_1) != 3 or meta_1 is None:
             failures.append("progressive L1 must select one eval triplet")
+        elif meta_1["selected_eval_ids"] != ["E2d-maturity-platform-risk"]:
+            failures.append("progressive L1 must use the dataset-declared Maturity Layer Gate smoke eval")
         if len(level_2) != 8 or meta_2 is None:
             failures.append("progressive L2 must select two eval triplets plus two distractors")
+        elif meta_2["selected_eval_ids"][0] != "E2d-maturity-platform-risk":
+            failures.append("progressive L2 must keep the dataset-declared smoke eval first")
         if len(level_3) != 14 or meta_3 is None:
             failures.append("progressive L3 must select all Maturity Layer Gate evals plus two distractors")
         if len(level_4) != len(samples) or meta_4 is None:
@@ -1132,6 +1218,7 @@ def make_backend(
     max_budget_usd: str | None = None,
     timeout_seconds: int = 180,
     fake_subagent_bin: str | None = None,
+    runtime_skill_source: Path = DEFAULT_RUNTIME_SKILL_SOURCE,
 ) -> Backend:
     backends: dict[str, type[Backend]] = {
         "claude-cli": ClaudeCliBackend,
@@ -1163,6 +1250,7 @@ def make_backend(
             max_budget_usd=max_budget_usd,
             timeout_seconds=timeout_seconds,
             fake_bin=fake_subagent_bin,
+            skill_source=runtime_skill_source,
         )
     return backends[name](
         model=model,
@@ -2123,6 +2211,7 @@ def run(args: argparse.Namespace) -> int:
         max_budget_usd=args.max_budget_usd,
         timeout_seconds=args.timeout_seconds,
         fake_subagent_bin=args.fake_subagent_bin,
+        runtime_skill_source=args.runtime_skill_source,
     )
     created_at = utc_now()
     head = git_head()
@@ -2149,6 +2238,11 @@ def run(args: argparse.Namespace) -> int:
         "progress_events": "progress/events.ndjson",
         "progress_latest": "progress/latest.json",
     }
+    if args.backend == "runtime-skill":
+        try:
+            manifest["runtime_skill_source"] = str(args.runtime_skill_source.relative_to(ROOT))
+        except ValueError:
+            manifest["runtime_skill_source"] = str(args.runtime_skill_source)
     if progressive_meta:
         manifest.update(progressive_meta)
     if args.sample_cap is not None:
@@ -2311,6 +2405,12 @@ def main() -> int:
     parser.add_argument(
         "--fake-subagent-bin",
         help="runtime-skill only: a deterministic echo binary that stands in for the model, for the offline oracle (no model call).",
+    )
+    parser.add_argument(
+        "--runtime-skill-source",
+        type=Path,
+        default=DEFAULT_RUNTIME_SKILL_SOURCE,
+        help="runtime-skill only: SKILL.md source to inject as the isolated subagent system prompt.",
     )
     parser.add_argument(
         "--self-test",

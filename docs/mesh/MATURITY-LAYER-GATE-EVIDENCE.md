@@ -5,7 +5,7 @@ status: active
 consumer: adapter authors and benchmark authors
 source_of_truth: false
 evidence_level: L1
-tver: 0.3.169
+tver: 0.3.170
 ---
 
 # Maturity Layer Gate Evidence

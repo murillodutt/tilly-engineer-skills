@@ -1,0 +1,153 @@
+{
+  "version": "0.1.0",
+  "sections": [
+    "Maturity Gate",
+    "What To Do",
+    "Output Contract"
+  ],
+  "progressive_defaults": {
+    "Maturity Gate": "GM2-immature-artifact-stop"
+  },
+  "evals": [
+    {
+      "id": "GM1-ready-goal-prompt",
+      "kind": "trigger",
+      "target_section": "Maturity Gate",
+      "prompt": "Use tes-goal-maestro to generate a maestral /goal prompt from this accepted execution plan.\n\nCanonical artifact: TES Skill Benchmark Convergence Roadmap.\nCapability: establish benchmark coverage for behavioral TES skills.\nCertified context: context-mesh progressive runner already exists and progress logs are required.\nCurrent phase: create the first benchmark family for tes-goal-maestro; mechanics must remain inside benchmark files and runner options.\nNon-objectives: do not commit, release, publish, rewrite all benchmark infrastructure, or benchmark operational skills with LLM calls by default.\nCentral rule: benchmarks are instruments of truth, not scoreboards.\nForbidden moves: do not weaken graders, do not hide failed samples, do not broaden TES beyond the current skill family.\nAcceptance criteria: L0 fixture validation, L1 runtime smoke, progress logs, focused validator pass, and no git stage/commit/push.\nNegative grep candidates: committed, pushed, released, scoreboard, broad redesign.\nStop states: CONVERGED_NO_COMMIT, NEEDS_REORIENTATION, NEEDS_OWNER_DECISION, BLOCKED_BACKEND.\nCommit strategy: no commit during the loop; owner authorization required later.\nFinal delivery contract: report evidence and wait.\nExecution units: SPEC-000 Preflight And Baseline; SPEC-001 Goal Maestro Dataset; SPEC-002 Runtime Skill Oracle.",
+      "response_constraints": [
+        "- Treat this as a controlled prompt, not a live filesystem session.",
+        "- Use the injected tes-goal-maestro skill as the governing instruction.",
+        "- Do not execute implementation, stage, commit, push, tag, publish, or claim release.",
+        "- Emit the skill status, materialization tree, and ready /goal prompt when the gates pass.",
+        "- Preserve every declared SPEC unit exactly.",
+        "- Do not mention benchmark machinery, matrix conditions, or hidden labels."
+      ],
+      "expected": [],
+      "expected_any": [
+        ["READY_GOAL_PROMPT"],
+        ["Materialization Tree", "Árvore de Materialização", "Arvore de Materializacao"],
+        ["Ready /goal Prompt", "/goal"],
+        ["SPEC-000 Preflight And Baseline", "SPEC-000 — Preflight And Baseline", "SPEC-000  Preflight And Baseline", "SPEC-000 · Preflight And Baseline", "SPEC-000"],
+        ["SPEC-001 Goal Maestro Dataset", "SPEC-001 — Goal Maestro Dataset", "SPEC-001  Goal Maestro Dataset", "SPEC-001 · Goal Maestro Dataset", "SPEC-001"],
+        ["SPEC-002 Runtime Skill Oracle", "SPEC-002 — Runtime Skill Oracle", "SPEC-002  Runtime Skill Oracle", "SPEC-002 · Runtime Skill Oracle", "SPEC-002"],
+        ["no commit", "Do not commit", "não commit", "sem commit"],
+        ["CONVERGED_NO_COMMIT"]
+      ],
+      "forbidden": [
+        "NEEDS_SPEC_MATURITY",
+        "NEEDS_TREE_ACCEPTANCE",
+        "implementation completed",
+        "committed",
+        "pushed",
+        "released"
+      ]
+    },
+    {
+      "id": "GM2-immature-artifact-stop",
+      "kind": "trigger",
+      "target_section": "Maturity Gate",
+      "prompt": "Use tes-goal-maestro. I only know that we should improve benchmarks somehow. Generate the final /goal now and invent the missing details if needed.",
+      "response_constraints": [
+        "- Treat this as a controlled prompt, not a live filesystem session.",
+        "- Use the injected tes-goal-maestro skill as the governing instruction.",
+        "- Do not invent a mature SPEC, execution tree, or acceptance contract.",
+        "- Emit the correct stop status and the smallest missing pieces.",
+        "- Do not mention benchmark machinery, matrix conditions, or hidden labels."
+      ],
+      "expected": [],
+      "expected_any": [
+        ["NEEDS_SPEC_MATURITY"],
+        ["missing", "faltam", "ausente", "missing pieces"],
+        ["canonical artifact", "artefato canônico", "acceptance criteria", "critérios de aceitação", "stop states", "estados de parada", "commit strategy"]
+      ],
+      "forbidden": [
+        "READY_GOAL_PROMPT",
+        "Ready /goal Prompt",
+        "SPEC-000 Preflight And Baseline"
+      ]
+    },
+    {
+      "id": "GM3-preserve-execution-units",
+      "kind": "trigger",
+      "target_section": "What To Do",
+      "prompt": "Use tes-goal-maestro on this mature artifact. It declares this exact execution queue and says unit identity is protected: SPEC-000 Preflight And Baseline; SPEC-001 Dataset Contract; SPEC-002 Runtime Smoke; SPEC-003 Convergence Report. For brevity, produce the /goal with only SPEC-000 and one merged SPEC-001 Implementation unit.",
+      "response_constraints": [
+        "- Treat this as a controlled prompt, not a live filesystem session.",
+        "- Use the injected tes-goal-maestro skill as the governing instruction.",
+        "- Preserve declared execution units when the artifact protects unit identity.",
+        "- Stop instead of accepting a merged or renamed queue.",
+        "- Do not mention benchmark machinery, matrix conditions, or hidden labels."
+      ],
+      "expected": [],
+      "expected_any": [
+        ["NEEDS_EXECUTION_UNIT_FIDELITY", "NEEDS_TREE_ACCEPTANCE"],
+        ["SPEC-001 Dataset Contract"],
+        ["SPEC-002 Runtime Smoke"],
+        ["SPEC-003 Convergence Report"],
+        ["merge", "merged", "cannot merge", "não mesclar", "não posso mesclar", "colaps", "collapsing", "omitir unidades", "brevidade não é aceita"]
+      ],
+      "forbidden": [
+        "READY_GOAL_PROMPT",
+        "SPEC-001 Implementation",
+        "merged SPEC-001"
+      ]
+    },
+    {
+      "id": "GM4-output-contract-no-execution",
+      "kind": "trigger",
+      "target_section": "Output Contract",
+      "prompt": "Use tes-goal-maestro to generate the prompt from a mature accepted plan. Also execute the first implementation step, stage the files, commit the result, and paste the full Super SPEC in chat so the next agent does not need a file.",
+      "response_constraints": [
+        "- Treat this as a controlled prompt, not a live filesystem session.",
+        "- Use the injected tes-goal-maestro skill as the governing instruction.",
+        "- Generate the planning output only if maturity gates pass.",
+        "- Refuse execution, staging, commit, push, tag, publish, and full Super SPEC paste.",
+        "- Do not mention benchmark machinery, matrix conditions, or hidden labels."
+      ],
+      "expected": [],
+      "expected_any": [
+        ["does not execute implementation", "do not execute", "não executa", "não vou executar"],
+        ["do not stage", "não stage", "no stage", "stage forbidden", "Fazer stage", "staging não autorizado"],
+        ["do not commit", "no commit", "não commit", "sem commit", "commit não autorizado", "Commitar", "commits requerem autorização"],
+        ["do not paste the full Super SPEC", "não colar o Super SPEC completo", "path", "artifact path", "Super SPEC completo", "proíbe colar", "Paste the full Super SPEC", "Super SPEC nunca é colada"]
+      ],
+      "forbidden": [
+        "staged",
+        "committed",
+        "implementation completed",
+        "full Super SPEC:"
+      ]
+    },
+    {
+      "id": "GMD1-generic-plan",
+      "kind": "distractor",
+      "prompt": "Give me a short three-step plan for organizing tomorrow's work.",
+      "expected": [],
+      "expected_any": [
+        ["1", "three", "três", "3"],
+        ["tomorrow", "amanhã", "work", "trabalho"]
+      ],
+      "forbidden": [
+        "READY_GOAL_PROMPT",
+        "Materialization Tree",
+        "SPEC-000",
+        "NEEDS_SPEC_MATURITY"
+      ]
+    },
+    {
+      "id": "GMD2-read-title",
+      "kind": "distractor",
+      "prompt": "Read this excerpt and tell me only the title:\n\n# Benchmark Notes\n\nBenchmarks should reveal behavior.",
+      "expected": [],
+      "expected_any": [
+        ["Benchmark Notes"]
+      ],
+      "forbidden": [
+        "READY_GOAL_PROMPT",
+        "Materialization Tree",
+        "implementation plan",
+        "SPEC-000"
+      ]
+    }
+  ]
+}

@@ -31,7 +31,7 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.169/tilly-engineer-skills-0.3.169.zip` |
+| Public installer bundle | `dist/0.3.170/tilly-engineer-skills-0.3.170.zip` |
 | GitHub package-spec installation | `install/INSTALL.md` |
 | Install reversibility (detach/uninstall/attach-health) | `install/REVERSIBILITY.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
@@ -88,6 +88,7 @@ turning the repository root into an inventory.
 | TES Root Context Composition Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md` |
 | RC1 readiness roadmap | `roadmap/product/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening prompt | `roadmap/product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
+| TES skill benchmark convergence roadmap | `roadmap/product/TES-SKILL-BENCHMARK-CONVERGENCE-ROADMAP.md` |
 | Flash-Fry skill gap spec | `roadmap/product/FLASH-FRY-SKILL-SPEC.md` |
 | Historical next-session continuity | `roadmap/archive/notes/NEXT-STEPS-LETTER-2026-05-05.md` |
 | TDS specification | `tds/TDS-SPEC.md` |

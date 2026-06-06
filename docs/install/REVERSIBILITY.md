@@ -5,7 +5,7 @@ status: active
 consumer: adopters uninstalling or reshaping a TES install, and agents driving detach/uninstall
 source_of_truth: false
 evidence_level: L2
-tver: 0.3.169
+tver: 0.3.170
 ---
 
 # TES Install Reversibility — Detach, Uninstall, Attach-Health

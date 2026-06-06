@@ -44,6 +44,26 @@ def validate_dataset(data: dict[str, object]) -> list[str]:
             if not isinstance(group, list) or not group:
                 failures.append(f"expected_any group is empty or invalid: {ev.get('id', '(unknown)')}[{index}]")
 
+    progressive_defaults = data.get("progressive_defaults", {})
+    if progressive_defaults and not isinstance(progressive_defaults, dict):
+        failures.append("progressive_defaults must be an object")
+    elif isinstance(progressive_defaults, dict):
+        trigger_by_id = {
+            str(ev.get("id")): ev
+            for ev in evals
+            if ev.get("kind") == "trigger"
+        }
+        for section, eval_id in progressive_defaults.items():
+            if section not in sections:
+                failures.append(f"progressive default names unknown section: {section}")
+                continue
+            ev = trigger_by_id.get(str(eval_id))
+            if ev is None:
+                failures.append(f"progressive default eval not found: {section} -> {eval_id}")
+                continue
+            if ev.get("target_section") != section:
+                failures.append(f"progressive default eval does not belong to section: {section} -> {eval_id}")
+
     return failures
 
 

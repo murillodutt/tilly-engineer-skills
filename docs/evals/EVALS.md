@@ -146,6 +146,16 @@ backend errors, no confirmed distractor leak, and no regression against the
 previous passing sample set. A lower level can guide a patch, but only `L4`
 supports a full certification claim.
 
+Datasets may declare `progressive_defaults` for sections whose first listed
+eval is retained for full coverage but is not the best smoke sample. The default
+only changes L1/L2 ordering; L3 and L4 still cover the full target gate.
+
+Use `--runtime-skill-source` when the same runner probes a TES skill other than
+the default engineering discipline skill. The first additional retained family
+is `benchmarks/goal-maestro/eval-dataset.json`, which probes
+`src/adapters/codex/skills/tes-goal-maestro/SKILL.md` through the same
+progressive levels and progress-log contract.
+
 Every non-dry-run execution writes active monitoring logs inside the run
 directory:
 

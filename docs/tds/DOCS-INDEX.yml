@@ -1,4 +1,4 @@
-version: 0.3.169
+version: 0.3.170
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -433,6 +433,13 @@ documents:
     class: roadmap
     status: active
     consumer: maintainers, release reviewers, and documentation operators
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/product/TES-SKILL-BENCHMARK-CONVERGENCE-ROADMAP.md
+    id: roadmap.tes_skill_benchmark_convergence
+    class: roadmap
+    status: proposed
+    consumer: maintainers and benchmark operators
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/product/FLASH-FRY-SKILL-SPEC.md

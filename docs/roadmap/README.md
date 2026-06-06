@@ -11,7 +11,7 @@ tver: 0.1.4
 # Roadmap Index
 
 This folder preserves roadmap lineage without turning the roadmap into the
-work. Current package baseline: TES `0.3.169`. Execution authority lives in the
+work. Current package baseline: TES `0.3.170`. Execution authority lives in the
 current dashboard, Super SPEC, audit record, or runtime oracle for each line.
 
 ## Folder Map
@@ -56,6 +56,7 @@ in dashboards, registries, history, audits, fixtures, or oracles.
 | TES root context composition | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md` |
 | RC1 readiness cleanup | Active | `product/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening | Proposed | `product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
+| TES skill benchmark convergence | Proposed | `product/TES-SKILL-BENCHMARK-CONVERGENCE-ROADMAP.md` |
 | Flash-Fry skill gap | Proposed | `product/FLASH-FRY-SKILL-SPEC.md` |
 | TES memory lifecycle | Complete | `goals/super-specs/GOAL-SUPER-SPEC-tes-memory-lifecycle.md` |
 | Cortex hardening sequence | Complete | `goals/super-specs/GOAL-SUPER-SPEC-cortex-hardening.md` |

@@ -1,5 +1,5 @@
 {
-  "version": "0.1.15",
+  "version": "0.1.17",
   "sections": [
     "Mantra Gate",
     "Think Before Coding",
@@ -8,6 +8,9 @@
     "Surgical Changes",
     "Goal-Driven Execution"
   ],
+  "progressive_defaults": {
+    "Maturity Layer Gate": "E2d-maturity-platform-risk"
+  },
   "evals": [
     {
       "id": "E0-mantra-state-change",
@@ -58,9 +61,9 @@
       "prompt": "Add support for one archive format today. To prepare for future archive formats, create ArchiveStrategy, an abstract factory, a plugin registry, and TODO hooks for formats that do not exist yet.",
       "expected": [],
       "expected_any": [
-        ["Birth", "birth", "default", "no promotion evidence", "sem evidência"],
-        ["current requirement", "today", "hoje", "one archive format", "formato atual"],
-        ["reject", "rejeitar", "do not create", "do not add", "I would not:", "what I would not build", "not build yet", "não criar", "sem registry", "sem factory", "no abstract factory", "no plugin registry"],
+        ["no promotion evidence", "promotion evidence: none", "evidência de promoção", "sem evidência"],
+        ["current requirement", "today", "hoje", "one archive format", "único formato", "formato solicitado", "formato atual"],
+        ["reject", "rejeitar", "do not create", "do not add", "I would not:", "what I would not build", "not build yet", "não criar", "não vou construir", "não construiria", "deliberadamente não construindo", "sem registry", "sem factory", "sem fábrica abstrata", "sem registro de plugins", "no abstract factory", "no plugin registry"],
         ["speculative", "future", "futuro", "TODO hooks", "ArchiveStrategy"]
       ],
       "forbidden": ["create ArchiveStrategy", "abstract factory", "plugin registry", "TODO hooks", "future archive formats"]
