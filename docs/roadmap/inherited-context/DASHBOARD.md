@@ -17,25 +17,48 @@ the next cut.
 Canonical:
 `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-inherited-context-canonical-source.md`
 
-## State
+## State — BLOCKED: off-path integration (the private canary finding)
 
-Released in TES `0.3.172` (tag `v0.3.172`, commit `cc04a4fe`, bundle sha
-`ced76b7c357a2d7cdd33f0d82dd01bf94976de92cb0244ccc7cba5ad75ea7d79`). Every SPEC
-below is delivered with a self-test fixture except SPEC-010.
+Components shipped in 0.3.172/0.3.173, but the line does NOT meet its objective
+on the real install path. A real-project install (private canary, 0.3.173) revealed that
+inheritance never runs in production: `tes_install` writes context_governance
+roots via `tes_bundle.apply_staged_bundle` → `root_context.compose_root_context`
+(the parent's INLINE composer), while SPEC-007's routing lives in
+`install_adapter.py` — a branch the production install does not traverse. Every
+"delivered" claim below was verified against `install_adapter` directly, the
+wrong path. This is the defect; the canary did its job.
 
 | SPEC | Scope | State | Fixture / evidence |
 |------|-------|-------|--------------------|
 | SPEC-000 | rich-root fixtures | delivered | `context_distill_coverage_oracle.py` self-test |
 | SPEC-001 | context-unit model + coverage diff | delivered | self-test: faithful=OVERLAY_COVERED, dropped directive fails |
 | SPEC-002 | canonical-source section map | delivered | cross-check vs `project_context_oracle` (merge keeps PASS) |
-| SPEC-004 | Claude `@`-pointer render | delivered | self-test RENDER_CLAUDE_OK |
-| SPEC-005 | Codex materialized block + src-sha | delivered | self-test RENDER_CODEX_OK, <32 KiB |
-| SPEC-006 | idempotency / ALREADY_INHERITED | delivered | self-test stable re-render |
-| SPEC-007 | installer routing (turn the default) | delivered | `install_adapter.py --self-test` (5 cases) |
-| SPEC-008 | uninstall restores `.bak` byte-faithful | delivered | `tes_bundle.py` self-test + end-to-end |
+| SPEC-004 | Claude `@`-pointer render | delivered (component) | self-test RENDER_CLAUDE_OK |
+| SPEC-005 | Codex materialized block + src-sha | delivered (component) | self-test RENDER_CODEX_OK, <32 KiB |
+| SPEC-006 | idempotency / ALREADY_INHERITED | delivered (component) | self-test stable re-render |
+| SPEC-007 | installer routing (turn the default) | **OFF-PATH** | wired in `install_adapter.py`, NOT in the production `apply_staged_bundle` path; never runs on npx/postinstall install |
+| SPEC-008 | uninstall restores `.bak` byte-faithful | delivered (component) | `tes_bundle.py` self-test + end-to-end |
 | SPEC-003 | `tes-context-distill` skill (Phase 2) | delivered | claude+codex, command-trigger + materialize |
 | SPEC-009 | `/tes-doctor` inherited-context recovery | delivered | doctor route + bootloader skill list |
-| SPEC-010 | real-project canary replay | exercised | realistic canary PASS full cycle; F1 found + fixed (see below) |
+| SPEC-010 | real-project canary replay | **exposed the off-path defect** | private canary 0.3.173: installed, did NOT inherit; parent composed inline instead |
+
+## Blocking architectural decision (unresolved)
+
+Inheritance (overlay → canonical source, root goes thin) and the parent
+root-context-composition (overlay INLINE in the root) are the SAME decision made
+twice, incompatibly, for the same context_governance root. Integrating SPEC-007
+into `apply_staged_bundle` collides with the parent's contract (proven: the
+`clean runtime ... project-owned overlay` self-test fails) and would REOPEN the
+parent contract, which the Super SPEC's Required Negative Checks forbid. The
+2026-06-06 integration attempt was reverted (uncommitted) for this reason.
+
+Resolution required before any reintegration: reconcile the two contracts —
+decide whether inherited-context SUPERSEDES the parent's inline composition for
+Claude/Codex roots (amend the parent), or COMPLEMENTS it under a narrower
+condition, or whether the parent's inline composition already satisfies the
+product need and this line is redundant. This is a product/architecture call,
+not a wiring fix. Canary evidence: parent inline composition DID preserve project
+context (strip-tes-block keeps project_text); no data was lost.
 
 ## Design facts (do not relitigate)
 
@@ -58,9 +81,20 @@ below is delivered with a self-test fixture except SPEC-010.
   (install → inherit → coverage → uninstall byte-faithful) now PASS. Self-test
   fixture strengthened to fail if either exclusion regresses.
 
+## Canary findings — F2 (blocking)
+
+- **F2 (open, blocking):** a real project canary (0.3.173, source-of-record off-repo) installed via the
+  production npx/postinstall path and did NOT inherit — the parent's inline
+  composer ran instead, because SPEC-007 routing is off-path (see State). The
+  components work in isolation; the line does not work end-to-end on the real
+  install path. Distinct from F1 (an oracle precision bug, resolved).
+
 ## Next cut
 
-The line is field-exercised on one realistic target with no open findings. Per
-`<real_project_learning_standard>`, broaden to two more independent real
-projects before a commercial-use claim. Until then: engineering-complete and
-single-target field-validated.
+BLOCKED on the architectural reconciliation above. Do NOT reintegrate SPEC-007
+into `apply_staged_bundle` until the inherit-vs-inline-compose contract is
+decided — a blind integration breaks the parent's self-test and reopens a
+forbidden contract. The honest status: components delivered, line objective NOT
+met on the production path, no data-loss risk (parent preserves project context
+inline). Owner decision needed: supersede parent / complement / accept parent
+as sufficient and retire this line.
