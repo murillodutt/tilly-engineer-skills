@@ -35,7 +35,7 @@ below is delivered with a self-test fixture except SPEC-010.
 | SPEC-008 | uninstall restores `.bak` byte-faithful | delivered | `tes_bundle.py` self-test + end-to-end |
 | SPEC-003 | `tes-context-distill` skill (Phase 2) | delivered | claude+codex, command-trigger + materialize |
 | SPEC-009 | `/tes-doctor` inherited-context recovery | delivered | doctor route + bootloader skill list |
-| SPEC-010 | real-project canary replay | **open** | requires a real rich-root target off-repo |
+| SPEC-010 | real-project canary replay | exercised | realistic canary PASS full cycle; F1 found + fixed (see below) |
 
 ## Design facts (do not relitigate)
 
@@ -48,9 +48,19 @@ below is delivered with a self-test fixture except SPEC-010.
   uninstall restore source. An inherited root is detected by markers AND archive
   — markers alone false-positive on clean installs.
 
+## Canary findings
+
+- **F1 (resolved):** on a realistic canary, `project_context_oracle` expected
+  `CURSOR.md`/`.cursor` (TES-installed surfaces) in PROJECT-CONTEXT, failing the
+  overlay oracle post-inherit. Root cause: `tes-runtime-capabilities.mdc` was
+  missing from the per-file TES-runtime exclusion, plus a stale CURSOR.md
+  bootloader marker. Fixed in `scripts/project_context_oracle.py`; full cycle
+  (install → inherit → coverage → uninstall byte-faithful) now PASS. Self-test
+  fixture strengthened to fail if either exclusion regresses.
+
 ## Next cut
 
-SPEC-010 — replay the inherited-context class on a real rich-root project canary
-(off-repo, generic vocabulary only), per `<real_project_learning_standard>`.
-Required before any commercial-use claim. Until then the line is
-engineering-complete but not field-certified.
+The line is field-exercised on one realistic target with no open findings. Per
+`<real_project_learning_standard>`, broaden to two more independent real
+projects before a commercial-use claim. Until then: engineering-complete and
+single-target field-validated.

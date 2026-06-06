@@ -119,11 +119,12 @@ TES_RUNTIME_PREFIXES = (
 )
 TES_RUNTIME_RELPATHS = {
     ".cursor/rules/tes-guidelines.mdc",
+    ".cursor/rules/tes-runtime-capabilities.mdc",
 }
 TES_ROOT_BOOTLOADER_MARKERS = {
     "AGENTS.md": "Portable Codex bootloader for repositories adopting Tilly Engineering",
     "CLAUDE.md": "Behavioral engineering discipline for reducing common LLM coding mistakes.",
-    "CURSOR.md": "This target repository includes a Cursor project rule for Tilly Engineering",
+    "CURSOR.md": "# Using This Repo With Cursor",
 }
 ANCHOR_NAMES = (
     "README.md",
@@ -524,6 +525,17 @@ def expected_anchors(target: Path) -> list[str]:
             continue
         path = target / name
         if path.exists() and path.is_file() and not is_excluded(path, target):
+            # A root bootloader carrying TES markers is a TES-installed surface,
+            # not a project anchor. After inherited-context install it is a thin
+            # TES-rendered root, so it must not be expected in PROJECT-CONTEXT
+            # (F1 canary finding: CURSOR.md showed up as a missing anchor).
+            if name in TES_ROOT_BOOTLOADER_MARKERS:
+                try:
+                    head = path.read_text(encoding="utf-8", errors="ignore")
+                except OSError:
+                    head = ""
+                if TES_ROOT_BOOTLOADER_MARKERS[name] in head or "<!-- TES:CORE BEGIN" in head:
+                    continue
             anchors.append(name)
     for path in files:
         try:
@@ -546,13 +558,26 @@ def expected_anchors(target: Path) -> list[str]:
     return sorted(dict.fromkeys(anchors))
 
 
+# Top-level directories that are wholly TES-installed runtime surfaces, never
+# project territory. `.cursor` is intentionally NOT here: a project may own its
+# own `.cursor/rules/*.mdc`. TES cursor surfaces are excluded per-file via
+# TES_RUNTIME_RELPATHS instead, so `.cursor` only disappears as a territory when
+# it contains nothing but TES files (F1 canary finding: the missing exclusion of
+# tes-runtime-capabilities.mdc was the real cause, not the directory itself).
+TES_RUNTIME_TERRITORIES = {".claude", ".codex", ".agents", ".claude-plugin"}
+
+
 def expected_territories(target: Path) -> list[str]:
     territories: set[str] = set()
     for path in iter_project_files(target):
         relpath = path.relative_to(target)
         if len(relpath.parts) > 1:
             territories.add(relpath.parts[0])
-    return sorted(name for name in territories if name not in {".git", ".tes"})
+    return sorted(
+        name
+        for name in territories
+        if name not in {".git", ".tes"} and name not in TES_RUNTIME_TERRITORIES
+    )
 
 
 def is_large_context_target(target: Path) -> bool:
@@ -1095,10 +1120,16 @@ def self_test() -> dict[str, Any]:
         write(target / "docs/agents/cortex/CONTRACT.md", "# Cortex\n")
         write(target / "AGENTS.md", "Portable Codex bootloader for repositories adopting Tilly Engineering\n")
         write(target / "CLAUDE.md", "Behavioral engineering discipline for reducing common LLM coding mistakes.\n")
-        write(target / "CURSOR.md", "This target repository includes a Cursor project rule for Tilly Engineering\n")
+        write(target / "CURSOR.md", "# Using This Repo With Cursor\n\nThin pointer to the Cursor rule layer.\n")
         territories = expected_territories(target)
         anchors = expected_anchors(target)
-        for generated in (".agents", ".claude", "skills", ".claude-plugin", "docs"):
+        # Both TES cursor surfaces, as the real adapter install writes them. A
+        # .cursor directory containing ONLY TES files must not surface as project
+        # territory (F1: tes-runtime-capabilities.mdc was the missed exclusion).
+        write(target / ".cursor/rules/tes-guidelines.mdc", "# TES Cursor rule\n")
+        write(target / ".cursor/rules/tes-runtime-capabilities.mdc", "# TES Cursor capability rule\n")
+        territories = expected_territories(target)
+        for generated in (".agents", ".claude", ".cursor", "skills", ".claude-plugin", "docs"):
             if generated in territories:
                 failures.append(f"oracle must exclude generated TES territory: {generated}")
         for generated in ("AGENTS.md", "CLAUDE.md", "CURSOR.md", ".cursor/rules/tes-guidelines.mdc"):
