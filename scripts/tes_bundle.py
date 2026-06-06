@@ -1628,6 +1628,58 @@ def detach_docs_mesh(target: Path, *, dry_run: bool = False, yes: bool = False, 
     }
 
 
+def _latest_inherited_bak(target: Path, relpath: str) -> Path | None:
+    """Return the most recent <root>.bak-<stamp> for a context_governance root,
+    or None when no archive exists. The stamp sorts lexicographically by UTC
+    timestamp, so the max name is the latest."""
+    root = target / relpath
+    baks = sorted(root.parent.glob(f"{root.name}.bak-*"))
+    return baks[-1] if baks else None
+
+
+def restore_inherited_roots(target: Path, *, dry_run: bool = False) -> dict[str, Any]:
+    """SPEC-008: restore the original root archived by inherited-context install.
+
+    For each context_governance root that is now a TES thin inherited root
+    (carries a TES:CORE block plus the @ pointer or a materialized overlay
+    block), restore the byte-faithful original from its latest <root>.bak-<stamp>.
+
+    A root is inherited-by-this-route iff it carries TES render markers AND a
+    matching <root>.bak-<stamp> archive exists (the SPEC-007 route always
+    archives). The archive is the signal that distinguishes an inherited root
+    from a normal capsule-installed rendered root: the latter also carries
+    TES:CORE but was never the user's content, so it has no archive.
+
+    Non-loss invariants:
+    - Restore happens only when both the render markers and the archive exist.
+    - A rendered root with no archive is a normal install, not a SPEC-007
+      inheritance: left untouched, no review noise.
+    - A project-owned root with no TES markers is left untouched.
+    - The restored bytes equal the archive exactly; the consumed .bak is removed.
+    """
+    actions: list[dict[str, str]] = []
+    review: list[dict[str, str]] = []
+    for relpath in sorted(CONTEXT_GOVERNANCE_PATHS):
+        root = target / relpath
+        if not root.is_file():
+            continue
+        text = root.read_text(encoding="utf-8", errors="ignore")
+        has_render_markers = "<!-- TES:CORE BEGIN" in text and (
+            "@docs/agents/PROJECT-CONTEXT.md" in text or "<!-- TES:PROJECT-OVERLAY BEGIN" in text
+        )
+        bak = _latest_inherited_bak(target, relpath)
+        # Inherited-by-route requires BOTH the markers and the archive.
+        if not has_render_markers or bak is None:
+            continue
+        if dry_run:
+            actions.append({"path": relpath, "action": "would-restore-inherited", "from": bak.name})
+            continue
+        root.write_text(bak.read_text(encoding="utf-8"), encoding="utf-8")
+        bak.unlink()
+        actions.append({"path": relpath, "action": "restore-inherited", "from": bak.name})
+    return {"actions": actions, "review": review}
+
+
 def uninstall_capsule(target: Path, *, dry_run: bool = False, yes: bool = False) -> dict[str, Any]:
     """ADR 0004 SPEC-003: reverse a TES installation and prove zero residue.
 
@@ -1683,6 +1735,14 @@ def uninstall_capsule(target: Path, *, dry_run: bool = False, yes: bool = False)
         if backup_id
         else {"status": "NO_BACKUP", "actions": []}
     )
+
+    # 1b. SPEC-008: restore inherited-context roots from their .bak archive. The
+    # inherited-context install (SPEC-007) rewrites CLAUDE.md/AGENTS.md to a thin
+    # rendered root and archives the original ad-hoc, outside the capsule backup
+    # manifest, so the step-1 restore does not cover it.
+    inherited_restore = restore_inherited_roots(target, dry_run=dry_run)
+    actions.extend(inherited_restore["actions"])
+    review_items.extend(inherited_restore["review"])
 
     # 2. Remove TES-owned surfaces per uninstall_action, sha256-fail-safe.
     for entry in manifest.get("entries", []):
@@ -2600,6 +2660,43 @@ def self_test() -> dict[str, Any]:
                 f"prune_historical_dist must report removed peers exactly; "
                 f"expected {sorted(expected_pruned)}, got {sorted(pruned)}"
             )
+
+    # SPEC-008: uninstall restores the inherited-context root from its .bak.
+    with tempfile.TemporaryDirectory(prefix="tes-bundle-spec008-") as s8_temp:
+        s8 = Path(s8_temp)
+        original_root = "# Project Rules\n\nNever commit to main.\nRun `npm test` before closeout.\n"
+        thin_root = (
+            "<!-- TES:CORE BEGIN version=0.3.171 sha256=abc adapter=claude -->\n"
+            "# TES Core\n<!-- TES:CORE END -->\n\n@docs/agents/PROJECT-CONTEXT.md\n"
+        )
+        # Case A: thin inherited root + archive → restore byte-faithful, drop .bak.
+        (s8 / "CLAUDE.md").write_text(thin_root, encoding="utf-8")
+        (s8 / "CLAUDE.md.bak-20260606T000000Z").write_text(original_root, encoding="utf-8")
+        res = restore_inherited_roots(s8, dry_run=False)
+        if (s8 / "CLAUDE.md").read_text(encoding="utf-8") != original_root:
+            failures.append("SPEC-008: uninstall must restore the original root byte-faithful")
+        if list(s8.glob("CLAUDE.md.bak-*")):
+            failures.append("SPEC-008: consumed .bak archive must be removed after restore")
+        if not any(a.get("action") == "restore-inherited" for a in res["actions"]):
+            failures.append("SPEC-008: restore must report restore-inherited")
+
+        # Case B: a rendered root with NO archive is a normal install, not an
+        # inheritance — left untouched, no review noise (avoids false positives
+        # on capsule installs whose roots carry TES:CORE but were never the user's).
+        (s8 / "AGENTS.md").write_text(thin_root, encoding="utf-8")
+        res_b = restore_inherited_roots(s8, dry_run=False)
+        if (s8 / "AGENTS.md").read_text(encoding="utf-8") != thin_root:
+            failures.append("SPEC-008: a rendered root with no .bak must be left untouched")
+        if res_b["review"] or res_b["actions"]:
+            failures.append("SPEC-008: a rendered root with no .bak must produce no restore/review")
+
+        # Case C: a project-owned root with no TES markers is left untouched.
+        plain = "# My Rules\n\nplain project root, no TES markers\n"
+        (s8 / "CLAUDE.md").write_text(plain, encoding="utf-8")
+        restore_inherited_roots(s8, dry_run=False)
+        if (s8 / "CLAUDE.md").read_text(encoding="utf-8") != plain:
+            failures.append("SPEC-008: a non-inherited project root must be left untouched")
+
     return {
         "version": VERSION,
         "status": "PASS" if not failures else "FAIL",
