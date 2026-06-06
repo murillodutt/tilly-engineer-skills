@@ -87,6 +87,7 @@ turning the repository root into an inventory.
 | TES Installed Certification And Field Reports Hardening Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
 | TES Root Context Composition Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md` |
 | TES Inherited Context Canonical Source Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-inherited-context-canonical-source.md` |
+| Inherited Context line dashboard | `roadmap/inherited-context/DASHBOARD.md` |
 | RC1 readiness roadmap | `roadmap/product/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening prompt | `roadmap/product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
 | TES skill benchmark convergence roadmap | `roadmap/product/TES-SKILL-BENCHMARK-CONVERGENCE-ROADMAP.md` |
