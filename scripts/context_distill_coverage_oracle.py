@@ -63,7 +63,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.170"
+VERSION = "0.3.171"
 
 # Parent (root-context-composition) marker shape, reused verbatim. This line
 # does not redefine the markers; it renders within them. Kept in sync with
@@ -434,6 +434,86 @@ def is_already_inherited(adapter: str, root_text: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# P2 — installer routing (SPEC-007). Turn the default for a context_governance
+# root in conflict: instead of whole-file overwrite (loses human context to
+# .bak) or whole-file preserve (leaves TES core stale), inherit the human
+# context into the canonical source and write the thin rendered root.
+# ---------------------------------------------------------------------------
+
+
+def route_context_governance_root(
+    *,
+    adapter: str,
+    root_text: str,
+    core_text: str,
+    existing_source_text: str,
+    stamp: str,
+    discards: list[dict[str, str]] | None = None,
+) -> dict[str, Any]:
+    """Decide and produce the write for one context_governance root.
+
+    Returns a dict with:
+      - status: INHERITED | ALREADY_INHERITED | BLOCKED_ARCHIVE_MISSING |
+                NEEDS_REVIEW_COVERAGE
+      - bak_name: the <root>.bak-<stamp> archive name (None when skipped)
+      - source_text: the canonical source to write (existing when skipped)
+      - root_text: the thin rendered root to write (None on coverage failure)
+      - coverage: the coverage map evidence (None when skipped)
+
+    Pure function: it computes the writes; the caller performs the IO. This keeps
+    the installer wiring thin and the decision fully unit-testable.
+    """
+    # SPEC-006 idempotency: an already-inherited root only re-renders.
+    if is_already_inherited(adapter, root_text):
+        rendered = (
+            render_claude_root(core_text)
+            if adapter == "claude"
+            else render_codex_root(core_text, existing_source_text)
+        )
+        return {
+            "status": "ALREADY_INHERITED",
+            "bak_name": None,
+            "source_text": existing_source_text,
+            "root_text": rendered,
+            "coverage": None,
+        }
+
+    # SPEC-008 invariant: no destructive write without an archive.
+    if not stamp:
+        return {"status": "BLOCKED_ARCHIVE_MISSING", "bak_name": None,
+                "source_text": existing_source_text, "root_text": None, "coverage": None}
+    bak_name = f".bak-{stamp}"
+
+    # Phase 1 deterministic distill: extract human units into the canonical
+    # source, merged after whatever the source already holds.
+    extracted = phase1_distill(root_text)
+    merged_source = existing_source_text
+    if existing_source_text.strip():
+        merged_source = existing_source_text.rstrip("\n") + "\n\n" + extracted
+    else:
+        merged_source = extracted
+
+    # Coverage gate: every human unit must be Covered or Discarded-with-reason.
+    coverage = coverage_map(root_text, merged_source, discards)
+    if coverage["status"] != "OVERLAY_COVERED":
+        return {"status": "NEEDS_REVIEW_COVERAGE", "bak_name": bak_name,
+                "source_text": merged_source, "root_text": None, "coverage": coverage}
+
+    rendered = (
+        render_claude_root(core_text)
+        if adapter == "claude"
+        else render_codex_root(core_text, merged_source)
+    )
+    return {
+        "status": "INHERITED",
+        "bak_name": bak_name,
+        "source_text": merged_source,
+        "root_text": rendered,
+        "coverage": coverage,
+    }
+
+
+# ---------------------------------------------------------------------------
 # SPEC-000 — neutral rich-root fixtures (generic identity only).
 # ---------------------------------------------------------------------------
 
@@ -580,6 +660,54 @@ def self_test() -> dict[str, Any]:
             failures.append("Claude re-render is not stable (idempotency broken)")
         if render_codex_root(core, source) != codex_root:
             failures.append("Codex re-render is not stable (idempotency broken)")
+
+        # --- P2 installer routing (SPEC-007 / SPEC-008) ---
+        # A rich context_governance root in conflict routes to INHERITED:
+        # human context lands in the source, the root is rendered thin.
+        routed = route_context_governance_root(
+            adapter="claude", root_text=bak_text, core_text=core,
+            existing_source_text="", stamp="selftest",
+        )
+        if routed["status"] != "INHERITED":
+            failures.append(f"routing a rich root must be INHERITED, got {routed['status']}")
+        if routed["bak_name"] != ".bak-selftest":
+            failures.append("routing must name the .bak archive")
+        if not routed["root_text"] or f"@{CANONICAL_SOURCE_REL}" not in routed["root_text"]:
+            failures.append("routed Claude root must be the thin @-pointer render")
+        # The human units must be covered by the merged source (no loss to .bak).
+        if routed["coverage"]["status"] != "OVERLAY_COVERED":
+            failures.append("routed source must cover all human units")
+
+        # REGRESSION GUARD (SPEC-008 invariant): no destructive write without an
+        # archive — an empty stamp must block, never overwrite.
+        blocked = route_context_governance_root(
+            adapter="claude", root_text=bak_text, core_text=core,
+            existing_source_text="", stamp="",
+        )
+        if blocked["status"] != "BLOCKED_ARCHIVE_MISSING":
+            failures.append("routing without an archive stamp must be BLOCKED_ARCHIVE_MISSING")
+        if blocked["root_text"] is not None:
+            failures.append("blocked routing must not produce a root write")
+
+        # SPEC-006 in the routing path: an already-inherited root only re-renders.
+        re_routed = route_context_governance_root(
+            adapter="claude", root_text=routed["root_text"], core_text=core,
+            existing_source_text=routed["source_text"], stamp="selftest2",
+        )
+        if re_routed["status"] != "ALREADY_INHERITED":
+            failures.append(f"routing an inherited root must be ALREADY_INHERITED, got {re_routed['status']}")
+        if re_routed["bak_name"] is not None:
+            failures.append("already-inherited routing must not re-archive")
+
+        # Codex routing yields the materialized block, no @.
+        codex_routed = route_context_governance_root(
+            adapter="codex", root_text=bak_text, core_text=core,
+            existing_source_text="", stamp="selftest",
+        )
+        if codex_routed["status"] != "INHERITED":
+            failures.append(f"Codex routing must be INHERITED, got {codex_routed['status']}")
+        if codex_routed["root_text"] and f"@{CANONICAL_SOURCE_REL}" in codex_routed["root_text"]:
+            failures.append("Codex routed root must not contain an @ directive")
 
     return {
         "status": "PASS" if not failures else "FAIL",

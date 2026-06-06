@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import context_distill_coverage_oracle as context_distill
 import field_reports
 import materialize_adapter
 import root_context
@@ -21,8 +22,81 @@ import tes_bundle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.170"
+VERSION = "0.3.171"
 RETROFIT_DIR = ".tes/retrofit"
+CANONICAL_SOURCE_REL = "docs/agents/PROJECT-CONTEXT.md"
+
+
+def route_inherited_context_roots(
+    overwrite_items: list[dict[str, str]],
+    target_root: Path,
+    dry_run: bool,
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    """P2 SPEC-007: turn the default for context_governance roots in conflict.
+
+    Instead of whole-file overwrite (which loses human context to a .bak) or
+    whole-file preserve (which leaves the TES core stale), inherit the human
+    context into the canonical source and write the thin rendered root. Only
+    Claude (`CLAUDE.md`) and Codex (`AGENTS.md`) are routed; other
+    context_governance paths (Cursor) keep the legacy copy path.
+
+    Returns (routed_actions, remaining_overwrite_items): the routed items are
+    removed from the blind-copy list so they are not double-written.
+    """
+    routed_actions: list[dict[str, str]] = []
+    remaining: list[dict[str, str]] = []
+    adapter_for_root = {"CLAUDE.md": "claude", "AGENTS.md": "codex"}
+    source_path = target_root / CANONICAL_SOURCE_REL
+
+    for item in overwrite_items:
+        relpath = item.get("relpath", "")
+        adapter = adapter_for_root.get(relpath)
+        if item.get("layer") != "context_governance" or adapter is None:
+            remaining.append(item)
+            continue
+
+        target = Path(item["target"])
+        try:
+            root_text = target.read_text(encoding="utf-8")
+            core_text = Path(item["source"]).read_text(encoding="utf-8")
+            existing_source = source_path.read_text(encoding="utf-8") if source_path.exists() else ""
+        except OSError as exc:
+            routed_actions.append({**item, "action": "route-error", "error": str(exc)})
+            remaining.append(item)
+            continue
+
+        stamp = "" if dry_run else context_distill_stamp()
+        decision = context_distill.route_context_governance_root(
+            adapter=adapter,
+            root_text=root_text,
+            core_text=core_text,
+            existing_source_text=existing_source,
+            stamp=stamp,
+        )
+
+        if dry_run:
+            routed_actions.append({**item, "action": "would-inherit", "route_status": decision["status"]})
+            continue
+
+        if decision["status"] not in {"INHERITED", "ALREADY_INHERITED"}:
+            # Coverage failure or blocked archive: do NOT overwrite. Fall back to
+            # preserve so the human root is never lost.
+            routed_actions.append({**item, "action": "preserve-conflict", "route_status": decision["status"]})
+            continue
+
+        if decision["bak_name"]:
+            backup_path = target.with_name(f"{target.name}{decision['bak_name']}")
+            shutil.copy2(target, backup_path)
+        source_path.parent.mkdir(parents=True, exist_ok=True)
+        source_path.write_text(decision["source_text"], encoding="utf-8")
+        target.write_text(decision["root_text"], encoding="utf-8")
+        routed_actions.append({**item, "action": "inherit", "route_status": decision["status"]})
+
+    return routed_actions, remaining
+
+
+def context_distill_stamp() -> str:
+    return utc_stamp()
 
 
 def is_tes_runtime_conflict(relpath: str) -> bool:
@@ -443,6 +517,12 @@ def install(args: argparse.Namespace) -> int:
                 )
             ]
             preserved_conflicts.extend(preserved_items)
+            # P2 SPEC-007: route context_governance roots (CLAUDE.md/AGENTS.md)
+            # through inherit+render instead of blind whole-file overwrite.
+            routed_actions, overwrite_items = route_inherited_context_roots(
+                overwrite_items, target_root, args.dry_run,
+            )
+            actions.extend(routed_actions)
             actions.extend(copy_files(
                 copies,
                 overwrite_items,
