@@ -11,7 +11,7 @@ tver: 0.1.4
 # Roadmap Index
 
 This folder preserves roadmap lineage without turning the roadmap into the
-work. Current package baseline: TES `0.3.174`. Execution authority lives in the
+work. Current package baseline: TES `0.3.175`. Execution authority lives in the
 current dashboard, Super SPEC, audit record, or runtime oracle for each line.
 
 ## Folder Map
