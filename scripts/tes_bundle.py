@@ -25,7 +25,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.173"
+VERSION = "0.3.174"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -2847,7 +2847,7 @@ def self_test() -> dict[str, Any]:
         s8 = Path(s8_temp)
         original_root = "# Project Rules\n\nNever commit to main.\nRun `npm test` before closeout.\n"
         thin_root = (
-            "<!-- TES:CORE BEGIN version=0.3.173 sha256=abc adapter=claude -->\n"
+            "<!-- TES:CORE BEGIN version=0.3.174 sha256=abc adapter=claude -->\n"
             "# TES Core\n<!-- TES:CORE END -->\n\n@docs/agents/PROJECT-CONTEXT.md\n"
         )
         # Case A: thin inherited root + archive → restore byte-faithful, drop .bak.
