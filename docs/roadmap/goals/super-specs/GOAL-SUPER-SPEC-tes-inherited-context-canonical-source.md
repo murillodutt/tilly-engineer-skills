@@ -17,10 +17,26 @@ missing layer above it: a single canonical overlay source, two asymmetric root
 renderings, and a non-lossy distillation of pre-existing human context into that
 source.
 
-Execution status (as of 0.3.172): P0 (SPEC-000/001/002), P1 (SPEC-004/005/006),
-and P2 SPEC-007 (installer routing) + SPEC-008 (uninstall restore) + SPEC-003
-(`tes-context-distill` skill) + SPEC-009 (`/tes-doctor` recovery) are delivered
-with self-test fixtures. Open: SPEC-010 (real-project canary replay).
+Execution status: all SPECs delivered and on the production install path. P0
+(SPEC-000/001/002), P1 (SPEC-004/005/006), P2 SPEC-007 (installer routing),
+SPEC-008 (uninstall restore), SPEC-003 (`tes-context-distill` skill), SPEC-009
+(`/tes-doctor` recovery), and SPEC-010 (canary replay) are covered by self-test
+fixtures plus a synthetic production-path canary (build→stage→apply: INHERITED,
+uninstall byte-faithful, idempotent re-render).
+
+Correction (post-0.3.173): SPEC-007 was initially wired in `install_adapter.py`
+— a branch the production install does not traverse — so inheritance never ran
+on real installs (exposed by a real-project canary). Routing moved into
+`tes_bundle.compose_context_from_staged`, the function `tes_install` →
+`apply_staged_bundle` actually calls.
+
+Owner architectural decision (recorded): inheritance SUPERSEDES the parent
+root-context-composition inline compose for Claude/Codex roots that carry
+substantive human context (detectable context units). Roots without such content
+keep the parent inline compose, so the parent contract stays valid for the
+prose-only case. This is a narrow conditional supersession authorized by the
+owner, not a blanket parent rewrite. The delivered installer behavior carries a
+patch bump at the line-closing sync.
 
 Capability: when a project already owns rich `CLAUDE.md` / `AGENTS.md` context,
 install distills that context into the existing canonical overlay
