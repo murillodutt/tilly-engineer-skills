@@ -50,6 +50,7 @@ SERVER_FILES = (
     "tes_update.py",
     "tes_legacy_retirement.py",
     "root_context.py",
+    "context_distill_coverage_oracle.py",
     "tes_init.py",
     "project_context_oracle.py",
     "project_alignment_oracle.py",

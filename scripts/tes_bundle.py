@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import context_distill_coverage_oracle as context_distill
 import materialize_adapter
 import root_context
 
@@ -81,6 +82,7 @@ HELPER_FILES = (
     "tes_update.py",
     "tes_legacy_retirement.py",
     "root_context.py",
+    "context_distill_coverage_oracle.py",
     "tes_init.py",
     "project_context_oracle.py",
     "project_alignment_oracle.py",
@@ -2018,6 +2020,76 @@ def previous_entry_sha(target: Path, relpath: str) -> str | None:
     return None
 
 
+INHERIT_ADAPTER_FOR_ROOT = {"CLAUDE.md": "claude", "AGENTS.md": "codex"}
+CANONICAL_SOURCE_REL = "docs/agents/PROJECT-CONTEXT.md"
+
+
+def _has_inheritable_human_context(existing_text: str, relpath: str) -> bool:
+    """True when the destination root carries real project-authored context that
+    should be inherited into the canonical source rather than composed inline.
+
+    The inherited-context path renders the root thin (Claude: TES:CORE + an
+    `@docs/agents/PROJECT-CONTEXT.md` pointer; Codex: TES:CORE + a materialized
+    overlay block) and moves human context to the canonical source. A root that
+    is already TES-rendered (carries TES:CORE), is empty, or has no detected
+    context units keeps the parent inline compose. Cursor roots are never routed.
+    """
+    if relpath not in INHERIT_ADAPTER_FOR_ROOT:
+        return False
+    if not existing_text.strip():
+        return False
+    if "<!-- TES:CORE BEGIN" in existing_text:
+        return False
+    return bool(context_distill.detect_units(existing_text))
+
+
+def inherit_context_from_staged(
+    target: Path,
+    entry: dict[str, Any],
+    dry_run: bool,
+    backup_id: str | None,
+    existing_text: str,
+    core_text: str,
+) -> dict[str, str]:
+    """SPEC-007 on the production path (apply_staged_bundle): distill the
+    project's human root context into docs/agents/PROJECT-CONTEXT.md and render
+    the thin inherited root, instead of composing the overlay inline. Archives
+    the original as <root>.bak-<stamp> (non-loss oracle / uninstall restore)."""
+    relpath = str(entry["path"])
+    dest = target / relpath
+    adapter = INHERIT_ADAPTER_FOR_ROOT[relpath]
+    source_path = target / CANONICAL_SOURCE_REL
+    existing_source = source_path.read_text(encoding="utf-8") if source_path.exists() else ""
+    stamp = "" if dry_run else utc_stamp()
+    decision = context_distill.route_context_governance_root(
+        adapter=adapter,
+        root_text=existing_text,
+        core_text=core_text,
+        existing_source_text=existing_source,
+        stamp=stamp,
+    )
+    result = {
+        "path": relpath,
+        "layer": str(entry["layer"]),
+        "action": "would-inherit-context" if dry_run else "inherit-context",
+        "route_status": str(decision["status"]),
+    }
+    if backup_id:
+        result["backup_id"] = backup_id
+    if dry_run:
+        return result
+    if decision["status"] not in {"INHERITED", "ALREADY_INHERITED"}:
+        result["action"] = "needs-review-inherit-coverage"
+        result["failure"] = "inherited-context coverage not satisfied"
+        return result
+    if decision["bak_name"]:
+        shutil.copy2(dest, dest.with_name(f"{dest.name}{decision['bak_name']}"))
+    source_path.parent.mkdir(parents=True, exist_ok=True)
+    source_path.write_text(str(decision["source_text"]), encoding="utf-8")
+    dest.write_text(str(decision["root_text"]), encoding="utf-8")
+    return result
+
+
 def compose_context_from_staged(
     target: Path,
     entry: dict[str, Any],
@@ -2028,6 +2100,11 @@ def compose_context_from_staged(
     dest = target / entry["path"]
     core_text = source.read_text(encoding="utf-8")
     existing_text = dest.read_text(encoding="utf-8") if dest.exists() and dest.is_file() else ""
+    # A project-authored root with real human context is inherited into the
+    # canonical source (thin @-pointer / materialized block), not composed
+    # inline. Roots without substantive human content keep the parent compose.
+    if _has_inheritable_human_context(existing_text, str(entry["path"])):
+        return inherit_context_from_staged(target, entry, dry_run, backup_id, existing_text, core_text)
     composed = root_context.compose_root_context(
         relpath=str(entry["path"]),
         core_text=core_text,
@@ -2452,7 +2529,11 @@ def self_test() -> dict[str, Any]:
         target = temp / "target"
         target.mkdir()
         subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
-        (target / "AGENTS.md").write_text("project-owned\nRun `npm test` before release.\n", encoding="utf-8")
+        # Prose-only project root (no detectable context units): exercises the
+        # parent INLINE compose path, which stays the default for roots without
+        # substantive human content. Inheritance (units present) is covered by
+        # the rich-root fixture below.
+        (target / "AGENTS.md").write_text("project-owned guardrail notes for this repository.\n", encoding="utf-8")
         (target / ".cursor/rules").mkdir(parents=True)
         (target / ".cursor/rules/project.mdc").write_text("Use the internal emulator fixture.\n", encoding="utf-8")
         (target / ".tes/bin").mkdir(parents=True)
@@ -2538,6 +2619,36 @@ def self_test() -> dict[str, Any]:
             failures.append("root-context-only apply must update core and preserve overlay")
         if (root_only_target / ".tes/bin/tes_update.py").exists():
             failures.append("root-context-only apply must not install helper runtime")
+
+        # PRODUCTION-PATH inheritance: a root with REAL human context units is
+        # inherited into the canonical source by apply_staged_bundle — the path
+        # tes_install actually uses. This is what the real-project canary proved
+        # was missing (routing previously lived only in install_adapter.py).
+        rich_target = temp / "rich-root-inherit-target"
+        rich_target.mkdir()
+        subprocess.run(["git", "init"], cwd=rich_target, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+        (rich_target / "CLAUDE.md").write_text(
+            "# Project Rules\n\nNever commit to main.\nAlways run `npm test` before closeout.\n"
+            "Do not touch the vendor/ directory.\nAPI docs live in docs/api/.\n",
+            encoding="utf-8",
+        )
+        rich_stage = stage_bundle(bundle, rich_target)
+        if rich_stage.get("status") != "STAGED":
+            failures.extend(rich_stage.get("failures", ["rich-root stage failed"]))
+        rich_apply = apply_staged_bundle(rich_target, yes=True, mode="preserve", root_context_only=True)
+        if rich_apply.get("status") != "APPLIED":
+            failures.extend(rich_apply.get("failures", ["rich-root apply failed"]))
+        rich_claude = (rich_target / "CLAUDE.md").read_text(encoding="utf-8")
+        if "@docs/agents/PROJECT-CONTEXT.md" not in rich_claude:
+            failures.append("production path must inherit a rich root into a thin @-pointer render")
+        if "Never commit to main" in rich_claude:
+            failures.append("inherited root must be thin; human context belongs in the canonical source")
+        rich_canonical = rich_target / "docs/agents/PROJECT-CONTEXT.md"
+        if not rich_canonical.exists() or "npm test" not in rich_canonical.read_text(encoding="utf-8"):
+            failures.append("production path must distill human units into the canonical source")
+        if not list(rich_target.glob("CLAUDE.md.bak-*")):
+            failures.append("production-path inheritance must archive the original root as .bak")
+
         planned = plan_target(target)
         if planned.get("status") != "PASS":
             failures.extend(planned.get("failures", ["plan failed"]))
