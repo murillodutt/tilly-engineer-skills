@@ -2090,6 +2090,54 @@ def inherit_context_from_staged(
     return result
 
 
+def _is_already_inherited_root(existing_text: str, relpath: str) -> bool:
+    """True when the root was already inherited on a prior install. Detected by
+    the canonical-source reference: the @ pointer (Claude) or the materialized
+    overlay block sourced from PROJECT-CONTEXT (Codex). Robust to the parent
+    having re-wrapped it — any presence of the reference means inherited."""
+    if relpath not in INHERIT_ADAPTER_FOR_ROOT:
+        return False
+    if relpath == "CLAUDE.md":
+        return f"@{CANONICAL_SOURCE_REL}" in existing_text
+    return f"source={CANONICAL_SOURCE_REL}" in existing_text  # Codex overlay marker
+
+
+def rerender_inherited_root(
+    dest: Path,
+    entry: dict[str, Any],
+    core_text: str,
+    dry_run: bool,
+    backup_id: str | None,
+) -> dict[str, str]:
+    """Idempotent re-render of an already-inherited root: rewrite the thin root
+    from the current core + the canonical source, with no re-distillation, no
+    new .bak, and no parent re-wrap. Stable across repeated installs."""
+    relpath = str(entry["path"])
+    adapter = INHERIT_ADAPTER_FOR_ROOT[relpath]
+    target = dest.parent
+    source_path = target / CANONICAL_SOURCE_REL
+    source_text = source_path.read_text(encoding="utf-8") if source_path.exists() else ""
+    if adapter == "claude":
+        rendered = context_distill.render_claude_root(core_text)
+    else:
+        rendered = context_distill.render_codex_root(core_text, source_text)
+    result = {
+        "path": relpath,
+        "layer": str(entry["layer"]),
+        "action": "would-rerender-inherited" if dry_run else "rerender-inherited",
+        "route_status": "ALREADY_INHERITED",
+    }
+    if backup_id:
+        result["backup_id"] = backup_id
+    if dry_run:
+        return result
+    if dest.read_text(encoding="utf-8") == rendered:
+        result["action"] = "skip-rerender-identical"
+        return result
+    dest.write_text(rendered, encoding="utf-8")
+    return result
+
+
 def compose_context_from_staged(
     target: Path,
     entry: dict[str, Any],
@@ -2100,10 +2148,17 @@ def compose_context_from_staged(
     dest = target / entry["path"]
     core_text = source.read_text(encoding="utf-8")
     existing_text = dest.read_text(encoding="utf-8") if dest.exists() and dest.is_file() else ""
+    relpath = str(entry["path"])
+    # Idempotency: a root already inherited (carries the @ pointer for Claude, or
+    # the canonical-source overlay block for Codex) must re-render stably — only
+    # refresh the core — never re-compose through the parent, which would re-wrap
+    # it and double the TES:CORE block on every reinstall.
+    if _is_already_inherited_root(existing_text, relpath):
+        return rerender_inherited_root(dest, entry, core_text, dry_run, backup_id)
     # A project-authored root with real human context is inherited into the
     # canonical source (thin @-pointer / materialized block), not composed
     # inline. Roots without substantive human content keep the parent compose.
-    if _has_inheritable_human_context(existing_text, str(entry["path"])):
+    if _has_inheritable_human_context(existing_text, relpath):
         return inherit_context_from_staged(target, entry, dry_run, backup_id, existing_text, core_text)
     composed = root_context.compose_root_context(
         relpath=str(entry["path"]),
@@ -2648,6 +2703,21 @@ def self_test() -> dict[str, Any]:
             failures.append("production path must distill human units into the canonical source")
         if not list(rich_target.glob("CLAUDE.md.bak-*")):
             failures.append("production-path inheritance must archive the original root as .bak")
+        # Idempotency: a second apply on an already-inherited root must re-render
+        # stably (no re-distill, no double TES:CORE, no bak proliferation).
+        rich_first = (rich_target / "CLAUDE.md").read_text(encoding="utf-8")
+        rich_bak_count = len(list(rich_target.glob("CLAUDE.md.bak-*")))
+        rich_restage = stage_bundle(bundle, rich_target)
+        if rich_restage.get("status") != "STAGED":
+            failures.extend(rich_restage.get("failures", ["rich-root restage failed"]))
+        apply_staged_bundle(rich_target, yes=True, mode="preserve", root_context_only=True)
+        rich_second = (rich_target / "CLAUDE.md").read_text(encoding="utf-8")
+        if rich_second != rich_first:
+            failures.append("second apply on inherited root must be stable (idempotent re-render)")
+        if rich_second.count("<!-- TES:CORE BEGIN") != 1:
+            failures.append("inherited root must keep exactly one TES:CORE block across reinstalls")
+        if len(list(rich_target.glob("CLAUDE.md.bak-*"))) != rich_bak_count:
+            failures.append("re-render of inherited root must not create another .bak")
 
         planned = plan_target(target)
         if planned.get("status") != "PASS":
