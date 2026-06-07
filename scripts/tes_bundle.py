@@ -2079,14 +2079,19 @@ def inherit_context_from_staged(
     if dry_run:
         return result
     if decision["status"] not in {"INHERITED", "ALREADY_INHERITED"}:
-        result["action"] = "needs-review-inherit-coverage"
-        result["failure"] = "inherited-context coverage not satisfied"
+        # Only a genuine non-loss failure (e.g. empty canonical source) blocks.
+        # Incomplete regex coverage no longer blocks — see route_context_governance_root.
+        result["action"] = "needs-review-inherit"
+        result["failure"] = f"inherited-context blocked: {decision['status']}"
         return result
     if decision["bak_name"]:
         shutil.copy2(dest, dest.with_name(f"{dest.name}{decision['bak_name']}"))
     source_path.parent.mkdir(parents=True, exist_ok=True)
     source_path.write_text(str(decision["source_text"]), encoding="utf-8")
     dest.write_text(str(decision["root_text"]), encoding="utf-8")
+    # Surface the advisory (non-blocking) when regex coverage was incomplete.
+    if decision.get("coverage_advisory"):
+        result["coverage_advisory"] = decision["coverage_advisory"]
     return result
 
 
