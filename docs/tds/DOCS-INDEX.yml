@@ -1,4 +1,4 @@
-version: 0.3.175
+version: 0.3.176
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -91,6 +91,13 @@ documents:
     status: active
     consumer: installing agents and runtime adapters
     source_of_truth: true
+    evidence_level: L2
+  - path: docs/install/scaffolds/DOCUMENTATION-AUTHORITY.template.md
+    id: install.documentation_authority_scaffold
+    class: adapter
+    status: active
+    consumer: installing agents, /tes-init, and /tes-align
+    source_of_truth: false
     evidence_level: L2
   - path: docs/install/REVERSIBILITY.md
     id: install.reversibility

@@ -8,6 +8,12 @@ description: Use when the user says /tes-cortex, /tes:cortex, /tes-curate, /tes:
 `/tes-cortex` and `/tes:cortex` are user-facing shortcuts for Cortex memory operations. The
 agent remains the executor; scripts and MCP tools are oracles.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | Memory boundaries or governed-write lanes |
+
 ## Intent Map
 
 | User intent | Preferred action |

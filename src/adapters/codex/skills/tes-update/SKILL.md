@@ -11,6 +11,12 @@ form as slash text, continue as `/tes-update`.
 
 The engine is `tes_update.py`. Do not reimplement update planning in the skill.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | Reviewing update scopes, probes, or failure modes |
+
 ## Workflow
 
 1. Classify the workspace:

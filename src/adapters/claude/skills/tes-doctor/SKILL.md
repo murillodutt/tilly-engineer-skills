@@ -10,6 +10,12 @@ license: MIT
 package-source health checks. `/tes:doctor`, `/tes:check`, and `/tes:certify`
 are compatible TES intent aliases if the host reports them as invalid slashes.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | Workspace classification or oracle selection |
+
 ## Context Gate
 
 Before choosing a command, classify the current workspace:

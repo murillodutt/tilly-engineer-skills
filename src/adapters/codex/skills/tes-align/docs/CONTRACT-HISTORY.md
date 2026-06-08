@@ -51,6 +51,9 @@ decisions, glossary, knowledge lifecycle, and evidence.
   prevents this false green.
 - Outranking a newer accepted ADR with older retained evidence. Freshness
   reconciliation requires the newest decision to be read before PASS.
+- Letting `PROJECT-CONTEXT.md` compete with Tier 2 mesh after `/tes-align`.
+- Updating `SKILL.md` without mirroring the change in this contract history.
+- Reporting PASS when Tier 3 `contracts/**` contradict Tier 1 or Tier 2.
 
 ## Relationship To Other Skills
 
@@ -67,6 +70,15 @@ Fix loops prove product changes after alignment selects the lane.
 | 2026-05-11 | Added System X-Ray plus Convergence Line as the standard roadmap frame. | TES Align source-of-truth document; `scripts/project_alignment_oracle.py --self-test`. | high |
 | 2026-05-21 | Clarified target-project alignment evidence boundary after source-package temporal evidence retention policy. | TES evidence retention policy; TES Align source-of-truth contract; project alignment oracle self-test. | high |
 | 2026-05-25 | Added Semantic Residue Gate and freshness reconciliation; vocabulary stays target-owned via `docs/agents/contracts/SEMANTIC-RESIDUE.yml`. | TES Align source-of-truth contract; project alignment oracle self-test fixtures for retired terms, allowlisted history, word-boundary, and malformed contracts. | high |
+| 2026-06-08 | Added Documentation Authority Tiers workflow: reconcile Tier 1+2 before Tier 3 mirror; demote `PROJECT-CONTEXT` to init inventory; create `DOCUMENTATION-AUTHORITY.md` when missing. | Consumer pilot ADR for documentation authority tiers; alignment oracle PASS. | high |
+| 2026-06-08 | Added Tier 3 inventory hygiene gate via `INVENTORY-HYGIENE.yml` and `scripts/verify_documentation_inventory.py` (oracle + align scrub). | Prospect follow-up; mechanical enforcement of deep-read and HEAD hygiene. | high |
+
+## Skill Docs Boundary
+
+This file (`docs/CONTRACT-HISTORY.md`) is TES skill contract memory — why
+`tes-align` exists and what must not regress. It is not project documentation.
+Project tier ladder lives in the target's
+`docs/agents/DOCUMENTATION-AUTHORITY.md` when present.
 
 ## Do Not Lose
 

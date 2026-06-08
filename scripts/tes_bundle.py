@@ -25,7 +25,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.175"
+VERSION = "0.3.176"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -86,6 +86,7 @@ HELPER_FILES = (
     "tes_init.py",
     "project_context_oracle.py",
     "project_alignment_oracle.py",
+    "verify_documentation_inventory.py",
     "tes_project_atlas.py",
     "tes_map.py",
     "tes_map_oracle.py",
@@ -634,6 +635,36 @@ def build_bundle(out: Path, adapter: str = "all") -> dict[str, Any]:
                 return {"version": VERSION, "status": "FAIL", "failures": [f"missing helper scripts/{helper}"]}
             archive_path = f"scripts/{helper}"
             entries.append(make_entry(f".tes/bin/{helper}", archive_path, source))
+            staged_files.append((source, archive_path))
+
+        bundled_assets: tuple[tuple[str, str], ...] = (
+            (
+                "scripts/fixtures/INVENTORY-HYGIENE.minimal.yml",
+                "scripts/fixtures/INVENTORY-HYGIENE.minimal.yml",
+            ),
+            (
+                "docs/install/scaffolds/DOCUMENTATION-AUTHORITY.target",
+                "scaffolds/DOCUMENTATION-AUTHORITY.target",
+            ),
+            (
+                "docs/install/scaffolds/contracts/INVENTORY-HYGIENE.template.yml",
+                "scaffolds/contracts/INVENTORY-HYGIENE.template.yml",
+            ),
+        )
+        for source_rel, archive_path in bundled_assets:
+            source = ROOT / source_rel
+            if not source.exists():
+                return {
+                    "version": VERSION,
+                    "status": "FAIL",
+                    "failures": [f"missing bundled asset {source_rel}"],
+                }
+            install_path = (
+                f".tes/bin/{source_rel.removeprefix('scripts/')}"
+                if source_rel.startswith("scripts/")
+                else f".tes/{archive_path}"
+            )
+            entries.append(make_entry(install_path, archive_path, source))
             staged_files.append((source, archive_path))
 
         for selected in materialize_adapter.selected_adapters(adapter):
@@ -2852,7 +2883,7 @@ def self_test() -> dict[str, Any]:
         s8 = Path(s8_temp)
         original_root = "# Project Rules\n\nNever commit to main.\nRun `npm test` before closeout.\n"
         thin_root = (
-            "<!-- TES:CORE BEGIN version=0.3.175 sha256=abc adapter=claude -->\n"
+            "<!-- TES:CORE BEGIN version=0.3.176 sha256=abc adapter=claude -->\n"
             "# TES Core\n<!-- TES:CORE END -->\n\n@docs/agents/PROJECT-CONTEXT.md\n"
         )
         # Case A: thin inherited root + archive → restore byte-faithful, drop .bak.

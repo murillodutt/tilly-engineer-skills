@@ -23,13 +23,23 @@ hidden init mode. Treat
 as TES intents, even when a previous root `AGENTS.md` must be recovered from
 `.tes/bk/**`.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | Reviewing init scope, tier handoff, or failure modes |
+
 ## Mission
 
 Initialize, retrofit, update, audit, or recertify TES in the current project by
 following the assisted context installer contract. `/tes-init` must also
-initialize the project for future agent work by reading the strongest project
-anchors and writing `docs/agents/PROJECT-CONTEXT.md` as the first durable
-project map.
+bootstrap the project for future agent work: read strong anchors, run
+`tes_init.py`, and write `docs/agents/PROJECT-CONTEXT.md` as **Tier 3 init
+inventory** (anchor catalog and manifest), not as the operating authority.
+
+When `docs/agents/DOCUMENTATION-AUTHORITY.md` exists or after `/tes-align`,
+Tier 2 mesh (`EXECUTION-LINE`, `PROJECT-STATE`, etc.) leads cold start;
+`PROJECT-CONTEXT` remains inventory unless `/tes-init` is re-run for reshape.
 
 Canonical installer spec:
 
@@ -103,11 +113,11 @@ the user for package contents.
    initialize `docs/agents/cortex/**`, keep runtime bootloaders thin, and
    activate the Cortex MCP route with governed remember by default when
    selected.
-   Treat `tes_init.py` as deterministic scaffold generation for context plus
-   first-pass alignment. The active agent must open strong anchors before
-   claiming deep project understanding, refine `PROJECT-CONTEXT.md` when
-   supported by evidence, or report `Project context: NEEDS_REVIEW` with the
-   blocker. `/tes-align` remains the deeper semantic refinement path.
+   Treat `tes_init.py` as deterministic scaffold generation for Tier 3 inventory
+   plus first-pass mesh stubs. The active agent must open strong anchors before
+   claiming deep project understanding, or report `Project context: NEEDS_REVIEW`
+   with the blocker. `/tes-align` owns Tier 2 semantic alignment and must run
+   before agents treat the project as operationally positioned.
 11. Invoke package oracles such as `tes_init.py`, `tes_update.py`,
    `tes_legacy_retirement.py`, `root_context.py`, `install_smoke.py`,
    `install_mcp.py`, and Cortex checks.

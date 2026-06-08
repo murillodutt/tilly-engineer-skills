@@ -11,6 +11,12 @@ license: MIT
 invalid slash. The agent remains the executor; scripts and MCP tools are
 oracles.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | Memory boundaries or governed-write lanes |
+
 ## Intent Map
 
 | User intent | Preferred action |
