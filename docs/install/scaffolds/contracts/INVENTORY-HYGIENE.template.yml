@@ -1,0 +1,23 @@
+# Inventory Hygiene Contract — target project
+#
+# Enforced by scripts/verify_documentation_inventory.py when present.
+# Optional gate inside project_alignment_oracle.py (TES package).
+#
+# Copy to docs/agents/contracts/INVENTORY-HYGIENE.yml and customize
+# forbidden_deep_read_paths for retired/archive surfaces in this repo.
+
+version: 1
+
+requires:
+  - path: docs/agents/DOCUMENTATION-AUTHORITY.md
+    severity: fail
+
+project_context:
+  path: docs/agents/PROJECT-CONTEXT.md
+  frontmatter_tier: "3-inventory"
+  git_head_must_match: true
+  deep_reads_section: "## Recommended Deep Reads"
+  forbidden_deep_read_paths: []
+  required_deep_read_pointers:
+    - DOCUMENTATION-AUTHORITY
+    - EXECUTION-LINE

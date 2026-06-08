@@ -37,9 +37,11 @@ SOURCE_PACKAGE_MODE = (
 )
 BUNDLE_MODE = SOURCE_ROOT.name == "scripts" and not SOURCE_PACKAGE_MODE
 PACKAGE_MODE = SOURCE_PACKAGE_MODE
-VERSION = "0.3.175"
+VERSION = "0.3.176"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
+DOCUMENTATION_AUTHORITY = Path("docs/agents/DOCUMENTATION-AUTHORITY.md")
+INVENTORY_HYGIENE = Path("docs/agents/contracts/INVENTORY-HYGIENE.yml")
 EVIDENCE_DIR = Path("docs/agents/evidence")
 PROJECT_STATE = Path("docs/agents/PROJECT-STATE.md")
 PROJECT_ROADMAP = Path("docs/agents/PROJECT-ROADMAP.md")
@@ -1370,16 +1372,18 @@ def format_frontmatter(
     *,
     confidence: str = "medium",
     related: list[str] | None = None,
+    tier: str | None = None,
 ) -> str:
     evidence = "\n".join(f"  - path: {path}" for path in evidence_paths[:5]) or "  - path: docs/agents/PROJECT-CONTEXT.md"
     tags = f"  - tes\n  - {tes_doc}"
     related_lines = "\n".join(f"  - \"[[{item}]]\"" for item in (related or []))
     related_block = f"\nrelated:\n{related_lines}" if related_lines else ""
+    tier_line = f"tier: {tier}\n" if tier else ""
     return f"""---
 tes_doc: {tes_doc}
 status: active
 owner: project
-updated: {date_stamp()}
+{tier_line}updated: {date_stamp()}
 confidence: {confidence}
 evidence:
 {evidence}
@@ -1638,12 +1642,15 @@ already identified and keeps uncertainty explicit.
             )
             + f"""# Execution Line
 
-Current lane: use `docs/agents/PROJECT-CONTEXT.md` as the entry map, then open
-`{primary}` before planning material work.
+Current lane: read [[DOCUMENTATION-AUTHORITY]] when present, then
+[[PROJECT-STATE]] and [[PROJECT-ROADMAP]]. Use [[PROJECT-CONTEXT]] as Tier 3
+init inventory only until `/tes-align` positions the operating mesh.
 
 ## Reentry
 
-- Read [[PROJECT-CONTEXT]], [[PROJECT-STATE]], and [[PROJECT-ROADMAP]].
+- Read [[DOCUMENTATION-AUTHORITY]] when present, then [[PROJECT-STATE]] and
+  [[PROJECT-ROADMAP]].
+- Use [[PROJECT-CONTEXT]] as inventory, not position authority, after align.
 - Check `git status --short --branch`.
 - Confirm the next gate from [[QUALITY-GATES]] before editing.
 
@@ -1791,6 +1798,49 @@ alignment_evidence:
     }
 
 
+def documentation_authority_scaffold_roots() -> list[Path]:
+    roots: list[Path] = []
+    package_scaffolds = ROOT / "docs/install/scaffolds"
+    if package_scaffolds.is_dir():
+        roots.append(package_scaffolds)
+    packaged = ROOT / ".tes/scaffolds"
+    if packaged.is_dir():
+        roots.append(packaged)
+    return roots
+
+
+def ensure_documentation_authority_scaffolds(target: Path) -> list[str]:
+    """Copy neutral documentation-authority scaffolds when missing."""
+    mappings = (
+        (
+            DOCUMENTATION_AUTHORITY,
+            "DOCUMENTATION-AUTHORITY.target",
+            "DOCUMENTATION-AUTHORITY.target",
+        ),
+        (
+            INVENTORY_HYGIENE,
+            "contracts/INVENTORY-HYGIENE.template.yml",
+            "contracts/INVENTORY-HYGIENE.template.yml",
+        ),
+    )
+    writes: list[str] = []
+    for dest_rel, nested, flat in mappings:
+        dest = target / dest_rel
+        if dest.is_file():
+            continue
+        for root in documentation_authority_scaffold_roots():
+            for candidate in (root / nested, root / flat):
+                if not candidate.is_file():
+                    continue
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                dest.write_text(candidate.read_text(encoding="utf-8"), encoding="utf-8")
+                writes.append(dest_rel.as_posix())
+                break
+            if dest.is_file():
+                break
+    return writes
+
+
 def ensure_initial_alignment_mesh(
     target: Path,
     scan: dict[str, Any],
@@ -1803,6 +1853,7 @@ def ensure_initial_alignment_mesh(
 ) -> list[str]:
     rewritable = rewrite_paths or set()
     writes: list[str] = []
+    writes.extend(ensure_documentation_authority_scaffolds(target))
     atlas = tes_project_atlas.build_atlas(target, deep=False)
     atlas_write = tes_project_atlas.write_views(
         target,
@@ -1892,8 +1943,9 @@ replacement for Git history.
 
 - Re-run `python3 scripts/tes_init.py --target <project> --yes` after major
   project reshapes.
-- Treat `docs/agents/PROJECT-CONTEXT.md` as the initial project map for agents:
-  update it when major architecture, product, or operational meaning changes.
+- Treat `docs/agents/PROJECT-CONTEXT.md` as Tier 3 init inventory: update it
+  when major architecture, product, or operational meaning changes, but do not
+  use it as cold-start position authority after `/tes-align`.
 - Do not treat this inventory as memory. Promote durable knowledge through
   Cortex `learn` and authorized `apply`.
 - Keep generated manifests in `docs/agents/evidence/**` so Git preserves the
@@ -1972,7 +2024,13 @@ def write_project_context(target: Path, scan: dict[str, Any], gates: list[dict[s
     quality_rows = [(name, command) for name, command in qscripts.items()]
     gate_rows = [(gate["command"], gate["status"]) for gate in gates]
     signal_rows = [(item["signal"], item["value"], item["source"]) for item in signals]
-    deep_reads = "\n".join(f"- `{anchor['path']}`" for anchor in anchors[:12]) or "- none"
+    deep_reads = "\n".join(
+        [
+            "- [[DOCUMENTATION-AUTHORITY]]",
+            "- [[EXECUTION-LINE]]",
+            *[f"- `{anchor['path']}`" for anchor in anchors[:10]],
+        ]
+    ) or "- [[DOCUMENTATION-AUTHORITY]]\n- [[EXECUTION-LINE]]"
     next_guidance = "\n".join(
         f"- For `{row['territory']}`, {row['guidance']}."
         for row in semantic_territories[:8]
@@ -1984,15 +2042,17 @@ def write_project_context(target: Path, scan: dict[str, Any], gates: list[dict[s
         "project-context",
         list(dict.fromkeys(evidence_paths)),
         confidence="medium",
+        tier="3-inventory",
         related=["PROJECT-REGISTER", "PROJECT-STATE", "PROJECT-ROADMAP", "EXECUTION-LINE"],
     ) + f"""# Tilly Project Context
 
 Generated: `{scan['generated_at']}`
 
-This is the initial project context compiled by `/tes-init`. It is a durable
-starting map for agents, not a substitute for the source files. Agents should
-read this before broad project work, then open the cited anchors and update the
-context when new durable understanding is learned.
+This is Tier 3 init inventory compiled by `/tes-init`: anchor catalog and
+manifest for agents, not operating position authority. After `/tes-align` or
+when `docs/agents/DOCUMENTATION-AUTHORITY.md` exists, Tier 2 mesh leads cold
+start. Agents open cited anchors for depth, then update this inventory when
+durable understanding changes.
 
 ## Identity
 

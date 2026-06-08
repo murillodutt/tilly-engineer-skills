@@ -16,19 +16,26 @@ the agent-driven condense/optimize pass. It is deliberately isolated from the
 installer so the heavy, judgment-bearing work is testable on its own and the
 `/tes-setup` alias stays thin.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | Phase 1 vs 2 boundary or non-loss rules |
+
 ## Phase Boundary
 
 Distillation has two phases. Know which one you are in.
 
 - **Phase 1 — deterministic (NOT this skill).** Archive the pre-existing root
-  as `<root>.bak-<stamp>`, extract context units verbatim into the canonical
-  source `docs/agents/PROJECT-CONTEXT.md`, render the thin root. This runs as
+  as `<root>.bak-<stamp>`, extract context units verbatim into Tier 3 inventory
+  `docs/agents/PROJECT-CONTEXT.md`, render the thin root. This runs as
   code inside the installer (`scripts/install_adapter.py` →
   `route_inherited_context_roots`) because it must run headless during a
   non-interactive `install --yes`. Do not re-implement it here.
 - **Phase 2 — judgment (THIS skill).** Condense, organize, and sanitize the
-  extracted units into clean canonical sections. Only this phase may reword. It
-  runs only under explicit user confirmation.
+  extracted units into clean Tier 3 inventory sections. Only this phase may
+  reword. It runs only under explicit user confirmation. Tier 2 operating
+  position still requires `/tes-align` after distill.
 
 ## Workflow
 

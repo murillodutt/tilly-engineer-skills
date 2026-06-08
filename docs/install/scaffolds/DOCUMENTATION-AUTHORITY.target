@@ -1,0 +1,82 @@
+---
+tes_doc: documentation-authority
+status: active
+owner: project
+updated: YYYY-MM-DD
+confidence: medium
+tags:
+  - tes
+  - documentation
+  - authority
+related:
+  - "[[EXECUTION-LINE]]"
+  - "[[PROJECT-STATE]]"
+  - "[[PROJECT-ROADMAP]]"
+  - "[[QUALITY-GATES]]"
+  - "[[BOUNDARIES-AND-CONSTRAINTS]]"
+---
+
+# Documentation Authority
+
+Canonical precedence for every agent and maintainer. When two documents
+disagree, the higher tier wins. Lower tiers must be updated to match or
+explicitly marked `historical` / `derived`.
+
+## Tier Ladder
+
+```text
+Tier 0 — Runtime proof
+  code, tests, package scripts, project oracles
+
+Tier 1 — Product truth
+  README.md, docs/roadmap.md, docs/decisions/**
+
+Tier 2 — Agent operating line
+  EXECUTION-LINE, PROJECT-STATE, PROJECT-ROADMAP, QUALITY-GATES,
+  BOUNDARIES-AND-CONSTRAINTS, GLOSSARY, this file
+
+Tier 3 — Derived contracts and init inventory
+  docs/agents/contracts/** (mirror Tier 1+2; never lead)
+  PROJECT-CONTEXT.md (init inventory after /tes-init; subordinate after /tes-align)
+  PROJECT-REGISTER.md (deterministic inventory)
+
+Tier 4 — Archive and evidence
+  docs/agents/evidence/**, retired methodology trees, historical snapshots
+  (proof and audit only — not current-state authority)
+```
+
+## Reading Order (cold start)
+
+1. This file — tier ladder and precedence.
+2. [[EXECUTION-LINE]] — current lane and stop conditions.
+3. [[PROJECT-STATE]] — done / active / blocked / unknown.
+4. Product roadmap and relevant `docs/decisions/**`.
+5. [[QUALITY-GATES]] + [[BOUNDARIES-AND-CONSTRAINTS]] before editing.
+6. Source code and tests to falsify claims.
+
+Do **not** start from `PROJECT-CONTEXT.md` or Tier 4 archives for current position.
+
+## Phase Vocabulary Bridge
+
+When Tier 1 and Tier 2 use different done/active vocabulary (for example a
+shipped MVP scope vs a formal phase closure in the product roadmap), record the
+bridge in an ADR under `docs/agents/DECISIONS/**` and in alignment evidence.
+Do not collapse both claims into one lane without explicit scoping.
+
+## Inventory Hygiene
+
+Every `/tes-align` must scrub Tier 3 inventory when
+`docs/agents/contracts/INVENTORY-HYGIENE.yml` exists:
+
+- Remove Tier 4 paths from **Recommended Deep Reads** in `PROJECT-CONTEXT.md`.
+- Point deep reads to [[DOCUMENTATION-AUTHORITY]] and [[EXECUTION-LINE]] first.
+- Refresh Git HEAD in the Identity table (see skill note on commit timing).
+- Keep `tier: 3-inventory` in frontmatter.
+
+Run `python3 scripts/verify_documentation_inventory.py --target .` before PASS.
+
+## Locks
+
+- Tier 3 contracts and init inventory never override Tier 2 position.
+- Tier 4 is evidence and history, not operating authority.
+- Retired terms belong in `docs/agents/contracts/SEMANTIC-RESIDUE.yml`, not skill bodies.

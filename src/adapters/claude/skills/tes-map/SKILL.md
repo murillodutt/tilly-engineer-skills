@@ -24,6 +24,12 @@ Use this skill when the user wants a short, visual, actionable answer to:
 - what is blocked or unknown;
 - which gate proves movement.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | GPS block boundaries or map vs align roles |
+
 ## Contract
 
 `PROJECT-ROADMAP.md` remains the Markdown source of truth. The Eraser Atlas

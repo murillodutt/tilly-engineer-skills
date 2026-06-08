@@ -9,6 +9,13 @@ description: Use when the user says /tes-setup, tes setup, setup TES, finish TES
 skill so hosts that expose slash commands by skill name can resolve the command
 instead of treating it as unknown text.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | Sentinel handling or alias boundaries |
+| `.agents/skills/tes-init/SKILL.md` | Full installer workflow |
+
 ## Workflow
 
 1. Prefer the installed TES Init contract:

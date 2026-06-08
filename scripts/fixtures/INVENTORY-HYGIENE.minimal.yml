@@ -1,0 +1,18 @@
+# Minimal fixture for verify_documentation_inventory.py --self-test
+version: 1
+
+requires:
+  - path: docs/agents/DOCUMENTATION-AUTHORITY.md
+    severity: fail
+
+project_context:
+  path: docs/agents/PROJECT-CONTEXT.md
+  frontmatter_tier: "3-inventory"
+  git_head_must_match: true
+  deep_reads_section: "## Recommended Deep Reads"
+  forbidden_deep_read_paths:
+    - docs/archive-retired/
+    - .retired-tooling
+  required_deep_read_pointers:
+    - DOCUMENTATION-AUTHORITY
+    - EXECUTION-LINE

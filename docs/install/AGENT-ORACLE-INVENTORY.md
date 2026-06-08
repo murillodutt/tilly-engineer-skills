@@ -20,6 +20,8 @@ python3 scripts/tes_init.py --target /path/to/project --yes
 python3 scripts/tes_init.py --self-test
 python3 scripts/project_context_oracle.py --target /path/to/project && python3 scripts/project_alignment_oracle.py --target /path/to/project
 python3 scripts/project_context_oracle.py --self-test && python3 scripts/project_alignment_oracle.py --self-test
+python3 scripts/verify_documentation_inventory.py --target /path/to/project
+python3 scripts/verify_documentation_inventory.py --self-test
 python3 scripts/tes_update.py plan --target /path/to/project --json-only
 python3 scripts/tes_update.py plan --target /path/to/project --json-only --record-field-report
 python3 scripts/tes_update.py --self-test
@@ -38,9 +40,10 @@ python3 scripts/tes_bundle.py restore --target /path/to/project --backup-id <bac
 
 `tes_init.py` recertifies package health, scans the target project,
 writes `docs/agents/PROJECT-REGISTER.md`, writes
-`docs/agents/PROJECT-CONTEXT.md` as the initial project map, creates the
-first-pass Obsidian-compatible operating mesh when missing, and stores a
-full manifest under `docs/agents/evidence/**`. If a later oracle is
+`docs/agents/PROJECT-CONTEXT.md` as Tier 3 init inventory, copies
+`DOCUMENTATION-AUTHORITY.md` and `INVENTORY-HYGIENE.yml` scaffolds when
+missing, creates the first-pass Obsidian-compatible operating mesh when
+missing, and stores a full manifest under `docs/agents/evidence/**`. If a later oracle is
 blocked, the run closes as `NEEDS_REVIEW` with evidence instead of
 leaving the project uninitialized.
 

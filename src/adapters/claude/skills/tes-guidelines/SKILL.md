@@ -12,6 +12,12 @@ Core contract:
 Assumptions visible. Scope smaller. Edits surgical. Success falsifiable.
 ```
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | Discipline origin, gates, or failure modes |
+
 ## TES Trigger Fallback
 
 Treat `/tes-init`, `/tes-setup`, `/tes-update`, `/tes-align`, `/tes-prospect`, `/tes-mine`,

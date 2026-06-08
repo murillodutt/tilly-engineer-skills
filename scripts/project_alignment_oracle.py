@@ -22,6 +22,7 @@ import datetime as _dt
 import fnmatch
 import json
 import re
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -29,7 +30,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.175"
+VERSION = "0.3.176"
 PACKAGE_MODE = (ROOT / "scripts").exists()
 AGENTS = Path("docs/agents")
 EVIDENCE = AGENTS / "evidence"
@@ -659,6 +660,65 @@ def freshness_reconciliation(target: Path) -> dict[str, Any]:
     }
 
 
+def inventory_hygiene_gate(target: Path) -> dict[str, Any]:
+    """Delegate to project-owned inventory runner when contract + script exist."""
+    contract = target / "docs/agents/contracts/INVENTORY-HYGIENE.yml"
+    script = target / "scripts" / "verify_documentation_inventory.py"
+    packaged = target / ".tes/bin/verify_documentation_inventory.py"
+    runner = script if script.is_file() else packaged
+    if not contract.is_file():
+        return {"applied": False, "status": "SKIP", "findings": []}
+    if not runner.is_file():
+        return {
+            "applied": False,
+            "status": "SKIP",
+            "findings": [],
+            "reason": (
+                "INVENTORY-HYGIENE.yml present but no inventory runner "
+                "(scripts/verify_documentation_inventory.py or "
+                ".tes/bin/verify_documentation_inventory.py)"
+            ),
+        }
+    proc = subprocess.run(
+        [sys.executable, str(runner), "--target", str(target), "--json"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode not in (0, 2) and not proc.stdout.strip():
+        return {
+            "applied": True,
+            "status": "FAIL",
+            "findings": [
+                {
+                    "code": "inventory.runner_error",
+                    "severity": "fail",
+                    "path": runner.as_posix(),
+                    "reason": proc.stderr.strip() or "inventory hygiene runner failed",
+                }
+            ],
+        }
+    try:
+        payload = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return {
+            "applied": True,
+            "status": "FAIL",
+            "findings": [
+                {
+                    "code": "inventory.runner_error",
+                    "severity": "fail",
+                    "path": runner.as_posix(),
+                    "reason": "inventory hygiene runner returned non-JSON output",
+                }
+            ],
+        }
+    if not isinstance(payload, dict):
+        payload = {"applied": True, "status": "FAIL", "findings": []}
+    payload.setdefault("applied", True)
+    return payload
+
+
 def analyze(target: Path) -> dict[str, Any]:
     target = target.resolve()
     failures: list[str] = []
@@ -782,9 +842,22 @@ def analyze(target: Path) -> dict[str, Any]:
     freshness = freshness_reconciliation(target)
     warnings.extend(freshness.get("notes", []))
 
+    inventory = inventory_hygiene_gate(target)
+    inventory_failures = [
+        f"inventory hygiene: {item.get('reason', item.get('code', 'unknown'))}"
+        for item in inventory.get("findings", [])
+        if item.get("severity") == "fail"
+    ]
+    inventory_needs_review = [
+        f"inventory hygiene: {item.get('reason', item.get('code', 'unknown'))}"
+        for item in inventory.get("findings", [])
+        if item.get("severity") == "needs_review"
+    ]
+    failures.extend(inventory_failures)
+
     if failures:
         status = "FAIL"
-    elif semantic_needs_review or freshness.get("needs_review"):
+    elif semantic_needs_review or freshness.get("needs_review") or inventory_needs_review:
         status = "NEEDS_REVIEW"
     else:
         status = "PASS"
@@ -799,9 +872,10 @@ def analyze(target: Path) -> dict[str, Any]:
         "warnings": warnings,
         "semantic_residue": residue,
         "freshness": freshness,
-        "needs_review": semantic_needs_review + [
-            item["reason"] for item in freshness.get("needs_review", [])
-        ],
+        "inventory_hygiene": inventory,
+        "needs_review": semantic_needs_review
+        + inventory_needs_review
+        + [item["reason"] for item in freshness.get("needs_review", [])],
     }
 
 
@@ -979,7 +1053,7 @@ def write_good_fixture(target: Path) -> None:
         "# Project Alignment Evidence\n\n"
         + "```yaml\nalignment_evidence:\n"
         + "  target: fixture\n"
-        + "  tes_version: 0.3.175\n"
+        + "  tes_version: 0.3.176\n"
         + "  anchors_read:\n"
         + "    - README.md\n"
         + "    - package.json\n"

@@ -105,24 +105,62 @@ overall oracle status to `FAIL`; `needs_review` lowers it to `NEEDS_REVIEW`;
 Run the gate before reporting PASS. When the gate fires, report the exact
 path, line, and matched literal in the retained evidence packet.
 
+## Documentation Authority Tiers
+
+When the target project declares `docs/agents/DOCUMENTATION-AUTHORITY.md`, treat
+it as the adjudication ladder for all alignment work:
+
+```text
+Tier 0 — runtime proof (code, tests, oracles)
+Tier 1 — product truth (README, docs/roadmap.md, docs/decisions/**)
+Tier 2 — agent operating line (EXECUTION-LINE, PROJECT-STATE, PROJECT-ROADMAP, gates, boundaries)
+Tier 3 — derived contracts + init inventory (contracts/**, PROJECT-CONTEXT after align)
+Tier 4 — archive (evidence/**, realign/**, retired methodology)
+```
+
+Alignment workflow:
+
+1. Reconcile Tier 1 against Tier 0 before writing Tier 2.
+2. Update Tier 2 mesh (state, roadmap, execution line, gates, boundaries).
+3. Mirror Tier 1+2 into Tier 3 contracts; demote `PROJECT-CONTEXT` to inventory.
+4. Banner or classify Tier 4 surfaces that compete with Tier 2.
+5. Record phase-vocabulary bridges (e.g. Golden Record Done vs Fase 1 NEEDS_REVIEW).
+
+Do not report PASS if Tier 3 contracts contradict Tier 1 or 2.
+
+## Tier 3 Inventory Hygiene
+
+When `docs/agents/contracts/INVENTORY-HYGIENE.yml` exists:
+
+1. Scrub `PROJECT-CONTEXT.md` **Recommended Deep Reads** — no Tier 4 paths
+   (`docs/realign/**`, `docs/agent-os-analysis.md`, `.agent-os`).
+2. Point deep reads to [[DOCUMENTATION-AUTHORITY]] and [[EXECUTION-LINE]] first.
+3. Update the Identity table Git HEAD to match `git rev-parse HEAD`.
+4. Keep `tier: 3-inventory` in frontmatter.
+5. Run `python3 scripts/verify_documentation_inventory.py --target .` before
+   claiming alignment PASS (also enforced inside `project_alignment_oracle.py`).
+
 ## Freshness Reconciliation
 
 Before claiming alignment, read:
 
-1. The newest accepted ADRs under `docs/agents/DECISIONS/**` or the linked
+1. `docs/agents/DOCUMENTATION-AUTHORITY.md` when present.
+2. The newest accepted ADRs under `docs/agents/DECISIONS/**` or the linked
    decision system.
-2. The newest retained alignment evidence packet under
+3. The newest retained alignment evidence packet under
    `docs/agents/evidence/**`.
-3. The current `PROJECT-CONTEXT.md`, `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`,
-   and `EXECUTION-LINE.md`.
+4. Tier 2: `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`.
+5. Tier 1: `docs/roadmap.md` and relevant `docs/decisions/**`.
+6. `PROJECT-CONTEXT.md` only as Tier 3 inventory — not as position authority.
 
 Precedence:
 
 ```text
-accepted ADRs and active decisions
--> current project-state/roadmap/execution mesh
--> latest retained evidence and changelog packets
--> historical evidence and generated inventories
+Tier 0 runtime proof
+-> Tier 1 product truth (ADRs, roadmap)
+-> Tier 2 operating mesh
+-> Tier 3 derived contracts and init inventory
+-> Tier 4 historical evidence and snapshots
 ```
 
 When a newer ADR introduces a term absent from the active mesh, mark the

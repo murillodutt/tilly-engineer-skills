@@ -11,6 +11,12 @@ Normal first registration for Codex, Claude Code, and Cursor comes from the
 `npx`/`bunx` installer; this skill is the focused MCP route after install or
 when the user asks for MCP directly.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | Host recognition states or MCP failure modes |
+
 ## Workflow
 
 1. Identify the selected runtime route: `current`, `codex`, `claude`,

@@ -15,11 +15,19 @@ an operating mesh that tells the next agent what is done, what is active, what
 must not be rebuilt, which gates prove quality, and which execution line should
 advance next.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `references/alignment-procedure.md` | Running alignment workflow details |
+| `docs/CONTRACT-HISTORY.md` | Reviewing why the skill exists, changelog, or failure modes |
+
 ## Source Of Truth
 
 When working inside the TES source package, read the TES Align source-of-truth
 document before changing this skill. When running in an installed target, use
-this skill body as the embedded contract. If the package source-of-truth
+this skill body as the embedded contract. Any material skill change must append
+`docs/CONTRACT-HISTORY.md` before claiming done. If the package source-of-truth
 document is 15 days or more past `sources_verified_on`, verify its listed
 sources, update it if needed, and only then use it as construction truth.
 
@@ -28,10 +36,15 @@ sources, update it if needed, and only then use it as construction truth.
 Turn initial context into an evidenced project operating mesh:
 
 ```text
-PROJECT-CONTEXT -> PROJECT-STATE -> PROJECT-ROADMAP x-ray/convergence -> EXECUTION-LINE
+DOCUMENTATION-AUTHORITY (when present)
+-> Tier 1 anchors (README, roadmap, decisions)
+-> PROJECT-STATE -> PROJECT-ROADMAP x-ray/convergence -> EXECUTION-LINE
+-> Tier 3 contracts mirror + PROJECT-CONTEXT inventory demotion
 ```
 
-The goal is operational legibility, not prettier documentation.
+The goal is operational legibility, not prettier documentation. When
+`docs/agents/DOCUMENTATION-AUTHORITY.md` exists, Tier 2 leads cold start;
+`PROJECT-CONTEXT` is init inventory after `/tes-align`, not position authority.
 `PROJECT-ROADMAP.md` should present Eraser-first Atlas links plus Mermaid
 fallback System X-Ray and Convergence Line views first, so the project organism
 and future path are visible before the audit lanes. `tes-align` owns the map.
@@ -53,11 +66,12 @@ managed `TES-MAP` block after this roadmap exists.
    the active mesh as first-class evidence and record them in the retained
    packet. Do not erase older claims without a successor decision.
 5. Create or update the project operating mesh under `docs/agents/**`:
-   `PROJECT-CONTEXT.md`, `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`,
-   `EXECUTION-LINE.md`, `QUALITY-GATES.md`,
-   `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`,
-   `GLOSSARY.md`, `DECISIONS/**` or a link to an existing decision system,
-   and `evidence/<timestamp>-project-alignment.md`.
+   `DOCUMENTATION-AUTHORITY.md` (tier ladder when missing), `PROJECT-STATE.md`,
+   `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`, `QUALITY-GATES.md`,
+   `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`,
+   `DECISIONS/**` or a link to an existing decision system,
+   `evidence/<timestamp>-project-alignment.md`, then mirror Tier 1+2 into
+   `contracts/**` and demote `PROJECT-CONTEXT.md` to Tier 3 inventory.
 6. In `PROJECT-ROADMAP.md`, make the first human scan path Eraser-first with
    local `.tes/gps/*.eraserdiagram` Atlas sidecars and Mermaid fallback graphs:
    - System X-Ray: Git state, delivered behavior, validation mesh, and release

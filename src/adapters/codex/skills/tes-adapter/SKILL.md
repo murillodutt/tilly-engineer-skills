@@ -8,6 +8,12 @@ description: Use when the user says /tes-adapter, /tes:adapter, or asks to mater
 `/tes-adapter` and `/tes:adapter` are shortcuts for adapter materialization, dry-run install,
 retrofit review, and adapter certification.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | Retrofit, dry-run, or materialization failure modes |
+
 ## Workflow
 
 1. Determine adapter route: `codex`, `claude`, `cursor`, or `all`.

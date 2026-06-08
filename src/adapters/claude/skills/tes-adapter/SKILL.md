@@ -10,6 +10,12 @@ license: MIT
 dry-run install, retrofit review, and adapter certification. `/tes:adapter` is
 a compatible TES intent alias if the host reports it as an invalid slash.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | Retrofit, dry-run, or materialization failure modes |
+
 ## Workflow
 
 1. Determine adapter route: `codex`, `claude`, `cursor`, or `all`.

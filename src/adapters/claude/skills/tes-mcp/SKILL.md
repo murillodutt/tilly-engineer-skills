@@ -14,6 +14,12 @@ after install or when the user asks for MCP directly. `/tes:mcp` is a
 compatible TES intent alias if
 the host reports it as an invalid slash.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | Host recognition states or MCP failure modes |
+
 ## Workflow
 
 1. Identify the selected runtime route: `current`, `codex`, `claude`,

@@ -8,6 +8,12 @@ description: Use when the user says /tes-doctor, /tes:doctor, /tes:check, /tes:c
 `/tes-doctor` and `/tes:doctor` are shortcuts for installed-target and
 package-source health checks. Use `/tes:check` and `/tes:certify` as aliases.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | Workspace classification or oracle selection |
+
 ## Context Gate
 
 Before choosing a command, classify the current workspace:

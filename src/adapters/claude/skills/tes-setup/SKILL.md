@@ -9,6 +9,13 @@ license: MIT
 `/tes-setup` is the direct setup alias for `/tes-init`. It exists so Claude
 Code recognizes the slash command that the first-session hook recommends.
 
+## Module Map
+
+| Surface | Load when |
+|---------|-----------|
+| `docs/CONTRACT-HISTORY.md` | Sentinel handling or alias boundaries |
+| `.claude/skills/tes-init/SKILL.md` | Full installer workflow |
+
 ## Workflow
 
 1. Prefer the installed TES Init contract:
