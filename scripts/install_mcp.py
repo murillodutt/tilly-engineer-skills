@@ -25,7 +25,7 @@ if str(SCRIPT_PATH.parent) not in sys.path:
     sys.path.insert(0, str(SCRIPT_PATH.parent))
 
 from install_mcp_hosts import HOSTS  # noqa: E402
-VERSION = "0.3.176"
+VERSION = "0.3.177"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (
@@ -52,6 +52,7 @@ SERVER_FILES = (
     "root_context.py",
     "context_distill_coverage_oracle.py",
     "tes_init.py",
+    "verify_documentation_inventory.py",
     "project_context_oracle.py",
     "project_alignment_oracle.py",
     "tes_project_atlas.py",
@@ -63,6 +64,10 @@ SERVER_FILES = (
     "materialize_adapter.py",
 )
 ADAPTERS = ("codex", "claude", "cursor", "vscode")
+# Helper-adjacent assets copied beside .tes/bin helpers (mirrors tes_bundle bundled_assets).
+HELPER_BUNDLED_ASSETS = (
+    "fixtures/INVENTORY-HYGIENE.minimal.yml",
+)
 
 
 def utc_stamp() -> str:
@@ -209,6 +214,66 @@ def install_server_files(target: Path, dry_run: bool, overwrite: bool, backup: b
         if backup_path:
             action["backup"] = rel(backup_path, target)
         actions.append(action)
+
+    for relpath in HELPER_BUNDLED_ASSETS:
+        try:
+            source = source_script(relpath)
+        except FileNotFoundError as exc:
+            failures.append(str(exc))
+            continue
+        target_path = target / BIN_DIR / relpath
+        source_sha = sha256_file(source)
+        if target_path.exists():
+            target_sha = sha256_file(target_path)
+            if target_sha == source_sha:
+                actions.append(
+                    {
+                        "path": rel(target_path, target),
+                        "source": str(source),
+                        "action": "skip-identical",
+                        "sha": source_sha,
+                    }
+                )
+                continue
+            if not overwrite:
+                failures.append(f"conflicting MCP helper asset: {rel(target_path, target)}")
+                continue
+            if dry_run:
+                actions.append(
+                    {
+                        "path": rel(target_path, target),
+                        "source": str(source),
+                        "action": "would-overwrite",
+                        "sha": source_sha,
+                    }
+                )
+                continue
+            backup_path = backup_file(target_path) if backup else None
+        else:
+            if dry_run:
+                actions.append(
+                    {
+                        "path": rel(target_path, target),
+                        "source": str(source),
+                        "action": "would-copy",
+                        "sha": source_sha,
+                    }
+                )
+                continue
+            backup_path = None
+
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target_path)
+        action = {
+            "path": rel(target_path, target),
+            "source": str(source),
+            "action": "overwrite" if backup_path else "copy",
+            "sha": source_sha,
+        }
+        if backup_path:
+            action["backup"] = rel(backup_path, target)
+        actions.append(action)
+
     return actions, failures
 
 

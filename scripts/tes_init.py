@@ -37,7 +37,7 @@ SOURCE_PACKAGE_MODE = (
 )
 BUNDLE_MODE = SOURCE_ROOT.name == "scripts" and not SOURCE_PACKAGE_MODE
 PACKAGE_MODE = SOURCE_PACKAGE_MODE
-VERSION = "0.3.176"
+VERSION = "0.3.177"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 DOCUMENTATION_AUTHORITY = Path("docs/agents/DOCUMENTATION-AUTHORITY.md")
@@ -1970,6 +1970,59 @@ def markdown_table(rows: list[tuple[str, ...]], headers: tuple[str, ...]) -> str
     return "\n".join(lines) + "\n"
 
 
+def _parse_forbidden_deep_read_paths_yaml(text: str) -> list[str] | None:
+    try:
+        import yaml
+    except ImportError:  # pragma: no cover
+        return None
+    data = yaml.safe_load(text)
+    if not isinstance(data, dict):
+        return None
+    project_context = data.get("project_context")
+    if not isinstance(project_context, dict):
+        return []
+    raw = project_context.get("forbidden_deep_read_paths")
+    if raw is None:
+        return []
+    if isinstance(raw, list):
+        return [str(item) for item in raw if item]
+    return None
+
+
+def _parse_forbidden_deep_read_paths_lines(text: str) -> list[str]:
+    """Fallback when PyYAML is unavailable. Stops at the next YAML key, any indent."""
+    forbidden: list[str] = []
+    in_block = False
+    for line in text.splitlines():
+        if re.match(r"^\s*forbidden_deep_read_paths\s*:\s*$", line):
+            in_block = True
+            continue
+        if in_block:
+            item = re.match(r"^\s*-\s*(.+?)\s*$", line)
+            if item:
+                forbidden.append(item.group(1).strip().strip("'\""))
+                continue
+            if line.strip():
+                break
+    return forbidden
+
+
+def forbidden_deep_read_paths(target: Path) -> list[str]:
+    """Load forbidden deep-read path prefixes from INVENTORY-HYGIENE.yml when present."""
+    contract = target / INVENTORY_HYGIENE
+    if not contract.is_file():
+        return []
+    text = contract.read_text(encoding="utf-8")
+    parsed = _parse_forbidden_deep_read_paths_yaml(text)
+    if parsed is not None:
+        return parsed
+    return _parse_forbidden_deep_read_paths_lines(text)
+
+
+def anchor_allowed_in_deep_reads(path: str, forbidden_prefixes: list[str]) -> bool:
+    return not any(path.startswith(prefix) for prefix in forbidden_prefixes)
+
+
 def write_project_context(target: Path, scan: dict[str, Any], gates: list[dict[str, Any]], manifest_rel: str) -> str:
     context = project_context(scan, target, manifest_rel)
     identity = context["identity"]
@@ -2024,11 +2077,17 @@ def write_project_context(target: Path, scan: dict[str, Any], gates: list[dict[s
     quality_rows = [(name, command) for name, command in qscripts.items()]
     gate_rows = [(gate["command"], gate["status"]) for gate in gates]
     signal_rows = [(item["signal"], item["value"], item["source"]) for item in signals]
+    forbidden_reads = forbidden_deep_read_paths(target)
+    deep_read_anchors = [
+        anchor
+        for anchor in anchors
+        if anchor_allowed_in_deep_reads(str(anchor["path"]), forbidden_reads)
+    ][:10]
     deep_reads = "\n".join(
         [
             "- [[DOCUMENTATION-AUTHORITY]]",
             "- [[EXECUTION-LINE]]",
-            *[f"- `{anchor['path']}`" for anchor in anchors[:10]],
+            *[f"- `{anchor['path']}`" for anchor in deep_read_anchors],
         ]
     ) or "- [[DOCUMENTATION-AUTHORITY]]\n- [[EXECUTION-LINE]]"
     next_guidance = "\n".join(
@@ -2757,6 +2816,55 @@ def self_test() -> dict[str, Any]:
             failures.append("timeout fixture must return NEEDS_REVIEW")
         if not any(gate["status"] == "BLOCKED" for gate in timeout_result["gates"]):
             failures.append("timeout fixture must expose a BLOCKED gate")
+
+    with tempfile.TemporaryDirectory(prefix="tes-init-inventory-hygiene-") as tempdir:
+        target = Path(tempdir)
+        fixture_yaml = (HELPER_ROOT / "fixtures" / "INVENTORY-HYGIENE.minimal.yml").read_text(encoding="utf-8")
+        contract_dir = target / "docs/agents/contracts"
+        contract_dir.mkdir(parents=True, exist_ok=True)
+        (contract_dir / "INVENTORY-HYGIENE.yml").write_text(fixture_yaml, encoding="utf-8")
+        (target / "docs/agents/DOCUMENTATION-AUTHORITY.md").write_text("# ok\n", encoding="utf-8")
+        (target / "README.md").write_text("# Active project\n", encoding="utf-8")
+        (target / "docs/archive-retired").mkdir(parents=True)
+        (target / "docs/archive-retired/README.md").write_text("# Retired tree\n", encoding="utf-8")
+        (target / "docs/live").mkdir(parents=True)
+        (target / "docs/live/README.md").write_text("# Live docs\n", encoding="utf-8")
+
+        forbidden = forbidden_deep_read_paths(target)
+        if forbidden != ["docs/archive-retired/", ".retired-tooling"]:
+            failures.append(f"forbidden_deep_read_paths mismatch: {forbidden!r}")
+        if any(token in forbidden for token in ("DOCUMENTATION-AUTHORITY", "EXECUTION-LINE")):
+            failures.append("forbidden parser must not bleed required_deep_read_pointers")
+
+        line_only = _parse_forbidden_deep_read_paths_lines(fixture_yaml)
+        if line_only != forbidden:
+            failures.append(f"line parser must match YAML reader: {line_only!r}")
+
+        manifest_rel = "docs/agents/evidence/fixture-inventory-hygiene-manifest.json"
+        scan = scan_project(target)
+        context_text = write_project_context(target, scan, [], manifest_rel)
+        (target / PROJECT_CONTEXT).parent.mkdir(parents=True, exist_ok=True)
+        (target / PROJECT_CONTEXT).write_text(context_text, encoding="utf-8")
+
+        deep_block = context_text.split("## Recommended Deep Reads", 1)[-1].split("## Open Context Questions", 1)[0]
+        if "docs/archive-retired" in deep_block or ".retired-tooling" in deep_block:
+            failures.append("inventory hygiene deep reads must exclude forbidden Tier 4 paths")
+        if "[[DOCUMENTATION-AUTHORITY]]" not in deep_block or "[[EXECUTION-LINE]]" not in deep_block:
+            failures.append("inventory hygiene deep reads must retain required wikilink pointers")
+
+        import verify_documentation_inventory
+
+        inventory = verify_documentation_inventory.analyze(target)
+        tier4 = [
+            item
+            for item in inventory.get("findings", [])
+            if item.get("code") == "inventory.tier4_deep_read"
+        ]
+        if tier4:
+            failures.append(
+                "tes_init scaffold must not regenerate inventory.tier4_deep_read findings: "
+                + str(tier4)
+            )
 
     return {
         "version": VERSION,
