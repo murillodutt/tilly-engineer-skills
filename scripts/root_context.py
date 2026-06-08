@@ -13,9 +13,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+try:  # Sanctioned-drift attestation is optional; degrade to suppress-nothing.
+    import root_context_sanctioned_oracle as _sanctioned
+except ImportError:  # pragma: no cover - exercised only when the oracle is absent
+    _sanctioned = None
+
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.177"
+VERSION = "0.3.178"
 EVIDENCE_DIR = Path("docs/agents/evidence")
 BACKUP_ROOT = Path(".tes/bk")
 ROOT_FILES = (
@@ -130,6 +135,36 @@ def extract_overlay(text: str) -> dict[str, Any] | None:
     return {**block, "sha256": text_sha256(overlay_text)}
 
 
+def strip_nested_core(text: str) -> str:
+    """Remove fossilized TES:CORE blocks from project-overlay text.
+
+    A root file composed by TES must carry exactly one TES:CORE block (the
+    current one at the top). Earlier install/update layers could leave an older
+    core fossilized inside the PROJECT-OVERLAY region; if preserved verbatim it
+    is re-injected on every later compose, duplicating the core indefinitely.
+    This removes any complete `TES:CORE BEGIN ... TES:CORE END` pair, anchored on
+    the module's own markers so a missing END never consumes legitimate overlay.
+    """
+    out: list[str] = []
+    cursor = 0
+    while True:
+        begin = CORE_BEGIN_RE.search(text, cursor)
+        if not begin:
+            out.append(text[cursor:])
+            break
+        end = text.find(CORE_END, begin.end())
+        if end < 0:
+            # Unterminated marker: not a complete block, leave the rest intact.
+            out.append(text[cursor:])
+            break
+        out.append(text[cursor:begin.start()])
+        cursor = end + len(CORE_END)
+        # Drop a single trailing newline left by the removed block, if present.
+        if cursor < len(text) and text[cursor] == "\n":
+            cursor += 1
+    return "".join(out)
+
+
 def strip_tes_blocks(text: str) -> dict[str, Any]:
     """Reverse root-context composition for uninstall (ADR 0004).
 
@@ -160,6 +195,27 @@ def is_root_context_path(relpath: str) -> bool:
     return relpath in ROOT_CONTEXT_PATHS
 
 
+def sanctioned_drift_allowlist(target: Path) -> list[Any]:
+    """Load the project's sanctioned root-drift attestation, or [] when absent.
+
+    Degrades to an empty list (suppress nothing) if the optional oracle is not
+    importable or the attestation file/contents are invalid — preserving the
+    pre-attestation behavior exactly.
+    """
+    if _sanctioned is None:
+        return []
+    try:
+        return _sanctioned.load_sanctioned(target)
+    except (OSError, ValueError):
+        return []
+
+
+def is_sanctioned_drift(relpath: str, allowlist: list[Any]) -> bool:
+    if not allowlist or _sanctioned is None:
+        return False
+    return _sanctioned.is_sanctioned(relpath, allowlist)
+
+
 def compose_root_context(
     *,
     relpath: str,
@@ -179,7 +235,11 @@ def compose_root_context(
     overlay_source = "none"
 
     if existing_overlay is not None:
-        overlay_text = final_newline(str(existing_overlay["text"]))
+        # Drop any fossilized TES:CORE block left inside a prior overlay so the
+        # composed file keeps exactly one core (the current top one). Without
+        # this, an older core embedded in the overlay is re-injected on every
+        # update and the core duplicates indefinitely.
+        overlay_text = final_newline(strip_nested_core(str(existing_overlay["text"])))
         overlay_source = "marked-overlay"
     elif existing_text and existing_sha not in {core_sha, previous_core_sha256}:
         overlay_text = final_newline(existing_text)
@@ -284,7 +344,13 @@ def project_context_lines(text: str) -> list[dict[str, Any]]:
     return snippets
 
 
-def classify_file(target: Path, adapter: str, path: Path, source_rel: str | None) -> dict[str, Any]:
+def classify_file(
+    target: Path,
+    adapter: str,
+    path: Path,
+    source_rel: str | None,
+    sanctioned: list[Any] | None = None,
+) -> dict[str, Any]:
     relpath = rel(path, target)
     if not path.exists():
         return {"adapter": adapter, "path": relpath, "state": "missing", "requires_structure_gate": False}
@@ -320,11 +386,19 @@ def classify_file(target: Path, adapter: str, path: Path, source_rel: str | None
         state = "project-root-context"
         requires = True
 
+    # Sanctioned drift: the project has attested this customized root file as
+    # intentional, so it no longer raises the structure gate every postinstall.
+    sanctioned_drift = bool(requires and is_sanctioned_drift(relpath, sanctioned or []))
+    if sanctioned_drift:
+        requires = False
+        state = f"{state}-sanctioned"
+
     return {
         "adapter": adapter,
         "path": relpath,
         "state": state,
         "requires_structure_gate": requires,
+        "sanctioned_drift": sanctioned_drift,
         "line_count": line_count,
         "sha256": current_sha,
         "core_sha256": core.get("sha256") if core else None,
@@ -342,8 +416,10 @@ def analyze(target: Path, *, write_plan: bool = False, backup_id: str | None = N
 
     candidate_root = target if backup_id is None else target / BACKUP_ROOT / backup_id / "files"
     candidates = root_candidates(target) if backup_id is None else backup_root_candidates(target, backup_id)
-    roots = [classify_file(candidate_root, adapter, path, source) for adapter, path, source in candidates]
+    sanctioned = sanctioned_drift_allowlist(target)
+    roots = [classify_file(candidate_root, adapter, path, source, sanctioned) for adapter, path, source in candidates]
     required = [item for item in roots if item.get("requires_structure_gate")]
+    sanctioned_paths = [item["path"] for item in roots if item.get("sanctioned_drift")]
     result: dict[str, Any] = {
         "version": VERSION,
         "status": "NEEDS_REVIEW" if required else "PASS",
@@ -352,6 +428,7 @@ def analyze(target: Path, *, write_plan: bool = False, backup_id: str | None = N
         "structure_gate": "required" if required else "not_required",
         "root_count": len([item for item in roots if item["state"] != "missing"]),
         "requires_structure_count": len(required),
+        "sanctioned_drift_paths": sanctioned_paths,
         "roots": roots,
         "writes": [],
         "failures": [],
@@ -423,6 +500,31 @@ def self_test() -> dict[str, Any]:
         if project["status"] != "NEEDS_REVIEW" or project["structure_gate"] != "required":
             failures.append("project root context must require structure gate")
 
+        # Sanctioned-drift attestation (GAP-3): declaring the customized root file
+        # suppresses its structure gate. When the optional oracle is not available
+        # (e.g. an isolated installed-helper run that did not stage it), the
+        # attestation degrades to suppress-nothing — so only the preserved
+        # NEEDS_REVIEW is asserted there. Suppression itself is asserted only when
+        # the oracle is importable.
+        sanctioned_file = target / ".tes/root-context-sanctioned.txt"
+        sanctioned_file.parent.mkdir(parents=True, exist_ok=True)
+        sanctioned_file.write_text("AGENTS.md\n", encoding="utf-8")
+        attested = analyze(target)
+        if _sanctioned is not None:
+            if attested["status"] != "PASS" or attested["structure_gate"] != "not_required":
+                failures.append("sanctioned root drift must suppress the structure gate")
+            if "AGENTS.md" not in attested.get("sanctioned_drift_paths", []):
+                failures.append("analyze must report which root paths were sanctioned")
+        else:
+            # Oracle absent: attestation must be a no-op, gate stays required.
+            if attested["status"] != "NEEDS_REVIEW" or attested["structure_gate"] != "required":
+                failures.append("absent sanctioned oracle must degrade to suppress-nothing")
+        sanctioned_file.write_text("# no entries\n", encoding="utf-8")
+        unattested = analyze(target)
+        if unattested["status"] != "NEEDS_REVIEW" or unattested["structure_gate"] != "required":
+            failures.append("empty attestation must preserve the original NEEDS_REVIEW")
+        sanctioned_file.unlink()
+
         (target / "CLAUDE.md").write_text("# CLAUDE.md\n\nTilly applies.\n\nProduction deploys require owner approval.\n", encoding="utf-8")
         mixed = analyze(target, write_plan=True)
         if not mixed["writes"] or not (target / mixed["writes"][0]).exists():
@@ -477,6 +579,58 @@ def self_test() -> dict[str, Any]:
             failures.append("composer must always emit overlay boundary")
         if "Use `/tes-update`.\n<!-- TES:PROJECT-OVERLAY" in str(composed_clean["text"]):
             failures.append("previous TES core must not become project overlay")
+
+        # Adversarial: a prior overlay already carries a fossilized TES:CORE
+        # block from an earlier install. Composing again must yield exactly one
+        # core and keep the legitimate project overlay intact.
+        contaminated = "\n".join(
+            [
+                "<!-- TES:CORE BEGIN version=0.0.1 sha256=deadbeef adapter=codex path=AGENTS.md -->",
+                "# TES Core",
+                "",
+                "Fossilized older core body.",
+                CORE_END,
+                "",
+                "<!-- TES:PROJECT-OVERLAY BEGIN source=marked-overlay sha256=cafef00d path=AGENTS.md -->",
+                "<!-- TES:CORE BEGIN version=0.0.1 sha256=deadbeef adapter=codex -->",
+                "# TES Core",
+                "",
+                "Fossilized older core body.",
+                CORE_END,
+                "",
+                "# Project Rules",
+                "",
+                "Preserve project release gates.",
+                "@docs/agents/EXECUTION-LINE.md",
+                OVERLAY_END,
+                "",
+            ]
+        )
+        composed_dedup = compose_root_context(
+            relpath="AGENTS.md",
+            core_text=core_v2,
+            existing_text=contaminated,
+            version=VERSION,
+        )
+        if str(composed_dedup["text"]).count("<!-- TES:CORE BEGIN") != 1:
+            failures.append("composer must dedup nested TES:CORE in overlay to a single core")
+        if "Preserve project release gates" not in str(composed_dedup["text"]):
+            failures.append("composer must preserve legitimate overlay while deduping nested core")
+        if "@docs/agents/EXECUTION-LINE.md" not in str(composed_dedup["text"]):
+            failures.append("composer must preserve overlay pointers while deduping nested core")
+        dedup_overlay = extract_overlay(str(composed_dedup["text"])) or {}
+        if "Fossilized older core body" in str(dedup_overlay.get("text", "")):
+            failures.append("fossilized core body must not survive inside the overlay")
+        # Control: a clean overlay must remain byte-identical (no regression).
+        clean_overlay = compose_root_context(
+            relpath="AGENTS.md",
+            core_text=core_v2,
+            existing_text=str(composed_v2["text"]),
+            version=VERSION,
+            previous_core_sha256=str(composed_v2["core_sha256"]),
+        )
+        if str(clean_overlay["text"]).count("<!-- TES:CORE BEGIN") != 1:
+            failures.append("clean overlay recompose must keep exactly one core")
 
     return {
         "version": VERSION,

@@ -26,7 +26,7 @@ except Exception:  # pragma: no cover - installed helper may be inspected alone.
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.177"
+VERSION = "0.3.178"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -56,6 +56,7 @@ HELPER_FILES = (
     "tes_update.py",
     "tes_legacy_retirement.py",
     "root_context.py",
+    "root_context_sanctioned_oracle.py",
     "context_distill_coverage_oracle.py",
     "tes_init.py",
     "project_context_oracle.py",

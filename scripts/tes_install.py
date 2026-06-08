@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.177"
+VERSION = "0.3.178"
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -1299,6 +1299,9 @@ def run_helper(target: Path, script_name: str, args: tuple[str, ...], timeout: f
         "status": "PASS" if result.returncode == 0 else "FAIL",
         "stdout": result.stdout.strip(),
         "stderr": result.stderr.strip(),
+        # Keep the parsed payload so downstream consumers (advisory collection)
+        # can read inner gate signals without re-parsing or re-running helpers.
+        "payload": payload,
     }
     if result.returncode != 0 and failures:
         command_result["oracle_failures"] = [str(item) for item in failures if item]
@@ -1395,6 +1398,7 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         status = certification_status
     else:
         status = "PASS"
+    advisories = collect_advisories(results) if status == "PASS" else []
     run_payload = {
         "schema": "tes-postinstall-run@1",
         "version": VERSION,
@@ -1403,7 +1407,9 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         "started_at": running["updated_at"],
         "completed_at": utc_stamp(),
         "status": status,
-        "commands": results,
+        # The parsed gate payload is consumed in-memory by collect_advisories;
+        # it must not bloat the persisted run record (drop it from each command).
+        "commands": [{k: v for k, v in item.items() if k != "payload"} for item in results],
         "mcp": summarize_mcp_result(mcp_result),
         "certification": summarize_certification_result(certification_result),
         "hook_input_keys": sorted((hook_input or {}).keys()),
@@ -1448,6 +1454,10 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
             )
     else:
         complete_payload.pop("failures", None)
+    if advisories:
+        complete_payload["advisories"] = advisories
+    else:
+        complete_payload.pop("advisories", None)
     write_json(sentinel_path, complete_payload)
     result = {
         "version": VERSION,
@@ -1460,9 +1470,96 @@ def postinstall(args: argparse.Namespace, hook_input: dict[str, Any] | None = No
         "mcp": summarize_mcp_result(mcp_result),
         "certification": summarize_certification_result(certification_result),
     }
+    if advisories:
+        result["advisories"] = advisories
     if recover_needs_review:
         result["recovery"] = "needs_review"
     return (0 if not failed and not needs_cert_review else 1), result
+
+
+def _tes_init_payload(results: list[dict[str, Any]]) -> dict[str, Any]:
+    """Return the parsed payload of the tes_init.py gate, or {} when absent."""
+    for item in results:
+        if isinstance(item, dict) and "tes_init.py" in str(item.get("command") or ""):
+            payload = item.get("payload")
+            return payload if isinstance(payload, dict) else {}
+    return {}
+
+
+def _gate_stdout_json(payload: dict[str, Any], needle: str) -> dict[str, Any]:
+    """Parse the JSON stdout of an inner gate whose command contains `needle`."""
+    gates = payload.get("gates")
+    if not isinstance(gates, list):
+        return {}
+    for gate in gates:
+        if isinstance(gate, dict) and needle in str(gate.get("command") or ""):
+            stdout = gate.get("stdout")
+            if isinstance(stdout, str) and stdout:
+                return parse_json_output(stdout)
+            inner = gate.get("payload")
+            if isinstance(inner, dict):
+                return inner
+    return {}
+
+
+def collect_advisories(results: list[dict[str, Any]]) -> list[dict[str, str]]:
+    """Derive post-PASS advisories from the tes_init payload already in `results`.
+
+    Advisories are non-blocking nudges (GAP-1/2/4/5). They never change status;
+    each rule is isolated so a malformed payload degrades to fewer advisories
+    rather than raising and breaking the hook.
+    """
+    advisories: list[dict[str, str]] = []
+    payload = _tes_init_payload(results)
+    if not payload:
+        return advisories
+
+    # GAP-1 + GAP-2: alignment oracle stdout (freshness drift, scaffold-only mesh).
+    try:
+        alignment = _gate_stdout_json(payload, "project_alignment_oracle.py")
+        freshness = alignment.get("freshness") if isinstance(alignment.get("freshness"), dict) else {}
+        notes = freshness.get("notes") if isinstance(freshness.get("notes"), list) else []
+        if any(str(note).startswith("newest ADR") for note in notes):
+            advisories.append(
+                {
+                    "code": "freshness.adr_drift",
+                    "message": "O ADR mais recente introduz termos ausentes do mesh ativo — rode /tes-align para reconciliar.",
+                }
+            )
+        if freshness.get("mesh_scaffold_only") is True:
+            advisories.append(
+                {
+                    "code": "mesh.scaffold_only",
+                    "message": "O mesh é apenas scaffold inicial — rode /tes-align para refinamento semântico.",
+                }
+            )
+    except Exception:
+        pass
+
+    # GAP-4: empty Cortex. Target the audit gate specifically — `cortex.py verify`
+    # runs first and carries no cell_count; only `cortex.py audit` does.
+    try:
+        audit = _gate_stdout_json(payload, "cortex.py audit")
+        if audit.get("cell_count") == 0:
+            advisories.append(
+                {
+                    "code": "cortex.empty",
+                    "message": "Cortex vazio — capacidade de memória durável não está sendo usada.",
+                }
+            )
+    except Exception:
+        pass
+
+    # GAP-5: field-reports outbox backlog over threshold.
+    try:
+        fr = _gate_stdout_json(payload, "field_reports.py")
+        pending_advisory = fr.get("pending_advisory")
+        if isinstance(pending_advisory, str) and pending_advisory:
+            advisories.append({"code": "field_reports.pending_high", "message": pending_advisory})
+    except Exception:
+        pass
+
+    return advisories
 
 
 def claude_postinstall_context(result: dict[str, Any], hook_input: dict[str, Any]) -> str:
@@ -1495,6 +1592,11 @@ def claude_postinstall_context(result: dict[str, Any], hook_input: dict[str, Any
             "If the user immediately asks `/tes-init`, summarize this completed run from "
             "`.tes/postinstall.json` and the run record unless they explicitly request recertification."
         )
+        advisories = result.get("advisories")
+        if isinstance(advisories, list):
+            for advisory in advisories:
+                if isinstance(advisory, dict) and advisory.get("message"):
+                    lines.append(f"Advisory: {advisory['message']}")
     elif status == "RUNNING":
         lines.append("TES setup was already running before this hook returned.")
         lines.append("Ask the user to wait a moment, then run `/tes-setup` for the setup report.")
@@ -2364,6 +2466,54 @@ def self_test() -> int:
             for relpath in (".tes", ".codex", ".claude", ".cursor", ".mcp.json")
         ):
             failures.append("source package target block must not create install artifacts")
+
+    # Advisories collector (GAP-1/2/4/5): signals already ride the tes_init
+    # payload, so no oracle is re-run. Each rule is isolated and never changes
+    # status. Prove fire-when-present, silent-when-absent, and safe degradation.
+    def _tes_init_result(payload: dict[str, Any]) -> list[dict[str, Any]]:
+        return [{"command": ".tes/bin/tes_init.py --target . --yes", "payload": payload}]
+
+    def _gate(command: str, stdout_obj: dict[str, Any]) -> dict[str, Any]:
+        return {"command": command, "stdout": json.dumps(stdout_obj)}
+
+    firing_payload = {
+        "gates": [
+            _gate(
+                ".tes/bin/project_alignment_oracle.py --target .",
+                {
+                    "freshness": {
+                        "notes": ["newest ADR docs/agents/DECISIONS/002.md introduces tokens absent"],
+                        "mesh_scaffold_only": True,
+                    }
+                },
+            ),
+            _gate(".tes/bin/cortex.py audit --target .", {"cell_count": 0}),
+            _gate(
+                ".tes/bin/field_reports.py status --target .",
+                {"pending": 42, "pending_advisory": "42 field reports pendentes (>30) — sincronize o outbox"},
+            ),
+        ]
+    }
+    firing = {a["code"] for a in collect_advisories(_tes_init_result(firing_payload))}
+    for code in ("freshness.adr_drift", "mesh.scaffold_only", "cortex.empty", "field_reports.pending_high"):
+        if code not in firing:
+            failures.append(f"collect_advisories must emit {code} when its signal is present")
+
+    quiet_payload = {
+        "gates": [
+            _gate(".tes/bin/project_alignment_oracle.py --target .", {"freshness": {"notes": [], "mesh_scaffold_only": False}}),
+            _gate(".tes/bin/cortex.py audit --target .", {"cell_count": 7}),
+            _gate(".tes/bin/field_reports.py status --target .", {"pending": 3, "pending_advisory": None}),
+        ]
+    }
+    if collect_advisories(_tes_init_result(quiet_payload)):
+        failures.append("collect_advisories must stay empty when no signal is present")
+
+    # Adversarial: missing payload / missing gates must degrade to [] (never raise).
+    if collect_advisories([]) != []:
+        failures.append("collect_advisories must return [] when tes_init payload is absent")
+    if collect_advisories(_tes_init_result({})) != []:
+        failures.append("collect_advisories must return [] when gates are absent")
 
     result = {
         "version": VERSION,

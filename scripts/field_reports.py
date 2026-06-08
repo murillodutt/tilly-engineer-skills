@@ -21,8 +21,9 @@ from typing import Any
 import scope_contract
 
 
-VERSION = "0.3.177"
+VERSION = "0.3.178"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
+DEFAULT_OUTBOX_PENDING_THRESHOLD = 30
 SCHEMA = "tes-field-report@2"
 LEGACY_SCHEMAS = ("tes-field-report@1", "tilly-field-report@1")
 FIELD_ROOT = Path(".tes/field-reports")
@@ -1148,17 +1149,41 @@ exit 0
     }
 
 
+def outbox_pending_threshold() -> int:
+    """Backlog size above which status() surfaces a non-blocking advisory.
+
+    Configurable via TES_FIELD_REPORTS_PENDING_THRESHOLD; falls back to the
+    default on any unset/invalid value. Never affects gate status.
+    """
+    raw = os.environ.get("TES_FIELD_REPORTS_PENDING_THRESHOLD")
+    if raw is None:
+        return DEFAULT_OUTBOX_PENDING_THRESHOLD
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        return DEFAULT_OUTBOX_PENDING_THRESHOLD
+    return value if value > 0 else DEFAULT_OUTBOX_PENDING_THRESHOLD
+
+
 def status(target: Path) -> dict[str, object]:
     target = target.expanduser().resolve()
     ensure_layout(target)
     events, failures = read_outbox(target)
     receipts = sorted(receipts_path(target).glob("*.json")) if receipts_path(target).exists() else []
     last_receipt = rel(receipts[-1], target) if receipts else None
+    pending = len(events)
+    threshold = outbox_pending_threshold()
+    pending_advisory = (
+        f"{pending} field reports pendentes (>{threshold}) — sincronize ou limpe o outbox."
+        if pending > threshold
+        else None
+    )
     return {
         "version": VERSION,
         "status": "PASS" if not failures else "BLOCKED",
         "disabled": field_reports_disabled(target),
-        "pending": len(events),
+        "pending": pending,
+        "pending_advisory": pending_advisory,
         "last_receipt": last_receipt,
         "outbox": rel(outbox_path(target), target),
         "failures": failures,
@@ -1498,6 +1523,36 @@ echo "https://github.com/murillodutt/tilly-engineer-skills/issues/999"
             failures.append("status must read migrated legacy outbox entries")
         if legacy_root(legacy_target).exists():
             failures.append("status must remove migrated legacy field reports root")
+
+        # GAP-5: outbox backlog over threshold surfaces a non-blocking advisory.
+        # Status must stay PASS; the advisory is purely additive.
+        threshold_target = target / "threshold"
+        threshold_target.mkdir()
+        ensure_layout(threshold_target)
+        empty_status = status(threshold_target)
+        if empty_status.get("pending_advisory") is not None:
+            failures.append("empty outbox must not raise a pending advisory")
+        if empty_status.get("status") != "PASS":
+            failures.append("empty outbox status must be PASS")
+        backlog = "".join(
+            json.dumps({"schema": SCHEMA, "event": f"e{i}", "status": "PASS"}) + "\n" for i in range(5)
+        )
+        outbox_path(threshold_target).write_text(backlog, encoding="utf-8")
+        prior = os.environ.get("TES_FIELD_REPORTS_PENDING_THRESHOLD")
+        os.environ["TES_FIELD_REPORTS_PENDING_THRESHOLD"] = "3"
+        try:
+            over = status(threshold_target)
+        finally:
+            if prior is None:
+                os.environ.pop("TES_FIELD_REPORTS_PENDING_THRESHOLD", None)
+            else:
+                os.environ["TES_FIELD_REPORTS_PENDING_THRESHOLD"] = prior
+        if over.get("pending") != 5:
+            failures.append("status must count backlog events")
+        if not over.get("pending_advisory"):
+            failures.append("backlog over threshold must raise a pending advisory")
+        if over.get("status") != "PASS":
+            failures.append("pending advisory must not change PASS status")
 
     return {"version": VERSION, "status": "PASS" if not failures else "FAIL", "failures": failures}
 

@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.177"
+VERSION = "0.3.178"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -29,9 +29,9 @@ REQUIRED_PATHS = (
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/adr/0001-tes-memory-lifecycle.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.177/index.json",
-    "docs/dist/0.3.177/tilly-engineer-skills-0.3.177.zip",
-    "docs/dist/0.3.177/tilly-engineer-skills-0.3.177.zip.sha256",
+    "docs/dist/0.3.178/index.json",
+    "docs/dist/0.3.178/tilly-engineer-skills-0.3.178.zip",
+    "docs/dist/0.3.178/tilly-engineer-skills-0.3.178.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -220,6 +220,7 @@ REQUIRED_PATHS = (
     "scripts/tes_legacy_retirement.py",
     "scripts/tes_namespace.py",
     "scripts/root_context.py",
+    "scripts/root_context_sanctioned_oracle.py",
     "scripts/codex_plugin_oracle.py",
     "scripts/claude_plugin_oracle.py",
     "scripts/platform_surface_oracle.py",

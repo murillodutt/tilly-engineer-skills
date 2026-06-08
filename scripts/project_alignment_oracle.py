@@ -21,6 +21,7 @@ import argparse
 import datetime as _dt
 import fnmatch
 import json
+import os
 import re
 import subprocess
 import sys
@@ -30,7 +31,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.177"
+VERSION = "0.3.178"
 PACKAGE_MODE = (ROOT / "scripts").exists()
 AGENTS = Path("docs/agents")
 EVIDENCE = AGENTS / "evidence"
@@ -652,9 +653,21 @@ def freshness_reconciliation(target: Path) -> dict[str, Any]:
                 f"the active mesh: {', '.join(absent[:5])}"
             )
 
+    # GAP-2: scaffold-only mesh detection. The initial /tes-init evidence packet
+    # carries the literal "initial deterministic mesh" limit; a later /tes-align
+    # refinement packet does not. Testing only the most-recent packet means the
+    # signal clears the moment /tes-align rewrites the newest packet — no false
+    # positive once the mesh has been semantically refined.
+    mesh_scaffold_only = False
+    if evidence_paths:
+        newest_packet = max(evidence_paths, key=lambda p: p.stat().st_mtime)
+        if "initial deterministic mesh" in read_text(newest_packet):
+            mesh_scaffold_only = True
+
     return {
         "newest_adr": rel(adr_files[-1], target) if adr_files else None,
         "newest_evidence": rel(evidence_paths[-1], target) if evidence_paths else None,
+        "mesh_scaffold_only": mesh_scaffold_only,
         "needs_review": needs_review,
         "notes": notes,
     }
@@ -1053,7 +1066,7 @@ def write_good_fixture(target: Path) -> None:
         "# Project Alignment Evidence\n\n"
         + "```yaml\nalignment_evidence:\n"
         + "  target: fixture\n"
-        + "  tes_version: 0.3.177\n"
+        + "  tes_version: 0.3.178\n"
         + "  anchors_read:\n"
         + "    - README.md\n"
         + "    - package.json\n"
@@ -1354,6 +1367,37 @@ def self_test() -> dict[str, Any]:
                 "freshness stopword fixture must not flag generic ADR headings: "
                 + "; ".join(offenders)
             )
+
+    # GAP-2: scaffold-only mesh detection keys off the most-recent evidence
+    # packet. A scaffold packet carrying the literal limit flags scaffold_only;
+    # a newer /tes-align refinement packet clears it (no false positive).
+    with tempfile.TemporaryDirectory(prefix="tes-align-scaffold-") as tempdir:
+        target = Path(tempdir)
+        write_good_fixture(target)
+        evidence_dir = target / EVIDENCE
+        evidence_dir.mkdir(parents=True, exist_ok=True)
+        # Make the scaffold packet unambiguously the newest one (the fixture
+        # already wrote an evidence packet with a near-current mtime).
+        scaffold_packet = evidence_dir / "20260101T000000Z-project-alignment.md"
+        scaffold_packet.write_text(
+            "# Alignment Evidence\n\nlimits: initial deterministic mesh; run /tes-align "
+            "for deeper semantic refinement\n",
+            encoding="utf-8",
+        )
+        os.utime(scaffold_packet, (2_000_000_000, 2_000_000_000))
+        fresh = freshness_reconciliation(target)
+        if fresh.get("mesh_scaffold_only") is not True:
+            failures.append("scaffold-only mesh must be detected from the initial evidence packet")
+        # A later /tes-align refinement packet (no scaffold limit) clears the flag.
+        refined_packet = evidence_dir / "20260601T000000Z-project-alignment.md"
+        refined_packet.write_text(
+            "# Alignment Evidence\n\nlimits: semantic refinement applied; mesh reflects domain\n",
+            encoding="utf-8",
+        )
+        os.utime(refined_packet, (2_100_000_000, 2_100_000_000))
+        refined = freshness_reconciliation(target)
+        if refined.get("mesh_scaffold_only") is not False:
+            failures.append("scaffold-only flag must clear once a refinement packet is newest")
 
     return {
         "version": VERSION,
