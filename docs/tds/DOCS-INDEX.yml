@@ -1079,6 +1079,13 @@ documents:
     consumer: TES maintainers and project-alignment oracle maintainers
     source_of_truth: false
     evidence_level: L3
+  - path: docs/evidence/reports/context-mesh/release-0.3.178-nested-core-advisories/JOURNAL.md
+    id: evidence.context_mesh.release_0_3_178_nested_core_advisories_journal
+    class: evidence
+    status: active
+    consumer: TES maintainers, root-context maintainers, and postinstall advisory maintainers
+    source_of_truth: false
+    evidence_level: L3
   - path: docs/evidence/reports/context-mesh/independent-canary-convergence-2026-05-08/JOURNAL.md
     id: evidence.context_mesh.independent_canary_convergence_2026_05_08_journal
     class: evidence
