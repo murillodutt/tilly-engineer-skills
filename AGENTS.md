@@ -1,75 +1,42 @@
 # AGENTS.md
 
-Repository bootloader for the independent Tilly Engineer Skills reference
-package.
+Maintainer bootloader and canonical governance authority for the independent
+Tilly Engineer Skills package. Codex loads only a skill's name, description, and
+path until needed, so detailed workflows live in `docs/governance/**` and
+`.agents/skills/tes-*/**`; this file carries the always-on discipline plus the
+maintainer-only rules that constrain work on the package itself.
 
-Keep this root file small. The distributable agent source lives in `src/**`.
-People-facing method, eval, and architecture material lives in `docs/**`.
+Distributable agent source lives in `src/**`. People-facing method, eval, and
+architecture material lives in `docs/**`. Keep this file small.
+
+<core_contract>
+
+```text
+Assumptions visible. Scope smaller. Edits surgical. Success falsifiable.
+```
+
+</core_contract>
 
 <instructions>
 
-Apply Tilly Engineering Discipline to material changes in this repository:
+Apply Tilly Engineering Discipline to non-trivial material changes:
 
-1. Think Before Coding
-   - State assumptions, ambiguity, tradeoffs, and blockers before acting.
-2. Maturity Layer Gate
-   - Default material work to `Birth`; promote only with evidence naming the
-     protected baseline, allowed complexity, forbidden complexity, and oracle.
-3. Simplicity First
-   - Keep root thin and avoid duplicate source copies.
-4. Surgical Changes
-   - Treat `src/**` as adapter source and `docs/**` as governed explanation.
-   - Classify `scripts/**` by consumer: validators are maintainer gates;
-     installer, Cortex, MCP, Field Reports, and adapter scripts may be
-     delivered behavior when adopters receive, invoke, or certify them.
-5. Goal-Driven Execution
-   - Run the smallest relevant oracle before closure.
+1. Think Before Coding — state assumptions, ambiguity, tradeoffs, and blockers
+   before acting; do not pick a risky interpretation silently.
+2. Maturity Layer Gate — default material work to `Birth`; promote only with
+   evidence that names the protected baseline, allowed complexity, forbidden
+   complexity, and oracle.
+3. Simplicity First — keep the root thin, avoid duplicate source copies, and
+   solve only the requested problem for the selected maturity layer; delete
+   speculative scope before adding it.
+4. Surgical Changes — treat `src/**` as adapter source and `docs/**` as governed
+   explanation; touch only request-traceable lines. Classify every `scripts/**`
+   change by consumer (`<scripts_classification>`) before deciding which surfaces
+   move.
+5. Goal-Driven Execution — define a falsifiable oracle and run the smallest
+   relevant gate before claiming closure.
 
 </instructions>
-
-<documentation_runtime_focus>
-
-Documentation must not become the work. For active engineering lines, use the
-latest accepted SPEC or Super SPEC plus its audit record as the normalization
-surface, then update only the indexes or roadmap entries needed to keep that
-line executable. Prefer programming, fixtures, oracles, and runtime evidence
-over creating parallel explanatory documents.
-
-When a documentation change is still necessary, keep it structural and compact:
-record the current execution authority, the audit result, the next prompt when
-the sequence is not closed, and the smallest evidence pointer required for a
-future agent to continue without chat history.
-
-Roadmaps are executive control surfaces. Keep each roadmap partition organized,
-structured, and objective: current dashboard for state and next action, registry
-for durable pointers, history for closed lineage, and audit records for evidence.
-When a roadmap reaches its size-warning threshold
-(`scripts/validate_doc_size.py`, default 85% of the line limit), partition or
-compact it before adding status. Repeated or ambiguous roadmap text is a defect
-to fix in the same execution cycle.
-
-</documentation_runtime_focus>
-
-<runtime_first_rule>
-
-TES is a product, not a governance archive. Optimize material work for result,
-maturity, efficiency, and precision. When an architecture is accepted and the
-remaining risk is implementation quality, switch to runtime-first execution. Do
-not create governance-only cycles, evidence-only layers, placeholder
-boundaries, long SPECs before code, or temporary runtimes expected to be removed
-immediately afterward.
-
-Build the smallest durable runtime slice on the intended execution path, then
-use fixtures, oracles, and compact docs to protect that behavior. Boundaries and
-SPECs are valuable only when they constrain or certify executable behavior; they
-are not progress by themselves.
-
-Circular execution is useful when there is a real defect or a clear incremental
-delivery. When it starts creating the next prompt by habit, it becomes noise. If
-the next unit does not improve runtime, latency, audio quality, safety, or direct
-maintenance, it must not be created.
-
-</runtime_first_rule>
 
 <success_formula>
 
@@ -82,148 +49,155 @@ surgical, or verification is missing.
 
 </success_formula>
 
-<feedback_voice>
+<runtime_first_product_rule>
 
-Talk to the user in objective, direct human prose. Lead with the conclusion,
-then the reasoning that supports it — humans follow clear, logical prose well.
-Default away from tables, bullet dumps, code blocks, and long inventories; use
-them only when the user asks or when the artifact genuinely needs exact syntax
-(a routing table, a command, a roadmap partition). Do not pad answers into a
-"Wikipedia" wall of structured facts and cross-references. Fewer words, more
-signal: say what is true, why it matters, and what to do next.
+TES is a product, not a governance archive. Build the smallest durable runtime
+slice on the intended execution path before adding governance. No governance-only
+cycles, long SPECs before code, placeholder boundaries, or throwaway runtimes.
+Documentation must not become the work; prefer fixtures, oracles, and runtime
+evidence over parallel explanatory documents. Roadmaps are executive control
+surfaces — partition or compact at the `validate_doc_size.py` warning threshold
+before adding status.
 
-</feedback_voice>
+</runtime_first_product_rule>
 
-<diamond_build_test_fail_fix>
+<scripts_classification>
 
-For critical capabilities, build from the finished contract down: final
-behavior, adversarial fixture, observed failure, smallest repair, and green
-gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
-`not available`, `certified`, or `fail`.
+Classify every `scripts/**` change by consumer before deciding which surfaces
+move:
 
-</diamond_build_test_fail_fix>
+- Maintainer gate (validators, self-tests) → maintainer-only; not delivered.
+- Installer, Cortex, MCP, Field Reports, runtime, or adapter script that an
+  adopter receives, invokes, or certifies → delivered behavior (see
+  `<release_identity>`).
+
+</scripts_classification>
 
 <regression_guard>
 
-For every TES package analysis, write, runtime change, oracle change, commit,
-or closeout, self-consume `.agents/skills/tes-regression-guard/SKILL.md`.
-This is an always-on local reasoning kernel, not a user-invoked skill and not a
-product command. Routine use stays implicit; report it only when it blocks,
-downgrades confidence, requires owner choice, or the user asks for audit detail.
+For every package analysis, write, runtime change, oracle change, commit, or
+closeout, self-consume `.agents/skills/tes-regression-guard/SKILL.md` as an
+always-on local reasoning kernel — not a user-invoked skill. Before changing
+behavior that already has certified, installed, materialized, generated, or
+measured evidence, name the last-known-good baseline, classify whether the change
+preserves, extends, or replaces it, and list protected invariants first.
 
-Before changing behavior that already has certified, installed, materialized,
-generated, measured, or human-rated evidence, name the last-known-good
-baseline, classify whether the change preserves, extends, or replaces it, and
-list protected invariants before editing.
-
-Regression is project-wide, not Python-specific. Protect skills, triggers,
+Regression is project-wide, not Python-specific: protect skills, triggers,
 adapters, materialized outputs, installers, runtime scripts, docs, roadmaps,
 oracles, generated public pages, version identity, release surfaces, private
 vocabulary, safety behavior, and UX claims. A passing source check is not enough
-when the risk lives in an installed, generated, materialized, audio, public, or
-CLI surface; run the comparison that matches the surface that can regress.
-
-Avoid narrow literal lists in runtime code unless they are governed data,
-schema, or contract backed. Example-specific fixes are regression seeds.
+when the risk lives in an installed, generated, materialized, public, or CLI
+surface; run the comparison matching the surface that can regress. Avoid narrow
+literal lists in runtime code unless they are governed data, schema, or contract
+backed — example-specific fixes are regression seeds.
 
 </regression_guard>
 
 <mantra_gate>
 
-Before state-changing actions, use the TES Mantra Gate. When the gate permits
-proceeding, show only `[🍳 Flash-Fry]` to the user, but the full gate must still
-record `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, and
-`STATUS` in the appropriate evidence surface.
-
-Report gate detail only when the gate returns `BLOCKED` or `NEEDS_REVIEW`, when
-approval is needed, or when the user explicitly asks for audit detail. High-risk
-work requires a complete internal record and oracle; forbidden work still stops.
-
-For closure, commit, or push claims, use the Mantra Gate adoption oracle when
-available. Treat `BYPASS_SUSPECTED`, `NEEDS_REVIEW`, or `BLOCKED` as a stop
-condition until the gate record, scope, risk, and closure oracle are repaired.
+Before state-changing actions, use the TES Mantra Gate. When it permits
+proceeding, show only `[🍳 Flash-Fry]`; the full gate still records `VERIFY`,
+`SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, and `STATUS` in the
+evidence surface. Report gate detail only on `BLOCKED`/`NEEDS_REVIEW`, when
+approval is needed, or when asked. For closure, commit, or push claims, use the
+Mantra Gate adoption oracle when available; treat `BYPASS_SUSPECTED`,
+`NEEDS_REVIEW`, or `BLOCKED` as a stop condition until the gate record, scope,
+risk, and closure oracle are repaired.
 
 </mantra_gate>
 
-<real_project_learning_standard>
+<diamond_build_test_fail_fix>
 
-Real project executions are learning loops, not one-off support runs. After each
-TES update cycle, use at least one real project canary to expose drift, false
-greens, stale helpers, adapter gaps, and semantic-context gaps.
+For critical capabilities, build from the finished contract down: final behavior,
+adversarial fixture, observed failure, smallest repair, green gate. Do not call
+certified behavior experimental; use `blocked`, `degraded`, `not available`,
+`certified`, or `fail`.
 
-When a canary reports `NEEDS_REVIEW`, `DEGRADED`, `BLOCKED`, or any meaningful
-drift:
+</diamond_build_test_fail_fix>
 
-1. Treat the finding as TES product evidence.
-2. Classify the failure before fixing it.
-3. Patch TES source, oracle, docs, adapter, installer, or governance as needed.
-4. Return to the TES canary workspace (`~/Dev/tes-canaries`, the TES project's
-   own named test area — not a client project, so it is allowed in tracked
-   content) and certify the fix with a durable run record.
-5. Re-run the original project canary to prove the fix.
-6. Repeat on two additional real projects before making a commercial-use claim.
+<feedback_voice>
 
-Do not promote a project-specific workaround into TES. Only promote portable
-learning that survives canary replay and maintainer gates.
+Short, frank prose. Lead with the conclusion, then the reasoning. Avoid tables,
+bullet dumps, code blocks, and long inventories unless the user asks or the
+artifact requires exact syntax (a routing table, a command, a roadmap partition).
 
-</real_project_learning_standard>
+</feedback_voice>
 
-<target_source_boundary>
+<learning_and_boundaries>
 
-Installed target projects and canary clones are evidence targets, not the
-source of truth for TES behavior. Real project names stay out of TES generic
-source, docs, commits, and evidence — they are private context, not public
-contract material.
+Real project executions are learning loops: after each TES update cycle, use at
+least one canary to expose drift, false greens, stale helpers, and adapter gaps.
+When a canary reports `NEEDS_REVIEW`/`DEGRADED`/`BLOCKED` or meaningful drift,
+treat it as TES product evidence, classify it, patch TES source/oracle/docs, and
+certify in the `~/Dev/tes-canaries` workspace before re-running the original
+canary. Repeat on two more real projects before any commercial-use claim.
 
-When a target-project run exposes a TES skill, installer, hook, oracle, or docs
-bug:
+Installed targets and canary clones are evidence targets, not the source of
+truth. Portable findings get patched in the package source here
+(`src/**`, `scripts/**`, `docs/**`) — not only in installed mirrors
+(`.agents/skills/**`, `.claude/skills/**`, `plugins/tilly-engineer-skills/**`).
+Do not promote a project-specific workaround; only portable learning that
+survives canary replay and maintainer gates.
 
-1. Classify whether the finding is portable TES product evidence or a
-   target-owned issue.
-2. If portable, patch the TES package source here: `src/**`, `scripts/**`,
-   `docs/**`, and the correlated release surfaces.
-3. Do not fix only the installed mirrors inside the target project, such as
-   `.agents/skills/**`, `.claude/skills/**`, `skills/**`, or
-   `plugins/tilly-engineer-skills/**`.
-4. Use the target again only to certify that the packaged TES fix installs and
-   behaves correctly.
-5. Do not generalize one target project's npm, pnpm, bun, or gate scripts as
-   universal TES commands. Delivered skills must distinguish installed-target
-   gates from package-source gates before certifying anything.
+</learning_and_boundaries>
 
-</target_source_boundary>
+<confidentiality>
 
-<private_project_confidentiality>
+Use neutral placeholder vocabulary only (`target-project`, `canary-project`,
+`<project-A>`, `<storage-backend>`, …); no real project, product,
+internal-service names, storage backends, archive formats, or `~/Dev/<name>`
+paths in tracked content. The project's own infrastructure names (e.g.
+`~/Dev/tes-canaries`) are allowed. `scripts/private_vocabulary_oracle.py` runs on
+every `npm run commit:check` against `.tes/private-vocabulary.txt` (gitignored)
+and fails the gate if any listed name appears in tracked content. When in doubt,
+prefer the placeholder.
 
-TES is a generic engineering discipline package. Worked examples in source,
-docs, evidence, fixtures, commit messages, and tag annotations must use
-neutral placeholder vocabulary only: `target-project`, `canary-project`,
-`real-project`, `<project-A>`, `<storage-backend>`, `<archive-format>`,
-and similar.
+</confidentiality>
 
-Anything that would identify a specific real client/adopter project, product,
-internal-service, repository path under `~/Dev/<client-name>`, or private
-codebase vocabulary belongs in the maintainer's local notes, not in
-TES tracked content. (The TES project's own infrastructure names, such as the
-`~/Dev/tes-canaries` workspace, are not client names and are allowed.)
+<maintainer_boundary>
 
-When citing a private canary for traceability, use a generic form such as
-"a private canary project (source-of-record kept off TES repository)"
-and keep the actual identifier in local notes.
+This file governs agents working on the Tilly Engineer Skills package itself; it
+is not an installed target-project rule. Before closing a material package
+change, use `docs/governance/MAINTAINER-CORRELATION-RULE.md` to check correlated
+files, and classify `scripts/**` by consumer before deciding which surfaces move.
+Keep maintainer-only rules here or in `docs/governance/**`; do not copy them into
+`src/adapters/**`, target bootloaders, user manuals, or `docs/agents/**` unless
+the delivered Tilly behavior intentionally changed.
 
-`docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md` defines the mechanism that lets
-target projects declare and enforce their own vocabulary without that
-vocabulary being known to TES.
+</maintainer_boundary>
 
-`scripts/private_vocabulary_oracle.py` runs on every `npm run commit:check`
-against the local allowlist at `.tes/private-vocabulary.txt` (gitignored,
-never committed) and fails the gate if any listed name appears in tracked
-content.
+<release_identity>
 
-When in doubt, prefer the placeholder. Placeholders are always
-reversible in private notes.
+Delivered behavior changes require a release-identity decision before closure. If
+a change adds, removes, or changes adopter-visible skills, triggers, installer
+behavior, helper/runtime scripts, plugin metadata, public docs, MCP, Field
+Reports, Cortex behavior, or adapter materialization, decide whether the package
+version and public bundle must advance.
 
-</private_project_confidentiality>
+Default rule: bump the patch version and update correlated release surfaces
+(`package.json`, script `VERSION` constants, plugin manifests,
+`docs/dist/<version>/**`, `.sha256` sidecars, `index.json`, public docs,
+validators, the maintainer correlation rule). After an authorized release tag is
+pushed, run `npm run release:check`. Exception: if Murillo explicitly keeps the
+current version for a delivered change, state that exception in the closeout and
+do not call the package sealed by version identity.
+
+</release_identity>
+
+<operating_discipline>
+
+Operating calibration (maintainer/dev memory only; never Cortex, never `src/**`,
+never delivered):
+
+- Commit locally by default; stop there until the owner explicitly asks to
+  sync/push. "push it" is not a standing grant — each push needs its own request.
+- Smart pre-commit, scoped to what changed: run only the focused oracles relevant
+  to the modified files; reserve the full `commit:check` suite for release/sync.
+- The `/goal` Stop hook is a guardrail, not a throttle: alignment pressure, not
+  deadline pressure. For large-surface changes, close each increment green before
+  advancing.
+
+</operating_discipline>
 
 <routing>
 
@@ -235,16 +209,12 @@ reversible in private notes.
 | TDS governed index | `docs/tds/DOCS-INDEX.yml` |
 | Cross-tool governance | `docs/governance/AGENTIC-ALIGNMENT-GOVERNANCE.md` |
 | Maintainer correlation rule | `docs/governance/MAINTAINER-CORRELATION-RULE.md` |
+| Sync audit checklist | `docs/governance/SYNC-AUDIT-CHECKLIST.md` |
 | Tool-neutral principles | `docs/mesh/PRINCIPLES.md` |
 | Context mesh method | `docs/mesh/CONTEXT-MESH-METHOD.md` |
 | Adoption scorecard | `docs/mesh/SCORECARD.md` |
 | Eval design | `docs/evals/EVALS.md` |
-| Detailed examples | `docs/evals/EXAMPLES.md` |
-| Codex adapter guide | `docs/adapters/CODEX.md` |
-| Claude adapter guide | `docs/adapters/CLAUDE.md` |
-| Cursor adapter guide | `docs/adapters/CURSOR.md` |
 | Codex bootloader source | `src/adapters/codex/AGENTS.md` |
-| Codex skill source | `src/adapters/codex/skills/tes-engineering-discipline/SKILL.md` |
 | Claude instruction source | `src/adapters/claude/CLAUDE.md` |
 | Cursor rule source | `src/adapters/cursor/rules/tes-guidelines.mdc` |
 | Package validation | `python3 scripts/validate_reference_package.py` |
@@ -253,80 +223,15 @@ reversible in private notes.
 
 </routing>
 
-<maintainer_boundary>
-
-This file governs agents working on the Tilly Engineer Skills package itself.
-It is not an installed target-project rule.
-
-Before closing a material package change, use
-`docs/governance/MAINTAINER-CORRELATION-RULE.md` to check correlated files.
-Classify `scripts/**` by consumer before deciding which surfaces must move.
-Keep maintainer-only rules in `AGENTS.md` or `docs/governance/**`; do not copy
-them into `src/adapters/**`, target bootloaders, user manuals, or
-`docs/agents/**` unless the delivered Tilly behavior intentionally changed.
-
-</maintainer_boundary>
-
-<release_identity>
-
-Delivered behavior changes require a release identity decision before closure.
-If a change adds, removes, or changes adopter-visible skills, triggers,
-installer behavior, helper/runtime scripts, plugin metadata, public docs, MCP,
-Field Reports, Cortex behavior, or adapter materialization, check whether the
-package version and public bundle must advance.
-
-Reference case: adding `/tes-prospect` and `/tes-mine` as explicit-invocation
-predictive skills is delivered behavior, even when their execution remains
-opt-in and their behavior is otherwise preserved. That class of change needs a
-version/bundle decision before closeout.
-
-Default rule: bump the patch version and update correlated release surfaces
-when delivered behavior changes. Check `package.json`, script `VERSION`
-constants, plugin manifests, `docs/dist/<version>/**`, `.sha256` sidecars,
-`index.json`, public docs, validators, and the maintainer correlation rule.
-After an authorized release tag is pushed, run `npm run release:check` before
-claiming the fixed GitHub npx or Bun installer ref is certified.
-
-Exception rule: if Murillo explicitly decides to keep the current version for a
-delivered behavior change, state that exception in the closeout and do not call
-the package sealed by version identity. The behavior may be committed, but the
-next release/bundle cycle must know the version bump was intentionally deferred.
-
-</release_identity>
-
-<maintainer_operating_discipline>
-
-Operating calibration for working in this repository (maintainer/dev memory only;
-never Cortex, never `src/**`, never delivered).
-
-- Commit locally by default. Apply commits to the local repository and stop there
-  until the owner explicitly asks to sync/push. "push it" is not a standing
-  grant; each push needs its own request (this strengthens the remote-action lock
-  in `<locks>`).
-- Smart pre-commit, scoped to what changed. Do not run the full `commit:check`
-  suite for every change. Run only the focused oracles relevant to the modified
-  files; reserve the full suite for release/sync. This saves significant time and
-  compute. The full suite remains mandatory before a sync/bump/push.
-- The `/goal` Stop hook is a guardrail, not a throttle. It keeps the agent on the
-  line — on task, on the current SPEC, minimizing invention and drift — rather
-  than pushing for speed. When the agent is being creative, that hook is what
-  closes the drift valve; treat it as alignment pressure, not deadline pressure.
-  For large-surface changes, close each increment green before advancing; a
-  forced march produced this session's reverts and tracking slips.
-
-</maintainer_operating_discipline>
-
 <locks>
 
-- Do not put full source packages back in the repository root.
-- Do not duplicate adapter source between `src/**` and hidden root tool folders.
+- Do not put full source packages back in the repository root, or duplicate
+  adapter source between `src/**` and hidden root tool folders.
 - Do not claim the package is sealed without `npm run commit:check`.
-- Do not add remote, push, publish, cloud, or marketplace actions without an
-  explicit private decision.
-- Keep TES generic. Real project names, product names, internal-service
-  names, storage backends, archive formats, private filesystem paths, and
-  other private vocabulary stay out of TES source, docs, evidence,
-  fixtures, commit messages, and tag annotations. See
-  `<private_project_confidentiality>`.
+- No remote, push, publish, cloud, or marketplace actions without an explicit
+  per-request private decision.
+- Keep TES generic: private project/product/internal-service names, storage
+  backends, archive formats, and filesystem paths stay out of tracked content
+  (see `<confidentiality>`).
 
 </locks>
