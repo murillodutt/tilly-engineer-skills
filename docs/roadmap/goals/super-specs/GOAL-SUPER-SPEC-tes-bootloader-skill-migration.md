@@ -41,7 +41,7 @@ oracle protection was deleted and no certified knowledge was dropped.
 
 Certified (self-test, smoke, composition, parity), not yet field-proven: no real
 host loaded the thinned anchors and exercised lazy loading. The
-`real_project_learning_standard` canary replay across three hosts remains the
+`<learning_and_boundaries>` canary replay across three hosts remains the
 open follow-up before any field claim. Remote sync (push, tag v0.3.165,
 `release:check`, `public_pages_oracle`) was deferred by owner decision.
 

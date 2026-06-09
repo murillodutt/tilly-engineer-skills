@@ -373,7 +373,7 @@ Tasks:
 3. If a bump is performed, run the bundle/governance checks via the source
    release flow (do not partial-bump the source package).
 4. Validate on a real project canary that a fresh default install yields working
-   `/tes-*` commands, per `<real_project_learning_standard>`.
+   `/tes-*` commands, per `<learning_and_boundaries>`.
 
 Stop condition: if release identity requires a bump and owner authorization for
 remote actions is unclear, stop with `NEEDS_REVIEW` and keep the work local.

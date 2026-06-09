@@ -97,4 +97,4 @@ on-path. Remaining work is the line-closing sync: bump to the next patch
 (delivered installer behavior changed — bump owed per the deferral exceptions
 recorded in commits `f182e8c2` and `99823339`), rebuild the bundle, tag, and
 certify. Field-certification for a commercial claim still wants replays on
-additional independent real projects per `<real_project_learning_standard>`.
+additional independent real projects per `<learning_and_boundaries>`.
