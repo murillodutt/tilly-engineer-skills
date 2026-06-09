@@ -144,6 +144,21 @@ on global `~/.codex` rules to carry project specifics; exceeding 32 KiB and
 silently losing the tail of the chain; omitting the test/build commands the agent
 needs to self-check.
 
+**Tags vs headings — a deliberate divergence from the official examples.** The
+`AGENTS.md` convention is plain Markdown with no required schema: "use any
+headings you like; the agent simply parses the text you provide." The official
+Codex examples use Markdown headings (`## Data analysis defaults`), and the spec
+prescribes **no** XML-style tags. So authoring an `AGENTS.md` with semantic tag
+blocks (`<instructions>`, `<routing>`, `<locks>`) is a *valid authoring choice,
+not the documented default* — Codex parses free text, so the tags are read as
+content and break nothing. Choose tags when you want stable, citable anchors
+that cross-references can point to by name (the same "strongly rewarded" behavior
+noted for Claude above), which is more robust than referencing a heading by its
+prose. Choose headings when the file is short and matching the official examples
+matters more than anchor stability. Either is conformant; the divergence is
+intentional, so do not "fix" tag blocks into headings on the assumption they are
+a mistake.
+
 ## Claude vs Codex — the axes that break a copy-paste
 
 | Axis | Claude `CLAUDE.md` | Codex `AGENTS.md` |
