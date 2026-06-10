@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "dist" / "adapters"
-VERSION = "0.3.178"
+VERSION = "0.3.179"
 CODEX_SKILLS = (
     "tes-engineering-discipline",
     "tes-init",
@@ -35,6 +35,7 @@ CODEX_SKILLS = (
     "tes-adapter",
     "tes-bench",
     "tes-bump",
+    "tes-upstream-first",
 )
 CLAUDE_SKILLS = (
     "tes-guidelines",
@@ -55,6 +56,7 @@ CLAUDE_SKILLS = (
     "tes-adapter",
     "tes-bench",
     "tes-bump",
+    "tes-upstream-first",
 )
 CLAUDE_PROJECT_SKILL_ROOT = ".claude/skills"
 FORBIDDEN_OUTPUT_REFS = (

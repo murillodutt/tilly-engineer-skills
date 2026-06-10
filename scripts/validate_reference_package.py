@@ -12,7 +12,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.178"
+VERSION = "0.3.179"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -29,9 +29,9 @@ REQUIRED_PATHS = (
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/adr/0001-tes-memory-lifecycle.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.178/index.json",
-    "docs/dist/0.3.178/tilly-engineer-skills-0.3.178.zip",
-    "docs/dist/0.3.178/tilly-engineer-skills-0.3.178.zip.sha256",
+    "docs/dist/0.3.179/index.json",
+    "docs/dist/0.3.179/tilly-engineer-skills-0.3.179.zip",
+    "docs/dist/0.3.179/tilly-engineer-skills-0.3.179.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -130,6 +130,8 @@ REQUIRED_PATHS = (
     "src/adapters/codex/skills/tes-bump/SKILL.md",
     "src/adapters/codex/skills/tes-bump/agents/openai.yaml",
     "src/adapters/codex/skills/tes-bump/docs/CONTRACT-HISTORY.md",
+    "src/adapters/codex/skills/tes-upstream-first/SKILL.md",
+    "src/adapters/codex/skills/tes-upstream-first/docs/CONTRACT-HISTORY.md",
     "src/adapters/claude/CLAUDE.md",
     "src/adapters/claude/plugin/plugin.json",
     "src/adapters/claude/plugin/marketplace.json",
@@ -173,6 +175,8 @@ REQUIRED_PATHS = (
     "src/adapters/claude/skills/tes-bump/SKILL.md",
     "src/adapters/claude/skills/tes-bump/agents/openai.yaml",
     "src/adapters/claude/skills/tes-bump/docs/CONTRACT-HISTORY.md",
+    "src/adapters/claude/skills/tes-upstream-first/SKILL.md",
+    "src/adapters/claude/skills/tes-upstream-first/docs/CONTRACT-HISTORY.md",
     "src/adapters/cursor/CURSOR.md",
     "src/adapters/cursor/rules/tes-guidelines.mdc",
     "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",
@@ -424,13 +428,13 @@ MAINTAINER_CORRELATION_FORBIDDEN_TERMS = (
 )
 
 AGENTS_BOOTLOADER_REQUIRED_TERMS = (
-    "Repository bootloader for the independent Tilly Engineer Skills reference",
-    "Classify `scripts/**` by consumer",
+    "Maintainer bootloader and canonical governance authority for the independent Tilly Engineer Skills",
+    "Classify every `scripts/**` change by consumer",
     "Maintainer correlation rule",
     "Closure gate",
     "`npm run commit:check`",
-    "This file governs agents working on the Tilly Engineer Skills package itself.",
-    "It is not an installed target-project rule.",
+    "This file governs agents working on the Tilly Engineer Skills package itself",
+    "it is not an installed target-project rule.",
 )
 
 AGENTS_BOOTLOADER_FORBIDDEN_TERMS = (
@@ -850,9 +854,16 @@ def version_drift_failures() -> list[str]:
         path = ROOT / relpath
         if not path.exists():
             continue
-        versions = sorted(set(SEMVER_RE.findall(path.read_text(encoding="utf-8"))))
-        stale = [version for version in versions if version != VERSION]
-        for version in stale:
+        stale: set[str] = set()
+        for line in path.read_text(encoding="utf-8").splitlines():
+            # Versioned evidence paths are immutable historical records: the
+            # directory name embeds the version that produced it and must not
+            # advance with the package. Skip drift detection on those lines;
+            # any genuine stale package reference still surfaces elsewhere.
+            if "docs/evidence/" in line:
+                continue
+            stale.update(v for v in SEMVER_RE.findall(line) if v != VERSION)
+        for version in sorted(stale):
             failures.append(f"{relpath} contains stale package version {version}; expected {VERSION}")
     return failures
 

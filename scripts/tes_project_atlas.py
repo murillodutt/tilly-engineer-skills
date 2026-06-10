@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.178"
+VERSION = "0.3.179"
 SCRIPT_PATH = Path(__file__).resolve()
 PACKAGE_MODE = (SCRIPT_PATH.parents[1] / "package.json").exists() and SCRIPT_PATH.parent.name == "scripts"
 GPS_DIR_REL = Path(".tes/gps")

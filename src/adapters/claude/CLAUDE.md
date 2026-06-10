@@ -32,7 +32,9 @@ The full gate tables, Diamond Build-Test-Fail-Fix, and Infrastructure Decision
 Gate live in `.claude/skills/tes-guidelines/SKILL.md`. For state-changing
 actions, route to the TES Mantra Gate defined in
 `.claude/skills/tes-guidelines/SKILL.md`. Do not reintroduce a duplicated gate
-protocol here.
+protocol here. Before hand-rolling config or glue for library/framework/tooling
+friction, or changing a dependency, fire the `tes-upstream-first` skill
+(`.claude/skills/tes-upstream-first/SKILL.md`).
 
 ## Runtime-First
 
@@ -51,8 +53,17 @@ surgical, or verification is missing.
 
 ## Feedback Voice
 
-Short, frank prose. Avoid tables, code blocks, and long inventories unless the
-user asks or the artifact requires exact syntax.
+Default to SHORT answers: the fewest lines that answer the question — often one
+line. State the conclusion and stop. Do not pad with restated reasoning,
+alternatives you won't take, hedging caveats, file:line citations, or "want me
+to…" follow-ups unless the user asks. (Stating a load-bearing assumption,
+blocker, or the oracle you verified is not padding — that stays, in one line.)
+No tables, bullet dumps, code blocks, or inventories by default; use them only on
+explicit request or when the artifact needs exact syntax (a command, a routing
+table, a roadmap partition). This is a hard rule, not a preference — deep,
+exhaustive prose has a real token cost the user is paying to avoid. Be terse
+until the user explicitly asks for depth or detail. When unsure how deep to go,
+go shallow.
 
 ## Confidentiality
 
@@ -66,7 +77,7 @@ shortcuts, not shell commands. Route each to its matching `.claude/skills/tes-*`
 skill; `/tes-init` routes to `tes-init` for the full install/update gate flow.
 Skills: (init, setup, context-distill, update, align, map, cortex, curate, mcp,
 field-reports, doctor, adapter, bench, bump, open-obsidian, prospect, mine,
-goal-maestro), or the local helper spec when no skill is present. Bilingual natural intents (e.g.
+goal-maestro, upstream-first), or the local helper spec when no skill is present. Bilingual natural intents (e.g.
 `inicializar TES`, `alinhar projeto`, `mapear projeto`, `Atualizar TES`) route
 the same way; if Claude reports a `/tes:*` form as invalid, treat it as TES
 intent and continue.
