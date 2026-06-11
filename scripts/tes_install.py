@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.179"
+VERSION = "0.3.180"
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -821,8 +821,23 @@ def run_installed_certification(target: Path, dry_run: bool, timeout: float) -> 
     payload = parse_json_output(result.stdout)
     status = str(payload.get("status") or ("PASS" if result.returncode == 0 else "FAIL"))
     failures = [str(item) for item in payload.get("failures", []) if item] if isinstance(payload.get("failures"), list) else []
+    # Derive human-readable failures from the structured certification payload,
+    # never from raw stdout. The oracle prints its full result as indented JSON
+    # on stdout; appending result.stdout here injected that whole blob as a
+    # single failures[] string, which the bin then leaked line-by-line as `],`
+    # `},` fragments. Prefer the payload's findings (component + repair route);
+    # fall back to a one-line message only when there is nothing structured.
     if result.returncode != 0 and not failures:
-        failures.append(result.stderr.strip() or result.stdout.strip() or "installed certification failed")
+        findings = payload.get("findings") if isinstance(payload.get("findings"), list) else []
+        for finding in findings:
+            if not isinstance(finding, dict):
+                continue
+            component = str(finding.get("component") or "certification")
+            repair = str(finding.get("repair") or finding.get("status") or "needs review").strip()
+            failures.append(f"{component}: {repair}")
+        if not failures:
+            stderr_line = result.stderr.strip().splitlines()[0] if result.stderr.strip() else ""
+            failures.append(stderr_line or "installed certification reported a non-passing status")
     return {
         "status": status,
         "command": " ".join(command),
@@ -859,8 +874,18 @@ def aggregate_install_status(dry_run: bool, apply_status: str, certification_sta
         return "INSTALLED"
     if certification_status == "PARTIAL":
         return "PARTIAL"
-    if certification_status in {"NEEDS_REVIEW", "BLOCKED", "FAIL"}:
-        return certification_status
+    # The apply succeeded (files written, reversible via uninstall/detach). A
+    # post-apply certification verdict of NEEDS_REVIEW or BLOCKED is a review
+    # item about the *installed* target — a stale historical gate record, a
+    # surface that wants /tes-setup — not a failed install. Degrade it to
+    # NEEDS_REVIEW so the bin shows the preserved-and-reversible review notice
+    # instead of crashing with "failed". Reserve FAIL for a certification
+    # process that actually broke (timeout, crash, unparseable output): that is
+    # a real install-process failure the operator must see as an error.
+    if certification_status in {"NEEDS_REVIEW", "BLOCKED"}:
+        return "NEEDS_REVIEW"
+    if certification_status == "FAIL":
+        return "FAIL"
     return "NEEDS_REVIEW"
 
 
@@ -1243,7 +1268,11 @@ def install(args: argparse.Namespace) -> int:
     }
     print(json.dumps(result, indent=2, sort_keys=True))
     print("[tes-install] " + result["status"])
-    return 1 if status in {"BLOCKED", "FAIL"} else 0
+    # Only a broken certification *process* (FAIL) is a non-zero install. A
+    # successful apply with a post-install review verdict aggregates to
+    # NEEDS_REVIEW (exit 0): TES is on disk and reversible, the bin renders the
+    # preserved-review notice. aggregate_install_status no longer yields BLOCKED.
+    return 1 if status == "FAIL" else 0
 
 
 def parse_hook_input() -> dict[str, Any]:

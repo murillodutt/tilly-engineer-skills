@@ -23,7 +23,7 @@ const BOOL_OPTIONS = new Set(["--yes", "--dry-run", "--no-hooks", "--no-postinst
 const MIN_NODE_MAJOR = 18;
 const MIN_BUN_VERSION = [1, 0, 0];
 const MIN_PYTHON_VERSION = [3, 11, 0];
-const TES_VERSION = "0.3.179";
+const TES_VERSION = "0.3.180";
 const ANSI = {
   reset: "\x1b[0m",
   bold: "\x1b[1m",
@@ -757,26 +757,62 @@ function renderInstallSummary(summary, parsed) {
   printCompletionNotice(parsed, summary, dryRun);
 }
 
+// A line is "JSON noise" when it carries no human meaning on its own: a bare
+// brace/bracket, a closing-punctuation fragment (`],` `},` `}],`), or a
+// "key": value pair from a serialized payload. The Python engine prints its
+// summary as indented JSON; without this guard those fragments leaked to the
+// user as the `],` `},` garbage the failed install showed.
+function isJsonNoise(trimmed) {
+  if (!trimmed) {
+    return true;
+  }
+  // Bare structural punctuation, including trailing commas: { } [ ] }, ], }],
+  if (/^[{}[\],]+,?$/.test(trimmed)) {
+    return true;
+  }
+  // A serialized "key": ... line (object entry) or a quoted string element.
+  if (/^"(?:[^"\\]|\\.)*"\s*:/.test(trimmed) || /^"(?:[^"\\]|\\.)*",?$/.test(trimmed)) {
+    return true;
+  }
+  // Engine status sentinels.
+  if (trimmed.startsWith("[tes-install]") || trimmed.startsWith("[tes-")) {
+    return true;
+  }
+  return false;
+}
+
 function renderFailure(summary, output) {
   console.error(`\n${color("TES Installer failed", ANSI.bold, ANSI.red)}\n`);
-  const failures = summary?.failures || summary?.stage?.failures || summary?.apply?.failures || [];
-  if (Array.isArray(failures) && failures.length > 0) {
-    for (const item of failures.slice(0, 8)) {
+  const failures =
+    summary?.failures
+    || summary?.certification?.failures
+    || summary?.stage?.failures
+    || summary?.apply?.failures
+    || [];
+  // Only treat structured failures as printable when they are short, single-line
+  // strings — never a serialized JSON blob accidentally stuffed into one entry.
+  const printable = (Array.isArray(failures) ? failures : [])
+    .map((item) => String(item).trim())
+    .filter((item) => item && !item.includes("\n") && item.length <= 300);
+  if (printable.length > 0) {
+    for (const item of printable.slice(0, 8)) {
       console.error(`- ${item}`);
     }
     return;
   }
-  const lines = String(output || "").split(/\r?\n/);
-  for (const line of lines.filter((item) => {
-    const trimmed = item.trim();
-    return trimmed
-      && trimmed !== "{"
-      && trimmed !== "}"
-      && !trimmed.startsWith("\"")
-      && !trimmed.startsWith("[tes-install]");
-  }).slice(0, 12)) {
-    console.error(line);
+  const lines = String(output || "")
+    .split(/\r?\n/)
+    .map((line) => line.trimEnd())
+    .filter((line) => !isJsonNoise(line.trim()));
+  if (lines.length > 0) {
+    for (const line of lines.slice(0, 12)) {
+      console.error(line);
+    }
+    return;
   }
+  // Nothing human-readable survived: never go silent or leak fragments.
+  console.error("The TES engine reported a failure but returned no readable detail.");
+  console.error("Re-run with --dry-run to preview, or run /tes-doctor in the project for a health report.");
 }
 
 function renderReviewItems(summary) {
@@ -834,7 +870,10 @@ function renderManageSummary(parsed, summary, rawOutput) {
 
 function renderManageFailure(parsed, summary, rawOutput) {
   console.error(`\n${color(`TES ${parsed.command} failed`, ANSI.bold, ANSI.red)}\n`);
-  const failures = (summary && Array.isArray(summary.failures)) ? summary.failures : [];
+  const rawFailures = (summary && Array.isArray(summary.failures)) ? summary.failures : [];
+  const failures = rawFailures
+    .map((item) => String(item).trim())
+    .filter((item) => item && !item.includes("\n") && item.length <= 300);
   if (failures.length > 0) {
     for (const item of failures.slice(0, 8)) {
       console.error(`- ${item}`);
@@ -842,13 +881,18 @@ function renderManageFailure(parsed, summary, rawOutput) {
     renderReviewItems(summary);
     return;
   }
-  const lines = String(rawOutput || "").split(/\r?\n/).filter((item) => {
-    const trimmed = item.trim();
-    return trimmed && trimmed !== "{" && trimmed !== "}" && !trimmed.startsWith("\"") && !trimmed.startsWith("[tes-");
-  });
-  for (const line of lines.slice(0, 12)) {
-    console.error(line);
+  const lines = String(rawOutput || "")
+    .split(/\r?\n/)
+    .map((line) => line.trimEnd())
+    .filter((line) => !isJsonNoise(line.trim()));
+  if (lines.length > 0) {
+    for (const line of lines.slice(0, 12)) {
+      console.error(line);
+    }
+    return;
   }
+  console.error("The TES engine reported a failure but returned no readable detail.");
+  console.error("Re-run with --dry-run to preview, or run /tes-doctor in the project for a health report.");
 }
 
 function manageEngineArgs(parsed) {

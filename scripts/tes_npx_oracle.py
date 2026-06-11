@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import os
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -23,7 +24,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.179"
+VERSION = "0.3.180"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -155,11 +156,16 @@ def load_json(path: Path) -> dict[str, Any]:
 
 def raw_engine_output_leaked(text: str) -> bool:
     lines = [line.strip() for line in text.splitlines()]
-    if "[tes-install]" in text:
+    if "[tes-install]" in text or "[tes-" in text:
         return True
     if "{" in lines or "}" in lines:
         return True
-    raw_json_keys = {"\"agent\":", "\"apply\":", "\"hooks\":", "\"mcp\":", "\"stage\":", "\"postinstall\":"}
+    # Closing-punctuation fragments of a serialized JSON payload — `],` `},`
+    # `}],` `}` `]` — were the exact garbage the failed install leaked. A line
+    # made only of braces/brackets and commas carries no human meaning.
+    if any(re.fullmatch(r"[{}\[\],]+,?", line) for line in lines if line):
+        return True
+    raw_json_keys = {"\"agent\":", "\"apply\":", "\"hooks\":", "\"mcp\":", "\"stage\":", "\"postinstall\":", "\"certification\":", "\"status\":"}
     return any(any(line.startswith(key) for key in raw_json_keys) for line in lines)
 
 
@@ -169,6 +175,54 @@ def commercial_output_failures(label: str, stdout: str) -> list[str]:
         failures.append(f"{label} must render the commercial installer screen")
     if raw_engine_output_leaked(stdout):
         failures.append(f"{label} must not leak raw Python engine JSON or [tes-install] sentinels")
+    return failures
+
+
+def plant_stale_gate_record(target: Path) -> None:
+    """Write a historical Mantra Gate record using a retired STATUS vocabulary
+    (`PASS`, which is not a valid gate STATUS). This is the exact shape that
+    drove a real install to certify BLOCKED and leak a serialized JSON blob as
+    `],` `},` fragments. A stale historical record must downgrade certification
+    to a clean NEEDS_REVIEW notice, never crash the install or leak fragments."""
+    records = target / ".tes/field-reports/mantra-gates.jsonl"
+    records.parent.mkdir(parents=True, exist_ok=True)
+    record = {
+        "gate": {
+            "VERIFY": "checked",
+            "SCOPE": "small",
+            "BEST_PATH": "direct",
+            "DOCUMENT": "noted",
+            "ORACLE": "ran tests",
+            "RESOLVE": "done",
+            "STATUS": "PASS",
+        },
+        "visible": "full",
+    }
+    records.write_text(json.dumps(record) + "\n", encoding="utf-8")
+
+
+def stale_record_review_failures(label: str, code: int, stdout: str, stderr: str, target: Path) -> list[str]:
+    """A re-certify run over a target carrying a stale gate record must: exit 0
+    (the apply succeeded and is reversible — a review item is not a failure),
+    keep the install lock APPLIED, and never leak raw engine JSON in either
+    stream."""
+    failures: list[str] = []
+    if code != 0:
+        failures.append(f"{label} must exit 0 on a post-apply review verdict, got {code}")
+    if raw_engine_output_leaked(stdout):
+        failures.append(f"{label} stdout must not leak raw engine JSON on a review verdict")
+    if raw_engine_output_leaked(stderr):
+        failures.append(f"{label} stderr must not leak raw engine JSON on a review verdict")
+    if "TES installer failed" in stdout.lower() or "tes installer failed" in stderr.lower():
+        failures.append(f"{label} must not report a hard failure when the apply succeeded")
+    lock = target / ".tes/tes-install-lock.json"
+    if lock.exists():
+        try:
+            apply_status = load_json(lock).get("apply", {}).get("status")
+        except (json.JSONDecodeError, OSError):
+            apply_status = None
+        if apply_status not in {"APPLIED", "CLEAN_APPLIED"}:
+            failures.append(f"{label} install lock apply.status must stay applied, got {apply_status!r}")
     return failures
 
 
@@ -759,6 +813,26 @@ def self_test() -> int:
                 failures.append(f"interactive accept install missing path: {relpath}")
         failures.extend(mcp_all_contract_failures(accept_target, "interactive accept install"))
 
+        # Regression: a stale historical gate record must not crash the install
+        # or leak `],` `},` JSON fragments. Plant one into the freshly installed
+        # target, then re-run the bin (idempotent preserve re-certify) and assert
+        # a clean, non-leaking NEEDS_REVIEW outcome with the apply still applied.
+        if not failures:
+            plant_stale_gate_record(accept_target)
+            recert = run(
+                ["node", "bin/tes.js", "add", "--target", str(accept_target), "--agent", "all", "--yes"],
+                ROOT,
+            )
+            failures.extend(
+                stale_record_review_failures(
+                    "stale-record re-certify",
+                    recert.returncode,
+                    recert.stdout,
+                    recert.stderr,
+                    accept_target,
+                )
+            )
+
         pack_result = run(["npm", "pack", "--pack-destination", str(pack_dir)], ROOT, timeout=240.0)
         if pack_result.returncode != 0:
             failures.append("npm pack failed")
@@ -1281,7 +1355,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.179 or main.",
+        help="Git ref to test, e.g. v0.3.180 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()

@@ -451,8 +451,16 @@ def evaluate(
                     "historical_risk": record_risk.get("risk"),
                 }
             )
+            # Health mode is a read-only audit of *historical* gate records, not
+            # an active gate on the current action. A malformed or stale record
+            # (e.g. an old STATUS vocabulary like "PASS") is a review item, not a
+            # hard stop: it must never escalate the adoption status to BLOCKED and
+            # bring down installed certification. Reserve BLOCKED for the active
+            # gate (state-changing / closure / commit-push modes); here cap a bad
+            # historical record at NEEDS_REVIEW so the record stays traceable
+            # (its own validation still reads BLOCKED) without failing the install.
             if result["status"] == "BLOCKED":
-                status = escalate(status, "BLOCKED")
+                status = escalate(status, "NEEDS_REVIEW")
             elif not result["valid"]:
                 status = escalate(status, "DEGRADED")
             continue
