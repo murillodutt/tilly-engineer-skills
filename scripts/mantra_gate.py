@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -13,7 +14,7 @@ import tempfile
 from typing import Any
 
 
-VERSION = "0.3.180"
+VERSION = "0.3.181"
 SCHEMA = "tes-mantra-gate@1"
 MARKER = "[🍳 Flash-Fry]"
 STATUSES = ("PROCEED", "BLOCKED", "NEEDS_REVIEW")
@@ -235,14 +236,49 @@ def validate_gate(
     }
 
 
-def sanitize(value: Any) -> Any:
+def local_diagnostic_enabled() -> bool:
+    """On-target operator opt-in. Off by default, so shipped telemetry and any
+    persisted ledger/outbox content is always fully redacted; the operator
+    running recovery on their own target sets TES_LOCAL_DIAGNOSTIC=1 to see the
+    concrete failing paths they need to act on."""
+    return os.environ.get("TES_LOCAL_DIAGNOSTIC") == "1"
+
+
+def _relativize_under_target(text: str, target: Path) -> str:
+    """Replace absolute paths that live UNDER `target` with their target-relative
+    form (which is not an absolute path, so it carries no machine/home/project
+    identity). Absolute paths outside the target stay redacted — local diagnostic
+    only un-hides the operator's own target, never other locations."""
+    base = str(target)
+
+    def repl(match: "re.Match[str]") -> str:
+        abs_path = match.group(0)
+        if abs_path == base:
+            return "."
+        if abs_path.startswith(base + os.sep):
+            return abs_path[len(base) + 1:]
+        return "[REDACTED_PATH]"
+
+    return ABSOLUTE_PATH_RE.sub(repl, text)
+
+
+def sanitize(value: Any, *, local_target: Path | None = None) -> Any:
+    # Secrets and emails are ALWAYS redacted; the local-diagnostic opt-in only
+    # un-hides paths under the operator's own target. `local_target` is passed
+    # only by on-target operator outputs (adoption evaluate, gate CLI print);
+    # the persisted-record path (write_record) never passes it, so shipped
+    # content stays fully redacted regardless of the env var.
+    local = local_target is not None and local_diagnostic_enabled()
     if isinstance(value, dict):
-        return {str(key): sanitize(child) for key, child in value.items()}
+        return {str(key): sanitize(child, local_target=local_target) for key, child in value.items()}
     if isinstance(value, list):
-        return [sanitize(child) for child in value]
+        return [sanitize(child, local_target=local_target) for child in value]
     if isinstance(value, str):
         text = SECRET_RE.sub("[REDACTED_SECRET]", value)
-        text = ABSOLUTE_PATH_RE.sub("[REDACTED_PATH]", text)
+        if local:
+            text = _relativize_under_target(text, local_target)
+        else:
+            text = ABSOLUTE_PATH_RE.sub("[REDACTED_PATH]", text)
         return EMAIL_RE.sub("[REDACTED_EMAIL]", text)
     return value
 
@@ -435,7 +471,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.emit_marker and result["status"] == "PROCEED":
             print(MARKER)
         else:
-            print(json.dumps(sanitize(result), indent=2, sort_keys=True))
+            print(json.dumps(sanitize(result, local_target=args.target), indent=2, sort_keys=True))
         return exit_code(result["status"], bool(result["valid"]))
 
     if args.command == "classify-risk":

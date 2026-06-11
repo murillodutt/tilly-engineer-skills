@@ -24,7 +24,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.180"
+VERSION = "0.3.181"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -41,6 +41,21 @@ def run(command: list[str], cwd: Path, timeout: float = 180.0) -> subprocess.Com
         check=False,
         timeout=timeout,
     )
+
+
+def run_external_smoke(command: list[str], cwd: Path, timeout: float) -> tuple[subprocess.CompletedProcess[str] | None, str | None]:
+    """Run an external-network install smoke (npm exec / bunx pulling a GitHub
+    package). A timeout or a missing runtime here is an EXTERNAL condition — a
+    slow GitHub clone, a cold bun cache, no network — not a product bug. Return
+    (result, None) on completion, or (None, reason) so the caller can record a
+    blocker (blocked_external) instead of letting TimeoutExpired crash the whole
+    release-check with a traceback."""
+    try:
+        return run(command, cwd, timeout=timeout), None
+    except subprocess.TimeoutExpired:
+        return None, f"external install smoke timed out after {timeout:g}s: {command[0]} (network/clone latency, not a package defect)"
+    except FileNotFoundError:
+        return None, f"external install smoke runtime not found: {command[0]}"
 
 
 def run_pty_script(
@@ -522,8 +537,10 @@ def github_package_self_test(
         dry_target = target or fixture(work, "github-npx-target")
         npm_command.extend(["--target", str(dry_target)])
         if not failures and not blockers:
-            exec_result = run(npm_command, work, timeout=360.0)
-            if exec_result.returncode != 0:
+            exec_result, exec_block = run_external_smoke(npm_command, work, timeout=360.0)
+            if exec_block:
+                blockers.append(exec_block)
+            elif exec_result.returncode != 0:
                 failures.append("GitHub package spec npm exec failed")
                 failures.extend(exec_result.stdout.splitlines())
                 failures.extend(exec_result.stderr.splitlines())
@@ -532,11 +549,13 @@ def github_package_self_test(
             if (dry_target / ".tes").exists():
                 failures.append("GitHub npx dry-run must not create .tes")
 
-            if include_bunx:
+            if include_bunx and not blockers:
                 bunx_target = fixture(work, "github-bunx-target")
                 bunx_command.extend(["--target", str(bunx_target)])
-                bunx_result = run(bunx_command, work, timeout=360.0)
-                if bunx_result.returncode != 0:
+                bunx_result, bunx_block = run_external_smoke(bunx_command, work, timeout=360.0)
+                if bunx_block:
+                    blockers.append(bunx_block)
+                elif bunx_result.returncode != 0:
                     failures.append("GitHub package spec bunx dry-run failed")
                     failures.extend(bunx_result.stdout.splitlines())
                     failures.extend(bunx_result.stderr.splitlines())
@@ -652,6 +671,22 @@ def manage_roundtrip_failures(work: Path) -> list[str]:
 
 def self_test() -> int:
     failures = package_contract_failures()
+
+    # Gap 3: an external install smoke that exceeds its timeout must degrade to a
+    # blocker reason, never raise TimeoutExpired and crash the release-check with
+    # a traceback. A missing runtime must likewise become a reason, not a crash.
+    with tempfile.TemporaryDirectory(prefix="tes-npx-smoke-guard-") as smoke_dir:
+        smoke_cwd = Path(smoke_dir)
+        timed = run_external_smoke([sys.executable, "-c", "import time; time.sleep(5)"], smoke_cwd, timeout=0.2)
+        if timed[0] is not None or not timed[1] or "timed out" not in timed[1]:
+            failures.append("run_external_smoke must return a timeout reason instead of raising TimeoutExpired")
+        missing = run_external_smoke(["tes-nonexistent-binary-xyz"], smoke_cwd, timeout=5.0)
+        if missing[0] is not None or not missing[1] or "not found" not in missing[1]:
+            failures.append("run_external_smoke must return a not-found reason for a missing runtime")
+        ok = run_external_smoke([sys.executable, "-c", "print('ok')"], smoke_cwd, timeout=10.0)
+        if ok[1] is not None or ok[0] is None or ok[0].returncode != 0:
+            failures.append("run_external_smoke must pass through a successful command result")
+
     if not shutil.which("node"):
         failures.append("node executable is required")
     if not shutil.which("npm"):
@@ -1355,7 +1390,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.180 or main.",
+        help="Git ref to test, e.g. v0.3.181 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()

@@ -13,7 +13,7 @@ import command_trigger_oracle
 import mantra_gate_adoption_oracle
 
 
-VERSION = "0.3.180"
+VERSION = "0.3.181"
 SCHEMA = "tes-installed-certification@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
@@ -348,6 +348,32 @@ def self_test() -> dict[str, Any]:
             failures.append(f"healthy fixture must report PASS, got {healthy_result['status']}")
         if not healthy_result["negative_checks"]["host_connected_not_inferred"]:
             failures.append("installed certification must never infer host_connected")
+
+        # A schema-invalid historical gate record on an otherwise healthy target
+        # must surface in the certification finding's detail (naming the invalid
+        # record), not fall through to surface_health:OK — the disagreement that
+        # sent a real recovery down the wrong path.
+        invalid_record_target = root / "healthy-with-invalid-record"
+        write_base_fixture(invalid_record_target, healthy=True)
+        ledger = invalid_record_target / ".tes/field-reports/mantra-gates.jsonl"
+        ledger.parent.mkdir(parents=True, exist_ok=True)
+        ledger.write_text(
+            json.dumps({"gate": {"VERIFY": "x", "SCOPE": "s", "BEST_PATH": "d", "DOCUMENT": "n",
+                                 "RESOLVE": "done", "STATUS": "PASS"}, "visible": "full"}) + "\n",
+            encoding="utf-8",
+        )
+        invalid_result = evaluate(invalid_record_target)
+        adoption_finding = next(
+            (f for f in invalid_result.get("findings", []) if f.get("component") == "mantra_gate_adoption"),
+            None,
+        )
+        detail_blob = json.dumps(adoption_finding.get("detail")) if adoption_finding else ""
+        if not adoption_finding:
+            failures.append("invalid historical record must produce a mantra_gate_adoption certification finding")
+        elif "invalid_historical_record" not in detail_blob and "PASS" not in detail_blob:
+            failures.append("certification finding detail must name the invalid record, not fall back to surface_health:OK")
+        if invalid_result["status"] == "BLOCKED":
+            failures.append("invalid historical record must not drive installed certification to BLOCKED (D-fix invariant)")
     return {
         "schema": SCHEMA,
         "version": VERSION,

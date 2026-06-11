@@ -21,7 +21,7 @@ from typing import Any
 import scope_contract
 
 
-VERSION = "0.3.180"
+VERSION = "0.3.181"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 DEFAULT_OUTBOX_PENDING_THRESHOLD = 30
 SCHEMA = "tes-field-report@2"
@@ -1208,6 +1208,105 @@ def enable(target: Path) -> dict[str, object]:
     return {"version": VERSION, "status": "PASS", "disabled": False, "writes": [rel(outbox_path(target), target)]}
 
 
+MANTRA_GATES_LEDGER = FIELD_ROOT / "mantra-gates.jsonl"
+MANTRA_GATES_QUARANTINE = FIELD_ROOT / "mantra-gates.quarantine.jsonl"
+
+
+def _load_gate_helpers():
+    """Lazy import of the sibling Mantra Gate helpers. Both are delivered next to
+    field_reports.py in .tes/bin/ (see tes_bundle.py). Importing here (not at
+    module top) keeps the rest of field_reports usable if they are ever absent,
+    and reusing the adoption oracle's own gate_from_record guarantees prune and
+    certification extract the SAME gate from a record — they must agree on what
+    is invalid, so they share one extraction, not two parallel field lists."""
+    import mantra_gate  # noqa: PLC0415 — intentional lazy, sibling-delivered helper
+    import mantra_gate_adoption_oracle  # noqa: PLC0415 — same, shared gate extraction
+
+    return mantra_gate, mantra_gate_adoption_oracle
+
+
+def _ledger_line_is_invalid(line: str, mantra_gate, adoption) -> bool:
+    """A ledger line is invalid when it is not parseable JSON, or its gate fails
+    mantra_gate schema validation in health mode (e.g. a retired STATUS like
+    PASS). Valid PROCEED/BLOCKED/NEEDS_REVIEW records are never invalid. Gate
+    extraction reuses the adoption oracle's gate_from_record so this matches
+    exactly what installed certification validates."""
+    try:
+        record = json.loads(line)
+    except json.JSONDecodeError:
+        return True
+    if not isinstance(record, dict):
+        return True
+    gate = adoption.gate_from_record(record)
+    health_gate = {k: v for k, v in gate.items() if str(k).upper() not in ("RISK",)}
+    result = mantra_gate.validate_gate(health_gate, state_changing=False, closure_claim=False, risk=None)
+    return not result["valid"]
+
+
+def prune_invalid_mantra_gates(target: Path) -> dict[str, object]:
+    """Sanctioned repair for the append-only Mantra Gate ledger.
+
+    Schema-invalid records (a retired STATUS vocabulary like PASS, or unparseable
+    lines) keep installed certification stuck at NEEDS_REVIEW with no governed way
+    to clear them — the only prior fix was hand-editing a git-ignored evidence
+    file. This MOVES invalid lines to a quarantine sidecar (never deletes — the
+    audit trail is preserved), keeps every valid PROCEED/BLOCKED/NEEDS_REVIEW
+    record in place and in order, records the prune as a field-report event, and
+    is idempotent (a second run with nothing invalid is a clean no-op)."""
+    target = target.expanduser().resolve()
+    ledger = target / MANTRA_GATES_LEDGER
+    quarantine = target / MANTRA_GATES_QUARANTINE
+    if not ledger.exists():
+        return {"version": VERSION, "status": "PASS", "invalid_count": 0,
+                "reason": "no mantra-gates ledger", "writes": []}
+
+    try:
+        mantra_gate, adoption = _load_gate_helpers()
+    except ImportError:
+        return {"version": VERSION, "status": "BLOCKED", "invalid_count": 0,
+                "reason": "Mantra Gate helpers not available alongside field_reports", "writes": []}
+
+    lines = [line for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip()]
+    kept: list[str] = []
+    quarantined: list[str] = []
+    for line in lines:
+        (quarantined if _ledger_line_is_invalid(line, mantra_gate, adoption) else kept).append(line)
+
+    if not quarantined:
+        # Idempotent no-op: nothing invalid, do not rewrite or re-record.
+        return {"version": VERSION, "status": "PASS", "invalid_count": 0,
+                "kept": len(kept), "writes": []}
+
+    # Append (not overwrite) quarantined lines so repeated prunes accumulate the
+    # full forensic record; rewrite the ledger to only the valid records.
+    with quarantine.open("a", encoding="utf-8") as handle:
+        for line in quarantined:
+            handle.write(line + "\n")
+    ledger.write_text(("".join(line + "\n" for line in kept)), encoding="utf-8")
+
+    writes = [rel(ledger, target), rel(quarantine, target)]
+    record_event(
+        target,
+        "field_reports.mantra_gate_prune",
+        "PASS",
+        surface="mantra-gates",
+        trigger="cli",
+        details={
+            "invalid_count": len(quarantined),
+            "kept_count": len(kept),
+            "quarantine": rel(quarantine, target),
+        },
+    )
+    return {
+        "version": VERSION,
+        "status": "PASS",
+        "invalid_count": len(quarantined),
+        "kept": len(kept),
+        "quarantine": rel(quarantine, target),
+        "writes": writes,
+    }
+
+
 def self_test() -> dict[str, object]:
     failures: list[str] = []
     with tempfile.TemporaryDirectory(prefix="tes-field-reports-") as tempdir:
@@ -1554,6 +1653,52 @@ echo "https://github.com/murillodutt/tilly-engineer-skills/issues/999"
         if over.get("status") != "PASS":
             failures.append("pending advisory must not change PASS status")
 
+        # prune-invalid-mantra-gates: a stale STATUS:PASS record followed by a
+        # valid PROCEED retry must leave only the valid record, quarantine the
+        # invalid one, record the prune, and be idempotent.
+        prune_target = Path(tempdir) / "prune"
+        ledger = prune_target / MANTRA_GATES_LEDGER
+        ledger.parent.mkdir(parents=True, exist_ok=True)
+        invalid_rec = {"gate": {"VERIFY": "x", "SCOPE": "s", "BEST_PATH": "d",
+                                "DOCUMENT": "n", "RESOLVE": "done", "STATUS": "PASS"}, "visible": "full"}
+        valid_rec = {"gate": {"VERIFY": "x", "SCOPE": "s", "BEST_PATH": "d",
+                              "DOCUMENT": "n", "RESOLVE": "done", "STATUS": "PROCEED"}, "visible": "full"}
+        ledger.write_text(json.dumps(invalid_rec) + "\n" + json.dumps(valid_rec) + "\n", encoding="utf-8")
+        prune_res = prune_invalid_mantra_gates(prune_target)
+        if prune_res.get("status") != "PASS":
+            failures.append("prune-invalid-mantra-gates must report PASS")
+        if prune_res.get("invalid_count") != 1:
+            failures.append(f"prune must detect 1 invalid record, got {prune_res.get('invalid_count')}")
+        remaining = [line for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip()]
+        if len(remaining) != 1 or "PROCEED" not in remaining[0]:
+            failures.append("prune must keep only the valid PROCEED record in the ledger")
+        quarantine = prune_target / MANTRA_GATES_QUARANTINE
+        if not quarantine.exists() or "PASS" not in quarantine.read_text(encoding="utf-8"):
+            failures.append("prune must quarantine the invalid PASS record")
+        prune_events = [
+            line for line in outbox_path(prune_target).read_text(encoding="utf-8").splitlines()
+            if "mantra_gate_prune" in line
+        ] if outbox_path(prune_target).exists() else []
+        if not prune_events:
+            failures.append("prune must record a field-report event in the outbox")
+        second = prune_invalid_mantra_gates(prune_target)
+        if second.get("invalid_count") != 0:
+            failures.append("prune must be idempotent (second run finds nothing invalid)")
+
+        # Legacy record agreement: a record with gate fields at the TOP level
+        # (no nested "gate") and an ORACLE field must be classified the SAME by
+        # prune and by the adoption oracle — both reuse gate_from_record, so a
+        # valid legacy PROCEED record is kept, not quarantined.
+        legacy_target = Path(tempdir) / "prune-legacy"
+        legacy_ledger = legacy_target / MANTRA_GATES_LEDGER
+        legacy_ledger.parent.mkdir(parents=True, exist_ok=True)
+        legacy_valid = {"VERIFY": "x", "SCOPE": "s", "BEST_PATH": "d", "DOCUMENT": "n",
+                        "ORACLE": "ran", "RESOLVE": "done", "STATUS": "PROCEED"}
+        legacy_ledger.write_text(json.dumps(legacy_valid) + "\n", encoding="utf-8")
+        legacy_res = prune_invalid_mantra_gates(legacy_target)
+        if legacy_res.get("invalid_count") != 0:
+            failures.append("prune must keep a valid legacy record with a top-level ORACLE field (parity with adoption oracle)")
+
     return {"version": VERSION, "status": "PASS" if not failures else "FAIL", "failures": failures}
 
 
@@ -1569,7 +1714,7 @@ def print_result(result: dict[str, object], label: str, json_only: bool = False)
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", nargs="?", choices=("capture", "drain", "status", "disable", "enable", "install-hook"))
+    parser.add_argument("command", nargs="?", choices=("capture", "drain", "status", "disable", "enable", "install-hook", "prune-invalid-mantra-gates"))
     parser.add_argument("--target", type=Path, default=Path.cwd())
     parser.add_argument("--event")
     parser.add_argument("--status")
@@ -1605,6 +1750,8 @@ def main() -> int:
         result = enable(args.target)
     elif args.command == "install-hook":
         result = install_hook(args.target)
+    elif args.command == "prune-invalid-mantra-gates":
+        result = prune_invalid_mantra_gates(args.target)
     else:
         parser.error("command is required unless --self-test is used")
     return print_result(result, str(args.command), args.json_only)

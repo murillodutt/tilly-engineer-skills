@@ -459,6 +459,25 @@ def evaluate(
             # gate (state-changing / closure / commit-push modes); here cap a bad
             # historical record at NEEDS_REVIEW so the record stays traceable
             # (its own validation still reads BLOCKED) without failing the install.
+            if result["status"] == "BLOCKED" or not result["valid"]:
+                # Surface the offending historical record as a finding so the
+                # cause is visible at the certification summary level, not only
+                # when the adoption oracle is run directly. Without this, the
+                # wrapping certification finding fell through to surface_health
+                # (status OK) and disagreed with the NEEDS_REVIEW verdict. The
+                # path/line let `field_reports prune-invalid-mantra-gates` and a
+                # local-diagnostic operator point straight at the record.
+                findings.append(
+                    {
+                        "type": "invalid_historical_record",
+                        "path": record.get("path"),
+                        "line": record.get("line"),
+                        "record_status": result["status"],
+                        "failures": result["failures"],
+                        "detail": "stale or schema-invalid Mantra Gate record in the ledger; "
+                        "prune it with `field_reports prune-invalid-mantra-gates`",
+                    }
+                )
             if result["status"] == "BLOCKED":
                 status = escalate(status, "NEEDS_REVIEW")
             elif not result["valid"]:
@@ -526,7 +545,12 @@ def evaluate(
             "surface_health": surfaces,
             "metrics": metrics,
             "recovery": recovery(status),
-        }
+        },
+        # On-target operator output: under TES_LOCAL_DIAGNOSTIC=1 the ledger
+        # paths in validations/findings render target-relative so the operator
+        # can act on them. Default (and all shipped/persisted content) stays
+        # fully redacted because this kwarg is only passed here, not at write.
+        local_target=target,
     )
 
 
@@ -707,6 +731,26 @@ def self_test() -> dict[str, Any]:
         tracked = evaluate(target)
         if not tracked["dirty_worktree_present"] or tracked["git"]["diff_files"] != ["tracked.txt"]:
             failures.append("tracked file changes must remain visible in dirty-worktree reporting")
+
+    with tempfile.TemporaryDirectory(prefix="tes-mg-adoption-invalid-record-") as tmp:
+        target = Path(tmp)
+        (target / "AGENTS.md").write_text("route to the TES Mantra Gate\n", encoding="utf-8")
+        ledger = target / ".tes/field-reports/mantra-gates.jsonl"
+        ledger.parent.mkdir(parents=True, exist_ok=True)
+        invalid = {"gate": {"VERIFY": "x", "SCOPE": "s", "BEST_PATH": "d", "DOCUMENT": "n",
+                            "RESOLVE": "done", "STATUS": "PASS"}, "visible": "full"}
+        ledger.write_text(json.dumps(invalid) + "\n", encoding="utf-8")
+        report = evaluate(target)
+        # A schema-invalid historical record must (a) surface a finding naming it
+        # so installed certification can show the cause, and (b) still cap status
+        # at NEEDS_REVIEW — never BLOCKED (the shipped D-fix invariant).
+        invalid_findings = [f for f in report.get("findings", []) if f.get("type") == "invalid_historical_record"]
+        if not invalid_findings:
+            failures.append("invalid historical record must produce an invalid_historical_record finding")
+        elif invalid_findings[0].get("failures") != ["invalid STATUS: PASS"]:
+            failures.append("invalid_historical_record finding must carry the record's validation failures")
+        if report.get("status") == "BLOCKED":
+            failures.append("invalid historical record must cap status at NEEDS_REVIEW, not BLOCKED (D-fix invariant)")
 
     return {
         "schema": SCHEMA,

@@ -17,7 +17,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.180"
+VERSION = "0.3.181"
 
 ACTIVE_PREFIXES = (
     ".github/",

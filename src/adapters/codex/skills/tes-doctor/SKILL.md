@@ -42,6 +42,7 @@ Run the smallest gate that proves the claim:
 | installed target | staged changes are commit-ready | run discovered `gate:staged`; otherwise use available project gates and `git diff --check` |
 | installed target | push readiness | run discovered `gate:push` plus `python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --commit-push`; otherwise report `NOT_AVAILABLE` instead of inventing one |
 | installed target | Mantra Gate history needs review | `python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --audit-history` |
+| installed target | a stale/schema-invalid Mantra Gate record blocks certification | `python3 .tes/bin/field_reports.py prune-invalid-mantra-gates --target .` (quarantines invalid ledger records, then recertify) |
 | package-source | package shape is valid | `npm run validate` |
 | package-source | docs stay modular | `npm run docs:size` |
 | package-source | TDS is aligned | `npm run tds:validate` |

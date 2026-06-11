@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.180"
+VERSION = "0.3.181"
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -568,6 +568,54 @@ def write_pending_sentinel(target: Path, agent: str, agents: list[str], mode: st
     return write_json(target / POSTINSTALL_PATH, payload, dry_run=dry_run)
 
 
+def derive_sentinel_reason(
+    apply_result: dict[str, Any],
+    certification_result: dict[str, Any] | None,
+) -> str:
+    """Name the gate that actually blocks. The review sentinel previously always
+    said "obsolete runtime artifacts need review", but the trigger is two
+    distinct conditions (apply NEEDS_REVIEW from obsolete cleanup, OR a
+    non-passing post-install certification). When obsolete cleanup is clean and
+    certification is the blocker, that boilerplate sent operators down the wrong
+    path — so derive the reason from whichever condition is genuinely non-passing,
+    naming the failing oracle component when it is certification."""
+    obsolete = apply_result.get("obsolete_cleanup") if isinstance(apply_result, dict) else None
+    review_items = obsolete.get("review_items") if isinstance(obsolete, dict) else None
+    if apply_result.get("status") == "NEEDS_REVIEW" and review_items:
+        return "obsolete runtime artifacts need review"
+
+    # Tolerate both shapes of certification result: the raw run_installed_
+    # certification dict (components live under "payload") and the summarized
+    # dict (components at top level). The call site passes the RAW result, so
+    # reading only the top level silently lost the component names in production.
+    cert = certification_result if isinstance(certification_result, dict) else {}
+    cert_status = str(cert.get("status") or "")
+    # Guard against an absent/empty certification result: an empty status must
+    # not rank as a blocker (rank("") defaults to NEEDS_REVIEW) and falsely
+    # report a certification gate when none ran.
+    cert_blocks = bool(cert_status) and certification_status_rank(cert_status) >= certification_status_rank("NEEDS_REVIEW")
+    if cert_blocks:
+        components = cert.get("components")
+        if not isinstance(components, dict) or not components:
+            payload = cert.get("payload") if isinstance(cert.get("payload"), dict) else {}
+            raw_components = payload.get("components") if isinstance(payload.get("components"), dict) else {}
+            components = {
+                name: (value.get("status") if isinstance(value, dict) else value)
+                for name, value in raw_components.items()
+            }
+        blocking = [
+            name for name, status in components.items()
+            if certification_status_rank(str(status or "")) >= certification_status_rank("NEEDS_REVIEW")
+        ]
+        if blocking:
+            return f"installed certification: {', '.join(sorted(blocking))} needs review"
+        return f"installed certification status {cert_status.lower()} (component detail unavailable)"
+
+    if review_items:
+        return "obsolete runtime artifacts need review"
+    return "post-install review required"
+
+
 def write_review_sentinel(
     target: Path,
     agent: str,
@@ -575,12 +623,13 @@ def write_review_sentinel(
     mode: str,
     apply_result: dict[str, Any],
     dry_run: bool,
+    certification_result: dict[str, Any] | None = None,
 ) -> dict[str, str]:
     existing = read_json(target / POSTINSTALL_PATH)
     payload = {
         **sentinel_payload(agent, agents, mode, existing),
         "state": "needs_review",
-        "reason": "obsolete runtime artifacts need review",
+        "reason": derive_sentinel_reason(apply_result, certification_result),
         "apply": summarize_result(apply_result),
     }
     return write_json(target / POSTINSTALL_PATH, payload, dry_run=dry_run)
@@ -1222,7 +1271,7 @@ def install(args: argparse.Namespace) -> int:
         {"path": rel(target / POSTINSTALL_PATH, target), "action": "skip-capsule-only" if not args.no_postinstall else "skip-disabled"}
         if postinstall_disabled
         else (
-            write_review_sentinel(target, args.agent, agents, args.postinstall_mode, apply_result, args.dry_run)
+            write_review_sentinel(target, args.agent, agents, args.postinstall_mode, apply_result, args.dry_run, certification_result)
             if apply_result.get("status") == "NEEDS_REVIEW"
             or certification_status_rank(str(certification_result.get("status") or "")) >= certification_status_rank("NEEDS_REVIEW")
             else write_pending_sentinel(target, args.agent, agents, args.postinstall_mode, args.dry_run)
@@ -1779,6 +1828,39 @@ def status(args: argparse.Namespace) -> int:
 
 def self_test() -> int:
     failures: list[str] = []
+
+    # derive_sentinel_reason: the review reason must name the gate that actually
+    # blocks, not always the obsolete-cleanup boilerplate. Exercise BOTH the
+    # summarized shape (components at top level) AND the RAW run_installed_
+    # certification shape (components under payload) — the call site passes the
+    # raw shape, so testing only the summarized one hid the component name loss.
+    summarized_reason = derive_sentinel_reason(
+        {"status": "APPLIED", "obsolete_cleanup": {"status": "PASS", "review_items": []}},
+        {"status": "NEEDS_REVIEW", "components": {"mantra_gate_adoption": "NEEDS_REVIEW", "mcp_registration": "PASS"}},
+    )
+    if "mantra_gate_adoption" not in summarized_reason or "certification" not in summarized_reason:
+        failures.append("sentinel reason must name the blocking component from a summarized certification result")
+    raw_reason = derive_sentinel_reason(
+        {"status": "APPLIED", "obsolete_cleanup": {"status": "PASS", "review_items": []}},
+        {"status": "NEEDS_REVIEW", "returncode": 1,
+         "payload": {"components": {"mantra_gate_adoption": {"status": "NEEDS_REVIEW"},
+                                     "mcp_registration": {"status": "PASS"}}}},
+    )
+    if "mantra_gate_adoption" not in raw_reason:
+        failures.append("sentinel reason must name the blocking component from a RAW certification result (payload.components)")
+    obsolete_reason = derive_sentinel_reason(
+        {"status": "NEEDS_REVIEW", "obsolete_cleanup": {"status": "NEEDS_REVIEW", "review_items": [{"path": "x"}]}},
+        {"status": "PASS", "components": {}},
+    )
+    if "obsolete" not in obsolete_reason:
+        failures.append("sentinel reason must keep the obsolete-artifacts message when there are real review items")
+    none_reason = derive_sentinel_reason(
+        {"status": "NEEDS_REVIEW", "obsolete_cleanup": {"status": "NEEDS_REVIEW", "review_items": [{"path": "x"}]}},
+        None,
+    )
+    if "certification" in none_reason:
+        failures.append("sentinel reason must not invent a certification blocker when certification_result is None")
+
     with tempfile.TemporaryDirectory(prefix="tes-postinstall-oracle-failure-") as tempdir:
         target = Path(tempdir)
         script = target / ".tes/bin/project_context_oracle.py"
