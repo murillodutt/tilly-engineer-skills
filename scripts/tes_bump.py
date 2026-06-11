@@ -362,7 +362,7 @@ def custom_targets(root: Path, config: dict[str, Any]) -> list[Target]:
         kind = item.get("type")
         if not isinstance(rel, str):
             raise BumpError(f"config target #{index} missing string path")
-        if kind not in {"json", "regex"}:
+        if kind not in {"json", "marketplace", "regex", "regex-all"}:
             raise BumpError(f"config target #{index} has unsupported type: {kind!r}")
         path = root / safe_relative_path(rel)
         if not path.is_file():
@@ -370,10 +370,13 @@ def custom_targets(root: Path, config: dict[str, Any]) -> list[Target]:
         if kind == "json":
             result.append(Target(path, "json-version", rel))
             continue
+        if kind == "marketplace":
+            result.append(Target(path, "marketplace-json", rel))
+            continue
         pattern = item.get("pattern")
         if not isinstance(pattern, str) or "{{VERSION}}" not in pattern:
-            raise BumpError(f"config regex target #{index} needs pattern with {{VERSION}}")
-        result.append(Target(path, "regex", rel, pattern))
+            raise BumpError(f"config {kind} target #{index} needs pattern with {{VERSION}}")
+        result.append(Target(path, "regex" if kind == "regex" else "regex-all", rel, pattern))
     return result
 
 
@@ -388,19 +391,53 @@ def merge_custom_targets(root: Path, discovered: list[Target]) -> tuple[list[Tar
             f"{config_path}: project {expected!r} does not match detected names {', '.join(project_names(root))}"
         )
 
-    targets = {target.path: target for target in discovered}
+    # Key by (path, kind, pattern) rather than path alone, so one file can
+    # carry several version occurrences with distinct patterns (e.g. a VERSION
+    # constant plus an example ref in the same script). A config target that
+    # exactly matches a discovered one still dedupes.
+    def key(target: Target) -> tuple[str, str, str | None]:
+        return (str(target.path), target.kind, target.pattern)
+
+    targets = {key(target): target for target in discovered}
     for target in custom_targets(root, config):
-        targets[target.path] = target
-    return sorted(targets.values(), key=lambda item: str(item.path)), str(config_path)
+        targets[key(target)] = target
+    return (
+        sorted(targets.values(), key=lambda item: (str(item.path), item.kind, item.pattern or "")),
+        str(config_path),
+    )
 
 
-def regex_from_template(pattern: str) -> re.Pattern[str]:
+# Version sub-pattern for interpolation inside a template when matching ANY
+# version. Unlike VERSION_TOKEN_RE it carries no leading/trailing \b, so the
+# surrounding literal text in the user's pattern controls the boundary. With
+# the \b present, a pattern like "v{{VERSION}}" expands to "v\b0\.3\.9" which
+# never matches, because there is no word boundary between "v" and "0".
+TEMPLATE_VERSION_PATTERN = r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[0-9A-Za-z.-]+)?"
+
+
+def regex_from_template(pattern: str, current: str | None = None) -> re.Pattern[str]:
+    """Compile a {{VERSION}} template into a regex.
+
+    When ``current`` is given, {{VERSION}} matches only that exact version
+    (escaped) — so a bump never rewrites a neighbouring or historical version
+    that happens to share the surrounding literal text. When ``current`` is
+    None, {{VERSION}} matches any SemVer token (legacy/discovery behaviour).
+    """
     escaped = re.escape(pattern)
-    escaped = escaped.replace(re.escape("{{VERSION}}"), VERSION_TOKEN_RE.pattern)
+    if current is not None:
+        # Match the exact current version, but guard the right edge so "0.3.9"
+        # does not match the "0.3.9" prefix of "0.3.99" (which would corrupt a
+        # neighbouring version). Only a trailing digit, or a dot followed by a
+        # digit, means a longer version token — a plain dot (e.g. "0.3.9.zip")
+        # is fine and must still match.
+        version_sub = re.escape(current) + r"(?!\d|\.\d)"
+    else:
+        version_sub = TEMPLATE_VERSION_PATTERN
+    escaped = escaped.replace(re.escape("{{VERSION}}"), version_sub)
     return re.compile(escaped)
 
 
-def update_target(target: Target, version: str, dry_run: bool) -> TargetResult:
+def update_target(target: Target, version: str, dry_run: bool, current: str | None = None) -> TargetResult:
     try:
         if target.kind == "version-file":
             old = target.path.read_text(encoding="utf-8").strip()
@@ -449,7 +486,7 @@ def update_target(target: Target, version: str, dry_run: bool) -> TargetResult:
             if not target.pattern:
                 raise BumpError("missing regex pattern")
             text = target.path.read_text(encoding="utf-8")
-            regex = regex_from_template(target.pattern)
+            regex = regex_from_template(target.pattern, current)
             replacement = target.pattern.replace("{{VERSION}}", version)
             new_text, count = regex.subn(replacement, text, count=1)
             if count != 1:
@@ -457,6 +494,19 @@ def update_target(target: Target, version: str, dry_run: bool) -> TargetResult:
             if not dry_run:
                 write_text_atomic(target.path, new_text)
             return TargetResult(target, "updated", f"pattern -> {version}")
+
+        if target.kind == "regex-all":
+            if not target.pattern:
+                raise BumpError("missing regex pattern")
+            text = target.path.read_text(encoding="utf-8")
+            regex = regex_from_template(target.pattern, current)
+            replacement = target.pattern.replace("{{VERSION}}", version)
+            new_text, count = regex.subn(replacement, text)
+            if count == 0:
+                raise BumpError("pattern not found")
+            if not dry_run:
+                write_text_atomic(target.path, new_text)
+            return TargetResult(target, "updated", f"{count} occurrences -> {version}")
 
         raise BumpError(f"unsupported target kind: {target.kind}")
     except Exception as exc:
@@ -500,6 +550,15 @@ def verify_target(target: Target, version: str) -> TargetResult:
         if target.kind == "regex":
             text = target.path.read_text(encoding="utf-8")
             expected = target.pattern.replace("{{VERSION}}", version) if target.pattern else version
+            return TargetResult(target, "ok" if expected in text else "failed", f"expected={expected}")
+        if target.kind == "regex-all":
+            text = target.path.read_text(encoding="utf-8")
+            if not target.pattern:
+                return TargetResult(target, "failed", "missing regex pattern")
+            # The bump matched only the current version, so other (historical)
+            # versions are left intact by design. Synced simply means the new
+            # version now appears in the pattern's surrounding context.
+            expected = target.pattern.replace("{{VERSION}}", version)
             return TargetResult(target, "ok" if expected in text else "failed", f"expected={expected}")
         return TargetResult(target, "failed", f"unsupported kind={target.kind}")
     except Exception as exc:
@@ -605,7 +664,7 @@ def run(root: Path, request: str | None, dry_run: bool, yes: bool, json_output: 
 
     results: list[TargetResult] = []
     for index, target in enumerate(ordered):
-        result = update_target(target, new_version, dry_run)
+        result = update_target(target, new_version, dry_run, current=source.version)
         results.append(result)
         if index == 0 and result.status == "failed":
             break
@@ -680,6 +739,64 @@ def self_test() -> int:
         if failures:
             for failure in failures:
                 print(f"self-test failure: {failure.target.path}: {failure.detail}", file=sys.stderr)
+            return 1
+
+    # Custom config: regex-all (multi-occurrence) and marketplace (nested) targets.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write_json_atomic(root / "package.json", {"name": "fixture", "version": "0.3.9"})
+        # i18n-style surface: current version repeated on several lines, PLUS a
+        # historical version (v0.3.99) that must survive the bump untouched.
+        (root / "i18n.json").write_text(
+            '{\n  "a": "install v0.3.9 now",\n  "b": "ref #v0.3.9",\n'
+            '  "c": "again v0.3.9",\n  "zip": "skills-0.3.9.zip",\n'
+            '  "hist": "changelog v0.3.99 stays"\n}\n',
+            encoding="utf-8",
+        )
+        # marketplace with the version nested under plugins[].
+        write_json_atomic(
+            root / "marketplace.json",
+            {"plugins": [{"name": "fixture", "version": "0.3.9"}]},
+        )
+        write_json_atomic(
+            root / ".tes/bump.json",
+            {
+                "project": "fixture",
+                "versionTargets": [
+                    {"path": "i18n.json", "type": "regex-all", "pattern": "v{{VERSION}}"},
+                    # Second pattern on the same file: a version followed by ".zip".
+                    # Exercises (a) multiple targets per path and (b) the right-edge
+                    # guard letting "0.3.9.zip" match while "0.3.99" does not.
+                    {"path": "i18n.json", "type": "regex-all", "pattern": "{{VERSION}}.zip"},
+                    {"path": "marketplace.json", "type": "marketplace"},
+                ],
+            },
+        )
+        rc = run(root, "minor", dry_run=False, yes=True, json_output=True)
+        if rc != 0:
+            print("self-test failure: custom-config bump returned nonzero", file=sys.stderr)
+            return rc
+        i18n_text = (root / "i18n.json").read_text(encoding="utf-8")
+        if i18n_text.count("v0.4.0") != 3:
+            print(f"self-test failure: regex-all did not replace all current-version occurrences: {i18n_text!r}", file=sys.stderr)
+            return 1
+        if "v0.3.99" not in i18n_text:
+            print(f"self-test failure: regex-all corrupted a historical version: {i18n_text!r}", file=sys.stderr)
+            return 1
+        if "v0.3.9 " in i18n_text or '"v0.3.9"' in i18n_text:
+            print(f"self-test failure: a current-version occurrence was left stale: {i18n_text!r}", file=sys.stderr)
+            return 1
+        if "0.4.0.zip" not in i18n_text:
+            print(f"self-test failure: version before .zip not bumped (right-edge guard): {i18n_text!r}", file=sys.stderr)
+            return 1
+        market = load_json(root / "marketplace.json")
+        if market["plugins"][0]["version"] != "0.4.0":
+            print("self-test failure: marketplace nested version not bumped", file=sys.stderr)
+            return 1
+        # regex-all with a pattern that matches nothing must fail loudly.
+        miss = update_target(Target(root / "i18n.json", "regex-all", "i18n.json", "zzz{{VERSION}}"), "0.5.0", dry_run=True, current="0.4.0")
+        if miss.status != "failed":
+            print("self-test failure: regex-all should fail when pattern is absent", file=sys.stderr)
             return 1
 
     for current, request, expected in (
