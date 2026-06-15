@@ -131,15 +131,26 @@ escalated trade-off: stopping at the frozen boundary is correct; the failure is
 not escalating the deliverable-vs-boundary collision to the user. Resolve only
 after the user picks which boundary moves.
 
-## Four Gates
+## Six Gates
+
+Gate Zero is the Declared-Contract Arbiter; it runs before the six gates and
+owns every collision between them. The table below lists Gate Zero plus the six
+gates it arbitrates.
 
 | Gate | Rule | Failure Blocked |
 |------|------|-----------------|
+| Declared-Contract Arbiter (Gate Zero) | Before closing any tensioned change, answer one binary question — does the minimal solution silently violate a contract already declared and source-nameable in this repo? Resolve collisions here, never inside another gate | Silent contract breach and silent collision resolution |
 | Think Before Coding | State assumptions, ambiguity, tradeoffs, and blockers before acting | Silent wrong interpretation |
 | Maturity Layer Gate | Default to `Birth`; promote only with evidence naming baseline, allowed complexity, forbidden complexity, and oracle | Flattening mature architecture or inflating birth work |
 | Simplicity First | Solve only the requested problem with the smallest useful shape for the selected maturity layer | Overbuilt code and API bloat |
 | Surgical Changes | Touch only request-traceable lines and self-created orphans | Drive-by refactors and hidden churn |
 | Goal-Driven Execution | Define a falsifiable oracle and verify before closure | False completion |
+| Effort Gate | Default to `Standard`; promote to `Premium` only when the Declared-Contract Arbiter or named consequence evidence obligates deeper rigor per line, never more lines | Under-rigor on declared-contract lines and invented rigor on undeclared ones |
+
+Scope gates: Maturity Layer, Simplicity First, Surgical Changes. Craft gates:
+Think Before Coding, Goal-Driven Execution, Effort Gate. The two axes are
+orthogonal: scope decides how many lines exist; effort decides how much rigor
+each line carries. Neither gate may move the other axis.
 
 The Declared-Contract Arbiter (Gate Zero) runs FIRST, before all six gates: when
 the gates tension, it can override the broad default, force a collision
@@ -210,6 +221,62 @@ locally." Layer is `Platform`: protect existing installs, release behavior, and
 rollback. Keep the fallback until baseline retirement is evidenced by accepted
 migration/compatibility proof and a release or installer oracle; a local green
 new-path check is not enough.
+
+## Effort Gate
+
+The Effort Gate is an elevation axis, not a barrier, and it is orthogonal to
+scope. It sets how much rigor each line carries, never how many lines exist.
+Default material work to `Standard`. Promote only with evidence:
+
+| Tier | When | Authorizes |
+|------|------|------------|
+| `Standard` | No declared-contract or named-consequence evidence obligates deeper rigor | The high-craft project baseline: lint, typecheck, test, surgical diff — already premium-grade, not a mediocrity ceiling |
+| `Premium` | The Declared-Contract Arbiter fires, or named consequence evidence (a frozen schema, a closed-domain coverage line, a peer-convergence pattern, an affordance deliverable, a ledger/money/auth/migration surface) obligates deeper rigor per line | More adversarial cases, a heavier named oracle class, mandatory upstream/Context7 verification, adversarial-first Diamond execution — all on the existing lines |
+
+Promote only when the Declared-Contract Arbiter answers YES or named consequence
+evidence is on the table. The trigger is always a source-nameable fact — a
+declared contract an oracle could name, or a named consequence surface — never
+an adjective. "Could be more thorough", "feels important", "deserves polish" are
+not `Premium` triggers; they are undeclared aspirations and they leave the tier
+at `Standard`. Invalid promotion evidence means `NEEDS_REVIEW`; no evidence
+means `Standard`. The tier resolves to exactly one of `Standard` or `Premium` or
+fails as `NEEDS_REVIEW`; "partially Premium" is not a state.
+
+Scope isolation (absolute): `Premium` authorizes more rigor per line, never more
+lines, abstractions, or features. A `Premium` plan that adds a strategy
+interface, an abstract factory, a config knob, or any new seam is a `Birth` hard
+stop violation dressed as thoroughness — the Effort Gate cannot buy a scope
+promotion. Both `Birth` + `Premium` and `Platform` + `Standard` are legal and
+expressible: a one-line fix on a frozen schema is `Birth` scope at `Premium`
+craft; a multi-surface release with no declared-contract tension can be
+`Platform` scope at `Standard` craft.
+
+When two declared contracts collide on the same line (an affordance-deliverable
+that must ship versus a frozen boundary it would breach), the Effort Gate does
+not resolve it — the Declared-Contract Arbiter does, and the correct move is to
+escalate the conflict, never to silently stop or silently breach.
+
+Worked example — minimal scope plus `Premium` craft. Request: "Flip the credit
+approval threshold from 0.70 to 0.75." Scope is `Birth`: one declared constant
+changes, no new consumer or contract. The Declared-Contract Arbiter fires —
+the threshold gates a money/credit decision surface — so effort promotes to
+`Premium`. Correct `Premium` response on the same one-line diff: a failing
+boundary fixture at 0.74/0.75/0.76 that proves the new cut, a contract oracle
+binding the decision path to the declared value, and rollback reasoning for the
+flip. Adding a `ThresholdStrategy` class, a thresholds config map, or a
+pluggable policy seam is not `Premium` craft — it is a `Birth` hard stop
+violation dressed as thoroughness. Premium deepens the proof on the line that
+changed; it never grows the line count.
+
+Worked example — `Premium` not required. Request: "Change a debug log string in
+a throwaway script from 'starting' to 'starting run'." No declared contract is
+on the path: no frozen schema, no closed-domain coverage line, no peer pattern,
+no affordance deliverable, no money/auth/ledger surface. The Declared-Contract
+Arbiter answers NO, so the tier stays `Standard` and the standard baseline
+closes it. Inventing `Premium` rigor here — an adversarial fixture suite, a
+mandated upstream check, a Diamond cycle — is the inverted bug: rigor spent
+where no declared contract obligates it is wasted scope-of-effort, the mirror of
+under-rigor on a contract line.
 
 ## Diamond Build-Test-Fail-Fix
 
