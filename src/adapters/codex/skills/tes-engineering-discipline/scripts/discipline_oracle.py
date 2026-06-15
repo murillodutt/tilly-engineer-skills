@@ -139,6 +139,7 @@ NAMED_CONSEQUENCE_SURFACES = (
     "ledger-row",
     "auth-issuance",
     "irreversible-migration",
+    "pii-export-surface",
 )
 
 # Legal ways a plan states it names NO consequence surface on the path. Absence is
@@ -190,11 +191,17 @@ def parse_plan_fields(text: str) -> dict[str, str]:
     return fields
 
 
-def is_generic(value: str, *, allow_birth_none: bool = False) -> bool:
+def is_generic(value: str, *, allow_birth_none: bool = False, allow_none: bool = False) -> bool:
     normalized = normalize(value)
     if not normalized:
         return True
     if allow_birth_none and normalized in {"none", "no higher-layer evidence", "default birth"}:
+        return False
+    # Some fields legitimately answer "none" to mean "nothing to declare" (e.g.
+    # ambiguity: no unresolved question). For those, a bare "none"/"n/a" is an
+    # honest answer, not empty-or-generic — the same exemption promotion_evidence
+    # already gets in Birth.
+    if allow_none and normalized in {"none", "n/a", "na"}:
         return False
     if normalized in GENERIC_VALUES:
         return True
@@ -319,7 +326,8 @@ def validate_plan_text(text: str) -> list[str]:
 
     for field in mandatory_fields:
         allow_birth_none = field == "promotion_evidence" and layer == "birth"
-        if is_generic(fields[field], allow_birth_none=allow_birth_none):
+        allow_none = field == "ambiguity"
+        if is_generic(fields[field], allow_birth_none=allow_birth_none, allow_none=allow_none):
             failures.append(f"plan field is empty or generic: {field}")
 
     if layer != "birth":
@@ -546,6 +554,54 @@ engineering_discipline:
   declared_contract: none
   named_consequence_surface: none
 """
+    # Canary finding 1: "ambiguity: none" is an honest answer ("nothing unresolved"),
+    # not an empty-or-generic field. A well-formed Standard plan that answers none
+    # to ambiguity must PASS. (Lived: every realistic plan a canary agent wrote.)
+    ambiguity_none_plan = """
+engineering_discipline:
+  assumptions: rename a label in a throwaway demo screen
+  ambiguity: none
+  maturity_layer: Birth
+  promotion_evidence: none
+  protected_baseline: the existing demo label text
+  stack_surface: the one demo component
+  simplest_path: edit the label string
+  allowed_complexity: a single string edit
+  forbidden_complexity: any new component or config
+  deleted_scope: a shared label registry
+  oracle: npm run lint on the changed file
+  effort_tier: Standard
+  declared_contract: none
+  named_consequence_surface: none
+"""
+    # Canary finding 2: a PII export across the app boundary is a first-class named
+    # consequence surface (a universal class, not a project special-case). Promoting
+    # via the declared surface PASSES. (Lived: the canary receipt-export-with-PII.)
+    pii_export_premium_plan = """
+engineering_discipline:
+  assumptions: the receipt export will include the buyer's address and email
+  ambiguity: none
+  maturity_layer: Birth
+  promotion_evidence: none
+  protected_baseline: the existing receipt export payload
+  stack_surface: the receipt export function
+  simplest_path: add the declared PII fields to the export payload
+  allowed_complexity: extend the existing payload builder
+  forbidden_complexity: a new export framework
+  deleted_scope: a generic export pipeline
+  oracle: pytest the export payload shape and PII redaction
+  effort_tier: Premium
+  consequence_evidence: personal data crosses the app boundary in this export
+  declared_contract: none
+  named_consequence_surface: pii-export-surface
+"""
+    # Safeguard: the enum is curated, not open. A surface that is NOT a known member
+    # must still fail as NEEDS_REVIEW — proving expansion is curation, not a path
+    # for any string to mint Premium.
+    unknown_surface_plan = pii_export_premium_plan.replace(
+        "named_consequence_surface: pii-export-surface",
+        "named_consequence_surface: some-unlisted-surface",
+    )
     failures: list[str] = []
     if validate_plan_text(valid_plan):
         failures.append("semantic self-test rejected a valid Evolution plan")
@@ -563,6 +619,12 @@ engineering_discipline:
         failures.append("semantic self-test accepted a Premium plan with no named trigger (the shipped gap)")
     if validate_plan_text(benign_standard_plan):
         failures.append("semantic self-test rejected a benign Standard plan (dropdown false-fire)")
+    if validate_plan_text(ambiguity_none_plan):
+        failures.append("semantic self-test rejected an honest 'ambiguity: none' plan (canary finding 1)")
+    if validate_plan_text(pii_export_premium_plan):
+        failures.append("semantic self-test rejected a PII-export named-surface Premium plan (canary finding 2)")
+    if not validate_plan_text(unknown_surface_plan):
+        failures.append("semantic self-test accepted an unlisted consequence surface (enum is not curated/binary-hard)")
     return failures
 
 

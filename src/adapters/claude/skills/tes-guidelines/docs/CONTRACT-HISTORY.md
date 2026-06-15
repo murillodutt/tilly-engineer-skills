@@ -50,6 +50,7 @@ Product skills (`tes-align`, `tes-init`, etc.) operate under these gates.
 | 2026-06-08 | Added contract history per Tilly skill standard. | Documentation authority tiers program. | high |
 | 2026-06-15 | Added Gate Zero (Declared-Contract Arbiter) and the sixth Effort Gate; reframed maturity as classificatory; gave the oracle Stage A teeth. | Lived gate-conflict evidence from real protocol use; adversarially verified. | high |
 | 2026-06-15 | SPEC-070: gave the Effort Gate Premium a positive named-trigger floor. Senior audit found Premium passed on rejecting weasel prose alone — `declared_contract` was inert and a substring token could mint Premium. Split the conflated `CONSEQUENCE_SIGNALS` deny-list into two first-class declared enums (`declared_contract` + `named_consequence_surface`), both binary-hard; Premium now fails `NEEDS_REVIEW` with no named trigger. | Reproduced gap against the installed oracle; the gate caught its own implementation doing the "fix-by-literal-list" and "adjective-as-criteria" it exists to block. | high |
+| 2026-06-15 | Canary fixes on a real checkout target: (1) `ambiguity: none` is an honest answer, no longer rejected as generic (exempted like Birth `promotion_evidence`); (2) added `pii-export-surface` to the named-consequence-surface enum by evidence of a universal class, with the tri-state safeguard tested (an unlisted surface still fails `NEEDS_REVIEW`). | Field-exercised the delivered 0.3.182 oracle with real scenario plans; two portable findings fixed in source with regression fixtures. | high |
 
 ## Do Not Lose
 
