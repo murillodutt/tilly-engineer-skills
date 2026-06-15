@@ -22,6 +22,11 @@ LIMITS = {
     # is legitimate per-section overhead x3 languages, not padding.
     "docs/install/USER-MANUAL.html": 2500,
     "docs/index.html": 2800,
+    # Carries the COMPLETE LITERAL solution (paste-ready blocks L1-L6 in its
+    # "Literal Solution" appendix) so the execution window applies embedded text
+    # by id instead of re-designing. The length is the embedded solution, not
+    # padding — the same rationale as the assisted-context installer prompt.
+    "docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-declared-contract-arbiter-and-effort-gate.md": 800,
 }
 WARN_RATIOS = {
     "docs/roadmap/README.md": 0.75,

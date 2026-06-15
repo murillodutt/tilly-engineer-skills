@@ -498,6 +498,20 @@ documents:
     consumer: maintainers, Cortex maintainers, oracle authors, adapter maintainers, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-declared-contract-arbiter-and-effort-gate.md
+    id: roadmap.goal_super_spec_declared_contract_arbiter_and_effort_gate
+    class: roadmap
+    status: active
+    consumer: maintainers, tes-guidelines authors, discipline-oracle authors, adapter materialization authors, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-PROMPT-tes-declared-contract-arbiter-and-effort-gate.md
+    id: roadmap.goal_prompt_declared_contract_arbiter_and_effort_gate
+    class: roadmap
+    status: active
+    consumer: maintainers and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-capsule-install-and-uninstall.md
     id: roadmap.goal_super_spec_tes_capsule_install_and_uninstall
     class: roadmap
