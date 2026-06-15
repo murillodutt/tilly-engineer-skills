@@ -27,11 +27,21 @@ but keep the spirit.
 
 ## Maturity Layer Gate
 
+Maturity is classificatory, not a phase of execution. The layer is decided
+during thinking — which converges before the first line — and the artifact is
+born at the layer the thinking settled on. There is no "execute `Birth`, then
+promote and re-execute": a `Platform` change is `Platform` from its first line,
+a `Birth` change is `Birth` from its first line. Nobody builds a simple house to
+demolish it into a palace; the simple phase is the THINKING, and it ends before
+the first beam. Promotion is reclassification of the work, never a rebuild of
+shipped lines. (Protecting an existing `Platform` baseline is not a rebuild — it
+is correctly classifying that the work was `Platform` all along.)
+
 Classify material work before applying `Simplicity First`:
 
 | Layer | Use When | Simplicity Means |
 |-------|----------|------------------|
-| `Birth` | No higher-layer evidence exists | Less structure; smallest durable runtime slice |
+| `Birth` | No higher-layer evidence exists | Less structure; the smallest slice in SCOPE, built at full craft — never an executable draft to be redone |
 | `Consolidation` | Real duplication, a second real consumer, repeated fixture, or maintenance cost justifies a small contract | Less repeated maintenance |
 | `Evolution` | Accepted architecture, mature SPEC, established contract, compatibility boundary, or execution tree exists | Less architectural regression; Fit First |
 | `Platform` | Release, installer, CLI, adapter, MCP, public docs, memory, compatibility, migration, or rollback surface is at risk | Less operational risk |
@@ -43,7 +53,8 @@ necessary complexity backed by consumers, contracts, or operational risk.
 `Birth` is invalid when the prompt names existing installs, an accepted
 contract, a compatibility interface, installer, fallback, rollback, release,
 migration, CLI, MCP, adapter, or public-doc surface. Those are promotion
-evidence. Preserve the baseline first, then simplify inside it.
+evidence: classify the work at that higher layer from its first line, and
+simplify inside that classification — not by building lower and rebuilding up.
 
 `Birth` hard stop: do not add a strategy interface, abstract factory, plugin
 registry, plugin system, compatibility layer, `TODO` hooks, or future-format
