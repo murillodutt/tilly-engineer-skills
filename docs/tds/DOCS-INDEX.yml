@@ -512,6 +512,13 @@ documents:
     consumer: maintainers and execution agents
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/FIELD-REPORT-effort-gate-premium-floor.md
+    id: roadmap.field_report_effort_gate_premium_floor
+    class: roadmap
+    status: active
+    consumer: maintainers and execution agents (TES window)
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-capsule-install-and-uninstall.md
     id: roadmap.goal_super_spec_tes_capsule_install_and_uninstall
     class: roadmap
