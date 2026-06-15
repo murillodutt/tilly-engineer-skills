@@ -50,6 +50,87 @@ do not stop to ask for a route when the intended TES action is clear.
 Tradeoff: this skill biases toward caution over speed. Use judgment for trivial
 one-liners.
 
+## Gate Zero — Declared-Contract Arbiter
+
+The arbiter runs FIRST, before the five gates, whenever the gates tension —
+Simplicity-First or Surgical-Changes pulling one way and a contract already in
+the repo pulling the other. It answers exactly one binary question:
+
+```text
+Does the minimal solution silently violate a contract already DECLARED and
+ENUMERABLE in this repo?
+```
+
+The question is yes/no with exactly one answer, in the spirit of `tes-mine`: it
+works because it is hard and accepts no questioning. `YES` requires a NAMED
+declared fact on the table; anything that is not `YES` is `NO`. Gradation —
+"partially declared", "sort of a peer-convergence", "mostly violated" — is
+forbidden; it is the entry door of ambiguity. This mirrors the oracle grammar:
+`maturity_layer` resolves to exactly one enum value or fails, `is_generic`
+returns `True`/`False`, `selected_layer` returns one layer or `None`. The
+`declared_contract` state resolves to exactly one of `YES`/`NO` or fails as
+`NEEDS_REVIEW` — never "partial".
+
+A declared contract is one an oracle could name from source WITHOUT running it.
+There are exactly four types:
+
+1. **Frozen-schema cardinality** — a frozen schema's field-cardinality
+   invariant (`strictObject`, `.optional()`). A transform that drops a declared
+   field violates it.
+2. **Closed-domain coverage** — a union or enum of known size `N` reachable on
+   the path, AND an acceptance line saying "all `N`", with the implementation
+   capped below `N`.
+3. **Peer-convergence** — a structural pattern used by a countable majority of
+   in-repo sibling units of the same class, with the unit under change the lone
+   deviation.
+4. **Affordance-deliverable** — a user-facing control whose label is verb+noun
+   naming a concrete artifact that must cross the app boundary.
+
+Decision is three-way:
+
+- **Override-and-bind-oracle.** If `YES` and the contract is satisfiable in
+  scope, the broad default (Simplicity-First / Surgical-Changes) is OVERRIDDEN
+  and the closure oracle MUST bind to the declared contract.
+- **Escalate-collision.** If `YES` but satisfying it would breach a SECOND
+  declared boundary — a frozen surface, a SPEC stop-state — you MUST NOT pick
+  the broad default silently. NAME the collision to the user as an escalated
+  trade-off. Resolving a collision silently is itself a failure the discipline
+  oracle's plan check is meant to surface.
+- **Broad-default-wins.** If `NO` declared contract is violated,
+  Simplicity-First and Surgical-Changes WIN unchanged. Undeclared aspirations —
+  craft, polish, "could be nicer" — do NOT trigger the override.
+
+When the override fires, the obligation is per-line rigor, not more lines: route
+to the Effort Gate and promote the effort tier to `Premium` (see Effort Gate).
+Premium authorizes a heavier oracle bound to the declared contract; it never
+authorizes a new abstraction, strategy interface, or config knob to "cover" the
+contract.
+
+Worked example (override). Request: "Persist the designer draft by
+round-tripping it through `JSON.parse(JSON.stringify(draft))` before save — it's
+the smallest serialization and the snapshot looks identical." A frozen
+`strictObject` with `.optional()` fields is on the path, and a JSON round-trip
+silently drops keys whose value is `undefined`. Verdict: `declared_contract =
+YES`, type frozen-schema cardinality. The broad default (smallest
+serialization) is OVERRIDDEN; the closure oracle MUST bind to the frozen schema
+— a structural clone that preserves declared-optional fields, with a test that
+asserts an `undefined`-valued optional field survives the round-trip. Effort
+tier promotes to `Premium` (heavier oracle, same scope). Do not add a
+serializer abstraction; repair the one path.
+
+Worked example (collision). Request: "Wire the 'Exportar PDF' button to deliver
+the file; the export module boundary is frozen and exposes no byte path, so just
+have the handler resolve and toast success." Two declared contracts collide: an
+affordance-deliverable invariant (a control labeled verb+noun — "Exportar PDF" —
+promising a delivered artifact across the app boundary) and a frozen module
+boundary that exposes no byte path to deliver it. Verdict: `declared_contract =
+YES` on the affordance, but satisfying it breaches the frozen boundary. You MUST
+NOT silently ship the toast-only handler (the affordance lies) and MUST NOT
+silently widen the frozen boundary (the surface lies). NAME the collision as an
+escalated trade-off: stopping at the frozen boundary is correct; the failure is
+not escalating the deliverable-vs-boundary collision to the user. Resolve only
+after the user picks which boundary moves.
+
 ## Four Gates
 
 | Gate | Rule | Failure Blocked |
@@ -59,6 +140,10 @@ one-liners.
 | Simplicity First | Solve only the requested problem with the smallest useful shape for the selected maturity layer | Overbuilt code and API bloat |
 | Surgical Changes | Touch only request-traceable lines and self-created orphans | Drive-by refactors and hidden churn |
 | Goal-Driven Execution | Define a falsifiable oracle and verify before closure | False completion |
+
+The Declared-Contract Arbiter (Gate Zero) runs FIRST, before all six gates: when
+the gates tension, it can override the broad default, force a collision
+escalation, or leave Simplicity-First and Surgical-Changes untouched.
 
 ## Maturity Layer Gate
 
