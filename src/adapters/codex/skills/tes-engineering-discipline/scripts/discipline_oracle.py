@@ -32,6 +32,11 @@ REQUIRED_TERMS = (
     "Stack Surface Scan",
     "Context7 or official documentation",
     "runtime-bound dependencies",
+    "Declared-Contract Arbiter",
+    "Effort Gate",
+    "Standard",
+    "Premium",
+    "Escalate-collision",
 )
 
 PLAN_FIELDS = (
@@ -46,6 +51,19 @@ PLAN_FIELDS = (
     "forbidden_complexity",
     "deleted_scope",
     "oracle",
+    "effort_tier",
+    "consequence_evidence",
+    "declared_contract",
+)
+
+# Effort-axis fields are recognized by the parser but optional in a plan: a plan
+# that names no effort tier defaults to Standard, and an absent declared_contract
+# is legal ("none"). They are exempt from the mandatory missing-field sweep and
+# validated only by the Effort Gate block below when present.
+EFFORT_FIELDS = (
+    "effort_tier",
+    "consequence_evidence",
+    "declared_contract",
 )
 
 VALID_LAYERS = ("birth", "consolidation", "evolution", "platform")
@@ -83,6 +101,62 @@ ORACLE_SIGNALS = (
     "run ",
     "test",
     "typecheck",
+)
+
+# The effort axis resolves binary-hard, mirroring the maturity layer: a plan
+# names exactly one tier or it defaults to Standard; a partial tier is rejected.
+VALID_TIERS = ("standard", "premium")
+
+# A declared contract is one an oracle could name from source WITHOUT running it.
+# Exactly four source-nameable types (see Gate Zero in the skill). A plan resolves
+# to exactly one type or it is absent — never "partial".
+DECLARED_CONTRACT_TYPES = (
+    "frozen-schema cardinality",
+    "closed-domain coverage",
+    "peer-convergence",
+    "affordance-deliverable",
+)
+
+# Legal ways a plan states it has NO declared contract on the path. Absence is a
+# valid answer (the broad default wins), not a missing field.
+CONTRACT_ABSENT = {"none", "no declared contract", "n/a", "na", "absent"}
+
+# Named consequence surfaces that obligate Premium rigor per line. Single-word
+# signals match by token-set membership (so "drop" never fires on "dropdown" and
+# "sign" never fires on "redesign"); multi-word signals match by substring.
+# "irreversible" is the one near-adjective here — justified as a checkable
+# property (revert+redeploy cannot undo it before a reader sees it), not a feeling.
+CONSEQUENCE_SIGNALS = (
+    "frozen schema",
+    "frozen-schema",
+    "closed-domain",
+    "closed domain",
+    "peer-convergence",
+    "peer convergence",
+    "affordance-deliverable",
+    "affordance deliverable",
+    "money",
+    "credit",
+    "ledger",
+    "auth",
+    "migration",
+    "rollback",
+    "irreversible",
+)
+
+# Pure-weasel adjectives that are NOT a declared contract or a named consequence.
+# A plan whose consequence_evidence is only weasel content leaves the tier at
+# Standard; a real consequence co-occurring with a weasel word still passes.
+EFFORT_WEASEL = (
+    "important",
+    "sensitive",
+    "premium-looking",
+    "could be nicer",
+    "deserves polish",
+    "feels important",
+    "more thorough",
+    "nicer",
+    "polish",
 )
 
 
@@ -136,12 +210,85 @@ def selected_layer(value: str) -> str | None:
     return None
 
 
+def selected_tier(value: str) -> str | None:
+    """Resolve the effort tier binary-hard, mirroring selected_layer.
+
+    Exactly one of Standard/Premium or None. A value naming both, or neither,
+    returns None so the caller can fail it as NEEDS_REVIEW (no "partially
+    Premium" state). An empty value is handled by the caller as the Standard
+    default.
+    """
+    normalized = normalize(value)
+    matches = [tier for tier in VALID_TIERS if tier in normalized.split()]
+    if len(matches) == 1:
+        return matches[0]
+    if normalized in VALID_TIERS:
+        return normalized
+    return None
+
+
+def _tokens(text: str) -> set[str]:
+    return set(re.findall(r"[a-z0-9-]+", text.lower()))
+
+
+def signal_present(text: str, signals) -> bool:
+    """Word-boundary match: single-word signals match by token-set membership
+    (so "drop" never fires on "dropdown"); multi-word/hyphenated signals match
+    by substring on the normalized text."""
+    normalized = normalize(text)
+    tokens = _tokens(normalized)
+    for signal in signals:
+        if " " in signal or "-" in signal:
+            if signal in normalized:
+                return True
+        elif signal in tokens:
+            return True
+    return False
+
+
+def declared_contract(value: str) -> str | None:
+    """Resolve the declared contract to exactly one type, or treat it as absent.
+
+    Returns the matched type name, the sentinel "absent" when the plan states no
+    contract is on the path, or None when the value is non-empty but does not
+    resolve to exactly one known type (caller fails it as NEEDS_REVIEW). Absence
+    is legal — the broad default wins — and is never a missing field.
+    """
+    normalized = normalize(value)
+    if not normalized or normalized in CONTRACT_ABSENT:
+        return "absent"
+    matches = [t for t in DECLARED_CONTRACT_TYPES if t in normalized]
+    if len(matches) == 1:
+        return matches[0]
+    return None
+
+
+def names_consequence_signal(text: str) -> bool:
+    return signal_present(text, CONSEQUENCE_SIGNALS)
+
+
+def is_only_weasel(text: str) -> bool:
+    """True when the value carries weasel content and NO real consequence signal.
+
+    A real consequence co-occurring with a weasel word ("important money surface")
+    is not pure weasel and must pass; only content that is weasel-and-nothing-else
+    is rejected."""
+    if names_consequence_signal(text):
+        return False
+    return signal_present(text, EFFORT_WEASEL)
+
+
 def validate_plan_text(text: str) -> list[str]:
     failures: list[str] = []
     lowered = text.lower()
     fields = parse_plan_fields(text)
 
-    for field in PLAN_FIELDS:
+    # Effort-axis fields are optional: a plan may omit them entirely (Standard
+    # default, no declared contract). Only the original mandatory fields are
+    # swept for presence and generic content.
+    mandatory_fields = tuple(f for f in PLAN_FIELDS if f not in EFFORT_FIELDS)
+
+    for field in mandatory_fields:
         if field not in lowered:
             failures.append(f"plan missing field: {field}")
         if field not in fields:
@@ -155,7 +302,7 @@ def validate_plan_text(text: str) -> list[str]:
         failures.append("maturity_layer must be exactly one of Birth, Consolidation, Evolution, or Platform")
         layer = "unknown"
 
-    for field in PLAN_FIELDS:
+    for field in mandatory_fields:
         allow_birth_none = field == "promotion_evidence" and layer == "birth"
         if is_generic(fields[field], allow_birth_none=allow_birth_none):
             failures.append(f"plan field is empty or generic: {field}")
@@ -173,6 +320,40 @@ def validate_plan_text(text: str) -> list[str]:
     oracle = normalize(fields["oracle"])
     if not any(signal in f" {oracle} " for signal in ORACLE_SIGNALS):
         failures.append("oracle must name a falsifiable command, test, fixture, or check")
+
+    # Effort Gate (Stage A): validate the effort tier, the declared contract, and
+    # consequence evidence only as far as string validation honestly can. This
+    # does NOT detect a violation in a diff — it validates that the plan DECLARES
+    # the tier and contract binary-hard.
+    tier_value = fields.get("effort_tier", "")
+    tier = "standard" if not normalize(tier_value) else selected_tier(tier_value)
+    if tier is None:
+        failures.append("effort_tier must resolve to exactly one of Standard or Premium")
+        tier = "standard"
+
+    contract = declared_contract(fields.get("declared_contract", ""))
+    if contract is None:
+        failures.append(
+            "declared_contract must resolve to exactly one declared type "
+            "(frozen-schema cardinality, closed-domain coverage, peer-convergence, "
+            "affordance-deliverable) or be absent"
+        )
+
+    consequence = fields.get("consequence_evidence", "")
+    if tier == "premium":
+        if is_generic(consequence) or is_only_weasel(consequence):
+            failures.append(
+                "Premium effort requires named consequence evidence, not a generic "
+                "or weasel value (a declared contract or a named consequence surface)"
+            )
+    else:
+        # UNDER_EFFORT: a premium-class signal named under Standard is under-rigor
+        # on a contract line — the plan must promote to Premium or drop the signal.
+        if names_consequence_signal(consequence) or (contract not in (None, "absent")):
+            failures.append(
+                "UNDER_EFFORT: a declared contract or named consequence signal is "
+                "present but the effort tier is Standard; promote to Premium"
+            )
 
     return failures
 
@@ -206,11 +387,96 @@ engineering_discipline:
   deleted_scope: later
   oracle: maybe
 """
+    # A valid Birth plan that promotes the effort tier to Premium on a declared
+    # contract, with the scope held at Birth (no new abstraction). PASSES.
+    valid_premium_plan = """
+engineering_discipline:
+  assumptions: persist path round-trips a frozen schema before save
+  ambiguity: no unresolved authority conflict
+  maturity_layer: Birth
+  promotion_evidence: none
+  protected_baseline: the existing persist function behavior
+  stack_surface: the single persist function and its schema
+  simplest_path: replace the JSON round-trip with a field-preserving clone
+  allowed_complexity: a structural clone on the one path
+  forbidden_complexity: a serializer abstraction, factory, or config knob
+  deleted_scope: a broad serialization layer refactor
+  oracle: pytest that the optional field survives the clone
+  effort_tier: Premium
+  consequence_evidence: frozen-schema cardinality on the persist path
+  declared_contract: frozen-schema cardinality
+"""
+    # A premium-class signal (a money/credit decision surface) is named, but the
+    # plan leaves the tier at Standard. UNDER_EFFORT must fire. FAILS as expected.
+    under_effort_plan = """
+engineering_discipline:
+  assumptions: flip the credit approval threshold from 0.70 to 0.75
+  ambiguity: no unresolved authority conflict
+  maturity_layer: Birth
+  promotion_evidence: none
+  protected_baseline: the existing threshold constant behavior
+  stack_surface: the single threshold constant
+  simplest_path: change the one declared constant
+  allowed_complexity: edit the existing constant only
+  forbidden_complexity: a thresholds config map or policy seam
+  deleted_scope: a pluggable policy framework
+  oracle: pytest the boundary fixture at 0.74/0.75/0.76
+  effort_tier: Standard
+  consequence_evidence: a money credit decision surface gates this change
+  declared_contract: none
+"""
+    # A benign Standard change whose evidence contains the word "dropdown".
+    # Word-boundary matching must NOT fire "drop" on "dropdown". PASSES.
+    benign_standard_plan = """
+engineering_discipline:
+  assumptions: rename a dropdown label in a throwaway demo screen
+  ambiguity: no unresolved authority conflict
+  maturity_layer: Birth
+  promotion_evidence: none
+  protected_baseline: the existing demo label text
+  stack_surface: the one demo component
+  simplest_path: edit the dropdown label string
+  allowed_complexity: a single string edit
+  forbidden_complexity: any new component or config
+  deleted_scope: a shared label registry
+  oracle: npm run lint on the changed file
+  effort_tier: Standard
+  consequence_evidence: a dropdown label tweak with no declared contract
+  declared_contract: none
+"""
+    # A real Premium plan whose evidence co-occurs the weasel word "important"
+    # with a real consequence ("money surface"). is_only_weasel must NOT reject
+    # it because a real consequence is present. PASSES.
+    real_premium_plan = """
+engineering_discipline:
+  assumptions: harden the ledger posting path
+  ambiguity: no unresolved authority conflict
+  maturity_layer: Birth
+  promotion_evidence: none
+  protected_baseline: the existing posting function behavior
+  stack_surface: the single posting function
+  simplest_path: add the boundary check on the one path
+  allowed_complexity: a guard on the existing line
+  forbidden_complexity: a posting strategy interface or registry
+  deleted_scope: a posting plugin framework
+  oracle: pytest the ledger boundary fixture
+  effort_tier: Premium
+  consequence_evidence: this important money surface posts to the ledger
+  declared_contract: none
+"""
     failures: list[str] = []
     if validate_plan_text(valid_plan):
         failures.append("semantic self-test rejected a valid Evolution plan")
     if not validate_plan_text(vague_plan):
         failures.append("semantic self-test accepted a vague promoted plan")
+    if validate_plan_text(valid_premium_plan):
+        failures.append("semantic self-test rejected a valid Premium plan")
+    if not validate_plan_text(under_effort_plan):
+        failures.append("semantic self-test accepted an under-effort plan (UNDER_EFFORT did not fire)")
+    if validate_plan_text(benign_standard_plan):
+        failures.append("semantic self-test rejected a benign Standard plan (dropdown false-fire)")
+    if validate_plan_text(real_premium_plan):
+        failures.append("semantic self-test rejected a real Premium plan (important co-occurrence false-fire)")
     return failures
 
 
