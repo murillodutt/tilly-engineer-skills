@@ -34,6 +34,8 @@ ambiguous scope, false completion, and governance-only cycles without runtime.
 - Treating user-facing craft as a scope question with no axis to be heard.
 - "Build small then rebuild" temporal trap of maturity.
 - Adjective-as-criteria and graded ("partially premium") effort decisions.
+- Premium minted by rejecting weasel prose alone, with the named declared trigger
+  inert and a substring token standing in for the binary-hard arbiter.
 
 ## Relationship To Other Skills
 
@@ -47,6 +49,7 @@ Product skills (`tes-align`, `tes-init`, etc.) operate under these gates.
 | 2026-04-01 | Created guidelines skill as discipline anchor. | TES core bootloader split. | high |
 | 2026-06-08 | Added contract history per Tilly skill standard. | Documentation authority tiers program. | high |
 | 2026-06-15 | Added Gate Zero (Declared-Contract Arbiter) and the sixth Effort Gate; reframed maturity as classificatory; gave the oracle Stage A teeth. | Lived gate-conflict evidence from real protocol use; adversarially verified. | high |
+| 2026-06-15 | SPEC-070: gave the Effort Gate Premium a positive named-trigger floor. Senior audit found Premium passed on rejecting weasel prose alone — `declared_contract` was inert and a substring token could mint Premium. Split the conflated `CONSEQUENCE_SIGNALS` deny-list into two first-class declared enums (`declared_contract` + `named_consequence_surface`), both binary-hard; Premium now fails `NEEDS_REVIEW` with no named trigger. | Reproduced gap against the installed oracle; the gate caught its own implementation doing the "fix-by-literal-list" and "adjective-as-criteria" it exists to block. | high |
 
 ## Do Not Lose
 

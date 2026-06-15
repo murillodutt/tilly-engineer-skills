@@ -261,7 +261,7 @@ Default material work to `Standard`. Promote only with evidence:
 | Tier | When | Authorizes |
 |------|------|------------|
 | `Standard` | No declared-contract or named-consequence evidence obligates deeper rigor | The high-craft project baseline: lint, typecheck, test, surgical diff — already premium-grade, not a mediocrity ceiling |
-| `Premium` | The Declared-Contract Arbiter fires, or named consequence evidence (a frozen schema, a closed-domain coverage line, a peer-convergence pattern, an affordance deliverable, a ledger/money/auth/migration surface) obligates deeper rigor per line | More adversarial cases, a heavier named oracle class, mandatory upstream/Context7 verification, adversarial-first Diamond execution — all on the existing lines |
+| `Premium` | The plan NAMES one of two declared, binary-hard triggers: a `declared_contract` resolving to one of the four arbiter types (frozen-schema cardinality, closed-domain coverage, peer-convergence, affordance-deliverable), OR a `named_consequence_surface` resolving to one named surface (a credit-decision threshold, a ledger row, an auth/session issuance, an irreversible migration). Both are declared facts, not words found in prose; neither outranks the other. With neither named, `Premium` fails as `NEEDS_REVIEW` | More adversarial cases, a heavier named oracle class, mandatory upstream/Context7 verification, adversarial-first Diamond execution — all on the existing lines |
 
 Promote only when the Declared-Contract Arbiter answers YES or named consequence
 evidence is on the table. The trigger is always a source-nameable fact — a
@@ -288,9 +288,10 @@ escalate the conflict, never to silently stop or silently breach.
 
 Worked example — minimal scope plus `Premium` craft. Request: "Flip the credit
 approval threshold from 0.70 to 0.75." Scope is `Birth`: one declared constant
-changes, no new consumer or contract. The Declared-Contract Arbiter fires —
-the threshold gates a money/credit decision surface — so effort promotes to
-`Premium`. Correct `Premium` response on the same one-line diff: a failing
+changes, no new consumer or contract. None of the four arbiter contract types is
+on the path, so this promotes on the OTHER declared trigger: a
+`named_consequence_surface` of `credit-decision-threshold` is named — so effort
+promotes to `Premium`. Correct `Premium` response on the same one-line diff: a failing
 boundary fixture at 0.74/0.75/0.76 that proves the new cut, a contract oracle
 binding the decision path to the declared value, and rollback reasoning for the
 flip. Adding a `ThresholdStrategy` class, a thresholds config map, or a
