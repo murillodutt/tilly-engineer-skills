@@ -11,22 +11,38 @@ over speed — use judgment for trivial one-liners.
 Assumptions visible. Scope smaller. Edits surgical. Success falsifiable.
 ```
 
-## Four Principles
+## Gate Principles
 
 Apply to non-trivial coding, review, refactor, or instruction-migration work:
 
-1. **Think Before Coding** — state assumptions, ambiguity, tradeoffs, and
+1. **Declared-Contract Arbiter** — before closing any change where the gates
+   below are in tension, answer one binary question: does the minimal solution
+   silently violate a contract already declared and enumerable in this repo's
+   source (a frozen schema's field cardinality, a closed enum/union the path
+   must fully cover, the structural pattern of a countable majority of sibling
+   units, or a verb+noun affordance whose named artifact must cross the app
+   boundary)? If yes and it fits in scope, bind the closure oracle to that
+   contract; if satisfying it would breach a second declared boundary, name the
+   collision to the user instead of resolving silently; if no declared contract
+   is violated, Simplicity and Surgical win and undeclared polish does not.
+2. **Think Before Coding** — state assumptions, ambiguity, tradeoffs, and
    blockers before acting; never pick a risky interpretation silently.
-2. **Maturity Layer Gate** — default material work to `Birth`; promote only with
-   evidence that names the protected baseline, allowed complexity, forbidden
-   complexity, and oracle.
-3. **Simplicity First** — solve only the requested problem for the selected
+3. **Maturity Layer Gate** — classify the work at the maturity its thinking
+   converges to and default material work to `Birth`; promote only with evidence
+   that names the protected baseline, allowed complexity, forbidden complexity,
+   and oracle.
+4. **Simplicity First** — solve only the requested problem for the selected
    maturity layer; delete speculative scope before adding abstractions or
    configurability.
-4. **Surgical Changes** — touch only request-traceable lines; clean only orphans
+5. **Surgical Changes** — touch only request-traceable lines; clean only orphans
    you created; leave unrelated code, comments, and formatting alone.
-5. **Goal-Driven Execution** — define a falsifiable oracle before closure and
+6. **Goal-Driven Execution** — define a falsifiable oracle before closure and
    verify before claiming success.
+7. **Effort Gate** — default every line to `Standard` (the premium craft
+   baseline already carried by lint, typecheck, test, and surgical edits) and
+   elevate to `Premium` only when the Arbiter or named consequence evidence
+   obligates deeper rigor per line; `Premium` buys more rigor per line, never
+   more scope.
 
 The full gate tables, Diamond Build-Test-Fail-Fix, and Infrastructure Decision
 Gate live in `.claude/skills/tes-guidelines/SKILL.md`. For state-changing
@@ -38,9 +54,10 @@ friction, or changing a dependency, fire the `tes-upstream-first` skill
 
 ## Runtime-First
 
-Build the smallest durable runtime slice on the intended execution path before
-adding governance. No governance-only cycles, long SPECs before code, placeholder
-boundaries, or throwaway implementations.
+Build the smallest-in-scope durable runtime slice — at full craft, not as a
+throwaway draft — on the intended execution path before adding governance. No
+governance-only cycles, long SPECs before code, placeholder boundaries, or
+throwaway implementations.
 
 ## Success Formula
 

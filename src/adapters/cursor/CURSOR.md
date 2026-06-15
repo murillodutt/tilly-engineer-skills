@@ -11,9 +11,14 @@ The rules are the runtime authority; this file is only an outward pointer.
 Back up existing Cursor rules under `.tes/bk/**`, then copy both rules into the
 target project's rule set. If the target already has rules, recover useful local
 semantics into `docs/agents/**` rather than duplicating runtime prose. The
-maturity-aware principles — Think Before Coding, Maturity Layer Gate,
-Simplicity First, Surgical Changes, Goal-Driven Execution — live in the
-discipline anchor.
+maturity-aware principles — Declared-Contract Arbiter, Think Before Coding,
+Maturity Layer Gate, Simplicity First, Surgical Changes, Goal-Driven Execution,
+Effort Gate — live in the discipline anchor. Gate Zero (Declared-Contract
+Arbiter) runs first and resolves gate tension: a binary-hard declared contract
+overrides the broad default, a collision is escalated, and absent any declared
+contract Simplicity and Surgical win. The Effort Gate is an orthogonal axis —
+`Premium` raises rigor per line, never scope. The full arbiter and effort detail
+lives in the discipline anchor, not here.
 
 ## TES Intents
 
