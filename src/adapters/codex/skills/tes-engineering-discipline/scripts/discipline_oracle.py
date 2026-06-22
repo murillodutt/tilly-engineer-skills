@@ -124,17 +124,18 @@ BROAD_CLOSURE_ORACLE_SIGNALS = (
 
 RED_CAPABLE_PROOF_SIGNALS = (
     "assert",
-    "behavior",
+    "assertion",
     "boundary",
     "declared interface",
+    "exported behavior regression",
     "fixture",
-    "focused",
     "golden",
+    "interface-specific regression",
     "public interface",
     "regression",
+    "regression check",
     "reproducer",
     "same-input",
-    "specific",
 )
 
 # The effort axis resolves binary-hard, mirroring the maturity layer: a plan
@@ -668,6 +669,10 @@ engineering_discipline:
     broad_with_focused_proof_plan = broad_only_oracle_plan + (
         "  focused_proof: pytest boundary fixture asserts the exported behavior regression\n"
     )
+    generic_focused_proof_plans = {
+        value: broad_only_oracle_plan + f"  focused_proof: {value}\n"
+        for value in ("behavior", "focused", "specific")
+    }
     failures: list[str] = []
     broad_only_fields = parse_plan_fields(broad_only_oracle_plan)
     broad_with_focused_fields = parse_plan_fields(broad_with_focused_proof_plan)
@@ -681,6 +686,9 @@ engineering_discipline:
         failures.append("semantic self-test accepted a broad closure gate with no focused_proof")
     if validate_plan_text(broad_with_focused_proof_plan):
         failures.append("semantic self-test rejected a broad closure gate with focused_proof")
+    for value, plan in generic_focused_proof_plans.items():
+        if not validate_plan_text(plan):
+            failures.append(f"semantic self-test accepted generic focused_proof: {value}")
     if validate_plan_text(valid_plan):
         failures.append("semantic self-test rejected a valid Evolution plan")
     if not validate_plan_text(vague_plan):
