@@ -5,7 +5,7 @@ status: active
 consumer: agents, maintainers, and certification reviewers
 source_of_truth: true
 evidence_level: L2
-tver: 0.1.3
+tver: 0.1.4
 ---
 
 # Current Evidence Claims
@@ -19,6 +19,26 @@ Proof: `docs/evidence/INDEX.md`.
 
 Boundary: this claim governs evidence organization. It does not certify any
 adapter behavior by itself.
+
+Retention status: `current`.
+
+## ADR 0005 Asset-Transfer Claim
+
+ADR 0005 is locally materialized as asset-transfer behavior, not as copied
+external workflow or new governance. Proof, Slice, Pressure, Language,
+Sanitization, and Routing lanes changed existing TES assets or existing checks
+with a focused oracle before closeout.
+
+Proof: `docs/adr/0005-asset-transfer-to-existing-surfaces.md`,
+`scripts/command_trigger_oracle.py`, `scripts/retention_metadata.py`,
+`scripts/validate_reference_package.py`, `benchmarks/goal-maestro/eval-dataset.json`,
+`benchmarks/pressure/eval-dataset.json`, and the local Git commits from
+`2dab39be` through `f670b737`.
+
+Boundary: this is a local package-source claim about retained asset-transfer
+evidence. It is not a public release claim, not a bundle/version certification,
+not adapter materialization evidence, not a commercial-use claim, and not
+authorization to create a new skill, command, router, or governance layer.
 
 Retention status: `current`.
 

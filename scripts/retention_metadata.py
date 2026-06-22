@@ -73,11 +73,11 @@ def adr_0005_current_claim_failures(root: Path = ROOT) -> list[str]:
     if not claims.exists():
         return [f"missing current claims document: {relative(claims, root)}"]
 
-    text = claims.read_text(encoding="utf-8")
+    text = " ".join(claims.read_text(encoding="utf-8").split())
     return [
         f"ADR 0005 current evidence claim missing term: {term}"
         for term in ADR_0005_CURRENT_CLAIM_TERMS
-        if term not in text
+        if " ".join(term.split()) not in text
     ]
 
 
@@ -100,6 +100,8 @@ def check(root: Path = ROOT) -> tuple[dict[str, object], list[str]]:
         for term in POLICY_TERMS:
             if term not in policy_text:
                 failures.append(f"retention policy document missing term: {term}")
+
+    failures.extend(adr_0005_current_claim_failures(root))
 
     if not legacy_policy_report.exists():
         failures.append(f"missing legacy retention policy report: {relative(legacy_policy_report, root)}")
