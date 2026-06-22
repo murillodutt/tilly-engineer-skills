@@ -109,7 +109,7 @@ gates it arbitrates.
 | Maturity Layer Gate | Default to `Birth`; promote only with evidence naming baseline, allowed complexity, forbidden complexity, and oracle | Flattening mature architecture or inflating birth work |
 | Simplicity First | Delete speculative scope before adding machinery for the selected maturity layer | Overbuilt code and API bloat |
 | Surgical Changes | Touch only request-traceable lines and self-created orphans | Drive-by edits and style churn |
-| Goal-Driven Execution | Define and run a falsifiable oracle before closure | False completion |
+| Goal-Driven Execution | Define and run a falsifiable oracle before closure; when the oracle is a broad closure gate, also name the red-capable proof for the behavior changed | False completion |
 | Effort Gate | Default to `Standard`; promote to `Premium` only when the Declared-Contract Arbiter or named consequence evidence obligates deeper rigor per line, never more lines | Under-rigor on declared-contract lines and invented rigor on undeclared ones |
 
 Scope gates: Maturity Layer, Simplicity First, Surgical Changes. Craft gates:
@@ -205,8 +205,15 @@ engineering_discipline:
   deleted_scope:
   no_touch_paths:
   oracle:
+  focused_proof:
   stop_if:
 ```
+
+`oracle` may name the focused proof directly. If it names a broad closure gate
+such as `commit:check`, package validation, TDS validation, or a diff check,
+also name `focused_proof`: the red-capable fixture, reproducer, assertion,
+boundary case, or public/declared-interface regression check that could fail for
+the behavior changed.
 
 Keep it in conversation or working notes unless the target project requires a
 retained artifact.

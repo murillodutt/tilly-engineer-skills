@@ -37,6 +37,9 @@ REQUIRED_TERMS = (
     "Standard",
     "Premium",
     "Escalate-collision",
+    "focused_proof",
+    "red-capable proof",
+    "broad closure gate",
 )
 
 PLAN_FIELDS = (
@@ -380,6 +383,12 @@ def validate_plan_text(text: str) -> list[str]:
     oracle = normalize(fields["oracle"])
     if not any(signal in f" {oracle} " for signal in ORACLE_SIGNALS):
         failures.append("oracle must name a falsifiable command, test, fixture, or check")
+    focused_proof = fields.get("focused_proof", "")
+    if oracle_is_broad_closure(fields["oracle"]) and not has_red_capable_proof(focused_proof):
+        failures.append(
+            "broad closure gate requires focused_proof with a red-capable fixture, "
+            "reproducer, assertion, boundary, or interface-specific regression check"
+        )
 
     # Effort Gate (Stage A): validate the effort tier and its two DECLARED, binary-
     # hard triggers. This does NOT detect a violation in a diff — it validates that
@@ -668,6 +677,10 @@ engineering_discipline:
         failures.append("semantic self-test found focused proof where none was declared")
     if not has_red_capable_proof(broad_with_focused_fields.get("focused_proof", "")):
         failures.append("semantic self-test did not detect a red-capable focused proof")
+    if not validate_plan_text(broad_only_oracle_plan):
+        failures.append("semantic self-test accepted a broad closure gate with no focused_proof")
+    if validate_plan_text(broad_with_focused_proof_plan):
+        failures.append("semantic self-test rejected a broad closure gate with focused_proof")
     if validate_plan_text(valid_plan):
         failures.append("semantic self-test rejected a valid Evolution plan")
     if not validate_plan_text(vague_plan):
