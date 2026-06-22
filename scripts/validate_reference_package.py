@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable, Sequence
 from pathlib import Path
 import json
 import re
@@ -278,6 +279,24 @@ FORBIDDEN_ROOT_PATHS = (
 )
 
 GENERATED_ADAPTER_OUTPUT = ROOT / "dist" / "adapters"
+BENCHMARK_FIXTURE_FILENAMES = frozenset({"eval-dataset.json", "result-schema.json"})
+TEXT_REFERENCE_SUFFIXES = frozenset({
+    ".css",
+    ".html",
+    ".js",
+    ".json",
+    ".md",
+    ".mdc",
+    ".mjs",
+    ".ps1",
+    ".py",
+    ".sh",
+    ".toml",
+    ".ts",
+    ".tsx",
+    ".yaml",
+    ".yml",
+})
 
 LOCAL_DEVELOPMENT_SKILL_PARITY = (
     "tes-high-agency-pattern",
@@ -649,6 +668,60 @@ def generated_adapter_output_failures() -> list[str]:
     ]
 
 
+def benchmark_fixture_reference_failures(
+    paths: Sequence[Path] | None = None,
+    read_text: Callable[[Path], str] | None = None,
+) -> list[str]:
+    relpaths = list(paths) if paths is not None else package_paths()
+    reader = read_text or (lambda relpath: (ROOT / relpath).read_text(encoding="utf-8"))
+    benchmark_paths = sorted(
+        path for path in relpaths
+        if len(path.parts) >= 3
+        and path.parts[0] == "benchmarks"
+        and path.name in BENCHMARK_FIXTURE_FILENAMES
+    )
+    reference_paths = [
+        path for path in relpaths
+        if path.suffix in TEXT_REFERENCE_SUFFIXES
+        and path not in benchmark_paths
+    ]
+
+    failures: list[str] = []
+    for fixture_path in benchmark_paths:
+        needle = fixture_path.as_posix()
+        referenced = False
+        for reference_path in reference_paths:
+            try:
+                if needle in reader(reference_path):
+                    referenced = True
+                    break
+            except UnicodeDecodeError:
+                continue
+        if not referenced:
+            failures.append(f"benchmark fixture has no active consumer: {fixture_path}")
+    return failures
+
+
+def benchmark_fixture_deletion_test_failures() -> list[str]:
+    fixture_paths = (
+        Path("benchmarks/retained/eval-dataset.json"),
+        Path("benchmarks/orphan/eval-dataset.json"),
+        Path("scripts/retained_oracle.py"),
+    )
+    fixture_text = {
+        Path("benchmarks/retained/eval-dataset.json"): "{}",
+        Path("benchmarks/orphan/eval-dataset.json"): "{}",
+        Path("scripts/retained_oracle.py"): (
+            'DATASET = "benchmarks/retained/eval-dataset.json"\n'
+        ),
+    }
+    expected = ["benchmark fixture has no active consumer: benchmarks/orphan/eval-dataset.json"]
+    actual = benchmark_fixture_reference_failures(fixture_paths, fixture_text.__getitem__)
+    if actual != expected:
+        return [f"benchmark fixture deletion test failed: expected {expected!r}, got {actual!r}"]
+    return []
+
+
 def local_development_skill_parity_failures() -> list[str]:
     failures: list[str] = []
     for skill in LOCAL_DEVELOPMENT_SKILL_PARITY:
@@ -935,6 +1008,7 @@ def main() -> int:
     failures.extend(version_drift_failures())
     failures.extend(yaml_surface_failures())
     failures.extend(generated_adapter_output_failures())
+    failures.extend(benchmark_fixture_deletion_test_failures())
     failures.extend(local_development_skill_parity_failures())
     failures.extend(local_development_skill_description_failures())
 
