@@ -786,6 +786,8 @@ def analyze(target: Path) -> dict[str, Any]:
         combined += "\n" + text
         failures.extend(frontmatter_failures(relpath.as_posix(), text))
         failures.extend(generic_failures(relpath.as_posix(), text))
+        if label == "glossary":
+            failures.extend(implementation_detail_failures(relpath.as_posix(), text))
         if len(path_refs(text)) == 0 and label not in {"glossary"}:
             failures.append(f"{relpath.as_posix()} must cite at least one project path")
 
@@ -1209,11 +1211,8 @@ def self_test() -> dict[str, Any]:
             + "\n| Webhook | HTTP endpoint implemented by `src/webhook.ts`, backed by a SQL table and environment variable. |\n",
             encoding="utf-8",
         )
-        result = implementation_detail_failures(
-            ALIGNMENT_FILES["glossary"].as_posix(),
-            read_text(path),
-        )
-        if not any("implementation detail" in item for item in result):
+        result = analyze(target)
+        if result["status"] != "FAIL" or not any("implementation detail" in item for item in result["failures"]):
             failures.append("glossary fixture must fail implementation-heavy language")
 
     with tempfile.TemporaryDirectory(prefix="tes-align-bad-roadmap-") as tempdir:
