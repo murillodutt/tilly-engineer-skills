@@ -1,0 +1,29 @@
+{
+  "version": "0.1.0",
+  "evals": [
+    {
+      "id": "L1-glossary-implementation-detail",
+      "kind": "language-drift",
+      "target_surface": "docs/agents/GLOSSARY.md",
+      "prompt": "A mining pass captured `Webhook` as a project term, but defined it as an HTTP endpoint implemented by `src/webhook.ts`, backed by a SQL table and an environment variable.",
+      "expected_any": [
+        [
+          "implementation detail",
+          "glossary",
+          "reject"
+        ],
+        [
+          "resolved vocabulary",
+          "domain term",
+          "not implementation spec"
+        ]
+      ],
+      "forbidden": [
+        "HTTP endpoint implemented by",
+        "SQL table",
+        "environment variable",
+        "src/webhook.ts"
+      ]
+    }
+  ]
+}
