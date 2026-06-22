@@ -679,11 +679,13 @@ def benchmark_fixture_reference_failures(
         if len(path.parts) >= 3
         and path.parts[0] == "benchmarks"
         and path.name in BENCHMARK_FIXTURE_FILENAMES
+        and (paths is not None or (ROOT / path).exists())
     )
     reference_paths = [
         path for path in relpaths
         if path.suffix in TEXT_REFERENCE_SUFFIXES
         and path not in benchmark_paths
+        and (paths is not None or (ROOT / path).exists())
     ]
 
     failures: list[str] = []
@@ -1009,6 +1011,7 @@ def main() -> int:
     failures.extend(yaml_surface_failures())
     failures.extend(generated_adapter_output_failures())
     failures.extend(benchmark_fixture_deletion_test_failures())
+    failures.extend(benchmark_fixture_reference_failures())
     failures.extend(local_development_skill_parity_failures())
     failures.extend(local_development_skill_description_failures())
 
