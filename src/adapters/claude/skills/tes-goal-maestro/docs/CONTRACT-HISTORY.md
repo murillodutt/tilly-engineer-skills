@@ -44,6 +44,9 @@ examples or origins.
   closeout gates.
 - Require material-diff proof, focused oracles, reviewer result, post-commit
   status and sync status for each material execution unit.
+- Reject horizontal layer packages such as "all docs", "all scripts",
+  "all tests" or broad cleanup when they replace declared vertical slices or
+  asset-transfer units.
 - Treat prior commits and closeouts as baseline context by default, not
   execution credit for a new materialization run.
 - Keep negative grep semantic when policy vocabulary is valid but the behavior
@@ -71,6 +74,8 @@ examples or origins.
 - Assigning subagents without file ownership.
 - Running broad implementation without per-SPEC oracles.
 - Accumulating many SPECs before commit.
+- Rewriting vertical slices into horizontal layer packages that no longer prove
+  one behavior or asset failure end to end.
 - Treating empty commits or compacted broad commits as proof of per-unit
   execution.
 - Treating prior commits or old closeouts as automatic execution credit.
@@ -95,6 +100,7 @@ discipline once execution begins.
 | 2026-05-20 | Added material-diff and sync-commit gates so empty commits cannot certify material units. | Corrective audit after execution-unit fidelity mismatch. | high |
 | 2026-05-20 | Added material-continuation, semantic negative-grep and sequential ownership gates. | Maintainer-evolved canary skill in a private canary project (source-of-record kept off TES repository per project-confidentiality lock). | high |
 | 2026-05-22 | Added default Super SPEC artifact materialization as `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` and forbade pasting the full generated Super SPEC in chat. | Maintainer requested smaller context-window footprint for Goal Maestro. | high |
+| 2026-06-22 | Added Vertical Slice Fidelity Gate to reject horizontal layer packages that replace declared vertical slices or asset-transfer units. | ADR 0005 asset-transfer run; `GM5-vertical-slices-not-horizontal-layers`; `python3 scripts/context_mesh_plan.py --dataset benchmarks/goal-maestro/eval-dataset.json`. | high |
 
 ## Do Not Lose
 

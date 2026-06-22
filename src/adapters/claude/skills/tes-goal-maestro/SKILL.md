@@ -87,6 +87,12 @@ skill invocation.
    - Do not merge, skip, rename or reorder declared units unless the user
      explicitly accepts that change.
    - Require one commit or explicit no-commit decision per declared unit.
+   - Run the Vertical Slice Fidelity Gate: when the artifact declares vertical
+     slices or asset-transfer units, preserve units that carry one behavior or
+     asset failure through target asset, smallest patch, focused proof,
+     regression surface and closeout. Reject agent-invented horizontal layer
+     packages such as "all docs", "all scripts", "all tests", or "cleanup" when
+     they replace declared vertical units.
    - If fidelity cannot be preserved, stop with
      `NEEDS_EXECUTION_UNIT_FIDELITY`.
 4. Run the Material Continuation Gate:
