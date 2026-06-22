@@ -60,6 +60,9 @@ The final prompt must include:
     implementations may exist.
 21. Semantic negative-grep rules when blocked-state vocabulary is valid inside
     the contract.
+22. Optional Next Prompt Handoff clause only when explicitly requested by
+    `next_prompt_handoff=true`, `--next-prompt-handoff`, or an equivalent
+    direct trigger.
 
 ## Prompt Template
 
@@ -142,6 +145,17 @@ Work mode:
 - Run focused oracle before broader oracle.
 - Fix until green or stop honestly.
 - No force push, destructive git, hidden live execution or public-surface drift.
+
+Next Prompt Handoff:
+- Disabled unless `next_prompt_handoff=true`, `--next-prompt-handoff`, or an
+  equivalent direct trigger was explicitly requested.
+- When enabled, after this run reaches `GO` and certification is complete,
+  emit the next `/goal` prompt for the next declared execution unit in this
+  same chat/context window.
+- Do not write the next prompt to disk unless the user explicitly asks.
+- Do not execute the next prompt automatically.
+- If this run stops, certification is incomplete, or no next declared unit
+  exists, report the stop/final state instead of generating a next prompt.
 
 Negative grep semantics:
 - Separate valid blocked-state or policy vocabulary from forbidden executable
@@ -272,6 +286,7 @@ Final delivery:
 - oracles run;
 - boundaries preserved;
 - blockers or decisions pending;
+- next prompt handoff status when explicitly requested;
 - final status.
 ```
 
@@ -297,7 +312,10 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
 15. preserves unrelated worktree changes;
 16. includes reviewer and evidence/oracle roles when complexity warrants them;
 17. defines stop criteria;
-18. defines final delivery.
+18. defines final delivery;
+19. includes a Next Prompt Handoff clause only when explicitly requested, and
+    that clause is chat-only, post-certification, non-executing, and does not
+    write prompt/tree files without an explicit save request.
 
 ## Stop If Missing
 
@@ -335,4 +353,6 @@ Reject prompts that:
 14. compress a declared multi-SPEC queue into fewer commits;
 15. let prior commits satisfy a new materialization run by default;
 16. use broad lexical greps that fail valid blocked-state vocabulary instead of
-    targeting forbidden behavior.
+    targeting forbidden behavior;
+17. include Next Prompt Handoff without an explicit parameter/trigger or allow
+    it to execute the next prompt automatically.

@@ -317,6 +317,25 @@ The tree must include a review loop:
 9. inspect post-commit status;
 10. continue to the next slice only after sync status is certified.
 
+## Next Prompt Handoff
+
+Next Prompt Handoff is optional and disabled by default. Include it only when
+the user explicitly requests `next_prompt_handoff=true`,
+`--next-prompt-handoff`, or an equivalent direct trigger.
+
+When enabled, the tree must place the handoff in `Final Delivery Contract` and
+require:
+
+1. current run reaches `GO`;
+2. certification is complete;
+3. next declared execution unit exists;
+4. next `/goal` prompt is emitted in the same chat/context window;
+5. next prompt is not written to disk unless explicitly requested;
+6. next prompt is not executed automatically.
+
+If the current run stops or no next declared unit exists, the executor reports
+the stop/final state instead of generating a next prompt.
+
 ## Weak Tree Rejection
 
 Stop and revise the tree if it lacks:
@@ -359,4 +378,5 @@ The tree must require a final report with:
 6. boundaries preserved;
 7. unit evidence blocks;
 8. decisions pending;
-9. final status.
+9. next prompt handoff status when explicitly requested;
+10. final status.

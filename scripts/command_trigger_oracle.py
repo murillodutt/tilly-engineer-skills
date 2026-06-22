@@ -303,6 +303,8 @@ VISIBLE_SKILL_ROUTES = {
             "DRAFT_MATERIALIZATION_TREE",
             "NEEDS_TREE_ACCEPTANCE",
             "READY_GOAL_PROMPT",
+            "next_prompt_handoff",
+            "--next-prompt-handoff",
         ),
         "tes-mine": ("/tes-mine", "/tes:mine", "cognitive brake"),
         "tes-map": (
@@ -335,6 +337,8 @@ VISIBLE_SKILL_ROUTES = {
             "DRAFT_MATERIALIZATION_TREE",
             "NEEDS_TREE_ACCEPTANCE",
             "READY_GOAL_PROMPT",
+            "next_prompt_handoff",
+            "--next-prompt-handoff",
         ),
         "tes-mine": ("/tes-mine", "/tes:mine", "cognitive brake"),
         "tes-map": (

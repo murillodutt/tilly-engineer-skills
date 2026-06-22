@@ -16,4 +16,7 @@ default_prompt: |
   oracles, reviewer result, post-commit status, and sync status for every
   material unit; empty commits do not satisfy material execution. Keep output
   chat-first except for the Super SPEC artifact, and save prompt or tree files
-  only on explicit request.
+  only on explicit request. Include Next Prompt Handoff only when the user
+  explicitly requests next_prompt_handoff=true, --next-prompt-handoff, or an
+  equivalent direct trigger; it may emit the next /goal prompt in chat after GO
+  and certification, but must not write or execute it automatically.

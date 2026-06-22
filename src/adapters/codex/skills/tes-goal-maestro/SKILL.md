@@ -6,7 +6,7 @@ license: MIT
 
 # TES Goal Maestro
 
-Operational contract: `tes.goal_maestro@0.3.2`.
+Operational contract: `tes.goal_maestro@0.3.3`.
 
 ## Invocation Contract
 
@@ -29,6 +29,12 @@ request.
 
 The skill optimizes for certifiable execution, not enthusiasm. A generated
 prompt must be harder to break than an ad hoc manual prompt.
+
+Next Prompt Handoff is opt-in only. Activate it only when the user explicitly
+requests the parameter or trigger, for example `next_prompt_handoff=true`,
+`--next-prompt-handoff`, or a direct instruction to generate the next `/goal`
+prompt in the chat/context window after certification. Do not infer it from a
+multi-unit tree, a roadmap, or a desire to continue.
 
 ## Maturity Gate
 
@@ -141,7 +147,15 @@ skill invocation.
 11. Produce the `Ready /goal Prompt` in the same response when the tree passes.
    Stop only for maturity gaps, execution-unit fidelity failure, tree repair,
    owner decisions, or an explicitly requested two-step review workflow.
-12. Keep output chat-first except for the required Super SPEC artifact. Save
+12. If Next Prompt Handoff was explicitly requested, include a chat-only
+    handoff clause in the tree's `Final Delivery Contract` and in the generated
+    `/goal` prompt. The clause must require the executor to emit the next
+    `/goal` prompt in the same chat/context window only after the current run
+    reaches `GO` with certification complete, must forbid writing the next
+    prompt to disk, and must forbid executing the next prompt automatically.
+    If the current run stops or no next declared unit exists, the executor must
+    report the stop/final state instead of generating a next prompt.
+13. Keep output chat-first except for the required Super SPEC artifact. Save
    prompt or tree files only when the user explicitly asks.
 
 The fixed tree schema is:
@@ -211,6 +225,10 @@ Each generated `/goal` prompt must require a per-unit evidence block:
 Default sync means local Git commit certification. Remote sync or push is
 forbidden unless the user explicitly authorizes remote actions.
 
+Next Prompt Handoff does not change sync. It is a chat-only closeout behavior
+for the generated `/goal` prompt and is disabled unless explicitly requested by
+parameter or trigger.
+
 Reject weak trees that omit per-SPEC files, oracles, review loop, stop states,
 material-diff evidence, sync status or commit rhythm.
 
@@ -257,6 +275,12 @@ Default output:
   required `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` artifact when a Super SPEC
   must be produced or expanded.
 - Do not paste the full Super SPEC into the context window.
+- Do not include Next Prompt Handoff unless `next_prompt_handoff=true`,
+  `--next-prompt-handoff`, or an equivalent direct trigger was explicitly
+  requested.
+- Do not generate a next prompt after a stopped or uncertified run, when no
+  next declared unit exists, or by writing it to disk without an explicit save
+  request.
 - Do not hide forbidden moves, missing oracles, or owner-decision points inside
   prose.
 - Do not emit a prompt that lacks `SPEC-000`, commit-per-SPEC discipline,
@@ -289,6 +313,6 @@ Default output:
 `tes-goal-maestro` is complete when it either stops with
 `NEEDS_SPEC_MATURITY`, `NEEDS_EXECUTION_UNIT_FIDELITY`, `NEEDS_TREE_REPAIR`,
 or delivers a ready `/goal` prompt whose artifact, boundaries, execution
-units, ownership, oracles, negative grep, commit rhythm, review loop, and stop
-states are explicit and faithful to any execution queue declared by the input
-artifact.
+units, ownership, oracles, negative grep, commit rhythm, review loop, optional
+Next Prompt Handoff boundary, and stop states are explicit and faithful to any
+execution queue declared by the input artifact.

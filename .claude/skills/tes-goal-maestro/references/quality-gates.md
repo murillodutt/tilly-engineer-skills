@@ -49,6 +49,10 @@ Also use it when the prompt would treat empty commits, compacted broad commits,
 prior commits, old closeouts or broad-only oracles as proof that individual
 material units executed in a new materialization run.
 
+Also use it when a mature artifact declares vertical slices or asset-transfer
+units and the proposed tree rewrites them into horizontal layer packages such
+as "all docs", "all scripts", "all tests", or broad cleanup.
+
 Return the declared unit list and the proposed correction. Do not produce
 `READY_GOAL_PROMPT` until the tree preserves the declared list or the user
 explicitly accepts a changed execution contract.
@@ -85,6 +89,8 @@ Stop if the SPEC says:
 8. "commit per slice" but there is no material-diff or sync evidence gate.
 9. "continue from history" without saying whether prior commits are
    baseline-only or execution credit.
+10. "execute these vertical slices" but the prompt rewrites them as all docs,
+    all scripts, all tests or broad cleanup.
 
 ## Weak Prompt Rejection
 
@@ -104,6 +110,10 @@ Reject a prompt if it lacks:
 12. exact preservation of any slice list declared by the SPEC.
 13. treatment of prior commits or closeouts when they may exist.
 14. semantic negative-grep separation for valid blocked-state vocabulary.
+15. rejection of horizontal layer packages when the SPEC declares vertical
+    slices or asset-transfer units.
+16. Next Prompt Handoff only when explicitly requested, with post-`GO`
+    certification, chat-only emission and no automatic execution.
 
 ## Boundary Leakage Checks
 
@@ -129,6 +139,13 @@ generate, validate, then emit `READY_GOAL_PROMPT`.
 A valid response must not paste a generated Super SPEC into the context window.
 Use the `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` artifact instead, then continue
 to the tree and `/goal` prompt when the remaining gates pass.
+
+Next Prompt Handoff is valid only when explicitly requested by
+`next_prompt_handoff=true`, `--next-prompt-handoff`, or an equivalent direct
+trigger. When requested, the generated prompt must require chat-only next
+prompt emission after `GO` and certification, must not write the next prompt to
+disk without an explicit save request, and must not execute it automatically.
+When not requested, the prompt must not include a next-prompt handoff clause.
 
 ## Commit Rhythm Checks
 
@@ -244,6 +261,16 @@ Then ask:
 ```text
 Do negative greps target forbidden behavior without rejecting valid policy
 vocabulary such as blocked-state enums or reason codes?
+```
+
+If the answer is no, return `NEEDS_TREE_REPAIR`.
+
+Then ask:
+
+```text
+If Next Prompt Handoff appears, was it explicitly requested, and does it wait
+for GO plus certification before emitting only the next prompt in chat without
+writing or executing it?
 ```
 
 If the answer is no, return `NEEDS_TREE_REPAIR`.
