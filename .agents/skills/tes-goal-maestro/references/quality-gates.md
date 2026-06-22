@@ -49,6 +49,10 @@ Also use it when the prompt would treat empty commits, compacted broad commits,
 prior commits, old closeouts or broad-only oracles as proof that individual
 material units executed in a new materialization run.
 
+Also use it when a mature artifact declares vertical slices or asset-transfer
+units and the proposed tree rewrites them into horizontal layer packages such
+as "all docs", "all scripts", "all tests", or broad cleanup.
+
 Return the declared unit list and the proposed correction. Do not produce
 `READY_GOAL_PROMPT` until the tree preserves the declared list or the user
 explicitly accepts a changed execution contract.
@@ -85,6 +89,8 @@ Stop if the SPEC says:
 8. "commit per slice" but there is no material-diff or sync evidence gate.
 9. "continue from history" without saying whether prior commits are
    baseline-only or execution credit.
+10. "execute these vertical slices" but the prompt rewrites them as all docs,
+    all scripts, all tests or broad cleanup.
 
 ## Weak Prompt Rejection
 
@@ -104,6 +110,8 @@ Reject a prompt if it lacks:
 12. exact preservation of any slice list declared by the SPEC.
 13. treatment of prior commits or closeouts when they may exist.
 14. semantic negative-grep separation for valid blocked-state vocabulary.
+15. rejection of horizontal layer packages when the SPEC declares vertical
+    slices or asset-transfer units.
 
 ## Boundary Leakage Checks
 

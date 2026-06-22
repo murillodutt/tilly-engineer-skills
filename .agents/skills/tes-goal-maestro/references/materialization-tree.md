@@ -64,6 +64,13 @@ Each unit must name:
 Split any unit that has more than one behavioral objective, more than one
 ownership boundary, or mixed contract/runtime/storage/live work.
 
+When the source artifact declares vertical slices or asset-transfer units, keep
+the unit vertical: one behavior or asset failure must flow through target
+asset, smallest patch, focused proof, regression surface and closeout.
+Horizontal layer packages such as "all docs", "all scripts", "all tests", or
+"cleanup" are invalid replacements for declared vertical units, even when they
+look faster to execute.
+
 ## Execution Unit Fidelity Gate
 
 If the source artifact declares materialization units, the tree must preserve
