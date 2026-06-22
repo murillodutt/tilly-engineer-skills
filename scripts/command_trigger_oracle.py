@@ -390,6 +390,7 @@ PRESSURE_FIXTURE_REQUIRED_TERMS = (
     "exactly one next question",
     "exactly one recommended answer",
 )
+ROUTE_TARGET_RE = re.compile(r"/tes[-:][a-z-]+")
 
 
 def read_group(root: Path, paths: tuple[str, ...]) -> tuple[str, list[str]]:
@@ -425,6 +426,47 @@ def check_text(name: str, text: str) -> list[str]:
         failures.append(f"{name} missing compatible alias: {term}")
     for term in missing_natural(text):
         failures.append(f"{name} missing natural intent: {term}")
+    return failures
+
+
+def route_case_failures(name: str, text: str, cases: tuple[dict[str, Any], ...]) -> list[str]:
+    failures: list[str] = []
+    lines = [
+        normalized(line)
+        for line in text.splitlines()
+        if "->" in line
+    ]
+    folded_lines = [line.casefold() for line in lines]
+    for case in cases:
+        case_id = str(case["id"])
+        expected_route = str(case["expected_route"])
+        forbidden_routes = tuple(str(route) for route in case.get("forbidden_routes", ()))
+        for intent in tuple(str(item) for item in case["intents"]):
+            folded_intent = normalized(intent).casefold()
+            matches = [
+                lines[index]
+                for index, folded in enumerate(folded_lines)
+                if folded_intent in folded
+            ]
+            if not matches:
+                failures.append(f"{name} missing route case {case_id}: {intent}")
+                continue
+            for line in matches:
+                routes = set(ROUTE_TARGET_RE.findall(line))
+                if expected_route not in routes:
+                    failures.append(
+                        f"{name} route case {case_id} must route {intent} to {expected_route}"
+                    )
+                unexpected = sorted(route for route in routes if route != expected_route)
+                for route in unexpected:
+                    failures.append(
+                        f"{name} route case {case_id} exposes route inventory for {intent}: {route}"
+                    )
+                for route in forbidden_routes:
+                    if route in routes:
+                        failures.append(
+                            f"{name} route case {case_id} must not route {intent} to {route}"
+                        )
     return failures
 
 
@@ -902,6 +944,23 @@ def run_fixture_tests() -> list[str]:
     wrapped_failures = check_text("fixture_wrapped_natural", wrapped_natural)
     if any("natural intent" in item for item in wrapped_failures):
         failures.append("wrapped natural intents must tolerate formatting line breaks")
+
+    map_route_cases = (
+        {
+            "id": "fixture-map-next-flow",
+            "intents": ("map this project",),
+            "expected_route": "/tes-map",
+            "forbidden_routes": ("/tes-align", "/tes-doctor"),
+        },
+    )
+    if route_case_failures("route_good", "map this project -> /tes-map", map_route_cases):
+        failures.append("good route fixture must pass with one expected next flow")
+    route_inventory = "map this project -> /tes-map /tes-align /tes-doctor"
+    if not any("exposes route inventory" in item for item in route_case_failures("route_inventory", route_inventory, map_route_cases)):
+        failures.append("route inventory fixture must fail when extra routes are exposed")
+    wrong_route = "map this project -> /tes-align"
+    if not any("must route map this project to /tes-map" in item for item in route_case_failures("route_wrong", wrong_route, map_route_cases)):
+        failures.append("wrong route fixture must fail without the expected next flow")
 
     with tempfile.TemporaryDirectory(prefix="tes-trigger-oracle-target-source-") as tempdir:
         target = Path(tempdir)
