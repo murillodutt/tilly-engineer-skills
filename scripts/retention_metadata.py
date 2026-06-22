@@ -16,6 +16,7 @@ EVIDENCE_ROOT = ROOT / "docs/evidence"
 REPORTS = EVIDENCE_ROOT / "reports"
 LEGACY_CONTEXT_MESH_REPORTS = REPORTS / "context-mesh"
 POLICY_DOC = EVIDENCE_ROOT / "INDEX.md"
+CURRENT_CLAIMS = EVIDENCE_ROOT / "current/CLAIMS.md"
 LEGACY_POLICY_REPORT = LEGACY_CONTEXT_MESH_REPORTS / "retention-metadata-strategy-2026-05-06/REPORT.md"
 FINAL_REPORT = LEGACY_CONTEXT_MESH_REPORTS / "context-mesh-v1-final-certification-2026-05-05/REPORT.md"
 POLICY_TERMS = (
@@ -27,6 +28,14 @@ POLICY_TERMS = (
     "superseded",
     "archived",
     "expired",
+)
+ADR_0005_CURRENT_CLAIM_TERMS = (
+    "ADR 0005 Asset-Transfer Claim",
+    "Proof, Slice, Pressure, Language, Sanitization, and Routing lanes",
+    "existing TES assets",
+    "focused oracle",
+    "not a public release claim",
+    "Retention status: `current`",
 )
 
 
@@ -57,6 +66,19 @@ def is_temporal_manifest(path: Path, root: Path) -> bool:
         and month.isdigit()
         and day.isdigit()
     )
+
+
+def adr_0005_current_claim_failures(root: Path = ROOT) -> list[str]:
+    claims = root / CURRENT_CLAIMS.relative_to(ROOT)
+    if not claims.exists():
+        return [f"missing current claims document: {relative(claims, root)}"]
+
+    text = claims.read_text(encoding="utf-8")
+    return [
+        f"ADR 0005 current evidence claim missing term: {term}"
+        for term in ADR_0005_CURRENT_CLAIM_TERMS
+        if term not in text
+    ]
 
 
 def check(root: Path = ROOT) -> tuple[dict[str, object], list[str]]:
@@ -130,6 +152,11 @@ def self_test() -> tuple[dict[str, object], list[str]]:
 
         policy_text = "\n".join(POLICY_TERMS)
         (evidence / "INDEX.md").write_text(policy_text, encoding="utf-8")
+        (evidence / "current").mkdir(parents=True, exist_ok=True)
+        (evidence / "current/CLAIMS.md").write_text(
+            "\n".join(ADR_0005_CURRENT_CLAIM_TERMS),
+            encoding="utf-8",
+        )
         (legacy_policy / "REPORT.md").write_text("legacy policy report\n", encoding="utf-8")
         (final / "REPORT.md").write_text("historical note: `retention_head=pending`\n", encoding="utf-8")
         manifest = {"run_id": "smoke", "retention_head": "pending", "run_head": "abc", "gate_head": "def"}
@@ -141,6 +168,10 @@ def self_test() -> tuple[dict[str, object], list[str]]:
             failures.append("self-test expected one temporal manifest")
         if result.get("legacy_context_mesh_manifest_count") != 1:
             failures.append("self-test expected one legacy manifest")
+        failures.extend(adr_0005_current_claim_failures(root))
+        (evidence / "current/CLAIMS.md").write_text("", encoding="utf-8")
+        if not adr_0005_current_claim_failures(root):
+            failures.append("self-test expected missing ADR 0005 current claim to fail")
         return result, failures
 
 
