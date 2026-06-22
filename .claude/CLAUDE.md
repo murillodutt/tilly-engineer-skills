@@ -36,6 +36,14 @@ Classify every `scripts/**` change by consumer before deciding which surfaces mo
 - Installer, Cortex, MCP, Field Reports, runtime, or adapter script that an adopter receives, invokes, or certifies → delivered behavior (see `<release_identity>`).
 </scripts_classification>
 
+<layer_boundary>
+TES has two repository layers:
+- Maintainer/development layer: root bootloaders (`AGENTS.md`, `.claude/CLAUDE.md`), local development skills (`.agents/skills/**`, `.claude/skills/**`), `docs/governance/**`, maintainer gates, and repository-only validation. This layer teaches agents how to develop TES and is not delivered to target projects by default.
+- Product/source layer: `src/**` adapter source plus adopter-facing docs, delivered runtime/helper scripts, plugin manifests, public docs, bundles, and generated or installed target surfaces. This layer is the source of truth for behavior adopters receive.
+
+Portable learning belongs in the product/source layer first when it changes delivered TES behavior. Update the maintainer/development layer only when the local development workflow changes or a bootloader mirror must stay aligned. Do not certify product behavior by running installed-target checks against this repository root; use source/package oracles here and installed-target oracles only against a real target-project fixture. For correlated file decisions, apply `docs/governance/MAINTAINER-CORRELATION-RULE.md`.
+</layer_boundary>
+
 <regression_guard>
 For every package analysis, write, runtime change, oracle change, commit, or closeout, self-consume `.agents/skills/tes-regression-guard/SKILL.md` as an always-on local reasoning kernel — not a user-invoked skill. Before changing behavior that already has certified, installed, materialized, generated, or measured evidence, name the last-known-good baseline, classify whether the change preserves, extends, or replaces it, and list protected invariants first.
 Regression is project-wide, not Python-specific: protect skills, triggers, adapters, materialized outputs, installers, runtime scripts, docs, roadmaps, oracles, generated public pages, version identity, release surfaces, private vocabulary, safety behavior, and UX claims. A passing source check is not enough when the risk lives in an installed, generated, materialized, public, or CLI surface; run the comparison matching the surface that can regress. Avoid narrow literal lists in runtime code unless they are governed data, schema, or contract backed — example-specific fixes are regression seeds.
