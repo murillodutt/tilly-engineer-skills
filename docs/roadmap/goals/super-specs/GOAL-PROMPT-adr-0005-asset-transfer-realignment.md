@@ -5,7 +5,7 @@ status: active
 consumer: maintainers, ADR 0005 operators, and execution agents
 source_of_truth: false
 evidence_level: L1
-tver: 0.2.0
+tver: 0.2.1
 ---
 
 # GOAL Prompt: ADR 0005 Asset Transfer Realignment
@@ -120,3 +120,33 @@ authorization.
 Final answer:
 State the selected asset, the behavior transferred, the proof run, release
 classification, and why no new skill was created.
+
+Continuation loop:
+After SPEC-005 closes with `ASSET_TRANSFERRED` or `ASSET_ALREADY_ADEQUATE` and
+the focused proof, package oracle, git diff check, and local commit requirement
+are satisfied, decide whether another concrete TES asset failure remains in the
+same ADR 0005 lane.
+
+If no concrete failure remains, stop with `CONVERGED` and do not create another
+prompt.
+
+If another concrete failure remains, create the next GOAL prompt as a Markdown
+artifact before the final answer. Name it
+`GOAL-PROMPT-adr-0005-<lane>-<target-asset-slug>.md` under
+`docs/roadmap/goals/super-specs/`, and make it execute exactly one next
+asset-transfer unit. The next prompt must carry forward:
+- selected lane
+- target_asset
+- current_failure
+- transferred_behavior
+- smallest_patch
+- proof
+- regression_surface
+- release_identity
+- no_new_skill_evidence
+- stop states
+
+The next prompt must not broaden to all lanes, create a canary, create a new
+skill, change public docs, alter release surfaces, push, tag, publish, or
+claim convergence without proof. Repeat this loop only while each prompt names
+one falsifiable asset failure and one existing asset that can carry the repair.
