@@ -28,10 +28,11 @@ current dashboard, Super SPEC, audit record, or runtime oracle for each line.
 ## Goal Artifact Policy
 
 `docs/roadmap/goals/super-specs/` remains tracked because Super SPECs are
-execution contracts or durable lineage. The 2026-06-02 audit found 26 tracked
-Super SPECs: 15 active, 6 proposed, and 5 archived. `goals/prompts/` is ignored
-because generated goal prompts are execution residue; durable outcomes belong
-in dashboards, registries, history, audits, fixtures, or oracles.
+execution contracts or durable lineage. Historical audit counts are not the
+current registry; this index carries active grouped lines and keeps older
+lineage reachable. `goals/prompts/` is ignored because generated goal prompts
+are execution residue; durable outcomes belong in dashboards, registries,
+history, audits, fixtures, or oracles.
 
 ## Current Lines
 
@@ -55,6 +56,7 @@ in dashboards, registries, history, audits, fixtures, or oracles.
 | TES installed certification and Field Reports | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
 | TES root context composition | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md` |
 | TES inherited context canonical source | Active | `goals/super-specs/GOAL-SUPER-SPEC-tes-inherited-context-canonical-source.md` |
+| ADR 0005 asset transfer realignment | Active | `goals/super-specs/GOAL-SUPER-SPEC-adr-0005-asset-transfer-realignment.md` |
 | RC1 readiness cleanup | Active | `product/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening | Proposed | `product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |
 | TES skill benchmark convergence | Proposed | `product/TES-SKILL-BENCHMARK-CONVERGENCE-ROADMAP.md` |

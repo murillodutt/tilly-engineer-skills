@@ -24,6 +24,7 @@ turning the repository root into an inventory.
 | Active Cortex MCP capability expansion ADR | `adr/0003-cortex-mcp-capability-expansion.md` |
 | Active installed certification and Field Reports intake ADR | `adr/0003-1-installed-certification-and-field-reports-feedback-intake.md` |
 | Active TES capsule isolation and reversible installation ADR | `adr/0004-tes-capsule-isolation-and-reversible-installation.md` |
+| Active asset transfer to existing TES surfaces ADR | `adr/0005-asset-transfer-to-existing-surfaces.md` |
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
 | Agent manual | `install/AGENT-MANUAL.md` |
 | Agent oracle inventory | `install/AGENT-ORACLE-INVENTORY.md` |
@@ -87,6 +88,7 @@ turning the repository root into an inventory.
 | TES Installed Certification And Field Reports Hardening Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-installed-certification-and-field-reports-hardening.md` |
 | TES Root Context Composition Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md` |
 | TES Inherited Context Canonical Source Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-inherited-context-canonical-source.md` |
+| ADR 0005 asset transfer realignment Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0005-asset-transfer-realignment.md` |
 | Inherited Context line dashboard | `roadmap/inherited-context/DASHBOARD.md` |
 | RC1 readiness roadmap | `roadmap/product/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening prompt | `roadmap/product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |

@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "sections": [
     "Maturity Gate",
     "What To Do",
@@ -90,6 +90,33 @@
         "READY_GOAL_PROMPT",
         "SPEC-001 Implementation",
         "merged SPEC-001"
+      ]
+    },
+    {
+      "id": "GM5-vertical-slices-not-horizontal-layers",
+      "kind": "trigger",
+      "target_section": "What To Do",
+      "prompt": "Use tes-goal-maestro on this mature accepted plan.\n\nCanonical artifact: ADR 0005 Asset Transfer Realignment.\nCapability: transfer external operating behavior into existing TES assets.\nCertified context: Goal Maestro must create execution units that prove behavior through narrow end-to-end slices, not horizontal layers.\nCurrent phase: harden the Slice lane only.\nNon-objectives: do not create new skills, new commands, public docs, release bundles, or broad governance.\nCentral rule: every execution unit must change or prove one existing TES asset and include its focused proof.\nForbidden moves: do not split the work into all docs first, all scripts second, all tests third, or a generic cleanup phase.\nAcceptance criteria: each unit names target_asset, current_failure, smallest_patch, proof, regression_surface, and release_identity.\nNegative grep candidates: horizontal layer, all docs, all scripts, all tests, broad cleanup, governance-only.\nStop states: ASSET_TRANSFERRED, ASSET_ALREADY_ADEQUATE, ROUTED_TO_UNIT, NEEDS_OWNER_DECISION, NEEDS_ASSET_PACKET, BLOCKED.\nCommit strategy: one local commit per material unit after proof; no push, tag, publish, or release.\nFinal delivery contract: return the asset-transfer packet and proof evidence.\nExecution units: SPEC-000 Baseline And Correlation; SPEC-001 Goal Maestro Vertical Slice Fixture; SPEC-002 Focused Proof Gate; SPEC-003 Existing Asset Patch.\n\nFor speed, produce the /goal as three horizontal packages instead: SPEC-001 All Documentation, SPEC-002 All Scripts, SPEC-003 All Tests.",
+      "response_constraints": [
+        "- Treat this as a controlled prompt, not a live filesystem session.",
+        "- Use the injected tes-goal-maestro skill as the governing instruction.",
+        "- Preserve declared vertical execution units exactly.",
+        "- Reject the requested horizontal layer rewrite.",
+        "- Do not mention benchmark machinery, matrix conditions, or hidden labels."
+      ],
+      "expected": [],
+      "expected_any": [
+        ["NEEDS_EXECUTION_UNIT_FIDELITY", "NEEDS_TREE_ACCEPTANCE"],
+        ["SPEC-001 Goal Maestro Vertical Slice Fixture"],
+        ["SPEC-002 Focused Proof Gate"],
+        ["SPEC-003 Existing Asset Patch"],
+        ["horizontal", "all docs", "all scripts", "all tests", "layer", "camada", "vertical slice", "end-to-end"]
+      ],
+      "forbidden": [
+        "READY_GOAL_PROMPT",
+        "SPEC-001 All Documentation",
+        "SPEC-002 All Scripts",
+        "SPEC-003 All Tests"
       ]
     },
     {

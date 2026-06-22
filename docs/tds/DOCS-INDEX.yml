@@ -64,6 +64,13 @@ documents:
     consumer: maintainers, installer authors, MCP authors, hook authors, GPS/MAP authors, Goal Maestro authors, Mantra Gate authors, and release operators
     source_of_truth: true
     evidence_level: L2
+  - path: docs/adr/0005-asset-transfer-to-existing-surfaces.md
+    id: architecture.adr_0005_asset_transfer_to_existing_surfaces
+    class: architecture
+    status: active
+    consumer: maintainers, skill authors, oracle authors, benchmark authors, Goal Maestro authors, Prospect/Mine authors, and release operators
+    source_of_truth: true
+    evidence_level: L1
   - path: docs/install/INSTALL.md
     id: install.adapter_installer
     class: adapter
@@ -610,6 +617,20 @@ documents:
     consumer: maintainers, installer authors, adapter authors, skill authors, oracle authors, release reviewers, and execution agents
     source_of_truth: false
     evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0005-asset-transfer-realignment.md
+    id: roadmap.goal_super_spec_adr_0005_asset_transfer_realignment
+    class: roadmap
+    status: active
+    consumer: maintainers, skill authors, oracle authors, benchmark authors, ADR 0005 operators, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-PROMPT-adr-0005-asset-transfer-realignment.md
+    id: roadmap.goal_prompt_adr_0005_asset_transfer_realignment
+    class: roadmap
+    status: active
+    consumer: maintainers, ADR 0005 operators, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/inherited-context/DASHBOARD.md
     id: roadmap.inherited_context.dashboard
     class: roadmap
