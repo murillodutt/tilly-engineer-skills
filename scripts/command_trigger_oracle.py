@@ -391,6 +391,14 @@ PRESSURE_FIXTURE_REQUIRED_TERMS = (
     "exactly one recommended answer",
 )
 ROUTE_TARGET_RE = re.compile(r"/tes[-:][a-z-]+")
+ROUTE_CASES = (
+    {
+        "id": "R1-map-intent-single-flow",
+        "intents": ("tes map", "map this project", "mapear projeto"),
+        "expected_route": "/tes-map",
+        "forbidden_routes": ("/tes-align", "/tes-doctor"),
+    },
+)
 
 
 def read_group(root: Path, paths: tuple[str, ...]) -> tuple[str, list[str]]:
@@ -825,6 +833,20 @@ def analyze(root: Path = ROOT) -> dict[str, Any]:
         group_failures.extend(check_text(group, text))
         failures.extend(item for item in group_failures if item not in failures)
         checked.append({"group": group, "paths": list(paths), "status": "PASS" if not group_failures else "FAIL"})
+
+    route_case_text, route_case_read_failures = read_group(root, DOC_SOURCE_GROUPS["command_triggers_doc"])
+    route_case_failures_list = [
+        *route_case_read_failures,
+        *route_case_failures("command_triggers_doc", route_case_text, ROUTE_CASES),
+    ]
+    failures.extend(route_case_failures_list)
+    checked.append(
+        {
+            "group": "route_cases",
+            "paths": list(DOC_SOURCE_GROUPS["command_triggers_doc"]),
+            "status": "PASS" if not route_case_failures_list else "FAIL",
+        }
+    )
 
     for platform, paths in PLATFORM_SOURCE_GROUPS.items():
         text, group_failures = read_group(root, paths)
