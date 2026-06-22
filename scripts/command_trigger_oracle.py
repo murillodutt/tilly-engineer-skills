@@ -366,6 +366,31 @@ GROUPED_INTENT_ROUTES = {
     },
 }
 
+PRESSURE_CONTRACT_TERMS = (
+    "one decision branch at a time",
+    "exactly one next question",
+    "exactly one recommended answer",
+    "repository evidence can answer",
+    "before asking the user",
+    "cognitive brake",
+)
+
+PRESSURE_AGENT_TERMS = (
+    "one decision branch at a time",
+    "exactly one next question",
+    "exactly one recommended answer",
+    "repository evidence can answer",
+)
+
+PRESSURE_FIXTURE_DATASET = "benchmarks/pressure/eval-dataset.json"
+PRESSURE_FIXTURE_REQUIRED_TERMS = (
+    "several questions",
+    "repository evidence",
+    "one decision branch at a time",
+    "exactly one next question",
+    "exactly one recommended answer",
+)
+
 
 def read_group(root: Path, paths: tuple[str, ...]) -> tuple[str, list[str]]:
     chunks: list[str] = []
@@ -537,6 +562,102 @@ def check_skill_route_contracts(root: Path) -> tuple[list[dict[str, Any]], list[
             missing = [term for term in terms if term not in text]
             failures.extend(f"{relpath} missing grouped route term: {term}" for term in missing)
             checked.append({"platform": platform, "skill": skill, "path": relpath, "status": "PASS" if not missing else "FAIL"})
+    return checked, failures
+
+
+def pressure_contract_failures(name: str, text: str, terms: tuple[str, ...]) -> list[str]:
+    return [
+        f"{name} missing pressure contract term: {term}"
+        for term in terms
+        if term not in text
+    ]
+
+
+def check_pressure_skill_contracts(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    checked: list[dict[str, Any]] = []
+    failures: list[str] = []
+    for platform in ("codex", "claude"):
+        skill_root = "src/adapters/codex/skills" if platform == "codex" else "src/adapters/claude/skills"
+        for skill in ("tes-prospect", "tes-mine"):
+            relpath = f"{skill_root}/{skill}/SKILL.md"
+            path = root / relpath
+            if not path.exists():
+                failures.append(f"{platform} missing pressure skill contract: {relpath}")
+                checked.append({"platform": platform, "skill": skill, "path": relpath, "status": "MISSING"})
+                continue
+            missing = pressure_contract_failures(
+                f"{relpath}",
+                normalized(path.read_text(encoding="utf-8")),
+                PRESSURE_CONTRACT_TERMS,
+            )
+            failures.extend(missing)
+            checked.append({"platform": platform, "skill": skill, "path": relpath, "status": "PASS" if not missing else "FAIL"})
+
+            agent_relpath = f"{skill_root}/{skill}/agents/openai.yaml"
+            agent_path = root / agent_relpath
+            if not agent_path.exists():
+                failures.append(f"{platform} missing pressure agent prompt: {agent_relpath}")
+                checked.append({"platform": platform, "skill": skill, "path": agent_relpath, "status": "MISSING"})
+                continue
+            agent_missing = pressure_contract_failures(
+                f"{agent_relpath}",
+                normalized(agent_path.read_text(encoding="utf-8")),
+                PRESSURE_AGENT_TERMS,
+            )
+            failures.extend(agent_missing)
+            checked.append({"platform": platform, "skill": skill, "path": agent_relpath, "status": "PASS" if not agent_missing else "FAIL"})
+    return checked, failures
+
+
+def check_pressure_fixture_dataset(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    path = root / PRESSURE_FIXTURE_DATASET
+    if not path.exists():
+        return [{"path": PRESSURE_FIXTURE_DATASET, "status": "MISSING"}], [
+            f"missing pressure fixture dataset: {PRESSURE_FIXTURE_DATASET}"
+        ]
+
+    failures: list[str] = []
+    checked: list[dict[str, Any]] = []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return [{"path": PRESSURE_FIXTURE_DATASET, "status": "FAIL"}], [
+            f"invalid pressure fixture dataset JSON: {exc}"
+        ]
+
+    evals = data.get("evals")
+    if not isinstance(evals, list) or not evals:
+        failures.append("pressure fixture dataset must contain evals")
+        evals = []
+
+    dataset_text = normalized(json.dumps(data, ensure_ascii=False))
+    for term in PRESSURE_FIXTURE_REQUIRED_TERMS:
+        if term not in dataset_text:
+            failures.append(f"pressure fixture dataset missing term: {term}")
+
+    for item in evals:
+        fixture_id = item.get("id", "(unknown)") if isinstance(item, dict) else "(invalid)"
+        if not isinstance(item, dict):
+            failures.append("pressure fixture item must be an object")
+            checked.append({"path": PRESSURE_FIXTURE_DATASET, "fixture": fixture_id, "status": "FAIL"})
+            continue
+        for key in ("id", "kind", "prompt", "expected_any", "forbidden"):
+            if key not in item:
+                failures.append(f"pressure fixture missing {key}: {fixture_id}")
+        if not item.get("expected_any"):
+            failures.append(f"pressure fixture has no expected assertions: {fixture_id}")
+        if not item.get("forbidden"):
+            failures.append(f"pressure fixture has no forbidden assertions: {fixture_id}")
+        checked.append({"path": PRESSURE_FIXTURE_DATASET, "fixture": fixture_id, "status": "PASS"})
+
+    if not any(
+        isinstance(item, dict)
+        and item.get("kind") == "pressure-drift"
+        and "several questions" in normalized(str(item.get("prompt", "")))
+        for item in evals
+    ):
+        failures.append("pressure fixture dataset must include a several-questions drift prompt")
+
     return checked, failures
 
 
@@ -714,6 +835,27 @@ def analyze(root: Path = ROOT) -> dict[str, Any]:
         }
     )
 
+    pressure_checked, pressure_failures = check_pressure_skill_contracts(root)
+    failures.extend(pressure_failures)
+    checked.append(
+        {
+            "group": "pressure_skill_contracts",
+            "status": "PASS" if not pressure_failures else "FAIL",
+            "files": pressure_checked,
+        }
+    )
+
+    pressure_fixture_checked, pressure_fixture_failures = check_pressure_fixture_dataset(root)
+    failures.extend(pressure_fixture_failures)
+    checked.append(
+        {
+            "group": "pressure_fixture_dataset",
+            "paths": [PRESSURE_FIXTURE_DATASET],
+            "status": "PASS" if not pressure_fixture_failures else "FAIL",
+            "files": pressure_fixture_checked,
+        }
+    )
+
     return {
         "version": VERSION,
         "status": "PASS" if not failures else "FAIL",
@@ -807,6 +949,26 @@ def run_fixture_tests() -> list[str]:
         result = check_installed_target(target)
         if result["status"] != "FAIL" or not any(".claude/skills/tes-init/SKILL.md" in item for item in result["failures"]):
             failures.append("bad installed Claude fixture must fail without project skills")
+
+    good_pressure = "\n".join(PRESSURE_CONTRACT_TERMS)
+    if pressure_contract_failures("pressure_good", good_pressure, PRESSURE_CONTRACT_TERMS):
+        failures.append("good pressure fixture must pass one-branch pressure terms")
+
+    broad_pressure = good_pressure.replace("one decision branch at a time", "several branches at once")
+    if not any("one decision branch at a time" in item for item in pressure_contract_failures("pressure_broad", broad_pressure, PRESSURE_CONTRACT_TERMS)):
+        failures.append("broad pressure fixture must fail without one-branch pressure")
+
+    multi_question_pressure = good_pressure.replace("exactly one next question", "several next questions")
+    if not any("exactly one next question" in item for item in pressure_contract_failures("pressure_multi_question", multi_question_pressure, PRESSURE_CONTRACT_TERMS)):
+        failures.append("multi-question pressure fixture must fail without exactly-one question")
+
+    no_recommendation_pressure = good_pressure.replace("exactly one recommended answer", "a list of options")
+    if not any("exactly one recommended answer" in item for item in pressure_contract_failures("pressure_no_recommendation", no_recommendation_pressure, PRESSURE_CONTRACT_TERMS)):
+        failures.append("pressure fixture must fail without exactly-one recommendation")
+
+    no_evidence_pressure = good_pressure.replace("repository evidence can answer", "ask the user what evidence exists")
+    if not any("repository evidence can answer" in item for item in pressure_contract_failures("pressure_no_evidence", no_evidence_pressure, PRESSURE_CONTRACT_TERMS)):
+        failures.append("pressure fixture must fail without codebase-before-question evidence")
 
     return failures
 

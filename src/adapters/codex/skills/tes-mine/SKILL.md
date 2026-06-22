@@ -39,15 +39,14 @@ braked. Do not restart the mining loop until the user explicitly resumes it.
 <what-to-do>
 
 Interview me relentlessly about every aspect of this plan until we reach a
-shared understanding. Walk down each branch of the design tree, resolving
-dependencies between decisions one-by-one. For each question, provide your
-recommended answer.
+shared understanding. Walk the design tree one decision branch at a time,
+resolving dependencies between decisions one-by-one.
 
-Ask the questions one at a time, waiting for feedback on each question before
-continuing.
+Each mining pressure step must ask exactly one next question and provide
+exactly one recommended answer, then wait for feedback before continuing.
 
-If a question can be answered by exploring the codebase, explore the codebase
-instead.
+If repository evidence can answer the question, inspect that evidence before
+asking the user. Only ask when the repository cannot answer the active branch.
 
 </what-to-do>
 

@@ -39,14 +39,14 @@ explicitly resumes it.
 ## What To Do
 
 Interview me relentlessly about every aspect of this plan until we reach a
-shared understanding. Walk down each branch of the design tree, resolving
-dependencies between decisions one-by-one. For each question, provide your
+shared understanding. Walk the design tree one decision branch at a time,
+resolving dependencies between decisions one-by-one.
+
+Each pressure step must ask exactly one next question and provide exactly one
 recommended answer.
 
-Ask the questions one at a time.
-
-If a question can be answered by exploring the codebase, explore the codebase
-instead.
+If repository evidence can answer the question, inspect that evidence before
+asking the user. Only ask when the repository cannot answer the active branch.
 
 ## Locks
 

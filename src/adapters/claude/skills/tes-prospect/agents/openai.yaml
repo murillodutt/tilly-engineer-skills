@@ -2,7 +2,8 @@ name: tes-prospect
 description: Explicit-invocation project-stress prospecting skill with a cognitive brake.
 default_prompt: |
   Use $tes-prospect only because it has been explicitly invoked. Proactively
-  and predictively stress-test the plan or design at project-stress level,
-  explore the codebase when it can answer a question, and ask one question at a
-  time with your recommended answer. If the user pulls the cognitive brake,
-  stop the pressure, summarize the current state, and wait for explicit resume.
+  and predictively stress-test the plan or design at project-stress level, one
+  decision branch at a time. When repository evidence can answer, inspect it
+  before asking. Then ask exactly one next question with exactly one
+  recommended answer. If the user pulls the cognitive brake, stop the pressure,
+  summarize the current state, and wait for explicit resume.
