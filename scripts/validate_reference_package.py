@@ -280,6 +280,15 @@ FORBIDDEN_ROOT_PATHS = (
 
 GENERATED_ADAPTER_OUTPUT = ROOT / "dist" / "adapters"
 BENCHMARK_FIXTURE_FILENAMES = frozenset({"eval-dataset.json", "result-schema.json"})
+EXECUTABLE_REFERENCE_SUFFIXES = frozenset({
+    ".js",
+    ".mjs",
+    ".ps1",
+    ".py",
+    ".sh",
+    ".ts",
+    ".tsx",
+})
 TEXT_REFERENCE_SUFFIXES = frozenset({
     ".css",
     ".html",
@@ -690,18 +699,41 @@ def benchmark_fixture_reference_failures(
 
     failures: list[str] = []
     for fixture_path in benchmark_paths:
-        needle = fixture_path.as_posix()
         referenced = False
         for reference_path in reference_paths:
             try:
-                if needle in reader(reference_path):
-                    referenced = True
-                    break
+                text = reader(reference_path)
             except UnicodeDecodeError:
                 continue
+            if benchmark_fixture_has_active_consumer(fixture_path, reference_path, text):
+                referenced = True
+                break
         if not referenced:
             failures.append(f"benchmark fixture has no active consumer: {fixture_path}")
     return failures
+
+
+def benchmark_fixture_has_active_consumer(
+    fixture_path: Path,
+    reference_path: Path,
+    text: str,
+) -> bool:
+    needle = fixture_path.as_posix()
+    if needle not in text:
+        return False
+    if reference_path.as_posix() == "scripts/validate_reference_package.py":
+        return False
+    if reference_path.suffix in EXECUTABLE_REFERENCE_SUFFIXES:
+        return True
+    command_pattern = re.compile(
+        r"(?:python3?|node|bun|npm)\s+[^`\n]*" + re.escape(needle)
+    )
+    if command_pattern.search(text):
+        return True
+    script_command_pattern = re.compile(
+        r"scripts/[A-Za-z0-9_./-]+\.py\s+[^`\n]*" + re.escape(needle)
+    )
+    return bool(script_command_pattern.search(text))
 
 
 def benchmark_fixture_deletion_test_failures() -> list[str]:
