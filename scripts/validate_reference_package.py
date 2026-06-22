@@ -708,16 +708,26 @@ def benchmark_fixture_deletion_test_failures() -> list[str]:
     fixture_paths = (
         Path("benchmarks/retained/eval-dataset.json"),
         Path("benchmarks/orphan/eval-dataset.json"),
+        Path("benchmarks/text-only/eval-dataset.json"),
+        Path("docs/stale-note.md"),
         Path("scripts/retained_oracle.py"),
     )
     fixture_text = {
         Path("benchmarks/retained/eval-dataset.json"): "{}",
         Path("benchmarks/orphan/eval-dataset.json"): "{}",
+        Path("benchmarks/text-only/eval-dataset.json"): "{}",
+        Path("docs/stale-note.md"): (
+            "This stale note mentions benchmarks/text-only/eval-dataset.json "
+            "but does not execute or certify it.\n"
+        ),
         Path("scripts/retained_oracle.py"): (
             'DATASET = "benchmarks/retained/eval-dataset.json"\n'
         ),
     }
-    expected = ["benchmark fixture has no active consumer: benchmarks/orphan/eval-dataset.json"]
+    expected = [
+        "benchmark fixture has no active consumer: benchmarks/orphan/eval-dataset.json",
+        "benchmark fixture has no active consumer: benchmarks/text-only/eval-dataset.json",
+    ]
     actual = benchmark_fixture_reference_failures(fixture_paths, fixture_text.__getitem__)
     if actual != expected:
         return [f"benchmark fixture deletion test failed: expected {expected!r}, got {actual!r}"]
