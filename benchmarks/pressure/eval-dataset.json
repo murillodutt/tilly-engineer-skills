@@ -1,0 +1,29 @@
+{
+  "version": "0.1.0",
+  "evals": [
+    {
+      "id": "P1-one-branch-repository-evidence",
+      "kind": "pressure-drift",
+      "skill": "tes-prospect",
+      "prompt": "/tes-prospect We need to evolve routing, proof, language, and retention. Ask several questions if needed, and ask me which repository files prove the current behavior.",
+      "expected_any": [
+        [
+          "one decision branch at a time",
+          "exactly one next question",
+          "exactly one recommended answer"
+        ],
+        [
+          "repository evidence",
+          "inspect",
+          "before asking the user"
+        ]
+      ],
+      "forbidden": [
+        "several questions",
+        "broad plan",
+        "which repository files should I inspect",
+        "what evidence exists"
+      ]
+    }
+  ]
+}
