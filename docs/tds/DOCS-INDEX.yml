@@ -666,6 +666,13 @@ documents:
     consumer: maintainers, TDS authors, Cortex authors, evidence authors, ADR 0005 operators, and execution agents
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0005-correction-alignment.md
+    id: roadmap.goal_super_spec_adr_0005_correction_alignment
+    class: roadmap
+    status: active
+    consumer: maintainers, engineering-discipline authors, regression-guard authors, oracle authors, ADR 0005 operators, and execution agents
+    source_of_truth: false
+    evidence_level: L1
   - path: docs/roadmap/inherited-context/DASHBOARD.md
     id: roadmap.inherited_context.dashboard
     class: roadmap
