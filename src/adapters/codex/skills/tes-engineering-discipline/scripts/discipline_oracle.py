@@ -55,6 +55,7 @@ PLAN_FIELDS = (
     "consequence_evidence",
     "declared_contract",
     "named_consequence_surface",
+    "focused_proof",
 )
 
 # Effort-axis fields are recognized by the parser but optional in a plan: a plan
@@ -68,6 +69,8 @@ EFFORT_FIELDS = (
     "declared_contract",
     "named_consequence_surface",
 )
+
+OPTIONAL_PLAN_FIELDS = (*EFFORT_FIELDS, "focused_proof")
 
 VALID_LAYERS = ("birth", "consolidation", "evolution", "platform")
 GENERIC_VALUES = {
@@ -104,6 +107,31 @@ ORACLE_SIGNALS = (
     "run ",
     "test",
     "typecheck",
+)
+
+BROAD_CLOSURE_ORACLE_SIGNALS = (
+    "commit:check",
+    "validate_reference_package.py",
+    "validate_tds.py",
+    "git diff --check",
+    "full closure",
+    "package validation",
+    "reference package",
+)
+
+RED_CAPABLE_PROOF_SIGNALS = (
+    "assert",
+    "behavior",
+    "boundary",
+    "declared interface",
+    "fixture",
+    "focused",
+    "golden",
+    "public interface",
+    "regression",
+    "reproducer",
+    "same-input",
+    "specific",
 )
 
 # The effort axis resolves binary-hard, mirroring the maturity layer: a plan
@@ -254,6 +282,15 @@ def signal_present(text: str, signals) -> bool:
     return False
 
 
+def oracle_is_broad_closure(value: str) -> bool:
+    normalized = normalize(value)
+    return any(signal in normalized for signal in BROAD_CLOSURE_ORACLE_SIGNALS)
+
+
+def has_red_capable_proof(value: str) -> bool:
+    return signal_present(value, RED_CAPABLE_PROOF_SIGNALS)
+
+
 def declared_contract(value: str) -> str | None:
     """Resolve the declared contract to exactly one type, absent, or NEEDS_REVIEW.
 
@@ -308,7 +345,7 @@ def validate_plan_text(text: str) -> list[str]:
     # Effort-axis fields are optional: a plan may omit them entirely (Standard
     # default, no declared contract). Only the original mandatory fields are
     # swept for presence and generic content.
-    mandatory_fields = tuple(f for f in PLAN_FIELDS if f not in EFFORT_FIELDS)
+    mandatory_fields = tuple(f for f in PLAN_FIELDS if f not in OPTIONAL_PLAN_FIELDS)
 
     for field in mandatory_fields:
         if field not in lowered:
@@ -602,7 +639,35 @@ engineering_discipline:
         "named_consequence_surface: pii-export-surface",
         "named_consequence_surface: some-unlisted-surface",
     )
+    broad_only_oracle_plan = """
+engineering_discipline:
+  assumptions: change one exported behavior
+  ambiguity: none
+  maturity_layer: Birth
+  promotion_evidence: none
+  protected_baseline: the existing exported behavior
+  stack_surface: the public entrypoint
+  simplest_path: edit the existing branch
+  allowed_complexity: one branch edit
+  forbidden_complexity: a validation framework
+  deleted_scope: a broad quality pass
+  oracle: npm run commit:check
+  effort_tier: Standard
+  declared_contract: none
+  named_consequence_surface: none
+"""
+    broad_with_focused_proof_plan = broad_only_oracle_plan + (
+        "  focused_proof: pytest boundary fixture asserts the exported behavior regression\n"
+    )
     failures: list[str] = []
+    broad_only_fields = parse_plan_fields(broad_only_oracle_plan)
+    broad_with_focused_fields = parse_plan_fields(broad_with_focused_proof_plan)
+    if not oracle_is_broad_closure(broad_only_fields["oracle"]):
+        failures.append("semantic self-test did not detect a broad closure oracle")
+    if has_red_capable_proof(broad_only_fields.get("focused_proof", "")):
+        failures.append("semantic self-test found focused proof where none was declared")
+    if not has_red_capable_proof(broad_with_focused_fields.get("focused_proof", "")):
+        failures.append("semantic self-test did not detect a red-capable focused proof")
     if validate_plan_text(valid_plan):
         failures.append("semantic self-test rejected a valid Evolution plan")
     if not validate_plan_text(vague_plan):
