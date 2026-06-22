@@ -153,6 +153,25 @@ GENERIC_FAILURE_PATTERNS = {
     "run tests": re.compile(r"(?<![A-Za-z0-9_])run\s+tests(?![A-Za-z0-9_/])", re.IGNORECASE),
     "to be determined": re.compile(r"(?<![A-Za-z0-9_])to\s+be\s+determined(?![A-Za-z0-9_])", re.IGNORECASE),
 }
+IMPLEMENTATION_DETAIL_PATTERNS = {
+    "runtime endpoint": re.compile(
+        r"(?<![A-Za-z0-9_])(?:api|http|rest|graphql)\s+endpoint(?![A-Za-z0-9_])|"
+        r"(?<![A-Za-z0-9_])endpoint\s+implemented\b",
+        re.IGNORECASE,
+    ),
+    "storage schema": re.compile(
+        r"(?<![A-Za-z0-9_])(?:sql|database|db)\s+(?:table|schema|query|migration)(?![A-Za-z0-9_])",
+        re.IGNORECASE,
+    ),
+    "runtime configuration": re.compile(
+        r"(?<![A-Za-z0-9_])(?:environment variable|env var|config key)(?![A-Za-z0-9_])",
+        re.IGNORECASE,
+    ),
+    "code construct": re.compile(
+        r"(?<![A-Za-z0-9_])(?:function|method|class|handler|middleware|controller)(?![A-Za-z0-9_])",
+        re.IGNORECASE,
+    ),
+}
 PATH_RE = re.compile(
     r"(?:^|[`\s])([A-Za-z0-9_./-]+\.(?:md|mdc|json|toml|ya?ml|py|js|ts|tsx|go|rs|tf|sh|ps1|lock|txt))"
 )
@@ -259,6 +278,18 @@ def generic_failures(label: str, text: str) -> list[str]:
         for term in GENERIC_FAILURE_TERMS
         if GENERIC_FAILURE_PATTERNS[term].search(searchable)
     ]
+
+
+def implementation_detail_failures(label: str, text: str) -> list[str]:
+    failures: list[str] = []
+    for lineno, line in enumerate(generic_search_text(text).splitlines(), start=1):
+        for detail, pattern in IMPLEMENTATION_DETAIL_PATTERNS.items():
+            if pattern.search(line):
+                failures.append(
+                    f"{label}:{lineno} contains implementation detail in language surface: {detail}"
+                )
+                break
+    return failures
 
 
 def require_terms(label: str, text: str, terms: tuple[str, ...]) -> list[str]:
@@ -1168,6 +1199,22 @@ def self_test() -> dict[str, Any]:
         result = analyze(target)
         if result["status"] != "PASS":
             failures.extend([f"pt-br prose fixture must pass: {item}" for item in result["failures"]])
+
+    with tempfile.TemporaryDirectory(prefix="tes-align-glossary-implementation-") as tempdir:
+        target = Path(tempdir)
+        write_good_fixture(target)
+        path = target / ALIGNMENT_FILES["glossary"]
+        path.write_text(
+            read_text(path)
+            + "\n| Webhook | HTTP endpoint implemented by `src/webhook.ts`, backed by a SQL table and environment variable. |\n",
+            encoding="utf-8",
+        )
+        result = implementation_detail_failures(
+            ALIGNMENT_FILES["glossary"].as_posix(),
+            read_text(path),
+        )
+        if not any("implementation detail" in item for item in result):
+            failures.append("glossary fixture must fail implementation-heavy language")
 
     with tempfile.TemporaryDirectory(prefix="tes-align-bad-roadmap-") as tempdir:
         target = Path(tempdir)
