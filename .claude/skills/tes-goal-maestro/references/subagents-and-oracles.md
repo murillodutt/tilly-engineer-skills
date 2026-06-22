@@ -24,6 +24,12 @@ When included:
    the next starts;
 9. close subagents after their bounded task is complete.
 
+For `--execute-loop`, use one fresh worker subagent per `ACTIVE_SPEC`. The
+parent sends the full prompt plus a hard active-SPEC envelope, validates commit
+and oracle evidence, then closes the worker. Workers may propose next-prompt
+material but cannot generate the authoritative next prompt or execute the next
+SPEC.
+
 ## Reusable Roles
 
 ### Contracts Senior
@@ -64,7 +70,9 @@ Reviews:
 11. prior commits or closeouts being treated as execution credit without
     explicit authorization;
 12. lexical negative greps that confuse valid blocked-state vocabulary with
-    forbidden executable behavior.
+    forbidden executable behavior;
+13. `--execute-loop` workers touching files outside `ACTIVE_SPEC`, skipping
+    local commit evidence, pushing remotely, or bypassing Executive Stop Audit.
 
 ### Evidence/Oracle Senior
 

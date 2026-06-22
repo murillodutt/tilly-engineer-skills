@@ -19,4 +19,8 @@ default_prompt: |
   only on explicit request. Include Next Prompt Handoff only when the user
   explicitly requests next_prompt_handoff=true, --next-prompt-handoff, or an
   equivalent direct trigger; it may emit the next /goal prompt in chat after GO
-  and certification, but must not write or execute it automatically.
+  and certification, but must not write or execute it automatically. Run
+  Execution Loop only when the user explicitly requests --execute-loop: create
+  an Execution Cost Draft from material sources, execute one ACTIVE_SPEC at a
+  time through a fresh worker subagent, require local commit evidence, keep
+  remote sync forbidden, and run Executive Stop Audit before final closure.

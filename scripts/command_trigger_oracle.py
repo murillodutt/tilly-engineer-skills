@@ -305,6 +305,11 @@ VISIBLE_SKILL_ROUTES = {
             "READY_GOAL_PROMPT",
             "next_prompt_handoff",
             "--next-prompt-handoff",
+            "--execute-loop",
+            "Execution Cost Draft",
+            "Executive Stop Audit",
+            "SPEC_REPAIR_BY_LLM",
+            "EXECUTION_LOOP_COMPLETE",
         ),
         "tes-mine": ("/tes-mine", "/tes:mine", "cognitive brake"),
         "tes-map": (
@@ -339,6 +344,11 @@ VISIBLE_SKILL_ROUTES = {
             "READY_GOAL_PROMPT",
             "next_prompt_handoff",
             "--next-prompt-handoff",
+            "--execute-loop",
+            "Execution Cost Draft",
+            "Executive Stop Audit",
+            "SPEC_REPAIR_BY_LLM",
+            "EXECUTION_LOOP_COMPLETE",
         ),
         "tes-mine": ("/tes-mine", "/tes:mine", "cognitive brake"),
         "tes-map": (

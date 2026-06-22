@@ -673,6 +673,13 @@ documents:
     consumer: maintainers, engineering-discipline authors, regression-guard authors, oracle authors, ADR 0005 operators, and execution agents
     source_of_truth: false
     evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-execute-loop.md
+    id: roadmap.goal_super_spec.goal_maestro_execute_loop
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, adapter authors, oracle authors, and execution agents
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/roadmap/inherited-context/DASHBOARD.md
     id: roadmap.inherited_context.dashboard
     class: roadmap

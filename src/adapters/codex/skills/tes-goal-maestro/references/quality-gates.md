@@ -114,6 +114,9 @@ Reject a prompt if it lacks:
     slices or asset-transfer units.
 16. Next Prompt Handoff only when explicitly requested, with post-`GO`
     certification, chat-only emission and no automatic execution.
+17. Execution Loop only when `--execute-loop` is explicitly requested, with an
+    Execution Cost Draft, `ACTIVE_SPEC` isolation, parent validation, local-only
+    commit sync and Executive Stop Audit.
 
 ## Boundary Leakage Checks
 
@@ -146,6 +149,14 @@ trigger. When requested, the generated prompt must require chat-only next
 prompt emission after `GO` and certification, must not write the next prompt to
 disk without an explicit save request, and must not execute it automatically.
 When not requested, the prompt must not include a next-prompt handoff clause.
+
+Execution Loop is valid only when explicitly requested by `--execute-loop`.
+When requested, the generated response must require an `Execution Cost Draft`
+from material sources before spawning, one fresh worker per `ACTIVE_SPEC`,
+full prompt plus hard active-SPEC envelope, parent validation before advancing,
+local automatic commit per green SPEC, no remote push, bounded
+`SPEC_REPAIR_BY_LLM`, and Executive Stop Audit before final stop.
+When not requested, the prompt must not include execution-loop behavior.
 
 ## Commit Rhythm Checks
 
@@ -271,6 +282,16 @@ Then ask:
 If Next Prompt Handoff appears, was it explicitly requested, and does it wait
 for GO plus certification before emitting only the next prompt in chat without
 writing or executing it?
+```
+
+If the answer is no, return `NEEDS_TREE_REPAIR`.
+
+Then ask:
+
+```text
+If Execution Loop appears, was `--execute-loop` explicitly requested, and does
+it require Execution Cost Draft, ACTIVE_SPEC isolation, parent validation,
+local-only commit sync, bounded SPEC_REPAIR_BY_LLM and Executive Stop Audit?
 ```
 
 If the answer is no, return `NEEDS_TREE_REPAIR`.

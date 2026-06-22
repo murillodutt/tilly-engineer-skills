@@ -63,6 +63,8 @@ The final prompt must include:
 22. Optional Next Prompt Handoff clause only when explicitly requested by
     `next_prompt_handoff=true`, `--next-prompt-handoff`, or an equivalent
     direct trigger.
+23. Optional Execution Loop boundary only when explicitly requested by
+    `--execute-loop`.
 
 ## Prompt Template
 
@@ -156,6 +158,18 @@ Next Prompt Handoff:
 - Do not execute the next prompt automatically.
 - If this run stops, certification is incomplete, or no next declared unit
   exists, report the stop/final state instead of generating a next prompt.
+
+Execution Loop:
+- Disabled unless `--execute-loop` was explicitly requested.
+- When enabled, the parent runner must create an `Execution Cost Draft` before
+  spawning any worker.
+- The parent runner opens one `ACTIVE_SPEC` at a time with the full prompt plus
+  a hard active-SPEC envelope.
+- Workers may execute only `ACTIVE_SPEC`; they may propose next-prompt material
+  but the parent generates the next prompt.
+- Local commit per green SPEC is allowed; remote sync or push remains
+  forbidden without separate user authorization.
+- Final stop requires Executive Stop Audit.
 
 Negative grep semantics:
 - Separate valid blocked-state or policy vocabulary from forbidden executable
@@ -287,6 +301,7 @@ Final delivery:
 - boundaries preserved;
 - blockers or decisions pending;
 - next prompt handoff status when explicitly requested;
+- execution loop status when `--execute-loop` was requested;
 - final status.
 ```
 
@@ -315,7 +330,10 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
 18. defines final delivery;
 19. includes a Next Prompt Handoff clause only when explicitly requested, and
     that clause is chat-only, post-certification, non-executing, and does not
-    write prompt/tree files without an explicit save request.
+    write prompt/tree files without an explicit save request;
+20. includes an Execution Loop boundary only when `--execute-loop` is
+    explicitly requested, and that boundary preserves parent authority,
+    `ACTIVE_SPEC` isolation, local-only commit sync, and Executive Stop Audit.
 
 ## Stop If Missing
 
@@ -355,4 +373,7 @@ Reject prompts that:
 16. use broad lexical greps that fail valid blocked-state vocabulary instead of
     targeting forbidden behavior;
 17. include Next Prompt Handoff without an explicit parameter/trigger or allow
-    it to execute the next prompt automatically.
+    it to execute the next prompt automatically;
+18. include Execution Loop without explicit `--execute-loop` or let a worker
+    execute outside `ACTIVE_SPEC`, push remotely, or bypass Executive Stop
+    Audit.

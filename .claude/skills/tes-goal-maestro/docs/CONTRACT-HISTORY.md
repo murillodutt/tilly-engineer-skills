@@ -25,6 +25,7 @@ examples or origins.
 | Maintainer corrective audit, 2026-05-20 | Commit messages and empty commits are not execution evidence; each unit needs material-diff proof and sync certification. | high |
 | Maintainer directive, 2026-05-22 | Generated Super SPEC content must leave the context window and be materialized as `GOAL-SUPER-SPEC-**.md`. | high |
 | Maintainer directive, 2026-06-22 | Next-prompt continuation must exist only as an explicitly requested parameter/trigger, not as default Goal Maestro behavior. | high |
+| Maintainer directive, 2026-06-22 | Continuous execution requires a separate opt-in runner activated by `--execute-loop`, with parent authority, one active SPEC per worker, local commits, bounded LLM repair, and final executive audit. | high |
 
 ## Source Search Ledger
 
@@ -65,6 +66,11 @@ examples or origins.
   `next_prompt_handoff=true`, `--next-prompt-handoff`, or an equivalent direct
   trigger; when active, it is chat-only, post-`GO`, post-certification,
   non-writing by default and non-executing.
+- Run Execution Loop only when explicitly requested by `--execute-loop`; when
+  active, the parent runner owns the loop, drafts expected cost from material
+  sources, opens one `ACTIVE_SPEC` per fresh worker subagent, validates local
+  commit evidence before advancing, and runs Executive Stop Audit before final
+  closure.
 - Always include `SPEC-000 Preflight And Baseline`.
 - Keep the skill neutral and free of project-specific origin stories,
   absolute paths, or domain examples.
@@ -89,6 +95,9 @@ examples or origins.
 - Parallelizing overlapping write scopes in a strict commit-per-unit queue.
 - Generating a next `/goal` prompt by default, before certification, into a
   file, or as an auto-executed continuation.
+- Turning Goal Maestro into an unbounded autopilot, letting workers advance
+  beyond `ACTIVE_SPEC`, skipping local commit evidence, attributing
+  `SPEC_REPAIR_BY_LLM` to humans, or closing without Executive Stop Audit.
 - Ending with prose instead of evidence and stop states.
 
 ## Relationship To Other Skills
@@ -109,6 +118,7 @@ discipline once execution begins.
 | 2026-05-22 | Added default Super SPEC artifact materialization as `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` and forbade pasting the full generated Super SPEC in chat. | Maintainer requested smaller context-window footprint for Goal Maestro. | high |
 | 2026-06-22 | Added Vertical Slice Fidelity Gate to reject horizontal layer packages that replace declared vertical slices or asset-transfer units. | ADR 0005 asset-transfer run; `GM5-vertical-slices-not-horizontal-layers`; `python3 scripts/context_mesh_plan.py --dataset benchmarks/goal-maestro/eval-dataset.json`. | high |
 | 2026-06-22 | Added opt-in Next Prompt Handoff through `next_prompt_handoff=true` or `--next-prompt-handoff`, restricted to chat-only post-certification prompt emission with no automatic execution. | Maintainer directive in current session; source skill and references updated. | high |
+| 2026-06-22 | Added opt-in `--execute-loop` execution runner contract with Execution Cost Draft, active-SPEC worker isolation, local commits, bounded LLM SPEC repair, escalation ladder, parent next-prompt authority, and Executive Stop Audit. | `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-execute-loop.md`; maintainer directive in current session. | high |
 
 ## Do Not Lose
 
@@ -120,4 +130,7 @@ mask missing material execution, do not collapse semantic negative grep into
 broad vocabulary bans, do not paste generated Super SPEC bodies into chat, and
 do not add project-specific examples. Do not make next-prompt continuation the
 default; it requires an explicit parameter/trigger and remains chat-only,
-post-certification, non-writing by default and non-executing.
+post-certification, non-writing by default and non-executing. Do not make
+execution automatic by default; `--execute-loop` is the only execution trigger,
+and it requires material cost drafting, parent authority, local commit evidence,
+bounded LLM repair, no remote push and Executive Stop Audit.

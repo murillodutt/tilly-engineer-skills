@@ -77,6 +77,7 @@ ownership and sync-status evidence, and emits `/goal` when gates pass. Opt-in
 `next_prompt_handoff=true`/`--next-prompt-handoff` may emit the next `/goal` in
 chat after `GO` and certification, without writing or executing it. Generated
 Super SPEC content is written to `GOAL-SUPER-SPEC-*.md` and summarized in chat.
+Opt-in `--execute-loop` runs one `ACTIVE_SPEC` per worker subagent with local commit evidence, no push, and Executive Stop Audit before closure.
 `tes-bump` is different: it is the version governance guard. It routes from
 direct bump/sync requests and auto-activates read-only when commit, release,
 delivered behavior, or another TES gate reports a version-decision condition.

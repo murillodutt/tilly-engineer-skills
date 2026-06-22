@@ -6,7 +6,7 @@ license: MIT
 
 # TES Goal Maestro
 
-Operational contract: `tes.goal_maestro@0.3.3`.
+Operational contract: `tes.goal_maestro@0.3.4`.
 
 ## Invocation Contract
 
@@ -15,8 +15,8 @@ Use after explicit invocation or a direct request to generate a maestral
 accepted execution tree. Do not activate from generic planning, ordinary goal
 language, or early design discussion.
 
-`tes-goal-maestro` does not execute implementation. It materializes an
-execution-grade materialization tree and, when the tree passes the skill's
+`tes-goal-maestro` does not execute implementation by default. It materializes
+an execution-grade materialization tree and, when the tree passes the skill's
 internal gates, emits a ready `/goal` prompt from a mature input artifact in
 the same response.
 
@@ -35,6 +35,13 @@ requests the parameter or trigger, for example `next_prompt_handoff=true`,
 `--next-prompt-handoff`, or a direct instruction to generate the next `/goal`
 prompt in the chat/context window after certification. Do not infer it from a
 multi-unit tree, a roadmap, or a desire to continue.
+
+Execution Loop is opt-in only. Activate it only when the user explicitly
+requests `--execute-loop`. This runs a parent-controlled execution loop after
+`READY_GOAL_PROMPT`: the parent creates an `Execution Cost Draft`, opens one
+`ACTIVE_SPEC` at a time in a fresh worker subagent with the full prompt plus a
+hard active-SPEC envelope, validates local commit evidence, generates the next
+prompt, and runs an Executive Stop Audit before final closure.
 
 ## Maturity Gate
 
@@ -68,6 +75,16 @@ Assign a readiness score:
   requires owner acceptance.
 - `READY_GOAL_PROMPT`: the input artifact is mature and the generated tree
   passes the internal tree gates.
+- `NEEDS_EXECUTION_LOOP_DRAFT`: `--execute-loop` was requested but material
+  sources are insufficient to draft the expected loop cost.
+- `SPEC_BLOCKED`: the active SPEC cannot converge after allowed attempts,
+  predictive analysis, knowledge-source escalation and sanitized cloud query.
+- `SPEC_CONTRACT_UNSTABLE`: the active SPEC needs more LLM repairs than the
+  allowed repair budget after escalation.
+- `EXECUTION_LOOP_COMPLETE`: all declared SPECs passed and Executive Stop Audit
+  confirms final stop.
+- `EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS`: audit-added `SPEC-AUDIT-*`
+  units were needed and then converged.
 
 If the input artifact is missing structural material, stop with
 `NEEDS_SPEC_MATURITY` and list only the smallest set of missing pieces.
@@ -135,6 +152,8 @@ skill invocation.
    - `references/subagents-and-oracles.md` when roles or verification are weak.
    - `references/quality-gates.md` when maturity, prompt strength or closeout
      needs hardening.
+   - `references/execution-loop-runner.md` only when `--execute-loop` was
+     explicitly requested.
 8. Produce the fixed `Materialization Tree` schema.
 9. Validate the tree against maturity, execution-unit fidelity, material
    continuation, ownership, oracle, negative-grep semantics, material-diff,
@@ -155,7 +174,14 @@ skill invocation.
     prompt to disk, and must forbid executing the next prompt automatically.
     If the current run stops or no next declared unit exists, the executor must
     report the stop/final state instead of generating a next prompt.
-13. Keep output chat-first except for the required Super SPEC artifact. Save
+13. If `--execute-loop` was explicitly requested, run the Execution Loop only
+    after `READY_GOAL_PROMPT`. Produce the `Execution Cost Draft` first; if it
+    cannot be produced from material sources, stop with
+    `NEEDS_EXECUTION_LOOP_DRAFT`. Execute one `ACTIVE_SPEC` at a time through a
+    fresh worker subagent, require local commit evidence per green SPEC, allow
+    `SPEC_REPAIR_BY_LLM` only for the active SPEC with a separate commit, and
+    run Executive Stop Audit before any final stop.
+14. Keep output chat-first except for the required Super SPEC artifact. Save
    prompt or tree files only when the user explicitly asks.
 
 The fixed tree schema is:
@@ -229,6 +255,10 @@ Next Prompt Handoff does not change sync. It is a chat-only closeout behavior
 for the generated `/goal` prompt and is disabled unless explicitly requested by
 parameter or trigger.
 
+Execution Loop does not change remote sync. It may create local commits per
+SPEC when `--execute-loop` is explicitly requested, but remote sync or push
+remains forbidden unless separately authorized by the user.
+
 Reject weak trees that omit per-SPEC files, oracles, review loop, stop states,
 material-diff evidence, sync status or commit rhythm.
 
@@ -252,6 +282,13 @@ Use these statuses:
   `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` and summarized instead of pasted in
   chat.
 - `SAVE_REQUESTED`: user explicitly asked to write the prompt or tree to disk.
+- `NEEDS_EXECUTION_LOOP_DRAFT`: `--execute-loop` lacks material sources for
+  loop-cost drafting.
+- `SPEC_BLOCKED`: active SPEC failed the allowed convergence ladder.
+- `SPEC_CONTRACT_UNSTABLE`: active SPEC exceeded repair budget after
+  escalation.
+- `EXECUTION_LOOP_COMPLETE`: loop and Executive Stop Audit are complete.
+- `EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS`: audit-added loops converged.
 
 Default output:
 
@@ -281,6 +318,14 @@ Default output:
 - Do not generate a next prompt after a stopped or uncertified run, when no
   next declared unit exists, or by writing it to disk without an explicit save
   request.
+- Do not run Execution Loop unless `--execute-loop` was explicitly requested.
+- Do not run `--execute-loop` without an `Execution Cost Draft` from material
+  sources.
+- Do not let a worker subagent execute outside `ACTIVE_SPEC`, execute the next
+  SPEC, push remotely, or become the authority for next-prompt generation.
+- Do not let a `SPEC_REPAIR_BY_LLM` be attributed to a human; it must be
+  committed separately before implementation and marked as LLM action.
+- Do not close an execution loop without Executive Stop Audit.
 - Do not hide forbidden moves, missing oracles, or owner-decision points inside
   prose.
 - Do not emit a prompt that lacks `SPEC-000`, commit-per-SPEC discipline,
@@ -312,7 +357,9 @@ Default output:
 
 `tes-goal-maestro` is complete when it either stops with
 `NEEDS_SPEC_MATURITY`, `NEEDS_EXECUTION_UNIT_FIDELITY`, `NEEDS_TREE_REPAIR`,
-or delivers a ready `/goal` prompt whose artifact, boundaries, execution
-units, ownership, oracles, negative grep, commit rhythm, review loop, optional
-Next Prompt Handoff boundary, and stop states are explicit and faithful to any
-execution queue declared by the input artifact.
+delivers a ready `/goal` prompt whose artifact, boundaries, execution units,
+ownership, oracles, negative grep, commit rhythm, review loop, optional Next
+Prompt Handoff boundary, optional `--execute-loop` boundary, and stop states
+are explicit and faithful to any execution queue declared by the input
+artifact; or when `--execute-loop` was explicitly requested, completes with a
+certified loop status after parent validation and Executive Stop Audit.

@@ -336,6 +336,25 @@ require:
 If the current run stops or no next declared unit exists, the executor reports
 the stop/final state instead of generating a next prompt.
 
+## Execution Loop Boundary
+
+Execution Loop is optional and disabled by default. Include it only when the
+user explicitly requests `--execute-loop`.
+
+When enabled, the tree's `Final Delivery Contract` must require:
+
+1. `Execution Cost Draft` before any worker subagent is spawned;
+2. one active execution unit at a time through `ACTIVE_SPEC=SPEC-00N`;
+3. full prompt plus hard active-SPEC envelope for each worker;
+4. parent validation before opening the next unit;
+5. local commit per green SPEC and no remote push without separate
+   authorization;
+6. `SPEC_REPAIR_BY_LLM` as a separate commit when the active SPEC itself is
+   repaired;
+7. Executive Stop Audit before final loop closure;
+8. `SPEC-AUDIT-*` appended units, not original-tree rewrites, when audit
+   returns `NEEDS_MORE_LOOPS`.
+
 ## Weak Tree Rejection
 
 Stop and revise the tree if it lacks:
@@ -379,4 +398,5 @@ The tree must require a final report with:
 7. unit evidence blocks;
 8. decisions pending;
 9. next prompt handoff status when explicitly requested;
-10. final status.
+10. execution loop status when `--execute-loop` was requested;
+11. final status.
