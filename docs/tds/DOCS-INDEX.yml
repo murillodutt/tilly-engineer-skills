@@ -512,13 +512,6 @@ documents:
     consumer: maintainers, tes-guidelines authors, discipline-oracle authors, adapter materialization authors, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/goals/super-specs/GOAL-PROMPT-tes-declared-contract-arbiter-and-effort-gate.md
-    id: roadmap.goal_prompt_declared_contract_arbiter_and_effort_gate
-    class: roadmap
-    status: active
-    consumer: maintainers and execution agents
-    source_of_truth: false
-    evidence_level: L1
   - path: docs/roadmap/goals/super-specs/FIELD-REPORT-effort-gate-premium-floor.md
     id: roadmap.field_report_effort_gate_premium_floor
     class: roadmap
@@ -624,11 +617,53 @@ documents:
     consumer: maintainers, skill authors, oracle authors, benchmark authors, ADR 0005 operators, and execution agents
     source_of_truth: false
     evidence_level: L1
-  - path: docs/roadmap/goals/super-specs/GOAL-PROMPT-adr-0005-asset-transfer-realignment.md
-    id: roadmap.goal_prompt_adr_0005_asset_transfer_realignment
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0005-pressure-lane.md
+    id: roadmap.goal_super_spec_adr_0005_pressure_lane
     class: roadmap
     status: active
-    consumer: maintainers, ADR 0005 operators, and execution agents
+    consumer: maintainers, Prospect/Mine authors, benchmark authors, ADR 0005 operators, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0005-language-lane.md
+    id: roadmap.goal_super_spec_adr_0005_language_lane
+    class: roadmap
+    status: active
+    consumer: maintainers, Mine authors, Cortex authors, oracle authors, ADR 0005 operators, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0005-slice-lane.md
+    id: roadmap.goal_super_spec_adr_0005_slice_lane
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, benchmark authors, ADR 0005 operators, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0005-proof-lane.md
+    id: roadmap.goal_super_spec_adr_0005_proof_lane
+    class: roadmap
+    status: active
+    consumer: maintainers, engineering-discipline authors, oracle authors, benchmark authors, ADR 0005 operators, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0005-sanitization-lane.md
+    id: roadmap.goal_super_spec_adr_0005_sanitization_lane
+    class: roadmap
+    status: active
+    consumer: maintainers, regression-guard authors, oracle authors, route authors, ADR 0005 operators, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0005-routing-lane.md
+    id: roadmap.goal_super_spec_adr_0005_routing_lane
+    class: roadmap
+    status: active
+    consumer: maintainers, route authors, installer authors, adapter authors, ADR 0005 operators, and execution agents
+    source_of_truth: false
+    evidence_level: L1
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0005-retention-lane.md
+    id: roadmap.goal_super_spec_adr_0005_retention_lane
+    class: roadmap
+    status: active
+    consumer: maintainers, TDS authors, Cortex authors, evidence authors, ADR 0005 operators, and execution agents
     source_of_truth: false
     evidence_level: L1
   - path: docs/roadmap/inherited-context/DASHBOARD.md

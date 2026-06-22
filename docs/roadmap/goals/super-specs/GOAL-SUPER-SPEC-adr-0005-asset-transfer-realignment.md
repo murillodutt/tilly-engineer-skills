@@ -67,6 +67,22 @@ lanes in one run unless the owner explicitly asks for a full sweep.
 | Sanitization | regression guard, reference package checks, route/oracle fixtures | Apply deletion test and condense pass-through surfaces. |
 | Routing | `COMMAND-TRIGGERS.md`, `command_trigger_oracle.py`, adapter route surfaces | Show next flow without exposing inventory or auto-firing explicit skills. |
 
+## Lane SPECs
+
+Execute one lane SPEC at a time. The parent ADR 0005 rule still applies: a lane
+is complete only when an existing TES asset changes or is proven adequate with a
+focused proof.
+
+| Lane | SPEC |
+|------|------|
+| Pressure | `GOAL-SUPER-SPEC-adr-0005-pressure-lane.md` |
+| Language | `GOAL-SUPER-SPEC-adr-0005-language-lane.md` |
+| Slice | `GOAL-SUPER-SPEC-adr-0005-slice-lane.md` |
+| Proof | `GOAL-SUPER-SPEC-adr-0005-proof-lane.md` |
+| Sanitization | `GOAL-SUPER-SPEC-adr-0005-sanitization-lane.md` |
+| Routing | `GOAL-SUPER-SPEC-adr-0005-routing-lane.md` |
+| Retention | `GOAL-SUPER-SPEC-adr-0005-retention-lane.md` |
+
 ## Implementation Units
 
 Run units sequentially for the selected lane.
