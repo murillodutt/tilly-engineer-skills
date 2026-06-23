@@ -101,7 +101,11 @@ The draft must state:
 14. Engineering Method Profile per coding, UI or generated-app SPEC;
 15. structural cost per coding SPEC: expected split, line growth, new modules
     or internal sections, and likely structural repair points;
-16. persistent ledger decision and path when required.
+16. required structural decision artifact when topology is inferred rather than
+    source-mandated;
+17. browser metrics and visual-spatial oracle plan for app, UI, game or
+    rendered-canvas work;
+18. persistent ledger decision and path when required.
 
 If the draft cannot be produced from material sources, stop with
 `NEEDS_EXECUTION_LOOP_DRAFT`.
@@ -119,9 +123,13 @@ Before every worker spawn, the parent must produce a short pre-SPEC reflection:
 6. restate `STRUCTURAL_METHOD=<profile-id>`, file topology budget, allowed new
    modules/internal sections, structural debt budget and structural source
    probes when code structure is in scope;
-7. state local risk and likely repair pressure;
-8. emit the loop-state block;
-9. confirm the worker may execute only the active SPEC.
+7. restate the structural decision artifact when topology is inferred rather
+   than source-mandated;
+8. restate browser metrics and visual-spatial evidence required for app, UI,
+   game or rendered-canvas work;
+9. state local risk and likely repair pressure;
+10. emit the loop-state block;
+11. confirm the worker may execute only the active SPEC.
 
 This reflection is mandatory even when the previous loop generated a next
 prompt.
@@ -140,6 +148,8 @@ failed_attempt_residue=<none|classified|blocked>
 next_allowed_action=<worker_attempt|failed_attempt_recovery|spec_repair|escalation|audit|stop>
 worktree_state=<clean|classified_dirty|blocked>
 bug_vs_architecture=<behavior_bug|structural_collapse|mixed|unknown|not_applicable>
+browser_metrics_required=<yes|no|not_applicable>
+visual_spatial_oracle_required=<yes|no|not_applicable>
 ```
 
 ## Worker Packet
@@ -159,6 +169,8 @@ FILE_TOPOLOGY_BUDGET=<budget or not_applicable>
 ALLOWED_NEW_MODULES=<paths, internal sections or none>
 STRUCTURAL_DEBT_BUDGET=<none, accepted debt or owner-decision needed>
 STRUCTURAL_SOURCE_PROBES=<commands or source checks>
+BROWSER_METRICS_CONTRACT=<artifact path and required fields or not_applicable>
+VISUAL_SPATIAL_ORACLE=<screenshot/pixel/legibility/bounding-box requirement or not_applicable>
 Return the evidence block required by the prompt.
 ```
 
@@ -266,9 +278,35 @@ The parent advances only after validating:
     next prompt;
 13. evidence was produced after the active SPEC opened, not counted from a
     reference implementation, manual build, browser smoke, run record or
-    post-facto audit.
+    post-facto audit;
+14. browser metrics artifact exists and matches the declared contract when app,
+    UI, game or rendered-canvas certification is in scope;
+15. visual-spatial oracle evidence exists when visual layout, render, spawn,
+    raycast, canvas, camera framing or spatial alignment can fail despite green
+    logic.
 
 Remote push is forbidden unless separately authorized by the user.
+
+## Certification Repair Rule
+
+The final certification SPEC may perform bounded code repairs only when the
+repair is discovered by certification evidence and remains inside the active
+SPEC contract.
+
+Allowed certification repairs must:
+
+1. be recorded as `audit_repair`, not as skipped or reordered implementation;
+2. name the failing oracle and the exact repair scope;
+3. change only files allowed by the active certification or audit unit;
+4. create a local non-empty repair commit unless the repair is documentation or
+   evidence-only with an accepted no-commit rationale;
+5. rerun the failing oracle plus the final closeout oracle;
+6. keep the original SPEC sequence intact.
+
+If the repair requires new product scope, changes a prior SPEC contract, or
+cannot be proven from certification evidence, stop with `NEEDS_MORE_LOOPS`,
+`SPEC_CONTRACT_UNSTABLE` or `NEEDS_OWNER_DECISION` instead of folding it into
+the final certification SPEC.
 
 ## Next Prompt Authority
 
@@ -311,7 +349,7 @@ current context plus Git.
 Shard the ledger before it becomes ingestion debt. The ledger must carry only
 SPEC id, spec version, attempt, repair count, audit cycle, failed-attempt
 recovery decision, commit, oracle status, structural decision fields, stop
-state and next allowed action.
+state, browser/visual oracle fields and next allowed action.
 
 ### Ledger Schema
 
@@ -329,8 +367,11 @@ commit:
 oracle_status:
 structural_method_id:
 topology_decision:
+topology_decision_artifact:
 structural_debt:
 next_structural_constraint:
+browser_metrics_contract:
+visual_spatial_oracle:
 stop_state:
 next_allowed_action:
 ```
@@ -342,6 +383,8 @@ Use `not_applicable` for structural decision fields when the active SPEC has no
 code, UI, runtime-script or generated-app structure. These fields are a compact
 decision ledger, not a design essay. They record only the active method,
 topology choice, accepted debt and constraint that the next loop must preserve.
+Use `not_applicable` for browser and visual fields when the active SPEC has no
+browser, UI, game, canvas, layout or spatial-rendering risk.
 
 ## Executive Stop Audit
 
@@ -359,6 +402,7 @@ The reviewer receives:
 7. baseline-only reference evidence classification, when any existed.
 8. Engineering Method Profile and structural method evidence, when applicable.
 9. structural decision ledger and structural handoff, when applicable.
+10. browser metrics artifact and visual-spatial evidence, when applicable.
 
 The reviewer does not receive the full original prompt unless the parent
 decides that a prompt contract dispute is the audit subject.

@@ -39,6 +39,8 @@ Engineering Method Profile:
   docs generator, adapter, or no-code rationale>
 - Intended topology: <files/modules/components/composables/stores/services/
   adapters/scripts/internal sections>
+- Topology decision artifact: <tree block, ledger block, ADR path, or
+  not_applicable>
 - Structural boundaries: <UI/domain/storage/runtime/docs/adapter boundaries>
 - Topology exceptions: <none or source-mandated single-file deliverable with
   internal modularity, named sections, narrow APIs and no duplicated logic>
@@ -55,6 +57,9 @@ Engineering Method Profile:
 - Structural oracles: <size thresholds, module/component inventory,
   import/dependency checks, lint/typecheck/build, rendered UI smoke or source
   probes>
+- Browser metrics contract: <browser-metrics.json fields or not_applicable>
+- Visual-spatial oracle: <screenshot, pixel, legibility, canvas,
+  bounding-box/spawn/raycast check or not_applicable>
 
 Subagents:
 
@@ -97,6 +102,11 @@ Work mode:
 - A declared no-commit preflight must still be reported as executed.
 - Before editing code, UI or generated app artifacts, apply the Engineering
   Method Profile and do not accept behavior-only green if structure regresses.
+- When the source does not mandate topology, record the topology decision before
+  the first material implementation commit.
+- When browser, UI, game, canvas or rendered app behavior is in scope, emit a
+  stable browser metrics artifact and visual-spatial evidence when visual or
+  spatial failure is possible.
 - Stage only files for the current SPEC.
 - Commit and certify the current SPEC before starting the next SPEC.
 - Do not revert user changes.
@@ -156,6 +166,10 @@ Execution Loop:
 - The ledger must carry structural decision fields when code structure is in
   scope: `structural_method_id`, `topology_decision`, `structural_debt` and
   `next_structural_constraint`.
+- For browser, UI, game or rendered-canvas work, the ledger or closeout must
+  carry the browser metrics contract and visual-spatial oracle result.
+- Certification repairs are allowed only as bounded `audit_repair` work inside
+  the active final/audit SPEC, with local commit evidence and rerun oracles.
 - Audit-added `SPEC-AUDIT-*` units are bounded; repeated audit expansion without
   new material evidence stops for owner decision or contract instability.
 - Final stop requires Executive Stop Audit.
@@ -179,7 +193,11 @@ First mandatory act:
    app artifacts.
 7. Declare `STRUCTURAL_METHOD=<profile-id>`, topology budget, allowed new
    modules/internal sections and structural source probes before editing.
-8. Declare the file matrix before editing.
+8. If topology is inferred rather than source-mandated, record the structural
+   decision artifact before the first material implementation commit.
+9. Declare the browser metrics and visual-spatial oracle requirements when app,
+   UI, game, canvas or rendered app work is in scope.
+10. Declare the file matrix before editing.
 
 SPEC-000 Preflight And Baseline
 Objective:
@@ -272,6 +290,8 @@ Run:
 - <regression suite>
 - <lint/typecheck/contract/doc checks>
 - <structural method checks when applicable>
+- <browser metrics artifact check when applicable>
+- <visual-spatial screenshot/pixel/legibility check when applicable>
 - `git diff --check`
 Negative grep:
 - <forbidden runtime or provider pattern>
@@ -298,6 +318,7 @@ Final delivery:
 - oracles run;
 - structural method result when applicable;
 - structural handoff when applicable;
+- browser metrics artifact and visual-spatial oracle result when applicable;
 - boundaries preserved;
 - blockers or decisions pending;
 - next prompt handoff status when explicitly requested;

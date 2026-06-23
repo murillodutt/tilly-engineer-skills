@@ -26,6 +26,27 @@ Derive the Engineering Method Profile from material sources, never from memory:
 If the run cannot derive enough stack or topology evidence, stop with
 `NEEDS_STRUCTURAL_METHOD`.
 
+## Structural Decision Gate
+
+When code, UI, runtime-script or generated-app work has no source-mandated
+topology, decide the topology before the first material implementation commit.
+Record the decision in the material tree, ledger or a small ADR-like artifact.
+
+Minimum fields:
+
+```text
+topology_decision=<multi-file static project|framework components|module split|internal sections|single-file exception|other>
+topology_exception=<none|source-mandated exception with reason>
+rationale=<source evidence, not memory>
+topology_budget=<files/modules/sections/line-growth limit>
+structural_oracles=<source probes and runtime probes>
+```
+
+If the source mandates a topology exception, mark it as an LLM execution
+decision, prove it from source text, and keep the exception bounded. If the
+worker chooses a single-file exception without source support, stop with
+`NEEDS_STRUCTURAL_METHOD`.
+
 ## Method Enforcement Packet
 
 Every coding or app-building execution unit must carry a compact packet:
@@ -33,6 +54,8 @@ Every coding or app-building execution unit must carry a compact packet:
 ```text
 STRUCTURAL_METHOD=<profile-id>
 stack=<language/framework/runtime>
+topology_decision=<chosen topology or not_applicable>
+topology_decision_artifact=<tree|ledger|ADR path|chat block>
 topology_budget=<files/modules/sections/line-growth limit>
 allowed_modules_or_internal_sections=<paths or names>
 forbidden_layer_moves=<UI/domain/storage/runtime/docs/adapter boundaries>
@@ -114,6 +137,7 @@ entry must include:
 ```text
 structural_method_id:
 topology_decision:
+topology_decision_artifact:
 structural_debt:
 next_structural_constraint:
 failed_attempt_recovery_decision:

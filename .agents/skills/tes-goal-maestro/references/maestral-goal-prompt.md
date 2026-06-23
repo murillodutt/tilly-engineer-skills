@@ -117,12 +117,16 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
 17. includes an Engineering Method Profile, `STRUCTURAL_METHOD=<profile-id>`,
     topology budget, structural source probes and structural oracles when code,
     UI or generated app artifacts are in scope;
-18. defines stop criteria;
-19. defines final delivery;
-20. includes a Next Prompt Handoff clause only when explicitly requested, and
+18. records a structural decision artifact before implementation when topology
+    is inferred rather than source-mandated;
+19. includes browser metrics and visual-spatial oracle requirements when app,
+    UI, game or rendered-canvas work can fail visually or spatially;
+20. defines stop criteria;
+21. defines final delivery;
+22. includes a Next Prompt Handoff clause only when explicitly requested, and
     that clause is chat-only, post-certification, non-executing, and does not
     write prompt/tree files without an explicit save request;
-21. includes an Execution Loop boundary only when `--execute-loop` is
+23. includes an Execution Loop boundary only when `--execute-loop` is
     explicitly requested, and that boundary preserves parent authority,
     `ACTIVE_SPEC` isolation, baseline classification, loop-state evidence,
     failed-attempt recovery, persistent ledger triggers, local-only commit
@@ -148,7 +152,10 @@ Stop with `NEEDS_SPEC_MATURITY`, `NEEDS_TREE_REPAIR`,
    Engineering Method Profile, `STRUCTURAL_METHOD=<profile-id>`, topology
    budget, structural source probes, structural negative checks, structural
    oracles or structural handoff requirements;
-9. `templates/maestral-goal-prompt.template.md` was not loaded before prompt
+9. browser, UI, game or rendered-canvas work is in scope but the prompt lacks
+   a browser metrics contract or visual-spatial oracle when visual or spatial
+   failure is realistic;
+10. `templates/maestral-goal-prompt.template.md` was not loaded before prompt
    construction.
 
 Use `NEEDS_TREE_ACCEPTANCE` only when changing the declared execution contract
@@ -191,4 +198,8 @@ Reject prompts that:
     repair, escalation or stop;
 22. generate a next prompt after code changes without structural handoff for
     the active method, changed topology, accepted debt and next-unit
-    constraints.
+    constraints;
+23. certify browser, UI, game, canvas, spawn, raycast, layout or 3D-render work
+    from logic-only checks when a visual-spatial failure can still occur;
+24. hide certification-time repairs as ordinary closeout instead of bounded,
+    committed `audit_repair` evidence.

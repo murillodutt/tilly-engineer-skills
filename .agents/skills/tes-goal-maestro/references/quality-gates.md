@@ -87,6 +87,11 @@ budget, allowed new modules/internal sections, structural debt budget,
 structural source probes, `bug_vs_architecture` recovery classification and
 structural handoff constraints.
 
+Also use it when browser, UI, game or rendered-canvas work requires
+certification but the prompt or closeout lacks a stable browser metrics
+contract or visual-spatial oracle for risks such as render, layout, spawn,
+raycast, camera framing or spatial alignment.
+
 ### DRAFT_MATERIALIZATION_TREE
 
 Use only when the user explicitly asks for staged review before `/goal`.
@@ -114,6 +119,9 @@ Stop if the SPEC says:
     all scripts, all tests or broad cleanup.
 11. "build this app" without stating the intended code topology, structural
     boundaries or structure-sensitive oracles.
+12. "certify this browser app/game/UI" without a machine-readable metrics
+    artifact and visual-spatial evidence when visual or spatial failure is a
+    realistic risk.
 
 ## Weak Prompt Rejection
 
@@ -243,7 +251,11 @@ Before `GO`, verify:
 9. structural method evidence exists for coding, UI or generated-app units;
 10. structural source probes ran or were explicitly impossible with rationale;
 11. structural handoff exists when another unit can build on the same code;
-12. remote sync is reported only when explicitly authorized.
+12. browser metrics artifact exists when browser app, UI, game or rendered
+    canvas certification is in scope;
+13. visual-spatial oracle evidence exists or is explicitly impossible with
+    rationale when visual or spatial failure is in scope;
+14. remote sync is reported only when explicitly authorized.
 
 If any check fails, use `NEEDS_EXECUTION_UNIT_FIDELITY`.
 If structural method evidence is missing or failing, use
@@ -269,6 +281,7 @@ Final delivery must report:
     forbidding unsafe behavior.
 14. structural method result for coding, UI or generated-app units.
 15. structural handoff for coding, UI or generated-app units when applicable.
+16. browser metrics artifact and visual-spatial oracle result when applicable.
 
 ## Stop-State Mapping
 
@@ -350,6 +363,16 @@ If code, UI or generated app artifacts are in scope, does the prompt carry
 `STRUCTURAL_METHOD=<profile-id>`, topology budget, structural source probes,
 structural debt budget, `bug_vs_architecture` recovery classification and
 structural handoff constraints?
+```
+
+If the answer is no, return `NEEDS_STRUCTURAL_METHOD`.
+
+Then ask:
+
+```text
+If browser, UI, game or rendered-canvas work is in scope, does the prompt carry
+a stable browser metrics contract and visual-spatial oracle requirement when
+visual or spatial failure can occur?
 ```
 
 If the answer is no, return `NEEDS_STRUCTURAL_METHOD`.
