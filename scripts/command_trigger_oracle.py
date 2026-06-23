@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.187"
+VERSION = "0.3.188"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -256,16 +256,20 @@ GOAL_MAESTRO_LOOP_CONTRACT_PATHS = {
         "src/adapters/codex/skills/tes-goal-maestro/references/execution-loop-runner.md",
         "src/adapters/codex/skills/tes-goal-maestro/references/quality-gates.md",
         "src/adapters/codex/skills/tes-goal-maestro/references/maestral-goal-prompt.md",
+        "src/adapters/codex/skills/tes-goal-maestro/references/structural-method.md",
         "src/adapters/codex/skills/tes-goal-maestro/references/materialization-tree.md",
         "src/adapters/codex/skills/tes-goal-maestro/references/subagents-and-oracles.md",
+        "src/adapters/codex/skills/tes-goal-maestro/templates/maestral-goal-prompt.template.md",
     ),
     "claude": (
         "src/adapters/claude/skills/tes-goal-maestro/SKILL.md",
         "src/adapters/claude/skills/tes-goal-maestro/references/execution-loop-runner.md",
         "src/adapters/claude/skills/tes-goal-maestro/references/quality-gates.md",
         "src/adapters/claude/skills/tes-goal-maestro/references/maestral-goal-prompt.md",
+        "src/adapters/claude/skills/tes-goal-maestro/references/structural-method.md",
         "src/adapters/claude/skills/tes-goal-maestro/references/materialization-tree.md",
         "src/adapters/claude/skills/tes-goal-maestro/references/subagents-and-oracles.md",
+        "src/adapters/claude/skills/tes-goal-maestro/templates/maestral-goal-prompt.template.md",
     ),
 }
 
@@ -374,6 +378,9 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
         "Executive Stop Audit",
     ),
         "references/maestral-goal-prompt.md": (
+            "templates/maestral-goal-prompt.template.md",
+            "Template Load Contract",
+            "READY_GOAL_PROMPT",
             "Execution Loop:",
             "Engineering Method Profile",
             "STRUCTURAL_METHOD=",
@@ -386,6 +393,21 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
         "reference implementations",
         "exact `--execute-loop-parent-fallback` flag",
         "Executive Stop Audit",
+    ),
+    "references/structural-method.md": (
+        "Engineering Method Profile",
+        "Method Enforcement Packet",
+        "STRUCTURAL_METHOD=",
+        "topology budget",
+        "allowed modules/internal sections",
+        "structural debt budget",
+        "structural source probes",
+        "structural handoff",
+        "bug_vs_architecture",
+        "structural_repair",
+        "single-file exception",
+        "SPEC-AUDIT-STRUCTURE",
+        "GOAL-EXECUTION-LOOP-LEDGER",
     ),
         "references/materialization-tree.md": (
             "Execution Loop Boundary",
@@ -410,6 +432,27 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
         "bug_vs_architecture",
         "Reference implementations",
         "exact `--execute-loop-parent-fallback` flag",
+        "Executive Stop Audit",
+    ),
+    "templates/maestral-goal-prompt.template.md": (
+        "/goal",
+        "Main SPEC:",
+        "SPEC-000 Preflight And Baseline",
+        "Execution unit fidelity:",
+        "git show --stat --oneline <commit>",
+        "Sync status:",
+        "Engineering Method Profile",
+        "STRUCTURAL_METHOD=",
+        "Structural method result:",
+        "Structural handoff:",
+        "Full Oracle And Closeout",
+        "Stop criteria:",
+        "Final delivery:",
+        "Execution Loop:",
+        "ACTIVE_SPEC",
+        "Failed Attempt Recovery",
+        "GOAL-EXECUTION-LOOP-LEDGER",
+        "bug_vs_architecture",
         "Executive Stop Audit",
     ),
 }
@@ -1498,6 +1541,44 @@ def run_fixture_tests() -> list[str]:
         )
     ):
         failures.append("goal-maestro runner file fixture must fail on weak parent fallback wording")
+
+    good_structural_method_file = "\n".join(
+        GOAL_MAESTRO_LOOP_FILE_TERMS["references/structural-method.md"]
+    )
+    if goal_maestro_loop_file_failures(
+        "src/adapters/codex/skills/tes-goal-maestro/references/structural-method.md",
+        good_structural_method_file,
+    ):
+        failures.append("good goal-maestro structural-method fixture must pass file-level terms")
+
+    structural_method_without_repair = good_structural_method_file.replace("structural_repair", "repair")
+    if not any(
+        "structural_repair" in item
+        for item in goal_maestro_loop_file_failures(
+            "src/adapters/codex/skills/tes-goal-maestro/references/structural-method.md",
+            structural_method_without_repair,
+        )
+    ):
+        failures.append("goal-maestro structural-method fixture must fail without structural_repair")
+
+    good_template_file = "\n".join(
+        GOAL_MAESTRO_LOOP_FILE_TERMS["templates/maestral-goal-prompt.template.md"]
+    )
+    if goal_maestro_loop_file_failures(
+        "src/adapters/codex/skills/tes-goal-maestro/templates/maestral-goal-prompt.template.md",
+        good_template_file,
+    ):
+        failures.append("good goal-maestro prompt template fixture must pass file-level terms")
+
+    template_without_spec000 = good_template_file.replace("SPEC-000 Preflight And Baseline", "Baseline")
+    if not any(
+        "SPEC-000 Preflight And Baseline" in item
+        for item in goal_maestro_loop_file_failures(
+            "src/adapters/codex/skills/tes-goal-maestro/templates/maestral-goal-prompt.template.md",
+            template_without_spec000,
+        )
+    ):
+        failures.append("goal-maestro prompt template fixture must fail without SPEC-000")
 
     good_generated_loop_prompt = "\n".join(
         (

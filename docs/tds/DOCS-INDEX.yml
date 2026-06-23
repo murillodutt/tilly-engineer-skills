@@ -1,4 +1,4 @@
-version: 0.3.187
+version: 0.3.188
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -678,6 +678,13 @@ documents:
     class: roadmap
     status: active
     consumer: maintainers, Goal Maestro authors, adapter authors, oracle authors, and execution agents
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-progressive-disclosure.md
+    id: roadmap.goal_super_spec.goal_maestro_progressive_disclosure
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, adapter authors, oracle authors, release reviewers, and execution agents
     source_of_truth: true
     evidence_level: L2
   - path: docs/roadmap/inherited-context/DASHBOARD.md

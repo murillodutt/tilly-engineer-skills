@@ -13,7 +13,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.187"
+VERSION = "0.3.188"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -30,9 +30,9 @@ REQUIRED_PATHS = (
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/adr/0001-tes-memory-lifecycle.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.187/index.json",
-    "docs/dist/0.3.187/tilly-engineer-skills-0.3.187.zip",
-    "docs/dist/0.3.187/tilly-engineer-skills-0.3.187.zip.sha256",
+    "docs/dist/0.3.188/index.json",
+    "docs/dist/0.3.188/tilly-engineer-skills-0.3.188.zip",
+    "docs/dist/0.3.188/tilly-engineer-skills-0.3.188.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -106,7 +106,9 @@ REQUIRED_PATHS = (
     "src/adapters/codex/skills/tes-goal-maestro/references/maestral-goal-prompt.md",
     "src/adapters/codex/skills/tes-goal-maestro/references/materialization-tree.md",
     "src/adapters/codex/skills/tes-goal-maestro/references/quality-gates.md",
+    "src/adapters/codex/skills/tes-goal-maestro/references/structural-method.md",
     "src/adapters/codex/skills/tes-goal-maestro/references/subagents-and-oracles.md",
+    "src/adapters/codex/skills/tes-goal-maestro/templates/maestral-goal-prompt.template.md",
     "src/adapters/codex/skills/tes-goal-maestro/docs/CONTRACT-HISTORY.md",
     "src/adapters/codex/skills/tes-prospect/SKILL.md",
     "src/adapters/codex/skills/tes-prospect/agents/openai.yaml",
@@ -152,7 +154,9 @@ REQUIRED_PATHS = (
     "src/adapters/claude/skills/tes-goal-maestro/references/maestral-goal-prompt.md",
     "src/adapters/claude/skills/tes-goal-maestro/references/materialization-tree.md",
     "src/adapters/claude/skills/tes-goal-maestro/references/quality-gates.md",
+    "src/adapters/claude/skills/tes-goal-maestro/references/structural-method.md",
     "src/adapters/claude/skills/tes-goal-maestro/references/subagents-and-oracles.md",
+    "src/adapters/claude/skills/tes-goal-maestro/templates/maestral-goal-prompt.template.md",
     "src/adapters/claude/skills/tes-goal-maestro/docs/CONTRACT-HISTORY.md",
     "src/adapters/claude/skills/tes-prospect/SKILL.md",
     "src/adapters/claude/skills/tes-prospect/agents/openai.yaml",

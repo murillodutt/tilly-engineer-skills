@@ -32,7 +32,7 @@ turning the repository root into an inventory.
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.187/tilly-engineer-skills-0.3.187.zip` |
+| Public installer bundle | `dist/0.3.188/tilly-engineer-skills-0.3.188.zip` |
 | GitHub package-spec installation | `install/INSTALL.md` |
 | Install reversibility (detach/uninstall/attach-health) | `install/REVERSIBILITY.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
@@ -89,6 +89,7 @@ turning the repository root into an inventory.
 | TES Root Context Composition Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md` |
 | TES Inherited Context Canonical Source Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-inherited-context-canonical-source.md` |
 | ADR 0005 asset transfer realignment Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-adr-0005-asset-transfer-realignment.md` |
+| Goal Maestro Progressive Disclosure Goal Super SPEC | `roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-progressive-disclosure.md` |
 | Inherited Context line dashboard | `roadmap/inherited-context/DASHBOARD.md` |
 | RC1 readiness roadmap | `roadmap/product/RC1-READINESS-ROADMAP.md` |
 | TES Align semantic drift hardening prompt | `roadmap/product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md` |

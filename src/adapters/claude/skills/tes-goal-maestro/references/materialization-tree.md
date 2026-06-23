@@ -229,42 +229,11 @@ Avoid broad-only validation. Run the smallest meaningful oracle first.
 
 When a unit changes code, UI, generated app artifacts or runtime scripts, the
 tree must include an `Engineering Method Profile` inside the relevant execution
-unit or oracle contract.
+unit or oracle contract. Load `references/structural-method.md` for the full
+method contract before accepting a coding or app-building tree.
 
-The profile must state:
-
-1. stack or language family;
-2. intended topology, such as files, modules, components, composables, stores,
-   services, adapters, scripts or internal sections;
-3. structural boundaries between UI, domain, storage, runtime, docs generation
-   and adapter layers;
-4. explicit topology exceptions;
-5. structural negative checks;
-6. structural oracles;
-7. `STRUCTURAL_METHOD=<profile-id>`, topology budget, allowed new
-   files/modules/internal sections, structural debt budget and structural
-   handoff requirements for the next unit.
-
-A source-mandated single-file deliverable is a valid topology exception only
-when the tree requires internal modularity, named sections, narrow APIs, no
-duplicated logic and a structural audit note. The exception must not become
-permission for an unbounded god file.
-
-Structural negative checks should target:
-
-1. god files or unchecked file-size growth;
-2. duplicated domain or conversion logic;
-3. accidental mixing of UI, domain, storage, runtime or adapter layers;
-4. framework-topology bypass;
-5. broad inline CSS/JS when file separation is expected;
-6. glue or workaround code without a declared consumer.
-
-Structural oracles should match the stack: size or line thresholds,
-component/module inventory, import/dependency checks, lint, typecheck, build,
-rendered UI smoke or source probes that can fail on structural collapse.
-
-The tree must include a compact structural decision record for each applicable
-unit:
+The tree must carry this compact structural decision record for each
+applicable unit:
 
 ```text
 STRUCTURAL_METHOD=<profile-id>
@@ -276,15 +245,16 @@ structural_source_probes=<commands or source inspections that can fail>
 structural_handoff=<next-unit constraints, or none>
 ```
 
-Use deterministic probes when source exists: line counts, module inventory,
-import boundaries, duplicate symbols, inline CSS/JS scans, framework directory
-probes or single-file section anchors. LLM review may supplement these probes,
-but must not replace practical runnable or source-readable checks.
+The tree must name topology budget, allowed modules/internal sections,
+structural debt budget, structural source probes, structural negative checks
+and structural handoff. A single-file exception must be source-mandated and
+must still require internal modularity.
 
-If a unit passes behavior or UI smoke but fails structural probes, the tree must
-route to `NEEDS_STRUCTURAL_METHOD` or a bounded
-`SPEC-AUDIT-STRUCTURE-*` repair unit. Do not treat this as ordinary bug fixing
-unless the failure is classified as `bug_vs_architecture=behavior_bug`.
+If a unit passes behavior or UI smoke but fails structural probes, route to
+`NEEDS_STRUCTURAL_METHOD` or a bounded `SPEC-AUDIT-STRUCTURE-*` repair unit.
+Do not treat this as ordinary bug fixing unless failed-attempt recovery
+classifies `bug_vs_architecture=behavior_bug`; architecture collapse routes to
+`structural_repair`.
 
 ## Negative Grep
 
@@ -368,19 +338,11 @@ Sync status:
 
 ## Review Loop
 
-The tree must include a review loop:
-
-1. inspect diff for the current unit;
-2. verify no unrelated files were touched;
-3. verify forbidden moves are absent;
-4. verify structural method requirements when applicable;
-5. run focused oracles;
-6. fix until green;
-7. stage only unit files;
-8. commit;
-9. capture unit evidence block;
-10. inspect post-commit status;
-11. continue to the next slice only after sync status is certified.
+The tree must include a review loop: inspect the current-unit diff, reject
+unrelated files and forbidden moves, verify structural method requirements,
+run focused oracles, fix until green, stage only unit files, commit, capture
+the unit evidence block, inspect post-commit status and continue only after
+sync status is certified.
 
 ## Next Prompt Handoff
 
@@ -388,67 +350,27 @@ Next Prompt Handoff is optional and disabled by default. Include it only when
 the user explicitly requests `next_prompt_handoff=true`,
 `--next-prompt-handoff`, or an equivalent direct trigger.
 
-When enabled, the tree must place the handoff in `Final Delivery Contract` and
-require:
-
-1. current run reaches `GO`;
-2. certification is complete;
-3. next declared execution unit exists;
-4. next `/goal` prompt is emitted in the same chat/context window;
-5. next prompt is not written to disk unless explicitly requested;
-6. next prompt is not executed automatically.
-
-If code, UI, runtime scripts or generated app artifacts were touched, handoff
-also requires active `STRUCTURAL_METHOD=<profile-id>`, changed files/modules or
-internal sections, preserved boundaries, accepted debt and next-unit
-constraints that prevent architecture regression.
-
-If the current run stops or no next declared unit exists, the executor reports
-the stop/final state instead of generating a next prompt.
+When enabled, place the handoff in `Final Delivery Contract`: emit the next
+`/goal` only after `GO`, certification, and a next declared unit; keep it in
+chat, do not write it to disk, and do not execute it automatically. If code,
+UI, runtime scripts or generated app artifacts changed, include active
+`STRUCTURAL_METHOD=<profile-id>`, changed topology, preserved boundaries,
+accepted debt and structural handoff constraints.
 
 ## Execution Loop Boundary
 
 Execution Loop is optional and disabled by default. Include it only when the
 user explicitly requests `--execute-loop`.
 
-When enabled, the tree's `Final Delivery Contract` must require:
-
-1. `Execution Cost Draft` before any worker subagent is spawned;
-2. one active execution unit at a time through `ACTIVE_SPEC=SPEC-00N`;
-3. full prompt plus hard active-SPEC envelope for each worker;
-4. classified baseline worktree state before the first worker;
-5. active Engineering Method Profile when the active unit changes code, UI or
-   generated app artifacts;
-6. active `STRUCTURAL_METHOD=<profile-id>`, file topology budget, allowed new
-   modules/internal sections and structural debt budget in the hard envelope;
-7. loop-state block for every attempt;
-8. failed-attempt recovery before another attempt starts, including
-   `bug_vs_architecture` and a `structural_repair` decision when architecture
-   collapsed;
-9. parent validation before opening the next unit;
-10. local commit per green SPEC and no remote push without separate
-   authorization;
-11. reference implementations, prior manual builds, browser smoke results, run
-   records and post-facto audits classified as baseline-only comparison
-   evidence, never execution credit;
-12. strict sequential replay with evidence produced after each `ACTIVE_SPEC`
-    opens and before the next SPEC starts;
-13. `SPEC_REPAIR_BY_LLM` as a separate commit against a canonical SPEC artifact
-   when the active SPEC itself is repaired;
-14. structural decision ledger fields inside
-    `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when code structure is
-    in scope;
-15. `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the loop is long,
-    repaired, audit-expanded, explicitly ledgered, or resumes without exact
-    loop-state proof;
-16. parent-side execution fallback only after the exact
-    `--execute-loop-parent-fallback` flag;
-17. owner-approved redaction before any cloud escalation;
-18. Executive Stop Audit before final loop closure;
-19. `SPEC-AUDIT-*` appended units, not original-tree rewrites, when audit
-    returns `NEEDS_MORE_LOOPS`;
-20. bounded audit-repair cycles that stop on repeated audit expansion without
-    new material evidence.
+When enabled, load `references/execution-loop-runner.md` and require the tree's
+`Final Delivery Contract` to name `Execution Cost Draft`, one `ACTIVE_SPEC` at
+a time, loop-state block, failed-attempt recovery with `bug_vs_architecture`,
+parent validation, local commit only, reference implementations as
+baseline-only comparison evidence, strict sequential replay,
+`SPEC_REPAIR_BY_LLM`, `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md`,
+the exact `--execute-loop-parent-fallback` flag, owner-approved cloud
+redaction, Executive Stop Audit, and bounded `SPEC-AUDIT-*` units when audit
+returns `NEEDS_MORE_LOOPS`.
 
 ## Weak Tree Rejection
 

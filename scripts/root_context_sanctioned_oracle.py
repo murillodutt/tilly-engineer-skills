@@ -39,7 +39,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.187"
+VERSION = "0.3.188"
 DEFAULT_SANCTIONED_PATH = Path(".tes/root-context-sanctioned.txt")
 
 
