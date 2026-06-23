@@ -158,6 +158,9 @@ Next Prompt Handoff:
 - Do not execute the next prompt automatically.
 - If this run stops, certification is incomplete, or no next declared unit
   exists, report the stop/final state instead of generating a next prompt.
+- If `--execute-loop` is also enabled, suspend this ordinary handoff clause for
+  internal continuation; the parent runner owns next-prompt generation and may
+  execute the next active-SPEC prompt only after parent validation.
 
 Execution Loop:
 - Disabled unless `--execute-loop` was explicitly requested.
@@ -169,6 +172,11 @@ Execution Loop:
   but the parent generates the next prompt.
 - Local commit per green SPEC is allowed; remote sync or push remains
   forbidden without separate user authorization.
+- The parent must classify the baseline worktree before the first worker,
+  maintain a loop-state block for every attempt, repair only canonical SPEC
+  artifacts, and use cloud escalation only after owner-approved redaction.
+- Audit-added `SPEC-AUDIT-*` units are bounded; repeated audit expansion without
+  new material evidence stops for owner decision or contract instability.
 - Final stop requires Executive Stop Audit.
 
 Negative grep semantics:
@@ -333,7 +341,9 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
     write prompt/tree files without an explicit save request;
 20. includes an Execution Loop boundary only when `--execute-loop` is
     explicitly requested, and that boundary preserves parent authority,
-    `ACTIVE_SPEC` isolation, local-only commit sync, and Executive Stop Audit.
+    `ACTIVE_SPEC` isolation, baseline classification, loop-state evidence,
+    local-only commit sync, bounded repair/audit behavior, and Executive Stop
+    Audit.
 
 ## Stop If Missing
 

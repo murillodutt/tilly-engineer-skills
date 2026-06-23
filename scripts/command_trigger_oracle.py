@@ -250,6 +250,37 @@ TARGET_SOURCE_GATE_SOURCE_PATHS = {
     ),
 }
 
+GOAL_MAESTRO_LOOP_CONTRACT_PATHS = {
+    "codex": (
+        "src/adapters/codex/skills/tes-goal-maestro/SKILL.md",
+        "src/adapters/codex/skills/tes-goal-maestro/references/execution-loop-runner.md",
+        "src/adapters/codex/skills/tes-goal-maestro/references/quality-gates.md",
+        "src/adapters/codex/skills/tes-goal-maestro/references/maestral-goal-prompt.md",
+        "src/adapters/codex/skills/tes-goal-maestro/references/materialization-tree.md",
+    ),
+    "claude": (
+        "src/adapters/claude/skills/tes-goal-maestro/SKILL.md",
+        "src/adapters/claude/skills/tes-goal-maestro/references/execution-loop-runner.md",
+        "src/adapters/claude/skills/tes-goal-maestro/references/quality-gates.md",
+        "src/adapters/claude/skills/tes-goal-maestro/references/maestral-goal-prompt.md",
+        "src/adapters/claude/skills/tes-goal-maestro/references/materialization-tree.md",
+    ),
+}
+
+GOAL_MAESTRO_LOOP_TERMS = (
+    "--execute-loop",
+    "takes precedence",
+    "loop-state block",
+    "baseline worktree",
+    "canonical SPEC artifact",
+    "Cloud Query Redaction Block",
+    "owner approval",
+    "bounded audit",
+    "NEEDS_MORE_LOOPS",
+    "NEEDS_OWNER_DECISION",
+    "SAFETY_BLOCKED",
+)
+
 
 CLAUDE_PROJECT_SKILLS = (
     "tes-guidelines",
@@ -309,6 +340,9 @@ VISIBLE_SKILL_ROUTES = {
             "Execution Cost Draft",
             "Executive Stop Audit",
             "SPEC_REPAIR_BY_LLM",
+            "NEEDS_MORE_LOOPS",
+            "NEEDS_OWNER_DECISION",
+            "SAFETY_BLOCKED",
             "EXECUTION_LOOP_COMPLETE",
         ),
         "tes-mine": ("/tes-mine", "/tes:mine", "cognitive brake"),
@@ -348,6 +382,9 @@ VISIBLE_SKILL_ROUTES = {
             "Execution Cost Draft",
             "Executive Stop Audit",
             "SPEC_REPAIR_BY_LLM",
+            "NEEDS_MORE_LOOPS",
+            "NEEDS_OWNER_DECISION",
+            "SAFETY_BLOCKED",
             "EXECUTION_LOOP_COMPLETE",
         ),
         "tes-mine": ("/tes-mine", "/tes:mine", "cognitive brake"),
@@ -626,6 +663,33 @@ def check_skill_route_contracts(root: Path) -> tuple[list[dict[str, Any]], list[
             missing = [term for term in terms if term not in text]
             failures.extend(f"{relpath} missing grouped route term: {term}" for term in missing)
             checked.append({"platform": platform, "skill": skill, "path": relpath, "status": "PASS" if not missing else "FAIL"})
+    return checked, failures
+
+
+def goal_maestro_loop_failures(name: str, text: str) -> list[str]:
+    normalized_text = normalized(text)
+    return [
+        f"{name} missing goal-maestro loop contract term: {term}"
+        for term in GOAL_MAESTRO_LOOP_TERMS
+        if term not in normalized_text
+    ]
+
+
+def check_goal_maestro_loop_contracts(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    checked: list[dict[str, Any]] = []
+    failures: list[str] = []
+    for platform, paths in GOAL_MAESTRO_LOOP_CONTRACT_PATHS.items():
+        text, read_failures = read_group(root, paths)
+        missing = goal_maestro_loop_failures(f"{platform} tes-goal-maestro loop", text)
+        failures.extend(read_failures)
+        failures.extend(missing)
+        checked.append(
+            {
+                "platform": platform,
+                "paths": list(paths),
+                "status": "PASS" if not read_failures and not missing else "FAIL",
+            }
+        )
     return checked, failures
 
 
@@ -913,6 +977,16 @@ def analyze(root: Path = ROOT) -> dict[str, Any]:
         }
     )
 
+    goal_maestro_loop_checked, goal_maestro_loop_failures_list = check_goal_maestro_loop_contracts(root)
+    failures.extend(goal_maestro_loop_failures_list)
+    checked.append(
+        {
+            "group": "goal_maestro_loop_contracts",
+            "status": "PASS" if not goal_maestro_loop_failures_list else "FAIL",
+            "files": goal_maestro_loop_checked,
+        }
+    )
+
     pressure_checked, pressure_failures = check_pressure_skill_contracts(root)
     failures.extend(pressure_failures)
     checked.append(
@@ -1064,6 +1138,22 @@ def run_fixture_tests() -> list[str]:
     no_evidence_pressure = good_pressure.replace("repository evidence can answer", "ask the user what evidence exists")
     if not any("repository evidence can answer" in item for item in pressure_contract_failures("pressure_no_evidence", no_evidence_pressure, PRESSURE_CONTRACT_TERMS)):
         failures.append("pressure fixture must fail without codebase-before-question evidence")
+
+    good_goal_loop = "\n".join(GOAL_MAESTRO_LOOP_TERMS)
+    if goal_maestro_loop_failures("goal_loop_good", good_goal_loop):
+        failures.append("good goal-maestro loop fixture must pass hardened loop terms")
+
+    no_execute_loop = good_goal_loop.replace("--execute-loop", "--plain-goal")
+    if not any("--execute-loop" in item for item in goal_maestro_loop_failures("goal_loop_no_trigger", no_execute_loop)):
+        failures.append("goal-maestro loop fixture must fail without execute-loop trigger")
+
+    no_loop_state = good_goal_loop.replace("loop-state block", "attempt notes")
+    if not any("loop-state block" in item for item in goal_maestro_loop_failures("goal_loop_no_state", no_loop_state)):
+        failures.append("goal-maestro loop fixture must fail without loop-state evidence")
+
+    no_cloud_redaction = good_goal_loop.replace("Cloud Query Redaction Block", "cloud notes")
+    if not any("Cloud Query Redaction Block" in item for item in goal_maestro_loop_failures("goal_loop_no_redaction", no_cloud_redaction)):
+        failures.append("goal-maestro loop fixture must fail without cloud redaction block")
 
     return failures
 

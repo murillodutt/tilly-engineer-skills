@@ -14,6 +14,16 @@ The execution loop is not default Goal Maestro behavior. It is an opt-in
 execution layer that runs after prompt materialization, uses subagents for
 bounded execution, and lets the parent validate evidence before the next loop.
 
+## Trigger Interaction
+
+If `--execute-loop` appears together with `next_prompt_handoff=true` or
+`--next-prompt-handoff`, the execution loop takes precedence for internal
+continuation. The parent runner may generate and execute the next active-SPEC
+prompt only after parent validation of the current SPEC. The ordinary
+Next Prompt Handoff rule still applies after the loop stops or completes, and
+workers remain forbidden from authoritative next-prompt generation or later
+SPEC execution.
+
 ## Lifecycle
 
 Use these states:
@@ -41,6 +51,12 @@ Before spawning any worker, produce an `Execution Cost Draft` from material
 sources only: the SPEC, Super SPEC, accepted tree, generated `/goal`, existing
 commits, and relevant oracles. Do not rely on memory.
 
+Inspect the worktree before drafting. If `git status --short --branch
+--untracked-files=all` shows existing changes, classify them as owner baseline,
+current-loop material, unrelated user work, or blocker. Do not open the first
+worker until the baseline is clean or explicitly classified in the draft; stop
+with `NEEDS_OWNER_DECISION` when ownership cannot be proven.
+
 The draft must state:
 
 1. source artifacts read;
@@ -52,7 +68,10 @@ The draft must state:
 7. expected local commits;
 8. likely repair points;
 9. expected final stop;
-10. known conditions that would require audit-added loops.
+10. known conditions that would require audit-added loops;
+11. baseline worktree state and classification;
+12. canonical SPEC artifact path for any future `SPEC_REPAIR_BY_LLM`;
+13. audit-repair cycle budget.
 
 If the draft cannot be produced from material sources, stop with
 `NEEDS_EXECUTION_LOOP_DRAFT`.
@@ -66,10 +85,25 @@ Before every worker spawn, the parent must produce a short pre-SPEC reflection:
 3. restate allowed files and forbidden files/actions;
 4. restate focused oracles and negative checks;
 5. state local risk and likely repair pressure;
-6. confirm the worker may execute only the active SPEC.
+6. emit the loop-state block;
+7. confirm the worker may execute only the active SPEC.
 
 This reflection is mandatory even when the previous loop generated a next
 prompt.
+
+The loop-state block is mandatory before every attempt and after every failed
+attempt:
+
+```text
+ACTIVE_SPEC=SPEC-00N
+spec_version=<source revision or repair version>
+attempt=<1..3>
+repair_count=<0..2>
+audit_repair_cycle=<0..N>
+last_commit=<sha or none>
+next_allowed_action=<worker_attempt|spec_repair|escalation|audit|stop>
+worktree_state=<clean|classified_dirty|blocked>
+```
 
 ## Worker Packet
 
@@ -97,9 +131,15 @@ If the active SPEC itself must change:
 1. mark the change as `SPEC_REPAIR_BY_LLM`;
 2. state that the repair was proposed and executed by the LLM, not a human;
 3. record cause, evidence, diff, impact, and oracle;
-4. commit the repair separately before implementation;
-5. rerun pre-SPEC reflection;
-6. reset the attempt counter because the contract changed.
+4. update the canonical material SPEC artifact, such as the source SPEC or the
+   generated `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` artifact;
+5. commit the repair separately before implementation;
+6. rerun pre-SPEC reflection with a new `spec_version`;
+7. reset the attempt counter because the contract changed.
+
+If the active SPEC exists only in chat, materialize or expand the required
+Super SPEC artifact before the repair commit. If no canonical repair target can
+be created from material sources, stop with `NEEDS_TREE_REPAIR`.
 
 Allow at most two SPEC repairs per active SPEC. If more repair is needed, run
 the escalation ladder before stopping with `SPEC_CONTRACT_UNSTABLE`.
@@ -112,12 +152,25 @@ leave the active SPEC unstable, run:
 1. predictive code analysis against the material code and SPEC evidence;
 2. MCP or official knowledge sources such as Context7 for library/framework/API
    questions;
-3. sanitized cloud query only with minimal anonymized error, public API facts,
-   and non-secret example context;
+3. sanitized cloud query only after explicit owner approval of the exact
+   sanitized payload, using minimal anonymized error, public API facts, and
+   non-secret example context;
 4. stop if unresolved.
 
 Never send secrets, private paths, proprietary diffs, project names, storage
 backends, credentials, or raw internal payloads to cloud tools.
+
+Before any cloud query, produce a `Cloud Query Redaction Block` with:
+
+1. sanitized payload to be sent;
+2. redacted terms and categories;
+3. confirmation that no secrets, private paths, project names, storage
+   backends, credentials or raw internal payloads remain;
+4. owner approval reference from the current execution context.
+
+If the owner does not approve the exact sanitized payload, stop with
+`NEEDS_OWNER_DECISION`; if sanitization cannot remove sensitive material, stop
+with `SAFETY_BLOCKED`.
 
 ## Parent Validation
 
@@ -131,7 +184,10 @@ The parent advances only after validating:
 6. `git show --stat --oneline <commit>` proves material diff;
 7. post-commit status is inspected;
 8. sync status is `LOCAL_COMMITTED` or `REMOTE_SYNC_NOT_REQUESTED`;
-9. worker did not execute later SPECs.
+9. worker did not execute later SPECs;
+10. parent refreshed local state by rereading the relevant changed files,
+    active SPEC artifact and latest `git show` evidence before creating the
+    next prompt.
 
 Remote push is forbidden unless separately authorized by the user.
 
@@ -151,16 +207,24 @@ validates evidence, close the worker. If subagent capacity is exhausted, the
 parent may close completed, degraded, or no-longer-needed subagents after
 capturing evidence.
 
+If no worker can be created after capacity cleanup, do not silently collapse
+the loop. The parent may execute under the same `ACTIVE_SPEC` envelope only
+when the current user request explicitly authorized parent-side loop execution;
+otherwise stop with `NEEDS_OWNER_DECISION`.
+
 Do not keep subagents open as memory. Git commits and parent-held evidence are
 the state.
 
 ## Loop State
 
 Default loop state lives in the parent context plus Git. Do not write a ledger
-file by default.
+file by default. The loop-state block is still mandatory in the parent
+evidence for every attempt.
 
 If the user explicitly requests `--execute-loop-ledger`, create a compact
-ledger and shard it before it becomes ingestion debt.
+ledger and shard it before it becomes ingestion debt. The ledger must carry
+only SPEC id, spec version, attempt, repair count, audit cycle, commit, oracle
+status, stop state and next allowed action.
 
 ## Executive Stop Audit
 
@@ -199,6 +263,13 @@ repairs; do not rewrite the original materialization tree.
 
 Audit repair units use the same loop rules: active SPEC envelope, local commit,
 oracles, parent validation, and final audit.
+
+The audit must name the exact missing units and the expected stop. After one
+audit-repair batch, rerun Executive Stop Audit. A second `NEEDS_MORE_LOOPS`
+recommendation may open another batch only when it names new material evidence
+that was not available to the first audit. Repeated audit expansion without new
+material evidence stops with `NEEDS_OWNER_DECISION` or
+`SPEC_CONTRACT_UNSTABLE`.
 
 ## Completion
 

@@ -28,7 +28,10 @@ For `--execute-loop`, use one fresh worker subagent per `ACTIVE_SPEC`. The
 parent sends the full prompt plus a hard active-SPEC envelope, validates commit
 and oracle evidence, then closes the worker. Workers may propose next-prompt
 material but cannot generate the authoritative next prompt or execute the next
-SPEC.
+SPEC. If worker capacity is unavailable after closing completed or degraded
+workers, the parent must either execute under the same `ACTIVE_SPEC` envelope
+only when the current request authorized parent-side loop execution, or stop
+with `NEEDS_OWNER_DECISION`.
 
 ## Reusable Roles
 
@@ -72,7 +75,9 @@ Reviews:
 12. lexical negative greps that confuse valid blocked-state vocabulary with
     forbidden executable behavior;
 13. `--execute-loop` workers touching files outside `ACTIVE_SPEC`, skipping
-    local commit evidence, pushing remotely, or bypassing Executive Stop Audit.
+    local commit evidence, pushing remotely, bypassing loop-state evidence,
+    using cloud escalation without owner-approved redaction, expanding audit
+    repairs without new material evidence, or bypassing Executive Stop Audit.
 
 ### Evidence/Oracle Senior
 
