@@ -158,6 +158,9 @@ Next Prompt Handoff:
 - Do not execute the next prompt automatically.
 - If this run stops, certification is incomplete, or no next declared unit
   exists, report the stop/final state instead of generating a next prompt.
+- If `--execute-loop` is also enabled, suspend this ordinary handoff clause for
+  internal continuation; the parent runner owns next-prompt generation and may
+  execute the next active-SPEC prompt only after parent validation.
 
 Execution Loop:
 - Disabled unless `--execute-loop` was explicitly requested.
@@ -169,6 +172,23 @@ Execution Loop:
   but the parent generates the next prompt.
 - Local commit per green SPEC is allowed; remote sync or push remains
   forbidden without separate user authorization.
+- Reference implementations, prior manual builds, browser smoke results,
+  screenshots, run records and post-facto audits are baseline-only comparison
+  evidence. They never count as execution credit for this loop.
+- Strict sequential replay is required: a SPEC is complete only from evidence
+  produced after its `ACTIVE_SPEC` was opened and parent-validated before the
+  next SPEC starts.
+- The parent must classify the baseline worktree before the first worker,
+  maintain a loop-state block for every attempt, repair only canonical SPEC
+  artifacts, resolve failed-attempt residue before the next attempt, and use
+  cloud escalation only after owner-approved redaction.
+- Parent-side execution fallback is disabled unless the exact
+  `--execute-loop-parent-fallback` flag was requested.
+- Create `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the loop is
+  long, repaired, audit-expanded, explicitly requested, or resumes after
+  context compaction without exact loop-state proof.
+- Audit-added `SPEC-AUDIT-*` units are bounded; repeated audit expansion without
+  new material evidence stops for owner decision or contract instability.
 - Final stop requires Executive Stop Audit.
 
 Negative grep semantics:
@@ -333,7 +353,11 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
     write prompt/tree files without an explicit save request;
 20. includes an Execution Loop boundary only when `--execute-loop` is
     explicitly requested, and that boundary preserves parent authority,
-    `ACTIVE_SPEC` isolation, local-only commit sync, and Executive Stop Audit.
+    `ACTIVE_SPEC` isolation, baseline classification, loop-state evidence,
+    failed-attempt recovery, persistent ledger triggers, local-only commit sync,
+    baseline-only comparison for reference implementations, strict sequential
+    replay, bounded repair/audit behavior, explicit parent-fallback
+    authorization, and Executive Stop Audit.
 
 ## Stop If Missing
 
@@ -377,3 +401,6 @@ Reject prompts that:
 18. include Execution Loop without explicit `--execute-loop` or let a worker
     execute outside `ACTIVE_SPEC`, push remotely, or bypass Executive Stop
     Audit.
+19. let a reference implementation, prior manual build, browser smoke result,
+    run record or post-facto audit satisfy `--execute-loop` without strict
+    sequential replay.

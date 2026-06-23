@@ -21,7 +21,7 @@ DATASET = ROOT / "benchmarks/cortex-memory/eval-dataset.json"
 RESULT_SCHEMA = ROOT / "benchmarks/cortex-memory/result-schema.json"
 SCHEMA_VERSION = "tes-cortex-memory-benchmark@0.1"
 FIXTURE_SCHEMA_VERSION = "tes-cortex-memory-fixtures@0.1"
-VERSION = "0.3.184"
+VERSION = "0.3.185"
 VALID_STATUSES = {"PASS", "FAIL", "BLOCKED", "DEGRADED", "NEEDS_REVIEW", "NOT_AVAILABLE"}
 
 sys.path.insert(0, str(ROOT / "scripts"))

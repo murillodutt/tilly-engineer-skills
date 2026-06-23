@@ -43,6 +43,13 @@ requests `--execute-loop`. This runs a parent-controlled execution loop after
 hard active-SPEC envelope, validates local commit evidence, generates the next
 prompt, and runs an Executive Stop Audit before final closure.
 
+Reference implementations, prior manual builds, browser smoke results,
+screenshots, run records and post-facto audits are baseline-only comparison
+evidence. They never satisfy `--execute-loop` execution credit. A loop needs
+strict sequential replay: each declared SPEC must open as `ACTIVE_SPEC`, execute
+after the loop starts, produce fresh local evidence and pass parent validation
+before the next SPEC opens.
+
 Parent-side execution fallback requires the exact `--execute-loop-parent-fallback` flag; otherwise worker capacity stops with `NEEDS_OWNER_DECISION`.
 
 If both Next Prompt Handoff and Execution Loop are requested, `--execute-loop`
@@ -207,9 +214,9 @@ skill invocation.
     owner approval before any sanitized cloud query, require `Failed Attempt
     Recovery` before another attempt starts, create a persistent
     `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` for long or repaired
-    loops, and bound audit-repair cycles so repeated
-    `NEEDS_MORE_LOOPS` becomes `NEEDS_OWNER_DECISION` or
-    `SPEC_CONTRACT_UNSTABLE`.
+    loops, reject reference implementations and post-facto audits as execution
+    credit, and bound audit-repair cycles so repeated `NEEDS_MORE_LOOPS`
+    becomes `NEEDS_OWNER_DECISION` or `SPEC_CONTRACT_UNSTABLE`.
 14. Keep output chat-first except for the required Super SPEC artifact and any
    required execution-loop ledger. Save prompt or tree files only when the user
    explicitly asks.
@@ -360,6 +367,10 @@ Default output:
 - Do not run `--execute-loop` without an `Execution Cost Draft` from material
   sources.
 - Do not run `--execute-loop` on an unclassified dirty baseline.
+- Do not certify `--execute-loop` from a reference implementation, prior manual
+  build, browser smoke result, screenshot, run record or post-facto audit. They
+  are baseline-only comparison evidence and require strict sequential replay
+  through fresh `ACTIVE_SPEC` execution.
 - Do not let the parent execute a worker role because worker capacity is
   unavailable unless the exact `--execute-loop-parent-fallback` flag was
   explicitly requested.

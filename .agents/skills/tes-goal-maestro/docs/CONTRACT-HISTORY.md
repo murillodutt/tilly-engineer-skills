@@ -26,6 +26,9 @@ examples or origins.
 | Maintainer directive, 2026-05-22 | Generated Super SPEC content must leave the context window and be materialized as `GOAL-SUPER-SPEC-**.md`. | high |
 | Maintainer directive, 2026-06-22 | Next-prompt continuation must exist only as an explicitly requested parameter/trigger, not as default Goal Maestro behavior. | high |
 | Maintainer directive, 2026-06-22 | Continuous execution requires a separate opt-in runner activated by `--execute-loop`, with parent authority, one active SPEC per worker, local commits, bounded LLM repair, and final executive audit. | high |
+| Maintainer audit, 2026-06-22 | Execution Loop must resolve handoff precedence, expose branch statuses, preserve loop counters, classify dirty baselines, require canonical SPEC repairs, require owner-approved cloud redaction, and bound audit expansion. | high |
+| Maintainer audit, 2026-06-22 | Execution Loop must resolve failed-attempt residue before retry, require explicit parent fallback authorization, persist loop state for long/repaired loops, and use prompt fixtures rather than only term checks. | high |
+| Canary execution audit, 2026-06-23 | Reference implementations, manual builds, browser smoke results, run records and post-facto audits are baseline-only comparison evidence; `--execute-loop` requires strict sequential replay through fresh `ACTIVE_SPEC` execution. | high |
 
 ## Source Search Ledger
 
@@ -71,6 +74,32 @@ examples or origins.
   sources, opens one `ACTIVE_SPEC` per fresh worker subagent, validates local
   commit evidence before advancing, and runs Executive Stop Audit before final
   closure.
+- When Next Prompt Handoff and Execution Loop are both requested,
+  `--execute-loop` owns internal next-prompt continuation; ordinary chat-only
+  handoff semantics apply only after the loop stops or completes.
+- Execution Loop exposes `NEEDS_MORE_LOOPS`, `NEEDS_OWNER_DECISION`, and
+  `SAFETY_BLOCKED` as branch states, carries loop-state evidence per attempt,
+  requires canonical material SPEC repair targets, and stops before cloud
+  escalation unless the owner approves the exact sanitized payload.
+- Execution Loop requires failed-attempt recovery before retry, creates a
+  persistent `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` for long,
+  repaired, audit-expanded or resumed loops, and treats parent-side worker
+  fallback as disabled unless explicitly requested by
+  the exact `--execute-loop-parent-fallback` flag.
+- Execution Loop treats reference implementations, prior manual builds,
+  browser smoke results, screenshots, run records and post-facto audits as
+  baseline-only comparison evidence. They never satisfy execution credit; the
+  loop must perform strict sequential replay through fresh `ACTIVE_SPEC`
+  execution and parent validation.
+
+## 2026-06-22 — Exact fallback flag and ledger oracle
+
+- Parent-side fallback authorization now requires the exact
+  `--execute-loop-parent-fallback` flag. Natural-language equivalents are no
+  longer accepted for this high-risk collapse path.
+- Execution-loop ledgers now have a deterministic field schema so generated
+  `GOAL-EXECUTION-LOOP-LEDGER-*` artifacts can be validated instead of trusted
+  as prose.
 - Always include `SPEC-000 Preflight And Baseline`.
 - Keep the skill neutral and free of project-specific origin stories,
   absolute paths, or domain examples.
@@ -98,6 +127,15 @@ examples or origins.
 - Turning Goal Maestro into an unbounded autopilot, letting workers advance
   beyond `ACTIVE_SPEC`, skipping local commit evidence, attributing
   `SPEC_REPAIR_BY_LLM` to humans, or closing without Executive Stop Audit.
+- Losing attempt/repair counters across context pressure, repairing SPEC text
+  only in memory, querying cloud tools without owner-approved redaction, or
+  expanding `SPEC-AUDIT-*` indefinitely after repeated audits.
+- Carrying failed-attempt residue into a later attempt, silently replacing
+  unavailable workers with parent execution, or relying on context-only state in
+  long/repaired loops that need a ledger.
+- Certifying `--execute-loop` from a reference implementation, manual build,
+  browser smoke result, run record or post-facto audit instead of strict
+  sequential replay.
 - Ending with prose instead of evidence and stop states.
 
 ## Relationship To Other Skills
@@ -119,6 +157,9 @@ discipline once execution begins.
 | 2026-06-22 | Added Vertical Slice Fidelity Gate to reject horizontal layer packages that replace declared vertical slices or asset-transfer units. | ADR 0005 asset-transfer run; `GM5-vertical-slices-not-horizontal-layers`; `python3 scripts/context_mesh_plan.py --dataset benchmarks/goal-maestro/eval-dataset.json`. | high |
 | 2026-06-22 | Added opt-in Next Prompt Handoff through `next_prompt_handoff=true` or `--next-prompt-handoff`, restricted to chat-only post-certification prompt emission with no automatic execution. | Maintainer directive in current session; source skill and references updated. | high |
 | 2026-06-22 | Added opt-in `--execute-loop` execution runner contract with Execution Cost Draft, active-SPEC worker isolation, local commits, bounded LLM SPEC repair, escalation ladder, parent next-prompt authority, and Executive Stop Audit. | `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-execute-loop.md`; maintainer directive in current session. | high |
+| 2026-06-22 | Hardened `--execute-loop` after P1/P2/P3 audit: handoff precedence, branch statuses, baseline classification, loop-state block, canonical SPEC repair, owner-approved cloud redaction, bounded audit repairs and stronger trigger oracle coverage. | Maintainer audit in current session; source skill, references, command triggers and oracle updated. | high |
+| 2026-06-22 | Closed remaining loop debts: failed-attempt recovery, explicit parent fallback trigger, automatic persistent ledger triggers, and generated-prompt fixture checks for execute-loop contracts. | Maintainer audit in current session; source skill, references, command triggers and oracle updated. | high |
+| 2026-06-23 | Added reference-baseline credit gate: previous implementations, manual builds, browser smokes, run records and post-facto audits cannot validate `--execute-loop` without fresh sequential active-SPEC execution. | Real-project canary audit; source skill, references and oracle updated. | high |
 
 ## Do Not Lose
 
@@ -133,4 +174,8 @@ default; it requires an explicit parameter/trigger and remains chat-only,
 post-certification, non-writing by default and non-executing. Do not make
 execution automatic by default; `--execute-loop` is the only execution trigger,
 and it requires material cost drafting, parent authority, local commit evidence,
-bounded LLM repair, no remote push and Executive Stop Audit.
+bounded LLM repair, loop-state evidence, canonical SPEC repair artifacts,
+failed-attempt recovery, persistent ledger triggers, explicit parent fallback
+authorization, owner-approved cloud redaction, bounded audit repair, no remote
+push, strict sequential replay, baseline-only treatment for reference
+implementations and Executive Stop Audit.

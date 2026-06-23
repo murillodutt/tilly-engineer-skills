@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.184"
+VERSION = "0.3.185"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -273,6 +273,9 @@ GOAL_MAESTRO_LOOP_TERMS = (
     "--execute-loop",
     "--execute-loop-parent-fallback",
     "takes precedence",
+    "strict sequential replay",
+    "baseline-only comparison",
+    "reference implementation",
     "loop-state block",
     "baseline worktree",
     "canonical SPEC artifact",
@@ -308,6 +311,11 @@ GOAL_MAESTRO_LEDGER_FORBIDDEN_PATTERNS = (
     r"chat transcript\s*:",
 )
 
+GOAL_MAESTRO_EXECUTION_CREDIT_FORBIDDEN_PATTERNS = (
+    r"reference (?:implementation|build|smoke|audit)[^\n]{0,120}(?:counts as|satisfies|certifies|validates|replaces)[^\n]{0,120}(?:loop|execution|ACTIVE_SPEC|SPEC)",
+    r"(?:manual build|browser smoke|post-facto audit|run record)[^\n]{0,120}(?:counts as|satisfies|certifies|validates|replaces)[^\n]{0,120}(?:loop|execution|ACTIVE_SPEC|SPEC)",
+)
+
 GOAL_MAESTRO_LOOP_FILE_TERMS = {
     "SKILL.md": (
         "--execute-loop",
@@ -315,11 +323,17 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
         "Execution Cost Draft",
         "Failed Attempt Recovery",
         "GOAL-EXECUTION-LOOP-LEDGER",
+        "strict sequential replay",
+        "reference implementation",
         "Executive Stop Audit",
         "exact `--execute-loop-parent-fallback` flag",
     ),
     "references/execution-loop-runner.md": (
         "The parent runner owns the loop",
+        "Reference Baseline Credit Gate",
+        "baseline-only comparison",
+        "strict sequential replay",
+        "post-facto audit",
         "Failed Attempt Recovery",
         "Ledger Schema",
         "exact `--execute-loop-parent-fallback` flag",
@@ -329,6 +343,8 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
         "Execution Cost Draft",
         "failed-attempt recovery",
         "persistent ledger",
+        "strict sequential replay",
+        "reference implementations",
         "exact `--execute-loop-parent-fallback` flag",
         "Executive Stop Audit",
     ),
@@ -336,6 +352,8 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
         "Execution Loop:",
         "failed-attempt residue",
         "GOAL-EXECUTION-LOOP-LEDGER",
+        "strict sequential replay",
+        "reference implementations",
         "exact `--execute-loop-parent-fallback` flag",
         "Executive Stop Audit",
     ),
@@ -343,6 +361,8 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
         "Execution Loop Boundary",
         "failed-attempt recovery",
         "GOAL-EXECUTION-LOOP-LEDGER",
+        "strict sequential replay",
+        "reference implementations",
         "exact",
         "--execute-loop-parent-fallback",
     ),
@@ -350,6 +370,8 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
         "one fresh worker subagent per `ACTIVE_SPEC`",
         "unresolved failed-attempt residue",
         "required persistent ledger",
+        "strict sequential replay",
+        "Reference implementations",
         "exact `--execute-loop-parent-fallback` flag",
         "Executive Stop Audit",
     ),
@@ -841,11 +863,17 @@ def goal_maestro_generated_prompt_failures(
         "Executive Stop Audit",
         "GOAL-EXECUTION-LOOP-LEDGER",
         "--execute-loop-parent-fallback",
+        "strict sequential replay",
+        "reference implementation",
+        "baseline-only comparison",
     )
     if execute_loop_requested:
         for term in loop_markers:
             if term not in normalized_text:
                 failures.append(f"{name} generated prompt missing execute-loop term: {term}")
+        for pattern in GOAL_MAESTRO_EXECUTION_CREDIT_FORBIDDEN_PATTERNS:
+            if re.search(pattern, normalized_text, re.IGNORECASE):
+                failures.append(f"{name} generated prompt credits reference evidence as loop execution")
         if next_prompt_handoff_requested and "Do not execute the next prompt automatically" in normalized_text:
             failures.append(
                 f"{name} generated prompt conflicts handoff no-execute text with execute-loop continuation"
@@ -1433,6 +1461,9 @@ def run_fixture_tests() -> list[str]:
             "Executive Stop Audit",
             "GOAL-EXECUTION-LOOP-LEDGER-example.md",
             "--execute-loop-parent-fallback",
+            "strict sequential replay",
+            "reference implementation",
+            "baseline-only comparison",
         )
     )
     if goal_maestro_generated_prompt_failures(
@@ -1475,6 +1506,20 @@ def run_fixture_tests() -> list[str]:
         )
     ):
         failures.append("generated execute-loop prompt fixture must fail on contradictory handoff no-execute text")
+
+    generated_loop_reference_credit = (
+        good_generated_loop_prompt
+        + "\nreference implementation validates loop execution for SPEC-001"
+    )
+    if not any(
+        "credits reference evidence" in item
+        for item in goal_maestro_generated_prompt_failures(
+            "generated_loop_reference_credit",
+            generated_loop_reference_credit,
+            execute_loop_requested=True,
+        )
+    ):
+        failures.append("generated execute-loop prompt fixture must fail when reference implementation is credited as execution")
 
     good_handoff_prompt = "GO certification complete. Do not execute the next prompt automatically."
     if goal_maestro_generated_prompt_failures(
@@ -1559,6 +1604,9 @@ def run_fixture_tests() -> list[str]:
             "Executive Stop Audit",
             "GOAL-EXECUTION-LOOP-LEDGER-example.md",
             "--execute-loop-parent-fallback",
+            "strict sequential replay",
+            "reference implementation",
+            "baseline-only comparison",
         )
     )
     if goal_maestro_generated_prompt_e2e_failures(

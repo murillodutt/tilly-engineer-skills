@@ -43,6 +43,23 @@ requests `--execute-loop`. This runs a parent-controlled execution loop after
 hard active-SPEC envelope, validates local commit evidence, generates the next
 prompt, and runs an Executive Stop Audit before final closure.
 
+Reference implementations, prior manual builds, browser smoke results,
+screenshots, run records and post-facto audits are baseline-only comparison
+evidence. They never satisfy `--execute-loop` execution credit. A loop needs
+strict sequential replay: each declared SPEC must open as `ACTIVE_SPEC`, execute
+after the loop starts, produce fresh local evidence and pass parent validation
+before the next SPEC opens.
+
+Parent-side execution fallback requires the exact `--execute-loop-parent-fallback` flag; otherwise worker capacity stops with `NEEDS_OWNER_DECISION`.
+
+If both Next Prompt Handoff and Execution Loop are requested, `--execute-loop`
+owns sequential next-prompt generation and execution inside the parent runner.
+The ordinary chat-only handoff clause is suspended until the loop stops or
+completes, so the generated contract must not contain contradictory
+"do not execute the next prompt automatically" language for parent-runner loop
+continuation. Workers still cannot generate the authoritative next prompt or
+execute later SPECs.
+
 ## Maturity Gate
 
 Before generating `/goal`, verify that the input artifact contains, explicitly
@@ -81,6 +98,13 @@ Assign a readiness score:
   predictive analysis, knowledge-source escalation and sanitized cloud query.
 - `SPEC_CONTRACT_UNSTABLE`: the active SPEC needs more LLM repairs than the
   allowed repair budget after escalation.
+- `NEEDS_MORE_LOOPS`: Executive Stop Audit found missing corrective execution
+  units and the parent has not yet appended or completed `SPEC-AUDIT-*`.
+- `NEEDS_OWNER_DECISION`: safe progress needs owner authority, including
+  remote sync, cloud query approval, unstable contract direction or unresolved
+  dirty-baseline ownership.
+- `SAFETY_BLOCKED`: the loop would require unsafe access, secrets, private
+  data, destructive actions, policy bypass or unauthorized external execution.
 - `EXECUTION_LOOP_COMPLETE`: all declared SPECs passed and Executive Stop Audit
   confirms final stop.
 - `EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS`: audit-added `SPEC-AUDIT-*`
@@ -174,15 +198,28 @@ skill invocation.
     prompt to disk, and must forbid executing the next prompt automatically.
     If the current run stops or no next declared unit exists, the executor must
     report the stop/final state instead of generating a next prompt.
+    When `--execute-loop` is also requested, do not emit the ordinary handoff
+    clause for internal loop continuation; use Execution Loop next-prompt
+    authority instead and report the final prompt/status only after the loop
+    stops or completes.
 13. If `--execute-loop` was explicitly requested, run the Execution Loop only
     after `READY_GOAL_PROMPT`. Produce the `Execution Cost Draft` first; if it
     cannot be produced from material sources, stop with
     `NEEDS_EXECUTION_LOOP_DRAFT`. Execute one `ACTIVE_SPEC` at a time through a
     fresh worker subagent, require local commit evidence per green SPEC, allow
     `SPEC_REPAIR_BY_LLM` only for the active SPEC with a separate commit, and
-    run Executive Stop Audit before any final stop.
-14. Keep output chat-first except for the required Super SPEC artifact. Save
-   prompt or tree files only when the user explicitly asks.
+    run Executive Stop Audit before any final stop. The loop must record a
+    loop-state block for every attempt, classify the worktree baseline before
+    the first worker, repair only canonical SPEC artifacts, require explicit
+    owner approval before any sanitized cloud query, require `Failed Attempt
+    Recovery` before another attempt starts, create a persistent
+    `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` for long or repaired
+    loops, reject reference implementations and post-facto audits as execution
+    credit, and bound audit-repair cycles so repeated `NEEDS_MORE_LOOPS`
+    becomes `NEEDS_OWNER_DECISION` or `SPEC_CONTRACT_UNSTABLE`.
+14. Keep output chat-first except for the required Super SPEC artifact and any
+   required execution-loop ledger. Save prompt or tree files only when the user
+   explicitly asks.
 
 The fixed tree schema is:
 
@@ -287,6 +324,12 @@ Use these statuses:
 - `SPEC_BLOCKED`: active SPEC failed the allowed convergence ladder.
 - `SPEC_CONTRACT_UNSTABLE`: active SPEC exceeded repair budget after
   escalation.
+- `NEEDS_MORE_LOOPS`: Executive Stop Audit requires appended `SPEC-AUDIT-*`
+  units before closure.
+- `NEEDS_OWNER_DECISION`: safe progress needs owner authority or an explicit
+  product/contract decision.
+- `SAFETY_BLOCKED`: unsafe access, secrets, destructive actions or
+  unauthorized external execution would be required.
 - `EXECUTION_LOOP_COMPLETE`: loop and Executive Stop Audit are complete.
 - `EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS`: audit-added loops converged.
 
@@ -319,13 +362,40 @@ Default output:
   next declared unit exists, or by writing it to disk without an explicit save
   request.
 - Do not run Execution Loop unless `--execute-loop` was explicitly requested.
+- Do not combine ordinary Next Prompt Handoff wording with `--execute-loop` in
+  a way that forbids parent-runner continuation after each validated SPEC.
 - Do not run `--execute-loop` without an `Execution Cost Draft` from material
   sources.
+- Do not run `--execute-loop` on an unclassified dirty baseline.
+- Do not certify `--execute-loop` from a reference implementation, prior manual
+  build, browser smoke result, screenshot, run record or post-facto audit. They
+  are baseline-only comparison evidence and require strict sequential replay
+  through fresh `ACTIVE_SPEC` execution.
+- Do not let the parent execute a worker role because worker capacity is
+  unavailable unless the exact `--execute-loop-parent-fallback` flag was
+  explicitly requested.
 - Do not let a worker subagent execute outside `ACTIVE_SPEC`, execute the next
   SPEC, push remotely, or become the authority for next-prompt generation.
+- Do not continue an `ACTIVE_SPEC` without a visible loop-state block carrying
+  SPEC id, SPEC version, attempt number, repair count, audit-repair cycle,
+  last commit and next allowed action.
+- Do not start the next attempt while failed-attempt residue remains
+  unclassified or unresolved; commit valid material, revert only isolated
+  current-attempt changes after diff review, or stop for owner decision.
 - Do not let a `SPEC_REPAIR_BY_LLM` be attributed to a human; it must be
   committed separately before implementation and marked as LLM action.
+- Do not repair a SPEC only in memory; `SPEC_REPAIR_BY_LLM` must update a
+  canonical material artifact such as the source SPEC or generated Super SPEC.
+- Do not perform a cloud query from the escalation ladder without explicit
+  owner approval of the exact sanitized payload and a redaction block proving
+  no secrets, private paths, project names or raw internal payloads remain.
 - Do not close an execution loop without Executive Stop Audit.
+- Do not keep creating `SPEC-AUDIT-*` loops indefinitely; repeated audit
+  requests without new material evidence must stop for owner decision or
+  contract instability.
+- Do not run long or repaired execution loops without a persistent ledger when
+  the draft predicts more than three SPECs, the loop resumes after compaction,
+  a SPEC repair occurs, or an audit repair is appended.
 - Do not hide forbidden moves, missing oracles, or owner-decision points inside
   prose.
 - Do not emit a prompt that lacks `SPEC-000`, commit-per-SPEC discipline,

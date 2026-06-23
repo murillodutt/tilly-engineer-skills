@@ -346,14 +346,30 @@ When enabled, the tree's `Final Delivery Contract` must require:
 1. `Execution Cost Draft` before any worker subagent is spawned;
 2. one active execution unit at a time through `ACTIVE_SPEC=SPEC-00N`;
 3. full prompt plus hard active-SPEC envelope for each worker;
-4. parent validation before opening the next unit;
-5. local commit per green SPEC and no remote push without separate
+4. classified baseline worktree state before the first worker;
+5. loop-state block for every attempt;
+6. failed-attempt recovery before another attempt starts;
+7. parent validation before opening the next unit;
+8. local commit per green SPEC and no remote push without separate
    authorization;
-6. `SPEC_REPAIR_BY_LLM` as a separate commit when the active SPEC itself is
-   repaired;
-7. Executive Stop Audit before final loop closure;
-8. `SPEC-AUDIT-*` appended units, not original-tree rewrites, when audit
-   returns `NEEDS_MORE_LOOPS`.
+9. reference implementations, prior manual builds, browser smoke results, run
+   records and post-facto audits classified as baseline-only comparison
+   evidence, never execution credit;
+10. strict sequential replay with evidence produced after each `ACTIVE_SPEC`
+    opens and before the next SPEC starts;
+11. `SPEC_REPAIR_BY_LLM` as a separate commit against a canonical SPEC artifact
+   when the active SPEC itself is repaired;
+12. `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the loop is long,
+    repaired, audit-expanded, explicitly ledgered, or resumes without exact
+    loop-state proof;
+13. parent-side execution fallback only after the exact
+    `--execute-loop-parent-fallback` flag;
+14. owner-approved redaction before any cloud escalation;
+15. Executive Stop Audit before final loop closure;
+16. `SPEC-AUDIT-*` appended units, not original-tree rewrites, when audit
+    returns `NEEDS_MORE_LOOPS`;
+17. bounded audit-repair cycles that stop on repeated audit expansion without
+    new material evidence.
 
 ## Weak Tree Rejection
 

@@ -352,18 +352,23 @@ When enabled, the tree's `Final Delivery Contract` must require:
 7. parent validation before opening the next unit;
 8. local commit per green SPEC and no remote push without separate
    authorization;
-9. `SPEC_REPAIR_BY_LLM` as a separate commit against a canonical SPEC artifact
+9. reference implementations, prior manual builds, browser smoke results, run
+   records and post-facto audits classified as baseline-only comparison
+   evidence, never execution credit;
+10. strict sequential replay with evidence produced after each `ACTIVE_SPEC`
+    opens and before the next SPEC starts;
+11. `SPEC_REPAIR_BY_LLM` as a separate commit against a canonical SPEC artifact
    when the active SPEC itself is repaired;
-10. `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the loop is long,
+12. `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the loop is long,
     repaired, audit-expanded, explicitly ledgered, or resumes without exact
     loop-state proof;
-11. parent-side execution fallback only after the exact
+13. parent-side execution fallback only after the exact
     `--execute-loop-parent-fallback` flag;
-12. owner-approved redaction before any cloud escalation;
-13. Executive Stop Audit before final loop closure;
-14. `SPEC-AUDIT-*` appended units, not original-tree rewrites, when audit
+14. owner-approved redaction before any cloud escalation;
+15. Executive Stop Audit before final loop closure;
+16. `SPEC-AUDIT-*` appended units, not original-tree rewrites, when audit
     returns `NEEDS_MORE_LOOPS`;
-15. bounded audit-repair cycles that stop on repeated audit expansion without
+17. bounded audit-repair cycles that stop on repeated audit expansion without
     new material evidence.
 
 ## Weak Tree Rejection

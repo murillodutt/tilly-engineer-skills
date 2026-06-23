@@ -28,6 +28,7 @@ examples or origins.
 | Maintainer directive, 2026-06-22 | Continuous execution requires a separate opt-in runner activated by `--execute-loop`, with parent authority, one active SPEC per worker, local commits, bounded LLM repair, and final executive audit. | high |
 | Maintainer audit, 2026-06-22 | Execution Loop must resolve handoff precedence, expose branch statuses, preserve loop counters, classify dirty baselines, require canonical SPEC repairs, require owner-approved cloud redaction, and bound audit expansion. | high |
 | Maintainer audit, 2026-06-22 | Execution Loop must resolve failed-attempt residue before retry, require explicit parent fallback authorization, persist loop state for long/repaired loops, and use prompt fixtures rather than only term checks. | high |
+| Canary execution audit, 2026-06-23 | Reference implementations, manual builds, browser smoke results, run records and post-facto audits are baseline-only comparison evidence; `--execute-loop` requires strict sequential replay through fresh `ACTIVE_SPEC` execution. | high |
 
 ## Source Search Ledger
 
@@ -85,6 +86,11 @@ examples or origins.
   repaired, audit-expanded or resumed loops, and treats parent-side worker
   fallback as disabled unless explicitly requested by
   the exact `--execute-loop-parent-fallback` flag.
+- Execution Loop treats reference implementations, prior manual builds,
+  browser smoke results, screenshots, run records and post-facto audits as
+  baseline-only comparison evidence. They never satisfy execution credit; the
+  loop must perform strict sequential replay through fresh `ACTIVE_SPEC`
+  execution and parent validation.
 
 ## 2026-06-22 — Exact fallback flag and ledger oracle
 
@@ -127,6 +133,9 @@ examples or origins.
 - Carrying failed-attempt residue into a later attempt, silently replacing
   unavailable workers with parent execution, or relying on context-only state in
   long/repaired loops that need a ledger.
+- Certifying `--execute-loop` from a reference implementation, manual build,
+  browser smoke result, run record or post-facto audit instead of strict
+  sequential replay.
 - Ending with prose instead of evidence and stop states.
 
 ## Relationship To Other Skills
@@ -150,6 +159,7 @@ discipline once execution begins.
 | 2026-06-22 | Added opt-in `--execute-loop` execution runner contract with Execution Cost Draft, active-SPEC worker isolation, local commits, bounded LLM SPEC repair, escalation ladder, parent next-prompt authority, and Executive Stop Audit. | `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-execute-loop.md`; maintainer directive in current session. | high |
 | 2026-06-22 | Hardened `--execute-loop` after P1/P2/P3 audit: handoff precedence, branch statuses, baseline classification, loop-state block, canonical SPEC repair, owner-approved cloud redaction, bounded audit repairs and stronger trigger oracle coverage. | Maintainer audit in current session; source skill, references, command triggers and oracle updated. | high |
 | 2026-06-22 | Closed remaining loop debts: failed-attempt recovery, explicit parent fallback trigger, automatic persistent ledger triggers, and generated-prompt fixture checks for execute-loop contracts. | Maintainer audit in current session; source skill, references, command triggers and oracle updated. | high |
+| 2026-06-23 | Added reference-baseline credit gate: previous implementations, manual builds, browser smokes, run records and post-facto audits cannot validate `--execute-loop` without fresh sequential active-SPEC execution. | Real-project canary audit; source skill, references and oracle updated. | high |
 
 ## Do Not Lose
 
@@ -167,4 +177,5 @@ and it requires material cost drafting, parent authority, local commit evidence,
 bounded LLM repair, loop-state evidence, canonical SPEC repair artifacts,
 failed-attempt recovery, persistent ledger triggers, explicit parent fallback
 authorization, owner-approved cloud redaction, bounded audit repair, no remote
-push and Executive Stop Audit.
+push, strict sequential replay, baseline-only treatment for reference
+implementations and Executive Stop Audit.

@@ -34,6 +34,11 @@ only when the current request explicitly authorized parent-side loop execution
 with the exact `--execute-loop-parent-fallback` flag, or stop with
 `NEEDS_OWNER_DECISION`.
 
+Reference implementations, prior manual builds, browser smoke results, run
+records and post-facto audits are reviewer inputs only. They are baseline-only
+comparison evidence and never replace a fresh worker, strict sequential replay
+or per-`ACTIVE_SPEC` commit evidence.
+
 ## Reusable Roles
 
 ### Contracts Senior
@@ -80,7 +85,8 @@ Reviews:
     starting another attempt with unresolved failed-attempt residue, missing a
     required persistent ledger, using parent-side execution fallback without
     explicit authorization, using cloud escalation without owner-approved
-    redaction, expanding audit repairs without new material evidence, or
+    redaction, crediting a reference implementation or post-facto audit as loop
+    execution, expanding audit repairs without new material evidence, or
     bypassing Executive Stop Audit.
 
 ### Evidence/Oracle Senior

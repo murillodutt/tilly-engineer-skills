@@ -172,6 +172,12 @@ Execution Loop:
   but the parent generates the next prompt.
 - Local commit per green SPEC is allowed; remote sync or push remains
   forbidden without separate user authorization.
+- Reference implementations, prior manual builds, browser smoke results,
+  screenshots, run records and post-facto audits are baseline-only comparison
+  evidence. They never count as execution credit for this loop.
+- Strict sequential replay is required: a SPEC is complete only from evidence
+  produced after its `ACTIVE_SPEC` was opened and parent-validated before the
+  next SPEC starts.
 - The parent must classify the baseline worktree before the first worker,
   maintain a loop-state block for every attempt, repair only canonical SPEC
   artifacts, resolve failed-attempt residue before the next attempt, and use
@@ -349,8 +355,9 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
     explicitly requested, and that boundary preserves parent authority,
     `ACTIVE_SPEC` isolation, baseline classification, loop-state evidence,
     failed-attempt recovery, persistent ledger triggers, local-only commit sync,
-    bounded repair/audit behavior, explicit parent-fallback authorization, and
-    Executive Stop Audit.
+    baseline-only comparison for reference implementations, strict sequential
+    replay, bounded repair/audit behavior, explicit parent-fallback
+    authorization, and Executive Stop Audit.
 
 ## Stop If Missing
 
@@ -394,3 +401,6 @@ Reject prompts that:
 18. include Execution Loop without explicit `--execute-loop` or let a worker
     execute outside `ACTIVE_SPEC`, push remotely, or bypass Executive Stop
     Audit.
+19. let a reference implementation, prior manual build, browser smoke result,
+    run record or post-facto audit satisfy `--execute-loop` without strict
+    sequential replay.

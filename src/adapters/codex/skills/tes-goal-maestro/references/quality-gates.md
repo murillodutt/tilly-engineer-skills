@@ -159,7 +159,8 @@ local automatic commit per green SPEC, no remote push, bounded
 baseline state before the first worker, owner-approved cloud escalation only,
 failed-attempt recovery before the next attempt, persistent ledger when the loop
 is long or repaired, exact parent-fallback flag authorization, bounded audit
-repairs, and Executive Stop Audit before final stop.
+repairs, strict sequential replay, baseline-only comparison for reference
+implementations or manual builds, and Executive Stop Audit before final stop.
 When not requested, the prompt must not include execution-loop behavior.
 
 If Next Prompt Handoff and Execution Loop are both explicitly requested,
@@ -201,7 +202,10 @@ Before `GO`, verify:
    default;
 7. earlier failed or partial closeouts were preserved as historical evidence
    and repaired through additive material commits when applicable;
-8. remote sync is reported only when explicitly authorized.
+8. reference implementations, prior manual builds, browser smoke results, run
+   records and post-facto audits were baseline-only comparison evidence, not
+   execution credit;
+9. remote sync is reported only when explicitly authorized.
 
 If any check fails, use `NEEDS_EXECUTION_UNIT_FIDELITY`.
 
@@ -303,7 +307,8 @@ it require Execution Cost Draft, ACTIVE_SPEC isolation, parent validation,
 local-only commit sync, baseline classification, loop-state blocks, canonical
 SPEC_REPAIR_BY_LLM, failed-attempt recovery, persistent ledger triggers, the
 exact `--execute-loop-parent-fallback` flag for parent fallback, owner-approved
-cloud escalation, bounded audit repairs and Executive Stop Audit?
+cloud escalation, strict sequential replay, reference implementations as
+baseline-only comparison, bounded audit repairs and Executive Stop Audit?
 ```
 
 If the answer is no, return `NEEDS_TREE_REPAIR`.

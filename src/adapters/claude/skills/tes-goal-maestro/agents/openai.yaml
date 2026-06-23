@@ -26,5 +26,7 @@ default_prompt: |
   require baseline classification, loop-state evidence, canonical
   SPEC_REPAIR_BY_LLM, failed-attempt recovery, persistent ledger triggers,
   the exact --execute-loop-parent-fallback flag before parent-side worker fallback,
-  owner-approved cloud redaction, local commit evidence, bounded audit repairs,
-  keep remote sync forbidden, and run Executive Stop Audit before final closure.
+  owner-approved cloud redaction, local commit evidence, strict sequential
+  replay, reference/manual builds as baseline-only comparison, bounded audit
+  repairs, keep remote sync forbidden, and run Executive Stop Audit before final
+  closure.

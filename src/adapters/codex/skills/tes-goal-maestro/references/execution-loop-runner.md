@@ -50,6 +50,26 @@ Stop or branch with:
 - `EXECUTION_LOOP_COMPLETE`
 - `EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS`
 
+## Reference Baseline Credit Gate
+
+Reference implementations, prior manual builds, browser smoke results,
+screenshots, run records and post-facto audits may inform the `Execution Cost
+Draft`, expected oracles, risk, comparison targets and final review. They are
+baseline-only comparison evidence.
+
+They never satisfy `--execute-loop` execution credit. The parent must run a
+strict sequential replay: open each declared SPEC as `ACTIVE_SPEC`, send a
+fresh worker the full prompt plus envelope, validate evidence produced after
+that SPEC opened, and commit or accept no-commit rationale before the next SPEC
+opens.
+
+If the target already contains a complete reference implementation, classify it
+in the baseline before the first worker. Continue only when the loop can still
+produce additive, non-empty per-SPEC evidence after loop start. If the existing
+implementation makes fresh per-SPEC evidence impossible without rewriting
+history or pretending old commits are new execution, stop with
+`NEEDS_OWNER_DECISION`.
+
 ## Execution Cost Draft
 
 Before spawning any worker, produce an `Execution Cost Draft` from material
@@ -216,7 +236,10 @@ The parent advances only after validating:
 9. worker did not execute later SPECs;
 10. parent refreshed local state by rereading the relevant changed files,
     active SPEC artifact and latest `git show` evidence before creating the
-    next prompt.
+    next prompt;
+11. evidence was produced after the active SPEC opened, not counted from a
+    reference implementation, manual build, browser smoke, run record or
+    post-facto audit.
 
 Remote push is forbidden unless separately authorized by the user.
 
@@ -296,6 +319,7 @@ The reviewer receives:
 4. oracles and negative checks;
 5. repair records;
 6. final worktree status.
+7. baseline-only reference evidence classification, when any existed.
 
 The reviewer does not receive the full original prompt unless the parent
 decides that a prompt contract dispute is the audit subject.
@@ -331,7 +355,8 @@ material evidence stops with `NEEDS_OWNER_DECISION` or
 ## Completion
 
 Use `EXECUTION_LOOP_COMPLETE` only when all declared SPECs passed and the
-Executive Stop Audit confirms no more loops are needed.
+Executive Stop Audit confirms no more loops are needed and no declared SPEC
+was credited from baseline-only reference evidence.
 
 Use `EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS` when the loop converged only
 after audit-added corrective SPECs.
