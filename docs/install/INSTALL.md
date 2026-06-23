@@ -11,7 +11,7 @@ tver: 0.9.8
 # Adapter Installation
 
 The public installer path is the GitHub package-spec command through npx or Bun after a fixed ref is authorized and release-certified.
-Version `0.3.189` is the fixed release identity for this install surface; treat the remote ref as certified only after the tag is published and `npm run release:check` passes.
+Version `0.3.190` is the fixed release identity for this install surface; treat the remote ref as certified only after the tag is published and `npm run release:check` passes.
 
 User-facing walkthrough:
 
@@ -24,11 +24,11 @@ closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 ## GitHub Package-Spec Form
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add
 ```
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install
@@ -40,10 +40,10 @@ keeping TES output visible.
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.189` is the intended fixed-ref form for a release-certified install
+`#v0.3.190` is the intended fixed-ref form for a release-certified install
 channel. Do not call that remote ref certified until `npm run release:check`
 passes after the tag or fixed ref is authorized and available.
 
@@ -143,12 +143,12 @@ Memory lives in versioned plain-Markdown artifacts (`sources/**`, `cells/**`,
 is derived recall/curation, never memory. The full operator contract lives in
 `docs/mesh/CORTEX.md`.
 
-Cortex is Obsidian-compatible plain Markdown. The installer does not create
-`.obsidian/**`, require community plugins, or depend on Obsidian state. After
-`/tes-init` and `/tes-align`, `/tes-open-obsidian` may open the project.
+Cortex is Obsidian-compatible plain Markdown. The installer does not create `.obsidian/**`, require community plugins, or depend on Obsidian state.
+After `/tes-init` and `/tes-align`, `/tes-open-obsidian` may open the project.
 `/tes-goal-maestro`, `/tes-prospect`, and `/tes-mine` install as explicit
-skills; Goal maestro emits `/goal` after maturity, internal tree,
-material-diff, material-continuation, semantic negative-grep, sequential ownership, and sync-status gates, while prospecting and mining keep the cognitive brake.
+skills; Goal maestro emits `/goal` after maturity, internal tree, material-diff,
+material-continuation, negative-grep, sequential ownership, sync-status,
+structural-method, and browser/visual gates. Prospecting and mining keep the brake.
 
 Cortex MCP is activated by default for selected runtime routes. It is
 project-scoped and exposes only the governed `cortex_remember_plan` /

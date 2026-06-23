@@ -42,9 +42,9 @@
       "contents": "Contents",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.189 · local bundle certified",
-      "manual_meta": "User manual · v0.3.189",
-      "version": "v0.3.189",
+      "release_meta": "v0.3.190 · local bundle certified",
+      "manual_meta": "User manual · v0.3.190",
+      "version": "v0.3.190",
       "source_note": "Generated from TDS.",
       "github": "GitHub",
       "read_manual": "Read the manual",
@@ -56,9 +56,9 @@
       "contents": "Indice",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.189 · bundle local certificado",
-      "manual_meta": "Manual de usuario · v0.3.189",
-      "version": "v0.3.189",
+      "release_meta": "v0.3.190 · bundle local certificado",
+      "manual_meta": "Manual de usuario · v0.3.190",
+      "version": "v0.3.190",
       "source_note": "Generado desde TDS.",
       "github": "GitHub",
       "read_manual": "Leer el manual",
@@ -70,9 +70,9 @@
       "contents": "Sumário",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.189 · bundle local certificado",
-      "manual_meta": "Manual do usuário · v0.3.189",
-      "version": "v0.3.189",
+      "release_meta": "v0.3.190 · bundle local certificado",
+      "manual_meta": "Manual do usuário · v0.3.190",
+      "version": "v0.3.190",
       "source_note": "Gerado a partir do TDS.",
       "github": "GitHub",
       "read_manual": "Ler o manual",
@@ -267,18 +267,22 @@
                 "title": "Memory that survives",
                 "body": "Decisions and project context live as versioned Markdown your whole team can read, and the agent can recall later."
               },
-        {
-          "title": "Checks before changes",
-          "body": "Before an agent changes anything real, TES runs its checks first — and tells you plainly when something needs your review."
-        },
-        {
-          "title": "Long work stays sliced",
-          "body": "Large plans are forced into named units with fresh evidence, one branch of work at a time, so the agent cannot quietly merge, skip, or reorder the work."
-        },
-        {
-          "title": "Nothing leaves without you",
-          "body": "No push, no publish, no remote action by default. Your code and your decisions stay yours until you say otherwise."
-        }
+              {
+                "title": "Checks before changes",
+                "body": "Before an agent changes anything real, TES runs its checks first — and tells you plainly when something needs your review."
+              },
+              {
+                "title": "Long work stays sliced",
+                "body": "Large plans are forced into named units with fresh evidence, one branch of work at a time, so the agent cannot quietly merge, skip, or reorder the work."
+              },
+              {
+                "title": "Architecture must prove itself",
+                "body": "For code, UI, canvas, or 3D work, Goal Maestro records the structural method, keeps topology bounded, and requires browser metrics or visual-spatial evidence when pixels can lie."
+              },
+              {
+                "title": "Nothing leaves without you",
+                "body": "No push, no publish, no remote action by default. Your code and your decisions stay yours until you say otherwise."
+              }
             ]
           }
         ]
@@ -299,18 +303,22 @@
                 "title": "Memoria que sobrevive",
                 "body": "Decisiones y contexto del proyecto viven como Markdown versionado que todo tu equipo lee, y que el agente puede recordar despues."
               },
-        {
-          "title": "Checks antes de cambiar",
-          "body": "Antes de que un agente cambie algo real, TES corre sus checks primero — y te avisa claro cuando algo necesita tu revision."
-        },
-        {
-          "title": "El trabajo largo queda en cortes",
-          "body": "Los planes grandes se fuerzan en unidades nombradas con evidencia nueva, una rama de trabajo por vez, para que el agente no pueda fusionar, saltar o reordenar el trabajo en silencio."
-        },
-        {
-          "title": "Nada sale sin ti",
-          "body": "Sin push, sin publish, sin accion remota por defecto. Tu codigo y tus decisiones siguen siendo tuyos hasta que digas lo contrario."
-        }
+              {
+                "title": "Checks antes de cambiar",
+                "body": "Antes de que un agente cambie algo real, TES corre sus checks primero — y te avisa claro cuando algo necesita tu revision."
+              },
+              {
+                "title": "El trabajo largo queda en cortes",
+                "body": "Los planes grandes se fuerzan en unidades nombradas con evidencia nueva, una rama de trabajo por vez, para que el agente no pueda fusionar, saltar o reordenar el trabajo en silencio."
+              },
+              {
+                "title": "La arquitectura debe probarse",
+                "body": "Para codigo, UI, canvas o 3D, Goal Maestro registra el metodo estructural, mantiene la topologia acotada y exige metricas de browser o evidencia visual-espacial cuando los pixeles pueden mentir."
+              },
+              {
+                "title": "Nada sale sin ti",
+                "body": "Sin push, sin publish, sin accion remota por defecto. Tu codigo y tus decisiones siguen siendo tuyos hasta que digas lo contrario."
+              }
             ]
           }
         ]
@@ -331,18 +339,22 @@
                 "title": "Memória que sobrevive",
                 "body": "Decisões e contexto do projeto vivem como Markdown versionado que sua equipe inteira lê, e que o agente consegue lembrar depois."
               },
-        {
-          "title": "Checagens antes de mudar",
-          "body": "Antes de um agente mudar algo real, o TES roda as checagens primeiro — e avisa com clareza quando algo precisa da sua revisão."
-        },
-        {
-          "title": "Trabalho longo fica fatiado",
-          "body": "Planos grandes são forçados em unidades nomeadas com evidência nova, um ramo de trabalho por vez, para o agente não fundir, pular ou reordenar o trabalho em silêncio."
-        },
-        {
-          "title": "Nada sai sem você",
-          "body": "Sem push, sem publish, sem ação remota por padrão. Seu código e suas decisões continuam seus até você dizer o contrário."
-        }
+              {
+                "title": "Checagens antes de mudar",
+                "body": "Antes de um agente mudar algo real, o TES roda as checagens primeiro — e avisa com clareza quando algo precisa da sua revisão."
+              },
+              {
+                "title": "Trabalho longo fica fatiado",
+                "body": "Planos grandes são forçados em unidades nomeadas com evidência nova, um ramo de trabalho por vez, para o agente não fundir, pular ou reordenar o trabalho em silêncio."
+              },
+              {
+                "title": "A arquitetura precisa se provar",
+                "body": "Para código, UI, canvas ou 3D, o Goal Maestro registra o método estrutural, mantém a topologia limitada e exige métricas de browser ou evidência visual-espacial quando pixels podem enganar."
+              },
+              {
+                "title": "Nada sai sem você",
+                "body": "Sem push, sem publish, sem ação remota por padrão. Seu código e suas decisões continuam seus até você dizer o contrário."
+              }
             ]
           }
         ]
@@ -361,18 +373,18 @@
                 "title": "You can always undo it",
                 "body": "Every file TES writes is recorded and reversible. `uninstall` removes everything and a residue check proves nothing was left behind. Nothing leaves your repo without you asking."
               },
-        {
-          "title": "It measurably changes behavior",
-          "body": "In one retained Claude CLI eval (sonnet), agents followed the discipline up to 6x more often with TES context than without it. Scoped, graded, and kept — not a universal promise."
-        },
-        {
-          "title": "Harder proof before done",
-          "body": "Goal work now requires behavior-specific proof, executable cleanup evidence, single-flow routing, resolved language, and retained learning evidence before it is treated as complete."
-        },
-        {
-          "title": "Three agents, one contract",
-          "body": "Codex, Claude Code, and Cursor share the same rules. Codex and Claude have retained behavior evidence; Cursor matches the contract structurally."
-        }
+              {
+                "title": "It measurably changes behavior",
+                "body": "In one retained Claude CLI eval (sonnet), agents followed the discipline up to 6x more often with TES context than without it. Scoped, graded, and kept — not a universal promise."
+              },
+              {
+                "title": "Harder proof before done",
+                "body": "Goal work now requires behavior-specific proof, structural-method evidence, executable cleanup, single-flow routing, resolved language, local commit evidence when looping, and browser or visual-spatial evidence for UI/canvas/3D before it is treated as complete."
+              },
+              {
+                "title": "Three agents, one contract",
+                "body": "Codex, Claude Code, and Cursor share the same rules. Codex and Claude have retained behavior evidence; Cursor matches the contract structurally."
+              }
             ]
           },
           {
@@ -393,18 +405,18 @@
                 "title": "Siempre puedes deshacerlo",
                 "body": "Cada archivo que TES escribe queda registrado y es reversible. `uninstall` quita todo y un chequeo de residuo prueba que no quedo nada. Nada sale de tu repo sin que lo pidas."
               },
-        {
-          "title": "Cambia el comportamiento de forma medible",
-          "body": "En un eval Claude CLI retenido (sonnet), los agentes siguieron la disciplina hasta 6x mas seguido con contexto TES que sin el. Acotado, evaluado y retenido — no una promesa universal."
-        },
-        {
-          "title": "Prueba mas dura antes de cerrar",
-          "body": "El trabajo por goal ahora exige prueba especifica de comportamiento, evidencia ejecutable de limpieza, routing de flujo unico, lenguaje resuelto y evidencia de aprendizaje retenido antes de tratarse como completo."
-        },
-        {
-          "title": "Tres agentes, un contrato",
-          "body": "Codex, Claude Code y Cursor comparten las mismas reglas. Codex y Claude tienen evidencia retenida de comportamiento; Cursor coincide con el contrato a nivel estructural."
-        }
+              {
+                "title": "Cambia el comportamiento de forma medible",
+                "body": "En un eval Claude CLI retenido (sonnet), los agentes siguieron la disciplina hasta 6x mas seguido con contexto TES que sin el. Acotado, evaluado y retenido — no una promesa universal."
+              },
+              {
+                "title": "Prueba mas dura antes de cerrar",
+                "body": "El trabajo por goal ahora exige prueba especifica de comportamiento, evidencia de metodo estructural, limpieza ejecutable, routing de flujo unico, lenguaje resuelto, evidencia de commit local cuando hay loop, y evidencia de browser o visual-espacial para UI/canvas/3D antes de tratarse como completo."
+              },
+              {
+                "title": "Tres agentes, un contrato",
+                "body": "Codex, Claude Code y Cursor comparten las mismas reglas. Codex y Claude tienen evidencia retenida de comportamiento; Cursor coincide con el contrato a nivel estructural."
+              }
             ]
           },
           {
@@ -425,18 +437,18 @@
                 "title": "Você sempre pode desfazer",
                 "body": "Todo arquivo que o TES escreve fica registrado e é reversível. O `uninstall` remove tudo e uma checagem de resíduo prova que nada ficou para trás. Nada sai do seu repositório sem você pedir."
               },
-        {
-          "title": "Muda o comportamento de forma mensurável",
-          "body": "Em um eval Claude CLI retido (sonnet), os agentes seguiram a disciplina até 6x mais vezes com contexto TES do que sem. Escopado, avaliado e retido — não uma promessa universal."
-        },
-        {
-          "title": "Prova mais dura antes de concluir",
-          "body": "Trabalho por goal agora exige prova específica de comportamento, evidência executável de limpeza, roteamento de fluxo único, linguagem resolvida e evidência de aprendizado retido antes de ser tratado como completo."
-        },
-        {
-          "title": "Três agentes, um contrato",
-          "body": "Codex, Claude Code e Cursor compartilham as mesmas regras. Codex e Claude têm evidência comportamental retida; o Cursor casa com o contrato no nível estrutural."
-        }
+              {
+                "title": "Muda o comportamento de forma mensurável",
+                "body": "Em um eval Claude CLI retido (sonnet), os agentes seguiram a disciplina até 6x mais vezes com contexto TES do que sem. Escopado, avaliado e retido — não uma promessa universal."
+              },
+              {
+                "title": "Prova mais dura antes de concluir",
+                "body": "Trabalho por goal agora exige prova específica de comportamento, evidência de método estrutural, limpeza executável, roteamento de fluxo único, linguagem resolvida, evidência de commit local quando há loop, e evidência de browser ou visual-espacial para UI/canvas/3D antes de ser tratado como completo."
+              },
+              {
+                "title": "Três agentes, um contrato",
+                "body": "Codex, Claude Code e Cursor compartilham as mesmas regras. Codex e Claude têm evidência comportamental retida; o Cursor casa com o contrato no nível estrutural."
+              }
             ]
           },
           {
@@ -455,17 +467,17 @@
           {
             "type": "code",
             "label": "fixed ref form",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "bun runtime",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "non-interactive",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -488,7 +500,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.189` is the intended fixed-ref form. Treat the remote ref as certified only after the tag is published and `npm run release:check` passes."
+            "text": "`#v0.3.190` is the intended fixed-ref form. Treat the remote ref as certified only after the tag is published and `npm run release:check` passes."
           },
           {
             "type": "p",
@@ -504,17 +516,17 @@
           {
             "type": "code",
             "label": "ref fija",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "no interactivo",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -537,7 +549,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.189` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de publicar el tag y de que `npm run release:check` pase."
+            "text": "`#v0.3.190` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de publicar el tag y de que `npm run release:check` pase."
           },
           {
             "type": "p",
@@ -553,17 +565,17 @@
           {
             "type": "code",
             "label": "ref fixa",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "não interativo",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -586,7 +598,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.189` é a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de publicar a tag e de `npm run release:check` passar."
+            "text": "`#v0.3.190` é a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de publicar a tag e de `npm run release:check` passar."
           },
           {
             "type": "p",
@@ -613,6 +625,10 @@
                 "body": "Use the manual when you need routes, states, Mantra Gate, rollback, MCP, Field Reports, or Obsidian viewing."
               },
               {
+                "title": "Run goals",
+                "body": "Use `/tes-goal-maestro` for one mature SPEC, add next-prompt handoff for staged work, or request `--execute-loop` when each SPEC should run sequentially with fresh workers, local commits, and final audit."
+              },
+              {
                 "title": "Audit",
                 "body": "Use the source map when a claim needs evidence, scope, or a governed document."
               }
@@ -637,6 +653,10 @@
                 "body": "Usa el manual para rutas, estados, Mantra Gate, rollback, MCP, Field Reports u Obsidian."
               },
               {
+                "title": "Ejecutar goals",
+                "body": "Usa `/tes-goal-maestro` para una SPEC madura, suma next-prompt handoff para trabajo por etapas o pide `--execute-loop` cuando cada SPEC deba ejecutarse en secuencia con workers nuevos, commits locales y auditoria final."
+              },
+              {
                 "title": "Auditar",
                 "body": "Usa el mapa de fuentes cuando un claim necesita evidencia, alcance o documento gobernado."
               }
@@ -659,6 +679,10 @@
               {
                 "title": "Operar",
                 "body": "Use o manual para rotas, estados, Mantra Gate, rollback, MCP, Field Reports ou Obsidian."
+              },
+              {
+                "title": "Executar goals",
+                "body": "Use `/tes-goal-maestro` para uma SPEC madura, acrescente next-prompt handoff para trabalho em etapas ou peça `--execute-loop` quando cada SPEC deve rodar em sequência com workers novos, commits locais e auditoria final."
               },
               {
                 "title": "Auditar",
@@ -858,12 +882,12 @@
           {
             "type": "code",
             "label": "fixed ref form",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "bun runtime",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -888,7 +912,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.189` is the intended fixed-ref form; remote certification exists only after `release:check` passes for the published tag. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit."
+            "text": "`#v0.3.190` is the intended fixed-ref form; remote certification exists only after `release:check` passes for the published tag. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit."
           },
           {
             "type": "p",
@@ -908,12 +932,12 @@
           {
             "type": "code",
             "label": "ref fija",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -938,7 +962,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.189` es la forma de ref fija prevista; la certificacion remota existe solo despues de que `release:check` pase para el tag publicado. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear."
+            "text": "`#v0.3.190` es la forma de ref fija prevista; la certificacion remota existe solo despues de que `release:check` pase para el tag publicado. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear."
           },
           {
             "type": "p",
@@ -958,12 +982,12 @@
           {
             "type": "code",
             "label": "ref fixa",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.189 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.190 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -988,7 +1012,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.189` e a forma de ref fixa prevista; a certificação remota existe somente depois de `release:check` passar para a tag publicada. Bundles runtime são preparados em `.tes/setup/<version>/`; esse diretório e cache local, não conhecimento do projeto para commit."
+            "text": "`#v0.3.190` e a forma de ref fixa prevista; a certificação remota existe somente depois de `release:check` passar para a tag publicada. Bundles runtime são preparados em `.tes/setup/<version>/`; esse diretório e cache local, não conhecimento do projeto para commit."
           },
           {
             "type": "p",
@@ -1035,11 +1059,11 @@
                 "Show the current Project GPS: position, blockers, proof, and next move.",
                 "Updates only the managed `TES-MAP` block in `PROJECT-ROADMAP.md`."
               ],
-        [
-          "`/tes-goal-maestro`",
-          "Generate an execution-grade tree and maestral `/goal` prompt from a mature SPEC, Super SPEC, PRD, relational project plan, or accepted execution tree; optionally continue with next-prompt handoff or `--execute-loop` when explicitly requested.",
-          "Writes generated Super SPECs to `GOAL-SUPER-SPEC-*.md`; otherwise chat-first unless explicitly saved. With `--execute-loop`, runs one active SPEC at a time, requires local commit evidence, and still forbids push unless you authorize it separately."
-        ],
+              [
+                "`/tes-goal-maestro`",
+                "Generate an execution-grade tree and maestral `/goal` prompt from a mature SPEC, Super SPEC, PRD, relational project plan, or accepted execution tree; optionally use next-prompt handoff or `--execute-loop` when explicitly requested.",
+                "Writes generated Super SPECs to `GOAL-SUPER-SPEC-*.md`; otherwise chat-first unless explicitly saved. With `--execute-loop`, runs one active SPEC at a time, requires local commit and structural/browser/visual evidence when relevant, and still forbids push unless you authorize it separately."
+              ],
               [
                 "`/tes-prospect`",
                 "Explicitly stress-test a plan or design with predictive project pressure.",
@@ -1108,7 +1132,7 @@
           },
           {
             "type": "p",
-      "text": "`/tes-goal-maestro`, `/tes-prospect`, and `/tes-mine` are explicit skills. Goal maestro turns a mature SPEC, Super SPEC, PRD, relational project plan, or accepted execution tree into an execution-grade tree, preserves declared execution units, validates the tree internally, writes generated Super SPEC content to `GOAL-SUPER-SPEC-*.md` instead of pasting it into chat, requires material-diff, material-continuation, semantic negative-grep, sequential ownership and sync-status evidence, then emits a hardened `/goal` prompt when gates pass. If you explicitly request next-prompt handoff, the next prompt is emitted in the chat after certification. If you explicitly request `--execute-loop`, the parent runner drafts expected loop cost, opens one active SPEC per fresh worker subagent, sends the full prompt rather than a compacted summary, validates local commit evidence, marks any LLM-authored SPEC repair separately, and runs an Executive Stop Audit before closure. Prospecting and mining stay dormant until named, then may drive project-stress prospecting or code mining proactively. Use the cognitive brake (`pause`, `hold`, `resuma onde estamos`) to stop pressure and receive the current state before resuming."
+            "text": "`/tes-goal-maestro`, `/tes-prospect`, and `/tes-mine` are explicit skills. Goal Maestro turns a mature SPEC, Super SPEC, PRD, relational project plan, or accepted execution tree into an execution-grade tree, preserves declared execution units, validates maturity and unit fidelity, records the structural method for code work, and emits a hardened `/goal` prompt when gates pass. If you request next-prompt handoff, the next prompt is emitted in chat after certification. If you request `--execute-loop`, the parent runner drafts loop cost, opens one active SPEC per fresh worker, sends the full prompt instead of a compacted summary, validates local commit evidence, captures structural/browser/visual proof when relevant, marks LLM-authored SPEC repairs separately, and runs an Executive Stop Audit before closure. Prospecting and mining stay dormant until named. Use the cognitive brake (`pause`, `hold`, `resuma onde estamos`) to stop pressure and receive the current state before resuming."
           },
           {
             "type": "p",
@@ -1149,11 +1173,11 @@
                 "Muestra el Project GPS actual: posicion, bloqueos, prueba y siguiente movimiento.",
                 "Actualiza solo el bloque gestionado `TES-MAP` en `PROJECT-ROADMAP.md`."
               ],
-        [
-          "`/tes-goal-maestro`",
-          "Generar un arbol de ejecucion y un prompt `/goal` maestral desde una SPEC madura, Super SPEC, PRD, plan relacional de proyecto o arbol de ejecucion aceptado; opcionalmente continuar con next-prompt handoff o `--execute-loop` cuando se pida explicitamente.",
-          "Escribe Super SPECs generadas en `GOAL-SUPER-SPEC-*.md`; lo demas es chat-first salvo guardado explicito. Con `--execute-loop`, ejecuta una SPEC activa por vez, exige evidencia de commit local y sigue prohibiendo push salvo autorizacion separada."
-        ],
+              [
+                "`/tes-goal-maestro`",
+                "Generar un arbol de ejecucion y un prompt `/goal` maestral desde una SPEC madura, Super SPEC, PRD, plan relacional de proyecto o arbol de ejecucion aceptado; opcionalmente usar next-prompt handoff o `--execute-loop` cuando se pida explicitamente.",
+                "Escribe Super SPECs generadas en `GOAL-SUPER-SPEC-*.md`; lo demas es chat-first salvo guardado explicito. Con `--execute-loop`, ejecuta una SPEC activa por vez, exige commit local y evidencia estructural/browser/visual cuando aplica, y sigue prohibiendo push salvo autorizacion separada."
+              ],
               [
                 "`/tes-prospect`",
                 "Estresar explicitamente un plan o diseno con presion predictiva de proyecto.",
@@ -1222,7 +1246,7 @@
           },
           {
             "type": "p",
-      "text": "`/tes-goal-maestro`, `/tes-prospect` y `/tes-mine` son skills explicitas. Goal maestro convierte una SPEC madura, Super SPEC, PRD, plan relacional de proyecto o arbol de ejecucion aceptado en un arbol de ejecucion, preserva unidades declaradas, valida el arbol internamente, escribe el contenido de Super SPEC generado en `GOAL-SUPER-SPEC-*.md` en vez de pegarlo en el chat, exige evidencia de diff material, continuacion material, negative grep semantico, ownership secuencial y estado de sync, y luego emite un prompt `/goal` endurecido cuando pasan los gates. Si pides explicitamente next-prompt handoff, el siguiente prompt se emite en el chat despues de la certificacion. Si pides explicitamente `--execute-loop`, el runner padre redacta el costo esperado del loop, abre una SPEC activa por subagente worker nuevo, envia el prompt completo en vez de un resumen compactado, valida evidencia de commit local, marca cualquier reparacion de SPEC hecha por la LLM por separado y ejecuta una Executive Stop Audit antes de cerrar. Prospeccion y mineria permanecen dormidas hasta ser nombradas, luego pueden conducir proactivamente la prospeccion de estres de proyecto o la mineria de codigo. Usa el freno cognitivo (`pausa`, `hold`, `resuma onde estamos`) para detener la presion y recibir el estado actual antes de retomar."
+            "text": "`/tes-goal-maestro`, `/tes-prospect` y `/tes-mine` son skills explicitas. Goal Maestro convierte una SPEC madura, Super SPEC, PRD, plan relacional de proyecto o arbol de ejecucion aceptado en un arbol de ejecucion, preserva unidades declaradas, valida madurez y fidelidad de unidades, registra el metodo estructural para trabajo de codigo y emite un prompt `/goal` endurecido cuando pasan los gates. Si pides next-prompt handoff, el siguiente prompt se emite en el chat despues de la certificacion. Si pides `--execute-loop`, el runner padre redacta el costo del loop, abre una SPEC activa por worker nuevo, envia el prompt completo en vez de un resumen compactado, valida evidencia de commit local, captura prueba estructural/browser/visual cuando aplica, marca por separado reparaciones de SPEC hechas por la LLM y ejecuta una Executive Stop Audit antes de cerrar. Prospeccion y mineria permanecen dormidas hasta ser nombradas. Usa el freno cognitivo (`pausa`, `hold`, `resuma onde estamos`) para detener la presion y recibir el estado antes de retomar."
           },
           {
             "type": "p",
@@ -1263,11 +1287,11 @@
                 "Mostra o Project GPS atual: posição, bloqueios, prova e próximo movimento.",
                 "Atualiza apenas o bloco gerenciado `TES-MAP` em `PROJECT-ROADMAP.md`."
               ],
-        [
-          "`/tes-goal-maestro`",
-          "Gerar uma árvore de execução e um prompt `/goal` maestral a partir de uma SPEC madura, Super SPEC, PRD, plano relacional de projeto ou árvore de execução aceita; opcionalmente continuar com next-prompt handoff ou `--execute-loop` quando solicitado explicitamente.",
-          "Escreve Super SPECs geradas em `GOAL-SUPER-SPEC-*.md`; o restante é chat-first salvo pedido explícito de salvar. Com `--execute-loop`, executa uma SPEC ativa por vez, exige evidência de commit local e continua proibindo push salvo autorização separada."
-        ],
+              [
+                "`/tes-goal-maestro`",
+                "Gerar uma árvore de execução e um prompt `/goal` maestral a partir de uma SPEC madura, Super SPEC, PRD, plano relacional de projeto ou árvore de execução aceita; opcionalmente usar next-prompt handoff ou `--execute-loop` quando solicitado explicitamente.",
+                "Escreve Super SPECs geradas em `GOAL-SUPER-SPEC-*.md`; o restante é chat-first salvo pedido explícito de salvar. Com `--execute-loop`, executa uma SPEC ativa por vez, exige commit local e evidência estrutural/browser/visual quando aplicável, e continua proibindo push salvo autorização separada."
+              ],
               [
                 "`/tes-prospect`",
                 "Estressar explicitamente um plano ou design com pressão preditiva de projeto.",
@@ -1336,7 +1360,7 @@
           },
           {
             "type": "p",
-      "text": "`/tes-goal-maestro`, `/tes-prospect` e `/tes-mine` são skills explícitas. Goal maestro transforma uma SPEC madura, Super SPEC, PRD, plano relacional de projeto ou árvore de execução aceita em uma árvore de execução, preserva unidades declaradas, valida a árvore internamente, escreve o conteúdo de Super SPEC gerado em `GOAL-SUPER-SPEC-*.md` em vez de colar no chat, exige evidência de diff material, continuação material, negative grep semântico, ownership sequencial e status de sync, e depois emite um prompt `/goal` endurecido quando os gates passam. Se você solicitar explicitamente next-prompt handoff, o próximo prompt é emitido no chat depois da certificação. Se você solicitar explicitamente `--execute-loop`, o executor pai rascunha o custo esperado do loop, abre uma SPEC ativa por subagente worker novo, envia o prompt completo em vez de um resumo compactado, valida evidência de commit local, marca separadamente qualquer reparo de SPEC feito pela LLM e roda uma Executive Stop Audit antes de fechar. Prospecção e mineração ficam dormentes até serem nomeadas, depois podem conduzir proativamente prospecção de estresse de projeto ou mineração de código. Use o freio cognitivo (`pausa`, `freia`, `resuma onde estamos`) para parar a pressão e receber o estado atual antes de retomar."
+            "text": "`/tes-goal-maestro`, `/tes-prospect` e `/tes-mine` são skills explícitas. Goal Maestro transforma uma SPEC madura, Super SPEC, PRD, plano relacional de projeto ou árvore de execução aceita em uma árvore de execução, preserva unidades declaradas, valida maturidade e fidelidade das unidades, registra o método estrutural para trabalho de código e emite um prompt `/goal` endurecido quando os gates passam. Se você pedir next-prompt handoff, o próximo prompt é emitido no chat depois da certificação. Se você pedir `--execute-loop`, o executor pai rascunha o custo do loop, abre uma SPEC ativa por worker novo, envia o prompt completo em vez de resumo compactado, valida evidência de commit local, captura prova estrutural/browser/visual quando aplicável, marca separadamente reparos de SPEC feitos pela LLM e roda uma Executive Stop Audit antes de fechar. Prospecção e mineração ficam dormentes até serem nomeadas. Use o freio cognitivo (`pausa`, `freia`, `resuma onde estamos`) para parar a pressão e receber o estado antes de retomar."
           },
           {
             "type": "p",
@@ -1695,6 +1719,15 @@
           {
             "type": "p",
             "text": "Before any change, TES records a baseline so the run can always be undone. Anything unsafe or unavailable shows up as `BLOCKED` or `NEEDS_REVIEW` — never hidden — and the final report is what you read before approving a commit or push. The full agent-side model is in the [agent manual](AGENT-MANUAL.md)."
+          },
+          {
+            "type": "list",
+            "items": [
+              "**Single SPEC:** ask `/tes-goal-maestro` to turn a mature SPEC into a ready `/goal` prompt, then execute only after the tree passes.",
+              "**Sequential program:** add `--execute-loop` when multiple SPECs must run one by one with fresh worker context, full prompts, local commits, and a final Executive Stop Audit.",
+              "**UI, canvas, or 3D:** expect browser metrics, screenshots, or visual-spatial checks in the proof bundle; a green build alone is not enough when the user sees pixels.",
+              "**Architecture pressure:** if a SPEC would create a god file or collapse boundaries, the skill records a structural repair or LLM-authored SPEC repair before continuing."
+            ]
           }
         ]
       },
@@ -1706,6 +1739,15 @@
           {
             "type": "p",
             "text": "Antes de cualquier cambio, TES registra un baseline para que la ejecucion siempre se pueda deshacer. Lo inseguro o no disponible aparece como `BLOCKED` o `NEEDS_REVIEW` — nunca oculto — y el reporte final es lo que lees antes de aprobar un commit o push. El modelo completo del lado del agente esta en el [manual del agente](AGENT-MANUAL.md)."
+          },
+          {
+            "type": "list",
+            "items": [
+              "**SPEC unica:** pide `/tes-goal-maestro` para convertir una SPEC madura en un prompt `/goal` listo, y ejecuta solo despues de que el arbol pase.",
+              "**Programa secuencial:** suma `--execute-loop` cuando varias SPECs deben correr una por una con contexto worker nuevo, prompts completos, commits locales y Executive Stop Audit final.",
+              "**UI, canvas o 3D:** espera metricas de browser, screenshots o checks visual-espaciales en el paquete de prueba; build verde no basta cuando el usuario ve pixeles.",
+              "**Presion de arquitectura:** si una SPEC crearia un god file o colapsaria limites, la skill registra reparacion estructural o reparacion de SPEC hecha por la LLM antes de continuar."
+            ]
           }
         ]
       },
@@ -1717,6 +1759,15 @@
           {
             "type": "p",
             "text": "Antes de qualquer mudança, o TES registra um baseline para que a execução sempre possa ser desfeita. O que for inseguro ou indisponível aparece como `BLOCKED` ou `NEEDS_REVIEW` — nunca escondido — e o relatório final é o que você lê antes de aprovar um commit ou push. O modelo completo do lado do agente está no [manual do agente](AGENT-MANUAL.md)."
+          },
+          {
+            "type": "list",
+            "items": [
+              "**SPEC única:** peça `/tes-goal-maestro` para transformar uma SPEC madura em um prompt `/goal` pronto, e execute só depois que a árvore passar.",
+              "**Programa sequencial:** acrescente `--execute-loop` quando várias SPECs precisam rodar uma por uma com contexto worker novo, prompts completos, commits locais e Executive Stop Audit final.",
+              "**UI, canvas ou 3D:** espere métricas de browser, screenshots ou checks visual-espaciais no pacote de prova; build verde sozinho não basta quando o usuário enxerga pixels.",
+              "**Pressão de arquitetura:** se uma SPEC criaria god file ou derrubaria limites, a skill registra reparo estrutural ou reparo de SPEC feito pela LLM antes de continuar."
+            ]
           }
         ]
       }
