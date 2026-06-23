@@ -174,7 +174,13 @@ Execution Loop:
   forbidden without separate user authorization.
 - The parent must classify the baseline worktree before the first worker,
   maintain a loop-state block for every attempt, repair only canonical SPEC
-  artifacts, and use cloud escalation only after owner-approved redaction.
+  artifacts, resolve failed-attempt residue before the next attempt, and use
+  cloud escalation only after owner-approved redaction.
+- Parent-side execution fallback is disabled unless
+  `--execute-loop-parent-fallback` or a direct equivalent was requested.
+- Create `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the loop is
+  long, repaired, audit-expanded, explicitly requested, or resumes after
+  context compaction without exact loop-state proof.
 - Audit-added `SPEC-AUDIT-*` units are bounded; repeated audit expansion without
   new material evidence stops for owner decision or contract instability.
 - Final stop requires Executive Stop Audit.
@@ -342,8 +348,9 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
 20. includes an Execution Loop boundary only when `--execute-loop` is
     explicitly requested, and that boundary preserves parent authority,
     `ACTIVE_SPEC` isolation, baseline classification, loop-state evidence,
-    local-only commit sync, bounded repair/audit behavior, and Executive Stop
-    Audit.
+    failed-attempt recovery, persistent ledger triggers, local-only commit sync,
+    bounded repair/audit behavior, explicit parent-fallback authorization, and
+    Executive Stop Audit.
 
 ## Stop If Missing
 

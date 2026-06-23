@@ -30,8 +30,9 @@ and oracle evidence, then closes the worker. Workers may propose next-prompt
 material but cannot generate the authoritative next prompt or execute the next
 SPEC. If worker capacity is unavailable after closing completed or degraded
 workers, the parent must either execute under the same `ACTIVE_SPEC` envelope
-only when the current request authorized parent-side loop execution, or stop
-with `NEEDS_OWNER_DECISION`.
+only when the current request explicitly authorized parent-side loop execution
+with `--execute-loop-parent-fallback` or a direct equivalent, or stop with
+`NEEDS_OWNER_DECISION`.
 
 ## Reusable Roles
 
@@ -76,8 +77,11 @@ Reviews:
     forbidden executable behavior;
 13. `--execute-loop` workers touching files outside `ACTIVE_SPEC`, skipping
     local commit evidence, pushing remotely, bypassing loop-state evidence,
-    using cloud escalation without owner-approved redaction, expanding audit
-    repairs without new material evidence, or bypassing Executive Stop Audit.
+    starting another attempt with unresolved failed-attempt residue, missing a
+    required persistent ledger, using parent-side execution fallback without
+    explicit authorization, using cloud escalation without owner-approved
+    redaction, expanding audit repairs without new material evidence, or
+    bypassing Executive Stop Audit.
 
 ### Evidence/Oracle Senior
 

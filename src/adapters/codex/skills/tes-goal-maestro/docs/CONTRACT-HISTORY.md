@@ -27,6 +27,7 @@ examples or origins.
 | Maintainer directive, 2026-06-22 | Next-prompt continuation must exist only as an explicitly requested parameter/trigger, not as default Goal Maestro behavior. | high |
 | Maintainer directive, 2026-06-22 | Continuous execution requires a separate opt-in runner activated by `--execute-loop`, with parent authority, one active SPEC per worker, local commits, bounded LLM repair, and final executive audit. | high |
 | Maintainer audit, 2026-06-22 | Execution Loop must resolve handoff precedence, expose branch statuses, preserve loop counters, classify dirty baselines, require canonical SPEC repairs, require owner-approved cloud redaction, and bound audit expansion. | high |
+| Maintainer audit, 2026-06-22 | Execution Loop must resolve failed-attempt residue before retry, require explicit parent fallback authorization, persist loop state for long/repaired loops, and use prompt fixtures rather than only term checks. | high |
 
 ## Source Search Ledger
 
@@ -79,6 +80,11 @@ examples or origins.
   `SAFETY_BLOCKED` as branch states, carries loop-state evidence per attempt,
   requires canonical material SPEC repair targets, and stops before cloud
   escalation unless the owner approves the exact sanitized payload.
+- Execution Loop requires failed-attempt recovery before retry, creates a
+  persistent `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` for long,
+  repaired, audit-expanded or resumed loops, and treats parent-side worker
+  fallback as disabled unless explicitly requested by
+  `--execute-loop-parent-fallback` or a direct equivalent.
 - Always include `SPEC-000 Preflight And Baseline`.
 - Keep the skill neutral and free of project-specific origin stories,
   absolute paths, or domain examples.
@@ -109,6 +115,9 @@ examples or origins.
 - Losing attempt/repair counters across context pressure, repairing SPEC text
   only in memory, querying cloud tools without owner-approved redaction, or
   expanding `SPEC-AUDIT-*` indefinitely after repeated audits.
+- Carrying failed-attempt residue into a later attempt, silently replacing
+  unavailable workers with parent execution, or relying on context-only state in
+  long/repaired loops that need a ledger.
 - Ending with prose instead of evidence and stop states.
 
 ## Relationship To Other Skills
@@ -131,6 +140,7 @@ discipline once execution begins.
 | 2026-06-22 | Added opt-in Next Prompt Handoff through `next_prompt_handoff=true` or `--next-prompt-handoff`, restricted to chat-only post-certification prompt emission with no automatic execution. | Maintainer directive in current session; source skill and references updated. | high |
 | 2026-06-22 | Added opt-in `--execute-loop` execution runner contract with Execution Cost Draft, active-SPEC worker isolation, local commits, bounded LLM SPEC repair, escalation ladder, parent next-prompt authority, and Executive Stop Audit. | `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-execute-loop.md`; maintainer directive in current session. | high |
 | 2026-06-22 | Hardened `--execute-loop` after P1/P2/P3 audit: handoff precedence, branch statuses, baseline classification, loop-state block, canonical SPEC repair, owner-approved cloud redaction, bounded audit repairs and stronger trigger oracle coverage. | Maintainer audit in current session; source skill, references, command triggers and oracle updated. | high |
+| 2026-06-22 | Closed remaining loop debts: failed-attempt recovery, explicit parent fallback trigger, automatic persistent ledger triggers, and generated-prompt fixture checks for execute-loop contracts. | Maintainer audit in current session; source skill, references, command triggers and oracle updated. | high |
 
 ## Do Not Lose
 
@@ -146,5 +156,6 @@ post-certification, non-writing by default and non-executing. Do not make
 execution automatic by default; `--execute-loop` is the only execution trigger,
 and it requires material cost drafting, parent authority, local commit evidence,
 bounded LLM repair, loop-state evidence, canonical SPEC repair artifacts,
-owner-approved cloud redaction, bounded audit repair, no remote push and
-Executive Stop Audit.
+failed-attempt recovery, persistent ledger triggers, explicit parent fallback
+authorization, owner-approved cloud redaction, bounded audit repair, no remote
+push and Executive Stop Audit.

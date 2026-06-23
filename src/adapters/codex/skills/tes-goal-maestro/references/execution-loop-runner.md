@@ -24,6 +24,11 @@ Next Prompt Handoff rule still applies after the loop stops or completes, and
 workers remain forbidden from authoritative next-prompt generation or later
 SPEC execution.
 
+`--execute-loop` authorizes the parent to orchestrate the loop, not to replace
+worker execution when worker creation is unavailable. Parent-side worker
+fallback requires `--execute-loop-parent-fallback` or a direct equivalent in the
+current user request.
+
 ## Lifecycle
 
 Use these states:
@@ -71,7 +76,8 @@ The draft must state:
 10. known conditions that would require audit-added loops;
 11. baseline worktree state and classification;
 12. canonical SPEC artifact path for any future `SPEC_REPAIR_BY_LLM`;
-13. audit-repair cycle budget.
+13. audit-repair cycle budget;
+14. persistent ledger decision and path when required.
 
 If the draft cannot be produced from material sources, stop with
 `NEEDS_EXECUTION_LOOP_DRAFT`.
@@ -101,7 +107,8 @@ attempt=<1..3>
 repair_count=<0..2>
 audit_repair_cycle=<0..N>
 last_commit=<sha or none>
-next_allowed_action=<worker_attempt|spec_repair|escalation|audit|stop>
+failed_attempt_residue=<none|classified|blocked>
+next_allowed_action=<worker_attempt|failed_attempt_recovery|spec_repair|escalation|audit|stop>
 worktree_state=<clean|classified_dirty|blocked>
 ```
 
@@ -143,6 +150,28 @@ be created from material sources, stop with `NEEDS_TREE_REPAIR`.
 
 Allow at most two SPEC repairs per active SPEC. If more repair is needed, run
 the escalation ladder before stopping with `SPEC_CONTRACT_UNSTABLE`.
+
+## Failed Attempt Recovery
+
+After any failed worker attempt, inspect `git status --short --branch
+--untracked-files=all` and the diff before opening another attempt. The parent
+must emit a `Failed Attempt Recovery` block:
+
+```text
+ACTIVE_SPEC=SPEC-00N
+failed_attempt=<attempt number>
+residue_files=<paths or none>
+residue_origin=<current_attempt|preexisting_baseline|mixed|unknown>
+decision=<commit_valid_material|spec_repair|revert_current_attempt|stop>
+oracle=<command or review proving the decision>
+```
+
+The next attempt may start only when residue is resolved. Valid material may be
+committed only if it satisfies the active SPEC evidence contract. A SPEC defect
+must become `SPEC_REPAIR_BY_LLM` before implementation continues. Reverting is
+allowed only for changes proven to belong wholly to the current failed attempt;
+never revert pre-existing baseline or user work. If residue is mixed or
+ownership is unknown, stop with `NEEDS_OWNER_DECISION`.
 
 ## Escalation Ladder
 
@@ -209,22 +238,29 @@ capturing evidence.
 
 If no worker can be created after capacity cleanup, do not silently collapse
 the loop. The parent may execute under the same `ACTIVE_SPEC` envelope only
-when the current user request explicitly authorized parent-side loop execution;
-otherwise stop with `NEEDS_OWNER_DECISION`.
+when the current user request explicitly authorized parent-side loop execution
+with `--execute-loop-parent-fallback` or a direct equivalent; otherwise stop
+with `NEEDS_OWNER_DECISION`.
 
 Do not keep subagents open as memory. Git commits and parent-held evidence are
 the state.
 
 ## Loop State
 
-Default loop state lives in the parent context plus Git. Do not write a ledger
-file by default. The loop-state block is still mandatory in the parent
-evidence for every attempt.
+Default loop state lives in the parent context plus Git for short clean loops.
+The loop-state block is still mandatory in the parent evidence for every
+attempt.
 
-If the user explicitly requests `--execute-loop-ledger`, create a compact
-ledger and shard it before it becomes ingestion debt. The ledger must carry
-only SPEC id, spec version, attempt, repair count, audit cycle, commit, oracle
-status, stop state and next allowed action.
+Create a persistent Markdown ledger named
+`GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the user explicitly
+requests `--execute-loop-ledger`, the draft predicts more than three SPECs, a
+SPEC repair occurs, an audit repair unit is appended, or execution resumes
+after context compaction and the parent cannot prove exact loop state from the
+current context plus Git.
+
+Shard the ledger before it becomes ingestion debt. The ledger must carry only
+SPEC id, spec version, attempt, repair count, audit cycle, failed-attempt
+recovery decision, commit, oracle status, stop state and next allowed action.
 
 ## Executive Stop Audit
 

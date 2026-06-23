@@ -269,11 +269,14 @@ GOAL_MAESTRO_LOOP_CONTRACT_PATHS = {
 
 GOAL_MAESTRO_LOOP_TERMS = (
     "--execute-loop",
+    "--execute-loop-parent-fallback",
     "takes precedence",
     "loop-state block",
     "baseline worktree",
     "canonical SPEC artifact",
     "Cloud Query Redaction Block",
+    "Failed Attempt Recovery",
+    "GOAL-EXECUTION-LOOP-LEDGER",
     "owner approval",
     "bounded audit",
     "NEEDS_MORE_LOOPS",
@@ -337,6 +340,7 @@ VISIBLE_SKILL_ROUTES = {
             "next_prompt_handoff",
             "--next-prompt-handoff",
             "--execute-loop",
+            "--execute-loop-parent-fallback",
             "Execution Cost Draft",
             "Executive Stop Audit",
             "SPEC_REPAIR_BY_LLM",
@@ -379,6 +383,7 @@ VISIBLE_SKILL_ROUTES = {
             "next_prompt_handoff",
             "--next-prompt-handoff",
             "--execute-loop",
+            "--execute-loop-parent-fallback",
             "Execution Cost Draft",
             "Executive Stop Audit",
             "SPEC_REPAIR_BY_LLM",
@@ -673,6 +678,43 @@ def goal_maestro_loop_failures(name: str, text: str) -> list[str]:
         for term in GOAL_MAESTRO_LOOP_TERMS
         if term not in normalized_text
     ]
+
+
+def goal_maestro_generated_prompt_failures(
+    name: str,
+    text: str,
+    *,
+    execute_loop_requested: bool,
+    next_prompt_handoff_requested: bool = False,
+) -> list[str]:
+    normalized_text = normalized(text)
+    failures: list[str] = []
+    loop_markers = (
+        "Execution Cost Draft",
+        "ACTIVE_SPEC=",
+        "loop-state block",
+        "Failed Attempt Recovery",
+        "Cloud Query Redaction Block",
+        "Executive Stop Audit",
+        "GOAL-EXECUTION-LOOP-LEDGER",
+        "--execute-loop-parent-fallback",
+    )
+    if execute_loop_requested:
+        for term in loop_markers:
+            if term not in normalized_text:
+                failures.append(f"{name} generated prompt missing execute-loop term: {term}")
+        if next_prompt_handoff_requested and "Do not execute the next prompt automatically" in normalized_text:
+            failures.append(
+                f"{name} generated prompt conflicts handoff no-execute text with execute-loop continuation"
+            )
+        return failures
+
+    for term in loop_markers:
+        if term in normalized_text:
+            failures.append(f"{name} generated prompt includes execute-loop term without trigger: {term}")
+    if next_prompt_handoff_requested and "Do not execute the next prompt automatically" not in normalized_text:
+        failures.append(f"{name} generated prompt missing handoff no-execute guard")
+    return failures
 
 
 def check_goal_maestro_loop_contracts(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
@@ -1154,6 +1196,68 @@ def run_fixture_tests() -> list[str]:
     no_cloud_redaction = good_goal_loop.replace("Cloud Query Redaction Block", "cloud notes")
     if not any("Cloud Query Redaction Block" in item for item in goal_maestro_loop_failures("goal_loop_no_redaction", no_cloud_redaction)):
         failures.append("goal-maestro loop fixture must fail without cloud redaction block")
+
+    good_generated_loop_prompt = "\n".join(
+        (
+            "Execution Cost Draft",
+            "ACTIVE_SPEC=SPEC-001",
+            "loop-state block",
+            "Failed Attempt Recovery",
+            "Cloud Query Redaction Block",
+            "Executive Stop Audit",
+            "GOAL-EXECUTION-LOOP-LEDGER-example.md",
+            "--execute-loop-parent-fallback",
+        )
+    )
+    if goal_maestro_generated_prompt_failures(
+        "generated_loop_good",
+        good_generated_loop_prompt,
+        execute_loop_requested=True,
+        next_prompt_handoff_requested=True,
+    ):
+        failures.append("good generated execute-loop prompt fixture must pass")
+
+    generated_loop_missing_recovery = good_generated_loop_prompt.replace("Failed Attempt Recovery", "retry notes")
+    if not any(
+        "Failed Attempt Recovery" in item
+        for item in goal_maestro_generated_prompt_failures(
+            "generated_loop_missing_recovery",
+            generated_loop_missing_recovery,
+            execute_loop_requested=True,
+        )
+    ):
+        failures.append("generated execute-loop prompt fixture must fail without failed-attempt recovery")
+
+    if not any(
+        "without trigger" in item
+        for item in goal_maestro_generated_prompt_failures(
+            "generated_loop_without_trigger",
+            good_generated_loop_prompt,
+            execute_loop_requested=False,
+        )
+    ):
+        failures.append("generated prompt fixture must fail when execute-loop terms appear without trigger")
+
+    generated_loop_conflicting_handoff = good_generated_loop_prompt + "\nDo not execute the next prompt automatically."
+    if not any(
+        "conflicts handoff" in item
+        for item in goal_maestro_generated_prompt_failures(
+            "generated_loop_conflicting_handoff",
+            generated_loop_conflicting_handoff,
+            execute_loop_requested=True,
+            next_prompt_handoff_requested=True,
+        )
+    ):
+        failures.append("generated execute-loop prompt fixture must fail on contradictory handoff no-execute text")
+
+    good_handoff_prompt = "GO certification complete. Do not execute the next prompt automatically."
+    if goal_maestro_generated_prompt_failures(
+        "generated_handoff_good",
+        good_handoff_prompt,
+        execute_loop_requested=False,
+        next_prompt_handoff_requested=True,
+    ):
+        failures.append("good generated handoff prompt fixture must pass without execute-loop terms")
 
     return failures
 

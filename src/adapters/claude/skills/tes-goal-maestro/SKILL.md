@@ -43,6 +43,9 @@ requests `--execute-loop`. This runs a parent-controlled execution loop after
 hard active-SPEC envelope, validates local commit evidence, generates the next
 prompt, and runs an Executive Stop Audit before final closure.
 
+Parent-side execution fallback requires explicit `--execute-loop-parent-fallback`
+or a direct equivalent; otherwise worker capacity stops with `NEEDS_OWNER_DECISION`.
+
 If both Next Prompt Handoff and Execution Loop are requested, `--execute-loop`
 owns sequential next-prompt generation and execution inside the parent runner.
 The ordinary chat-only handoff clause is suspended until the loop stops or
@@ -202,11 +205,14 @@ skill invocation.
     run Executive Stop Audit before any final stop. The loop must record a
     loop-state block for every attempt, classify the worktree baseline before
     the first worker, repair only canonical SPEC artifacts, require explicit
-    owner approval before any sanitized cloud query, and bound audit-repair
-    cycles so repeated `NEEDS_MORE_LOOPS` becomes `NEEDS_OWNER_DECISION` or
+    owner approval before any sanitized cloud query, resolve failed-attempt
+    residue before another attempt starts, create a persistent loop ledger for
+    long or repaired loops, and bound audit-repair cycles so repeated
+    `NEEDS_MORE_LOOPS` becomes `NEEDS_OWNER_DECISION` or
     `SPEC_CONTRACT_UNSTABLE`.
-14. Keep output chat-first except for the required Super SPEC artifact. Save
-   prompt or tree files only when the user explicitly asks.
+14. Keep output chat-first except for the required Super SPEC artifact and any
+   required execution-loop ledger. Save prompt or tree files only when the user
+   explicitly asks.
 
 The fixed tree schema is:
 
@@ -354,11 +360,17 @@ Default output:
 - Do not run `--execute-loop` without an `Execution Cost Draft` from material
   sources.
 - Do not run `--execute-loop` on an unclassified dirty baseline.
+- Do not let the parent execute a worker role because worker capacity is
+  unavailable unless `--execute-loop-parent-fallback` or a direct equivalent
+  was explicitly requested.
 - Do not let a worker subagent execute outside `ACTIVE_SPEC`, execute the next
   SPEC, push remotely, or become the authority for next-prompt generation.
 - Do not continue an `ACTIVE_SPEC` without a visible loop-state block carrying
   SPEC id, SPEC version, attempt number, repair count, audit-repair cycle,
   last commit and next allowed action.
+- Do not start the next attempt while failed-attempt residue remains
+  unclassified or unresolved; commit valid material, revert only isolated
+  current-attempt changes after diff review, or stop for owner decision.
 - Do not let a `SPEC_REPAIR_BY_LLM` be attributed to a human; it must be
   committed separately before implementation and marked as LLM action.
 - Do not repair a SPEC only in memory; `SPEC_REPAIR_BY_LLM` must update a
@@ -370,6 +382,9 @@ Default output:
 - Do not keep creating `SPEC-AUDIT-*` loops indefinitely; repeated audit
   requests without new material evidence must stop for owner decision or
   contract instability.
+- Do not run long or repaired execution loops without a persistent ledger when
+  the draft predicts more than three SPECs, the loop resumes after compaction,
+  a SPEC repair occurs, or an audit repair is appended.
 - Do not hide forbidden moves, missing oracles, or owner-decision points inside
   prose.
 - Do not emit a prompt that lacks `SPEC-000`, commit-per-SPEC discipline,
