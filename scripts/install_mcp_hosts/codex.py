@@ -10,6 +10,7 @@ from typing import Any
 from .base import HostAdapter
 
 SERVER_NAME = "tes-cortex"
+APPROVAL_MODES = {"auto", "prompt", "approve"}
 
 
 class CodexHost(HostAdapter):
@@ -22,16 +23,20 @@ class CodexHost(HostAdapter):
     supports_auth_block = False
 
     def allowed_fields(self, transport="stdio"):  # type: ignore[override]
-        # Mirrors McpServerConfig + McpServerTransportConfig in codex-rs/config/src/mcp_types.rs.
-        # deny_unknown_fields is enforced by the Rust serde derive; we mirror it here.
+        # Mirrors Codex config.toml MCP keys documented by OpenAI. Keep this
+        # strict because Codex rejects unknown fields, but do not reject
+        # supported per-tool policy subtables.
+        shared = {
+            "startup_timeout_sec", "tool_timeout_sec", "enabled", "required",
+            "enabled_tools", "disabled_tools", "default_tools_approval_mode",
+            "tools",
+        }
         if transport == "http":
-            return {
+            return shared | {
                 "url", "bearer_token_env_var", "http_headers", "env_http_headers",
-                "startup_timeout_sec", "tool_timeout_sec", "enabled",
             }
-        return {
-            "command", "args", "env", "cwd",
-            "startup_timeout_sec", "tool_timeout_sec", "enabled",
+        return shared | {
+            "command", "args", "env", "env_vars", "cwd", "experimental_environment",
         }
 
     def forbidden_fields(self, transport="stdio"):  # type: ignore[override]
@@ -51,6 +56,36 @@ class CodexHost(HostAdapter):
         forbidden = self.forbidden_fields(transport) & keys
         if forbidden:
             failures.append(f"codex {transport} entry has forbidden fields: {sorted(forbidden)}")
+        mode = entry.get("default_tools_approval_mode")
+        if mode is not None and mode not in APPROVAL_MODES:
+            failures.append(
+                "codex MCP default_tools_approval_mode must be one of "
+                f"{sorted(APPROVAL_MODES)}"
+            )
+        tools = entry.get("tools")
+        if tools is not None:
+            failures.extend(self._validate_tools(tools))
+        return failures
+
+    def _validate_tools(self, tools):
+        failures: list[str] = []
+        if not isinstance(tools, dict):
+            return ["codex MCP tools must be a table"]
+        for tool_name, tool_config in tools.items():
+            if not isinstance(tool_config, dict):
+                failures.append(f"codex MCP tools.{tool_name} must be a table")
+                continue
+            extra = set(tool_config) - {"approval_mode"}
+            if extra:
+                failures.append(
+                    f"codex MCP tools.{tool_name} has unknown fields: {sorted(extra)}"
+                )
+            mode = tool_config.get("approval_mode")
+            if mode is not None and mode not in APPROVAL_MODES:
+                failures.append(
+                    f"codex MCP tools.{tool_name}.approval_mode must be one of "
+                    f"{sorted(APPROVAL_MODES)}"
+                )
         return failures
 
     def build_stdio(self, target, target_script, python, read_only):  # type: ignore[override]

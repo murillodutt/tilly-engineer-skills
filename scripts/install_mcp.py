@@ -25,7 +25,7 @@ if str(SCRIPT_PATH.parent) not in sys.path:
     sys.path.insert(0, str(SCRIPT_PATH.parent))
 
 from install_mcp_hosts import HOSTS  # noqa: E402
-VERSION = "0.3.190"
+VERSION = "0.3.191"
 SERVER_NAME = "tes-cortex"
 BIN_DIR = Path(".tes/bin")
 SERVER_FILES = (
@@ -587,9 +587,31 @@ def _golden_stdio_failures() -> list[str]:
         failures.append("vscode bearer Authorization must use ${input:...} interpolation")
 
     # Negative validation: forbidden/unknown fields per host.
+    codex_tool_policy = HOSTS["codex"].assert_entry_valid(
+        {
+            "command": "/x",
+            "args": [],
+            "tools": {"cortex_health": {"approval_mode": "approve"}},
+            "enabled_tools": ["cortex_health"],
+            "disabled_tools": ["cortex_apply"],
+            "default_tools_approval_mode": "prompt",
+            "required": True,
+            "env_vars": ["LOCAL_TOKEN"],
+            "experimental_environment": "remote",
+        },
+        "stdio",
+    )
+    if codex_tool_policy:
+        failures.append(f"codex valid tool policy fields rejected: {codex_tool_policy}")
     codex_unknown = HOSTS["codex"].assert_entry_valid({"command": "/x", "args": [], "secret": "boom"}, "stdio")
     if not codex_unknown:
         failures.append("codex strict validation must reject unknown field (deny_unknown_fields parity)")
+    codex_bad_tool_policy = HOSTS["codex"].assert_entry_valid(
+        {"command": "/x", "args": [], "tools": {"cortex_health": {"approval_mode": "always"}}},
+        "stdio",
+    )
+    if not codex_bad_tool_policy:
+        failures.append("codex tool policy validation must reject invalid approval mode")
     codex_http_forbidden = HOSTS["codex"].assert_entry_valid({"url": "u", "command": "/x"}, "http")
     if not codex_http_forbidden:
         failures.append("codex http must forbid command in StreamableHttp variant")
@@ -704,6 +726,15 @@ def self_test() -> int:
                 failures.append("default Codex MCP install must use absolute target cwd")
             if not isinstance(codex_args, list) or target_script(target, "cortex_mcp.py") not in codex_args or str(target) not in codex_args:
                 failures.append("default Codex MCP install must use absolute target args")
+        codex_policy_config = codex_config.rstrip() + (
+            "\n\n[mcp_servers.tes-cortex.tools.cortex_health]\n"
+            "approval_mode = \"approve\"\n"
+        )
+        (target / ".codex/config.toml").write_text(codex_policy_config, encoding="utf-8")
+        _, codex_policy_err = HOSTS["codex"].validate_registered(target, read_only=False)
+        if codex_policy_err:
+            failures.append(f"codex validate_registered must accept per-tool policy: {codex_policy_err}")
+        (target / ".codex/config.toml").write_text(codex_config, encoding="utf-8")
         for relpath in (".mcp.json", ".cursor/mcp.json", ".vscode/mcp.json"):
             data = json.loads((target / relpath).read_text(encoding="utf-8"))
             server_key = "servers" if relpath == ".vscode/mcp.json" else "mcpServers"
