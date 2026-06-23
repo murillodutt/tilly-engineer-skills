@@ -13,7 +13,7 @@ import command_trigger_oracle
 import mantra_gate_adoption_oracle
 
 
-VERSION = "0.3.188"
+VERSION = "0.3.189"
 SCHEMA = "tes-installed-certification@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"

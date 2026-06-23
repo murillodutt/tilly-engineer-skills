@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.188"
+VERSION = "0.3.189"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -339,8 +339,12 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
             "Engineering Method Profile",
             "STRUCTURAL_METHOD=",
             "bug_vs_architecture",
-            "NEEDS_STRUCTURAL_METHOD",
-            "Failed Attempt Recovery",
+        "NEEDS_STRUCTURAL_METHOD",
+        "Failed Attempt Recovery",
+        "Routing Realignment Mantra",
+        "Load the owner before using owned behavior",
+        "repair routing first",
+        "Do not inline owned behavior",
         "GOAL-EXECUTION-LOOP-LEDGER",
         "strict sequential replay",
         "reference implementation",
@@ -1514,6 +1518,23 @@ def run_fixture_tests() -> list[str]:
     no_cloud_redaction = good_goal_loop.replace("Cloud Query Redaction Block", "cloud notes")
     if not any("Cloud Query Redaction Block" in item for item in goal_maestro_loop_failures("goal_loop_no_redaction", no_cloud_redaction)):
         failures.append("goal-maestro loop fixture must fail without cloud redaction block")
+
+    good_root_file = "\n".join(GOAL_MAESTRO_LOOP_FILE_TERMS["SKILL.md"])
+    if goal_maestro_loop_file_failures(
+        "src/adapters/codex/skills/tes-goal-maestro/SKILL.md",
+        good_root_file,
+    ):
+        failures.append("good goal-maestro root file fixture must pass file-level terms")
+
+    root_without_mantra = good_root_file.replace("Routing Realignment Mantra", "Routing Notes")
+    if not any(
+        "Routing Realignment Mantra" in item
+        for item in goal_maestro_loop_file_failures(
+            "src/adapters/codex/skills/tes-goal-maestro/SKILL.md",
+            root_without_mantra,
+        )
+    ):
+        failures.append("goal-maestro root file fixture must fail without routing mantra")
 
     good_runner_file = "\n".join(GOAL_MAESTRO_LOOP_FILE_TERMS["references/execution-loop-runner.md"])
     if goal_maestro_loop_file_failures(

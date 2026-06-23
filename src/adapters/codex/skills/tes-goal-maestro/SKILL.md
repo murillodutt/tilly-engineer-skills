@@ -14,6 +14,15 @@ Central rule:
 The root skill routes; references execute the contract; templates preserve shape.
 ```
 
+Routing Realignment Mantra:
+
+```text
+Root routes. References own depth. Templates preserve emitted shape.
+Load the owner before using owned behavior.
+If routing and behavior diverge, repair routing first, then execute.
+Do not inline owned behavior to make the root feel complete.
+```
+
 No behavior may be removed to reduce root size. Move behavior only to a named
 surface with a load rule and an oracle.
 
