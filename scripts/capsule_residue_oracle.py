@@ -26,7 +26,7 @@ from typing import Any
 import root_context
 
 
-VERSION = "0.3.186"
+VERSION = "0.3.187"
 
 # Governed surface markers (kept in sync with the installer writers).
 MCP_SERVER_NAME = "tes-cortex"

@@ -30,6 +30,7 @@ examples or origins.
 | Maintainer audit, 2026-06-22 | Execution Loop must resolve failed-attempt residue before retry, require explicit parent fallback authorization, persist loop state for long/repaired loops, and use prompt fixtures rather than only term checks. | high |
 | Canary execution audit, 2026-06-23 | Reference implementations, manual builds, browser smoke results, run records and post-facto audits are baseline-only comparison evidence; `--execute-loop` requires strict sequential replay through fresh `ACTIVE_SPEC` execution. | high |
 | Canary execution audit and maintainer directive, 2026-06-23 | Coding and app-building units need an Engineering Method Profile so behavior-green runs do not hide god files, framework-topology bypass, duplicated logic or single-file exception abuse. | high |
+| Maintainer systemic correction, 2026-06-23 | Structural method must be enforced through active-SPEC envelope fields, deterministic source probes, structural handoff, decision ledger and `bug_vs_architecture` recovery classification, not only remembered as prose. | high |
 
 ## Source Search Ledger
 
@@ -96,6 +97,11 @@ examples or origins.
   stack or language, intended topology, explicit topology exceptions,
   structural boundaries, structural negative checks, structural oracles and
   structural evidence per material unit.
+- Coding, UI, runtime-script and generated-app units require a Method
+  Enforcement Packet: `STRUCTURAL_METHOD=<profile-id>`, topology budget,
+  allowed new modules or internal sections, structural debt budget, structural
+  source probes, `bug_vs_architecture` recovery classification and structural
+  handoff constraints.
 - A source-mandated single-file deliverable is allowed only as an explicit
   contract exception with internal modularity, named sections, narrow APIs, no
   duplicated logic and structural audit evidence.
@@ -149,6 +155,11 @@ examples or origins.
   runtime and adapter layers without a declared contract.
 - Treating a single-file deliverable as permission for unbounded growth instead
   of a constrained topology exception.
+- Losing structural state between units because the next prompt, active-SPEC
+  envelope or loop ledger omitted `STRUCTURAL_METHOD`, changed topology,
+  accepted debt or next-unit constraints.
+- Retrying a coding SPEC as an ordinary bug fix when the failure is actually
+  structural collapse.
 - Ending with prose instead of evidence and stop states.
 
 ## Relationship To Other Skills
@@ -174,6 +185,7 @@ discipline once execution begins.
 | 2026-06-22 | Closed remaining loop debts: failed-attempt recovery, explicit parent fallback trigger, automatic persistent ledger triggers, and generated-prompt fixture checks for execute-loop contracts. | Maintainer audit in current session; source skill, references, command triggers and oracle updated. | high |
 | 2026-06-23 | Added reference-baseline credit gate: previous implementations, manual builds, browser smokes, run records and post-facto audits cannot validate `--execute-loop` without fresh sequential active-SPEC execution. | Real-project canary audit; source skill, references and oracle updated. | high |
 | 2026-06-23 | Added Structural Method Gate: Goal Maestro now requires an Engineering Method Profile for coding and app-building units, including topology, exceptions, structure-sensitive negative checks, structural oracles and per-unit evidence. | Real-project canary audit; maintainer directive to add structural engineering across codifiers. | high |
+| 2026-06-23 | Closed structural-method enforcement gaps: `STRUCTURAL_METHOD=<profile-id>` active-SPEC envelope, topology budget, structural source probes, structural handoff, structural decision ledger fields and `bug_vs_architecture` recovery classification are now required for coding execution. | Maintainer systemic correction request after comparing the first structural gate against the full method proposal. | high |
 
 ## Do Not Lose
 
@@ -194,5 +206,6 @@ authorization, owner-approved cloud redaction, bounded audit repair, no remote
 push, strict sequential replay, baseline-only treatment for reference
 implementations and Executive Stop Audit. Do not accept behavior-only green when
 code structure regresses; coding and app-building prompts need an Engineering
-Method Profile and structural evidence, with single-file delivery treated only
-as an explicit bounded exception.
+Method Profile, `STRUCTURAL_METHOD=<profile-id>` enforcement packet,
+structural source probes, structural evidence and structural handoff, with
+single-file delivery treated only as an explicit bounded exception.

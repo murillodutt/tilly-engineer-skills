@@ -34,6 +34,13 @@ only when the current request explicitly authorized parent-side loop execution
 with the exact `--execute-loop-parent-fallback` flag, or stop with
 `NEEDS_OWNER_DECISION`.
 
+When a worker touches code, UI, runtime scripts or generated app artifacts, the
+hard envelope must include `STRUCTURAL_METHOD=<profile-id>`, file topology
+budget, allowed new modules/internal sections, structural debt budget,
+structural source probes and structural handoff requirements. The worker must
+classify failed attempts with `bug_vs_architecture` before another attempt can
+start.
+
 Reference implementations, prior manual builds, browser smoke results, run
 records and post-facto audits are reviewer inputs only. They are baseline-only
 comparison evidence and never replace a fresh worker, strict sequential replay
@@ -86,8 +93,10 @@ Reviews:
     required persistent ledger, using parent-side execution fallback without
     explicit authorization, using cloud escalation without owner-approved
     redaction, crediting a reference implementation or post-facto audit as loop
-    execution, expanding audit repairs without new material evidence, or
-    bypassing Executive Stop Audit.
+    execution, skipping `STRUCTURAL_METHOD=<profile-id>` envelope fields,
+    missing structural source probes, omitting structural handoff, retrying a
+    coding SPEC without `bug_vs_architecture`, expanding audit repairs without
+    new material evidence, or bypassing Executive Stop Audit.
 
 ### Evidence/Oracle Senior
 
@@ -146,7 +155,8 @@ Common oracles:
 9. negative grep for forbidden patterns;
 10. `git show --stat --oneline <commit>` for material-diff proof;
 11. post-commit `git status --short --branch --untracked-files=all`;
-12. final status report.
+12. structural source probes for coding work;
+13. final status report.
 
 ## Negative Grep Patterns
 

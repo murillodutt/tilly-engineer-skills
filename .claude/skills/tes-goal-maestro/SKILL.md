@@ -6,7 +6,7 @@ license: MIT
 
 # TES Goal Maestro
 
-Operational contract: `tes.goal_maestro@0.3.5`.
+Operational contract: `tes.goal_maestro@0.3.6`.
 
 ## Invocation Contract
 
@@ -52,18 +52,14 @@ before the next SPEC opens.
 
 Parent-side execution fallback requires the exact `--execute-loop-parent-fallback` flag; otherwise worker capacity stops with `NEEDS_OWNER_DECISION`.
 
-Structural Method Gate is active for coding or app-building execution units. It
-requires an `Engineering Method Profile` before implementation pressure starts:
-stack or language, intended code topology, explicit contract exceptions,
-structural boundaries, structural negative checks, structural oracles and audit
-repair criteria. The gate is method, not governance. It prevents converged
-behavior from being accepted when the implementation collapses into a god file,
-mixes UI/domain/storage/runtime layers without contract, duplicates conversion
-logic, ignores the framework's normal topology, or expands single-file work
-beyond the source artifact's explicit contract. If the source artifact requires
-a single-file deliverable, do not split files; instead require internal
-modularity, named sections, narrow APIs, no duplicated logic and a structural
-audit note that records the exception.
+Structural Method Gate is active for coding or app-building execution units.
+It requires an `Engineering Method Profile` plus a compact `Method Enforcement
+Packet`: `STRUCTURAL_METHOD=<profile-id>`, topology budget, allowed modules or
+internal sections, structural debt budget, structural source probes,
+`bug_vs_architecture` classification and structural handoff. The gate is method,
+not governance: behavior-green work still fails if it becomes a god file, mixes
+layers without contract, duplicates domain logic, bypasses framework topology
+or abuses a single-file exception instead of proving internal structure.
 
 If both Next Prompt Handoff and Execution Loop are requested, `--execute-loop`
 owns sequential next-prompt generation and execution inside the parent runner.
@@ -89,8 +85,8 @@ or by clear derivation:
 9. negative-grep candidates;
 10. stop states or owner-decision points;
 11. commit strategy;
-12. engineering method profile when the run changes code, UI or generated app
-    artifacts;
+12. engineering method profile and Method Enforcement Packet when the run
+    changes code, UI, runtime scripts or generated app artifacts;
 13. final delivery contract.
 
 Assign a readiness score:
@@ -183,21 +179,16 @@ skill invocation.
      or bypass-attempt flags remain forbidden.
 6. Run the Structural Method Gate when execution units touch code, UI or
    generated app artifacts:
-   - Derive an `Engineering Method Profile` from material sources, not memory.
-   - Name the stack or language family, such as HTML/CSS/JS, TypeScript, Vue,
-     React, Python, CLI, docs generator, or another source-proven surface.
-   - Name the intended topology: files, modules, components, composables,
-     stores, services, adapters, scripts or internal sections.
-   - Name explicit topology exceptions. A source-mandated single-file
-     deliverable is valid only when the profile requires internal modularity and
-     forbids using the exception as permission for unbounded file growth.
-   - Add structural negative checks for god files, duplicated domain logic,
-     UI/domain/storage mixing, framework-topology bypass, accidental glue,
-     broad inline CSS/JS when separation is expected, and unchecked file-size or
-     complexity growth.
-   - Add structural oracles appropriate to the stack: size/line thresholds,
-     component/module inventory, import/dependency checks, lint/typecheck/build,
-     rendered UI smoke, or source probes that can fail on structural collapse.
+   - Derive the profile from material sources: stack, topology, boundaries,
+     topology exceptions, negative checks and structural oracles.
+   - Carry `STRUCTURAL_METHOD=<profile-id>` through tree, prompt, active-SPEC
+     envelope, ledger and closeout.
+   - Declare topology budget, allowed files/modules/internal sections,
+     forbidden layer moves, structural debt budget and structural source probes.
+   - Classify failed coding attempts with `bug_vs_architecture` before retry or
+     escalation, including `structural_repair` when architecture collapsed.
+   - Require structural handoff when another unit may build on the same code:
+     changed topology, preserved boundaries, accepted debt and constraints.
    - If behavior passes but structure regresses, stop with
      `NEEDS_STRUCTURAL_METHOD` or append bounded `SPEC-AUDIT-STRUCTURE-*`
      repair units during `--execute-loop`.
@@ -236,6 +227,11 @@ skill invocation.
     prompt to disk, and must forbid executing the next prompt automatically.
     If the current run stops or no next declared unit exists, the executor must
     report the stop/final state instead of generating a next prompt.
+    When code, UI, runtime scripts or generated app artifacts were touched, the
+    next prompt must also carry a structural handoff summary from material
+    evidence: active `STRUCTURAL_METHOD`, files/modules/internal sections
+    created or changed, boundaries preserved, accepted structural debt and
+    next-unit constraints.
     When `--execute-loop` is also requested, do not emit the ordinary handoff
     clause for internal loop continuation; use Execution Loop next-prompt
     authority instead and report the final prompt/status only after the loop
@@ -250,7 +246,10 @@ skill invocation.
     loop-state block for every attempt, classify the worktree baseline before
     the first worker, repair only canonical SPEC artifacts, require explicit
     owner approval before any sanitized cloud query, require `Failed Attempt
-    Recovery` before another attempt starts, create a persistent
+    Recovery` with `bug_vs_architecture` before another attempt starts, carry
+    `STRUCTURAL_METHOD=<profile-id>` and topology budget in every coding
+    active-SPEC envelope, create a persistent structural decision ledger inside
+    the loop ledger, create a persistent
     `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` for long or repaired
     loops, reject reference implementations and post-facto audits as execution
     credit, and bound audit-repair cycles so repeated `NEEDS_MORE_LOOPS`
@@ -289,8 +288,9 @@ Every execution unit in the tree must define:
 6. negative checks where relevant;
 7. semantic commit message;
 8. completion evidence requirements;
-9. structural method requirements when the unit changes code, UI or generated
-   app artifacts.
+9. structural method requirements, `STRUCTURAL_METHOD=<profile-id>`, topology
+   budget, structural oracles and structural handoff requirements when the unit
+   changes code, UI, runtime scripts or generated app artifacts.
 
 If the source artifact already names materialization units, the tree and
 prompt must preserve that list exactly. Expanding a unit into smaller sub-steps
@@ -321,9 +321,10 @@ Each generated `/goal` prompt must require a per-unit evidence block:
 4. focused oracles run;
 5. negative checks run;
 6. structural method result when applicable;
-7. reviewer result;
-8. post-commit `git status --short --branch --untracked-files=all`;
-9. sync status: `LOCAL_COMMITTED`, `REMOTE_SYNCED`,
+7. structural handoff when applicable;
+8. reviewer result;
+9. post-commit `git status --short --branch --untracked-files=all`;
+10. sync status: `LOCAL_COMMITTED`, `REMOTE_SYNCED`,
    `REMOTE_SYNC_NOT_REQUESTED` or `SYNC_BLOCKED`.
 
 Default sync means local Git commit certification. Remote sync or push is
@@ -424,6 +425,12 @@ Default output:
   collapse code into an unbounded god file, bypass the target framework's
   normal topology, or use a single-file delivery exception as permission to mix
   unrelated layers without internal structure.
+- Do not let a coding active-SPEC run without `STRUCTURAL_METHOD=<profile-id>`,
+  file topology budget, allowed new module/internal-section constraints,
+  structural source probes and structural handoff requirements.
+- Do not retry a failed coding active-SPEC before classifying
+  `bug_vs_architecture` and deciding whether the next action is bug repair,
+  `structural_repair`, SPEC repair, escalation or stop.
 - Do not continue an `ACTIVE_SPEC` without a visible loop-state block carrying
   SPEC id, SPEC version, attempt number, repair count, audit-repair cycle,
   last commit and next allowed action.
@@ -436,7 +443,8 @@ Default output:
   canonical material artifact such as the source SPEC or generated Super SPEC.
 - Do not perform a cloud query from the escalation ladder without explicit
   owner approval of the exact sanitized payload and a redaction block proving
-  no secrets, private paths, project names or raw internal payloads remain.
+  no secrets, private paths, project names, sensitive architecture structure or
+  raw internal payloads remain.
 - Do not close an execution loop without Executive Stop Audit.
 - Do not keep creating `SPEC-AUDIT-*` loops indefinitely; repeated audit
   requests without new material evidence must stop for owner decision or

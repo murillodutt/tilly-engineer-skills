@@ -99,7 +99,9 @@ The draft must state:
 12. canonical SPEC artifact path for any future `SPEC_REPAIR_BY_LLM`;
 13. audit-repair cycle budget;
 14. Engineering Method Profile per coding, UI or generated-app SPEC;
-15. persistent ledger decision and path when required.
+15. structural cost per coding SPEC: expected split, line growth, new modules
+    or internal sections, and likely structural repair points;
+16. persistent ledger decision and path when required.
 
 If the draft cannot be produced from material sources, stop with
 `NEEDS_EXECUTION_LOOP_DRAFT`.
@@ -114,9 +116,12 @@ Before every worker spawn, the parent must produce a short pre-SPEC reflection:
 4. restate focused oracles and negative checks;
 5. restate the Engineering Method Profile when code, UI or generated app
    artifacts are in scope;
-6. state local risk and likely repair pressure;
-7. emit the loop-state block;
-8. confirm the worker may execute only the active SPEC.
+6. restate `STRUCTURAL_METHOD=<profile-id>`, file topology budget, allowed new
+   modules/internal sections, structural debt budget and structural source
+   probes when code structure is in scope;
+7. state local risk and likely repair pressure;
+8. emit the loop-state block;
+9. confirm the worker may execute only the active SPEC.
 
 This reflection is mandatory even when the previous loop generated a next
 prompt.
@@ -134,6 +139,7 @@ last_commit=<sha or none>
 failed_attempt_residue=<none|classified|blocked>
 next_allowed_action=<worker_attempt|failed_attempt_recovery|spec_repair|escalation|audit|stop>
 worktree_state=<clean|classified_dirty|blocked>
+bug_vs_architecture=<behavior_bug|structural_collapse|mixed|unknown|not_applicable>
 ```
 
 ## Worker Packet
@@ -148,6 +154,11 @@ Do not execute any later SPEC.
 Do not generate the final next prompt; you may propose next-prompt material.
 Do not push or perform remote sync.
 Apply the active Engineering Method Profile when present.
+STRUCTURAL_METHOD=<profile-id or not_applicable>
+FILE_TOPOLOGY_BUDGET=<budget or not_applicable>
+ALLOWED_NEW_MODULES=<paths, internal sections or none>
+STRUCTURAL_DEBT_BUDGET=<none, accepted debt or owner-decision needed>
+STRUCTURAL_SOURCE_PROBES=<commands or source checks>
 Return the evidence block required by the prompt.
 ```
 
@@ -188,6 +199,8 @@ failed_attempt=<attempt number>
 residue_files=<paths or none>
 residue_origin=<current_attempt|preexisting_baseline|mixed|unknown>
 decision=<commit_valid_material|spec_repair|revert_current_attempt|stop>
+bug_vs_architecture=<behavior_bug|structural_collapse|mixed|unknown|not_applicable>
+structural_decision=<bug_repair|structural_repair|spec_repair|escalation|stop|not_applicable>
 oracle=<command or review proving the decision>
 ```
 
@@ -203,7 +216,9 @@ ownership is unknown, stop with `NEEDS_OWNER_DECISION`.
 After three failed attempts for a SPEC version, or after two repairs still
 leave the active SPEC unstable, run:
 
-1. predictive code analysis against the material code and SPEC evidence;
+1. predictive code analysis against the material code and SPEC evidence,
+   explicitly deciding whether the unresolved failure is a behavior bug,
+   architecture collapse, mixed failure or unknown;
 2. MCP or official knowledge sources such as Context7 for library/framework/API
    questions;
 3. sanitized cloud query only after explicit owner approval of the exact
@@ -212,14 +227,16 @@ leave the active SPEC unstable, run:
 4. stop if unresolved.
 
 Never send secrets, private paths, proprietary diffs, project names, storage
-backends, credentials, or raw internal payloads to cloud tools.
+backends, credentials, sensitive architecture structure, or raw internal
+payloads to cloud tools.
 
 Before any cloud query, produce a `Cloud Query Redaction Block` with:
 
 1. sanitized payload to be sent;
 2. redacted terms and categories;
 3. confirmation that no secrets, private paths, project names, storage
-   backends, credentials or raw internal payloads remain;
+   backends, credentials, sensitive architecture structure or raw internal
+   payloads remain;
 4. owner approval reference from the current execution context.
 
 If the owner does not approve the exact sanitized payload, stop with
@@ -240,11 +257,14 @@ The parent advances only after validating:
 8. sync status is `LOCAL_COMMITTED` or `REMOTE_SYNC_NOT_REQUESTED`;
 9. structural method evidence passed when code, UI or generated app artifacts
    were in scope;
-10. worker did not execute later SPECs;
-11. parent refreshed local state by rereading the relevant changed files,
+10. structural handoff names active `STRUCTURAL_METHOD`, changed topology,
+    accepted debt and next-unit constraints when a later unit can build on the
+    same code;
+11. worker did not execute later SPECs;
+12. parent refreshed local state by rereading the relevant changed files,
     active SPEC artifact and latest `git show` evidence before creating the
     next prompt;
-12. evidence was produced after the active SPEC opened, not counted from a
+13. evidence was produced after the active SPEC opened, not counted from a
     reference implementation, manual build, browser smoke, run record or
     post-facto audit.
 
@@ -290,7 +310,8 @@ current context plus Git.
 
 Shard the ledger before it becomes ingestion debt. The ledger must carry only
 SPEC id, spec version, attempt, repair count, audit cycle, failed-attempt
-recovery decision, commit, oracle status, stop state and next allowed action.
+recovery decision, commit, oracle status, structural decision fields, stop
+state and next allowed action.
 
 ### Ledger Schema
 
@@ -306,12 +327,21 @@ audit_repair_cycle:
 failed_attempt_recovery_decision:
 commit:
 oracle_status:
+structural_method_id:
+topology_decision:
+structural_debt:
+next_structural_constraint:
 stop_state:
 next_allowed_action:
 ```
 
 The ledger must not store full prompt bodies, raw diffs, secrets, credentials,
 private paths, chat transcripts or project-specific names.
+
+Use `not_applicable` for structural decision fields when the active SPEC has no
+code, UI, runtime-script or generated-app structure. These fields are a compact
+decision ledger, not a design essay. They record only the active method,
+topology choice, accepted debt and constraint that the next loop must preserve.
 
 ## Executive Stop Audit
 
@@ -328,6 +358,7 @@ The reviewer receives:
 6. final worktree status.
 7. baseline-only reference evidence classification, when any existed.
 8. Engineering Method Profile and structural method evidence, when applicable.
+9. structural decision ledger and structural handoff, when applicable.
 
 The reviewer does not receive the full original prompt unless the parent
 decides that a prompt contract dispute is the audit subject.

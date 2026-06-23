@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.186"
+VERSION = "0.3.187"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -280,6 +280,11 @@ GOAL_MAESTRO_LOOP_TERMS = (
     "baseline worktree",
     "canonical SPEC artifact",
     "Engineering Method Profile",
+    "STRUCTURAL_METHOD=",
+    "structural source probes",
+    "structural handoff",
+    "bug_vs_architecture",
+    "structural_repair",
     "Cloud Query Redaction Block",
     "Failed Attempt Recovery",
     "GOAL-EXECUTION-LOOP-LEDGER",
@@ -300,6 +305,10 @@ GOAL_MAESTRO_LEDGER_FIELDS = (
     "failed_attempt_recovery_decision:",
     "commit:",
     "oracle_status:",
+    "structural_method_id:",
+    "topology_decision:",
+    "structural_debt:",
+    "next_structural_constraint:",
     "stop_state:",
     "next_allowed_action:",
 )
@@ -324,6 +333,8 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
             "--execute-loop-parent-fallback",
             "Execution Cost Draft",
             "Engineering Method Profile",
+            "STRUCTURAL_METHOD=",
+            "bug_vs_architecture",
             "NEEDS_STRUCTURAL_METHOD",
             "Failed Attempt Recovery",
         "GOAL-EXECUTION-LOOP-LEDGER",
@@ -337,6 +348,8 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
             "Reference Baseline Credit Gate",
             "baseline-only comparison",
             "Engineering Method Profile",
+            "STRUCTURAL_METHOD=",
+            "bug_vs_architecture",
             "NEEDS_STRUCTURAL_METHOD",
             "SPEC-AUDIT-STRUCTURE",
             "strict sequential replay",
@@ -349,6 +362,9 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
         "references/quality-gates.md": (
             "Execution Cost Draft",
             "Engineering Method Profile",
+            "STRUCTURAL_METHOD=",
+            "structural handoff",
+            "bug_vs_architecture",
             "NEEDS_STRUCTURAL_METHOD",
             "failed-attempt recovery",
         "persistent ledger",
@@ -360,7 +376,10 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
         "references/maestral-goal-prompt.md": (
             "Execution Loop:",
             "Engineering Method Profile",
+            "STRUCTURAL_METHOD=",
             "Structural method result",
+            "Structural handoff",
+            "bug_vs_architecture",
             "failed-attempt residue",
         "GOAL-EXECUTION-LOOP-LEDGER",
         "strict sequential replay",
@@ -372,6 +391,9 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
             "Execution Loop Boundary",
             "Structural Method Gate",
             "Engineering Method Profile",
+            "STRUCTURAL_METHOD=",
+            "structural handoff",
+            "bug_vs_architecture",
             "failed-attempt recovery",
         "GOAL-EXECUTION-LOOP-LEDGER",
         "strict sequential replay",
@@ -384,6 +406,8 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
         "unresolved failed-attempt residue",
         "required persistent ledger",
         "strict sequential replay",
+        "STRUCTURAL_METHOD=",
+        "bug_vs_architecture",
         "Reference implementations",
         "exact `--execute-loop-parent-fallback` flag",
         "Executive Stop Audit",
@@ -413,7 +437,9 @@ GOAL_MAESTRO_GENERATED_PROMPT_REQUIRED_TERMS = (
     "git show --stat --oneline <commit>",
     "Sync status:",
     "Engineering Method Profile",
+    "STRUCTURAL_METHOD=",
     "Structural method result:",
+    "Structural handoff:",
     "Full Oracle And Closeout",
     "Stop criteria:",
     "Final delivery:",
@@ -885,6 +911,9 @@ def goal_maestro_generated_prompt_failures(
         "strict sequential replay",
         "reference implementation",
         "baseline-only comparison",
+        "STRUCTURAL_METHOD=",
+        "bug_vs_architecture",
+        "Structural handoff:",
     )
     if execute_loop_requested:
         for term in loop_markers:
@@ -1483,6 +1512,9 @@ def run_fixture_tests() -> list[str]:
             "strict sequential replay",
             "reference implementation",
             "baseline-only comparison",
+            "STRUCTURAL_METHOD=web-app",
+            "bug_vs_architecture=behavior_bug",
+            "Structural handoff:",
         )
     )
     if goal_maestro_generated_prompt_failures(
@@ -1503,6 +1535,28 @@ def run_fixture_tests() -> list[str]:
         )
     ):
         failures.append("generated execute-loop prompt fixture must fail without failed-attempt recovery")
+
+    generated_loop_missing_structural_method = good_generated_loop_prompt.replace("STRUCTURAL_METHOD=web-app", "")
+    if not any(
+        "STRUCTURAL_METHOD=" in item
+        for item in goal_maestro_generated_prompt_failures(
+            "generated_loop_missing_structural_method",
+            generated_loop_missing_structural_method,
+            execute_loop_requested=True,
+        )
+    ):
+        failures.append("generated execute-loop prompt fixture must fail without STRUCTURAL_METHOD")
+
+    generated_loop_missing_structural_handoff = good_generated_loop_prompt.replace("Structural handoff:", "")
+    if not any(
+        "Structural handoff:" in item
+        for item in goal_maestro_generated_prompt_failures(
+            "generated_loop_missing_structural_handoff",
+            generated_loop_missing_structural_handoff,
+            execute_loop_requested=True,
+        )
+    ):
+        failures.append("generated execute-loop prompt fixture must fail without structural handoff")
 
     if not any(
         "without trigger" in item
@@ -1561,6 +1615,10 @@ def run_fixture_tests() -> list[str]:
             "failed_attempt_recovery_decision: none",
             "commit: abc1234",
             "oracle_status: PASS",
+            "structural_method_id: web-app",
+            "topology_decision: split-modules",
+            "structural_debt: none",
+            "next_structural_constraint: preserve split",
             "stop_state: next",
             "next_allowed_action: worker_attempt",
         )
@@ -1613,7 +1671,9 @@ def run_fixture_tests() -> list[str]:
             "git show --stat --oneline <commit>",
             "Sync status:",
             "Engineering Method Profile",
+            "STRUCTURAL_METHOD=web-app",
             "Structural method result:",
+            "Structural handoff:",
             "Full Oracle And Closeout",
             "Stop criteria:",
             "Final delivery:",
@@ -1628,6 +1688,7 @@ def run_fixture_tests() -> list[str]:
             "strict sequential replay",
             "reference implementation",
             "baseline-only comparison",
+            "bug_vs_architecture=behavior_bug",
         )
     )
     if goal_maestro_generated_prompt_e2e_failures(
@@ -1651,6 +1712,19 @@ def run_fixture_tests() -> list[str]:
         )
     ):
         failures.append("generated prompt E2E fixture must fail without Engineering Method Profile")
+
+    e2e_missing_structural_handoff = generated_e2e_prompt.replace("Structural handoff:", "")
+    if not any(
+        "Structural handoff:" in item
+        for item in goal_maestro_generated_prompt_e2e_failures(
+            "generated_e2e_missing_structural_handoff",
+            mature_spec,
+            e2e_missing_structural_handoff,
+            execute_loop_requested=True,
+            next_prompt_handoff_requested=True,
+        )
+    ):
+        failures.append("generated prompt E2E fixture must fail without Structural handoff")
 
     e2e_missing_unit = generated_e2e_prompt.replace("SPEC-002 Harden ledger fixture", "")
     if not any(

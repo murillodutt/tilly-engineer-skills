@@ -60,8 +60,8 @@ The final prompt must include:
     implementations may exist.
 21. Semantic negative-grep rules when blocked-state vocabulary is valid inside
     the contract.
-22. Engineering Method Profile when the run changes code, UI or generated app
-    artifacts.
+22. Engineering Method Profile and Method Enforcement Packet when the run
+    changes code, UI, runtime scripts or generated app artifacts.
 23. Optional Next Prompt Handoff clause only when explicitly requested by
     `next_prompt_handoff=true`, `--next-prompt-handoff`, or an equivalent
     direct trigger.
@@ -104,6 +104,7 @@ Do not allow:
 - <forbidden move N>
 
 Engineering Method Profile:
+- STRUCTURAL_METHOD=<profile-id>
 - Stack or language family: <HTML/CSS/JS, TypeScript, Vue, React, Python, CLI,
   docs generator, adapter, or no-code rationale>
 - Intended topology: <files/modules/components/composables/stores/services/
@@ -111,6 +112,13 @@ Engineering Method Profile:
 - Structural boundaries: <UI/domain/storage/runtime/docs/adapter boundaries>
 - Topology exceptions: <none or source-mandated single-file deliverable with
   internal modularity, named sections, narrow APIs and no duplicated logic>
+- File topology budget: <max files, max line growth, max section growth or
+  source-proven exception>
+- Allowed new modules/internal sections: <paths, names or none>
+- Structural debt budget: <none, accepted debt, or owner-decision needed>
+- Structural source probes: <line counts, module inventory, import-boundary
+  checks, duplicate-symbol scans, inline CSS/JS scans, framework probes or
+  single-file section-anchor checks>
 - Structural negative checks: <god file, duplicated logic, layer mixing,
   framework-topology bypass, broad inline CSS/JS when separation is expected,
   unchecked file-size growth>
@@ -173,6 +181,10 @@ Next Prompt Handoff:
 - When enabled, after this run reaches `GO` and certification is complete,
   emit the next `/goal` prompt for the next declared execution unit in this
   same chat/context window.
+- If code, UI, runtime scripts or generated app artifacts changed, include a
+  structural handoff in the next prompt: active `STRUCTURAL_METHOD`, files or
+  modules changed, boundaries preserved, accepted structural debt and next-unit
+  constraints.
 - Do not write the next prompt to disk unless the user explicitly asks.
 - Do not execute the next prompt automatically.
 - If this run stops, certification is incomplete, or no next declared unit
@@ -199,14 +211,19 @@ Execution Loop:
   next SPEC starts.
 - The parent must classify the baseline worktree before the first worker,
   carry the active Engineering Method Profile when code structure is in scope,
-  maintain a loop-state block for every attempt, repair only canonical SPEC
-  artifacts, resolve failed-attempt residue before the next attempt, and use
-  cloud escalation only after owner-approved redaction.
+  carry `STRUCTURAL_METHOD=<profile-id>`, topology budget, allowed modules and
+  structural debt budget in the active envelope, maintain a loop-state block
+  for every attempt, repair only canonical SPEC artifacts, resolve
+  failed-attempt residue before the next attempt with `bug_vs_architecture`,
+  and use cloud escalation only after owner-approved redaction.
 - Parent-side execution fallback is disabled unless the exact
   `--execute-loop-parent-fallback` flag was requested.
 - Create `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the loop is
   long, repaired, audit-expanded, explicitly requested, or resumes after
   context compaction without exact loop-state proof.
+- The ledger must carry structural decision fields when code structure is in
+  scope: `structural_method_id`, `topology_decision`, `structural_debt` and
+  `next_structural_constraint`.
 - Audit-added `SPEC-AUDIT-*` units are bounded; repeated audit expansion without
   new material evidence stops for owner decision or contract instability.
 - Final stop requires Executive Stop Audit.
@@ -228,7 +245,9 @@ First mandatory act:
 5. Run read-only baseline oracles.
 6. Derive the Engineering Method Profile before editing code, UI or generated
    app artifacts.
-7. Declare the file matrix before editing.
+7. Declare `STRUCTURAL_METHOD=<profile-id>`, topology budget, allowed new
+   modules/internal sections and structural source probes before editing.
+8. Declare the file matrix before editing.
 
 SPEC-000 Preflight And Baseline
 Objective:
@@ -282,6 +301,7 @@ Completion evidence:
 - Oracles:
 - Negative checks:
 - Structural method result:
+- Structural handoff:
 - Reviewer result:
 - Post-commit status:
 - Sync status:
@@ -309,6 +329,7 @@ Completion evidence:
 - Oracles:
 - Negative checks:
 - Structural method result:
+- Structural handoff:
 - Reviewer result:
 - Post-commit status:
 - Sync status:
@@ -344,6 +365,7 @@ Final delivery:
 - files changed;
 - oracles run;
 - structural method result when applicable;
+- structural handoff when applicable;
 - boundaries preserved;
 - blockers or decisions pending;
 - next prompt handoff status when explicitly requested;
@@ -372,7 +394,8 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
 14. requires sync status per unit;
 15. preserves unrelated worktree changes;
 16. includes reviewer and evidence/oracle roles when complexity warrants them;
-17. includes an Engineering Method Profile and structural oracles when code,
+17. includes an Engineering Method Profile, `STRUCTURAL_METHOD=<profile-id>`,
+    topology budget, structural source probes and structural oracles when code,
     UI or generated app artifacts are in scope;
 18. defines stop criteria;
 19. defines final delivery;
@@ -385,7 +408,8 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
     failed-attempt recovery, persistent ledger triggers, local-only commit sync,
     baseline-only comparison for reference implementations, strict sequential
     replay, bounded repair/audit behavior, explicit parent-fallback
-    authorization, and Executive Stop Audit.
+    authorization, `bug_vs_architecture` recovery classification, structural
+    decision ledger fields and Executive Stop Audit.
 
 ## Stop If Missing
 
@@ -401,8 +425,9 @@ Stop with `NEEDS_SPEC_MATURITY`, `NEEDS_TREE_REPAIR`,
 6. the prompt would need to invent file ownership or stop states;
 7. the prompt would need to merge or drop declared execution units;
 8. code, UI or generated app artifacts are in scope but the prompt lacks an
-   Engineering Method Profile, structural negative checks or structural
-   oracles.
+   Engineering Method Profile, `STRUCTURAL_METHOD=<profile-id>`, topology
+   budget, structural source probes, structural negative checks, structural
+   oracles or structural handoff requirements.
 
 Use `NEEDS_TREE_ACCEPTANCE` only when changing the declared execution contract
 requires owner acceptance or the user explicitly asked for staged review.
@@ -439,3 +464,9 @@ Reject prompts that:
 20. accept a behavior-green implementation that collapsed into a god file,
     duplicated domain logic, bypassed framework topology or misused a
     single-file exception to mix unrelated layers.
+21. retry a failed coding SPEC without classifying `bug_vs_architecture` and
+    deciding whether the next action is bug repair, `structural_repair`, SPEC
+    repair, escalation or stop.
+22. generate a next prompt after code changes without structural handoff for
+    the active method, changed topology, accepted debt and next-unit
+    constraints.

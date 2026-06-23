@@ -33,8 +33,10 @@ Use when:
 3. file ownership is clear;
 4. oracles are falsifiable;
 5. stop states are explicit;
-6. coding, UI or generated-app units include an Engineering Method Profile with
-   structural negative checks and structural oracles.
+6. coding, UI, runtime-script or generated-app units include an Engineering
+   Method Profile, `STRUCTURAL_METHOD=<profile-id>`, topology budget,
+   structural source probes, structural negative checks, structural oracles and
+   structural handoff requirements.
 
 Explicit skill invocation is enough to produce both the tree and the final
 `/goal` prompt in one response when these conditions are true.
@@ -78,6 +80,12 @@ implementation collapses into a god file, duplicates domain logic, mixes UI,
 domain, storage, runtime or adapter layers without contract, bypasses framework
 topology, or misuses a single-file exception as permission for unbounded file
 growth.
+
+Also use it when the prompt names a profile but does not enforce it through a
+Method Enforcement Packet: `STRUCTURAL_METHOD=<profile-id>`, file topology
+budget, allowed new modules/internal sections, structural debt budget,
+structural source probes, `bug_vs_architecture` recovery classification and
+structural handoff constraints.
 
 ### DRAFT_MATERIALIZATION_TREE
 
@@ -134,6 +142,9 @@ Reject a prompt if it lacks:
     commit sync and Executive Stop Audit.
 18. Engineering Method Profile for coding, UI or generated-app work, including
     topology, exceptions, structural negative checks and structural oracles.
+19. `STRUCTURAL_METHOD=<profile-id>`, topology budget, structural source
+    probes, structural debt budget and structural handoff requirements for
+    coding, UI, runtime-script or generated-app work.
 
 ## Boundary Leakage Checks
 
@@ -149,6 +160,8 @@ Ask whether the prompt accidentally permits:
 8. final interpretation, verdict or score;
 9. god-file growth, framework-topology bypass or accidental UI/domain/storage
    mixing in coding or app-building work.
+10. next-unit architecture regression because no structural handoff carried the
+    active method, changed topology, accepted debt and constraints.
 
 If yes, revise before returning the prompt.
 
@@ -180,7 +193,9 @@ failed-attempt recovery before the next attempt, persistent ledger when the loop
 is long or repaired, exact parent-fallback flag authorization, bounded audit
 repairs, strict sequential replay, baseline-only comparison for reference
 implementations or manual builds, active Engineering Method Profile when code
-structure is in scope, and Executive Stop Audit before final stop.
+structure is in scope, `STRUCTURAL_METHOD=<profile-id>` envelope fields,
+structural decision ledger fields, `bug_vs_architecture` recovery
+classification, and Executive Stop Audit before final stop.
 When not requested, the prompt must not include execution-loop behavior.
 
 If Next Prompt Handoff and Execution Loop are both explicitly requested,
@@ -226,7 +241,9 @@ Before `GO`, verify:
    records and post-facto audits were baseline-only comparison evidence, not
    execution credit;
 9. structural method evidence exists for coding, UI or generated-app units;
-10. remote sync is reported only when explicitly authorized.
+10. structural source probes ran or were explicitly impossible with rationale;
+11. structural handoff exists when another unit can build on the same code;
+12. remote sync is reported only when explicitly authorized.
 
 If any check fails, use `NEEDS_EXECUTION_UNIT_FIDELITY`.
 If structural method evidence is missing or failing, use
@@ -251,6 +268,7 @@ Final delivery must report:
 13. whether negative grep allowed valid blocked-state vocabulary while
     forbidding unsafe behavior.
 14. structural method result for coding, UI or generated-app units.
+15. structural handoff for coding, UI or generated-app units when applicable.
 
 ## Stop-State Mapping
 
@@ -328,6 +346,17 @@ If the answer is no, return `NEEDS_STRUCTURAL_METHOD`.
 Then ask:
 
 ```text
+If code, UI or generated app artifacts are in scope, does the prompt carry
+`STRUCTURAL_METHOD=<profile-id>`, topology budget, structural source probes,
+structural debt budget, `bug_vs_architecture` recovery classification and
+structural handoff constraints?
+```
+
+If the answer is no, return `NEEDS_STRUCTURAL_METHOD`.
+
+Then ask:
+
+```text
 If Next Prompt Handoff appears, was it explicitly requested, and does it wait
 for GO plus certification before emitting only the next prompt in chat without
 writing or executing it?
@@ -344,7 +373,8 @@ local-only commit sync, baseline classification, loop-state blocks, canonical
 SPEC_REPAIR_BY_LLM, failed-attempt recovery, persistent ledger triggers, the
 exact `--execute-loop-parent-fallback` flag for parent fallback, owner-approved
 cloud escalation, strict sequential replay, reference implementations as
-baseline-only comparison, bounded audit repairs and Executive Stop Audit?
+baseline-only comparison, bounded audit repairs, structural decision ledger
+fields, `bug_vs_architecture` recovery classification and Executive Stop Audit?
 ```
 
 If the answer is no, return `NEEDS_TREE_REPAIR`.
