@@ -363,14 +363,15 @@ Execution Loop is optional and disabled by default. Include it only when the
 user explicitly requests `--execute-loop`.
 
 When enabled, load `references/execution-loop-runner.md` and require the tree's
-`Final Delivery Contract` to name `Execution Cost Draft`, one `ACTIVE_SPEC` at
-a time, loop-state block, failed-attempt recovery with `bug_vs_architecture`,
-parent validation, local commit only, reference implementations as
-baseline-only comparison evidence, strict sequential replay,
-`SPEC_REPAIR_BY_LLM`, `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md`,
-the exact `--execute-loop-parent-fallback` flag, owner-approved cloud
-redaction, Executive Stop Audit, and bounded `SPEC-AUDIT-*` units when audit
-returns `NEEDS_MORE_LOOPS`.
+`Final Delivery Contract` to name `Execution Cost Draft`, Pre-Edit Gate, one
+`ACTIVE_SPEC` at a time, loop-state block, failed-attempt recovery with
+`bug_vs_architecture`, parent validation, local commit only, reference
+implementations as baseline-only comparison evidence, strict sequential replay,
+no Super SPEC materialization as declared-unit credit, `SPEC_REPAIR_BY_LLM`,
+mandatory `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md`, the exact
+`--execute-loop-parent-fallback` flag, owner-approved cloud redaction,
+Executive Stop Audit, and bounded `SPEC-AUDIT-*` units when audit returns
+`NEEDS_MORE_LOOPS`.
 
 ## Weak Tree Rejection
 

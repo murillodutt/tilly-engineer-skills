@@ -50,9 +50,10 @@ save request.
 
 Execution Loop is opt-in only. Activate it only when the user explicitly
 requests `--execute-loop`. When enabled, produce `READY_GOAL_PROMPT`, then the
-parent runner creates an `Execution Cost Draft`, opens one `ACTIVE_SPEC` at a
-time, requires strict sequential replay, validates local commit evidence, and
-closes only after Executive Stop Audit.
+parent runner creates an `Execution Cost Draft`, opens a mandatory Pre-Edit
+Gate, creates the loop ledger, opens one `ACTIVE_SPEC` at a time, requires
+strict sequential replay, validates local commit evidence, and closes only
+after Executive Stop Audit.
 
 Parent-side execution fallback requires the exact `--execute-loop-parent-fallback`
 flag. No equivalent wording is valid.
@@ -60,6 +61,8 @@ flag. No equivalent wording is valid.
 Reference implementation evidence, prior manual builds, browser smoke results,
 screenshots, run records and post-facto audits are baseline-only comparison
 evidence. They never satisfy material execution or `--execute-loop` credit.
+Materializing or expanding a Super SPEC is preparation for the loop, not
+execution credit for the first declared unit.
 
 Structural Method Gate is active for code, UI, runtime scripts and generated
 app artifacts. Load `references/structural-method.md` and carry an Engineering
@@ -213,17 +216,24 @@ authorization for that action.
   requests, or required execution-loop ledger.
 - Do not include Next Prompt Handoff without an explicit handoff trigger.
 - Do not run Execution Loop without explicit `--execute-loop` and an
-  `Execution Cost Draft`.
+  `Execution Cost Draft`, Pre-Edit Gate and `GOAL-EXECUTION-LOOP-LEDGER`.
 - Do not allow parent fallback without the exact
   `--execute-loop-parent-fallback` flag.
 - Do not let workers execute outside `ACTIVE_SPEC`, execute the next SPEC,
   push remotely, or own authoritative next-prompt generation.
+- Do not edit, spawn a worker, or use parent fallback unless the Pre-Edit Gate
+  declares `EXECUTE_LOOP_REQUESTED=yes`, `READY_GOAL_PROMPT=present`,
+  `DECLARED_UNITS=<exact ordered ids>`, `FIRST_UNEXECUTED_UNIT=<id>`,
+  matching `ACTIVE_SPEC=<id>`, `BASELINE_ONLY_COMMITS=<hashes or none>`,
+  `LEDGER=<GOAL-EXECUTION-LOOP-LEDGER-...md>` and `MAY_EDIT=yes`.
+- Do not let a generated or expanded Super SPEC consume a declared execution
+  unit or advance `FIRST_UNEXECUTED_UNIT`.
 - Do not let a reference implementation, prior build, browser smoke, run
   record, screenshot or post-facto audit satisfy material execution.
 - Do not retry failed coding work before Failed Attempt Recovery classifies
   `bug_vs_architecture` and chooses bug repair, `structural_repair`, SPEC
   repair, `SPEC_REPAIR_BY_LLM`, escalation or stop.
-- Do not run or close long/repaired loops without the required
+- Do not run or close any `--execute-loop` without the required
   `GOAL-EXECUTION-LOOP-LEDGER`.
 - Do not compress declared execution units into fewer implementation units.
 - Do not allow empty commits to satisfy material execution units.

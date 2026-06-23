@@ -81,6 +81,9 @@ prompt carries the required shape.
 The template must carry, when relevant:
 
 - `Execution Loop:`
+- Pre-Edit Gate
+- `FIRST_UNEXECUTED_UNIT`
+- `MAY_EDIT=yes`
 - Engineering Method Profile
 - `STRUCTURAL_METHOD=<profile-id>`
 - Structural method result
@@ -128,9 +131,10 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
     write prompt/tree files without an explicit save request;
 23. includes an Execution Loop boundary only when `--execute-loop` is
     explicitly requested, and that boundary preserves parent authority,
-    `ACTIVE_SPEC` isolation, baseline classification, loop-state evidence,
-    failed-attempt recovery, persistent ledger triggers, local-only commit
-    sync, baseline-only comparison for reference implementations, strict
+    Pre-Edit Gate, `ACTIVE_SPEC` isolation, baseline classification,
+    loop-state evidence, failed-attempt recovery, mandatory persistent ledger,
+    local-only commit sync, baseline-only comparison for reference
+    implementations, no Super SPEC materialization as unit credit, strict
     sequential replay, bounded repair/audit behavior, explicit parent-fallback
     authorization, `bug_vs_architecture` recovery classification, structural
     decision ledger fields and Executive Stop Audit.

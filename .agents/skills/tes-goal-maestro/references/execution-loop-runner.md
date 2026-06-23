@@ -34,9 +34,9 @@ user request.
 Use these states:
 
 ```text
-ready_goal_prompt -> execution_cost_drafted -> active_spec_opened ->
-active_spec_committed -> next_prompt_ready -> executive_stop_audit ->
-execution_loop_complete
+ready_goal_prompt -> execution_cost_drafted -> pre_edit_gate_passed ->
+active_spec_opened -> active_spec_committed -> next_prompt_ready ->
+executive_stop_audit -> execution_loop_complete
 ```
 
 Stop or branch with:
@@ -70,6 +70,48 @@ produce additive, non-empty per-SPEC evidence after loop start. If the existing
 implementation makes fresh per-SPEC evidence impossible without rewriting
 history or pretending old commits are new execution, stop with
 `NEEDS_OWNER_DECISION`.
+
+## Pre-Edit Gate
+
+Before any worker spawn, parent fallback edit, material implementation edit, or
+execution-unit commit, the parent must emit a Pre-Edit Gate from material
+sources. This gate is the mechanical permission to edit.
+
+The gate block is mandatory:
+
+```text
+EXECUTE_LOOP_REQUESTED=yes
+READY_GOAL_PROMPT=present
+DECLARED_UNITS=<exact ordered unit ids from the materialization tree>
+FIRST_UNEXECUTED_UNIT=<id>
+ACTIVE_SPEC=<id>
+BASELINE_ONLY_COMMITS=<hashes or none>
+LEDGER=<GOAL-EXECUTION-LOOP-LEDGER-...md>
+MAY_EDIT=<yes|no>
+```
+
+`MAY_EDIT=yes` is allowed only when:
+
+1. `EXECUTE_LOOP_REQUESTED=yes`;
+2. `READY_GOAL_PROMPT=present`;
+3. `DECLARED_UNITS` preserves the source-declared queue exactly;
+4. `FIRST_UNEXECUTED_UNIT` is the first declared unit without current-loop
+   post-open evidence and accepted commit/no-commit rationale;
+5. `ACTIVE_SPEC` equals `FIRST_UNEXECUTED_UNIT`;
+6. `BASELINE_ONLY_COMMITS` lists prior commits used only as comparison
+   evidence, or `none`;
+7. `LEDGER` names the persistent execution-loop ledger.
+
+If the block is missing, `MAY_EDIT=no`, or `FIRST_UNEXECUTED_UNIT` differs from
+`ACTIVE_SPEC`, stop with `NEEDS_EXECUTION_UNIT_FIDELITY` before any edit or
+worker spawn. Do not repair the mismatch by reordering, skipping, renaming or
+counting old commits.
+
+Materializing, expanding or repairing a Super SPEC before the loop is
+preparatory contract work. It does not consume the first declared execution
+unit, advance `FIRST_UNEXECUTED_UNIT`, or count as material execution unless
+the source artifact explicitly declares that same unit as the active execution
+unit.
 
 ## Execution Cost Draft
 
@@ -105,7 +147,8 @@ The draft must state:
     source-mandated;
 17. browser metrics and visual-spatial oracle plan for app, UI, game or
     rendered-canvas work;
-18. persistent ledger decision and path when required.
+18. persistent ledger path for this `--execute-loop`; the ledger is always
+    required before the first `ACTIVE_SPEC` opens.
 
 If the draft cannot be produced from material sources, stop with
 `NEEDS_EXECUTION_LOOP_DRAFT`.
@@ -128,8 +171,9 @@ Before every worker spawn, the parent must produce a short pre-SPEC reflection:
 8. restate browser metrics and visual-spatial evidence required for app, UI,
    game or rendered-canvas work;
 9. state local risk and likely repair pressure;
-10. emit the loop-state block;
-11. confirm the worker may execute only the active SPEC.
+10. emit and pass the Pre-Edit Gate;
+11. emit the loop-state block;
+12. confirm the worker may execute only the active SPEC.
 
 This reflection is mandatory even when the previous loop generated a next
 prompt.
@@ -147,6 +191,7 @@ last_commit=<sha or none>
 failed_attempt_residue=<none|classified|blocked>
 next_allowed_action=<worker_attempt|failed_attempt_recovery|spec_repair|escalation|audit|stop>
 worktree_state=<clean|classified_dirty|blocked>
+first_unexecuted_unit=<id>
 bug_vs_architecture=<behavior_bug|structural_collapse|mixed|unknown|not_applicable>
 browser_metrics_required=<yes|no|not_applicable>
 visual_spatial_oracle_required=<yes|no|not_applicable>
@@ -260,28 +305,30 @@ with `SAFETY_BLOCKED`.
 The parent advances only after validating:
 
 1. active SPEC id;
-2. changed files are inside the allowed matrix;
-3. focused oracles passed;
-4. negative checks passed;
-5. local commit exists for the active SPEC or accepted no-commit rationale;
-6. `git show --stat --oneline <commit>` proves material diff;
-7. post-commit status is inspected;
-8. sync status is `LOCAL_COMMITTED` or `REMOTE_SYNC_NOT_REQUESTED`;
-9. structural method evidence passed when code, UI or generated app artifacts
+2. Pre-Edit Gate existed before edits and `FIRST_UNEXECUTED_UNIT` matched
+   `ACTIVE_SPEC`;
+3. changed files are inside the allowed matrix;
+4. focused oracles passed;
+5. negative checks passed;
+6. local commit exists for the active SPEC or accepted no-commit rationale;
+7. `git show --stat --oneline <commit>` proves material diff;
+8. post-commit status is inspected;
+9. sync status is `LOCAL_COMMITTED` or `REMOTE_SYNC_NOT_REQUESTED`;
+10. structural method evidence passed when code, UI or generated app artifacts
    were in scope;
-10. structural handoff names active `STRUCTURAL_METHOD`, changed topology,
+11. structural handoff names active `STRUCTURAL_METHOD`, changed topology,
     accepted debt and next-unit constraints when a later unit can build on the
     same code;
-11. worker did not execute later SPECs;
-12. parent refreshed local state by rereading the relevant changed files,
+12. worker did not execute later SPECs;
+13. parent refreshed local state by rereading the relevant changed files,
     active SPEC artifact and latest `git show` evidence before creating the
     next prompt;
-13. evidence was produced after the active SPEC opened, not counted from a
+14. evidence was produced after the active SPEC opened, not counted from a
     reference implementation, manual build, browser smoke, run record or
     post-facto audit;
-14. browser metrics artifact exists and matches the declared contract when app,
+15. browser metrics artifact exists and matches the declared contract when app,
     UI, game or rendered-canvas certification is in scope;
-15. visual-spatial oracle evidence exists when visual layout, render, spawn,
+16. visual-spatial oracle evidence exists when visual layout, render, spawn,
     raycast, canvas, camera framing or spatial alignment can fail despite green
     logic.
 
@@ -335,16 +382,14 @@ the state.
 
 ## Loop State
 
-Default loop state lives in the parent context plus Git for short clean loops.
-The loop-state block is still mandatory in the parent evidence for every
-attempt.
+Default loop state lives in the parent context plus Git, but a persistent
+ledger is mandatory for every `--execute-loop`. The loop-state block is still
+mandatory in the parent evidence for every attempt.
 
 Create a persistent Markdown ledger named
-`GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the user explicitly
-requests `--execute-loop-ledger`, the draft predicts more than three SPECs, a
-SPEC repair occurs, an audit repair unit is appended, or execution resumes
-after context compaction and the parent cannot prove exact loop state from the
-current context plus Git.
+`GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` before the first
+`ACTIVE_SPEC` opens. `--execute-loop-ledger` may request a specific ledger path
+or stricter retention, but it is not required to make the ledger mandatory.
 
 Shard the ledger before it becomes ingestion debt. The ledger must carry only
 SPEC id, spec version, attempt, repair count, audit cycle, failed-attempt
@@ -362,6 +407,7 @@ spec_version:
 attempt:
 repair_count:
 audit_repair_cycle:
+first_unexecuted_unit:
 failed_attempt_recovery_decision:
 commit:
 oracle_status:
@@ -443,8 +489,9 @@ material evidence stops with `NEEDS_OWNER_DECISION` or
 
 Use `EXECUTION_LOOP_COMPLETE` only when all declared SPECs passed and the
 Executive Stop Audit confirms no more loops are needed and no declared SPEC
-was credited from baseline-only reference evidence. Coding, UI or generated-app
-SPECs must also have passing structural method evidence.
+was skipped, credited from Super SPEC materialization, or credited from
+baseline-only reference evidence. Coding, UI or generated-app SPECs must also
+have passing structural method evidence.
 
 Use `EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS` when the loop converged only
 after audit-added corrective SPECs.

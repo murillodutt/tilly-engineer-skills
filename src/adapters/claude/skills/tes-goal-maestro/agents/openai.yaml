@@ -26,14 +26,18 @@ default_prompt: |
   and certification, but must not write or execute it automatically outside a
   parent-owned execution loop. Run Execution Loop only when the user explicitly
   requests --execute-loop: create an Execution Cost Draft from material
-  sources, carry active Engineering Method Profiles and
+  sources, then require a Pre-Edit Gate before any edit or worker spawn:
+  EXECUTE_LOOP_REQUESTED=yes, READY_GOAL_PROMPT=present, DECLARED_UNITS exact,
+  FIRST_UNEXECUTED_UNIT matching ACTIVE_SPEC, BASELINE_ONLY_COMMITS listed,
+  LEDGER named, and MAY_EDIT=yes. Carry active Engineering Method Profiles and
   STRUCTURAL_METHOD=<profile-id> envelope fields for coding work, execute one
   ACTIVE_SPEC at a time through a fresh worker subagent, require baseline
   classification, loop-state evidence, canonical SPEC_REPAIR_BY_LLM,
-  failed-attempt recovery with bug_vs_architecture classification, persistent
-  ledger triggers and structural decision ledger fields, the exact
+  failed-attempt recovery with bug_vs_architecture classification, a mandatory
+  persistent ledger from loop start and structural decision ledger fields, the
+  exact
   --execute-loop-parent-fallback flag before parent-side worker fallback,
   owner-approved cloud redaction, local commit evidence, strict sequential
   replay, reference/manual builds as baseline-only comparison, bounded audit
-  repairs, keep remote sync forbidden, and run Executive Stop Audit before final
-  closure.
+  repairs, never count Super SPEC materialization as a declared execution unit,
+  keep remote sync forbidden, and run Executive Stop Audit before final closure.

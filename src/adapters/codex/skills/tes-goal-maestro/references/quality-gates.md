@@ -146,8 +146,9 @@ Reject a prompt if it lacks:
 16. Next Prompt Handoff only when explicitly requested, with post-`GO`
     certification, chat-only emission and no automatic execution.
 17. Execution Loop only when `--execute-loop` is explicitly requested, with an
-    Execution Cost Draft, `ACTIVE_SPEC` isolation, parent validation, local-only
-    commit sync and Executive Stop Audit.
+    Execution Cost Draft, Pre-Edit Gate, `ACTIVE_SPEC` isolation, parent
+    validation, local-only commit sync, mandatory ledger and Executive Stop
+    Audit.
 18. Engineering Method Profile for coding, UI or generated-app work, including
     topology, exceptions, structural negative checks and structural oracles.
 19. `STRUCTURAL_METHOD=<profile-id>`, topology budget, structural source
@@ -193,17 +194,21 @@ When not requested, the prompt must not include a next-prompt handoff clause.
 Execution Loop is valid only when explicitly requested by `--execute-loop`.
 When requested, the generated response must require an `Execution Cost Draft`
 from material sources before spawning, one fresh worker per `ACTIVE_SPEC`,
-full prompt plus hard active-SPEC envelope, parent validation before advancing,
-local automatic commit per green SPEC, no remote push, bounded
+full prompt plus hard active-SPEC envelope, a Pre-Edit Gate with
+`EXECUTE_LOOP_REQUESTED=yes`, `READY_GOAL_PROMPT=present`, `DECLARED_UNITS`,
+`FIRST_UNEXECUTED_UNIT`, `ACTIVE_SPEC`, `BASELINE_ONLY_COMMITS`, `LEDGER` and
+`MAY_EDIT=yes`, parent validation before advancing, local automatic commit per
+green SPEC, no remote push, bounded
 `SPEC_REPAIR_BY_LLM`, a loop-state block for every attempt, classified
 baseline state before the first worker, owner-approved cloud escalation only,
-failed-attempt recovery before the next attempt, persistent ledger when the loop
-is long or repaired, exact parent-fallback flag authorization, bounded audit
+failed-attempt recovery before the next attempt, persistent ledger for every
+`--execute-loop`, exact parent-fallback flag authorization, bounded audit
 repairs, strict sequential replay, baseline-only comparison for reference
-implementations or manual builds, active Engineering Method Profile when code
-structure is in scope, `STRUCTURAL_METHOD=<profile-id>` envelope fields,
-structural decision ledger fields, `bug_vs_architecture` recovery
-classification, and Executive Stop Audit before final stop.
+implementations or manual builds, no Super SPEC materialization counted as a
+declared execution unit, active Engineering Method Profile when code structure
+is in scope, `STRUCTURAL_METHOD=<profile-id>` envelope fields, structural
+decision ledger fields, `bug_vs_architecture` recovery classification, and
+Executive Stop Audit before final stop.
 When not requested, the prompt must not include execution-loop behavior.
 
 If Next Prompt Handoff and Execution Loop are both explicitly requested,
@@ -391,13 +396,14 @@ Then ask:
 
 ```text
 If Execution Loop appears, was `--execute-loop` explicitly requested, and does
-it require Execution Cost Draft, ACTIVE_SPEC isolation, parent validation,
-local-only commit sync, baseline classification, loop-state blocks, canonical
-SPEC_REPAIR_BY_LLM, failed-attempt recovery, persistent ledger triggers, the
-exact `--execute-loop-parent-fallback` flag for parent fallback, owner-approved
-cloud escalation, strict sequential replay, reference implementations as
-baseline-only comparison, bounded audit repairs, structural decision ledger
-fields, `bug_vs_architecture` recovery classification and Executive Stop Audit?
+it require Execution Cost Draft, Pre-Edit Gate, ACTIVE_SPEC isolation, parent
+validation, local-only commit sync, baseline classification, loop-state blocks,
+canonical SPEC_REPAIR_BY_LLM, failed-attempt recovery, mandatory persistent
+ledger, the exact `--execute-loop-parent-fallback` flag for parent fallback,
+owner-approved cloud escalation, strict sequential replay, reference
+implementations as baseline-only comparison, no Super SPEC materialization as
+unit credit, bounded audit repairs, structural decision ledger fields,
+`bug_vs_architecture` recovery classification and Executive Stop Audit?
 ```
 
 If the answer is no, return `NEEDS_TREE_REPAIR`.

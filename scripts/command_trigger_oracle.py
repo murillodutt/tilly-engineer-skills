@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.191"
+VERSION = "0.3.192"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -283,6 +283,13 @@ GOAL_MAESTRO_LOOP_TERMS = (
     "loop-state block",
     "baseline worktree",
     "canonical SPEC artifact",
+    "Pre-Edit Gate",
+    "EXECUTE_LOOP_REQUESTED=",
+    "READY_GOAL_PROMPT=present",
+    "FIRST_UNEXECUTED_UNIT",
+    "BASELINE_ONLY_COMMITS",
+    "MAY_EDIT=yes",
+    "Super SPEC materialization",
     "Engineering Method Profile",
     "STRUCTURAL_METHOD=",
     "structural source probes",
@@ -306,6 +313,7 @@ GOAL_MAESTRO_LEDGER_FIELDS = (
     "attempt:",
     "repair_count:",
     "audit_repair_cycle:",
+    "first_unexecuted_unit:",
     "failed_attempt_recovery_decision:",
     "commit:",
     "oracle_status:",
@@ -336,6 +344,9 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
             "--execute-loop",
             "--execute-loop-parent-fallback",
             "Execution Cost Draft",
+            "Pre-Edit Gate",
+            "FIRST_UNEXECUTED_UNIT",
+            "MAY_EDIT=yes",
             "Engineering Method Profile",
             "STRUCTURAL_METHOD=",
             "bug_vs_architecture",
@@ -354,6 +365,13 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
         "references/execution-loop-runner.md": (
             "The parent runner owns the loop",
             "Reference Baseline Credit Gate",
+            "Pre-Edit Gate",
+            "EXECUTE_LOOP_REQUESTED=yes",
+            "READY_GOAL_PROMPT=present",
+            "FIRST_UNEXECUTED_UNIT",
+            "BASELINE_ONLY_COMMITS",
+            "MAY_EDIT=<yes|no>",
+            "Super SPEC",
             "baseline-only comparison",
             "Engineering Method Profile",
             "STRUCTURAL_METHOD=",
@@ -369,6 +387,9 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
     ),
         "references/quality-gates.md": (
             "Execution Cost Draft",
+            "Pre-Edit Gate",
+            "FIRST_UNEXECUTED_UNIT",
+            "MAY_EDIT=yes",
             "Engineering Method Profile",
             "STRUCTURAL_METHOD=",
             "structural handoff",
@@ -386,6 +407,9 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
             "Template Load Contract",
             "READY_GOAL_PROMPT",
             "Execution Loop:",
+            "Pre-Edit Gate",
+            "FIRST_UNEXECUTED_UNIT",
+            "MAY_EDIT=yes",
             "Engineering Method Profile",
             "STRUCTURAL_METHOD=",
             "Structural method result",
@@ -415,6 +439,7 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
     ),
         "references/materialization-tree.md": (
             "Execution Loop Boundary",
+            "Pre-Edit Gate",
             "Structural Method Gate",
             "Engineering Method Profile",
             "STRUCTURAL_METHOD=",
@@ -454,6 +479,9 @@ GOAL_MAESTRO_LOOP_FILE_TERMS = {
         "Final delivery:",
         "Execution Loop:",
         "ACTIVE_SPEC",
+        "Pre-Edit Gate",
+        "FIRST_UNEXECUTED_UNIT",
+        "MAY_EDIT=yes",
         "Failed Attempt Recovery",
         "GOAL-EXECUTION-LOOP-LEDGER",
         "bug_vs_architecture",
@@ -956,6 +984,9 @@ def goal_maestro_generated_prompt_failures(
         "GOAL-EXECUTION-LOOP-LEDGER",
         "--execute-loop-parent-fallback",
         "strict sequential replay",
+        "Pre-Edit Gate",
+        "FIRST_UNEXECUTED_UNIT",
+        "MAY_EDIT=yes",
         "reference implementation",
         "baseline-only comparison",
         "STRUCTURAL_METHOD=",
@@ -1005,9 +1036,14 @@ def goal_maestro_generated_prompt_e2e_failures(
     if not declared_units:
         failures.append(f"{name} mature SPEC declares no SPEC units")
     for unit in declared_units:
-        if unit not in prompt_text:
-            failures.append(f"{name} generated prompt missing declared unit: {unit}")
-    positions = [prompt_text.find(unit) for unit in declared_units if unit in prompt_text]
+        if not re.search(rf"(?m)^{re.escape(unit)}\b", prompt_text):
+            failures.append(f"{name} generated prompt missing declared unit entry: {unit}")
+    positions = [
+        match.start()
+        for unit in declared_units
+        for match in [re.search(rf"(?m)^{re.escape(unit)}\b", prompt_text)]
+        if match
+    ]
     if positions != sorted(positions):
         failures.append(f"{name} generated prompt reorders declared SPEC units")
 
@@ -1605,6 +1641,13 @@ def run_fixture_tests() -> list[str]:
         (
             "Execution Cost Draft",
             "ACTIVE_SPEC=SPEC-001",
+            "Pre-Edit Gate",
+            "EXECUTE_LOOP_REQUESTED=yes",
+            "READY_GOAL_PROMPT=present",
+            "DECLARED_UNITS=SPEC-001,SPEC-002",
+            "FIRST_UNEXECUTED_UNIT=SPEC-001",
+            "BASELINE_ONLY_COMMITS=none",
+            "MAY_EDIT=yes",
             "loop-state block",
             "Failed Attempt Recovery",
             "Cloud Query Redaction Block",
@@ -1637,6 +1680,30 @@ def run_fixture_tests() -> list[str]:
         )
     ):
         failures.append("generated execute-loop prompt fixture must fail without failed-attempt recovery")
+
+    generated_loop_missing_pre_edit = good_generated_loop_prompt.replace("Pre-Edit Gate", "preflight note")
+    if not any(
+        "Pre-Edit Gate" in item
+        for item in goal_maestro_generated_prompt_failures(
+            "generated_loop_missing_pre_edit",
+            generated_loop_missing_pre_edit,
+            execute_loop_requested=True,
+        )
+    ):
+        failures.append("generated execute-loop prompt fixture must fail without Pre-Edit Gate")
+
+    generated_loop_missing_first_unexecuted = good_generated_loop_prompt.replace(
+        "FIRST_UNEXECUTED_UNIT=SPEC-001", ""
+    )
+    if not any(
+        "FIRST_UNEXECUTED_UNIT" in item
+        for item in goal_maestro_generated_prompt_failures(
+            "generated_loop_missing_first_unexecuted",
+            generated_loop_missing_first_unexecuted,
+            execute_loop_requested=True,
+        )
+    ):
+        failures.append("generated execute-loop prompt fixture must fail without FIRST_UNEXECUTED_UNIT")
 
     generated_loop_missing_structural_method = good_generated_loop_prompt.replace("STRUCTURAL_METHOD=web-app", "")
     if not any(
@@ -1714,6 +1781,7 @@ def run_fixture_tests() -> list[str]:
             "attempt: 1",
             "repair_count: 0",
             "audit_repair_cycle: 0",
+            "first_unexecuted_unit: SPEC-001",
             "failed_attempt_recovery_decision: none",
             "commit: abc1234",
             "oracle_status: PASS",
@@ -1781,6 +1849,13 @@ def run_fixture_tests() -> list[str]:
             "Final delivery:",
             "Execution Cost Draft",
             "ACTIVE_SPEC=SPEC-001",
+            "Pre-Edit Gate",
+            "EXECUTE_LOOP_REQUESTED=yes",
+            "READY_GOAL_PROMPT=present",
+            "DECLARED_UNITS=SPEC-001,SPEC-002",
+            "FIRST_UNEXECUTED_UNIT=SPEC-001",
+            "BASELINE_ONLY_COMMITS=none",
+            "MAY_EDIT=yes",
             "loop-state block",
             "Failed Attempt Recovery",
             "Cloud Query Redaction Block",

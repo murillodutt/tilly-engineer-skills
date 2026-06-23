@@ -137,6 +137,20 @@ Execution Loop:
 - Disabled unless `--execute-loop` was explicitly requested.
 - When enabled, the parent runner must create an `Execution Cost Draft` before
   spawning any worker.
+- Before any edit, worker spawn, parent fallback or material commit, the parent
+  must emit and pass this Pre-Edit Gate:
+  `EXECUTE_LOOP_REQUESTED=yes`,
+  `READY_GOAL_PROMPT=present`,
+  `DECLARED_UNITS=<exact ordered unit ids>`,
+  `FIRST_UNEXECUTED_UNIT=<id>`,
+  `ACTIVE_SPEC=<id>`,
+  `BASELINE_ONLY_COMMITS=<hashes or none>`,
+  `LEDGER=<GOAL-EXECUTION-LOOP-LEDGER-...md>`,
+  `MAY_EDIT=yes`.
+- If `FIRST_UNEXECUTED_UNIT != ACTIVE_SPEC`, or if `MAY_EDIT` is not `yes`,
+  stop with `NEEDS_EXECUTION_UNIT_FIDELITY` before editing.
+- Materializing or expanding a Super SPEC is preparatory contract work. It does
+  not consume any declared execution unit or advance `FIRST_UNEXECUTED_UNIT`.
 - The parent runner opens one `ACTIVE_SPEC` at a time with the full prompt plus
   a hard active-SPEC envelope.
 - Workers may execute only `ACTIVE_SPEC`; they may propose next-prompt material
@@ -160,9 +174,8 @@ Execution Loop:
   `ACTIVE_SPEC`.
 - Parent-side execution fallback is disabled unless the exact
   `--execute-loop-parent-fallback` flag was requested.
-- Create `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the loop is
-  long, repaired, audit-expanded, explicitly requested, or resumes after
-  context compaction without exact loop-state proof.
+- Create `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` before the first
+  `ACTIVE_SPEC` opens for every `--execute-loop`.
 - The ledger must carry structural decision fields when code structure is in
   scope: `structural_method_id`, `topology_decision`, `structural_debt` and
   `next_structural_constraint`.
@@ -198,6 +211,8 @@ First mandatory act:
 9. Declare the browser metrics and visual-spatial oracle requirements when app,
    UI, game, canvas or rendered app work is in scope.
 10. Declare the file matrix before editing.
+11. If `--execute-loop` is active, create the ledger and pass the Pre-Edit Gate
+    before the first worker spawn or material edit.
 
 SPEC-000 Preflight And Baseline
 Objective:
@@ -219,6 +234,8 @@ Execution unit fidelity:
 - Prior commits or closeouts do not satisfy this run's material units by
   default; they are baseline-only unless explicitly accepted by the source
   artifact or owner.
+- Super SPEC materialization does not satisfy or consume a declared execution
+  unit unless that same declared unit is explicitly active.
 - Earlier failed or partial closeouts must be preserved as historical evidence
   and repaired through additive material commits, not overwritten as if they
   never happened.
