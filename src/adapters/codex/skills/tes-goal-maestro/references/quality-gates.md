@@ -158,7 +158,7 @@ local automatic commit per green SPEC, no remote push, bounded
 `SPEC_REPAIR_BY_LLM`, a loop-state block for every attempt, classified
 baseline state before the first worker, owner-approved cloud escalation only,
 failed-attempt recovery before the next attempt, persistent ledger when the loop
-is long or repaired, explicit parent-fallback authorization, bounded audit
+is long or repaired, exact parent-fallback flag authorization, bounded audit
 repairs, and Executive Stop Audit before final stop.
 When not requested, the prompt must not include execution-loop behavior.
 
@@ -301,9 +301,9 @@ Then ask:
 If Execution Loop appears, was `--execute-loop` explicitly requested, and does
 it require Execution Cost Draft, ACTIVE_SPEC isolation, parent validation,
 local-only commit sync, baseline classification, loop-state blocks, canonical
-SPEC_REPAIR_BY_LLM, failed-attempt recovery, persistent ledger triggers,
-explicit parent-fallback authorization, owner-approved cloud escalation, bounded
-audit repairs and Executive Stop Audit?
+SPEC_REPAIR_BY_LLM, failed-attempt recovery, persistent ledger triggers, the
+exact `--execute-loop-parent-fallback` flag for parent fallback, owner-approved
+cloud escalation, bounded audit repairs and Executive Stop Audit?
 ```
 
 If the answer is no, return `NEEDS_TREE_REPAIR`.

@@ -31,7 +31,7 @@ material but cannot generate the authoritative next prompt or execute the next
 SPEC. If worker capacity is unavailable after closing completed or degraded
 workers, the parent must either execute under the same `ACTIVE_SPEC` envelope
 only when the current request explicitly authorized parent-side loop execution
-with `--execute-loop-parent-fallback` or a direct equivalent, or stop with
+with the exact `--execute-loop-parent-fallback` flag, or stop with
 `NEEDS_OWNER_DECISION`.
 
 ## Reusable Roles

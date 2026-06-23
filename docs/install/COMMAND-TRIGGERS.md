@@ -350,7 +350,7 @@ visual language.
   `--execute-loop` are requested, the loop owns internal continuation; it must
   preserve baseline classification, loop-state evidence, canonical
   `SPEC_REPAIR_BY_LLM`, failed-attempt recovery, persistent ledger triggers,
-  explicit `--execute-loop-parent-fallback` before parent-side worker fallback,
+  exact `--execute-loop-parent-fallback` flag before parent-side worker fallback,
   owner-approved cloud redaction, bounded audit repairs, and branch statuses
   such as `NEEDS_MORE_LOOPS`, `NEEDS_OWNER_DECISION` and `SAFETY_BLOCKED`.
   Generated Super SPEC content must be written to

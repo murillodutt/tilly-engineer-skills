@@ -25,6 +25,6 @@ default_prompt: |
   sources, execute one ACTIVE_SPEC at a time through a fresh worker subagent,
   require baseline classification, loop-state evidence, canonical
   SPEC_REPAIR_BY_LLM, failed-attempt recovery, persistent ledger triggers,
-  explicit --execute-loop-parent-fallback before parent-side worker fallback,
+  the exact --execute-loop-parent-fallback flag before parent-side worker fallback,
   owner-approved cloud redaction, local commit evidence, bounded audit repairs,
   keep remote sync forbidden, and run Executive Stop Audit before final closure.

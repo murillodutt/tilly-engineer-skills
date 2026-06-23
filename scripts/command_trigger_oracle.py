@@ -257,6 +257,7 @@ GOAL_MAESTRO_LOOP_CONTRACT_PATHS = {
         "src/adapters/codex/skills/tes-goal-maestro/references/quality-gates.md",
         "src/adapters/codex/skills/tes-goal-maestro/references/maestral-goal-prompt.md",
         "src/adapters/codex/skills/tes-goal-maestro/references/materialization-tree.md",
+        "src/adapters/codex/skills/tes-goal-maestro/references/subagents-and-oracles.md",
     ),
     "claude": (
         "src/adapters/claude/skills/tes-goal-maestro/SKILL.md",
@@ -264,6 +265,7 @@ GOAL_MAESTRO_LOOP_CONTRACT_PATHS = {
         "src/adapters/claude/skills/tes-goal-maestro/references/quality-gates.md",
         "src/adapters/claude/skills/tes-goal-maestro/references/maestral-goal-prompt.md",
         "src/adapters/claude/skills/tes-goal-maestro/references/materialization-tree.md",
+        "src/adapters/claude/skills/tes-goal-maestro/references/subagents-and-oracles.md",
     ),
 }
 
@@ -282,6 +284,102 @@ GOAL_MAESTRO_LOOP_TERMS = (
     "NEEDS_MORE_LOOPS",
     "NEEDS_OWNER_DECISION",
     "SAFETY_BLOCKED",
+)
+
+GOAL_MAESTRO_LEDGER_FIELDS = (
+    "spec_id:",
+    "spec_version:",
+    "attempt:",
+    "repair_count:",
+    "audit_repair_cycle:",
+    "failed_attempt_recovery_decision:",
+    "commit:",
+    "oracle_status:",
+    "stop_state:",
+    "next_allowed_action:",
+)
+
+GOAL_MAESTRO_LEDGER_FORBIDDEN_PATTERNS = (
+    r"full prompt\s*:",
+    r"raw diff\s*:",
+    r"secret\s*:",
+    r"credential\s*:",
+    r"private path\s*:",
+    r"chat transcript\s*:",
+)
+
+GOAL_MAESTRO_LOOP_FILE_TERMS = {
+    "SKILL.md": (
+        "--execute-loop",
+        "--execute-loop-parent-fallback",
+        "Execution Cost Draft",
+        "Failed Attempt Recovery",
+        "GOAL-EXECUTION-LOOP-LEDGER",
+        "Executive Stop Audit",
+        "exact `--execute-loop-parent-fallback` flag",
+    ),
+    "references/execution-loop-runner.md": (
+        "The parent runner owns the loop",
+        "Failed Attempt Recovery",
+        "Ledger Schema",
+        "exact `--execute-loop-parent-fallback` flag",
+        *GOAL_MAESTRO_LEDGER_FIELDS,
+    ),
+    "references/quality-gates.md": (
+        "Execution Cost Draft",
+        "failed-attempt recovery",
+        "persistent ledger",
+        "exact `--execute-loop-parent-fallback` flag",
+        "Executive Stop Audit",
+    ),
+    "references/maestral-goal-prompt.md": (
+        "Execution Loop:",
+        "failed-attempt residue",
+        "GOAL-EXECUTION-LOOP-LEDGER",
+        "exact `--execute-loop-parent-fallback` flag",
+        "Executive Stop Audit",
+    ),
+    "references/materialization-tree.md": (
+        "Execution Loop Boundary",
+        "failed-attempt recovery",
+        "GOAL-EXECUTION-LOOP-LEDGER",
+        "exact",
+        "--execute-loop-parent-fallback",
+    ),
+    "references/subagents-and-oracles.md": (
+        "one fresh worker subagent per `ACTIVE_SPEC`",
+        "unresolved failed-attempt residue",
+        "required persistent ledger",
+        "exact `--execute-loop-parent-fallback` flag",
+        "Executive Stop Audit",
+    ),
+}
+
+GOAL_MAESTRO_MATURE_SPEC_REQUIRED_TERMS = (
+    "Canonical Artifact:",
+    "Capability:",
+    "Certified Context:",
+    "Phase Boundary:",
+    "Non-Objectives:",
+    "Central Rule:",
+    "Forbidden Moves:",
+    "Acceptance Criteria:",
+    "Negative Grep:",
+    "Stop States:",
+    "Commit Strategy:",
+    "Final Delivery Contract:",
+)
+
+GOAL_MAESTRO_GENERATED_PROMPT_REQUIRED_TERMS = (
+    "/goal",
+    "Main SPEC:",
+    "SPEC-000 Preflight And Baseline",
+    "Execution unit fidelity:",
+    "git show --stat --oneline <commit>",
+    "Sync status:",
+    "Full Oracle And Closeout",
+    "Stop criteria:",
+    "Final delivery:",
 )
 
 
@@ -680,6 +778,51 @@ def goal_maestro_loop_failures(name: str, text: str) -> list[str]:
     ]
 
 
+def goal_maestro_loop_file_key(relpath: str) -> str:
+    marker = "tes-goal-maestro/"
+    if marker in relpath:
+        return relpath.split(marker, 1)[1]
+    return relpath
+
+
+def goal_maestro_loop_file_failures(relpath: str, text: str) -> list[str]:
+    key = goal_maestro_loop_file_key(relpath)
+    normalized_text = normalized(text)
+    failures = [
+        f"{relpath} missing goal-maestro file contract term: {term}"
+        for term in GOAL_MAESTRO_LOOP_FILE_TERMS.get(key, ())
+        if term not in normalized_text
+    ]
+    if "--execute-loop-parent-fallback" in normalized_text and "direct equivalent" in normalized_text:
+        failures.append(f"{relpath} weakens parent fallback with direct-equivalent wording")
+    return failures
+
+
+def goal_maestro_ledger_failures(name: str, text: str) -> list[str]:
+    folded = normalized(text).casefold()
+    failures = [
+        f"{name} ledger missing field: {field}"
+        for field in GOAL_MAESTRO_LEDGER_FIELDS
+        if field not in text
+    ]
+    if not re.search(r"\bSPEC-(?:\d{3}|AUDIT-\d{3})\b", text):
+        failures.append(f"{name} ledger missing SPEC id")
+    for pattern in GOAL_MAESTRO_LEDGER_FORBIDDEN_PATTERNS:
+        if re.search(pattern, folded):
+            failures.append(f"{name} ledger contains forbidden payload pattern: {pattern}")
+    return failures
+
+
+def goal_maestro_declared_spec_units(text: str) -> list[str]:
+    units = re.findall(r"\bSPEC-\d{3}\b", text)
+    ordered: list[str] = []
+    for unit in units:
+        if unit == "SPEC-000" or unit in ordered:
+            continue
+        ordered.append(unit)
+    return ordered
+
+
 def goal_maestro_generated_prompt_failures(
     name: str,
     text: str,
@@ -717,19 +860,75 @@ def goal_maestro_generated_prompt_failures(
     return failures
 
 
+def goal_maestro_generated_prompt_e2e_failures(
+    name: str,
+    spec_text: str,
+    prompt_text: str,
+    *,
+    execute_loop_requested: bool,
+    next_prompt_handoff_requested: bool = False,
+) -> list[str]:
+    failures: list[str] = []
+    normalized_spec = normalized(spec_text)
+    normalized_prompt = normalized(prompt_text)
+    for term in GOAL_MAESTRO_MATURE_SPEC_REQUIRED_TERMS:
+        if term not in normalized_spec:
+            failures.append(f"{name} mature SPEC missing term: {term}")
+    for term in GOAL_MAESTRO_GENERATED_PROMPT_REQUIRED_TERMS:
+        if term not in normalized_prompt:
+            failures.append(f"{name} generated prompt missing base term: {term}")
+
+    declared_units = goal_maestro_declared_spec_units(spec_text)
+    if not declared_units:
+        failures.append(f"{name} mature SPEC declares no SPEC units")
+    for unit in declared_units:
+        if unit not in prompt_text:
+            failures.append(f"{name} generated prompt missing declared unit: {unit}")
+    positions = [prompt_text.find(unit) for unit in declared_units if unit in prompt_text]
+    if positions != sorted(positions):
+        failures.append(f"{name} generated prompt reorders declared SPEC units")
+
+    failures.extend(
+        goal_maestro_generated_prompt_failures(
+            name,
+            prompt_text,
+            execute_loop_requested=execute_loop_requested,
+            next_prompt_handoff_requested=next_prompt_handoff_requested,
+        )
+    )
+    return failures
+
+
 def check_goal_maestro_loop_contracts(root: Path) -> tuple[list[dict[str, Any]], list[str]]:
     checked: list[dict[str, Any]] = []
     failures: list[str] = []
     for platform, paths in GOAL_MAESTRO_LOOP_CONTRACT_PATHS.items():
-        text, read_failures = read_group(root, paths)
-        missing = goal_maestro_loop_failures(f"{platform} tes-goal-maestro loop", text)
-        failures.extend(read_failures)
-        failures.extend(missing)
+        chunks: list[str] = []
+        platform_failures: list[str] = []
+        files: list[dict[str, Any]] = []
+        for relpath in paths:
+            path = root / relpath
+            if not path.exists():
+                failure = f"missing trigger source: {relpath}"
+                platform_failures.append(failure)
+                files.append({"path": relpath, "status": "MISSING"})
+                continue
+            text = path.read_text(encoding="utf-8")
+            chunks.append(text)
+            file_failures = goal_maestro_loop_file_failures(relpath, text)
+            platform_failures.extend(file_failures)
+            files.append({"path": relpath, "status": "PASS" if not file_failures else "FAIL"})
+        group_text = "\n".join(chunks)
+        platform_failures.extend(
+            goal_maestro_loop_failures(f"{platform} tes-goal-maestro loop", group_text)
+        )
+        failures.extend(platform_failures)
         checked.append(
             {
                 "platform": platform,
                 "paths": list(paths),
-                "status": "PASS" if not read_failures and not missing else "FAIL",
+                "status": "PASS" if not platform_failures else "FAIL",
+                "files": files,
             }
         )
     return checked, failures
@@ -1197,6 +1396,33 @@ def run_fixture_tests() -> list[str]:
     if not any("Cloud Query Redaction Block" in item for item in goal_maestro_loop_failures("goal_loop_no_redaction", no_cloud_redaction)):
         failures.append("goal-maestro loop fixture must fail without cloud redaction block")
 
+    good_runner_file = "\n".join(GOAL_MAESTRO_LOOP_FILE_TERMS["references/execution-loop-runner.md"])
+    if goal_maestro_loop_file_failures(
+        "src/adapters/codex/skills/tes-goal-maestro/references/execution-loop-runner.md",
+        good_runner_file,
+    ):
+        failures.append("good goal-maestro runner file fixture must pass file-level terms")
+
+    runner_without_schema = good_runner_file.replace("Ledger Schema", "Ledger Notes")
+    if not any(
+        "Ledger Schema" in item
+        for item in goal_maestro_loop_file_failures(
+            "src/adapters/codex/skills/tes-goal-maestro/references/execution-loop-runner.md",
+            runner_without_schema,
+        )
+    ):
+        failures.append("goal-maestro runner file fixture must fail without ledger schema")
+
+    runner_with_weak_fallback = good_runner_file + "\n--execute-loop-parent-fallback or a direct equivalent"
+    if not any(
+        "direct-equivalent" in item
+        for item in goal_maestro_loop_file_failures(
+            "src/adapters/codex/skills/tes-goal-maestro/references/execution-loop-runner.md",
+            runner_with_weak_fallback,
+        )
+    ):
+        failures.append("goal-maestro runner file fixture must fail on weak parent fallback wording")
+
     good_generated_loop_prompt = "\n".join(
         (
             "Execution Cost Draft",
@@ -1258,6 +1484,120 @@ def run_fixture_tests() -> list[str]:
         next_prompt_handoff_requested=True,
     ):
         failures.append("good generated handoff prompt fixture must pass without execute-loop terms")
+
+    good_ledger = "\n".join(
+        (
+            "# GOAL-EXECUTION-LOOP-LEDGER-example",
+            "## SPEC-001",
+            "spec_id: SPEC-001",
+            "spec_version: source-v1",
+            "attempt: 1",
+            "repair_count: 0",
+            "audit_repair_cycle: 0",
+            "failed_attempt_recovery_decision: none",
+            "commit: abc1234",
+            "oracle_status: PASS",
+            "stop_state: next",
+            "next_allowed_action: worker_attempt",
+        )
+    )
+    if goal_maestro_ledger_failures("ledger_good", good_ledger):
+        failures.append("good execution-loop ledger fixture must pass")
+
+    ledger_missing_field = good_ledger.replace("next_allowed_action: worker_attempt", "")
+    if not any(
+        "next_allowed_action:" in item
+        for item in goal_maestro_ledger_failures("ledger_missing_field", ledger_missing_field)
+    ):
+        failures.append("ledger fixture must fail without next_allowed_action")
+
+    ledger_with_raw_payload = good_ledger + "\nraw diff: leaked implementation patch"
+    if not any(
+        "raw diff" in item
+        for item in goal_maestro_ledger_failures("ledger_with_raw_payload", ledger_with_raw_payload)
+    ):
+        failures.append("ledger fixture must fail when raw diff payload is stored")
+
+    mature_spec = "\n".join(
+        (
+            "Canonical Artifact: docs/roadmap/goals/super-specs/example.md",
+            "Capability: example loop convergence",
+            "Certified Context: existing goal-maestro contract",
+            "Phase Boundary: instruction and oracle hardening only",
+            "Non-Objectives: no remote push",
+            "Central Rule: preserve declared units",
+            "Forbidden Moves: no broad merged unit",
+            "Acceptance Criteria: prompt validates against command trigger oracle",
+            "Negative Grep: no direct equivalent fallback",
+            "Stop States: GO, NEEDS_OWNER_DECISION, SAFETY_BLOCKED",
+            "Commit Strategy: one commit per SPEC",
+            "Final Delivery Contract: certified local closeout",
+            "Execution Units:",
+            "SPEC-001 Harden prompt fixture",
+            "SPEC-002 Harden ledger fixture",
+        )
+    )
+    generated_e2e_prompt = "\n".join(
+        (
+            "/goal",
+            "Main SPEC:",
+            "docs/roadmap/goals/super-specs/example.md",
+            "SPEC-000 Preflight And Baseline",
+            "SPEC-001 Harden prompt fixture",
+            "SPEC-002 Harden ledger fixture",
+            "Execution unit fidelity:",
+            "git show --stat --oneline <commit>",
+            "Sync status:",
+            "Full Oracle And Closeout",
+            "Stop criteria:",
+            "Final delivery:",
+            "Execution Cost Draft",
+            "ACTIVE_SPEC=SPEC-001",
+            "loop-state block",
+            "Failed Attempt Recovery",
+            "Cloud Query Redaction Block",
+            "Executive Stop Audit",
+            "GOAL-EXECUTION-LOOP-LEDGER-example.md",
+            "--execute-loop-parent-fallback",
+        )
+    )
+    if goal_maestro_generated_prompt_e2e_failures(
+        "generated_e2e_good",
+        mature_spec,
+        generated_e2e_prompt,
+        execute_loop_requested=True,
+        next_prompt_handoff_requested=True,
+    ):
+        failures.append("good generated prompt E2E fixture must pass from mature SPEC to prompt")
+
+    e2e_missing_unit = generated_e2e_prompt.replace("SPEC-002 Harden ledger fixture", "")
+    if not any(
+        "SPEC-002" in item
+        for item in goal_maestro_generated_prompt_e2e_failures(
+            "generated_e2e_missing_unit",
+            mature_spec,
+            e2e_missing_unit,
+            execute_loop_requested=True,
+            next_prompt_handoff_requested=True,
+        )
+    ):
+        failures.append("generated prompt E2E fixture must fail when a declared unit is missing")
+
+    e2e_reordered_units = generated_e2e_prompt.replace(
+        "SPEC-001 Harden prompt fixture\nSPEC-002 Harden ledger fixture",
+        "SPEC-002 Harden ledger fixture\nSPEC-001 Harden prompt fixture",
+    )
+    if not any(
+        "reorders declared SPEC units" in item
+        for item in goal_maestro_generated_prompt_e2e_failures(
+            "generated_e2e_reordered_units",
+            mature_spec,
+            e2e_reordered_units,
+            execute_loop_requested=True,
+            next_prompt_handoff_requested=True,
+        )
+    ):
+        failures.append("generated prompt E2E fixture must fail when declared units are reordered")
 
     return failures
 

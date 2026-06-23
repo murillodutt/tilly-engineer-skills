@@ -357,8 +357,8 @@ When enabled, the tree's `Final Delivery Contract` must require:
 10. `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the loop is long,
     repaired, audit-expanded, explicitly ledgered, or resumes without exact
     loop-state proof;
-11. parent-side execution fallback only after explicit
-    `--execute-loop-parent-fallback` or direct equivalent;
+11. parent-side execution fallback only after the exact
+    `--execute-loop-parent-fallback` flag;
 12. owner-approved redaction before any cloud escalation;
 13. Executive Stop Audit before final loop closure;
 14. `SPEC-AUDIT-*` appended units, not original-tree rewrites, when audit

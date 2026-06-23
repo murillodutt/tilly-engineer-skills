@@ -26,8 +26,8 @@ SPEC execution.
 
 `--execute-loop` authorizes the parent to orchestrate the loop, not to replace
 worker execution when worker creation is unavailable. Parent-side worker
-fallback requires `--execute-loop-parent-fallback` or a direct equivalent in the
-current user request.
+fallback requires the exact `--execute-loop-parent-fallback` flag in the current
+user request.
 
 ## Lifecycle
 
@@ -239,8 +239,8 @@ capturing evidence.
 If no worker can be created after capacity cleanup, do not silently collapse
 the loop. The parent may execute under the same `ACTIVE_SPEC` envelope only
 when the current user request explicitly authorized parent-side loop execution
-with `--execute-loop-parent-fallback` or a direct equivalent; otherwise stop
-with `NEEDS_OWNER_DECISION`.
+with the exact `--execute-loop-parent-fallback` flag; otherwise stop with
+`NEEDS_OWNER_DECISION`.
 
 Do not keep subagents open as memory. Git commits and parent-held evidence are
 the state.
@@ -261,6 +261,27 @@ current context plus Git.
 Shard the ledger before it becomes ingestion debt. The ledger must carry only
 SPEC id, spec version, attempt, repair count, audit cycle, failed-attempt
 recovery decision, commit, oracle status, stop state and next allowed action.
+
+### Ledger Schema
+
+Each ledger entry must use one active SPEC or audit unit and include these exact
+field labels:
+
+```text
+spec_id:
+spec_version:
+attempt:
+repair_count:
+audit_repair_cycle:
+failed_attempt_recovery_decision:
+commit:
+oracle_status:
+stop_state:
+next_allowed_action:
+```
+
+The ledger must not store full prompt bodies, raw diffs, secrets, credentials,
+private paths, chat transcripts or project-specific names.
 
 ## Executive Stop Audit
 

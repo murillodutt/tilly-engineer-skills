@@ -84,7 +84,16 @@ examples or origins.
   persistent `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` for long,
   repaired, audit-expanded or resumed loops, and treats parent-side worker
   fallback as disabled unless explicitly requested by
-  `--execute-loop-parent-fallback` or a direct equivalent.
+  the exact `--execute-loop-parent-fallback` flag.
+
+## 2026-06-22 — Exact fallback flag and ledger oracle
+
+- Parent-side fallback authorization now requires the exact
+  `--execute-loop-parent-fallback` flag. Natural-language equivalents are no
+  longer accepted for this high-risk collapse path.
+- Execution-loop ledgers now have a deterministic field schema so generated
+  `GOAL-EXECUTION-LOOP-LEDGER-*` artifacts can be validated instead of trusted
+  as prose.
 - Always include `SPEC-000 Preflight And Baseline`.
 - Keep the skill neutral and free of project-specific origin stories,
   absolute paths, or domain examples.

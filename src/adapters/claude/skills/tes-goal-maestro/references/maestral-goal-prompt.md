@@ -176,8 +176,8 @@ Execution Loop:
   maintain a loop-state block for every attempt, repair only canonical SPEC
   artifacts, resolve failed-attempt residue before the next attempt, and use
   cloud escalation only after owner-approved redaction.
-- Parent-side execution fallback is disabled unless
-  `--execute-loop-parent-fallback` or a direct equivalent was requested.
+- Parent-side execution fallback is disabled unless the exact
+  `--execute-loop-parent-fallback` flag was requested.
 - Create `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the loop is
   long, repaired, audit-expanded, explicitly requested, or resumes after
   context compaction without exact loop-state proof.
