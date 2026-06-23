@@ -63,7 +63,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.185"
+VERSION = "0.3.186"
 
 # Parent (root-context-composition) marker shape, reused verbatim. This line
 # does not redefine the markers; it renders within them. Kept in sync with

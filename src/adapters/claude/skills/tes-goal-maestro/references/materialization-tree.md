@@ -59,7 +59,9 @@ Each unit must name:
 5. focused oracles;
 6. negative checks when relevant;
 7. semantic commit message;
-8. completion evidence requirements.
+8. completion evidence requirements;
+9. engineering method profile when the unit changes code, UI or generated app
+   artifacts.
 
 Split any unit that has more than one behavioral objective, more than one
 ownership boundary, or mixed contract/runtime/storage/live work.
@@ -223,6 +225,41 @@ Each slice must have falsifiable oracles. Examples:
 
 Avoid broad-only validation. Run the smallest meaningful oracle first.
 
+## Structural Method Gate
+
+When a unit changes code, UI, generated app artifacts or runtime scripts, the
+tree must include an `Engineering Method Profile` inside the relevant execution
+unit or oracle contract.
+
+The profile must state:
+
+1. stack or language family;
+2. intended topology, such as files, modules, components, composables, stores,
+   services, adapters, scripts or internal sections;
+3. structural boundaries between UI, domain, storage, runtime, docs generation
+   and adapter layers;
+4. explicit topology exceptions;
+5. structural negative checks;
+6. structural oracles.
+
+A source-mandated single-file deliverable is a valid topology exception only
+when the tree requires internal modularity, named sections, narrow APIs, no
+duplicated logic and a structural audit note. The exception must not become
+permission for an unbounded god file.
+
+Structural negative checks should target:
+
+1. god files or unchecked file-size growth;
+2. duplicated domain or conversion logic;
+3. accidental mixing of UI, domain, storage, runtime or adapter layers;
+4. framework-topology bypass;
+5. broad inline CSS/JS when file separation is expected;
+6. glue or workaround code without a declared consumer.
+
+Structural oracles should match the stack: size or line thresholds,
+component/module inventory, import/dependency checks, lint, typecheck, build,
+rendered UI smoke or source probes that can fail on structural collapse.
+
 ## Negative Grep
 
 The tree must include negative grep for:
@@ -297,6 +334,7 @@ Changed files:
 git show --stat:
 Oracles:
 Negative checks:
+Structural method result:
 Reviewer result:
 Post-commit status:
 Sync status:
@@ -309,13 +347,14 @@ The tree must include a review loop:
 1. inspect diff for the current unit;
 2. verify no unrelated files were touched;
 3. verify forbidden moves are absent;
-4. run focused oracles;
-5. fix until green;
-6. stage only unit files;
-7. commit;
-8. capture unit evidence block;
-9. inspect post-commit status;
-10. continue to the next slice only after sync status is certified.
+4. verify structural method requirements when applicable;
+5. run focused oracles;
+6. fix until green;
+7. stage only unit files;
+8. commit;
+9. capture unit evidence block;
+10. inspect post-commit status;
+11. continue to the next slice only after sync status is certified.
 
 ## Next Prompt Handoff
 
@@ -347,28 +386,30 @@ When enabled, the tree's `Final Delivery Contract` must require:
 2. one active execution unit at a time through `ACTIVE_SPEC=SPEC-00N`;
 3. full prompt plus hard active-SPEC envelope for each worker;
 4. classified baseline worktree state before the first worker;
-5. loop-state block for every attempt;
-6. failed-attempt recovery before another attempt starts;
-7. parent validation before opening the next unit;
-8. local commit per green SPEC and no remote push without separate
+5. active Engineering Method Profile when the active unit changes code, UI or
+   generated app artifacts;
+6. loop-state block for every attempt;
+7. failed-attempt recovery before another attempt starts;
+8. parent validation before opening the next unit;
+9. local commit per green SPEC and no remote push without separate
    authorization;
-9. reference implementations, prior manual builds, browser smoke results, run
+10. reference implementations, prior manual builds, browser smoke results, run
    records and post-facto audits classified as baseline-only comparison
    evidence, never execution credit;
-10. strict sequential replay with evidence produced after each `ACTIVE_SPEC`
+11. strict sequential replay with evidence produced after each `ACTIVE_SPEC`
     opens and before the next SPEC starts;
-11. `SPEC_REPAIR_BY_LLM` as a separate commit against a canonical SPEC artifact
+12. `SPEC_REPAIR_BY_LLM` as a separate commit against a canonical SPEC artifact
    when the active SPEC itself is repaired;
-12. `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the loop is long,
+13. `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the loop is long,
     repaired, audit-expanded, explicitly ledgered, or resumes without exact
     loop-state proof;
-13. parent-side execution fallback only after the exact
+14. parent-side execution fallback only after the exact
     `--execute-loop-parent-fallback` flag;
-14. owner-approved redaction before any cloud escalation;
-15. Executive Stop Audit before final loop closure;
-16. `SPEC-AUDIT-*` appended units, not original-tree rewrites, when audit
+15. owner-approved redaction before any cloud escalation;
+16. Executive Stop Audit before final loop closure;
+17. `SPEC-AUDIT-*` appended units, not original-tree rewrites, when audit
     returns `NEEDS_MORE_LOOPS`;
-17. bounded audit-repair cycles that stop on repeated audit expansion without
+18. bounded audit-repair cycles that stop on repeated audit expansion without
     new material evidence.
 
 ## Weak Tree Rejection
@@ -384,8 +425,9 @@ Stop and revise the tree if it lacks:
 7. material-diff evidence;
 8. commit strategy;
 9. reviewer loop;
-10. stop states;
-11. final delivery contract.
+10. engineering method profile for coding, UI or generated-app units;
+11. stop states;
+12. final delivery contract.
 
 Also stop and revise the tree if it compresses, skips or renames a unit
 declared by the source artifact.
@@ -413,6 +455,7 @@ The tree must require a final report with:
 6. boundaries preserved;
 7. unit evidence blocks;
 8. decisions pending;
-9. next prompt handoff status when explicitly requested;
-10. execution loop status when `--execute-loop` was requested;
-11. final status.
+9. structural method result when applicable;
+10. next prompt handoff status when explicitly requested;
+11. execution loop status when `--execute-loop` was requested;
+12. final status.

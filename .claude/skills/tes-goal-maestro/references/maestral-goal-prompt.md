@@ -60,10 +60,12 @@ The final prompt must include:
     implementations may exist.
 21. Semantic negative-grep rules when blocked-state vocabulary is valid inside
     the contract.
-22. Optional Next Prompt Handoff clause only when explicitly requested by
+22. Engineering Method Profile when the run changes code, UI or generated app
+    artifacts.
+23. Optional Next Prompt Handoff clause only when explicitly requested by
     `next_prompt_handoff=true`, `--next-prompt-handoff`, or an equivalent
     direct trigger.
-23. Optional Execution Loop boundary only when explicitly requested by
+24. Optional Execution Loop boundary only when explicitly requested by
     `--execute-loop`.
 
 ## Prompt Template
@@ -100,6 +102,21 @@ Do not allow:
 - <forbidden move 2>
 - <forbidden move 3>
 - <forbidden move N>
+
+Engineering Method Profile:
+- Stack or language family: <HTML/CSS/JS, TypeScript, Vue, React, Python, CLI,
+  docs generator, adapter, or no-code rationale>
+- Intended topology: <files/modules/components/composables/stores/services/
+  adapters/scripts/internal sections>
+- Structural boundaries: <UI/domain/storage/runtime/docs/adapter boundaries>
+- Topology exceptions: <none or source-mandated single-file deliverable with
+  internal modularity, named sections, narrow APIs and no duplicated logic>
+- Structural negative checks: <god file, duplicated logic, layer mixing,
+  framework-topology bypass, broad inline CSS/JS when separation is expected,
+  unchecked file-size growth>
+- Structural oracles: <size thresholds, module/component inventory,
+  import/dependency checks, lint/typecheck/build, rendered UI smoke or source
+  probes>
 
 Subagents:
 
@@ -140,6 +157,8 @@ Work mode:
 - Do not merge declared units unless the user explicitly changes the
   execution contract before implementation.
 - A declared no-commit preflight must still be reported as executed.
+- Before editing code, UI or generated app artifacts, apply the Engineering
+  Method Profile and do not accept behavior-only green if structure regresses.
 - Stage only files for the current SPEC.
 - Commit and certify the current SPEC before starting the next SPEC.
 - Do not revert user changes.
@@ -179,6 +198,7 @@ Execution Loop:
   produced after its `ACTIVE_SPEC` was opened and parent-validated before the
   next SPEC starts.
 - The parent must classify the baseline worktree before the first worker,
+  carry the active Engineering Method Profile when code structure is in scope,
   maintain a loop-state block for every attempt, repair only canonical SPEC
   artifacts, resolve failed-attempt residue before the next attempt, and use
   cloud escalation only after owner-approved redaction.
@@ -206,7 +226,9 @@ First mandatory act:
 3. Identify unrelated pending changes.
 4. Read the main SPEC and existing dependencies.
 5. Run read-only baseline oracles.
-6. Declare the file matrix before editing.
+6. Derive the Engineering Method Profile before editing code, UI or generated
+   app artifacts.
+7. Declare the file matrix before editing.
 
 SPEC-000 Preflight And Baseline
 Objective:
@@ -259,6 +281,7 @@ Completion evidence:
 - `git show --stat --oneline <commit>`:
 - Oracles:
 - Negative checks:
+- Structural method result:
 - Reviewer result:
 - Post-commit status:
 - Sync status:
@@ -285,6 +308,7 @@ Completion evidence:
 - `git show --stat --oneline <commit>`:
 - Oracles:
 - Negative checks:
+- Structural method result:
 - Reviewer result:
 - Post-commit status:
 - Sync status:
@@ -294,6 +318,7 @@ Run:
 - <focused test suite>
 - <regression suite>
 - <lint/typecheck/contract/doc checks>
+- <structural method checks when applicable>
 - `git diff --check`
 Negative grep:
 - <forbidden runtime or provider pattern>
@@ -318,6 +343,7 @@ Final delivery:
 - sync status per SPEC;
 - files changed;
 - oracles run;
+- structural method result when applicable;
 - boundaries preserved;
 - blockers or decisions pending;
 - next prompt handoff status when explicitly requested;
@@ -346,12 +372,14 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
 14. requires sync status per unit;
 15. preserves unrelated worktree changes;
 16. includes reviewer and evidence/oracle roles when complexity warrants them;
-17. defines stop criteria;
-18. defines final delivery;
-19. includes a Next Prompt Handoff clause only when explicitly requested, and
+17. includes an Engineering Method Profile and structural oracles when code,
+    UI or generated app artifacts are in scope;
+18. defines stop criteria;
+19. defines final delivery;
+20. includes a Next Prompt Handoff clause only when explicitly requested, and
     that clause is chat-only, post-certification, non-executing, and does not
     write prompt/tree files without an explicit save request;
-20. includes an Execution Loop boundary only when `--execute-loop` is
+21. includes an Execution Loop boundary only when `--execute-loop` is
     explicitly requested, and that boundary preserves parent authority,
     `ACTIVE_SPEC` isolation, baseline classification, loop-state evidence,
     failed-attempt recovery, persistent ledger triggers, local-only commit sync,
@@ -362,7 +390,8 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
 ## Stop If Missing
 
 Stop with `NEEDS_SPEC_MATURITY`, `NEEDS_TREE_REPAIR`,
-`NEEDS_EXECUTION_UNIT_FIDELITY` or `NEEDS_TREE_ACCEPTANCE` when:
+`NEEDS_EXECUTION_UNIT_FIDELITY`, `NEEDS_STRUCTURAL_METHOD` or
+`NEEDS_TREE_ACCEPTANCE` when:
 
 1. the canonical artifact is unclear;
 2. the execution phase is unclear;
@@ -370,7 +399,10 @@ Stop with `NEEDS_SPEC_MATURITY`, `NEEDS_TREE_REPAIR`,
 4. oracles are missing;
 5. the materialization tree fails internal gates;
 6. the prompt would need to invent file ownership or stop states;
-7. the prompt would need to merge or drop declared execution units.
+7. the prompt would need to merge or drop declared execution units;
+8. code, UI or generated app artifacts are in scope but the prompt lacks an
+   Engineering Method Profile, structural negative checks or structural
+   oracles.
 
 Use `NEEDS_TREE_ACCEPTANCE` only when changing the declared execution contract
 requires owner acceptance or the user explicitly asked for staged review.
@@ -404,3 +436,6 @@ Reject prompts that:
 19. let a reference implementation, prior manual build, browser smoke result,
     run record or post-facto audit satisfy `--execute-loop` without strict
     sequential replay.
+20. accept a behavior-green implementation that collapsed into a god file,
+    duplicated domain logic, bypassed framework topology or misused a
+    single-file exception to mix unrelated layers.

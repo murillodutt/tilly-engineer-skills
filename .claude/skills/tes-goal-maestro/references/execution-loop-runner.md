@@ -44,6 +44,7 @@ Stop or branch with:
 - `NEEDS_EXECUTION_LOOP_DRAFT`
 - `SPEC_BLOCKED`
 - `SPEC_CONTRACT_UNSTABLE`
+- `NEEDS_STRUCTURAL_METHOD`
 - `NEEDS_MORE_LOOPS`
 - `NEEDS_OWNER_DECISION`
 - `SAFETY_BLOCKED`
@@ -97,7 +98,8 @@ The draft must state:
 11. baseline worktree state and classification;
 12. canonical SPEC artifact path for any future `SPEC_REPAIR_BY_LLM`;
 13. audit-repair cycle budget;
-14. persistent ledger decision and path when required.
+14. Engineering Method Profile per coding, UI or generated-app SPEC;
+15. persistent ledger decision and path when required.
 
 If the draft cannot be produced from material sources, stop with
 `NEEDS_EXECUTION_LOOP_DRAFT`.
@@ -110,9 +112,11 @@ Before every worker spawn, the parent must produce a short pre-SPEC reflection:
 2. declare `ACTIVE_SPEC=SPEC-00N`;
 3. restate allowed files and forbidden files/actions;
 4. restate focused oracles and negative checks;
-5. state local risk and likely repair pressure;
-6. emit the loop-state block;
-7. confirm the worker may execute only the active SPEC.
+5. restate the Engineering Method Profile when code, UI or generated app
+   artifacts are in scope;
+6. state local risk and likely repair pressure;
+7. emit the loop-state block;
+8. confirm the worker may execute only the active SPEC.
 
 This reflection is mandatory even when the previous loop generated a next
 prompt.
@@ -143,6 +147,7 @@ Execute only ACTIVE_SPEC.
 Do not execute any later SPEC.
 Do not generate the final next prompt; you may propose next-prompt material.
 Do not push or perform remote sync.
+Apply the active Engineering Method Profile when present.
 Return the evidence block required by the prompt.
 ```
 
@@ -233,11 +238,13 @@ The parent advances only after validating:
 6. `git show --stat --oneline <commit>` proves material diff;
 7. post-commit status is inspected;
 8. sync status is `LOCAL_COMMITTED` or `REMOTE_SYNC_NOT_REQUESTED`;
-9. worker did not execute later SPECs;
-10. parent refreshed local state by rereading the relevant changed files,
+9. structural method evidence passed when code, UI or generated app artifacts
+   were in scope;
+10. worker did not execute later SPECs;
+11. parent refreshed local state by rereading the relevant changed files,
     active SPEC artifact and latest `git show` evidence before creating the
     next prompt;
-11. evidence was produced after the active SPEC opened, not counted from a
+12. evidence was produced after the active SPEC opened, not counted from a
     reference implementation, manual build, browser smoke, run record or
     post-facto audit.
 
@@ -320,6 +327,7 @@ The reviewer receives:
 5. repair records;
 6. final worktree status.
 7. baseline-only reference evidence classification, when any existed.
+8. Engineering Method Profile and structural method evidence, when applicable.
 
 The reviewer does not receive the full original prompt unless the parent
 decides that a prompt contract dispute is the audit subject.
@@ -329,6 +337,7 @@ The reviewer recommends one of:
 - `EXECUTION_LOOP_COMPLETE`
 - `EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS`
 - `NEEDS_MORE_LOOPS`
+- `NEEDS_STRUCTURAL_METHOD`
 - `SPEC_BLOCKED`
 - `SPEC_CONTRACT_UNSTABLE`
 - `NEEDS_OWNER_DECISION`
@@ -345,6 +354,9 @@ repairs; do not rewrite the original materialization tree.
 Audit repair units use the same loop rules: active SPEC envelope, local commit,
 oracles, parent validation, and final audit.
 
+When the missing evidence is structural, name the corrective units
+`SPEC-AUDIT-STRUCTURE-001`, `SPEC-AUDIT-STRUCTURE-002`, and so on.
+
 The audit must name the exact missing units and the expected stop. After one
 audit-repair batch, rerun Executive Stop Audit. A second `NEEDS_MORE_LOOPS`
 recommendation may open another batch only when it names new material evidence
@@ -356,7 +368,8 @@ material evidence stops with `NEEDS_OWNER_DECISION` or
 
 Use `EXECUTION_LOOP_COMPLETE` only when all declared SPECs passed and the
 Executive Stop Audit confirms no more loops are needed and no declared SPEC
-was credited from baseline-only reference evidence.
+was credited from baseline-only reference evidence. Coding, UI or generated-app
+SPECs must also have passing structural method evidence.
 
 Use `EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS` when the loop converged only
 after audit-added corrective SPECs.

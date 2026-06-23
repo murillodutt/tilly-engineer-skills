@@ -6,7 +6,9 @@ default_prompt: |
   If the input artifact is immature, stop with NEEDS_SPEC_MATURITY. If declared
   execution units are not preserved exactly, stop with
   NEEDS_EXECUTION_UNIT_FIDELITY. If the artifact is mature but the
-  materialization tree fails internal gates, stop with NEEDS_TREE_REPAIR.
+  materialization tree fails internal gates, stop with NEEDS_TREE_REPAIR. If
+  coding, UI or generated-app units lack an Engineering Method Profile, stop
+  with NEEDS_STRUCTURAL_METHOD.
   Otherwise produce both the materialization tree and READY_GOAL_PROMPT in the
   same response. When a Super SPEC must be produced or expanded, write it as
   GOAL-SUPER-SPEC-<slug-or-timestamp>.md and show only its path plus a short
@@ -22,8 +24,9 @@ default_prompt: |
   and certification, but must not write or execute it automatically outside a
   parent-owned execution loop. Run Execution Loop only when the user explicitly
   requests --execute-loop: create an Execution Cost Draft from material
-  sources, execute one ACTIVE_SPEC at a time through a fresh worker subagent,
-  require baseline classification, loop-state evidence, canonical
+  sources, carry active Engineering Method Profiles for coding work, execute
+  one ACTIVE_SPEC at a time through a fresh worker subagent, require baseline
+  classification, loop-state evidence, canonical
   SPEC_REPAIR_BY_LLM, failed-attempt recovery, persistent ledger triggers,
   the exact --execute-loop-parent-fallback flag before parent-side worker fallback,
   owner-approved cloud redaction, local commit evidence, strict sequential

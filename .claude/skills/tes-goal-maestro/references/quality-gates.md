@@ -32,7 +32,9 @@ Use when:
 2. tree is explicit and passes internal gates;
 3. file ownership is clear;
 4. oracles are falsifiable;
-5. stop states are explicit.
+5. stop states are explicit;
+6. coding, UI or generated-app units include an Engineering Method Profile with
+   structural negative checks and structural oracles.
 
 Explicit skill invocation is enough to produce both the tree and the final
 `/goal` prompt in one response when these conditions are true.
@@ -63,8 +65,19 @@ new skill output should prefer `NEEDS_EXECUTION_UNIT_FIDELITY`.
 ### NEEDS_TREE_REPAIR
 
 Use when the generated tree fails fixed schema, ownership, oracle,
-execution-unit fidelity, material-continuation, negative-grep semantics,
-commit-rhythm or closeout checks.
+execution-unit fidelity, material-continuation, structural-method,
+negative-grep semantics, commit-rhythm or closeout checks.
+
+### NEEDS_STRUCTURAL_METHOD
+
+Use when code, UI, generated app artifacts or runtime scripts are in scope and
+the tree or prompt lacks a safe Engineering Method Profile.
+
+Also use it when the profile or evidence shows behavior can pass while the
+implementation collapses into a god file, duplicates domain logic, mixes UI,
+domain, storage, runtime or adapter layers without contract, bypasses framework
+topology, or misuses a single-file exception as permission for unbounded file
+growth.
 
 ### DRAFT_MATERIALIZATION_TREE
 
@@ -91,6 +104,8 @@ Stop if the SPEC says:
    baseline-only or execution credit.
 10. "execute these vertical slices" but the prompt rewrites them as all docs,
     all scripts, all tests or broad cleanup.
+11. "build this app" without stating the intended code topology, structural
+    boundaries or structure-sensitive oracles.
 
 ## Weak Prompt Rejection
 
@@ -117,6 +132,8 @@ Reject a prompt if it lacks:
 17. Execution Loop only when `--execute-loop` is explicitly requested, with an
     Execution Cost Draft, `ACTIVE_SPEC` isolation, parent validation, local-only
     commit sync and Executive Stop Audit.
+18. Engineering Method Profile for coding, UI or generated-app work, including
+    topology, exceptions, structural negative checks and structural oracles.
 
 ## Boundary Leakage Checks
 
@@ -129,7 +146,9 @@ Ask whether the prompt accidentally permits:
 5. destructive git or filesystem operations;
 6. secrets, credentials or private data;
 7. raw payload export;
-8. final interpretation, verdict or score.
+8. final interpretation, verdict or score;
+9. god-file growth, framework-topology bypass or accidental UI/domain/storage
+   mixing in coding or app-building work.
 
 If yes, revise before returning the prompt.
 
@@ -160,7 +179,8 @@ baseline state before the first worker, owner-approved cloud escalation only,
 failed-attempt recovery before the next attempt, persistent ledger when the loop
 is long or repaired, exact parent-fallback flag authorization, bounded audit
 repairs, strict sequential replay, baseline-only comparison for reference
-implementations or manual builds, and Executive Stop Audit before final stop.
+implementations or manual builds, active Engineering Method Profile when code
+structure is in scope, and Executive Stop Audit before final stop.
 When not requested, the prompt must not include execution-loop behavior.
 
 If Next Prompt Handoff and Execution Loop are both explicitly requested,
@@ -205,9 +225,12 @@ Before `GO`, verify:
 8. reference implementations, prior manual builds, browser smoke results, run
    records and post-facto audits were baseline-only comparison evidence, not
    execution credit;
-9. remote sync is reported only when explicitly authorized.
+9. structural method evidence exists for coding, UI or generated-app units;
+10. remote sync is reported only when explicitly authorized.
 
 If any check fails, use `NEEDS_EXECUTION_UNIT_FIDELITY`.
+If structural method evidence is missing or failing, use
+`NEEDS_STRUCTURAL_METHOD`.
 
 ## Closeout Checks
 
@@ -227,6 +250,7 @@ Final delivery must report:
 12. whether prior commits/closeouts were baseline-only or explicitly credited.
 13. whether negative grep allowed valid blocked-state vocabulary while
     forbidding unsafe behavior.
+14. structural method result for coding, UI or generated-app units.
 
 ## Stop-State Mapping
 
@@ -236,6 +260,8 @@ Use:
   boundary is violated.
 - `NEEDS_OWNER_DECISION` when the next safe step needs product, architecture,
   public-surface, data, legal, live-execution or ownership decision.
+- `NEEDS_STRUCTURAL_METHOD` when code, UI or generated-app work lacks a safe
+  Engineering Method Profile or fails structure-sensitive checks.
 - `BLOCKED` when a critical oracle fails outside the slice's control.
 - `SAFETY_BLOCKED` when the task would require unsafe access, fake authority,
   secrets, destructive operations, bypass, private data, or hidden production
@@ -288,6 +314,16 @@ vocabulary such as blocked-state enums or reason codes?
 ```
 
 If the answer is no, return `NEEDS_TREE_REPAIR`.
+
+Then ask:
+
+```text
+If code, UI or generated app artifacts are in scope, does the prompt state an
+Engineering Method Profile with topology, exceptions, structural negative
+checks, structural oracles and per-unit structural evidence?
+```
+
+If the answer is no, return `NEEDS_STRUCTURAL_METHOD`.
 
 Then ask:
 

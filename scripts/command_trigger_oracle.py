@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.185"
+VERSION = "0.3.186"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -279,6 +279,7 @@ GOAL_MAESTRO_LOOP_TERMS = (
     "loop-state block",
     "baseline worktree",
     "canonical SPEC artifact",
+    "Engineering Method Profile",
     "Cloud Query Redaction Block",
     "Failed Attempt Recovery",
     "GOAL-EXECUTION-LOOP-LEDGER",
@@ -287,6 +288,7 @@ GOAL_MAESTRO_LOOP_TERMS = (
     "NEEDS_MORE_LOOPS",
     "NEEDS_OWNER_DECISION",
     "SAFETY_BLOCKED",
+    "NEEDS_STRUCTURAL_METHOD",
 )
 
 GOAL_MAESTRO_LEDGER_FIELDS = (
@@ -317,49 +319,60 @@ GOAL_MAESTRO_EXECUTION_CREDIT_FORBIDDEN_PATTERNS = (
 )
 
 GOAL_MAESTRO_LOOP_FILE_TERMS = {
-    "SKILL.md": (
-        "--execute-loop",
-        "--execute-loop-parent-fallback",
-        "Execution Cost Draft",
-        "Failed Attempt Recovery",
+        "SKILL.md": (
+            "--execute-loop",
+            "--execute-loop-parent-fallback",
+            "Execution Cost Draft",
+            "Engineering Method Profile",
+            "NEEDS_STRUCTURAL_METHOD",
+            "Failed Attempt Recovery",
         "GOAL-EXECUTION-LOOP-LEDGER",
         "strict sequential replay",
         "reference implementation",
         "Executive Stop Audit",
         "exact `--execute-loop-parent-fallback` flag",
     ),
-    "references/execution-loop-runner.md": (
-        "The parent runner owns the loop",
-        "Reference Baseline Credit Gate",
-        "baseline-only comparison",
-        "strict sequential replay",
+        "references/execution-loop-runner.md": (
+            "The parent runner owns the loop",
+            "Reference Baseline Credit Gate",
+            "baseline-only comparison",
+            "Engineering Method Profile",
+            "NEEDS_STRUCTURAL_METHOD",
+            "SPEC-AUDIT-STRUCTURE",
+            "strict sequential replay",
         "post-facto audit",
         "Failed Attempt Recovery",
         "Ledger Schema",
         "exact `--execute-loop-parent-fallback` flag",
         *GOAL_MAESTRO_LEDGER_FIELDS,
     ),
-    "references/quality-gates.md": (
-        "Execution Cost Draft",
-        "failed-attempt recovery",
+        "references/quality-gates.md": (
+            "Execution Cost Draft",
+            "Engineering Method Profile",
+            "NEEDS_STRUCTURAL_METHOD",
+            "failed-attempt recovery",
         "persistent ledger",
         "strict sequential replay",
         "reference implementations",
         "exact `--execute-loop-parent-fallback` flag",
         "Executive Stop Audit",
     ),
-    "references/maestral-goal-prompt.md": (
-        "Execution Loop:",
-        "failed-attempt residue",
+        "references/maestral-goal-prompt.md": (
+            "Execution Loop:",
+            "Engineering Method Profile",
+            "Structural method result",
+            "failed-attempt residue",
         "GOAL-EXECUTION-LOOP-LEDGER",
         "strict sequential replay",
         "reference implementations",
         "exact `--execute-loop-parent-fallback` flag",
         "Executive Stop Audit",
     ),
-    "references/materialization-tree.md": (
-        "Execution Loop Boundary",
-        "failed-attempt recovery",
+        "references/materialization-tree.md": (
+            "Execution Loop Boundary",
+            "Structural Method Gate",
+            "Engineering Method Profile",
+            "failed-attempt recovery",
         "GOAL-EXECUTION-LOOP-LEDGER",
         "strict sequential replay",
         "reference implementations",
@@ -399,6 +412,8 @@ GOAL_MAESTRO_GENERATED_PROMPT_REQUIRED_TERMS = (
     "Execution unit fidelity:",
     "git show --stat --oneline <commit>",
     "Sync status:",
+    "Engineering Method Profile",
+    "Structural method result:",
     "Full Oracle And Closeout",
     "Stop criteria:",
     "Final delivery:",
@@ -457,6 +472,8 @@ VISIBLE_SKILL_ROUTES = {
             "DRAFT_MATERIALIZATION_TREE",
             "NEEDS_TREE_ACCEPTANCE",
             "READY_GOAL_PROMPT",
+            "NEEDS_STRUCTURAL_METHOD",
+            "Engineering Method Profile",
             "next_prompt_handoff",
             "--next-prompt-handoff",
             "--execute-loop",
@@ -500,6 +517,8 @@ VISIBLE_SKILL_ROUTES = {
             "DRAFT_MATERIALIZATION_TREE",
             "NEEDS_TREE_ACCEPTANCE",
             "READY_GOAL_PROMPT",
+            "NEEDS_STRUCTURAL_METHOD",
+            "Engineering Method Profile",
             "next_prompt_handoff",
             "--next-prompt-handoff",
             "--execute-loop",
@@ -1593,6 +1612,8 @@ def run_fixture_tests() -> list[str]:
             "Execution unit fidelity:",
             "git show --stat --oneline <commit>",
             "Sync status:",
+            "Engineering Method Profile",
+            "Structural method result:",
             "Full Oracle And Closeout",
             "Stop criteria:",
             "Final delivery:",
@@ -1617,6 +1638,19 @@ def run_fixture_tests() -> list[str]:
         next_prompt_handoff_requested=True,
     ):
         failures.append("good generated prompt E2E fixture must pass from mature SPEC to prompt")
+
+    e2e_missing_method = generated_e2e_prompt.replace("Engineering Method Profile", "")
+    if not any(
+        "Engineering Method Profile" in item
+        for item in goal_maestro_generated_prompt_e2e_failures(
+            "generated_e2e_missing_method",
+            mature_spec,
+            e2e_missing_method,
+            execute_loop_requested=True,
+            next_prompt_handoff_requested=True,
+        )
+    ):
+        failures.append("generated prompt E2E fixture must fail without Engineering Method Profile")
 
     e2e_missing_unit = generated_e2e_prompt.replace("SPEC-002 Harden ledger fixture", "")
     if not any(

@@ -6,7 +6,7 @@ license: MIT
 
 # TES Goal Maestro
 
-Operational contract: `tes.goal_maestro@0.3.4`.
+Operational contract: `tes.goal_maestro@0.3.5`.
 
 ## Invocation Contract
 
@@ -52,6 +52,19 @@ before the next SPEC opens.
 
 Parent-side execution fallback requires the exact `--execute-loop-parent-fallback` flag; otherwise worker capacity stops with `NEEDS_OWNER_DECISION`.
 
+Structural Method Gate is active for coding or app-building execution units. It
+requires an `Engineering Method Profile` before implementation pressure starts:
+stack or language, intended code topology, explicit contract exceptions,
+structural boundaries, structural negative checks, structural oracles and audit
+repair criteria. The gate is method, not governance. It prevents converged
+behavior from being accepted when the implementation collapses into a god file,
+mixes UI/domain/storage/runtime layers without contract, duplicates conversion
+logic, ignores the framework's normal topology, or expands single-file work
+beyond the source artifact's explicit contract. If the source artifact requires
+a single-file deliverable, do not split files; instead require internal
+modularity, named sections, narrow APIs, no duplicated logic and a structural
+audit note that records the exception.
+
 If both Next Prompt Handoff and Execution Loop are requested, `--execute-loop`
 owns sequential next-prompt generation and execution inside the parent runner.
 The ordinary chat-only handoff clause is suspended until the loop stops or
@@ -76,7 +89,9 @@ or by clear derivation:
 9. negative-grep candidates;
 10. stop states or owner-decision points;
 11. commit strategy;
-12. final delivery contract.
+12. engineering method profile when the run changes code, UI or generated app
+    artifacts;
+13. final delivery contract.
 
 Assign a readiness score:
 
@@ -94,6 +109,9 @@ Assign a readiness score:
   passes the internal tree gates.
 - `NEEDS_EXECUTION_LOOP_DRAFT`: `--execute-loop` was requested but material
   sources are insufficient to draft the expected loop cost.
+- `NEEDS_STRUCTURAL_METHOD`: the run changes code, UI or generated app
+  artifacts but lacks enough stack or topology evidence to derive a safe
+  Engineering Method Profile.
 - `SPEC_BLOCKED`: the active SPEC cannot converge after allowed attempts,
   predictive analysis, knowledge-source escalation and sanitized cloud query.
 - `SPEC_CONTRACT_UNSTABLE`: the active SPEC needs more LLM repairs than the
@@ -163,14 +181,34 @@ skill invocation.
      term is also valid as policy vocabulary. For example, a blocked bypass
      enum can be allowed while CAPTCHA solving, proxy bypass, fake credentials
      or bypass-attempt flags remain forbidden.
-6. Run the Sequential Ownership Gate:
+6. Run the Structural Method Gate when execution units touch code, UI or
+   generated app artifacts:
+   - Derive an `Engineering Method Profile` from material sources, not memory.
+   - Name the stack or language family, such as HTML/CSS/JS, TypeScript, Vue,
+     React, Python, CLI, docs generator, or another source-proven surface.
+   - Name the intended topology: files, modules, components, composables,
+     stores, services, adapters, scripts or internal sections.
+   - Name explicit topology exceptions. A source-mandated single-file
+     deliverable is valid only when the profile requires internal modularity and
+     forbids using the exception as permission for unbounded file growth.
+   - Add structural negative checks for god files, duplicated domain logic,
+     UI/domain/storage mixing, framework-topology bypass, accidental glue,
+     broad inline CSS/JS when separation is expected, and unchecked file-size or
+     complexity growth.
+   - Add structural oracles appropriate to the stack: size/line thresholds,
+     component/module inventory, import/dependency checks, lint/typecheck/build,
+     rendered UI smoke, or source probes that can fail on structural collapse.
+   - If behavior passes but structure regresses, stop with
+     `NEEDS_STRUCTURAL_METHOD` or append bounded `SPEC-AUDIT-STRUCTURE-*`
+     repair units during `--execute-loop`.
+7. Run the Sequential Ownership Gate:
    - When a queue requires commit-per-unit sequencing, prefer centralized
      material edits and use subagents mainly for read-only review, oracle
      tracking or bounded disjoint write scopes.
    - Do not imply parallel write execution when commits must be certified in a
      strict order unless the write scopes are genuinely independent and the
      prompt names how integration will be serialized.
-7. Load the relevant references:
+8. Load the relevant references:
    - `references/materialization-tree.md` for tree construction.
    - `references/maestral-goal-prompt.md` for final prompt construction.
    - `references/subagents-and-oracles.md` when roles or verification are weak.
@@ -178,19 +216,19 @@ skill invocation.
      needs hardening.
    - `references/execution-loop-runner.md` only when `--execute-loop` was
      explicitly requested.
-8. Produce the fixed `Materialization Tree` schema.
-9. Validate the tree against maturity, execution-unit fidelity, material
-   continuation, ownership, oracle, negative-grep semantics, material-diff,
-   sync-commit and stop-state gates.
-10. If a Super SPEC must be produced or expanded, write it to
+9. Produce the fixed `Materialization Tree` schema.
+10. Validate the tree against maturity, execution-unit fidelity, material
+   continuation, ownership, oracle, structural method, negative-grep semantics,
+   material-diff, sync-commit and stop-state gates.
+11. If a Super SPEC must be produced or expanded, write it to
    `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` in the current target workspace or
    in the explicitly requested output directory. Use a filesystem-safe slug
    from the artifact title when available; otherwise use a timestamp. Do not
    display the full Super SPEC body in chat.
-11. Produce the `Ready /goal Prompt` in the same response when the tree passes.
+12. Produce the `Ready /goal Prompt` in the same response when the tree passes.
    Stop only for maturity gaps, execution-unit fidelity failure, tree repair,
    owner decisions, or an explicitly requested two-step review workflow.
-12. If Next Prompt Handoff was explicitly requested, include a chat-only
+13. If Next Prompt Handoff was explicitly requested, include a chat-only
     handoff clause in the tree's `Final Delivery Contract` and in the generated
     `/goal` prompt. The clause must require the executor to emit the next
     `/goal` prompt in the same chat/context window only after the current run
@@ -202,7 +240,7 @@ skill invocation.
     clause for internal loop continuation; use Execution Loop next-prompt
     authority instead and report the final prompt/status only after the loop
     stops or completes.
-13. If `--execute-loop` was explicitly requested, run the Execution Loop only
+14. If `--execute-loop` was explicitly requested, run the Execution Loop only
     after `READY_GOAL_PROMPT`. Produce the `Execution Cost Draft` first; if it
     cannot be produced from material sources, stop with
     `NEEDS_EXECUTION_LOOP_DRAFT`. Execute one `ACTIVE_SPEC` at a time through a
@@ -217,7 +255,7 @@ skill invocation.
     loops, reject reference implementations and post-facto audits as execution
     credit, and bound audit-repair cycles so repeated `NEEDS_MORE_LOOPS`
     becomes `NEEDS_OWNER_DECISION` or `SPEC_CONTRACT_UNSTABLE`.
-14. Keep output chat-first except for the required Super SPEC artifact and any
+15. Keep output chat-first except for the required Super SPEC artifact and any
    required execution-loop ledger. Save prompt or tree files only when the user
    explicitly asks.
 
@@ -250,7 +288,9 @@ Every execution unit in the tree must define:
 5. focused oracles;
 6. negative checks where relevant;
 7. semantic commit message;
-8. completion evidence requirements.
+8. completion evidence requirements;
+9. structural method requirements when the unit changes code, UI or generated
+   app artifacts.
 
 If the source artifact already names materialization units, the tree and
 prompt must preserve that list exactly. Expanding a unit into smaller sub-steps
@@ -280,9 +320,10 @@ Each generated `/goal` prompt must require a per-unit evidence block:
 3. `git show --stat --oneline <commit>`;
 4. focused oracles run;
 5. negative checks run;
-6. reviewer result;
-7. post-commit `git status --short --branch --untracked-files=all`;
-8. sync status: `LOCAL_COMMITTED`, `REMOTE_SYNCED`,
+6. structural method result when applicable;
+7. reviewer result;
+8. post-commit `git status --short --branch --untracked-files=all`;
+9. sync status: `LOCAL_COMMITTED`, `REMOTE_SYNCED`,
    `REMOTE_SYNC_NOT_REQUESTED` or `SYNC_BLOCKED`.
 
 Default sync means local Git commit certification. Remote sync or push is
@@ -321,6 +362,9 @@ Use these statuses:
 - `SAVE_REQUESTED`: user explicitly asked to write the prompt or tree to disk.
 - `NEEDS_EXECUTION_LOOP_DRAFT`: `--execute-loop` lacks material sources for
   loop-cost drafting.
+- `NEEDS_STRUCTURAL_METHOD`: coding or app-building execution lacks a safe
+  Engineering Method Profile, or the profile reveals structural regression that
+  must be repaired before the next unit.
 - `SPEC_BLOCKED`: active SPEC failed the allowed convergence ladder.
 - `SPEC_CONTRACT_UNSTABLE`: active SPEC exceeded repair budget after
   escalation.
@@ -376,6 +420,10 @@ Default output:
   explicitly requested.
 - Do not let a worker subagent execute outside `ACTIVE_SPEC`, execute the next
   SPEC, push remotely, or become the authority for next-prompt generation.
+- Do not let a worker ignore the active unit's Engineering Method Profile,
+  collapse code into an unbounded god file, bypass the target framework's
+  normal topology, or use a single-file delivery exception as permission to mix
+  unrelated layers without internal structure.
 - Do not continue an `ACTIVE_SPEC` without a visible loop-state block carrying
   SPEC id, SPEC version, attempt number, repair count, audit-repair cycle,
   last commit and next allowed action.
@@ -401,6 +449,8 @@ Default output:
 - Do not emit a prompt that lacks `SPEC-000`, commit-per-SPEC discipline,
   material-diff proof, sync status, negative grep, review loop, stop states, or
   final delivery contract.
+- Do not emit a coding or app-building prompt without an Engineering Method
+  Profile or an explicit no-code rationale.
 - Do not compress declared execution units into fewer implementation units.
 - Do not allow empty commits to satisfy material execution units.
 - Do not allow `GO` when declared units were implemented in compacted commits
