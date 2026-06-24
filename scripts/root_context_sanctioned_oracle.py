@@ -19,7 +19,7 @@ Usage:
 
 The default path is `.tes/root-context-sanctioned.txt`. One entry per line.
 Lines starting with `#` are comments. Each entry is a repo-relative root-file
-path matched literally (`AGENTS.md`, `.cursor/rules/tes-guidelines.mdc`); prefix
+path matched literally (`AGENTS.md`, `.cursor/rules/tes-engineering-discipline.mdc`); prefix
 with `re:` for an explicit regex against the relpath.
 
 When the file does not exist, the oracle exits PASS with a single
@@ -39,7 +39,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 DEFAULT_SANCTIONED_PATH = Path(".tes/root-context-sanctioned.txt")
 
 
@@ -145,11 +145,11 @@ def self_test() -> dict[str, Any]:
         root = Path(tempdir)
         path = root / DEFAULT_SANCTIONED_PATH
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("AGENTS.md\n.cursor/rules/tes-guidelines.mdc\n", encoding="utf-8")
+        path.write_text("AGENTS.md\n.cursor/rules/tes-engineering-discipline.mdc\n", encoding="utf-8")
         allow = load_allowlist(path)
         if not is_sanctioned("AGENTS.md", allow):
             failures.append("literal entry must match its exact relpath")
-        if not is_sanctioned(".cursor/rules/tes-guidelines.mdc", allow):
+        if not is_sanctioned(".cursor/rules/tes-engineering-discipline.mdc", allow):
             failures.append("nested literal entry must match its exact relpath")
         if is_sanctioned("CLAUDE.md", allow):
             failures.append("unlisted relpath must not be sanctioned")

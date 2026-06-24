@@ -77,7 +77,7 @@ brake.
 | Surface | Codex | Claude Code | Cursor |
 |---------|-------|-------------|--------|
 | Base guidance | `AGENTS.md` | `CLAUDE.md` | `.cursor/rules/*.mdc`; `AGENTS.md` may be a simple alternative in Cursor projects |
-| TES package source | `src/adapters/codex/AGENTS.md` | `src/adapters/claude/CLAUDE.md` | `src/adapters/cursor/rules/tes-guidelines.mdc`, `src/adapters/cursor/rules/tes-runtime-capabilities.mdc`, plus `src/adapters/cursor/CURSOR.md` as a user handoff note |
+| TES package source | `src/adapters/codex/AGENTS.md` | `src/adapters/claude/CLAUDE.md` | `src/adapters/cursor/rules/tes-engineering-discipline.mdc`, `src/adapters/cursor/rules/tes-runtime-capabilities.mdc`, plus `src/adapters/cursor/CURSOR.md` as a user handoff note |
 | Skills | `.agents/skills/**` | `.claude/skills/**` | Official Cursor plugins support `skills/**`; TES currently certifies command capability routing through `.cursor/rules/tes-runtime-capabilities.mdc` |
 | Plugin metadata | Source-only under `src/adapters/codex/plugin/**` | Source-only under `src/adapters/claude/plugin/**` | `.cursor-plugin/plugin.json` exists officially; TES v1 does not publish or certify a Cursor plugin |
 | Rules | Project guidance through `AGENTS.md` | No Cursor-style `.mdc` rule surface | `.cursor/rules/*.mdc` with frontmatter; TES separates governance from runtime command capability routing |

@@ -1,6 +1,6 @@
 # Using This Repo With Cursor
 
-Thin pointer to the Cursor rule layer. Cursor loads `.cursor/rules/tes-guidelines.mdc` as the always-on discipline anchor and `.cursor/rules/tes-runtime-capabilities.mdc` as the lazy capability rule (Apply Intelligently) that carries the full gate flows and `/tes-*` command protocols. The rules are the runtime authority; this file is only an outward pointer.
+Thin pointer to the Cursor rule layer. Cursor loads `.cursor/rules/tes-engineering-discipline.mdc` as the always-on discipline anchor and `.cursor/rules/tes-runtime-capabilities.mdc` as the lazy capability rule (Apply Intelligently) that carries the full gate flows and `/tes-*` command protocols. The rules are the runtime authority; this file is only an outward pointer.
 
 ## Use In Another Project
 

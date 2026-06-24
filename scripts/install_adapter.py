@@ -22,7 +22,7 @@ import tes_bundle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 RETROFIT_DIR = ".tes/retrofit"
 CANONICAL_SOURCE_REL = "docs/agents/PROJECT-CONTEXT.md"
 
@@ -151,14 +151,14 @@ def is_tes_owned_cursor_bootloader(relpath: str, target: Path) -> bool:
         return False
     markers = (
         "# Using This Repo With Cursor",
-        "Cursor loads `.cursor/rules/tes-guidelines.mdc`.",
+        "Cursor loads `.cursor/rules/tes-engineering-discipline.mdc`.",
         "## Behavioral Source Of Truth",
     )
     return sum(1 for marker in markers if marker in text) >= 2
 
 
 def is_tes_owned_cursor_rule(relpath: str, target: Path) -> bool:
-    if relpath != ".cursor/rules/tes-guidelines.mdc" or not target.exists():
+    if relpath != ".cursor/rules/tes-engineering-discipline.mdc" or not target.exists():
         return False
     try:
         text = target.read_text(encoding="utf-8", errors="ignore")

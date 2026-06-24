@@ -60,7 +60,7 @@ scripts/{cortex.py,cortex_embed.mjs,cortex_mcp.py,scope_contract.py,event_ledger
 src/adapters/codex/AGENTS.md
 src/adapters/codex/skills/{tes-engineering-discipline,tes-goal-maestro}/
 src/adapters/claude/{CLAUDE.md,plugin/plugin.json,plugin/marketplace.json,skills/tes-*/SKILL.md}
-src/adapters/cursor/rules/tes-guidelines.mdc
+src/adapters/cursor/rules/tes-engineering-discipline.mdc
 ```
 
 If you cannot fetch raw URLs, stop and ask the user to provide local package contents or permission to continue from already available context.

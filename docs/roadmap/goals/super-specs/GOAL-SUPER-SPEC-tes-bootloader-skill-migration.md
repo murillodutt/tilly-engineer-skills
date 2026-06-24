@@ -21,7 +21,7 @@ the always-loaded anchor; everything else loads on demand.
 
 All seven units executed and committed; `npm run commit:check` PASS (43 gates,
 exit 0). Anchor content lines after migration: CLAUDE.md 58, AGENTS.md 66
-(XML-tagged), CURSOR.md 31, Cursor `tes-guidelines.mdc` 57 — all within the
+(XML-tagged), CURSOR.md 31, Cursor `tes-engineering-discipline.mdc` 57 — all within the
 parity oracle budget (70).
 
 | Unit | Commit | Result |
@@ -76,7 +76,7 @@ Codex "minimal" and Cursor "small always-on" guidance.
 ## Current Meaning (Evidence-Based)
 
 The bootloaders today DUPLICATE knowledge that the skills already carry lazily:
-`src/adapters/claude/skills/tes-guidelines/SKILL.md` (161 lines) already has the
+`src/adapters/claude/skills/tes-engineering-discipline/SKILL.md` (161 lines) already has the
 Four Gates table, Diamond, Mantra Gate, Infrastructure Gate, Workflow, Cortex
 reflex, and Field Reports; `tes-init/SKILL.md` (124 lines) already has the full
 init gate flow. So this line is mostly DEDUPLICATION — delete the duplicated
@@ -113,9 +113,9 @@ the few items that have no skill home yet, plus the Cursor rule-mode change.
 | Fix | Owned Surface | Gap Today | Required Correction | Focused Oracle |
 |-----|---------------|-----------|---------------------|----------------|
 | Skill-layer single source | `src/adapters/*/skills/**`, `src/adapters/cursor/rules/**` | Detail is duplicated between bootloader and skill. | Ensure every detail (init gate, Cortex reflex, Field Reports, Memory Lifecycle, per-intent protocol) lives in exactly one skill/rule, complete and current. Move the few orphan items that have no skill home. | per-skill `--self-test` where present; skill presence check. |
-| Thin Claude anchor | `src/adapters/claude/CLAUDE.md` | 248 lines, mostly duplicated. | Reduce to ~50 lines: identity, four one-line principles, runtime-first one-liner, success formula, confidentiality one-liner, skill-routing map, locks. Detail -> `tes-guidelines`/`tes-init`. | `python3 scripts/root_context.py --self-test`; line-count <= ~55. |
+| Thin Claude anchor | `src/adapters/claude/CLAUDE.md` | 248 lines, mostly duplicated. | Reduce to ~50 lines: identity, four one-line principles, runtime-first one-liner, success formula, confidentiality one-liner, skill-routing map, locks. Detail -> `tes-engineering-discipline`/`tes-init`. | `python3 scripts/root_context.py --self-test`; line-count <= ~55. |
 | Thin Codex anchor | `src/adapters/codex/AGENTS.md` | 252 lines. | Reduce to ~50 lines preserving XML-tag form: `<instructions>` (four one-liners), runtime-first, `<routing>` map, `<locks>`. Detail -> `.agents/skills/**`. | `python3 scripts/root_context.py --self-test`; `discipline_oracle --self-test`. |
-| Thin Cursor anchor + rule modes | `src/adapters/cursor/CURSOR.md`, `src/adapters/cursor/rules/*.mdc` | Prose guide; rule-mode frontmatter not aligned to lazy. | Reduce CURSOR.md to ~50 lines; ensure `tes-guidelines.mdc` is the thin always-on anchor and `tes-runtime-capabilities.mdc` is `description`+`alwaysApply:false` (lazy). | `python3 scripts/root_context.py --self-test`; rule frontmatter check. |
+| Thin Cursor anchor + rule modes | `src/adapters/cursor/CURSOR.md`, `src/adapters/cursor/rules/*.mdc` | Prose guide; rule-mode frontmatter not aligned to lazy. | Reduce CURSOR.md to ~50 lines; ensure `tes-engineering-discipline.mdc` is the thin always-on anchor and `tes-runtime-capabilities.mdc` is `description`+`alwaysApply:false` (lazy). | `python3 scripts/root_context.py --self-test`; rule frontmatter check. |
 | Parity oracle | new `scripts/context_skill_parity_oracle.py` | No proof that thinning a bootloader did not drop certified knowledge. | New oracle: for each removed bootloader concept, assert it is present in the host's skill/rule layer; assert no principle text is byte-duplicated between anchor and skill; assert anchor line budgets. | `python3 scripts/context_skill_parity_oracle.py --self-test`. |
 | Materialization + install proof | `scripts/materialize_adapter.py`, `scripts/install_smoke.py` | Thinner cores must still materialize and compose. | Assert materialized adapters carry the thin anchor + full skill set; assert TES:CORE composition still works with the smaller core. | `python3 scripts/materialize_adapter.py all --check`; `install_smoke --self-test`. |
 
@@ -204,7 +204,7 @@ Owned files: `src/adapters/cursor/CURSOR.md`, `src/adapters/cursor/rules/*.mdc`.
 Implementation:
 
 1. Reduce `CURSOR.md` to ~50 lines (thin pointer + intents + locks).
-2. Ensure `tes-guidelines.mdc` carries the always-on discipline anchor
+2. Ensure `tes-engineering-discipline.mdc` carries the always-on discipline anchor
    (`alwaysApply: true`, minimal) and `tes-runtime-capabilities.mdc` is lazy
    (`description` + `alwaysApply: false`), so capability detail loads only when
    relevant — the Cursor-native equivalent of a lazy skill.

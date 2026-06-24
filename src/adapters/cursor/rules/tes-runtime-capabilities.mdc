@@ -1,12 +1,12 @@
 ---
-description: TES runtime detail for Cursor — load when the user runs a /tes-* or /tes:* intent (init, setup, update, align, map, cortex, curate, mcp, field-reports, doctor, adapter, bench, bump, goal-maestro, prospect, mine, open-obsidian); does non-trivial coding, review, refactor, or architecture work that needs the maturity layer (Birth, Consolidation, Evolution, Platform) classification; or asks about the Mantra Gate, Infrastructure Decision Gate, Diamond, Cortex reflection, Field Reports, or the memory lifecycle boundary. Carries the full gate flows and command protocols that the always-on tes-guidelines anchor routes to.
+description: TES runtime detail for Cursor — load when the user runs a /tes-* or /tes:* intent (init, setup, update, align, map, cortex, curate, mcp, field-reports, doctor, adapter, bench, bump, goal-maestro, prospect, mine, open-obsidian); does non-trivial coding, review, refactor, or architecture work that needs the maturity layer (Birth, Consolidation, Evolution, Platform) classification; or asks about the Mantra Gate, Infrastructure Decision Gate, Diamond, Cortex reflection, Field Reports, or the memory lifecycle boundary. Carries the full gate flows and command protocols that the always-on tes-engineering-discipline anchor routes to.
 alwaysApply: false
 ---
 
 # TES Runtime Capabilities
 
 This rule is TES-owned runtime detail, the Cursor-native lazy layer behind the
-always-on `tes-guidelines.mdc` anchor. It may be refreshed by the deterministic
+always-on `tes-engineering-discipline.mdc` anchor. It may be refreshed by the deterministic
 installer while `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, and previous
 project-owned Cursor rules are recovered from `.tes/bk/**`. It loads when its
 description matches the request, not on every turn.
@@ -70,7 +70,7 @@ behavior, adversarial fixture, observed failure, smallest repair, and green
 gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 `not available`, `certified`, or `fail`.
 
-The Mantra Gate is owned by the always-on `tes-guidelines.mdc` anchor, but it is
+The Mantra Gate is owned by the always-on `tes-engineering-discipline.mdc` anchor, but it is
 risk-scoped: destructive, remote, release, sync, secret-bearing, or high-impact
 state changes need it; ordinary local edits do not block on gate artifacts,
 markers, or rule loading. This rule does not restate the full protocol.

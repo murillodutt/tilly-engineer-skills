@@ -21,7 +21,7 @@ Do not treat Cursor or Claude packaging as Codex runtime truth.
 
 ## Cursor
 
-Use `.cursor/rules/tes-guidelines.mdc` with `alwaysApply: true` when the four
+Use `.cursor/rules/tes-engineering-discipline.mdc` with `alwaysApply: true` when the four
 gates should be available for every non-trivial coding task.
 
 Keep the Cursor rule short. Put long examples outside the always-loaded rule.

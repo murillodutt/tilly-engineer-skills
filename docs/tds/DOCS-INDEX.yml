@@ -1,4 +1,4 @@
-version: 0.3.192
+version: 0.3.193
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -509,7 +509,7 @@ documents:
     id: roadmap.goal_super_spec_declared_contract_arbiter_and_effort_gate
     class: roadmap
     status: active
-    consumer: maintainers, tes-guidelines authors, discipline-oracle authors, adapter materialization authors, and execution agents
+    consumer: maintainers, tes-engineering-discipline authors, discipline-oracle authors, adapter materialization authors, and execution agents
     source_of_truth: false
     evidence_level: L1
   - path: docs/roadmap/goals/super-specs/FIELD-REPORT-effort-gate-premium-floor.md

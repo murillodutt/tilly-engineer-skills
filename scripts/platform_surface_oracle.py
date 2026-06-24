@@ -19,7 +19,7 @@ import project_context_oracle
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 CODEX_SKILLS = materialize_adapter.CODEX_SKILLS
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 
@@ -186,7 +186,7 @@ def materialized_results() -> tuple[dict[str, Any], list[str]]:
             ),
             "cursor": (
                 "CURSOR.md",
-                ".cursor/rules/tes-guidelines.mdc",
+                ".cursor/rules/tes-engineering-discipline.mdc",
                 ".cursor/rules/tes-runtime-capabilities.mdc",
             ),
         }
@@ -277,9 +277,9 @@ def analyze() -> dict[str, Any]:
 
     # Claude
     # Bootloader keeps the behavioral anchors always-on; the dense Cortex reflex
-    # and memory lifecycle boundary live in the lazy tes-guidelines skill.
+    # and memory lifecycle boundary live in the lazy tes-engineering-discipline skill.
     claude_agent = "src/adapters/claude/CLAUDE.md"
-    claude_guidelines_skill = "src/adapters/claude/skills/tes-guidelines/SKILL.md"
+    claude_guidelines_skill = "src/adapters/claude/skills/tes-engineering-discipline/SKILL.md"
     if not exists(claude_agent):
         failures.append(f"missing Claude bootloader: {claude_agent}")
     else:
@@ -313,7 +313,7 @@ def analyze() -> dict[str, Any]:
     # Cursor-native lazy layer (Apply Intelligently), so it is alwaysApply:false
     # with a description (official Cursor rule-loading model). The memory
     # lifecycle boundary moved with the capability detail into the lazy rule.
-    cursor_rule = "src/adapters/cursor/rules/tes-guidelines.mdc"
+    cursor_rule = "src/adapters/cursor/rules/tes-engineering-discipline.mdc"
     cursor_runtime_rule = "src/adapters/cursor/rules/tes-runtime-capabilities.mdc"
     cursor_rule_modes = {cursor_rule: "true", cursor_runtime_rule: "false"}
     for rule, mode in cursor_rule_modes.items():

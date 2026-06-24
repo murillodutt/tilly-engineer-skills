@@ -37,7 +37,7 @@ SOURCE_PACKAGE_MODE = (
 )
 BUNDLE_MODE = SOURCE_ROOT.name == "scripts" and not SOURCE_PACKAGE_MODE
 PACKAGE_MODE = SOURCE_PACKAGE_MODE
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 DOCUMENTATION_AUTHORITY = Path("docs/agents/DOCUMENTATION-AUTHORITY.md")
@@ -101,7 +101,7 @@ TES_RUNTIME_PREFIXES = (
     ("docs", "agents", "cortex"),
 )
 TES_RUNTIME_RELPATHS = {
-    ".cursor/rules/tes-guidelines.mdc",
+    ".cursor/rules/tes-engineering-discipline.mdc",
 }
 TES_ROOT_BOOTLOADER_MARKERS = {
     "AGENTS.md": "Portable Codex bootloader for repositories adopting Tilly Engineering",
@@ -490,8 +490,8 @@ def surface_inventory(target: Path) -> dict[str, Any]:
         "codex_skill": ".agents/skills/tes-engineering-discipline/SKILL.md",
         "claude_md": "CLAUDE.md",
         "claude_plugin": ".claude-plugin/plugin.json",
-        "claude_project_skill": ".claude/skills/tes-guidelines/SKILL.md",
-        "claude_plugin_skill": "skills/tes-guidelines/SKILL.md",
+        "claude_project_skill": ".claude/skills/tes-engineering-discipline/SKILL.md",
+        "claude_plugin_skill": "skills/tes-engineering-discipline/SKILL.md",
         "cursor_bootloader": "CURSOR.md",
         "cursor_rules": ".cursor/rules",
         "codex_mcp": ".codex/config.toml",

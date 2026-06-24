@@ -12,7 +12,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 
 PREFERRED_TRIGGERS = (
     "/tes-init",
@@ -180,7 +180,7 @@ PLATFORM_SOURCE_GROUPS = {
     ),
     "claude": (
         "src/adapters/claude/CLAUDE.md",
-        "src/adapters/claude/skills/tes-guidelines/SKILL.md",
+        "src/adapters/claude/skills/tes-engineering-discipline/SKILL.md",
         "src/adapters/claude/skills/tes-init/SKILL.md",
         "src/adapters/claude/skills/tes-setup/SKILL.md",
         "src/adapters/claude/skills/tes-context-distill/SKILL.md",
@@ -200,7 +200,7 @@ PLATFORM_SOURCE_GROUPS = {
         "src/adapters/claude/skills/tes-bump/SKILL.md",
     ),
     "cursor": (
-        "src/adapters/cursor/rules/tes-guidelines.mdc",
+        "src/adapters/cursor/rules/tes-engineering-discipline.mdc",
         "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",
     ),
 }
@@ -223,7 +223,7 @@ INIT_ROUTER_SOURCE_PATHS = (
 INIT_ROUTER_BOOTLOADERS = (
     "src/adapters/codex/AGENTS.md",
     "src/adapters/claude/CLAUDE.md",
-    "src/adapters/cursor/rules/tes-guidelines.mdc",
+    "src/adapters/cursor/rules/tes-engineering-discipline.mdc",
 )
 INIT_ROUTER_ANCHOR_TERMS = ("/tes-init",)
 
@@ -522,7 +522,7 @@ GOAL_MAESTRO_GENERATED_PROMPT_REQUIRED_TERMS = (
 
 
 CLAUDE_PROJECT_SKILLS = (
-    "tes-guidelines",
+    "tes-engineering-discipline",
     "tes-init",
     "tes-setup",
     "tes-update",
@@ -1240,7 +1240,7 @@ def required_installed_files(platform: str) -> tuple[str, ...]:
     if platform == "claude":
         return (
             "CLAUDE.md",
-            ".claude/skills/tes-guidelines/SKILL.md",
+            ".claude/skills/tes-engineering-discipline/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
             ".claude/skills/tes-setup/SKILL.md",
             ".claude/skills/tes-update/SKILL.md",
@@ -1490,7 +1490,7 @@ def run_fixture_tests() -> list[str]:
 
     with tempfile.TemporaryDirectory(prefix="tes-trigger-oracle-good-") as tempdir:
         target = Path(tempdir)
-        (target / ".claude/skills/tes-guidelines").mkdir(parents=True)
+        (target / ".claude/skills/tes-engineering-discipline").mkdir(parents=True)
         (target / ".claude/skills/tes-init").mkdir(parents=True)
         (target / ".claude/skills/tes-setup").mkdir(parents=True)
         (target / ".claude/skills/tes-update").mkdir(parents=True)
@@ -1500,7 +1500,7 @@ def run_fixture_tests() -> list[str]:
         (target / ".claude/skills/tes-field-reports").mkdir(parents=True)
         (target / ".claude/skills/tes-bump").mkdir(parents=True)
         (target / "CLAUDE.md").write_text(good_text, encoding="utf-8")
-        (target / ".claude/skills/tes-guidelines/SKILL.md").write_text(good_text, encoding="utf-8")
+        (target / ".claude/skills/tes-engineering-discipline/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-init/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-setup/SKILL.md").write_text(good_text, encoding="utf-8")
         (target / ".claude/skills/tes-update/SKILL.md").write_text(good_text, encoding="utf-8")

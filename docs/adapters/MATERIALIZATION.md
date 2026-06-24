@@ -33,7 +33,7 @@ after an inspection run.
 | Adapter | Generated install tree |
 |---------|------------------------|
 | Codex | `AGENTS.md` and `.agents/skills/**` |
-| Cursor | `CURSOR.md`, `.cursor/rules/tes-guidelines.mdc`, and `.cursor/rules/tes-runtime-capabilities.mdc` |
+| Cursor | `CURSOR.md`, `.cursor/rules/tes-engineering-discipline.mdc`, and `.cursor/rules/tes-runtime-capabilities.mdc` |
 | Claude | `CLAUDE.md` and `.claude/skills/**` |
 
 ## Gate
@@ -44,10 +44,10 @@ check builds all adapters in a temporary directory and verifies:
 - each expected target path exists;
 - Codex skill self-test passes after materialization;
 - Cursor keeps `.mdc` frontmatter with a `description` on both rules, the
-  always-on discipline anchor `tes-guidelines.mdc` at `alwaysApply: true`, and
+  always-on discipline anchor `tes-engineering-discipline.mdc` at `alwaysApply: true`, and
   the lazy capability rule `tes-runtime-capabilities.mdc` at `alwaysApply: false`
   (Apply Intelligently), so capability detail loads only when relevant;
-- Cursor separates the always-on governance anchor (`tes-guidelines.mdc`) from
+- Cursor separates the always-on governance anchor (`tes-engineering-discipline.mdc`) from
   the lazy TES-owned command/capability layer (`tes-runtime-capabilities.mdc`);
 - Claude project skills materialize under `.claude/skills/**`;
 - plugin metadata under `src/adapters/**/plugin/**` remains source-only and is
@@ -70,8 +70,8 @@ would be absent from the commit.
 Mantra Gate behavior is skill-owned, not bootloader-owned:
 
 - Codex `AGENTS.md` routes to `.agents/skills/tes-engineering-discipline/SKILL.md`.
-- Claude `CLAUDE.md` routes to `.claude/skills/tes-guidelines/SKILL.md`.
-- Cursor `.cursor/rules/tes-guidelines.mdc` carries the active rule directly.
+- Claude `CLAUDE.md` routes to `.claude/skills/tes-engineering-discipline/SKILL.md`.
+- Cursor `.cursor/rules/tes-engineering-discipline.mdc` carries the active rule directly.
 
 Materialization checks reject active bootloaders or rules that reintroduce
 retired project-local gate markers or duplicate the gate protocol in the

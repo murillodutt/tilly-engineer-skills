@@ -20,14 +20,14 @@ except ImportError:  # pragma: no cover - exercised only when the oracle is abse
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 EVIDENCE_DIR = Path("docs/agents/evidence")
 BACKUP_ROOT = Path(".tes/bk")
 ROOT_FILES = (
     ("codex", "AGENTS.md", "src/adapters/codex/AGENTS.md"),
     ("claude", "CLAUDE.md", "src/adapters/claude/CLAUDE.md"),
     ("cursor", "CURSOR.md", "src/adapters/cursor/CURSOR.md"),
-    ("cursor", ".cursor/rules/tes-guidelines.mdc", "src/adapters/cursor/rules/tes-guidelines.mdc"),
+    ("cursor", ".cursor/rules/tes-engineering-discipline.mdc", "src/adapters/cursor/rules/tes-engineering-discipline.mdc"),
     ("cursor", ".cursorrules", None),
 )
 ROOT_CONTEXT_PATHS = {relpath for _, relpath, _ in ROOT_FILES}

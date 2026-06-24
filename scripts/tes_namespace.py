@@ -17,7 +17,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 
 ACTIVE_PREFIXES = (
     ".github/",
@@ -129,7 +129,7 @@ class RawLocation:
 
 PATH_REPLACEMENTS = (
     Replacement("tilly-engineering-discipline", "tes-engineering-discipline", "codex skill"),
-    Replacement("tilly-guidelines", "tes-guidelines", "adapter guideline"),
+    Replacement("tilly-guidelines", "tes-engineering-discipline", "adapter guideline"),
     Replacement("tilly-field-report", "tes-field-report", "github field report"),
     Replacement("tilly_init", "tes_init", "python script"),
     Replacement("tilly_update", "tes_update", "python script"),
@@ -192,7 +192,7 @@ CONTENT_REPLACEMENTS = (
     Replacement("tilly-field-report@1", "tes-field-report@2", "field report schema"),
     Replacement("tilly-field-report", "tes-field-report", "field report issue template"),
     Replacement("tilly-engineering-discipline", "tes-engineering-discipline", "codex skill"),
-    Replacement("tilly-guidelines", "tes-guidelines", "adapter guideline"),
+    Replacement("tilly-guidelines", "tes-engineering-discipline", "adapter guideline"),
     Replacement("tilly-adapter", "tes-adapter", "adapter skill"),
     Replacement("tilly-bench", "tes-bench", "bench skill"),
     Replacement("tilly-cortex", "tes-cortex", "cortex skill"),

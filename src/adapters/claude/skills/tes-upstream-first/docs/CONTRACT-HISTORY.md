@@ -55,9 +55,9 @@ than living in a doc that is not auto-loaded.
 
 ## Relationship To Other Skills
 
-`tes-upstream-first` is narrower than `tes-guidelines`: it governs the *approach*
+`tes-upstream-first` is narrower than `tes-engineering-discipline`: it governs the *approach*
 to a single class of decision (library friction / dependency change), where
-`tes-guidelines` is the broad engineering-discipline anchor. It pairs with the
+`tes-engineering-discipline` is the broad engineering-discipline anchor. It pairs with the
 global Context7 rule (step 1 of its checklist) and with `tes-bump` when a
 dependency change implies a version decision.
 

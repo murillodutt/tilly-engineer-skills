@@ -44,7 +44,7 @@ Official references: [Memory](https://code.claude.com/docs/en/memory),
 | Source | Purpose |
 |--------|---------|
 | `src/adapters/claude/CLAUDE.md` | Short target root instruction file |
-| `src/adapters/claude/skills/tes-guidelines/SKILL.md` | Claude skill source |
+| `src/adapters/claude/skills/tes-engineering-discipline/SKILL.md` | Claude skill source |
 | `src/adapters/claude/skills/tes-*/SKILL.md` | Project skill source |
 | `src/adapters/claude/plugin/plugin.json` | Plugin metadata source |
 | `src/adapters/claude/plugin/marketplace.json` | Local marketplace metadata source |

@@ -15,7 +15,7 @@ import materialize_adapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 CLAUDE_SKILLS = materialize_adapter.CLAUDE_SKILLS
 PLUGIN_SOURCE_ROOT = ROOT / "src/adapters/claude/plugin"
 TARGET_PLUGIN_PATHS = (
@@ -79,7 +79,7 @@ def validate_target_omits_plugin(target: Path) -> list[str]:
     target = target.resolve()
     for relpath in (
         "CLAUDE.md",
-        ".claude/skills/tes-guidelines/SKILL.md",
+        ".claude/skills/tes-engineering-discipline/SKILL.md",
         ".claude/skills/tes-init/SKILL.md",
     ):
         if not (target / relpath).exists():

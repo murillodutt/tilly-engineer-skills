@@ -19,7 +19,7 @@ rules under `.cursor/rules/**`; `CURSOR.md` is a user handoff note only.
 
 | Surface | Role | Package Status |
 |---------|------|----------------|
-| `.cursor/rules/tes-guidelines.mdc` | Always-on discipline anchor (`alwaysApply: true`) | Included |
+| `.cursor/rules/tes-engineering-discipline.mdc` | Always-on discipline anchor (`alwaysApply: true`) | Included |
 | `.cursor/rules/tes-runtime-capabilities.mdc` | Lazy capability rule (`alwaysApply: false` + `description`, Apply Intelligently); loads the full command/gate detail only when relevant | Included |
 | `AGENTS.md` | Simple root-only alternative context | Not materialized by default |
 | `.cursorrules` | Legacy rule file | Forbidden |
@@ -37,7 +37,7 @@ Official references: [Rules](https://docs.cursor.com/en/context/rules),
 
 | Source | Purpose |
 |--------|---------|
-| `src/adapters/cursor/rules/tes-guidelines.mdc` | Always-on discipline anchor source (`alwaysApply: true`) |
+| `src/adapters/cursor/rules/tes-engineering-discipline.mdc` | Always-on discipline anchor source (`alwaysApply: true`) |
 | `src/adapters/cursor/rules/tes-runtime-capabilities.mdc` | Lazy capability rule source (`alwaysApply: false` + `description`) |
 | `src/adapters/cursor/CURSOR.md` | User adapter note |
 
@@ -88,7 +88,7 @@ always-on layer stays thin.
 
 - Do not reintroduce `.cursorrules`.
 - Keep `.mdc` frontmatter with a `description` on both rules:
-  `tes-guidelines.mdc` at `alwaysApply: true` (always-on anchor) and
+  `tes-engineering-discipline.mdc` at `alwaysApply: true` (always-on anchor) and
   `tes-runtime-capabilities.mdc` at `alwaysApply: false` (lazy capability rule).
 - Do not materialize `AGENTS.md` for Cursor without an explicit decision,
   because it can duplicate `.cursor/rules/**`.

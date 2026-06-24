@@ -1,10 +1,10 @@
 ---
-name: tes-guidelines
+name: tes-engineering-discipline
 description: Maturity-aware behavioral engineering discipline to reduce ambiguity, overcomplication, simplification regression, drive-by edits, and false completion. Use when writing, reviewing, refactoring, or migrating code/instructions and the work is non-trivial.
 license: MIT
 ---
 
-# Tilly Guidelines
+# Tilly Engineering Discipline
 
 Core contract:
 

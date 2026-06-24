@@ -21,7 +21,7 @@ DATASET = ROOT / "benchmarks/context-mesh/eval-dataset.json"
 ADAPTER_SOURCE_PATHS = {
     "claude": (
         "src/adapters/claude/CLAUDE.md",
-        "src/adapters/claude/skills/tes-guidelines/SKILL.md",
+        "src/adapters/claude/skills/tes-engineering-discipline/SKILL.md",
     ),
     "codex": (
         "src/adapters/codex/AGENTS.md",
@@ -29,7 +29,7 @@ ADAPTER_SOURCE_PATHS = {
     ),
     "cursor": (
         "src/adapters/cursor/CURSOR.md",
-        "src/adapters/cursor/rules/tes-guidelines.mdc",
+        "src/adapters/cursor/rules/tes-engineering-discipline.mdc",
         # Cursor's lazy capability rule is the contract owner of the expanded
         # detail (memory lifecycle, Cortex, gate flows) after the migration,
         # mirroring the bootloader+skill pair used for Claude and Codex.
@@ -40,7 +40,7 @@ ADAPTER_SOURCE_PATHS = {
 ADAPTER_MATERIALIZED_PATHS = {
     "claude": (
         "CLAUDE.md",
-        ".claude/skills/tes-guidelines/SKILL.md",
+        ".claude/skills/tes-engineering-discipline/SKILL.md",
     ),
     "codex": (
         "AGENTS.md",
@@ -48,7 +48,7 @@ ADAPTER_MATERIALIZED_PATHS = {
     ),
     "cursor": (
         "CURSOR.md",
-        ".cursor/rules/tes-guidelines.mdc",
+        ".cursor/rules/tes-engineering-discipline.mdc",
         ".cursor/rules/tes-runtime-capabilities.mdc",
     ),
 }

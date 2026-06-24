@@ -25,7 +25,7 @@ import root_context
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 MANIFEST_NAME = "tes-bundle-manifest.json"
 INSTALLED_MANIFEST = Path(".tes/manifest.json")
 SETUP_ROOT = Path(".tes/setup")
@@ -41,7 +41,7 @@ PACKAGE_SOURCE_NAME = "tilly-engineer-skills"
 PACKAGE_SOURCE_MARKERS = (
     Path("src/adapters/codex/AGENTS.md"),
     Path("src/adapters/claude/CLAUDE.md"),
-    Path("src/adapters/cursor/rules/tes-guidelines.mdc"),
+    Path("src/adapters/cursor/rules/tes-engineering-discipline.mdc"),
     Path("scripts/tes_install.py"),
     Path("scripts/tes_bundle.py"),
     Path("docs/governance/MAINTAINER-CORRELATION-RULE.md"),
@@ -103,7 +103,7 @@ CONTEXT_GOVERNANCE_PATHS = {
     "CLAUDE.md",
     "CURSOR.md",
     ".cursorrules",
-    ".cursor/rules/tes-guidelines.mdc",
+    ".cursor/rules/tes-engineering-discipline.mdc",
 }
 MCP_CONFIG_PATHS = {
     ".codex/config.toml",
@@ -134,6 +134,12 @@ OBSOLETE_RUNTIME_DIRS = (
 )
 OBSOLETE_RUNTIME_FILE_PATHS = (
     ".agents/plugins/marketplace.json",
+)
+RETIRED_GUIDELINES_NAME = "tes-" + "guidelines"
+RETIRED_RUNTIME_PATHS = (
+    f".claude/skills/{RETIRED_GUIDELINES_NAME}",
+    f"skills/{RETIRED_GUIDELINES_NAME}",
+    f".cursor/rules/{RETIRED_GUIDELINES_NAME}.mdc",
 )
 OBSOLETE_TES_MARKERS = (
     "tilly-engineer-skills",
@@ -2415,6 +2421,21 @@ def cleanup_obsolete_runtime(target: Path, manifest: dict[str, Any], dry_run: bo
                 shutil.rmtree(target_path)
             else:
                 target_path.unlink()
+
+    for relpath in RETIRED_RUNTIME_PATHS:
+        path = target / relpath
+        if not path.exists():
+            continue
+        actions.append({
+            "path": relpath,
+            "action": "would-remove-retired-runtime" if dry_run else "remove-retired-runtime",
+            "reason": f"retired-{RETIRED_GUIDELINES_NAME}",
+        })
+        if not dry_run:
+            if path.is_dir():
+                shutil.rmtree(path)
+            else:
+                path.unlink()
 
     for relpath in (*OBSOLETE_RUNTIME_DIRS, *OBSOLETE_RUNTIME_FILE_PATHS):
         path = target / relpath

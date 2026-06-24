@@ -163,7 +163,7 @@ forms so the runtime picker separates them from the main Tilly project.
 
 Claude skill directory names and frontmatter names must also move to `tes-*`.
 
-- `tilly-guidelines` becomes `tes-guidelines`.
+- `tilly-guidelines` becomes `tes-engineering-discipline`.
 - `tilly-init` becomes `tes-init`.
 - `tilly-cortex` becomes `tes-cortex`.
 - `tilly-mcp` becomes `tes-mcp`.
@@ -180,7 +180,7 @@ use TES.
 Cursor rule files that expose the old namespace must move to TES naming.
 
 - `src/adapters/cursor/rules/tilly-guidelines.mdc` becomes
-  `src/adapters/cursor/rules/tes-guidelines.mdc`.
+  `src/adapters/cursor/rules/tes-engineering-discipline.mdc`.
 
 Installed Cursor rules must also use the TES name. If a project already has a
 project-owned rule with old Tilly content, the installer must run the root

@@ -17,7 +17,7 @@ import tes_init
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 ROUTES = ("current", "codex", "claude", "cursor", "vscode", "all", "mcp", "audit")
 PROJECT_CONTEXT_FIXTURES = (
     "fixture-minimal",
@@ -50,7 +50,7 @@ Discipline.
 
 ## In This Repository
 
-Cursor loads `.cursor/rules/tes-guidelines.mdc`.
+Cursor loads `.cursor/rules/tes-engineering-discipline.mdc`.
 
 ## Behavioral Source Of Truth
 
@@ -202,7 +202,7 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
         return (
             "CLAUDE.md",
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",
-            ".claude/skills/tes-guidelines/SKILL.md",
+            ".claude/skills/tes-engineering-discipline/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
             ".claude/skills/tes-update/SKILL.md",
             ".claude/skills/tes-align/SKILL.md",
@@ -214,7 +214,7 @@ def expected_adapter_paths(adapter: str) -> tuple[str, ...]:
         return (
             "CURSOR.md",
             f".tes/setup/{VERSION}/tes-bundle-manifest.json",
-            ".cursor/rules/tes-guidelines.mdc",
+            ".cursor/rules/tes-engineering-discipline.mdc",
             ".cursor/rules/tes-runtime-capabilities.mdc",
         )
     raise ValueError(f"unknown adapter: {adapter}")
@@ -562,7 +562,7 @@ def skills_surface_probe() -> dict[str, Any]:
         # 1. Decoupling: skills present, bootloaders/rules absent.
         if not (target / skill_marker).exists():
             failures.append("attach skills must materialize the project skill command set")
-        for bootloader in ("CLAUDE.md", "AGENTS.md", "CURSOR.md", ".cursor/rules/tes-guidelines.mdc"):
+        for bootloader in ("CLAUDE.md", "AGENTS.md", "CURSOR.md", ".cursor/rules/tes-engineering-discipline.mdc"):
             if (target / bootloader).exists():
                 failures.append(f"attach skills must NOT materialize a root-context surface: {bootloader}")
 
@@ -803,7 +803,7 @@ def claude_clean_bootloader_probe() -> dict[str, Any]:
         if recovery.get("status") not in {"RECOVERED", "NEEDS_REVIEW"}:
             failures.append("claude clean install must emit semantic recovery")
         failures.extend(require_paths(target, (
-            ".claude/skills/tes-guidelines/SKILL.md",
+            ".claude/skills/tes-engineering-discipline/SKILL.md",
             ".claude/skills/tes-init/SKILL.md",
             ".claude/skills/tes-update/SKILL.md",
             ".claude/skills/tes-align/SKILL.md",
@@ -912,7 +912,7 @@ def hostile_governance_conflict_probe() -> dict[str, Any]:
         (target / "AGENTS.md").write_text(CODEX_LOCAL_BOOTLOADER, encoding="utf-8")
         (target / "CLAUDE.md").write_text(CLAUDE_LOCAL_BOOTLOADER, encoding="utf-8")
         (target / "CURSOR.md").write_text(STALE_TES_CURSOR_BOOTLOADER, encoding="utf-8")
-        write(target / ".cursor/rules/tes-guidelines.mdc", HOSTILE_CURSOR_RULE)
+        write(target / ".cursor/rules/tes-engineering-discipline.mdc", HOSTILE_CURSOR_RULE)
 
         code, stdout, stderr = run(
             [
@@ -944,7 +944,7 @@ def hostile_governance_conflict_probe() -> dict[str, Any]:
             failures.append("hostile governance install did not replace AGENTS.md")
         if CLAUDE_LOCAL_BOOTLOADER in (target / "CLAUDE.md").read_text(encoding="utf-8"):
             failures.append("hostile governance install did not replace CLAUDE.md")
-        if HOSTILE_CURSOR_RULE in (target / ".cursor/rules/tes-guidelines.mdc").read_text(encoding="utf-8"):
+        if HOSTILE_CURSOR_RULE in (target / ".cursor/rules/tes-engineering-discipline.mdc").read_text(encoding="utf-8"):
             failures.append("hostile governance install did not replace Cursor rule")
         cursor_bootloader = (target / "CURSOR.md").read_text(encoding="utf-8")
         if cursor_bootloader == STALE_TES_CURSOR_BOOTLOADER or "/tes-init" not in cursor_bootloader:
@@ -974,9 +974,13 @@ def legacy_obsolete_cleanup_probe() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="tes-install-smoke-obsolete-clean-") as tempdir:
         target = Path(tempdir)
         failures: list[str] = []
+        retired_guidelines = "tes-" + "guidelines"
         failures.extend(init_git(target))
         write(target / "README.md", "# Legacy TES Install\n")
         write(target / "skills/tes-init/SKILL.md", "# TES Init\n\nTilly Engineering /tes-init legacy root skill.\n")
+        write(target / f"skills/{retired_guidelines}/SKILL.md", "# Tilly Guidelines\n\nTES legacy root discipline skill.\n")
+        write(target / f".claude/skills/{retired_guidelines}/SKILL.md", "# Tilly Guidelines\n\nTES legacy Claude discipline skill.\n")
+        write(target / f".cursor/rules/{retired_guidelines}.mdc", "---\nalwaysApply: true\n---\n# TES legacy Cursor guideline rule\n")
         write(target / ".claude-plugin/plugin.json", '{"name":"tilly-engineer-skills","version":"0.3.112","skills":["./skills/"]}\n')
         write(target / ".agents/plugins/marketplace.json", '{"plugins":[{"id":"tilly-engineer-skills","version":"0.3.112"}]}\n')
         write(target / "plugins/tilly-engineer-skills/.codex-plugin/plugin.json", '{"name":"tilly-engineer-skills","version":"0.3.112","skills":"./skills/"}\n')
@@ -1006,7 +1010,7 @@ def legacy_obsolete_cleanup_probe() -> dict[str, Any]:
         cleanup = ((payload.get("apply") or {}).get("obsolete_cleanup") or {})
         if cleanup.get("status") not in {"PASS", "DRY-RUN"}:
             failures.append(f"legacy obsolete cleanup expected PASS cleanup, got {cleanup.get('status')}")
-        for relpath in ("skills", ".claude-plugin", ".agents/plugins", "plugins/tilly-engineer-skills"):
+        for relpath in ("skills", ".claude-plugin", ".agents/plugins", "plugins/tilly-engineer-skills", f".claude/skills/{retired_guidelines}", f".cursor/rules/{retired_guidelines}.mdc"):
             if (target / relpath).exists():
                 failures.append(f"legacy TES-owned obsolete path was not removed: {relpath}")
         failures.extend(require_paths(target, (

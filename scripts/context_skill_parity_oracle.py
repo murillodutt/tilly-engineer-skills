@@ -40,7 +40,7 @@ from typing import Any
 
 import yaml
 
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 INVENTORY_REL = (
@@ -60,7 +60,7 @@ BUDGETED_BOOTLOADERS = {
     "src/adapters/claude/CLAUDE.md",
     "src/adapters/codex/AGENTS.md",
     "src/adapters/cursor/CURSOR.md",
-    "src/adapters/cursor/rules/tes-guidelines.mdc",
+    "src/adapters/cursor/rules/tes-engineering-discipline.mdc",
 }
 
 

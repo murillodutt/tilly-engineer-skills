@@ -15,7 +15,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 TES_AGENT_MESH_RELPATHS = {
     "docs/agents/PROJECT-CONTEXT.md",
@@ -118,7 +118,7 @@ TES_RUNTIME_PREFIXES = (
     ("docs", "agents", "cortex"),
 )
 TES_RUNTIME_RELPATHS = {
-    ".cursor/rules/tes-guidelines.mdc",
+    ".cursor/rules/tes-engineering-discipline.mdc",
     ".cursor/rules/tes-runtime-capabilities.mdc",
 }
 TES_ROOT_BOOTLOADER_MARKERS = {
@@ -1116,7 +1116,7 @@ def self_test() -> dict[str, Any]:
         write(target / ".claude/skills/tes-init/SKILL.md", "# TES skill\n")
         write(target / "skills/tes-init/SKILL.md", "# TES skill\n")
         write(target / ".claude-plugin/plugin.json", "{}\n")
-        write(target / ".cursor/rules/tes-guidelines.mdc", "# TES Cursor rule\n")
+        write(target / ".cursor/rules/tes-engineering-discipline.mdc", "# TES Cursor rule\n")
         write(target / "docs/agents/cortex/CONTRACT.md", "# Cortex\n")
         write(target / "AGENTS.md", "Portable Codex bootloader for repositories adopting Tilly Engineering\n")
         write(target / "CLAUDE.md", "Behavioral engineering discipline for reducing common LLM coding mistakes.\n")
@@ -1126,13 +1126,13 @@ def self_test() -> dict[str, Any]:
         # Both TES cursor surfaces, as the real adapter install writes them. A
         # .cursor directory containing ONLY TES files must not surface as project
         # territory (F1: tes-runtime-capabilities.mdc was the missed exclusion).
-        write(target / ".cursor/rules/tes-guidelines.mdc", "# TES Cursor rule\n")
+        write(target / ".cursor/rules/tes-engineering-discipline.mdc", "# TES Cursor rule\n")
         write(target / ".cursor/rules/tes-runtime-capabilities.mdc", "# TES Cursor capability rule\n")
         territories = expected_territories(target)
         for generated in (".agents", ".claude", ".cursor", "skills", ".claude-plugin", "docs"):
             if generated in territories:
                 failures.append(f"oracle must exclude generated TES territory: {generated}")
-        for generated in ("AGENTS.md", "CLAUDE.md", "CURSOR.md", ".cursor/rules/tes-guidelines.mdc"):
+        for generated in ("AGENTS.md", "CLAUDE.md", "CURSOR.md", ".cursor/rules/tes-engineering-discipline.mdc"):
             if generated in anchors:
                 failures.append(f"oracle must exclude generated TES anchor: {generated}")
         if "src" not in territories or "src/app.py" not in anchors:

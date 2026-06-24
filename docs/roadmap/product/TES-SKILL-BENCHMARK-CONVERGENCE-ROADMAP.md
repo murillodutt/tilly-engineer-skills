@@ -44,7 +44,7 @@ correlation, or adapter materialization.
 
 | Skill family | Required coverage | Current status | Next action |
 |--------------|-------------------|----------------|-------------|
-| `tes-engineering-discipline` / `tes-guidelines` | Context mesh gates, maturity layer, distractors, progressive L1-L4 | Covered and recently converged | Retain as canary gate before related behavior claims. |
+| `tes-engineering-discipline` / `tes-engineering-discipline` | Context mesh gates, maturity layer, distractors, progressive L1-L4 | Covered and recently converged | Retain as canary gate before related behavior claims. |
 | `tes-goal-maestro` | Behavioral benchmark for execution-unit fidelity, stop states, no commit, no scope drift, and goal prompt quality | Missing | Create focused dataset and progressive loop first. |
 | `tes-prospect` | Behavioral benchmark for one-question pressure, hidden dependency discovery, cognitive brake, and no premature redesign | Missing | Create focused dataset after Goal Maestro fixtures exist. |
 | `tes-mine` | Behavioral benchmark for durable vocabulary extraction, no private leakage, no overcapture, and useful synthesis | Missing | Create focused dataset after Prospect fixtures exist. |

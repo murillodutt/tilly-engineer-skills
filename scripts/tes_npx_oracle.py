@@ -24,7 +24,7 @@ except ImportError:  # pragma: no cover - Windows fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 BIN_NAME = "tilly-engineer-skills"
 DEFAULT_GITHUB_SPEC = "github:murillodutt/tilly-engineer-skills"
 DEFAULT_GITHUB_REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills.git"
@@ -964,7 +964,7 @@ def self_test() -> int:
                 "CURSOR.md",
                 ".agents/skills/tes-map/SKILL.md",
                 ".claude/skills/tes-map/SKILL.md",
-                ".cursor/rules/tes-guidelines.mdc",
+                ".cursor/rules/tes-engineering-discipline.mdc",
                 ".cursor/rules/tes-runtime-capabilities.mdc",
             ):
                 if not (install_target / relpath).exists():
@@ -1390,7 +1390,7 @@ def main() -> int:
     parser.add_argument(
         "--github-ref",
         default=os.environ.get("TES_GITHUB_NPX_REF", f"v{VERSION}"),
-        help="Git ref to test, e.g. v0.3.192 or main.",
+        help="Git ref to test, e.g. v0.3.193 or main.",
     )
     parser.add_argument("--target", type=Path, help="Optional dry-run target for GitHub npx self-test.")
     args = parser.parse_args()

@@ -105,7 +105,7 @@ Operating calibration (maintainer/dev memory only; never Cortex, never `src/**`,
 | Eval design | `docs/evals/EVALS.md` |
 | Codex bootloader source | `src/adapters/codex/AGENTS.md` |
 | Claude instruction source | `src/adapters/claude/CLAUDE.md` |
-| Cursor rule source | `src/adapters/cursor/rules/tes-guidelines.mdc` |
+| Cursor rule source | `src/adapters/cursor/rules/tes-engineering-discipline.mdc` |
 | Package validation | `python3 scripts/validate_reference_package.py` |
 | TDS validation | `python3 scripts/validate_tds.py` |
 | Closure gate | `npm run commit:check` |

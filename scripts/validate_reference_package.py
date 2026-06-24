@@ -13,7 +13,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 
 REQUIRED_PATHS = (
     "README.md",
@@ -30,9 +30,9 @@ REQUIRED_PATHS = (
     "docs/architecture/TES-NAMING-MIGRATION-CATALOG.md",
     "docs/adr/0001-tes-memory-lifecycle.md",
     "docs/install/USER-MANUAL.html",
-    "docs/dist/0.3.192/index.json",
-    "docs/dist/0.3.192/tilly-engineer-skills-0.3.192.zip",
-    "docs/dist/0.3.192/tilly-engineer-skills-0.3.192.zip.sha256",
+    "docs/dist/0.3.193/index.json",
+    "docs/dist/0.3.193/tilly-engineer-skills-0.3.193.zip",
+    "docs/dist/0.3.193/tilly-engineer-skills-0.3.193.zip.sha256",
     "docs/install/MINI-PROMPT.md",
     "docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md",
     "docs/install/COMMAND-TRIGGERS.md",
@@ -143,7 +143,7 @@ REQUIRED_PATHS = (
     "src/adapters/claude/CLAUDE.md",
     "src/adapters/claude/plugin/plugin.json",
     "src/adapters/claude/plugin/marketplace.json",
-    "src/adapters/claude/skills/tes-guidelines/SKILL.md",
+    "src/adapters/claude/skills/tes-engineering-discipline/SKILL.md",
     "src/adapters/claude/skills/tes-init/SKILL.md",
     "src/adapters/claude/skills/tes-setup/SKILL.md",
     "src/adapters/claude/skills/tes-update/SKILL.md",
@@ -193,7 +193,7 @@ REQUIRED_PATHS = (
     "src/adapters/claude/skills/tes-upstream-first/SKILL.md",
     "src/adapters/claude/skills/tes-upstream-first/docs/CONTRACT-HISTORY.md",
     "src/adapters/cursor/CURSOR.md",
-    "src/adapters/cursor/rules/tes-guidelines.mdc",
+    "src/adapters/cursor/rules/tes-engineering-discipline.mdc",
     "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",
     "benchmarks/context-mesh/eval-dataset.json",
     "benchmarks/goal-maestro/eval-dataset.json",
@@ -270,8 +270,8 @@ SYNCED_FILES = (
     "docs/mesh/PRINCIPLES.md",
     "src/adapters/codex/AGENTS.md",
     "src/adapters/claude/CLAUDE.md",
-    "src/adapters/cursor/rules/tes-guidelines.mdc",
-    "src/adapters/claude/skills/tes-guidelines/SKILL.md",
+    "src/adapters/cursor/rules/tes-engineering-discipline.mdc",
+    "src/adapters/claude/skills/tes-engineering-discipline/SKILL.md",
     "src/adapters/codex/skills/tes-engineering-discipline/SKILL.md",
 )
 
@@ -608,6 +608,10 @@ VERSION_LOCKED_SURFACES = (
     "src/adapters/claude/plugin/marketplace.json",
 )
 SEMVER_RE = re.compile(r"\b0\.3\.\d+\b")
+RETIRED_ACTIVE_TERMS = ("tes-" + "guidelines",)
+RETIRED_TERM_ALLOWED_PREFIXES = (
+    Path("docs/evidence"),
+)
 
 
 def package_paths() -> list[Path]:
@@ -690,6 +694,25 @@ def generated_adapter_output_failures() -> list[str]:
         "purge dist/adapters after inspection; src/adapters is the only "
         "local canonical adapter source"
     ]
+
+
+def retired_active_term_failures() -> list[str]:
+    failures: list[str] = []
+    for path in package_paths():
+        if not (ROOT / path).exists():
+            continue
+        if any(path == prefix or path.is_relative_to(prefix) for prefix in RETIRED_TERM_ALLOWED_PREFIXES):
+            continue
+        if path.suffix not in TEXT_REFERENCE_SUFFIXES:
+            continue
+        try:
+            text = (ROOT / path).read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        for term in RETIRED_ACTIVE_TERMS:
+            if term in text:
+                failures.append(f"retired active term {term!r} present in {path}")
+    return failures
 
 
 def benchmark_fixture_reference_failures(
@@ -957,7 +980,7 @@ def installer_report_contract_failures() -> list[str]:
             ROOT / "scripts/tes_init.py",
             ROOT / "src/adapters/codex/skills/tes-init/SKILL.md",
             ROOT / "src/adapters/claude/skills/tes-init/SKILL.md",
-            ROOT / "src/adapters/cursor/rules/tes-guidelines.mdc",
+            ROOT / "src/adapters/cursor/rules/tes-engineering-discipline.mdc",
         )
         if path.exists()
     )
@@ -1066,6 +1089,7 @@ def main() -> int:
     failures.extend(installer_report_contract_failures())
     failures.extend(version_drift_failures())
     failures.extend(yaml_surface_failures())
+    failures.extend(retired_active_term_failures())
     failures.extend(generated_adapter_output_failures())
     failures.extend(benchmark_fixture_deletion_test_failures())
     failures.extend(benchmark_fixture_reference_failures())

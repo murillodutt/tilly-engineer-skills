@@ -2,7 +2,7 @@
 tds_id: roadmap.goal_super_spec_declared_contract_arbiter_and_effort_gate
 tds_class: roadmap
 status: active
-consumer: maintainers, tes-guidelines authors, discipline-oracle authors, adapter materialization authors, and execution agents
+consumer: maintainers, tes-engineering-discipline authors, discipline-oracle authors, adapter materialization authors, and execution agents
 source_of_truth: false
 evidence_level: L1
 tver: 0.1.0
@@ -60,7 +60,7 @@ Canonical Super SPEC:
 
 Primary edit surfaces (sources, not installed copies):
 
-- `src/adapters/claude/skills/tes-guidelines/SKILL.md` — the discipline anchor
+- `src/adapters/claude/skills/tes-engineering-discipline/SKILL.md` — the discipline anchor
   (Gate Zero, Six Gates table, Effort Gate section, maturity reframe).
 - `src/adapters/codex/skills/tes-engineering-discipline/SKILL.md` — the Codex
   mirror that `discipline_oracle.py --self-test` actually reads
@@ -72,7 +72,7 @@ Primary edit surfaces (sources, not installed copies):
   `src/adapters/cursor/CURSOR.md` — the thin bootloaders of the PRODUCT layer
   (the adapters shipped to adopting projects). Adapters render shared INTENT,
   not byte-identical text.
-- `src/adapters/claude/skills/tes-guidelines/docs/CONTRACT-HISTORY.md` — the
+- `src/adapters/claude/skills/tes-engineering-discipline/docs/CONTRACT-HISTORY.md` — the
   append-only changelog (mandatory before claiming done).
 
 Two-layer boundary (do not confuse them). This change is **delivered-behavior**,
@@ -185,7 +185,7 @@ the "Literal Solution" appendix below; the unit references the block by id.
 
 ### SPEC-010 — Maturity reframe (classificatory, not temporal)
 
-- Owned files: `src/adapters/claude/skills/tes-guidelines/SKILL.md` and the
+- Owned files: `src/adapters/claude/skills/tes-engineering-discipline/SKILL.md` and the
   Codex mirror `src/adapters/codex/skills/tes-engineering-discipline/SKILL.md`.
 - Behavior: apply literal block **[L2 maturity-reframe]** — insert the
   born-at-converged-level paragraph under the Maturity Layer Gate heading;
@@ -273,7 +273,7 @@ the "Literal Solution" appendix below; the unit references the block by id.
 ### SPEC-060 — Contract history + full gate
 
 - Owned files:
-  `src/adapters/claude/skills/tes-guidelines/docs/CONTRACT-HISTORY.md` (append
+  `src/adapters/claude/skills/tes-engineering-discipline/docs/CONTRACT-HISTORY.md` (append
   only) and any benchmark/parity surface the full gate touches.
 - Behavior: append literal block **[L6 contract-history]** changelog rows and
   the new contracts-preserved/failure-modes entries; run the full repo gate
@@ -486,7 +486,7 @@ two SKILL.md surfaces do NOT share a byte-identical gates table — the same way
 the bootloaders render shared intent, not identical text. Apply L3 by INTENT to
 each surface, honoring its own house structure:
 
-- **Claude** (`src/adapters/claude/skills/tes-guidelines/SKILL.md`): the gates
+- **Claude** (`src/adapters/claude/skills/tes-engineering-discipline/SKILL.md`): the gates
   table is headed `## Four Gates`. Apply EDIT 1 byte-for-byte as written below
   (`## Four Gates` → `## Six Gates`, the five Claude rows preserved verbatim,
   plus the Gate Zero note row, the Effort Gate row, and the scope/craft axis
@@ -688,7 +688,7 @@ arbiter/effort detail. After editing the unsealed sources, run
 `scripts/materialize_adapter.py` to re-seal the `TES:CORE` regions; never
 hand-edit a sealed region or hand-recompute a hash.
 
-## [L6 contract-history] → tes-guidelines docs/CONTRACT-HISTORY.md (append only)
+## [L6 contract-history] → tes-engineering-discipline docs/CONTRACT-HISTORY.md (append only)
 
 Append to the Changelog table:
 

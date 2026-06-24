@@ -39,7 +39,7 @@ planning paths:
 - `AGENTS.md`
 - `CLAUDE.md`
 - `CURSOR.md`
-- `.cursor/rules/tes-guidelines.mdc`
+- `.cursor/rules/tes-engineering-discipline.mdc`
 - related adapter root/rule files when they carry active TES routing
 
 That creates two unacceptable product failures:

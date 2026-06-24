@@ -113,17 +113,17 @@ def surface_candidates(target: Path) -> list[dict[str, str]]:
                 "adapter": "claude",
                 "kind": "bootloader",
                 "path": "src/adapters/claude/CLAUDE.md",
-                "route": ".claude/skills/tes-guidelines/SKILL.md",
+                "route": ".claude/skills/tes-engineering-discipline/SKILL.md",
             },
             {
                 "adapter": "claude",
                 "kind": "owner",
-                "path": "src/adapters/claude/skills/tes-guidelines/SKILL.md",
+                "path": "src/adapters/claude/skills/tes-engineering-discipline/SKILL.md",
             },
             {
                 "adapter": "cursor",
                 "kind": "owner",
-                "path": "src/adapters/cursor/rules/tes-guidelines.mdc",
+                "path": "src/adapters/cursor/rules/tes-engineering-discipline.mdc",
             },
         ]
     return [
@@ -142,17 +142,17 @@ def surface_candidates(target: Path) -> list[dict[str, str]]:
             "adapter": "claude",
             "kind": "bootloader",
             "path": "CLAUDE.md",
-            "route": ".claude/skills/tes-guidelines/SKILL.md",
+            "route": ".claude/skills/tes-engineering-discipline/SKILL.md",
         },
         {
             "adapter": "claude",
             "kind": "owner",
-            "path": ".claude/skills/tes-guidelines/SKILL.md",
+            "path": ".claude/skills/tes-engineering-discipline/SKILL.md",
         },
         {
             "adapter": "cursor",
             "kind": "owner",
-            "path": ".cursor/rules/tes-guidelines.mdc",
+            "path": ".cursor/rules/tes-engineering-discipline.mdc",
         },
     ]
 

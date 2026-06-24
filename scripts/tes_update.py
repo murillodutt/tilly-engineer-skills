@@ -26,7 +26,7 @@ except Exception:  # pragma: no cover - installed helper may be inspected alone.
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -76,7 +76,7 @@ CONTEXT_CORE_PATHS = (
     "AGENTS.md",
     "CLAUDE.md",
     "CURSOR.md",
-    ".cursor/rules/tes-guidelines.mdc",
+    ".cursor/rules/tes-engineering-discipline.mdc",
     ".cursorrules",
 )
 UPDATE_SCOPES = ("none", "helpers-only", "root-context", "adapter-config", "project-context", "full-convergence")
@@ -153,7 +153,7 @@ CODEX_TRIGGER_SKILLS = (
     "tes-bench",
 )
 CLAUDE_TRIGGER_SKILLS = (
-    "tes-guidelines",
+    "tes-engineering-discipline",
     "tes-init",
     "tes-update",
     "tes-align",
@@ -164,6 +164,15 @@ CLAUDE_TRIGGER_SKILLS = (
     "tes-adapter",
     "tes-bench",
 )
+RETIRED_GUIDELINES_NAME = "tes-" + "guidelines"
+RETIRED_RUNTIME_PATHS = {
+    "claude": (
+        f".claude/skills/{RETIRED_GUIDELINES_NAME}",
+    ),
+    "cursor": (
+        f".cursor/rules/{RETIRED_GUIDELINES_NAME}.mdc",
+    ),
+}
 POST_LAYER_ZERO_FINAL_PROBE_CONTRACT = (
     "helper_contract_status=PASS",
     "runtime_trigger_status=PASS|NOT_APPLIED",
@@ -298,7 +307,7 @@ def surfaces(target: Path) -> dict[str, bool]:
         "codex": (target / "AGENTS.md").exists()
         or (target / ".agents/skills/tes-engineering-discipline/SKILL.md").exists(),
         "claude": (target / "CLAUDE.md").exists()
-        or (target / ".claude/skills/tes-guidelines/SKILL.md").exists(),
+        or (target / ".claude/skills/tes-engineering-discipline/SKILL.md").exists(),
         "cursor": (target / ".cursor/rules").exists() or (target / "CURSOR.md").exists(),
         "mcp_codex": (target / ".codex/config.toml").exists(),
         "mcp_claude": (target / ".mcp.json").exists(),
@@ -358,7 +367,7 @@ def missing_runtime_files(target: Path, runtime: str) -> list[str]:
             relpath
             for relpath in (
                 "CLAUDE.md",
-                ".claude/skills/tes-guidelines/SKILL.md",
+                ".claude/skills/tes-engineering-discipline/SKILL.md",
                 ".claude/skills/tes-init/SKILL.md",
                 ".claude/skills/tes-update/SKILL.md",
             )
@@ -388,9 +397,15 @@ def runtime_trigger_contract(target: Path, surface_map: dict[str, bool]) -> dict
         missing_files = missing_runtime_files(target, runtime)
         if runtime == "claude":
             missing_terms.extend(term for term in CLAUDE_INVALID_SLASH_TERMS if term not in text)
+        retired_paths = [
+            relpath
+            for relpath in RETIRED_RUNTIME_PATHS.get(runtime, ())
+            if (target / relpath).exists()
+        ]
 
         record_failures = [
             *(f"missing runtime file: {relpath}" for relpath in missing_files),
+            *(f"retired runtime path present: {relpath}" for relpath in retired_paths),
             *(f"missing trigger term: {term}" for term in missing_terms),
             *(f"missing natural intent: {term}" for term in missing_natural),
         ]
@@ -402,6 +417,7 @@ def runtime_trigger_contract(target: Path, surface_map: dict[str, bool]) -> dict
                 "status": "DRIFT" if record_failures else "PASS",
                 "paths": existing,
                 "missing_files": missing_files,
+                "retired_paths": retired_paths,
                 "missing_terms": missing_terms,
                 "missing_natural_intents": missing_natural,
                 "failures": record_failures,
@@ -1769,10 +1785,10 @@ def self_test() -> dict[str, Any]:
         write(target / ".agents/skills/tes-update/SKILL.md", trigger_fixture_text())
         write(target / ".agents/skills/tes-engineering-discipline/SKILL.md", trigger_fixture_text())
         write(target / "CLAUDE.md", trigger_fixture_text(claude=True))
-        write(target / ".claude/skills/tes-guidelines/SKILL.md", trigger_fixture_text(claude=True))
+        write(target / ".claude/skills/tes-engineering-discipline/SKILL.md", trigger_fixture_text(claude=True))
         write(target / ".claude/skills/tes-init/SKILL.md", trigger_fixture_text(claude=True))
         write(target / ".claude/skills/tes-update/SKILL.md", trigger_fixture_text(claude=True))
-        write(target / ".cursor/rules/tes-guidelines.mdc", trigger_fixture_text())
+        write(target / ".cursor/rules/tes-engineering-discipline.mdc", trigger_fixture_text())
         write(target / ".tes/bin/cortex_mcp.py", 'VERSION = "0.3.24"\n')
         write(target / ".agents/skills/tilly-init/SKILL.md", "name: tilly-init\n")
         args = argparse.Namespace(
@@ -1843,6 +1859,43 @@ def self_test() -> dict[str, Any]:
         assert_project_start_gate(result, failures, "current fixture")
         if (result.get("project_start_gate") or {}).get("status") != "READY":
             failures.append("current fixture with installed init helpers must mark Project-Start Gate ready")
+
+    with tempfile.TemporaryDirectory(prefix="tes-update-retired-guidelines-") as tempdir:
+        target = Path(tempdir)
+        write(target / "docs/agents/PROJECT-REGISTER.md", "Generated by Tilly\n")
+        write(target / "CLAUDE.md", trigger_fixture_text(claude=True))
+        write(target / ".claude/skills/tes-engineering-discipline/SKILL.md", trigger_fixture_text(claude=True))
+        write(target / ".claude/skills/tes-init/SKILL.md", trigger_fixture_text(claude=True))
+        write(target / ".claude/skills/tes-update/SKILL.md", trigger_fixture_text(claude=True))
+        write(target / f".claude/skills/{RETIRED_GUIDELINES_NAME}/SKILL.md", trigger_fixture_text(claude=True))
+        write(target / ".tes/bin/tes_update.py", helper_source_text("tes_update.py"))
+        write(target / ".tes/bin/tes_init.py", helper_source_text("tes_init.py"))
+        write(target / ".tes/bin/project_context_oracle.py", helper_source_text("project_context_oracle.py"))
+        write(target / ".tes/bin/project_alignment_oracle.py", helper_source_text("project_alignment_oracle.py"))
+        write(target / ".tes/bin/tes_open_obsidian.py", helper_source_text("tes_open_obsidian.py"))
+        write_alignment_fixture(target)
+        args = argparse.Namespace(
+            target=target,
+            remote_version=VERSION,
+            remote_commit="r" * 40,
+            remote_helper_manifest=None,
+            local_package_helpers=True,
+            runtime="claude",
+            offline=False,
+            timeout=0.1,
+        )
+        result = analyze(args)
+        if result["runtime_trigger_status"] != "DRIFT":
+            failures.append(f"retired {RETIRED_GUIDELINES_NAME} residue must mark runtime triggers as DRIFT")
+        if result["recommended_update_scope"] != "adapter-config":
+            failures.append(f"retired {RETIRED_GUIDELINES_NAME} residue must recommend adapter-config update scope")
+        retired = [
+            path
+            for record in result.get("runtime_trigger_records", [])
+            for path in record.get("retired_paths", [])
+        ]
+        if f".claude/skills/{RETIRED_GUIDELINES_NAME}" not in retired:
+            failures.append(f"retired {RETIRED_GUIDELINES_NAME} path must be reported in update records")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-context-core-drift-") as tempdir:
         target = Path(tempdir)

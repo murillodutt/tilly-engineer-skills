@@ -15,7 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "dist" / "adapters"
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 CODEX_SKILLS = (
     "tes-engineering-discipline",
     "tes-init",
@@ -38,7 +38,7 @@ CODEX_SKILLS = (
     "tes-upstream-first",
 )
 CLAUDE_SKILLS = (
-    "tes-guidelines",
+    "tes-engineering-discipline",
     "tes-init",
     "tes-setup",
     "tes-context-distill",
@@ -116,8 +116,8 @@ ADAPTERS: dict[str, tuple[CopyRule, ...]] = {
     "cursor": (
         CopyRule("src/adapters/cursor/CURSOR.md", "CURSOR.md"),
         CopyRule(
-            "src/adapters/cursor/rules/tes-guidelines.mdc",
-            ".cursor/rules/tes-guidelines.mdc",
+            "src/adapters/cursor/rules/tes-engineering-discipline.mdc",
+            ".cursor/rules/tes-engineering-discipline.mdc",
         ),
         CopyRule(
             "src/adapters/cursor/rules/tes-runtime-capabilities.mdc",
@@ -301,14 +301,14 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
         failures.extend(mantra_gate_skill_failures(
             adapter,
             adapter_root,
-            ".cursor/rules/tes-guidelines.mdc",
+            ".cursor/rules/tes-engineering-discipline.mdc",
         ))
         # Rule-mode contract (bootloader-to-skill migration): the discipline
         # anchor is always-on; the capability rule is the Cursor-native lazy
         # layer (Apply Intelligently), so it must be alwaysApply:false with a
         # description, per the official Cursor rule-loading model.
         cursor_rule_modes = {
-            ".cursor/rules/tes-guidelines.mdc": "true",
+            ".cursor/rules/tes-engineering-discipline.mdc": "true",
             ".cursor/rules/tes-runtime-capabilities.mdc": "false",
         }
         for relpath, mode in cursor_rule_modes.items():
@@ -327,12 +327,12 @@ def validate_adapter(adapter: str, adapter_root: Path) -> list[str]:
             adapter,
             adapter_root,
             "CLAUDE.md",
-            ".claude/skills/tes-guidelines/SKILL.md",
+            ".claude/skills/tes-engineering-discipline/SKILL.md",
         ))
         failures.extend(mantra_gate_skill_failures(
             adapter,
             adapter_root,
-            ".claude/skills/tes-guidelines/SKILL.md",
+            ".claude/skills/tes-engineering-discipline/SKILL.md",
         ))
         for skill in CLAUDE_SKILLS:
             if not (adapter_root / f"{CLAUDE_PROJECT_SKILL_ROOT}/{skill}/SKILL.md").exists():

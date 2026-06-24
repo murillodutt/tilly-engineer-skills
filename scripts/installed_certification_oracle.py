@@ -13,7 +13,7 @@ import command_trigger_oracle
 import mantra_gate_adoption_oracle
 
 
-VERSION = "0.3.192"
+VERSION = "0.3.193"
 SCHEMA = "tes-installed-certification@1"
 STALE_DISCIPLINE_PATH = ".agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py"
 CANONICAL_DISCIPLINE_PATH = ".agents/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
@@ -161,8 +161,8 @@ def trigger_status(target: Path) -> dict[str, Any]:
             "CLAUDE.md",
             "CURSOR.md",
             ".agents/skills/tes-engineering-discipline/SKILL.md",
-            ".claude/skills/tes-guidelines/SKILL.md",
-            ".cursor/rules/tes-guidelines.mdc",
+            ".claude/skills/tes-engineering-discipline/SKILL.md",
+            ".cursor/rules/tes-engineering-discipline.mdc",
         )
     ):
         return {"status": "NOT_APPLIED", "checked": [], "failures": [], "reason": "root-context not attached"}
@@ -248,7 +248,7 @@ def write_installed_trigger_surfaces(target: Path, *, include_portuguese_goal: b
         path = target / ".claude/skills" / relpath / "SKILL.md"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
-    cursor = target / ".cursor/rules/tes-guidelines.mdc"
+    cursor = target / ".cursor/rules/tes-engineering-discipline.mdc"
     cursor.parent.mkdir(parents=True, exist_ok=True)
     cursor.write_text(all_trigger_terms(), encoding="utf-8")
 
@@ -265,7 +265,7 @@ def write_base_fixture(target: Path, *, healthy: bool) -> None:
         )
         (target / "CLAUDE.md").write_text(
             "Use the TES Mantra Gate defined in "
-            "`.claude/skills/tes-guidelines/SKILL.md` for destructive, remote, release, "
+            "`.claude/skills/tes-engineering-discipline/SKILL.md` for destructive, remote, release, "
             "sync, secret-bearing, or high-impact state changes. Do not reintroduce.\n",
             encoding="utf-8",
         )
@@ -277,11 +277,11 @@ def write_base_fixture(target: Path, *, healthy: bool) -> None:
         mantra_owner_text(include_triggers=healthy),
         encoding="utf-8",
     )
-    (target / ".claude/skills/tes-guidelines/SKILL.md").write_text(
+    (target / ".claude/skills/tes-engineering-discipline/SKILL.md").write_text(
         mantra_owner_text(include_triggers=healthy),
         encoding="utf-8",
     )
-    (target / ".cursor/rules/tes-guidelines.mdc").write_text(
+    (target / ".cursor/rules/tes-engineering-discipline.mdc").write_text(
         mantra_owner_text(include_triggers=True),
         encoding="utf-8",
     )

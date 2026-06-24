@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`tes-guidelines` is the maturity-aware engineering discipline anchor: Think
+`tes-engineering-discipline` is the maturity-aware engineering discipline anchor: Think
 Before Coding, Maturity Layer Gate, Simplicity First, Surgical Changes,
 Goal-Driven Execution, Mantra Gate, Diamond, and Infrastructure Decision Gate.
 
