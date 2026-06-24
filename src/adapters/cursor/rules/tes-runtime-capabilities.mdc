@@ -70,8 +70,10 @@ behavior, adversarial fixture, observed failure, smallest repair, and green
 gate. Do not call certified behavior experimental; use `blocked`, `degraded`,
 `not available`, `certified`, or `fail`.
 
-The Mantra Gate is the always-on `tes-guidelines.mdc` anchor's responsibility
-(state-changing actions need it on every turn). This rule does not restate it.
+The Mantra Gate is owned by the always-on `tes-guidelines.mdc` anchor, but it is
+risk-scoped: destructive, remote, release, sync, secret-bearing, or high-impact
+state changes need it; ordinary local edits do not block on gate artifacts,
+markers, or rule loading. This rule does not restate the full protocol.
 
 ## Infrastructure Decision Gate
 

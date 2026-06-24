@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Portable Codex bootloader for repositories adopting Tilly Engineering Discipline. This is the always-on anchor; Codex loads only a skill's name, description, and path until needed, so detailed workflows live in `.agents/skills/tes-*/**`.
+Portable Codex bootloader for repositories adopting Tilly Engineering Discipline. This is the always-on anchor for ordinary work; project skills are reference surfaces loaded only when the task explicitly needs their detail or the user invokes them.
 
 <core_contract>
 
@@ -22,7 +22,7 @@ Apply to non-trivial coding, review, refactor, or instruction-migration work:
 6. Goal-Driven Execution — define a falsifiable oracle before closure; run the smallest relevant check first.
 7. Effort Gate — default every line to `Standard` (the premium craft baseline already carried by lint, typecheck, test, and surgical edits) and elevate to `Premium` only when the Arbiter or named consequence evidence obligates deeper rigor per line; `Premium` buys more rigor per line, never more scope.
 
-Full gate tables, Diamond, and the Infrastructure Decision Gate live in `.agents/skills/tes-engineering-discipline/SKILL.md`. For state-changing actions, route to the TES Mantra Gate defined in `.agents/skills/tes-engineering-discipline/SKILL.md`. Do not reintroduce a duplicated gate protocol here. Before hand-rolling config or glue for library/framework/tooling friction, or changing a dependency, fire the `tes-upstream-first` skill (`.agents/skills/tes-upstream-first/SKILL.md`).
+Full gate tables, Diamond, and the Infrastructure Decision Gate live in `.agents/skills/tes-engineering-discipline/SKILL.md`. Use the TES Mantra Gate there for destructive, remote, release, sync, secret-bearing, or high-impact state changes; ordinary local edits, focused oracles, staging, and local commits should not block on gate artifacts, markers, or skill loading. Do not reintroduce a duplicated gate protocol here. Before hand-rolling config or glue for material library/framework/tooling friction, or changing a dependency, prefer upstream documentation and load `tes-upstream-first` only when that decision needs its detail.
 
 </instructions>
 

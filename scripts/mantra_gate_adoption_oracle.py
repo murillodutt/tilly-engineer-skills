@@ -21,7 +21,13 @@ SCHEMA = "tes-mantra-gate-adoption@1"
 STATUSES = ("OK", "DEGRADED", "BYPASS_SUSPECTED", "BLOCKED", "NEEDS_REVIEW")
 STATUS_WEIGHT = {"OK": 0, "DEGRADED": 1, "BYPASS_SUSPECTED": 2, "NEEDS_REVIEW": 3, "BLOCKED": 4}
 GATE_FIELDS = ("VERIFY", "SCOPE", "BEST_PATH", "DOCUMENT", "ORACLE", "RESOLVE", "STATUS")
-MANTRA_GATE_OWNER_TERMS = ("## Mantra Gate", "TES Mantra Gate", "[🍳 Flash-Fry]")
+MANTRA_GATE_OWNER_TERMS = (
+    "## Mantra Gate",
+    "TES Mantra Gate",
+    "destructive, remote, release, sync",
+    "high-impact",
+    "local edits",
+)
 RETIRED_LOCAL_GATE_MARKERS = (
     "retired local gate",
     "legacy local gate",
@@ -31,7 +37,6 @@ RETIRED_LOCAL_GATE_MARKERS = (
 )
 BOOTLOADER_DUPLICATED_MANTRA_GATE_FRAGMENTS = (
     "Full gate fields are",
-    "VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS",
     "the full gate is still retained as evidence",
 )
 
@@ -657,12 +662,15 @@ def self_test() -> dict[str, Any]:
         target = Path(tmp)
         (target / ".agents/skills/tes-engineering-discipline").mkdir(parents=True)
         (target / "AGENTS.md").write_text(
-            "For state-changing actions, route to the TES Mantra Gate defined in "
-            "`.agents/skills/tes-engineering-discipline/SKILL.md`. Do not reintroduce.\n",
+            "Use the TES Mantra Gate defined in "
+            "`.agents/skills/tes-engineering-discipline/SKILL.md` for destructive, remote, "
+            "release, sync, secret-bearing, or high-impact state changes. Do not reintroduce.\n",
             encoding="utf-8",
         )
         (target / ".agents/skills/tes-engineering-discipline/SKILL.md").write_text(
-            "## Mantra Gate\n\nUse the TES Mantra Gate. [🍳 Flash-Fry]\n",
+            "## Mantra Gate\n\nUse the TES Mantra Gate for destructive, remote, release, sync, "
+            "secret-bearing, or high-impact state changes. Ordinary local edits do not block "
+            "on gate artifacts, markers, or skill loading.\n",
             encoding="utf-8",
         )
         (target / "docs/evidence").mkdir(parents=True)
@@ -682,7 +690,9 @@ def self_test() -> dict[str, Any]:
             encoding="utf-8",
         )
         (target / ".agents/skills/tes-engineering-discipline/SKILL.md").write_text(
-            "## Mantra Gate\n\nUse the TES Mantra Gate. [🍳 Flash-Fry]\n",
+            "## Mantra Gate\n\nUse the TES Mantra Gate for destructive, remote, release, sync, "
+            "secret-bearing, or high-impact state changes. Ordinary local edits do not block "
+            "on gate artifacts, markers, or skill loading.\n",
             encoding="utf-8",
         )
         degraded_surface = evaluate(target)

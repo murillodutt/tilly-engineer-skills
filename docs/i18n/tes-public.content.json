@@ -268,8 +268,8 @@
                 "body": "Decisions and project context live as versioned Markdown your whole team can read, and the agent can recall later."
               },
               {
-                "title": "Checks before changes",
-                "body": "Before an agent changes anything real, TES runs its checks first — and tells you plainly when something needs your review."
+                "title": "Checks before risky actions",
+                "body": "Before destructive, remote, release, sync, secret-bearing, or high-impact actions, TES runs its checks first — and tells you plainly when something needs your review."
               },
               {
                 "title": "Long work stays sliced",
@@ -304,8 +304,8 @@
                 "body": "Decisiones y contexto del proyecto viven como Markdown versionado que todo tu equipo lee, y que el agente puede recordar despues."
               },
               {
-                "title": "Checks antes de cambiar",
-                "body": "Antes de que un agente cambie algo real, TES corre sus checks primero — y te avisa claro cuando algo necesita tu revision."
+                "title": "Checks antes de acciones riesgosas",
+                "body": "Antes de acciones destructivas, remotas, de release, sync, con secretos o de alto impacto, TES corre sus checks primero — y te avisa claro cuando algo necesita tu revision."
               },
               {
                 "title": "El trabajo largo queda en cortes",
@@ -340,8 +340,8 @@
                 "body": "Decisões e contexto do projeto vivem como Markdown versionado que sua equipe inteira lê, e que o agente consegue lembrar depois."
               },
               {
-                "title": "Checagens antes de mudar",
-                "body": "Antes de um agente mudar algo real, o TES roda as checagens primeiro — e avisa com clareza quando algo precisa da sua revisão."
+                "title": "Checagens antes de ações arriscadas",
+                "body": "Antes de ações destrutivas, remotas, de release, sync, com segredos ou de alto impacto, o TES roda as checagens primeiro — e avisa com clareza quando algo precisa da sua revisão."
               },
               {
                 "title": "Trabalho longo fica fatiado",
@@ -742,7 +742,7 @@
           {
             "type": "aside",
             "title": "Mantra Gate",
-            "text": "Before an agent changes anything real, TES runs a quick safety check called the Mantra Gate. When it passes, you see `[🍳 Flash-Fry]`. If an agent ever tries to skip the check, TES flags it and warns you instead of letting it through."
+            "text": "Before destructive, remote, release, sync, secret-bearing, or high-impact actions, TES runs a quick safety check called the Mantra Gate. Ordinary local edits stay lightweight; risky actions need evidence, scope, and an oracle before progress is claimed."
           },
           {
             "type": "aside",
@@ -769,7 +769,7 @@
           {
             "type": "aside",
             "title": "Mantra Gate",
-            "text": "Antes de que un agente cambie algo real, TES corre un chequeo rapido de seguridad llamado Mantra Gate. Cuando pasa, ves `[🍳 Flash-Fry]`. Si un agente intenta saltarse el chequeo, TES lo marca y te avisa en vez de dejarlo pasar."
+            "text": "Antes de acciones destructivas, remotas, de release, sync, con secretos o de alto impacto, TES corre una verificacion rapida llamada Mantra Gate. Las ediciones locales comunes siguen livianas; las acciones riesgosas necesitan evidencia, alcance y un oraculo antes de reclamar progreso."
           },
           {
             "type": "aside",
@@ -796,7 +796,7 @@
           {
             "type": "aside",
             "title": "Mantra Gate",
-            "text": "Antes de um agente mudar algo real, o TES roda uma checagem rápida de segurança chamada Mantra Gate. Quando ela passa, você vê `[🍳 Flash-Fry]`. Se um agente tentar pular a checagem, o TES marca e avisa você em vez de deixar passar."
+            "text": "Antes de ações destrutivas, remotas, de release, sync, com segredos ou de alto impacto, o TES roda uma checagem rápida chamada Mantra Gate. Edições locais comuns continuam leves; ações arriscadas precisam de evidência, escopo e oráculo antes de declarar progresso."
           },
           {
             "type": "aside",

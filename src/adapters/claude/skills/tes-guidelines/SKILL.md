@@ -48,7 +48,8 @@ If Claude reports `/tes:*` text as an invalid slash, treat it as TES intent and
 do not stop to ask for a route when the intended TES action is clear.
 
 Tradeoff: this skill biases toward caution over speed. Use judgment for trivial
-one-liners.
+one-liners, and honor an owner-requested no-skill run unless destructive,
+remote, secret, release, or safety risk requires escalation.
 
 ## Gate Zero — Declared-Contract Arbiter
 
@@ -291,19 +292,21 @@ Do not call certified behavior experimental. Use `blocked`, `degraded`,
 
 ## Mantra Gate
 
-Before state-changing actions, use the TES Mantra Gate. For routine writes,
-commits, generated artifacts, spec execution, high-risk work, or project-state
-updates, show only `[🍳 Flash-Fry]` to the user when the gate permits
-proceeding; the full gate is still retained as evidence.
+Use the TES Mantra Gate for destructive, remote, release, sync, secret-bearing,
+or high-impact state changes, and for closure claims that depend on those
+actions. For ordinary local edits, focused oracles, staging, and local commits,
+keep the check inline and do not block on gate artifacts, markers, or skill
+loading.
 
-Full gate fields are `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`,
+Gate fields are `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`,
 `RESOLVE`, and `STATUS`. Report gate detail only when the gate returns
 `BLOCKED` or `NEEDS_REVIEW`, approval is required, or the user explicitly asks
 for audit detail.
 
-For closure, commit, or push claims, the adoption oracle may check that a gate
-record exists near the state change. If it reports `BYPASS_SUSPECTED`,
-`NEEDS_REVIEW`, or `BLOCKED`, stop and recover before claiming progress.
+For destructive, remote, release, sync, secret-bearing, or high-impact closure
+claims, the adoption oracle may check that a gate record exists near the state
+change. If it reports `BYPASS_SUSPECTED`, `NEEDS_REVIEW`, or `BLOCKED`, stop and
+recover before claiming that risky action progressed.
 
 ## Infrastructure Decision Gate
 

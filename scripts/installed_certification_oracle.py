@@ -225,7 +225,12 @@ def all_trigger_terms() -> str:
 
 
 def mantra_owner_text(*, include_triggers: bool) -> str:
-    text = "## Mantra Gate\n\nUse the TES Mantra Gate. [🍳 Flash-Fry]\n"
+    text = (
+        "## Mantra Gate\n\n"
+        "Use the TES Mantra Gate for destructive, remote, release, sync, "
+        "secret-bearing, or high-impact state changes. Ordinary local edits "
+        "do not block on gate artifacts, markers, or skill loading.\n"
+    )
     if include_triggers:
         text += all_trigger_terms()
     return text
@@ -253,13 +258,15 @@ def write_base_fixture(target: Path, *, healthy: bool) -> None:
     write_installed_trigger_surfaces(target, include_portuguese_goal=healthy)
     if healthy:
         (target / "AGENTS.md").write_text(
-            "For state-changing actions, route to the TES Mantra Gate defined in "
-            "`.agents/skills/tes-engineering-discipline/SKILL.md`. Do not reintroduce.\n",
+            "Use the TES Mantra Gate defined in "
+            "`.agents/skills/tes-engineering-discipline/SKILL.md` for destructive, remote, "
+            "release, sync, secret-bearing, or high-impact state changes. Do not reintroduce.\n",
             encoding="utf-8",
         )
         (target / "CLAUDE.md").write_text(
-            "For state-changing actions, route to the TES Mantra Gate defined in "
-            "`.claude/skills/tes-guidelines/SKILL.md`. Do not reintroduce.\n",
+            "Use the TES Mantra Gate defined in "
+            "`.claude/skills/tes-guidelines/SKILL.md` for destructive, remote, release, "
+            "sync, secret-bearing, or high-impact state changes. Do not reintroduce.\n",
             encoding="utf-8",
         )
     else:

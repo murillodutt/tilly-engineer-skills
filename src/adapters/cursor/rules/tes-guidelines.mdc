@@ -5,8 +5,9 @@ alwaysApply: true
 
 # Tilly Engineering Discipline
 
-Always-on anchor. Detailed gate flows and command protocols live in the
-`tes-runtime-capabilities.mdc` rule, which the Agent loads when relevant.
+Always-on anchor for ordinary work. Detailed gate flows and command protocols
+live in the `tes-runtime-capabilities.mdc` rule, which the Agent loads only
+when the task explicitly needs that detail or the user invokes a TES intent.
 
 Core contract:
 
@@ -36,13 +37,12 @@ The Diamond and Infrastructure Decision Gate live in
 
 ## Mantra Gate
 
-Before state-changing actions, use the TES Mantra Gate (state changes need it on
-every turn, so it stays in this always-on anchor). For routine writes, commits,
-generated artifacts, spec execution, high-risk work, or project-state updates,
-show only `[🍳 Flash-Fry]` to the user when the gate permits proceeding; the
-full gate is still retained as evidence. Report gate detail only on `BLOCKED` or
-`NEEDS_REVIEW`, when approval is required, or when the user asks for audit
-detail.
+Use the TES Mantra Gate for destructive, remote, release, sync, secret-bearing,
+or high-impact state changes, and for closure claims that depend on those
+actions. For ordinary local edits, focused oracles, staging, and local commits,
+keep the check inline and do not block on gate artifacts, markers, or rule
+loading. Report gate detail only on `BLOCKED` or `NEEDS_REVIEW`, when approval
+is required, or when the user asks for audit detail.
 
 ## Runtime-First
 

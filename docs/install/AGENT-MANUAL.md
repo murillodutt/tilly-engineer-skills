@@ -199,17 +199,17 @@ new TES assets. Legacy retrofit records archive under
 
 ## 6. Mantra Gate
 
-Mantra Gate is the TES pre-action micro-gate for state-changing work:
-evidence, scope, path, record, oracle, and stop rule.
+Mantra Gate is the TES safety gate for destructive, remote, release, sync,
+secret-bearing, or high-impact work: evidence, scope, path, record, oracle, and
+stop rule.
 
-Permitted writes show only `[🍳 Flash-Fry]`, but the full gate
-(`VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, `STATUS`)
-must be recorded in the active evidence/report surface, Field Reports/Cortex,
-or `.tes/mantra-gates/` fallback. Risk is `routine`, `material`, `high-risk`,
-or `forbidden`: high-risk work needs a complete internal record and oracle,
-forbidden work stops, and state-changing evidence without a nearby record
-reports `BYPASS_SUSPECTED`. The default adoption check is health/read-only:
-dirty trees are context, not current-action blockers.
+Ordinary local edits, focused oracles, staging, and local commits stay
+lightweight and do not block on gate artifacts or markers. Risky actions use
+the full gate (`VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`,
+`STATUS`) in the active evidence/report surface, Field Reports/Cortex, or
+`.tes/mantra-gates/` fallback. Forbidden work stops, and risky action evidence
+without a nearby record reports `BYPASS_SUSPECTED`. The default adoption check
+is health/read-only: dirty trees are context, not current-action blockers.
 
 Helpers: `python3 .tes/bin/mantra_gate.py --self-test`,
 `python3 .tes/bin/mantra_gate.py emit-marker`,

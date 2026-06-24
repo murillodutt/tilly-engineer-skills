@@ -76,13 +76,14 @@ RETIRED_LOCAL_GATE_MARKERS = (
 )
 BOOTLOADER_DUPLICATED_MANTRA_GATE_FRAGMENTS = (
     "Full gate fields are",
-    "VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS",
     "the full gate is still retained as evidence",
 )
 MANTRA_GATE_SKILL_TERMS = (
     "## Mantra Gate",
     "TES Mantra Gate",
-    "[🍳 Flash-Fry]",
+    "destructive, remote, release, sync",
+    "high-impact",
+    "local edits",
 )
 DOCTOR_REPAIR_ROUTE_TERMS = (
     "context oracle mismatch",
