@@ -75,7 +75,7 @@ Starting worktree: clean; branch ahead of upstream by one commit.
 - TES commit: `2026990417787f85960ff70dc06852c98863b0a4`
 - Prompt version: `0.1.0`
 - Command(s): `python3 scripts/install_adapter.py --adapter all --target <owned> --yes`; `python3 scripts/project_context_oracle.py --target <owned>`; `python3 <owned>/.tes/bin/tes_update.py plan --target <owned> --json-only --timeout 15`; `python3 scripts/root_context.py analyze --target <owned>`.
-- Observed result: adapter install returned `INSTALLED_WITH_PRESERVED_CONFLICTS`, preserving project-owned `AGENTS.md` and `CLAUDE.md` while copying TES-owned `.agents/**`, `.claude/**`, `skills/**`, `.claude-plugin/**`, `CURSOR.md`, and `.cursor/rules/tes-guidelines.mdc`. Re-probe returned `runtime_trigger_status=PASS`, `update_status=CURRENT`, and `recommended_update_scope=none`.
+- Observed result: adapter install returned `INSTALLED_WITH_PRESERVED_CONFLICTS`, preserving project-owned `AGENTS.md` and `CLAUDE.md` while copying TES-owned `.agents/**`, `.claude/**`, `skills/**`, `.claude-plugin/**`, `CURSOR.md`, and `.cursor/rules/tes-engineering-discipline.mdc`. Re-probe returned `runtime_trigger_status=PASS`, `update_status=CURRENT`, and `recommended_update_scope=none`.
 - Failure/gap/bug: none requiring TES source change; `root_context.py` still reports `NEEDS_REVIEW` because project-owned root context remains intentionally preserved.
 - Decision: classify adapter materialization and local governance preservation as certified for this run.
 - Patch or no-patch reason: no product patch; behavior matched contract.

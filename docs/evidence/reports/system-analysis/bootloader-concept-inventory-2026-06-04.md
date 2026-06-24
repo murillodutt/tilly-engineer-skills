@@ -29,14 +29,14 @@ Baseline line counts (source bootloaders and lazy targets):
 | `src/adapters/claude/CLAUDE.md` | 247 | Claude bootloader (anchor target) |
 | `src/adapters/codex/AGENTS.md` | 252 | Codex bootloader (anchor target) |
 | `src/adapters/cursor/CURSOR.md` | 99 | Cursor prose bootloader (anchor target) |
-| `src/adapters/cursor/rules/tes-guidelines.mdc` | 238 | Cursor always-on rule; ROOT_FILE under composition (anchor target) |
+| `src/adapters/cursor/rules/tes-engineering-discipline.mdc` | 238 | Cursor always-on rule; ROOT_FILE under composition (anchor target) |
 | `src/adapters/cursor/rules/tes-runtime-capabilities.mdc` | 101 | Cursor capability rule; lazy target (must become `alwaysApply: false`) |
-| `src/adapters/claude/skills/tes-guidelines/SKILL.md` | 161 | Claude lazy skill (expansion home) |
+| `src/adapters/claude/skills/tes-engineering-discipline/SKILL.md` | 161 | Claude lazy skill (expansion home) |
 | `src/adapters/claude/skills/tes-init/SKILL.md` | 124 | Claude init skill (expansion home) |
 | `src/adapters/codex/skills/tes-engineering-discipline/SKILL.md` | 183 | Codex lazy skill (expansion home) |
 
 `root_context.py` `ROOT_FILES` treats `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, and
-`.cursor/rules/tes-guidelines.mdc` as composed bootloaders (TES:CORE + overlay).
+`.cursor/rules/tes-engineering-discipline.mdc` as composed bootloaders (TES:CORE + overlay).
 `.cursor/rules/tes-runtime-capabilities.mdc` is NOT a ROOT_FILE, so it is the
 free lazy surface that may receive migrated Cursor capability detail.
 
@@ -76,7 +76,7 @@ hosts:
   claude:
     bootloader: src/adapters/claude/CLAUDE.md
     skills:
-      - src/adapters/claude/skills/tes-guidelines/SKILL.md
+      - src/adapters/claude/skills/tes-engineering-discipline/SKILL.md
       - src/adapters/claude/skills/tes-init/SKILL.md
   codex:
     bootloader: src/adapters/codex/AGENTS.md
@@ -85,7 +85,7 @@ hosts:
       - src/adapters/codex/skills/tes-init/SKILL.md
   cursor:
     bootloader: src/adapters/cursor/CURSOR.md
-    anchor_rule: src/adapters/cursor/rules/tes-guidelines.mdc
+    anchor_rule: src/adapters/cursor/rules/tes-engineering-discipline.mdc
     lazy_rule: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
 concepts:
   # keep-as-anchor: short anchor in the bootloader; expansion (if required) once
@@ -100,7 +100,7 @@ concepts:
     anchor_markers: ["Assumptions visible", "Edits surgical", "falsifiable"]
     skill_markers: ["Assumptions visible", "Edits surgical", "falsifiable"]
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
+      claude: src/adapters/claude/skills/tes-engineering-discipline/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
       cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
 
@@ -113,9 +113,9 @@ concepts:
     anchor_markers: ["Think Before Coding", "Simplicity First", "Surgical Changes", "Goal-Driven Execution"]
     skill_markers: ["Think Before Coding", "Simplicity First", "Surgical Changes", "Goal-Driven Execution"]
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
+      claude: src/adapters/claude/skills/tes-engineering-discipline/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
-      cursor: src/adapters/cursor/rules/tes-guidelines.mdc
+      cursor: src/adapters/cursor/rules/tes-engineering-discipline.mdc
 
   - id: runtime-first
     label: "Runtime-First Product Rule"
@@ -126,9 +126,9 @@ concepts:
     anchor_markers: ["smallest durable runtime slice", "governance-only"]
     skill_markers: ["smallest durable runtime slice", "governance-only"]
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
+      claude: src/adapters/claude/skills/tes-engineering-discipline/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
-      cursor: src/adapters/cursor/rules/tes-guidelines.mdc
+      cursor: src/adapters/cursor/rules/tes-engineering-discipline.mdc
 
   - id: success-formula
     label: "Success Formula E = A * S * C * V"
@@ -139,9 +139,9 @@ concepts:
     anchor_markers: ["E = A * S * C * V"]
     skill_markers: ["E = A * S * C * V"]
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
+      claude: src/adapters/claude/skills/tes-engineering-discipline/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
-      cursor: src/adapters/cursor/rules/tes-guidelines.mdc
+      cursor: src/adapters/cursor/rules/tes-engineering-discipline.mdc
 
   - id: skill-routing-map
     label: "Skill/intent routing map (/tes-* canonical + /tes:* aliases)"
@@ -167,7 +167,7 @@ concepts:
     expansion_in:
       claude: src/adapters/claude/CLAUDE.md
       codex: src/adapters/codex/AGENTS.md
-      cursor: src/adapters/cursor/rules/tes-guidelines.mdc
+      cursor: src/adapters/cursor/rules/tes-engineering-discipline.mdc
 
   - id: feedback-voice
     label: "Feedback voice (short frank prose, avoid table/dump bloat)"
@@ -180,7 +180,7 @@ concepts:
     expansion_in:
       claude: src/adapters/claude/CLAUDE.md
       codex: src/adapters/codex/AGENTS.md
-      cursor: src/adapters/cursor/rules/tes-guidelines.mdc
+      cursor: src/adapters/cursor/rules/tes-engineering-discipline.mdc
 
   - id: locks
     label: "Bootloader locks (no inventory bloat, no unauthorized remote/secrets/destructive ops)"
@@ -205,7 +205,7 @@ concepts:
     anchor: ""
     skill_markers: ["Diamond Build-Test-Fail-Fix", "adversarial fixture"]
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
+      claude: src/adapters/claude/skills/tes-engineering-discipline/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
       cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
 
@@ -215,11 +215,11 @@ concepts:
     disposition: already-in-skill
     anchor: ""
     skill_markers: ["Mantra Gate", "Flash-Fry"]
-    note: "Cursor owner is the always-on tes-guidelines.mdc anchor: the Mantra Gate is a state-change gate that must be available every turn, so it stays always-loaded (not the lazy rule). Claude/Codex own it in their lazy skill. The full VERIFY..STATUS field list lives in the owner surfaces; the Cursor anchor carries the compact Flash-Fry form."
+    note: "Cursor owner is the always-on tes-engineering-discipline.mdc anchor: the Mantra Gate is a state-change gate that must be available every turn, so it stays always-loaded (not the lazy rule). Claude/Codex own it in their lazy skill. The full VERIFY..STATUS field list lives in the owner surfaces; the Cursor anchor carries the compact Flash-Fry form."
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
+      claude: src/adapters/claude/skills/tes-engineering-discipline/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
-      cursor: src/adapters/cursor/rules/tes-guidelines.mdc
+      cursor: src/adapters/cursor/rules/tes-engineering-discipline.mdc
 
   - id: infrastructure-gate
     label: "Infrastructure Decision Gate / Stack Surface Scan"
@@ -228,7 +228,7 @@ concepts:
     anchor: ""
     skill_markers: ["Infrastructure Decision Gate", "Stack Surface Scan"]
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
+      claude: src/adapters/claude/skills/tes-engineering-discipline/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
       cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
 
@@ -272,11 +272,11 @@ concepts:
       claude: already-in-skill
       codex: already-in-skill
       cursor: already-in-skill
-    note: "Verified at SPEC-001: Claude tes-guidelines Workflow step 6, Codex tes-engineering-discipline Workflow step 6 (lines 120-129), and Cursor tes-runtime-capabilities.mdc all carry the full reflex (reflect + curate-plan + no-write-without-authorization). The bootloader copies were deleted in SPEC-002..004."
+    note: "Verified at SPEC-001: Claude tes-engineering-discipline Workflow step 6, Codex tes-engineering-discipline Workflow step 6 (lines 120-129), and Cursor tes-runtime-capabilities.mdc all carry the full reflex (reflect + curate-plan + no-write-without-authorization). The bootloader copies were deleted in SPEC-002..004."
     anchor: ""
     skill_markers: ["cortex_reflect", "curate-plan"]
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
+      claude: src/adapters/claude/skills/tes-engineering-discipline/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
       cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
 
@@ -287,11 +287,11 @@ concepts:
       claude: already-in-skill
       codex: already-in-skill
       cursor: already-in-skill
-    note: "Claude tes-guidelines Workflow step 7; Codex tes-engineering-discipline Workflow step 7; Cursor tes-runtime-capabilities.mdc Field Reports section. Bootloader copies were deleted in SPEC-002..004."
+    note: "Claude tes-engineering-discipline Workflow step 7; Codex tes-engineering-discipline Workflow step 7; Cursor tes-runtime-capabilities.mdc Field Reports section. Bootloader copies were deleted in SPEC-002..004."
     anchor: ""
     skill_markers: ["Field Reports", "sanitized", "pre-push"]
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
+      claude: src/adapters/claude/skills/tes-engineering-discipline/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
       cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
 
@@ -306,7 +306,7 @@ concepts:
     anchor: ""
     skill_markers: ["Memory Lifecycle Boundary", "recall stays read-only", "subagent return"]
     expansion_in:
-      claude: src/adapters/claude/skills/tes-guidelines/SKILL.md
+      claude: src/adapters/claude/skills/tes-engineering-discipline/SKILL.md
       codex: src/adapters/codex/skills/tes-engineering-discipline/SKILL.md
       cursor: src/adapters/cursor/rules/tes-runtime-capabilities.mdc
 ```
@@ -319,7 +319,7 @@ anchor-worthy, stop and decide its home before thinning." Resolution:
 - Every concept above has a clear `target_surface`. No concept is orphaned.
 - The one concept that is NOT already present in its target skill is
   `memory-lifecycle-boundary` for Claude and Codex (it currently lives only in
-  the bootloader). It has a clear home (`tes-guidelines` / `tes-engineering-discipline`)
+  the bootloader). It has a clear home (`tes-engineering-discipline`)
   and SPEC-001 is the unit that moves it. This is the single move-to-skill action
   with real new content; everything else is delete-duplication or keep-anchor.
 - `confidentiality` exists as a full section only in `CLAUDE.md` today; SPEC-001

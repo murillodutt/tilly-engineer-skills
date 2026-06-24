@@ -57,14 +57,14 @@ retired?
 | `src/adapters/claude/skills/tes-align/SKILL.md` | Parity with Codex skill. |
 | `src/adapters/claude/skills/tes-align/references/alignment-procedure.md` | Parity with Codex reference. |
 | `src/adapters/claude/skills/tes-align/docs/CONTRACT-HISTORY.md` | Parity with Codex history. |
-| `src/adapters/cursor/rules/tes-guidelines.mdc` | Extended existing `/tes-align` routing line to require Semantic Residue Gate and freshness reads where Cursor owns the routing surface. |
+| `src/adapters/cursor/rules/tes-engineering-discipline.mdc` | Extended existing `/tes-align` routing line to require Semantic Residue Gate and freshness reads where Cursor owns the routing surface. |
 | `docs/INDEX.md`, `docs/tds/DOCS-INDEX.yml`, `scripts/validate_reference_package.py` | Indexed the new reference document. |
 
 ## Adapter Surfaces Updated
 
 - Codex: `src/adapters/codex/skills/tes-align/**`.
 - Claude: `src/adapters/claude/skills/tes-align/**`.
-- Cursor: routing line in `src/adapters/cursor/rules/tes-guidelines.mdc`. No
+- Cursor: routing line in `src/adapters/cursor/rules/tes-engineering-discipline.mdc`. No
   fake Cursor skill folder was created because Cursor does not own an
   equivalent skill surface for `/tes-align`.
 
