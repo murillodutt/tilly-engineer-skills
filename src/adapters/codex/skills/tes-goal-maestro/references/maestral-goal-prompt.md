@@ -23,6 +23,9 @@ A maestral /goal prompt is an execution contract, not a long request.
 It must let a future agent execute without inventing artifact, scope,
 boundaries, owners, tests, commit rhythm or stop states.
 
+It must start from a persisted non-self anchor artifact and must not make the
+generated tree its own source of truth.
+
 If the source flow created a Super SPEC, the prompt must name the
 `GOAL-SUPER-SPEC-<slug-or-timestamp>.md` artifact path as the canonical Super
 SPEC reference. Do not embed the full Super SPEC body inside the `/goal`
@@ -44,32 +47,40 @@ The final prompt must include:
 1. `/goal` opening line.
 2. Mission.
 3. Main SPEC path.
-4. Super SPEC artifact path when one was created.
-5. Certified context.
-6. Phase boundary.
-7. Central rule.
-8. Non-objectives and forbidden moves.
-9. Specialized subagents with ownership.
-10. Work mode.
-11. First mandatory act.
-12. `SPEC-000 Preflight And Baseline`.
-13. Narrow execution units.
-14. Full oracle.
-15. Negative grep.
-16. Stop criteria.
-17. Final delivery contract.
-18. Execution unit fidelity statement when the input artifact declares units.
-19. Per-unit material-diff and sync-commit evidence requirements.
-20. Material continuation rule when prior commits, closeouts or partial
+4. Anchor artifact class, path and hash.
+5. Super SPEC artifact path when one was created.
+6. Certified context.
+7. Shared contracts when units cross a type/API boundary.
+8. Phase boundary.
+9. Central rule and quality ceiling when the anchor declares one.
+10. Non-objectives and forbidden moves.
+11. Specialized subagents with ownership.
+12. Work mode.
+13. First mandatory act.
+14. `SPEC-000 Preflight And Baseline`.
+15. Narrow execution units.
+16. Full oracle.
+17. Negative grep.
+18. Stop criteria.
+19. Final delivery contract.
+20. Execution unit fidelity statement when the input artifact declares units.
+21. Per-unit material-diff and sync-commit evidence requirements.
+22. Material continuation rule when prior commits, closeouts or partial
     implementations may exist.
-21. Semantic negative-grep rules when blocked-state vocabulary is valid inside
+23. Semantic negative-grep rules when blocked-state vocabulary is valid inside
     the contract.
-22. Engineering Method Profile and Method Enforcement Packet when the run
+24. Engineering Method Profile and Method Enforcement Packet when the run
     changes code, UI, runtime scripts or generated app artifacts.
-23. Optional Next Prompt Handoff clause only when explicitly requested by
+25. Runtime-smoke oracle when any unit has `unit_role=integration`.
+26. Browser/visual runtime certification unit when a required visual axis exists.
+27. Source-derived contract handoff and API lint for `--execute-loop` workers
+    that reuse prior APIs.
+28. Tree Adversary status when `--execute-loop` or high-risk execution is in
+    scope.
+29. Optional Next Prompt Handoff clause only when explicitly requested by
     `next_prompt_handoff=true`, `--next-prompt-handoff`, or an equivalent
     direct trigger.
-24. Optional Execution Loop boundary only when explicitly requested by
+30. Optional Execution Loop boundary only when explicitly requested by
     `--execute-loop`.
 
 ## Template Load Contract
@@ -91,6 +102,12 @@ The template must carry, when relevant:
 - `bug_vs_architecture`
 - failed-attempt residue
 - `GOAL-EXECUTION-LOOP-LEDGER`
+- `ANCHOR_CLASS`
+- `ANCHOR_PATH`
+- Tree Adversary
+- Runtime smoke oracle
+- Contract handoff artifact
+- API lint status
 - strict sequential replay
 - reference implementations
 - exact `--execute-loop-parent-fallback` flag
@@ -101,35 +118,41 @@ The template must carry, when relevant:
 Before returning `READY_GOAL_PROMPT`, verify the prompt:
 
 1. starts from a real SPEC;
-2. includes `SPEC-000`;
-3. names allowed files per slice;
-4. names forbidden moves;
-5. assigns ownership;
-6. includes per-slice oracles;
-7. includes negative grep;
-8. requires commit per SPEC;
-9. preserves every declared execution unit without silent merge;
-10. forbids empty commits as proof of material execution;
-11. requires `git show --stat` evidence per material unit;
-12. states how prior commits or closeouts are treated when they exist;
-13. distinguishes allowed policy vocabulary from forbidden behavior in negative
+2. cites a persisted non-self anchor artifact with path and hash;
+3. includes `SPEC-000`;
+4. names allowed files per slice;
+5. names forbidden moves;
+6. assigns ownership;
+7. includes per-slice oracles;
+8. includes negative grep;
+9. requires commit per SPEC;
+10. preserves every declared execution unit without silent merge;
+11. forbids empty commits as proof of material execution;
+12. requires `git show --stat` evidence per material unit;
+13. states how prior commits or closeouts are treated when they exist;
+14. distinguishes allowed policy vocabulary from forbidden behavior in negative
     grep;
-14. requires sync status per unit;
-15. preserves unrelated worktree changes;
-16. includes reviewer and evidence/oracle roles when complexity warrants them;
-17. includes an Engineering Method Profile, `STRUCTURAL_METHOD=<profile-id>`,
+15. requires sync status per unit;
+16. preserves unrelated worktree changes;
+17. includes reviewer and evidence/oracle roles when complexity warrants them;
+18. includes an Engineering Method Profile, `STRUCTURAL_METHOD=<profile-id>`,
     topology budget, structural source probes and structural oracles when code,
     UI or generated app artifacts are in scope;
-18. records a structural decision artifact before implementation when topology
+19. enforces topology budgets with executable probes or source-proven exceptions;
+20. records a structural decision artifact before implementation when topology
     is inferred rather than source-mandated;
-19. includes browser metrics and visual-spatial oracle requirements when app,
-    UI, game or rendered-canvas work can fail visually or spatially;
-20. defines stop criteria;
-21. defines final delivery;
-22. includes a Next Prompt Handoff clause only when explicitly requested, and
+21. includes runtime-smoke for integration units;
+22. includes browser metrics and visual-spatial certification requirements that
+    require PASS evidence for required axes;
+23. includes source-derived contract handoff and API lint for reused APIs in
+    fresh-worker loops;
+24. includes Tree Adversary status when required;
+25. defines stop criteria;
+26. defines final delivery;
+27. includes a Next Prompt Handoff clause only when explicitly requested, and
     that clause is chat-only, post-certification, non-executing, and does not
     write prompt/tree files without an explicit save request;
-23. includes an Execution Loop boundary only when `--execute-loop` is
+28. includes an Execution Loop boundary only when `--execute-loop` is
     explicitly requested, and that boundary preserves parent authority,
     Pre-Edit Gate, `ACTIVE_SPEC` isolation, baseline classification,
     loop-state evidence, failed-attempt recovery, mandatory persistent ledger,
@@ -143,23 +166,29 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
 
 Stop with `NEEDS_SPEC_MATURITY`, `NEEDS_TREE_REPAIR`,
 `NEEDS_EXECUTION_UNIT_FIDELITY`, `NEEDS_STRUCTURAL_METHOD` or
-`NEEDS_TREE_ACCEPTANCE` when:
+`NEEDS_TREE_ACCEPTANCE`, `NEEDS_ANCHOR_ARTIFACT`,
+`NEEDS_AMBITION_RECONCILIATION`, `NEEDS_INTEGRATION_ORACLE`,
+`VISUAL_CERT_BLOCKED` or `NEEDS_TREE_ADVERSARY` when:
 
 1. the canonical artifact is unclear;
-2. the execution phase is unclear;
-3. forbidden moves are missing;
-4. oracles are missing;
-5. the materialization tree fails internal gates;
-6. the prompt would need to invent file ownership or stop states;
-7. the prompt would need to merge or drop declared execution units;
-8. code, UI or generated app artifacts are in scope but the prompt lacks an
+2. the anchor artifact is missing, self-referential or unhashed;
+3. the execution phase is unclear;
+4. forbidden moves are missing;
+5. oracles are missing;
+6. the materialization tree fails internal gates;
+7. the prompt would need to invent file ownership or stop states;
+8. the prompt would need to merge or drop declared execution units;
+9. code, UI or generated app artifacts are in scope but the prompt lacks an
    Engineering Method Profile, `STRUCTURAL_METHOD=<profile-id>`, topology
    budget, structural source probes, structural negative checks, structural
    oracles or structural handoff requirements;
-9. browser, UI, game or rendered-canvas work is in scope but the prompt lacks
-   a browser metrics contract or visual-spatial oracle when visual or spatial
-   failure is realistic;
-10. `templates/maestral-goal-prompt.template.md` was not loaded before prompt
+10. integration units have only build/typecheck proof;
+11. browser, UI, game or rendered-canvas work is in scope but the prompt lacks
+   required-axis PASS certification;
+12. fresh-worker loops would depend on parent memory instead of source-derived
+   handoff;
+13. Tree Adversary is required but absent or uncleared;
+14. `templates/maestral-goal-prompt.template.md` was not loaded before prompt
    construction.
 
 Use `NEEDS_TREE_ACCEPTANCE` only when changing the declared execution contract
@@ -205,5 +234,9 @@ Reject prompts that:
     constraints;
 23. certify browser, UI, game, canvas, spawn, raycast, layout or 3D-render work
     from logic-only checks when a visual-spatial failure can still occur;
-24. hide certification-time repairs as ordinary closeout instead of bounded,
+24. close a required visual axis with `DEGRADED`, no screenshots, or no browser
+    attempt;
+25. accept build/typecheck-only proof for runtime integration;
+26. send fresh workers into reused APIs with only parent-memory summaries;
+27. hide certification-time repairs as ordinary closeout instead of bounded,
     committed `audit_repair` evidence.

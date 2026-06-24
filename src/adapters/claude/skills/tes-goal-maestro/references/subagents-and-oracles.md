@@ -61,6 +61,14 @@ Owns runtime modules and integration boundaries.
 
 Use when the slice implements behavior after contracts are established.
 
+### Visual-Runtime Senior
+
+Owns browser automation, rendered evidence, browser metrics, runtime-smoke
+artifacts and visual-spatial certification.
+
+Use when the slice touches UI, game, canvas, WebGL/WebGPU, Three.js, render,
+layout, spawn, raycast, camera framing, browser runtime or integration wiring.
+
 ### Tests Senior
 
 Owns focused tests, adversarial cases, fixtures and regression selection.
@@ -157,17 +165,34 @@ Common oracles:
 10. `git show --stat --oneline <commit>` for material-diff proof;
 11. post-commit `git status --short --branch --untracked-files=all`;
 12. structural source probes for coding work;
-13. browser metrics artifact for app, UI, game or rendered-canvas work;
-14. visual-spatial screenshot or pixel/legibility audit when layout, render,
+13. integration runtime-smoke oracle for wiring units;
+14. browser metrics artifact for app, UI, game or rendered-canvas work;
+15. visual-spatial screenshot or pixel/legibility audit when layout, render,
     spawn, raycast, canvas, 3D placement or visual state can fail despite green
     logic;
-15. final status report.
+16. source-derived contract handoff and API lint when workers reuse existing
+    APIs;
+17. final status report.
+
+## Integration Runtime-Smoke Oracle
+
+When a unit connects modules into an executable runtime path, build and
+typecheck are not enough. Use `references/runtime-certification.md` as the
+owner of this contract.
+
+The oracle must instantiate the real wiring module, stub only external
+browser/GPU/network/clock boundaries, run deterministic ticks or calls, and
+assert state movement, no fatal runtime failure, and at least one cross-module
+effect.
 
 ## Browser Metrics Contract
 
 For browser-certified apps, UI tools, games or generated app artifacts, do not
 rely only on `window` globals or prose. Produce a stable machine-readable
 artifact when browser certification is part of the closeout.
+
+`references/runtime-certification.md` owns required-axis completion. This
+section records the artifact shape for prompt writers.
 
 Default artifact:
 
@@ -204,8 +229,9 @@ or equivalent rendered evidence when the active SPEC touches:
 - generated images, visual assets or rendered public docs.
 
 If visual-spatial evidence is impossible in the environment, record the exact
-reason and downgrade the closeout to `DEGRADED` unless the source explicitly
-allows non-visual certification.
+browser/render attempt and command output. For required axes, a blocked or
+degraded visual result routes to `VISUAL_CERT_BLOCKED` or `AXIS_UNPROVEN`; it
+does not satisfy `EXECUTION_LOOP_COMPLETE`.
 
 ## Negative Grep Patterns
 

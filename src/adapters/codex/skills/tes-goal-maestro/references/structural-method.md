@@ -57,12 +57,16 @@ stack=<language/framework/runtime>
 topology_decision=<chosen topology or not_applicable>
 topology_decision_artifact=<tree|ledger|ADR path|chat block>
 topology_budget=<files/modules/sections/line-growth limit>
+topology_probe=<command that fails when the budget is exceeded>
+topology_exemptions=<paths with source-proven reason or none>
 allowed_modules_or_internal_sections=<paths or names>
 forbidden_layer_moves=<UI/domain/storage/runtime/docs/adapter boundaries>
 structural_debt_budget=<none|accepted debt|owner decision>
 structural_source_probes=<commands or inspections>
 structural_negative_checks=<god file, duplication, layer mixing, topology bypass>
 structural_oracles=<lint/typecheck/build/render/source probes>
+ambition_floor=<none or anchor-declared ceiling features this unit must reach>
+shared_contract_surface=<frozen fields, extension points, optionality rule or none>
 ```
 
 For single-file deliverables, the exception is valid only when the source
@@ -84,11 +88,23 @@ The worker must not use a behavior-green result to justify an unbounded god
 file, framework-topology bypass, duplicated domain logic or mixed unrelated
 layers.
 
+A numerical line, file, module or section budget must become an executable
+probe that returns non-zero when the budget is exceeded. A probe that only
+prints counts is inventory, not enforcement.
+
+Acceptable exceptions must be source-proven before implementation and named in
+`topology_exemptions`. Orchestration-only and data-catalog exceptions must have
+negative checks that prove they did not absorb unrelated domain logic. Domain
+logic files that exceed the budget require split, explicit accepted debt, or
+`NEEDS_STRUCTURAL_METHOD`.
+
 ## Structural Source Probes
 
 Use probes that match the stack:
 
 - line counts and section inventories;
+- executable budget assertions, such as line-count or module-count commands
+  that fail on excess;
 - module/component/composable/service/store inventory;
 - import and dependency-boundary checks;
 - duplicate-symbol or duplicate-logic scans;
@@ -96,8 +112,9 @@ Use probes that match the stack:
 - generated output or rendered UI smoke when visual structure matters;
 - framework-specific build, lint, typecheck or route probes.
 
-The prompt must name probes before editing. The closeout must report their
-result, not merely say the structure is fine.
+The prompt must name probes before editing. The closeout must report
+`topology_probe=PASS|FAIL` and the command result, not merely say the structure
+is fine.
 
 ## Failed Attempt Recovery
 
@@ -124,7 +141,9 @@ handoff:
 3. boundaries preserved;
 4. accepted structural debt;
 5. next-unit constraints;
-6. structural source probes and oracles run.
+6. structural source probes and oracles run;
+7. shared contract surface: frozen fields, open extension points and optionality
+   rule when a later unit may extend the same type or API.
 
 Next Prompt Handoff and `--execute-loop` prompts must carry this structural
 handoff when code, UI, runtime scripts or generated app artifacts changed.
@@ -141,6 +160,8 @@ topology_decision_artifact:
 structural_debt:
 next_structural_constraint:
 failed_attempt_recovery_decision:
+topology_probe_result:
+shared_contract_surface:
 ```
 
 Long, repaired, audit-expanded or resumed loops must persist these fields in
@@ -163,6 +184,7 @@ Stop when any coding or app-building unit lacks:
 - Method Enforcement Packet;
 - `STRUCTURAL_METHOD=<profile-id>`;
 - topology budget;
+- executable topology probe or source-proven exception;
 - allowed modules/internal sections;
 - structural debt budget;
 - structural source probes;

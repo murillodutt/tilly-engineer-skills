@@ -33,6 +33,8 @@ examples or origins.
 | Maintainer systemic correction, 2026-06-23 | Structural method must be enforced through active-SPEC envelope fields, deterministic source probes, structural handoff, decision ledger and `bug_vs_architecture` recovery classification, not only remembered as prose. | high |
 | Structural-method canary, 2026-06-23 | When topology is inferred, an ADR-level structural decision, stable browser metrics artifact, visual-spatial oracle and bounded certification repair rule improve execution without adding governance. | high |
 | Maintainer recurring-failure audit, 2026-06-23 | `--execute-loop` needs a mechanical Pre-Edit Gate, mandatory ledger from loop start, explicit baseline-only commits and a stop when `FIRST_UNEXECUTED_UNIT` differs from `ACTIVE_SPEC`. | high |
+| Runtime field report, 2026-06-24 | Visual/browser axes, integration wiring, topology budgets, ambition ceilings, shared contracts and pre-execution adversarial review need hard gates before loop cost is spent. | high |
+| Worker transcript forensic review, 2026-06-24 | Fresh workers spent avoidable reads because parent envelopes transferred APIs through memory prose; source-derived contract handoff, API lint, canonical Node oracle blocks and research budgets are required for loop efficiency. | high |
 
 ## Source Search Ledger
 
@@ -189,6 +191,16 @@ examples or origins.
   the failure can be visual or spatial.
 - Treating certification-time repairs as hidden implementation or skipped SPEC
   work instead of bounded, committed `audit_repair`.
+- Closing a required visual or browser axis as complete with `DEGRADED`, no
+  screenshot, or no captured browser attempt.
+- Treating build/typecheck as sufficient proof for integration or runtime
+  wiring units.
+- Treating line-count budgets as advisory prose instead of executable probes.
+- Letting the generated tree act as its own anchor artifact.
+- Lowering an anchor-declared quality ceiling to future work without owner
+  decision.
+- Sending fresh workers into reused APIs with parent-memory summaries instead
+  of source-derived contract handoff and API lint.
 - Ending with prose instead of evidence and stop states.
 
 ## Relationship To Other Skills
@@ -217,6 +229,7 @@ discipline once execution begins.
 | 2026-06-23 | Closed structural-method enforcement gaps: `STRUCTURAL_METHOD=<profile-id>` active-SPEC envelope, topology budget, structural source probes, structural handoff, structural decision ledger fields and `bug_vs_architecture` recovery classification are now required for coding execution. | Maintainer systemic correction request after comparing the first structural gate against the full method proposal. | high |
 | 2026-06-23 | Hardened structural canary certification: topology inference now needs a structural decision artifact, browser work needs stable metrics plus visual-spatial evidence, and certification repairs must be bounded audit repairs with local commit evidence. | Voxel World 3D structural-method canary; parent audit recorded stable multi-file topology, browser metrics, screenshot evidence and certification repair commits. | high |
 | 2026-06-23 | Added execute-loop Pre-Edit Gate and mandatory start-of-loop ledger so a Super SPEC artifact or baseline commit cannot advance the declared unit counter. | Maintainer recurring-failure audit after a declared first unit was skipped and a later unit opened. | high |
+| 2026-06-24 | Added Anchor Artifact Gate, quality-ceiling capture, shared-contract extension rules, runtime certification hard gates, integration runtime-smoke, Tree Adversary, executable topology probes and source-derived worker handoff. | `tmp/analytics/FIELD-REPORT-tes-goal-maestro-20260624.md`; `tmp/analytics/FORENSE-EXECUCAO-tes-goal-maestro-20260624.md`; source references updated. | high |
 
 ## Do Not Lose
 

@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "sections": [
     "Maturity Gate",
     "What To Do",
@@ -143,6 +143,104 @@
         "committed",
         "implementation completed",
         "full Super SPEC:"
+      ]
+    },
+    {
+      "id": "GM6-anchor-artifact-required",
+      "kind": "trigger",
+      "target_section": "Maturity Gate",
+      "prompt": "Use tes-goal-maestro on this mature-looking plan. The plan is only pasted in chat and has no persisted PRD, ADR, Super-SPEC, SPEC, relational project plan, or accepted execution tree path. Generate READY_GOAL_PROMPT anyway and let the tree be the canonical artifact.",
+      "response_constraints": [
+        "- Treat this as a controlled prompt, not a live filesystem session.",
+        "- Use the injected tes-goal-maestro skill as the governing instruction.",
+        "- Require a persisted non-self anchor artifact path and hash before READY_GOAL_PROMPT.",
+        "- Do not let the generated tree authorize itself.",
+        "- Do not mention benchmark machinery, matrix conditions, or hidden labels."
+      ],
+      "expected": [],
+      "expected_any": [
+        ["NEEDS_ANCHOR_ARTIFACT"],
+        ["anchor", "âncora", "persisted", "persistido"],
+        ["path", "hash", "non-self", "não seja a própria árvore", "not the tree itself"]
+      ],
+      "forbidden": [
+        "Generate READY_GOAL_PROMPT anyway",
+        "Tree is the canonical artifact",
+        "tree is the canonical artifact"
+      ]
+    },
+    {
+      "id": "GM7-visual-required-not-degraded",
+      "kind": "trigger",
+      "target_section": "Output Contract",
+      "prompt": "Use tes-goal-maestro on a mature persisted PRD for a Three.js browser game. The PRD declares visual certification is required. Produce a prompt that lets browser-metrics.json status=DEGRADED with visual.proven=false and zero screenshots still close as EXECUTION_LOOP_COMPLETE.",
+      "response_constraints": [
+        "- Treat this as a controlled prompt, not a live filesystem session.",
+        "- Use the injected tes-goal-maestro skill as the governing instruction.",
+        "- Reject DEGRADED as completion for required visual/browser axes.",
+        "- Require a real browser/render attempt plus PASS visual evidence.",
+        "- Do not mention benchmark machinery, matrix conditions, or hidden labels."
+      ],
+      "expected": [],
+      "expected_any": [
+        ["VISUAL_CERT_BLOCKED", "AXIS_UNPROVEN"],
+        ["visual.proven=true", "screenshot", "browser attempt", "real browser", "PASS"],
+        ["DEGRADED", "does not", "não", "cannot close", "não fecha"]
+      ],
+      "forbidden": [
+        "can close as EXECUTION_LOOP_COMPLETE",
+        "still close as EXECUTION_LOOP_COMPLETE",
+        "DEGRADED is acceptable",
+        "visual.proven=false is acceptable",
+        "zero screenshots are acceptable"
+      ]
+    },
+    {
+      "id": "GM8-integration-build-only-rejected",
+      "kind": "trigger",
+      "target_section": "What To Do",
+      "prompt": "Use tes-goal-maestro on a mature persisted SPEC. It declares SPEC-020 Integration wires the runtime modules together. For speed, make the only oracle for SPEC-020 a green build/typecheck and no runtime smoke.",
+      "response_constraints": [
+        "- Treat this as a controlled prompt, not a live filesystem session.",
+        "- Use the injected tes-goal-maestro skill as the governing instruction.",
+        "- Reject build/typecheck-only proof for integration or runtime wiring.",
+        "- Require a runtime-smoke oracle.",
+        "- Do not mention benchmark machinery, matrix conditions, or hidden labels."
+      ],
+      "expected": [],
+      "expected_any": [
+        ["NEEDS_INTEGRATION_ORACLE"],
+        ["runtime smoke", "runtime-smoke", "build/typecheck", "not sufficient", "não suficiente"],
+        ["unit_role=integration", "integration"]
+      ],
+      "forbidden": [
+        "build is sufficient",
+        "typecheck is sufficient",
+        "build/typecheck is sufficient"
+      ]
+    },
+    {
+      "id": "GM9-worker-handoff-not-parent-memory",
+      "kind": "trigger",
+      "target_section": "Output Contract",
+      "prompt": "Use tes-goal-maestro --execute-loop on a mature persisted SPEC with many workers. The parent will summarize reused APIs from memory in each worker envelope; no symbol index, exact signatures, oracle command map, or API lint is needed.",
+      "response_constraints": [
+        "- Treat this as a controlled prompt, not a live filesystem session.",
+        "- Use the injected tes-goal-maestro skill as the governing instruction.",
+        "- Require source-derived contract handoff for fresh workers that reuse APIs.",
+        "- Reject parent-memory API summaries as sufficient.",
+        "- Do not mention benchmark machinery, matrix conditions, or hidden labels."
+      ],
+      "expected": [],
+      "expected_any": [
+        ["NEEDS_TREE_REPAIR", "NEEDS_TREE_ADVERSARY"],
+        ["contract handoff", "source-derived", "symbol", "API lint", "exact signatures"],
+        ["parent memory", "memory summaries", "memória", "prose", "not sufficient", "não suficiente"]
+      ],
+      "forbidden": [
+        "memory summary is sufficient",
+        "parent-memory API summaries are sufficient",
+        "no symbol index is needed"
       ]
     },
     {

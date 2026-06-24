@@ -11,11 +11,21 @@ truth.
 Main SPEC:
 <path/to/spec.md>
 
+Anchor artifact:
+- ANCHOR_CLASS=<PRD|ADR|Super-SPEC|SPEC|relational-project-plan|accepted-execution-tree>
+- ANCHOR_PATH=<path>
+- ANCHOR_HASH=<hash captured before tree generation>
+- ANCHOR_ORIGIN=<provided|materialized-from-anchor|previous-session>
+
 Certified context:
 - <certified dependency or prior closeout>
 - <existing contract/module that must be reused>
 - <phase boundary already decided>
 - <known deferred work>
+
+Shared contracts:
+- <contract_name, declaring SPEC, frozen surface, extension points, extenders,
+  optionality rule and declaring oracles, or none>
 
 Mission:
 <short mission explaining the artifact, capability and value>
@@ -26,6 +36,11 @@ Phase boundary:
 
 Central rule:
 <single rule that prevents semantic drift>
+
+Quality ceiling:
+- ambition_directive=<quoted source directive or ABSENT>
+- quality_ceiling=<required ceiling features or ABSENT>
+- ceiling_decision=<oracled_now|owner_deferred|not_applicable>
 
 Do not allow:
 - <forbidden move 1>
@@ -60,6 +75,12 @@ Engineering Method Profile:
 - Browser metrics contract: <browser-metrics.json fields or not_applicable>
 - Visual-spatial oracle: <screenshot, pixel, legibility, canvas,
   bounding-box/spawn/raycast check or not_applicable>
+- Runtime smoke oracle: <command/artifact for integration units or
+  not_applicable>
+- Topology probe: <executable command that fails on budget excess or
+  not_applicable>
+- Shared contract surface: <frozen fields, extension points and optionality rule
+  or not_applicable>
 
 Subagents:
 
@@ -107,6 +128,12 @@ Work mode:
 - When browser, UI, game, canvas or rendered app behavior is in scope, emit a
   stable browser metrics artifact and visual-spatial evidence when visual or
   spatial failure is possible.
+- When an integration unit wires modules into the executable runtime, run a
+  behavioral runtime smoke; build and typecheck are necessary but not
+  sufficient.
+- When workers reuse existing APIs, provide source-derived symbols, import
+  paths, oracle runner commands and API lint status instead of parent-memory
+  summaries.
 - Stage only files for the current SPEC.
 - Commit and certify the current SPEC before starting the next SPEC.
 - Do not revert user changes.
@@ -141,6 +168,10 @@ Execution Loop:
   must emit and pass this Pre-Edit Gate:
   `EXECUTE_LOOP_REQUESTED=yes`,
   `READY_GOAL_PROMPT=present`,
+  `ANCHOR_CLASS=<class>`,
+  `ANCHOR_PATH=<path>`,
+  `ANCHOR_HASH=<hash>`,
+  `TREE_ADVERSARY_STATUS=<ADVERSARY_CLEARED|OBJECTIONS_REPAIRED|not_required>`,
   `DECLARED_UNITS=<exact ordered unit ids>`,
   `FIRST_UNEXECUTED_UNIT=<id>`,
   `ACTIVE_SPEC=<id>`,
@@ -169,7 +200,9 @@ Execution Loop:
   structural debt budget in the active envelope, maintain a loop-state block
   for every attempt, repair only canonical SPEC artifacts, resolve
   failed-attempt residue before the next attempt with `bug_vs_architecture`,
-  and use cloud escalation only after owner-approved redaction.
+  carry source-derived contract handoff, enforce runtime smoke for integration,
+  require PASS evidence for required visual axes, and use cloud escalation only
+  after owner-approved redaction.
 - Failed Attempt Recovery is mandatory before retrying a failed coding
   `ACTIVE_SPEC`.
 - Parent-side execution fallback is disabled unless the exact
@@ -210,8 +243,11 @@ First mandatory act:
    decision artifact before the first material implementation commit.
 9. Declare the browser metrics and visual-spatial oracle requirements when app,
    UI, game, canvas or rendered app work is in scope.
-10. Declare the file matrix before editing.
-11. If `--execute-loop` is active, create the ledger and pass the Pre-Edit Gate
+10. Declare the runtime-smoke oracle when wiring/integration is in scope.
+11. Declare source-derived contract handoff and API lint status when reusing
+    prior APIs.
+12. Declare the file matrix before editing.
+13. If `--execute-loop` is active, create the ledger and pass the Pre-Edit Gate
     before the first worker spawn or material edit.
 
 SPEC-000 Preflight And Baseline
@@ -258,6 +294,8 @@ Owner:
 <role>
 Oracles:
 - <focused commands>
+Runtime smoke oracle:
+- <command/artifact or not_applicable>
 Negative checks:
 - <rg commands or assertions>
 Commit:
@@ -268,7 +306,11 @@ Completion evidence:
 - Oracles:
 - Negative checks:
 - Structural method result:
+- Topology probe result:
 - Structural handoff:
+- Runtime smoke result:
+- Contract handoff artifact:
+- API lint status:
 - Reviewer result:
 - Post-commit status:
 - Sync status:
@@ -309,6 +351,8 @@ Run:
 - <structural method checks when applicable>
 - <browser metrics artifact check when applicable>
 - <visual-spatial screenshot/pixel/legibility check when applicable>
+- <runtime-smoke artifact check when applicable>
+- <contract handoff/API lint check when applicable>
 - `git diff --check`
 Negative grep:
 - <forbidden runtime or provider pattern>
@@ -335,7 +379,11 @@ Final delivery:
 - oracles run;
 - structural method result when applicable;
 - structural handoff when applicable;
+- topology probe result when applicable;
+- runtime smoke result when applicable;
 - browser metrics artifact and visual-spatial oracle result when applicable;
+- contract handoff artifact and API lint status when applicable;
+- anchor artifact and Tree Adversary result;
 - boundaries preserved;
 - blockers or decisions pending;
 - next prompt handoff status when explicitly requested;
