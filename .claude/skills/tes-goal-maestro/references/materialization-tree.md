@@ -26,21 +26,35 @@ Always emit the tree with these sections, in this order:
 
 1. `Canonical Artifact`
 2. `Certified Context`
-3. `Phase Boundary`
-4. `Non-Objectives`
-5. `Central Rule`
-6. `Forbidden Moves`
-7. `Execution Units`
-8. `Subagent Ownership`
-9. `Per-SPEC Oracles`
-10. `Negative Grep`
-11. `Commit Strategy`
-12. `Review Loop`
-13. `Stop States`
-14. `Final Delivery Contract`
+3. `Shared Contracts`
+4. `Phase Boundary`
+5. `Non-Objectives`
+6. `Central Rule`
+7. `Forbidden Moves`
+8. `Execution Units`
+9. `Subagent Ownership`
+10. `Per-SPEC Oracles`
+11. `Negative Grep`
+12. `Commit Strategy`
+13. `Review Loop`
+14. `Stop States`
+15. `Final Delivery Contract`
 
 When a Super SPEC artifact is created, include its path and summary in the
 `Canonical Artifact` section.
+
+The `Canonical Artifact` section must include the anchor fields owned by
+`references/ambition-and-anchor.md`:
+
+```text
+anchor_class=
+anchor_path=
+anchor_hash=
+anchor_origin=
+anchor_source=
+```
+
+The generated tree must not cite itself as the anchor.
 
 ## Required Execution Units
 
@@ -49,6 +63,8 @@ Every materialization tree must include:
 1. `000 Preflight And Baseline` using the input artifact's naming convention.
 2. One or more narrow implementation units.
 3. One final oracle/closeout unit.
+4. A dedicated visual/runtime certification unit when browser, visual, canvas,
+   3D, UI, render, layout, spawn, raycast, or spatial proof is required.
 
 Each unit must name:
 
@@ -61,10 +77,21 @@ Each unit must name:
 7. semantic commit message;
 8. completion evidence requirements;
 9. engineering method profile and Method Enforcement Packet when the unit
-   changes code, UI, runtime scripts or generated app artifacts.
+   changes code, UI, runtime scripts or generated app artifacts;
+10. `unit_role` and `oracle_class` when the unit integrates runtime wiring,
+    browser/UI behavior, shared contracts or visual-spatial evidence.
 
 Split any unit that has more than one behavioral objective, more than one
 ownership boundary, or mixed contract/runtime/storage/live work.
+
+Integration or wiring units must declare `unit_role=integration` and a
+runtime-smoke oracle from `references/runtime-certification.md`. Build or
+typecheck alone is a `build-only` oracle and is not sufficient for integration.
+
+Browser, visual, game, canvas, WebGL/WebGPU, Three.js, rendered UI, layout or
+spatial-risk work must declare the required runtime axis and a dedicated
+certification unit. A `DEGRADED` metrics artifact does not satisfy a required
+axis.
 
 When the source artifact declares vertical slices or asset-transfer units, keep
 the unit vertical: one behavior or asset failure must flow through target
@@ -107,6 +134,28 @@ Forbidden refinement:
 If preserving declared units appears inefficient or technically awkward, stop
 with `NEEDS_EXECUTION_UNIT_FIDELITY` or `NEEDS_OWNER_DECISION`. Do not optimize
 away the input artifact's execution rhythm.
+
+## Shared Contracts
+
+Use `references/ambition-and-anchor.md` when a type, schema, command, runtime
+surface, fixture helper or source module crosses execution-unit boundaries.
+
+The tree must name each shared contract with:
+
+```text
+contract_name:
+declared_in:
+frozen_surface:
+extension_points:
+extenders:
+optionality_rule:
+declaring_oracles:
+extension_oracles:
+```
+
+If a later unit must extend an upstream frozen surface and no extension point is
+declared, stop with `NEEDS_CONTRACT_EXTENSION_POINT`. Do not silently make the
+new field optional to keep earlier oracles green.
 
 ## Material Diff Gate
 
@@ -198,6 +247,10 @@ For every unit, the tree must define:
 
 If allowed files cannot be named, the tree is not ready.
 
+For `extension-only` writes to upstream shared-contract files, the allowed file
+matrix must name the upstream path, the reserved extension point, and the
+declaring oracles that must rerun green.
+
 ## Subagent Ownership
 
 Subagents are optional unless the user or task asks for them. When present,
@@ -223,7 +276,16 @@ Each slice must have falsifiable oracles. Examples:
 6. `git diff --check`;
 7. negative grep for forbidden behavior.
 
-Avoid broad-only validation. Run the smallest meaningful oracle first.
+Every executable unit must classify its oracle:
+
+```text
+oracle_class=<behavioral|structural|build-only|visual-runtime|contract>
+oracle_strength=<sufficient|facade|blocked>
+```
+
+Avoid broad-only validation. Run the smallest meaningful oracle first. For
+`unit_role=integration`, the smallest meaningful oracle is the runtime-smoke,
+not build/typecheck.
 
 ## Structural Method Gate
 
@@ -243,11 +305,14 @@ allowed_new_modules=<paths, module names, internal sections or none>
 structural_debt_budget=<none, explicit accepted debt, or owner-decision needed>
 structural_source_probes=<commands or source inspections that can fail>
 structural_handoff=<next-unit constraints, or none>
+runtime_smoke_oracle=<command or not_applicable>
+contract_handoff_artifact=<path, ledger section, prompt block or not_applicable>
 ```
 
 The tree must name topology budget, allowed modules/internal sections,
 structural debt budget, structural source probes, structural negative checks
-and structural handoff. A single-file exception must be source-mandated and
+and structural handoff. File topology budgets must include an executable probe
+or source-proven exception. A single-file exception must be source-mandated and
 must still require internal modularity.
 
 If a unit passes behavior or UI smoke but fails structural probes, route to
@@ -275,13 +340,6 @@ valid vocabulary. A blocked-state enum, safety reason code or policy field is
 allowed when it records a prohibition; the forbidden target is the executable
 behavior or unsafe configuration.
 
-Example:
-
-1. Allowed vocabulary: `BLOCKED_BYPASS_REQUIRED`, `requiresBypass`,
-   `bypassRequired`.
-2. Forbidden behavior: CAPTCHA solving, bypass attempts, fake credentials,
-   proxy evasion, hidden network access or leaked secret usage.
-
 If the same word is both valid policy vocabulary and forbidden behavior, write
 the prompt with separate allow/deny patterns instead of a broad lexical grep.
 
@@ -305,14 +363,8 @@ integration point. Otherwise, keep subagents read-only or evidence-focused.
 
 The tree must require commit per slice.
 
-Each commit message should be semantic and scoped:
-
-```text
-feat(scope): add contract
-test(scope): certify fixture matrix
-chore(scope): expose internal boundary
-docs(scope): define baseline
-```
+Each commit message should be semantic and scoped, such as `feat(scope): ...`,
+`test(scope): ...`, `chore(scope): ...` or `docs(scope): ...`.
 
 Never accumulate multiple units before commit unless the user explicitly
 changes the execution contract.
@@ -363,14 +415,16 @@ Execution Loop is optional and disabled by default. Include it only when the
 user explicitly requests `--execute-loop`.
 
 When enabled, load `references/execution-loop-runner.md` and require the tree's
-`Final Delivery Contract` to name `Execution Cost Draft`, one `ACTIVE_SPEC` at
-a time, loop-state block, failed-attempt recovery with `bug_vs_architecture`,
-parent validation, local commit only, reference implementations as
-baseline-only comparison evidence, strict sequential replay,
-`SPEC_REPAIR_BY_LLM`, `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md`,
-the exact `--execute-loop-parent-fallback` flag, owner-approved cloud
-redaction, Executive Stop Audit, and bounded `SPEC-AUDIT-*` units when audit
-returns `NEEDS_MORE_LOOPS`.
+`Final Delivery Contract` to name `Execution Cost Draft`, Pre-Edit Gate, one
+`ACTIVE_SPEC` at a time, loop-state block, failed-attempt recovery with
+`bug_vs_architecture`, parent validation, local commit only, reference
+implementations as baseline-only comparison evidence, strict sequential replay,
+no Super SPEC materialization as declared-unit credit, `SPEC_REPAIR_BY_LLM`,
+mandatory `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md`, the exact
+`--execute-loop-parent-fallback` flag, owner-approved cloud redaction,
+Execution Cost Draft entries for anchor, quality ceiling, shared contracts and
+contract handoff, Pre-Execution Tree Adversary, Executive Stop Audit, and
+bounded `SPEC-AUDIT-*` units when audit returns `NEEDS_MORE_LOOPS`.
 
 ## Weak Tree Rejection
 
@@ -386,11 +440,17 @@ Stop and revise the tree if it lacks:
 8. commit strategy;
 9. reviewer loop;
 10. engineering method profile for coding, UI or generated-app units;
-11. stop states;
-12. final delivery contract.
+11. anchor artifact fields;
+12. runtime-smoke oracle for integration units;
+13. dedicated certification unit for required browser or visual axes;
+14. executable topology budget probe when structure is budgeted;
+15. Tree Adversary result when required;
+16. stop states;
+17. final delivery contract.
 
 Also stop and revise the tree if it compresses, skips or renames a unit
-declared by the source artifact.
+declared by the source artifact, cites itself as its anchor, or lowers a
+declared quality ceiling without owner decision.
 
 ## Stop States
 
@@ -402,6 +462,16 @@ Use the SPEC's stop states when available. Otherwise include:
 3. `BLOCKED`: a critical oracle fails for a reason outside the slice.
 4. `SAFETY_BLOCKED`: the work would require unsafe access, secrets,
    destructive actions, policy bypass or unauthorized data.
+5. `NEEDS_ANCHOR_ARTIFACT`: the tree lacks a persisted non-self anchor.
+6. `NEEDS_AMBITION_RECONCILIATION`: a declared quality ceiling was lowered
+   without oracle or owner decision.
+7. `NEEDS_INTEGRATION_ORACLE`: an integration unit has only build/typecheck.
+8. `AXIS_UNPROVEN`: a required quality/runtime axis lacks PASS evidence.
+9. `VISUAL_CERT_BLOCKED`: visual/browser proof was required but not attempted or
+   blocked by environment.
+10. `NEEDS_CONTRACT_EXTENSION_POINT`: a shared contract needs a reserved
+    extension point before a later unit can extend it.
+11. `NEEDS_TREE_ADVERSARY`: a required adversarial tree pass is missing.
 
 ## Final Delivery Contract
 
@@ -417,6 +487,10 @@ The tree must require a final report with:
 8. decisions pending;
 9. structural method result when applicable;
 10. structural handoff when applicable;
-11. next prompt handoff status when explicitly requested;
-12. execution loop status when `--execute-loop` was requested;
-13. final status.
+11. runtime smoke result for integration units;
+12. browser metrics and visual evidence for required axes;
+13. contract handoff artifact and API lint status when workers reused code;
+14. anchor and Tree Adversary status;
+15. next prompt handoff status when explicitly requested;
+16. execution loop status when `--execute-loop` was requested;
+17. final status.

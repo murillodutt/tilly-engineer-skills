@@ -1,20 +1,24 @@
 ---
 name: tes-regression-guard
-description: "Always-on local-only self-consumed guard for TES development analysis and writing. Use automatically for every TES repository reasoning, file edit, runtime change, doc change, oracle change, commit, or closeout to prevent regressions, loop drift, baseline loss, and example-specific fixes. Do not require user invocation and do not present as user-invoked."
+description: "Risk-scoped local-only regression reference for TES development work. Use when a change can affect a certified, installed, materialized, generated, measured, release, CLI, public, or user-visible baseline. Do not load by default for ordinary analysis or when the owner explicitly asks for a no-skill run unless a concrete destructive, secret, remote, release, or safety risk must be escalated."
 license: MIT
 ---
 
 # TES Regression Guard
 
-Operational contract: `tes.regression_guard@0.1.0`.
+Operational contract: `tes.regression_guard@0.1.1`.
 
 Local development surface only. Do not package, publish, materialize, expose as
 a product skill, or ask the user to invoke it.
 
-This is an always-on self-consumed guard for TES repository work. Apply it at
-the start of analysis and again before writing, committing, or closing. The job
-is to prevent a useful improvement in any project surface from silently
-destroying the thing that made the previous version work.
+This is a risk-scoped reference for TES repository work. Apply it when a change
+can regress a named baseline. Do not load it for ordinary analysis, low-risk
+edits, or an owner-requested no-skill run unless a concrete destructive, secret,
+remote, release, or safety risk would make proceeding unsafe.
+
+The job is to prevent a useful improvement in any project surface from silently
+destroying the thing that made the previous version work, without turning every
+turn into a governance preflight.
 
 ## Contract
 
@@ -29,14 +33,15 @@ No change may rely on hope, example-only word lists, a new unverified recipe, a
 fresh document, or a passing unrelated oracle when the old behavior had
 evidence.
 
-For low-risk analysis with no file writes, keep the guard implicit: identify
-the baseline and possible regression in your reasoning, then continue. Report
-details only when the guard blocks, downgrades confidence, or the user asks.
+For low-risk analysis or ordinary local edits, keep the guard implicit: identify
+the possible regression in your reasoning, then continue. Report details only
+when the guard blocks, downgrades confidence, or the user asks.
 
 ## Workflow
 
-1. Identify whether the turn is analysis-only, write, runtime, oracle, docs,
-   adapter, installer, roadmap, release identity, commit, or closeout.
+1. Identify whether the turn can affect a certified, installed, materialized,
+   generated, measured, release, CLI, public, or user-visible baseline.
+   If not, do not expand this skill further.
 2. Name the last-known-good baseline: commit, command, fixture, WAV, log,
    oracle, human score, docs record, public surface, installed behavior, or
    adapter/materialization evidence.
@@ -70,14 +75,16 @@ details only when the guard blocks, downgrades confidence, or the user asks.
 
 ## Stop Conditions
 
-- The baseline cannot be identified and the change can affect behavior.
+- The baseline cannot be identified and the change can affect a protected
+  behavior surface.
 - The new path changes defaults without explicit replacement evidence.
 - The fix depends on narrow examples instead of a stable rule or data surface.
 - The comparison cannot be run for the risk being claimed.
 - A regression is observed and no rollback or opt-in gate is applied.
 - A documentation or roadmap update hides a product regression behind new
   wording.
-- A generated or materialized surface is not checked after source changes.
+- A generated or materialized surface is not checked after source changes that
+  can affect it.
 
 ## Output
 
@@ -106,8 +113,10 @@ creating a regression loop.
 ## Locks
 
 - Do not convert this local guard into shipped user documentation.
-- Do not require explicit invocation.
+- Do not require automatic invocation.
 - Do not announce routine use unless it affects the answer.
+- Do not override an owner-requested no-skill run without concrete destructive,
+  secret, remote, release, or safety risk.
 - Do not create governance-only cycles.
 - Do not let a passing oracle replace human-rated audio evidence when the risk
   is speech quality.

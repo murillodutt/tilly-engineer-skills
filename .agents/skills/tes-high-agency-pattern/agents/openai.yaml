@@ -1,7 +1,8 @@
 name: tes-high-agency-pattern
-description: Local-only self-consumed pattern guidance for one development-layer skill or workflow.
+description: Local-only reference pattern guidance for one development-layer skill or workflow.
 default_prompt: |
-  Use $tes-high-agency-pattern only as local self-consumed guidance while
+  Use $tes-high-agency-pattern only as local reference guidance while
   designing or reviewing one development-layer skill or workflow. Identify the
   transferable pattern, recommend the smallest local adjustment, state the drift
-  lock, and keep public, installer, and commercial promotion out of scope.
+  lock, honor owner-requested no-skill runs, and keep public, installer, and
+  commercial promotion out of scope.

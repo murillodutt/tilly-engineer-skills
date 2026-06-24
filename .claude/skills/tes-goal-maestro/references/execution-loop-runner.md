@@ -34,14 +34,19 @@ user request.
 Use these states:
 
 ```text
-ready_goal_prompt -> execution_cost_drafted -> active_spec_opened ->
-active_spec_committed -> next_prompt_ready -> executive_stop_audit ->
-execution_loop_complete
+ready_goal_prompt -> execution_cost_drafted -> pre_edit_gate_passed ->
+active_spec_opened -> active_spec_committed -> next_prompt_ready ->
+executive_stop_audit -> execution_loop_complete
 ```
 
 Stop or branch with:
 
 - `NEEDS_EXECUTION_LOOP_DRAFT`
+- `NEEDS_ANCHOR_ARTIFACT`
+- `NEEDS_TREE_ADVERSARY`
+- `NEEDS_INTEGRATION_ORACLE`
+- `AXIS_UNPROVEN`
+- `VISUAL_CERT_BLOCKED`
 - `SPEC_BLOCKED`
 - `SPEC_CONTRACT_UNSTABLE`
 - `NEEDS_STRUCTURAL_METHOD`
@@ -71,6 +76,60 @@ implementation makes fresh per-SPEC evidence impossible without rewriting
 history or pretending old commits are new execution, stop with
 `NEEDS_OWNER_DECISION`.
 
+## Pre-Edit Gate
+
+Before any worker spawn, parent fallback edit, material implementation edit, or
+execution-unit commit, the parent must emit a Pre-Edit Gate from material
+sources. This gate is the mechanical permission to edit.
+
+The gate block is mandatory:
+
+```text
+EXECUTE_LOOP_REQUESTED=yes
+READY_GOAL_PROMPT=present
+ANCHOR_CLASS=<class>
+ANCHOR_PATH=<path>
+ANCHOR_HASH=<hash>
+TREE_ADVERSARY_STATUS=<ADVERSARY_CLEARED|OBJECTIONS_REPAIRED|not_required>
+DECLARED_UNITS=<exact ordered unit ids from the materialization tree>
+FIRST_UNEXECUTED_UNIT=<id>
+ACTIVE_SPEC=<id>
+BASELINE_ONLY_COMMITS=<hashes or none>
+LEDGER=<GOAL-EXECUTION-LOOP-LEDGER-...md>
+MAY_EDIT=<yes|no>
+```
+
+`MAY_EDIT=yes` is allowed only when:
+
+1. `EXECUTE_LOOP_REQUESTED=yes`;
+2. `READY_GOAL_PROMPT=present`;
+3. `ANCHOR_PATH` names a persisted non-self artifact and `ANCHOR_HASH` was
+   captured before execution;
+4. `TREE_ADVERSARY_STATUS` is `ADVERSARY_CLEARED`, `OBJECTIONS_REPAIRED`, or
+   `not_required`;
+5. `DECLARED_UNITS` preserves the source-declared queue exactly;
+6. `FIRST_UNEXECUTED_UNIT` is the first declared unit without current-loop
+   post-open evidence and accepted commit/no-commit rationale;
+7. `ACTIVE_SPEC` equals `FIRST_UNEXECUTED_UNIT`;
+8. `BASELINE_ONLY_COMMITS` lists prior commits used only as comparison
+   evidence, or `none`;
+9. `LEDGER` names the persistent execution-loop ledger.
+
+If the block is missing, `MAY_EDIT=no`, or `FIRST_UNEXECUTED_UNIT` differs from
+`ACTIVE_SPEC`, stop with `NEEDS_EXECUTION_UNIT_FIDELITY` before any edit or
+worker spawn. Do not repair the mismatch by reordering, skipping, renaming or
+counting old commits.
+
+If the anchor fields are missing or self-referential, stop with
+`NEEDS_ANCHOR_ARTIFACT`. If the adversary status is missing or uncleared, stop
+with `NEEDS_TREE_ADVERSARY`.
+
+Materializing, expanding or repairing a Super SPEC before the loop is
+preparatory contract work. It does not consume the first declared execution
+unit, advance `FIRST_UNEXECUTED_UNIT`, or count as material execution unless
+the source artifact explicitly declares that same unit as the active execution
+unit.
+
 ## Execution Cost Draft
 
 Before spawning any worker, produce an `Execution Cost Draft` from material
@@ -83,25 +142,15 @@ current-loop material, unrelated user work, or blocker. Do not open the first
 worker until the baseline is clean or explicitly classified in the draft; stop
 with `NEEDS_OWNER_DECISION` when ownership cannot be proven.
 
-The draft must state:
-
-1. source artifacts read;
-2. predicted SPEC count and order;
-3. dependency edges between SPECs;
-4. risk level per SPEC;
-5. expected oracles per SPEC;
-6. likely subagent count;
-7. expected local commits;
-8. likely repair points;
-9. expected final stop;
-10. known conditions that would require audit-added loops;
-11. baseline worktree state and classification;
-12. canonical SPEC artifact path for any future `SPEC_REPAIR_BY_LLM`;
-13. audit-repair cycle budget;
-14. Engineering Method Profile per coding, UI or generated-app SPEC;
-15. structural cost per coding SPEC: expected split, line growth, new modules
-    or internal sections, and likely structural repair points;
-16. persistent ledger decision and path when required.
+The draft must state source artifacts, declared SPEC order, dependency edges,
+risk, expected oracles, expected commits, likely repair points, final stop,
+baseline worktree classification, canonical SPEC repair target, audit budget,
+structural method cost, runtime/visual/integration plans, shared contracts,
+source-derived handoff plan, Tree Adversary result and the persistent ledger
+path. Use the owning references for detail:
+`ambition-and-anchor.md`, `structural-method.md`,
+`runtime-certification.md`, `execution-context-handoff.md` and
+`tree-adversary.md`.
 
 If the draft cannot be produced from material sources, stop with
 `NEEDS_EXECUTION_LOOP_DRAFT`.
@@ -109,19 +158,10 @@ If the draft cannot be produced from material sources, stop with
 ## Pre-SPEC Reflection
 
 Before every worker spawn, the parent must produce a short pre-SPEC reflection:
-
-1. reread the active SPEC and material evidence from prior loops;
-2. declare `ACTIVE_SPEC=SPEC-00N`;
-3. restate allowed files and forbidden files/actions;
-4. restate focused oracles and negative checks;
-5. restate the Engineering Method Profile when code, UI or generated app
-   artifacts are in scope;
-6. restate `STRUCTURAL_METHOD=<profile-id>`, file topology budget, allowed new
-   modules/internal sections, structural debt budget and structural source
-   probes when code structure is in scope;
-7. state local risk and likely repair pressure;
-8. emit the loop-state block;
-9. confirm the worker may execute only the active SPEC.
+active SPEC id, allowed/forbidden files, focused oracles, negative checks,
+Engineering Method Profile, structural packet, runtime/visual/integration
+packet, source-derived handoff packet, local risk, Pre-Edit Gate, loop-state
+block and the hard statement that the worker may execute only the active SPEC.
 
 This reflection is mandatory even when the previous loop generated a next
 prompt.
@@ -139,7 +179,18 @@ last_commit=<sha or none>
 failed_attempt_residue=<none|classified|blocked>
 next_allowed_action=<worker_attempt|failed_attempt_recovery|spec_repair|escalation|audit|stop>
 worktree_state=<clean|classified_dirty|blocked>
+first_unexecuted_unit=<id>
 bug_vs_architecture=<behavior_bug|structural_collapse|mixed|unknown|not_applicable>
+browser_metrics_required=<yes|no|not_applicable>
+visual_spatial_oracle_required=<yes|no|not_applicable>
+browser_attempt=<tool_invoked|not_attempted|not_applicable>
+visual_evidence=<paths|degraded_with_proof|none|not_applicable>
+runtime_smoke_oracle=<pass|fail|missing|not_applicable>
+adversary_objection=<none|open|repaired|not_applicable>
+shared_contract_extended=<yes|no|not_applicable>
+extension_point_proven=<yes|no|not_applicable>
+contract_handoff_artifact=<path|ledger-section|prompt-block|not_applicable>
+api_lint_status=<PASS|FAIL|not_applicable>
 ```
 
 ## Worker Packet
@@ -159,6 +210,12 @@ FILE_TOPOLOGY_BUDGET=<budget or not_applicable>
 ALLOWED_NEW_MODULES=<paths, internal sections or none>
 STRUCTURAL_DEBT_BUDGET=<none, accepted debt or owner-decision needed>
 STRUCTURAL_SOURCE_PROBES=<commands or source checks>
+BROWSER_METRICS_CONTRACT=<artifact path and required fields or not_applicable>
+VISUAL_SPATIAL_ORACLE=<screenshot/pixel/legibility/bounding-box requirement or not_applicable>
+RUNTIME_SMOKE_ORACLE=<command or not_applicable>
+CONTRACT_HANDOFF_ARTIFACT=<source-derived symbols/oracles or not_applicable>
+API_LINT_STATUS=<PASS|not_applicable>
+RESEARCH_BUDGET=<official source + local cross-check or not_applicable>
 Return the evidence block required by the prompt.
 ```
 
@@ -245,30 +302,37 @@ with `SAFETY_BLOCKED`.
 
 ## Parent Validation
 
-The parent advances only after validating:
-
-1. active SPEC id;
-2. changed files are inside the allowed matrix;
-3. focused oracles passed;
-4. negative checks passed;
-5. local commit exists for the active SPEC or accepted no-commit rationale;
-6. `git show --stat --oneline <commit>` proves material diff;
-7. post-commit status is inspected;
-8. sync status is `LOCAL_COMMITTED` or `REMOTE_SYNC_NOT_REQUESTED`;
-9. structural method evidence passed when code, UI or generated app artifacts
-   were in scope;
-10. structural handoff names active `STRUCTURAL_METHOD`, changed topology,
-    accepted debt and next-unit constraints when a later unit can build on the
-    same code;
-11. worker did not execute later SPECs;
-12. parent refreshed local state by rereading the relevant changed files,
-    active SPEC artifact and latest `git show` evidence before creating the
-    next prompt;
-13. evidence was produced after the active SPEC opened, not counted from a
-    reference implementation, manual build, browser smoke, run record or
-    post-facto audit.
+The parent advances only after validating the active SPEC id, Pre-Edit Gate,
+allowed file matrix, focused oracles, negative checks, local commit or accepted
+no-commit rationale, `git show --stat`, post-commit status, sync status,
+fresh post-open evidence, no later-SPEC execution, refreshed local state before
+next prompt, structural method packet, runtime certification packet,
+integration runtime-smoke, shared-contract extension packet,
+source-derived handoff packet and Tree Adversary status. Route failures to the
+specific stop state named by the owning reference, not to a broad green closeout.
 
 Remote push is forbidden unless separately authorized by the user.
+
+## Certification Repair Rule
+
+The final certification SPEC may perform bounded code repairs only when the
+repair is discovered by certification evidence and remains inside the active
+SPEC contract.
+
+Allowed certification repairs must:
+
+1. be recorded as `audit_repair`, not as skipped or reordered implementation;
+2. name the failing oracle and the exact repair scope;
+3. change only files allowed by the active certification or audit unit;
+4. create a local non-empty repair commit unless the repair is documentation or
+   evidence-only with an accepted no-commit rationale;
+5. rerun the failing oracle plus the final closeout oracle;
+6. keep the original SPEC sequence intact.
+
+If the repair requires new product scope, changes a prior SPEC contract, or
+cannot be proven from certification evidence, stop with `NEEDS_MORE_LOOPS`,
+`SPEC_CONTRACT_UNSTABLE` or `NEEDS_OWNER_DECISION` instead of folding it into
+the final certification SPEC.
 
 ## Next Prompt Authority
 
@@ -297,21 +361,20 @@ the state.
 
 ## Loop State
 
-Default loop state lives in the parent context plus Git for short clean loops.
-The loop-state block is still mandatory in the parent evidence for every
-attempt.
+Default loop state lives in the parent context plus Git, but a persistent
+ledger is mandatory for every `--execute-loop`. The loop-state block is still
+mandatory in the parent evidence for every attempt.
 
 Create a persistent Markdown ledger named
-`GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the user explicitly
-requests `--execute-loop-ledger`, the draft predicts more than three SPECs, a
-SPEC repair occurs, an audit repair unit is appended, or execution resumes
-after context compaction and the parent cannot prove exact loop state from the
-current context plus Git.
+`GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` before the first
+`ACTIVE_SPEC` opens. `--execute-loop-ledger` may request a specific ledger path
+or stricter retention, but it is not required to make the ledger mandatory.
 
 Shard the ledger before it becomes ingestion debt. The ledger must carry only
 SPEC id, spec version, attempt, repair count, audit cycle, failed-attempt
 recovery decision, commit, oracle status, structural decision fields, stop
-state and next allowed action.
+state, browser/visual oracle fields, runtime-smoke fields, shared-contract
+extension fields, source-handoff fields and next allowed action.
 
 ### Ledger Schema
 
@@ -324,13 +387,25 @@ spec_version:
 attempt:
 repair_count:
 audit_repair_cycle:
+first_unexecuted_unit:
 failed_attempt_recovery_decision:
 commit:
 oracle_status:
 structural_method_id:
 topology_decision:
+topology_decision_artifact:
 structural_debt:
 next_structural_constraint:
+browser_metrics_contract:
+visual_spatial_oracle:
+browser_attempt:
+visual_evidence:
+runtime_smoke_oracle:
+adversary_objection:
+shared_contract_extended:
+extension_point_proven:
+contract_handoff_artifact:
+api_lint_status:
 stop_state:
 next_allowed_action:
 ```
@@ -342,23 +417,22 @@ Use `not_applicable` for structural decision fields when the active SPEC has no
 code, UI, runtime-script or generated-app structure. These fields are a compact
 decision ledger, not a design essay. They record only the active method,
 topology choice, accepted debt and constraint that the next loop must preserve.
+Use `not_applicable` for browser and visual fields when the active SPEC has no
+browser, UI, game, canvas, layout or spatial-rendering risk.
+Use `not_applicable` for runtime-smoke fields when the active SPEC is not an
+integration or wiring unit. Use `not_applicable` for handoff fields only when
+the worker does not reuse existing APIs.
 
 ## Executive Stop Audit
 
 When the planned stop is reached, do not close automatically. Spawn a separate
 read-only reviewer for `Executive Stop Audit`.
 
-The reviewer receives:
-
-1. original materialization tree;
-2. executed SPECs;
-3. commits and `git show --stat` evidence;
-4. oracles and negative checks;
-5. repair records;
-6. final worktree status.
-7. baseline-only reference evidence classification, when any existed.
-8. Engineering Method Profile and structural method evidence, when applicable.
-9. structural decision ledger and structural handoff, when applicable.
+The reviewer receives the original tree, executed SPECs, commits and
+`git show --stat`, oracles and negative checks, repair records, final worktree
+status, baseline-only classification, structural evidence, runtime/visual
+evidence, integration smoke evidence, source-derived handoff evidence, and Tree
+Adversary result.
 
 The reviewer does not receive the full original prompt unless the parent
 decides that a prompt contract dispute is the audit subject.
@@ -369,6 +443,10 @@ The reviewer recommends one of:
 - `EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS`
 - `NEEDS_MORE_LOOPS`
 - `NEEDS_STRUCTURAL_METHOD`
+- `NEEDS_INTEGRATION_ORACLE`
+- `AXIS_UNPROVEN`
+- `VISUAL_CERT_BLOCKED`
+- `NEEDS_TREE_ADVERSARY`
 - `SPEC_BLOCKED`
 - `SPEC_CONTRACT_UNSTABLE`
 - `NEEDS_OWNER_DECISION`
@@ -397,10 +475,19 @@ material evidence stops with `NEEDS_OWNER_DECISION` or
 
 ## Completion
 
-Use `EXECUTION_LOOP_COMPLETE` only when all declared SPECs passed and the
-Executive Stop Audit confirms no more loops are needed and no declared SPEC
-was credited from baseline-only reference evidence. Coding, UI or generated-app
-SPECs must also have passing structural method evidence.
+Use `EXECUTION_LOOP_COMPLETE` only when all declared SPECs passed, the
+Pre-Edit Gate had valid anchor fields, required Tree Adversary review was
+cleared or repaired, the Executive Stop Audit confirms no more loops are
+needed, and no declared SPEC was skipped, credited from Super SPEC
+materialization, or credited from baseline-only reference evidence. Coding, UI
+or generated-app SPECs must also have passing structural method evidence.
+
+Required browser, visual or runtime axes must have PASS evidence. Required
+visual axes need `browser_attempt=tool_invoked`, `status=PASS`,
+`visual.proven=true` and at least one evidence artifact. Integration units need
+a passing runtime-smoke artifact. A required axis with `DEGRADED`, `BLOCKED`,
+`not_attempted` or missing runtime smoke cannot close as
+`EXECUTION_LOOP_COMPLETE`.
 
 Use `EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS` when the loop converged only
 after audit-added corrective SPECs.

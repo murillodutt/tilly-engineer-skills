@@ -329,7 +329,8 @@ LOCAL_DEVELOPMENT_SKILL_PARITY = (
 
 LOCAL_DEVELOPMENT_SKILL_DESCRIPTION_TERMS = {
     "tes-high-agency-pattern": (
-        "Local-only self-consumed",
+        "Local-only reference",
+        "Use only when explicitly useful",
         "one local development-layer skill/workflow operating pattern",
         "agency",
         "question budget",
@@ -339,10 +340,10 @@ LOCAL_DEVELOPMENT_SKILL_DESCRIPTION_TERMS = {
         "packaging discipline",
         "Prefer tes-predictive-operations",
         "prospect/mine/alternate/package modes",
-        "Do not present as user-invoked",
     ),
     "tes-predictive-operations": (
-        "Local-only self-consumed",
+        "Local-only reference",
+        "Use only when explicitly useful",
         "next reasoning mode during active project work",
         "prospect, mine, alternate, or package",
         "planning pressure",
@@ -350,10 +351,10 @@ LOCAL_DEVELOPMENT_SKILL_DESCRIPTION_TERMS = {
         "packaging timing",
         "Prefer tes-high-agency-pattern",
         "one local development-layer skill/workflow operating pattern",
-        "Do not present as user-invoked",
     ),
     "tes-sync": (
-        "Local-only self-consumed",
+        "Local-only reference",
+        "Use only when the user says",
         "complete sync routine on the TES source package",
         "identity bump",
         "public bundle",

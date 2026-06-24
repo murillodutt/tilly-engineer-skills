@@ -1,6 +1,6 @@
 ---
 name: tes-landing-authoring
-description: "Local-only self-consumed guidance for editing the public landing page (docs/index.html) without breaking its pipeline or letting it drift back into a technical report. Use whenever you are about to change landing copy, proof, or section order. Prefer tes-manual-authoring for the user manual instead. Do not present as user-invoked."
+description: "Local-only reference guidance for editing the public landing page (docs/index.html) without breaking its pipeline or letting it drift back into a technical report. Use when explicitly useful for landing copy, proof, or section order. Prefer tes-manual-authoring for the user manual instead."
 license: MIT
 ---
 
@@ -11,9 +11,10 @@ Operational contract: `tes.landing_authoring@0.1.0`.
 Local development surface only. Do not package, publish, materialize, or treat
 as distributable TES.
 
-Self-consume only while editing the public landing page. Do not ask the user to
-invoke this skill. Prefer `tes-manual-authoring` when the target is the user
-manual (`docs/install/USER-MANUAL.html`).
+Use only as a reference while editing the public landing page. Do not load it
+automatically for ordinary execution, and honor an owner-requested no-skill run.
+Prefer `tes-manual-authoring` when the target is the user manual
+(`docs/install/USER-MANUAL.html`).
 
 ## Golden rule of the pipeline
 

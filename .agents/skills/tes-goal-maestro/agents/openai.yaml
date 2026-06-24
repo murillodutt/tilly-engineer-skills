@@ -3,16 +3,24 @@ description: Generate maestral /goal prompts from mature input artifacts and int
 default_prompt: |
   Use $tes-goal-maestro because it has been explicitly invoked or because the
   user directly asked for a maestral /goal prompt. Verify SPEC maturity first.
-  If the input artifact is immature, stop with NEEDS_SPEC_MATURITY. If declared
-  execution units are not preserved exactly, stop with
-  NEEDS_EXECUTION_UNIT_FIDELITY. If the artifact is mature but the
+  If the input artifact is immature, stop with NEEDS_SPEC_MATURITY. If no
+  persisted non-self anchor artifact with path and hash exists, stop with
+  NEEDS_ANCHOR_ARTIFACT. If declared execution units are not preserved exactly,
+  stop with NEEDS_EXECUTION_UNIT_FIDELITY. If the artifact is mature but the
   materialization tree fails internal gates, stop with NEEDS_TREE_REPAIR. If
-  coding, UI, runtime-script or generated-app units lack an Engineering Method
-  Profile plus Method Enforcement Packet (`STRUCTURAL_METHOD=<profile-id>`,
-  topology budget, structural source probes, structural debt budget and
-  structural handoff), stop with NEEDS_STRUCTURAL_METHOD.
+  declared ambition or quality ceiling is lowered without oracle or owner
+  decision, stop with NEEDS_AMBITION_RECONCILIATION. If coding, UI,
+  runtime-script or generated-app units lack an Engineering Method Profile plus
+  Method Enforcement Packet (`STRUCTURAL_METHOD=<profile-id>`, executable
+  topology budget probe, structural source probes, structural debt budget and
+  structural handoff), stop with NEEDS_STRUCTURAL_METHOD. If an integration
+  unit has only build/typecheck proof, stop with NEEDS_INTEGRATION_ORACLE. If a
+  required visual/browser/runtime axis is DEGRADED, unattempted or unproven,
+  stop with AXIS_UNPROVEN or VISUAL_CERT_BLOCKED.
   Otherwise produce both the materialization tree and READY_GOAL_PROMPT in the
-  same response. When a Super SPEC must be produced or expanded, write it as
+  same response. For --execute-loop or high-risk trees, run the Tree Adversary
+  before READY_GOAL_PROMPT and stop with NEEDS_TREE_ADVERSARY unless objections
+  are cleared or repaired. When a Super SPEC must be produced or expanded, write it as
   GOAL-SUPER-SPEC-<slug-or-timestamp>.md and show only its path plus a short
   summary in chat. Ask for tree acceptance only when the user explicitly
   requests staged review or when changing the declared execution contract
@@ -27,15 +35,17 @@ default_prompt: |
   parent-owned execution loop. Run Execution Loop only when the user explicitly
   requests --execute-loop: create an Execution Cost Draft from material
   sources, then require a Pre-Edit Gate before any edit or worker spawn:
-  EXECUTE_LOOP_REQUESTED=yes, READY_GOAL_PROMPT=present, DECLARED_UNITS exact,
+  EXECUTE_LOOP_REQUESTED=yes, READY_GOAL_PROMPT=present, ANCHOR_CLASS,
+  ANCHOR_PATH, ANCHOR_HASH, TREE_ADVERSARY_STATUS, DECLARED_UNITS exact,
   FIRST_UNEXECUTED_UNIT matching ACTIVE_SPEC, BASELINE_ONLY_COMMITS listed,
   LEDGER named, and MAY_EDIT=yes. Carry active Engineering Method Profiles and
   STRUCTURAL_METHOD=<profile-id> envelope fields for coding work, execute one
   ACTIVE_SPEC at a time through a fresh worker subagent, require baseline
   classification, loop-state evidence, canonical SPEC_REPAIR_BY_LLM,
   failed-attempt recovery with bug_vs_architecture classification, a mandatory
-  persistent ledger from loop start and structural decision ledger fields, the
-  exact
+  persistent ledger from loop start and structural decision ledger fields,
+  source-derived contract handoff and API lint for reused APIs, runtime smoke
+  for integration units, PASS-only required visual certification, the exact
   --execute-loop-parent-fallback flag before parent-side worker fallback,
   owner-approved cloud redaction, local commit evidence, strict sequential
   replay, reference/manual builds as baseline-only comparison, bounded audit

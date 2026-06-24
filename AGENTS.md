@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Maintainer bootloader and canonical governance authority for the independent Tilly Engineer Skills package. The governance body below is mirrored verbatim with `.claude/CLAUDE.md` (same XML tags, same rules) so Codex and Claude carry one identical discipline; only this header and `<routing>` differ, by platform. Codex loads only a skill's name, description, and path until needed, so detailed workflows live in `docs/governance/**` and `.agents/skills/tes-*/**`.
+Maintainer bootloader and canonical governance authority for the independent Tilly Engineer Skills package. The governance body below is mirrored verbatim with `.claude/CLAUDE.md` (same XML tags, same rules) so Codex and Claude carry one identical discipline; only this header and `<routing>` differ, by platform. Codex should treat this bootloader as sufficient for ordinary work: local development skills are reference surfaces loaded only when the task explicitly needs them or the owner asks for them.
 
 Distributable agent source lives in `src/**`. People-facing method, eval, and architecture material lives in `docs/**`. Keep this file small.
 
@@ -45,12 +45,13 @@ Portable learning belongs in the product/source layer first when it changes deli
 </layer_boundary>
 
 <regression_guard>
-For every package analysis, write, runtime change, oracle change, commit, or closeout, self-consume `.agents/skills/tes-regression-guard/SKILL.md` as an always-on local reasoning kernel — not a user-invoked skill. Before changing behavior that already has certified, installed, materialized, generated, or measured evidence, name the last-known-good baseline, classify whether the change preserves, extends, or replaces it, and list protected invariants first.
-Regression is project-wide, not Python-specific: protect skills, triggers, adapters, materialized outputs, installers, runtime scripts, docs, roadmaps, oracles, generated public pages, version identity, release surfaces, private vocabulary, safety behavior, and UX claims. A passing source check is not enough when the risk lives in an installed, generated, materialized, public, or CLI surface; run the comparison matching the surface that can regress. Avoid narrow literal lists in runtime code unless they are governed data, schema, or contract backed — example-specific fixes are regression seeds.
+Use regression thinking inline for changes that can affect certified, installed, materialized, generated, measured, release, CLI, public, or user-visible behavior. Do not load a regression skill by default, and honor an explicit no-skill run unless a concrete destructive, secret, remote, release, or safety risk must be escalated.
+Before risky behavior changes, name the last-known-good baseline, classify whether the change preserves, extends, or replaces it, list protected invariants, and run the comparison matching the surface that can regress. For low-risk local analysis or ordinary edits, keep this as a short mental check and move. Avoid narrow literal lists in runtime code unless they are governed data, schema, or contract backed — example-specific fixes are regression seeds.
 </regression_guard>
 
 <mantra_gate>
-Before state-changing actions, use the TES Mantra Gate. When it permits proceeding, show only `[🍳 Flash-Fry]`; the full gate still records `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, and `STATUS` in the evidence surface. Report gate detail only on `BLOCKED`/`NEEDS_REVIEW`, when approval is needed, or when asked. For closure, commit, or push claims, use the Mantra Gate adoption oracle when available; treat `BYPASS_SUSPECTED`, `NEEDS_REVIEW`, or `BLOCKED` as a stop condition until the gate record, scope, risk, and closure oracle are repaired.
+Use a lightweight Mantra Gate only for destructive, remote, release, sync, secret-bearing, or high-impact state changes, and for closure claims that depend on those actions: `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, `STATUS`.
+For ordinary local edits, focused oracles, staging, and local commits, do not block on gate artifacts, markers, or skill loading. Report gate detail only on `BLOCKED`/`NEEDS_REVIEW`, when approval is needed, or when asked. Treat `BYPASS_SUSPECTED`, `NEEDS_REVIEW`, or `BLOCKED` as a stop condition only for the risky action whose gate failed.
 </mantra_gate>
 
 <diamond_build_test_fail_fix>
@@ -84,6 +85,7 @@ Operating calibration (maintainer/dev memory only; never Cortex, never `src/**`,
 - Commit locally by default; stop there until the owner explicitly asks to sync/push. "push it" is not a standing grant — each push needs its own request.
 - Smart pre-commit, scoped to what changed: run only the focused oracles relevant to the modified files; reserve the full `commit:check` suite for release/sync.
 - The `/goal` Stop hook is a guardrail, not a throttle: alignment pressure, not deadline pressure. For large-surface changes, close each increment green before advancing.
+- User instructions can narrow local development aids: if the owner says no skills or no governance expansion, keep execution bootloader-first unless destructive, remote, secret, release, or safety risk requires escalation.
 </operating_discipline>
 
 <routing>

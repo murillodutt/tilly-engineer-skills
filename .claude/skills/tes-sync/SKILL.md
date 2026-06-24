@@ -1,6 +1,6 @@
 ---
 name: tes-sync
-description: "Local-only self-consumed guidance for running the complete sync routine on the TES source package: identity bump, public bundle, validate, commit, push, tag, release certification. Use when the user says sync completo, bump + commit + push, release, publica, /tes-sync, or asks to ship a delivered-behavior change end-to-end. Mirror of the audit checklist that survived the 0.3.124 and 0.3.125 cycles. Do not present as a user-facing TES product skill."
+description: "Local-only reference guidance for running the complete sync routine on the TES source package: identity bump, public bundle, validate, commit, push, tag, release certification. Use only when the user says sync completo, bump + commit + push, release, publica, /tes-sync, or asks to ship a delivered-behavior change end-to-end. Mirror of the audit checklist that survived the 0.3.124 and 0.3.125 cycles. Do not present as a user-facing TES product skill."
 license: MIT
 ---
 
@@ -16,9 +16,9 @@ This skill is the agent-facing condensation of the same flow.
 When the sync scope contract changes, update that checklist in the same change
 so maintainer-facing docs and agent-facing instructions do not diverge.
 
-Self-consume when the user asks for a complete sync, a release, a bump
-followed by push, or invokes `/tes-sync`. Do not ask the user to invoke this
-skill.
+Use this reference only when the user asks for a complete sync, a release, a
+bump followed by push, or invokes `/tes-sync`. Do not activate for ordinary
+local edits or owner-requested no-sync work.
 
 ## When To Activate
 

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`tes-predictive-operations` is local-only self-consumed development guidance
+`tes-predictive-operations` is local-only reference development guidance
 for deciding how to operate `tes-prospect` and `tes-mine` together during
 project reasoning.
 
@@ -20,7 +20,8 @@ package only after the behavior is already understood.
 |--------|--------|------------|
 | `.agents/skills/tes-prospect/SKILL.md` | Plan-risk pressure pass with explicit invocation, one question at a time, and a cognitive brake. | high |
 | `.agents/skills/tes-mine/SKILL.md` | Language, code-evidence, and durable-knowledge mining pass with explicit invocation and a cognitive brake. | high |
-| Maintainer directive, 2026-05-22 | This guidance should be self-consumed locally, not exposed as a user command. | high |
+| Maintainer directive, 2026-05-22 | This guidance was originally made automatic locally, not exposed as a user command. | historical |
+| Maintainer directive, 2026-06-24 | Local development meta-skills should not auto-load when they block high-agency execution; keep this as reference guidance and honor no-skill runs. | high |
 | Maintainer directive, 2026-05-29 | Apply review findings: valid skill packaging, docs/agents trace, local-only placement, and clearer contract memory. | high |
 
 ## Source Search Ledger
@@ -35,7 +36,7 @@ package only after the behavior is already understood.
 - Keep `tes-prospect` as the plan-risk pressure pass.
 - Keep `tes-mine` as the language, code-evidence, and durable-knowledge mining
   pass.
-- Self-consume the mode-selection guidance during project reasoning.
+- Use mode-selection guidance only as an explicit local reference during project reasoning.
 - Do not expose it as a user-invoked skill or command.
 - Alternate prospecting and mining deliberately instead of creating a third
   execution engine.
@@ -67,11 +68,12 @@ package only after the behavior is already understood.
 | 2026-05-22 | Created local predictive operations skill for coordinated `tes-prospect` and `tes-mine` use. | Maintainer analysis session. | high |
 | 2026-05-22 | Added local skill-packaging check from external `write-a-skill` guidance. | Maintainer-provided external skill excerpt; absorbed as local operating check. | high |
 | 2026-05-22 | Slimmed `SKILL.md` to the smallest mode-selection contract and moved details into `references/**`. | Maintainer requested extreme progressive disclosure. | high |
-| 2026-05-22 | Changed activation posture from user-invoked to self-consumed local guidance. | Maintainer clarified these skills should be autoconsumed, not invoked. | high |
+| 2026-05-22 | Changed activation posture from user-invoked to automatic local guidance. | Maintainer clarified these skills should be auto-loaded, not invoked. | historical |
 | 2026-05-22 | Added Operating Temperament mode selection so local skill construction can choose sniper, miner, prospector, builder, gate, or curator behavior. | Maintainer clarified that some skills need questions and verbosity while others must be objective and precise. | high |
 | 2026-05-22 | Renamed `operating-temperament.md` to `temperament-mode-selection.md` and added cross-routing to `tes-high-agency-pattern`. | Maintainer senior analysis identified false same-name drift between complementary temperament references. | high |
 | 2026-05-22 | Tightened frontmatter description to route active project prospect/mine/alternate/package decisions away from one-skill operating-pattern design. | Maintainer approved P4 trigger-alignment pass after senior review. | high |
 | 2026-05-29 | Quoted frontmatter description, added operational contract version, validation, done criteria, OpenAI metadata, expanded contract history, and docs/agents trace expectation. | Read-only review found invalid YAML frontmatter, missing local skill metadata, incomplete Tilly contract history, and missing `docs/agents/**` trace. | high |
+| 2026-06-24 | Demoted from automatic behavior to explicit local reference guidance that honors owner-requested no-skill runs. | Maintainer directive in current session; bootloader update. | high |
 
 ## Do Not Lose
 

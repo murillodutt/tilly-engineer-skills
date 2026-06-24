@@ -61,6 +61,14 @@ Owns runtime modules and integration boundaries.
 
 Use when the slice implements behavior after contracts are established.
 
+### Visual-Runtime Senior
+
+Owns browser automation, rendered evidence, browser metrics, runtime-smoke
+artifacts and visual-spatial certification.
+
+Use when the slice touches UI, game, canvas, WebGL/WebGPU, Three.js, render,
+layout, spawn, raycast, camera framing, browser runtime or integration wiring.
+
 ### Tests Senior
 
 Owns focused tests, adversarial cases, fixtures and regression selection.
@@ -96,7 +104,8 @@ Reviews:
     execution, skipping `STRUCTURAL_METHOD=<profile-id>` envelope fields,
     missing structural source probes, omitting structural handoff, retrying a
     coding SPEC without `bug_vs_architecture`, expanding audit repairs without
-    new material evidence, or bypassing Executive Stop Audit.
+    new material evidence, missing required browser metrics or visual-spatial
+    evidence for app/UI/game work, or bypassing Executive Stop Audit.
 
 ### Evidence/Oracle Senior
 
@@ -156,7 +165,73 @@ Common oracles:
 10. `git show --stat --oneline <commit>` for material-diff proof;
 11. post-commit `git status --short --branch --untracked-files=all`;
 12. structural source probes for coding work;
-13. final status report.
+13. integration runtime-smoke oracle for wiring units;
+14. browser metrics artifact for app, UI, game or rendered-canvas work;
+15. visual-spatial screenshot or pixel/legibility audit when layout, render,
+    spawn, raycast, canvas, 3D placement or visual state can fail despite green
+    logic;
+16. source-derived contract handoff and API lint when workers reuse existing
+    APIs;
+17. final status report.
+
+## Integration Runtime-Smoke Oracle
+
+When a unit connects modules into an executable runtime path, build and
+typecheck are not enough. Use `references/runtime-certification.md` as the
+owner of this contract.
+
+The oracle must instantiate the real wiring module, stub only external
+browser/GPU/network/clock boundaries, run deterministic ticks or calls, and
+assert state movement, no fatal runtime failure, and at least one cross-module
+effect.
+
+## Browser Metrics Contract
+
+For browser-certified apps, UI tools, games or generated app artifacts, do not
+rely only on `window` globals or prose. Produce a stable machine-readable
+artifact when browser certification is part of the closeout.
+
+`references/runtime-certification.md` owns required-axis completion. This
+section records the artifact shape for prompt writers.
+
+Default artifact:
+
+```text
+browser-metrics.json
+```
+
+Minimum fields:
+
+```json
+{
+  "status": "PASS|DEGRADED|BLOCKED",
+  "consoleErrors": [],
+  "runtime": {},
+  "visual": {},
+  "domainMetrics": {},
+  "failures": []
+}
+```
+
+Use domain-specific fields under `domainMetrics`; do not force every canary or
+app to share the same game-specific keys. Parent reviewers must parse the
+artifact by contract before trusting a worker closeout.
+
+## Visual-Spatial Oracle
+
+When a failure can be visual or spatial, logic checks are necessary but not
+sufficient. Require screenshot, pixel, canvas, bounding-box, accessibility tree
+or equivalent rendered evidence when the active SPEC touches:
+
+- canvas, WebGL, Three.js, maps or 3D scenes;
+- spawn position, raycast, collision, block/grid alignment or camera framing;
+- responsive layout, text fit, modal position or critical UI visibility;
+- generated images, visual assets or rendered public docs.
+
+If visual-spatial evidence is impossible in the environment, record the exact
+browser/render attempt and command output. For required axes, a blocked or
+degraded visual result routes to `VISUAL_CERT_BLOCKED` or `AXIS_UNPROVEN`; it
+does not satisfy `EXECUTION_LOOP_COMPLETE`.
 
 ## Negative Grep Patterns
 

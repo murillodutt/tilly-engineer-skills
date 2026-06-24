@@ -11,11 +11,21 @@ truth.
 Main SPEC:
 <path/to/spec.md>
 
+Anchor artifact:
+- ANCHOR_CLASS=<PRD|ADR|Super-SPEC|SPEC|relational-project-plan|accepted-execution-tree>
+- ANCHOR_PATH=<path>
+- ANCHOR_HASH=<hash captured before tree generation>
+- ANCHOR_ORIGIN=<provided|materialized-from-anchor|previous-session>
+
 Certified context:
 - <certified dependency or prior closeout>
 - <existing contract/module that must be reused>
 - <phase boundary already decided>
 - <known deferred work>
+
+Shared contracts:
+- <contract_name, declaring SPEC, frozen surface, extension points, extenders,
+  optionality rule and declaring oracles, or none>
 
 Mission:
 <short mission explaining the artifact, capability and value>
@@ -26,6 +36,11 @@ Phase boundary:
 
 Central rule:
 <single rule that prevents semantic drift>
+
+Quality ceiling:
+- ambition_directive=<quoted source directive or ABSENT>
+- quality_ceiling=<required ceiling features or ABSENT>
+- ceiling_decision=<oracled_now|owner_deferred|not_applicable>
 
 Do not allow:
 - <forbidden move 1>
@@ -39,6 +54,8 @@ Engineering Method Profile:
   docs generator, adapter, or no-code rationale>
 - Intended topology: <files/modules/components/composables/stores/services/
   adapters/scripts/internal sections>
+- Topology decision artifact: <tree block, ledger block, ADR path, or
+  not_applicable>
 - Structural boundaries: <UI/domain/storage/runtime/docs/adapter boundaries>
 - Topology exceptions: <none or source-mandated single-file deliverable with
   internal modularity, named sections, narrow APIs and no duplicated logic>
@@ -55,6 +72,15 @@ Engineering Method Profile:
 - Structural oracles: <size thresholds, module/component inventory,
   import/dependency checks, lint/typecheck/build, rendered UI smoke or source
   probes>
+- Browser metrics contract: <browser-metrics.json fields or not_applicable>
+- Visual-spatial oracle: <screenshot, pixel, legibility, canvas,
+  bounding-box/spawn/raycast check or not_applicable>
+- Runtime smoke oracle: <command/artifact for integration units or
+  not_applicable>
+- Topology probe: <executable command that fails on budget excess or
+  not_applicable>
+- Shared contract surface: <frozen fields, extension points and optionality rule
+  or not_applicable>
 
 Subagents:
 
@@ -97,6 +123,17 @@ Work mode:
 - A declared no-commit preflight must still be reported as executed.
 - Before editing code, UI or generated app artifacts, apply the Engineering
   Method Profile and do not accept behavior-only green if structure regresses.
+- When the source does not mandate topology, record the topology decision before
+  the first material implementation commit.
+- When browser, UI, game, canvas or rendered app behavior is in scope, emit a
+  stable browser metrics artifact and visual-spatial evidence when visual or
+  spatial failure is possible.
+- When an integration unit wires modules into the executable runtime, run a
+  behavioral runtime smoke; build and typecheck are necessary but not
+  sufficient.
+- When workers reuse existing APIs, provide source-derived symbols, import
+  paths, oracle runner commands and API lint status instead of parent-memory
+  summaries.
 - Stage only files for the current SPEC.
 - Commit and certify the current SPEC before starting the next SPEC.
 - Do not revert user changes.
@@ -127,6 +164,24 @@ Execution Loop:
 - Disabled unless `--execute-loop` was explicitly requested.
 - When enabled, the parent runner must create an `Execution Cost Draft` before
   spawning any worker.
+- Before any edit, worker spawn, parent fallback or material commit, the parent
+  must emit and pass this Pre-Edit Gate:
+  `EXECUTE_LOOP_REQUESTED=yes`,
+  `READY_GOAL_PROMPT=present`,
+  `ANCHOR_CLASS=<class>`,
+  `ANCHOR_PATH=<path>`,
+  `ANCHOR_HASH=<hash>`,
+  `TREE_ADVERSARY_STATUS=<ADVERSARY_CLEARED|OBJECTIONS_REPAIRED|not_required>`,
+  `DECLARED_UNITS=<exact ordered unit ids>`,
+  `FIRST_UNEXECUTED_UNIT=<id>`,
+  `ACTIVE_SPEC=<id>`,
+  `BASELINE_ONLY_COMMITS=<hashes or none>`,
+  `LEDGER=<GOAL-EXECUTION-LOOP-LEDGER-...md>`,
+  `MAY_EDIT=yes`.
+- If `FIRST_UNEXECUTED_UNIT != ACTIVE_SPEC`, or if `MAY_EDIT` is not `yes`,
+  stop with `NEEDS_EXECUTION_UNIT_FIDELITY` before editing.
+- Materializing or expanding a Super SPEC is preparatory contract work. It does
+  not consume any declared execution unit or advance `FIRST_UNEXECUTED_UNIT`.
 - The parent runner opens one `ACTIVE_SPEC` at a time with the full prompt plus
   a hard active-SPEC envelope.
 - Workers may execute only `ACTIVE_SPEC`; they may propose next-prompt material
@@ -145,17 +200,22 @@ Execution Loop:
   structural debt budget in the active envelope, maintain a loop-state block
   for every attempt, repair only canonical SPEC artifacts, resolve
   failed-attempt residue before the next attempt with `bug_vs_architecture`,
-  and use cloud escalation only after owner-approved redaction.
+  carry source-derived contract handoff, enforce runtime smoke for integration,
+  require PASS evidence for required visual axes, and use cloud escalation only
+  after owner-approved redaction.
 - Failed Attempt Recovery is mandatory before retrying a failed coding
   `ACTIVE_SPEC`.
 - Parent-side execution fallback is disabled unless the exact
   `--execute-loop-parent-fallback` flag was requested.
-- Create `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` when the loop is
-  long, repaired, audit-expanded, explicitly requested, or resumes after
-  context compaction without exact loop-state proof.
+- Create `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` before the first
+  `ACTIVE_SPEC` opens for every `--execute-loop`.
 - The ledger must carry structural decision fields when code structure is in
   scope: `structural_method_id`, `topology_decision`, `structural_debt` and
   `next_structural_constraint`.
+- For browser, UI, game or rendered-canvas work, the ledger or closeout must
+  carry the browser metrics contract and visual-spatial oracle result.
+- Certification repairs are allowed only as bounded `audit_repair` work inside
+  the active final/audit SPEC, with local commit evidence and rerun oracles.
 - Audit-added `SPEC-AUDIT-*` units are bounded; repeated audit expansion without
   new material evidence stops for owner decision or contract instability.
 - Final stop requires Executive Stop Audit.
@@ -179,7 +239,16 @@ First mandatory act:
    app artifacts.
 7. Declare `STRUCTURAL_METHOD=<profile-id>`, topology budget, allowed new
    modules/internal sections and structural source probes before editing.
-8. Declare the file matrix before editing.
+8. If topology is inferred rather than source-mandated, record the structural
+   decision artifact before the first material implementation commit.
+9. Declare the browser metrics and visual-spatial oracle requirements when app,
+   UI, game, canvas or rendered app work is in scope.
+10. Declare the runtime-smoke oracle when wiring/integration is in scope.
+11. Declare source-derived contract handoff and API lint status when reusing
+    prior APIs.
+12. Declare the file matrix before editing.
+13. If `--execute-loop` is active, create the ledger and pass the Pre-Edit Gate
+    before the first worker spawn or material edit.
 
 SPEC-000 Preflight And Baseline
 Objective:
@@ -201,6 +270,8 @@ Execution unit fidelity:
 - Prior commits or closeouts do not satisfy this run's material units by
   default; they are baseline-only unless explicitly accepted by the source
   artifact or owner.
+- Super SPEC materialization does not satisfy or consume a declared execution
+  unit unless that same declared unit is explicitly active.
 - Earlier failed or partial closeouts must be preserved as historical evidence
   and repaired through additive material commits, not overwritten as if they
   never happened.
@@ -223,6 +294,8 @@ Owner:
 <role>
 Oracles:
 - <focused commands>
+Runtime smoke oracle:
+- <command/artifact or not_applicable>
 Negative checks:
 - <rg commands or assertions>
 Commit:
@@ -233,7 +306,11 @@ Completion evidence:
 - Oracles:
 - Negative checks:
 - Structural method result:
+- Topology probe result:
 - Structural handoff:
+- Runtime smoke result:
+- Contract handoff artifact:
+- API lint status:
 - Reviewer result:
 - Post-commit status:
 - Sync status:
@@ -272,6 +349,10 @@ Run:
 - <regression suite>
 - <lint/typecheck/contract/doc checks>
 - <structural method checks when applicable>
+- <browser metrics artifact check when applicable>
+- <visual-spatial screenshot/pixel/legibility check when applicable>
+- <runtime-smoke artifact check when applicable>
+- <contract handoff/API lint check when applicable>
 - `git diff --check`
 Negative grep:
 - <forbidden runtime or provider pattern>
@@ -298,6 +379,11 @@ Final delivery:
 - oracles run;
 - structural method result when applicable;
 - structural handoff when applicable;
+- topology probe result when applicable;
+- runtime smoke result when applicable;
+- browser metrics artifact and visual-spatial oracle result when applicable;
+- contract handoff artifact and API lint status when applicable;
+- anchor artifact and Tree Adversary result;
 - boundaries preserved;
 - blockers or decisions pending;
 - next prompt handoff status when explicitly requested;

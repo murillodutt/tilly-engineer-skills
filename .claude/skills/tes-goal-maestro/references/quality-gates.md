@@ -24,6 +24,15 @@ Use when the SPEC lacks any required foundation:
 
 Return only the smallest missing set.
 
+### NEEDS_ANCHOR_ARTIFACT
+
+Use when the run cannot cite a persisted non-self anchor artifact with
+`anchor_class`, `anchor_path` and `anchor_hash`, or when the generated tree is
+trying to act as its own anchor.
+
+Do not use this for semantically immature input. Use `NEEDS_SPEC_MATURITY` when
+the content itself lacks maturity.
+
 ### READY_GOAL_PROMPT
 
 Use when:
@@ -36,7 +45,15 @@ Use when:
 6. coding, UI, runtime-script or generated-app units include an Engineering
    Method Profile, `STRUCTURAL_METHOD=<profile-id>`, topology budget,
    structural source probes, structural negative checks, structural oracles and
-   structural handoff requirements.
+   structural handoff requirements;
+7. the tree cites a persisted non-self anchor artifact;
+8. any declared quality ceiling has an oracle or explicit owner deferral;
+9. integration units include runtime-smoke oracles;
+10. required visual/browser/runtime axes include PASS-capable certification
+    units;
+11. required Tree Adversary review is cleared or repaired;
+12. `--execute-loop` worker context handoff is source-derived rather than parent
+    memory.
 
 Explicit skill invocation is enough to produce both the tree and the final
 `/goal` prompt in one response when these conditions are true.
@@ -70,6 +87,10 @@ Use when the generated tree fails fixed schema, ownership, oracle,
 execution-unit fidelity, material-continuation, structural-method,
 negative-grep semantics, commit-rhythm or closeout checks.
 
+Also use it when the tree lacks source-derived worker handoff for a loop that
+will reuse prior APIs, carries unvalidated API facts in the worker envelope, or
+uses a parent-memory summary where repository symbols are available.
+
 ### NEEDS_STRUCTURAL_METHOD
 
 Use when code, UI, generated app artifacts or runtime scripts are in scope and
@@ -86,6 +107,50 @@ Method Enforcement Packet: `STRUCTURAL_METHOD=<profile-id>`, file topology
 budget, allowed new modules/internal sections, structural debt budget,
 structural source probes, `bug_vs_architecture` recovery classification and
 structural handoff constraints.
+
+Also use it when browser, UI, game or rendered-canvas work requires
+certification but the prompt or closeout lacks a stable browser metrics
+contract or visual-spatial oracle for risks such as render, layout, spawn,
+raycast, camera framing or spatial alignment.
+
+Also use it when a topology budget is only reported as prose or line count
+inventory. A numerical budget must have an executable probe or a source-proven
+exception.
+
+### NEEDS_AMBITION_RECONCILIATION
+
+Use when the anchor declares a quality ceiling or ambition directive and the
+tree silently lowers it to minimum viable behavior, future work, or
+Non-Objectives without an owner decision or PASS-capable oracle.
+
+### NEEDS_CONTRACT_EXTENSION_POINT
+
+Use when a later unit needs to extend a shared contract frozen by an earlier
+unit and no reserved extension point exists.
+
+### NEEDS_INTEGRATION_ORACLE
+
+Use when a runtime-wiring, game-loop, adapter-wiring or integration unit has
+only build/typecheck/lint as proof. Build can accompany the runtime smoke; it
+cannot replace it.
+
+### AXIS_UNPROVEN
+
+Use when an anchor-declared or tree-required quality/runtime axis lacks PASS
+evidence at closeout. `DEGRADED` is honest evidence, but it does not satisfy a
+required axis.
+
+### VISUAL_CERT_BLOCKED
+
+Use when browser or visual proof is required and no real browser/render attempt
+was made, or the attempt failed for a captured environment reason. A blocked
+environment must include command output in the ledger.
+
+### NEEDS_TREE_ADVERSARY
+
+Use when a required Pre-Execution Tree Adversary pass is absent, when the parent
+self-clears its own adequacy objections, or when objections remain unrepaired
+before `READY_GOAL_PROMPT`.
 
 ### DRAFT_MATERIALIZATION_TREE
 
@@ -114,6 +179,13 @@ Stop if the SPEC says:
     all scripts, all tests or broad cleanup.
 11. "build this app" without stating the intended code topology, structural
     boundaries or structure-sensitive oracles.
+12. "certify this browser app/game/UI" without a machine-readable metrics
+    artifact and visual-spatial evidence when visual or spatial failure is a
+    realistic risk.
+13. "wire the runtime" while listing only build/typecheck as proof.
+14. "aim for the ceiling" or equivalent anchor language while routing ceiling
+    features to future work without owner decision.
+15. "continue with this tree" without a persisted anchor path and hash.
 
 ## Weak Prompt Rejection
 
@@ -138,13 +210,21 @@ Reject a prompt if it lacks:
 16. Next Prompt Handoff only when explicitly requested, with post-`GO`
     certification, chat-only emission and no automatic execution.
 17. Execution Loop only when `--execute-loop` is explicitly requested, with an
-    Execution Cost Draft, `ACTIVE_SPEC` isolation, parent validation, local-only
-    commit sync and Executive Stop Audit.
+    Execution Cost Draft, Pre-Edit Gate, `ACTIVE_SPEC` isolation, parent
+    validation, local-only commit sync, mandatory ledger and Executive Stop
+    Audit.
 18. Engineering Method Profile for coding, UI or generated-app work, including
     topology, exceptions, structural negative checks and structural oracles.
 19. `STRUCTURAL_METHOD=<profile-id>`, topology budget, structural source
     probes, structural debt budget and structural handoff requirements for
     coding, UI, runtime-script or generated-app work.
+20. persisted non-self anchor artifact path and hash.
+21. Tree Adversary status when `--execute-loop` or high-risk execution is in
+    scope.
+22. runtime-smoke oracle for integration units.
+23. PASS-capable browser/visual certification unit for required visual axes.
+24. source-derived contract handoff artifact and API lint status for fresh
+    workers that reuse existing APIs.
 
 ## Boundary Leakage Checks
 
@@ -158,8 +238,9 @@ Ask whether the prompt accidentally permits:
 6. secrets, credentials or private data;
 7. raw payload export;
 8. final interpretation, verdict or score;
-9. god-file growth, framework-topology bypass or accidental UI/domain/storage
-   mixing in coding or app-building work.
+9. god-file growth above `FILE_TOPOLOGY_BUDGET` measured by an executable
+   probe, framework-topology bypass or accidental UI/domain/storage mixing in
+   coding or app-building work.
 10. next-unit architecture regression because no structural handoff carried the
     active method, changed topology, accepted debt and constraints.
 
@@ -185,17 +266,23 @@ When not requested, the prompt must not include a next-prompt handoff clause.
 Execution Loop is valid only when explicitly requested by `--execute-loop`.
 When requested, the generated response must require an `Execution Cost Draft`
 from material sources before spawning, one fresh worker per `ACTIVE_SPEC`,
-full prompt plus hard active-SPEC envelope, parent validation before advancing,
-local automatic commit per green SPEC, no remote push, bounded
+full prompt plus hard active-SPEC envelope, a Pre-Edit Gate with
+`EXECUTE_LOOP_REQUESTED=yes`, `READY_GOAL_PROMPT=present`, `DECLARED_UNITS`,
+`FIRST_UNEXECUTED_UNIT`, `ACTIVE_SPEC`, `BASELINE_ONLY_COMMITS`, `LEDGER`,
+`ANCHOR_CLASS`, `ANCHOR_PATH`, `ANCHOR_HASH`, `TREE_ADVERSARY_STATUS` and
+`MAY_EDIT=yes`, parent validation before advancing, local automatic commit per
+green SPEC, no remote push, bounded
 `SPEC_REPAIR_BY_LLM`, a loop-state block for every attempt, classified
 baseline state before the first worker, owner-approved cloud escalation only,
-failed-attempt recovery before the next attempt, persistent ledger when the loop
-is long or repaired, exact parent-fallback flag authorization, bounded audit
+failed-attempt recovery before the next attempt, persistent ledger for every
+`--execute-loop`, exact parent-fallback flag authorization, bounded audit
 repairs, strict sequential replay, baseline-only comparison for reference
-implementations or manual builds, active Engineering Method Profile when code
-structure is in scope, `STRUCTURAL_METHOD=<profile-id>` envelope fields,
-structural decision ledger fields, `bug_vs_architecture` recovery
-classification, and Executive Stop Audit before final stop.
+implementations or manual builds, no Super SPEC materialization counted as a
+declared execution unit, active Engineering Method Profile when code structure
+is in scope, `STRUCTURAL_METHOD=<profile-id>` envelope fields, structural
+decision ledger fields, `bug_vs_architecture` recovery classification,
+source-derived contract handoff, runtime-smoke for integration units, PASS-only
+required visual axes, and Executive Stop Audit before final stop.
 When not requested, the prompt must not include execution-loop behavior.
 
 If Next Prompt Handoff and Execution Loop are both explicitly requested,
@@ -241,13 +328,31 @@ Before `GO`, verify:
    records and post-facto audits were baseline-only comparison evidence, not
    execution credit;
 9. structural method evidence exists for coding, UI or generated-app units;
-10. structural source probes ran or were explicitly impossible with rationale;
+10. structural source probes ran; numerical topology probes cannot be waived as
+    impossible unless the probe target does not exist and the unit stops;
 11. structural handoff exists when another unit can build on the same code;
-12. remote sync is reported only when explicitly authorized.
+12. browser metrics artifact exists when browser app, UI, game or rendered
+    canvas certification is in scope;
+13. visual-spatial oracle evidence exists, or a real browser/render attempt
+    failed with captured environment output when visual or spatial failure is
+    in scope;
+14. remote sync is reported only when explicitly authorized;
+15. persisted non-self anchor was cited by path and hash;
+16. Tree Adversary status is cleared or repaired when required;
+17. integration units have runtime-smoke artifacts that pass;
+18. required browser/visual axes have `status=PASS`, `visual.proven=true` and
+    at least one evidence artifact;
+19. `DEGRADED` or `BLOCKED` required axes route to `AXIS_UNPROVEN` or
+    `VISUAL_CERT_BLOCKED`, not `GO`;
+20. worker envelopes that reuse APIs include a source-derived handoff artifact
+    and `api_lint_status=PASS`.
 
-If any check fails, use `NEEDS_EXECUTION_UNIT_FIDELITY`.
+If any execution-fidelity check fails, use `NEEDS_EXECUTION_UNIT_FIDELITY`.
 If structural method evidence is missing or failing, use
 `NEEDS_STRUCTURAL_METHOD`.
+If runtime-smoke is missing for an integration unit, use
+`NEEDS_INTEGRATION_ORACLE`. If a required axis is unproven, use
+`AXIS_UNPROVEN` or `VISUAL_CERT_BLOCKED`.
 
 ## Closeout Checks
 
@@ -269,6 +374,11 @@ Final delivery must report:
     forbidding unsafe behavior.
 14. structural method result for coding, UI or generated-app units.
 15. structural handoff for coding, UI or generated-app units when applicable.
+16. browser metrics artifact and visual-spatial oracle result when applicable.
+17. anchor artifact path and hash.
+18. Tree Adversary result.
+19. runtime-smoke result for integration units.
+20. contract handoff artifact and API lint status when workers reused APIs.
 
 ## Stop-State Mapping
 
@@ -280,6 +390,17 @@ Use:
   public-surface, data, legal, live-execution or ownership decision.
 - `NEEDS_STRUCTURAL_METHOD` when code, UI or generated-app work lacks a safe
   Engineering Method Profile or fails structure-sensitive checks.
+- `NEEDS_ANCHOR_ARTIFACT` when no persisted non-self anchor is available.
+- `NEEDS_TREE_ADVERSARY` when a required adversarial tree pass is missing or
+  uncleared.
+- `NEEDS_AMBITION_RECONCILIATION` when anchor-declared ceiling is silently
+  lowered.
+- `NEEDS_CONTRACT_EXTENSION_POINT` when a shared contract needs a reserved
+  extension point before later units can extend it.
+- `NEEDS_INTEGRATION_ORACLE` when integration proof is build-only.
+- `AXIS_UNPROVEN` when a required runtime/quality axis has no PASS evidence.
+- `VISUAL_CERT_BLOCKED` when required visual/browser evidence was not attempted
+  or is blocked by captured environment limits.
 - `BLOCKED` when a critical oracle fails outside the slice's control.
 - `SAFETY_BLOCKED` when the task would require unsafe access, fake authority,
   secrets, destructive operations, bypass, private data, or hidden production
@@ -287,94 +408,33 @@ Use:
 
 ## Final Prompt Strength Test
 
-Before returning `READY_GOAL_PROMPT`, ask:
+Before returning `READY_GOAL_PROMPT`, run this compact strength test. Route the
+first failed answer to the named status.
 
-```text
-Could a capable agent execute this prompt without asking what to build, which
-files to touch, how to verify, when to commit, or when to stop?
-```
-
-If the answer is no, the prompt is not ready.
-
-Then ask:
-
-```text
-If the SPEC declared N slices, does this prompt preserve N visible slices and
-N matching commit decisions?
-```
-
-If the answer is no, return `NEEDS_EXECUTION_UNIT_FIDELITY`.
-
-Then ask:
-
-```text
-Does every material unit have changed files, focused oracle evidence,
-reviewer result, git show --stat output, post-commit status and sync status?
-```
-
-If the answer is no, return `NEEDS_EXECUTION_UNIT_FIDELITY`.
-
-Then ask:
-
-```text
-If prior commits or closeouts exist, does the prompt explicitly say whether
-they are baseline-only or execution credit, and does new execution require an
-additive material trail?
-```
-
-If the answer is no, return `NEEDS_TREE_REPAIR`.
-
-Then ask:
-
-```text
-Do negative greps target forbidden behavior without rejecting valid policy
-vocabulary such as blocked-state enums or reason codes?
-```
-
-If the answer is no, return `NEEDS_TREE_REPAIR`.
-
-Then ask:
-
-```text
-If code, UI or generated app artifacts are in scope, does the prompt state an
-Engineering Method Profile with topology, exceptions, structural negative
-checks, structural oracles and per-unit structural evidence?
-```
-
-If the answer is no, return `NEEDS_STRUCTURAL_METHOD`.
-
-Then ask:
-
-```text
-If code, UI or generated app artifacts are in scope, does the prompt carry
-`STRUCTURAL_METHOD=<profile-id>`, topology budget, structural source probes,
-structural debt budget, `bug_vs_architecture` recovery classification and
-structural handoff constraints?
-```
-
-If the answer is no, return `NEEDS_STRUCTURAL_METHOD`.
-
-Then ask:
-
-```text
-If Next Prompt Handoff appears, was it explicitly requested, and does it wait
-for GO plus certification before emitting only the next prompt in chat without
-writing or executing it?
-```
-
-If the answer is no, return `NEEDS_TREE_REPAIR`.
-
-Then ask:
-
-```text
-If Execution Loop appears, was `--execute-loop` explicitly requested, and does
-it require Execution Cost Draft, ACTIVE_SPEC isolation, parent validation,
-local-only commit sync, baseline classification, loop-state blocks, canonical
-SPEC_REPAIR_BY_LLM, failed-attempt recovery, persistent ledger triggers, the
-exact `--execute-loop-parent-fallback` flag for parent fallback, owner-approved
-cloud escalation, strict sequential replay, reference implementations as
-baseline-only comparison, bounded audit repairs, structural decision ledger
-fields, `bug_vs_architecture` recovery classification and Executive Stop Audit?
-```
-
-If the answer is no, return `NEEDS_TREE_REPAIR`.
+1. Persisted non-self anchor path and hash exist:
+   `NEEDS_ANCHOR_ARTIFACT`.
+2. A capable agent can execute without asking artifact, files, oracles, commit
+   rhythm or stop state: `NEEDS_TREE_REPAIR`.
+3. Declared units remain visible, ordered and mapped to commit decisions:
+   `NEEDS_EXECUTION_UNIT_FIDELITY`.
+4. Prior commits and closeouts are explicitly baseline-only or credited by the
+   source/owner: `NEEDS_TREE_REPAIR`.
+5. Negative greps forbid behavior without rejecting valid policy vocabulary:
+   `NEEDS_TREE_REPAIR`.
+6. Anchor-declared ceiling and shared-contract extension checks pass
+   `references/ambition-and-anchor.md`:
+   `NEEDS_AMBITION_RECONCILIATION` or
+   `NEEDS_CONTRACT_EXTENSION_POINT`.
+7. Coding/UI/generated-app units pass `references/structural-method.md`,
+   including executable topology probes: `NEEDS_STRUCTURAL_METHOD`.
+8. Runtime, integration, browser and visual axes pass
+   `references/runtime-certification.md`: `NEEDS_INTEGRATION_ORACLE`,
+   `AXIS_UNPROVEN` or `VISUAL_CERT_BLOCKED`.
+9. Fresh-worker API reuse passes `references/execution-context-handoff.md`:
+   `NEEDS_TREE_REPAIR`.
+10. Required adversarial review passes `references/tree-adversary.md`:
+    `NEEDS_TREE_ADVERSARY`.
+11. Optional Next Prompt Handoff and `--execute-loop` clauses appear only when
+    explicitly requested and carry the runner contract:
+    `NEEDS_TREE_REPAIR`. Parent fallback must require the exact
+    `--execute-loop-parent-fallback` flag.

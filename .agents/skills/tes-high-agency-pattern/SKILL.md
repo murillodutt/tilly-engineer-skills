@@ -1,6 +1,6 @@
 ---
 name: tes-high-agency-pattern
-description: "Local-only self-consumed guidance for designing or reviewing one local development-layer skill/workflow operating pattern: agency, question budget, verbosity, evidence posture, output shape, and packaging discipline. Use when refining how a skill should behave. Prefer tes-predictive-operations for choosing prospect/mine/alternate/package modes during active project reasoning. Do not present as user-invoked."
+description: "Local-only reference guidance for designing or reviewing one local development-layer skill/workflow operating pattern: agency, question budget, verbosity, evidence posture, output shape, and packaging discipline. Use only when explicitly useful for refining how a skill should behave. Prefer tes-predictive-operations for choosing prospect/mine/alternate/package modes during active project reasoning."
 license: MIT
 ---
 
@@ -11,9 +11,10 @@ Operational contract: `tes.high_agency_pattern@0.1.0`.
 Local development surface only. Do not package, publish, materialize, or treat
 as distributable TES.
 
-Self-consume only while already working on local skill or workflow design. Do
-not ask the user to invoke this skill. `tes-mine` and `tes-prospect` are
-reference skills; do not edit them.
+Use only as a reference while already working on local skill or workflow design.
+Do not load it automatically for ordinary execution, and honor an
+owner-requested no-skill run. `tes-mine` and `tes-prospect` are reference
+skills; do not edit them.
 
 Prefer `tes-predictive-operations` when the active decision is how to alternate
 prospecting, mining, and packaging during project reasoning.
@@ -24,8 +25,8 @@ High-agency work is conservative at activation and intense after activation:
 explicit trigger, proactive posture, evidence before questions, one risk at a
 time, recommended answer, cognitive brake, and no artifact until resolution.
 
-This meta-skill remains self-consumed. The explicit-trigger rule applies to the
-target skill or workflow being designed, not to this local review lens.
+This meta-skill is a local review lens, not an automatic runtime governor. The
+explicit-trigger rule applies to the target skill or workflow being designed.
 
 Load references only when needed:
 

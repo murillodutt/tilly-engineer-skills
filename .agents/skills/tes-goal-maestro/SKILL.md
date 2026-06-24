@@ -6,7 +6,7 @@ license: MIT
 
 # TES Goal Maestro
 
-Operational contract: `tes.goal_maestro@0.3.6`.
+Operational contract: `tes.goal_maestro@0.3.7`.
 
 Central rule:
 
@@ -70,6 +70,11 @@ Method Profile, `STRUCTURAL_METHOD=<profile-id>`, `bug_vs_architecture`,
 Failed Attempt Recovery, structural handoff and `NEEDS_STRUCTURAL_METHOD`
 rules through the tree, prompt, loop ledger and closeout.
 
+Anchor, ambition, runtime certification, tree adversary and execution context
+handoff gates are active for `--execute-loop` and for any generated prompt whose
+source artifact declares runtime, visual, integration, shared-contract or
+quality-ceiling risk. Load their owning references before accepting the tree.
+
 If both Next Prompt Handoff and Execution Loop are requested, `--execute-loop`
 owns internal next-prompt generation. Do not include ordinary handoff language
 that forbids parent-runner continuation between validated active SPECs.
@@ -87,6 +92,10 @@ required:
 | Full literal `/goal` prompt body and evidence shape | `templates/maestral-goal-prompt.template.md` |
 | Engineering method profile, topology budget, structural source probes and structural repair | `references/structural-method.md` |
 | Role ownership, reviewer duties and reusable oracle patterns | `references/subagents-and-oracles.md` |
+| Anchor artifact, quality ceiling, ambition directive and shared-contract extension rules | `references/ambition-and-anchor.md` |
+| Browser/visual certification, runtime-smoke integration oracle and required-axis stop states | `references/runtime-certification.md` |
+| Pre-execution adversarial review, oracle classification and adequacy objections | `references/tree-adversary.md` |
+| Source-derived worker handoff, API lint, research budget and Node oracle block | `references/execution-context-handoff.md` |
 | `--execute-loop`, `ACTIVE_SPEC`, loop-state block, `GOAL-EXECUTION-LOOP-LEDGER`, SPEC repair and Executive Stop Audit | `references/execution-loop-runner.md` |
 
 Before returning `READY_GOAL_PROMPT`, the loaded references must cover every
@@ -94,8 +103,12 @@ behavior the generated prompt depends on.
 
 ## Maturity Gate
 
-Before generating `/goal`, verify that the input artifact provides or clearly
-derives:
+Before generating `/goal`, first verify the Anchor Artifact Gate from
+`references/ambition-and-anchor.md`: the run must cite a persisted non-self
+anchor artifact with class, path and hash, or stop with
+`NEEDS_ANCHOR_ARTIFACT`.
+
+Then verify that the input artifact provides or clearly derives:
 
 1. canonical artifact;
 2. capability or purpose;
@@ -108,17 +121,22 @@ derives:
 9. negative-grep candidates;
 10. stop states or owner-decision points;
 11. commit strategy;
-12. Engineering Method Profile and Method Enforcement Packet when code,
+12. ambition directive and quality ceiling when declared by the anchor;
+13. Engineering Method Profile and Method Enforcement Packet when code,
     runtime, UI or generated app artifacts change;
-13. final delivery contract.
+14. runtime, visual, integration, shared-contract and worker-handoff needs when
+    those risks are in scope;
+15. final delivery contract.
 
 Use `references/quality-gates.md` for full status definitions. Root-level
 statuses are:
 
 - `NEEDS_SPEC_MATURITY`
+- `NEEDS_ANCHOR_ARTIFACT`
 - `NEEDS_EXECUTION_UNIT_FIDELITY`
 - `NEEDS_SLICE_FIDELITY`
 - `NEEDS_TREE_REPAIR`
+- `NEEDS_TREE_ADVERSARY`
 - `DRAFT_MATERIALIZATION_TREE`
 - `NEEDS_TREE_ACCEPTANCE`
 - `READY_GOAL_PROMPT`
@@ -126,6 +144,11 @@ statuses are:
 - `SAVE_REQUESTED`
 - `NEEDS_EXECUTION_LOOP_DRAFT`
 - `NEEDS_STRUCTURAL_METHOD`
+- `NEEDS_AMBITION_RECONCILIATION`
+- `NEEDS_CONTRACT_EXTENSION_POINT`
+- `NEEDS_INTEGRATION_ORACLE`
+- `AXIS_UNPROVEN`
+- `VISUAL_CERT_BLOCKED`
 - `SPEC_BLOCKED`
 - `SPEC_CONTRACT_UNSTABLE`
 - `NEEDS_MORE_LOOPS`
@@ -139,33 +162,46 @@ the smallest missing set. If the artifact is mature but the tree is absent,
 generate and validate the tree, then continue to `READY_GOAL_PROMPT` when the
 tree passes.
 
+Status specificity rule: prefer the most specific Goal Maestro stop state before
+generic branch states. Do not answer with `SPEC_BLOCKED` or `SAFETY_BLOCKED`
+when the failure is specifically missing integration proof, missing visual proof,
+missing source-derived worker handoff, missing anchor, missing Tree Adversary, or
+unrepaired tree adequacy. Use the named stop state instead.
+
 ## Workflow
 
 1. Read the input artifact and any user-provided tree.
-2. Run Maturity Gate and assign readiness.
+2. Run Anchor Artifact Gate, then Maturity Gate, and assign readiness.
 3. Preserve every declared execution unit id and order; stop with
    `NEEDS_EXECUTION_UNIT_FIDELITY` if fidelity fails.
-4. Treat prior commits and closeouts as baseline-only unless the source
+4. Capture any `ambition_directive`, `quality_ceiling` and shared contracts
+   from the anchor before reducing scope.
+5. Treat prior commits and closeouts as baseline-only unless the source
    artifact or owner explicitly grants execution credit.
-5. Apply semantic negative-grep rules: block forbidden behavior, not valid
+6. Apply semantic negative-grep rules: block forbidden behavior, not valid
    blocked-state vocabulary.
-6. For code, UI, runtime or generated app work, load
+7. For code, UI, runtime or generated app work, load
    `references/structural-method.md` before building the tree.
-7. Prefer centralized sequential writes when commit-per-unit order matters;
+8. For browser, visual, runtime or integration work, load
+   `references/runtime-certification.md` before building the tree.
+9. Prefer centralized sequential writes when commit-per-unit order matters;
    use subagents for bounded ownership, review and oracles.
-8. Load the route-specific references from `Mandatory Load Routing`.
-9. Produce the fixed Materialization Tree schema.
-10. Validate the tree against maturity, fidelity, continuation, ownership,
-    oracle, structural method, negative-grep, material-diff, sync-commit and
-    stop-state gates.
-11. Write a Super SPEC artifact only when a Super SPEC must be produced or
+10. Load the route-specific references from `Mandatory Load Routing`.
+11. Produce the fixed Materialization Tree schema.
+12. Validate the tree against anchor, maturity, fidelity, continuation,
+    ownership, oracle adequacy, runtime certification, structural method,
+    context handoff, negative-grep, material-diff, sync-commit and stop-state
+    gates.
+13. When `--execute-loop` is requested or risk is high, run the Tree Adversary
+    from `references/tree-adversary.md`; do not self-clear objections.
+14. Write a Super SPEC artifact only when a Super SPEC must be produced or
     expanded; otherwise stay chat-first.
-12. Load `references/maestral-goal-prompt.md` and
+15. Load `references/maestral-goal-prompt.md` and
     `templates/maestral-goal-prompt.template.md` before emitting a prompt.
-13. Produce `READY_GOAL_PROMPT` in the same response when gates pass.
-14. If Next Prompt Handoff was explicitly requested, add only the chat-window
+16. Produce `READY_GOAL_PROMPT` in the same response when gates pass.
+17. If Next Prompt Handoff was explicitly requested, add only the chat-window
     handoff clause defined by the prompt reference.
-15. If `--execute-loop` was explicitly requested, load
+18. If `--execute-loop` was explicitly requested, load
     `references/execution-loop-runner.md` and run only after
     `READY_GOAL_PROMPT`.
 
@@ -173,27 +209,31 @@ Fixed tree schema:
 
 1. `Canonical Artifact`
 2. `Certified Context`
-3. `Phase Boundary`
-4. `Non-Objectives`
-5. `Central Rule`
-6. `Forbidden Moves`
-7. `Execution Units`
-8. `Subagent Ownership`
-9. `Per-SPEC Oracles`
-10. `Negative Grep`
-11. `Commit Strategy`
-12. `Review Loop`
-13. `Stop States`
-14. `Final Delivery Contract`
+3. `Shared Contracts`
+4. `Phase Boundary`
+5. `Non-Objectives`
+6. `Central Rule`
+7. `Forbidden Moves`
+8. `Execution Units`
+9. `Subagent Ownership`
+10. `Per-SPEC Oracles`
+11. `Negative Grep`
+12. `Commit Strategy`
+13. `Review Loop`
+14. `Stop States`
+15. `Final Delivery Contract`
 
 Every generated `/goal` prompt must include `SPEC-000 Preflight And Baseline`,
 commit-per-SPEC discipline, material-diff proof, sync status, negative grep,
-review loop, stop states and final delivery contract.
+review loop, anchor artifact fields, stop states and final delivery contract.
 
 Every material unit must define objective, allowed files, forbidden files or
 actions where risky, owner, focused oracles, negative checks where relevant,
 semantic commit message, completion evidence and structural method
-requirements when applicable.
+requirements when applicable. Integration units must define a runtime-smoke
+oracle; browser or visual units must define required-axis certification
+evidence; code units must carry source-derived handoff evidence when reused APIs
+cross SPEC boundaries.
 
 Each per-unit evidence block must require changed files,
 `git show --stat --oneline <commit>`, focused oracles, negative checks,
@@ -208,6 +248,8 @@ authorization for that action.
 ## Critical Locks
 
 - Do not generate `/goal` from an immature input artifact.
+- Do not generate `READY_GOAL_PROMPT` without a persisted non-self anchor
+  artifact when the Anchor Artifact Gate applies.
 - Do not ask for a separate permission between tree and `/goal` after explicit
   invocation when the tree passes all gates.
 - Do not execute implementation unless the user separately asks for execution
@@ -217,6 +259,8 @@ authorization for that action.
 - Do not include Next Prompt Handoff without an explicit handoff trigger.
 - Do not run Execution Loop without explicit `--execute-loop` and an
   `Execution Cost Draft`, Pre-Edit Gate and `GOAL-EXECUTION-LOOP-LEDGER`.
+- Do not run Execution Loop unless the Tree Adversary is cleared or its
+  objections are repaired.
 - Do not allow parent fallback without the exact
   `--execute-loop-parent-fallback` flag.
 - Do not let workers execute outside `ACTIVE_SPEC`, execute the next SPEC,
@@ -237,6 +281,15 @@ authorization for that action.
   `GOAL-EXECUTION-LOOP-LEDGER`.
 - Do not compress declared execution units into fewer implementation units.
 - Do not allow empty commits to satisfy material execution units.
+- Do not let build/typecheck alone satisfy an integration or runtime-wiring
+  unit; stop with `NEEDS_INTEGRATION_ORACLE`.
+- Do not close a required visual/browser axis as complete with `DEGRADED`,
+  missing screenshots, or `browser_attempt=not_attempted`.
+- Do not let a topology budget pass as prose; it must have an executable probe
+  or an explicit source-proven exception.
+- Do not let a parent-memory summary replace a source-derived contract handoff
+  when workers reuse existing APIs; stop with `NEEDS_TREE_REPAIR` before worker
+  spawn.
 - Do not use broad lexical negative greps that reject valid policy vocabulary.
 - Do not perform cloud escalation without owner approval of the exact sanitized
   payload and Cloud Query Redaction Block.

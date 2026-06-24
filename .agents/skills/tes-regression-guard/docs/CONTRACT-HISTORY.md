@@ -3,8 +3,8 @@
 ## Purpose
 
 Preserve certified, installed, materialized, generated, measured, and
-human-rated TES behavior during all repository analysis and writing while
-allowing runtime-first engineering to continue.
+human-rated TES behavior during risky repository changes while allowing
+runtime-first engineering to continue without compulsory skill loading.
 
 ## Why This Skill Exists
 
@@ -19,7 +19,8 @@ generated public surfaces, release identity, and user-facing behavior.
 | Source | Signal | Confidence |
 |--------|--------|------------|
 | Maintainer directive, 2026-05-31 | Regression loops are dangerous and waste hours; create a development-layer skill and reinforce `AGENTS.md` before returning to the correction line. | High |
-| Maintainer directive, 2026-05-31 | The guard must be auto-loaded/self-consumed permanently for every analysis and writing condition, not invoked by the user. | High |
+| Maintainer directive, 2026-05-31 | The guard was originally promoted to automatic behavior for every analysis and writing condition. | Historical |
+| Maintainer directive, 2026-06-24 | Automatic skill loading was blocking high-agency TES execution; keep regression protection risk-scoped and honor no-skill runs unless destructive, secret, remote, release, or safety risk requires escalation. | High |
 | Maintainer directive, 2026-05-31 | Regression is not exclusive to Python or one capability; it must be treated broadly across the whole TES project. | High |
 | Prior audio-quality tests | Human-rated audio quality depended on direct execution, voice profile, chunking, punctuation, and light prosody choices. | High |
 | Local runtime evidence | A later direct run used optimized scripts but omitted the winning prosody recipe and exposed fragile hard-coded heuristics. | High |
@@ -68,8 +69,9 @@ generated public surfaces, release identity, and user-facing behavior.
 | Date | Change | Evidence | Confidence |
 |------|--------|----------|------------|
 | 2026-05-31 | Created local anti-regression guard for TES development changes. | Maintainer directive in current session; live runtime regression analysis. | High |
-| 2026-05-31 | Promoted guard from risky-change-only to always-on self-consumed analysis/write kernel. | Maintainer directive in current session. | High |
+| 2026-05-31 | Promoted guard from risky-change-only to automatic analysis/write kernel. | Maintainer directive in current session. | Historical |
 | 2026-05-31 | Generalized guard from capability/Python-centered regression to whole-project regression protection. | Maintainer directive in current session. | High |
+| 2026-06-24 | Demoted automatic loading back to risk-scoped reference behavior while preserving protected-baseline checks for risky changes. | Maintainer directive in current session; bootloader update. | High |
 
 ## Do Not Lose
 
@@ -79,5 +81,5 @@ change that preserves one visible command while changing triggers, routing,
 docs, materialization, generated public pages, release identity, safety,
 latency, audio, or comparison evidence is not equivalent.
 
-This guard is not a command. It is a standing local reasoning kernel for every
-TES package analysis and write.
+This guard is not a command. It is a local reference for risky TES package
+changes, not a standing loader for every analysis and write.

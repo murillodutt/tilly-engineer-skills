@@ -31,6 +31,10 @@ examples or origins.
 | Canary execution audit, 2026-06-23 | Reference implementations, manual builds, browser smoke results, run records and post-facto audits are baseline-only comparison evidence; `--execute-loop` requires strict sequential replay through fresh `ACTIVE_SPEC` execution. | high |
 | Canary execution audit and maintainer directive, 2026-06-23 | Coding and app-building units need an Engineering Method Profile so behavior-green runs do not hide god files, framework-topology bypass, duplicated logic or single-file exception abuse. | high |
 | Maintainer systemic correction, 2026-06-23 | Structural method must be enforced through active-SPEC envelope fields, deterministic source probes, structural handoff, decision ledger and `bug_vs_architecture` recovery classification, not only remembered as prose. | high |
+| Structural-method canary, 2026-06-23 | When topology is inferred, an ADR-level structural decision, stable browser metrics artifact, visual-spatial oracle and bounded certification repair rule improve execution without adding governance. | high |
+| Maintainer recurring-failure audit, 2026-06-23 | `--execute-loop` needs a mechanical Pre-Edit Gate, mandatory ledger from loop start, explicit baseline-only commits and a stop when `FIRST_UNEXECUTED_UNIT` differs from `ACTIVE_SPEC`. | high |
+| Runtime field report, 2026-06-24 | Visual/browser axes, integration wiring, topology budgets, ambition ceilings, shared contracts and pre-execution adversarial review need hard gates before loop cost is spent. | high |
+| Worker transcript forensic review, 2026-06-24 | Fresh workers spent avoidable reads because parent envelopes transferred APIs through memory prose; source-derived contract handoff, API lint, canonical Node oracle blocks and research budgets are required for loop efficiency. | high |
 
 ## Source Search Ledger
 
@@ -76,6 +80,11 @@ examples or origins.
   sources, opens one `ACTIVE_SPEC` per fresh worker subagent, validates local
   commit evidence before advancing, and runs Executive Stop Audit before final
   closure.
+- Execution Loop requires a Pre-Edit Gate before any edit, worker spawn or
+  parent fallback: `EXECUTE_LOOP_REQUESTED=yes`, `READY_GOAL_PROMPT=present`,
+  exact `DECLARED_UNITS`, `FIRST_UNEXECUTED_UNIT`, matching `ACTIVE_SPEC`,
+  `BASELINE_ONLY_COMMITS`, `LEDGER`, and `MAY_EDIT=yes`. A mismatch stops with
+  `NEEDS_EXECUTION_UNIT_FIDELITY`.
 - When Next Prompt Handoff and Execution Loop are both requested,
   `--execute-loop` owns internal next-prompt continuation; ordinary chat-only
   handoff semantics apply only after the loop stops or completes.
@@ -84,10 +93,13 @@ examples or origins.
   requires canonical material SPEC repair targets, and stops before cloud
   escalation unless the owner approves the exact sanitized payload.
 - Execution Loop requires failed-attempt recovery before retry, creates a
-  persistent `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` for long,
-  repaired, audit-expanded or resumed loops, and treats parent-side worker
+  persistent `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md` before the
+  first `ACTIVE_SPEC` for every `--execute-loop`, and treats parent-side worker
   fallback as disabled unless explicitly requested by
   the exact `--execute-loop-parent-fallback` flag.
+- Materializing or expanding a Super SPEC is preparatory contract work and does
+  not consume or satisfy a declared execution unit unless that same unit is the
+  active execution unit in the source contract.
 - Execution Loop treats reference implementations, prior manual builds,
   browser smoke results, screenshots, run records and post-facto audits as
   baseline-only comparison evidence. They never satisfy execution credit; the
@@ -102,6 +114,14 @@ examples or origins.
   allowed new modules or internal sections, structural debt budget, structural
   source probes, `bug_vs_architecture` recovery classification and structural
   handoff constraints.
+- When topology is inferred rather than source-mandated, coding and
+  app-building loops require a recorded structural decision before the first
+  material implementation commit.
+- Browser, UI, game and rendered-canvas certification requires a stable
+  machine-readable metrics artifact and visual-spatial evidence when visual or
+  spatial failure is a realistic risk.
+- Certification repairs may happen inside the active final or audit SPEC only
+  as bounded `audit_repair` work with local commit evidence and rerun oracles.
 - A source-mandated single-file deliverable is allowed only as an explicit
   contract exception with internal modularity, named sections, narrow APIs, no
   duplicated logic and structural audit evidence.
@@ -158,8 +178,29 @@ examples or origins.
 - Losing structural state between units because the next prompt, active-SPEC
   envelope or loop ledger omitted `STRUCTURAL_METHOD`, changed topology,
   accepted debt or next-unit constraints.
+- Advancing to a later unit because Super SPEC materialization or baseline
+  commits were mistaken for execution of the first unexecuted unit.
+- Starting edits without `FIRST_UNEXECUTED_UNIT` matching `ACTIVE_SPEC`.
 - Retrying a coding SPEC as an ordinary bug fix when the failure is actually
   structural collapse.
+- Letting topology inference happen implicitly in the worker without a recorded
+  structural decision artifact.
+- Trusting browser globals or worker prose instead of a stable metrics artifact
+  for app, UI, game or rendered-canvas certification.
+- Accepting logic-only spawn, raycast, canvas, layout or 3D-render checks when
+  the failure can be visual or spatial.
+- Treating certification-time repairs as hidden implementation or skipped SPEC
+  work instead of bounded, committed `audit_repair`.
+- Closing a required visual or browser axis as complete with `DEGRADED`, no
+  screenshot, or no captured browser attempt.
+- Treating build/typecheck as sufficient proof for integration or runtime
+  wiring units.
+- Treating line-count budgets as advisory prose instead of executable probes.
+- Letting the generated tree act as its own anchor artifact.
+- Lowering an anchor-declared quality ceiling to future work without owner
+  decision.
+- Sending fresh workers into reused APIs with parent-memory summaries instead
+  of source-derived contract handoff and API lint.
 - Ending with prose instead of evidence and stop states.
 
 ## Relationship To Other Skills
@@ -186,6 +227,9 @@ discipline once execution begins.
 | 2026-06-23 | Added reference-baseline credit gate: previous implementations, manual builds, browser smokes, run records and post-facto audits cannot validate `--execute-loop` without fresh sequential active-SPEC execution. | Real-project canary audit; source skill, references and oracle updated. | high |
 | 2026-06-23 | Added Structural Method Gate: Goal Maestro now requires an Engineering Method Profile for coding and app-building units, including topology, exceptions, structure-sensitive negative checks, structural oracles and per-unit evidence. | Real-project canary audit; maintainer directive to add structural engineering across codifiers. | high |
 | 2026-06-23 | Closed structural-method enforcement gaps: `STRUCTURAL_METHOD=<profile-id>` active-SPEC envelope, topology budget, structural source probes, structural handoff, structural decision ledger fields and `bug_vs_architecture` recovery classification are now required for coding execution. | Maintainer systemic correction request after comparing the first structural gate against the full method proposal. | high |
+| 2026-06-23 | Hardened structural canary certification: topology inference now needs a structural decision artifact, browser work needs stable metrics plus visual-spatial evidence, and certification repairs must be bounded audit repairs with local commit evidence. | Voxel World 3D structural-method canary; parent audit recorded stable multi-file topology, browser metrics, screenshot evidence and certification repair commits. | high |
+| 2026-06-23 | Added execute-loop Pre-Edit Gate and mandatory start-of-loop ledger so a Super SPEC artifact or baseline commit cannot advance the declared unit counter. | Maintainer recurring-failure audit after a declared first unit was skipped and a later unit opened. | high |
+| 2026-06-24 | Added Anchor Artifact Gate, quality-ceiling capture, shared-contract extension rules, runtime certification hard gates, integration runtime-smoke, Tree Adversary, executable topology probes and source-derived worker handoff. | `tmp/analytics/FIELD-REPORT-tes-goal-maestro-20260624.md`; `tmp/analytics/FORENSE-EXECUCAO-tes-goal-maestro-20260624.md`; source references updated. | high |
 
 ## Do Not Lose
 
@@ -208,4 +252,7 @@ implementations and Executive Stop Audit. Do not accept behavior-only green when
 code structure regresses; coding and app-building prompts need an Engineering
 Method Profile, `STRUCTURAL_METHOD=<profile-id>` enforcement packet,
 structural source probes, structural evidence and structural handoff, with
-single-file delivery treated only as an explicit bounded exception.
+single-file delivery treated only as an explicit bounded exception. Do not let
+topology inference remain implicit, do not certify browser or visual-spatial
+work without a stable metrics artifact and rendered evidence, and do not hide
+certification repairs outside bounded audit-repair commits.

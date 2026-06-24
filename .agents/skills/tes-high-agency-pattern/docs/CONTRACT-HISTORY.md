@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`tes-high-agency-pattern` is local-only self-consumed development guidance that
+`tes-high-agency-pattern` is local-only reference development guidance that
 extracts the operating pattern proven by `tes-mine` and `tes-prospect` without
 changing those reference skills or promoting the pattern into distributable TES.
 
@@ -20,7 +20,8 @@ and bounded to one target skill or workflow at a time.
 |--------|--------|------------|
 | `.agents/skills/tes-prospect/SKILL.md` | Explicit invocation, proactive pressure, one question at a time, and cognitive brake. | high |
 | `.agents/skills/tes-mine/SKILL.md` | Evidence-first mining, one question at a time, durable writes only after resolution, and cognitive brake. | high |
-| Maintainer directive, 2026-05-22 | The pattern should be self-consumed locally and not exposed as a user command. | high |
+| Maintainer directive, 2026-05-22 | The pattern was originally made automatic locally and not exposed as a user command. | historical |
+| Maintainer directive, 2026-06-24 | Local development meta-skills should not auto-load when they block high-agency execution; keep this as a reference lens and honor no-skill runs. | high |
 | Maintainer directive, 2026-05-29 | Apply review findings: valid skill packaging, docs/agents trace, local-only placement, and clearer contract memory. | high |
 
 ## Source Search Ledger
@@ -28,12 +29,12 @@ and bounded to one target skill or workflow at a time.
 | Window | Query | Occurrences | Meaning |
 |--------|-------|-------------|---------|
 | 2026-05-29 review | `tes-high-agency-pattern` across `.agents/**`, `docs/**`, and `AGENTS.md` | local skill only before repair | The new runtime asset needed an explicit `docs/agents/**` trace. |
-| 2026-05-29 review | `explicit invocation` in `tes-prospect`, `tes-mine`, and this skill | direct conceptual lineage | The explicit-trigger rule belongs to target workflows; this meta-skill remains self-consumed. |
+| 2026-05-29 review | `explicit invocation` in `tes-prospect`, `tes-mine`, and this skill | direct conceptual lineage | The explicit-trigger rule belongs to target workflows; this meta-skill is now a local reference lens. |
 
 ## Contracts Preserved
 
 - Keep `tes-mine` and `tes-prospect` untouched as reference skills.
-- Self-consume the high-agency pattern only during local skill/workflow design.
+- Use the high-agency pattern only as a local reference during skill/workflow design.
 - Do not expose it as a user-invoked skill or command.
 - Apply explicit activation, proactive posture, evidence-before-question,
   one-risk-at-a-time operation, recommended answers, cognitive brake, and
@@ -66,15 +67,16 @@ and bounded to one target skill or workflow at a time.
 | 2026-05-22 | Created local high-agency pattern skill from `tes-mine` and `tes-prospect` learning. | Maintainer analysis session. | high |
 | 2026-05-22 | Added local skill-packaging reinforcement from external `write-a-skill` guidance. | Maintainer-provided external skill excerpt; absorbed as local principles, not copied as product surface. | high |
 | 2026-05-22 | Slimmed `SKILL.md` to a local routing contract and moved detail into `references/**`. | Maintainer requested extreme progressive disclosure. | high |
-| 2026-05-22 | Changed activation posture from user-invoked to self-consumed local guidance. | Maintainer clarified these skills should be autoconsumed, not invoked. | high |
+| 2026-05-22 | Changed activation posture from user-invoked to automatic local guidance. | Maintainer clarified these skills should be auto-loaded, not invoked. | historical |
 | 2026-05-22 | Added local Operating Temperament guidance for sniper, miner, prospector, builder, gate, and curator skill design. | Maintainer clarified that the development layer should learn how to create powerful skills with different verbosity and question profiles. | high |
 | 2026-05-22 | Renamed `operating-temperament.md` to `temperament-profiles.md` and added cross-routing to `tes-predictive-operations`. | Maintainer senior analysis identified false same-name drift between complementary temperament references. | high |
 | 2026-05-22 | Tightened frontmatter description to route one-skill operating-pattern design away from active project mode selection. | Maintainer approved P4 trigger-alignment pass after senior review. | high |
-| 2026-05-29 | Quoted frontmatter description, added operational contract version, clarified self-consumed versus explicit-target activation, added validation, done criteria, OpenAI metadata, expanded contract history, and docs/agents trace expectation. | Read-only review found invalid YAML frontmatter, ambiguous self-consumed placement, missing local skill metadata, incomplete Tilly contract history, and missing `docs/agents/**` trace. | high |
+| 2026-05-29 | Quoted frontmatter description, added operational contract version, clarified automatic versus explicit-target activation, added validation, done criteria, OpenAI metadata, expanded contract history, and docs/agents trace expectation. | Read-only review found invalid YAML frontmatter, ambiguous automatic placement, missing local skill metadata, incomplete Tilly contract history, and missing `docs/agents/**` trace. | high |
+| 2026-06-24 | Demoted from automatic behavior to explicit local reference guidance that honors owner-requested no-skill runs. | Maintainer directive in current session; bootloader update. | high |
 
 ## Do Not Lose
 
-This skill is a local learning lens for the agent to self-consume. It must not
+This skill is a local learning lens for the agent to consult explicitly. It must not
 be exposed as a command, must not become a commercial skill, must not weaken or
 edit `tes-mine` or `tes-prospect`, and must not promote external guidance
 before repeated local evidence shows it improves precision without increasing

@@ -12,8 +12,10 @@ Assumptions visible. Scope smaller. Edits surgical. Success falsifiable.
 ```
 
 Use this skill for non-trivial coding, review, refactor, debugging, migration,
-or agent-instruction work. Skip the full ceremony for obvious one-line fixes,
-but keep the spirit.
+or agent-instruction work when explicitly invoked or when bootloader/project
+rules call for deeper discipline. Skip the full ceremony for obvious one-line
+fixes, and honor an owner-requested no-skill run unless destructive, remote,
+secret, release, or safety risk requires escalation.
 
 ## Gate Zero — Declared-Contract Arbiter
 
@@ -220,22 +222,25 @@ retained artifact.
 
 ## Mantra Gate
 
-Before state-changing work, use the TES Mantra Gate:
+Use the TES Mantra Gate for destructive, remote, release, sync, secret-bearing,
+or high-impact state changes, and for closure claims that depend on those
+actions:
 
 ```text
 VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS
 ```
 
-For routine writes, commits, generated artifacts, spec execution, high-risk
-work, or project-state updates, show only `[🍳 Flash-Fry]` to the user when the
-gate permits proceeding. That marker is UX compression, not evidence deletion:
-the full gate must be recorded in the current evidence/report surface, Field
-Reports/Cortex when appropriate, or the local `.tes/mantra-gates/` fallback.
+For ordinary local edits, focused oracles, staging, and local commits, keep the
+check inline and do not block on gate artifacts, markers, or skill loading. When
+a risky gate permits proceeding, a short status is enough; retained gate records
+belong only in the current evidence/report surface, Field Reports/Cortex when
+appropriate, or the local `.tes/mantra-gates/` fallback.
 
 Report gate detail only when the gate returns `BLOCKED` or `NEEDS_REVIEW`,
 approval is required, or the user explicitly asks for audit detail. If `VERIFY`
-or the required `ORACLE` is missing, stop as `BLOCKED`. If `SCOPE` or
-`DOCUMENT` is ambiguous for material work, stop as `NEEDS_REVIEW`.
+or the required `ORACLE` is missing for the risky action, stop as `BLOCKED`. If
+`SCOPE` or `DOCUMENT` is ambiguous for high-impact material work, stop as
+`NEEDS_REVIEW`.
 
 ## Infrastructure Decision Gate
 

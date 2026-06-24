@@ -1,9 +1,11 @@
 name: tes-regression-guard
-description: Always-on local anti-regression guard for TES development analysis and writing.
+description: Risk-scoped local anti-regression reference for TES development work.
 default_prompt: |
-  Self-consume $tes-regression-guard automatically for every TES repository
-  analysis, write, oracle, runtime change, commit, or closeout. Do not ask the
-  user to invoke it and do not present it as a product command. Name the
-  last-known-good baseline when behavior can move, classify the intended delta,
-  protect invariants, require same-input comparison evidence for risky changes,
-  and stop or gate the change when the baseline cannot be protected.
+  Use $tes-regression-guard only when a TES repository change can affect a
+  certified, installed, materialized, generated, measured, release, CLI, public,
+  or user-visible baseline. Do not load it by default for ordinary analysis,
+  low-risk edits, or an owner-requested no-skill run unless a concrete
+  destructive, secret, remote, release, or safety risk must be escalated. Name
+  the last-known-good baseline when behavior can move, classify the intended
+  delta, protect invariants, require same-input comparison evidence for risky
+  changes, and stop or gate the change when the baseline cannot be protected.
