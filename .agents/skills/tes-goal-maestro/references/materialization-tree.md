@@ -105,22 +105,7 @@ If preserving declared units appears inefficient or technically awkward, stop wi
 
 ## Shared Contracts
 
-Use `references/ambition-and-anchor.md` when a type, schema, command, runtime surface, fixture helper or source module crosses execution-unit boundaries.
-
-The tree must name each shared contract with:
-
-```text
-contract_name:
-declared_in:
-frozen_surface:
-extension_points:
-extenders:
-optionality_rule:
-declaring_oracles:
-extension_oracles:
-```
-
-If a later unit must extend an upstream frozen surface and no extension point is declared, stop with `NEEDS_CONTRACT_EXTENSION_POINT`. Do not silently make the new field optional to keep earlier oracles green.
+`references/ambition-and-anchor.md` § Shared Contracts owns this contract (the 8-field entry schema and the `extension-only` write rule) when a type, schema, command, runtime surface, fixture helper or source module crosses execution-unit boundaries. A later unit extending an upstream frozen surface with no declared extension point → `NEEDS_CONTRACT_EXTENSION_POINT`; do not make the new field optional to keep earlier oracles green.
 
 ## Material Diff Gate
 
@@ -232,6 +217,12 @@ oracle_strength=<sufficient|facade|blocked>
 ```
 
 Avoid broad-only validation. Run the smallest meaningful oracle first. For `unit_role=integration`, the smallest meaningful oracle is the runtime-smoke, not build/typecheck.
+
+An oracle is `facade` when the quantity it MEASURES is a structural proxy (file size, mtime, byte count, path existence) for the semantic property it NAMES (luminance, frame rate, position, color). Declare `PROVEN_PROPERTY` and `MEASURED_QUANTITY` for each executable oracle; if the measured quantity can stay constant while the named property is violated, `oracle_strength=facade` → `NEEDS_TREE_REPAIR`. See `references/tree-adversary.md` § Oracle Classification for the name↔measure test; this copy is read in-loco by the unit gate.
+
+### Wall harness invocation
+
+When a reference names a wall harness for a gate — written `(drive with scripts/<name>.mjs)` — that harness IS the per-SPEC oracle for that gate, not a suggestion to read. The named harness must be **run** (`node scripts/<name>.mjs <args>`) as part of the unit's focused-oracle step; its exit code is the gate. A non-zero exit is the stop named by the owning reference (the prose does not get to overrule it); a zero exit is the only evidence that clears the gate. "Drive with X.mjs" mentioned but not executed is `oracle_strength=facade` for that unit — the same hole the harness exists to close. Parent Validation records the command and its literal exit code in `focused oracle evidence`; the Executive Stop Audit re-runs it. An agent that paraphrases the harness result instead of running it has not run the oracle.
 
 ## Structural Method Gate
 

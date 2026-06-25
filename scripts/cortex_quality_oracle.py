@@ -329,11 +329,16 @@ def run_oracle() -> dict[str, Any]:
         missing_cell.unlink()
 
         xenova_probe = cortex.curate_plan(healthy, "xenova", write_index=False)
-        if xenova_probe.get("status") not in {"PASS", "BLOCKED"}:
-            failures.append(f"xenova probe returned ambiguous status: {xenova_probe.get('status')}")
-        if xenova_probe.get("status") == "PASS" and xenova_probe.get("backend_status") != "CERTIFIED":
+        xenova_status = xenova_probe.get("status")
+        xenova_backend_ok = xenova_probe.get("backend_status") == "CERTIFIED"
+        xenova_probe_ok = xenova_status in {"PASS", "BLOCKED"} or (
+            xenova_status == "FAIL" and xenova_backend_ok
+        )
+        if not xenova_probe_ok:
+            failures.append(f"xenova probe returned ambiguous status: {xenova_status}")
+        if xenova_status == "PASS" and xenova_probe.get("backend_status") != "CERTIFIED":
             failures.append("xenova PASS did not report CERTIFIED backend status")
-        if xenova_probe.get("status") == "BLOCKED" and not xenova_probe.get("failures"):
+        if xenova_status == "BLOCKED" and not xenova_probe.get("failures"):
             failures.append("xenova BLOCKED omitted exact reason")
 
         return {

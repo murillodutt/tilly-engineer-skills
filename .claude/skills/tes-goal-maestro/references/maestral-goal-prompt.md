@@ -124,7 +124,7 @@ Before returning `READY_GOAL_PROMPT`, verify the prompt:
 
 ## Stop If Missing
 
-Stop with `NEEDS_SPEC_MATURITY`, `NEEDS_TREE_REPAIR`, `NEEDS_EXECUTION_UNIT_FIDELITY`, `NEEDS_STRUCTURAL_METHOD` or `NEEDS_TREE_ACCEPTANCE`, `NEEDS_ANCHOR_ARTIFACT`, `NEEDS_AMBITION_RECONCILIATION`, `NEEDS_INTEGRATION_ORACLE`, `VISUAL_CERT_BLOCKED` or `NEEDS_TREE_ADVERSARY` when:
+Stop with `NEEDS_SPEC_MATURITY`, `NEEDS_TREE_REPAIR`, `NEEDS_EXECUTION_UNIT_FIDELITY`, `NEEDS_STRUCTURAL_METHOD` or `NEEDS_TREE_ACCEPTANCE`, `NEEDS_ANCHOR_ARTIFACT`, `NEEDS_AMBITION_RECONCILIATION`, `NEEDS_INTEGRATION_ORACLE`, `VISUAL_CERT_BLOCKED`, `NEEDS_CONTEXT` or `NEEDS_TREE_ADVERSARY` when:
 
 1. the canonical artifact is unclear;
 2. the anchor artifact is missing, self-referential or unhashed;
@@ -139,7 +139,8 @@ Stop with `NEEDS_SPEC_MATURITY`, `NEEDS_TREE_REPAIR`, `NEEDS_EXECUTION_UNIT_FIDE
 11. browser, UI, game or rendered-canvas work is in scope but the prompt lacks required-axis PASS certification;
 12. fresh-worker loops would depend on parent memory instead of source-derived handoff;
 13. Tree Adversary is required but absent or uncleared;
-14. `templates/maestral-goal-prompt.template.md` was not loaded before prompt construction.
+14. `templates/maestral-goal-prompt.template.md` was not loaded before prompt construction;
+15. any anchor-traceable axis would reach a worker without resolved context — `runtime_target`, an `oracle_runner_contract` with a regression target, or (under isolation) `forbidden-write`/`forbidden-import` constraints — in which case stop with `NEEDS_CONTEXT` and do not emit the prompt. This gate runs at prompt generation, not only inside `--execute-loop`: a holed envelope must be caught before the worker, not after.
 
 Use `NEEDS_TREE_ACCEPTANCE` only when changing the declared execution contract requires owner acceptance or the user explicitly asked for staged review.
 

@@ -76,7 +76,7 @@ MAY_EDIT=<yes|no>
 
 1. `EXECUTE_LOOP_REQUESTED=yes`;
 2. `READY_GOAL_PROMPT=present`;
-3. `ANCHOR_PATH` names a persisted non-self artifact and `ANCHOR_HASH` was captured before execution;
+3. `ANCHOR_PATH` names a persisted non-self artifact and `ANCHOR_HASH` is **recomputed** at the gate — `git hash-object <ANCHOR_PATH>` is run and compared byte-for-byte to the declared `ANCHOR_HASH`; a declared hash that is not re-derived is self-attested provenance, the same hole as a facade oracle. Divergence, a missing path, or `ANCHOR_PATH` resolving to a `benchmark-*/` distinct from the current run → stop with `NEEDS_ANCHOR_ARTIFACT`; the loop does not start (drive with `scripts/anchor-rehash.mjs`);
 4. `TREE_ADVERSARY_STATUS` is `ADVERSARY_CLEARED`, `OBJECTIONS_REPAIRED`, or `not_required`;
 5. `DECLARED_UNITS` preserves the source-declared queue exactly;
 6. `FIRST_UNEXECUTED_UNIT` is the first declared unit without current-loop post-open evidence and accepted commit/no-commit rationale;
@@ -218,6 +218,10 @@ If the owner does not approve the exact sanitized payload, stop with `NEEDS_OWNE
 
 The parent advances only after validating the active SPEC id, Pre-Edit Gate, allowed file matrix, focused oracles, negative checks, local commit or accepted no-commit rationale, `git show --stat`, post-commit status, sync status, fresh post-open evidence, no later-SPEC execution, refreshed local state before next prompt, structural method packet, runtime certification packet, integration runtime-smoke, shared-contract extension packet, source-derived handoff packet and Tree Adversary status. Route failures to the specific stop state named by the owning reference, not to a broad green closeout.
 
+Validating "focused oracles" means running them. Any wall harness a reference names for the active gate (`scripts/<name>.mjs`, per `references/materialization-tree.md` § Wall harness invocation) must be executed with its literal exit code captured as evidence — a paraphrased or assumed result is not validation, and a harness mentioned but not run leaves the gate `facade`.
+
+When `RUNTIME_TARGET=browser`, the negative checks must include a runtime-import grep over the `allowed_files` (`scripts/runtime-import-grep.mjs`): a non-stubbed `node:`, `child_process`, bare `fs`, `path`, or `os` import in browser-bound source → stop with `NEEDS_TREE_REPAIR` before the commit. This catches the node-in-browser class inside the active-SPEC span, where typecheck and build are blind to it.
+
 Remote push is forbidden unless separately authorized by the user.
 
 ## Certification Repair Rule
@@ -276,6 +280,7 @@ topology_decision:
 topology_decision_artifact:
 structural_debt:
 next_structural_constraint:
+topology_probe_result:
 browser_metrics_contract:
 visual_spatial_oracle:
 browser_attempt:
@@ -286,9 +291,14 @@ shared_contract_extended:
 extension_point_proven:
 contract_handoff_artifact:
 api_lint_status:
+auditor_distinct_from_operator:
+auditor_rewrote_no_oracle:
+audit_remutation:
 stop_state:
 next_allowed_action:
 ```
+
+The three `audit_*`/`auditor_*` fields are written only by the `Executive Stop Audit` reviewer, never by the operator that ran the oracles; they stay `not_applicable` on operator-written SPEC entries and carry `yes`/`yes`/`ran` only on the audit unit. A green oracle is not execution credit until `audit_remutation=ran` and the re-mutation made it fail.
 
 The ledger must not store full prompt bodies, raw diffs, secrets, credentials, private paths, chat transcripts or project-specific names.
 
@@ -296,9 +306,17 @@ Use `not_applicable` for structural decision fields when the active SPEC has no 
 
 ## Executive Stop Audit
 
-When the planned stop is reached, do not close automatically. Spawn a separate read-only reviewer for `Executive Stop Audit`.
+When the planned stop is reached, do not close automatically. Spawn a separate reviewer for `Executive Stop Audit`. The reviewer must be distinct from any subagent that authored or ran a required-axis oracle: receiving evidence is not auditing it. A reviewer who only inspects artifacts the operator produced is the defendant judging itself, and a facade oracle survives that.
 
 The reviewer receives the original tree, executed SPECs, commits and `git show --stat`, oracles and negative checks, repair records, final worktree status, baseline-only classification, structural evidence, runtime/visual evidence, integration smoke evidence, source-derived handoff evidence, and Tree Adversary result.
+
+The reviewer does not stop at inspection. For every required-axis oracle, the reviewer **re-executes** it in a clean worktree and then **re-mutates** it: inject a violation into the named property the oracle claims to prove and confirm the oracle turns to exit≠0. An oracle that stays PASS under the mutation of its own named property is a facade, however green it looked. Record three binary fields, all required for `EXECUTION_LOOP_COMPLETE`:
+
+- `AUDITOR_DISTINCT_FROM_OPERATOR=<yes|no>` — the reviewer authored and ran none of the oracles under audit;
+- `AUDITOR_REWROTE_NO_ORACLE=<yes|no>` — the reviewer edited no oracle to make it pass;
+- `audit_remutation=<ran|skipped>` — every required-axis oracle was re-executed and re-mutated.
+
+Any field missing, `no`, or `skipped`, or any oracle staying PASS under re-mutation → stop with `NEEDS_INDEPENDENT_AUDIT`. Drive the re-execution and re-mutation with `scripts/audit-remutation.mjs`. The reviewer also runs `scripts/ledger-no-placeholder.mjs` over the ledger and SCORECARD; any placeholder `commit:` (`<...>`, empty, `TODO`, `TBD`, `<hash>`) → `NEEDS_EXECUTION_UNIT_FIDELITY`.
 
 The reviewer does not receive the full original prompt unless the parent decides that a prompt contract dispute is the audit subject.
 
@@ -331,7 +349,7 @@ The audit must name the exact missing units and the expected stop. After one aud
 
 ## Completion
 
-Use `EXECUTION_LOOP_COMPLETE` only when all declared SPECs passed, the Pre-Edit Gate had valid anchor fields, required Tree Adversary review was cleared or repaired, the Executive Stop Audit confirms no more loops are needed, and no declared SPEC was skipped, credited from Super SPEC materialization, or credited from baseline-only reference evidence. Coding, UI or generated-app SPECs must also have passing structural method evidence.
+Use `EXECUTION_LOOP_COMPLETE` only when all declared SPECs passed, the Pre-Edit Gate had valid anchor fields, required Tree Adversary review was cleared or repaired, the Executive Stop Audit confirms no more loops are needed, and no declared SPEC was skipped, credited from Super SPEC materialization, or credited from baseline-only reference evidence. Coding, UI or generated-app SPECs must also have passing structural method evidence. "Passing" here means the structural source probe actually ran and exited zero: the loop-state and Ledger Schema field `topology_probe_result=<PASS|FAIL|not_applicable>` must carry `PASS` from a versioned probe in the diff, not a prose claim that the budget was respected. `topology_probe_result=FAIL` (or a `FILE_TOPOLOGY_BUDGET≠not_applicable` unit with the field missing) → stop with `NEEDS_STRUCTURAL_METHOD` before the commit, and the reviewer re-runs the probe in the `Executive Stop Audit`.
 
 Required browser, visual or runtime axes must have PASS evidence. Required visual axes need `browser_attempt=tool_invoked`, `status=PASS`, `visual.proven=true` and at least one evidence artifact. Integration units need a passing runtime-smoke artifact. A required axis with `DEGRADED`, `BLOCKED`, `not_attempted` or missing runtime smoke cannot close as `EXECUTION_LOOP_COMPLETE`.
 

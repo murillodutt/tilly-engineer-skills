@@ -6,7 +6,7 @@ license: MIT
 
 # TES Goal Maestro
 
-Operational contract: `tes.goal_maestro@0.3.7`.
+Operational contract: `tes.goal_maestro@0.5.0`.
 
 Central rule:
 
@@ -64,6 +64,8 @@ Load only what the run needs, but do not execute from memory when a route is req
 | Pre-execution adversarial review, oracle classification and adequacy objections | `references/tree-adversary.md` |
 | Source-derived worker handoff, API lint, research budget and Node oracle block | `references/execution-context-handoff.md` |
 | `--execute-loop`, `ACTIVE_SPEC`, loop-state block, `GOAL-EXECUTION-LOOP-LEDGER`, SPEC repair and Executive Stop Audit | `references/execution-loop-runner.md` |
+| Executable wall harnesses (oracle name↔measure, audit re-mutation, runtime/topology/visual/coherence/wiring/anchor checks, ledger placeholder scan) | `scripts/*.mjs` — each is a per-SPEC oracle that must be **run** (exit≠0 is the stop), not just read; see `references/materialization-tree.md` § Wall harness invocation. `scripts/validate-walls.mjs` runs the full mutation-suite (also wired in CI). |
+| Domain wall harnesses (database, financeiro, LLM build, UX avançada) — domain-agnostic coverage | `scripts/{db-*,*-idempotency,ledger-double-entry,referential-integrity,batch-reconcile,decimal-precision,audit-trail-immutable,eval-coverage,token-budget,tool-reachability,rag-relevance,i18n-coverage,responsive-check,a11y-audit,web-vitals}.mjs`. Three closure classes: node-puro (deterministic), dep-pesada (PASS or **BLOCKED-proven**, exit 2, never fake PASS), non-deterministic (frozen gold or BLOCKED). `runChecks` exit codes: 0=PASS, 1=FAIL, 2=BLOCKED-proven. |
 
 Before returning `READY_GOAL_PROMPT`, the loaded references must cover every behavior the generated prompt depends on.
 
@@ -103,6 +105,7 @@ Use `references/quality-gates.md` for full status definitions. Root-level status
 - `SUPER_SPEC_MATERIALIZED`
 - `SAVE_REQUESTED`
 - `NEEDS_EXECUTION_LOOP_DRAFT`
+- `NEEDS_CONTEXT`
 - `NEEDS_STRUCTURAL_METHOD`
 - `NEEDS_AMBITION_RECONCILIATION`
 - `NEEDS_CONTRACT_EXTENSION_POINT`
@@ -114,6 +117,7 @@ Use `references/quality-gates.md` for full status definitions. Root-level status
 - `NEEDS_MORE_LOOPS`
 - `NEEDS_OWNER_DECISION`
 - `SAFETY_BLOCKED`
+- `NEEDS_INDEPENDENT_AUDIT`
 - `EXECUTION_LOOP_COMPLETE`
 - `EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS`
 

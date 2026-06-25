@@ -18,6 +18,7 @@ from typing import Any
 
 
 VERSION = "0.3.194"
+SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
 POSTINSTALL_PATH = Path(".tes/postinstall.json")
@@ -1325,17 +1326,29 @@ def install(args: argparse.Namespace) -> int:
 
 
 def parse_hook_input() -> dict[str, Any]:
-    try:
-        raw = sys.stdin.read()
-    except OSError:
-        return {}
-    if not raw.strip():
+    if sys.stdin is None or sys.stdin.closed:
         return {}
     try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
+        if sys.stdin.isatty():
+            return {}
+        if not sys.stdin.readable():
+            return {}
+        import select
+
+        if select.select([sys.stdin], [], [], 0)[0]:
+            raw = sys.stdin.read()
+        else:
+            return {}
+    except (OSError, ValueError):
         return {}
-    return data if isinstance(data, dict) else {}
+    else:
+        if not raw.strip():
+            return {}
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            return {}
+        return data if isinstance(data, dict) else {}
 
 
 def helper_path(target: Path, script_name: str) -> Path:
@@ -1829,6 +1842,35 @@ def status(args: argparse.Namespace) -> int:
 def self_test() -> int:
     failures: list[str] = []
 
+    def run(
+        args: list[str] | tuple[str, ...],
+        *,
+        cwd: Path | str | None = None,
+        input: str | None = None,
+        timeout: float = SELF_TEST_SUBPROCESS_TIMEOUT,
+    ) -> subprocess.CompletedProcess[str]:
+        try:
+            return subprocess.run(
+                args,
+                cwd=cwd,
+                input="" if input is None else input,
+                text=True,
+                capture_output=True,
+                check=False,
+                timeout=timeout,
+            )
+        except subprocess.TimeoutExpired as exc:
+            command = " ".join(shlex.quote(str(part)) for part in args)
+            failures.append(f"self-test subprocess timed out after {timeout:g}s: {command}")
+            stdout = exc.stdout if isinstance(exc.stdout, str) else (exc.stdout or b"").decode("utf-8", errors="replace")
+            stderr = exc.stderr if isinstance(exc.stderr, str) else (exc.stderr or b"").decode("utf-8", errors="replace")
+            return subprocess.CompletedProcess(
+                list(args),
+                124,
+                stdout,
+                stderr.strip() or f"timed out after {timeout:g}s",
+            )
+
     # derive_sentinel_reason: the review reason must name the gate that actually
     # blocks, not always the obsolete-cleanup boilerplate. Exercise BOTH the
     # summarized shape (components at top level) AND the RAW run_installed_
@@ -1949,8 +1991,8 @@ def self_test() -> int:
             + "\n",
             encoding="utf-8",
         )
-        subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
-        install_result = subprocess.run(
+        run(["git", "init"], cwd=target)
+        install_result = run(
             [
                 sys.executable,
                 str(Path(__file__).resolve()),
@@ -1964,9 +2006,6 @@ def self_test() -> int:
                 "--yes",
             ],
             cwd=source_root(),
-            text=True,
-            capture_output=True,
-            check=False,
         )
         if install_result.returncode != 0:
             failures.append("thin install failed")
@@ -2013,8 +2052,8 @@ def self_test() -> int:
             "Run `.agents/skills/tilly-engineer-skills/scripts/discipline_oracle.py`.\n",
             encoding="utf-8",
         )
-        subprocess.run(["git", "init"], cwd=partial_target, text=True, capture_output=True, check=False)
-        partial_install = subprocess.run(
+        run(["git", "init"], cwd=partial_target)
+        partial_install = run(
             [
                 sys.executable,
                 str(Path(__file__).resolve()),
@@ -2028,9 +2067,6 @@ def self_test() -> int:
                 "--yes",
             ],
             cwd=source_root(),
-            text=True,
-            capture_output=True,
-            check=False,
         )
         partial_payload = parse_json_output(partial_install.stdout)
         partial_mcp = partial_payload.get("mcp") if isinstance(partial_payload.get("mcp"), dict) else {}
@@ -2080,7 +2116,7 @@ def self_test() -> int:
             for handler in (group.get("hooks") if isinstance(group.get("hooks"), list) else [])
         ):
             failures.append("Claude hook migration must preserve unrelated SessionStart hooks")
-        start_notice = subprocess.run(
+        start_notice = run(
             [
                 sys.executable,
                 str(target / ".tes/bin/tes_install.py"),
@@ -2093,9 +2129,6 @@ def self_test() -> int:
             ],
             cwd=target,
             input=json.dumps({"hook_event_name": "SessionStart", "source": "startup", "cwd": str(target)}),
-            text=True,
-            capture_output=True,
-            check=False,
         )
         if start_notice.returncode != 0:
             failures.append("Claude start notice hook failed")
@@ -2114,7 +2147,7 @@ def self_test() -> int:
         sentinel = read_json(target / POSTINSTALL_PATH)
         if sentinel.get("state") != "pending":
             failures.append("Claude start notice must not run postinstall")
-        hook_result = subprocess.run(
+        hook_result = run(
             [
                 sys.executable,
                 str(target / ".tes/bin/tes_install.py"),
@@ -2125,9 +2158,6 @@ def self_test() -> int:
                 str(target),
             ],
             cwd=target,
-            text=True,
-            capture_output=True,
-            check=False,
         )
         if hook_result.returncode != 0:
             failures.append("first hook postinstall failed")
@@ -2153,7 +2183,7 @@ def self_test() -> int:
         ):
             if not (target / relpath).exists():
                 failures.append(f"postinstall missing path: {relpath}")
-        second_hook = subprocess.run(
+        second_hook = run(
             [
                 sys.executable,
                 str(target / ".tes/bin/tes_install.py"),
@@ -2164,9 +2194,6 @@ def self_test() -> int:
                 str(target),
             ],
             cwd=target,
-            text=True,
-            capture_output=True,
-            check=False,
         )
         if second_hook.returncode != 0:
             failures.append("idempotent hook retry failed")
@@ -2199,7 +2226,7 @@ def self_test() -> int:
             "failures": [{"command": "fixture", "returncode": 1, "stderr": "fixture blocker repaired"}],
         }
         write_json(target / POSTINSTALL_PATH, recovery_sentinel)
-        recovery_result = subprocess.run(
+        recovery_result = run(
             [
                 sys.executable,
                 str(target / ".tes/bin/tes_install.py"),
@@ -2211,9 +2238,6 @@ def self_test() -> int:
                 "--recover-needs-review",
             ],
             cwd=target,
-            text=True,
-            capture_output=True,
-            check=False,
         )
         if recovery_result.returncode != 0:
             failures.append("needs_review recovery postinstall failed")
@@ -2228,7 +2252,7 @@ def self_test() -> int:
             failures.append("needs_review recovery must record recovery mode")
         if "failures" in recovered_sentinel:
             failures.append("needs_review recovery must clear stale failure records after PASS")
-        recovery_skip = subprocess.run(
+        recovery_skip = run(
             [
                 sys.executable,
                 str(target / ".tes/bin/tes_install.py"),
@@ -2240,9 +2264,6 @@ def self_test() -> int:
                 "--recover-needs-review",
             ],
             cwd=target,
-            text=True,
-            capture_output=True,
-            check=False,
         )
         if recovery_skip.returncode != 0 or "postinstall recovery only runs when the sentinel is needs_review" not in recovery_skip.stdout:
             failures.append("needs_review recovery must skip clean sentinels")
@@ -2253,7 +2274,7 @@ def self_test() -> int:
             claude_target = Path(claude_tempdir)
             (claude_target / "README.md").write_text("# Claude Hook Fixture\n", encoding="utf-8")
             (claude_target / "package.json").write_text('{"name":"tes-claude-hook-fixture"}\n', encoding="utf-8")
-            claude_install = subprocess.run(
+            claude_install = run(
                 [
                     sys.executable,
                     str(Path(__file__).resolve()),
@@ -2267,9 +2288,6 @@ def self_test() -> int:
                     "--yes",
                 ],
                 cwd=source_root(),
-                text=True,
-                capture_output=True,
-                check=False,
             )
             if claude_install.returncode != 0:
                 failures.append("Claude-only install failed")
@@ -2277,7 +2295,7 @@ def self_test() -> int:
                 failures.extend(claude_install.stderr.splitlines())
             if not (claude_target / ".claude/skills/tes-setup/SKILL.md").exists():
                 failures.append("Claude-only install must deliver /tes-setup as a project skill")
-            claude_start_notice = subprocess.run(
+            claude_start_notice = run(
                 [
                     sys.executable,
                     str(claude_target / ".tes/bin/tes_install.py"),
@@ -2290,9 +2308,6 @@ def self_test() -> int:
                 ],
                 cwd=claude_target,
                 input=json.dumps({"hook_event_name": "SessionStart", "source": "startup", "cwd": str(claude_target)}),
-                text=True,
-                capture_output=True,
-                check=False,
             )
             if claude_start_notice.returncode != 0:
                 failures.append("Claude-only start notice hook failed")
@@ -2305,7 +2320,7 @@ def self_test() -> int:
                 failures.append("Claude-only start notice hook must return structured JSON")
             if claude_start_payload.get("systemMessage") != CLAUDE_SETUP_RUNNING_MESSAGE:
                 failures.append("Claude-only start notice must show the visible running message")
-            claude_first_hook = subprocess.run(
+            claude_first_hook = run(
                 [
                     sys.executable,
                     str(claude_target / ".tes/bin/tes_install.py"),
@@ -2318,9 +2333,6 @@ def self_test() -> int:
                 ],
                 cwd=claude_target,
                 input=json.dumps({"hook_event_name": "SessionStart", "source": "startup", "cwd": str(claude_target)}),
-                text=True,
-                capture_output=True,
-                check=False,
             )
             if claude_first_hook.returncode != 2:
                 failures.append("Claude first SessionStart hook failed")
@@ -2338,7 +2350,7 @@ def self_test() -> int:
                 failures.append("Claude asyncRewake postinstall must complete before completion message")
             if claude_sentinel.get("last_status") != "PASS":
                 failures.append("Claude asyncRewake postinstall must record PASS before completion message")
-            claude_complete_notice = subprocess.run(
+            claude_complete_notice = run(
                 [
                     sys.executable,
                     str(claude_target / ".tes/bin/tes_install.py"),
@@ -2351,9 +2363,6 @@ def self_test() -> int:
                 ],
                 cwd=claude_target,
                 input=json.dumps({"hook_event_name": "SessionStart", "source": "startup", "cwd": str(claude_target)}),
-                text=True,
-                capture_output=True,
-                check=False,
             )
             if claude_complete_notice.returncode != 0:
                 failures.append("Claude complete start notice hook failed")
@@ -2372,7 +2381,7 @@ def self_test() -> int:
                 '{"name":"tes-claude-partial-hook-fixture"}\n',
                 encoding="utf-8",
             )
-            claude_partial_install = subprocess.run(
+            claude_partial_install = run(
                 [
                     sys.executable,
                     str(Path(__file__).resolve()),
@@ -2386,16 +2395,13 @@ def self_test() -> int:
                     "--yes",
                 ],
                 cwd=source_root(),
-                text=True,
-                capture_output=True,
-                check=False,
             )
             if claude_partial_install.returncode != 0:
                 failures.append("Claude partial fixture install failed")
                 failures.extend(claude_partial_install.stdout.splitlines())
                 failures.extend(claude_partial_install.stderr.splitlines())
             (claude_partial_target / ".tes/bin/.DS_Store").write_text("neutral residue\n", encoding="utf-8")
-            claude_partial_hook = subprocess.run(
+            claude_partial_hook = run(
                 [
                     sys.executable,
                     str(claude_partial_target / ".tes/bin/tes_install.py"),
@@ -2410,9 +2416,6 @@ def self_test() -> int:
                 input=json.dumps(
                     {"hook_event_name": "SessionStart", "source": "startup", "cwd": str(claude_partial_target)}
                 ),
-                text=True,
-                capture_output=True,
-                check=False,
             )
             if claude_partial_hook.returncode != 2:
                 failures.append("Claude asyncRewake partial certification must wake the CLI")
@@ -2430,7 +2433,7 @@ def self_test() -> int:
 
     with tempfile.TemporaryDirectory(prefix="tes-thin-install-dry-") as tempdir:
         target = Path(tempdir)
-        dry_result = subprocess.run(
+        dry_result = run(
             [
                 sys.executable,
                 str(Path(__file__).resolve()),
@@ -2444,9 +2447,6 @@ def self_test() -> int:
                 "--dry-run",
             ],
             cwd=source_root(),
-            text=True,
-            capture_output=True,
-            check=False,
         )
         if dry_result.returncode != 0:
             failures.append("thin dry-run failed")
@@ -2467,7 +2467,7 @@ def self_test() -> int:
             marker_path = target / marker
             marker_path.parent.mkdir(parents=True, exist_ok=True)
             marker_path.write_text("source marker\n", encoding="utf-8")
-        blocked_result = subprocess.run(
+        blocked_result = run(
             [
                 sys.executable,
                 str(Path(__file__).resolve()),
@@ -2481,9 +2481,6 @@ def self_test() -> int:
                 "--dry-run",
             ],
             cwd=source_root(),
-            text=True,
-            capture_output=True,
-            check=False,
         )
         blocked_payload = parse_json_output(blocked_result.stdout)
         if blocked_result.returncode != 2:
@@ -2558,12 +2555,9 @@ def self_test() -> int:
             ),
         ]
         for label, command in blocked_entrypoints:
-            entrypoint_result = subprocess.run(
+            entrypoint_result = run(
                 command,
                 cwd=source_root(),
-                text=True,
-                capture_output=True,
-                check=False,
             )
             entrypoint_payload = parse_json_output(entrypoint_result.stdout)
             if entrypoint_result.returncode != 2:

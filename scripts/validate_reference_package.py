@@ -1131,6 +1131,18 @@ def main() -> int:
         if path.exists() and VERSION not in path.read_text(encoding="utf-8"):
             failures.append(f"{relpath} must declare {VERSION}")
 
+    if args.staged_ready:
+        if failures:
+            print("[tes-reference] FAIL")
+            for failure in failures:
+                print(f"- {failure}")
+            return 1
+        staged_count = len(git_path_list("diff", "--cached", "--name-only", "--diff-filter=ACMR"))
+        print("[tes-reference] PASS")
+        print(f"root={ROOT}")
+        print(f"checked_staged_files={staged_count}")
+        return 0
+
     oracle = ROOT / "src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py"
     if oracle.exists():
         result = subprocess.run(

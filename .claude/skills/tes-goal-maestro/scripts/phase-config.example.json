@@ -1,0 +1,10 @@
+{
+  "_comment": "Exemplo de phase-config (SPEC-002 / B1 phase-aware). Vive no envelope do eixo (oracle_runner_contract). A fase corrente é declarada; símbolos gated só são permitidos nas allowed_phases.",
+  "phase": "fixture",
+  "gated": [
+    { "symbol": "livePaymentProcessor", "allowed_phases": ["live"] },
+    { "symbol": "realModelCall", "allowed_phases": ["live"] },
+    { "symbol": "pg.connect", "allowed_phases": ["live", "sandbox"] },
+    { "symbol": "stripe.charges.create", "allowed_phases": ["live"] }
+  ]
+}

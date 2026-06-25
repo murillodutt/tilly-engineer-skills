@@ -32,10 +32,15 @@ CLAUDE_SESSIONSTART_MATCHER = "startup|resume|clear|compact"
 CLAUDE_SETUP_RUNNING_MESSAGE = "IMPORTANT: TES setup is running. Please wait; do not start project work."
 
 
-def run(command: list[str], cwd: Path, timeout: float = 180.0) -> subprocess.CompletedProcess[str]:
+def hook_input(target: Path) -> str:
+    return json.dumps({"hook_event_name": "SessionStart", "source": "startup", "cwd": str(target)})
+
+
+def run(command: list[str], cwd: Path, timeout: float = 180.0, input: str = "") -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         command,
         cwd=cwd,
+        input=input,
         text=True,
         capture_output=True,
         check=False,
@@ -1003,6 +1008,7 @@ def self_test() -> int:
                 ],
                 work,
                 timeout=60.0,
+                input=hook_input(install_target),
             )
             if claude_start_result.returncode != 0:
                 failures.append("installed Claude start notice hook failed")
@@ -1055,6 +1061,7 @@ def self_test() -> int:
                 ],
                 work,
                 timeout=300.0,
+                input=hook_input(install_target),
             )
             if claude_hook_result.returncode != 0:
                 failures.append("installed Claude hook retry failed")
@@ -1126,6 +1133,7 @@ def self_test() -> int:
                 ],
                 work,
                 timeout=60.0,
+                input=hook_input(first_claude_target),
             )
             if first_start_notice.returncode != 0:
                 failures.append("installed Claude first-session start notice failed")
@@ -1148,6 +1156,7 @@ def self_test() -> int:
                 ],
                 work,
                 timeout=300.0,
+                input=hook_input(first_claude_target),
             )
             # --rewake-on-complete runs the post-install flow, marks the sentinel
             # complete, and exits 2 — the SessionStart rewake signal Claude Code
@@ -1181,6 +1190,7 @@ def self_test() -> int:
                 ],
                 work,
                 timeout=60.0,
+                input=hook_input(first_claude_target),
             )
             if first_complete_notice.returncode != 0:
                 failures.append("installed Claude complete start notice failed")

@@ -47,6 +47,15 @@ oracle_strength=<sufficient|facade|blocked>
 
 `build-only` is never sufficient for `unit_role=integration`, browser/runtime certification, or visual-spatial axes. The adversary routes such units to `NEEDS_INTEGRATION_ORACLE`, `VISUAL_CERT_BLOCKED`, or `NEEDS_TREE_REPAIR`.
 
+An oracle is `facade` not only when its proof is build/typecheck-only, but whenever the quantity it MEASURES is a structural proxy for the property it NAMES. A function named for a semantic property (luminance, frame rate, world position, color, distinct-cell count) but whose body measures a structural proxy (`statSync(.size)` bytes, mtime, byte count, path existence) is a facade — it executes at runtime and passes every gate while proving nothing about the named property. Each executable oracle must declare the pair:
+
+```text
+PROVEN_PROPERTY=<the semantic property the name promises>
+MEASURED_QUANTITY=<the quantity the body actually computes>
+```
+
+If `MEASURED_QUANTITY` is a structural proxy that can stay constant while `PROVEN_PROPERTY` is violated, set `oracle_strength=facade` and route to `NEEDS_TREE_REPAIR`. The decisive test is post-execution and belongs to the independent auditor: mutate only the named property (make the frame black, freeze the camera, zero the FPS) and the oracle MUST turn exit≠0. An oracle that stays PASS under the mutation of its own named property is a facade by construction.
+
 ## Done
 
 The adversary pass is done when it has either cleared the tree, forced bounded tree repair before prompt emission, or stopped with a precise status that the owner can resolve before execution cost is spent.

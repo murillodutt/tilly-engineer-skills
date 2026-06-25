@@ -94,6 +94,8 @@ Use probes that match the stack:
 
 The prompt must name probes before editing. The closeout must report `topology_probe=PASS|FAIL` and the command result, not merely say the structure is fine.
 
+When `FILE_TOPOLOGY_BUDGET≠not_applicable`, the budget probe must exist as a versioned script in the unit diff (not an ad-hoc command typed once and discarded), and its exit code feeds `topology_probe_result` in the loop-state and Ledger Schema. The runner credits "passing structural method evidence" only from `topology_probe_result=PASS`; a `FAIL`, or the field missing on an in-scope unit, stops with `NEEDS_STRUCTURAL_METHOD` before the commit. The `Executive Stop Audit` reviewer re-runs the versioned probe — prose that the budget was respected is not evidence.
+
 ## Failed Attempt Recovery
 
 Before retrying failed coding work, classify `bug_vs_architecture`:
