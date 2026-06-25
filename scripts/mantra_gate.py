@@ -17,8 +17,8 @@ from typing import Any
 VERSION = "0.3.195"
 SCHEMA = "tes-mantra-gate@1"
 MARKER = "[🍳 Flash-Fry]"
-STATUSES = ("PROCEED", "BLOCKED", "NEEDS_REVIEW")
-STATUS_WEIGHT = {"PROCEED": 0, "NEEDS_REVIEW": 1, "BLOCKED": 2}
+STATUSES = ("PROCEED", "BLOCKED", "NEEDS_REVIEW", "DRIFT_FROM_CONTRACT")
+STATUS_WEIGHT = {"PROCEED": 0, "NEEDS_REVIEW": 1, "BLOCKED": 2, "DRIFT_FROM_CONTRACT": 3}
 RISK_LEVELS = ("routine", "material", "high-risk", "forbidden")
 START_MARKER = "<!-- TES-MANTRA-GATE:START -->"
 END_MARKER = "<!-- TES-MANTRA-GATE:END -->"
@@ -308,6 +308,10 @@ def record_gate(target: Path, action: str, result: dict[str, Any], *, record_pat
             "declared_status": result["declared_status"],
         },
         "gate": result["gate"],
+        "supervise": {
+            "tier": result.get("tier", "pointwise"),
+            "interrupted": result.get("interrupted", False),
+        },
     }
     with destination.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(sanitize(event), ensure_ascii=False, sort_keys=True) + "\n")
@@ -397,6 +401,21 @@ def self_test() -> dict[str, Any]:
             failures.append("record must sanitize paths and secrets")
         if synthetic_email in json.dumps(sanitize({"email": synthetic_email})):
             failures.append("record must sanitize emails")
+
+    with tempfile.TemporaryDirectory(prefix="tes-mantra-gate-supervise-") as tmp:
+        target = Path(tmp)
+        (target / ".tes/field-reports").mkdir(parents=True)
+        original_top_keys = {"schema", "recorded_at", "action", "marker", "status", "visible", "result", "gate"}
+        # Back-compat: a result WITHOUT tier/interrupted still records; the 8 original
+        # top-level keys remain a SUBSET while "supervise" is added (defaults pointwise/False).
+        back_compat = validate_gate(sample_gate(), state_changing=True, closure_claim=True)
+        record = record_gate(target, "supervise-back-compat", back_compat)
+        event = json.loads(record.read_text(encoding="utf-8").strip().splitlines()[-1])
+        if not original_top_keys <= set(event.keys()):
+            failures.append("record must keep the 8 original top-level keys as a subset")
+        supervise = event.get("supervise")
+        if not supervise or supervise.get("tier") != "pointwise" or supervise.get("interrupted") is not False:
+            failures.append("record must add supervise with default tier=pointwise, interrupted=False")
 
     return {
         "schema": SCHEMA,
