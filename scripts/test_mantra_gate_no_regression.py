@@ -163,8 +163,12 @@ def write_plan() -> Path:
         oracle(
             "gate-status-weight", "mantra_gate.STATUS_WEIGHT keeps PROCEED/NEEDS_REVIEW/BLOCKED at 0/1/2",
             "weight-mutation",
-            'STATUS_WEIGHT = {"PROCEED": 0, "NEEDS_REVIEW": 1, "BLOCKED": 2}',
-            'STATUS_WEIGHT = {"PROCEED": 9, "NEEDS_REVIEW": 1, "BLOCKED": 2}',
+            # Mutate only the stable fragment "PROCEED": 0, not the whole dict line —
+            # so the refuter survives the additive growth of STATUS_WEIGHT
+            # (e.g. DRIFT_FROM_CONTRACT: 3). A whole-line mutate goes vacuous the
+            # moment a new entry is appended; this fragment does not.
+            '"PROCEED": 0',
+            '"PROCEED": 9',
         ),
     ]}
     PLAN_PATH.parent.mkdir(parents=True, exist_ok=True)
