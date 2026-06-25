@@ -70,6 +70,14 @@ Also use it when the tree lacks source-derived worker handoff for a loop that wi
 
 Use when the adversary tried to synthesize an oracle for a `NEEDS_TREE_REPAIR` unit (via `scripts/lib/synth.mjs`, see `references/tree-adversary.md` § Oracle Synthesis On Repair) but the named property is outside the known families and is not explicitly structural, so `synthMeasure` returned `honest=false`. This is an honest degrade: the harness must NOT invent a structural proxy to fill the gap. A human (or a later synthesis-family extension) must supply the falsifiable oracle before the unit can carry `oracle_strength=sufficient`. Do not use `NEEDS_HUMAN_ORACLE` when an in-family synthesis succeeded or when the unit already declares a valid oracle.
 
+### NEEDS_DISCOVERABILITY
+
+Use when a decision's claim is self-attested with no repo-derivable pointer (the discoverability-first lens, see `references/tree-adversary.md` § Decision Lens Contract). A decision that cannot be discovered or derived from the repo cannot be certified correct. Stop until the claim is discovered (a real pointer is found) or explicitly marked `AXIS_UNPROVEN` with an owner-visible reason.
+
+### LENS_THEATER
+
+Use when a declared specialized decision lens cannot name the concrete attack it will attempt, or its output only restates why the author's approach is good. Per the break-mandate rule (`references/tree-adversary.md` § Decision Lens Contract), such a lens produced no value and must not be run or cited as a closure artifact. Affirmation is never credit — not even from a lens. A lens that never breaks anything across a loop is pruned as confirmation theater.
+
 ### NEEDS_STRUCTURAL_METHOD
 
 Use when code, UI, generated app artifacts or runtime scripts are in scope and the tree or prompt lacks a safe Engineering Method Profile.

@@ -68,6 +68,17 @@ The repaired unit then carries `oracle_strength=sufficient` with the synthesized
 
 A property that is NOT in a known family and is NOT explicitly structural returns `honest=false` from `synthMeasure`. The adversary then routes to `NEEDS_HUMAN_ORACLE` — it must NOT invent a structural proxy to fill the gap. `NEEDS_HUMAN_ORACLE` is an honest degrade: the harness can synthesize falsifiable oracles only for the families whose canonical mutation it knows; outside them, a human (or a later synthesis extension) must supply the oracle. Synthesis never replaces a valid in-family oracle a unit already declares.
 
+## Decision Lens Contract
+
+A specialized decision lens (descobribilidade, independent stress, anti-elegance, structural-method) is a tool to BREAK a decision, not to praise it. Measured loop evidence (ADR 0006): lenses that broke a decision paid for themselves; lenses that only confirmed were ~85% theater at ~0.7–1.2× the cost of the product they protected. The lens system is therefore governed by four rules, and the lens panel itself is held to "affirmation is never credit":
+
+1. **Break-mandate (anti-elegance).** A lens MUST declare, before running, the concrete attack it will attempt on the decision. A lens that cannot name an attack is not run. A lens whose output only restates why the author's approach is good produced no value in the loop and is forbidden as a closure artifact — flag it `LENS_THEATER`, do not cite it. (Codifies "estressar de forma independente em vez de apaixonar-se pela própria elegância.")
+2. **Discoverability-first.** The first lens on any non-trivial decision is descobribilidade: *can the claim be discovered or derived from the repo, or is it self-attested?* A decision that cannot be discovered cannot be correct, so this lens runs before correctness lenses. A claim that is self-attested with no repo-derivable pointer routes to `NEEDS_DISCOVERABILITY` until it is discovered or explicitly marked `AXIS_UNPROVEN`.
+3. **Risk-gating (cost discipline).** Lens depth is gated by the unit's `structural_method_id` / declared risk axis, not applied uniformly. Doc-surface and mechanical-bump classes get no predictive lens; code/harness/installer classes get the full panel. The gate signal already lives in the materialization tree and ledger.
+4. **Audit-over-predict bias.** When a defect class is deterministic and checkable by an executable gate, prefer a wired commit-time gate over predictive stress AND over audit-final. Reserve the independent auditor — now a quorum panel (see `references/execution-loop-runner.md` § Quorum Audit) — for re-mutation and facade-hunting, where it out-yielded stress. Predictive stress is for genuinely open design questions, not for what a gate or an auditor catches better.
+
+The unifying contract: discover first → attack to break (never confirm) → gate by risk → generate the proof and submit it to your own falsifier → wire deterministic checks, panel-audit the rest.
+
 ## Done
 
 The adversary pass is done when it has either cleared the tree, forced bounded tree repair before prompt emission, or stopped with a precise status that the owner can resolve before execution cost is spent.
