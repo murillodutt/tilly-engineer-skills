@@ -222,6 +222,21 @@ def gate_plan() -> list[Gate]:
                 ("*/skills/tes-goal-maestro/scripts/*.mjs",),
             ),
         ),
+        # Part A residual (ADR 0006): move the two audit-leaked defect classes
+        # (placeholder commits, stale anchor provenance) from audit-final to commit-time.
+        # The ledger is the staged artifact that carries both signals.
+        Gate(
+            "goal-maestro-ledger-placeholder",
+            ["node", "src/adapters/claude/skills/tes-goal-maestro/scripts/ledger-no-placeholder.mjs"],
+            matcher=lambda paths: any_match(paths, ("GOAL-EXECUTION-LOOP-LEDGER-*.md", "**/GOAL-EXECUTION-LOOP-LEDGER-*.md")),
+            file_filter=lambda path: fnmatch.fnmatch(path.name, "GOAL-EXECUTION-LOOP-LEDGER-*.md"),
+        ),
+        Gate(
+            "goal-maestro-anchor-rehash",
+            ["node", "src/adapters/claude/skills/tes-goal-maestro/scripts/anchor-rehash-staged.mjs"],
+            matcher=lambda paths: any_match(paths, ("GOAL-EXECUTION-LOOP-LEDGER-*.md", "**/GOAL-EXECUTION-LOOP-LEDGER-*.md")),
+            file_filter=lambda path: fnmatch.fnmatch(path.name, "GOAL-EXECUTION-LOOP-LEDGER-*.md"),
+        ),
         Gate(
             "staged-surfaces",
             ["python3", "scripts/staged_surface_check.py"],
