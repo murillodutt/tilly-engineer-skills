@@ -95,4 +95,17 @@ audit_remutation: not_applicable
 stop_state: active_spec_committed
 next_allowed_action: worker_attempt (SPEC-005)
 
+### SPEC-004 (A3: SKILL.md:67 agnostic claim)
+spec_id: SPEC-004 | spec_version: 1 | attempt: 1 | repair_count: 0 | audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-005 | failed_attempt_recovery_decision: not_applicable
+commit: <pending>
+oracle_status: PASS ((also wired in CI) removed from 4 surfaces; validate-walls 27/27; doc-size PASS)
+structural_method_id: doc-surface-edit | topology_*: not_applicable | structural_debt: none
+next_structural_constraint: none
+runtime/visual/browser fields: not_applicable
+adversary_objection: not_applicable | shared_contract_extended: no
+contract_handoff_artifact: not_applicable | api_lint_status: not_applicable
+audit_* fields: not_applicable
+stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-005)
+
 (one entry per SPEC, appended as the loop advances)
