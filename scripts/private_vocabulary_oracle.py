@@ -53,7 +53,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.193"
+VERSION = "0.3.194"
 DEFAULT_ALLOWLIST_PATH = Path(".tes/private-vocabulary.txt")
 SCAN_SUFFIXES = {
     ".md",

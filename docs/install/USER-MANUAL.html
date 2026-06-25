@@ -1197,7 +1197,7 @@
       <header class="nav-bar">
         <div class="brand">
           <span class="brand-mark" data-ui="brand">Tilly<em>·</em>Skills</span>
-          <span class="brand-meta">User manual · v0.3.193</span>
+          <span class="brand-meta">User manual · v0.3.194</span>
         </div>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="rail-inner" aria-label="Open navigation">
           <span></span>
@@ -1281,8 +1281,8 @@
           </div>
           <div class="chapter-body">
             <p class="lede">Start from the target repository with GitHub npx. The command installs TES locally, prepares selected agent hooks, and records the first-session setup path.</p>
-            <div class="pre-wrap" data-label="fixed ref form" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="bun runtime" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="fixed ref form" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="bun runtime" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Run the command from the target repository with Node.js 18+ or Bun 1.0+, plus Python 3.11+.</li>
 <li>Interactive mode asks for target, agents, install mode, and final confirmation.</li>
@@ -1294,7 +1294,7 @@
 </ol>
 <aside class="side-note"><p class="side-note-title">Important: agent follow-up is host-specific</p><p>Do not start project work immediately after install. Codex needs hook review in Settings &gt; Hooks when marked needs review; Claude Code needs the TES completion notice; Cursor needs a workspace reopen and <code>/tes-setup</code> report. Only after <code>/tes-setup</code> reports complete, run <code>/tes-align</code>, then use <code>/tes-map</code> for the current GPS view before project work.</p></aside>
 <p>Useful options: <code>--target &lt;path&gt;</code> installs outside the current directory; <code>--agent codex|claude|cursor|all</code> chooses hooks; <code>--yes</code> skips the wizard; <code>--dry-run</code> prints planned writes; <code>--mode preserve</code> is the default.</p>
-<p><code>#v0.3.193</code> is the intended fixed-ref form; remote certification exists only after <code>release:check</code> passes for the published tag. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit.</p>
+<p><code>#v0.3.194</code> is the intended fixed-ref form; remote certification exists only after <code>release:check</code> passes for the published tag. Runtime bundles stage under <code>.tes/setup/&lt;version&gt;/</code>; that directory is local cache, not project knowledge to commit.</p>
 <p>Older plugin/root-skill surfaces (<code>skills/**</code>, <code>.claude-plugin/**</code>, <code>.agents/plugins/**</code>, and <code>plugins/tilly-engineer-skills/**</code>) are cleaned only when TES-owned, generated, or empty. Ambiguous or secret-like content is preserved, backed up in <code>.tes/bk/**</code>, and returned as <code>NEEDS_REVIEW</code>.</p>
 <p>By default the install is complete and ready to use, and everything it writes can be undone. TES also checks for real whether the MCP and hooks actually came up in your editor — if one still needs you to restart or trust it, TES tells you instead of pretending it worked. For a minimal, isolation-only install, pass <code>--attach capsule</code>. The how and why are in the <a href="REVERSIBILITY.md">reversibility guide</a> and <a href="../adr/0004-tes-capsule-isolation-and-reversible-installation.md">ADR 0004</a>.</p>
           </div>
@@ -1320,7 +1320,7 @@
             <h2>Routes</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">The route decides which runtime surfaces move.</p>
+            <p class="lede">Pick a route to choose which editor surfaces (Codex, Claude Code, Cursor, or all) receive TES updates.</p>
             <div class="table-wrap"><table><thead><tr><th>Route</th><th>When to use it</th></tr></thead><tbody><tr><td><code>current</code></td><td>Update the detected runtime and its default governed Cortex MCP config.</td></tr><tr><td><code>codex</code></td><td>Default: materialize <code>AGENTS.md</code>, Codex skills (<code>.agents/skills/**</code>), and <code>.codex/config.toml</code> MCP + SessionStart hook. <code>--attach capsule</code> writes <code>.tes/**</code> only.</td></tr><tr><td><code>claude</code></td><td>Default: materialize <code>CLAUDE.md</code>, <code>.claude/skills/**</code>, <code>.mcp.json</code>, and <code>.claude/settings.json</code> (MCP + hooks). <code>--attach capsule</code> writes <code>.tes/**</code> only.</td></tr><tr><td><code>cursor</code></td><td>Default: materialize Cursor TES rules (<code>.cursor/rules/**</code>), <code>.cursor/mcp.json</code>, and <code>.cursor/hooks.json</code>. <code>--attach capsule</code> writes <code>.tes/**</code> only.</td></tr><tr><td><code>vscode</code></td><td>Explicit MCP-only route for VS Code config at <code>.vscode/mcp.json</code>.</td></tr><tr><td><code>all</code></td><td>Prepare Codex, Claude Code, Cursor, and their project MCP configs; VS Code stays explicit.</td></tr><tr><td><code>audit</code></td><td>Inspect without modifying files.</td></tr></tbody></table></div>
           </div>
         </section>
@@ -1331,7 +1331,7 @@
             <h2>Project states</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">The state decides whether the run installs, updates, audits, or recovers.</p>
+            <p class="lede">Read the state to know whether the run will install, update, audit, or recover.</p>
             <div class="table-wrap"><table><thead><tr><th>State</th><th>Meaning</th></tr></thead><tbody><tr><td><code>new</code></td><td>No relevant agent instructions exist. TES creates the minimum mesh.</td></tr><tr><td><code>existing</code></td><td>Local rules already exist. TES creates backup, installs clean runtime, and recovers useful semantics.</td></tr><tr><td><code>meshed</code></td><td>TES already exists. The run becomes update or convergence.</td></tr></tbody></table></div>
 <p>Existing instructions are backed up and useful semantics are recovered instead of discarded.</p>
           </div>
@@ -1343,7 +1343,7 @@
             <h2>Cortex</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Cortex is filesystem-first memory. Markdown is the contract; SQLite recall is a derived access path.</p>
+            <p class="lede">Cortex keeps project decisions in readable Markdown files you control — no proprietary database. Store and review memory with <code>/tes-cortex</code> and Git.</p>
             <p>Cortex lives under <code>docs/agents/cortex/**</code>. Every durable claim needs evidence. Operator commands classify mutability: <code>health</code>, <code>peek</code>, and <code>review</code> are read-only; <code>checkpoint</code> writes only TTL resume state; <code>remember</code> requires authorization and evidence; <code>forget</code> is blocked until consolidation evidence exists.</p>
 <p>You can read Cortex like any repository document, review it in pull requests, and revert it with Git.</p>
           </div>
@@ -1384,7 +1384,7 @@
             <h2>Field Reports</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Field Reports help TES learn from real installations without exporting project content.</p>
+            <p class="lede">Field Reports send only anonymous usage signals, and only during <code>git push</code> when the GitHub CLI is available — otherwise nothing leaves your machine. Run <code>/tes:field-reports:disable</code> to opt out.</p>
             <p>Reports capture sanitized operational facts and drain only during <code>git push</code> when GitHub CLI, authentication, and network are available. If any link is missing, nothing leaves the machine and push proceeds normally.</p>
 <div class="pre-wrap" data-label="disable" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>/tes:field-reports:disable</code></pre></div>
 <div class="pre-wrap" data-label="enable" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>/tes:field-reports:enable</code></pre></div>
@@ -1397,7 +1397,7 @@
             <h2>Obsidian</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Obsidian is an optional visual workbench over Markdown. It is not a runtime dependency and not proof by itself.</p>
+            <p class="lede">After <code>/tes-align</code>, open Obsidian to browse your project Markdown if you like — it is optional, not required. Keep the Markdown readable outside Obsidian and never treat an Obsidian-only view as proof.</p>
             <ul class="list">
 <li>Open <code>docs/agents/</code> as the vault for the full mesh.</li>
 <li>Open <code>docs/agents/cortex/</code> alone for focused memory work.</li>
@@ -1527,8 +1527,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Empieza desde el repositorio objetivo con npx desde GitHub. El comando instala TES localmente, prepara los hooks de agentes seleccionados y registra el camino de setup de primera sesion.</p>
-            <div class="pre-wrap" data-label="ref fija" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="ref fija" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Ejecuta el comando desde el repositorio objetivo con Node.js 18+ o Bun 1.0+, mas Python 3.11+.</li>
 <li>El modo interactivo pregunta target, agentes, modo de instalacion y confirmacion final.</li>
@@ -1540,7 +1540,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 </ol>
 <aside class="side-note"><p class="side-note-title">Importante: el seguimiento del agente depende del host</p><p>No empieces trabajo de proyecto inmediatamente despues de instalar. Codex necesita revisar el hook en Settings &gt; Hooks cuando aparezca needs review; Claude Code necesita el aviso de finalizacion de TES; Cursor necesita reabrir el workspace y el reporte de <code>/tes-setup</code>. Solo despues de que <code>/tes-setup</code> reporte complete, ejecuta <code>/tes-align</code> y usa <code>/tes-map</code> para la vista GPS actual antes del trabajo de proyecto.</p></aside>
 <p>Opciones utiles: <code>--target &lt;path&gt;</code> instala fuera del directorio actual; <code>--agent codex|claude|cursor|all</code> elige hooks; <code>--yes</code> salta el wizard; <code>--dry-run</code> muestra escrituras planificadas; <code>--mode preserve</code> es el default.</p>
-<p><code>#v0.3.193</code> es la forma de ref fija prevista; la certificacion remota existe solo despues de que <code>release:check</code> pase para el tag publicado. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; ese directorio es cache local, no conocimiento del proyecto para commitear.</p>
+<p><code>#v0.3.194</code> es la forma de ref fija prevista; la certificacion remota existe solo despues de que <code>release:check</code> pase para el tag publicado. Los bundles runtime se preparan bajo <code>.tes/setup/&lt;version&gt;/</code>; ese directorio es cache local, no conocimiento del proyecto para commitear.</p>
 <p>Las superficies antiguas de plugin/root skills (<code>skills/**</code>, <code>.claude-plugin/**</code>, <code>.agents/plugins/**</code> y <code>plugins/tilly-engineer-skills/**</code>) se limpian solo cuando son TES-owned, generadas o vacias. El contenido ambiguo o parecido a secreto se preserva, se respalda en <code>.tes/bk/**</code> y retorna <code>NEEDS_REVIEW</code>.</p>
 <p>Por defecto la instalacion es completa y lista para usar, y todo lo que escribe se puede deshacer. TES tambien verifica de verdad si el MCP y los hooks quedaron activos en tu editor — si alguno aun necesita que reinicies o le des trust, TES te avisa en vez de fingir que funciono. Para una instalacion minima, solo de aislamiento, usa <code>--attach capsule</code>. El como y el porque estan en la <a href="REVERSIBILITY.md">guia de reversibilidad</a> y el <a href="../adr/0004-tes-capsule-isolation-and-reversible-installation.md">ADR 0004</a>.</p>
           </div>
@@ -1566,7 +1566,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <h2>Rutas</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">La ruta decide que superficies se mueven.</p>
+            <p class="lede">Elige una ruta para decidir qué superficies del editor (Codex, Claude Code, Cursor o todas) reciben actualizaciones de TES.</p>
             <div class="table-wrap"><table><thead><tr><th>Ruta</th><th>Cuando usarla</th></tr></thead><tbody><tr><td><code>current</code></td><td>Actualizar el runtime detectado y su config Cortex MCP gobernada por defecto.</td></tr><tr><td><code>codex</code></td><td>Por defecto: preparar MCP <code>.codex/config.toml</code> y hooks; root-context explícito adjunta <code>AGENTS.md</code> y skills Codex.</td></tr><tr><td><code>claude</code></td><td>Por defecto: preparar <code>.mcp.json</code> y <code>.claude/settings.json</code>; root-context explícito adjunta <code>CLAUDE.md</code> y <code>.claude/skills/**</code>.</td></tr><tr><td><code>cursor</code></td><td>Por defecto: preparar <code>.cursor/mcp.json</code> y <code>.cursor/hooks.json</code>; root-context explícito adjunta reglas TES de Cursor.</td></tr><tr><td><code>vscode</code></td><td>Ruta explicita solo MCP para VS Code en <code>.vscode/mcp.json</code>.</td></tr><tr><td><code>all</code></td><td>Preparar Codex, Claude Code, Cursor y sus configs MCP de proyecto; VS Code queda explicito.</td></tr><tr><td><code>audit</code></td><td>Inspeccionar sin modificar archivos.</td></tr></tbody></table></div>
           </div>
         </section>
@@ -1577,7 +1577,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <h2>Estados del proyecto</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">El estado decide si el run instala, actualiza, audita o recupera.</p>
+            <p class="lede">Lee el estado para saber si la ejecución instalará, actualizará, auditará o recuperará.</p>
             <div class="table-wrap"><table><thead><tr><th>Estado</th><th>Significado</th></tr></thead><tbody><tr><td><code>new</code></td><td>No hay instrucciones relevantes de agente. TES crea el mesh minimo.</td></tr><tr><td><code>existing</code></td><td>Ya existen reglas locales. TES crea backup, instala runtime limpio y recupera semantica util.</td></tr><tr><td><code>meshed</code></td><td>TES ya existe. La ejecucion pasa a update o convergence.</td></tr></tbody></table></div>
 <p>Instrucciones existentes se respaldan y la semantica util se recupera, no se descarta.</p>
           </div>
@@ -1589,7 +1589,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <h2>Cortex</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Cortex es memoria filesystem-first. Markdown es el contrato; recall SQLite es un acceso derivado.</p>
+            <p class="lede">Cortex mantiene decisiones del proyecto en archivos Markdown legibles que controlas — sin base de datos propietaria. Almacena y revisa memoria con <code>/tes-cortex</code> y Git.</p>
             <p>Cortex vive en <code>docs/agents/cortex/**</code>. Todo claim durable necesita evidencia. Los comandos operadores clasifican mutabilidad: <code>health</code>, <code>peek</code> y <code>review</code> son read-only; <code>checkpoint</code> escribe solo estado TTL de reanudacion; <code>remember</code> requiere autorizacion y evidencia; <code>forget</code> queda bloqueado hasta que exista evidencia de consolidacion.</p>
 <p>Puedes leer Cortex como cualquier documento del repositorio, revisarlo en pull requests y revertirlo con Git.</p>
           </div>
@@ -1630,7 +1630,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <h2>Field Reports</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Field Reports ayuda a TES a aprender de instalaciones reales sin exportar contenido del proyecto.</p>
+            <p class="lede">Field Reports envía solo señales anónimas de uso, y solo durante <code>git push</code> cuando la GitHub CLI está disponible — si no, nada sale de tu máquina. Ejecuta <code>/tes:field-reports:disable</code> para desactivar.</p>
             <p>Los reportes capturan hechos operativos sanitizados y drenan solo durante <code>git push</code> cuando GitHub CLI, autenticacion y red estan disponibles. Si falta algo, nada sale de la maquina y el push continua.</p>
 <div class="pre-wrap" data-label="desactivar" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>/tes:field-reports:disable</code></pre></div>
 <div class="pre-wrap" data-label="activar" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>/tes:field-reports:enable</code></pre></div>
@@ -1643,7 +1643,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <h2>Obsidian</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Obsidian es un workbench visual opcional sobre Markdown. No es dependencia de runtime ni prueba por si mismo.</p>
+            <p class="lede">Después de <code>/tes-align</code>, abre Obsidian para explorar el Markdown del proyecto si quieres — es opcional, no requerido. Mantén el Markdown legible fuera de Obsidian y nunca trates una vista solo-Obsidian como prueba.</p>
             <ul class="list">
 <li>Abre <code>docs/agents/</code> como vault para el mesh completo.</li>
 <li>Abre <code>docs/agents/cortex/</code> para trabajo de memoria enfocado.</li>
@@ -1773,8 +1773,8 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
           </div>
           <div class="chapter-body">
             <p class="lede">Comece pelo repositório alvo com npx direto do GitHub. O comando instala TES localmente, prepara os hooks dos agentes escolhidos e registra o caminho de setup da primeira sessão.</p>
-            <div class="pre-wrap" data-label="ref fixa" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes</code></pre></div>
-<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes</code></pre></div>
+            <div class="pre-wrap" data-label="ref fixa" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes</code></pre></div>
+<div class="pre-wrap" data-label="runtime bun" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes</code></pre></div>
 <ol class="steps">
 <li>Rode o comando a partir do repositório alvo com Node.js 18+ ou Bun 1.0+, mais Python 3.11+.</li>
 <li>O modo interativo pergunta target, agentes, modo de instalação e confirmacao final.</li>
@@ -1786,7 +1786,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
 </ol>
 <aside class="side-note"><p class="side-note-title">Importante: o follow-up do agente depende do host</p><p>Não inicie trabalho no projeto imediatamente depois de instalar. Codex precisa revisar o hook em Settings &gt; Hooks quando aparecer needs review; Claude Code precisa do aviso de conclusão do TES; Cursor precisa reabrir o workspace e ver o relatório de <code>/tes-setup</code>. Só depois que <code>/tes-setup</code> reportar complete, rode <code>/tes-align</code> e use <code>/tes-map</code> para a visão GPS atual antes do trabalho no projeto.</p></aside>
 <p>Opções úteis: <code>--target &lt;path&gt;</code> instala fora do diretório atual; <code>--agent codex|claude|cursor|all</code> escolhe hooks; <code>--yes</code> pula o wizard; <code>--dry-run</code> mostra escritas planejadas; <code>--mode preserve</code> e o padrão.</p>
-<p><code>#v0.3.193</code> e a forma de ref fixa prevista; a certificação remota existe somente depois de <code>release:check</code> passar para a tag publicada. Bundles runtime são preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretório e cache local, não conhecimento do projeto para commit.</p>
+<p><code>#v0.3.194</code> e a forma de ref fixa prevista; a certificação remota existe somente depois de <code>release:check</code> passar para a tag publicada. Bundles runtime são preparados em <code>.tes/setup/&lt;version&gt;/</code>; esse diretório e cache local, não conhecimento do projeto para commit.</p>
 <p>Superfícies antigas de plugin/root skills (<code>skills/**</code>, <code>.claude-plugin/**</code>, <code>.agents/plugins/**</code> e <code>plugins/tilly-engineer-skills/**</code>) são limpas somente quando são TES-owned, geradas ou vazias. Conteúdo ambiguo ou com sinal de segredo e preservado, salvo em <code>.tes/bk/**</code> e retorna <code>NEEDS_REVIEW</code>.</p>
 <p>Por padrão a instalação é completa e pronta para usar, e tudo o que ela escreve pode ser desfeito. O TES também verifica de verdade se o MCP e os hooks ficaram ativos no seu editor — se algum ainda depender de você reiniciar ou confiar nele, o TES avisa em vez de fingir que deu certo. Para uma instalação mínima, só de isolamento, use <code>--attach capsule</code>. O como e o porquê estão no <a href="REVERSIBILITY.md">guia de reversibilidade</a> e no <a href="../adr/0004-tes-capsule-isolation-and-reversible-installation.md">ADR 0004</a>.</p>
           </div>
@@ -1812,7 +1812,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <h2>Rotas</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">A rota decide quais superfícies se movem.</p>
+            <p class="lede">Escolha uma rota para decidir quais superfícies do editor (Codex, Claude Code, Cursor ou todas) recebem atualizações do TES.</p>
             <div class="table-wrap"><table><thead><tr><th>Rota</th><th>Quando usar</th></tr></thead><tbody><tr><td><code>current</code></td><td>Atualizar o runtime detectado e sua config Cortex MCP governada por padrão.</td></tr><tr><td><code>codex</code></td><td>Por padrão: preparar MCP <code>.codex/config.toml</code> e hooks; root-context explícito anexa <code>AGENTS.md</code> e skills Codex.</td></tr><tr><td><code>claude</code></td><td>Por padrão: preparar <code>.mcp.json</code> e <code>.claude/settings.json</code>; root-context explícito anexa <code>CLAUDE.md</code> e <code>.claude/skills/**</code>.</td></tr><tr><td><code>cursor</code></td><td>Por padrão: preparar <code>.cursor/mcp.json</code> e <code>.cursor/hooks.json</code>; root-context explícito anexa regras TES do Cursor.</td></tr><tr><td><code>vscode</code></td><td>Rota explícita apenas MCP para VS Code em <code>.vscode/mcp.json</code>.</td></tr><tr><td><code>all</code></td><td>Preparar Codex, Claude Code, Cursor e suas configs MCP de projeto; VS Code fica explícito.</td></tr><tr><td><code>audit</code></td><td>Inspecionar sem modificar arquivos.</td></tr></tbody></table></div>
           </div>
         </section>
@@ -1823,7 +1823,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <h2>Estados do projeto</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">O estado decide se o run instala, atualiza, audita ou recupera.</p>
+            <p class="lede">Leia o estado para saber se a execução vai instalar, atualizar, auditar ou recuperar.</p>
             <div class="table-wrap"><table><thead><tr><th>Estado</th><th>Significado</th></tr></thead><tbody><tr><td><code>new</code></td><td>Sem instruções relevantes de agente. TES cria a malha minima.</td></tr><tr><td><code>existing</code></td><td>Já existem regras locais. TES cria backup, instala runtime limpo e recupera semântica útil.</td></tr><tr><td><code>meshed</code></td><td>TES já existe. A execução vira update ou convergence.</td></tr></tbody></table></div>
 <p>Instrucoes existentes são salvas em backup e a semântica útil e recuperada, não descartada.</p>
           </div>
@@ -1835,7 +1835,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <h2>Cortex</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Cortex é memória filesystem-first. Markdown é o contrato; recall SQLite e um acesso derivado.</p>
+            <p class="lede">O Cortex mantém decisões do projeto em arquivos Markdown legíveis que você controla — sem banco de dados proprietário. Armazene e revise memória com <code>/tes-cortex</code> e Git.</p>
             <p>Cortex vive em <code>docs/agents/cortex/**</code>. Todo claim durável precisa de evidência. Comandos operadores classificam mutabilidade: <code>health</code>, <code>peek</code> e <code>review</code> são somente leitura; <code>checkpoint</code> escreve apenas estado TTL de retomada; <code>remember</code> exige autorização e evidência; <code>forget</code> fica bloqueado até existir evidência de consolidacao.</p>
 <p>Você le o Cortex como qualquer documento do repositório, revisa em pull requests e reverte com Git.</p>
           </div>
@@ -1876,7 +1876,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <h2>Field Reports</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Field Reports ajuda TES a aprender com instalações reais sem exportar conteúdo do projeto.</p>
+            <p class="lede">Field Reports envia apenas sinais anônimos de uso, e só durante o <code>git push</code> quando a GitHub CLI está disponível — caso contrário nada sai da sua máquina. Rode <code>/tes:field-reports:disable</code> para desativar.</p>
             <p>Os relatórios capturam fatos operacionais sanitizados e drenam apenas durante <code>git push</code> quando GitHub CLI, autenticação e rede estão disponíveis. Se faltar qualquer elo, nada sai da máquina e o push continua.</p>
 <div class="pre-wrap" data-label="desativar" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>/tes:field-reports:disable</code></pre></div>
 <div class="pre-wrap" data-label="ativar" data-copy-block><button type="button" class="copy-btn code-copy-btn" data-copy-button data-copy-icon="true" data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy" title="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="9" y="9" width="10" height="10" rx="1.8"></rect><path d="M5 15.5V6.8C5 5.8 5.8 5 6.8 5h8.7"></path></svg><span class="visually-hidden">Copy</span></button><pre><code>/tes:field-reports:enable</code></pre></div>
@@ -1889,7 +1889,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
             <h2>Obsidian</h2>
           </div>
           <div class="chapter-body">
-            <p class="lede">Obsidian é uma bancada visual opcional sobre Markdown. Não é dependência de runtime nem prova por si só.</p>
+            <p class="lede">Depois de <code>/tes-align</code>, abra o Obsidian para navegar pelo Markdown do projeto se quiser — é opcional, não obrigatório. Mantenha o Markdown legível fora do Obsidian e nunca trate uma visão só-Obsidian como prova.</p>
             <ul class="list">
 <li>Abra <code>docs/agents/</code> como vault para a malha completa.</li>
 <li>Abra <code>docs/agents/cortex/</code> para trabalho focado de memória.</li>
@@ -1969,7 +1969,7 @@ git clean -fd -- .tes/setup/&lt;version&gt;</code></pre></div>
       <footer class="footer">
 
         <div class="footer-meta">
-          <span>v0.3.193 - Generated from TDS.</span>
+          <span>v0.3.194 - Generated from TDS.</span>
           <span><a href="https://github.com/murillodutt/tilly-engineer-skills">GitHub</a></span>
         </div>
       </footer>

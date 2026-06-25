@@ -42,9 +42,9 @@
       "contents": "Contents",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.193 · local bundle certified",
-      "manual_meta": "User manual · v0.3.193",
-      "version": "v0.3.193",
+      "release_meta": "v0.3.194 · local bundle certified",
+      "manual_meta": "User manual · v0.3.194",
+      "version": "v0.3.194",
       "source_note": "Generated from TDS.",
       "github": "GitHub",
       "read_manual": "Read the manual",
@@ -56,9 +56,9 @@
       "contents": "Indice",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.193 · bundle local certificado",
-      "manual_meta": "Manual de usuario · v0.3.193",
-      "version": "v0.3.193",
+      "release_meta": "v0.3.194 · bundle local certificado",
+      "manual_meta": "Manual de usuario · v0.3.194",
+      "version": "v0.3.194",
       "source_note": "Generado desde TDS.",
       "github": "GitHub",
       "read_manual": "Leer el manual",
@@ -70,9 +70,9 @@
       "contents": "Sumário",
       "brand": "Tilly · Skills",
       "language_mark": "Tilly Engineer Skills",
-      "release_meta": "v0.3.193 · bundle local certificado",
-      "manual_meta": "Manual do usuário · v0.3.193",
-      "version": "v0.3.193",
+      "release_meta": "v0.3.194 · bundle local certificado",
+      "manual_meta": "Manual do usuário · v0.3.194",
+      "version": "v0.3.194",
       "source_note": "Gerado a partir do TDS.",
       "github": "GitHub",
       "read_manual": "Ler o manual",
@@ -467,17 +467,17 @@
           {
             "type": "code",
             "label": "fixed ref form",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "bun runtime",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "non-interactive",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -500,7 +500,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.193` is the intended fixed-ref form. Treat the remote ref as certified only after the tag is published and `npm run release:check` passes."
+            "text": "`#v0.3.194` is the intended fixed-ref form. Treat the remote ref as certified only after the tag is published and `npm run release:check` passes."
           },
           {
             "type": "p",
@@ -516,17 +516,17 @@
           {
             "type": "code",
             "label": "ref fija",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "no interactivo",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -549,7 +549,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.193` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de publicar el tag y de que `npm run release:check` pase."
+            "text": "`#v0.3.194` es la forma de ref fija prevista. Trata el ref remoto como certificado solo despues de publicar el tag y de que `npm run release:check` pase."
           },
           {
             "type": "p",
@@ -565,17 +565,17 @@
           {
             "type": "code",
             "label": "ref fixa",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add"
           },
           {
             "type": "code",
             "label": "não interativo",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -598,7 +598,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.193` é a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de publicar a tag e de `npm run release:check` passar."
+            "text": "`#v0.3.194` é a forma de ref fixa prevista. Trate o ref remoto como certificado somente depois de publicar a tag e de `npm run release:check` passar."
           },
           {
             "type": "p",
@@ -882,12 +882,12 @@
           {
             "type": "code",
             "label": "fixed ref form",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "bun runtime",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -912,7 +912,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.193` is the intended fixed-ref form; remote certification exists only after `release:check` passes for the published tag. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit."
+            "text": "`#v0.3.194` is the intended fixed-ref form; remote certification exists only after `release:check` passes for the published tag. Runtime bundles stage under `.tes/setup/<version>/`; that directory is local cache, not project knowledge to commit."
           },
           {
             "type": "p",
@@ -932,12 +932,12 @@
           {
             "type": "code",
             "label": "ref fija",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -962,7 +962,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.193` es la forma de ref fija prevista; la certificacion remota existe solo despues de que `release:check` pase para el tag publicado. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear."
+            "text": "`#v0.3.194` es la forma de ref fija prevista; la certificacion remota existe solo despues de que `release:check` pase para el tag publicado. Los bundles runtime se preparan bajo `.tes/setup/<version>/`; ese directorio es cache local, no conocimiento del proyecto para commitear."
           },
           {
             "type": "p",
@@ -982,12 +982,12 @@
           {
             "type": "code",
             "label": "ref fixa",
-            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes"
+            "text": "npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "code",
             "label": "runtime bun",
-            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.193 tilly-engineer-skills add --agent all --yes"
+            "text": "bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.194 tilly-engineer-skills add --agent all --yes"
           },
           {
             "type": "steps",
@@ -1012,7 +1012,7 @@
           },
           {
             "type": "p",
-            "text": "`#v0.3.193` e a forma de ref fixa prevista; a certificação remota existe somente depois de `release:check` passar para a tag publicada. Bundles runtime são preparados em `.tes/setup/<version>/`; esse diretório e cache local, não conhecimento do projeto para commit."
+            "text": "`#v0.3.194` e a forma de ref fixa prevista; a certificação remota existe somente depois de `release:check` passar para a tag publicada. Bundles runtime são preparados em `.tes/setup/<version>/`; esse diretório e cache local, não conhecimento do projeto para commit."
           },
           {
             "type": "p",
@@ -1373,7 +1373,7 @@
       "en": {
         "num": "04",
         "title": "Routes",
-        "lede": "The route decides which runtime surfaces move.",
+        "lede": "Pick a route to choose which editor surfaces (Codex, Claude Code, Cursor, or all) receive TES updates.",
         "blocks": [
           {
             "type": "table",
@@ -1417,7 +1417,7 @@
       "es": {
         "num": "04",
         "title": "Rutas",
-        "lede": "La ruta decide que superficies se mueven.",
+        "lede": "Elige una ruta para decidir qué superficies del editor (Codex, Claude Code, Cursor o todas) reciben actualizaciones de TES.",
         "blocks": [
           {
             "type": "table",
@@ -1461,7 +1461,7 @@
       "pt": {
         "num": "04",
         "title": "Rotas",
-        "lede": "A rota decide quais superfícies se movem.",
+        "lede": "Escolha uma rota para decidir quais superfícies do editor (Codex, Claude Code, Cursor ou todas) recebem atualizações do TES.",
         "blocks": [
           {
             "type": "table",
@@ -1507,7 +1507,7 @@
       "en": {
         "num": "05",
         "title": "Project states",
-        "lede": "The state decides whether the run installs, updates, audits, or recovers.",
+        "lede": "Read the state to know whether the run will install, update, audit, or recover.",
         "blocks": [
           {
             "type": "table",
@@ -1539,7 +1539,7 @@
       "es": {
         "num": "05",
         "title": "Estados del proyecto",
-        "lede": "El estado decide si el run instala, actualiza, audita o recupera.",
+        "lede": "Lee el estado para saber si la ejecución instalará, actualizará, auditará o recuperará.",
         "blocks": [
           {
             "type": "table",
@@ -1571,7 +1571,7 @@
       "pt": {
         "num": "05",
         "title": "Estados do projeto",
-        "lede": "O estado decide se o run instala, atualiza, audita ou recupera.",
+        "lede": "Leia o estado para saber se a execução vai instalar, atualizar, auditar ou recuperar.",
         "blocks": [
           {
             "type": "table",
@@ -1667,7 +1667,7 @@
       "en": {
         "num": "06",
         "title": "Cortex",
-        "lede": "Cortex is filesystem-first memory. Markdown is the contract; SQLite recall is a derived access path.",
+        "lede": "Cortex keeps project decisions in readable Markdown files you control — no proprietary database. Store and review memory with `/tes-cortex` and Git.",
         "blocks": [
           {
             "type": "p",
@@ -1682,7 +1682,7 @@
       "es": {
         "num": "06",
         "title": "Cortex",
-        "lede": "Cortex es memoria filesystem-first. Markdown es el contrato; recall SQLite es un acceso derivado.",
+        "lede": "Cortex mantiene decisiones del proyecto en archivos Markdown legibles que controlas — sin base de datos propietaria. Almacena y revisa memoria con `/tes-cortex` y Git.",
         "blocks": [
           {
             "type": "p",
@@ -1697,7 +1697,7 @@
       "pt": {
         "num": "06",
         "title": "Cortex",
-        "lede": "Cortex é memória filesystem-first. Markdown é o contrato; recall SQLite e um acesso derivado.",
+        "lede": "O Cortex mantém decisões do projeto em arquivos Markdown legíveis que você controla — sem banco de dados proprietário. Armazene e revise memória com `/tes-cortex` e Git.",
         "blocks": [
           {
             "type": "p",
@@ -1886,7 +1886,7 @@
       "en": {
         "num": "09",
         "title": "Field Reports",
-        "lede": "Field Reports help TES learn from real installations without exporting project content.",
+        "lede": "Field Reports send only anonymous usage signals, and only during `git push` when the GitHub CLI is available — otherwise nothing leaves your machine. Run `/tes:field-reports:disable` to opt out.",
         "blocks": [
           {
             "type": "p",
@@ -1907,7 +1907,7 @@
       "es": {
         "num": "09",
         "title": "Field Reports",
-        "lede": "Field Reports ayuda a TES a aprender de instalaciones reales sin exportar contenido del proyecto.",
+        "lede": "Field Reports envía solo señales anónimas de uso, y solo durante `git push` cuando la GitHub CLI está disponible — si no, nada sale de tu máquina. Ejecuta `/tes:field-reports:disable` para desactivar.",
         "blocks": [
           {
             "type": "p",
@@ -1928,7 +1928,7 @@
       "pt": {
         "num": "09",
         "title": "Field Reports",
-        "lede": "Field Reports ajuda TES a aprender com instalações reais sem exportar conteúdo do projeto.",
+        "lede": "Field Reports envia apenas sinais anônimos de uso, e só durante o `git push` quando a GitHub CLI está disponível — caso contrário nada sai da sua máquina. Rode `/tes:field-reports:disable` para desativar.",
         "blocks": [
           {
             "type": "p",
@@ -1951,7 +1951,7 @@
       "en": {
         "num": "10",
         "title": "Obsidian",
-        "lede": "Obsidian is an optional visual workbench over Markdown. It is not a runtime dependency and not proof by itself.",
+        "lede": "After `/tes-align`, open Obsidian to browse your project Markdown if you like — it is optional, not required. Keep the Markdown readable outside Obsidian and never treat an Obsidian-only view as proof.",
         "blocks": [
           {
             "type": "list",
@@ -1966,7 +1966,7 @@
       "es": {
         "num": "10",
         "title": "Obsidian",
-        "lede": "Obsidian es un workbench visual opcional sobre Markdown. No es dependencia de runtime ni prueba por si mismo.",
+        "lede": "Después de `/tes-align`, abre Obsidian para explorar el Markdown del proyecto si quieres — es opcional, no requerido. Mantén el Markdown legible fuera de Obsidian y nunca trates una vista solo-Obsidian como prueba.",
         "blocks": [
           {
             "type": "list",
@@ -1981,7 +1981,7 @@
       "pt": {
         "num": "10",
         "title": "Obsidian",
-        "lede": "Obsidian é uma bancada visual opcional sobre Markdown. Não é dependência de runtime nem prova por si só.",
+        "lede": "Depois de `/tes-align`, abra o Obsidian para navegar pelo Markdown do projeto se quiser — é opcional, não obrigatório. Mantenha o Markdown legível fora do Obsidian e nunca trate uma visão só-Obsidian como prova.",
         "blocks": [
           {
             "type": "list",
