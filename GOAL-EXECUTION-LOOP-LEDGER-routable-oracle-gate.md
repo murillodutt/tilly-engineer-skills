@@ -63,4 +63,36 @@ audit_remutation: not_applicable
 stop_state: active_spec_committed
 next_allowed_action: worker_attempt (SPEC-003)
 
+### SPEC-003 (A2: oracle-wiring-check by gate re-mutation)
+spec_id: SPEC-003
+spec_version: 1
+attempt: 1
+repair_count: 0
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-005
+failed_attempt_recovery_decision: not_applicable
+commit: <pending impl commit>
+oracle_status: PASS (suite 27/27 in all 4 surfaces; D3 facade→exit1, wired→exit0, oracle-as-gate barred; 3-lens design stress: residual trust-boundary documented in-code)
+structural_method_id: mjs-harness-edit
+topology_decision: single-file harness rewrite (oracle-wiring-check.mjs), mirrors audit-remutation.mjs structure
+topology_decision_artifact: ledger-section
+structural_debt: residual — cannot prove (node-pure) that declared gate_command IS the persistent gate at regression_target; documented in-code; full closure needs installed-target canary (out of unit scope)
+next_structural_constraint: SPEC-009 installer must write a gate_command/regression_target the harness can re-mutate
+topology_probe_result: not_applicable (line count well within budget; mirrors existing harness)
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: not_applicable
+runtime_smoke_oracle: not_applicable
+adversary_objection: repaired (naive exit-0 → gate re-mutation + mandatory decoy negative control + anti-oracle-as-gate)
+shared_contract_extended: yes (oracle-wiring-check input schema: requiredOracles/wiredText → oracles[]{gate_command,oracle_command,mutate,decoy_mutate,regression_target})
+extension_point_proven: yes (D3 fixture rewritten to new schema, suite green)
+contract_handoff_artifact: ledger-section
+api_lint_status: not_applicable
+auditor_distinct_from_operator: not_applicable
+auditor_rewrote_no_oracle: not_applicable
+audit_remutation: not_applicable
+stop_state: active_spec_committed
+next_allowed_action: worker_attempt (SPEC-005)
+
 (one entry per SPEC, appended as the loop advances)

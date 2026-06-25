@@ -97,12 +97,26 @@ const WALLS = [
     violate: () => [fixture('d2-bad.json', JSON.stringify({ claims: { backend: 'WebGPU' }, artifact: { backend: 'webgl2' }, fieldMap: { backend: 'backend' } }))],
     revert: () => [fixture('d2-ok.json', JSON.stringify({ claims: { backend: 'webgl2' }, artifact: { backend: 'webgl2' }, fieldMap: { backend: 'backend' } }))],
   },
-  // D3 — oracle wiring
+  // D3 — oracle wiring por RE-MUTAÇÃO DO GATE (gate WIRED re-roda o oráculo; FACADE não)
   {
     id: 'D3 oracle-wiring-check',
     harness: 'oracle-wiring-check.mjs',
-    violate: () => [fixture('d3-bad.json', JSON.stringify({ requiredOracles: ['certify.ts'], wiredText: '- run: npm run lint' }))],
-    revert: () => [fixture('d3-ok.json', JSON.stringify({ requiredOracles: ['certify.ts'], wiredText: '- run: npx tsx certify.ts' }))],
+    // FACADE: gate_command 'true' nunca re-roda o oráculo → fica 0 mesmo com o oráculo quebrado → exit 1.
+    violate: () => [fixture('d3-bad.json', JSON.stringify({ oracles: [{
+      axis: 'f', regression_target: '.ci/fake',
+      gate_command: 'true',
+      oracle_command: `test ! -f ${join(tmp, '__d3f')}`,
+      mutate: `touch ${join(tmp, '__d3f')}`, revert: `rm -f ${join(tmp, '__d3f')}`,
+      decoy_mutate: `touch ${join(tmp, '__d3fd')}`, decoy_revert: `rm -f ${join(tmp, '__d3fd')}`,
+    }] }))],
+    // WIRED: gate envolve o oráculo via wrapper distinto (não-substring), insensível ao decoy → exit 0.
+    revert: () => [fixture('d3-ok.json', JSON.stringify({ oracles: [{
+      axis: 'h', regression_target: '.ci/real',
+      gate_command: `sh -c '[ ! -e ${join(tmp, '__d3h')} ]'`,
+      oracle_command: `test ! -f ${join(tmp, '__d3h')}`,
+      mutate: `touch ${join(tmp, '__d3h')}`, revert: `rm -f ${join(tmp, '__d3h')}`,
+      decoy_mutate: `touch ${join(tmp, '__d3hd')}`, decoy_revert: `rm -f ${join(tmp, '__d3hd')}`,
+    }] }))],
   },
   // A1 — anchor rehash
   {
