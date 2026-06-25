@@ -108,4 +108,16 @@ contract_handoff_artifact: not_applicable | api_lint_status: not_applicable
 audit_* fields: not_applicable
 stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-005)
 
+### SPEC-005 (I1: validate-walls as declarative Gate in staged router)
+spec_id: SPEC-005 | spec_version: 1 | attempt: 1 | repair_count: 0 | audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-006 | failed_attempt_recovery_decision: not_applicable
+commit: <pending>
+oracle_status: PASS (--plan: walls gate SKIP when no .mjs staged, RUN when a .mjs is staged; END-TO-END: broken wall staged → gate FAIL [commit-gate]; restored → 27/27. THIS is staged-wired proof per check 23.)
+structural_method_id: py-router-gate-add | topology_decision: declarative Gate in gate_plan() (mirrors existing Gate entries) | structural_debt: none
+next_structural_constraint: SPEC-006 adds same wall to closure (closure-wired layer)
+runtime_smoke_oracle: pass (gate executed end-to-end, observed FAIL on broken wall) | adversary_objection: not_applicable
+shared_contract_extended: no | contract_handoff_artifact: not_applicable | api_lint_status: not_applicable
+audit_* fields: not_applicable
+stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-006)
+
 (one entry per SPEC, appended as the loop advances)

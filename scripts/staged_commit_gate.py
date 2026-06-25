@@ -215,6 +215,14 @@ def gate_plan() -> list[Gate]:
     return [
         Gate("reference-package", ["python3", "scripts/validate_reference_package.py", "--staged-only"]),
         Gate(
+            "goal-maestro-walls",
+            ["node", "src/adapters/claude/skills/tes-goal-maestro/scripts/validate-walls.mjs"],
+            matcher=lambda paths: any_match(
+                paths,
+                ("*/skills/tes-goal-maestro/scripts/*.mjs",),
+            ),
+        ),
+        Gate(
             "staged-surfaces",
             ["python3", "scripts/staged_surface_check.py"],
             matcher=lambda paths: suffix_match(paths, surface_suffixes),
