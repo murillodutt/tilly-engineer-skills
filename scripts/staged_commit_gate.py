@@ -349,6 +349,11 @@ def gate_plan() -> list[Gate]:
                 ),
             ),
         ),
+        Gate(
+            "asset-transfer-packet",
+            ["python3", "scripts/supervise_detectors/new_skill_without_packet.py", "--target", "."],
+            matcher=lambda paths: any_match(paths, ("*/skills/*/SKILL.md",)),
+        ),
         Gate("local-skill-parity", []),
         Gate("git-whitespace", ["git", "diff", "--check", "&&", "git", "diff", "--cached", "--check"]),
     ]
