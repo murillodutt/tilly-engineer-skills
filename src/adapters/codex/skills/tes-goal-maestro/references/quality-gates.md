@@ -229,7 +229,8 @@ Before `GO`, verify:
 17. integration units have runtime-smoke artifacts that pass;
 18. required browser/visual axes have `status=PASS`, `visual.proven=true` and at least one evidence artifact;
 19. `DEGRADED` or `BLOCKED` required axes route to `AXIS_UNPROVEN` or `VISUAL_CERT_BLOCKED`, not `GO`;
-20. worker envelopes that reuse APIs include a source-derived handoff artifact and `api_lint_status=PASS`.
+20. worker envelopes that reuse APIs include a source-derived handoff artifact and `api_lint_status=PASS`;
+21. each required-axis oracle declares `PROVEN_PROPERTY`/`MEASURED_QUANTITY` and its PASS survives inversion: mutating only the named property makes it exit≠0. A PASS that holds while the named property is violated is `oracle_strength=facade`, not execution credit.
 
 If any execution-fidelity check fails, use `NEEDS_EXECUTION_UNIT_FIDELITY`. If structural method evidence is missing or failing, use `NEEDS_STRUCTURAL_METHOD`. If runtime-smoke is missing for an integration unit, use `NEEDS_INTEGRATION_ORACLE`. If a required axis is unproven, use `AXIS_UNPROVEN` or `VISUAL_CERT_BLOCKED`.
 
@@ -257,6 +258,11 @@ Final delivery must report:
 18. Tree Adversary result.
 19. runtime-smoke result for integration units.
 20. contract handoff artifact and API lint status when workers reused APIs.
+21. claim↔artifact coherence: every quantitative or categorical claim in the SCORECARD must cite a named field of a persisted artifact and agree with it (`claim.backend == artifact.backend`, `claim.fps == artifact.frames`). The audit greps the artifact and FAILS the axis (`AXIS_UNPROVEN`) if the claim contradicts it — a "WebGPU 60FPS" claim over a `browser-metrics.json` that says `backend=webgl2, frames=112` is an unproven path raised over the proven one.
+22. single canonical artifact per axis: `rg --files -g 'browser-metrics.json'` must resolve to one authoritative artifact per axis, or a stale one carries `superseded_by=<path>` with its `visual_axis!=PASS`. Two artifacts with opposite `proven` and no supersession note → `NEEDS_OWNER_DECISION`, not a silent pick of the greener one.
+23. persistent-gate wiring: a required-axis oracle that no persistent gate (pre-commit hook or per-workspace CI) references is `oracle_strength=facade` for closeout — a green snapshot with no regression net. `status: GO` requires `oracle_ci_wired=yes`, proven by `ORACLE_WIRING_PROOF=<ci-or-precommit-command>` and a non-empty `rg -n 'certify' .github/workflows/`. An unwired required axis is at most `DEGRADED`/`AXIS_UNPROVEN`, never `GO` (drive with `scripts/oracle-wiring-check.mjs`).
+
+`status: GO` (check 1) is reachable only when checks 21–23 also hold: claims agree with artifacts, one canonical artifact per axis, and every required-axis oracle is wired into a persistent gate.
 
 ## Stop-State Mapping
 

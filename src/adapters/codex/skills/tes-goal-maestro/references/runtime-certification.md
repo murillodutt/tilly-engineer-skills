@@ -40,6 +40,10 @@ Minimum `browser-metrics.json` fields:
 
 For a required visual axis, `EXECUTION_LOOP_COMPLETE` requires `status=PASS`, `visual.proven=true`, and at least one evidence path. A `DEGRADED` or `BLOCKED` artifact routes to `AXIS_UNPROVEN` or `VISUAL_CERT_BLOCKED`, not completion.
 
+`visual.proven=true` is NOT satisfied by "≥1 screenshot exists". A capture of a degenerate rendered surface — a game camera stuck in a wall, an all-HUD frame, a blank dashboard, a chart with no plotted series, a form that rendered empty — or one whose numbers come from JS state (`window.__game`, a store snapshot) rather than from the rendered output, passes that weak bar while proving nothing rendered. The axis must carry a `rendered_state_nondegeneracy_oracle` that runs with an exit code over the actual rendered output (PNG, DOM, accessibility tree) and asserts at least one of: rendered-output variance above a floor declared by the anchor, distinct-element/color count above a floor, or an expected layout/geometry bounding box present. Any JS-state readout is forbidden from satisfying `proven` — the evidence must come from the rendered output, not the in-memory state that produced it. Below the floor → `AXIS_UNPROVEN`/`DEGRADED` even with a capture present. The game/canvas case is the pixel-variance instance of this general rule; drive it with `scripts/scene-non-degenerate.mjs`.
+
+When `runtime_target=browser`, the smoke must execute the bundle **as served** in the browser target (headless browser, or the actual built `dist-client` imported in the bundle), not a Node process with the browser boundary stubbed away. A Node-only smoke for browser code lets `node:fs` and friends pass node-side and break only in the real browser. `consoleErrors` is a gate, not a log: any `consoleError` or uncaught exception on the hot path → exit≠0 → the axis cannot be `PASS`. A node-only smoke standing in for browser code → stop with `AXIS_UNPROVEN` or `NEEDS_INTEGRATION_ORACLE`. Drive the served-bundle boot with `scripts/browser-boot-smoke.mjs`.
+
 ## Browser Attempt Escape Hatch
 
 Non-visual certification is valid only after a real browser attempt fails for a captured environment reason such as missing browser binary, sandbox denial, no display, no GPU, or unsupported runtime. The ledger must include:
@@ -64,7 +68,7 @@ runtime_smoke_oracle=<command or artifact>
 oracle_class=behavioral
 ```
 
-The runtime smoke must instantiate the real wiring module, use stubs only for external browser/GPU/network/clock boundaries, run deterministic ticks or calls, and assert invariants that the compiler cannot prove:
+The runtime smoke must instantiate the real wiring module, use stubs only for the narrow external GPU/network/clock surface — never the whole runtime boundary, and never to relocate browser code into a Node process — run deterministic ticks or calls, and assert invariants that the compiler cannot prove:
 
 1. state advances across ticks or calls;
 2. no throw, NaN, unresolved promise, or fatal console/runtime error appears on the hot path;
@@ -77,12 +81,15 @@ If the tree gives an integration unit only build/typecheck, stop with `NEEDS_INT
 Use this role when browser, UI, game, canvas, render, layout, spawn, raycast, or runtime-wiring evidence is required.
 
 Ownership:
+
 - browser/runtime smoke scripts, screenshots, `browser-metrics.json`, and runtime evidence artifacts.
 
 Forbidden:
+
 - replacing runtime proof with build-only, typecheck-only, or prose evidence.
 
 Oracles:
+
 - browser metrics parse;
 - screenshot/pixel/bounding-box/accessibility evidence;
 - runtime smoke artifact for integration units.
