@@ -841,6 +841,41 @@ def local_development_skill_parity_failures() -> list[str]:
         for relpath in sorted(codex_files.keys() & claude_files.keys()):
             if codex_files[relpath].read_bytes() != claude_files[relpath].read_bytes():
                 failures.append(f"{skill}: Codex/Claude development skill drift: {relpath}")
+    return failures
+
+
+def goal_maestro_scripts_parity_failures() -> list[str]:
+    # The executable wall harnesses (scripts/*.mjs) must stay byte-identical between the
+    # claude and codex SOURCE adapters. The staged gate already covers the .agents/.claude
+    # mirror pair; this covers the src/adapters/{claude,codex} source pair, which no other
+    # gate compared — a silent-divergence hole proven empirically. Glob/walk, not a literal
+    # path list (REQUIRED_PATHS means "exists once", not "byte-parity across adapters").
+    failures: list[str] = []
+    claude_root = ROOT / "src" / "adapters" / "claude" / "skills" / "tes-goal-maestro" / "scripts"
+    codex_root = ROOT / "src" / "adapters" / "codex" / "skills" / "tes-goal-maestro" / "scripts"
+    if not claude_root.is_dir():
+        return [f"missing goal-maestro claude scripts dir: {claude_root.relative_to(ROOT)}"]
+    if not codex_root.is_dir():
+        return [f"missing goal-maestro codex scripts dir: {codex_root.relative_to(ROOT)}"]
+
+    claude_files = {
+        path.relative_to(claude_root): path
+        for path in claude_root.rglob("*")
+        if path.is_file() and path.name != ".DS_Store"
+    }
+    codex_files = {
+        path.relative_to(codex_root): path
+        for path in codex_root.rglob("*")
+        if path.is_file() and path.name != ".DS_Store"
+    }
+
+    for relpath in sorted(claude_files.keys() - codex_files.keys()):
+        failures.append(f"goal-maestro scripts: missing Codex file: {relpath}")
+    for relpath in sorted(codex_files.keys() - claude_files.keys()):
+        failures.append(f"goal-maestro scripts: missing Claude file: {relpath}")
+    for relpath in sorted(claude_files.keys() & codex_files.keys()):
+        if claude_files[relpath].read_bytes() != codex_files[relpath].read_bytes():
+            failures.append(f"goal-maestro scripts: claude/codex source drift: {relpath}")
 
     return failures
 
@@ -1101,6 +1136,7 @@ def main() -> int:
     failures.extend(benchmark_fixture_deletion_test_failures())
     failures.extend(benchmark_fixture_reference_failures())
     failures.extend(local_development_skill_parity_failures())
+    failures.extend(goal_maestro_scripts_parity_failures())
     failures.extend(local_development_skill_description_failures())
 
     for relpath in SYNCED_FILES:

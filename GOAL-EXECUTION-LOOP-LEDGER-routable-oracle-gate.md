@@ -132,4 +132,16 @@ shared_contract_extended: no | contract_handoff_artifact: not_applicable | api_l
 audit_* fields: not_applicable
 stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-007)
 
+### SPEC-007 (A4: src↔src wall parity in closure)
+spec_id: SPEC-007 | spec_version: 1 | attempt: 1 | repair_count: 0 | audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-008 | failed_attempt_recovery_decision: not_applicable
+commit: <pending>
+oracle_status: PASS (goal_maestro_scripts_parity_failures added, reusing local_development_skill_parity_failures molde rglob+read_bytes; plugged in main() after line 1138. EMPIRICAL: baseline PASS; divergence in claude token-budget.mjs → FAIL 'claude/codex source drift'; reverted → PASS. The silent-divergence hole is now closed.)
+structural_method_id: py-parity-fn-add | topology_decision: glob/walk fn (not REQUIRED_PATHS literal list) | structural_debt: none
+next_structural_constraint: none
+runtime/visual/browser fields: not_applicable | adversary_objection: not_applicable
+shared_contract_extended: no | contract_handoff_artifact: not_applicable | api_lint_status: not_applicable
+audit_* fields: not_applicable
+stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-008)
+
 (one entry per SPEC, appended as the loop advances)
