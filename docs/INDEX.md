@@ -24,6 +24,7 @@ This documentation layer explains the method behind the source package without t
 | Active installed certification and Field Reports intake ADR | `adr/0003-1-installed-certification-and-field-reports-feedback-intake.md` |
 | Active TES capsule isolation and reversible installation ADR | `adr/0004-tes-capsule-isolation-and-reversible-installation.md` |
 | Active asset transfer to existing TES surfaces ADR | `adr/0005-asset-transfer-to-existing-surfaces.md` |
+| Active Goal Maestro decision-lens evolution and self-falsifying ceiling ADR | `adr/0006-decision-lens-evolution-and-routable-gate-closure.md` |
 | User manual PT/EN/ES | `install/USER-MANUAL.html` |
 | Agent manual | `install/AGENT-MANUAL.md` |
 | Agent oracle inventory | `install/AGENT-ORACLE-INVENTORY.md` |

@@ -17,7 +17,7 @@ TES is a local trust layer for AI coding work. It keeps the rules used, context 
 - A trail after the chat is gone.
 - Versioned Markdown memory in the repo.
 - Project GPS with `/tes-map` for the current phase, blockers, proof, and next move.
-- Goal Maestro with `/tes-goal-maestro` for mature-artifact-to-execution-tree-to-`/goal` materialization, structural method checks, and loop-ready evidence.
+- Goal Maestro with `/tes-goal-maestro` that turns a mature artifact into an execution tree and writes its own falsifiable checks, then adversarially audits its own work before closure.
 - Mantra Gate with `[🍳 Flash-Fry]` before state-changing actions.
 - Deterministic gates before closure.
 - Retained evidence your team can inspect.

@@ -9,4 +9,4 @@ The original small package included Codex/Claude/Cursor-oriented behavioral guid
 - Surgical Changes
 - Goal-Driven Execution
 
-This independent `0.1.0` project adds a portable context-mesh method, Codex derivation, validation scripts, local Git hooks, and adoption scorecards.
+This independent project — first released as `0.1.0` — adds a portable context-mesh method, Codex derivation, validation scripts, local Git hooks, and adoption scorecards.
