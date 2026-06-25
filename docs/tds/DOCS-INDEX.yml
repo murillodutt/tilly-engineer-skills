@@ -491,6 +491,13 @@ documents:
     consumer: maintainers, Goal Maestro authors, installer authors, oracle authors, release reviewers, and execution agents
     source_of_truth: true
     evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-ceiling-self-falsifying.md
+    id: roadmap.goal_super_spec.goal_maestro_ceiling_self_falsifying
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, oracle authors, lens authors, and execution agents
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md
     id: roadmap.goal_super_spec_cortex_mcp_capability_expansion
     class: roadmap
