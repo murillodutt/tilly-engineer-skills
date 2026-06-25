@@ -2,17 +2,11 @@
 
 ## Purpose
 
-Preserve certified, installed, materialized, generated, measured, and
-human-rated TES behavior during risky repository changes while allowing
-runtime-first engineering to continue without compulsory skill loading.
+Preserve certified, installed, materialized, generated, measured, and human-rated TES behavior during risky repository changes while allowing runtime-first engineering to continue without compulsory skill loading.
 
 ## Why This Skill Exists
 
-A prior latency and audio-quality work line exposed the immediate failure mode,
-but the risk is project-wide: an improvement in one dimension can silently remove
-the contract that made a previous result good. The same pattern can affect
-skills, docs, adapters, installers, runtime scripts, oracles, roadmap lines,
-generated public surfaces, release identity, and user-facing behavior.
+A prior latency and audio-quality work line exposed the immediate failure mode, but the risk is project-wide: an improvement in one dimension can silently remove the contract that made a previous result good. The same pattern can affect skills, docs, adapters, installers, runtime scripts, oracles, roadmap lines, generated public surfaces, release identity, and user-facing behavior.
 
 ## Origin Signals
 
@@ -37,8 +31,7 @@ generated public surfaces, release identity, and user-facing behavior.
 
 - Runtime-first work continues.
 - Human-rated behavior is evidence, not anecdote.
-- Installed behavior, generated docs, materialized adapters, public surfaces,
-  and CLI/oracle contracts are product evidence.
+- Installed behavior, generated docs, materialized adapters, public surfaces, and CLI/oracle contracts are product evidence.
 - Audio, cache, model, and provider runtime artifacts stay uncommitted.
 - Local development guards do not become shipped product skills.
 
@@ -46,23 +39,17 @@ generated public surfaces, release identity, and user-facing behavior.
 
 - Regressing a known-good audio recipe while improving latency.
 - Mistaking direct execution for full recipe equivalence.
-- Regressing skill triggers, adapter parity, installer behavior, roadmap
-  continuity, generated docs, release identity, private-vocabulary safety, or
-  CLI payload shape while changing a neighboring surface.
+- Regressing skill triggers, adapter parity, installer behavior, roadmap continuity, generated docs, release identity, private-vocabulary safety, or CLI payload shape while changing a neighboring surface.
 - Adding narrow literal lists that fail on the next unseen term.
 - Creating another circular prompt/documentation loop instead of stopping.
-- Treating one passing oracle as enough when another surface owns the actual
-  risk.
+- Treating one passing oracle as enough when another surface owns the actual risk.
 
 ## Relationship To Other Skills
 
-- `tes-sync`: release/bump/publish line must not hide regressions behind
-  package closure.
-- `tes-goal-maestro`: prompts and Super SPECs must not create circular drift
-  when no runtime/product delta exists.
+- `tes-sync`: release/bump/publish line must not hide regressions behind package closure.
+- `tes-goal-maestro`: prompts and Super SPECs must not create circular drift when no runtime/product delta exists.
 - `tes-high-agency-pattern`: can review this guard's agency and packaging.
-- `tes-predictive-operations`: decides when to prospect, mine, alternate, or
-  package; this skill protects baseline behavior during execution.
+- `tes-predictive-operations`: decides when to prospect, mine, alternate, or package; this skill protects baseline behavior during execution.
 
 ## Changelog
 
@@ -75,11 +62,6 @@ generated public surfaces, release identity, and user-facing behavior.
 
 ## Do Not Lose
 
-The baseline recipe is part of the product, and this applies across every
-capability. A
-change that preserves one visible command while changing triggers, routing,
-docs, materialization, generated public pages, release identity, safety,
-latency, audio, or comparison evidence is not equivalent.
+The baseline recipe is part of the product, and this applies across every capability. A change that preserves one visible command while changing triggers, routing, docs, materialization, generated public pages, release identity, safety, latency, audio, or comparison evidence is not equivalent.
 
-This guard is not a command. It is a local reference for risky TES package
-changes, not a standing loader for every analysis and write.
+This guard is not a command. It is a local reference for risky TES package changes, not a standing loader for every analysis and write.

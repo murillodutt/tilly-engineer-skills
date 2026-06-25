@@ -9,12 +9,9 @@ evidence_level: L1
 
 # GOAL Super SPEC: ADR 0005 Language Lane
 
-Status: active lane SPEC derived from
-`docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
+Status: active lane SPEC derived from `docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
 
-Purpose: transfer shared-language discipline into existing mining, project
-context, glossary, Cortex, and private-vocabulary assets without turning
-language capture into memory hoarding.
+Purpose: transfer shared-language discipline into existing mining, project context, glossary, Cortex, and private-vocabulary assets without turning language capture into memory hoarding.
 
 ## Asset-Transfer Packet
 
@@ -34,10 +31,8 @@ language capture into memory hoarding.
 Tasks:
 
 1. Capture `git status --short --branch --untracked-files=all`.
-2. Read ADR 0005, `tes-mine`, glossary/reference formats, and relevant Cortex
-   write-boundary docs.
-3. Classify the selected failure as ambiguity, contradiction, stale vocabulary,
-   private vocabulary leakage, or over-retention.
+2. Read ADR 0005, `tes-mine`, glossary/reference formats, and relevant Cortex write-boundary docs.
+3. Classify the selected failure as ambiguity, contradiction, stale vocabulary, private vocabulary leakage, or over-retention.
 4. Name correlated oracle and adapter surfaces before editing.
 
 Focused oracles:
@@ -54,19 +49,16 @@ git diff --check
 Tasks:
 
 1. Choose one reproducible language failure.
-2. Prove whether the failure belongs in `tes-mine`, a glossary/context oracle,
-   Cortex gating, or the private-vocabulary oracle.
+2. Prove whether the failure belongs in `tes-mine`, a glossary/context oracle, Cortex gating, or the private-vocabulary oracle.
 3. Reject any repair that stores unresolved speculation as durable memory.
 
 ## SPEC-002: Proof First
 
 Tasks:
 
-1. Add or identify the cheapest assertion that fails when unresolved language is
-   accepted as context.
+1. Add or identify the cheapest assertion that fails when unresolved language is accepted as context.
 2. Prefer deterministic oracle fixtures for mechanical language rules.
-3. Use benchmark samples only when the behavior depends on judgment or
-   conversational restraint.
+3. Use benchmark samples only when the behavior depends on judgment or conversational restraint.
 
 ## SPEC-003: Existing Asset Patch
 
@@ -74,8 +66,7 @@ Tasks:
 
 1. Patch the selected existing asset and required mirrors only.
 2. Keep glossary surfaces free of implementation details.
-3. Keep Cortex writes governed and proposal-based unless an existing contract
-   explicitly authorizes durable write.
+3. Keep Cortex writes governed and proposal-based unless an existing contract explicitly authorizes durable write.
 
 ## SPEC-004: Regression And Release
 
@@ -83,8 +74,6 @@ Tasks:
 
 1. Run the focused proof.
 2. Run the smallest package oracle covering the changed surface.
-3. If skill, oracle, or installed behavior changed, stop for release identity
-   classification.
+3. If skill, oracle, or installed behavior changed, stop for release identity classification.
 
-Valid statuses: `ASSET_TRANSFERRED`, `ASSET_ALREADY_ADEQUATE`,
-`NEEDS_OWNER_DECISION`, `NEEDS_ASSET_PACKET`, `BLOCKED`.
+Valid statuses: `ASSET_TRANSFERRED`, `ASSET_ALREADY_ADEQUATE`, `NEEDS_OWNER_DECISION`, `NEEDS_ASSET_PACKET`, `BLOCKED`.

@@ -11,23 +11,13 @@ evidence_level: L4
 
 ## Summary
 
-TES `0.3.110` strengthens Mantra Gate from a validatable micro-gate into a
-local adoption-health layer. The compact marker was later renamed to
-`[🍳 Flash-Fry]` without changing the `tes-mantra-gate@1` schema; state-changing
-work now has a read-only oracle that can detect missing records, high-risk
-compact-only gates, missing closure oracles, forbidden risk classes, and
-sanitized local metrics.
+TES `0.3.110` strengthens Mantra Gate from a validatable micro-gate into a local adoption-health layer. The compact marker was later renamed to `[🍳 Flash-Fry]` without changing the `tes-mantra-gate@1` schema; state-changing work now has a read-only oracle that can detect missing records, high-risk compact-only gates, missing closure oracles, forbidden risk classes, and sanitized local metrics.
 
 ## Changed Behavior
 
-- `scripts/mantra_gate.py` now includes deterministic risk classification:
-  `routine`, `material`, `high-risk`, and `forbidden`.
-- `scripts/mantra_gate_adoption_oracle.py` correlates Git diff, staged files,
-  recent commit metadata, Field Reports presence, local gate JSONL records,
-  action intent, risk, and closure claims.
-- `/tes-doctor` guidance now treats `BYPASS_SUSPECTED`, `NEEDS_REVIEW`, and
-  `BLOCKED` from Mantra Gate adoption as stop conditions for closure,
-  commit, or push claims.
+- `scripts/mantra_gate.py` now includes deterministic risk classification: `routine`, `material`, `high-risk`, and `forbidden`.
+- `scripts/mantra_gate_adoption_oracle.py` correlates Git diff, staged files, recent commit metadata, Field Reports presence, local gate JSONL records, action intent, risk, and closure claims.
+- `/tes-doctor` guidance now treats `BYPASS_SUSPECTED`, `NEEDS_REVIEW`, and `BLOCKED` from Mantra Gate adoption as stop conditions for closure, commit, or push claims.
 - Installed bundles now include the adoption oracle under `.tes/bin/**`.
 
 ## Focused Evidence
@@ -45,20 +35,12 @@ sanitized local metrics.
 
 ## Adoption Probe
 
-A local full Mantra Gate record was written to
-`.tes/field-reports/mantra-gates.jsonl` for this package change. The adoption
-oracle classified the working change as `high-risk` because it touches generated
-runtime packaging and public package surfaces, then returned `OK` because a
-complete gate record existed.
+A local full Mantra Gate record was written to `.tes/field-reports/mantra-gates.jsonl` for this package change. The adoption oracle classified the working change as `high-risk` because it touches generated runtime packaging and public package surfaces, then returned `OK` because a complete gate record existed.
 
-This report is retained only as historical evidence. The current operating
-contract is governed by `docs/mesh/MANTRA-GATE.md` and permits compact
-`[🍳 Flash-Fry]` display when the internal record is complete and the gate
-returns `PROCEED`.
+This report is retained only as historical evidence. The current operating contract is governed by `docs/mesh/MANTRA-GATE.md` and permits compact `[🍳 Flash-Fry]` display when the internal record is complete and the gate returns `PROCEED`.
 
 ## Limits
 
 - No remote telemetry was added.
 - No push was performed.
-- The adoption oracle is intentionally read-only; it reports suspicious bypass
-  instead of mutating project state.
+- The adoption oracle is intentionally read-only; it reports suspicious bypass instead of mutating project state.

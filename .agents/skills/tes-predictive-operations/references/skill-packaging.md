@@ -1,7 +1,6 @@
 # Skill Packaging
 
-Use this reference only when the current risk is packaging a local skill whose
-behavior is already clear.
+Use this reference only when the current risk is packaging a local skill whose behavior is already clear.
 
 ## Packaging Check
 
@@ -21,5 +20,4 @@ behavior is already clear.
 
 ## Stop
 
-Stop if packaging starts inventing behavior, public claims, installer surface,
-or edits to `tes-mine` or `tes-prospect`.
+Stop if packaging starts inventing behavior, public claims, installer surface, or edits to `tes-mine` or `tes-prospect`.

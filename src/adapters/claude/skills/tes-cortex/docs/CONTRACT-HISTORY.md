@@ -2,13 +2,11 @@
 
 ## Purpose
 
-`/tes-cortex` governs Cortex memory: recall, read, verify, audit, rebuild,
-curate, learn, reflect, apply, remember, forget, and consolidation.
+`/tes-cortex` governs Cortex memory: recall, read, verify, audit, rebuild, curate, learn, reflect, apply, remember, forget, and consolidation.
 
 ## Why This Skill Exists
 
-Memory boundaries are easy to violate (SQLite as truth, writing sources after
-import, ungoverned remember). This skill maps intents to safe operations.
+Memory boundaries are easy to violate (SQLite as truth, writing sources after import, ungoverned remember). This skill maps intents to safe operations.
 
 ## Contracts Preserved
 
@@ -27,8 +25,7 @@ import, ungoverned remember). This skill maps intents to safe operations.
 
 ## Relationship To Other Skills
 
-`tes-init` scaffolds cortex tree. `tes-mcp` exposes Cortex tools. `tes-align`
-may suggest Cortex promotion after Tier 1/2 review.
+`tes-init` scaffolds cortex tree. `tes-mcp` exposes Cortex tools. `tes-align` may suggest Cortex promotion after Tier 1/2 review.
 
 ## Changelog
 

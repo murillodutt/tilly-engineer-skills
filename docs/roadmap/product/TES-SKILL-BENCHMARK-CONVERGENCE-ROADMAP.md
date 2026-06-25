@@ -12,13 +12,9 @@ tver: 0.1.0
 
 ## Goal
 
-Establish benchmark coverage for TES skills that can regress by agent behavior,
-then run progressive goal loops until each covered skill has live evidence,
-focused failure classification, and a clear stop point.
+Establish benchmark coverage for TES skills that can regress by agent behavior, then run progressive goal loops until each covered skill has live evidence, focused failure classification, and a clear stop point.
 
-This roadmap does not authorize commits, release identity changes, bundle
-updates, publishing, or broad documentation work. It is an execution control
-surface for benchmark convergence.
+This roadmap does not authorize commits, release identity changes, bundle updates, publishing, or broad documentation work. It is an execution control surface for benchmark convergence.
 
 ## Baseline
 
@@ -31,14 +27,9 @@ surface for benchmark convergence.
 
 ## Benchmark Policy
 
-Benchmarks are instruments of truth, not scoreboards. A useful benchmark must
-separate false green from real behavior, preserve distractors, emit runtime
-evidence, and make the next repair cause obvious.
+Benchmarks are instruments of truth, not scoreboards. A useful benchmark must separate false green from real behavior, preserve distractors, emit runtime evidence, and make the next repair cause obvious.
 
-Use LLM/runtime benchmarks only for skills whose value depends on judgment,
-routing, restraint, or agent behavior. Use deterministic oracles for skills
-whose contract is file layout, install behavior, command output, package
-correlation, or adapter materialization.
+Use LLM/runtime benchmarks only for skills whose value depends on judgment, routing, restraint, or agent behavior. Use deterministic oracles for skills whose contract is file layout, install behavior, command output, package correlation, or adapter materialization.
 
 ## Coverage Matrix
 
@@ -61,18 +52,15 @@ correlation, or adapter materialization.
 Acceptance:
 
 - list every source skill by adapter and route;
-- classify each as behavioral benchmark, deterministic oracle, existing
-  benchmark, or no new coverage needed;
+- classify each as behavioral benchmark, deterministic oracle, existing benchmark, or no new coverage needed;
 - preserve adapter parity and keep private project vocabulary out of fixtures.
 
 ### Wave 1: Behavioral Core
 
 Acceptance:
 
-- create progressive datasets for `tes-goal-maestro`, `tes-prospect`, and
-  `tes-mine`;
-- each dataset includes positive cases, negative cases, distractors, and at
-  least one regression sample for scope drift;
+- create progressive datasets for `tes-goal-maestro`, `tes-prospect`, and `tes-mine`;
+- each dataset includes positive cases, negative cases, distractors, and at least one regression sample for scope drift;
 - live runs write structured progress logs.
 
 ### Wave 2: Alignment Canary
@@ -87,22 +75,17 @@ Acceptance:
 
 Acceptance:
 
-- benchmark `tes-bench` against routing, level selection, evidence reading,
-  failure classification, and convergence stop discipline;
+- benchmark `tes-bench` against routing, level selection, evidence reading, failure classification, and convergence stop discipline;
 - prevent score-chasing language from replacing behavioral evidence.
 
 ### Wave 4: Retention And Closure
 
 Acceptance:
 
-- every covered family has a latest run pointer, progress logs, and a
-  classification note;
-- deterministic-only skills have named oracles or an explicit no-new-coverage
-  decision;
-- `git diff --check`, focused validators, and `npm run commit:check` pass only
-  at final closure;
-- no stage, commit, push, tag, publish, bundle, or release action occurs before
-  owner authorization.
+- every covered family has a latest run pointer, progress logs, and a classification note;
+- deterministic-only skills have named oracles or an explicit no-new-coverage decision;
+- `git diff --check`, focused validators, and `npm run commit:check` pass only at final closure;
+- no stage, commit, push, tag, publish, bundle, or release action occurs before owner authorization.
 
 ## Goal Loop Template
 
@@ -112,29 +95,20 @@ Each skill benchmark loop follows the same progression:
 2. L1 smoke: one representative sample proves the harness path.
 3. L2 contrast: positives, negatives, and distractors separate behavior.
 4. L3 family: all samples for one skill family run with progress logs.
-5. L4 retained evidence: full relevant benchmark set runs without distractor
-   leak or backend defects.
+5. L4 retained evidence: full relevant benchmark set runs without distractor leak or backend defects.
 
-Each repair cycle must name the current level, run id, failure classification,
-single fix target, and next oracle. Stop after convergence; do not polish.
+Each repair cycle must name the current level, run id, failure classification, single fix target, and next oracle. Stop after convergence; do not polish.
 
 ## Stop Conditions
 
-Stop with `CONVERGED_NO_COMMIT` when all required levels for the current skill
-family are GO, focused validators pass, progress logs exist, and no forbidden
-git or release action occurred.
+Stop with `CONVERGED_NO_COMMIT` when all required levels for the current skill family are GO, focused validators pass, progress logs exist, and no forbidden git or release action occurred.
 
-Stop with `NEEDS_REORIENTATION` when the next action is not tied to a failed
-sample, the fix target is unclear, or the loop starts broadening TES instead of
-converging the benchmark.
+Stop with `NEEDS_REORIENTATION` when the next action is not tied to a failed sample, the fix target is unclear, or the loop starts broadening TES instead of converging the benchmark.
 
-Stop with `NEEDS_OWNER_DECISION` when convergence requires release identity,
-benchmark contract changes, or accepting residual risk.
+Stop with `NEEDS_OWNER_DECISION` when convergence requires release identity, benchmark contract changes, or accepting residual risk.
 
 Stop with `BLOCKED_BACKEND` when live runtime evidence cannot be obtained.
 
 ## First Cut
 
-Start with `tes-goal-maestro`. It is the highest-leverage behavioral skill
-because it creates the loop prompts that later benchmark runs will execute.
-If Goal Maestro drifts, every downstream convergence loop inherits that drift.
+Start with `tes-goal-maestro`. It is the highest-leverage behavioral skill because it creates the loop prompts that later benchmark runs will execute. If Goal Maestro drifts, every downstream convergence loop inherits that drift.

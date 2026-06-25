@@ -10,9 +10,7 @@ tver: 0.2.0
 
 # Claude Pipeline
 
-The Claude pipeline materializes the neutral behavioral contract into Claude
-Code instructions, plugin structure, and skills. It has retained v1 behavior
-evidence for the declared `claude-cli` backend.
+The Claude pipeline materializes the neutral behavioral contract into Claude Code instructions, plugin structure, and skills. It has retained v1 behavior evidence for the declared `claude-cli` backend.
 
 ## Contract
 
@@ -33,20 +31,13 @@ evidence for the declared `claude-cli` backend.
 ## Known Limits
 
 - `claude-cli` executes through Claude Code, not a bare model API.
-- The run may include Claude Code default context beyond the prompt assembled
-  by the runner.
-- Behavior certification applies only to the dataset hash, git head, backend,
-  model, grader version, and run id declared in evidence.
-- Source-only plugin metadata retention and target-install omission are checked
-  by `python3 scripts/claude_plugin_oracle.py --self-test`; marketplace
-  distribution remains outside the certified scope.
+- The run may include Claude Code default context beyond the prompt assembled by the runner.
+- Behavior certification applies only to the dataset hash, git head, backend, model, grader version, and run id declared in evidence.
+- Source-only plugin metadata retention and target-install omission are checked by `python3 scripts/claude_plugin_oracle.py --self-test`; marketplace distribution remains outside the certified scope.
 
 ## NO-GO
 
 - Do not declare a fixture run as Claude behavior.
-- Do not treat non-bare Claude Code execution as a hidden detail; report it in
-  evidence limits.
-- Do not change grader wording after a run without a new grader hash and
-  changelog.
-- Do not fix the runner reflexively when behavior evidence fails; classify the
-  failure first.
+- Do not treat non-bare Claude Code execution as a hidden detail; report it in evidence limits.
+- Do not change grader wording after a run without a new grader hash and changelog.
+- Do not fix the runner reflexively when behavior evidence fails; classify the failure first.

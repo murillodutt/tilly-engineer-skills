@@ -9,29 +9,17 @@ evidence_level: L2
 
 # TES Align Semantic Drift Hardening — Certification Packet
 
-Date: 2026-05-25
-Run id: tes-align/semantic-drift-hardening
-Domain: tes-align
-Retention status: retained
+Date: 2026-05-25 Run id: tes-align/semantic-drift-hardening Domain: tes-align Retention status: retained
 
 ## Mission
 
-Harden `/tes-align` across adapter skill surfaces and project-alignment oracles
-so TES can detect and correct project-specific semantic drift, not only
-structural mesh completeness. Carry the mechanism in TES while leaving the
-vocabulary to the target project.
+Harden `/tes-align` across adapter skill surfaces and project-alignment oracles so TES can detect and correct project-specific semantic drift, not only structural mesh completeness. Carry the mechanism in TES while leaving the vocabulary to the target project.
 
-Source brief:
-`docs/roadmap/product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md`.
+Source brief: `docs/roadmap/product/TES-ALIGN-SEMANTIC-DRIFT-HARDENING-SUPER-PROMPT.md`.
 
 ## Origin Failure Pattern
 
-A canary certification loop produced a structurally green oracle result while
-active `docs/agents/**` documentation still asserted retired claims and used
-implementation vocabulary the project had already moved past. The structural
-PASS became a false green because no gate existed to ask: did the mesh absorb
-the latest project truth, and did it stop using the language the project
-retired?
+A canary certification loop produced a structurally green oracle result while active `docs/agents/**` documentation still asserted retired claims and used implementation vocabulary the project had already moved past. The structural PASS became a false green because no gate existed to ask: did the mesh absorb the latest project truth, and did it stop using the language the project retired?
 
 ## Behavior Before And After
 
@@ -64,9 +52,7 @@ retired?
 
 - Codex: `src/adapters/codex/skills/tes-align/**`.
 - Claude: `src/adapters/claude/skills/tes-align/**`.
-- Cursor: routing line in `src/adapters/cursor/rules/tes-engineering-discipline.mdc`. No
-  fake Cursor skill folder was created because Cursor does not own an
-  equivalent skill surface for `/tes-align`.
+- Cursor: routing line in `src/adapters/cursor/rules/tes-engineering-discipline.mdc`. No fake Cursor skill folder was created because Cursor does not own an equivalent skill surface for `/tes-align`.
 
 ## Oracle Behavior Snapshot
 
@@ -115,17 +101,11 @@ The self-test now exercises:
 | `git diff --check` / `git diff --cached --check` | clean |
 | `npm run commit:check` | PASS end-to-end |
 
-`npm run commit:check` was executed once with all changes staged, confirming
-the staged-ready validator accepted the new tracked path
-`docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md`. The stage was then reset because
-this packet is evidence only; commit and release decisions remain with the
-maintainer.
+`npm run commit:check` was executed once with all changes staged, confirming the staged-ready validator accepted the new tracked path `docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md`. The stage was then reset because this packet is evidence only; commit and release decisions remain with the maintainer.
 
 ## Target Project Canary
 
-The certification ran on package-internal fixtures only. The canary that
-originally exposed the gap was target-side and remains the responsibility of
-the next real-project run to re-execute against the hardened oracle.
+The certification ran on package-internal fixtures only. The canary that originally exposed the gap was target-side and remains the responsibility of the next real-project run to re-execute against the hardened oracle.
 
 ```text
 target-project canary used: none in this packet
@@ -135,22 +115,10 @@ required follow-up: rerun the originating canary with the hardened oracle
 
 ## Limits And Remaining Risks
 
-- Freshness reconciliation uses a deterministic but heuristic token diff
-  between the newest ADR and the active mesh. Highly textual ADRs may emit
-  benign `notes`. The gate stays advisory at `notes` level and only escalates
-  to `needs_review` when an ADR is newer than the latest retained evidence.
-- The contract loader requires PyYAML when a project declares a residue
-  contract. The package already validates PyYAML availability through
-  `validate_reference_package.py::yaml_surface_failures` so this dependency
-  is implicit. When PyYAML is unavailable on a target, the oracle records a
-  structural failure naming the missing dependency.
-- Allowlist matching uses `fnmatch` semantics with explicit handling for
-  `**` patterns. Project authors should follow the documented globs and
-  avoid regex inside `allowed_paths`.
-- The cross-adapter parity check is structural and contract-level. The
-  cross-runtime behavior of the gate has not been re-certified against the
-  full behavioral parity matrix; the closest existing behavioral evidence is
-  the structural `adapter_parity_readiness` GO recorded above.
+- Freshness reconciliation uses a deterministic but heuristic token diff between the newest ADR and the active mesh. Highly textual ADRs may emit benign `notes`. The gate stays advisory at `notes` level and only escalates to `needs_review` when an ADR is newer than the latest retained evidence.
+- The contract loader requires PyYAML when a project declares a residue contract. The package already validates PyYAML availability through `validate_reference_package.py::yaml_surface_failures` so this dependency is implicit. When PyYAML is unavailable on a target, the oracle records a structural failure naming the missing dependency.
+- Allowlist matching uses `fnmatch` semantics with explicit handling for `**` patterns. Project authors should follow the documented globs and avoid regex inside `allowed_paths`.
+- The cross-adapter parity check is structural and contract-level. The cross-runtime behavior of the gate has not been re-certified against the full behavioral parity matrix; the closest existing behavioral evidence is the structural `adapter_parity_readiness` GO recorded above.
 
 ## Final Claim
 
@@ -158,7 +126,4 @@ required follow-up: rerun the originating canary with the hardened oracle
 TES Align semantic drift hardening: PASS.
 ```
 
-The structural alignment oracle is preserved. The Semantic Residue Gate is
-portable, contract-driven, and target-vocabulary-free. Adversarial and
-allowlist fixtures both behave as required. Cross-adapter materialization
-and parity readiness gates remain GO.
+The structural alignment oracle is preserved. The Semantic Residue Gate is portable, contract-driven, and target-vocabulary-free. Adversarial and allowlist fixtures both behave as required. Cross-adapter materialization and parity readiness gates remain GO.

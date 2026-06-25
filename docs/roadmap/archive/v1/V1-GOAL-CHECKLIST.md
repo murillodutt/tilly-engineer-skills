@@ -9,16 +9,11 @@ evidence_level: L2
 
 # V1 Goal Checklist
 
-This checklist preserves the project objective so future loops do not confuse
-progress with the finish line. It is historical planning material; the current
-certification authority is
-`docs/evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md`.
+This checklist preserves the project objective so future loops do not confuse progress with the finish line. It is historical planning material; the current certification authority is `docs/evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md`.
 
 ## Objective
 
-`tilly-engineer-skills` exists to turn engineering guidelines for coding agents
-into behavioral contracts that are testable, portable, and certified across
-adapter ecosystems.
+`tilly-engineer-skills` exists to turn engineering guidelines for coding agents into behavioral contracts that are testable, portable, and certified across adapter ecosystems.
 
 The core claim is:
 
@@ -93,16 +88,11 @@ The behavioral gates are:
 
 ## Full V1 Checklist
 
-- [ ] Claude behavior evidence is either repeated with stronger stability or
-      explicitly scoped as single-run evidence.
-- [x] Codex behavior evidence is retained, or Codex behavior is explicitly
-      excluded from v1 with rationale.
-- [x] Cursor behavior evidence is retained, or Cursor behavior is explicitly
-      excluded from v1 with rationale.
-- [ ] Adapter behavior reports use `gate_head`, `run_head`, and
-      `retention_head`.
-- [ ] Dataset SHA, grader SHA, prompt SHA, output SHA, backend, and model are
-      retained for every behavior run.
+- [ ] Claude behavior evidence is either repeated with stronger stability or explicitly scoped as single-run evidence.
+- [x] Codex behavior evidence is retained, or Codex behavior is explicitly excluded from v1 with rationale.
+- [x] Cursor behavior evidence is retained, or Cursor behavior is explicitly excluded from v1 with rationale.
+- [ ] Adapter behavior reports use `gate_head`, `run_head`, and `retention_head`.
+- [ ] Dataset SHA, grader SHA, prompt SHA, output SHA, backend, and model are retained for every behavior run.
 - [ ] No report claims universal model behavior.
 - [ ] No report claims behavior parity from structural parity.
 - [ ] No report claims section ROI beyond the evidence floor.
@@ -110,9 +100,7 @@ The behavioral gates are:
 
 ## Do Not Forget
 
-The project is close to v1-rc because the architecture is already right. It is
-not full universal parity because behavior has not been certified across all
-adapters.
+The project is close to v1-rc because the architecture is already right. It is not full universal parity because behavior has not been certified across all adapters.
 
 Do not solve that gap by adding more philosophy, more gates, or more UI.
 
@@ -122,8 +110,7 @@ The next valuable work is evidence:
 Retention policy -> installer smoke -> local packaging oracle -> Cursor backend discovery
 ```
 
-Only after that should the team decide whether Cursor is measured, deferred, or
-excluded from the first v1 certification.
+Only after that should the team decide whether Cursor is measured, deferred, or excluded from the first v1 certification.
 
 ## Claim Boundaries
 
@@ -148,8 +135,7 @@ Codex Behavior Backend Implementation
 
 Minimum scope:
 
-- [ ] Use the existing Codex backend readiness report as the implementation
-      contract.
+- [ ] Use the existing Codex backend readiness report as the implementation contract.
 - [ ] Materialize a temporary Codex adapter workspace.
 - [ ] Invoke `codex exec` non-interactively.
 - [ ] Capture stdout JSONL, stderr, final output, hashes, timeout, and errors.
@@ -162,7 +148,5 @@ Stop if:
 - [ ] The backend depends on unreproducible desktop thread state.
 - [ ] Raw output cannot be retained.
 - [ ] Timeout cannot be enforced.
-- [ ] The backend measures generic model behavior without the Codex adapter
-      context.
-- [ ] Implementing the backend requires changing the shared contract, dataset,
-      or grader before failure evidence exists.
+- [ ] The backend measures generic model behavior without the Codex adapter context.
+- [ ] Implementing the backend requires changing the shared contract, dataset, or grader before failure evidence exists.

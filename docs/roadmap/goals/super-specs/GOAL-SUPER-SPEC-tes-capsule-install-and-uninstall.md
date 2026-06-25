@@ -10,23 +10,15 @@ tver: 0.1.0
 
 # GOAL Super SPEC: TES Capsule Install And Uninstall
 
-Status: proposed execution contract derived from ADR 0004. This is the first and
-foundational line of capsule-first isolation: capsule-only install plus a
-reversible uninstall that proves zero active residue. Attach/detach,
-attach-health for MCP/hooks, and GPS capsule mode are later lines that depend on
-the manifest and reversibility primitives this line delivers.
+Status: proposed execution contract derived from ADR 0004. This is the first and foundational line of capsule-first isolation: capsule-only install plus a reversible uninstall that proves zero active residue. Attach/detach, attach-health for MCP/hooks, and GPS capsule mode are later lines that depend on the manifest and reversibility primitives this line delivers.
 
-Capability: a default `install` that writes only `.tes/**`, and an `uninstall`
-that restores project-owned files, removes TES-owned surfaces, removes the
-capsule, and proves no active TES residue remains.
+Capability: a default `install` that writes only `.tes/**`, and an `uninstall` that restores project-owned files, removes TES-owned surfaces, removes the capsule, and proves no active TES residue remains.
 
 ## Canonical Artifact
 
-Canonical Super SPEC:
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-capsule-install-and-uninstall.md`
+Canonical Super SPEC: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-capsule-install-and-uninstall.md`
 
-Primary decision source:
-`docs/adr/0004-tes-capsule-isolation-and-reversible-installation.md`
+Primary decision source: `docs/adr/0004-tes-capsule-isolation-and-reversible-installation.md`
 
 Related implementation surfaces:
 
@@ -63,30 +55,16 @@ Related implementation surfaces:
 
 ## Current Meaning
 
-Today a default install writes four project-visible surfaces (root bootloaders,
-host hooks, MCP configs, `docs/agents/**`) and there is no uninstall. The
-closest removal mechanism, `cleanup_obsolete_runtime` in `scripts/tes_bundle.py`,
-only removes paths that left a manifest between versions and preserves any file
-whose sha256 no longer matches the manifest (it records
-`preserve-obsolete-runtime-needs-review`). That sha256-fail-safe is the
-last-known-good safety behavior this line must preserve: uninstall must never
-remove a file the user edited.
+Today a default install writes four project-visible surfaces (root bootloaders, host hooks, MCP configs, `docs/agents/**`) and there is no uninstall. The closest removal mechanism, `cleanup_obsolete_runtime` in `scripts/tes_bundle.py`, only removes paths that left a manifest between versions and preserves any file whose sha256 no longer matches the manifest (it records `preserve-obsolete-runtime-needs-review`). That sha256-fail-safe is the last-known-good safety behavior this line must preserve: uninstall must never remove a file the user edited.
 
-This line delivers the missing direction — a clean entry that writes only the
-capsule, and a clean exit that restores and proves.
+This line delivers the missing direction — a clean entry that writes only the capsule, and a clean exit that restores and proves.
 
 ## Invariants (must hold after every unit)
 
-- Inbound isolation preserved: no capsule write resolves outside the target; the
-  MCP server still refuses a runtime `target` argument.
-- sha256-fail-safe preserved: uninstall never deletes a project-owned or
-  TES-owned file whose checksum diverges from the manifest without recording it
-  as `needs-review` and preserving it.
-- No false green: `INSTALLED` is not certification; uninstall `PASS` requires the
-  residue oracle to pass, not just that removal ran.
-- Reversibility: a target that received capsule-only install returns, after
-  uninstall, to a state where project-owned files are byte-identical to pre-
-  install and no active TES surface remains.
+- Inbound isolation preserved: no capsule write resolves outside the target; the MCP server still refuses a runtime `target` argument.
+- sha256-fail-safe preserved: uninstall never deletes a project-owned or TES-owned file whose checksum diverges from the manifest without recording it as `needs-review` and preserving it.
+- No false green: `INSTALLED` is not certification; uninstall `PASS` requires the residue oracle to pass, not just that removal ran.
+- Reversibility: a target that received capsule-only install returns, after uninstall, to a state where project-owned files are byte-identical to pre-install and no active TES surface remains.
 
 ## Required Fix Matrix
 
@@ -100,10 +78,7 @@ capsule, and a clean exit that restores and proves.
 
 ## Execution Discipline
 
-Run units sequentially. Do not implement a later unit before the current unit
-has its focused oracle green, a release identity classification, and a closure
-note. Before each unit state owned files, no-touch files, release identity
-impact, focused oracle, and stop condition.
+Run units sequentially. Do not implement a later unit before the current unit has its focused oracle green, a release identity classification, and a closure note. Before each unit state owned files, no-touch files, release identity impact, focused oracle, and stop condition.
 
 ## SPEC-000: Reentry And Boundary
 
@@ -124,28 +99,20 @@ python3 scripts/private_vocabulary_oracle.py
 git diff --check
 ```
 
-Closure note: SPEC-000 PASS means a clean boundary and the manifest/backup
-primitives are confirmed as the last-known-good baseline to compose.
+Closure note: SPEC-000 PASS means a clean boundary and the manifest/backup primitives are confirmed as the last-known-good baseline to compose.
 
 ## SPEC-001: Manifest Reversibility Fields
 
-Owned files: `scripts/tes_bundle.py`; docs only if the manifest contract is
-operator-visible.
+Owned files: `scripts/tes_bundle.py`; docs only if the manifest contract is operator-visible.
 
 Implementation:
 
-1. Add `attachment_surface` (`capsule` for `.tes/**`; the eight attach surfaces
-   for project-visible writes), `restore_policy`, and `uninstall_action` to
-   `BundleEntry` and `manifest_payload`.
-2. Bump manifest schema to `tes-bundle-manifest@2`; keep an `@1` reader so
-   existing installed manifests migrate forward, not break.
-3. Default `attachment_surface=capsule`, `uninstall_action=remove`,
-   `restore_policy=restore-from-backup` for tes-owned capsule paths; preserve
-   the existing `owner`/`layer`/`obsolete_policy` semantics unchanged.
+1. Add `attachment_surface` (`capsule` for `.tes/**`; the eight attach surfaces for project-visible writes), `restore_policy`, and `uninstall_action` to `BundleEntry` and `manifest_payload`.
+2. Bump manifest schema to `tes-bundle-manifest@2`; keep an `@1` reader so existing installed manifests migrate forward, not break.
+3. Default `attachment_surface=capsule`, `uninstall_action=remove`, `restore_policy=restore-from-backup` for tes-owned capsule paths; preserve the existing `owner`/`layer`/`obsolete_policy` semantics unchanged.
 4. Update `validate_manifest` for the new required fields.
 
-Release identity impact: delivered manifest behavior; patch bump decided at
-SPEC-006.
+Release identity impact: delivered manifest behavior; patch bump decided at SPEC-006.
 
 Focused oracle:
 
@@ -153,39 +120,21 @@ Focused oracle:
 python3 scripts/tes_bundle.py --self-test
 ```
 
-Stop condition: if any existing layer needs a non-`remove` uninstall action that
-is not yet defined, stop with `NEEDS_REVIEW` rather than guessing.
+Stop condition: if any existing layer needs a non-`remove` uninstall action that is not yet defined, stop with `NEEDS_REVIEW` rather than guessing.
 
 ## SPEC-002: Capsule-Only Install (explicit --attach capsule)
 
-> **Superseded default (reconciled with the ADR 0004 amendment, 2026-06-05).**
-> This SPEC originally made capsule-only the *documented default*. The
-> skills-surface line (0.3.167) amended ADR 0004 so the public `install` default
-> now materializes a full functional TES — capsule + skills + root-context + mcp +
-> hooks, with only `docs-mesh` opt-in. Capsule-only is now the **explicit
-> `--attach capsule` mode**, not the default. The capsule-only-default framing
-> below is retained as execution-line history; it is no longer the current
-> contract. The live default is owned by
-> `docs/architecture/INSTALLATION-FRAMEWORK.md` and `docs/install/INSTALL.md`.
+> **Superseded default (reconciled with the ADR 0004 amendment, 2026-06-05).** This SPEC originally made capsule-only the *documented default*. The skills-surface line (0.3.167) amended ADR 0004 so the public `install` default now materializes a full functional TES — capsule + skills + root-context + mcp + hooks, with only `docs-mesh` opt-in. Capsule-only is now the **explicit `--attach capsule` mode**, not the default. The capsule-only-default framing below is retained as execution-line history; it is no longer the current contract. The live default is owned by `docs/architecture/INSTALLATION-FRAMEWORK.md` and `docs/install/INSTALL.md`.
 
-Owned files: `scripts/tes_install.py`, `scripts/tes_init.py`; `bin/` only for
-flag parsing.
+Owned files: `scripts/tes_install.py`, `scripts/tes_init.py`; `bin/` only for flag parsing.
 
 Implementation:
 
-1. Make default `install` write only `.tes/**`: capsule state, helpers,
-   manifest, lock, postinstall record.
-2. Gate every project-visible write (root bootloaders, hooks, MCP configs,
-   `docs/agents/**`) behind explicit selection that defaults off. In this line
-   the gate is simply "off unless explicitly requested"; the named attach
-   profiles arrive in a later line.
-3. Preserve existing flags as compatibility shims where a maintainer relies on
-   them. (Reconciled: capsule-only is the explicit `--attach capsule` opt-in, not
-   the documented public default — see the amendment note above and ADR 0004
-   amendment 2026-06-05.)
+1. Make default `install` write only `.tes/**`: capsule state, helpers, manifest, lock, postinstall record.
+2. Gate every project-visible write (root bootloaders, hooks, MCP configs, `docs/agents/**`) behind explicit selection that defaults off. In this line the gate is simply "off unless explicitly requested"; the named attach profiles arrive in a later line.
+3. Preserve existing flags as compatibility shims where a maintainer relies on them. (Reconciled: capsule-only is the explicit `--attach capsule` opt-in, not the documented public default — see the amendment note above and ADR 0004 amendment 2026-06-05.)
 
-Release identity impact: delivered installer behavior; adopter-visible; patch
-bump decided at SPEC-006.
+Release identity impact: delivered installer behavior; adopter-visible; patch bump decided at SPEC-006.
 
 Focused oracle:
 
@@ -193,9 +142,7 @@ Focused oracle:
 python3 scripts/install_smoke.py
 ```
 
-Stop condition: if any capsule capability silently requires a project-visible
-write to function, that is a capability-preservation defect — stop with
-`NEEDS_REVIEW` and route it through the attach design, not a hidden write.
+Stop condition: if any capsule capability silently requires a project-visible write to function, that is a capability-preservation defect — stop with `NEEDS_REVIEW` and route it through the attach design, not a hidden write.
 
 ## SPEC-003: Uninstall Command
 
@@ -203,20 +150,12 @@ Owned files: `scripts/tes_install.py`, `scripts/tes_bundle.py`.
 
 Implementation:
 
-1. Add the `uninstall` subcommand. It must require `--yes` and support
-   `--dry-run`, mirroring `restore_backup`.
-2. Order: snapshot current state; restore project-owned files via
-   `restore_backup` using the recorded `restore_policy`; remove tes-owned
-   surfaces by manifest `uninstall_action`; remove the capsule directory last.
-3. Inherit the sha256-fail-safe from `cleanup_obsolete_runtime`: any file whose
-   checksum diverges from the manifest is preserved and reported as
-   `needs-review`, never silently deleted.
-4. Run `capsule_residue_oracle` at the end and fold its verdict into the
-   uninstall status using the ADR 0003.1 vocabulary
-   (`PASS`/`PARTIAL`/`NEEDS_REVIEW`/`BLOCKED`).
+1. Add the `uninstall` subcommand. It must require `--yes` and support `--dry-run`, mirroring `restore_backup`.
+2. Order: snapshot current state; restore project-owned files via `restore_backup` using the recorded `restore_policy`; remove tes-owned surfaces by manifest `uninstall_action`; remove the capsule directory last.
+3. Inherit the sha256-fail-safe from `cleanup_obsolete_runtime`: any file whose checksum diverges from the manifest is preserved and reported as `needs-review`, never silently deleted.
+4. Run `capsule_residue_oracle` at the end and fold its verdict into the uninstall status using the ADR 0003.1 vocabulary (`PASS`/`PARTIAL`/`NEEDS_REVIEW`/`BLOCKED`).
 
-Release identity impact: delivered installer behavior; patch bump decided at
-SPEC-006.
+Release identity impact: delivered installer behavior; patch bump decided at SPEC-006.
 
 Focused oracle:
 
@@ -225,9 +164,7 @@ python3 scripts/tes_install.py uninstall --dry-run --target <fixture>
 python3 scripts/capsule_residue_oracle.py --self-test
 ```
 
-Stop condition: if restore would overwrite a user-modified file (checksum
-mismatch on a project-owned path), stop and report `NEEDS_REVIEW` with the
-divergent paths; do not force.
+Stop condition: if restore would overwrite a user-modified file (checksum mismatch on a project-owned path), stop and report `NEEDS_REVIEW` with the divergent paths; do not force.
 
 ## SPEC-004: Zero-Residue Oracle
 
@@ -235,20 +172,12 @@ Owned files: new `scripts/capsule_residue_oracle.py`.
 
 Implementation:
 
-1. Scan the target for active TES surfaces: `.tes/**`, TES-managed blocks in
-   root bootloaders, hook entries pointing at TES, and MCP `tes-cortex` config
-   entries.
-2. Return `PASS` only when no active surface remains, or only when surfaces the
-   user explicitly chose to retain (exports) remain and are reported by name.
-3. Distinguish active residue (a live route or capsule state) from inert
-   user-retained exports. Inert retained exports do not fail; unexplained active
-   residue does.
-4. Provide `--self-test` with fixtures: clean target (PASS), target with leftover
-   `.tes/**` (FAIL), target with a stale hook entry (FAIL), target with a
-   user-retained export only (PASS with reported retention).
+1. Scan the target for active TES surfaces: `.tes/**`, TES-managed blocks in root bootloaders, hook entries pointing at TES, and MCP `tes-cortex` config entries.
+2. Return `PASS` only when no active surface remains, or only when surfaces the user explicitly chose to retain (exports) remain and are reported by name.
+3. Distinguish active residue (a live route or capsule state) from inert user-retained exports. Inert retained exports do not fail; unexplained active residue does.
+4. Provide `--self-test` with fixtures: clean target (PASS), target with leftover `.tes/**` (FAIL), target with a stale hook entry (FAIL), target with a user-retained export only (PASS with reported retention).
 
-Release identity impact: delivered oracle behavior; patch bump decided at
-SPEC-006.
+Release identity impact: delivered oracle behavior; patch bump decided at SPEC-006.
 
 Focused oracle:
 
@@ -256,8 +185,7 @@ Focused oracle:
 python3 scripts/capsule_residue_oracle.py --self-test
 ```
 
-Stop condition: if "active" vs "inert retained" cannot be classified for a
-surface, default that surface to active (fail-closed) and record it for review.
+Stop condition: if "active" vs "inert retained" cannot be classified for a surface, default that surface to active (fail-closed) and record it for review.
 
 ## SPEC-005: Reversibility Round-Trip
 
@@ -268,11 +196,9 @@ Implementation:
 1. Add a fixture that performs capsule-only install then uninstall.
 2. Assert project-owned files are byte-identical to the pre-install snapshot.
 3. Assert `capsule_residue_oracle` returns `PASS` with no active residue.
-4. Assert the inbound isolation guard still holds: no write resolved outside the
-   target and the MCP server still refuses a runtime `target` argument.
+4. Assert the inbound isolation guard still holds: no write resolved outside the target and the MCP server still refuses a runtime `target` argument.
 
-Release identity impact: delivered test/smoke behavior; participates in the
-patch release because runtime changed earlier.
+Release identity impact: delivered test/smoke behavior; participates in the patch release because runtime changed earlier.
 
 Focused oracle:
 
@@ -280,20 +206,15 @@ Focused oracle:
 python3 scripts/install_smoke.py
 ```
 
-Stop condition: if byte-identity fails for any project-owned file, the line is
-not reversible — stop with `NEEDS_REVIEW` and fix the offending write/restore.
+Stop condition: if byte-identity fails for any project-owned file, the line is not reversible — stop with `NEEDS_REVIEW` and fix the offending write/restore.
 
 ## SPEC-006: Release Identity And Closure
 
-Owned files: `package.json`, `bin/` `TES_VERSION`, script `VERSION` constants,
-correlated bundle/public surfaces only if delivered behavior changed; docs/
-evidence only if retained proof is created.
+Owned files: `package.json`, `bin/` `TES_VERSION`, script `VERSION` constants, correlated bundle/public surfaces only if delivered behavior changed; docs/evidence only if retained proof is created.
 
 Tasks:
 
-1. Classify release identity: SPEC-001..005 change delivered installer, manifest,
-   and oracle behavior — a patch bump from `0.3.159` is required unless the owner
-   explicitly defers, per ADR 0004 Release Identity.
+1. Classify release identity: SPEC-001..005 change delivered installer, manifest, and oracle behavior — a patch bump from `0.3.159` is required unless the owner explicitly defers, per ADR 0004 Release Identity.
 2. Run every implemented unit's focused oracle.
 3. Run baseline gates:
 
@@ -314,15 +235,11 @@ python3 scripts/build_public_docs.py --check
 python3 scripts/public_bundle_oracle.py
 ```
 
-Stop condition: if release identity requires a bump and owner authorization is
-unclear, stop with `NEEDS_REVIEW` rather than bumping or publishing.
+Stop condition: if release identity requires a bump and owner authorization is unclear, stop with `NEEDS_REVIEW` rather than bumping or publishing.
 
 ## Private Vocabulary Guard
 
-No private project names, repository paths, remotes, commit narratives, target
-product vocabulary, domain decisions, or canary identifiers may enter TES. Use
-generic forms only: `private target canary`, `target project`, `source-of-record
-kept outside TES`, `<project-A>`, `<absolute-path>`, `<redacted-token>`.
+No private project names, repository paths, remotes, commit narratives, target product vocabulary, domain decisions, or canary identifiers may enter TES. Use generic forms only: `private target canary`, `target project`, `source-of-record kept outside TES`, `<project-A>`, `<absolute-path>`, `<redacted-token>`.
 
 ## Evidence Plan
 
@@ -334,8 +251,4 @@ kept outside TES`, `<project-A>`, `<absolute-path>`, `<redacted-token>`.
 
 ## Final Closure Report Requirements
 
-The executor must report: implemented SPEC units; files changed; release
-identity decision; focused oracle results; baseline gate results; whether
-`npm run commit:check` passed; residual risks; deferred work (attach/detach,
-attach-health, GPS capsule mode); and confirmation that no private target
-identifiers were added.
+The executor must report: implemented SPEC units; files changed; release identity decision; focused oracle results; baseline gate results; whether `npm run commit:check` passed; residual risks; deferred work (attach/detach, attach-health, GPS capsule mode); and confirmation that no private target identifiers were added.

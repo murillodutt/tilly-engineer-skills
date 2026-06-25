@@ -9,23 +9,15 @@ evidence_level: L2
 
 # Senior Mentorship Context 2026-05-05
 
-This context is for the next engineering window working on
-`~/Dev/tilly-engineer-skills`.
+This context is for the next engineering window working on `~/Dev/tilly-engineer-skills`.
 
-It aligns the current repository state with the senior feedback: stop expanding
-surface area, freeze what exists, and certify the package responsibly before
-claiming v1 behavior.
+It aligns the current repository state with the senior feedback: stop expanding surface area, freeze what exists, and certify the package responsibly before claiming v1 behavior.
 
 ## Executive Direction
 
-The team should not treat version `0.1.0` as a small or immature artifact. The
-package can be a v1 release candidate in spirit while the package version stays
-`0.1.0`. The reason for keeping `0.1.0` is governance: certify the existing
-system before elevating it.
+The team should not treat version `0.1.0` as a small or immature artifact. The package can be a v1 release candidate in spirit while the package version stays `0.1.0`. The reason for keeping `0.1.0` is governance: certify the existing system before elevating it.
 
-The next work is not "build a benchmark framework." The benchmark runner,
-TDS, adapter materialization, governance docs, and local gates already exist.
-The next work is certification.
+The next work is not "build a benchmark framework." The benchmark runner, TDS, adapter materialization, governance docs, and local gates already exist. The next work is certification.
 
 The key question is:
 
@@ -33,15 +25,11 @@ The key question is:
 Which claim does this evidence have the right to make?
 ```
 
-Do not claim behavioral certification from fixture evidence. Do not claim
-section-level rent from a single trigger per gate. Do not claim a certified
-Git state while running on uncommitted staged content unless the evidence
-manifest records the tree or staged diff.
+Do not claim behavioral certification from fixture evidence. Do not claim section-level rent from a single trigger per gate. Do not claim a certified Git state while running on uncommitted staged content unless the evidence manifest records the tree or staged diff.
 
 ## Current Verified State
 
-The repository currently contains a large staged patch that reorganizes the
-project into a reference package:
+The repository currently contains a large staged patch that reorganizes the project into a reference package:
 
 | Area | Current state |
 |------|---------------|
@@ -68,16 +56,14 @@ Local checks run by Codex mentoring session:
 | `git diff --check && git diff --cached --check` | PASS |
 | `npm run commit:check` | PASS |
 
-Additional non-mutating evidence runs were written under `/tmp`, not into the
-repo:
+Additional non-mutating evidence runs were written under `/tmp`, not into the repo:
 
 | Backend | Command shape | Result |
 |---------|---------------|--------|
 | `fixture` | `python3 scripts/context_mesh_run.py --backend fixture --out-root /tmp/tilly-context-mesh-cert-check --run-id codex-mentorship-fixture --no-tds-index` | `certification_status=GO`, 26 executed |
 | `echo` | `python3 scripts/context_mesh_run.py --backend echo --out-root /tmp/tilly-context-mesh-cert-check --run-id codex-mentorship-echo --no-tds-index` | pipeline PASS, `certification_status=NO-GO` |
 
-This is good evidence that the runner can both certify and reject. It is not
-yet evidence that a live model behaves correctly.
+This is good evidence that the runner can both certify and reject. It is not yet evidence that a live model behaves correctly.
 
 ## The Main Mentorship Correction
 
@@ -89,8 +75,7 @@ The correct next posture is:
 Freeze -> commit -> certify pipeline -> add/activate real backend -> certify behavior.
 ```
 
-Do not add Promptfoo, HTML reports, LLM judge, N=3, or more adapter machinery
-until the current staged patch is sealed and the evidence claims are classified.
+Do not add Promptfoo, HTML reports, LLM judge, N=3, or more adapter machinery until the current staged patch is sealed and the evidence claims are classified.
 
 ## Certification Classes
 
@@ -103,14 +88,11 @@ Use two distinct certification labels.
 
 Never collapse these labels into a single generic `GO`.
 
-Fixture `GO` means the evidence machine behaves. It does not mean a model has
-been behaviorally improved.
+Fixture `GO` means the evidence machine behaves. It does not mean a model has been behaviorally improved.
 
 ## Immediate P0: Commit Or Tree Hash
 
-The repository currently has staged changes. `context_mesh_run.py` records
-`git_head`, but `git_head` points at the last commit, not necessarily the staged
-tree being executed.
+The repository currently has staged changes. `context_mesh_run.py` records `git_head`, but `git_head` points at the last commit, not necessarily the staged tree being executed.
 
 Therefore, a retained certification run before commit is ambiguous.
 
@@ -130,8 +112,7 @@ npm run commit:check
 git diff --cached --stat
 ```
 
-If still green, seal the patch with a semantic local commit. Do not push unless
-explicitly authorized.
+If still green, seal the patch with a semantic local commit. Do not push unless explicitly authorized.
 
 ## Pipeline Certification Procedure
 
@@ -178,12 +159,9 @@ certify live-model behavior.
 
 ## Behavioral Certification Procedure
 
-Only after `pipeline-v1-rc` is retained should the team add or activate a real
-backend.
+Only after `pipeline-v1-rc` is retained should the team add or activate a real backend.
 
-The real backend should be isolated behind the existing backend interface. It
-must not mix provider calls with grading, summary writing, TDS indexing, or
-report rendering.
+The real backend should be isolated behind the existing backend interface. It must not mix provider calls with grading, summary writing, TDS indexing, or report rendering.
 
 Minimal target:
 
@@ -209,13 +187,11 @@ no N=3
 | backend/model | declared |
 | evidence limits | explicit |
 
-If `full <= none`, this is NO-GO unless the report retains a clear explanation
-and does not claim behavioral success.
+If `full <= none`, this is NO-GO unless the report retains a clear explanation and does not claim behavioral success.
 
 ## Ablation Interpretation
 
-The current dataset has one trigger eval per gate. That means each gate can
-only produce maximum `loss=1`.
+The current dataset has one trigger eval per gate. That means each gate can only produce maximum `loss=1`.
 
 Per `docs/evals/EVALS.md`, `loss=1` means:
 
@@ -223,11 +199,9 @@ Per `docs/evals/EVALS.md`, `loss=1` means:
 adversarial_follow_up_required
 ```
 
-So the current dataset can prove that the pipeline computes ablation losses.
-It cannot yet make a strong rent claim per gate.
+So the current dataset can prove that the pipeline computes ablation losses. It cannot yet make a strong rent claim per gate.
 
-Do not inflate the dataset broadly. Add adversarial follow-ups only where the
-real backend produces ambiguous `loss=1` or unexpected results.
+Do not inflate the dataset broadly. Add adversarial follow-ups only where the real backend produces ambiguous `loss=1` or unexpected results.
 
 Each new adversarial eval must include:
 
@@ -265,12 +239,9 @@ Adapter parity is behavioral, not textual.
 | Claude | `CLAUDE.md`, `.claude-plugin/**`, and `skills/**` after materialization |
 | Cursor | `CURSOR.md` plus `.cursor/rules/*.mdc` |
 
-Do not force symmetry that the tools do not natively share. The common truth is
-the four behavioral gates, not identical packaging.
+Do not force symmetry that the tools do not natively share. The common truth is the four behavioral gates, not identical packaging.
 
-The current materializer already proves structural adapter output. Behavioral
-adapter parity is a later certification step and should run the same matrix
-through each adapter only after the live backend path is stable.
+The current materializer already proves structural adapter output. Behavioral adapter parity is a later certification step and should run the same matrix through each adapter only after the live backend path is stable.
 
 ## What Not To Do Next
 

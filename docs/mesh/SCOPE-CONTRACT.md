@@ -10,11 +10,9 @@ tver: 0.1.0
 
 # TES Scope Contract
 
-TES runtime scope is the normalized identity envelope shared by Cortex, Field
-Reports, event ledgers, checkpoints, and future operator commands.
+TES runtime scope is the normalized identity envelope shared by Cortex, Field Reports, event ledgers, checkpoints, and future operator commands.
 
-It is not the project name, a user identity, a filesystem path, a branch name,
-or a public durable memory cell.
+It is not the project name, a user identity, a filesystem path, a branch name, or a public durable memory cell.
 
 ## Contract
 
@@ -34,8 +32,7 @@ Every normalized scope carries:
 - `status`: operational status when no trust level is supplied.
 - `trust_level`: trust classification when no status is supplied.
 
-`agent` or `parent_agent` must be present. `status` or `trust_level` must be
-present.
+`agent` or `parent_agent` must be present. `status` or `trust_level` must be present.
 
 ## Evidence References
 
@@ -49,32 +46,21 @@ Scope evidence references are not arbitrary paths. The helper accepts only:
 
 `sources/**` is canonicalized to `docs/agents/cortex/sources/**`.
 
-Absolute paths, home-relative paths, traversal, URLs, personal data, and
-secret-like labels fail closed. A failed scope must not be hidden as a generic
-fallback.
+Absolute paths, home-relative paths, traversal, URLs, personal data, and secret-like labels fail closed. A failed scope must not be hidden as a generic fallback.
 
 ## Privacy Boundary
 
-The `project` field is an opaque local fingerprint so that Field Reports,
-receipts, future ledgers, and Cortex command output can correlate a run without
-publishing project names or local paths.
+The `project` field is an opaque local fingerprint so that Field Reports, receipts, future ledgers, and Cortex command output can correlate a run without publishing project names or local paths.
 
-Tracked TES source, docs, fixtures, commits, evidence, and release material
-must continue to use neutral vocabulary such as `target-project` or
-`canary-project`. A scope fingerprint is runtime metadata, not public product
-copy.
+Tracked TES source, docs, fixtures, commits, evidence, and release material must continue to use neutral vocabulary such as `target-project` or `canary-project`. A scope fingerprint is runtime metadata, not public product copy.
 
 ## Runtime Consumers
 
-Cortex CLI output attaches a normalized `scope` object to command results.
-Scope failure turns a previously passing Cortex command result into `FAIL`.
+Cortex CLI output attaches a normalized `scope` object to command results. Scope failure turns a previously passing Cortex command result into `FAIL`.
 
-Field Reports attaches a normalized `scope` object to captured events. If a
-caller supplies an unsafe scope evidence reference, capture returns `BLOCKED`
-and writes nothing to the outbox.
+Field Reports attaches a normalized `scope` object to captured events. If a caller supplies an unsafe scope evidence reference, capture returns `BLOCKED` and writes nothing to the outbox.
 
-MCP remains read-only. This scope contract does not authorize MCP mutation,
-checkpoint promotion, Field Reports doctrine memory, or subagent durable writes.
+MCP remains read-only. This scope contract does not authorize MCP mutation, checkpoint promotion, Field Reports doctrine memory, or subagent durable writes.
 
 ## Certification
 
@@ -84,5 +70,4 @@ The focused scope gate is:
 python3 scripts/scope_contract.py --self-test
 ```
 
-The package closure gate also runs the Cortex and Field Reports quality oracles
-so consumer integration cannot silently drop the scope envelope.
+The package closure gate also runs the Cortex and Field Reports quality oracles so consumer integration cannot silently drop the scope envelope.

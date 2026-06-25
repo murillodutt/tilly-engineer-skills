@@ -29,10 +29,7 @@ Run ID: `codex-smoke-2026-05-05-6806b58`
 
 ## Smoke Scope
 
-This retained report is Stage 2 Codex smoke evidence only. It proves that the
-`codex-cli` route can execute one bounded sample, retain raw output evidence,
-and record audit hashes on `6806b58`. It is not Codex behavior certification,
-adapter behavior parity, or statistical evidence.
+This retained report is Stage 2 Codex smoke evidence only. It proves that the `codex-cli` route can execute one bounded sample, retain raw output evidence, and record audit hashes on `6806b58`. It is not Codex behavior certification, adapter behavior parity, or statistical evidence.
 
 ## Certification Thresholds
 

@@ -8,16 +8,11 @@ license: MIT
 
 Operational contract: `tes.predictive_operations@0.1.0`.
 
-Local development surface only. Do not package, publish, materialize, or treat
-as distributable TES.
+Local development surface only. Do not package, publish, materialize, or treat as distributable TES.
 
-Use only as a reference while already balancing planning pressure, evidence
-mining, or local skill packaging. Do not load it automatically for ordinary
-execution, and honor an owner-requested no-skill run.
-`tes-prospect` and `tes-mine` are reference skills; do not edit them.
+Use only as a reference while already balancing planning pressure, evidence mining, or local skill packaging. Do not load it automatically for ordinary execution, and honor an owner-requested no-skill run. `tes-prospect` and `tes-mine` are reference skills; do not edit them.
 
-Prefer `tes-high-agency-pattern` when the active decision is how to design or
-review the operating pattern of one local development-layer skill.
+Prefer `tes-high-agency-pattern` when the active decision is how to design or review the operating pattern of one local development-layer skill.
 
 ## Contract
 
@@ -25,22 +20,18 @@ Use the smallest reasoning mode:
 
 - `prospect`: risk is in the plan, boundary, dependency, or next decision.
 - `mine`: risk is in language, code evidence, contradiction, or durable memory.
-- `alternate`: pressure exposes risk, mining checks evidence, pressure returns
-  with a sharper decision.
+- `alternate`: pressure exposes risk, mining checks evidence, pressure returns with a sharper decision.
 - `package`: behavior is clear, but the local skill surface needs tightening.
 
 Load references only when needed:
 
 - `references/predictive-operations.md` for mode details.
-- `references/temperament-mode-selection.md` when deciding whether the next skill
-  should behave like a sniper, miner, prospector, builder, gate, or curator.
+- `references/temperament-mode-selection.md` when deciding whether the next skill should behave like a sniper, miner, prospector, builder, gate, or curator.
 - `references/skill-packaging.md` for packaging checks.
 
 ## Brake
 
-On `pause`, `pausa`, `freia`, `segura`, `para`, `hold`, `step back`,
-`volta um nivel`, or `resuma onde estamos`, stop pressure, summarize state, and
-wait for explicit resume.
+On `pause`, `pausa`, `freia`, `segura`, `para`, `hold`, `step back`, `volta um nivel`, or `resuma onde estamos`, stop pressure, summarize state, and wait for explicit resume.
 
 ## Output
 
@@ -61,9 +52,7 @@ python3 $CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py .agen
 
 ## Done
 
-`tes-predictive-operations` is done when the next reasoning mode is selected,
-the next question or repository check is singular, and no durable write is
-performed outside the active workflow's write policy.
+`tes-predictive-operations` is done when the next reasoning mode is selected, the next question or repository check is singular, and no durable write is performed outside the active workflow's write policy.
 
 ## Locks
 

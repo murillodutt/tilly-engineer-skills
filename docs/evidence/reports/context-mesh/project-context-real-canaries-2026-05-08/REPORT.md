@@ -11,10 +11,7 @@ evidence_level: L3
 
 ## Scope
 
-Validate `/tes-init` as a useful project-start ritual, not only a TES runtime
-installer. Canaries were disposable local sandboxes under
-`~/Dev/tes-canaries/**`; no canary repository was committed or
-pushed.
+Validate `/tes-init` as a useful project-start ritual, not only a TES runtime installer. Canaries were disposable local sandboxes under `~/Dev/tes-canaries/**`; no canary repository was committed or pushed.
 
 ## Canaries
 
@@ -64,7 +61,4 @@ All listed gates passed before this report was written.
 
 ## Residual Risk
 
-The deterministic scaffold is now materially useful across diverse repositories,
-but it is not a semantic analyst by itself. The generated context explicitly
-requires the active agent to open strong anchors before claiming deep project
-understanding in non-trivial projects.
+The deterministic scaffold is now materially useful across diverse repositories, but it is not a semantic analyst by itself. The generated context explicitly requires the active agent to open strong anchors before claiming deep project understanding in non-trivial projects.

@@ -9,12 +9,9 @@ evidence_level: L1
 
 # GOAL Super SPEC: ADR 0005 Sanitization Lane
 
-Status: active lane SPEC derived from
-`docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
+Status: active lane SPEC derived from `docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
 
-Purpose: transfer architecture-cleanup behavior into existing TES regression,
-route, oracle, and surface-review assets using deletion tests rather than new
-governance.
+Purpose: transfer architecture-cleanup behavior into existing TES regression, route, oracle, and surface-review assets using deletion tests rather than new governance.
 
 ## Asset-Transfer Packet
 
@@ -34,11 +31,9 @@ governance.
 Tasks:
 
 1. Capture `git status --short --branch --untracked-files=all`.
-2. Read ADR 0005, regression guard, relevant route/oracle docs, and the target
-   surface under review.
+2. Read ADR 0005, regression guard, relevant route/oracle docs, and the target surface under review.
 3. Select exactly one suspected shallow surface.
-4. Name every correlated installed, generated, adapter, route, and public
-   surface before editing.
+4. Name every correlated installed, generated, adapter, route, and public surface before editing.
 
 Focused oracles:
 
@@ -54,18 +49,15 @@ git diff --check
 Tasks:
 
 1. Simulate or inspect what happens if the suspected surface disappears.
-2. Classify the result as `NO_CHANGE`, `CONDENSED`, `MOVED_ON_DEMAND`,
-   `DEEPENED`, `DELETED`, `ROUTED_TO_UNIT`, or `NEEDS_OWNER_DECISION`.
-3. Stop if the surface touches release, installer, public, or adapter behavior
-   and no release identity can be named.
+2. Classify the result as `NO_CHANGE`, `CONDENSED`, `MOVED_ON_DEMAND`, `DEEPENED`, `DELETED`, `ROUTED_TO_UNIT`, or `NEEDS_OWNER_DECISION`.
+3. Stop if the surface touches release, installer, public, or adapter behavior and no release identity can be named.
 
 ## SPEC-002: Existing Asset Patch
 
 Tasks:
 
 1. Apply the smallest change matching the deletion-test result.
-2. Prefer moving detail on demand, condensing duplicated prose, or deepening the
-   real owner over adding a new governance document.
+2. Prefer moving detail on demand, condensing duplicated prose, or deepening the real owner over adding a new governance document.
 3. Do not delete compatibility or release paths without retirement evidence.
 
 ## SPEC-003: Regression And Release
@@ -73,9 +65,7 @@ Tasks:
 Tasks:
 
 1. Run the focused proof matching the changed surface.
-2. Run package validation and any materialization or public-doc oracle affected
-   by the patch.
+2. Run package validation and any materialization or public-doc oracle affected by the patch.
 3. If delivered behavior changed, stop for release decision.
 
-Valid statuses: `ASSET_TRANSFERRED`, `ASSET_ALREADY_ADEQUATE`,
-`ROUTED_TO_UNIT`, `NEEDS_OWNER_DECISION`, `NEEDS_ASSET_PACKET`, `BLOCKED`.
+Valid statuses: `ASSET_TRANSFERRED`, `ASSET_ALREADY_ADEQUATE`, `ROUTED_TO_UNIT`, `NEEDS_OWNER_DECISION`, `NEEDS_ASSET_PACKET`, `BLOCKED`.

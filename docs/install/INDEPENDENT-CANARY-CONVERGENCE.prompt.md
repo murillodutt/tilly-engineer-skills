@@ -12,9 +12,7 @@ evidence_level: L2
 
 Prompt version: `0.1.1`
 
-Purpose: start a clean, independent TES convergence window that tests the
-published package against real projects, records a journal, converts findings
-into portable product improvements, and closes only with objective gates.
+Purpose: start a clean, independent TES convergence window that tests the published package against real projects, records a journal, converts findings into portable product improvements, and closes only with objective gates.
 
 ## Versioning Contract
 
@@ -27,10 +25,8 @@ into portable product improvements, and closes only with objective gates.
   - canary run root;
   - durable journal path;
   - final report path.
-- If a run discovers that the prompt itself caused ambiguity or missed a useful
-  instruction, update this file in a new commit and bump `Prompt version`.
-- Do not edit completed run journals to fit a later prompt version. Add a new
-  run section or new report instead.
+- If a run discovers that the prompt itself caused ambiguity or missed a useful instruction, update this file in a new commit and bump `Prompt version`.
+- Do not edit completed run journals to fit a later prompt version. Add a new run section or new report instead.
 
 ## Expected Durable Outputs
 
@@ -43,14 +39,9 @@ Each run may also create local disposable files under:
 
 - `~/Dev/tes-canaries/runs/YYYYMMDDTHHMMSSZ/`
 
-The durable journal/report live in the TES repository. The local canary run
-root is disposable and must not become product truth.
+The durable journal/report live in the TES repository. The local canary run root is disposable and must not become product truth.
 
-Before creating canary clones, create or update the sandbox `.gitignore` at
-`~/Dev/tes-canaries/.gitignore` so local journals, run indexes,
-logs, clones, and transient tool layers remain untracked by default. Do not
-ignore governed evidence under `docs/evidence/**`; promotion into that tree is
-the explicit audit boundary.
+Before creating canary clones, create or update the sandbox `.gitignore` at `~/Dev/tes-canaries/.gitignore` so local journals, run indexes, logs, clones, and transient tool layers remain untracked by default. Do not ignore governed evidence under `docs/evidence/**`; promotion into that tree is the explicit audit boundary.
 
 ## Copyable Prompt
 

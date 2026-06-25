@@ -10,17 +10,13 @@ tver: 0.1.0
 
 # Cortex Memory Benchmark Harness Execution Units
 
-This document is the execution-detail companion to
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md`.
+This document is the execution-detail companion to `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md`.
 
-Read the canonical Super SPEC first. Use this file only for the current
-execution unit, so the harness can advance in small auditable waves without
-turning planning detail into runtime behavior.
+Read the canonical Super SPEC first. Use this file only for the current execution unit, so the harness can advance in small auditable waves without turning planning detail into runtime behavior.
 
 ## SPEC-000 Preflight And Boundary
 
-Objective: prove that this harness is an ADR 0001 implementation surface, not a
-new memory authority.
+Objective: prove that this harness is an ADR 0001 implementation surface, not a new memory authority.
 
 Allowed files:
 
@@ -46,8 +42,7 @@ Focused oracles:
 - `python3 scripts/validate_reference_graph.py`
 - `git diff --check`
 
-Done when the harness boundary, non-objectives, result contract, and wave queue
-are documented and indexed.
+Done when the harness boundary, non-objectives, result contract, and wave queue are documented and indexed.
 
 ## SPEC-001 Native Memory Eval Contract
 
@@ -81,14 +76,12 @@ Negative checks:
 
 ## SPEC-002 Neutral Cortex Fixtures
 
-Objective: create small generic fixtures that expose memory behavior without
-importing external datasets.
+Objective: create small generic fixtures that expose memory behavior without importing external datasets.
 
 Likely files:
 
 - `benchmarks/cortex-memory/eval-dataset.json`
-- fixture source documents under a neutral local fixture directory only if the
-  runner needs materialized Cortex files
+- fixture source documents under a neutral local fixture directory only if the runner needs materialized Cortex files
 
 Required fixture families:
 
@@ -144,8 +137,7 @@ Negative checks:
 
 ## SPEC-004 Retrieval-Sufficiency Oracle
 
-Objective: judge whether recalled evidence is enough to answer safely before
-answer generation.
+Objective: judge whether recalled evidence is enough to answer safely before answer generation.
 
 Likely files:
 
@@ -205,8 +197,7 @@ Negative checks:
 
 ## SPEC-006 Checkpoint And Compare Runs
 
-Objective: make long runs resumable and regression-friendly without turning
-checkpoints into memory.
+Objective: make long runs resumable and regression-friendly without turning checkpoints into memory.
 
 Likely files:
 
@@ -235,8 +226,7 @@ Negative checks:
 
 ## SPEC-007 Evidence And Release Closure
 
-Objective: close the harness only after docs, scripts, fixtures, evidence, and
-release identity agree.
+Objective: close the harness only after docs, scripts, fixtures, evidence, and release identity agree.
 
 Likely files:
 

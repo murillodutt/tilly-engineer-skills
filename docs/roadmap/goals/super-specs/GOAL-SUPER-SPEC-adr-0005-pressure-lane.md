@@ -9,11 +9,9 @@ evidence_level: L1
 
 # GOAL Super SPEC: ADR 0005 Pressure Lane
 
-Status: active lane SPEC derived from
-`docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
+Status: active lane SPEC derived from `docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
 
-Purpose: transfer the external relentless-interview behavior into existing TES
-pressure assets without creating a new skill or command.
+Purpose: transfer the external relentless-interview behavior into existing TES pressure assets without creating a new skill or command.
 
 ## Asset-Transfer Packet
 
@@ -34,10 +32,8 @@ Tasks:
 
 1. Capture `git status --short --branch --untracked-files=all`.
 2. Read ADR 0005, the parent ADR 0005 Super SPEC, `tes-prospect`, and `tes-mine`.
-3. Name whether the selected patch is skill behavior, benchmark behavior, or
-   mirror parity only.
-4. List correlated Codex, Claude, local `.agents`, benchmark, and package
-   validation surfaces before editing.
+3. Name whether the selected patch is skill behavior, benchmark behavior, or mirror parity only.
+4. List correlated Codex, Claude, local `.agents`, benchmark, and package validation surfaces before editing.
 
 Focused oracles:
 
@@ -51,10 +47,8 @@ git diff --check
 
 Tasks:
 
-1. Add or identify one fixture where the prompt tempts the agent to ask several
-   questions, skip the recommended answer, or ask what the repo can answer.
-2. Require the expected behavior to answer with exactly one next pressure
-   question and one recommended answer.
+1. Add or identify one fixture where the prompt tempts the agent to ask several questions, skip the recommended answer, or ask what the repo can answer.
+2. Require the expected behavior to answer with exactly one next pressure question and one recommended answer.
 3. Preserve the cognitive brake as a stop condition.
 
 Stop if the fixture would require a new user-invoked skill.
@@ -63,11 +57,9 @@ Stop if the fixture would require a new user-invoked skill.
 
 Tasks:
 
-1. Patch only the smallest pressure contract text, reference, or benchmark
-   expectation needed to make the fixture pass.
+1. Patch only the smallest pressure contract text, reference, or benchmark expectation needed to make the fixture pass.
 2. Keep `tes-prospect` and `tes-mine` explicit-invocation only.
-3. Do not copy external skill names, command names, setup workflow, or issue
-   tracker assumptions.
+3. Do not copy external skill names, command names, setup workflow, or issue tracker assumptions.
 
 ## SPEC-003: Regression And Release
 
@@ -75,8 +67,6 @@ Tasks:
 
 1. Run the focused fixture or benchmark.
 2. Run package validation and command-trigger validation.
-3. If any adapter skill text changed, stop with release identity classified as
-   `DELIVERED_REQUIRES_RELEASE_DECISION`.
+3. If any adapter skill text changed, stop with release identity classified as `DELIVERED_REQUIRES_RELEASE_DECISION`.
 
-Valid statuses: `ASSET_TRANSFERRED`, `ASSET_ALREADY_ADEQUATE`,
-`NEEDS_OWNER_DECISION`, `NEEDS_ASSET_PACKET`, `BLOCKED`.
+Valid statuses: `ASSET_TRANSFERRED`, `ASSET_ALREADY_ADEQUATE`, `NEEDS_OWNER_DECISION`, `NEEDS_ASSET_PACKET`, `BLOCKED`.

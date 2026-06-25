@@ -10,9 +10,7 @@ tver: 0.1.5
 
 # Platform Differences Reference
 
-This reference prevents false symmetry between Codex, Claude Code, and Cursor.
-TES keeps one shared behavioral contract, but each platform receives that
-contract through its native packaging shape.
+This reference prevents false symmetry between Codex, Claude Code, and Cursor. TES keeps one shared behavioral contract, but each platform receives that contract through its native packaging shape.
 
 Last official-source check: 2026-05-26.
 
@@ -48,29 +46,7 @@ TES entry vocabulary is shared across platforms:
 | Bench | `/tes-bench` | `/tes:bench` | Plan, run, or inspect context-mesh benchmark evidence under the temporal evidence contract. |
 | Bump | `/tes-bump` | `/tes:bump` | Govern, plan, and apply bounded project version bumps through read-only governance and dry-run-first target discovery; no Git or publishing side effects. |
 
-The hyphen form is the preferred cross-platform trigger. The colon form is a
-compatibility alias and may be rejected by a host slash-command parser. If a
-host says a `/tes:*` slash command is invalid, the agent must treat the text as
-TES intent and route to the matching `tes-*` skill, rule, or installer spec.
-Natural intent text such as `tes init`, `tes setup`, `tes update`, `tes align`,
-`tes map`, `generate a maestral /goal prompt`, `gerar um /goal maestral`,
-`project GPS`, `mapa TES`, `tes open obsidian`, `tes bump`,
-`align TES`,
-`align this project`, `map this project`, `open Obsidian`,
-`open this project in Obsidian`, `Atualizar TES`, `atualizar TES`,
-`alinhar TES`, `alinhar projeto`, `mapear TES`, `mapear projeto`,
-`abrir Obsidian`, `abrir no Obsidian`, `initialize TES`, `install TES`,
-`recertify TES`, `inicializar TES`, `instalar TES`, and `recertificar TES` must route to the
-same contract.
-`/tes-prospect`, `/tes-mine`, and `/tes-goal-maestro` are intentionally
-excluded from broad natural intent routing. `tes-goal-maestro` may also route
-from a direct request to generate a maestral `/goal` prompt from a mature SPEC,
-Super SPEC, PRD, relational project plan, or accepted execution tree. Generated
-Super SPEC content must be written to `GOAL-SUPER-SPEC-*.md` and summarized in
-chat instead of pasted into the context window.
-Prospecting and mining activate only when named by trigger, alias, or explicit
-skill invocation, then operate proactively until the user pulls the cognitive
-brake.
+The hyphen form is the preferred cross-platform trigger. The colon form is a compatibility alias and may be rejected by a host slash-command parser. If a host says a `/tes:*` slash command is invalid, the agent must treat the text as TES intent and route to the matching `tes-*` skill, rule, or installer spec. Natural intent text such as `tes init`, `tes setup`, `tes update`, `tes align`, `tes map`, `generate a maestral /goal prompt`, `gerar um /goal maestral`, `project GPS`, `mapa TES`, `tes open obsidian`, `tes bump`, `align TES`, `align this project`, `map this project`, `open Obsidian`, `open this project in Obsidian`, `Atualizar TES`, `atualizar TES`, `alinhar TES`, `alinhar projeto`, `mapear TES`, `mapear projeto`, `abrir Obsidian`, `abrir no Obsidian`, `initialize TES`, `install TES`, `recertify TES`, `inicializar TES`, `instalar TES`, and `recertificar TES` must route to the same contract. `/tes-prospect`, `/tes-mine`, and `/tes-goal-maestro` are intentionally excluded from broad natural intent routing. `tes-goal-maestro` may also route from a direct request to generate a maestral `/goal` prompt from a mature SPEC, Super SPEC, PRD, relational project plan, or accepted execution tree. Generated Super SPEC content must be written to `GOAL-SUPER-SPEC-*.md` and summarized in chat instead of pasted into the context window. Prospecting and mining activate only when named by trigger, alias, or explicit skill invocation, then operate proactively until the user pulls the cognitive brake.
 
 ## Surface Differences
 
@@ -87,15 +63,9 @@ brake.
 
 ## Memory Lifecycle Boundary
 
-Adapter lifecycle parity means each delivered surface names the same six
-moments: recall, scope normalization, write gate, checkpoint, closeout, and
-subagent return. The package may certify that textual and materialized boundary
-only when `scripts/adapter_parity_readiness.py` passes.
+Adapter lifecycle parity means each delivered surface names the same six moments: recall, scope normalization, write gate, checkpoint, closeout, and subagent return. The package may certify that textual and materialized boundary only when `scripts/adapter_parity_readiness.py` passes.
 
-Subagent return is not write authority. Subagents or agents may return findings
-and evidence to the parent context; the parent owns durable memory promotion and
-the write gate. Checkpoints and event records remain future waves, not implied
-by this adapter matrix.
+Subagent return is not write authority. Subagents or agents may return findings and evidence to the parent context; the parent owns durable memory promotion and the write gate. Checkpoints and event records remain future waves, not implied by this adapter matrix.
 
 ## Platform Decisions
 
@@ -112,8 +82,7 @@ by this adapter matrix.
 
 ## Maintainer Checklist
 
-When an official platform source changes, update the correlated surfaces in the
-same patch:
+When an official platform source changes, update the correlated surfaces in the same patch:
 
 | Change observed | Required local checks |
 |-----------------|-----------------------|

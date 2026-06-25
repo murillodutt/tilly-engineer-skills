@@ -1,7 +1,6 @@
 # Code Of Conduct
 
-TES is built for careful engineering collaboration. Participation in this
-project should preserve that tone.
+TES is built for careful engineering collaboration. Participation in this project should preserve that tone.
 
 ## Expectations
 
@@ -15,11 +14,9 @@ project should preserve that tone.
 
 - Harassment, abuse, or discriminatory language.
 - Publishing secrets, private code, or private operational payloads.
-- Pressuring maintainers to tag, release, publish, or submit marketplace assets
-  without explicit readiness review.
+- Pressuring maintainers to tag, release, publish, or submit marketplace assets without explicit readiness review.
 - Weakening gates or hiding failures to produce a false green.
 
 ## Enforcement
 
-Maintainers may edit, hide, or close interactions that violate these rules.
-Security-sensitive reports may be redirected to a private channel.
+Maintainers may edit, hide, or close interactions that violate these rules. Security-sensitive reports may be redirected to a private channel.

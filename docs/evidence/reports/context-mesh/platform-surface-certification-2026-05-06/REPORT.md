@@ -20,8 +20,7 @@ Tilly Engineer Skills v0.3.14 has certified local package alignment for the
 Codex, Claude, and Cursor platform surfaces it claims.
 ```
 
-This is a package-shape and contract certification. It is not a live IDE UI,
-marketplace publication, or universal behavior-parity claim.
+This is a package-shape and contract certification. It is not a live IDE UI, marketplace publication, or universal behavior-parity claim.
 
 ## Documentation Baseline
 
@@ -105,15 +104,10 @@ failures=[]
 
 - No live marketplace publication is certified.
 - No live IDE UI behavior is certified.
-- No platform lifecycle hook is claimed when only `.githooks/pre-commit`
-  exists.
-- No Cursor skill/plugin parity is claimed because Cursor rules are the native
-  portable surface.
-- No Codex plugin package is claimed until a `.codex-plugin/plugin.json`
-  package exists with its own oracle.
+- No platform lifecycle hook is claimed when only `.githooks/pre-commit` exists.
+- No Cursor skill/plugin parity is claimed because Cursor rules are the native portable surface.
+- No Codex plugin package is claimed until a `.codex-plugin/plugin.json` package exists with its own oracle.
 
 ## Post-Gate
 
-Keep `npm run platform:surface:check` inside `npm run commit:check` so every
-future adapter, plugin, skill, MCP, hook, agent, or rule change is checked
-against the platform-surface contract before certification.
+Keep `npm run platform:surface:check` inside `npm run commit:check` so every future adapter, plugin, skill, MCP, hook, agent, or rule change is checked against the platform-surface contract before certification.

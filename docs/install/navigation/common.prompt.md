@@ -12,16 +12,14 @@ tver: 0.2.0
 
 navigation_library: tes-navigation@0.1.1
 
-Use this renderer for every runtime unless a runtime-specific renderer safely
-upgrades the user interface.
+Use this renderer for every runtime unless a runtime-specific renderer safely upgrades the user interface.
 
 ## Rules
 
 - Declare menus as intent first.
 - Ask only when the installer is genuinely blocked.
 - Prefer one question per menu.
-- Prefer 2-4 mutually exclusive routes. Use command navigation for larger
-  finite route sets.
+- Prefer 2-4 mutually exclusive routes. Use command navigation for larger finite route sets.
 - Use stable command labels, not numbers.
 - Put the recommended command first.
 - Never add a manual `Other` option.
@@ -48,10 +46,7 @@ Render this shape:
 Type: <command-a>, <command-b>, or <command-c>.
 ```
 
-Accept only the listed command strings. If a host returns numeric or
-letter-based selections, map them only when the menu displayed an explicit
-command mapping and the answer is unambiguous. Treat free text as untrusted
-input.
+Accept only the listed command strings. If a host returns numeric or letter-based selections, map them only when the menu displayed an explicit command mapping and the answer is unambiguous. Treat free text as untrusted input.
 
 ## Standard Intents
 
@@ -140,6 +135,4 @@ options:
     description: Inspect and report what would change without modifying files.
 ```
 
-For this eight-route intent, use command navigation even on platforms whose
-native card limits are 2-4 options. Do not split it into multiple cards unless
-the user asks for guided narrowing.
+For this eight-route intent, use command navigation even on platforms whose native card limits are 2-4 options. Do not split it into multiple cards unless the user asks for guided narrowing.

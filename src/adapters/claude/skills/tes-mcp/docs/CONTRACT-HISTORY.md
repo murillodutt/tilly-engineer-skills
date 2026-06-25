@@ -2,13 +2,11 @@
 
 ## Purpose
 
-`/tes-mcp` activates, verifies, repairs, and explains project-scoped TES Cortex
-MCP for Codex, Claude, Cursor, VS Code, or all routes.
+`/tes-mcp` activates, verifies, repairs, and explains project-scoped TES Cortex MCP for Codex, Claude, Cursor, VS Code, or all routes.
 
 ## Why This Skill Exists
 
-MCP registration is easy to confuse with host recognition. This skill separates
-config presence, self-test, handshake, and session restart requirements.
+MCP registration is easy to confuse with host recognition. This skill separates config presence, self-test, handshake, and session restart requirements.
 
 ## Contracts Preserved
 
@@ -25,8 +23,7 @@ config presence, self-test, handshake, and session restart requirements.
 
 ## Relationship To Other Skills
 
-`tes-init` may activate MCP during install. `tes-mcp` is the focused repair
-route. `tes-cortex` operates memory; `tes-doctor` certifies install health.
+`tes-init` may activate MCP during install. `tes-mcp` is the focused repair route. `tes-cortex` operates memory; `tes-doctor` certifies install health.
 
 ## Changelog
 

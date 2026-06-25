@@ -10,57 +10,31 @@ tver: 0.4.0
 
 # ADR 0003: Cortex MCP Capability Expansion
 
-Proposed on 2026-05-27 after comparative analysis of contemporary
-MCP memory-oriented server patterns.
-Accepted on 2026-05-27 as the active Cortex MCP evolution contract.
+Proposed on 2026-05-27 after comparative analysis of contemporary MCP memory-oriented server patterns. Accepted on 2026-05-27 as the active Cortex MCP evolution contract.
 
-TES will expand the Cortex MCP surface along seven targeted capability axes
-without changing the source of truth, the write lane, or the dependency
-posture. Adopted patterns are drawn from contemporary MCP practice but
-reimplemented inside the TES boundary.
+TES will expand the Cortex MCP surface along seven targeted capability axes without changing the source of truth, the write lane, or the dependency posture. Adopted patterns are drawn from contemporary MCP practice but reimplemented inside the TES boundary.
 
-ADR 0001 and ADR 0002 are now archived bootstrapping records. Their surviving
-runtime invariants are carried forward here so the active contract stays thin
-instead of accumulating multiple overlapping ADR sources of truth.
+ADR 0001 and ADR 0002 are now archived bootstrapping records. Their surviving runtime invariants are carried forward here so the active contract stays thin instead of accumulating multiple overlapping ADR sources of truth.
 
 ## Context
 
-The Cortex MCP server today is a zero-dependency JSON-RPC 2.0 stdio
-implementation exposing 14 tools (12 in read-only). It is well certified for
-the read and governed-write paths it covers. Three operational gaps remain
-visible after comparison with current MCP servers in the field:
+The Cortex MCP server today is a zero-dependency JSON-RPC 2.0 stdio implementation exposing 14 tools (12 in read-only). It is well certified for the read and governed-write paths it covers. Three operational gaps remain visible after comparison with current MCP servers in the field:
 
-1. host integration leaves cell discovery and slash-command surfacing entirely
-   to tool calls, even though MCP has native `resources/*` and `prompts/*`
-   primitives that hosts already render;
-2. tool schemas are assembled by hand with three helpers, producing 30+ lines
-   per new tool and a small but real drift risk between schema and
-   implementation;
-3. operational latency on hot paths (`verify`-prefixed tool calls), feedback
-   on long tools (`review`, `curate_plan`, `audit`), durable history of a
-   single cell, and remote invocation are all unaddressed.
+1. host integration leaves cell discovery and slash-command surfacing entirely to tool calls, even though MCP has native `resources/*` and `prompts/*` primitives that hosts already render;
+2. tool schemas are assembled by hand with three helpers, producing 30+ lines per new tool and a small but real drift risk between schema and implementation;
+3. operational latency on hot paths (`verify`-prefixed tool calls), feedback on long tools (`review`, `curate_plan`, `audit`), durable history of a single cell, and remote invocation are all unaddressed.
 
-Comparable MCP servers demonstrate pragmatic answers for several of these
-(declarative schemas, streamable HTTP transport, server-side prompts, soft
-history). They also demonstrate patterns that this ADR explicitly does not
-adopt: automatic capture, broad CRUD, multi-tenant scopes, and
-FastMCP/Pydantic as a hard dependency.
+Comparable MCP servers demonstrate pragmatic answers for several of these (declarative schemas, streamable HTTP transport, server-side prompts, soft history). They also demonstrate patterns that this ADR explicitly does not adopt: automatic capture, broad CRUD, multi-tenant scopes, and FastMCP/Pydantic as a hard dependency.
 
-This ADR records the capability expansion as a single decision so that the
-next implementation cycle can sequence the items against a stable contract.
+This ADR records the capability expansion as a single decision so that the next implementation cycle can sequence the items against a stable contract.
 
 ## Decision
 
-TES adopts seven targeted capabilities. Each item lists its surface, the
-expected invariants, and the oracle conditions a future implementation must
-satisfy.
+TES adopts seven targeted capabilities. Each item lists its surface, the expected invariants, and the oracle conditions a future implementation must satisfy.
 
 ## Capability Status And Dependency Graph
 
-The ADR is active as an architectural decision. The seven expansion
-capabilities are certified in the local package source by their scoped
-`cortex_mcp.py --self-test` additions and by the incremental commits listed
-below. Release identity remains a separate package decision.
+The ADR is active as an architectural decision. The seven expansion capabilities are certified in the local package source by their scoped `cortex_mcp.py --self-test` additions and by the incremental commits listed below. Release identity remains a separate package decision.
 
 | Capability | Status | Dependency note |
 |------------|--------|-----------------|
@@ -75,21 +49,14 @@ below. Release identity remains a separate package decision.
 
 Implementation uses two tracks:
 
-- Serial bridge: land the schema helper first, then bring HTTP transport early
-  enough that capability closeout can prove dual-transport behavior.
-- Parallel capability fronts: resources, prompts, verify cache, progress
-  notifications, and cell history may proceed independently after the relevant
-  bridge is available.
+- Serial bridge: land the schema helper first, then bring HTTP transport early enough that capability closeout can prove dual-transport behavior.
+- Parallel capability fronts: resources, prompts, verify cache, progress notifications, and cell history may proceed independently after the relevant bridge is available.
 
-The merge gate is the consolidated `cortex_mcp.py --self-test`, with each
-available capability covered in stdio and HTTP once HTTP exists.
+The merge gate is the consolidated `cortex_mcp.py --self-test`, with each available capability covered in stdio and HTTP once HTTP exists.
 
 ### 1. MCP Resources for Cells
 
-Expose every Markdown cell under `docs/agents/cortex/cells/**` as a native
-MCP resource. The server advertises `resources` capability at `initialize`,
-implements `resources/list` and `resources/read`, and addresses cells with
-URIs of the form `tes-cortex://cells/<stem>`.
+Expose every Markdown cell under `docs/agents/cortex/cells/**` as a native MCP resource. The server advertises `resources` capability at `initialize`, implements `resources/list` and `resources/read`, and addresses cells with URIs of the form `tes-cortex://cells/<stem>`.
 
 | Invariant |
 |-----------|
@@ -101,10 +68,7 @@ URIs of the form `tes-cortex://cells/<stem>`.
 
 ### 2. Server-side Prompts
 
-Expose Cortex operator prompts via `prompts/list` and `prompts/get`. Initial
-set: `cortex/closure-reflection`, `cortex/curation-review`,
-`cortex/remember-checklist`. Hosts surface these as slash commands without
-the user needing to remember skill names.
+Expose Cortex operator prompts via `prompts/list` and `prompts/get`. Initial set: `cortex/closure-reflection`, `cortex/curation-review`, `cortex/remember-checklist`. Hosts surface these as slash commands without the user needing to remember skill names.
 
 | Invariant |
 |-----------|
@@ -115,12 +79,7 @@ the user needing to remember skill names.
 
 ### 3. Schema Helper without Pydantic
 
-Replace ad-hoc `schema_string` / `schema_integer` / `schema_string_array`
-calls with a single declarative helper. The helper accepts a mapping of
-property name to a small type descriptor (`("string", description)`,
-`("integer", description, default)`, `("string-array", description)`, etc.)
-and the `required` list, and emits the JSONSchema dict the server already
-expects.
+Replace ad-hoc `schema_string` / `schema_integer` / `schema_string_array` calls with a single declarative helper. The helper accepts a mapping of property name to a small type descriptor (`("string", description)`, `("integer", description, default)`, `("string-array", description)`, etc.) and the `required` list, and emits the JSONSchema dict the server already expects.
 
 | Invariant |
 |-----------|
@@ -131,9 +90,7 @@ expects.
 
 ### 4. Verify Cache by Mtime
 
-Cache the result of `cortex.verify(target)` keyed by the maximum `mtime`
-across `docs/agents/cortex/**`. Invalidate on any change. Tools that today
-call `cortex.verify` at the top of their handler consult the cache instead.
+Cache the result of `cortex.verify(target)` keyed by the maximum `mtime` across `docs/agents/cortex/**`. Invalidate on any change. Tools that today call `cortex.verify` at the top of their handler consult the cache instead.
 
 | Invariant |
 |-----------|
@@ -144,9 +101,7 @@ call `cortex.verify` at the top of their handler consult the cache instead.
 
 ### 5. Progress Notifications
 
-Long-running tools emit MCP `notifications/progress` updates. Initial
-coverage: `cortex_review`, `cortex_audit`, `cortex_curate_plan` (when
-`backend` is not `lexical`).
+Long-running tools emit MCP `notifications/progress` updates. Initial coverage: `cortex_review`, `cortex_audit`, `cortex_curate_plan` (when `backend` is not `lexical`).
 
 | Invariant |
 |-----------|
@@ -157,10 +112,7 @@ coverage: `cortex_review`, `cortex_audit`, `cortex_curate_plan` (when
 
 ### 6. Cell History Tool
 
-Add one read-only tool, `cortex_cell_history`, that reads the `TRAIL.md`
-associated with a cell and returns structured entries (timestamp,
-evidence_ref, claim summary, links delta). Source of truth remains
-`TRAIL.md`; the tool parses and structures it.
+Add one read-only tool, `cortex_cell_history`, that reads the `TRAIL.md` associated with a cell and returns structured entries (timestamp, evidence_ref, claim summary, links delta). Source of truth remains `TRAIL.md`; the tool parses and structures it.
 
 | Invariant |
 |-----------|
@@ -171,10 +123,7 @@ evidence_ref, claim summary, links delta). Source of truth remains
 
 ### 7. Optional Streamable HTTP Transport
 
-Add `--transport http` as an opt-in transport alongside default stdio. HTTP
-mode binds to `127.0.0.1:<port>` by default. Implementation uses the
-standard library (`http.server` or equivalent stdlib primitives). The
-JSON-RPC handler is unchanged; only the framing differs.
+Add `--transport http` as an opt-in transport alongside default stdio. HTTP mode binds to `127.0.0.1:<port>` by default. Implementation uses the standard library (`http.server` or equivalent stdlib primitives). The JSON-RPC handler is unchanged; only the framing differs.
 
 | Invariant |
 |-----------|
@@ -187,23 +136,15 @@ JSON-RPC handler is unchanged; only the framing differs.
 
 ## Active Cortex MCP Contract
 
-This ADR now owns the active Cortex MCP contract. The following invariants are
-carried forward from ADR 0001 and ADR 0002:
+This ADR now owns the active Cortex MCP contract. The following invariants are carried forward from ADR 0001 and ADR 0002:
 
 - Markdown under `docs/agents/cortex/**` is the durable memory source of truth.
-- Runtime indexes, event logs, checkpoints, resources, prompts, transports, and
-  notifications are access, evidence, acceleration, or operator surfaces, not
-  memory truth.
-- The two-step `cortex_remember_plan` / `cortex_remember` write lane and its
-  approval-phrase semantics are unchanged.
-- `cortex_remember` may create only one new cell plus correlated `MAP.md`,
-  `LINKS.md`, `TRAIL.md`, and derived recall-index writes already owned by the
-  Cortex write gate.
-- `cortex_remember` must not overwrite existing cells and must not write
-  `sources/**`.
+- Runtime indexes, event logs, checkpoints, resources, prompts, transports, and notifications are access, evidence, acceleration, or operator surfaces, not memory truth.
+- The two-step `cortex_remember_plan` / `cortex_remember` write lane and its approval-phrase semantics are unchanged.
+- `cortex_remember` may create only one new cell plus correlated `MAP.md`, `LINKS.md`, `TRAIL.md`, and derived recall-index writes already owned by the Cortex write gate.
+- `cortex_remember` must not overwrite existing cells and must not write `sources/**`.
 - Target is fixed at process startup. Tools never accept a `target` argument.
-- No new destructive surface (no delete, no update, no forget, no
-  checkpoint, no apply over MCP).
+- No new destructive surface (no delete, no update, no forget, no checkpoint, no apply over MCP).
 - No automatic capture. Reflection remains no-write.
 - Event tools are evidence inspection only and must report no writes.
 - No multi-tenant scope (`user_id` / `agent_id` / `app_id` / `run_id`).
@@ -224,9 +165,7 @@ carried forward from ADR 0001 and ADR 0002:
 
 ## Required Oracles
 
-Each capability requires extending the existing oracles, not creating new
-standalone ones. The expansion must keep `cortex_mcp.py --self-test` as the
-single point of truth for MCP contract validation.
+Each capability requires extending the existing oracles, not creating new standalone ones. The expansion must keep `cortex_mcp.py --self-test` as the single point of truth for MCP contract validation.
 
 | Capability | Self-test addition |
 |------------|-------------------|
@@ -238,28 +177,12 @@ single point of truth for MCP contract validation.
 | Cell history | Empty trail returns PASS with empty list; populated trail returns structured entries; path traversal and target override are rejected. |
 | HTTP transport | `--transport http` boots, accepts a JSON-RPC POST, returns the same envelope as stdio; non-localhost bind requires explicit flag; read-only and approval semantics behave identically to stdio. |
 
-Before a sealed package or release claim, the full repository commit gate
-runs as before. `install_mcp.py --self-test` must continue to pass without
-modification (resources, prompts, progress, HTTP, and history must not
-require installer changes — installer remains a project-scoped registration
-helper).
+Before a sealed package or release claim, the full repository commit gate runs as before. `install_mcp.py --self-test` must continue to pass without modification (resources, prompts, progress, HTTP, and history must not require installer changes — installer remains a project-scoped registration helper).
 
 ## Consequences
 
-The Cortex MCP server grows by roughly 600 lines without adding
-dependencies and without changing the write lane. Hosts gain native
-discovery of cells and slash-command surfacing for operator prompts. The
-schema authoring path becomes shorter. Long tool calls become observable.
-Remote invocation becomes possible without coupling the project to a web
-framework. A new read tool, `cortex_cell_history`, exposes durable change
-history that today requires reading raw Markdown.
+The Cortex MCP server grows by roughly 600 lines without adding dependencies and without changing the write lane. Hosts gain native discovery of cells and slash-command surfacing for operator prompts. The schema authoring path becomes shorter. Long tool calls become observable. Remote invocation becomes possible without coupling the project to a web framework. A new read tool, `cortex_cell_history`, exposes durable change history that today requires reading raw Markdown.
 
-The cost is stricter self-test scope: every new capability is contract-
-verified inside the same binary, and the next time a similar MCP memory-server
-pattern is proposed, this ADR is the reference for what was deliberately not
-adopted.
+The cost is stricter self-test scope: every new capability is contract-verified inside the same binary, and the next time a similar MCP memory-server pattern is proposed, this ADR is the reference for what was deliberately not adopted.
 
-ADR status `active` means the direction and carried-forward Cortex MCP
-invariants are accepted. Capability status `certified` means the specific
-capability has landed with its self-test extension and, once HTTP exists,
-stdio/HTTP parity.
+ADR status `active` means the direction and carried-forward Cortex MCP invariants are accepted. Capability status `certified` means the specific capability has landed with its self-test extension and, once HTTP exists, stdio/HTTP parity.

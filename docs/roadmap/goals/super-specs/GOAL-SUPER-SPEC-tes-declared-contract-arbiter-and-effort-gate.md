@@ -10,31 +10,13 @@ tver: 0.1.0
 
 # GOAL Super SPEC: Declared-Contract Arbiter + Effort Gate
 
-Status: active execution artifact. This Super SPEC carries the COMPLETE LITERAL
-solution — every paste-ready block of text and code — not a recipe. The next
-window in the TES execution flow applies the embedded literal blocks in the
-ordered Materialization Tree; it does not re-design.
+Status: active execution artifact. This Super SPEC carries the COMPLETE LITERAL solution — every paste-ready block of text and code — not a recipe. The next window in the TES execution flow applies the embedded literal blocks in the ordered Materialization Tree; it does not re-design.
 
-Capability: extend the TES engineering-discipline protocol with (1) a **Gate
-Zero — Declared-Contract Arbiter** that resolves gate tension deterministically
-by binary-hard declared-contract evidence instead of letting the broad/generic
-default win by gravity; (2) a sixth **Effort Gate** as an orthogonal elevation
-axis (`Standard` default, `Premium` on named consequence) that separates *how
-much rigor per line* from *how much scope*; (3) a **classificatory reframe** of
-the Maturity Layer Gate so maturity is decided in thinking and the artifact is
-born at the converged level (the house-palace thesis), removing the temporal
-"build small then rebuild" defect; and (4) **oracle teeth** in
-`discipline_oracle.py` (Stage A string validation) that bind effort and
-declared-contract fields to the proven validation spine. All without forking the
-existing gate vocabulary, breaking the sha256-sealed bootloader regions, or
-overclaiming enforcement the oracle does not perform.
+Capability: extend the TES engineering-discipline protocol with (1) a **Gate Zero — Declared-Contract Arbiter** that resolves gate tension deterministically by binary-hard declared-contract evidence instead of letting the broad/generic default win by gravity; (2) a sixth **Effort Gate** as an orthogonal elevation axis (`Standard` default, `Premium` on named consequence) that separates *how much rigor per line* from *how much scope*; (3) a **classificatory reframe** of the Maturity Layer Gate so maturity is decided in thinking and the artifact is born at the converged level (the house-palace thesis), removing the temporal "build small then rebuild" defect; and (4) **oracle teeth** in `discipline_oracle.py` (Stage A string validation) that bind effort and declared-contract fields to the proven validation spine. All without forking the existing gate vocabulary, breaking the sha256-sealed bootloader regions, or overclaiming enforcement the oracle does not perform.
 
 ## Why this exists — lived provenance (not theory)
 
-This change was discovered through REAL USE of the TES protocol on a real
-project, not by theorizing about the protocol. The five gate-conflict cases that
-dictated the design are lived decisions; the arbiter rule was EXTRACTED from
-them, then adversarially verified back against them. Anonymized:
+This change was discovered through REAL USE of the TES protocol on a real project, not by theorizing about the protocol. The five gate-conflict cases that dictated the design are lived decisions; the arbiter rule was EXTRACTED from them, then adversarially verified back against them. Anonymized:
 
 | Lived case | Gate tension | What won | Lesson encoded |
 |------------|--------------|----------|----------------|
@@ -44,92 +26,42 @@ them, then adversarially verified back against them. Anonymized:
 | Lone-deviation page layout | Surgical (smallest CSS patch) vs a structural convention used by a countable majority of sibling pages | true-scenario (aligned to the peers) | **peer-convergence** is a declared contract |
 | "1 star of 5" craft | Simplicity ("I built the requested widgets") vs no declared contract at decision time | broad-default, correctly | NO declared contract existed → broad default MUST win; inventing craft from nothing is the inverted "always do more" bug. This is the gate the absence of an effort axis silenced. |
 
-The separating signal the experience dictated is NOT consequence-class
-(correctness vs completeness) and NOT a list of soft contexts. It is:
-**a violation of a contract already DECLARED and source-checkable in the repo at
-decision time.** When that exists and is satisfiable, the true scenario wins;
-when it collides with another declared contract, escalate; when no declared
-contract exists, the broad default correctly wins. The signal is binary-hard, in
-the spirit of `tes-mine`: a yes/no question has exactly one answer; gradation is
-the entry door of ambiguity and is forbidden.
+The separating signal the experience dictated is NOT consequence-class (correctness vs completeness) and NOT a list of soft contexts. It is: **a violation of a contract already DECLARED and source-checkable in the repo at decision time.** When that exists and is satisfiable, the true scenario wins; when it collides with another declared contract, escalate; when no declared contract exists, the broad default correctly wins. The signal is binary-hard, in the spirit of `tes-mine`: a yes/no question has exactly one answer; gradation is the entry door of ambiguity and is forbidden.
 
 ## Canonical Artifact
 
-Canonical Super SPEC:
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-declared-contract-arbiter-and-effort-gate.md`
+Canonical Super SPEC: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-declared-contract-arbiter-and-effort-gate.md`
 
 Primary edit surfaces (sources, not installed copies):
 
-- `src/adapters/claude/skills/tes-engineering-discipline/SKILL.md` — the discipline anchor
-  (Gate Zero, Six Gates table, Effort Gate section, maturity reframe).
-- `src/adapters/codex/skills/tes-engineering-discipline/SKILL.md` — the Codex
-  mirror that `discipline_oracle.py --self-test` actually reads
-  (`parents[1]/SKILL.md`); receives the same gate detail AND the new
-  `REQUIRED_TERMS`.
-- `src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py`
-  — the Stage A teeth.
-- `src/adapters/claude/CLAUDE.md`, `src/adapters/codex/AGENTS.md`, and
-  `src/adapters/cursor/CURSOR.md` — the thin bootloaders of the PRODUCT layer
-  (the adapters shipped to adopting projects). Adapters render shared INTENT,
-  not byte-identical text.
-- `src/adapters/claude/skills/tes-engineering-discipline/docs/CONTRACT-HISTORY.md` — the
-  append-only changelog (mandatory before claiming done).
+- `src/adapters/claude/skills/tes-engineering-discipline/SKILL.md` — the discipline anchor (Gate Zero, Six Gates table, Effort Gate section, maturity reframe).
+- `src/adapters/codex/skills/tes-engineering-discipline/SKILL.md` — the Codex mirror that `discipline_oracle.py --self-test` actually reads (`parents[1]/SKILL.md`); receives the same gate detail AND the new `REQUIRED_TERMS`.
+- `src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py` — the Stage A teeth.
+- `src/adapters/claude/CLAUDE.md`, `src/adapters/codex/AGENTS.md`, and `src/adapters/cursor/CURSOR.md` — the thin bootloaders of the PRODUCT layer (the adapters shipped to adopting projects). Adapters render shared INTENT, not byte-identical text.
+- `src/adapters/claude/skills/tes-engineering-discipline/docs/CONTRACT-HISTORY.md` — the append-only changelog (mandatory before claiming done).
 
-Two-layer boundary (do not confuse them). This change is **delivered-behavior**,
-so it lives ENTIRELY in the **product layer** under `src/adapters/**` (the files
-above) — the adapters this repo ships. The **work layer** — the active
-bootloaders that govern working inside THIS repo (`.claude/**`, `.agents/**`, the
-repo-root `AGENTS.md`, `.claude/CLAUDE.md`) — is NOT a target of this SPEC and is
-left untouched. The repo-root `AGENTS.md` is the maintainer/work bootloader, not
-the shipped Codex adapter; the shipped Codex adapter is
-`src/adapters/codex/AGENTS.md`. Whether the work layer later adopts these gates
-is a separate governance decision, out of scope here.
+Two-layer boundary (do not confuse them). This change is **delivered-behavior**, so it lives ENTIRELY in the **product layer** under `src/adapters/**` (the files above) — the adapters this repo ships. The **work layer** — the active bootloaders that govern working inside THIS repo (`.claude/**`, `.agents/**`, the repo-root `AGENTS.md`, `.claude/CLAUDE.md`) — is NOT a target of this SPEC and is left untouched. The repo-root `AGENTS.md` is the maintainer/work bootloader, not the shipped Codex adapter; the shipped Codex adapter is `src/adapters/codex/AGENTS.md`. Whether the work layer later adopts these gates is a separate governance decision, out of scope here.
 
-Sealed-region rule: the installed bootloaders carry an sha256-sealed
-`TES:CORE` region. NEVER hand-edit a sealed region. Edit the unsealed SOURCE
-files above and re-run `scripts/materialize_adapter.py` to re-seal.
+Sealed-region rule: the installed bootloaders carry an sha256-sealed `TES:CORE` region. NEVER hand-edit a sealed region. Edit the unsealed SOURCE files above and re-run `scripts/materialize_adapter.py` to re-seal.
 
 ## Certified Context
 
-- The existing five gates (Think Before Coding, Maturity Layer Gate, Simplicity
-  First, Surgical Changes, Goal-Driven Execution), the Mantra Gate, Diamond
-  Build-Test-Fail-Fix, and the Infrastructure Decision Gate are accepted and
-  preserved. This change ADDS Gate Zero and the Effort Gate and reframes two
-  sentences of the Maturity Layer Gate; it does not flatten the existing
-  structure.
-- `discipline_oracle.py` is pure string validation (no git/subprocess):
-  `PLAN_FIELDS`, `parse_plan_fields`, `is_generic(GENERIC_VALUES)`,
-  `selected_layer(VALID_LAYERS)`, `ORACLE_SIGNALS`, `validate_plan_text`,
-  `semantic_self_test` (valid/vague fixture pair), `main` with `--self-test`
-  and `--plan`. Wired via `npm run oracle:self-test` inside `commit:check`.
-- The `ArchiveStrategy` and Platform worked examples in the Maturity Layer Gate
-  SURVIVE UNCHANGED — they were always about not building speculative
-  scaffolding, which the reframe reinforces.
+- The existing five gates (Think Before Coding, Maturity Layer Gate, Simplicity First, Surgical Changes, Goal-Driven Execution), the Mantra Gate, Diamond Build-Test-Fail-Fix, and the Infrastructure Decision Gate are accepted and preserved. This change ADDS Gate Zero and the Effort Gate and reframes two sentences of the Maturity Layer Gate; it does not flatten the existing structure.
+- `discipline_oracle.py` is pure string validation (no git/subprocess): `PLAN_FIELDS`, `parse_plan_fields`, `is_generic(GENERIC_VALUES)`, `selected_layer(VALID_LAYERS)`, `ORACLE_SIGNALS`, `validate_plan_text`, `semantic_self_test` (valid/vague fixture pair), `main` with `--self-test` and `--plan`. Wired via `npm run oracle:self-test` inside `commit:check`.
+- The `ArchiveStrategy` and Platform worked examples in the Maturity Layer Gate SURVIVE UNCHANGED — they were always about not building speculative scaffolding, which the reframe reinforces.
 
 ## Phase Boundary
 
-This phase MAY: add Gate Zero, add the Effort Gate, reframe the two temporal
-sentences of the Maturity Layer Gate, extend `discipline_oracle.py` with Stage A
-string-validation teeth, add the bootloader lines, and re-materialize adapters
-to re-seal.
+This phase MAY: add Gate Zero, add the Effort Gate, reframe the two temporal sentences of the Maturity Layer Gate, extend `discipline_oracle.py` with Stage A string-validation teeth, add the bootloader lines, and re-materialize adapters to re-seal.
 
-This phase MUST NOT: implement a live git/diff audit (Stage B) — the oracle
-stays string-validation only; alter the Mantra Gate, Diamond, or Infrastructure
-Decision Gate; rewrite the surviving worked examples; rename or remove any of the
-five existing gates; or hand-edit a sha256-sealed region.
+This phase MUST NOT: implement a live git/diff audit (Stage B) — the oracle stays string-validation only; alter the Mantra Gate, Diamond, or Infrastructure Decision Gate; rewrite the surviving worked examples; rename or remove any of the five existing gates; or hand-edit a sha256-sealed region.
 
 ## Non-Objectives
 
-- No Stage B (live diff/git audit) of the arbiter or effort gate. Explicitly
-  deferred; the honest teeth are Stage A intake validation.
-- No third effort tier (a `Draft`/throwaway demotion). Two tiers
-  (`Standard`/`Premium`) ship for binary-hard falsifiability. A third tier is a
-  separate, owner-authorized change.
-- No expansion of `CONSEQUENCE_SIGNALS`/`EFFORT_WEASEL`/declared-contract
-  taxonomy beyond what the five lived cases require. The lists need governance
-  curation over time, exactly like `ORACLE_SIGNALS`.
-- No change to project-side installed copies in this SPEC; materialization
-  installs them.
+- No Stage B (live diff/git audit) of the arbiter or effort gate. Explicitly deferred; the honest teeth are Stage A intake validation.
+- No third effort tier (a `Draft`/throwaway demotion). Two tiers (`Standard`/`Premium`) ship for binary-hard falsifiability. A third tier is a separate, owner-authorized change.
+- No expansion of `CONSEQUENCE_SIGNALS`/`EFFORT_WEASEL`/declared-contract taxonomy beyond what the five lived cases require. The lists need governance curation over time, exactly like `ORACLE_SIGNALS`.
+- No change to project-side installed copies in this SPEC; materialization installs them.
 
 ## Central Rule
 
@@ -142,214 +74,102 @@ Effort raises rigor per line; it never raises scope.
 
 ## Forbidden Moves
 
-- No adjective-as-criteria. Every trigger is a source-nameable fact
-  (frozen-schema cardinality / closed-domain coverage / peer-convergence /
-  affordance-deliverable / a named consequence surface). "Important",
-  "sensitive", "premium-looking", "could be nicer" are NOT triggers.
-- No gradation. `declared_contract` and `effort_tier` resolve to exactly one
-  state or fail as `NEEDS_REVIEW`. "Partially declared" / "somewhat premium" do
-  not exist (the `tes-mine` binary-hard criterion).
-- No scope inflation via effort. A `Premium` plan that adds a strategy
-  interface, factory, registry, config knob, or any new seam is a `Birth` hard
-  stop violation dressed as thoroughness.
-- No silent collision resolution. Two colliding declared contracts MUST be named
-  to the user.
-- No overclaim of enforcement. The oracle validates that the plan DECLARES the
-  contract and tier (string validation); it does NOT detect the violation in a
-  diff. Say so.
+- No adjective-as-criteria. Every trigger is a source-nameable fact (frozen-schema cardinality / closed-domain coverage / peer-convergence /affordance-deliverable / a named consequence surface). "Important", "sensitive", "premium-looking", "could be nicer" are NOT triggers.
+- No gradation. `declared_contract` and `effort_tier` resolve to exactly one state or fail as `NEEDS_REVIEW`. "Partially declared" / "somewhat premium" do not exist (the `tes-mine` binary-hard criterion).
+- No scope inflation via effort. A `Premium` plan that adds a strategy interface, factory, registry, config knob, or any new seam is a `Birth` hard stop violation dressed as thoroughness.
+- No silent collision resolution. Two colliding declared contracts MUST be named to the user.
+- No overclaim of enforcement. The oracle validates that the plan DECLARES the contract and tier (string validation); it does NOT detect the violation in a diff. Say so.
 - No hand-edit of a sealed `TES:CORE` region. Edit source, re-materialize.
-- No empty commits to satisfy a unit; each unit changes its named files and
-  passes its oracle.
+- No empty commits to satisfy a unit; each unit changes its named files and passes its oracle.
 
 ## Materialization Tree
 
-One commit per unit, in order. The literal blocks for each unit are embedded in
-the "Literal Solution" appendix below; the unit references the block by id.
+One commit per unit, in order. The literal blocks for each unit are embedded in the "Literal Solution" appendix below; the unit references the block by id.
 
 ### SPEC-000 — Preflight & baseline
 
 - Owned files: none (read-only).
 - Forbidden: runtime edits, commits, remote actions.
-- Behavior: confirm the source paths exist (the five edit surfaces above), run
-  `npm run oracle:self-test` to capture the GREEN baseline, run
-  `git status --short --branch --untracked-files=all` and `git log --oneline -12`
-  to record worktree state and confirm prior commits are baseline-only, and
-  confirm the sealed bootloader regions are materialized (not hand-edited).
-- Done: baseline oracle PASS recorded; worktree state and edit surfaces
-  confirmed.
+- Behavior: confirm the source paths exist (the five edit surfaces above), run `npm run oracle:self-test` to capture the GREEN baseline, run `git status --short --branch --untracked-files=all` and `git log --oneline -12` to record worktree state and confirm prior commits are baseline-only, and confirm the sealed bootloader regions are materialized (not hand-edited).
+- Done: baseline oracle PASS recorded; worktree state and edit surfaces confirmed.
 - Oracle: `python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test` returns PASS before any edit.
-- Commit: **none** (preflight is a no-commit decision per `tes-goal-maestro`;
-  this unit carries no material change). Evidence: baseline oracle results,
-  worktree status, unrelated-change list, and the file matrix for SPEC-010.
-  Recorded in SPEC-010's evidence block.
+- Commit: **none** (preflight is a no-commit decision per `tes-goal-maestro`; this unit carries no material change). Evidence: baseline oracle results, worktree status, unrelated-change list, and the file matrix for SPEC-010. Recorded in SPEC-010's evidence block.
 
 ### SPEC-010 — Maturity reframe (classificatory, not temporal)
 
-- Owned files: `src/adapters/claude/skills/tes-engineering-discipline/SKILL.md` and the
-  Codex mirror `src/adapters/codex/skills/tes-engineering-discipline/SKILL.md`.
-- Behavior: apply literal block **[L2 maturity-reframe]** — insert the
-  born-at-converged-level paragraph under the Maturity Layer Gate heading;
-  replace the temporal sentence "Preserve the baseline first, then simplify
-  inside it." with its classificatory form; shield "smallest durable runtime
-  slice" so "smallest" reads as scope, never executable-draft craft. The
-  `ArchiveStrategy` and Platform worked examples are LEFT UNCHANGED.
-- Done: the temporal sentence is gone; the reframe paragraph is present; the two
-  worked examples are byte-unchanged.
-- Oracle: `grep -c "Preserve the baseline first, then simplify" SKILL.md` == 0;
-  `grep "born at the layer" SKILL.md` matches; `--self-test` still PASS.
+- Owned files: `src/adapters/claude/skills/tes-engineering-discipline/SKILL.md` and the Codex mirror `src/adapters/codex/skills/tes-engineering-discipline/SKILL.md`.
+- Behavior: apply literal block **[L2 maturity-reframe]** — insert the born-at-converged-level paragraph under the Maturity Layer Gate heading; replace the temporal sentence "Preserve the baseline first, then simplify inside it." with its classificatory form; shield "smallest durable runtime slice" so "smallest" reads as scope, never executable-draft craft. The `ArchiveStrategy` and Platform worked examples are LEFT UNCHANGED.
+- Done: the temporal sentence is gone; the reframe paragraph is present; the two worked examples are byte-unchanged.
+- Oracle: `grep -c "Preserve the baseline first, then simplify" SKILL.md` == 0; `grep "born at the layer" SKILL.md` matches; `--self-test` still PASS.
 - Commit: `docs(discipline): reframe maturity as classificatory, not temporal`
 
 ### SPEC-020 — Gate Zero: Declared-Contract Arbiter
 
 - Owned files: both SKILL.md surfaces (Claude + Codex mirror).
-- Behavior: apply literal block **[L1 gate-zero-arbiter]** — insert the
-  `## Gate Zero — Declared-Contract Arbiter` section before the gates table;
-  append the companion note line after the table.
-- Done: the section is present with the binary question, the binary-hard
-  `tes-mine` clause, the four declared-contract types, the three-way decision,
-  and the two worked examples (override + collision).
-- Oracle: `grep "Declared-Contract Arbiter" SKILL.md` matches in BOTH surfaces;
-  `grep "Escalate-collision" SKILL.md` matches (the enum token from block [L1];
-  this is the same string later added to `REQUIRED_TERMS` in SPEC-040).
+- Behavior: apply literal block **[L1 gate-zero-arbiter]** — insert the `## Gate Zero — Declared-Contract Arbiter` section before the gates table; append the companion note line after the table.
+- Done: the section is present with the binary question, the binary-hard `tes-mine` clause, the four declared-contract types, the three-way decision, and the two worked examples (override + collision).
+- Oracle: `grep "Declared-Contract Arbiter" SKILL.md` matches in BOTH surfaces; `grep "Escalate-collision" SKILL.md` matches (the enum token from block [L1]; this is the same string later added to `REQUIRED_TERMS` in SPEC-040).
 - Commit: `feat(discipline): add Gate Zero declared-contract arbiter`
 
 ### SPEC-030 — Effort Gate (sixth gate)
 
 - Owned files: both SKILL.md surfaces.
-- Behavior: apply literal block **[L3 effort-gate]** — replace the `## Four
-  Gates` heading/table with the `## Six Gates` block (preserving the five
-  original rows verbatim, adding the Gate Zero note row and the Effort Gate
-  row, and the scope/craft axis note); insert the `## Effort Gate` section
-  between the Maturity Layer Gate and Diamond sections.
-- Done: the Six Gates table lists Gate Zero + six gates; the Effort Gate section
-  carries the `Standard`/`Premium` tier table, the scope-isolation absolute
-  clause, the collision-ownership sentence, and the two worked examples
-  (minimal-scope-plus-Premium, Premium-not-required).
-- Oracle: `grep "## Effort Gate" SKILL.md` matches; `grep "Standard" SKILL.md`
-  and `grep "Premium" SKILL.md` match in the Codex mirror; `--self-test` still
-  PASS (terms not yet required until SPEC-040 adds them).
+- Behavior: apply literal block **[L3 effort-gate]** — replace the `## Four Gates` heading/table with the `## Six Gates` block (preserving the five original rows verbatim, adding the Gate Zero note row and the Effort Gate row, and the scope/craft axis note); insert the `## Effort Gate` section between the Maturity Layer Gate and Diamond sections.
+- Done: the Six Gates table lists Gate Zero + six gates; the Effort Gate section carries the `Standard`/`Premium` tier table, the scope-isolation absolute clause, the collision-ownership sentence, and the two worked examples (minimal-scope-plus-Premium, Premium-not-required).
+- Oracle: `grep "## Effort Gate" SKILL.md` matches; `grep "Standard" SKILL.md` and `grep "Premium" SKILL.md` match in the Codex mirror; `--self-test` still PASS (terms not yet required until SPEC-040 adds them).
 - Commit: `feat(discipline): add Effort Gate elevation axis (Standard/Premium)`
 
 ### SPEC-040 — Oracle teeth (Stage A string validation)
 
-- Owned files:
-  `src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py`
-  and the Codex mirror SKILL.md (for the new `REQUIRED_TERMS`).
-- Behavior: apply literal block **[L4 oracle-diff]** — the five hunks
-  (REQUIRED_TERMS, PLAN_FIELDS, module constants with word-boundary matching,
-  resolver/matcher helpers + the Effort Gate block in `validate_plan_text`, and
-  the four new `semantic_self_test` plans + assertions). Word-boundary matching
-  prevents the verified false-fires (`drop`≠`dropdown`, `important` co-occurring
-  with a real consequence).
-- Done: `selected_tier`/`declared_contract` resolve binary-hard; UNDER_EFFORT
-  fires; the four new self-tests are present.
-- Oracle: `python3 ...discipline_oracle.py --self-test` PASS with the six self
-  tests (the original Evolution pair + the four new plans: valid-premium PASS,
-  under-effort FAIL-as-expected, benign-Standard PASS, real-Premium PASS).
+- Owned files: `src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py` and the Codex mirror SKILL.md (for the new `REQUIRED_TERMS`).
+- Behavior: apply literal block **[L4 oracle-diff]** — the five hunks (REQUIRED_TERMS, PLAN_FIELDS, module constants with word-boundary matching, resolver/matcher helpers + the Effort Gate block in `validate_plan_text`, and the four new `semantic_self_test` plans + assertions). Word-boundary matching prevents the verified false-fires (`drop`≠`dropdown`, `important` co-occurring with a real consequence).
+- Done: `selected_tier`/`declared_contract` resolve binary-hard; UNDER_EFFORT fires; the four new self-tests are present.
+- Oracle: `python3 ...discipline_oracle.py --self-test` PASS with the six self tests (the original Evolution pair + the four new plans: valid-premium PASS, under-effort FAIL-as-expected, benign-Standard PASS, real-Premium PASS).
 - Commit: `feat(discipline): give effort gate + arbiter Stage A oracle teeth`
 
 ### SPEC-050 — Bootloaders (thin) + re-materialization
 
-- Owned files (PRODUCT layer only): `src/adapters/claude/CLAUDE.md`,
-  `src/adapters/codex/AGENTS.md`, `src/adapters/cursor/CURSOR.md` — each rendered
-  in its adapter's voice.
-- Forbidden: the work/maintainer layer — repo-root `AGENTS.md`, `.claude/CLAUDE.md`,
-  `.claude/**`, `.agents/**` — is out of scope and untouched.
-- Behavior: apply literal block **[L5 bootloader]** as EQUIVALENT INTENT per
-  adapter (CLAUDE.md `## Gate Principles` numbered list; AGENTS.md
-  `<instructions>` XML; CURSOR.md rule). Add the Gate-Zero principle and the
-  Effort principle; shield the Runtime-First "smallest durable runtime slice"
-  sentence. Keep bootloaders THIN — name the gates and point to the skill; do
-  not restate detail. Then re-run `scripts/materialize_adapter.py` to re-seal
-  the `TES:CORE` regions.
-- Done: each bootloader names the two new gates; the sealed regions are
-  re-materialized (not hand-edited); `materialize_adapter.py` and
-  `adapter_parity_readiness.py` pass.
-- Oracle: `python3 scripts/adapter_parity_readiness.py` PASS; the installed
-  bootloaders carry a fresh valid `sha256=` seal; `grep "Declared-Contract"`
-  matches each bootloader.
+- Owned files (PRODUCT layer only): `src/adapters/claude/CLAUDE.md`, `src/adapters/codex/AGENTS.md`, `src/adapters/cursor/CURSOR.md` — each rendered in its adapter's voice.
+- Forbidden: the work/maintainer layer — repo-root `AGENTS.md`, `.claude/CLAUDE.md`, `.claude/**`, `.agents/**` — is out of scope and untouched.
+- Behavior: apply literal block **[L5 bootloader]** as EQUIVALENT INTENT per adapter (CLAUDE.md `## Gate Principles` numbered list; AGENTS.md `<instructions>` XML; CURSOR.md rule). Add the Gate-Zero principle and the Effort principle; shield the Runtime-First "smallest durable runtime slice" sentence. Keep bootloaders THIN — name the gates and point to the skill; do not restate detail. Then re-run `scripts/materialize_adapter.py` to re-seal the `TES:CORE` regions.
+- Done: each bootloader names the two new gates; the sealed regions are re-materialized (not hand-edited); `materialize_adapter.py` and `adapter_parity_readiness.py` pass.
+- Oracle: `python3 scripts/adapter_parity_readiness.py` PASS; the installed bootloaders carry a fresh valid `sha256=` seal; `grep "Declared-Contract"` matches each bootloader.
 - Commit: `feat(discipline): surface arbiter+effort gates in thin bootloaders`
 
 ### SPEC-060 — Contract history + full gate
 
-- Owned files:
-  `src/adapters/claude/skills/tes-engineering-discipline/docs/CONTRACT-HISTORY.md` (append
-  only) and any benchmark/parity surface the full gate touches.
-- Behavior: append literal block **[L6 contract-history]** changelog rows and
-  the new contracts-preserved/failure-modes entries; run the full repo gate
-  (`npm run commit:check` or the documented closure gate).
+- Owned files: `src/adapters/claude/skills/tes-engineering-discipline/docs/CONTRACT-HISTORY.md` (append only) and any benchmark/parity surface the full gate touches.
+- Behavior: append literal block **[L6 contract-history]** changelog rows and the new contracts-preserved/failure-modes entries; run the full repo gate (`npm run commit:check` or the documented closure gate).
 - Done: CONTRACT-HISTORY has the new dated rows; the full gate is green.
 - Oracle: `npm run commit:check` (the full 60+ oracle suite) returns PASS.
 - Commit: `docs(discipline): record arbiter+effort gate in contract history`
 
 ## Release Identity Rule
 
-Pre-stable (0.x). This is a MINOR-class change (additive gates + a behavioral
-reframe of an existing gate; no removal). Bump per the repo's version workflow
-after SPEC-060 is green; do not bump mid-tree.
+Pre-stable (0.x). This is a MINOR-class change (additive gates + a behavioral reframe of an existing gate; no removal). Bump per the repo's version workflow after SPEC-060 is green; do not bump mid-tree.
 
 ## Global Stop Conditions
 
-Stop and escalate to the owner if: applying a literal block reveals the source
-text drifted from what the block assumes (line anchors no longer match); the
-`materialize_adapter.py` re-seal fails or the parity oracle rejects the
-bootloader change; any unit's oracle cannot be made to pass without breaching
-the Phase Boundary; or a sealed region would have to be hand-edited.
+Stop and escalate to the owner if: applying a literal block reveals the source text drifted from what the block assumes (line anchors no longer match); the `materialize_adapter.py` re-seal fails or the parity oracle rejects the bootloader change; any unit's oracle cannot be made to pass without breaching the Phase Boundary; or a sealed region would have to be hand-edited.
 
 ## Honest Limits (carried, not hidden)
 
-- **Stage A only.** The oracle validates that the plan DECLARES the contract,
-  tier, and escalation — string validation. It does NOT run a live diff/git
-  audit, so it cannot detect a dishonest plan that simply omits the contract it
-  secretly knows about. This is the identical residual trust the Maturity Gate
-  already places in honest promotion evidence. Stage B is deferred.
-- **Token/glob lists can be gamed or go stale.** `CONSEQUENCE_SIGNALS` /
-  `EFFORT_WEASEL` need governance curation, like `ORACLE_SIGNALS`. Keyword
-  stuffing fails safe (more rigor, never more scope) but pollutes the audit
-  trail.
-- **Two tiers are deliberately coarse.** A money/credit surface and a
-  single-consumer validator get the same `Premium` ceiling though blast radius
-  differs by orders of magnitude — the accepted price of a falsifiable enum over
-  a vibe slider, mirroring the four-layer maturity coarseness.
-- **`irreversible` is the one near-adjective in `CONSEQUENCE_SIGNALS`.** It is
-  justified as a checkable property (revert+redeploy cannot undo it before a
-  reader sees it), not a feeling; the inline comment says so.
+- **Stage A only.** The oracle validates that the plan DECLARES the contract, tier, and escalation — string validation. It does NOT run a live diff/git audit, so it cannot detect a dishonest plan that simply omits the contract it secretly knows about. This is the identical residual trust the Maturity Gate already places in honest promotion evidence. Stage B is deferred.
+- **Token/glob lists can be gamed or go stale.** `CONSEQUENCE_SIGNALS` /`EFFORT_WEASEL` need governance curation, like `ORACLE_SIGNALS`. Keyword stuffing fails safe (more rigor, never more scope) but pollutes the audit trail.
+- **Two tiers are deliberately coarse.** A money/credit surface and a single-consumer validator get the same `Premium` ceiling though blast radius differs by orders of magnitude — the accepted price of a falsifiable enum over a vibe slider, mirroring the four-layer maturity coarseness.
+- **`irreversible` is the one near-adjective in `CONSEQUENCE_SIGNALS`.** It is justified as a checkable property (revert+redeploy cannot undo it before a reader sees it), not a feeling; the inline comment says so.
 
 ## Definition Of Complete
 
-Complete when: SPEC-000 preflight is recorded as a no-commit decision and the
-six material units (SPEC-010..060) are committed in order with their oracles
-green; the
-two new gates are present in both SKILL.md surfaces and the three bootloaders;
-`discipline_oracle.py --self-test` passes with the six self-tests; the sealed
-bootloader regions are freshly materialized; CONTRACT-HISTORY records the change;
-and `npm run commit:check` is green. The protocol then arbitrates gate tension by
-binary-hard declared-contract evidence, carries an orthogonal effort axis, treats
-maturity as classificatory, and overclaims nothing.
+Complete when: SPEC-000 preflight is recorded as a no-commit decision and the six material units (SPEC-010..060) are committed in order with their oracles green; the two new gates are present in both SKILL.md surfaces and the three bootloaders; `discipline_oracle.py --self-test` passes with the six self-tests; the sealed bootloader regions are freshly materialized; CONTRACT-HISTORY records the change; and `npm run commit:check` is green. The protocol then arbitrates gate tension by binary-hard declared-contract evidence, carries an orthogonal effort axis, treats maturity as classificatory, and overclaims nothing.
 
 ---
 
 # Literal Solution (paste-ready blocks)
 
-> These are the COMPLETE final words/code, forged in the protocol voice and
-> adversarially verified against the anti-ambiguity bar and the five lived cases.
-> The Materialization Tree applies them by id. Anchors (line numbers) are
-> indicative; match on the quoted BEFORE text, not the line number.
+> These are the COMPLETE final words/code, forged in the protocol voice and adversarially verified against the anti-ambiguity bar and the five lived cases. The Materialization Tree applies them by id. Anchors (line numbers) are indicative; match on the quoted BEFORE text, not the line number.
 
-**Per-adapter rule for every "both SKILL.md surfaces" block (L1, L2, L3).** The
-literal text below is authored in the CLAUDE surface voice and structure. The
-Claude surface receives it byte-for-byte. The CODEX mirror
-(`.agents/skills/tes-engineering-discipline/SKILL.md` /
-`src/adapters/codex/skills/tes-engineering-discipline/SKILL.md`) has its own
-house structure and wording — notably its gates table is headed `## Core Gates`
-(not `## Four`/`## Six Gates`) and its existing gate rows carry Codex wording.
-Apply each block to the Codex mirror by INTENT, not byte-identical paste:
-preserve the Codex headings and the wording of rows that already exist; ADD the
-new sections/rows/notes; adapt only surface-specific cross-references. This is
-the same "adapters render shared intent, not byte-identical text" rule the
-bootloader block (L5) already states — it binds the SKILL.md blocks too. Never
-overwrite a Codex-worded row with Claude wording to force a byte match; that
-violates verbatim/surgical for the Codex surface.
+**Per-adapter rule for every "both SKILL.md surfaces" block (L1, L2, L3).** The literal text below is authored in the CLAUDE surface voice and structure. The Claude surface receives it byte-for-byte. The CODEX mirror (`.agents/skills/tes-engineering-discipline/SKILL.md` /`src/adapters/codex/skills/tes-engineering-discipline/SKILL.md`) has its own house structure and wording — notably its gates table is headed `## Core Gates` (not `## Four`/`## Six Gates`) and its existing gate rows carry Codex wording. Apply each block to the Codex mirror by INTENT, not byte-identical paste: preserve the Codex headings and the wording of rows that already exist; ADD the new sections/rows/notes; adapt only surface-specific cross-references. This is the same "adapters render shared intent, not byte-identical text" rule the bootloader block (L5) already states — it binds the SKILL.md blocks too. Never overwrite a Codex-worded row with Claude wording to force a byte match; that violates verbatim/surgical for the Codex surface.
 
 ## [L1 gate-zero-arbiter] → both SKILL.md surfaces, before the gates table
 
@@ -361,8 +181,7 @@ Simplicity-First or Surgical-Changes pulling one way and a contract already in
 the repo pulling the other. It answers exactly one binary question:
 
 ```text
-Does the minimal solution silently violate a contract already DECLARED and
-ENUMERABLE in this repo?
+Does the minimal solution silently violate a contract already DECLARED and ENUMERABLE in this repo?
 ```
 
 The question is yes/no with exactly one answer, in the spirit of `tes-mine`: it
@@ -446,8 +265,7 @@ escalation, or leave Simplicity-First and Surgical-Changes untouched.
 
 ## [L2 maturity-reframe] → both SKILL.md surfaces, Maturity Layer Gate section
 
-New paragraph, inserted directly under the `## Maturity Layer Gate` heading,
-before "Default material work to `Birth`. Promote only with evidence:":
+New paragraph, inserted directly under the `## Maturity Layer Gate` heading, before "Default material work to `Birth`. Promote only with evidence:":
 
 ```markdown
 Maturity is classificatory, not a phase of execution. The layer is decided
@@ -468,46 +286,25 @@ BEFORE: | `Birth` | No higher-layer evidence exists | Less structure; smallest d
 AFTER:  | `Birth` | No higher-layer evidence exists | Less structure; the smallest slice in SCOPE, built at full craft — never an executable draft to be redone |
 ```
 
-Temporal sentence — replace the trailing sentence at the end of the
-"`Birth` is invalid when..." paragraph:
+Temporal sentence — replace the trailing sentence at the end of the "`Birth` is invalid when..." paragraph:
 
 ```text
 BEFORE: Those are promotion evidence. Preserve the baseline first, then simplify inside it.
 AFTER:  Those are promotion evidence: classify the work at that higher layer from its first line, and simplify inside that classification — not by building lower and rebuilding up.
 ```
 
-The `ArchiveStrategy` worked example and the Platform worked example are LEFT
-UNCHANGED.
+The `ArchiveStrategy` worked example and the Platform worked example are LEFT UNCHANGED.
 
 ## [L3 effort-gate] → both SKILL.md surfaces
 
-**Per-adapter application rule (intent-equivalent, not byte-identical).** The
-two SKILL.md surfaces do NOT share a byte-identical gates table — the same way
-the bootloaders render shared intent, not identical text. Apply L3 by INTENT to
-each surface, honoring its own house structure:
+**Per-adapter application rule (intent-equivalent, not byte-identical).** The two SKILL.md surfaces do NOT share a byte-identical gates table — the same way the bootloaders render shared intent, not identical text. Apply L3 by INTENT to each surface, honoring its own house structure:
 
-- **Claude** (`src/adapters/claude/skills/tes-engineering-discipline/SKILL.md`): the gates
-  table is headed `## Four Gates`. Apply EDIT 1 byte-for-byte as written below
-  (`## Four Gates` → `## Six Gates`, the five Claude rows preserved verbatim,
-  plus the Gate Zero note row, the Effort Gate row, and the scope/craft axis
-  note).
-- **Codex** (`src/adapters/codex/skills/tes-engineering-discipline/SKILL.md`):
-  the gates table is headed `## Core Gates` and its five rows carry the Codex
-  wording (e.g. "Name facts, assumptions, ambiguity..."; "Delete speculative
-  scope before adding machinery..."). Do NOT rename `## Core Gates` and do NOT
-  overwrite the five Codex rows with the Claude wording — that would violate
-  verbatim/surgical for the Codex surface. Instead, ADD only: the
-  Declared-Contract Arbiter (Gate Zero) row, the Effort Gate row, and the
-  scope/craft axis note, preserving the Codex heading and the Codex wording of
-  the existing rows.
+- **Claude** (`src/adapters/claude/skills/tes-engineering-discipline/SKILL.md`): the gates table is headed `## Four Gates`. Apply EDIT 1 byte-for-byte as written below (`## Four Gates` → `## Six Gates`, the five Claude rows preserved verbatim, plus the Gate Zero note row, the Effort Gate row, and the scope/craft axis note).
+- **Codex** (`src/adapters/codex/skills/tes-engineering-discipline/SKILL.md`): the gates table is headed `## Core Gates` and its five rows carry the Codex wording (e.g. "Name facts, assumptions, ambiguity..."; "Delete speculative scope before adding machinery..."). Do NOT rename `## Core Gates` and do NOT overwrite the five Codex rows with the Claude wording — that would violate verbatim/surgical for the Codex surface. Instead, ADD only: the Declared-Contract Arbiter (Gate Zero) row, the Effort Gate row, and the scope/craft axis note, preserving the Codex heading and the Codex wording of the existing rows.
 
-EDIT 2 (the `## Effort Gate` section) is intent-shared: insert it in BOTH
-surfaces at the same logical point — after the Maturity Layer Gate section and
-before the Diamond section — adapting only surface-specific cross-reference
-wording if a surface names a section differently.
+EDIT 2 (the `## Effort Gate` section) is intent-shared: insert it in BOTH surfaces at the same logical point — after the Maturity Layer Gate section and before the Diamond section — adapting only surface-specific cross-reference wording if a surface names a section differently.
 
-The block below is the Claude rendering (EDIT 1 byte-for-byte for Claude; the
-literal source of the rows/notes/section the Codex surface adds by intent).
+The block below is the Claude rendering (EDIT 1 byte-for-byte for Claude; the literal source of the rows/notes/section the Codex surface adds by intent).
 
 EDIT 1 — replace the `## Four Gates` section with (Claude surface):
 
@@ -534,8 +331,7 @@ orthogonal: scope decides how many lines exist; effort decides how much rigor
 each line carries. Neither gate may move the other axis.
 ```
 
-EDIT 2 — insert this `## Effort Gate` section between the Maturity Layer Gate
-section and `## Diamond Build-Test-Fail-Fix`:
+EDIT 2 — insert this `## Effort Gate` section between the Maturity Layer Gate section and `## Diamond Build-Test-Fail-Fix`:
 
 ```markdown
 ## Effort Gate
@@ -597,44 +393,20 @@ under-rigor on a contract line.
 
 ## [L4 oracle-diff] → discipline_oracle.py (Codex mirror) — five hunks
 
-See the verified literal hunks. Summary of each (full text in the forge
-artifact, reproduced verbatim into the file at SPEC-040):
+See the verified literal hunks. Summary of each (full text in the forge artifact, reproduced verbatim into the file at SPEC-040):
 
-- HUNK 1: extend `REQUIRED_TERMS` with `"Declared-Contract Arbiter"`,
-  `"Effort Gate"`, `"Standard"`, `"Premium"`, `"Escalate-collision"`. The term
-  is the enum token `Escalate-collision` (the canonical decision-state name in
-  block [L1], present verbatim in the Codex SKILL.md after SPEC-020) — NOT a
-  prose phrase. Picking the enum token avoids adding redundant text just to
-  satisfy a grep: the required term points at what the gate text already says.
-- HUNK 2: extend `PLAN_FIELDS` with `"effort_tier"`, `"consequence_evidence"`,
-  `"declared_contract"`.
-- HUNK 3: add `VALID_TIERS`, `DECLARED_CONTRACT_TYPES`, `CONTRACT_ABSENT`,
-  `CONSEQUENCE_SIGNALS`, `EFFORT_WEASEL` after `ORACLE_SIGNALS`. Word-boundary
-  semantics: single-word signals match by token-set membership (so `drop` ≠
-  `dropdown`, `sign` ≠ `redesign`); multi-word signals match by substring.
-- HUNK 4a: add `selected_tier` (binary-hard, mirrors `selected_layer`),
-  `declared_contract` (exactly-one-type-or-absent), `names_consequence_signal`
-  (word-boundary), `is_only_weasel` (rejects only pure-weasel content, not a
-  real consequence co-occurring with a weasel word).
-- HUNK 4b: in `validate_plan_text`, skip `declared_contract` in the generic
-  sweep (its absence "none" is legal), and append the Effort Gate block before
-  `return failures`: `effort_tier` must resolve to exactly one tier;
-  `declared_contract` must resolve to one type or be absent;
-  `consequence_evidence` above Standard must not be generic or pure-weasel;
-  UNDER_EFFORT fires when a premium-class signal is named under `Standard`.
-- HUNK 5: extend `semantic_self_test` with four new plans + assertions —
-  valid-premium PASSES, under-effort FAILS, benign-Standard PASSES (locks the
-  `dropdown` non-fire), real-Premium PASSES (locks the `important`
-  co-occurrence non-fire). The original Evolution pair is preserved.
+- HUNK 1: extend `REQUIRED_TERMS` with `"Declared-Contract Arbiter"`, `"Effort Gate"`, `"Standard"`, `"Premium"`, `"Escalate-collision"`. The term is the enum token `Escalate-collision` (the canonical decision-state name in block [L1], present verbatim in the Codex SKILL.md after SPEC-020) — NOT a prose phrase. Picking the enum token avoids adding redundant text just to satisfy a grep: the required term points at what the gate text already says.
+- HUNK 2: extend `PLAN_FIELDS` with `"effort_tier"`, `"consequence_evidence"`, `"declared_contract"`.
+- HUNK 3: add `VALID_TIERS`, `DECLARED_CONTRACT_TYPES`, `CONTRACT_ABSENT`, `CONSEQUENCE_SIGNALS`, `EFFORT_WEASEL` after `ORACLE_SIGNALS`. Word-boundary semantics: single-word signals match by token-set membership (so `drop` ≠ `dropdown`, `sign` ≠ `redesign`); multi-word signals match by substring.
+- HUNK 4a: add `selected_tier` (binary-hard, mirrors `selected_layer`), `declared_contract` (exactly-one-type-or-absent), `names_consequence_signal` (word-boundary), `is_only_weasel` (rejects only pure-weasel content, not a real consequence co-occurring with a weasel word).
+- HUNK 4b: in `validate_plan_text`, skip `declared_contract` in the generic sweep (its absence "none" is legal), and append the Effort Gate block before `return failures`: `effort_tier` must resolve to exactly one tier; `declared_contract` must resolve to one type or be absent; `consequence_evidence` above Standard must not be generic or pure-weasel; UNDER_EFFORT fires when a premium-class signal is named under `Standard`.
+- HUNK 5: extend `semantic_self_test` with four new plans + assertions — valid-premium PASSES, under-effort FAILS, benign-Standard PASSES (locks the `dropdown` non-fire), real-Premium PASSES (locks the `important` co-occurrence non-fire). The original Evolution pair is preserved.
 
-The five new `REQUIRED_TERMS` MUST be present as literal substrings in the Codex
-mirror `.agents/skills/tes-engineering-discipline/SKILL.md` (landed by SPEC-020 /
-SPEC-030 on that surface), or `--self-test` fails the `missing skill term:` check.
+The five new `REQUIRED_TERMS` MUST be present as literal substrings in the Codex mirror `.agents/skills/tes-engineering-discipline/SKILL.md` (landed by SPEC-020 /SPEC-030 on that surface), or `--self-test` fails the `missing skill term:` check.
 
 ## [L5 bootloader] → CLAUDE.md / AGENTS.md / CURSOR.md (equivalent intent, then re-seal)
 
-CLAUDE.md `## Gate Principles` (replace `## Four Principles`), renumbered to
-include the two new gates (Gate Zero first, Effort last):
+CLAUDE.md `## Gate Principles` (replace `## Four Principles`), renumbered to include the two new gates (Gate Zero first, Effort last):
 
 ```markdown
 ## Gate Principles
@@ -678,15 +450,7 @@ BEFORE: Build the smallest durable runtime slice on the intended execution path 
 AFTER:  Build the smallest-in-scope durable runtime slice — at full craft, not as a throwaway draft — on the intended execution path before adding governance.
 ```
 
-`src/adapters/codex/AGENTS.md` (the shipped Codex adapter, `<instructions>` XML)
-and `src/adapters/cursor/CURSOR.md` (cursor rule) receive the EQUIVALENT intent
-in their own rendering — not a byte-identical paste. These are PRODUCT-layer
-adapters under `src/adapters/**`; do NOT edit the repo-root `AGENTS.md` or
-`.claude/CLAUDE.md` (the work/maintainer layer — out of scope). Keep each
-bootloader THIN: name the two gates and point to the skill; do not restate the
-arbiter/effort detail. After editing the unsealed sources, run
-`scripts/materialize_adapter.py` to re-seal the `TES:CORE` regions; never
-hand-edit a sealed region or hand-recompute a hash.
+`src/adapters/codex/AGENTS.md` (the shipped Codex adapter, `<instructions>` XML) and `src/adapters/cursor/CURSOR.md` (cursor rule) receive the EQUIVALENT intent in their own rendering — not a byte-identical paste. These are PRODUCT-layer adapters under `src/adapters/**`; do NOT edit the repo-root `AGENTS.md` or `.claude/CLAUDE.md` (the work/maintainer layer — out of scope). Keep each bootloader THIN: name the two gates and point to the skill; do not restate the arbiter/effort detail. After editing the unsealed sources, run `scripts/materialize_adapter.py` to re-seal the `TES:CORE` regions; never hand-edit a sealed region or hand-recompute a hash.
 
 ## [L6 contract-history] → tes-engineering-discipline docs/CONTRACT-HISTORY.md (append only)
 

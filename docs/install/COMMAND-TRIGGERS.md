@@ -10,43 +10,15 @@ tver: 0.4.8
 
 # TES Command Triggers
 
-After installation, TES commands are intent text in the current agent window.
-Scripts and npm aliases are deterministic oracles the agent invokes when the
-runtime exposes local tools.
+After installation, TES commands are intent text in the current agent window. Scripts and npm aliases are deterministic oracles the agent invokes when the runtime exposes local tools.
 
-All adapters share the same preferred user triggers: `/tes-init`,
-`/tes-update`, `/tes-align`, `/tes-map`, `/tes-goal-maestro`,
-`/tes-prospect`, `/tes-mine`,
-`/tes-open-obsidian`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`,
-`/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, and
-`/tes-bump`. Treat
-`/tes:*` forms as compatible TES intent aliases; if a host reports one as an
-invalid slash, continue through the matching `tes-*` skill/rule/spec instead of
-asking the user to restate the route.
+All adapters share the same preferred user triggers: `/tes-init`, `/tes-update`, `/tes-align`, `/tes-map`, `/tes-goal-maestro`, `/tes-prospect`, `/tes-mine`, `/tes-open-obsidian`, `/tes-cortex`, `/tes-curate`, `/tes-mcp`, `/tes-field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, and `/tes-bump`. Treat `/tes:*` forms as compatible TES intent aliases; if a host reports one as an invalid slash, continue through the matching `tes-*` skill/rule/spec instead of asking the user to restate the route.
 
-`/tes-prospect`, `/tes-mine`, and `/tes-goal-maestro` are
-explicit-invocation skills. They do not have broad natural-language routing.
-Prospecting and mining stay dormant until the user names the skill or trigger,
-then operate proactively with a cognitive brake. Goal maestro may also route
-from a direct request to generate a maestral `/goal` prompt from a mature SPEC,
-Super SPEC, PRD, relational project plan, or accepted execution tree. For code,
-UI, canvas, or 3D work, Goal Maestro also records the structural method and
-requires browser metrics or visual-spatial evidence when the user-facing result
-depends on pixels.
-`/tes-bump` is the version governance guard: it routes from direct bump/sync
-requests and auto-activates read-only when commit, release, delivered behavior,
-or another TES gate reports a version-decision condition.
-The executable parity gate is `python3 scripts/command_trigger_oracle.py
---self-test`.
-Installed target parity can be checked with
-`python3 scripts/command_trigger_oracle.py --target <target-root>`.
+`/tes-prospect`, `/tes-mine`, and `/tes-goal-maestro` are explicit-invocation skills. They do not have broad natural-language routing. Prospecting and mining stay dormant until the user names the skill or trigger, then operate proactively with a cognitive brake. Goal maestro may also route from a direct request to generate a maestral `/goal` prompt from a mature SPEC, Super SPEC, PRD, relational project plan, or accepted execution tree. For code, UI, canvas, or 3D work, Goal Maestro also records the structural method and requires browser metrics or visual-spatial evidence when the user-facing result depends on pixels. `/tes-bump` is the version governance guard: it routes from direct bump/sync requests and auto-activates read-only when commit, release, delivered behavior, or another TES gate reports a version-decision condition. The executable parity gate is `python3 scripts/command_trigger_oracle.py --self-test`. Installed target parity can be checked with `python3 scripts/command_trigger_oracle.py --target <target-root>`.
 
 ## Visible Skill Surface
 
-Some triggers are primary visible skills. Some are supported command intents
-routed through a broader skill only when the user-facing surface is genuinely a
-sub-mode of that skill. `/tes-update` is a visible update command, not a hidden
-mode of `/tes-init`.
+Some triggers are primary visible skills. Some are supported command intents routed through a broader skill only when the user-facing surface is genuinely a sub-mode of that skill. `/tes-update` is a visible update command, not a hidden mode of `/tes-init`.
 
 | Trigger | Visible router | Surface contract |
 |---------|----------------|------------------|
@@ -140,136 +112,49 @@ tes bump     -> /tes-bump
 
 ## Passive Overlays
 
-These are not user-invocable triggers. They are always-on skills/rules that
-shape how other triggers behave; they have no `/tes-*` slash and never write
-on their own.
+These are not user-invocable triggers. They are always-on skills/rules that shape how other triggers behave; they have no `/tes-*` slash and never write on their own.
 
 | Overlay | Host surface | Role |
 |---------|--------------|------|
 | `tes-engineering-discipline` | Codex `SKILL.md`, Claude `SKILL.md`, Cursor `.cursor/rules/tes-engineering-discipline.mdc` | Behavioral engineering discipline: assumptions visible, maturity layer selected before simplicity, scope smaller, edits surgical, success falsifiable. Activates on non-trivial coding, review, refactor, or instruction-migration work. |
 | `tes-runtime-capabilities` | Cursor `.cursor/rules/tes-runtime-capabilities.mdc` | Always-on Cursor rule that maps TES runtime command capabilities after clean install or semantic recovery. Refreshed only by the deterministic installer. |
 
-Overlays do not appear in the `Trigger Matrix` because users never invoke
-them. They are listed here so installers, doctors, and adapter certification
-can verify the overlay surface is present on every supported host.
+Overlays do not appear in the `Trigger Matrix` because users never invoke them. They are listed here so installers, doctors, and adapter certification can verify the overlay surface is present on every supported host.
 
 ## `/tes-init` Router Contract
 
-`/tes-init` is the canonical user-facing initialization entrypoint. `/tes-setup`
-is a commercial setup alias for the same route after npx installation, and is
-installed as a direct skill/slash command where the host resolves slash commands
-by skill name. Neither form should split into user-visible parameters or a
-second context command. The active agent routes internally through two read-only
-gates before choosing writes:
+`/tes-init` is the canonical user-facing initialization entrypoint. `/tes-setup` is a commercial setup alias for the same route after npx installation, and is installed as a direct skill/slash command where the host resolves slash commands by skill name. Neither form should split into user-visible parameters or a second context command. The active agent routes internally through two read-only gates before choosing writes:
 
-The mechanical install route may install runtime capabilities first. That route
-deliberately does not perform semantic project analysis in the installer. It
-leaves `.tes/postinstall.json` pending and
-lets the first-session hook call `tes_install.py hook`, which runs
-`tes_init.py`, `project_context_oracle.py`, and `project_alignment_oracle.py`
-once. Repeated hook executions must be idempotent and fast after the sentinel is
-`complete`.
+The mechanical install route may install runtime capabilities first. That route deliberately does not perform semantic project analysis in the installer. It leaves `.tes/postinstall.json` pending and lets the first-session hook call `tes_install.py hook`, which runs `tes_init.py`, `project_context_oracle.py`, and `project_alignment_oracle.py` once. Repeated hook executions must be idempotent and fast after the sentinel is `complete`.
 
-Claude Code `SessionStart` hooks pass this result as hook context rather than a
-normal chat message. TES installs a fast synchronous start notice before the
-background runner: `IMPORTANT: TES setup is running. Please wait; do not start project work.`
-The second handler uses Claude Code's native `asyncRewake` hook mode, runs
-post-install in the background, and wakes the session when setup finishes. The
-completion instruction is: `Please, run /tes-setup for the report.` If
-`.tes/postinstall.json` is
-`running`, a plain `/tes-init` or `/tes-setup` should ask the user to wait and
-avoid duplicate setup work. If the sentinel is already `complete`, summarize the
-sentinel and `last_run` instead of rerunning Project-Start, unless the user
-explicitly asks to recertify/update or the planner reports drift.
-If the sentinel is `needs_review`, `/tes-init` is the recovery route: inspect
-the latest run, repair the focused blocker, then run
-`tes_install.py postinstall --recover-needs-review` so TES reruns Project-Start,
-verifies selected MCP config, records the recovery run, and clears the sentinel
-only when the gates pass.
+Claude Code `SessionStart` hooks pass this result as hook context rather than a normal chat message. TES installs a fast synchronous start notice before the background runner: `IMPORTANT: TES setup is running. Please wait; do not start project work.` The second handler uses Claude Code's native `asyncRewake` hook mode, runs post-install in the background, and wakes the session when setup finishes. The completion instruction is: `Please, run /tes-setup for the report.` If `.tes/postinstall.json` is `running`, a plain `/tes-init` or `/tes-setup` should ask the user to wait and avoid duplicate setup work. If the sentinel is already `complete`, summarize the sentinel and `last_run` instead of rerunning Project-Start, unless the user explicitly asks to recertify/update or the planner reports drift. If the sentinel is `needs_review`, `/tes-init` is the recovery route: inspect the latest run, repair the focused blocker, then run `tes_install.py postinstall --recover-needs-review` so TES reruns Project-Start, verifies selected MCP config, records the recovery run, and clears the sentinel only when the gates pass.
 
-1. **Install/Update Gate**: detect whether TES is missing, stale, helper-drifted,
-   adapter-drifted, or legacy-blocked. When this gate requires installer/update
-   writes, Step Zero protects installer/update writes with the normal Git
-   baseline or dirty-tree choice.
-2. **Project Context Gate**: detect whether
-   `docs/agents/PROJECT-CONTEXT.md` is missing, bootstrap-only, stale, weak, or
-   failing `project_context_oracle.py`. When TES is already installed/current and
-   only this gate fails, a dirty tree must not block project-context
-   initialization; report the dirty tree, then run the project-context scaffold
-   and oracle without refreshing helpers, adapters, MCP config, bootloaders, or
-   remotes.
-3. **Project-Start Gate**: for `/tes-init`, always run the installed
-   project-context initializer before the final report. The initializer also
-   creates the first-pass Obsidian-compatible operating mesh when missing:
-   `python3 .tes/bin/tes_init.py --target . --yes` when operating inside an
-   installed target, or the package `scripts/tes_init.py --target <target> --yes`
-   when certifying from source. A preflight context PASS does not replace
-   project-start execution. Certify both `project_context_oracle.py --target
-   <target>` and `project_alignment_oracle.py --target <target>`. After
-   helper-only or adapter repairs, rerun the Project-Start Gate before closing
-   `/tes-init`; `tes_update.py plan` exposes the `project_start_gate` contract
-   so executors cannot treat route planning as context initialization.
-   For `needs_review` postinstall recovery, use
-   `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`
-   as the final Project-Start closure instead of a broad forced rerun.
+1. **Install/Update Gate**: detect whether TES is missing, stale, helper-drifted, adapter-drifted, or legacy-blocked. When this gate requires installer/update writes, Step Zero protects installer/update writes with the normal Git baseline or dirty-tree choice.
+2. **Project Context Gate**: detect whether `docs/agents/PROJECT-CONTEXT.md` is missing, bootstrap-only, stale, weak, or failing `project_context_oracle.py`. When TES is already installed/current and only this gate fails, a dirty tree must not block project-context initialization; report the dirty tree, then run the project-context scaffold and oracle without refreshing helpers, adapters, MCP config, bootloaders, or remotes.
+3. **Project-Start Gate**: for `/tes-init`, always run the installed project-context initializer before the final report. The initializer also creates the first-pass Obsidian-compatible operating mesh when missing: `python3 .tes/bin/tes_init.py --target . --yes` when operating inside an installed target, or the package `scripts/tes_init.py --target <target> --yes` when certifying from source. A preflight context PASS does not replace project-start execution. Certify both `project_context_oracle.py --target <target>` and `project_alignment_oracle.py --target <target>`. After helper-only or adapter repairs, rerun the Project-Start Gate before closing `/tes-init`; `tes_update.py plan` exposes the `project_start_gate` contract so executors cannot treat route planning as context initialization. For `needs_review` postinstall recovery, use `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review` as the final Project-Start closure instead of a broad forced rerun.
 
-When an old meshed project has stale helpers, runtime trigger drift, or an
-incomplete alignment mesh, `tes_update.py plan --json-only` also exposes a
-`continuation_plan`. If required writes are not authorized yet, the final
-report must include that plan with phases, approvals, write surfaces, commands,
-and final recorded probe instead of closing with an unstructured
-`NEEDS_REVIEW`.
+When an old meshed project has stale helpers, runtime trigger drift, or an incomplete alignment mesh, `tes_update.py plan --json-only` also exposes a `continuation_plan`. If required writes are not authorized yet, the final report must include that plan with phases, approvals, write surfaces, commands, and final recorded probe instead of closing with an unstructured `NEEDS_REVIEW`.
 
-The continuation plan separates deterministic script layers from semantic
-context layers:
+The continuation plan separates deterministic script layers from semantic context layers:
 
-- `bundle_staging`: download or use the versioned TES ZIP, verify SHA-256, and
-  create `.tes/setup/<version>/` from the TES bundle manifest.
-- `clean_backup`: before any runtime overwrite, create `.tes/bk/<timestamp>/`
-  with `manifest.json`, file hashes, Git state, adapter route, and restore
-  policy. The backup captures previous root governance, runtime skills,
-  adapter/plugin surfaces, MCP config, and prior TES manifests.
-- `.tes/setup/**` is local staging cache. The bundle script must add a
-  target-local Git exclude entry before extraction so adopter repositories do
-  not accidentally commit the downloaded ZIP or extracted setup payload.
-- `.tes/bk/**` is local rollback and recovery history. The bundle script must
-  add a target-local Git exclude entry before backup so adopter repositories do
-  not commit legacy governance or sensitive local context.
-- If the ZIP is manually extracted only to reach `scripts/tes_bundle.py`, rerun
-  that extracted script with `stage --target <project> --bundle <verified-zip>`
-  before reporting certification. Manual unzip alone is not a certified stage.
+- `bundle_staging`: download or use the versioned TES ZIP, verify SHA-256, and create `.tes/setup/<version>/` from the TES bundle manifest.
+- `clean_backup`: before any runtime overwrite, create `.tes/bk/<timestamp>/` with `manifest.json`, file hashes, Git state, adapter route, and restore policy. The backup captures previous root governance, runtime skills, adapter/plugin surfaces, MCP config, and prior TES manifests.
+- `.tes/setup/**` is local staging cache. The bundle script must add a target-local Git exclude entry before extraction so adopter repositories do not accidentally commit the downloaded ZIP or extracted setup payload.
+- `.tes/bk/**` is local rollback and recovery history. The bundle script must add a target-local Git exclude entry before backup so adopter repositories do not commit legacy governance or sensitive local context.
+- If the ZIP is manually extracted only to reach `scripts/tes_bundle.py`, rerun that extracted script with `stage --target <project> --bundle <verified-zip>` before reporting certification. Manual unzip alone is not a certified stage.
 - `layer_zero_helpers`: refresh manifest-known `.tes/bin/**` helpers.
-- `runtime_capability_refresh`: apply the canonical clean runtime from the
-  staged bundle with `tes_bundle.py apply --mode clean-runtime`. This may
-  overwrite `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, Cursor rules, and TES-owned
-  routers only after the central backup exists. It also installs routers such as
-  `.agents/skills/tes-*`, `.claude/skills/tes-*`, and
-  `.cursor/rules/tes-runtime-capabilities.mdc`. Plugin templates remain
-  source-only in the TES Git package. Obsolete runtime plugin/root-skill
-  surfaces (`skills/**`, `.claude-plugin/**`, `.agents/plugins/**`, and
-  `plugins/tilly-engineer-skills/**`) are removed only when they are
-  TES-owned/generated or empty; ambiguous content is preserved, backed up, and
-  returned as `NEEDS_REVIEW`.
-- `semantic_recovery`: analyze `.tes/bk/<timestamp>/**` as evidence, migrate
-  safe local semantics into `docs/agents/**`, compress redundant legacy rules,
-  reject runtime noise, and mark ambiguous material as `NEEDS_REVIEW`.
+- `runtime_capability_refresh`: apply the canonical clean runtime from the staged bundle with `tes_bundle.py apply --mode clean-runtime`. This may overwrite `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, Cursor rules, and TES-owned routers only after the central backup exists. It also installs routers such as `.agents/skills/tes-*`, `.claude/skills/tes-*`, and `.cursor/rules/tes-runtime-capabilities.mdc`. Plugin templates remain source-only in the TES Git package. Obsolete runtime plugin/root-skill surfaces (`skills/**`, `.claude-plugin/**`, `.agents/plugins/**`, and `plugins/tilly-engineer-skills/**`) are removed only when they are TES-owned/generated or empty; ambiguous content is preserved, backed up, and returned as `NEEDS_REVIEW`.
+- `semantic_recovery`: analyze `.tes/bk/<timestamp>/**` as evidence, migrate safe local semantics into `docs/agents/**`, compress redundant legacy rules, reject runtime noise, and mark ambiguous material as `NEEDS_REVIEW`.
 
-`runtime_trigger_status=PASS` must not rely on root bootloaders left in a
-legacy state. The active runtime is clean; backup evidence is the recovery
-source for project-specific semantics.
+`runtime_trigger_status=PASS` must not rely on root bootloaders left in a legacy state. The active runtime is clean; backup evidence is the recovery source for project-specific semantics.
 
-This keeps `/tes-init` simple for users: make this project usable by TES. If
-both gates pass, close with certification and recommend `/tes-doctor` only for a
-full health check.
+This keeps `/tes-init` simple for users: make this project usable by TES. If both gates pass, close with certification and recommend `/tes-doctor` only for a full health check.
 
 ## `/tes-update` Update Contract
 
-`/tes-update` is the canonical user-facing update entrypoint for an installed
-TES mesh. `/tes:update` is a compatibility alias; when a host rejects the colon
-form as invalid slash text, route it to the visible `tes-update` skill.
+`/tes-update` is the canonical user-facing update entrypoint for an installed TES mesh. `/tes:update` is a compatibility alias; when a host rejects the colon form as invalid slash text, route it to the visible `tes-update` skill.
 
-The active agent must start with a read-only planner call, not with Project
-Start and not with raw JSON to the user:
+The active agent must start with a read-only planner call, not with Project Start and not with raw JSON to the user:
 
 ```bash
 python3 .tes/bin/tes_update.py plan --target . --json-only
@@ -281,17 +166,9 @@ When certifying from package source or a canary, use:
 python3 scripts/tes_update.py plan --target <target> --json-only
 ```
 
-The report should be short and product-shaped: current version, available
-version, scope, route, action, and proof. If the first call is read-only, state
-`No project work started`.
+The report should be short and product-shaped: current version, available version, scope, route, action, and proof. If the first call is read-only, state `No project work started`.
 
-`/tes-update` does not rerun `/tes-init` by default. Route to `/tes-init` only
-when the planner declares Project-Start, missing context, evidence drift, or
-the user explicitly asks to recertify/reinitialize. If the planner reports
-`STALE_HELPERS` or `recommended_update_scope=helpers-only`, repair only
-TES-owned `.tes/bin/**` helpers first, then rerun the planner before adapter or
-MCP config refresh. If adapter/runtime drift remains, refresh runtime capability
-and selected TES adapter MCP config only after helper parity is `PASS`.
+`/tes-update` does not rerun `/tes-init` by default. Route to `/tes-init` only when the planner declares Project-Start, missing context, evidence drift, or the user explicitly asks to recertify/reinitialize. If the planner reports `STALE_HELPERS` or `recommended_update_scope=helpers-only`, repair only TES-owned `.tes/bin/**` helpers first, then rerun the planner before adapter or MCP config refresh. If adapter/runtime drift remains, refresh runtime capability and selected TES adapter MCP config only after helper parity is `PASS`.
 
 After any write, the final recorded probe is mandatory:
 
@@ -299,21 +176,13 @@ After any write, the final recorded probe is mandatory:
 python3 .tes/bin/tes_update.py plan --target . --json-only --record-field-report
 ```
 
-The final probe must show `helper_contract_status=PASS`,
-`runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and
-`recommended_update_scope=none`.
+The final probe must show `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`.
 
 ## `/tes-map` Project Atlas And GPS Contract
 
-`/tes-align` owns the project map. `/tes-map` updates the adaptive Project
-Atlas and current position. Easy-first is the Atlas birth surface, not the
-evolution ceiling: the first output is certified and useful, while deeper
-project-specific relationships evolve through profilers, `--deep`, fixtures,
-and oracles.
+`/tes-align` owns the project map. `/tes-map` updates the adaptive Project Atlas and current position. Easy-first is the Atlas birth surface, not the evolution ceiling: the first output is certified and useful, while deeper project-specific relationships evolve through profilers, `--deep`, fixtures, and oracles.
 
-`/tes-map` reads the existing mesh, writes local Eraser `.eraserdiagram`
-sidecars under `.tes/gps/**`, and refreshes only this managed block in
-`docs/agents/PROJECT-ROADMAP.md` when docs-mesh is attached:
+`/tes-map` reads the existing mesh, writes local Eraser `.eraserdiagram` sidecars under `.tes/gps/**`, and refreshes only this managed block in `docs/agents/PROJECT-ROADMAP.md` when docs-mesh is attached:
 
 ```md
 ## TES Map
@@ -323,92 +192,30 @@ sidecars under `.tes/gps/**`, and refreshes only this managed block in
 <!-- TES-MAP:END -->
 ```
 
-The helpers are `tes_project_atlas.py` and `tes_map.py`; the oracle is
-`tes_map_oracle.py`. If
-`PROJECT-CONTEXT.md` is missing, return `NEEDS_CONTEXT` and route the user to
-`/tes-init`. If `PROJECT-ROADMAP.md` is missing, return `NEEDS_ALIGN` and route
-the user to `/tes-align`. Do not write `.obsidian/**`, do not rewrite the whole
-roadmap, and do not invent phases, blockers, or proof gates. The user-facing
-report should stay short: `Atlas`, `You are here`, `Next safe move`,
-`Blocked by`, and `Proof`. Mermaid is the Markdown fallback, not the primary
-visual language.
+The helpers are `tes_project_atlas.py` and `tes_map.py`; the oracle is `tes_map_oracle.py`. If `PROJECT-CONTEXT.md` is missing, return `NEEDS_CONTEXT` and route the user to `/tes-init`. If `PROJECT-ROADMAP.md` is missing, return `NEEDS_ALIGN` and route the user to `/tes-align`. Do not write `.obsidian/**`, do not rewrite the whole roadmap, and do not invent phases, blockers, or proof gates. The user-facing report should stay short: `Atlas`, `You are here`, `Next safe move`, `Blocked by`, and `Proof`. Mermaid is the Markdown fallback, not the primary visual language.
 
 ## No-Go
 
-- Do not create a slash command merely because a script exists. Visible commands
-  must be product entrypoints; `/tes-update` is visible because update is a
-  commercial user workflow.
-- Do not give `/tes-prospect`, `/tes-mine`, or `/tes-goal-maestro` broad
-  natural-language activation; they require explicit invocation or, for
-  `tes-goal-maestro`, a direct request for a maestral `/goal` prompt from a
-  mature SPEC, Super SPEC, PRD, relational project plan, or accepted execution
-  tree. `next_prompt_handoff=true` or `--next-prompt-handoff` is opt-in only;
-  when requested, the generated prompt may emit the next `/goal` in chat after
-  `GO` and certification, but must not write or execute it automatically.
-  `--execute-loop` is opt-in only; when requested, Goal Maestro must create an
-  Execution Cost Draft from material sources, run one `ACTIVE_SPEC` per fresh
-  worker subagent, record the structural method, require local commit evidence,
-  require browser metrics or visual-spatial proof for UI/canvas/3D work, keep
-  push forbidden, and run Executive Stop Audit before final closure. If both
-  handoff and `--execute-loop` are requested, the loop owns internal
-  continuation; it must
-  preserve baseline classification, treat reference implementations and manual
-  builds as baseline-only comparison, require strict sequential replay,
-  loop-state evidence, canonical
-  `SPEC_REPAIR_BY_LLM`, failed-attempt recovery, persistent ledger triggers,
-  exact `--execute-loop-parent-fallback` flag before parent-side worker fallback,
-  owner-approved cloud redaction, bounded audit repairs, and branch statuses
-  such as `NEEDS_MORE_LOOPS`, `NEEDS_OWNER_DECISION` and `SAFETY_BLOCKED`.
-  Generated Super SPEC content must be written to
-  `GOAL-SUPER-SPEC-*.md` and summarized in chat instead of being pasted into
-  the context window.
+- Do not create a slash command merely because a script exists. Visible commands must be product entrypoints; `/tes-update` is visible because update is a commercial user workflow.
+- Do not give `/tes-prospect`, `/tes-mine`, or `/tes-goal-maestro` broad natural-language activation; they require explicit invocation or, for `tes-goal-maestro`, a direct request for a maestral `/goal` prompt from a mature SPEC, Super SPEC, PRD, relational project plan, or accepted execution tree. `next_prompt_handoff=true` or `--next-prompt-handoff` is opt-in only; when requested, the generated prompt may emit the next `/goal` in chat after `GO` and certification, but must not write or execute it automatically. `--execute-loop` is opt-in only; when requested, Goal Maestro must create an Execution Cost Draft from material sources, run one `ACTIVE_SPEC` per fresh worker subagent, record the structural method, require local commit evidence, require browser metrics or visual-spatial proof for UI/canvas/3D work, keep push forbidden, and run Executive Stop Audit before final closure. If both handoff and `--execute-loop` are requested, the loop owns internal continuation; it must preserve baseline classification, treat reference implementations and manual builds as baseline-only comparison, require strict sequential replay, loop-state evidence, canonical `SPEC_REPAIR_BY_LLM`, failed-attempt recovery, persistent ledger triggers, exact `--execute-loop-parent-fallback` flag before parent-side worker fallback, owner-approved cloud redaction, bounded audit repairs, and branch statuses such as `NEEDS_MORE_LOOPS`, `NEEDS_OWNER_DECISION` and `SAFETY_BLOCKED`. Generated Super SPEC content must be written to `GOAL-SUPER-SPEC-*.md` and summarized in chat instead of being pasted into the context window.
 - Do not certify a command that was skipped or blocked.
-- Do not claim latest-source certification when the installer reports
-  `STALE_SOURCE` or `BLOCKED` source freshness.
-- For public bundles, do not call the bundle stale just because the bundle
-  `source_commit` differs from remote `main`. If that commit is an ancestor of
-  the distribution commit that serves the same version/hash, freshness is
-  `PASS` with meaning `current public bundle`.
-- Prefer `tes_bundle.py freshness --target <project>` over prose comparison
-  when bundle metadata is present.
-- Do not claim `/tes-update` or `/tes:update` is `CURRENT` while helper contract parity is
-  `STALE_HELPERS` or `BLOCKED`.
-- Do not record Field Reports from exploratory `/tes-update` or `/tes:update` probes; use
-  `--record-field-report` only on the final certification probe.
-- Do not commit or push after a helper overwrite until a post-Layer Zero final
-  recorded probe shows `helper_contract_status=PASS`,
-  `runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`,
-  and `recommended_update_scope=none`.
-- Do not claim `CURRENT` when `runtime_trigger_status=DRIFT`; run the adapter
-  refresh route until installed trigger parity is PASS.
-- Do not let a project-owned bootloader conflict block clean runtime install.
-  Back it up centrally, apply the canonical runtime, and recover useful
-  semantics from the backup evidence.
-- Do not use MCP config activation to repair stale helpers; run the helper-only
-  Layer Zero route first.
+- Do not claim latest-source certification when the installer reports `STALE_SOURCE` or `BLOCKED` source freshness.
+- For public bundles, do not call the bundle stale just because the bundle `source_commit` differs from remote `main`. If that commit is an ancestor of the distribution commit that serves the same version/hash, freshness is `PASS` with meaning `current public bundle`.
+- Prefer `tes_bundle.py freshness --target <project>` over prose comparison when bundle metadata is present.
+- Do not claim `/tes-update` or `/tes:update` is `CURRENT` while helper contract parity is `STALE_HELPERS` or `BLOCKED`.
+- Do not record Field Reports from exploratory `/tes-update` or `/tes:update` probes; use `--record-field-report` only on the final certification probe.
+- Do not commit or push after a helper overwrite until a post-Layer Zero final recorded probe shows `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`.
+- Do not claim `CURRENT` when `runtime_trigger_status=DRIFT`; run the adapter refresh route until installed trigger parity is PASS.
+- Do not let a project-owned bootloader conflict block clean runtime install. Back it up centrally, apply the canonical runtime, and recover useful semantics from the backup evidence.
+- Do not use MCP config activation to repair stale helpers; run the helper-only Layer Zero route first.
 - Do not call SQLite, MCP, or generated output memory.
-- Do not call `.tes/cortex/semantic.sqlite` memory; it is only derived
-  curation cache.
-- Do not overwrite root runtime files before `.tes/bk/<timestamp>/manifest.json`
-  exists and can restore the previous files.
-- Do not copy new TES assets over old runtime surfaces while
-  `tes_legacy_retirement.py audit` still reports active legacy.
+- Do not call `.tes/cortex/semantic.sqlite` memory; it is only derived curation cache.
+- Do not overwrite root runtime files before `.tes/bk/<timestamp>/manifest.json` exists and can restore the previous files.
+- Do not copy new TES assets over old runtime surfaces while `tes_legacy_retirement.py audit` still reports active legacy.
 - Do not treat Field Reports, GitHub issues, outbox, or hooks as project truth.
-- Do not assume a silent pre-push hook created no upstream issue; verify
-  `.tes/field-reports/receipts/**` or `field_reports.py status`.
-- Field Reports also has a GitHub receiver gate: issue template, schema oracle,
-  labels, and quarantine workflow.
-- Do not run write operations such as adapter install, MCP activation, Cortex
-  apply, materialization, or benchmark artifact updates without a clear target
-  and authorization.
-- Do not treat `/tes-init` as only an installer. It must leave an initial
-  `docs/agents/PROJECT-CONTEXT.md` project map or report why project
-  contextualization was blocked.
-- Do not claim `Project context: PASS` unless
-  `python3 scripts/project_context_oracle.py --target <target-root>` passes or
-  the installed package source is unavailable and the report explicitly marks
-  the gate `BLOCKED` or `NEEDS_REVIEW`.
-- Do not claim `GO` when discovered safe project quality gates such as lint,
-  typecheck, test, build, validate, contract, or CI-equivalent commands were
-  skipped. Run them, or report the exact gate as `BLOCKED` or `NEEDS_REVIEW`
-  with the precondition.
+- Do not assume a silent pre-push hook created no upstream issue; verify `.tes/field-reports/receipts/**` or `field_reports.py status`.
+- Field Reports also has a GitHub receiver gate: issue template, schema oracle, labels, and quarantine workflow.
+- Do not run write operations such as adapter install, MCP activation, Cortex apply, materialization, or benchmark artifact updates without a clear target and authorization.
+- Do not treat `/tes-init` as only an installer. It must leave an initial `docs/agents/PROJECT-CONTEXT.md` project map or report why project contextualization was blocked.
+- Do not claim `Project context: PASS` unless `python3 scripts/project_context_oracle.py --target <target-root>` passes or the installed package source is unavailable and the report explicitly marks the gate `BLOCKED` or `NEEDS_REVIEW`.
+- Do not claim `GO` when discovered safe project quality gates such as lint, typecheck, test, build, validate, contract, or CI-equivalent commands were skipped. Run them, or report the exact gate as `BLOCKED` or `NEEDS_REVIEW` with the precondition.

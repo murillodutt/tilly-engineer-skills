@@ -1,8 +1,6 @@
 # Skill Benchmark: tes-sync
 
-**Model**: <model-name>
-**Date**: 2026-05-25T15:16:10Z
-**Evals**: 1, 2, 3 (3 runs each per configuration)
+**Model**: <model-name> **Date**: 2026-05-25T15:16:10Z **Evals**: 1, 2, 3 (3 runs each per configuration)
 
 ## Summary
 

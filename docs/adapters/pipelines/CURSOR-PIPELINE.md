@@ -10,9 +10,7 @@ tver: 0.2.0
 
 # Cursor Pipeline
 
-The Cursor pipeline materializes the neutral behavioral contract into Cursor
-rules and adapter guidance. It remains structurally certifiable and explicitly
-behavior-deferred until a clean non-interactive execution backend is declared.
+The Cursor pipeline materializes the neutral behavioral contract into Cursor rules and adapter guidance. It remains structurally certifiable and explicitly behavior-deferred until a clean non-interactive execution backend is declared.
 
 ## Contract
 
@@ -35,10 +33,8 @@ behavior-deferred until a clean non-interactive execution backend is declared.
 - Cursor rule loading and interaction model differ from Codex and Claude.
 - Cursor has no direct skill equivalent in this package.
 - Structural parity proves rule materialization, not behavior.
-- Project-scoped MCP config can be installed for Cursor, but MCP config is not
-  behavior evidence.
-- Promotion criteria are recorded in
-  `docs/evidence/reports/context-mesh/cursor-behavior-readiness-2026-05-06/REPORT.md`.
+- Project-scoped MCP config can be installed for Cursor, but MCP config is not behavior evidence.
+- Promotion criteria are recorded in `docs/evidence/reports/context-mesh/cursor-behavior-readiness-2026-05-06/REPORT.md`.
 
 ## NO-GO
 

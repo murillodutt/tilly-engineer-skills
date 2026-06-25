@@ -30,30 +30,21 @@ sources:
 
 This document is the source of truth for the `/tes-align` skill.
 
-It defines what the skill must preserve, which failure modes it must prevent,
-and how the project operating mesh should remain usable in Obsidian without
-making Obsidian the source of truth.
+It defines what the skill must preserve, which failure modes it must prevent, and how the project operating mesh should remain usable in Obsidian without making Obsidian the source of truth.
 
 ## Thesis
 
-`/tes-init` makes a project visible to TES. `/tes-align` must make the project
-operationally legible.
+`/tes-init` makes a project visible to TES. `/tes-align` must make the project operationally legible.
 
-The skill exists to perform semantic project alignment after initial context
-creation:
+The skill exists to perform semantic project alignment after initial context creation:
 
 ```text
 initial context -> semantic alignment -> operating mesh -> execution line
 ```
 
-The outcome is not prettier documentation. The outcome is that a future agent
-can enter the project, understand what already exists, what is in motion, what
-must not be rebuilt, which gates prove quality, and which line of work should
-advance next.
+The outcome is not prettier documentation. The outcome is that a future agent can enter the project, understand what already exists, what is in motion, what must not be rebuilt, which gates prove quality, and which line of work should advance next.
 
-For humans, the project should be visible at two levels in one scan.
-`PROJECT-ROADMAP.md` therefore presents a System X-Ray and a Convergence Line
-first; compact text lanes remain the audit trail behind the pictures.
+For humans, the project should be visible at two levels in one scan. `PROJECT-ROADMAP.md` therefore presents a System X-Ray and a Convergence Line first; compact text lanes remain the audit trail behind the pictures.
 
 ## Role Boundary
 
@@ -66,16 +57,11 @@ first; compact text lanes remain the audit trail behind the pictures.
 | `/tes-field-reports` | Capture sanitized operational feedback outside project truth. |
 | Build-Test-Fail-Fix loops | Prove product behavior with real failures, fixes, retests, and portable learning. |
 
-`/tes-align` must not become a second installer, release gate, or generic
-maestro. It is a specialist that turns observed project evidence into a deeper
-actionable operating mesh. The first `/tes-init` execution may create the
-minimum Obsidian-compatible mesh to reduce friction; `/tes-align` owns semantic
-refinement, existing-doc reconciliation, and roadmap/execution-line maturity.
+`/tes-align` must not become a second installer, release gate, or generic maestro. It is a specialist that turns observed project evidence into a deeper actionable operating mesh. The first `/tes-init` execution may create the minimum Obsidian-compatible mesh to reduce friction; `/tes-align` owns semantic refinement, existing-doc reconciliation, and roadmap/execution-line maturity.
 
 ## Operating Mesh Contract
 
-The target project should end with a coherent `docs/agents/**` layer. The
-exact files depend on what the project already owns.
+The target project should end with a coherent `docs/agents/**` layer. The exact files depend on what the project already owns.
 
 Default generated or updated surfaces:
 
@@ -92,20 +78,13 @@ Default generated or updated surfaces:
 | `docs/agents/DECISIONS/` | ADR-style decision records or links to the project's existing decision system. |
 | `docs/agents/evidence/<timestamp>-project-alignment.md` | Retained alignment packet with anchors read, changes made, gaps, and certification. |
 
-These are canonical names for TES-generated target-project meshes, not a blind
-creation requirement. If equivalent project-owned docs already exist, the skill
-must link and align them instead of duplicating them.
+These are canonical names for TES-generated target-project meshes, not a blind creation requirement. If equivalent project-owned docs already exist, the skill must link and align them instead of duplicating them.
 
-The `docs/agents/evidence/**` packet is target-project alignment evidence.
-TES source-package benchmark evidence uses `docs/evidence/current/**`,
-`docs/evidence/reports/YYYY/MM/DD/**`, and `docs/evidence/archive/**`.
-`/tes-align` must not copy those source-package retention layers into target
-projects or treat historical benchmark reports as current target truth.
+The `docs/agents/evidence/**` packet is target-project alignment evidence. TES source-package benchmark evidence uses `docs/evidence/current/**`, `docs/evidence/reports/YYYY/MM/DD/**`, and `docs/evidence/archive/**`. `/tes-align` must not copy those source-package retention layers into target projects or treat historical benchmark reports as current target truth.
 
 ## Existing-Doc Classification
 
-Before writing any project operating mesh file, `/tes-align` must classify
-existing documentation and governance.
+Before writing any project operating mesh file, `/tes-align` must classify existing documentation and governance.
 
 | Status | Meaning | Action |
 |--------|---------|--------|
@@ -117,13 +96,11 @@ existing documentation and governance.
 | `deferred` | Useful, but not required for the current alignment pass. | Record as future work. |
 | `not_applicable` | The surface does not fit the project. | Record why; do not create filler. |
 
-The skill must discover before it writes. It must not create a new roadmap,
-ADR folder, safety policy, or glossary just because the template contains one.
+The skill must discover before it writes. It must not create a new roadmap, ADR folder, safety policy, or glossary just because the template contains one.
 
 ## Discovery Anchors
 
-For a non-trivial project, `/tes-align` must read strong anchors before
-claiming semantic alignment.
+For a non-trivial project, `/tes-align` must read strong anchors before claiming semantic alignment.
 
 Required anchor classes:
 
@@ -137,14 +114,11 @@ Required anchor classes:
 | History | recent Git commits, existing roadmap, issue/PR references when locally available. |
 | Risk | secrets policy, destructive commands, external systems, deployment surfaces, data boundaries. |
 
-If a project is sparse, `/tes-align` must say so plainly and avoid inventing
-architecture. Sparse projects can still pass when the roadmap and state explain
-what is unknown.
+If a project is sparse, `/tes-align` must say so plainly and avoid inventing architecture. Sparse projects can still pass when the roadmap and state explain what is unknown.
 
 ## Obsidian-Native Design
 
-Obsidian is the preferred visualization layer for the project operating mesh.
-Markdown and Git remain the source of truth.
+Obsidian is the preferred visualization layer for the project operating mesh. Markdown and Git remain the source of truth.
 
 Design rules:
 
@@ -152,16 +126,12 @@ Design rules:
 2. Use YAML frontmatter as Obsidian Properties, not hidden metadata.
 3. Use wikilinks for project-local relationships when they improve navigation.
 4. Keep hub documents small enough for people and agents to scan.
-5. Treat Graph view as a navigation signal for hubs, orphans, and relation
-   density.
-6. Treat Bases as an optional view layer over Markdown properties, not as the
-   only record of project state.
-7. Treat Canvas as an optional visual synthesis layer; important cards should
-   resolve back to Markdown files.
+5. Treat Graph view as a navigation signal for hubs, orphans, and relation density.
+6. Treat Bases as an optional view layer over Markdown properties, not as the only record of project state.
+7. Treat Canvas as an optional visual synthesis layer; important cards should resolve back to Markdown files.
 8. Do not write `.obsidian/**`.
 9. Do not require Obsidian plugins for the mesh to work.
-10. Do not let `.canvas`, `.base`, or visual views become the only source of a
-    claim, decision, risk, or roadmap item.
+10. Do not let `.canvas`, `.base`, or visual views become the only source of a claim, decision, risk, or roadmap item.
 
 Suggested frontmatter for target-project mesh documents:
 
@@ -183,20 +153,13 @@ related:
 ---
 ```
 
-The exact keys may evolve, but the intent must hold: make the mesh queryable,
-linkable, and Git-readable without binding TES to an Obsidian runtime.
+The exact keys may evolve, but the intent must hold: make the mesh queryable, linkable, and Git-readable without binding TES to an Obsidian runtime.
 
 ## Roadmap Semantics
 
 `PROJECT-ROADMAP.md` must reduce confusion, not create ambition theater.
 
-Its primary human view is two Mermaid `flowchart TD` graphs, not a plain bullet
-roadmap. The System X-Ray should make Git state, delivered behavior, validation
-mesh, and release boundary visible at a glance. The Convergence Line should make
-sequence, current position, blocked branches, unknowns, and final gate visible
-at a glance. Use visual classes such as `system`, `behavior`, `gate`, `release`,
-`done`, `current`, `next`, `later`, `deferred`, `blocked`, `unknown`, and
-`final` when those states exist.
+Its primary human view is two Mermaid `flowchart TD` graphs, not a plain bullet roadmap. The System X-Ray should make Git state, delivered behavior, validation mesh, and release boundary visible at a glance. The Convergence Line should make sequence, current position, blocked branches, unknowns, and final gate visible at a glance. Use visual classes such as `system`, `behavior`, `gate`, `release`, `done`, `current`, `next`, `later`, `deferred`, `blocked`, `unknown`, and `final` when those states exist.
 
 It must separate:
 
@@ -210,17 +173,13 @@ It must separate:
 | `Blocked` | Cannot proceed until a named dependency resolves. |
 | `Unknown` | Evidence is insufficient; do not invent. |
 
-The roadmap must not ask agents to rebuild what already exists. If the project
-has a previous roadmap, `/tes-align` must compare against it and mark stale,
-done, superseded, or still-active items.
+The roadmap must not ask agents to rebuild what already exists. If the project has a previous roadmap, `/tes-align` must compare against it and mark stale, done, superseded, or still-active items.
 
-The text lanes remain required because they preserve evidence and searchability.
-They are secondary to the two visual graphs for human presentation.
+The text lanes remain required because they preserve evidence and searchability. They are secondary to the two visual graphs for human presentation.
 
 ## Execution Line Semantics
 
-`EXECUTION-LINE.md` is the project lane. It should tell the next agent how to
-restart work without rediscovering the whole repository.
+`EXECUTION-LINE.md` is the project lane. It should tell the next agent how to restart work without rediscovering the whole repository.
 
 It must include:
 
@@ -236,8 +195,7 @@ The execution line must be specific to the project, not a copied TES workflow.
 
 ## Quality And Safety
 
-`QUALITY-GATES.md` and `BOUNDARIES-AND-CONSTRAINTS.md` must map real project
-surfaces.
+`QUALITY-GATES.md` and `BOUNDARIES-AND-CONSTRAINTS.md` must map real project surfaces.
 
 The skill should classify gates as:
 
@@ -249,8 +207,7 @@ The skill should classify gates as:
 | `unavailable` | Expected in theory but absent in this project. |
 | `unsafe` | Must not run without explicit authorization. |
 
-Safety constraints must mention protected files, generated files, secrets,
-external systems, destructive commands, and project-owned governance.
+Safety constraints must mention protected files, generated files, secrets, external systems, destructive commands, and project-owned governance.
 
 ## Evidence And Contradictions
 
@@ -284,39 +241,21 @@ alignment_evidence:
 
 ## Semantic Residue And Freshness Responsibilities
 
-Structural alignment proves the mesh shape exists. Semantic alignment must also
-prove the mesh tells the current project truth.
+Structural alignment proves the mesh shape exists. Semantic alignment must also prove the mesh tells the current project truth.
 
-`/tes-align` must therefore run a Semantic Residue Gate and a freshness
-reconciliation before reporting PASS. Both layers are portable: TES owns the
-mechanism; the target project owns the vocabulary.
+`/tes-align` must therefore run a Semantic Residue Gate and a freshness reconciliation before reporting PASS. Both layers are portable: TES owns the mechanism; the target project owns the vocabulary.
 
-The full contract shape, severity semantics, allowlist rules, expiration
-behavior, structured finding shape, and reconciliation heuristic live in
-`docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md`. This source-of-truth keeps the
-responsibility summary so the role boundary stays auditable:
+The full contract shape, severity semantics, allowlist rules, expiration behavior, structured finding shape, and reconciliation heuristic live in `docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md`. This source-of-truth keeps the responsibility summary so the role boundary stays auditable:
 
-1. When the project declares `docs/agents/contracts/SEMANTIC-RESIDUE.yml`,
-   the oracle scans active documentation for retired terms or stale claim
-   patterns. Matches lower the oracle status to `FAIL` or `NEEDS_REVIEW`
-   according to per-entry severity.
-2. Word-boundary matching is mandatory for literal terms so a short literal
-   does not flag an unrelated longer word that contains it as a substring.
-3. Historical evidence may retain retired vocabulary only when listed under
-   the entry's `allowed_paths`.
-4. Before PASS, the skill reads the newest accepted ADRs and the newest
-   retained alignment evidence packet. A newer ADR introducing successor
-   vocabulary absent from `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`,
-   `EXECUTION-LINE.md`, or `PROJECT-CONTEXT.md` lowers status to
-   `NEEDS_REVIEW`.
-5. TES generic code must not hard-code any real project name or any other
-   project-specific vocabulary. The mechanism is TES; the vocabulary is
-   target-owned.
+1. When the project declares `docs/agents/contracts/SEMANTIC-RESIDUE.yml`, the oracle scans active documentation for retired terms or stale claim patterns. Matches lower the oracle status to `FAIL` or `NEEDS_REVIEW` according to per-entry severity.
+2. Word-boundary matching is mandatory for literal terms so a short literal does not flag an unrelated longer word that contains it as a substring.
+3. Historical evidence may retain retired vocabulary only when listed under the entry's `allowed_paths`.
+4. Before PASS, the skill reads the newest accepted ADRs and the newest retained alignment evidence packet. A newer ADR introducing successor vocabulary absent from `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`, or `PROJECT-CONTEXT.md` lowers status to `NEEDS_REVIEW`.
+5. TES generic code must not hard-code any real project name or any other project-specific vocabulary. The mechanism is TES; the vocabulary is target-owned.
 
 ## Oracle Requirements
 
-The implementation includes a deterministic `project_alignment_oracle.py`
-package gate.
+The implementation includes a deterministic `project_alignment_oracle.py` package gate.
 
 Minimum checks:
 
@@ -338,13 +277,9 @@ Minimum checks:
 | Allowlisted historical evidence keeps old terms without failing | False fail on retained timelines. |
 | Newer accepted ADR is read before claiming alignment | Older evidence silently outranks current decision. |
 
-The oracle must allow sparse projects to pass honestly when gaps are explicit.
-It must fail generic documents that look complete but cannot guide work.
+The oracle must allow sparse projects to pass honestly when gaps are explicit. It must fail generic documents that look complete but cannot guide work.
 
-Failures are emitted as structured records with at minimum the fields
-`code`, `severity`, `entry_id`, `path`, `line`, `match`, and `reason`. The
-machine-readable surface is JSON via `--json` so downstream automation can
-classify residue without parsing prose.
+Failures are emitted as structured records with at minimum the fields `code`, `severity`, `entry_id`, `path`, `line`, `match`, and `reason`. The machine-readable surface is JSON via `--json` so downstream automation can classify residue without parsing prose.
 
 ## Skill Construction Requirements
 
@@ -358,13 +293,11 @@ classify residue without parsing prose.
 | `docs/CONTRACT-HISTORY.md` | Why the skill exists, origin evidence, failure modes, relationships, and do-not-lose points. |
 | `agents/openai.yaml` | Runtime display and default prompt aligned to `/tes-align`. |
 
-The skill body must be English. Target-project generated docs may follow the
-project language when evidence supports it.
+The skill body must be English. Target-project generated docs may follow the project language when evidence supports it.
 
 ## Canaries
 
-Before certification, `/tes-align` must be tested against real and synthetic
-projects:
+Before certification, `/tes-align` must be tested against real and synthetic projects:
 
 | Canary | Risk |
 |--------|------|
@@ -376,9 +309,7 @@ projects:
 | Obsidian vault-like docs | `.obsidian/**` pollution or visual-only truth. |
 | Multi-language/toolchain project | Incorrect gate and ownership mapping. |
 
-Certification must include at least one false-green attempt where the first
-alignment looks plausible but the oracle or reviewer proves it is not useful
-enough.
+Certification must include at least one false-green attempt where the first alignment looks plausible but the oracle or reviewer proves it is not useful enough.
 
 ## Source Ledger
 
@@ -411,20 +342,14 @@ This contract is based on:
 - Do not make `.base` or `.canvas` files the source of truth.
 - Do not turn roadmap creation into speculative feature invention.
 - Do not overwrite project-owned governance.
-- Do not claim certification without a deterministic oracle and retained
-  evidence.
-- Do not hard-code any real project name or any other project-specific
-  vocabulary into generic TES code. The Semantic Residue Gate mechanism is TES;
-  the vocabulary is target-owned.
-- Do not delete historical evidence merely because it contains retired
-  language. Allowlist it through the contract instead.
-- Do not call structural PASS deep alignment when the project has unread newer
-  ADRs or evidence packets.
+- Do not claim certification without a deterministic oracle and retained evidence.
+- Do not hard-code any real project name or any other project-specific vocabulary into generic TES code. The Semantic Residue Gate mechanism is TES; the vocabulary is target-owned.
+- Do not delete historical evidence merely because it contains retired language. Allowlist it through the contract instead.
+- Do not call structural PASS deep alignment when the project has unread newer ADRs or evidence packets.
 
 ## Done
 
-`/tes-align` is ready only when a clean target project can run it after
-`/tes-init` and receive:
+`/tes-align` is ready only when a clean target project can run it after `/tes-init` and receive:
 
 1. A refined project context.
 2. A current state document.
@@ -433,9 +358,7 @@ This contract is based on:
 5. Project-specific quality gates and boundaries.
 6. An Obsidian-native but Git-portable mesh.
 7. A retained evidence packet.
-8. A passing alignment oracle, including the Semantic Residue Gate when a
-   contract is declared and freshness reconciliation against the latest ADRs
-   and retained evidence.
+8. A passing alignment oracle, including the Semantic Residue Gate when a contract is declared and freshness reconciliation against the latest ADRs and retained evidence.
 
 The certification sentence should be:
 
@@ -443,6 +366,4 @@ The certification sentence should be:
 Project alignment: PASS, with explicit limits.
 ```
 
-If the project is too sparse, contradictory, or unsafe to align, the honest
-closure is `NEEDS_REVIEW`, `BLOCKED`, or `DEFERRED`, not a polished false
-green.
+If the project is too sparse, contradictory, or unsafe to align, the honest closure is `NEEDS_REVIEW`, `BLOCKED`, or `DEFERRED`, not a polished false green.

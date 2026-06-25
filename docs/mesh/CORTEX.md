@@ -10,13 +10,9 @@ tver: 0.5.2
 
 # TES Cortex
 
-TES Cortex transforms the LLM Wiki pattern into Tilly memory: versioned,
-auditable, filesystem-first, Obsidian-visible, and governed by contract.
+TES Cortex transforms the LLM Wiki pattern into Tilly memory: versioned, auditable, filesystem-first, Obsidian-visible, and governed by contract.
 
-Cortex is not copied LLM Wiki terminology. It is the Tilly-native projection of
-compiled project memory. The filesystem Markdown artifacts are the source of
-truth; SQLite, Obsidian, MCP, and LLM responses are access, visualization, or
-acceleration surfaces.
+Cortex is not copied LLM Wiki terminology. It is the Tilly-native projection of compiled project memory. The filesystem Markdown artifacts are the source of truth; SQLite, Obsidian, MCP, and LLM responses are access, visualization, or acceleration surfaces.
 
 ## Memory Contract
 
@@ -44,19 +40,13 @@ The local recall index lives at:
 .tes/cortex/semantic.sqlite
 ```
 
-These databases are never memory and never source of truth. They are derived
-caches for faster recall and semantic curation. They must be rebuildable at any
-time from `sources/**`, `cells/**`, `MAP.md`, `TRAIL.md`, `LINKS.md`, and
-`CONTRACT.md`.
+These databases are never memory and never source of truth. They are derived caches for faster recall and semantic curation. They must be rebuildable at any time from `sources/**`, `cells/**`, `MAP.md`, `TRAIL.md`, `LINKS.md`, and `CONTRACT.md`.
 
 ## Relationship To Mokh And TDS
 
-Mokh preserves operational memory and events. Cortex is the compiled,
-filesystem/Obsidian projection that agents and people can navigate over time.
+Mokh preserves operational memory and events. Cortex is the compiled, filesystem/Obsidian projection that agents and people can navigate over time.
 
-TDS documents contracts, evidence, and governed explanations. TDS does not
-become memory; Cortex compiles durable knowledge from sources, questions,
-decisions, and lessons.
+TDS documents contracts, evidence, and governed explanations. TDS does not become memory; Cortex compiles durable knowledge from sources, questions, decisions, and lessons.
 
 ## Target Shape
 
@@ -77,26 +67,20 @@ docs/agents/cortex/
   semantic.sqlite
 ```
 
-The `.tes/cortex/recall.sqlite` and `.tes/cortex/semantic.sqlite` files are
-derived and may be deleted. Running `rebuild` recreates recall. Running
-`curate-plan` recreates the semantic curation index from `cells/**`.
+The `.tes/cortex/recall.sqlite` and `.tes/cortex/semantic.sqlite` files are derived and may be deleted. Running `rebuild` recreates recall. Running `curate-plan` recreates the semantic curation index from `cells/**`.
 
 ## Obsidian Compatibility
 
-Open `docs/agents/` as the TES mesh vault, or `docs/agents/cortex/` only when
-you want a focused memory workspace.
+Open `docs/agents/` as the TES mesh vault, or `docs/agents/cortex/` only when you want a focused memory workspace.
 
-Use plain Markdown files and links that remain useful outside Obsidian. Agents
-may use Obsidian wikilinks between Cortex cells when that improves graph view,
-but source citations stay as explicit repository paths.
+Use plain Markdown files and links that remain useful outside Obsidian. Agents may use Obsidian wikilinks between Cortex cells when that improves graph view, but source citations stay as explicit repository paths.
 
 Required boundary:
 
 - Do not create or edit `.obsidian/**` during Cortex installation or operation.
 - Do not require Dataview, Web Clipper, Canvas, Marp, or community plugins.
 - Do not depend on Obsidian state for certification.
-- Keep attachments under `sources/assets/**` when the user intentionally adds
-  local assets.
+- Keep attachments under `sources/assets/**` when the user intentionally adds local assets.
 - Treat Obsidian graph view as a user navigation aid, not proof of correctness.
 
 ## Starter File Minimums
@@ -111,44 +95,24 @@ Required boundary:
 
 ## Cell Integrity
 
-Cells are compiled memory, not loose summaries. A cell under `cells/**` must
-have:
+Cells are compiled memory, not loose summaries. A cell under `cells/**` must have:
 
 - exactly one H1;
 - a `## Claim` section with the durable claim or synthesis;
 - a `## Evidence` section;
-- at least one explicit evidence ref to `sources/**`,
-  `docs/agents/cortex/sources/**`, `docs/agents/evidence/**`, or an
-  `Assumption:` line.
+- at least one explicit evidence ref to `sources/**`, `docs/agents/cortex/sources/**`, `docs/agents/evidence/**`, or an `Assumption:` line.
 
-`audit` fails when a cell misses this minimum. Missing map entries and orphan
-cells remain warnings; broken wikilinks and ungrounded cells are failures.
+`audit` fails when a cell misses this minimum. Missing map entries and orphan cells remain warnings; broken wikilinks and ungrounded cells are failures.
 
-Evidence refs are repository-relative by contract. Absolute filesystem paths,
-home-directory paths, drive-letter paths, traversal refs, derived caches, run
-scratch, checkpoints, benchmark outputs, recall indexes, and semantic indexes
-do not satisfy `## Evidence`. If a claim can only be grounded by local context
-that is not retained under an allowed evidence root, write an `Assumption:`
-line and keep the cell reviewable instead of embedding the local path.
+Evidence refs are repository-relative by contract. Absolute filesystem paths, home-directory paths, drive-letter paths, traversal refs, derived caches, run scratch, checkpoints, benchmark outputs, recall indexes, and semantic indexes do not satisfy `## Evidence`. If a claim can only be grounded by local context that is not retained under an allowed evidence root, write an `Assumption:` line and keep the cell reviewable instead of embedding the local path.
 
-`curate-plan` adds the semantic gate above structural integrity. It classifies
-merge candidates, split candidates, link candidates, semantic tensions,
-evidence gaps, redundancy warnings, and reject candidates. It never writes
-memory artifacts. Every curation candidate carries an action, rationale, and
-next step so an agent can decide what to merge, split, link, resolve, ground, or
-reject without inventing the reason.
+`curate-plan` adds the semantic gate above structural integrity. It classifies merge candidates, split candidates, link candidates, semantic tensions, evidence gaps, redundancy warnings, and reject candidates. It never writes memory artifacts. Every curation candidate carries an action, rationale, and next step so an agent can decide what to merge, split, link, resolve, ground, or reject without inventing the reason.
 
-Split detection uses compound pressure, not raw bullet count alone. A narrow
-cell with many evidence bullets may remain valid when the claim is small and
-the extra bullets are evidence support. A split candidate is raised when bullet
-pressure combines with claim bullets, non-evidence bullets, long claims, many
-headings, high line count, or mixed-topic markers.
+Split detection uses compound pressure, not raw bullet count alone. A narrow cell with many evidence bullets may remain valid when the claim is small and the extra bullets are evidence support. A split candidate is raised when bullet pressure combines with claim bullets, non-evidence bullets, long claims, many headings, high line count, or mixed-topic markers.
 
 ## Curation Conveyor
 
-Cortex does not store everything that passes through the agent window. Cortex
-receives, classifies, separates, rejects, consolidates, and publishes only
-knowledge with evidence, route, and authorization.
+Cortex does not store everything that passes through the agent window. Cortex receives, classifies, separates, rejects, consolidates, and publishes only knowledge with evidence, route, and authorization.
 
 The conveyor has three gates:
 
@@ -158,35 +122,21 @@ The conveyor has three gates:
 | `semantic_curation_gate` | `curate-plan` classifies duplicates, compound swollen cells, nearby unlinked cells, tensions, evidence gaps, redundancy, and transient material. It writes no memory. |
 | `promotion_gate` | `apply --yes` is the only built-in path that writes compiled memory, and only with explicit evidence and authorization. |
 
-`learn` and `reflect` reject or no-op generic prompts that lack source evidence
-or a specific durable lesson. Weak inputs return an explicit evidence gap or
-no-capture reason instead of producing a plausible-looking memory proposal.
+`learn` and `reflect` reject or no-op generic prompts that lack source evidence or a specific durable lesson. Weak inputs return an explicit evidence gap or no-capture reason instead of producing a plausible-looking memory proposal.
 
 ## Scope Boundary
 
-Cortex command output carries the runtime scope defined in
-`docs/mesh/SCOPE-CONTRACT.md`. The scope identifies the local run through an
-opaque project fingerprint, adapter, agent, run id, source, bounded evidence
-reference, timestamp, and status or trust level.
+Cortex command output carries the runtime scope defined in `docs/mesh/SCOPE-CONTRACT.md`. The scope identifies the local run through an opaque project fingerprint, adapter, agent, run id, source, bounded evidence reference, timestamp, and status or trust level.
 
-Scope is coordination metadata. It is not a Cortex cell, not durable memory,
-not a project name, and not authorization to write. A scope failure must fail
-closed instead of falling back to broad target assumptions.
+Scope is coordination metadata. It is not a Cortex cell, not durable memory, not a project name, and not authorization to write. A scope failure must fail closed instead of falling back to broad target assumptions.
 
 ## Event Ledger Boundary
 
-`docs/mesh/EVENT-LEDGER.md` defines read-only lifecycle event inspection.
-Event ledger entries are coordination evidence, not Cortex memory. Inspecting a
-ledger must not append to `TRAIL.md`, create cells, rebuild recall, or promote
-events into durable knowledge.
+`docs/mesh/EVENT-LEDGER.md` defines read-only lifecycle event inspection. Event ledger entries are coordination evidence, not Cortex memory. Inspecting a ledger must not append to `TRAIL.md`, create cells, rebuild recall, or promote events into durable knowledge.
 
 ## Checkpoint Boundary
 
-`docs/mesh/CHECKPOINTS.md` defines TTL resumability state. Checkpoints may help
-an agent resume work, but they are not Cortex cells, not certification
-evidence, not Event Ledger records, and not Field Reports. Creating or cleaning
-a checkpoint must not append to `TRAIL.md`, create cells, rebuild recall, or
-authorize durable memory writes.
+`docs/mesh/CHECKPOINTS.md` defines TTL resumability state. Checkpoints may help an agent resume work, but they are not Cortex cells, not certification evidence, not Event Ledger records, and not Field Reports. Creating or cleaning a checkpoint must not append to `TRAIL.md`, create cells, rebuild recall, or authorize durable memory writes.
 
 `curate-plan` statuses:
 
@@ -203,32 +153,18 @@ The semantic index is:
 .tes/cortex/semantic.sqlite
 ```
 
-It stores path, content hash, model, dimensions, and serialized vectors derived
-from `cells/**`. It is an acceleration and certification artifact, not memory.
-The deterministic package gate uses `--backend lexical`. Real environments may
-run `--backend xenova` or `--backend auto` with the optional
-`@huggingface/transformers` dependency and the default
-`Xenova/multilingual-e5-small` model. If explicit Xenova cannot run, the status
-is `BLOCKED`; if `auto` falls back to lexical, the status is `DEGRADED` unless
-memory-quality failures are also present.
+It stores path, content hash, model, dimensions, and serialized vectors derived from `cells/**`. It is an acceleration and certification artifact, not memory. The deterministic package gate uses `--backend lexical`. Real environments may run `--backend xenova` or `--backend auto` with the optional `@huggingface/transformers` dependency and the default `Xenova/multilingual-e5-small` model. If explicit Xenova cannot run, the status is `BLOCKED`; if `auto` falls back to lexical, the status is `DEGRADED` unless memory-quality failures are also present.
 
 ## Rules
 
 - Never modify `sources/**` after import/init.
-- Do not file secrets, credentials, private keys, `.env` contents, or regulated
-  personal data into Cortex unless the target project has an explicit local
-  privacy contract.
-- Every compiled claim points to `sources/**`,
-  `docs/agents/cortex/sources/**`, `docs/agents/evidence/**`, or an explicit
-  assumption inside the cell's `## Evidence` section.
-- Do not use absolute local paths, derived caches, benchmark run artifacts,
-  checkpoints, recall indexes, or semantic indexes as durable cell evidence.
+- Do not file secrets, credentials, private keys, `.env` contents, or regulated personal data into Cortex unless the target project has an explicit local privacy contract.
+- Every compiled claim points to `sources/**`, `docs/agents/cortex/sources/**`, `docs/agents/evidence/**`, or an explicit assumption inside the cell's `## Evidence` section.
+- Do not use absolute local paths, derived caches, benchmark run artifacts, checkpoints, recall indexes, or semantic indexes as durable cell evidence.
 - Every `absorb` updates `MAP.md`, `LINKS.md`, and appends to `TRAIL.md`.
 - Important relationships appear as normal Markdown links and in `LINKS.md`.
-- Prefer links that render in Obsidian and remain readable in GitHub or a plain
-  editor.
-- Contradictions are retained as contradictions until a newer source or user
-  decision resolves them.
+- Prefer links that render in Obsidian and remain readable in GitHub or a plain editor.
+- Contradictions are retained as contradictions until a newer source or user decision resolves them.
 - Durable answers may be promoted into `cells/**`; transient chat is not filed.
 - Do not call `.tes/cortex/recall.sqlite` memory.
 - Do not call `.tes/cortex/semantic.sqlite` memory.
@@ -296,42 +232,19 @@ python3 scripts/cortex.py --self-test
 python3 scripts/cortex_operator_oracle.py --self-test
 ```
 
-The helper scaffolds starter Markdown, migrates legacy Cortex names into the v1
-names when safe, validates the required files, checks the parseable trail
-heading, reports whether `.obsidian/**` is present, audits basic Cortex health,
-rebuilds SQLite FTS5 recall, falls back to `rg` for recall when FTS5 is not
-available, proposes promotions through `learn`, and applies cells only through
-explicitly authorized `apply --yes` runs that pass audit and rebuild.
+The helper scaffolds starter Markdown, migrates legacy Cortex names into the v1 names when safe, validates the required files, checks the parseable trail heading, reports whether `.obsidian/**` is present, audits basic Cortex health, rebuilds SQLite FTS5 recall, falls back to `rg` for recall when FTS5 is not available, proposes promotions through `learn`, and applies cells only through explicitly authorized `apply --yes` runs that pass audit and rebuild.
 
-`reflect` is the low-friction capture layer. Bootloaders and skills should call
-it before final responses for material work and before commits when Cortex
-exists. It inspects the local Git diff, emits a no-write promotion proposal when
-durable learning is likely, and marks curation as due when the current diff
-crosses the default 500 changed-line budget. When curation is due, agents should
-run `curate-plan` and use the returned classifications before proposing
-compaction, split, or redundancy removal with a visible diff. Curation never
-means automatic deletion.
+`reflect` is the low-friction capture layer. Bootloaders and skills should call it before final responses for material work and before commits when Cortex exists. It inspects the local Git diff, emits a no-write promotion proposal when durable learning is likely, and marks curation as due when the current diff crosses the default 500 changed-line budget. When curation is due, agents should run `curate-plan` and use the returned classifications before proposing compaction, split, or redundancy removal with a visible diff. Curation never means automatic deletion.
 
-Long closure notes do not become full cell filenames. `reflect` caps proposed
-cell slugs and adds a deterministic hash plus `cell_name_reason`; operators
-should still replace the suggestion with a short claim-specific cell name before
-authorized `apply --yes` promotion.
+Long closure notes do not become full cell filenames. `reflect` caps proposed cell slugs and adds a deterministic hash plus `cell_name_reason`; operators should still replace the suggestion with a short claim-specific cell name before authorized `apply --yes` promotion.
 
-`apply` writes only `cells/**`, `MAP.md`, `LINKS.md`, `TRAIL.md`, and the
-derived recall index rebuilt from those artifacts. It refuses to write without
-`--yes`, refuses ungrounded evidence, refuses to overwrite an existing cell
-unless `--update` is passed, and never writes in `sources/**`.
+`apply` writes only `cells/**`, `MAP.md`, `LINKS.md`, `TRAIL.md`, and the derived recall index rebuilt from those artifacts. It refuses to write without `--yes`, refuses ungrounded evidence, refuses to overwrite an existing cell unless `--update` is passed, and never writes in `sources/**`.
 
-`remember` is the operator spelling for the same authorized durable-memory path
-as `apply`. `checkpoint` is not durable memory and writes only TTL state.
-`forget` is intentionally blocked until the consolidation gate can prove
-observed write behavior, rollback, and review evidence.
+`remember` is the operator spelling for the same authorized durable-memory path as `apply`. `checkpoint` is not durable memory and writes only TTL state. `forget` is intentionally blocked until the consolidation gate can prove observed write behavior, rollback, and review evidence.
 
 ## Consolidation Gate
 
-Consolidation is the review layer after an authorized durable-memory write. It
-does not decide from intent, event records, checkpoints, or subagent claims
-alone.
+Consolidation is the review layer after an authorized durable-memory write. It does not decide from intent, event records, checkpoints, or subagent claims alone.
 
 ```bash
 python3 scripts/consolidation_gate.py lock --target /path/to/project-or-vault --id run-id --evidence sources/source.md --yes
@@ -339,19 +252,11 @@ python3 scripts/consolidation_gate.py certify --target /path/to/project-or-vault
 python3 scripts/consolidation_gate.py --self-test
 ```
 
-`lock` writes only `.tes/cortex/consolidation/**` and requires `--yes`.
-`certify` is read-only. It returns `CERTIFIED` only when a valid lock, approved
-review, rollback reference, allowed evidence, and observed Cortex cell, MAP,
-LINKS, and TRAIL write result are present. Event-only records, checkpoint-only
-state, stale locks, ambiguous review, or subagent direct memory writes return
-`BLOCKED` or `NEEDS_REVIEW`.
+`lock` writes only `.tes/cortex/consolidation/**` and requires `--yes`. `certify` is read-only. It returns `CERTIFIED` only when a valid lock, approved review, rollback reference, allowed evidence, and observed Cortex cell, MAP, LINKS, and TRAIL write result are present. Event-only records, checkpoint-only state, stale locks, ambiguous review, or subagent direct memory writes return `BLOCKED` or `NEEDS_REVIEW`.
 
-Compatibility aliases `scaffold`, `check`, and `lint` may remain in the helper
-only to prevent transition friction. Documentation and package scripts use
-`init`, `verify`, and `audit`.
+Compatibility aliases `scaffold`, `check`, and `lint` may remain in the helper only to prevent transition friction. Documentation and package scripts use `init`, `verify`, and `audit`.
 
-This makes Cortex portable across Codex, Claude Code, Cursor, OpenCode, and
-generic terminal agents.
+This makes Cortex portable across Codex, Claude Code, Cursor, OpenCode, and generic terminal agents.
 
 ## Trail Contract
 
@@ -395,15 +300,12 @@ No-go:
 - Do not maintain old and new Cortex names in parallel.
 - Do not call the derived index memory.
 - Do not let reflection or curation delete content automatically.
-- Do not describe certified Cortex capability as experimental. Use `blocked`,
-  `degraded`, `not available`, `certified`, or `fail`.
+- Do not describe certified Cortex capability as experimental. Use `blocked`, `degraded`, `not available`, `certified`, or `fail`.
 - Do not market Cortex as a RAG killer.
 
 ## Installer Boundary
 
-The assisted installer creates the structure and local contract. It does not
-bulk-import project history, scrape the web, install search tools, edit
-Obsidian config, or claim a complete knowledge graph during installation.
+The assisted installer creates the structure and local contract. It does not bulk-import project history, scrape the web, install search tools, edit Obsidian config, or claim a complete knowledge graph during installation.
 
 Initial certification proves that:
 
@@ -412,24 +314,15 @@ Initial certification proves that:
 - `.tes/cortex/recall.sqlite` is documented as derived and rebuildable;
 - the Obsidian boundary is declared without requiring `.obsidian/**`;
 - runtime bootloaders route to Cortex when durable project memory is relevant;
-- Cortex MCP is activated for selected runtime routes with governed remember
-  available by default, or explicitly blocked/read-only with a reason;
+- Cortex MCP is activated for selected runtime routes with governed remember available by default, or explicitly blocked/read-only with a reason;
 - `curate-plan` is available as a no-write curation gate;
 - `health`, `peek`, and `review` are available as no-write operator commands;
 - `checkpoint`, `remember`, and `forget` report explicit mutability classes;
-- MCP event inspection is read-only and governed MCP remember remains
-  exact-approval only;
+- MCP event inspection is read-only and governed MCP remember remains exact-approval only;
 - installation evidence states whether Cortex was created, skipped, or blocked.
 
 ## MCP Boundary
 
-MCP enters only after CLI, rebuild, fallback recall, no-write curation, and the
-ADR 0002 governed remember lane are certified. The MCP shape includes verify,
-audit, recall, read cell, absorb-plan, curate-plan, reflect, event list, event
-status, `cortex_remember_plan`, and `cortex_remember`. Operators may start or
-install MCP with `--read-only` to hide the governed remember tools.
+MCP enters only after CLI, rebuild, fallback recall, no-write curation, and the ADR 0002 governed remember lane are certified. The MCP shape includes verify, audit, recall, read cell, absorb-plan, curate-plan, reflect, event list, event status, `cortex_remember_plan`, and `cortex_remember`. Operators may start or install MCP with `--read-only` to hide the governed remember tools.
 
-The stdio surface is governed by `docs/mesh/CORTEX-MCP.md` and implemented by
-`scripts/cortex_mcp.py`. It is activated by `scripts/install_mcp.py`, delegates
-to deterministic Cortex helper functions, and does not promote, rewrite, or
-persist knowledge except through the exact-approval governed remember lane.
+The stdio surface is governed by `docs/mesh/CORTEX-MCP.md` and implemented by `scripts/cortex_mcp.py`. It is activated by `scripts/install_mcp.py`, delegates to deterministic Cortex helper functions, and does not promote, rewrite, or persist knowledge except through the exact-approval governed remember lane.

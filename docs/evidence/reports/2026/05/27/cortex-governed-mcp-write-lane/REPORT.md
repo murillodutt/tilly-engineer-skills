@@ -12,25 +12,13 @@ tver: 0.1.0
 
 Date: 2026-05-27.
 
-Retention meaning: `superseded` for MCP default posture. This report remains
-valid retained evidence for the initial ADR 0002 governed write-lane
-implementation, but its opt-in/default-read-only statements were superseded on
-2026-05-27 by `cortex-mcp-governed-remember-default`, where governed remember
-became the default project-scoped MCP posture and `--read-only` became the
-inspection-only opt-out.
+Retention meaning: `superseded` for MCP default posture. This report remains valid retained evidence for the initial ADR 0002 governed write-lane implementation, but its opt-in/default-read-only statements were superseded on 2026-05-27 by `cortex-mcp-governed-remember-default`, where governed remember became the default project-scoped MCP posture and `--read-only` became the inspection-only opt-out.
 
 ## Summary
 
-TES added ADR 0002 and initially implemented a governed MCP write lane for
-Cortex as an opt-in posture. At that checkpoint, the default MCP server remained
-read-only, write-capable MCP tools were exposed only when the server started
-with `--enable-writes`, and the only durable-memory write tool was
-`cortex_remember`.
+TES added ADR 0002 and initially implemented a governed MCP write lane for Cortex as an opt-in posture. At that checkpoint, the default MCP server remained read-only, write-capable MCP tools were exposed only when the server started with `--enable-writes`, and the only durable-memory write tool was `cortex_remember`.
 
-The external memory MCP shape was used only as a portability study. TES keeps
-Markdown under `docs/agents/cortex/**` as durable memory truth and does not add
-an external backend, hosted MCP, graph store, update/delete/bulk/entity tools,
-or automatic Cortex writes.
+The external memory MCP shape was used only as a portability study. TES keeps Markdown under `docs/agents/cortex/**` as durable memory truth and does not add an external backend, hosted MCP, graph store, update/delete/bulk/entity tools, or automatic Cortex writes.
 
 ## Implemented
 
@@ -66,16 +54,12 @@ All listed focused gates passed before this report was written.
 - No update, delete, bulk delete, or entity delete tool.
 - No MCP checkpoint write.
 - No direct MCP `apply`.
-- No automatic Cortex writes from reflection, event ledger, checkpoints, or LLM
-  output.
-- No package publish, marketplace action, remote tag, push, or commercial-use
-  certification.
+- No automatic Cortex writes from reflection, event ledger, checkpoints, or LLM output.
+- No package publish, marketplace action, remote tag, push, or commercial-use certification.
 
 ## Release Identity
 
-This is delivered runtime, installer, adapter-skill, and public documentation
-behavior. It requires a patch release identity decision. The local package
-source should move from `0.3.138` to `0.3.139` before sealed closure.
+This is delivered runtime, installer, adapter-skill, and public documentation behavior. It requires a patch release identity decision. The local package source should move from `0.3.138` to `0.3.139` before sealed closure.
 
 ## Superseded By
 

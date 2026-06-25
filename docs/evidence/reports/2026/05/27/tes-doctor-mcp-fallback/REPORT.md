@@ -12,15 +12,9 @@ tver: 0.1.0
 
 ## Summary
 
-The VS Code MCP config parity fix made MCP registration validation strict, but
-`/tes-doctor` still described MCP as a package-source health check rather than
-an installed-target fallback repair lane. This left a practical support gap:
-when the user asks the doctor to certify or repair a broken MCP install, the
-skill must know how to test, repair, or install MCP without pretending skipped
-commands passed.
+The VS Code MCP config parity fix made MCP registration validation strict, but `/tes-doctor` still described MCP as a package-source health check rather than an installed-target fallback repair lane. This left a practical support gap: when the user asks the doctor to certify or repair a broken MCP install, the skill must know how to test, repair, or install MCP without pretending skipped commands passed.
 
-The portable correction gives `/tes-doctor` a bounded MCP fallback path while
-preserving `/tes-mcp` as the primary activation route.
+The portable correction gives `/tes-doctor` a bounded MCP fallback path while preserving `/tes-mcp` as the primary activation route.
 
 ## Mantra Gate
 
@@ -40,27 +34,17 @@ preserving `/tes-mcp` as the primary activation route.
 
 1. Test with `cortex_mcp.py --self-test` or package MCP self-tests.
 2. Select the active route, or `all` when the host route is unclear.
-3. Dry-run `install_mcp.py --target . --adapter all --overwrite --json-only`
-   when write authorization is not yet established.
+3. Dry-run `install_mcp.py --target . --adapter all --overwrite --json-only` when write authorization is not yet established.
 4. Repair or install with `--yes` only after repair/install authorization.
 5. Certify `config_registrations` and the project-scoped config path.
 
-The fallback may write only `.tes/bin/**` and project-scoped MCP config. It
-must not edit global MCP config, secrets, hooks, remotes, cloud settings, or
-ungoverned MCP write tools.
+The fallback may write only `.tes/bin/**` and project-scoped MCP config. It must not edit global MCP config, secrets, hooks, remotes, cloud settings, or ungoverned MCP write tools.
 
 ## Evidence
 
-`install_mcp.py` is now installed into `.tes/bin/**`, so an installed target can
-repair a missing or broken project MCP config without requiring a source-package
-checkout. Its self-test removes a VS Code MCP config from a neutral temporary
-target, runs the installed `.tes/bin/install_mcp.py` fallback, and verifies that
-`.vscode/mcp.json` is recreated with `servers.tes-cortex` in
-`config_registrations`.
+`install_mcp.py` is now installed into `.tes/bin/**`, so an installed target can repair a missing or broken project MCP config without requiring a source-package checkout. Its self-test removes a VS Code MCP config from a neutral temporary target, runs the installed `.tes/bin/install_mcp.py` fallback, and verifies that `.vscode/mcp.json` is recreated with `servers.tes-cortex` in `config_registrations`.
 
-The command-trigger oracle now requires both Codex and Claude `tes-doctor`
-skills to carry the MCP fallback contract, the installed helper repair command,
-`config_registrations`, and the global MCP config lock.
+The command-trigger oracle now requires both Codex and Claude `tes-doctor` skills to carry the MCP fallback contract, the installed helper repair command, `config_registrations`, and the global MCP config lock.
 
 ## Closure
 

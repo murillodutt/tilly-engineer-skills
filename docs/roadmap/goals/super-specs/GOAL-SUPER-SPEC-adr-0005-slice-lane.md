@@ -9,11 +9,9 @@ evidence_level: L1
 
 # GOAL Super SPEC: ADR 0005 Slice Lane
 
-Status: active lane SPEC derived from
-`docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
+Status: active lane SPEC derived from `docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
 
-Purpose: harden Goal Maestro so mature plans become vertical execution units,
-not horizontal packages of documents, scripts, tests, or cleanup.
+Purpose: harden Goal Maestro so mature plans become vertical execution units, not horizontal packages of documents, scripts, tests, or cleanup.
 
 ## Asset-Transfer Packet
 
@@ -33,12 +31,9 @@ not horizontal packages of documents, scripts, tests, or cleanup.
 Tasks:
 
 1. Capture `git status --short --branch --untracked-files=all`.
-2. Read ADR 0005, the Goal Maestro skill, materialization-tree reference, and
-   existing goal-maestro dataset.
-3. Identify whether the failure is missing fixture, weak quality gate, or
-   adapter mirror drift.
-4. Name correlated Codex, Claude, local `.agents`, benchmark, and package
-   validation surfaces before editing.
+2. Read ADR 0005, the Goal Maestro skill, materialization-tree reference, and existing goal-maestro dataset.
+3. Identify whether the failure is missing fixture, weak quality gate, or adapter mirror drift.
+4. Name correlated Codex, Claude, local `.agents`, benchmark, and package validation surfaces before editing.
 
 Focused oracles:
 
@@ -52,10 +47,8 @@ git diff --check
 
 Tasks:
 
-1. Add or identify a mature artifact that declares vertical slices or
-   asset-transfer units.
-2. Include an adversarial instruction to rewrite the work as "all docs", "all
-   scripts", "all tests", broad cleanup, or equivalent horizontal layer.
+1. Add or identify a mature artifact that declares vertical slices or asset-transfer units.
+2. Include an adversarial instruction to rewrite the work as "all docs", "all scripts", "all tests", broad cleanup, or equivalent horizontal layer.
 3. Require the expected result to preserve vertical unit identity and order.
 
 ## SPEC-002: Existing Asset Patch
@@ -63,8 +56,7 @@ Tasks:
 Tasks:
 
 1. Patch only the relevant Goal Maestro gate, reference, or dataset record.
-2. Preserve explicit unit identifiers, order, count, and one-commit-per-unit
-   expectations unless the source artifact says otherwise.
+2. Preserve explicit unit identifiers, order, count, and one-commit-per-unit expectations unless the source artifact says otherwise.
 3. Do not add a new router, issue workflow, or external tracker dependency.
 
 ## SPEC-003: Regression And Release
@@ -73,8 +65,6 @@ Tasks:
 
 1. Run the focused Goal Maestro benchmark.
 2. Run package validation.
-3. If delivered skill behavior changed, stop for release decision before
-   claiming the package is sealed.
+3. If delivered skill behavior changed, stop for release decision before claiming the package is sealed.
 
-Valid statuses: `ASSET_TRANSFERRED`, `ASSET_ALREADY_ADEQUATE`,
-`NEEDS_OWNER_DECISION`, `NEEDS_ASSET_PACKET`, `BLOCKED`.
+Valid statuses: `ASSET_TRANSFERRED`, `ASSET_ALREADY_ADEQUATE`, `NEEDS_OWNER_DECISION`, `NEEDS_ASSET_PACKET`, `BLOCKED`.

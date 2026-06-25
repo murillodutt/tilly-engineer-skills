@@ -10,14 +10,11 @@ tver: 0.1.0
 
 # Context Mesh Method
 
-Tilly Engineering Discipline is not only four coding guidelines. The stronger
-method is a context mesh: a set of instructions, skills, checks, and feedback
-loops that make agent behavior measurable.
+Tilly Engineering Discipline is not only four coding guidelines. The stronger method is a context mesh: a set of instructions, skills, checks, and feedback loops that make agent behavior measurable.
 
 ## Thesis
 
-Agent instructions should not be treated as motivational text. A durable agent
-instruction must become at least one of:
+Agent instructions should not be treated as motivational text. A durable agent instruction must become at least one of:
 
 - Contract
 - Measurement
@@ -37,8 +34,7 @@ Otherwise it remains taste, folklore, or prompt decoration.
 | Verification | How do we know it worked? | Evals, tests, gates, benchmark outputs |
 | Return | What becomes reusable? | Docs, scorecards, Cortex pages, skill updates |
 
-If one layer changes alone, drift appears. If all layers connect, the rule
-stops being opinion and becomes governed behavior.
+If one layer changes alone, drift appears. If all layers connect, the rule stops being opinion and becomes governed behavior.
 
 ## Behavioral Rent
 
@@ -56,24 +52,20 @@ This is the core test: does the instruction change a real agent decision?
 
 ## Pre-Write Versus Post-Write
 
-Tests, linters, typecheckers, and gates protect the project after the agent has
-already acted. Tilly's maturity-aware gates protect before the first edit.
+Tests, linters, typecheckers, and gates protect the project after the agent has already acted. Tilly's maturity-aware gates protect before the first edit.
 
-That matters because many LLM coding failures are direction failures, not syntax
-failures:
+That matters because many LLM coding failures are direction failures, not syntax failures:
 
 - Wrong assumptions
 - Premature abstraction
 - Unrelated cleanup
 - No falsifiable finish line
 
-Pre-write discipline lowers the number of bad edits that post-write gates need
-to catch.
+Pre-write discipline lowers the number of bad edits that post-write gates need to catch.
 
 ## Adversarial Evals
 
-A weak eval asks whether the agent remembers the rule. A strong eval tries to
-make the agent betray the rule with a plausible user request.
+A weak eval asks whether the agent remembers the rule. A strong eval tries to make the agent betray the rule with a plausible user request.
 
 Examples:
 
@@ -87,8 +79,7 @@ Examples:
 
 ## Distractor Audit
 
-Strong context can pollute trivial work. Distractors check whether the prompt
-leaks discipline into tasks that should stay light.
+Strong context can pollute trivial work. Distractors check whether the prompt leaks discipline into tasks that should stay light.
 
 Examples:
 
@@ -98,16 +89,13 @@ Examples:
 - Read-only lookup
 - Small CSS copy change
 
-A distractor judge must preserve evidence: excerpt, rule signal, and cost. A
-judge that can accuse behavior without evidence is not audit-safe.
+A distractor judge must preserve evidence: excerpt, rule signal, and cost. A judge that can accuse behavior without evidence is not audit-safe.
 
 ## Adapter Rule
 
 External tools are adapters, not sources of truth.
 
-Promptfoo, CI dashboards, IDE rules, and plugin marketplaces can improve
-execution and visualization. The local contract should remain in versioned
-project files that understand the project's semantics.
+Promptfoo, CI dashboards, IDE rules, and plugin marketplaces can improve execution and visualization. The local contract should remain in versioned project files that understand the project's semantics.
 
 ## Evidence Limits
 
@@ -135,5 +123,4 @@ For a new project, reduce the discipline into:
 4. Optional deterministic scripts.
 5. Concrete validation command.
 
-Learning becomes real only when it returns as a test, gate, skill, prompt, doc,
-or Cortex artifact.
+Learning becomes real only when it returns as a test, gate, skill, prompt, doc, or Cortex artifact.

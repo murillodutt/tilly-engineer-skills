@@ -2,13 +2,11 @@
 
 ## Purpose
 
-`/tes-adapter` materializes, dry-runs, retrofits, validates, and certifies TES
-adapters for Codex, Claude, Cursor, or all routes.
+`/tes-adapter` materializes, dry-runs, retrofits, validates, and certifies TES adapters for Codex, Claude, Cursor, or all routes.
 
 ## Why This Skill Exists
 
-Adapter installs conflict with project-owned instructions. Materialization and
-retrofit need explicit dry-run and conflict review.
+Adapter installs conflict with project-owned instructions. Materialization and retrofit need explicit dry-run and conflict review.
 
 ## Contracts Preserved
 
@@ -27,8 +25,7 @@ retrofit need explicit dry-run and conflict review.
 
 ## Relationship To Other Skills
 
-`tes-init` applies adapters during install. `tes-adapter` is focused
-materialization/certification. `tes-update` may refresh adapter config.
+`tes-init` applies adapters during install. `tes-adapter` is focused materialization/certification. `tes-update` may refresh adapter config.
 
 ## Changelog
 

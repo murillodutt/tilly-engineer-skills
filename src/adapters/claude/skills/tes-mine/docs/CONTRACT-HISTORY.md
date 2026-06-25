@@ -2,16 +2,11 @@
 
 ## Purpose
 
-`tes-mine` is an explicit-invocation code and domain knowledge mining skill.
-After invocation, it digs through plans, code, language, decisions, and context
-documents to surface durable project knowledge.
+`tes-mine` is an explicit-invocation code and domain knowledge mining skill. After invocation, it digs through plans, code, language, decisions, and context documents to surface durable project knowledge.
 
 ## Why This Skill Exists
 
-DUTT use showed that valuable project knowledge is often present but buried:
-terms are overloaded, domain concepts drift from code, and decisions remain
-implicit. `tes-mine` exists to mine those hidden assets and turn resolved
-language or decisions into durable context.
+DUTT use showed that valuable project knowledge is often present but buried: terms are overloaded, domain concepts drift from code, and decisions remain implicit. `tes-mine` exists to mine those hidden assets and turn resolved language or decisions into durable context.
 
 ## Origin Signals
 
@@ -43,10 +38,8 @@ language or decisions into durable context.
 - Sharpen fuzzy or overloaded language into canonical terms.
 - Cross-reference user claims with code.
 - Update `CONTEXT.md` inline when a term is resolved.
-- Offer ADRs only when the decision is hard to reverse, surprising without
-  context, and the result of a real trade-off.
-- Stop immediately on a cognitive brake, summarize state, avoid new context or
-  ADR writes while braked, and wait for explicit resume.
+- Offer ADRs only when the decision is hard to reverse, surprising without context, and the result of a real trade-off.
+- Stop immediately on a cognitive brake, summarize state, avoid new context or ADR writes while braked, and wait for explicit resume.
 
 ## Known Failure Modes Prevented
 
@@ -60,9 +53,7 @@ language or decisions into durable context.
 
 ## Relationship To Other Skills
 
-`tes-mine` is the mining pass for durable project knowledge. `tes-prospect` is
-the read-only project-stress pressure pass. Tilly Engineering Discipline remains
-the general engineering overlay.
+`tes-mine` is the mining pass for durable project knowledge. `tes-prospect` is the read-only project-stress pressure pass. Tilly Engineering Discipline remains the general engineering overlay.
 
 ## Changelog
 
@@ -73,7 +64,4 @@ the general engineering overlay.
 
 ## Do Not Lose
 
-The skill is both the mine and the miner: it must keep digging until hidden
-technical value becomes shared project language, resolved context, or a sparse
-ADR candidate. The cognitive brake regulates intensity and write timing without
-weakening the mining behavior.
+The skill is both the mine and the miner: it must keep digging until hidden technical value becomes shared project language, resolved context, or a sparse ADR candidate. The cognitive brake regulates intensity and write timing without weakening the mining behavior.

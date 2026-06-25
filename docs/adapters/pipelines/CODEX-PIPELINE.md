@@ -10,9 +10,7 @@ tver: 0.2.0
 
 # Codex Pipeline
 
-The Codex pipeline materializes the neutral behavioral contract into Codex
-runtime instructions and skills. It has retained v1 behavior evidence for the
-declared `codex-cli` backend and prompt contract.
+The Codex pipeline materializes the neutral behavioral contract into Codex runtime instructions and skills. It has retained v1 behavior evidence for the declared `codex-cli` backend and prompt contract.
 
 ## Contract
 
@@ -32,16 +30,13 @@ declared `codex-cli` backend and prompt contract.
 
 ## Known Limits
 
-- Codex skill behavior is instruction-mediated and depends on the active Codex
-  runtime.
+- Codex skill behavior is instruction-mediated and depends on the active Codex runtime.
 - Behavior evidence is scoped to the retained run/hash/backend/prompt contract.
-- Cross-adapter behavioral parity is not claimed while Cursor remains
-  structural-only.
+- Cross-adapter behavioral parity is not claimed while Cursor remains structural-only.
 
 ## NO-GO
 
 - Do not declare Codex universal behavioral parity from a single backend run.
 - Do not use copied Claude or Cursor text as the parity criterion.
-- Do not add hooks, cloud actions, or marketplace assumptions as part of this
-  pipeline.
+- Do not add hooks, cloud actions, or marketplace assumptions as part of this pipeline.
 - Do not claim certification without retained evidence artifacts.

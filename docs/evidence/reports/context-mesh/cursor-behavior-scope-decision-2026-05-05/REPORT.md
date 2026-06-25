@@ -9,11 +9,9 @@ evidence_level: L3
 
 # Cursor Behavior Scope Decision Report
 
-This report closes Stage 4 of the V1 convergence loop. It decides Cursor's v1
-behavior scope without running a Cursor behavior backend.
+This report closes Stage 4 of the V1 convergence loop. It decides Cursor's v1 behavior scope without running a Cursor behavior backend.
 
-It does not change the shared contract, dataset, grader, runner, Cursor adapter
-source, Claude evidence, Codex evidence, or UI.
+It does not change the shared contract, dataset, grader, runner, Cursor adapter source, Claude evidence, Codex evidence, or UI.
 
 ## Decision
 
@@ -48,8 +46,7 @@ designed and certified.
 
 ## Why Cursor Is Deferred
 
-Cursor behavior measurement would need a clean route that proves what is being
-measured:
+Cursor behavior measurement would need a clean route that proves what is being measured:
 
 | Requirement | Current v1 status |
 |-------------|-------------------|
@@ -62,8 +59,7 @@ measured:
 | Matrix label non-leakage | Not certified for Cursor behavior |
 | Cost/auth/error limits | Not certified |
 
-Measuring Cursor without these controls would risk certifying editor/session
-state rather than the Cursor adapter contract.
+Measuring Cursor without these controls would risk certifying editor/session state rather than the Cursor adapter contract.
 
 ## V1 Claim Boundary
 
@@ -87,8 +83,7 @@ Structural parity implies behavior parity.
 
 Cursor behavior can be reopened after v1 through a separate readiness loop:
 
-1. Identify exact non-interactive Cursor invocation, API, connector, or
-   acceptable defer decision.
+1. Identify exact non-interactive Cursor invocation, API, connector, or acceptable defer decision.
 2. Declare prompt isolation and editor/session context limits.
 3. Prove raw output retention and hashes.
 4. Normalize auth, timeout, refusal, tool, and missing-output failures.

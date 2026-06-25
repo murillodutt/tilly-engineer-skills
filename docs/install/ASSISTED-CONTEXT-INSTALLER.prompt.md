@@ -15,8 +15,7 @@ You are installing Tilly Engineer Skills into the current target project as an a
 
 ## Mission
 
-Install, retrofit, or update TES so that the target project gets durable,
-maintainable agent context and an initial project contextualization:
+Install, retrofit, or update TES so that the target project gets durable, maintainable agent context and an initial project contextualization:
 
 ```text
 docs/agents/** is source. Runtime assets route and execute.
@@ -24,10 +23,7 @@ docs/agents/** is source. Runtime assets route and execute.
 
 Runtime assets include `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, `.agents/**`, `.claude/skills/**`, `.cursor/**`, `.codex/config.toml`, `.mcp.json`, `.tes/bin/**`, and future explicitly approved agent plugin/hook/MCP files. They must stay thin. Durable project governance belongs in `docs/agents/**`.
 
-`/tes-init` must also initialize the project for future agent work. It should
-analyze the target root, read the strongest project anchors available, write
-`docs/agents/PROJECT-CONTEXT.md`, and make unknowns explicit instead of
-claiming domain or architecture facts without evidence.
+`/tes-init` must also initialize the project for future agent work. It should analyze the target root, read the strongest project anchors available, write `docs/agents/PROJECT-CONTEXT.md`, and make unknowns explicit instead of claiming domain or architecture facts without evidence.
 
 ## Executor Model
 
@@ -71,21 +67,7 @@ Before using copied or cloned package files, record the exact package snapshot:
 - `source_remote_head`: current `origin/main` from `https://github.com/murillodutt/tilly-engineer-skills` when Git/network is available, otherwise `unknown`;
 - `source_freshness`: `PASS` when both commits are known and equal, or when a public bundle's `source_commit` is an ancestor of the current remote `main` distribution commit for the same published version; `STALE_SOURCE` when both commits are known and unrelated or the bundle version/hash is not the current published artifact; `BLOCKED` when freshness cannot be checked.
 
-When installing from the public versioned ZIP, use the bundle `index.json` and
-staged `tes-bundle-manifest.json` as the package snapshot source. They must
-expose `source_commit`, `source_repository`, `created_at`, and SHA-256
-metadata. The ZIP must also contain its setup installer scripts so it can be
-staged and applied without a full source checkout. Treat `source_commit` as the
-source package commit that generated the bundle; the later Git commit that
-publishes the ZIP/hash may be a distribution commit and cannot be embedded in
-its own artifact without a circular hash.
-If the public index and staged manifest agree on version, SHA-256, and
-`source_commit`, and that source commit is an ancestor of remote `main`, report
-freshness as `PASS` with meaning `current public bundle`, not `STALE_SOURCE`.
-Use the deterministic helper when available:
-`python3 <tes-package-or-staged-bundle>/scripts/tes_bundle.py freshness --target <target-root>`.
-Do not infer freshness only from unequal commit strings; public bundle source
-commits may intentionally be ancestors of the later distribution commit.
+When installing from the public versioned ZIP, use the bundle `index.json` and staged `tes-bundle-manifest.json` as the package snapshot source. They must expose `source_commit`, `source_repository`, `created_at`, and SHA-256 metadata. The ZIP must also contain its setup installer scripts so it can be staged and applied without a full source checkout. Treat `source_commit` as the source package commit that generated the bundle; the later Git commit that publishes the ZIP/hash may be a distribution commit and cannot be embedded in its own artifact without a circular hash. If the public index and staged manifest agree on version, SHA-256, and `source_commit`, and that source commit is an ancestor of remote `main`, report freshness as `PASS` with meaning `current public bundle`, not `STALE_SOURCE`. Use the deterministic helper when available: `python3 <tes-package-or-staged-bundle>/scripts/tes_bundle.py freshness --target <target-root>`. Do not infer freshness only from unequal commit strings; public bundle source commits may intentionally be ancestors of the later distribution commit.
 
 If `source_freshness` is `STALE_SOURCE`, continue only as a snapshot certification. The final report must say that the target was certified against the recorded snapshot, not against the latest Tilly Engineer Skills `main`. If `source_freshness` is `BLOCKED`, do not claim latest-source certification. This is not a target-project failure; it is certification metadata that protects the user from stale installer conclusions.
 
@@ -131,36 +113,16 @@ Do not expose file-by-file commentary unless it is a blocker, a requested diff r
 
 ## Step Zero - Local Git Baseline
 
-Before any installation edit, protect the target project with a local Git baseline.
-For `/tes-init`, run the router gates first:
+Before any installation edit, protect the target project with a local Git baseline. For `/tes-init`, run the router gates first:
 
-- **Install/Update Gate** determines whether installer, helper, adapter, MCP,
-  bootloader, or legacy-retirement writes are needed.
-- **Project Context Gate** determines whether
-  `docs/agents/PROJECT-CONTEXT.md` is absent, bootstrap-only, stale, weak, or
-  failing the project-context oracle.
-- **Project-Start Gate** is the `/tes-init` execution gate. It runs the
-  installed project-context initializer and oracle before the final report. A
-  preflight context PASS does not replace project-start execution.
-- When `.tes/postinstall.json` is `needs_review`, `/tes-init` is recovery:
-  inspect the latest postinstall run, repair the focused blocker, then run
-  `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`.
-  That command reruns Project-Start, records the recovery run, and clears the
-  sentinel only on PASS.
+- **Install/Update Gate** determines whether installer, helper, adapter, MCP, bootloader, or legacy-retirement writes are needed.
+- **Project Context Gate** determines whether `docs/agents/PROJECT-CONTEXT.md` is absent, bootstrap-only, stale, weak, or failing the project-context oracle.
+- **Project-Start Gate** is the `/tes-init` execution gate. It runs the installed project-context initializer and oracle before the final report. A preflight context PASS does not replace project-start execution.
+- When `.tes/postinstall.json` is `needs_review`, `/tes-init` is recovery: inspect the latest postinstall run, repair the focused blocker, then run `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`. That command reruns Project-Start, records the recovery run, and clears the sentinel only on PASS.
 
-If the Install/Update Gate finds an old meshed project that needs helper,
-adapter, legacy-retirement, context, or alignment repairs but the user has not
-authorized the required writes yet, close the pass as `NEEDS_REVIEW` and include
-the `continuation_plan` from `tes_update.py plan --json-only`. The plan must
-name the required phases, approvals, write surfaces, commands, final recorded
-probe, and the fact that Project-Start Gate still runs after repairs. A
-`NEEDS_REVIEW` report without this continuation plan is incomplete.
+If the Install/Update Gate finds an old meshed project that needs helper, adapter, legacy-retirement, context, or alignment repairs but the user has not authorized the required writes yet, close the pass as `NEEDS_REVIEW` and include the `continuation_plan` from `tes_update.py plan --json-only`. The plan must name the required phases, approvals, write surfaces, commands, final recorded probe, and the fact that Project-Start Gate still runs after repairs. A `NEEDS_REVIEW` report without this continuation plan is incomplete.
 
-Step Zero protects installer/update writes. It must not block project-context
-initialization when TES is already installed/current and the only failing gate
-is the Project Context Gate. In that case, report the dirty tree as rollback
-context, avoid helper/adapter/MCP/bootloader writes, run the project-context
-scaffold, and certify with `project_context_oracle.py`.
+Step Zero protects installer/update writes. It must not block project-context initialization when TES is already installed/current and the only failing gate is the Project Context Gate. In that case, report the dirty tree as rollback context, avoid helper/adapter/MCP/bootloader writes, run the project-context scaffold, and certify with `project_context_oracle.py`.
 
 Render this short check:
 
@@ -180,8 +142,7 @@ git status --short --branch --untracked-files=all
 
 If the working tree is clean, record the current `HEAD` as the rollback point and continue.
 
-If the working tree is dirty and the Install/Update Gate needs installer/update
-writes, stop before editing and ask for one route:
+If the working tree is dirty and the Install/Update Gate needs installer/update writes, stop before editing and ask for one route:
 
 Load the Step Zero intent from:
 
@@ -189,8 +150,7 @@ Load the Step Zero intent from:
 docs/install/navigation/common.prompt.md
 ```
 
-Then render it with the runtime navigation library. If the runtime renderer
-cannot be loaded, use this fallback:
+Then render it with the runtime navigation library. If the runtime renderer cannot be loaded, use this fallback:
 
 ```text
 Tilly Step Zero
@@ -241,10 +201,7 @@ Do not run rollback commands automatically.
 
 ## Local Git Hygiene
 
-If the target is a Git repository, protect local-only Tilly artifacts through
-`.git/info/exclude` before creating backups, caches, Field Reports state, or
-derived Cortex indexes. This is a local repo exclude, not a project `.gitignore`
-rewrite.
+If the target is a Git repository, protect local-only Tilly artifacts through `.git/info/exclude` before creating backups, caches, Field Reports state, or derived Cortex indexes. This is a local repo exclude, not a project `.gitignore` rewrite.
 
 Required local excludes:
 
@@ -257,8 +214,7 @@ Required local excludes:
 - `.tes/cortex/*.sqlite`
 - `.tes/cortex/*.sqlite-*`
 
-Do not ignore `.tes/bin/*.py`; installed helper scripts are the
-project-scoped runtime surface.
+Do not ignore `.tes/bin/*.py`; installed helper scripts are the project-scoped runtime surface.
 
 ## Phase 0 - Internal Preflight
 
@@ -350,8 +306,7 @@ CLAUDE.md routing to docs/agents/**, .cursor/rules/** routing to docs/agents/**
 
 Classify as `existing` when any local agent guidance, project rules, architecture docs, decision docs, or validation scripts already exist, but the TES mesh is not yet present enough to treat as `meshed`.
 
-For an existing project, treat all current instructions as project-owned until
-proven otherwise.
+For an existing project, treat all current instructions as project-owned until proven otherwise.
 
 Before rewriting root runtime files, stage the bundle and create a central clean backup: `python3 scripts/tes_bundle.py stage --target <target-root>`, then `python3 scripts/tes_bundle.py backup --target <target-root> --adapter <route> --yes`. Use `python3 scripts/root_context.py analyze --target <target-root> --backup-id <backup-id>` or `tes_bundle.py recover-plan` to read previous governance from `.tes/bk/<timestamp>/**`, not from the active runtime after overwrite.
 
@@ -369,8 +324,7 @@ If user input is needed, render the `adapter-route` intent from the navigation l
 
 Use native structured cards only when the active runtime renderer explicitly supports them and the intent fits its limits. Otherwise use command navigation. Do not use a multiple-choice panel, checkbox UI, hidden chips, or a naked sequence such as "1, 2, 3, 4, 5, or 6".
 
-If the navigation library cannot be loaded, render this fallback shape, with
-detected values filled in:
+If the navigation library cannot be loaded, render this fallback shape, with detected values filled in:
 
 ```text
 TES Context Mesh Navigation
@@ -446,78 +400,33 @@ For a new project: create minimal contracts from discovered project facts, keep 
 For an existing project:
 
 - migrate durable rules from `AGENTS.md`, `CLAUDE.md`, `.cursor/**`, `.claude/**`, README, architecture docs, decision docs, and package scripts into the smallest appropriate `docs/agents/**` files;
-- create or update `docs/agents/PROJECT-CONTEXT.md` as the initial project
-  map, citing the project anchors actually read;
-- preserve local commands, test oracles, security boundaries, product identity,
-  language rules, ownership, release rules, and no-go conditions;
+- create or update `docs/agents/PROJECT-CONTEXT.md` as the initial project map, citing the project anchors actually read;
+- preserve local commands, test oracles, security boundaries, product identity, language rules, ownership, release rules, and no-go conditions;
 - runtime assets should route to `docs/agents/**` instead of carrying long canonical prose.
 
 ## Phase 4.1 - Initialize Project Context
 
-`/tes-init` is not only an installer. It is the project start ritual for agents.
-It routes internally through the **Install/Update Gate** and **Project Context
-Gate**. If the install/update surface is current but the project context is
-missing or weak, `/tes-init` performs only project-context initialization and
-must not refresh helpers, adapters, MCP config, bootloaders, remotes, tags, or
-release surfaces.
+`/tes-init` is not only an installer. It is the project start ritual for agents. It routes internally through the **Install/Update Gate** and **Project Context Gate**. If the install/update surface is current but the project context is missing or weak, `/tes-init` performs only project-context initialization and must not refresh helpers, adapters, MCP config, bootloaders, remotes, tags, or release surfaces.
 
-For `/tes-init`, the **Project-Start Gate** must run before final closeout even
-when Project Context Gate preflight reports `PASS`. Run
-`python3 .tes/bin/tes_init.py --target . --yes` in an installed target, or
-`python3 scripts/tes_init.py --target <target-root> --yes` from the package
-source. Then run `project_context_oracle.py --target <target-root>` and
-`project_alignment_oracle.py --target <target-root>`. The initializer creates
-the first-pass Obsidian-compatible operating mesh when missing; `/tes-align`
-remains the deeper semantic refinement route. After helper-only or adapter
-repairs, rerun the Project-Start Gate; preflight context PASS does not replace
-project-start execution.
+For `/tes-init`, the **Project-Start Gate** must run before final closeout even when Project Context Gate preflight reports `PASS`. Run `python3 .tes/bin/tes_init.py --target . --yes` in an installed target, or `python3 scripts/tes_init.py --target <target-root> --yes` from the package source. Then run `project_context_oracle.py --target <target-root>` and `project_alignment_oracle.py --target <target-root>`. The initializer creates the first-pass Obsidian-compatible operating mesh when missing; `/tes-align` remains the deeper semantic refinement route. After helper-only or adapter repairs, rerun the Project-Start Gate; preflight context PASS does not replace project-start execution.
 
-If `.tes/postinstall.json` is `needs_review`, do not leave the user with a
-manual hidden `--force` step. Treat `/tes-init` as recovery, inspect the latest
-run, repair the focused blocker, then run
-`python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`
-as the Project-Start closure. If that recovery does not return PASS, report
-`NEEDS_REVIEW` with the new run record and blocker.
+If `.tes/postinstall.json` is `needs_review`, do not leave the user with a manual hidden `--force` step. Treat `/tes-init` as recovery, inspect the latest run, repair the focused blocker, then run `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review` as the Project-Start closure. If that recovery does not return PASS, report `NEEDS_REVIEW` with the new run record and blocker.
 
-When the update planner returns `continuation_plan.status=PENDING_APPROVAL`, do
-not improvise a shorter route. Present the approval-gated plan compactly in the
-report and stop. After the user approves, resume at the first required phase,
-then rerun the exact final recorded probe required by the plan.
+When the update planner returns `continuation_plan.status=PENDING_APPROVAL`, do not improvise a shorter route. Present the approval-gated plan compactly in the report and stop. After the user approves, resume at the first required phase, then rerun the exact final recorded probe required by the plan.
 
-After classification and before certification closeout, analyze the project as
-deeply as the current context window and local tools permit:
+After classification and before certification closeout, analyze the project as deeply as the current context window and local tools permit:
 
 - inventory tracked and unignored files;
-- read the strongest project anchors first: README, package or build
-  manifests, architecture docs, root agent instructions, local validation
-  scripts, source entrypoints, test roots, deployment/configuration docs, and
-  existing `docs/agents/**`;
-- synthesize project identity, territories, runtime/build/test signals,
-  governance surfaces, quality gates, source anchors, known unknowns, and
-  recommended deep reads;
+- read the strongest project anchors first: README, package or build manifests, architecture docs, root agent instructions, local validation scripts, source entrypoints, test roots, deployment/configuration docs, and existing `docs/agents/**`;
+- synthesize project identity, territories, runtime/build/test signals, governance surfaces, quality gates, source anchors, known unknowns, and recommended deep reads;
 - write the synthesis to `docs/agents/PROJECT-CONTEXT.md`;
-- create the initial alignment mesh under `docs/agents/**` when missing:
-  `PROJECT-STATE.md`, `PROJECT-ROADMAP.md` with Mermaid System X-Ray and
-  Convergence Line graphs, `EXECUTION-LINE.md`, `QUALITY-GATES.md`,
-  `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`,
-  `DECISIONS/**`, and retained project-alignment evidence;
+- create the initial alignment mesh under `docs/agents/**` when missing: `PROJECT-STATE.md`, `PROJECT-ROADMAP.md` with Mermaid System X-Ray and Convergence Line graphs, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `BOUNDARIES-AND-CONSTRAINTS.md`, `KNOWLEDGE-LIFECYCLE.md`, `GLOSSARY.md`, `DECISIONS/**`, and retained project-alignment evidence;
 - write the deterministic inventory to `docs/agents/PROJECT-REGISTER.md`;
 - store full manifests and evidence under `docs/agents/evidence/**`.
 
-Distinguish deterministic scaffold from semantic refinement. `tes_init.py`
-creates the inventory-backed scaffold: identity, anchors, territories, scripts,
-surfaces, evidence, and gaps. The active agent performs semantic refinement by
-opening the strongest anchors and improving `PROJECT-CONTEXT.md` with supported
-project meaning. For a non-trivial project, do not claim deep context until the
-agent has opened strong anchors in the current run. If anchor reading is
-blocked, close as `Project context: NEEDS_REVIEW` with the reason.
+Distinguish deterministic scaffold from semantic refinement. `tes_init.py` creates the inventory-backed scaffold: identity, anchors, territories, scripts, surfaces, evidence, and gaps. The active agent performs semantic refinement by opening the strongest anchors and improving `PROJECT-CONTEXT.md` with supported project meaning. For a non-trivial project, do not claim deep context until the agent has opened strong anchors in the current run. If anchor reading is blocked, close as `Project context: NEEDS_REVIEW` with the reason.
 
-The context file must be evidence-led. Cite repository paths and say
-`unknown`, `not found`, or `needs deeper read` when the project files do not
-support a claim. Do not copy source code, secrets, or raw private content into
-the context file. Do not bulk-absorb history into Cortex during installation;
-only seed stable facts discovered while initializing and record deeper absorb
-work as a post-install next step.
+The context file must be evidence-led. Cite repository paths and say `unknown`, `not found`, or `needs deeper read` when the project files do not support a claim. Do not copy source code, secrets, or raw private content into the context file. Do not bulk-absorb history into Cortex during installation; only seed stable facts discovered while initializing and record deeper absorb work as a post-install next step.
 
 ## Phase 4.5 - Create Cortex
 
@@ -629,12 +538,7 @@ CLAUDE.md
 
 `CLAUDE.md` must stay short. It should route to `docs/agents/**`, mention `docs/agents/cortex/**` as the durable memory layer when relevant, recover project-specific sentinels required by local validation, and list local oracles. Claude project skills live under `.claude/skills/**`; plugin metadata and plugin-root skill copies remain source-only in the TES Git package unless a separate plugin packaging decision is made. Claude runtime files are package assets; do not put target-project governance inside them. If `CLAUDE.md` already differs, back it up in `.tes/bk/**`, apply the clean bootloader, and recover useful semantics into `docs/agents/**`. If the target already uses additional Claude-scoped rule files, back them up and route their durable semantics back to `docs/agents/**` instead of leaving them as active runtime.
 
-Before reporting install/update success, scan for obsolete TES plugin/root-skill
-runtime surfaces: `skills/**`, `.claude-plugin/**`, `.agents/plugins/**`, and
-`plugins/tilly-engineer-skills/**`. Remove them only when they are TES-owned,
-generated, or empty. If any path is ambiguous, modified, non-TES, or
-secret-like, preserve it, back it up under `.tes/bk/**`, write review evidence,
-and return `NEEDS_REVIEW`.
+Before reporting install/update success, scan for obsolete TES plugin/root-skill runtime surfaces: `skills/**`, `.claude-plugin/**`, `.agents/plugins/**`, and `plugins/tilly-engineer-skills/**`. Remove them only when they are TES-owned, generated, or empty. If any path is ambiguous, modified, non-TES, or secret-like, preserve it, back it up under `.tes/bk/**`, write review evidence, and return `NEEDS_REVIEW`.
 
 ### Cursor
 
@@ -794,11 +698,7 @@ python3 scripts/install_smoke.py --self-test
 python3 scripts/platform_surface_oracle.py --self-test
 ```
 
-Package self-tests report `self_test_mode=package` and certify the source-package
-contract. Installed helper self-tests report `self_test_mode=installed` and
-certify only the materialized helper contract. When package source is not
-available, use installed helper self-tests instead of claiming package-source
-coverage:
+Package self-tests report `self_test_mode=package` and certify the source-package contract. Installed helper self-tests report `self_test_mode=installed` and certify only the materialized helper contract. When package source is not available, use installed helper self-tests instead of claiming package-source coverage:
 
 ```bash
 python3 .tes/bin/root_context.py --self-test
@@ -812,22 +712,7 @@ python3 scripts/tes_init.py --target <target-root> --yes
 python3 scripts/project_context_oracle.py --target <target-root>
 ```
 
-This writes `docs/agents/PROJECT-REGISTER.md`,
-`docs/agents/PROJECT-CONTEXT.md`, and timestamped evidence such as
-`docs/agents/evidence/YYYYMMDDTHHMMSSZ-tes-project-manifest.json`. The
-initializer writes provisional register/context files before later gates, so a
-slow or blocked oracle must leave auditable `NEEDS_REVIEW` evidence instead of
-leaving the project uninitialized. It must not bulk-absorb project files into
-Cortex or write to `sources/**`. It also installs the local Field Reports
-`pre-push` drain and local Git hygiene excludes when the target is a Git
-repository, and must report `BLOCKED` instead of pretending activation.
-The project-context oracle is the executable quality gate for the generated
-project map. It must pass before the report claims `Project context: PASS`; if
-it fails, report `Project context: NEEDS_REVIEW` and include the missing
-anchors, territories, scripts, or explicit unknowns in evidence.
-Passing the oracle proves the scaffold contract, not reviewer-grade semantic
-mastery; the agent must still report whether semantic refinement was completed,
-blocked, or left as next work.
+This writes `docs/agents/PROJECT-REGISTER.md`, `docs/agents/PROJECT-CONTEXT.md`, and timestamped evidence such as `docs/agents/evidence/YYYYMMDDTHHMMSSZ-tes-project-manifest.json`. The initializer writes provisional register/context files before later gates, so a slow or blocked oracle must leave auditable `NEEDS_REVIEW` evidence instead of leaving the project uninitialized. It must not bulk-absorb project files into Cortex or write to `sources/**`. It also installs the local Field Reports `pre-push` drain and local Git hygiene excludes when the target is a Git repository, and must report `BLOCKED` instead of pretending activation. The project-context oracle is the executable quality gate for the generated project map. It must pass before the report claims `Project context: PASS`; if it fails, report `Project context: NEEDS_REVIEW` and include the missing anchors, territories, scripts, or explicit unknowns in evidence. Passing the oracle proves the scaffold contract, not reviewer-grade semantic mastery; the agent must still report whether semantic refinement was completed, blocked, or left as next work.
 
 If Codex skill is present:
 
@@ -874,13 +759,7 @@ test
 build
 ```
 
-Project quality gates are part of GO, not optional polish. If `package.json`,
-Makefile, CI config, or project docs expose safe `lint`, `typecheck`, `test`,
-`build`, `contract`, `validate`, or CI-equivalent gates, run the relevant local
-commands before final report. If a command needs database, Docker, secrets,
-network, destructive writes, or long runtime, name the precondition and report
-that gate as `BLOCKED` or `NEEDS_REVIEW` with the reason. Do not hide skipped
-quality gates under `Limits` while claiming `GO`.
+Project quality gates are part of GO, not optional polish. If `package.json`, Makefile, CI config, or project docs expose safe `lint`, `typecheck`, `test`, `build`, `contract`, `validate`, or CI-equivalent gates, run the relevant local commands before final report. If a command needs database, Docker, secrets, network, destructive writes, or long runtime, name the precondition and report that gate as `BLOCKED` or `NEEDS_REVIEW` with the reason. Do not hide skipped quality gates under `Limits` while claiming `GO`.
 
 Do not run multiple build commands in parallel when they share caches.
 
@@ -988,9 +867,7 @@ GO requires:
 - Field Reports state and installed helper set are explicit in the report;
 - helper contract parity is PASS or NOT_INSTALLED; `STALE_HELPERS` cannot close as GO;
 - runtime trigger parity is PASS or NOT_APPLIED; `DRIFT` cannot close as GO;
-- discovered safe project quality gates such as lint, typecheck, test, build,
-  contract, validate, or CI-equivalent commands passed, or unsafe/unavailable
-  gates are explicitly `BLOCKED` or `NEEDS_REVIEW` with reasons;
+- discovered safe project quality gates such as lint, typecheck, test, build, contract, validate, or CI-equivalent commands passed, or unsafe/unavailable gates are explicitly `BLOCKED` or `NEEDS_REVIEW` with reasons;
 - final `tes_update` evidence is recorded when Field Reports is installed;
 - if Layer Zero copied helpers, final `tes_update` evidence must be recorded after the overwrite and must show `helper_contract_status=PASS`, `runtime_trigger_status=PASS` or `NOT_APPLIED`, `update_available=False`, and `recommended_update_scope=none`;
 - when Field Reports drains through the silent pre-push hook, verify `field_reports.py status` or `.tes/field-reports/receipts/**` before claiming that no upstream issue was created;

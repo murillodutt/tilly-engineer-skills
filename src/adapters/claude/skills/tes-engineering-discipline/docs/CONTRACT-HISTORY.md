@@ -2,27 +2,20 @@
 
 ## Purpose
 
-`tes-engineering-discipline` is the maturity-aware engineering discipline anchor: Think
-Before Coding, Maturity Layer Gate, Simplicity First, Surgical Changes,
-Goal-Driven Execution, Mantra Gate, Diamond, and Infrastructure Decision Gate.
+`tes-engineering-discipline` is the maturity-aware engineering discipline anchor: Think Before Coding, Maturity Layer Gate, Simplicity First, Surgical Changes, Goal-Driven Execution, Mantra Gate, Diamond, and Infrastructure Decision Gate.
 
 ## Why This Skill Exists
 
-Bootloaders stay thin; behavioral depth loads on demand. This skill prevents
-ambiguous scope, false completion, and governance-only cycles without runtime.
+Bootloaders stay thin; behavioral depth loads on demand. This skill prevents ambiguous scope, false completion, and governance-only cycles without runtime.
 
 ## Contracts Preserved
 
-- Core contract: assumptions visible, scope smaller, edits surgical, success
-  falsifiable.
+- Core contract: assumptions visible, scope smaller, edits surgical, success falsifiable.
 - Default material work to Birth maturity unless promoted with evidence.
-- Mantra Gate for destructive, remote, release, sync, secret-bearing, or
-  high-impact state changes; ordinary local edits do not block on markers or
-  skill loading.
+- Mantra Gate for destructive, remote, release, sync, secret-bearing, or high-impact state changes; ordinary local edits do not block on markers or skill loading.
 - `/tes-prospect` and `/tes-mine` require explicit invocation.
 - TES trigger vocabulary routing without duplicating every skill body.
-- Gate Zero arbitrates gate tension by binary-hard declared-contract evidence;
-  collisions are escalated, never resolved silently.
+- Gate Zero arbitrates gate tension by binary-hard declared-contract evidence; collisions are escalated, never resolved silently.
 - Effort is an orthogonal axis: `Premium` raises rigor per line, never scope.
 - Maturity is classificatory: the artifact is born at the converged layer.
 
@@ -36,13 +29,11 @@ ambiguous scope, false completion, and governance-only cycles without runtime.
 - Treating user-facing craft as a scope question with no axis to be heard.
 - "Build small then rebuild" temporal trap of maturity.
 - Adjective-as-criteria and graded ("partially premium") effort decisions.
-- Premium minted by rejecting weasel prose alone, with the named declared trigger
-  inert and a substring token standing in for the binary-hard arbiter.
+- Premium minted by rejecting weasel prose alone, with the named declared trigger inert and a substring token standing in for the binary-hard arbiter.
 
 ## Relationship To Other Skills
 
-Loaded by all TES work. `tes-engineering-discipline` is the Codex mirror.
-Product skills (`tes-align`, `tes-init`, etc.) operate under these gates.
+Loaded by all TES work. `tes-engineering-discipline` is the Codex mirror. Product skills (`tes-align`, `tes-init`, etc.) operate under these gates.
 
 ## Changelog
 

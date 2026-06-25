@@ -12,12 +12,9 @@ tver: 0.1.0
 
 Status: active planning artifact; no delivered behavior yet.
 
-Capability: make TES first-session and recovery flows converge truthfully by
-keeping generators, validators, installed certification, bundle hygiene, and
-repair routes symmetric across package source and installed targets.
+Capability: make TES first-session and recovery flows converge truthfully by keeping generators, validators, installed certification, bundle hygiene, and repair routes symmetric across package source and installed targets.
 
-Canonical artifact:
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md`
+Canonical artifact: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-recovery-contract-symmetry.md`
 
 ## Mantra Gate Snapshot
 
@@ -45,27 +42,16 @@ Canonical artifact:
 
 ## Problem
 
-TES `0.3.145` can enter a first-session or recovery loop where generated target
-context is immediately rejected by an oracle that expects a different contract.
-The issue #47 Field Report is the public sanitized symptom. The private canary
-analysis shows a concrete family of failures:
+TES `0.3.145` can enter a first-session or recovery loop where generated target context is immediately rejected by an oracle that expects a different contract. The issue #47 Field Report is the public sanitized symptom. The private canary analysis shows a concrete family of failures:
 
-- `tes_init.py` writes `docs/agents/PROJECT-CONTEXT.md` from an inventory based
-  on `git ls-files --cached --others --exclude-standard`;
-- `project_context_oracle.py` requires some Caution Zones from direct
-  filesystem checks;
-- lockfiles ignored by `.gitignore` can therefore be invisible to the generator
-  while still required by the validator;
-- manual repairs to generated context are not durable because the next
-  recovery run rewrites the context from the same asymmetric generator;
-- installed certification can identify secondary partial states, but the
-  first-session operator sees repeated `NEEDS_REVIEW` before a clear repair
-  route;
-- release/bundle hygiene and adapter trigger/adoption drift can surface in the
-  same recovery run, making root cause harder to isolate.
+- `tes_init.py` writes `docs/agents/PROJECT-CONTEXT.md` from an inventory based on `git ls-files --cached --others --exclude-standard`;
+- `project_context_oracle.py` requires some Caution Zones from direct filesystem checks;
+- lockfiles ignored by `.gitignore` can therefore be invisible to the generator while still required by the validator;
+- manual repairs to generated context are not durable because the next recovery run rewrites the context from the same asymmetric generator;
+- installed certification can identify secondary partial states, but the first-session operator sees repeated `NEEDS_REVIEW` before a clear repair route;
+- release/bundle hygiene and adapter trigger/adoption drift can surface in the same recovery run, making root cause harder to isolate.
 
-The dangerous behavior is not merely "missing dependency locks." It is a wider
-anti-pattern:
+The dangerous behavior is not merely "missing dependency locks." It is a wider anti-pattern:
 
 ```text
 generator source of truth != validator source of truth
@@ -75,38 +61,28 @@ or
 published bundle contents != release hygiene oracle
 ```
 
-When any of those are true, TES can produce false blockers, false greens, or
-non-durable repair instructions.
+When any of those are true, TES can produce false blockers, false greens, or non-durable repair instructions.
 
 ## Goal
 
-After this goal is implemented, TES install, first-session recovery, update,
-doctor, and certification flows must satisfy this equation:
+After this goal is implemented, TES install, first-session recovery, update, doctor, and certification flows must satisfy this equation:
 
 ```text
 same detected facts + same contract constants + same status semantics
 = same generator output, oracle expectation, repair route, and Field Report
 ```
 
-For the issue #47 class, a neutral target fixture with ignored lockfiles must
-fail before repair and pass after repair without manual installed-target edits.
+For the issue #47 class, a neutral target fixture with ignored lockfiles must fail before repair and pass after repair without manual installed-target edits.
 
 ## Non-Objectives
 
-- Do not copy private canary names, paths, domain vocabulary, commits, remotes,
-  target docs, target code, raw run records, or raw stack traces into TES.
-- Do not patch only installed mirrors such as `.tes/bin/**`,
-  `.agents/skills/**`, `.claude/skills/**`, or `skills/**` in a target project.
-- Do not declare a package sealed, released, or remotely certified without
-  `npm run commit:check` and an explicit release identity decision.
-- Do not make lockfile handling project-specific to one stack or package
-  manager.
-- Do not make every ignored file part of TES project context; only declared
-  contract facts should bypass the git-index inventory.
-- Do not weaken oracles merely to remove friction. Generators must satisfy
-  useful validators, or validators must be narrowed with an explicit contract.
-- Do not expand MCP write authority, global config writes, cloud behavior, or
-  marketplace behavior.
+- Do not copy private canary names, paths, domain vocabulary, commits, remotes, target docs, target code, raw run records, or raw stack traces into TES.
+- Do not patch only installed mirrors such as `.tes/bin/**`, `.agents/skills/**`, `.claude/skills/**`, or `skills/**` in a target project.
+- Do not declare a package sealed, released, or remotely certified without `npm run commit:check` and an explicit release identity decision.
+- Do not make lockfile handling project-specific to one stack or package manager.
+- Do not make every ignored file part of TES project context; only declared contract facts should bypass the git-index inventory.
+- Do not weaken oracles merely to remove friction. Generators must satisfy useful validators, or validators must be narrowed with an explicit contract.
+- Do not expand MCP write authority, global config writes, cloud behavior, or marketplace behavior.
 
 ## Required Status Semantics
 
@@ -119,23 +95,15 @@ fail before repair and pass after repair without manual installed-target edits.
 | `DEGRADED` | A component is below contract but still diagnosable without hiding the final certification status. |
 | `NOT_AVAILABLE` | A surface or host capability is absent by design and must not be reported as failed or inferred. |
 
-`INSTALLED` may describe a completed write operation. It must not be used as a
-final certification verdict.
+`INSTALLED` may describe a completed write operation. It must not be used as a final certification verdict.
 
 ## Assumptions
 
-- The private canary finding is portable TES product evidence because the
-  failing condition can be reproduced with neutral fixture files.
-- `scripts/tes_init.py`, `scripts/project_context_oracle.py`, and installed
-  target copies under `.tes/bin/**` are delivered behavior when adopters invoke
-  or certify them.
-- Shared constants are preferable to duplicated tuples when generator and
-  validator must agree.
-- Filesystem checks are acceptable for narrow root-level contract facts, such
-  as known dependency lockfiles, even when general project inventory remains
-  git-index based.
-- A patch release is the default release-identity outcome if delivered runtime
-  behavior changes.
+- The private canary finding is portable TES product evidence because the failing condition can be reproduced with neutral fixture files.
+- `scripts/tes_init.py`, `scripts/project_context_oracle.py`, and installed target copies under `.tes/bin/**` are delivered behavior when adopters invoke or certify them.
+- Shared constants are preferable to duplicated tuples when generator and validator must agree.
+- Filesystem checks are acceptable for narrow root-level contract facts, such as known dependency lockfiles, even when general project inventory remains git-index based.
+- A patch release is the default release-identity outcome if delivered runtime behavior changes.
 
 ## Contract Symmetry Principles
 
@@ -168,33 +136,27 @@ final certification verdict.
 
 ## P0 Cut: Minimum Convergent Repair
 
-The first implementation wave should be small enough to land without absorbing
-the entire backlog:
+The first implementation wave should be small enough to land without absorbing the entire backlog:
 
 1. Add a neutral ignored-lockfile regression fixture.
 2. Share lockfile constants/predicate between generator and oracle.
 3. Make `caution_zones` satisfy `expected_caution_terms` for root lockfiles.
 4. Align `weak_anchor_triage` with the same lockfile set.
-5. Propagate context-oracle failure details into postinstall run records if the
-   implementation touches recovery code.
+5. Propagate context-oracle failure details into postinstall run records if the implementation touches recovery code.
 6. Run focused gates and record release identity impact.
 
-P0 is complete only when a repeated first-session/recovery run no longer
-rewrites itself into the same `NEEDS_REVIEW` state for the neutral fixture.
+P0 is complete only when a repeated first-session/recovery run no longer rewrites itself into the same `NEEDS_REVIEW` state for the neutral fixture.
 
 ## P1 Cut: Installed Surface Repairability
 
 After P0:
 
-1. Ensure first-session materialization and installed certification agree on
-   Mantra Gate routing.
-2. Ensure command trigger parity is generated in installed Codex, Claude, and
-   Cursor surfaces during the relevant write path.
+1. Ensure first-session materialization and installed certification agree on Mantra Gate routing.
+2. Ensure command trigger parity is generated in installed Codex, Claude, and Cursor surfaces during the relevant write path.
 3. Add or update legacy-path retirement for generated target docs.
 4. Make `/tes-doctor` route each drift class to source-aware repair guidance.
 
-P1 is complete only when installed certification components either pass or
-report exact repair routes without hiding under a broader `INSTALLED` status.
+P1 is complete only when installed certification components either pass or report exact repair routes without hiding under a broader `INSTALLED` status.
 
 ## P2 Cut: Operational Noise And Retention
 
@@ -205,29 +167,23 @@ After P0/P1:
 3. Improve Field Reports summaries for multi-surface drains.
 4. Add evidence reports for the repaired failure family.
 
-P2 is complete only when noisy but non-blocking runtime state remains
-observable without becoming a false blocker.
+P2 is complete only when noisy but non-blocking runtime state remains observable without becoming a false blocker.
 
 ## Required Negative Checks
 
-- No private project names, private filesystem paths, private stack names,
-  internal service names, branch names, remotes, commits, product vocabulary,
-  or raw target docs in TES tracked content.
+- No private project names, private filesystem paths, private stack names, internal service names, branch names, remotes, commits, product vocabulary, or raw target docs in TES tracked content.
 - No target-only installed mirror patch as the final repair.
 - No duplicated lockfile tuple drift between generator and validator.
 - No `PASS` when generator output is immediately rejected by the paired oracle.
 - No `PASS` when installed certification components are degraded.
 - No stale retired skill path in generated quality gates.
-- No `.DS_Store`, `Thumbs.db`, `__MACOSX`, or AppleDouble residue in public
-  bundle or adapter materialization.
-- No `host_connected` or runtime availability claim inferred from config file
-  presence alone.
+- No `.DS_Store`, `Thumbs.db`, `__MACOSX`, or AppleDouble residue in public bundle or adapter materialization.
+- No `host_connected` or runtime availability claim inferred from config file presence alone.
 - No remote release/ref claim without explicit release identity authorization.
 
 ## Required Oracles Before Implementation Closeout
 
-Run focused gates during each unit. Before claiming convergence of this Super
-SPEC, run:
+Run focused gates during each unit. Before claiming convergence of this Super SPEC, run:
 
 ```bash
 python3 scripts/tes_init.py --self-test
@@ -251,8 +207,7 @@ git diff --check
 npm run commit:check
 ```
 
-If a unit intentionally lands before the full wave, closeout must name the
-narrower oracle that passed and the remaining units that are still open.
+If a unit intentionally lands before the full wave, closeout must name the narrower oracle that passed and the remaining units that are still open.
 
 ## Evidence And Canary Requirements
 
@@ -261,9 +216,7 @@ The final implementation must include:
 - neutral fixture evidence for the ignored-lockfile contract-symmetry failure;
 - before/after proof that the paired generator and oracle agree;
 - a package-source evidence report under `docs/evidence/reports/**`;
-- one replay on the original private canary project with the source-of-record
-  kept outside TES tracked content;
-- two additional private real-project canary replays before any
-  commercial-use or broad readiness claim;
+- one replay on the original private canary project with the source-of-record kept outside TES tracked content;
+- two additional private real-project canary replays before any commercial-use or broad readiness claim;
 - `git status --short --branch --untracked-files=all`;
 - release identity decision for any delivered behavior change.

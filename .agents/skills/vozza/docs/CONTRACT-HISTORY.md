@@ -2,24 +2,15 @@
 
 ## Purpose
 
-`vozza` reads user-provided text aloud through an available local
-text-to-speech tool while preserving language, protecting secrets, and keeping
-the workflow intentionally small.
+`vozza` reads user-provided text aloud through an available local text-to-speech tool while preserving language, protecting secrets, and keeping the workflow intentionally small.
 
 ## Why This Skill Exists
 
-The maintainer-proven local TTS skill worked well enough across simple mirrored
-project installs to promote the portable behavior into a standalone product.
-The useful contract is not the dependency itself; it is the small read-aloud
-workflow, speech cleanup, speed handling, and honest unavailable state.
+The maintainer-proven local TTS skill worked well enough across simple mirrored project installs to promote the portable behavior into a standalone product. The useful contract is not the dependency itself; it is the small read-aloud workflow, speech cleanup, speed handling, and honest unavailable state.
 
 ## Lineage
 
-`vozza` originates from a maintainer-internal read-aloud skill that was extracted
-from a prior internal read-aloud line into this standalone `vozza` product. The
-product identity, contract id, command, script names, and runtime path were
-rebranded during extraction; the durable read-aloud behavior was preserved.
-Historic dated rows below describe that single behavioral lineage.
+`vozza` originates from a maintainer-internal read-aloud skill that was extracted from a prior internal read-aloud line into this standalone `vozza` product. The product identity, contract id, command, script names, and runtime path were rebranded during extraction; the durable read-aloud behavior was preserved. Historic dated rows below describe that single behavioral lineage.
 
 ## Origin Signals
 
@@ -40,28 +31,16 @@ Historic dated rows below describe that single behavioral lineage.
 
 - Read only the text the user asked to hear.
 - Preserve language and meaning; do not summarize unless asked.
-- Convert Markdown, URLs, file paths, and code blocks into speech-friendly
-  text.
-- Normalize multilingual text into the default reading language through an
-  ephemeral TTS conversion cache when requested or needed.
-- Preserve technical terms, proper nouns, commands, and acronyms while adapting
-  pronunciation for natural speech.
-- Distinguish conversational spoken rendering from faithful reading so
-  agent-authored speech can become oral prose without summarizing user text.
-- Keep exact handling span-scoped so one literal cue does not force unrelated
-  fragile spans into raw speech.
-- Oralize tables, bullets, numbered lists, quotes, and code blocks in a way
-  that preserves facts, ordering, protected spans, exact islands, and
-  no-execute behavior.
-- Preserve mixed-language English identity for engineering workflow,
-  planning, product, package, model, command, and code terms while keeping
-  pronunciation hints instruction-level only.
-- Use provider fallback and error classification as optional runtime guidance
-  without importing proactive `speak` behavior or provider persistence.
-- Use the tested local voice/rate when accepted, but degrade to the host
-  default voice if needed.
-- Compute percentage speed changes from the last spoken rate in the current
-  conversation, falling back to `225`.
+- Convert Markdown, URLs, file paths, and code blocks into speech-friendly text.
+- Normalize multilingual text into the default reading language through an ephemeral TTS conversion cache when requested or needed.
+- Preserve technical terms, proper nouns, commands, and acronyms while adapting pronunciation for natural speech.
+- Distinguish conversational spoken rendering from faithful reading so agent-authored speech can become oral prose without summarizing user text.
+- Keep exact handling span-scoped so one literal cue does not force unrelated fragile spans into raw speech.
+- Oralize tables, bullets, numbered lists, quotes, and code blocks in a way that preserves facts, ordering, protected spans, exact islands, and no-execute behavior.
+- Preserve mixed-language English identity for engineering workflow, planning, product, package, model, command, and code terms while keeping pronunciation hints instruction-level only.
+- Use provider fallback and error classification as optional runtime guidance without importing proactive `speak` behavior or provider persistence.
+- Use the tested local voice/rate when accepted, but degrade to the host default voice if needed.
+- Compute percentage speed changes from the last spoken rate in the current conversation, falling back to `225`.
 - Report `TTS_NOT_AVAILABLE` when no local TTS tool exists.
 - Redact secret-like values instead of reading them aloud.
 
@@ -73,18 +52,14 @@ Historic dated rows below describe that single behavioral lineage.
 - Letting conversational speech become silent summary or invented intent.
 - Dropping long text instead of chunking it.
 - Reading mixed-language text with forced or awkward untranslated pronunciation.
-- Translating technical acronyms such as ADR, SPEC, or MCP into the wrong
-  semantic object.
+- Translating technical acronyms such as ADR, SPEC, or MCP into the wrong semantic object.
 - Turning reactive TTS into proactive announcements.
-- Persisting provider state, voice assignments, or global config as a side
-  effect of a read-aloud request.
+- Persisting provider state, voice assignments, or global config as a side effect of a read-aloud request.
 - Making the MCP dependency itself part of the product contract.
 
 ## Relationship To Other Skills
 
-`vozza` is a reactive read-aloud skill. It does not replace engineering,
-installer, or benchmark skills. It should not be used as a proactive
-announcement channel for normal status updates.
+`vozza` is a reactive read-aloud skill. It does not replace engineering, installer, or benchmark skills. It should not be used as a proactive announcement channel for normal status updates.
 
 ## Changelog
 
@@ -116,6 +91,4 @@ announcement channel for normal status updates.
 
 ## Do Not Lose
 
-Keep this skill small. The durable product behavior is "read this requested
-text aloud, safely and honestly," not a full audio subsystem or dependency
-manager.
+Keep this skill small. The durable product behavior is "read this requested text aloud, safely and honestly," not a full audio subsystem or dependency manager.

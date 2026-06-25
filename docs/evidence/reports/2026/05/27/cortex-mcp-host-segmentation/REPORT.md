@@ -14,25 +14,11 @@ Date: 2026-05-27.
 
 ## Summary
 
-TES executes the four serial waves planned in
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md`. The Cortex MCP
-installer at `scripts/install_mcp.py` becomes a host-agnostic orchestrator
-that delegates to per-host adapter modules under
-`scripts/install_mcp_hosts/**`. Each adapter owns one host's exact schema for
-stdio, opt-in localhost HTTP, strict per-host validation, and bearer-env
-authenticated HTTP. Cursor additionally supports the OAuth `auth` block;
-VS Code additionally emits top-level `inputs[]` with `type: "promptString"`
-when bearer-env is requested.
+TES executes the four serial waves planned in `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-host-segmentation.md`. The Cortex MCP installer at `scripts/install_mcp.py` becomes a host-agnostic orchestrator that delegates to per-host adapter modules under `scripts/install_mcp_hosts/**`. Each adapter owns one host's exact schema for stdio, opt-in localhost HTTP, strict per-host validation, and bearer-env authenticated HTTP. Cursor additionally supports the OAuth `auth` block; VS Code additionally emits top-level `inputs[]` with `type: "promptString"` when bearer-env is requested.
 
-The Cortex MCP server contract from ADR 0003 is unchanged. The
-`cortex_remember_plan` / `cortex_remember` write lane is unchanged. No tool
-schemas, prompts, resources, or transports were added or removed at the
-server layer. Markdown under `docs/agents/cortex/**` remains durable memory
-truth.
+The Cortex MCP server contract from ADR 0003 is unchanged. The `cortex_remember_plan` / `cortex_remember` write lane is unchanged. No tool schemas, prompts, resources, or transports were added or removed at the server layer. Markdown under `docs/agents/cortex/**` remains durable memory truth.
 
-Initial closure at SHA `b1fffd5` was committed as `ece2cc2`. A senior review
-audit found four gaps against the Super SPEC and one evidence drift; the
-five corrections landed at HEAD `66bd7c7` and this revision documents them.
+Initial closure at SHA `b1fffd5` was committed as `ece2cc2`. A senior review audit found four gaps against the Super SPEC and one evidence drift; the five corrections landed at HEAD `66bd7c7` and this revision documents them.
 
 ## Review Findings And Corrections
 
@@ -74,15 +60,11 @@ Forbidden-field guards rejected before write (mirrored in on-disk drift detectio
 - Cursor http rejects `command`, `args`, `env`, `cwd`.
 - VS Code rejects unknown fields under either transport.
 
-Codex `deny_unknown_fields` parity is enforced by `assert_entry_valid` against
-the closed `McpServerConfig` and `StreamableHttp` field sets mirrored from
-`codex-rs/config/src/mcp_types.rs`.
+Codex `deny_unknown_fields` parity is enforced by `assert_entry_valid` against the closed `McpServerConfig` and `StreamableHttp` field sets mirrored from `codex-rs/config/src/mcp_types.rs`.
 
 ## Oracles
 
-All Gate Record oracles plus the full `commit:check` suite passed at HEAD
-SHA `66bd7c7f2afda6b33939e6a03b2254c57800e7c0`, with the re-published bundle
-metadata reporting `source_tree_state: clean`:
+All Gate Record oracles plus the full `commit:check` suite passed at HEAD SHA `66bd7c7f2afda6b33939e6a03b2254c57800e7c0`, with the re-published bundle metadata reporting `source_tree_state: clean`:
 
 | Oracle | Result |
 |--------|--------|
@@ -116,82 +98,45 @@ The orchestrator surface remains backward-compatible and gains:
 --auth-scope <scope>          # Cursor OAuth scope; repeatable
 ```
 
-Existing flags (`--read-only`, `--enable-writes`, `--helpers-only`,
-`--overwrite`, `--no-backup`, `--dry-run`, `--yes`, `--json-only`,
-`--self-test`) keep their existing semantics.
+Existing flags (`--read-only`, `--enable-writes`, `--helpers-only`, `--overwrite`, `--no-backup`, `--dry-run`, `--yes`, `--json-only`, `--self-test`) keep their existing semantics.
 
 ## Privacy Self-Tests
 
 Two complementary privacy self-tests:
 
-1. **Bearer secret** — exports `TES_BEARER_TOKEN=super-secret-not-stored`
-   into the install subprocess environment, runs `--transport http
-   --bearer-env TES_BEARER_TOKEN --adapter all`, and asserts the secret
-   never appears in stdout/stderr, any generated config file, or the
-   `.tes/events/ledger.jsonl` event written by
-   `field_reports.safe_record_event`.
+1. **Bearer secret** — exports `TES_BEARER_TOKEN=super-secret-not-stored` into the install subprocess environment, runs `--transport http --bearer-env TES_BEARER_TOKEN --adapter all`, and asserts the secret never appears in stdout/stderr, any generated config file, or the `.tes/events/ledger.jsonl` event written by `field_reports.safe_record_event`.
 
-2. **Cursor OAuth client secret** — exports
-   `TES_CURSOR_CLIENT_SECRET=client-secret-must-not-leak` into the install
-   subprocess environment, runs the Cursor adapter with
-   `--auth-client-id-env TES_CURSOR_CLIENT_ID
-   --auth-client-secret-env TES_CURSOR_CLIENT_SECRET
-   --auth-scope read:cortex --auth-scope write:cortex`, and asserts the
-   secret never appears in stdout/stderr or in `.cursor/mcp.json`.
+2. **Cursor OAuth client secret** — exports `TES_CURSOR_CLIENT_SECRET=client-secret-must-not-leak` into the install subprocess environment, runs the Cursor adapter with `--auth-client-id-env TES_CURSOR_CLIENT_ID --auth-client-secret-env TES_CURSOR_CLIENT_SECRET --auth-scope read:cortex --auth-scope write:cortex`, and asserts the secret never appears in stdout/stderr or in `.cursor/mcp.json`.
 
-Both fixtures verify that the generated config references only the
-environment variable names, never the values.
+Both fixtures verify that the generated config references only the environment variable names, never the values.
 
 ## On-Disk Drift Detection
 
-A negative self-test injects drift into each host's registered file after a
-clean HTTP install and asserts that `validate_registered` returns FAIL:
+A negative self-test injects drift into each host's registered file after a clean HTTP install and asserts that `validate_registered` returns FAIL:
 
 - Codex: adds `unexpected_field = "drift"` to the TOML.
 - Claude: adds `cwd: "/forbidden"` to the JSON server entry.
 - VS Code: adds `bogus_field: 1` to the JSON server entry.
 
-`assert_entry_valid` runs against the parsed on-disk dict using each host's
-`allowed_fields(transport)` and `forbidden_fields(transport)` sets.
+`assert_entry_valid` runs against the parsed on-disk dict using each host's `allowed_fields(transport)` and `forbidden_fields(transport)` sets.
 
 ## Boundary Statement
 
-This closure does not change ADR 0001 or ADR 0003. It does not add new MCP
-tools, prompts, resources, or transports at the server. It does not weaken
-the `cortex_remember` plan-then-apply lane. It does not mutate any global
-host configuration, secret, hook, remote, package lockfile, `.obsidian/**`,
-or Cortex source material. Non-localhost HTTP installs require explicit
-`--allow-non-localhost`, mirroring the server-side guard.
+This closure does not change ADR 0001 or ADR 0003. It does not add new MCP tools, prompts, resources, or transports at the server. It does not weaken the `cortex_remember` plan-then-apply lane. It does not mutate any global host configuration, secret, hook, remote, package lockfile, `.obsidian/**`, or Cortex source material. Non-localhost HTTP installs require explicit `--allow-non-localhost`, mirroring the server-side guard.
 
 ## Release Identity Decision
 
-`package.json` remains at `0.3.142` and the public bundle is re-published at
-the current HEAD without a version change. Rationale:
+`package.json` remains at `0.3.142` and the public bundle is re-published at the current HEAD without a version change. Rationale:
 
-- The host segmentation changes are entirely internal to the installer
-  surface (`scripts/install_mcp.py` plus the new `install_mcp_hosts/**`
-  package). The Cortex MCP server contract is unchanged.
-- The CLI surface gains additive flags (`--transport`, `--host`, `--port`,
-  `--url`, `--allow-non-localhost`, `--bearer-env`,
-  `--auth-client-id-env`, `--auth-client-secret-env`, `--auth-scope`) but
-  preserves every existing flag's semantics and default behavior.
-- Generated stdio configs are byte-identical to the pre-refactor output;
-  no installed project sees a different file on upgrade with default
-  flags.
-- The Super SPEC permits deferring the per-wave patch bump when the
-  closeout records the deferral. This report is the record.
+- The host segmentation changes are entirely internal to the installer surface (`scripts/install_mcp.py` plus the new `install_mcp_hosts/**` package). The Cortex MCP server contract is unchanged.
+- The CLI surface gains additive flags (`--transport`, `--host`, `--port`, `--url`, `--allow-non-localhost`, `--bearer-env`, `--auth-client-id-env`, `--auth-client-secret-env`, `--auth-scope`) but preserves every existing flag's semantics and default behavior.
+- Generated stdio configs are byte-identical to the pre-refactor output; no installed project sees a different file on upgrade with default flags.
+- The Super SPEC permits deferring the per-wave patch bump when the closeout records the deferral. This report is the record.
 
-A future operator may bump to `0.3.143` to mark a release boundary
-explicitly; nothing in this closure blocks that decision.
+A future operator may bump to `0.3.143` to mark a release boundary explicitly; nothing in this closure blocks that decision.
 
 ## Residual Items
 
-- Codex CLI host recognition (`codex mcp list`) for the new HTTP
-  StreamableHttp variant is exercised only by local self-tests; remote
-  release certification of recognition is deferred.
-- VS Code `inputs[]` injection covers the bearer-env path; broader
-  `inputs[]` flows for prompt-based secrets beyond Authorization remain a
-  future addition.
-- Cursor `auth` block emission is covered by self-test; OAuth callback
-  exchange with a live Cursor instance remains a future operator
-  validation.
+- Codex CLI host recognition (`codex mcp list`) for the new HTTP StreamableHttp variant is exercised only by local self-tests; remote release certification of recognition is deferred.
+- VS Code `inputs[]` injection covers the bearer-env path; broader `inputs[]` flows for prompt-based secrets beyond Authorization remain a future addition.
+- Cursor `auth` block emission is covered by self-test; OAuth callback exchange with a live Cursor instance remains a future operator validation.

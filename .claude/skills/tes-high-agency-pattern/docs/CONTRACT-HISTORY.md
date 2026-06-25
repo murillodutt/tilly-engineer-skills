@@ -2,17 +2,11 @@
 
 ## Purpose
 
-`tes-high-agency-pattern` is local-only reference development guidance that
-extracts the operating pattern proven by `tes-mine` and `tes-prospect` without
-changing those reference skills or promoting the pattern into distributable TES.
+`tes-high-agency-pattern` is local-only reference development guidance that extracts the operating pattern proven by `tes-mine` and `tes-prospect` without changing those reference skills or promoting the pattern into distributable TES.
 
 ## Why This Skill Exists
 
-Some local development-layer skills benefit from high agency after activation,
-but that pattern is dangerous if it becomes always-on, verbose by default, or
-commercialized before evidence proves it useful. This skill preserves the
-portable operating pattern while keeping it local, conservative at activation,
-and bounded to one target skill or workflow at a time.
+Some local development-layer skills benefit from high agency after activation, but that pattern is dangerous if it becomes always-on, verbose by default, or commercialized before evidence proves it useful. This skill preserves the portable operating pattern while keeping it local, conservative at activation, and bounded to one target skill or workflow at a time.
 
 ## Origin Signals
 
@@ -36,11 +30,8 @@ and bounded to one target skill or workflow at a time.
 - Keep `tes-mine` and `tes-prospect` untouched as reference skills.
 - Use the high-agency pattern only as a local reference during skill/workflow design.
 - Do not expose it as a user-invoked skill or command.
-- Apply explicit activation, proactive posture, evidence-before-question,
-  one-risk-at-a-time operation, recommended answers, cognitive brake, and
-  resolved-output discipline only when they improve precision.
-- Treat external skill-design input as packaging reinforcement, not as a new
-  authority layer.
+- Apply explicit activation, proactive posture, evidence-before-question, one-risk-at-a-time operation, recommended answers, cognitive brake, and resolved-output discipline only when they improve precision.
+- Treat external skill-design input as packaging reinforcement, not as a new authority layer.
 - Keep commercial/public TES surfaces out of scope.
 
 ## Known Failure Modes Prevented
@@ -54,10 +45,8 @@ and bounded to one target skill or workflow at a time.
 ## Relationship To Other Skills
 
 - `tes-prospect` proves the plan-risk pressure side of the pattern.
-- `tes-mine` proves the language, evidence, and durable-memory side of the
-  pattern.
-- `tes-predictive-operations` chooses prospect/mine/alternate/package modes
-  during active reasoning.
+- `tes-mine` proves the language, evidence, and durable-memory side of the pattern.
+- `tes-predictive-operations` chooses prospect/mine/alternate/package modes during active reasoning.
 - `tes-high-agency-pattern` reviews or designs one local skill/workflow pattern.
 
 ## Changelog
@@ -76,10 +65,4 @@ and bounded to one target skill or workflow at a time.
 
 ## Do Not Lose
 
-This skill is a local learning lens for the agent to consult explicitly. It must not
-be exposed as a command, must not become a commercial skill, must not weaken or
-edit `tes-mine` or `tes-prospect`, and must not promote external guidance
-before repeated local evidence shows it improves precision without increasing
-contextual noise. Keep `SKILL.md` lean; use references for depth. Its
-temperament reference defines profiles; `tes-predictive-operations` owns mode
-selection during active reasoning.
+This skill is a local learning lens for the agent to consult explicitly. It must not be exposed as a command, must not become a commercial skill, must not weaken or edit `tes-mine` or `tes-prospect`, and must not promote external guidance before repeated local evidence shows it improves precision without increasing contextual noise. Keep `SKILL.md` lean; use references for depth. Its temperament reference defines profiles; `tes-predictive-operations` owns mode selection during active reasoning.

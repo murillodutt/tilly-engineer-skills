@@ -10,23 +10,16 @@ tver: 0.3.170
 
 # Maturity Layer Gate Evidence
 
-This note records the compact evidence basis for the TES Maturity Layer Gate.
-It is not a broad theory document; `docs/mesh/PRINCIPLES.md` owns the contract.
+This note records the compact evidence basis for the TES Maturity Layer Gate. It is not a broad theory document; `docs/mesh/PRINCIPLES.md` owns the contract.
 
 ## Observed Regression
 
-In a private canary project (source-of-record kept off the TES repository), an
-agent treated `Simplicity First` as a flat rule and attempted to simplify mature
-adapter/installer surfaces by removing compatibility structure that existed to
-protect installed behavior. The inverse risk appeared during review: once
-`Evolution` and `Platform` were named, a vague promotion could allow speculative
-architecture unless the evidence fields were checked.
+In a private canary project (source-of-record kept off the TES repository), an agent treated `Simplicity First` as a flat rule and attempted to simplify mature adapter/installer surfaces by removing compatibility structure that existed to protect installed behavior. The inverse risk appeared during review: once `Evolution` and `Platform` were named, a vague promotion could allow speculative architecture unless the evidence fields were checked.
 
 The gate therefore protects both directions:
 
 - `Birth` without promotion evidence must reject future scaffolding;
-- `Evolution` and `Platform` must preserve accepted contracts, compatibility,
-  fallback, and release oracles even when local code would become shorter.
+- `Evolution` and `Platform` must preserve accepted contracts, compatibility, fallback, and release oracles even when local code would become shorter.
 
 ## Evidence Map
 
@@ -47,6 +40,4 @@ The gate blocks two regressions:
 - premature complexity in `Birth`;
 - simplification regression in `Evolution` or `Platform`.
 
-The promotion rule is deliberately asymmetric: no evidence keeps the task in
-`Birth`; evidence must name the protected baseline, allowed complexity,
-forbidden complexity, and oracle before higher-layer complexity is accepted.
+The promotion rule is deliberately asymmetric: no evidence keeps the task in `Birth`; evidence must name the protected baseline, allowed complexity, forbidden complexity, and oracle before higher-layer complexity is accepted.

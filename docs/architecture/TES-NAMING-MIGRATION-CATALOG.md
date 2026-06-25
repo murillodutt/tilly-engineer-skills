@@ -12,71 +12,48 @@ tver: 0.3.0
 
 ## Decision
 
-Tilly Engineer Skills keeps its formal package name, but its operational
-namespace moves to the acronym `TES`.
+Tilly Engineer Skills keeps its formal package name, but its operational namespace moves to the acronym `TES`.
 
-The main Tilly project owns the generic `Tilly` runtime surface. This reference
-package must not keep active commands, skills, scripts, MCP server IDs, rules, or
-installed helper names that collide with that surface.
+The main Tilly project owns the generic `Tilly` runtime surface. This reference package must not keep active commands, skills, scripts, MCP server IDs, rules, or installed helper names that collide with that surface.
 
 The migration target is simple:
 
 - Product prose may say `Tilly Engineer Skills`.
 - Operational IDs must use `TES`, `tes`, or `tes-*`.
-- Active prompt commands must use `/tes-*` as the preferred user-facing trigger.
-  `/tes:*` forms may remain only as compatibility aliases interpreted as TES
-  intent text.
-- Installed runtime files must avoid `tilly-*`, `tilly_*.py`, and `.tilly/**`
-  unless a specific migration bridge declares a temporary compatibility reason.
+- Active prompt commands must use `/tes-*` as the preferred user-facing trigger. `/tes:*` forms may remain only as compatibility aliases interpreted as TES intent text.
+- Installed runtime files must avoid `tilly-*`, `tilly_*.py`, and `.tilly/**` unless a specific migration bridge declares a temporary compatibility reason.
 
 ## Current Status
 
-The TES operational namespace is implemented in v0.3.34.
-Update convergence now includes `tes_legacy_retirement.py`, a closed-catalog
-gate that removes known old runtime assets, migrates Field Reports state, and
-preserves project-owned context before new TES assets are copied.
+The TES operational namespace is implemented in v0.3.34. Update convergence now includes `tes_legacy_retirement.py`, a closed-catalog gate that removes known old runtime assets, migrates Field Reports state, and preserves project-owned context before new TES assets are copied.
 
-Active scripts, npm command prompts, skills, rules, MCP server IDs, issue
-templates, installed helper paths, navigation IDs, and generated evidence names
-use `TES`, `tes`, or `tes-*`.
+Active scripts, npm command prompts, skills, rules, MCP server IDs, issue templates, installed helper paths, navigation IDs, and generated evidence names use `TES`, `tes`, or `tes-*`.
 
-The raw inventory may still find `tilly-engineer-skills` because that remains
-the repository name, formal package identity, raw installer URL, and Field
-Reports destination. It may also find old names in this catalog, the namespace
-oracle, and historical evidence. Those are allowed by source boundary, not
-active runtime surfaces.
+The raw inventory may still find `tilly-engineer-skills` because that remains the repository name, formal package identity, raw installer URL, and Field Reports destination. It may also find old names in this catalog, the namespace oracle, and historical evidence. Those are allowed by source boundary, not active runtime surfaces.
 
 ## Why This Exists
 
-The current package exposes many assets as `tilly-*` even though another project
-named Tilly is the primary product. Agent runtimes list skills and commands from
-different projects in the same context picker. When both projects publish
-`Tilly Init`, `Tilly Cortex`, `Tilly MCP`, or `/tilly:init`, users and agents can
-select the wrong behavior.
+The current package exposes many assets as `tilly-*` even though another project named Tilly is the primary product. Agent runtimes list skills and commands from different projects in the same context picker. When both projects publish `Tilly Init`, `Tilly Cortex`, `Tilly MCP`, or `/tilly:init`, users and agents can select the wrong behavior.
 
 This is not a cosmetic issue. It is a routing and authority issue.
 
 ## Naming Rules
 
 - `Tilly Engineer Skills` remains allowed as the people-facing package name.
-- `TES` is the user-facing acronym for commands, skills, scripts, rules, and
-  installed helper surfaces.
+- `TES` is the user-facing acronym for commands, skills, scripts, rules, and installed helper surfaces.
 - `tes` is the lowercase executable namespace.
 - `tes-*` is the skill, MCP server, issue template, and installed asset prefix.
 - `/tes-*` is the preferred active command prompt namespace.
-- `/tes:*` remains a compatibility alias namespace for existing prompts and
-  agent transcripts.
+- `/tes:*` remains a compatibility alias namespace for existing prompts and agent transcripts.
 - `/tilly:*` must not appear in active skill descriptions after migration.
 - Historical evidence may keep old names when it records past behavior.
-- Migration code may detect old names, but it must not present them as the
-  current route.
+- Migration code may detect old names, but it must not present them as the current route.
 
 ## Catalog Of Required Renames
 
 ### Prompt Commands
 
-The active command prompts move from `/tilly:*` to preferred `/tes-*`
-triggers. Existing `/tes:*` forms remain compatibility aliases.
+The active command prompts move from `/tilly:*` to preferred `/tes-*` triggers. Existing `/tes:*` forms remain compatibility aliases.
 
 - `/tilly:init` becomes `/tes-init`.
 - `/tilly:update` becomes `/tes-update`.
@@ -93,28 +70,22 @@ triggers. Existing `/tes:*` forms remain compatibility aliases.
 - `/tilly:adapter` becomes `/tes-adapter`.
 - `/tilly:bench` becomes `/tes-bench`.
 
-Natural language triggers must also stop saying `Atualizar a Tilly` as the
-default phrase for this package. The current phrase becomes `Atualizar TES` or
-`Atualizar Tilly Engineer Skills`.
+Natural language triggers must also stop saying `Atualizar a Tilly` as the default phrase for this package. The current phrase becomes `Atualizar TES` or `Atualizar Tilly Engineer Skills`.
 
 ### NPM Commands
 
-The package scripts that currently use the `tilly:` command namespace must move
-to `tes:`.
+The package scripts that currently use the `tilly:` command namespace must move to `tes:`.
 
 - `tilly:init` becomes `tes:init`.
 - `tilly:init:self-test` becomes `tes:init:self-test`.
 - `tilly:update` becomes `tes:update`.
 - `tilly:update:self-test` becomes `tes:update:self-test`.
 
-Scripts that already use neutral domain namespaces, such as `cortex:*`,
-`mcp:*`, `field-reports:*`, `materialize:*`, and `adapter:*`, may remain unless
-their implementation exposes a `tilly-*` runtime name.
+Scripts that already use neutral domain namespaces, such as `cortex:*`, `mcp:*`, `field-reports:*`, `materialize:*`, and `adapter:*`, may remain unless their implementation exposes a `tilly-*` runtime name.
 
 ### Python Scripts
 
-Top-level script filenames that expose the old package namespace must move to
-`tes_*`.
+Top-level script filenames that expose the old package namespace must move to `tes_*`.
 
 - `scripts/tilly_init.py` becomes `scripts/tes_init.py`.
 - `scripts/tilly_update.py` becomes `scripts/tes_update.py`.
@@ -127,8 +98,7 @@ Installed helper paths must follow the same rule.
 - `.tilly/bin/cortex_mcp.py` becomes `.tes/bin/cortex_mcp.py`.
 - `.tilly/bin/root_context.py` becomes `.tes/bin/root_context.py`.
 
-Existing installed projects need a one-way migration plan that removes stale
-`.tilly/bin/**` helpers after `.tes/bin/**` is certified.
+Existing installed projects need a one-way migration plan that removes stale `.tilly/bin/**` helpers after `.tes/bin/**` is certified.
 
 ### Local Runtime Directories
 
@@ -139,9 +109,7 @@ The hidden local runtime root must move from `.tilly/**` to `.tes/**`.
 - `.tilly/cortex/recall.sqlite` becomes `.tes/cortex/recall.sqlite`.
 - `.tilly/cortex/semantic.sqlite` becomes `.tes/cortex/semantic.sqlite`.
 
-This does not change the Cortex memory source of truth. The memory still lives
-in versioned Markdown artifacts under `docs/agents/cortex/**` in an installed
-project. SQLite remains a derived cache.
+This does not change the Cortex memory source of truth. The memory still lives in versioned Markdown artifacts under `docs/agents/cortex/**` in an installed project. SQLite remains a derived cache.
 
 ### Codex Skills
 
@@ -155,9 +123,7 @@ Codex skill directory names and frontmatter names must move to `tes-*`.
 - `tilly-adapter` becomes `tes-adapter`.
 - `tilly-bench` becomes `tes-bench`.
 
-Descriptions must name TES command prompts and must not advertise `/tilly:*`.
-Skill display names should use `TES Init`, `TES Cortex`, `TES MCP`, and similar
-forms so the runtime picker separates them from the main Tilly project.
+Descriptions must name TES command prompts and must not advertise `/tilly:*`. Skill display names should use `TES Init`, `TES Cortex`, `TES MCP`, and similar forms so the runtime picker separates them from the main Tilly project.
 
 ### Claude Skills And Plugin Surface
 
@@ -171,20 +137,15 @@ Claude skill directory names and frontmatter names must also move to `tes-*`.
 - `tilly-adapter` becomes `tes-adapter`.
 - `tilly-bench` becomes `tes-bench`.
 
-The Claude plugin and marketplace metadata may keep the formal package name
-where it identifies the repository, but skill names exposed to the runtime must
-use TES.
+The Claude plugin and marketplace metadata may keep the formal package name where it identifies the repository, but skill names exposed to the runtime must use TES.
 
 ### Cursor Rules
 
 Cursor rule files that expose the old namespace must move to TES naming.
 
-- `src/adapters/cursor/rules/tilly-guidelines.mdc` becomes
-  `src/adapters/cursor/rules/tes-engineering-discipline.mdc`.
+- `src/adapters/cursor/rules/tilly-guidelines.mdc` becomes `src/adapters/cursor/rules/tes-engineering-discipline.mdc`.
 
-Installed Cursor rules must also use the TES name. If a project already has a
-project-owned rule with old Tilly content, the installer must run the root
-context structure gate before replacing or preserving it.
+Installed Cursor rules must also use the TES name. If a project already has a project-owned rule with old Tilly content, the installer must run the root context structure gate before replacing or preserving it.
 
 ### MCP Surface
 
@@ -192,33 +153,26 @@ The Cortex MCP server must move to the TES namespace.
 
 - MCP server ID `tilly-cortex` becomes `tes-cortex`.
 - MCP package name `tilly-cortex-mcp` becomes `tes-cortex-mcp`.
-- Codex config section `mcp_servers.tilly-cortex` becomes
-  `mcp_servers.tes-cortex`.
-- Claude Code, Cursor, and VS Code MCP configs must use `tes-cortex` as the
-  server key.
+- Codex config section `mcp_servers.tilly-cortex` becomes `mcp_servers.tes-cortex`.
+- Claude Code, Cursor, and VS Code MCP configs must use `tes-cortex` as the server key.
 - Tool titles should say `TES Cortex MCP`.
 
-The installer may detect and remove old `tilly-cortex` configs only after the
-new `tes-cortex` config passes the MCP self-test.
+The installer may detect and remove old `tilly-cortex` configs only after the new `tes-cortex` config passes the MCP self-test.
 
 ### Field Reports
 
 Field Reports must become a TES operational surface.
 
 - `Tilly Field Reports` becomes `TES Field Reports`.
-- `.github/ISSUE_TEMPLATE/tilly-field-report.yml` becomes
-  `.github/ISSUE_TEMPLATE/tes-field-report.yml`.
+- `.github/ISSUE_TEMPLATE/tilly-field-report.yml` becomes `.github/ISSUE_TEMPLATE/tes-field-report.yml`.
 - Schema marker `tilly-field-report@1` becomes `tes-field-report@2`.
 - Issue titles and labels should use `TES Field Report`.
 
-The GitHub destination may remain `murillodutt/tilly-engineer-skills` because it
-is the package repository. The payload must not expose old runtime command
-names as current commands.
+The GitHub destination may remain `murillodutt/tilly-engineer-skills` because it is the package repository. The payload must not expose old runtime command names as current commands.
 
 ### Installer And Manual
 
-The assisted installer, command trigger guide, install docs, and user manual
-must present TES commands as the only active prompt surface.
+The assisted installer, command trigger guide, install docs, and user manual must present TES commands as the only active prompt surface.
 
 Required updates:
 
@@ -231,9 +185,7 @@ Required updates:
 - `README.md`
 - `AGENTS.md`
 
-The manual may include one short migration note explaining that earlier
-installations used `/tilly:*`, but it must not teach users to keep using old
-commands.
+The manual may include one short migration note explaining that earlier installations used `/tilly:*`, but it must not teach users to keep using old commands.
 
 ### Validators And Oracles
 
@@ -251,13 +203,11 @@ Required updates include:
 - `scripts/root_context.py`
 - package `commit:check`
 
-The validation suite must include a namespace oracle that fails if active
-runtime surfaces still expose `tilly-*`, `tilly_`, `.tilly/**`, or `/tilly:*`.
+The validation suite must include a namespace oracle that fails if active runtime surfaces still expose `tilly-*`, `tilly_`, `.tilly/**`, or `/tilly:*`.
 
 ## Compatibility Policy
 
-Compatibility exists only to migrate old installations, not to keep both
-namespaces alive.
+Compatibility exists only to migrate old installations, not to keep both namespaces alive.
 
 Allowed temporary behavior:
 
@@ -285,20 +235,15 @@ Keep these names unless a later decision says otherwise:
 - Formal product name `Tilly Engineer Skills`.
 - GitHub destination repository `murillodutt/tilly-engineer-skills`.
 - Historical evidence and past reports.
-- User prose that clearly refers to the product name instead of an operational
-  command or runtime ID.
+- User prose that clearly refers to the product name instead of an operational command or runtime ID.
 
 ## Implementation Order
 
 1. Add this catalog and certify the blast radius.
-2. Add `scripts/tes_namespace.py` as a no-write namespace oracle that reports
-   current violations without rewriting. Its `inventory` mode must cross-check
-   paths and content with `find`, `rg --line-number --column`, and recursive
-   `grep` before any apply-style migration is considered.
+2. Add `scripts/tes_namespace.py` as a no-write namespace oracle that reports current violations without rewriting. Its `inventory` mode must cross-check paths and content with `find`, `rg --line-number --column`, and recursive `grep` before any apply-style migration is considered.
 3. Rename source skills, scripts, rules, MCP IDs, and package commands.
 4. Update materializers and installers to emit TES surfaces.
-5. Add `tes_legacy_retirement.py` for existing `.tilly/**`, `tilly-*`, and
-   `tilly-cortex` installations.
+5. Add `tes_legacy_retirement.py` for existing `.tilly/**`, `tilly-*`, and `tilly-cortex` installations.
 6. Update docs and manual so TES is the only active user command surface.
 7. Run install/update probes in clean and already-meshed projects.
 8. Remove stale compatibility bridges once real installations converge.
@@ -312,8 +257,7 @@ The migration is not certified until these checks pass:
 - `python3 scripts/tes_namespace.py audit`.
 - No active skill directory under `src/adapters/**/skills/tilly-*`.
 - No active skill frontmatter name beginning with `tilly-`.
-- No active command prompt `/tilly:*` in current installer, manual, rules, or
-  skill descriptions.
+- No active command prompt `/tilly:*` in current installer, manual, rules, or skill descriptions.
 - No installed helper path `.tilly/bin/**` in generated configs.
 - No MCP server key `tilly-cortex` in generated configs.
 - `python3 scripts/validate_reference_package.py`.
@@ -328,19 +272,12 @@ The migration is not certified until these checks pass:
 
 These decisions were closed during the v0.3.34 migration:
 
-- The Claude plugin package name remains `tilly-engineer-skills` because it is
-  repository identity, not an active command namespace.
+- The Claude plugin package name remains `tilly-engineer-skills` because it is repository identity, not an active command namespace.
 - Active docs, skills, and rules do not teach `/tilly:*` as current commands.
-- Local `.tilly/field-reports/**` state is migrated to `.tes/field-reports/**`
-  when present.
-- Known legacy runtime assets are retired by `tes_legacy_retirement.py` before
-  update materialization; unknown legacy closes as `NEEDS_REVIEW`.
-- GitHub issue template and schema moved to `tes-field-report`; generic labels
-  such as `field-report` remain because they are not runtime command IDs.
+- Local `.tilly/field-reports/**` state is migrated to `.tes/field-reports/**` when present.
+- Known legacy runtime assets are retired by `tes_legacy_retirement.py` before update materialization; unknown legacy closes as `NEEDS_REVIEW`.
+- GitHub issue template and schema moved to `tes-field-report`; generic labels such as `field-report` remain because they are not runtime command IDs.
 
 ## Certification Claim
 
-This catalog defines the required migration surface and certification boundary.
-The package is TES-namespaced when the required gates pass and installed project
-probes show no active `tilly-*`, `tilly_`, `.tilly/**`, or `/tilly:*` runtime
-surfaces outside declared migration and historical scopes.
+This catalog defines the required migration surface and certification boundary. The package is TES-namespaced when the required gates pass and installed project probes show no active `tilly-*`, `tilly_`, `.tilly/**`, or `/tilly:*` runtime surfaces outside declared migration and historical scopes.

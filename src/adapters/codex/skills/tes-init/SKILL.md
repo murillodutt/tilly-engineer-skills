@@ -5,23 +5,7 @@ description: Use when the user says /tes-init, /tes-setup, /tes:init, tes init, 
 
 # TES Init
 
-`/tes-init`, `/tes-setup`, `/tes:init`,
-`tes init`, `tes setup`, `initialize TES`, `install TES`, `recertify TES`,
-`inicializar TES`, `instalar TES`, `recertificar TES`, and direct
-command/prompts such as `TES, initialize this project`,
-`TES, inicialize este projeto` are
-user-facing installer intents. They are not blind shell commands and not
-background daemons. The active agent remains the executor.
-Across Codex, Claude Code, and Cursor, `/tes-*` forms are the preferred shared
-triggers, `/tes-setup` is a setup alias for `/tes-init`, and `/tes:*` forms are
-compatible TES intent aliases. `/tes-update` has its own visible
-`tes-update` skill; route update requests there instead of treating update as a
-hidden init mode. Treat
-`/tes-cortex`, `/tes:curate`, `/tes-curate`, `/tes-mcp`, `/tes-field-reports`,
-`/tes:field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`,
-`/tes:check`, `/tes:certify`, `/tes:recall`, `/tes:learn`, and `/tes:reflect`
-as TES intents, even when a previous root `AGENTS.md` must be recovered from
-`.tes/bk/**`.
+`/tes-init`, `/tes-setup`, `/tes:init`, `tes init`, `tes setup`, `initialize TES`, `install TES`, `recertify TES`, `inicializar TES`, `instalar TES`, `recertificar TES`, and direct command/prompts such as `TES, initialize this project`, `TES, inicialize este projeto` are user-facing installer intents. They are not blind shell commands and not background daemons. The active agent remains the executor. Across Codex, Claude Code, and Cursor, `/tes-*` forms are the preferred shared triggers, `/tes-setup` is a setup alias for `/tes-init`, and `/tes:*` forms are compatible TES intent aliases. `/tes-update` has its own visible `tes-update` skill; route update requests there instead of treating update as a hidden init mode. Treat `/tes-cortex`, `/tes:curate`, `/tes-curate`, `/tes-mcp`, `/tes-field-reports`, `/tes:field-reports`, `/tes-doctor`, `/tes-adapter`, `/tes-bench`, `/tes:check`, `/tes:certify`, `/tes:recall`, `/tes:learn`, and `/tes:reflect` as TES intents, even when a previous root `AGENTS.md` must be recovered from `.tes/bk/**`.
 
 ## Module Map
 
@@ -31,15 +15,9 @@ as TES intents, even when a previous root `AGENTS.md` must be recovered from
 
 ## Mission
 
-Initialize, retrofit, update, audit, or recertify TES in the current project by
-following the assisted context installer contract. `/tes-init` must also
-bootstrap the project for future agent work: read strong anchors, run
-`tes_init.py`, and write `docs/agents/PROJECT-CONTEXT.md` as **Tier 3 init
-inventory** (anchor catalog and manifest), not as the operating authority.
+Initialize, retrofit, update, audit, or recertify TES in the current project by following the assisted context installer contract. `/tes-init` must also bootstrap the project for future agent work: read strong anchors, run `tes_init.py`, and write `docs/agents/PROJECT-CONTEXT.md` as **Tier 3 init inventory** (anchor catalog and manifest), not as the operating authority.
 
-When `docs/agents/DOCUMENTATION-AUTHORITY.md` exists or after `/tes-align`,
-Tier 2 mesh (`EXECUTION-LINE`, `PROJECT-STATE`, etc.) leads cold start;
-`PROJECT-CONTEXT` remains inventory unless `/tes-init` is re-run for reshape.
+When `docs/agents/DOCUMENTATION-AUTHORITY.md` exists or after `/tes-align`, Tier 2 mesh (`EXECUTION-LINE`, `PROJECT-STATE`, etc.) leads cold start; `PROJECT-CONTEXT` remains inventory unless `/tes-init` is re-run for reshape.
 
 Canonical installer spec:
 
@@ -47,91 +25,29 @@ Canonical installer spec:
 https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/docs/install/ASSISTED-CONTEXT-INSTALLER.prompt.md
 ```
 
-Use the local package copy when available. Otherwise fetch the raw spec or ask
-the user for package contents.
+Use the local package copy when available. Otherwise fetch the raw spec or ask the user for package contents.
 
 ## Workflow
 
 1. Enter quiet installer mode.
-2. Detect the current runtime and classify the project as `new`, `existing`, or
-   `meshed`.
+2. Detect the current runtime and classify the project as `new`, `existing`, or `meshed`.
 3. Run the `/tes-init` router gates before choosing writes:
-   - **Install/Update Gate** checks installed/cloud versions, helper contract,
-     adapter/runtime drift, MCP activation, and legacy retirement.
-   - **Project Context Gate** checks whether
-     `docs/agents/PROJECT-CONTEXT.md` exists and passes
-     `project_context_oracle.py`.
-   Step Zero protects installer/update writes. It must not block
-   project-context initialization when TES is already installed/current and the
-   Project Context Gate is the only failing gate; report the dirty tree, avoid
-   helper/adapter/MCP/bootloader writes, and initialize/certify project context.
-   For `/tes-init`, a preflight context PASS does not replace project-start
-   execution. After helper-only or adapter repairs, run the **Project-Start
-   Gate** before final reporting: execute `python3 .tes/bin/tes_init.py --target
-   . --yes` in an installed target, or package `scripts/tes_init.py --target
-   <target> --yes`, then run `project_context_oracle.py --target <target>` and
-   `project_alignment_oracle.py --target <target>`.
-   When `.tes/postinstall.json` is already `complete` from the first-session
-   hook and the user asks plain `/tes-init` or `/tes-setup`, treat it as a
-   status/report request: read `.tes/postinstall.json` and its `last_run`,
-   summarize the completed run, and do not rerun Project-Start unless the user
-   explicitly asks to recertify/update, the sentinel is not `complete`, the
-   planner reports drift, or evidence is missing.
-   When `.tes/postinstall.json` is `needs_review`, treat `/tes-init` as a
-   recovery intent: inspect the sentinel, the latest run record, and reported
-   blockers; repair only the relevant TES/setup issue; then run
-   `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review`
-   as the final Project-Start closure. That recovery command reruns
-   `tes_init.py`, `project_context_oracle.py`, and
-   `project_alignment_oracle.py`, verifies selected TES adapter MCP config,
-   records a new run, and clears the sentinel only when the gates pass. Do not
-   use broad `--force` for this path unless the user explicitly asks for full
-   recertification.
-4. Run Step Zero before installer/update edits: inspect Git status and offer a
-   local baseline commit when the tree is dirty and install/update writes are
-   required.
-5. If an install/init preflight planner reports helper or runtime drift, use the
-   visible `tes-update` skill for update convergence unless the user explicitly
-   asked for full recertification. Do not rerun Project-Start merely because an
-   update plan was requested.
-6. If the update planner returns `continuation_plan.status=PENDING_APPROVAL`
-   during an init/recertification run, stop with `NEEDS_REVIEW` and include the
-   plan's required phases, approvals, write surfaces, commands, and final
-   recorded probe. Do not leave an old meshed project with a bare blocker that
-   the next agent cannot resume.
-7. Before rewriting root bootloaders, stage the bundle and create a central
-   `.tes/bk/<timestamp>/` backup. Analyze previous root context from that
-   backup and recover durable semantics into `docs/agents/**`.
-8. When `legacy_retirement_required=true`, run `tes_legacy_retirement.py plan`,
-   apply only if the run is authorized, then require
-   `tes_legacy_retirement.py audit` before copying new TES assets.
-9. Use the detected runtime as the default route. Ask for route only when the
-   installer contract requires it.
-10. Apply clean runtime after central backup, build or update `docs/agents/**`, analyze the
-   target project in depth, write or update `docs/agents/PROJECT-CONTEXT.md`,
-   create the initial Obsidian-compatible operating mesh when missing,
-   initialize `docs/agents/cortex/**`, keep runtime bootloaders thin, and
-   activate the Cortex MCP route with governed remember by default when
-   selected.
-   Treat `tes_init.py` as deterministic scaffold generation for Tier 3 inventory
-   plus first-pass mesh stubs. The active agent must open strong anchors before
-   claiming deep project understanding, or report `Project context: NEEDS_REVIEW`
-   with the blocker. `/tes-align` owns Tier 2 semantic alignment and must run
-   before agents treat the project as operationally positioned.
-11. Invoke package oracles such as `tes_init.py`, `tes_update.py`,
-   `tes_legacy_retirement.py`, `root_context.py`, `install_smoke.py`,
-   `install_mcp.py`, and Cortex checks.
-   If local execution is unavailable, mark it `BLOCKED` or `SKIP`.
-12. Install or report the Field Reports `pre-push` drain. It is active by
-   default and controlled by the user manual prompts.
-13. Finish with a short certification report, source snapshot freshness, changed
-   surfaces, installed helper set, Field Reports state, evidence path, limits,
-   project context path, rollback summary, and Git rollback instructions.
+   - **Install/Update Gate** checks installed/cloud versions, helper contract, adapter/runtime drift, MCP activation, and legacy retirement.
+   - **Project Context Gate** checks whether `docs/agents/PROJECT-CONTEXT.md` exists and passes `project_context_oracle.py`. Step Zero protects installer/update writes. It must not block project-context initialization when TES is already installed/current and the Project Context Gate is the only failing gate; report the dirty tree, avoid helper/adapter/MCP/bootloader writes, and initialize/certify project context. For `/tes-init`, a preflight context PASS does not replace project-start execution. After helper-only or adapter repairs, run the **Project-Start Gate** before final reporting: execute `python3 .tes/bin/tes_init.py --target. --yes` in an installed target, or package `scripts/tes_init.py --target <target> --yes`, then run `project_context_oracle.py --target <target>` and `project_alignment_oracle.py --target <target>`. When `.tes/postinstall.json` is already `complete` from the first-session hook and the user asks plain `/tes-init` or `/tes-setup`, treat it as a status/report request: read `.tes/postinstall.json` and its `last_run`, summarize the completed run, and do not rerun Project-Start unless the user explicitly asks to recertify/update, the sentinel is not `complete`, the planner reports drift, or evidence is missing. When `.tes/postinstall.json` is `needs_review`, treat `/tes-init` as a recovery intent: inspect the sentinel, the latest run record, and reported blockers; repair only the relevant TES/setup issue; then run `python3 .tes/bin/tes_install.py postinstall --target . --recover-needs-review` as the final Project-Start closure. That recovery command reruns `tes_init.py`, `project_context_oracle.py`, and `project_alignment_oracle.py`, verifies selected TES adapter MCP config, records a new run, and clears the sentinel only when the gates pass. Do not use broad `--force` for this path unless the user explicitly asks for full recertification.
+4. Run Step Zero before installer/update edits: inspect Git status and offer a local baseline commit when the tree is dirty and install/update writes are required.
+5. If an install/init preflight planner reports helper or runtime drift, use the visible `tes-update` skill for update convergence unless the user explicitly asked for full recertification. Do not rerun Project-Start merely because an update plan was requested.
+6. If the update planner returns `continuation_plan.status=PENDING_APPROVAL` during an init/recertification run, stop with `NEEDS_REVIEW` and include the plan's required phases, approvals, write surfaces, commands, and final recorded probe. Do not leave an old meshed project with a bare blocker that the next agent cannot resume.
+7. Before rewriting root bootloaders, stage the bundle and create a central `.tes/bk/<timestamp>/` backup. Analyze previous root context from that backup and recover durable semantics into `docs/agents/**`.
+8. When `legacy_retirement_required=true`, run `tes_legacy_retirement.py plan`, apply only if the run is authorized, then require `tes_legacy_retirement.py audit` before copying new TES assets.
+9. Use the detected runtime as the default route. Ask for route only when the installer contract requires it.
+10. Apply clean runtime after central backup, build or update `docs/agents/**`, analyze the target project in depth, write or update `docs/agents/PROJECT-CONTEXT.md`, create the initial Obsidian-compatible operating mesh when missing, initialize `docs/agents/cortex/**`, keep runtime bootloaders thin, and activate the Cortex MCP route with governed remember by default when selected. Treat `tes_init.py` as deterministic scaffold generation for Tier 3 inventory plus first-pass mesh stubs. The active agent must open strong anchors before claiming deep project understanding, or report `Project context: NEEDS_REVIEW` with the blocker. `/tes-align` owns Tier 2 semantic alignment and must run before agents treat the project as operationally positioned.
+11. Invoke package oracles such as `tes_init.py`, `tes_update.py`, `tes_legacy_retirement.py`, `root_context.py`, `install_smoke.py`, `install_mcp.py`, and Cortex checks. If local execution is unavailable, mark it `BLOCKED` or `SKIP`.
+12. Install or report the Field Reports `pre-push` drain. It is active by default and controlled by the user manual prompts.
+13. Finish with a short certification report, source snapshot freshness, changed surfaces, installed helper set, Field Reports state, evidence path, limits, project context path, rollback summary, and Git rollback instructions.
 
 ## Locks
 
 - Do not overwrite project instructions before `.tes/bk/<timestamp>/manifest.json` exists.
 - Do not edit secrets, global MCP config, remotes, package locks, or CI secrets.
-- Do not push, amend, tag, publish, or install dependencies without explicit
-  user approval after the final report.
+- Do not push, amend, tag, publish, or install dependencies without explicit user approval after the final report.
 - Do not promote Cortex cells automatically.

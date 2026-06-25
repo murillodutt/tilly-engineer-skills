@@ -2,13 +2,11 @@
 
 ## Purpose
 
-`/tes-map` updates the Project GPS managed block and Eraser Atlas projections
-inside `PROJECT-ROADMAP.md` after alignment exists.
+`/tes-map` updates the Project GPS managed block and Eraser Atlas projections inside `PROJECT-ROADMAP.md` after alignment exists.
 
 ## Why This Skill Exists
 
-Agents need a visual current-position answer without rewriting the whole
-roadmap. `tes-align` owns the map; `tes-map` refreshes GPS projection.
+Agents need a visual current-position answer without rewriting the whole roadmap. `tes-align` owns the map; `tes-map` refreshes GPS projection.
 
 ## Contracts Preserved
 
@@ -25,8 +23,7 @@ roadmap. `tes-align` owns the map; `tes-map` refreshes GPS projection.
 
 ## Relationship To Other Skills
 
-`tes-align` creates/updates roadmap and Convergence Line. `tes-map` refreshes
-GPS position and Atlas links.
+`tes-align` creates/updates roadmap and Convergence Line. `tes-map` refreshes GPS position and Atlas links.
 
 ## Changelog
 

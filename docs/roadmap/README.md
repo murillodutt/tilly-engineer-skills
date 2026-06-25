@@ -10,9 +10,7 @@ tver: 0.1.4
 
 # Roadmap Index
 
-This folder preserves roadmap lineage without turning the roadmap into the
-work. Current package baseline: TES `0.3.193`. Execution authority lives in the
-current dashboard, Super SPEC, audit record, or runtime oracle for each line.
+This folder preserves roadmap lineage without turning the roadmap into the work. Current package baseline: TES `0.3.193`. Execution authority lives in the current dashboard, Super SPEC, audit record, or runtime oracle for each line.
 
 ## Folder Map
 
@@ -27,12 +25,7 @@ current dashboard, Super SPEC, audit record, or runtime oracle for each line.
 
 ## Goal Artifact Policy
 
-`docs/roadmap/goals/super-specs/` remains tracked because Super SPECs are
-execution contracts or durable lineage. Historical audit counts are not the
-current registry; this index carries active grouped lines and keeps older
-lineage reachable. `goals/prompts/` is ignored because generated goal prompts
-are execution residue; durable outcomes belong in dashboards, registries,
-history, audits, fixtures, or oracles.
+`docs/roadmap/goals/super-specs/` remains tracked because Super SPECs are execution contracts or durable lineage. Historical audit counts are not the current registry; this index carries active grouped lines and keeps older lineage reachable. `goals/prompts/` is ignored because generated goal prompts are execution residue; durable outcomes belong in dashboards, registries, history, audits, fixtures, or oracles.
 
 ## Current Lines
 
@@ -85,9 +78,7 @@ Roadmap partition budgets are enforced by `scripts/validate_doc_size.py`.
 | Registry | 160 lines | Stable artifact pointers and grouped ranges. |
 | History | 140 lines | Closed lineage and lessons. |
 
-When a dashboard reaches the warning zone, move detail to registry/history
-before adding new status. Ambiguous, repeated, or stale roadmap text is a
-defect to fix in the same execution cycle.
+When a dashboard reaches the warning zone, move detail to registry/history before adding new status. Ambiguous, repeated, or stale roadmap text is a defect to fix in the same execution cycle.
 
 ## Status Vocabulary
 
@@ -99,5 +90,4 @@ defect to fix in the same execution cycle.
 | Deferred | Intentionally postponed with reason. |
 | Complete | Closed by evidence or replaced by a newer source. |
 
-Do not delete old roadmap documents merely because they are outdated. Move
-them to the right partition and make the lineage explicit.
+Do not delete old roadmap documents merely because they are outdated. Move them to the right partition and make the lineage explicit.

@@ -10,15 +10,13 @@ tver: 0.1.0
 
 # Assisted Installer Navigation Library
 
-The assisted installer declares navigation as intent, then loads the smallest
-runtime renderer that can present that intent safely.
+The assisted installer declares navigation as intent, then loads the smallest runtime renderer that can present that intent safely.
 
 ```text
 navigation intent -> runtime renderer -> answer parser -> installer action
 ```
 
-The installer must not expose scratch JSON, hidden chain-of-thought, numbered
-option fragments, or platform-specific internals to the user.
+The installer must not expose scratch JSON, hidden chain-of-thought, numbered option fragments, or platform-specific internals to the user.
 
 ## Runtime Renderers
 
@@ -34,28 +32,15 @@ option fragments, or platform-specific internals to the user.
 | Anthropic API direct | No UI without harness | `anthropic-api.prompt.md` | custom tool-use plus client-rendered UI |
 | Continue.dev, Aider, other | No certified native card | `generic.prompt.md` | command navigation |
 
-Different renderers are not drift. Drift occurs only when the same navigation
-intent produces different installer actions.
+Different renderers are not drift. Drift occurs only when the same navigation intent produces different installer actions.
 
-Tilly command navigation uses named commands, not naked numbers. A host may add
-ordinal decoration for accessibility, but the accepted answer remains the
-stable command string.
+Tilly command navigation uses named commands, not naked numbers. A host may add ordinal decoration for accessibility, but the accepted answer remains the stable command string.
 
 ## Basis
 
-- Codex app-server documents experimental `tool/requestUserInput` for 1-3
-  short questions, and Codex protocol v1 documents `RequestUserInput` /
-  `UserInputAnswer` with options plus `isOther`. This package still treats
-  Codex structured input as host and mode sensitive:
-  `https://developers.openai.com/codex/app-server`
-  `https://github.com/openai/codex/blob/main/codex-rs/docs/protocol_v1.md`
-- Claude Code documents `AskUserQuestion` for clarifying questions and gives
-  the 1-4 question / 2-4 option limits:
-  `https://code.claude.com/docs/en/agent-sdk/user-input`
-- Cursor documents project rules under `.cursor/rules/**` and tool availability
-  is mode-dependent. This package uses native Cursor question tools only when
-  the active host exposes them:
-  `https://docs.cursor.com/en/context/rules`
+- Codex app-server documents experimental `tool/requestUserInput` for 1-3 short questions, and Codex protocol v1 documents `RequestUserInput` /`UserInputAnswer` with options plus `isOther`. This package still treats Codex structured input as host and mode sensitive: `https://developers.openai.com/codex/app-server` `https://github.com/openai/codex/blob/main/codex-rs/docs/protocol_v1.md`
+- Claude Code documents `AskUserQuestion` for clarifying questions and gives the 1-4 question / 2-4 option limits: `https://code.claude.com/docs/en/agent-sdk/user-input`
+- Cursor documents project rules under `.cursor/rules/**` and tool availability is mode-dependent. This package uses native Cursor question tools only when the active host exposes them: `https://docs.cursor.com/en/context/rules`
 
 ## Dynamic Loading
 
@@ -79,9 +64,7 @@ cursor.prompt.md
 generic.prompt.md
 ```
 
-If a runtime-specific file cannot be fetched, continue with
-`common.prompt.md`. If the common file cannot be fetched, use the embedded
-command navigation fallback in the main installer prompt.
+If a runtime-specific file cannot be fetched, continue with `common.prompt.md`. If the common file cannot be fetched, use the embedded command navigation fallback in the main installer prompt.
 
 ## Intent Shape
 
@@ -100,8 +83,7 @@ options:
     description: <honest trade-off>
 ```
 
-The renderer may convert this shape to a native card, a terminal menu, or a
-compact prose menu. It must preserve commands exactly.
+The renderer may convert this shape to a native card, a terminal menu, or a compact prose menu. It must preserve commands exactly.
 
 ## Evidence
 
@@ -116,9 +98,7 @@ navigation_decisions:
     selected: <command>
 ```
 
-For installer certification, raw UI appearance is not the evidence. The
-evidence is the selected command, the renderer used, and the resulting file
-changes.
+For installer certification, raw UI appearance is not the evidence. The evidence is the selected command, the renderer used, and the resulting file changes.
 
 ## Changelog
 

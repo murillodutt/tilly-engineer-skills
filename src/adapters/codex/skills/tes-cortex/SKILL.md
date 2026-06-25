@@ -5,8 +5,7 @@ description: Use when the user says /tes-cortex, /tes:cortex, /tes-curate, /tes:
 
 # TES Cortex
 
-`/tes-cortex` and `/tes:cortex` are user-facing shortcuts for Cortex memory operations. The
-agent remains the executor; scripts and MCP tools are oracles.
+`/tes-cortex` and `/tes:cortex` are user-facing shortcuts for Cortex memory operations. The agent remains the executor; scripts and MCP tools are oracles.
 
 ## Module Map
 
@@ -38,8 +37,7 @@ agent remains the executor; scripts and MCP tools are oracles.
 
 ## Rules
 
-- Treat `sources/**`, `cells/**`, `MAP.md`, `TRAIL.md`, `LINKS.md`, and
-  `CONTRACT.md` as the memory.
+- Treat `sources/**`, `cells/**`, `MAP.md`, `TRAIL.md`, `LINKS.md`, and `CONTRACT.md` as the memory.
 - Treat `.tes/cortex/recall.sqlite` as rebuildable cache.
 - Treat `.tes/cortex/semantic.sqlite` as rebuildable curation cache.
 - Prefer MCP for read-only recall/read/curate/reflect when available.
@@ -47,13 +45,9 @@ agent remains the executor; scripts and MCP tools are oracles.
 - Prefer MCP event tools only for read-only lifecycle evidence inspection.
 - Never write `sources/**` after import.
 - Never promote loose summaries; cells need `## Claim` and `## Evidence`.
-- When `reflect.curation_due=true`, run `curate-plan` before proposing memory
-  compaction, split, merge, or rejection.
+- When `reflect.curation_due=true`, run `curate-plan` before proposing memory compaction, split, merge, or rejection.
 - Never run `apply --yes` without explicit user authorization.
 - Never run `remember --yes` without explicit user authorization and evidence.
-- Never call `cortex_remember` unless the user approved the exact plan phrase;
-  read-only MCP mode intentionally hides the tool.
-- Never call consolidation `CERTIFIED` without a valid lock, approved review,
-  rollback reference, allowed evidence, and observed Cortex cell write result.
-- Do not treat `forget` as available destructive deletion; it is blocked until
-  the consolidation gate owns observed-write and rollback evidence.
+- Never call `cortex_remember` unless the user approved the exact plan phrase; read-only MCP mode intentionally hides the tool.
+- Never call consolidation `CERTIFIED` without a valid lock, approved review, rollback reference, allowed evidence, and observed Cortex cell write result.
+- Do not treat `forget` as available destructive deletion; it is blocked until the consolidation gate owns observed-write and rollback evidence.

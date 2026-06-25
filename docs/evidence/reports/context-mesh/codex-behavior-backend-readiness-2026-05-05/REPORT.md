@@ -9,10 +9,7 @@ evidence_level: L3
 
 # Codex Behavior Backend Readiness Report
 
-This report decides whether a Codex behavior backend has a clean enough route
-to design before implementation. It does not implement a backend, run behavior,
-change the shared contract, change the dataset, change the grader, or claim
-Codex behavior certification.
+This report decides whether a Codex behavior backend has a clean enough route to design before implementation. It does not implement a backend, run behavior, change the shared contract, change the dataset, change the grader, or claim Codex behavior certification.
 
 ## Decision
 
@@ -25,9 +22,7 @@ Codex has a local non-interactive execution route suitable for backend design,
 but no Codex behavior claim exists yet.
 ```
 
-The route is not approved for certification runs until the backend is
-implemented with raw evidence capture, timeout normalization, and explicit cost
-controls.
+The route is not approved for certification runs until the backend is implemented with raw evidence capture, timeout normalization, and explicit cost controls.
 
 ## Head Fields
 
@@ -38,8 +33,7 @@ controls.
 | `retention_head_pending` | `true` before this report is committed |
 | `retention_head_final` | Resolved by the Git commit that retains this report |
 
-Future behavior reports must replace `retention_head_pending` with a retained
-commit reference and must include a real `run_head`.
+Future behavior reports must replace `retention_head_pending` with a retained commit reference and must include a real `run_head`.
 
 ## Frozen Inputs
 
@@ -87,9 +81,7 @@ codex exec \
   -
 ```
 
-The sample prompt should be passed on stdin. The backend implementation should
-wrap this command with a subprocess timeout rather than relying on shell
-behavior.
+The sample prompt should be passed on stdin. The backend implementation should wrap this command with a subprocess timeout rather than relying on shell behavior.
 
 ## Adapter Measurement Route
 
@@ -97,20 +89,13 @@ The backend must measure the Codex adapter, not generic OpenAI model behavior.
 
 Required route:
 
-1. Materialize the Codex adapter into a temporary workspace outside the source
-   repository.
-2. Run `codex exec --cd <temporary-materialized-codex-workspace>` so Codex sees
-   the materialized `AGENTS.md` and `.agents/skills/**` as project context.
-3. For `none`, run from an equivalent temporary workspace without Codex adapter
-   context.
-4. For `drop:<section>`, use a generated temporary adapter context with only
-   that section removed from the materialized instructions.
-5. Keep matrix labels in evidence only; never put `full`, `none`, or
-   `drop:<section>` in the backend prompt.
+1. Materialize the Codex adapter into a temporary workspace outside the source repository.
+2. Run `codex exec --cd <temporary-materialized-codex-workspace>` so Codex sees the materialized `AGENTS.md` and `.agents/skills/**` as project context.
+3. For `none`, run from an equivalent temporary workspace without Codex adapter context.
+4. For `drop:<section>`, use a generated temporary adapter context with only that section removed from the materialized instructions.
+5. Keep matrix labels in evidence only; never put `full`, `none`, or `drop:<section>` in the backend prompt.
 
-If implementation instead sends the shared runner prompt to `codex exec`
-without materialized adapter context, the result must be called generic Codex
-CLI behavior, not Codex adapter behavior.
+If implementation instead sends the shared runner prompt to `codex exec` without materialized adapter context, the result must be called generic Codex CLI behavior, not Codex adapter behavior.
 
 ## Readiness Matrix
 
@@ -176,13 +161,10 @@ Implementation may begin only if it preserves:
 - The backend cannot capture raw output and event stream.
 - The backend cannot enforce timeout.
 - The backend needs contract, dataset, or grader changes before proving need.
-- The backend measures generic OpenAI output and calls it Codex adapter behavior
-  without materialized adapter context.
+- The backend measures generic OpenAI output and calls it Codex adapter behavior without materialized adapter context.
 - The backend exposes matrix labels to the model prompt.
 - A report declares Codex behavior parity before a retained Codex behavior run.
 
 ## Next Step
 
-Implement the smallest `codex-cli` backend only after a separate patch confirms
-the temporary materialized workspace strategy. First implementation should run a
-dry fixture or single-sample smoke path before any full paid behavior matrix.
+Implement the smallest `codex-cli` backend only after a separate patch confirms the temporary materialized workspace strategy. First implementation should run a dry fixture or single-sample smoke path before any full paid behavior matrix.

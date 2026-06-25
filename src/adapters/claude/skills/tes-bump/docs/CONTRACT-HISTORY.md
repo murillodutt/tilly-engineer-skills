@@ -2,17 +2,11 @@
 
 ## Purpose
 
-`tes-bump` is the version governance guard for deciding, planning, and applying
-bounded project version bumps inside TES-managed targets.
+`tes-bump` is the version governance guard for deciding, planning, and applying bounded project version bumps inside TES-managed targets.
 
 ## Why This Skill Exists
 
-Version bumps are small but fragile: agents can skip the source of truth,
-forget plugin manifests, invent changelog behavior, or update broad files by
-string replacement. They can also reach commit or release closure after
-delivered behavior changed without making a version decision. TES needs the
-portable version-sync contract and a commit/release governance guard that
-stays generic and does not import any specific caller's product assumptions.
+Version bumps are small but fragile: agents can skip the source of truth, forget plugin manifests, invent changelog behavior, or update broad files by string replacement. They can also reach commit or release closure after delivered behavior changed without making a version decision. TES needs the portable version-sync contract and a commit/release governance guard that stays generic and does not import any specific caller's product assumptions.
 
 ## Origin Signals
 
@@ -32,18 +26,15 @@ stays generic and does not import any specific caller's product assumptions.
 
 ## Contracts Preserved
 
-- Activate for explicit version bump intent and as a governance guard when
-  commit, release, or delivered behavior creates a version-decision condition.
+- Activate for explicit version bump intent and as a governance guard when commit, release, or delivered behavior creates a version-decision condition.
 - Read the current source version before computing the next version.
-- Run a read-only governance check before inferred commit/release bump
-  conditions write anything.
+- Run a read-only governance check before inferred commit/release bump conditions write anything.
 - Use strict SemVer: patch, minor, major, exact release, and prerelease.
 - Discover bounded targets instead of broad string replacing.
 - Write the source of truth first and stop if that write fails.
 - Support custom targets only through safe relative paths.
 - Validate updated targets before reporting success.
-- Report old version, new version, updated targets, failures, and Git next
-  steps.
+- Report old version, new version, updated targets, failures, and Git next steps.
 - Never commit, tag, push, publish, or mutate remotes from the bump skill.
 - Stop closure on `NEEDS_VERSION_DECISION` or `NEEDS_REVIEW`.
 
@@ -55,16 +46,12 @@ stays generic and does not import any specific caller's product assumptions.
 - Updating marketplace manifests with lossy replace-all behavior.
 - Importing caller-specific changelog MCP, release-notes, or spec behavior into TES.
 - Claiming TES package release readiness without release identity gates.
-- Partially bumping the TES package source while leaving release identity
-  surfaces stale.
+- Partially bumping the TES package source while leaving release identity surfaces stale.
 - Treating version governance as optional during commit or release closure.
 
 ## Relationship To Other Skills
 
-`tes-bump` is narrower than `tes-update` and `tes-doctor`: it changes version
-surfaces only. `tes-doctor` owns health and commit readiness. TES package
-release closure remains governed by maintainer correlation, public bundle
-oracles, and `npm run commit:check`.
+`tes-bump` is narrower than `tes-update` and `tes-doctor`: it changes version surfaces only. `tes-doctor` owns health and commit readiness. TES package release closure remains governed by maintainer correlation, public bundle oracles, and `npm run commit:check`.
 
 ## Changelog
 
@@ -76,9 +63,4 @@ oracles, and `npm run commit:check`.
 
 ## Do Not Lose
 
-This is a version governance skill, not a general implementation utility.
-Preserve the governance-check-first, dry-run-first, bounded-target,
-source-first, self-validating shape. Do not allow caller-specific release
-notes, MCP submission, external service ports, or spec classification to
-become TES default behavior. Do not let the helper perform a partial TES
-package release bump.
+This is a version governance skill, not a general implementation utility. Preserve the governance-check-first, dry-run-first, bounded-target, source-first, self-validating shape. Do not allow caller-specific release notes, MCP submission, external service ports, or spec classification to become TES default behavior. Do not let the helper perform a partial TES package release bump.

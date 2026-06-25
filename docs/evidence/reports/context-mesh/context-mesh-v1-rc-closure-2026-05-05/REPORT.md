@@ -9,9 +9,7 @@ evidence_level: L4
 
 # Context Mesh V1-RC Closure Report
 
-This report freezes the best retained context-mesh state after the
-Evidence-Converged Context principle was adopted. It does not add a dataset,
-runner, backend, judge, or adapter surface.
+This report freezes the best retained context-mesh state after the Evidence-Converged Context principle was adopted. It does not add a dataset, runner, backend, judge, or adapter surface.
 
 ## Closure Decision
 
@@ -25,9 +23,7 @@ runner, backend, judge, or adapter surface.
 | Cursor | Structural only | Adapter materialization validates, no behavior backend certified |
 | Cross-adapter parity | Partial by design | Governance exists; behavior parity is not claimed |
 
-Decision: `GO` for current context-mesh v1-rc closure. `NO-GO` for universal
-model behavior, Codex behavior parity, Cursor behavior parity, or statistical
-stability claims.
+Decision: `GO` for current context-mesh v1-rc closure. `NO-GO` for universal model behavior, Codex behavior parity, Cursor behavior parity, or statistical stability claims.
 
 ## Anchors
 
@@ -47,8 +43,7 @@ stability claims.
 
 ## Latest Fixture Evidence
 
-Source:
-`docs/evidence/reports/context-mesh/pipeline-v1-rc-fixture-2026-05-05-convergence-08/`
+Source: `docs/evidence/reports/context-mesh/pipeline-v1-rc-fixture-2026-05-05-convergence-08/`
 
 | Metric | Value |
 |--------|-------|
@@ -73,8 +68,7 @@ Fixture ablation losses:
 
 ## Latest Claude Evidence
 
-Source:
-`docs/evidence/reports/context-mesh/behavior-v1-rc-claude-2026-05-05-convergence-08/`
+Source: `docs/evidence/reports/context-mesh/behavior-v1-rc-claude-2026-05-05-convergence-08/`
 
 | Metric | Value |
 |--------|-------|
@@ -101,18 +95,13 @@ Claude ablation losses:
 
 ## Evidence Limits
 
-- The behavior claim is scoped to one Claude run, one dataset SHA, one grader
-  version, one backend, and one model.
-- The Claude backend uses Claude Code through `claude-cli`; it is not a bare API
-  execution path.
-- Deterministic substring grading is intentionally strict and can be
-  wording-sensitive.
-- `distractor_fail_rate` was `0.5`, but confirmed `distractor_leak_rate` was
-  `0.0`; this closure treats literal distractor failure separately from leak.
+- The behavior claim is scoped to one Claude run, one dataset SHA, one grader version, one backend, and one model.
+- The Claude backend uses Claude Code through `claude-cli`; it is not a bare API execution path.
+- Deterministic substring grading is intentionally strict and can be wording-sensitive.
+- `distractor_fail_rate` was `0.5`, but confirmed `distractor_leak_rate` was `0.0`; this closure treats literal distractor failure separately from leak.
 - Codex and Cursor are not behavior-certified.
 - Cross-adapter parity is governance-ready, not behavior-certified.
-- No N>1 stability, confidence interval, cost ROI, or universal model claim is
-  made here.
+- No N>1 stability, confidence interval, cost ROI, or universal model claim is made here.
 
 ## Next Loop
 
@@ -133,5 +122,4 @@ Success criteria:
 | Benchmark condition | Each adapter can be mapped to benchmark conditions without exposing matrix labels to the backend |
 | Parity claim | Structural and contract parity only unless behavior evidence exists |
 
-Do not start this next loop by adding behavior backends. First prove the
-adapter surfaces preserve the same behavioral contract without semantic drift.
+Do not start this next loop by adding behavior backends. First prove the adapter surfaces preserve the same behavioral contract without semantic drift.

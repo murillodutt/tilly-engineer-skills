@@ -6,26 +6,17 @@ license: MIT
 
 # TES Open Obsidian
 
-`/tes-open-obsidian` is the preferred shared TES trigger for opening a
-TES-initialized project in Obsidian. `/tes:open-obsidian` is a compatible TES
-intent alias if the host reports it as invalid slash text.
+`/tes-open-obsidian` is the preferred shared TES trigger for opening a TES-initialized project in Obsidian. `/tes:open-obsidian` is a compatible TES intent alias if the host reports it as invalid slash text.
 
-Use this skill after `/tes-init` and `/tes-align` have produced an
-Obsidian-ready Markdown mesh under `docs/agents/**`.
+Use this skill after `/tes-init` and `/tes-align` have produced an Obsidian-ready Markdown mesh under `docs/agents/**`.
 
 ## Contract
 
-TES prepares and verifies the Markdown knowledge mesh. Obsidian belongs to the
-user or host project.
+TES prepares and verifies the Markdown knowledge mesh. Obsidian belongs to the user or host project.
 
-This skill opens `docs/agents` as the Obsidian vault when explicitly invoked,
-because that folder is the TES operating mesh. It must not create, edit, clean,
-or version `.obsidian/**`.
+This skill opens `docs/agents` as the Obsidian vault when explicitly invoked, because that folder is the TES operating mesh. It must not create, edit, clean, or version `.obsidian/**`.
 
-Prefer the official Obsidian CLI when it is available and registered. The CLI
-requires the Obsidian 1.12+ installer with **Command line interface** enabled in
-Obsidian settings: <https://obsidian.md/help/cli>. On macOS, the helper may fall
-back to opening `<target>/docs/agents` with the Obsidian app.
+Prefer the official Obsidian CLI when it is available and registered. The CLI requires the Obsidian 1.12+ installer with **Command line interface** enabled in Obsidian settings: <https://obsidian.md/help/cli>. On macOS, the helper may fall back to opening `<target>/docs/agents` with the Obsidian app.
 
 ## Workflow
 
@@ -42,17 +33,14 @@ Use the source helper when working inside the TES package:
 python3 scripts/tes_open_obsidian.py --target <target> --dry-run --open
 ```
 
-3. If the result is `BLOCKED`, report the missing gate. Usually the fix is to
-   run `/tes-init` first.
+3. If the result is `BLOCKED`, report the missing gate. Usually the fix is to run `/tes-init` first.
 4. If the result is `READY` and the user asked to open, run:
 
 ```bash
 python3 .tes/bin/tes_open_obsidian.py --target . --open
 ```
 
-5. Report whether the project was `OPENED`, `READY`, or `BLOCKED`, including
-   `vault_root`, `vault_root_relative`, and whether the helper used the
-   Obsidian CLI or the macOS app fallback.
+5. Report whether the project was `OPENED`, `READY`, or `BLOCKED`, including `vault_root`, `vault_root_relative`, and whether the helper used the Obsidian CLI or the macOS app fallback.
 
 ## Done
 

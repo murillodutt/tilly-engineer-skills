@@ -2,14 +2,11 @@
 
 ## Purpose
 
-`tes-prospect` is an explicit-invocation project-stress skill that pressures a
-plan or design before execution.
+`tes-prospect` is an explicit-invocation project-stress skill that pressures a plan or design before execution.
 
 ## Why This Skill Exists
 
-DUTT use showed that a normal assistant can remain too reactive during design.
-`tes-prospect` exists to take over the stress-test loop after invocation:
-anticipate failure, expose hidden branches, and keep the next decision concrete.
+DUTT use showed that a normal assistant can remain too reactive during design. `tes-prospect` exists to take over the stress-test loop after invocation: anticipate failure, expose hidden branches, and keep the next decision concrete.
 
 ## Origin Signals
 
@@ -34,8 +31,7 @@ anticipate failure, expose hidden branches, and keep the next decision concrete.
 - Walk the decision tree one branch at a time.
 - Ask one question at a time.
 - Explore the codebase instead of asking when local evidence can answer.
-- Stop immediately on a cognitive brake, summarize state, and wait for
-  explicit resume.
+- Stop immediately on a cognitive brake, summarize state, and wait for explicit resume.
 
 ## Known Failure Modes Prevented
 
@@ -48,9 +44,7 @@ anticipate failure, expose hidden branches, and keep the next decision concrete.
 
 ## Relationship To Other Skills
 
-`tes-prospect` is the read-only pressure pass. `tes-mine` is the code and domain
-knowledge mining pass that can capture durable context and ADRs. Tilly
-Engineering Discipline remains the general engineering overlay.
+`tes-prospect` is the read-only pressure pass. `tes-mine` is the code and domain knowledge mining pass that can capture durable context and ADRs. Tilly Engineering Discipline remains the general engineering overlay.
 
 ## Changelog
 
@@ -61,7 +55,4 @@ Engineering Discipline remains the general engineering overlay.
 
 ## Do Not Lose
 
-Invocation is conservative, execution is intense. The skill must stay dormant
-until explicitly called, then apply real project pressure instead of behaving
-like a passive planning assistant. The cognitive brake regulates intensity
-without making the skill passive.
+Invocation is conservative, execution is intense. The skill must stay dormant until explicitly called, then apply real project pressure instead of behaving like a passive planning assistant. The cognitive brake regulates intensity without making the skill passive.

@@ -10,8 +10,7 @@ tver: 0.1.1
 
 # Cortex Memory Benchmarks
 
-The Cortex memory benchmark harness tests recall behavior without changing the
-Cortex authority model from ADR 0001.
+The Cortex memory benchmark harness tests recall behavior without changing the Cortex authority model from ADR 0001.
 
 ```text
 Markdown is truth.
@@ -29,9 +28,7 @@ The harness answers a narrow operational question:
 Did Cortex recall enough grounded evidence to answer safely?
 ```
 
-It does not rank TES against external memory systems. It does not create a new
-memory backend. It does not promote run outputs, scores, indexes, checkpoints,
-or model answers into durable memory.
+It does not rank TES against external memory systems. It does not create a new memory backend. It does not promote run outputs, scores, indexes, checkpoints, or model answers into durable memory.
 
 ## Native Contract
 
@@ -45,8 +42,7 @@ The native benchmark result is stage-based:
 | `checkpoint` | Optional resumability record outside durable Cortex memory. |
 | `compare` | Run-to-run metric deltas and pass/fail flips. |
 
-Retrieved matches are mandatory evidence. A benchmark item cannot pass if the
-retrieval artifact is missing, even when the final answer looks plausible.
+Retrieved matches are mandatory evidence. A benchmark item cannot pass if the retrieval artifact is missing, even when the final answer looks plausible.
 
 ## Capabilities
 
@@ -67,10 +63,7 @@ The first fixture matrix covers:
 
 ## Cutoffs
 
-Cutoffs measure how deep a reviewer or agent must search before the necessary
-evidence appears. The default fixture matrix uses `top_1`, `top_3`, and
-`top_5`. Later runs may add deeper cutoffs, but every run must record the exact
-cutoff list in metadata.
+Cutoffs measure how deep a reviewer or agent must search before the necessary evidence appears. The default fixture matrix uses `top_1`, `top_3`, and `top_5`. Later runs may add deeper cutoffs, but every run must record the exact cutoff list in metadata.
 
 ## Status Vocabulary
 
@@ -95,29 +88,20 @@ python3 scripts/cortex_memory_compare.py --baseline baseline.json --candidate ca
 python3 scripts/cortex_memory_benchmark.py --self-test
 ```
 
-`predict-only` and `evaluate-only` are intentionally separate so a recall
-artifact can be retained, reviewed, replayed, and judged without rerunning
-retrieval.
+`predict-only` and `evaluate-only` are intentionally separate so a recall artifact can be retained, reviewed, replayed, and judged without rerunning retrieval.
 
 ## Evidence Rules
 
 - Keep benchmark evidence generic and neutral.
 - Do not commit external datasets or large result files.
-- Do not store private project names, private paths, storage backends, product
-  names, secrets, or canary identifiers.
-- When fixtures model Cortex cells, their evidence refs must use
-  `sources/**`, `docs/agents/cortex/sources/**`, `docs/agents/evidence/**`, or
-  `Assumption:`. Absolute local paths, derived indexes, checkpoints, run
-  scratch, and benchmark outputs are not durable Cortex evidence.
-- Treat generated run directories as evidence only after a report is explicitly
-  retained and indexed.
-- Use `docs/evidence/**` for retained proof and `.tes/runs/**` for local
-  scratch runs.
+- Do not store private project names, private paths, storage backends, product names, secrets, or canary identifiers.
+- When fixtures model Cortex cells, their evidence refs must use `sources/**`, `docs/agents/cortex/sources/**`, `docs/agents/evidence/**`, or `Assumption:`. Absolute local paths, derived indexes, checkpoints, run scratch, and benchmark outputs are not durable Cortex evidence.
+- Treat generated run directories as evidence only after a report is explicitly retained and indexed.
+- Use `docs/evidence/**` for retained proof and `.tes/runs/**` for local scratch runs.
 
 ## Closure
 
-Harness closure requires the focused self-tests plus the normal documentation
-and privacy gates:
+Harness closure requires the focused self-tests plus the normal documentation and privacy gates:
 
 ```bash
 python3 scripts/cortex_memory_benchmark.py --self-test

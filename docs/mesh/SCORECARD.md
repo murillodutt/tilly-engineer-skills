@@ -10,8 +10,7 @@ tver: 0.1.0
 
 # Adoption Scorecard
 
-Use this scorecard to evaluate whether a project adopted Tilly Engineering
-Discipline as a real engineering layer or only copied guidance text.
+Use this scorecard to evaluate whether a project adopted Tilly Engineering Discipline as a real engineering layer or only copied guidance text.
 
 ## Behavioral Score
 
@@ -30,8 +29,7 @@ If any factor is zero, the work is not converged.
 
 ## Context-System Score
 
-Use this when the target project has Codex, reusable skills, hooks, MCPs, or
-other persistent agent context.
+Use this when the target project has Codex, reusable skills, hooks, MCPs, or other persistent agent context.
 
 | Factor | Question | Score |
 |--------|----------|-------|
@@ -60,8 +58,7 @@ If any factor is zero, the context layer is not fully converged.
 | L4 | Governance integration | The oracle is part of local CI, hooks, or closure gates |
 | L5 | Reentry stable | A new context window can resume with state, source route, and next check |
 
-The DUTT-grade target is L4 or L5. L0 and L1 are useful, but they are not the
-malha that produced the strongest ambiguity reduction.
+The DUTT-grade target is L4 or L5. L0 and L1 are useful, but they are not the malha that produced the strongest ambiguity reduction.
 
 ## Anti-Score
 
@@ -72,5 +69,4 @@ Subtract confidence when any of these appear:
 - The agent says "done" without a check.
 - The diff includes unrelated cleanup.
 - The workflow depends on memory instead of a versioned source.
-- Cortex is treated as hidden memory instead of versioned markdown under
-  `docs/agents/cortex/**`.
+- Cortex is treated as hidden memory instead of versioned markdown under `docs/agents/cortex/**`.

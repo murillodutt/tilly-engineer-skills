@@ -10,24 +10,17 @@ tver: 0.2.0
 
 # GOAL Super SPEC: Cortex Memory Benchmark Harness
 
-Status: retained execution plan. The harness was locally implemented and
-certified in package-source version `0.3.135`; remote release certification
-and commercial-use claims remain deferred.
+Status: retained execution plan. The harness was locally implemented and certified in package-source version `0.3.135`; remote release certification and commercial-use claims remain deferred.
 
-Capability: add a governed Cortex memory benchmark harness that tests recall,
-retrieval sufficiency, temporal reasoning, contradiction handling, and
-regression without changing the ADR 0001 memory authority boundary.
+Capability: add a governed Cortex memory benchmark harness that tests recall, retrieval sufficiency, temporal reasoning, contradiction handling, and regression without changing the ADR 0001 memory authority boundary.
 
 ## Canonical Artifact
 
-Canonical Super SPEC:
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md`
+Canonical Super SPEC: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md`
 
-Primary decision source:
-`docs/adr/0001-tes-memory-lifecycle.md`
+Primary decision source: `docs/adr/0001-tes-memory-lifecycle.md`
 
-Execution unit companion:
-`docs/roadmap/cortex-memory-benchmark-harness/EXECUTION-UNITS.md`
+Execution unit companion: `docs/roadmap/cortex-memory-benchmark-harness/EXECUTION-UNITS.md`
 
 Primary related surfaces:
 
@@ -57,15 +50,9 @@ Primary related surfaces:
 
 ## Current Meaning
 
-This document is the retained implementation plan and boundary record. The
-local package-source implementation is recorded in
-`docs/evidence/reports/2026/05/26/cortex-memory-benchmark-harness/REPORT.md`.
+This document is the retained implementation plan and boundary record. The local package-source implementation is recorded in `docs/evidence/reports/2026/05/26/cortex-memory-benchmark-harness/REPORT.md`.
 
-The benchmark harness must strengthen ADR 0001 by proving memory behavior. It
-must not create a second memory architecture. Run registries, indexes, result
-JSON, SQLite files, checkpoints, model outputs, and judge decisions remain
-derived evidence unless an authorized Cortex write path promotes a durable
-claim with source evidence.
+The benchmark harness must strengthen ADR 0001 by proving memory behavior. It must not create a second memory architecture. Run registries, indexes, result JSON, SQLite files, checkpoints, model outputs, and judge decisions remain derived evidence unless an authorized Cortex write path promotes a durable claim with source evidence.
 
 ## Creation Gate Record
 
@@ -85,23 +72,19 @@ claim with source evidence.
 - Cortex Markdown remains the durable source of memory truth.
 - MCP remains read-only.
 - The first implementation should be CLI and evidence oriented, not UI first.
-- Existing context mesh eval machinery remains separate from Cortex memory
-  benchmarks until an explicit adapter or shared helper earns its keep.
-- Any runtime command, script, fixture, or user-visible documentation added in a
-  later wave may be delivered behavior and needs release identity review.
+- Existing context mesh eval machinery remains separate from Cortex memory benchmarks until an explicit adapter or shared helper earns its keep.
+- Any runtime command, script, fixture, or user-visible documentation added in a later wave may be delivered behavior and needs release identity review.
 
 ## Non-Objectives
 
 - Create a new ADR.
-- Copy an external memory-server, vector database, Docker, SaaS, or web-app
-  stack into TES.
+- Copy an external memory-server, vector database, Docker, SaaS, or web-app stack into TES.
 - Treat benchmark results or run registries as durable memory.
 - Add write-capable MCP or automatic Cortex writes.
 - Commit external datasets or large benchmark result files.
 - Claim commercial memory quality from local fixtures alone.
 - Add a UI before the CLI contract and evidence schema are stable.
-- Store private project names, product names, paths, or canary identifiers in
-  tracked TES source, fixtures, reports, or commits.
+- Store private project names, product names, paths, or canary identifiers in tracked TES source, fixtures, reports, or commits.
 
 ## Central Rule
 
@@ -155,8 +138,7 @@ The first native result schema should be small and explicit:
 | `checkpoint` | Optional resume state reference; never durable memory. |
 | `evidence` | Paths to retained raw artifacts and summary report. |
 
-Retrieved Cortex matches must always be preserved. A passing answer without
-preserved retrieval evidence is a benchmark failure.
+Retrieved Cortex matches must always be preserved. A passing answer without preserved retrieval evidence is a benchmark failure.
 
 ## Scoring Model
 
@@ -171,13 +153,11 @@ Use simple status plus rubric nuggets before adding complex metrics.
 | `NEEDS_REVIEW` | Oracle cannot decide safely from retained evidence. |
 | `NOT_AVAILABLE` | Capability is out of scope for the current run. |
 
-Rubric nuggets should be scored `0`, `0.5`, or `1` when semantic judgment is
-needed. Deterministic checks should remain exact when exactness is the point.
+Rubric nuggets should be scored `0`, `0.5`, or `1` when semantic judgment is needed. Deterministic checks should remain exact when exactness is the point.
 
 ## Execution Units
 
-Detailed execution units live in
-`docs/roadmap/cortex-memory-benchmark-harness/EXECUTION-UNITS.md`.
+Detailed execution units live in `docs/roadmap/cortex-memory-benchmark-harness/EXECUTION-UNITS.md`.
 
 | Unit | Purpose |
 |------|---------|
@@ -190,27 +170,17 @@ Detailed execution units live in
 | `SPEC-006` | Add checkpoint and compare-run behavior. |
 | `SPEC-007` | Close evidence and release identity. |
 
-Execution agents must read this Super SPEC first, then the companion execution
-unit document for the current unit only. Do not load or implement later units
-as active scope until the current unit has passed its focused oracles.
+Execution agents must read this Super SPEC first, then the companion execution unit document for the current unit only. Do not load or implement later units as active scope until the current unit has passed its focused oracles.
 
 ## Deferred UI Path
 
-A local viewer or dashboard may be useful later, but it is deferred until the
-CLI result contract, fixtures, oracles, and compare-run behavior are stable.
-If a UI is added, it should consume retained result artifacts and follow the
-TES frontend and Nuxt governance path instead of copying an external Next.js
-application wholesale.
+A local viewer or dashboard may be useful later, but it is deferred until the CLI result contract, fixtures, oracles, and compare-run behavior are stable. If a UI is added, it should consume retained result artifacts and follow the TES frontend and Nuxt governance path instead of copying an external Next.js application wholesale.
 
 ## Release Identity Rule
 
 This Super SPEC alone does not require a package version bump.
 
-Later waves that add scripts, fixtures, package commands, adopter-visible docs,
-adapter behavior, MCP behavior, installer behavior, public docs, or generated
-bundle content are delivered behavior unless explicitly classified otherwise.
-Default release policy is a patch bump for delivered behavior, unless the owner
-explicitly defers that bump and the closeout records the deferral.
+Later waves that add scripts, fixtures, package commands, adopter-visible docs, adapter behavior, MCP behavior, installer behavior, public docs, or generated bundle content are delivered behavior unless explicitly classified otherwise. Default release policy is a patch bump for delivered behavior, unless the owner explicitly defers that bump and the closeout records the deferral.
 
 ## Global Stop Conditions
 

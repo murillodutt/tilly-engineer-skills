@@ -9,11 +9,9 @@ evidence_level: L1
 
 # GOAL Super SPEC: ADR 0005 Proof Lane
 
-Status: active lane SPEC derived from
-`docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
+Status: active lane SPEC derived from `docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
 
-Purpose: harden TES proof discipline so green gates must be red-capable for the
-specific behavior being changed.
+Purpose: harden TES proof discipline so green gates must be red-capable for the specific behavior being changed.
 
 ## Asset-Transfer Packet
 
@@ -33,12 +31,9 @@ specific behavior being changed.
 Tasks:
 
 1. Capture `git status --short --branch --untracked-files=all`.
-2. Read ADR 0005, `tes-engineering-discipline`, its oracle, and the local
-   quality recipe.
-3. Identify whether the failure is proof semantics, oracle grammar, quality
-   routing, or closeout wording.
-4. Name correlated Codex, Claude, local `.agents`, oracle, docs, and package
-   validation surfaces before editing.
+2. Read ADR 0005, `tes-engineering-discipline`, its oracle, and the local quality recipe.
+3. Identify whether the failure is proof semantics, oracle grammar, quality routing, or closeout wording.
+4. Name correlated Codex, Claude, local `.agents`, oracle, docs, and package validation surfaces before editing.
 
 Focused oracles:
 
@@ -53,21 +48,16 @@ git diff --check
 
 Tasks:
 
-1. Add or identify a plan/check fixture where the proposed oracle is broad but
-   cannot catch the named behavior regression.
-2. Require the expected result to stop as insufficient proof or bind to a
-   behavior-specific oracle.
-3. Ensure the fixture permits legitimate broad gates only after a focused proof
-   exists.
+1. Add or identify a plan/check fixture where the proposed oracle is broad but cannot catch the named behavior regression.
+2. Require the expected result to stop as insufficient proof or bind to a behavior-specific oracle.
+3. Ensure the fixture permits legitimate broad gates only after a focused proof exists.
 
 ## SPEC-002: Existing Asset Patch
 
 Tasks:
 
-1. Patch the smallest discipline text, oracle check, or recipe line needed to
-   enforce red-capable proof.
-2. Keep tests and checks behavior-facing; do not require implementation-detail
-   mocks or private-method checks as the default.
+1. Patch the smallest discipline text, oracle check, or recipe line needed to enforce red-capable proof.
+2. Keep tests and checks behavior-facing; do not require implementation-detail mocks or private-method checks as the default.
 3. Avoid adding a generic test framework, strategy interface, or new command.
 
 ## SPEC-003: Regression And Release
@@ -75,10 +65,7 @@ Tasks:
 Tasks:
 
 1. Run the discipline focused proof.
-2. Run TDS validation if documentation changed and package validation if skill
-   or oracle behavior changed.
-3. If adopter-visible discipline changed, stop for release identity
-   classification.
+2. Run TDS validation if documentation changed and package validation if skill or oracle behavior changed.
+3. If adopter-visible discipline changed, stop for release identity classification.
 
-Valid statuses: `ASSET_TRANSFERRED`, `ASSET_ALREADY_ADEQUATE`,
-`NEEDS_OWNER_DECISION`, `NEEDS_ASSET_PACKET`, `BLOCKED`.
+Valid statuses: `ASSET_TRANSFERRED`, `ASSET_ALREADY_ADEQUATE`, `NEEDS_OWNER_DECISION`, `NEEDS_ASSET_PACKET`, `BLOCKED`.

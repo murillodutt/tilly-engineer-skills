@@ -12,9 +12,7 @@ tver: 0.1.0
 
 Status: implementation artifact for the `0.3.137` local package-source cut.
 
-Capability: convert portable learning from a private installed-target canary
-into TES runtime behavior, fixtures, and documentation without promoting any
-target-specific vocabulary, paths, commits, commands, or project decisions.
+Capability: convert portable learning from a private installed-target canary into TES runtime behavior, fixtures, and documentation without promoting any target-specific vocabulary, paths, commits, commands, or project decisions.
 
 ## Authority
 
@@ -44,20 +42,14 @@ target-specific vocabulary, paths, commits, commands, or project decisions.
 - Do not add write-capable MCP.
 - Do not add automatic Cortex writes.
 - Do not add an external memory backend.
-- Do not migrate private target project commands, paths, names, decisions, or
-  vocabulary.
-- Do not claim remote tag, fixed-ref, marketplace, cloud, or commercial-use
-  certification.
+- Do not migrate private target project commands, paths, names, decisions, or vocabulary.
+- Do not claim remote tag, fixed-ref, marketplace, cloud, or commercial-use certification.
 
 ## Acceptance Criteria
 
-- `tes_install.py postinstall --recover-needs-review` is idempotent and
-  sentinel-scoped.
-- `/tes-init` and `/tes-setup` instructions route `needs_review` through that
-  explicit recovery path.
-- `curate-plan` preserves narrow evidence-dense cells while still failing
-  swollen claim cells.
-- Correlated install, adapter, Cortex, roadmap, TDS, and evidence surfaces are
-  updated with neutral language only.
+- `tes_install.py postinstall --recover-needs-review` is idempotent and sentinel-scoped.
+- `/tes-init` and `/tes-setup` instructions route `needs_review` through that explicit recovery path.
+- `curate-plan` preserves narrow evidence-dense cells while still failing swollen claim cells.
+- Correlated install, adapter, Cortex, roadmap, TDS, and evidence surfaces are updated with neutral language only.
 - Private vocabulary and staged diff checks pass.
 - Release identity is classified before closure.

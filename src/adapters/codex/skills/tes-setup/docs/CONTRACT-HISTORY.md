@@ -2,13 +2,11 @@
 
 ## Purpose
 
-`/tes-setup` is the Claude Code setup alias for `/tes-init`, optimized for
-first-session postinstall sentinel handling.
+`/tes-setup` is the Claude Code setup alias for `/tes-init`, optimized for first-session postinstall sentinel handling.
 
 ## Why This Skill Exists
 
-The first-session hook recommends `/tes-setup`. This skill routes to `tes-init`
-without duplicating installer logic.
+The first-session hook recommends `/tes-setup`. This skill routes to `tes-init` without duplicating installer logic.
 
 ## Contracts Preserved
 

@@ -1,7 +1,6 @@
 # Structural Method
 
-Use this reference when a materialization tree, prompt, `ACTIVE_SPEC` or loop
-touches code, UI, runtime scripts or generated app artifacts.
+Use this reference when a materialization tree, prompt, `ACTIVE_SPEC` or loop touches code, UI, runtime scripts or generated app artifacts.
 
 Core rule:
 
@@ -9,8 +8,7 @@ Core rule:
 A SPEC only passes when behavior converges without structural degradation.
 ```
 
-The Structural Method Gate is method, not governance. It turns stack evidence
-into operational constraints for the worker and parent reviewer.
+The Structural Method Gate is method, not governance. It turns stack evidence into operational constraints for the worker and parent reviewer.
 
 ## Engineering Method Profile
 
@@ -23,14 +21,11 @@ Derive the Engineering Method Profile from material sources, never from memory:
 5. known structural debt and prohibited growth direction;
 6. structural oracles available in the repo.
 
-If the run cannot derive enough stack or topology evidence, stop with
-`NEEDS_STRUCTURAL_METHOD`.
+If the run cannot derive enough stack or topology evidence, stop with `NEEDS_STRUCTURAL_METHOD`.
 
 ## Structural Decision Gate
 
-When code, UI, runtime-script or generated-app work has no source-mandated
-topology, decide the topology before the first material implementation commit.
-Record the decision in the material tree, ledger or a small ADR-like artifact.
+When code, UI, runtime-script or generated-app work has no source-mandated topology, decide the topology before the first material implementation commit. Record the decision in the material tree, ledger or a small ADR-like artifact.
 
 Minimum fields:
 
@@ -42,10 +37,7 @@ topology_budget=<files/modules/sections/line-growth limit>
 structural_oracles=<source probes and runtime probes>
 ```
 
-If the source mandates a topology exception, mark it as an LLM execution
-decision, prove it from source text, and keep the exception bounded. If the
-worker chooses a single-file exception without source support, stop with
-`NEEDS_STRUCTURAL_METHOD`.
+If the source mandates a topology exception, mark it as an LLM execution decision, prove it from source text, and keep the exception bounded. If the worker chooses a single-file exception without source support, stop with `NEEDS_STRUCTURAL_METHOD`.
 
 ## Method Enforcement Packet
 
@@ -69,42 +61,30 @@ ambition_floor=<none or anchor-declared ceiling features this unit must reach>
 shared_contract_surface=<frozen fields, extension points, optionality rule or none>
 ```
 
-For single-file deliverables, the exception is valid only when the source
-contract requires it. A single-file exception still needs internal modularity,
-named sections, narrow APIs, section anchors, and no duplicated logic.
+For single-file deliverables, the exception is valid only when the source contract requires it. A single-file exception still needs internal modularity, named sections, narrow APIs, section anchors, and no duplicated logic.
 
 ## Topology Budget
 
 The topology budget must say how much structure may change:
 
-- allowed files, modules, components, composables, stores, services, adapters,
-  scripts or internal sections;
+- allowed files, modules, components, composables, stores, services, adapters, scripts or internal sections;
 - maximum acceptable file growth or explicit source-proven exception;
 - forbidden new dependencies or boundary crossings;
 - required split when a file is already near the budget;
 - allowed module creation before adding behavior.
 
-The worker must not use a behavior-green result to justify an unbounded god
-file, framework-topology bypass, duplicated domain logic or mixed unrelated
-layers.
+The worker must not use a behavior-green result to justify an unbounded god file, framework-topology bypass, duplicated domain logic or mixed unrelated layers.
 
-A numerical line, file, module or section budget must become an executable
-probe that returns non-zero when the budget is exceeded. A probe that only
-prints counts is inventory, not enforcement.
+A numerical line, file, module or section budget must become an executable probe that returns non-zero when the budget is exceeded. A probe that only prints counts is inventory, not enforcement.
 
-Acceptable exceptions must be source-proven before implementation and named in
-`topology_exemptions`. Orchestration-only and data-catalog exceptions must have
-negative checks that prove they did not absorb unrelated domain logic. Domain
-logic files that exceed the budget require split, explicit accepted debt, or
-`NEEDS_STRUCTURAL_METHOD`.
+Acceptable exceptions must be source-proven before implementation and named in `topology_exemptions`. Orchestration-only and data-catalog exceptions must have negative checks that prove they did not absorb unrelated domain logic. Domain logic files that exceed the budget require split, explicit accepted debt, or `NEEDS_STRUCTURAL_METHOD`.
 
 ## Structural Source Probes
 
 Use probes that match the stack:
 
 - line counts and section inventories;
-- executable budget assertions, such as line-count or module-count commands
-  that fail on excess;
+- executable budget assertions, such as line-count or module-count commands that fail on excess;
 - module/component/composable/service/store inventory;
 - import and dependency-boundary checks;
 - duplicate-symbol or duplicate-logic scans;
@@ -112,9 +92,9 @@ Use probes that match the stack:
 - generated output or rendered UI smoke when visual structure matters;
 - framework-specific build, lint, typecheck or route probes.
 
-The prompt must name probes before editing. The closeout must report
-`topology_probe=PASS|FAIL` and the command result, not merely say the structure
-is fine.
+The prompt must name probes before editing. The closeout must report `topology_probe=PASS|FAIL` and the command result, not merely say the structure is fine.
+
+When `FILE_TOPOLOGY_BUDGET≠not_applicable`, the budget probe must exist as a versioned script in the unit diff (not an ad-hoc command typed once and discarded), and its exit code feeds `topology_probe_result` in the loop-state and Ledger Schema. The runner credits "passing structural method evidence" only from `topology_probe_result=PASS`; a `FAIL`, or the field missing on an in-scope unit, stops with `NEEDS_STRUCTURAL_METHOD` before the commit. The `Executive Stop Audit` reviewer re-runs the versioned probe — prose that the budget was respected is not evidence.
 
 ## Failed Attempt Recovery
 
@@ -122,19 +102,15 @@ Before retrying failed coding work, classify `bug_vs_architecture`:
 
 - `behavior_bug`: behavior failed but topology remains valid;
 - `test_oracle_bug`: the test/oracle is wrong or incomplete;
-- `structural_repair`: behavior may pass or nearly pass, but architecture
-  collapsed, exceeded budget, duplicated logic or mixed layers;
+- `structural_repair`: behavior may pass or nearly pass, but architecture collapsed, exceeded budget, duplicated logic or mixed layers;
 - `SPEC_REPAIR_BY_LLM`: the active SPEC itself forced bad architecture;
 - `NEEDS_OWNER_DECISION`: safe correction needs owner direction.
 
-Do not start the next attempt while failed-attempt residue is unresolved. The
-parent must commit valid material, revert only isolated current-attempt residue
-after diff review, repair the canonical SPEC artifact, or stop.
+Do not start the next attempt while failed-attempt residue is unresolved. The parent must commit valid material, revert only isolated current-attempt residue after diff review, repair the canonical SPEC artifact, or stop.
 
 ## Structural Handoff
 
-Every coding unit that another unit may build on must provide structural
-handoff:
+Every coding unit that another unit may build on must provide structural handoff:
 
 1. active `STRUCTURAL_METHOD=<profile-id>`;
 2. files, modules or internal sections created or changed;
@@ -142,16 +118,13 @@ handoff:
 4. accepted structural debt;
 5. next-unit constraints;
 6. structural source probes and oracles run;
-7. shared contract surface: frozen fields, open extension points and optionality
-   rule when a later unit may extend the same type or API.
+7. shared contract surface: frozen fields, open extension points and optionality rule when a later unit may extend the same type or API.
 
-Next Prompt Handoff and `--execute-loop` prompts must carry this structural
-handoff when code, UI, runtime scripts or generated app artifacts changed.
+Next Prompt Handoff and `--execute-loop` prompts must carry this structural handoff when code, UI, runtime scripts or generated app artifacts changed.
 
 ## Loop Ledger Fields
 
-When `--execute-loop` is active and code structure is in scope, each loop-state
-entry must include:
+When `--execute-loop` is active and code structure is in scope, each loop-state entry must include:
 
 ```text
 structural_method_id:
@@ -164,17 +137,13 @@ topology_probe_result:
 shared_contract_surface:
 ```
 
-Long, repaired, audit-expanded or resumed loops must persist these fields in
-`GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md`.
+Long, repaired, audit-expanded or resumed loops must persist these fields in `GOAL-EXECUTION-LOOP-LEDGER-<slug-or-timestamp>.md`.
 
 ## Audit Repair
 
-If behavior passes but structure regresses, the parent must stop with
-`NEEDS_STRUCTURAL_METHOD` or append bounded `SPEC-AUDIT-STRUCTURE-*` repair
-units during `--execute-loop`.
+If behavior passes but structure regresses, the parent must stop with `NEEDS_STRUCTURAL_METHOD` or append bounded `SPEC-AUDIT-STRUCTURE-*` repair units during `--execute-loop`.
 
-Repeated audit repair without new material evidence becomes
-`NEEDS_OWNER_DECISION` or `SPEC_CONTRACT_UNSTABLE`.
+Repeated audit repair without new material evidence becomes `NEEDS_OWNER_DECISION` or `SPEC_CONTRACT_UNSTABLE`.
 
 ## Stop If Missing
 

@@ -9,17 +9,13 @@ evidence_level: L3
 
 # Codex Behavior NO-GO Forensics Report
 
-This report analyzes the retained Codex behavior matrix without rerunning the
-model. It reads only the existing `raw.ndjson` and `summary.json` from
-`codex-behavior-v1-rc-2026-05-05`.
+This report analyzes the retained Codex behavior matrix without rerunning the model. It reads only the existing `raw.ndjson` and `summary.json` from `codex-behavior-v1-rc-2026-05-05`.
 
-It does not change the shared contract, dataset, grader, runner, Codex
-instruction source, or backend prompt contract.
+It does not change the shared contract, dataset, grader, runner, Codex instruction source, or backend prompt contract.
 
 ## Decision
 
-Result: `GO` for diagnostic index hardening design; `NO-GO` for immediate
-score repair.
+Result: `GO` for diagnostic index hardening design; `NO-GO` for immediate score repair.
 
 Claim:
 
@@ -52,13 +48,11 @@ shared contract, dataset, grader, or Codex instruction source.
 | Behavioral outcome | `full=0.4286`, `none=0.0`, `behavioral_lift=0.4286` | Context has measurable positive signal |
 | Contamination/leakage | `distractor_fail_rate=0.0`, `distractor_leak_rate=1.0` | Tasks succeed, but context bleeds into trivial outputs |
 
-The certification `NO-GO` is therefore a dosage failure, not an infrastructure
-failure.
+The certification `NO-GO` is therefore a dosage failure, not an infrastructure failure.
 
 ## Derived Indices
 
-These indices are deterministic derivations from the retained raw and summary
-artifacts. They are proposed diagnostics, not runner metrics yet.
+These indices are deterministic derivations from the retained raw and summary artifacts. They are proposed diagnostics, not runner metrics yet.
 
 | Index | Value | Source |
 |-------|-------|--------|
@@ -85,9 +79,7 @@ artifacts. They are proposed diagnostics, not runner metrics yet.
 | `0043-distractor-D1-typo` | PASS | LEAK | `trivial_overplan`, `discipline_overlay_leak` | Output offers a surgical README fix, names project discipline, assumptions, and oracle for a typo |
 | `0044-distractor-D2-read-only` | PASS | LEAK | `adapter_rule_name_leak`, `discipline_overlay_leak` | Output gives the correct title but exposes `Simplicity First` and workspace discipline |
 
-The distractor result is stronger than a generic fail. Codex can do the trivial
-task, but the harness plus adapter context encourages visible discipline even
-when the task does not need it.
+The distractor result is stronger than a generic fail. Codex can do the trivial task, but the harness plus adapter context encourages visible discipline even when the task does not need it.
 
 ## Harness Contamination Hypothesis
 
@@ -97,9 +89,7 @@ The Codex backend prompt currently applies one instruction to every sample:
 Make the behavioral decision caused by available project context visible in the response.
 ```
 
-This instruction is useful for trigger samples, but it is risky for distractors.
-It may be asking the model to reveal the exact context influence that the
-distractor is meant to suppress.
+This instruction is useful for trigger samples, but it is risky for distractors. It may be asking the model to reveal the exact context influence that the distractor is meant to suppress.
 
 Probable cause split:
 
@@ -114,8 +104,7 @@ Probable cause split:
 
 ## Failure Classification
 
-The 29 failed samples are classified by deterministic signals in the retained
-grader reasons and outputs.
+The 29 failed samples are classified by deterministic signals in the retained grader reasons and outputs.
 
 | Class | Count | Meaning |
 |-------|-------|---------|
@@ -164,26 +153,20 @@ grader reasons and outputs.
 ## What Not To Do
 
 - Do not rerun Codex to chase a better score.
-- Do not edit expected phrases before separating wording brittleness from true
-  behavior gaps.
+- Do not edit expected phrases before separating wording brittleness from true behavior gaps.
 - Do not change the central contract from this run alone.
-- Do not change Codex instruction source before testing the harness
-  contamination hypothesis.
+- Do not change Codex instruction source before testing the harness contamination hypothesis.
 - Do not call Codex/Claude parity from this matrix.
 
 ## Recommended Next Repair Loop
 
 Open a narrow backend-prompt repair loop:
 
-1. Add a design note or patch for Codex prompt contracts that treats trigger
-   and distractor samples differently.
+1. Add a design note or patch for Codex prompt contracts that treats trigger and distractor samples differently.
 2. For trigger samples, keep context-caused decisions visible.
-3. For distractor samples, require the agent to answer the trivial task without
-   naming rules, gates, governance, benchmarks, or project discipline unless
-   necessary.
+3. For distractor samples, require the agent to answer the trivial task without naming rules, gates, governance, benchmarks, or project discipline unless necessary.
 4. Run a bounded distractor-only or sample-capped smoke before any full matrix.
-5. Promote only proven diagnostic indices into runner summary after this
-   forensics report explains the NO-GO.
+5. Promote only proven diagnostic indices into runner summary after this forensics report explains the NO-GO.
 
 First candidate repair:
 

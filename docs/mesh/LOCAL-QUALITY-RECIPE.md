@@ -10,9 +10,7 @@ tver: 0.1.0
 
 # Local Quality Recipe
 
-This recipe installs a project-local quality layer that adapts to the files,
-manifests, and tools present in each repository. It is a pattern, not a fixed
-stack.
+This recipe installs a project-local quality layer that adapts to the files, manifests, and tools present in each repository. It is a pattern, not a fixed stack.
 
 ## Contract
 
@@ -46,8 +44,7 @@ Activate hooks locally:
 git config core.hooksPath .githooks
 ```
 
-Do not put local cache exclusions in the project `.gitignore` unless they are
-real project policy.
+Do not put local cache exclusions in the project `.gitignore` unless they are real project policy.
 
 ## Pre-Commit Hook
 
@@ -62,13 +59,11 @@ git diff --check
 git diff --cached --check
 ```
 
-It should not push, publish, install cloud services, rewrite history, or require
-network access.
+It should not push, publish, install cloud services, rewrite history, or require network access.
 
 ## Auto-Adaptive Router
 
-The router reads staged paths and checks only relevant surfaces. It should use
-tool detection before running a command:
+The router reads staged paths and checks only relevant surfaces. It should use tool detection before running a command:
 
 | Evidence | Surface | Preferred gate |
 |----------|---------|----------------|
@@ -82,9 +77,7 @@ tool detection before running a command:
 | scripts or CLIs | Runtime helpers | self-test or focused smoke |
 | generated output | Materialization | source-to-output check, never hand-edit generated files |
 
-When a tool is missing, the router should report `SKIP` with the missing tool
-and continue only if that surface is optional. Required project surfaces must
-fail with a clear command to install or run.
+When a tool is missing, the router should report `SKIP` with the missing tool and continue only if that surface is optional. Required project surfaces must fail with a clear command to install or run.
 
 ## Command Names
 
@@ -100,13 +93,11 @@ Use stable command names so agents and devs can rely on them:
 | `quality:diff` | Run Git whitespace checks |
 | `commit:check` | Run the full local closure gate |
 
-For npm projects, expose them in `package.json`. For Python, Go, Rust, or mixed
-repos, keep the same public names in `make`, `just`, `task`, or a project CLI.
+For npm projects, expose them in `package.json`. For Python, Go, Rust, or mixed repos, keep the same public names in `make`, `just`, `task`, or a project CLI.
 
 ## Full Closure
 
-`commit:check` is the local CI contract. It should include every gate needed to
-say the repository is locally ready:
+`commit:check` is the local CI contract. It should include every gate needed to say the repository is locally ready:
 
 ```text
 structure validation
@@ -119,8 +110,7 @@ contract/self-tests
 git diff checks
 ```
 
-Keep expensive external checks out of `commit:check` unless they are
-deterministic, authenticated locally, and required for the project contract.
+Keep expensive external checks out of `commit:check` unless they are deterministic, authenticated locally, and required for the project contract.
 
 ## Failure Loop
 
@@ -133,8 +123,7 @@ Use one loop for every stack:
 1. Re-run `quality:staged` or the failed group.
 1. Re-run `commit:check` before claiming closure.
 
-Do not use `--no-verify` unless the user explicitly authorizes it and the risk
-is named.
+Do not use `--no-verify` unless the user explicitly authorizes it and the risk is named.
 
 ## Replication Steps
 
@@ -147,6 +136,4 @@ is named.
 1. Run `commit:check`.
 1. Record which surfaces are `PASS`, `SKIP`, or `BLOCKED`.
 
-The recipe is replicated only when the target project can answer: which
-surfaces were detected, which gates ran, which gates skipped with reason, and
-which command proves local closure.
+The recipe is replicated only when the target project can answer: which surfaces were detected, which gates ran, which gates skipped with reason, and which command proves local closure.

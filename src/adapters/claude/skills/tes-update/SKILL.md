@@ -6,9 +6,7 @@ license: MIT
 
 # TES Update
 
-`/tes-update` is the visible update entrypoint for an already installed TES
-mesh. `/tes:update` is a compatible TES intent alias; if Claude Code rejects
-the colon form as invalid slash text, continue as `/tes-update`.
+`/tes-update` is the visible update entrypoint for an already installed TES mesh. `/tes:update` is a compatible TES intent alias; if Claude Code rejects the colon form as invalid slash text, continue as `/tes-update`.
 
 The engine is `tes_update.py`. Do not reimplement update planning in the skill.
 
@@ -23,39 +21,23 @@ The engine is `tes_update.py`. Do not reimplement update planning in the skill.
 1. Classify the workspace:
    - Installed target: `.tes/bin/tes_update.py` exists.
    - Package source: `scripts/tes_update.py` exists.
-   - Otherwise report `BLOCKED` and ask the user to run the GitHub npx
-     installer.
+   - Otherwise report `BLOCKED` and ask the user to run the GitHub npx installer.
 2. Run the read-only plan first:
-   - Installed target:
-     `python3 .tes/bin/tes_update.py plan --target . --json-only`
-   - Package source or canary:
-     `python3 scripts/tes_update.py plan --target <target> --json-only`
+   - Installed target: `python3 .tes/bin/tes_update.py plan --target . --json-only`
+   - Package source or canary: `python3 scripts/tes_update.py plan --target <target> --json-only`
 3. Report a compact product status, never raw JSON:
    - `Current version`
    - `Available version`
    - `Scope`
    - `Route`
    - `Action`
-   - `Proof`
-   Include `No project work started` when the plan was read-only.
-4. If the plan reports `CURRENT` and `recommended_update_scope=none`, do not
-   write. Close with the proof and any declared limits.
-5. If the plan reports `STALE_HELPERS` or
-   `recommended_update_scope=helpers-only`, repair only TES-owned
-   `.tes/bin/**` helpers through the helper-only Layer Zero route, then rerun
-   the plan before any adapter or MCP config refresh.
-6. If the plan reports `recommended_update_scope=root-context`, run only the
-   root-context composition route named by the planner. This updates the TES
-   core block while preserving project overlay; do not perform whole-file
-   bootloader overwrite and do not treat project overlay as adapter drift.
-7. If the plan reports adapter/runtime drift, refresh adapter configuration and
-   selected TES adapter MCP config only after helper parity is `PASS`.
-8. Do not rerun `/tes-init` by default. Route to `/tes-init` only when the
-   planner declares Project-Start, missing context, evidence drift, or the user
-   explicitly asks to recertify/reinitialize.
-9. After any write, run the final recorded probe before claiming `PASS`:
-   `python3 .tes/bin/tes_update.py plan --target . --json-only --record-field-report`
-   The final probe must show:
+   - `Proof` Include `No project work started` when the plan was read-only.
+4. If the plan reports `CURRENT` and `recommended_update_scope=none`, do not write. Close with the proof and any declared limits.
+5. If the plan reports `STALE_HELPERS` or `recommended_update_scope=helpers-only`, repair only TES-owned `.tes/bin/**` helpers through the helper-only Layer Zero route, then rerun the plan before any adapter or MCP config refresh.
+6. If the plan reports `recommended_update_scope=root-context`, run only the root-context composition route named by the planner. This updates the TES core block while preserving project overlay; do not perform whole-file bootloader overwrite and do not treat project overlay as adapter drift.
+7. If the plan reports adapter/runtime drift, refresh adapter configuration and selected TES adapter MCP config only after helper parity is `PASS`.
+8. Do not rerun `/tes-init` by default. Route to `/tes-init` only when the planner declares Project-Start, missing context, evidence drift, or the user explicitly asks to recertify/reinitialize.
+9. After any write, run the final recorded probe before claiming `PASS`: `python3 .tes/bin/tes_update.py plan --target . --json-only --record-field-report` The final probe must show:
    - `helper_contract_status=PASS`
    - `runtime_trigger_status=PASS` or `NOT_APPLIED`
    - `context_core_status=PASS`
@@ -68,5 +50,4 @@ The engine is `tes_update.py`. Do not reimplement update planning in the skill.
 - Do not edit secrets, remotes, package locks, global config, or CI secrets.
 - Do not start project feature work from this skill.
 - Do not record Field Reports for exploratory read-only probes.
-- Do not call the target current while helper parity is `STALE_HELPERS` or
-  runtime triggers are `DRIFT`.
+- Do not call the target current while helper parity is `STALE_HELPERS` or runtime triggers are `DRIFT`.

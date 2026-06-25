@@ -1,56 +1,39 @@
 # Bump Scope Decision
 
-Read this when `tes_bump.py --governance-check` reports
-`PASS` or `NEEDS_VERSION_DECISION` and you need to pick the sync scope.
+Read this when `tes_bump.py --governance-check` reports `PASS` or `NEEDS_VERSION_DECISION` and you need to pick the sync scope.
 
 ## The Two Scopes
 
-`/tes-sync` always applies a version bump. There is no no-bump sync route.
-The governance check classifies how far the bump must propagate.
+`/tes-sync` always applies a version bump. There is no no-bump sync route. The governance check classifies how far the bump must propagate.
 
 ### Source-only bump
 
-This is the minimum `/tes-sync` route. Use it when governance verdict is
-`PASS`, or when the verdict is `NEEDS_VERSION_DECISION` but the change does
-not move installer refs, i18n, or bundle behavior. Examples that fit here:
+This is the minimum `/tes-sync` route. Use it when governance verdict is `PASS`, or when the verdict is `NEEDS_VERSION_DECISION` but the change does not move installer refs, i18n, or bundle behavior. Examples that fit here:
 
 - Internal oracle hardening that does not change CLI flags.
 - New self-test fixtures.
 - Adapter source edits that materialize identically.
 - Governance docs, internal evidence, and test scaffolding.
 
-Keep this scope narrow. The TES `release_identity` block in `AGENTS.md`
-still means most delivered-behavior changes flow naturally into the bundle
-scope. Source-only is now a bumped sync, not a no-bump sync.
+Keep this scope narrow. The TES `release_identity` block in `AGENTS.md` still means most delivered-behavior changes flow naturally into the bundle scope. Source-only is now a bumped sync, not a no-bump sync.
 
-Sync surface: source identity only (no `docs/install/**`, no `i18n`, no
-`docs/dist/`).
-Phases run: identity bump, validation, commit, push.
-Phases skipped: public refs, bundle publish, public HTML regen, tag,
-release:check.
+Sync surface: source identity only (no `docs/install/**`, no `i18n`, no `docs/dist/`). Phases run: identity bump, validation, commit, push. Phases skipped: public refs, bundle publish, public HTML regen, tag, release:check.
 
 ### Bump + bundle + public refs (default)
 
-Governance verdict is `NEEDS_VERSION_DECISION` and delivered behavior
-flows to adopters: skill body changed, oracle behavior changed, new
-delivered command, new ref, installer copy moved.
+Governance verdict is `NEEDS_VERSION_DECISION` and delivered behavior flows to adopters: skill body changed, oracle behavior changed, new delivered command, new ref, installer copy moved.
 
-Sync surface: everything.
-Phases run: all 12 from `SKILL.md`.
+Sync surface: everything. Phases run: all 12 from `SKILL.md`.
 
-This is the path the 0.3.124 and 0.3.125 cycles took. Use this scope by
-default unless you can clearly justify the narrower one.
+This is the path the 0.3.124 and 0.3.125 cycles took. Use this scope by default unless you can clearly justify the narrower one.
 
 ## Decision Heuristic
 
-Ask: would a target project that installs the new version observe a
-difference?
+Ask: would a target project that installs the new version observe a difference?
 
-- Yes (skill body, oracle exit code, installer copy, command surface) →
-  bundle scope.
+- Yes (skill body, oracle exit code, installer copy, command surface) → bundle scope.
 - No (test fixtures, internal docs, governance) → source-only bump.
-- Yes but installer refs were already moved this session, or refs stay
-  on the old version intentionally → source-only with explicit closeout.
+- Yes but installer refs were already moved this session, or refs stay on the old version intentionally → source-only with explicit closeout.
 
 ## Canonical Identity Bump File Set
 
@@ -95,9 +78,7 @@ for f in scripts/*.py; do
 done
 ```
 
-The anchored `^...$` pattern protects against accidentally touching
-strings inside docstrings, help text, or fixture data that happens to
-contain the version.
+The anchored `^...$` pattern protects against accidentally touching strings inside docstrings, help text, or fixture data that happens to contain the version.
 
 ## Why The Scoped Pattern Matters For `validate_reference_package.py`
 
@@ -109,15 +90,12 @@ The three REQUIRED_PATHS entries for the bundle look like:
 "docs/dist/0.3.124/tilly-engineer-skills-0.3.124.zip.sha256",
 ```
 
-A global `sed 's|0.3.124|0.3.125|g'` against the whole file replaces the
-**directory** version but also leaves the **zip filename** broken:
+A global `sed 's|0.3.124|0.3.125|g'` against the whole file replaces the **directory** version but also leaves the **zip filename** broken:
 
 ```python
 "docs/dist/0.3.125/tilly-engineer-skills-0.3.124.zip",
 ```
 
-This passed the syntax check but fails commit:check because the actual
-zip file is named `tilly-engineer-skills-<new>.zip`.
+This passed the syntax check but fails commit:check because the actual zip file is named `tilly-engineer-skills-<new>.zip`.
 
-Use a scoped pattern or just hand-edit those three lines. The trap cost
-real time during the 0.3.125 cycle.
+Use a scoped pattern or just hand-edit those three lines. The trap cost real time during the 0.3.125 cycle.

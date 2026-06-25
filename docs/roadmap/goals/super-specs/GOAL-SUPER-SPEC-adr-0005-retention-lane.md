@@ -9,11 +9,9 @@ evidence_level: L1
 
 # GOAL Super SPEC: ADR 0005 Retention Lane
 
-Status: active lane SPEC derived from
-`docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
+Status: active lane SPEC derived from `docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
 
-Purpose: retain ADR 0005 learning only where it affects existing contracts,
-evidence, Cortex boundaries, TDS indexes, or contract histories.
+Purpose: retain ADR 0005 learning only where it affects existing contracts, evidence, Cortex boundaries, TDS indexes, or contract histories.
 
 ## Asset-Transfer Packet
 
@@ -33,11 +31,9 @@ evidence, Cortex boundaries, TDS indexes, or contract histories.
 Tasks:
 
 1. Capture `git status --short --branch --untracked-files=all`.
-2. Read ADR 0005, TDS spec, relevant evidence index, Cortex boundary, or
-   contract history.
+2. Read ADR 0005, TDS spec, relevant evidence index, Cortex boundary, or contract history.
 3. Identify the exact retained learning and the existing surface that owns it.
-4. Name whether the change is index-only, evidence-only, contract-history, or
-   behavior-correlated.
+4. Name whether the change is index-only, evidence-only, contract-history, or behavior-correlated.
 
 Focused oracles:
 
@@ -52,11 +48,9 @@ git diff --check
 
 Tasks:
 
-1. Prove that the learning changes a contract, explains a hard-to-reverse
-   decision, supports evidence, or prevents a repeated failure.
+1. Prove that the learning changes a contract, explains a hard-to-reverse decision, supports evidence, or prevents a repeated failure.
 2. If it is only interesting context, keep it out of tracked TES docs.
-3. If it belongs to a contract history, update the owning history instead of
-   creating a new document.
+3. If it belongs to a contract history, update the owning history instead of creating a new document.
 
 ## SPEC-002: Existing Asset Patch
 
@@ -64,8 +58,7 @@ Tasks:
 
 1. Patch the smallest retained surface that owns the learning.
 2. Keep TDS entries synchronized with frontmatter.
-3. Do not let evidence wording override a newer accepted ADR or source of
-   truth.
+3. Do not let evidence wording override a newer accepted ADR or source of truth.
 
 ## SPEC-003: Regression And Release
 
@@ -73,8 +66,6 @@ Tasks:
 
 1. Run TDS validation and private vocabulary checks.
 2. Run any Cortex or evidence oracle matching the changed surface.
-3. If public, adapter, installed, or release behavior changed, stop for release
-   identity decision.
+3. If public, adapter, installed, or release behavior changed, stop for release identity decision.
 
-Valid statuses: `ASSET_TRANSFERRED`, `ASSET_ALREADY_ADEQUATE`,
-`NEEDS_OWNER_DECISION`, `NEEDS_ASSET_PACKET`, `BLOCKED`.
+Valid statuses: `ASSET_TRANSFERRED`, `ASSET_ALREADY_ADEQUATE`, `NEEDS_OWNER_DECISION`, `NEEDS_ASSET_PACKET`, `BLOCKED`.

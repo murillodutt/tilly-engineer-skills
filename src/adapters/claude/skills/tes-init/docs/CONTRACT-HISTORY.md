@@ -2,25 +2,20 @@
 
 ## Purpose
 
-`/tes-init` installs or recertifies TES in a target project and bootstraps Tier
-3 project inventory (`PROJECT-CONTEXT`, initial mesh stubs, cortex scaffold).
+`/tes-init` installs or recertifies TES in a target project and bootstraps Tier 3 project inventory (`PROJECT-CONTEXT`, initial mesh stubs, cortex scaffold).
 
 ## Why This Skill Exists
 
-Projects need a deterministic installer that backs up governance, applies thin
-runtime bootloaders, and produces auditable project-start evidence — without
-conflating scaffold inventory with operational position.
+Projects need a deterministic installer that backs up governance, applies thin runtime bootloaders, and produces auditable project-start evidence — without conflating scaffold inventory with operational position.
 
 ## Contracts Preserved
 
 - Assisted Context Installer spec is canonical for installer behavior.
 - `/tes-update` owns mesh refresh without default re-init.
 - `/tes-align` owns Tier 2 semantic alignment after init.
-- `PROJECT-CONTEXT.md` is Tier 3 init inventory, not cold-start authority once
-  `DOCUMENTATION-AUTHORITY.md` exists or after align.
+- `PROJECT-CONTEXT.md` is Tier 3 init inventory, not cold-start authority once `DOCUMENTATION-AUTHORITY.md` exists or after align.
 - Central `.tes/bk/**` backup before bootloader overwrite.
-- Project-owned governance recovered into `docs/agents/**`, not duplicated in
-  bootloaders.
+- Project-owned governance recovered into `docs/agents/**`, not duplicated in bootloaders.
 
 ## Known Failure Modes Prevented
 
@@ -32,9 +27,7 @@ conflating scaffold inventory with operational position.
 
 ## Relationship To Other Skills
 
-`tes-init` bootstraps. `tes-align` positions. `tes-update` refreshes TES
-helpers/adapters. `tes-doctor` certifies health. `tes-context-distill` optional
-Phase 2 on inherited root context archives.
+`tes-init` bootstraps. `tes-align` positions. `tes-update` refreshes TES helpers/adapters. `tes-doctor` certifies health. `tes-context-distill` optional Phase 2 on inherited root context archives.
 
 ## Changelog
 
@@ -45,5 +38,4 @@ Phase 2 on inherited root context archives.
 
 ## Do Not Lose
 
-Init produces inventory and mesh stubs. Alignment produces the operating line.
-Do not claim operational position without `/tes-align` or existing Tier 2 mesh.
+Init produces inventory and mesh stubs. Alignment produces the operating line. Do not claim operational position without `/tes-align` or existing Tier 2 mesh.

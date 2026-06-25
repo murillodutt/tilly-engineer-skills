@@ -6,10 +6,7 @@
 
 ## Why This Skill Exists
 
-`/tes-field-reports` was already documented as a preferred TES command trigger,
-but Codex exposed no standalone Field Reports skill. The visible runtime surface
-needed to match the documented primary command without splitting every routed
-alias into an unnecessary skill.
+`/tes-field-reports` was already documented as a preferred TES command trigger, but Codex exposed no standalone Field Reports skill. The visible runtime surface needed to match the documented primary command without splitting every routed alias into an unnecessary skill.
 
 ## Origin Signals
 
@@ -28,8 +25,7 @@ alias into an unnecessary skill.
 
 ## Contracts Preserved
 
-- `/tes-update` now has its own visible `tes-update` skill; Field Reports
-  still records only final update certification probes.
+- `/tes-update` now has its own visible `tes-update` skill; Field Reports still records only final update certification probes.
 - `/tes-curate` remains routed through `tes-cortex`.
 - Field Reports remains sanitized operational feedback, not project truth.
 - Draining remains explicit user intent or pre-push hook behavior.
@@ -43,9 +39,7 @@ alias into an unnecessary skill.
 
 ## Relationship To Other Skills
 
-`tes-init` installs or repairs Field Reports as part of the runtime. `tes-doctor`
-certifies Field Reports health. `tes-field-reports` handles direct user intent
-for status, drain, disable, enable, and hook repair.
+`tes-init` installs or repairs Field Reports as part of the runtime. `tes-doctor` certifies Field Reports health. `tes-field-reports` handles direct user intent for status, drain, disable, enable, and hook repair.
 
 ## Changelog
 
@@ -55,5 +49,4 @@ for status, drain, disable, enable, and hook repair.
 
 ## Do Not Lose
 
-Field Reports is useful because it is small, sanitized, local-first, and honest
-about transport blockers. Do not turn it into project memory or analytics.
+Field Reports is useful because it is small, sanitized, local-first, and honest about transport blockers. Do not turn it into project memory or analytics.

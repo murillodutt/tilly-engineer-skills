@@ -10,24 +10,19 @@ tver: 0.1.0
 
 # TES Memory Lifecycle Wave 7 Release And Canary Report
 
-This report closes the ADR 0001 implementation run at the local package-source
-level. It does not authorize or claim a remote tag, GitHub release, package
-publish, marketplace action, or broad commercial-use certification.
+This report closes the ADR 0001 implementation run at the local package-source level. It does not authorize or claim a remote tag, GitHub release, package publish, marketplace action, or broad commercial-use certification.
 
 ## Claim
 
 ADR 0001 is implemented for the package-source contract through Wave 7:
 
 - adapter lifecycle and subagent boundaries are explicit;
-- scope normalization is shared by Cortex, Field Reports, events, and
-  checkpoints;
+- scope normalization is shared by Cortex, Field Reports, events, and checkpoints;
 - event ledger and checkpoint behavior are inspectable and sanitized;
 - Cortex operator commands have explicit mutability classes;
-- durable memory consolidation requires a lock, approved review, rollback
-  reference, allowed evidence, and observed Cortex write evidence;
+- durable memory consolidation requires a lock, approved review, rollback reference, allowed evidence, and observed Cortex write evidence;
 - release identity is resolved as package version `0.3.133`;
-- the public bundle for `0.3.133` was regenerated from clean source commit
-  `58e4772f393a368635cefe8e5c84e8b38b6c4a44`.
+- the public bundle for `0.3.133` was regenerated from clean source commit `58e4772f393a368635cefe8e5c84e8b38b6c4a44`.
 
 ## Material Trail
 
@@ -47,8 +42,7 @@ Package version: `0.3.133`.
 
 Bundle: `docs/dist/0.3.133/tilly-engineer-skills-0.3.133.zip`.
 
-Bundle SHA-256:
-`560e6d49c2c59f1927ef77169bbe934fb7ca6642697de84ac6e77a175b6dda4f`.
+Bundle SHA-256: `560e6d49c2c59f1927ef77169bbe934fb7ca6642697de84ac6e77a175b6dda4f`.
 
 Bundle metadata:
 
@@ -56,15 +50,11 @@ Bundle metadata:
 - `source_tree_state`: `clean`
 - `source_branch`: `main`
 
-`npm run release:check` was not run because no release tag, fixed public
-installer ref, push, or remote release action was authorized in this loop. The
-correct status is local package-source closure with remote release
-certification deferred.
+`npm run release:check` was not run because no release tag, fixed public installer ref, push, or remote release action was authorized in this loop. The correct status is local package-source closure with remote release certification deferred.
 
 ## Canary Replay
 
-A disposable real-project canary was run from local notes kept outside the TES
-repository. Tracked evidence uses neutral placeholders only.
+A disposable real-project canary was run from local notes kept outside the TES repository. Tracked evidence uses neutral placeholders only.
 
 Commands, normalized:
 
@@ -100,9 +90,7 @@ Observed result:
 | Cortex self-test | `PASS` |
 | Cortex health | `PASS` |
 
-The canary target was intentionally left as disposable local evidence. No
-canary files, private paths, remotes, or project identifiers are part of this
-repository.
+The canary target was intentionally left as disposable local evidence. No canary files, private paths, remotes, or project identifiers are part of this repository.
 
 ## Closure Oracles
 
@@ -131,14 +119,10 @@ Focused and package gates used during Waves 1-7:
 
 ## Residual Risk
 
-- Remote release certification is deferred until an explicit tag/ref/push or
-  equivalent fixed public installer decision is authorized.
-- One real-project canary supports this local closure but does not support a
-  broad commercial-use claim.
-- Cursor remains structural where behavior is not directly exercised by a
-  retained backend run.
-- MCP remains read-only; write-capable MCP behavior is not part of this
-  implementation.
+- Remote release certification is deferred until an explicit tag/ref/push or equivalent fixed public installer decision is authorized.
+- One real-project canary supports this local closure but does not support a broad commercial-use claim.
+- Cursor remains structural where behavior is not directly exercised by a retained backend run.
+- MCP remains read-only; write-capable MCP behavior is not part of this implementation.
 
 ## Decision
 

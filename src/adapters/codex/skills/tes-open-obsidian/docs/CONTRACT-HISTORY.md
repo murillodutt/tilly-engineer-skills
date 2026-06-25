@@ -2,15 +2,11 @@
 
 ## Purpose
 
-`tes-open-obsidian` is the opt-in bridge from TES Markdown knowledge mesh to
-the user-facing Obsidian visual surface.
+`tes-open-obsidian` is the opt-in bridge from TES Markdown knowledge mesh to the user-facing Obsidian visual surface.
 
 ## Why This Skill Exists
 
-TES intentionally treats Obsidian as a visualization tool, not as the source of
-truth. The project mesh lives in `docs/agents/**`; `.obsidian/**` remains
-user/project-owned state. This skill lets a user open the prepared project in
-Obsidian without turning TES into an Obsidian configuration manager.
+TES intentionally treats Obsidian as a visualization tool, not as the source of truth. The project mesh lives in `docs/agents/**`; `.obsidian/**` remains user/project-owned state. This skill lets a user open the prepared project in Obsidian without turning TES into an Obsidian configuration manager.
 
 ## Origin Signals
 
@@ -45,9 +41,7 @@ Obsidian without turning TES into an Obsidian configuration manager.
 
 ## Relationship To Other Skills
 
-`tes-init` creates the initial mesh. `tes-align` refines it. `tes-open-obsidian`
-only preflights and opens the project for user navigation. `tes-doctor`
-remains the health check.
+`tes-init` creates the initial mesh. `tes-align` refines it. `tes-open-obsidian` only preflights and opens the project for user navigation. `tes-doctor` remains the health check.
 
 ## Changelog
 
@@ -59,6 +53,4 @@ remains the health check.
 
 ## Do Not Lose
 
-This skill exists to make the Obsidian workflow convenient without making
-Obsidian a TES dependency. Never let convenience become hidden `.obsidian/**`
-mutation.
+This skill exists to make the Obsidian workflow convenient without making Obsidian a TES dependency. Never let convenience become hidden `.obsidian/**` mutation.

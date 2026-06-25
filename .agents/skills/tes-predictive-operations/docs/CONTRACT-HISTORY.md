@@ -2,17 +2,11 @@
 
 ## Purpose
 
-`tes-predictive-operations` is local-only reference development guidance
-for deciding how to operate `tes-prospect` and `tes-mine` together during
-project reasoning.
+`tes-predictive-operations` is local-only reference development guidance for deciding how to operate `tes-prospect` and `tes-mine` together during project reasoning.
 
 ## Why This Skill Exists
 
-Project reasoning can over-escalate into a broad planning loop, premature
-durable-memory mining, or packaging work before behavior is clear. This skill
-keeps that choice small: prospect when the risk is in the plan, mine when the
-risk is in language or evidence, alternate only when both are needed, and
-package only after the behavior is already understood.
+Project reasoning can over-escalate into a broad planning loop, premature durable-memory mining, or packaging work before behavior is clear. This skill keeps that choice small: prospect when the risk is in the plan, mine when the risk is in language or evidence, alternate only when both are needed, and package only after the behavior is already understood.
 
 ## Origin Signals
 
@@ -34,20 +28,16 @@ package only after the behavior is already understood.
 ## Contracts Preserved
 
 - Keep `tes-prospect` as the plan-risk pressure pass.
-- Keep `tes-mine` as the language, code-evidence, and durable-knowledge mining
-  pass.
+- Keep `tes-mine` as the language, code-evidence, and durable-knowledge mining pass.
 - Use mode-selection guidance only as an explicit local reference during project reasoning.
 - Do not expose it as a user-invoked skill or command.
-- Alternate prospecting and mining deliberately instead of creating a third
-  execution engine.
+- Alternate prospecting and mining deliberately instead of creating a third execution engine.
 - Use skill-packaging checks only after the target behavior is already clear.
-- Write durable context only after a term, relationship, contradiction, or
-  decision is resolved and the active workflow authorizes the write.
+- Write durable context only after a term, relationship, contradiction, or decision is resolved and the active workflow authorizes the write.
 
 ## Known Failure Modes Prevented
 
-- Treating `prospect`, `mine`, `alternate`, and `package` as one large
-  always-on reasoning loop.
+- Treating `prospect`, `mine`, `alternate`, and `package` as one large always-on reasoning loop.
 - Asking the maintainer to invoke a local meta-skill.
 - Packaging a workflow before its behavior is clear.
 - Writing durable context from unresolved language, contradiction, or plan risk.
@@ -58,8 +48,7 @@ package only after the behavior is already understood.
 - `tes-prospect` owns plan-risk pressure.
 - `tes-mine` owns language, evidence, and durable-knowledge mining.
 - `tes-high-agency-pattern` owns one-skill operating-pattern design.
-- `tes-predictive-operations` owns the smallest local mode choice between those
-  behaviors during active project reasoning.
+- `tes-predictive-operations` owns the smallest local mode choice between those behaviors during active project reasoning.
 
 ## Changelog
 
@@ -77,9 +66,4 @@ package only after the behavior is already understood.
 
 ## Do Not Lose
 
-This guidance helps the agent decide the smallest useful reasoning mode. It
-must not be exposed as a command, must not edit `tes-mine` or `tes-prospect`,
-must not become a commercial skill, and must not apply packaging work before
-behavior is clear. Keep `SKILL.md` lean; use references for depth. Its
-temperament reference chooses the mode; `tes-high-agency-pattern` owns profile
-design for one local development-layer skill.
+This guidance helps the agent decide the smallest useful reasoning mode. It must not be exposed as a command, must not edit `tes-mine` or `tes-prospect`, must not become a commercial skill, and must not apply packaging work before behavior is clear. Keep `SKILL.md` lean; use references for depth. Its temperament reference chooses the mode; `tes-high-agency-pattern` owns profile design for one local development-layer skill.

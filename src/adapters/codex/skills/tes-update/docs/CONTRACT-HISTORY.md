@@ -2,13 +2,11 @@
 
 ## Purpose
 
-`/tes-update` refreshes an installed TES mesh via `tes_update.py` without
-default full re-initialization.
+`/tes-update` refreshes an installed TES mesh via `tes_update.py` without default full re-initialization.
 
 ## Why This Skill Exists
 
-Installed targets drift in helpers, adapters, and root-context blocks. Update
-needs a read-only plan first, bounded write scopes, and a recorded final probe.
+Installed targets drift in helpers, adapters, and root-context blocks. Update needs a read-only plan first, bounded write scopes, and a recorded final probe.
 
 ## Contracts Preserved
 
@@ -27,8 +25,7 @@ needs a read-only plan first, bounded write scopes, and a recorded final probe.
 
 ## Relationship To Other Skills
 
-`tes-update` refreshes TES runtime. `tes-init` recertifies project-start.
-`tes-doctor` validates health. `tes-adapter` materializes adapter trees.
+`tes-update` refreshes TES runtime. `tes-init` recertifies project-start. `tes-doctor` validates health. `tes-adapter` materializes adapter trees.
 
 ## Changelog
 
@@ -39,5 +36,4 @@ needs a read-only plan first, bounded write scopes, and a recorded final probe.
 
 ## Do Not Lose
 
-Plan read-only first. Write only the scope the planner names. Prove closure with
-the recorded probe.
+Plan read-only first. Write only the scope the planner names. Prove closure with the recorded probe.

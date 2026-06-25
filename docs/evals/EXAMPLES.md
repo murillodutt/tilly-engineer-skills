@@ -9,12 +9,9 @@ evidence_level: L1
 
 # Examples
 
-This file is optional reference material. Do not load it by default in root
-agent instructions. Use it only when a task needs concrete examples of the core
-failure patterns.
+This file is optional reference material. Do not load it by default in root agent instructions. Use it only when a task needs concrete examples of the core failure patterns.
 
-Real-world code examples demonstrating the maturity-aware principles. Each
-example shows what LLMs commonly do wrong and how to fix it.
+Real-world code examples demonstrating the maturity-aware principles. Each example shows what LLMs commonly do wrong and how to fix it.
 
 ---
 
@@ -255,8 +252,7 @@ Forbidden complexity: new framework or broad adapter redesign.
 Oracle: adapter parity or compatibility test.
 ```
 
-Simplicity still applies, but now it means less architectural regression, not
-fewer lines at the expense of an accepted contract.
+Simplicity still applies, but now it means less architectural regression, not fewer lines at the expense of an accepted contract.
 
 ---
 

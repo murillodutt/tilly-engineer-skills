@@ -1,7 +1,6 @@
 # Temperament Mode Selection
 
-Use this reference when choosing the smallest useful reasoning mode for a
-development-layer skill.
+Use this reference when choosing the smallest useful reasoning mode for a development-layer skill.
 
 ## Mode Selection
 
@@ -31,8 +30,7 @@ Use `builder` when the task needs a material artifact:
 
 Use `gate` when the task needs certification:
 
-- health check, parity check, release readiness, install/update validation, or
-  contract audit;
+- health check, parity check, release readiness, install/update validation, or contract audit;
 - output should be status-first and evidence-backed.
 
 Use `curator` when the task needs memory hygiene:
@@ -44,8 +42,7 @@ Use `curator` when the task needs memory hygiene:
 
 - `sniper`: zero questions unless unsafe or blocking ambiguity exists.
 - `prospector`: one question at a time, with a recommended answer.
-- `miner`: ask after repository evidence cannot resolve the term or
-  contradiction.
+- `miner`: ask after repository evidence cannot resolve the term or contradiction.
 - `builder`: ask only when the implementation choice would be risky to infer.
 - `gate`: do not ask before running the available read-only oracle.
 - `curator`: ask before promotion, not before read-only recall or audit.

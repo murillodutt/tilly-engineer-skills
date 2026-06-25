@@ -2,15 +2,11 @@
 
 ## Purpose
 
-`tes-bench` routes benchmark planning, safe fixture runs, convergence review,
-and behavior-evidence certification for TES context-mesh evidence.
+`tes-bench` routes benchmark planning, safe fixture runs, convergence review, and behavior-evidence certification for TES context-mesh evidence.
 
 ## Why This Skill Exists
 
-Benchmark commands are package-source evidence operations. Installed target
-projects usually do not own the benchmark scripts, so agents need a clear
-route that avoids inventing target-local benchmark commands or promoting raw
-evidence into current truth.
+Benchmark commands are package-source evidence operations. Installed target projects usually do not own the benchmark scripts, so agents need a clear route that avoids inventing target-local benchmark commands or promoting raw evidence into current truth.
 
 ## Origin Signals
 
@@ -31,8 +27,7 @@ evidence into current truth.
 
 - `/tes-bench` is package-source benchmark work, not installed-target health.
 - Fixture evidence does not prove behavior parity.
-- Raw evidence, manifests, summaries, reports, and grader hashes are retained
-  when a claim depends on them.
+- Raw evidence, manifests, summaries, reports, and grader hashes are retained when a claim depends on them.
 - Current evidence interpretation lives in `docs/evidence/current/**`.
 - New generated benchmark runs default to temporal `reports/YYYY/MM/DD`.
 
@@ -46,10 +41,7 @@ evidence into current truth.
 
 ## Relationship To Other Skills
 
-`tes-bench` handles benchmark evidence. `tes-align` handles target-project
-operating mesh alignment and writes target evidence under `docs/agents/**`.
-`tes-map` reads the target map. `tes-doctor` is the route for installed-target
-health.
+`tes-bench` handles benchmark evidence. `tes-align` handles target-project operating mesh alignment and writes target evidence under `docs/agents/**`. `tes-map` reads the target map. `tes-doctor` is the route for installed-target health.
 
 ## Changelog
 
@@ -59,7 +51,4 @@ health.
 
 ## Do Not Lose
 
-Evidence is proof retained for claims, not truth by existence. Use
-`docs/evidence/current/**` for current claims and keep generated run artifacts
-under the temporal reports contract unless a caller explicitly chooses another
-root.
+Evidence is proof retained for claims, not truth by existence. Use `docs/evidence/current/**` for current claims and keep generated run artifacts under the temporal reports contract unless a caller explicitly chooses another root.

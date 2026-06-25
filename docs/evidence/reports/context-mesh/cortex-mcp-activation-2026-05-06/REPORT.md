@@ -9,17 +9,13 @@ evidence_level: L3
 
 # Cortex MCP Activation Report
 
-This report records the first project-scoped Cortex MCP activation cut on
-May 6, 2026.
+This report records the first project-scoped Cortex MCP activation cut on May 6, 2026.
 
-Correction note, May 26, 2026: current helper installation uses `.tes/bin/**`.
-Older `.tilly/bin/**` references were stale path vocabulary, not the active
-runtime contract.
+Correction note, May 26, 2026: current helper installation uses `.tes/bin/**`. Older `.tilly/bin/**` references were stale path vocabulary, not the active runtime contract.
 
 ## Claim
 
-The assisted installer can activate the read-only Cortex MCP server for target
-projects without relying on manual post-install configuration.
+The assisted installer can activate the read-only Cortex MCP server for target projects without relying on manual post-install configuration.
 
 ## Scope
 
@@ -57,8 +53,7 @@ projects without relying on manual post-install configuration.
 
 ## Rollback
 
-Use Git to revert this cut, or remove the project-scoped activation files from
-the target project:
+Use Git to revert this cut, or remove the project-scoped activation files from the target project:
 
 ```bash
 git revert <install-commit>

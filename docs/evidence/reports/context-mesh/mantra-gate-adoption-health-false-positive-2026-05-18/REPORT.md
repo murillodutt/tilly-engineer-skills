@@ -17,27 +17,19 @@ evidence_level: L4
 
 ## Cause
 
-TES `0.3.110` made the Mantra Gate adoption oracle correlate dirty worktree,
-staged files, recent commit files, and existing gate records. In `/tes-doctor`,
-that default read-only health check could inherit `high-risk` from historical
-or unrelated local state, then validate old compact records as if they were the
-gate for the current doctor action.
+TES `0.3.110` made the Mantra Gate adoption oracle correlate dirty worktree, staged files, recent commit files, and existing gate records. In `/tes-doctor`, that default read-only health check could inherit `high-risk` from historical or unrelated local state, then validate old compact records as if they were the gate for the current doctor action.
 
 ## Correction
 
 TES `0.3.111` separated adoption modes:
 
-- default `health`: read-only; reports dirty state and historical compact
-  records as contextual metrics;
+- default `health`: read-only; reports dirty state and historical compact records as contextual metrics;
 - `--state-changing`: validates the current state-changing action;
 - `--closure-claim`: requires a closure `ORACLE`;
 - `--commit-push`: keeps push readiness strict;
 - `--audit-history`: explicitly inspected historical records.
 
-This report is archived because its historical expectation for current-action
-compact display was superseded. The current contract treats compact
-`[🍳 Flash-Fry]` display as valid when the internal gate record is complete and
-the gate returns `PROCEED`.
+This report is archived because its historical expectation for current-action compact display was superseded. The current contract treats compact `[🍳 Flash-Fry]` display as valid when the internal gate record is complete and the gate returns `PROCEED`.
 
 ## Focused Evidence
 
@@ -52,6 +44,4 @@ the gate returns `PROCEED`.
 
 ## Limit
 
-Historical findings remain visible. Current policy is defined by
-`docs/mesh/MANTRA-GATE.md`; this report must not be used as active operating
-guidance.
+Historical findings remain visible. Current policy is defined by `docs/mesh/MANTRA-GATE.md`; this report must not be used as active operating guidance.

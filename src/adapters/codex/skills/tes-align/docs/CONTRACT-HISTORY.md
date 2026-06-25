@@ -2,15 +2,11 @@
 
 ## Purpose
 
-`tes-align` turns the initial `/tes-init` project map into an evidenced project
-operating mesh.
+`tes-align` turns the initial `/tes-init` project map into an evidenced project operating mesh.
 
 ## Why This Skill Exists
 
-Canary convergence showed that a valid `PROJECT-CONTEXT.md` can still be too
-shallow to guide future work. The missing layer is semantic alignment:
-System X-Ray, Convergence Line, state, execution line, gates, boundaries,
-decisions, glossary, knowledge lifecycle, and evidence.
+Canary convergence showed that a valid `PROJECT-CONTEXT.md` can still be too shallow to guide future work. The missing layer is semantic alignment: System X-Ray, Convergence Line, state, execution line, gates, boundaries, decisions, glossary, knowledge lifecycle, and evidence.
 
 ## Origin Signals
 
@@ -44,22 +40,16 @@ decisions, glossary, knowledge lifecycle, and evidence.
 - Hiding unknowns.
 - Polluting `.obsidian/**`.
 - Claiming alignment without retained evidence.
-- Mixing target-project `docs/agents/evidence/**` with TES source-package
-  benchmark evidence under `docs/evidence/**`.
-- Reporting structural PASS while active docs still assert retired claims or
-  use vocabulary the project has already moved past. The Semantic Residue Gate
-  prevents this false green.
-- Outranking a newer accepted ADR with older retained evidence. Freshness
-  reconciliation requires the newest decision to be read before PASS.
+- Mixing target-project `docs/agents/evidence/**` with TES source-package benchmark evidence under `docs/evidence/**`.
+- Reporting structural PASS while active docs still assert retired claims or use vocabulary the project has already moved past. The Semantic Residue Gate prevents this false green.
+- Outranking a newer accepted ADR with older retained evidence. Freshness reconciliation requires the newest decision to be read before PASS.
 - Letting `PROJECT-CONTEXT.md` compete with Tier 2 mesh after `/tes-align`.
 - Updating `SKILL.md` without mirroring the change in this contract history.
 - Reporting PASS when Tier 3 `contracts/**` contradict Tier 1 or Tier 2.
 
 ## Relationship To Other Skills
 
-`tes-init` creates the initial map. `tes-align` deepens it. `tes-doctor`
-certifies health. `tes-cortex` recalls and curates continuity. Build-Test-Fail-
-Fix loops prove product changes after alignment selects the lane.
+`tes-init` creates the initial map. `tes-align` deepens it. `tes-doctor` certifies health. `tes-cortex` recalls and curates continuity. Build-Test-Fail-Fix loops prove product changes after alignment selects the lane.
 
 ## Changelog
 
@@ -75,13 +65,8 @@ Fix loops prove product changes after alignment selects the lane.
 
 ## Skill Docs Boundary
 
-This file (`docs/CONTRACT-HISTORY.md`) is TES skill contract memory — why
-`tes-align` exists and what must not regress. It is not project documentation.
-Project tier ladder lives in the target's
-`docs/agents/DOCUMENTATION-AUTHORITY.md` when present.
+This file (`docs/CONTRACT-HISTORY.md`) is TES skill contract memory — why `tes-align` exists and what must not regress. It is not project documentation. Project tier ladder lives in the target's `docs/agents/DOCUMENTATION-AUTHORITY.md` when present.
 
 ## Do Not Lose
 
-`tes-align` exists to make the project operable for the next agent. It should
-reduce confusion and duplicated work, not expand documentation for its own
-sake.
+`tes-align` exists to make the project operable for the next agent. It should reduce confusion and duplicated work, not expand documentation for its own sake.

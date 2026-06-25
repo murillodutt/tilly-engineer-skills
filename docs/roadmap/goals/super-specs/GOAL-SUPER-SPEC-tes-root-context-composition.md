@@ -12,12 +12,9 @@ tver: 0.1.0
 
 Status: active planning artifact; no delivered behavior yet.
 
-Capability: make TES root-context installation and update always advance the
-TES core while preserving project-owned context, across first install,
-postinstall hooks, NPX/BunX updates, adapter refresh, and `/tes-update`.
+Capability: make TES root-context installation and update always advance the TES core while preserving project-owned context, across first install, postinstall hooks, NPX/BunX updates, adapter refresh, and `/tes-update`.
 
-Canonical artifact:
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md`
+Canonical artifact: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md`
 
 ## Mantra Gate Snapshot
 
@@ -33,8 +30,7 @@ Canonical artifact:
 
 ## Problem
 
-TES currently treats root-context files as whole files in several write and
-planning paths:
+TES currently treats root-context files as whole files in several write and planning paths:
 
 - `AGENTS.md`
 - `CLAUDE.md`
@@ -44,26 +40,16 @@ planning paths:
 
 That creates two unacceptable product failures:
 
-1. A project-preserving install or update can leave the TES core stale, so new
-   triggers, locks, safety text, or runtime capability routing do not reach the
-   adopter.
-2. A clean runtime refresh can overwrite project-owned governance, so local
-   context, constraints, architecture decisions, and operating rules are lost
-   or pushed into backup-only evidence.
+1. A project-preserving install or update can leave the TES core stale, so new triggers, locks, safety text, or runtime capability routing do not reach the adopter.
+2. A clean runtime refresh can overwrite project-owned governance, so local context, constraints, architecture decisions, and operating rules are lost or pushed into backup-only evidence.
 
-Both outcomes violate the product contract. TES core updates must not be
-optional, and user/project context must not be lossy.
+Both outcomes violate the product contract. TES core updates must not be optional, and user/project context must not be lossy.
 
-The observed target-project case exposed the planning symptom: SHA drift of
-the whole root file was treated like adapter/runtime drift. The planner
-recommended `adapter-config`, which named root bootloader writes that could
-remove project governance. The deeper product bug is the whole-file ownership
-model, not only the `/tes-update` status wording.
+The observed target-project case exposed the planning symptom: SHA drift of the whole root file was treated like adapter/runtime drift. The planner recommended `adapter-config`, which named root bootloader writes that could remove project governance. The deeper product bug is the whole-file ownership model, not only the `/tes-update` status wording.
 
 ## Goal
 
-After this Super SPEC is implemented, every TES path that writes or certifies
-root context must satisfy:
+After this Super SPEC is implemented, every TES path that writes or certifies root context must satisfy:
 
 ```text
 current TES core + preserved project overlay = composed root context
@@ -82,18 +68,12 @@ Required invariants:
 ## Non-Objectives
 
 - Do not freeze target root files by editing `.tes/manifest.json`.
-- Do not preserve stale TES core merely because the project has custom root
-  governance.
-- Do not move private target vocabulary, project names, domain decisions,
-  filesystem paths, remotes, commits, or raw target logs into TES source,
-  docs, fixtures, evidence, commits, tags, or release notes.
-- Do not patch installed mirrors such as `.tes/bin/**`, `.agents/skills/**`,
-  `.claude/skills/**`, or target root files as the source of truth.
+- Do not preserve stale TES core merely because the project has custom root governance.
+- Do not move private target vocabulary, project names, domain decisions, filesystem paths, remotes, commits, or raw target logs into TES source, docs, fixtures, evidence, commits, tags, or release notes.
+- Do not patch installed mirrors such as `.tes/bin/**`, `.agents/skills/**`, `.claude/skills/**`, or target root files as the source of truth.
 - Do not rely on LLM judgment to hand-merge root context at install time.
-- Do not weaken command-trigger, materialization, or installed certification
-  oracles to hide composition failures.
-- Do not add cloud, marketplace, global config, remote write, or external
-  service behavior.
+- Do not weaken command-trigger, materialization, or installed certification oracles to hide composition failures.
+- Do not add cloud, marketplace, global config, remote write, or external service behavior.
 
 ## Product Contract
 
@@ -104,8 +84,7 @@ Root context has two mandatory layers.
 | TES Core | TES package | Versioned, generated from adapter source, updated on every install/update path. |
 | Project Overlay | Target project | Preserved, migrated to `docs/agents/**` when useful, never discarded silently. |
 
-The install mode names remain user-facing, but root context ignores their old
-whole-file implications:
+The install mode names remain user-facing, but root context ignores their old whole-file implications:
 
 | Mode | Root-Context Meaning |
 |------|----------------------|
@@ -117,8 +96,7 @@ whole-file implications:
 
 ## Composition Markers
 
-The implementation should use explicit block markers or an equivalent
-machine-readable boundary. Proposed marker shape:
+The implementation should use explicit block markers or an equivalent machine-readable boundary. Proposed marker shape:
 
 ```md
 <!-- TES:CORE BEGIN version=0.3.x sha256=<core-sha> adapter=<adapter> -->
@@ -134,8 +112,7 @@ Rules:
 
 - Manifest parity checks compare the TES core block, not the whole file.
 - Whole-file SHA can be retained as evidence only.
-- Existing unmarked files are legacy input and must be migrated by fixture-backed
-  heuristics before any write.
+- Existing unmarked files are legacy input and must be migrated by fixture-backed heuristics before any write.
 - Unknown non-core content becomes overlay candidate, not garbage.
 - Conflicts close as `NEEDS_REVIEW_CONFLICT`, with no overwrite.
 
@@ -151,8 +128,7 @@ Rules:
 | `NEEDS_REVIEW_CONFLICT` | Existing content cannot be safely classified or merged; no overwrite occurred. |
 | `BLOCKED_OVERLAY_UNRECOVERABLE` | Required overlay source is missing from both active root and backup/evidence. |
 
-`DRIFT` remains valid for runtime trigger or helper parity failures. It must not
-be the final word for project-owned root context.
+`DRIFT` remains valid for runtime trigger or helper parity failures. It must not be the final word for project-owned root context.
 
 ## Implementation Units
 
@@ -180,11 +156,9 @@ The first execution wave should be small and decisive:
 2. Implement the shared composer with marker support.
 3. Integrate the composer into `tes_bundle.py apply` for root-context entries.
 4. Prove `preserve` and `clean-runtime` both update core and preserve overlay.
-5. Update `tes_update.py` semantics so project overlay is not treated as
-   adapter/runtime drift.
+5. Update `tes_update.py` semantics so project overlay is not treated as adapter/runtime drift.
 
-P0 is complete only when the old destructive recommendation fails its new
-regression test and the composed route passes.
+P0 is complete only when the old destructive recommendation fails its new regression test and the composed route passes.
 
 ## P1 Cut: Installer And Postinstall Coverage
 
@@ -192,12 +166,10 @@ After P0:
 
 1. Route `tes_install.py` and NPX/BunX install/update through the same composer.
 2. Add hook/postinstall certification fields for core and overlay.
-3. Ensure first-session setup cannot report complete when composition is stale
-   or lossy.
+3. Ensure first-session setup cannot report complete when composition is stale or lossy.
 4. Update installer docs and user-facing summaries if behavior wording changes.
 
-P1 is complete only when first install, update install, hook, and postinstall
-all exercise the same composition contract.
+P1 is complete only when first install, update install, hook, and postinstall all exercise the same composition contract.
 
 ## P2 Cut: Legacy Migration And UX
 
@@ -208,29 +180,24 @@ After P1:
 3. Add evidence packet and Field Reports actionability.
 4. Replay neutral and private canary evidence.
 
-P2 is complete only when a pre-marker target can upgrade without losing context
-and without freezing TES core.
+P2 is complete only when a pre-marker target can upgrade without losing context and without freezing TES core.
 
 ## Required Negative Checks
 
-- No whole-file root-context overwrite unless an explicit emergency restore
-  command is invoked with backup id and owner approval.
+- No whole-file root-context overwrite unless an explicit emergency restore command is invoked with backup id and owner approval.
 - No `PASS` when the TES core block is stale.
 - No `PASS` when project overlay content is missing after composition.
 - No `update_available=false` if core is stale.
-- No `adapter-config` recommendation solely because project overlay differs
-  from the package core.
+- No `adapter-config` recommendation solely because project overlay differs from the package core.
 - No loss hidden by backup-only recovery.
-- No target-project vocabulary, private path, private product name, internal
-  service name, branch name, remote, commit, or raw target log in TES source.
+- No target-project vocabulary, private path, private product name, internal service name, branch name, remote, commit, or raw target log in TES source.
 - No duplicated composer logic in install/update paths.
 - No installed-target mirror patch as final repair.
 - No release claim without patch-version and bundle decision.
 
 ## Required Oracles Before Implementation Closeout
 
-Run focused gates during each unit. Before claiming convergence of this Super
-SPEC, run:
+Run focused gates during each unit. Before claiming convergence of this Super SPEC, run:
 
 ```bash
 python3 scripts/root_context.py --self-test
@@ -252,8 +219,7 @@ git diff --check
 npm run commit:check
 ```
 
-If implementation lands in waves, each closeout must name the narrower oracle
-packet that passed and the remaining units still open.
+If implementation lands in waves, each closeout must name the narrower oracle packet that passed and the remaining units still open.
 
 ## Post-Correction Analysis
 
@@ -275,12 +241,10 @@ Every implementation closeout must include:
 The final claim may be `PASS` only when all are true:
 
 - core update is mandatory and observed across all root-context write paths;
-- overlay preservation is mandatory and observed across all root-context write
-  paths;
+- overlay preservation is mandatory and observed across all root-context write paths;
 - stale-core and overlay-loss fixtures fail before repair and pass after repair;
 - installed-target behavior and package-source behavior agree;
-- public bundle, NPX/BunX, hook/postinstall, and `/tes-update` route through the
-  same composition contract;
+- public bundle, NPX/BunX, hook/postinstall, and `/tes-update` route through the same composition contract;
 - private canary replay is summarized without private identifiers;
 - release identity is resolved.
 

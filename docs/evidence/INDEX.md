@@ -12,9 +12,7 @@ tver: 0.1.0
 
 Evidence is retained proof. It is not operational truth by itself.
 
-Operational truth lives in small current claims with explicit limits and links
-to proof. Raw traces, reports, and historical audit material support those
-claims, but they do not govern the present merely because they still exist.
+Operational truth lives in small current claims with explicit limits and links to proof. Raw traces, reports, and historical audit material support those claims, but they do not govern the present merely because they still exist.
 
 ## Layers
 
@@ -24,21 +22,13 @@ claims, but they do not govern the present merely because they still exist.
 | Reports | `docs/evidence/reports/YYYY/MM/DD/<domain>/<run-id>/` | Default home for new generated evidence runs. |
 | Archive | `docs/evidence/archive/` | Cold audit indexes for retained proof that should stay addressable but inactive. |
 
-New evidence must be born under
-`docs/evidence/reports/YYYY/MM/DD/<domain>/<run-id>/` unless a caller provides
-an explicit external or legacy output root. The context mesh domain is
-`context-mesh`.
+New evidence must be born under `docs/evidence/reports/YYYY/MM/DD/<domain>/<run-id>/` unless a caller provides an explicit external or legacy output root. The context mesh domain is `context-mesh`.
 
-The legacy layout `docs/evidence/reports/context-mesh/<run-id>/` remains
-readable and indexable. Do not migrate historical evidence in bulk unless a
-separate migration plan proves the move is safe, reversible, and worth the
-review noise.
+The legacy layout `docs/evidence/reports/context-mesh/<run-id>/` remains readable and indexable. Do not migrate historical evidence in bulk unless a separate migration plan proves the move is safe, reversible, and worth the review noise.
 
 ## Retention Status
 
-TDS frontmatter currently supports `status: active|proposed|archived`. Evidence
-needs a second semantic layer so retained proof does not masquerade as current
-truth.
+TDS frontmatter currently supports `status: active|proposed|archived`. Evidence needs a second semantic layer so retained proof does not masquerade as current truth.
 
 | Retention status | Meaning | TDS compatibility |
 |------------------|---------|-------------------|
@@ -48,24 +38,17 @@ truth.
 | `archived` | Cold proof kept for audit, no longer part of current operating context. | Use `status: archived` when the Markdown report itself is archived. |
 | `expired` | Proof no longer supports any claim and has no active audit role. | Use `status: archived` before any removal decision; raw evidence is not deleted by default. |
 
-Generated evidence reports and raw traces should normally declare or be treated
-as `source_of_truth: false`. The current claim panel may be
-`source_of_truth: true` because it defines the present interpretation, not
-because it stores raw proof.
+Generated evidence reports and raw traces should normally declare or be treated as `source_of_truth: false`. The current claim panel may be `source_of_truth: true` because it defines the present interpretation, not because it stores raw proof.
 
 ## Current Contract
 
 `docs/evidence/current/INDEX.md` is the agent-readable entrypoint.
 
-`docs/evidence/current/CLAIMS.md` lists current evidence-backed claims. Each
-claim must stay small and name its proof, boundary, and retention status.
+`docs/evidence/current/CLAIMS.md` lists current evidence-backed claims. Each claim must stay small and name its proof, boundary, and retention status.
 
-`docs/evidence/current/RISKS.md` lists known limits, stale-evidence hazards,
-and migration risks. It is the place to explain why a retained report is not a
-current claim.
+`docs/evidence/current/RISKS.md` lists known limits, stale-evidence hazards, and migration risks. It is the place to explain why a retained report is not a current claim.
 
-Do not place `raw.ndjson`, large report bodies, benchmark matrices, or audit
-logs under `current/**`.
+Do not place `raw.ndjson`, large report bodies, benchmark matrices, or audit logs under `current/**`.
 
 ## Report Contract
 
@@ -80,10 +63,7 @@ docs/evidence/reports/YYYY/MM/DD/<domain>/<run-id>/
   graders-sha.json
 ```
 
-Reports under `docs/**` must remain TDS-indexed when they are Markdown. The
-generated `REPORT.md` must retain reproducibility fields such as run id, Git
-HEAD, dataset hash, grader hash, backend, model, and evidence limits when those
-fields apply.
+Reports under `docs/**` must remain TDS-indexed when they are Markdown. The generated `REPORT.md` must retain reproducibility fields such as run id, Git HEAD, dataset hash, grader hash, backend, model, and evidence limits when those fields apply.
 
 ## Archive Contract
 
@@ -96,16 +76,10 @@ docs/evidence/archive/
   YYYY-MM.sha256
 ```
 
-Each monthly index should identify entries by date, domain, version or Git
-head, related claim, hash, path, evidence level, and retention status. Archive
-indexes do not replace raw evidence; they make cold proof discoverable without
-promoting it back into current context.
+Each monthly index should identify entries by date, domain, version or Git head, related claim, hash, path, evidence level, and retention status. Archive indexes do not replace raw evidence; they make cold proof discoverable without promoting it back into current context.
 
 ## Compatibility
 
-Legacy evidence under `docs/evidence/reports/context-mesh/<run-id>/` remains
-valid retained proof. Existing claims and reports must not be rewritten simply
-to fit the temporal layout.
+Legacy evidence under `docs/evidence/reports/context-mesh/<run-id>/` remains valid retained proof. Existing claims and reports must not be rewritten simply to fit the temporal layout.
 
-Readers should accept both temporal and legacy paths. Writers should default to
-the temporal path unless a caller explicitly asks for another output root.
+Readers should accept both temporal and legacy paths. Writers should default to the temporal path unless a caller explicitly asks for another output root.

@@ -9,14 +9,11 @@ evidence_level: L3
 
 # Codex Behavior Matrix Readiness Report
 
-This report prepares Stage 3 of the V1 convergence loop. It does not run the
-Codex behavior matrix, change the shared contract, change the dataset, change
-the grader, change the runner, or claim Codex behavior certification.
+This report prepares Stage 3 of the V1 convergence loop. It does not run the Codex behavior matrix, change the shared contract, change the dataset, change the grader, change the runner, or claim Codex behavior certification.
 
 ## Decision
 
-Result: `GO` for a governed Codex behavior matrix attempt after this readiness
-report is retained.
+Result: `GO` for a governed Codex behavior matrix attempt after this readiness report is retained.
 
 Claim:
 
@@ -37,10 +34,7 @@ either outcome must be retained before repair.
 | `retention_head_pending` | `true` before the future behavior report is committed |
 | `retention_head_final` | Resolved by the Git commit that retains the future behavior report |
 
-Future behavior evidence must not leave `retention_head` as an unexplained
-stale value. If the runner can only know the pre-commit state, the report must
-declare `retention_head_pending=true` and the retaining commit must be recorded
-in the closure text or a follow-up retained report.
+Future behavior evidence must not leave `retention_head` as an unexplained stale value. If the runner can only know the pre-commit state, the report must declare `retention_head_pending=true` and the retaining commit must be recorded in the closure text or a follow-up retained report.
 
 ## Frozen Inputs
 
@@ -69,8 +63,7 @@ in the closure text or a follow-up retained report.
 | Captured hashes | stdout JSONL, stderr, adapter workspace, final output |
 | Smoke certification status | `NO-GO` by full-matrix thresholds, expected for `sample_cap=1` |
 
-The Stage 2 smoke only proves route execution and evidence retention. It does
-not predict the behavior matrix result.
+The Stage 2 smoke only proves route execution and evidence retention. It does not predict the behavior matrix result.
 
 ## Planned Command
 
@@ -106,8 +99,7 @@ distractors=2
 
 ## Cost And Time Bounds
 
-The Codex CLI route does not expose a dollar budget flag. Stage 3 therefore
-uses operational bounds instead of a cost cap.
+The Codex CLI route does not expose a dollar budget flag. Stage 3 therefore uses operational bounds instead of a cost cap.
 
 | Bound | Value |
 |-------|-------|
@@ -119,8 +111,7 @@ uses operational bounds instead of a cost cap.
 | Practical expected runtime | Unknown until first full retained run |
 | Cost estimate | Unknown from local CLI; treat as paid/valuable execution |
 
-Do not rerun the matrix just to improve score. Any failed or partial matrix
-must be retained and classified first.
+Do not rerun the matrix just to improve score. Any failed or partial matrix must be retained and classified first.
 
 ## Stop Conditions
 
@@ -137,9 +128,7 @@ Stage 3 must stop downstream interpretation and repair if any condition occurs:
 | Dataset, grader, or shared contract changes before run | Stop; create a new readiness report with new hashes |
 | `commit:check` fails before or after run | Stop; fix the gate before certification language |
 
-The current runner does not fail fast on the first backend error during a full
-matrix. Therefore `backend_error_count > 0` is a post-run NO-GO condition for
-behavior certification, not permission to silently rerun.
+The current runner does not fail fast on the first backend error during a full matrix. Therefore `backend_error_count > 0` is a post-run NO-GO condition for behavior certification, not permission to silently rerun.
 
 ## Interpretation Rules
 
@@ -189,13 +178,9 @@ Required fields include:
 - Running without explicit `--model gpt-5.3-codex`.
 - Running with dirty contract, dataset, grader, or runner changes.
 - Treating a smoke or partial run as behavior certification.
-- Editing expected phrases or grader logic before retaining the first full
-  Codex matrix outcome.
+- Editing expected phrases or grader logic before retaining the first full Codex matrix outcome.
 - Declaring Codex/Claude parity from one Codex run.
 
 ## Next Step
 
-After this report is committed and `npm run commit:check` is green, run the
-dry-run command above. If the dry-run shows `planned_calls=44` and
-`plan_parity=true`, execute the behavior matrix once and retain the result
-before any repair.
+After this report is committed and `npm run commit:check` is green, run the dry-run command above. If the dry-run shows `planned_calls=44` and `plan_parity=true`, execute the behavior matrix once and retain the result before any repair.

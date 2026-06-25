@@ -10,12 +10,9 @@ tver: 0.1.0
 
 # GOAL Super SPEC: TES Installed Certification And Field Reports Hardening
 
-Status: execution contract derived from ADR 0003.1 for the next TES package
-source convergence cut after `0.3.144`.
+Status: execution contract derived from ADR 0003.1 for the next TES package source convergence cut after `0.3.144`.
 
-Capability: make TES installation and update certification truthful at the
-installed-target boundary, and make Field Reports GitHub issues actionable
-product feedback rather than high-volume event logs.
+Capability: make TES installation and update certification truthful at the installed-target boundary, and make Field Reports GitHub issues actionable product feedback rather than high-volume event logs.
 
 ## Mantra Gate Snapshot
 
@@ -43,8 +40,7 @@ product feedback rather than high-volume event logs.
 
 ## Problem
 
-TES `0.3.144` can install core runtime and MCP config successfully while still
-leaving the active installed project in a partial certification state:
+TES `0.3.144` can install core runtime and MCP config successfully while still leaving the active installed project in a partial certification state:
 
 - MCP registration for Codex, Claude Code, and Cursor may pass;
 - Cortex self-tests and local verification may pass;
@@ -53,16 +49,13 @@ leaving the active installed project in a partial certification state:
 - generated target docs may reference stale quality-gate paths;
 - bundle or manifest surfaces may include operating-system residue;
 - bundle metadata may record a dirty source tree;
-- Field Reports may open a high-signal issue without enough product-class
-  routing to drive the next maintenance action.
+- Field Reports may open a high-signal issue without enough product-class routing to drive the next maintenance action.
 
-The dangerous failure is a false green: `INSTALLED` or postinstall `PASS`
-appearing broader than the evidence actually proves.
+The dangerous failure is a false green: `INSTALLED` or postinstall `PASS` appearing broader than the evidence actually proves.
 
 ## Goal
 
-After this goal is implemented, a TES install/update run must produce a truthful
-certification state:
+After this goal is implemented, a TES install/update run must produce a truthful certification state:
 
 ```text
 core runtime + MCP registration + installed adapter surfaces + trigger parity
@@ -70,9 +63,7 @@ core runtime + MCP registration + installed adapter surfaces + trigger parity
 = PASS, PARTIAL, NEEDS_REVIEW, or BLOCKED
 ```
 
-Field Reports must preserve the privacy boundary while emitting enough
-classification, dedupe, severity, and next-action metadata for maintainers to
-turn real-project signals into TES product fixes.
+Field Reports must preserve the privacy boundary while emitting enough classification, dedupe, severity, and next-action metadata for maintainers to turn real-project signals into TES product fixes.
 
 ## Non-Objectives
 
@@ -80,14 +71,9 @@ turn real-project signals into TES product fixes.
 - Do not make VS Code part of `npx --agent all`.
 - Do not infer `host_connected` from config file presence.
 - Do not add new Cortex MCP tools or broaden MCP write authority.
-- Do not publish, push, tag, release, rebuild public bundles, or claim remote
-  GitHub package-spec certification unless a later explicit release identity
-  decision authorizes it.
-- Do not commit private canary names, private target paths, private product
-  vocabulary, raw target docs, raw stack traces, prompts, code, diffs, branch
-  names, remotes, or secrets.
-- Do not fix only an installed target mirror. Portable defects must land in TES
-  package source and be replayed through neutral fixtures.
+- Do not publish, push, tag, release, rebuild public bundles, or claim remote GitHub package-spec certification unless a later explicit release identity decision authorizes it.
+- Do not commit private canary names, private target paths, private product vocabulary, raw target docs, raw stack traces, prompts, code, diffs, branch names, remotes, or secrets.
+- Do not fix only an installed target mirror. Portable defects must land in TES package source and be replayed through neutral fixtures.
 
 ## Required Status Semantics
 
@@ -98,8 +84,7 @@ turn real-project signals into TES product fixes.
 | `NEEDS_REVIEW` | A concrete maintainer or user repair route is required before readiness can be claimed. |
 | `BLOCKED` | Unsafe, privacy-breaking, destructive, or unresolved contract state prevents continuation. |
 
-`INSTALLED` may remain an operation status in installer/MCP events, but it must
-not be used as the final certification verdict.
+`INSTALLED` may remain an operation status in installer/MCP events, but it must not be used as the final certification verdict.
 
 ## Implementation Units
 
@@ -130,31 +115,24 @@ Next action: run installed-target certification fixture
 Privacy state: sanitized
 ```
 
-The issue body must still avoid code, diffs, prompts, file contents, stack
-traces, private paths, branch names, remotes, emails, URLs outside the TES issue
-destination, and secrets.
+The issue body must still avoid code, diffs, prompts, file contents, stack traces, private paths, branch names, remotes, emails, URLs outside the TES issue destination, and secrets.
 
 ## Required Negative Checks
 
-- No private project names or private filesystem paths in TES tracked source,
-  docs, evidence, fixtures, commits, or generated public docs.
+- No private project names or private filesystem paths in TES tracked source, docs, evidence, fixtures, commits, or generated public docs.
 - No `.vscode/mcp.json` from `npx --agent all`.
 - No global MCP writes.
 - No non-TES MCP server removal during repair/update.
 - No `host_connected` claim from config file presence.
 - No `PASS` certification when installed adoption or trigger parity fails.
-- No stale `tilly-engineer-skills/scripts/discipline_oracle.py` quality-gate
-  command in generated target docs.
+- No stale `tilly-engineer-skills/scripts/discipline_oracle.py` quality-gate command in generated target docs.
 - No `.DS_Store` in adapter materialization, bundle, staged setup, or manifest.
-- No sealed release/ref/bundle claim when `source_tree_state=dirty`, unless a
-  maintainer exception is recorded and the claim stays explicitly unsealed.
-- No Field Reports issue body containing prohibited private or raw operational
-  content.
+- No sealed release/ref/bundle claim when `source_tree_state=dirty`, unless a maintainer exception is recorded and the claim stays explicitly unsealed.
+- No Field Reports issue body containing prohibited private or raw operational content.
 
 ## Required Oracles Before Closeout
 
-Implementation closeout must run the smallest relevant subset while developing,
-then the full package gate before claiming convergence:
+Implementation closeout must run the smallest relevant subset while developing, then the full package gate before claiming convergence:
 
 ```bash
 python3 scripts/mantra_gate_adoption_oracle.py --self-test
@@ -175,18 +153,14 @@ git diff --check
 npm run commit:check
 ```
 
-If a runtime change is intentionally split across commits, each commit must name
-the narrower oracle it passed and leave the Super SPEC status honest.
+If a runtime change is intentionally split across commits, each commit must name the narrower oracle it passed and leave the Super SPEC status honest.
 
 ## Evidence And Canary Requirements
 
 The final implementation must include:
 
-- neutral fixture evidence proving the issue #46 failure class is reproduced and
-  then repaired;
+- neutral fixture evidence proving the issue #46 failure class is reproduced and then repaired;
 - a local package-source evidence report under `docs/evidence/reports/**`;
-- a private canary replay note kept outside TES tracked content, referenced only
-  generically in closeout;
+- a private canary replay note kept outside TES tracked content, referenced only generically in closeout;
 - `git status --short --branch --untracked-files=all`;
-- release identity decision: version/bundle unchanged by explicit exception, or
-  version/bundle advanced under an authorized release plan.
+- release identity decision: version/bundle unchanged by explicit exception, or version/bundle advanced under an authorized release plan.

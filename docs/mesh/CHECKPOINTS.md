@@ -10,12 +10,9 @@ tver: 0.1.1
 
 # TES Checkpoints
 
-TES Checkpoints are the TTL resumability lane for interrupted or resumable
-agent work.
+TES Checkpoints are the TTL resumability lane for interrupted or resumable agent work.
 
-They do not replace Cortex cells, Cortex `TRAIL.md`, Event Ledger records,
-Field Reports, evidence reports, Git history, release identity, or closeout
-oracles.
+They do not replace Cortex cells, Cortex `TRAIL.md`, Event Ledger records, Field Reports, evidence reports, Git history, release identity, or closeout oracles.
 
 ## Contract
 
@@ -40,9 +37,7 @@ python3 scripts/checkpoint.py inspect-schema
 python3 scripts/checkpoint.py --self-test
 ```
 
-`list`, `status`, and `inspect-schema` are read-only and must report
-`writes: []`. `create` may write only `.tes/checkpoints/<id>.json`. `cleanup`
-may delete only expired checkpoint files.
+`list`, `status`, and `inspect-schema` are read-only and must report `writes: []`. `create` may write only `.tes/checkpoints/<id>.json`. `cleanup` may delete only expired checkpoint files.
 
 ## Resume Status
 
@@ -55,29 +50,21 @@ Checkpoint inspection reports one of these resume states:
 | `MISSING` | The requested checkpoint id has no local checkpoint file. |
 | `INVALID` | The checkpoint is malformed, unsafe, cross-scope, or claims authority it does not have. |
 
-Invalid checkpoints remain visible to inspection. They are not silently
-promoted, cleaned as success, or used as certification evidence.
+Invalid checkpoints remain visible to inspection. They are not silently promoted, cleaned as success, or used as certification evidence.
 
 ## TTL Boundary
 
 Every checkpoint carries `created_at`, `expires_at`, and `ttl_seconds`.
 
-The default TTL is 24 hours. The maximum TTL is seven days. Longer retention
-requires a future decision because checkpoints are temporary execution state,
-not durable memory.
+The default TTL is 24 hours. The maximum TTL is seven days. Longer retention requires a future decision because checkpoints are temporary execution state, not durable memory.
 
-Expired checkpoint cleanup is bounded to `.tes/checkpoints/**`; it must not
-touch `docs/agents/cortex/**`, `.tes/events/**`, `.tes/field-reports/**`, or
-Git history.
+Expired checkpoint cleanup is bounded to `.tes/checkpoints/**`; it must not touch `docs/agents/cortex/**`, `.tes/events/**`, `.tes/field-reports/**`, or Git history.
 
 ## Privacy Boundary
 
-Checkpoint records carry the runtime scope from `docs/mesh/SCOPE-CONTRACT.md`.
-Unsafe evidence references, absolute paths, URLs, emails, stack traces, and
-secret-like values fail or are redacted before command output.
+Checkpoint records carry the runtime scope from `docs/mesh/SCOPE-CONTRACT.md`. Unsafe evidence references, absolute paths, URLs, emails, stack traces, and secret-like values fail or are redacted before command output.
 
-Tracked TES source, docs, fixtures, evidence, commits, and release material
-must continue to use neutral placeholder vocabulary.
+Tracked TES source, docs, fixtures, evidence, commits, and release material must continue to use neutral placeholder vocabulary.
 
 ## Non-Promotion Rule
 
@@ -92,13 +79,9 @@ Each checkpoint carries an authority block:
 }
 ```
 
-Changing any of these values makes the checkpoint invalid. A checkpoint cannot
-bypass closeout, release identity, observed write evidence, or the Cortex write
-gate.
+Changing any of these values makes the checkpoint invalid. A checkpoint cannot bypass closeout, release identity, observed write evidence, or the Cortex write gate.
 
-The consolidation gate treats checkpoint-only state as temporary execution
-context. It can explain why memory consolidation is blocked, but it cannot
-certify durable memory.
+The consolidation gate treats checkpoint-only state as temporary execution context. It can explain why memory consolidation is blocked, but it cannot certify durable memory.
 
 ## Certification
 
@@ -108,6 +91,4 @@ The focused checkpoint gate is:
 python3 scripts/checkpoint.py --self-test
 ```
 
-The self-test proves schema validation, TTL classification, expired cleanup,
-unsafe payload rejection and redaction, no hidden Cortex write, no Field
-Reports write, and no automatic Event Ledger write.
+The self-test proves schema validation, TTL classification, expired cleanup, unsafe payload rejection and redaction, no hidden Cortex write, no Field Reports write, and no automatic Event Ledger write.

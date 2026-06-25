@@ -9,9 +9,7 @@ evidence_level: L4
 
 # Codex Distractor Prompt Repair Smoke Report
 
-This report retains the targeted smoke for `codex-adapter-prompt@0.1.1`.
-It validates only the Codex distractor prompt contract repair. It does not
-certify Codex behavior, adapter parity, or the full matrix.
+This report retains the targeted smoke for `codex-adapter-prompt@0.1.1`. It validates only the Codex distractor prompt contract repair. It does not certify Codex behavior, adapter parity, or the full matrix.
 
 ## Decision
 
@@ -36,8 +34,7 @@ visible.
 | Contract change | Distractor prompts answer directly and avoid naming rules, gates, governance, benchmarks, evals, or project discipline |
 | No-touch surfaces | Shared contract, dataset, grader, Codex adapter source, Claude evidence, Cursor, UI |
 
-Triggers still keep the context-visible instruction. Distractors now keep
-discipline latent unless context is necessary to answer the task.
+Triggers still keep the context-visible instruction. Distractors now keep discipline latent unless context is necessary to answer the task.
 
 ## Smoke Commands
 
@@ -63,9 +60,7 @@ npm run benchmark:run -- \
   --timeout-seconds 180
 ```
 
-Both runs are shards and therefore report `SHARD-NOT-CERTIFIED`. That status is
-expected; the smoke is a targeted prompt repair proof, not a matrix
-certification.
+Both runs are shards and therefore report `SHARD-NOT-CERTIFIED`. That status is expected; the smoke is a targeted prompt repair proof, not a matrix certification.
 
 ## Smoke Results
 
@@ -101,13 +96,8 @@ docs/evidence/reports/context-mesh/codex-distractor-d2-prompt-011/
 
 ## Interpretation
 
-The repaired prompt contract removes the likely harness contamination identified
-in the Codex NO-GO forensics. This does not prove that the full Codex matrix
-will certify. It proves the two distractors can pass without context bleed under
-the repaired prompt contract.
+The repaired prompt contract removes the likely harness contamination identified in the Codex NO-GO forensics. This does not prove that the full Codex matrix will certify. It proves the two distractors can pass without context bleed under the repaired prompt contract.
 
 ## Next Step
 
-Open a new Codex behavior matrix readiness note or run plan referencing this
-repair, then execute a full 44-call matrix once. The next matrix must be
-retained whether it returns GO or NO-GO.
+Open a new Codex behavior matrix readiness note or run plan referencing this repair, then execute a full 44-call matrix once. The next matrix must be retained whether it returns GO or NO-GO.

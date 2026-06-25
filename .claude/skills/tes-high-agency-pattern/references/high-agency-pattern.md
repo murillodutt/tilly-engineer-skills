@@ -15,16 +15,11 @@ High-agency skills are conservative at activation and intense after activation:
 
 ## Why It Works
 
-The pattern improves precision because it removes accidental activation,
-reduces branch explosion, checks local evidence before asking the user, and
-keeps pressure reversible through a brake.
+The pattern improves precision because it removes accidental activation, reduces branch explosion, checks local evidence before asking the user, and keeps pressure reversible through a brake.
 
-`tes-prospect` proves the plan-risk side: expose one hidden dependency or weak
-decision before execution.
+`tes-prospect` proves the plan-risk side: expose one hidden dependency or weak decision before execution.
 
-`tes-mine` proves the language/evidence side: turn hidden terms,
-contradictions, and decisions into durable project knowledge only after they
-resolve.
+`tes-mine` proves the language/evidence side: turn hidden terms, contradictions, and decisions into durable project knowledge only after they resolve.
 
 ## Adoption Gate
 

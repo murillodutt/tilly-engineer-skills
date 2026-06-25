@@ -1,16 +1,12 @@
 # Relevant Findings Change Log
 
-This file records follow-up objectives from the full-project inspection on
-2026-05-22. It is intentionally not `CHANGELOG.md`: Git remains the project
-changelog, while this file preserves actionable findings that should not be
-lost before the team chooses an implementation window.
+This file records follow-up objectives from the full-project inspection on 2026-05-22. It is intentionally not `CHANGELOG.md`: Git remains the project changelog, while this file preserves actionable findings that should not be lost before the team chooses an implementation window.
 
 ## Scope
 
 - Source: local inspection of `~/Dev/tilly-engineer-skills`.
 - Status: deferred; no implementation is authorized by this note.
-- Closure rule: each item needs its own focused change, evidence, and the
-  smallest relevant oracle before it can be marked complete.
+- Closure rule: each item needs its own focused change, evidence, and the smallest relevant oracle before it can be marked complete.
 
 ## Findings To Carry Forward
 
@@ -25,33 +21,15 @@ lost before the team chooses an implementation window.
 
 ## Delivered Evolution (2026-05-22 → 2026-06-07, v0.3.123 → v0.3.175)
 
-The inherited-context capability was designed, built, and shipped to the
-production install path. When a project already owns a rich `CLAUDE.md` /
-`AGENTS.md`, install now inherits that context instead of overwriting or
-leaving the TES core stale:
+The inherited-context capability was designed, built, and shipped to the production install path. When a project already owns a rich `CLAUDE.md` /`AGENTS.md`, install now inherits that context instead of overwriting or leaving the TES core stale:
 
-- **Canonical source + two renderings.** One overlay source
-  (`docs/agents/PROJECT-CONTEXT.md`); `CLAUDE.md` renders thin with an
-  `@`-pointer, `AGENTS.md` with a materialized overlay block. Asymmetry is a
-  permanent design fact (Codex has no `@import`). Authored as Super SPEC
-  `GOAL-SUPER-SPEC-tes-inherited-context-canonical-source.md`.
-- **Non-loss by archive.** The pre-existing root is archived as
-  `<root>.bak-<stamp>` and restored byte-faithful on uninstall.
-- **Judgment where it belongs.** The LLM (`tes-init`/`tes-context-distill`)
-  authors and condenses the project context; the deterministic layer is the
-  floor, not the product. Regex coverage is advisory, not a gate.
-- **On the production path.** Inheritance runs in
-  `tes_bundle.compose_context_from_staged` (the function `tes_install` →
-  `apply_staged_bundle` calls), is idempotent across reinstalls, and was
-  validated end-to-end on a real-project canary at v0.3.175.
+- **Canonical source + two renderings.** One overlay source (`docs/agents/PROJECT-CONTEXT.md`); `CLAUDE.md` renders thin with an `@`-pointer, `AGENTS.md` with a materialized overlay block. Asymmetry is a permanent design fact (Codex has no `@import`). Authored as Super SPEC `GOAL-SUPER-SPEC-tes-inherited-context-canonical-source.md`.
+- **Non-loss by archive.** The pre-existing root is archived as `<root>.bak-<stamp>` and restored byte-faithful on uninstall.
+- **Judgment where it belongs.** The LLM (`tes-init`/`tes-context-distill`) authors and condenses the project context; the deterministic layer is the floor, not the product. Regex coverage is advisory, not a gate.
+- **On the production path.** Inheritance runs in `tes_bundle.compose_context_from_staged` (the function `tes_install` → `apply_staged_bundle` calls), is idempotent across reinstalls, and was validated end-to-end on a real-project canary at v0.3.175.
 
-Closure signal satisfied: shipped and certified across v0.3.172–v0.3.175
-(`release:check` PASS, public bundle + Pages live), line dashboard at
-`docs/roadmap/inherited-context/DASHBOARD.md`. Remaining carry-forward: the
-regex-oracle-role item above.
+Closure signal satisfied: shipped and certified across v0.3.172–v0.3.175 (`release:check` PASS, public bundle + Pages live), line dashboard at `docs/roadmap/inherited-context/DASHBOARD.md`. Remaining carry-forward: the regex-oracle-role item above.
 
 ## Review Cadence
 
-Review this file before broad TES maintenance waves, release preparation, or
-large refactors. Remove or archive an item only after the future closure signal
-has been satisfied and the proof is visible in Git history or governed docs.
+Review this file before broad TES maintenance waves, release preparation, or large refactors. Remove or archive an item only after the future closure signal has been satisfied and the proof is visible in Git history or governed docs.

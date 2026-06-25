@@ -10,31 +10,21 @@ tver: 0.2.0
 
 # GOAL Super SPEC: ADR 0005 Asset Transfer Realignment
 
-Status: active execution contract derived from
-`docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
+Status: active execution contract derived from `docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
 
-Purpose: transfer the useful operating behavior from the inspected
-`mattpocock/skills` pattern into existing TES assets: skills, references,
-scripts, hooks, agents, benchmarks, routes, and adapter source. This Super SPEC
-does not authorize creating new TES skills by default.
+Purpose: transfer the useful operating behavior from the inspected `mattpocock/skills` pattern into existing TES assets: skills, references, scripts, hooks, agents, benchmarks, routes, and adapter source. This Super SPEC does not authorize creating new TES skills by default.
 
 ## Central Rule
 
-No governance-only pass. Each implementation unit must either change or prove an
-existing TES asset, or delete/condense a document that was standing in for an
-asset.
+No governance-only pass. Each implementation unit must either change or prove an existing TES asset, or delete/condense a document that was standing in for an asset.
 
 ## Non-Objectives
 
-- Do not copy upstream skill text, packaging, issue-tracker workflow, command
-  names, or private assumptions.
+- Do not copy upstream skill text, packaging, issue-tracker workflow, command names, or private assumptions.
 - Do not add a new `/tes-*` command.
-- Do not create a new skill unless a deletion test proves no existing asset can
-  carry the behavior.
+- Do not create a new skill unless a deletion test proves no existing asset can carry the behavior.
 - Do not run private canaries or write private target details into TES source.
-- Do not change public docs, adapters, package version, bundle, tag, push, or
-  release unless the selected asset patch is classified as delivered behavior
-  and the owner authorizes the correlated release path.
+- Do not change public docs, adapters, package version, bundle, tag, push, or release unless the selected asset patch is classified as delivered behavior and the owner authorizes the correlated release path.
 
 ## Asset-Transfer Packet
 
@@ -55,8 +45,7 @@ If a unit cannot fill the packet, stop as `NEEDS_ASSET_PACKET`.
 
 ## Candidate Asset Lanes
 
-Select the smallest lane that matches the observed failure. Do not execute all
-lanes in one run unless the owner explicitly asks for a full sweep.
+Select the smallest lane that matches the observed failure. Do not execute all lanes in one run unless the owner explicitly asks for a full sweep.
 
 | Lane | Primary assets | Intended repair |
 |------|----------------|-----------------|
@@ -69,9 +58,7 @@ lanes in one run unless the owner explicitly asks for a full sweep.
 
 ## Lane SPECs
 
-Execute one lane SPEC at a time. The parent ADR 0005 rule still applies: a lane
-is complete only when an existing TES asset changes or is proven adequate with a
-focused proof.
+Execute one lane SPEC at a time. The parent ADR 0005 rule still applies: a lane is complete only when an existing TES asset changes or is proven adequate with a focused proof.
 
 | Lane | SPEC |
 |------|------|
@@ -93,8 +80,7 @@ Tasks:
 
 1. Capture `git status --short --branch --untracked-files=all`.
 2. Read ADR 0005 and this Super SPEC.
-3. Identify the selected asset lane and classify whether it is maintainer-only
-   or delivered behavior.
+3. Identify the selected asset lane and classify whether it is maintainer-only or delivered behavior.
 4. Name correlated files before editing.
 
 Focused oracles:
@@ -111,11 +97,9 @@ Tasks:
 
 1. Choose one current TES failure from the selected lane.
 2. Prove why the failure belongs in an existing asset.
-3. Fill `target_asset`, `current_failure`, `transferred_behavior`,
-   `smallest_patch`, and `no_new_skill_evidence` before editing.
+3. Fill `target_asset`, `current_failure`, `transferred_behavior`, `smallest_patch`, and `no_new_skill_evidence` before editing.
 
-Stop if the first useful action would be a new skill, new command, or new
-governance file.
+Stop if the first useful action would be a new skill, new command, or new governance file.
 
 ### SPEC-002: Proof First
 
@@ -123,11 +107,9 @@ Tasks:
 
 1. Add or identify the cheapest proof that can fail for the selected failure.
 2. Prefer deterministic scripts and fixture checks for mechanical contracts.
-3. Use benchmarks only when the behavior depends on judgment, routing,
-   language, restraint, or sequencing.
+3. Use benchmarks only when the behavior depends on judgment, routing, language, restraint, or sequencing.
 
-Acceptable outputs: focused self-test, dataset fixture, benchmark sample,
-oracle assertion, hook check, or documented `NO_CHANGE` with evidence.
+Acceptable outputs: focused self-test, dataset fixture, benchmark sample, oracle assertion, hook check, or documented `NO_CHANGE` with evidence.
 
 ### SPEC-003: Existing Asset Patch
 
@@ -136,12 +118,9 @@ Tasks:
 1. Patch only the selected existing asset and required correlated surfaces.
 2. Keep explicit-invocation skills explicit.
 3. Move detail on demand before adding root or route prose.
-4. If architecture bloat is found, apply the deletion test and choose one
-   result: `NO_CHANGE`, `CONDENSED`, `MOVED_ON_DEMAND`, `DEEPENED`, `DELETED`,
-   `ROUTED_TO_UNIT`, or `NEEDS_OWNER_DECISION`.
+4. If architecture bloat is found, apply the deletion test and choose one result: `NO_CHANGE`, `CONDENSED`, `MOVED_ON_DEMAND`, `DEEPENED`, `DELETED`, `ROUTED_TO_UNIT`, or `NEEDS_OWNER_DECISION`.
 
-Forbidden: broad refactor, drive-by cleanup, copied upstream prose, public docs
-or adapter changes without release classification.
+Forbidden: broad refactor, drive-by cleanup, copied upstream prose, public docs or adapter changes without release classification.
 
 ### SPEC-004: Regression And Release Classification
 
@@ -150,8 +129,7 @@ Tasks:
 1. Run the focused proof from SPEC-002.
 2. Run the smallest package-level oracle that covers the regression surface.
 3. Classify release identity.
-4. If delivered behavior changed, stop for release decision unless the owner
-   already authorized the correlated release path.
+4. If delivered behavior changed, stop for release decision unless the owner already authorized the correlated release path.
 
 Recommended oracle set by surface:
 
@@ -185,6 +163,4 @@ Valid final statuses:
 
 ## Closure Rule
 
-The closeout must not say ADR 0005 is implemented because these documents
-exist. ADR 0005 is implemented only when an existing TES asset is improved or
-proven adequate with the packet above.
+The closeout must not say ADR 0005 is implemented because these documents exist. ADR 0005 is implemented only when an existing TES asset is improved or proven adequate with the packet above.

@@ -10,25 +10,17 @@ tver: 0.2.1
 
 # Tilly Engineering Discipline Principles
 
-This is the tool-neutral source of truth. Tool-specific files should reduce this
-contract into their native format without changing the behavior.
+This is the tool-neutral source of truth. Tool-specific files should reduce this contract into their native format without changing the behavior.
 
 ## Evidence-Converged Context
 
-A context rule is not project truth until it proves behavioral lift, survives
-distractors, exposes ablation loss, keeps raw evidence, and converges through
-Build-Test-Fail-Fix.
+A context rule is not project truth until it proves behavioral lift, survives distractors, exposes ablation loss, keeps raw evidence, and converges through Build-Test-Fail-Fix.
 
-In operational terms: well-written agent instructions are not accepted as true
-because they sound right. They become project truth only when retained evidence
-shows measurable lift against baseline, no confirmed distractor leak, auditably
-different behavior when the rule is ablated, and convergence through targeted
-repair loops.
+In operational terms: well-written agent instructions are not accepted as true because they sound right. They become project truth only when retained evidence shows measurable lift against baseline, no confirmed distractor leak, auditably different behavior when the rule is ablated, and convergence through targeted repair loops.
 
 ## Diamond Build-Test-Fail-Fix
 
-Critical capabilities are built top-down from the final contract, not bottom-up
-from speculative experiments.
+Critical capabilities are built top-down from the final contract, not bottom-up from speculative experiments.
 
 The expected order is:
 
@@ -39,14 +31,11 @@ The expected order is:
 5. Repair until the gate is green.
 6. Certify only the state that the oracle actually proved.
 
-Do not describe a certified capability as experimental. Use precise operational
-states: `blocked`, `degraded`, `not available`, `certified`, or `fail`.
+Do not describe a certified capability as experimental. Use precise operational states: `blocked`, `degraded`, `not available`, `certified`, or `fail`.
 
 ## Feedback Voice
 
-Tilly should answer with short, frank prose by default. Avoid tables, code
-blocks, YAML/property dumps, and long inventories unless the user asks for them
-or the artifact itself requires exact syntax.
+Tilly should answer with short, frank prose by default. Avoid tables, code blocks, YAML/property dumps, and long inventories unless the user asks for them or the artifact itself requires exact syntax.
 
 ## 1. Think Before Coding
 
@@ -61,9 +50,7 @@ Failure blocked: silent wrong interpretation.
 
 ## Maturity Layer Gate
 
-Default every material task to `Birth`. Promote only when evidence shows that
-the work is no longer a birth slice. Invalid or missing promotion evidence means
-`NEEDS_REVIEW`; no evidence means `Birth`.
+Default every material task to `Birth`. Promote only when evidence shows that the work is no longer a birth slice. Invalid or missing promotion evidence means `NEEDS_REVIEW`; no evidence means `Birth`.
 
 | Layer | Governing move | Promotion evidence |
 |-------|----------------|--------------------|
@@ -72,31 +59,17 @@ the work is no longer a birth slice. Invalid or missing promotion evidence means
 | `Evolution` | Make the smallest architecture-preserving change. Fit First: protect accepted architecture instead of flattening it. | Accepted architecture, mature SPEC, established contract, compatibility boundary, or execution tree. |
 | `Platform` | Choose the lowest verified operational risk. | Release, installer, CLI, adapter, MCP, public docs, memory, compatibility, migration, or rollback surface. |
 
-Promotion evidence must name the protected baseline, allowed complexity,
-forbidden complexity, and oracle. Higher layers do not permit speculative
-complexity; they permit necessary complexity backed by consumers, contracts, or
-operational risk.
+Promotion evidence must name the protected baseline, allowed complexity, forbidden complexity, and oracle. Higher layers do not permit speculative complexity; they permit necessary complexity backed by consumers, contracts, or operational risk.
 
-`Birth` is invalid when the prompt names existing installs, an accepted
-contract, a compatibility interface, installer, fallback, rollback, release,
-migration, CLI, MCP, adapter, or public-doc surface. Those are promotion
-evidence. Preserve the baseline first, then simplify inside it.
+`Birth` is invalid when the prompt names existing installs, an accepted contract, a compatibility interface, installer, fallback, rollback, release, migration, CLI, MCP, adapter, or public-doc surface. Those are promotion evidence. Preserve the baseline first, then simplify inside it.
 
-`Platform` baseline retirement is a separate proof, not a local cleanup
-preference. Existing installs, installer, fallback, compatibility, rollback,
-release, migration, CLI, MCP, adapter, or public-doc surfaces are `Platform`,
-not `Birth`. A green local check does not authorize removing those paths. Remove
-them only after explicit retirement evidence proves the protected baseline no
-longer has consumers, the migration or rollback story is accepted, and a
-compatibility or release oracle protects existing installs.
+`Platform` baseline retirement is a separate proof, not a local cleanup preference. Existing installs, installer, fallback, compatibility, rollback, release, migration, CLI, MCP, adapter, or public-doc surfaces are `Platform`, not `Birth`. A green local check does not authorize removing those paths. Remove them only after explicit retirement evidence proves the protected baseline no longer has consumers, the migration or rollback story is accepted, and a compatibility or release oracle protects existing installs.
 
-Failure blocked: flattening mature architecture under the banner of simplicity,
-or inflating birth work by claiming maturity without evidence.
+Failure blocked: flattening mature architecture under the banner of simplicity, or inflating birth work by claiming maturity without evidence.
 
 ## 2. Simplicity First
 
-Solve today's problem with the smallest useful shape for the selected maturity
-layer.
+Solve today's problem with the smallest useful shape for the selected maturity layer.
 
 - Do not add unrequested features.
 - Do not add one-use abstractions.
@@ -134,47 +107,25 @@ Failure blocked: false completion.
 
 ## Mantra Gate
 
-Before state-changing work, use the TES Mantra Gate as the micro-gate between
-intention and action:
+Before state-changing work, use the TES Mantra Gate as the micro-gate between intention and action:
 
 ```text
 VERIFY -> SCOPE -> BEST_PATH -> DOCUMENT -> ORACLE -> RESOLVE -> STATUS
 ```
 
-The normal user-facing marker is `[🍳 Flash-Fry]`. It compresses the gate for
-readability; it does not delete evidence. A full gate record must exist for
-material writes, commits, spec execution, generated artifacts, migrations,
-external calls, architectural changes, or project-state updates.
+The normal user-facing marker is `[🍳 Flash-Fry]`. It compresses the gate for readability; it does not delete evidence. A full gate record must exist for material writes, commits, spec execution, generated artifacts, migrations, external calls, architectural changes, or project-state updates.
 
-Show only the compact marker when the gate permits proceeding. Report the full
-gate detail when the gate returns `BLOCKED` or `NEEDS_REVIEW`, approval is
-needed, or the user explicitly asks for audit detail. Use `BLOCKED` when
-evidence or oracle is missing, and `NEEDS_REVIEW` when scope or approval is
-ambiguous.
+Show only the compact marker when the gate permits proceeding. Report the full gate detail when the gate returns `BLOCKED` or `NEEDS_REVIEW`, approval is needed, or the user explicitly asks for audit detail. Use `BLOCKED` when evidence or oracle is missing, and `NEEDS_REVIEW` when scope or approval is ambiguous.
 
 ## Infrastructure Decision Gate
 
-Infrastructure decisions require a Stack Surface Scan before implementation.
-Do not choose native wrappers, deployment targets, database clients, queues,
-crypto primitives, build tools, hosting assumptions, or runtime-bound
-dependencies from memory or generic ecosystem habit.
+Infrastructure decisions require a Stack Surface Scan before implementation. Do not choose native wrappers, deployment targets, database clients, queues, crypto primitives, build tools, hosting assumptions, or runtime-bound dependencies from memory or generic ecosystem habit.
 
-Before deciding, inspect the target project's actual stack evidence:
-`package.json`, lockfiles, framework and runtime config, deployment presets,
-existing adapters, generated output contracts, and project governance. Then
-check Context7 or official documentation for the framework, runtime, or cloud
-surface that owns the behavior. If those sources are missing, stale, or
-conflicting, stop as `NEEDS_REVIEW`.
+Before deciding, inspect the target project's actual stack evidence: `package.json`, lockfiles, framework and runtime config, deployment presets, existing adapters, generated output contracts, and project governance. Then check Context7 or official documentation for the framework, runtime, or cloud surface that owns the behavior. If those sources are missing, stale, or conflicting, stop as `NEEDS_REVIEW`.
 
-For Nuxt or Nitro projects, Nitro changes the decision surface. Inspect the
-Nitro preset, `node` target, and deployment runtime before choosing a native
-OpenSSL wrapper, a pure Node DER builder, Web Crypto, or any other
-runtime-bound implementation. A Node-looking codebase can still target edge,
-worker, serverless, or compatibility layers.
+For Nuxt or Nitro projects, Nitro changes the decision surface. Inspect the Nitro preset, `node` target, and deployment runtime before choosing a native OpenSSL wrapper, a pure Node DER builder, Web Crypto, or any other runtime-bound implementation. A Node-looking codebase can still target edge, worker, serverless, or compatibility layers.
 
-The decision is valid only after the agent states the stack evidence,
-documentation source, rejected alternatives, chosen path, and smallest oracle
-that proves the choice in that runtime.
+The decision is valid only after the agent states the stack evidence, documentation source, rejected alternatives, chosen path, and smallest oracle that proves the choice in that runtime.
 
 ## Portable Formula
 
@@ -212,5 +163,4 @@ engineering_discipline:
   stop_if:
 ```
 
-Keep retained documentation only when it creates a real contract, evidence, or
-repeatable workflow. Do not turn the discipline into internal bureaucracy.
+Keep retained documentation only when it creates a real contract, evidence, or repeatable workflow. Do not turn the discipline into internal bureaucracy.

@@ -12,238 +12,120 @@ tver: 0.1.4
 
 ## Retention Policy Claim
 
-TES evidence is governed by three layers: `current`, temporal `reports`, and
-`archive`.
+TES evidence is governed by three layers: `current`, temporal `reports`, and `archive`.
 
 Proof: `docs/evidence/INDEX.md`.
 
-Boundary: this claim governs evidence organization. It does not certify any
-adapter behavior by itself.
+Boundary: this claim governs evidence organization. It does not certify any adapter behavior by itself.
 
 Retention status: `current`.
 
 ## ADR 0005 Asset-Transfer Claim
 
-ADR 0005 is locally materialized as asset-transfer behavior, not as copied
-external workflow or new governance. Proof, Slice, Pressure, Language,
-Sanitization, and Routing lanes changed existing TES assets or existing checks
-with a focused oracle before closeout.
+ADR 0005 is locally materialized as asset-transfer behavior, not as copied external workflow or new governance. Proof, Slice, Pressure, Language, Sanitization, and Routing lanes changed existing TES assets or existing checks with a focused oracle before closeout.
 
-Proof: `docs/adr/0005-asset-transfer-to-existing-surfaces.md`,
-`scripts/command_trigger_oracle.py`, `scripts/retention_metadata.py`,
-`scripts/validate_reference_package.py`, `benchmarks/goal-maestro/eval-dataset.json`,
-`benchmarks/pressure/eval-dataset.json`, and the local Git commits from
-`2dab39be` through `f670b737`.
+Proof: `docs/adr/0005-asset-transfer-to-existing-surfaces.md`, `scripts/command_trigger_oracle.py`, `scripts/retention_metadata.py`, `scripts/validate_reference_package.py`, `benchmarks/goal-maestro/eval-dataset.json`, `benchmarks/pressure/eval-dataset.json`, and the local Git commits from `2dab39be` through `f670b737`.
 
-Boundary: this is a local package-source claim about retained asset-transfer
-evidence. It is not a public release claim, not a bundle/version certification,
-not adapter materialization evidence, not a commercial-use claim, and not
-authorization to create a new skill, command, router, or governance layer.
+Boundary: this is a local package-source claim about retained asset-transfer evidence. It is not a public release claim, not a bundle/version certification, not adapter materialization evidence, not a commercial-use claim, and not authorization to create a new skill, command, router, or governance layer.
 
 Retention status: `current`.
 
 ## Cortex Governed MCP Write Lane Claim
 
-TES `0.3.140` adds ADR 0002 and implements a default governed MCP remember
-lane. Project MCP activation exposes only `cortex_remember_plan` and
-`cortex_remember` for one new grounded Cortex cell after exact approval phrase
-match; `--read-only` hides that lane for inspection-only activation. Read-only
-event inspection is exposed through `cortex_list_events` and
-`cortex_get_event_status`. TES `0.3.141` extends MCP activation validation to
-the final project config registrations and adds VS Code project MCP support at
-`.vscode/mcp.json` under `servers.tes-cortex`. The same release adds
-`/tes-doctor` as a fallback path that can test, repair, or install project MCP
-through installed `.tes/bin/install_mcp.py` when MCP health is the failing
-surface. TES `0.3.142` hardens that lane by generating absolute project MCP
-commands for Codex, Claude Code, Cursor, and VS Code, then separating config
-registration from host recognition with explicit states from `config_present`
-through `host_connected` or `session_restart_required`.
+TES `0.3.140` adds ADR 0002 and implements a default governed MCP remember lane. Project MCP activation exposes only `cortex_remember_plan` and `cortex_remember` for one new grounded Cortex cell after exact approval phrase match; `--read-only` hides that lane for inspection-only activation. Read-only event inspection is exposed through `cortex_list_events` and `cortex_get_event_status`. TES `0.3.141` extends MCP activation validation to the final project config registrations and adds VS Code project MCP support at `.vscode/mcp.json` under `servers.tes-cortex`. The same release adds `/tes-doctor` as a fallback path that can test, repair, or install project MCP through installed `.tes/bin/install_mcp.py` when MCP health is the failing surface. TES `0.3.142` hardens that lane by generating absolute project MCP commands for Codex, Claude Code, Cursor, and VS Code, then separating config registration from host recognition with explicit states from `config_present` through `host_connected` or `session_restart_required`.
 
-Proof: `docs/adr/0002-cortex-governed-mcp-write-lane.md`,
-`scripts/cortex_mcp.py`, `scripts/install_mcp.py`,
-`scripts/cortex_operator_oracle.py`, `docs/mesh/CORTEX-MCP.md`, and
-`docs/evidence/reports/2026/05/27/cortex-mcp-governed-remember-default/REPORT.md`,
-and
-`docs/evidence/reports/2026/05/27/cortex-mcp-vscode-config-parity/REPORT.md`,
-and
-`docs/evidence/reports/2026/05/27/tes-doctor-mcp-fallback/REPORT.md`, and
-`docs/evidence/reports/2026/05/27/cortex-mcp-host-recognition-parity/REPORT.md`.
+Proof: `docs/adr/0002-cortex-governed-mcp-write-lane.md`, `scripts/cortex_mcp.py`, `scripts/install_mcp.py`, `scripts/cortex_operator_oracle.py`, `docs/mesh/CORTEX-MCP.md`, and `docs/evidence/reports/2026/05/27/cortex-mcp-governed-remember-default/REPORT.md`, and `docs/evidence/reports/2026/05/27/cortex-mcp-vscode-config-parity/REPORT.md`, and `docs/evidence/reports/2026/05/27/tes-doctor-mcp-fallback/REPORT.md`, and `docs/evidence/reports/2026/05/27/cortex-mcp-host-recognition-parity/REPORT.md`.
 
-Boundary: this does not add an external memory backend, hosted MCP, graph
-store, automatic Cortex writes, update/delete/bulk/entity tools, checkpoint
-write over MCP, direct MCP `apply`, package publishing, marketplace action, or
-commercial-use certification.
+Boundary: this does not add an external memory backend, hosted MCP, graph store, automatic Cortex writes, update/delete/bulk/entity tools, checkpoint write over MCP, direct MCP `apply`, package publishing, marketplace action, or commercial-use certification.
 
 Retention status: `current`.
 
 ## Writer Path Claim
 
-New context mesh runs default to
-`docs/evidence/reports/YYYY/MM/DD/context-mesh/<run-id>/` when no explicit
-`--out-root` is provided.
+New context mesh runs default to `docs/evidence/reports/YYYY/MM/DD/context-mesh/<run-id>/` when no explicit `--out-root` is provided.
 
 Proof: `scripts/context_mesh_run.py` and `docs/evals/EVALS.md`.
 
-Boundary: callers may still provide a custom output root, including the legacy
-`docs/evidence/reports/context-mesh` layout.
+Boundary: callers may still provide a custom output root, including the legacy `docs/evidence/reports/context-mesh` layout.
 
 Retention status: `current`.
 
 ## Legacy Compatibility Claim
 
-Historical context mesh evidence under
-`docs/evidence/reports/context-mesh/<run-id>/` remains readable and retained.
+Historical context mesh evidence under `docs/evidence/reports/context-mesh/<run-id>/` remains readable and retained.
 
-Proof: `scripts/context_mesh_convergence.py`,
-`scripts/retention_metadata.py`, and existing TDS index entries.
+Proof: `scripts/context_mesh_convergence.py`, `scripts/retention_metadata.py`, and existing TDS index entries.
 
-Boundary: legacy evidence is retained proof. It is not a current operational
-claim unless linked from this directory or another active claim document.
+Boundary: legacy evidence is retained proof. It is not a current operational claim unless linked from this directory or another active claim document.
 
 Retention status: `current`.
 
 ## TES Align Semantic Residue Claim
 
-`/tes-align` runs a portable Semantic Residue Gate and freshness
-reconciliation before reporting PASS. TES owns the mechanism; the target
-project owns the vocabulary via
-`docs/agents/contracts/SEMANTIC-RESIDUE.yml`. Malformed contract files
-surface as a structured `residue.malformed_contract` finding inside
-`semantic_residue.findings`, not only as a prose `failures[]` line.
-Freshness reconciliation filters generic ADR section headings through an
-internal stopword list to avoid noise on documentary scaffolding.
+`/tes-align` runs a portable Semantic Residue Gate and freshness reconciliation before reporting PASS. TES owns the mechanism; the target project owns the vocabulary via `docs/agents/contracts/SEMANTIC-RESIDUE.yml`. Malformed contract files surface as a structured `residue.malformed_contract` finding inside `semantic_residue.findings`, not only as a prose `failures[]` line. Freshness reconciliation filters generic ADR section headings through an internal stopword list to avoid noise on documentary scaffolding.
 
-Proof: `docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md`,
-`scripts/project_alignment_oracle.py` self-test fixtures (13 total), the
-initial certification report at
-`docs/evidence/reports/2026/05/25/tes-align/semantic-drift-hardening/REPORT.md`,
-and the external-review follow-up packet at
-`docs/evidence/reports/2026/05/25/tes-align/external-review-followup/REPORT.md`.
+Proof: `docs/mesh/TES-ALIGN-SEMANTIC-RESIDUE.md`, `scripts/project_alignment_oracle.py` self-test fixtures (13 total), the initial certification report at `docs/evidence/reports/2026/05/25/tes-align/semantic-drift-hardening/REPORT.md`, and the external-review follow-up packet at `docs/evidence/reports/2026/05/25/tes-align/external-review-followup/REPORT.md`.
 
-Boundary: certified at the package-source contract level. The originating
-target-project canary still owes a real-project rerun against the hardened
-oracle.
+Boundary: certified at the package-source contract level. The originating target-project canary still owes a real-project rerun against the hardened oracle.
 
 Retention status: `current`.
 
 ## Single-Current-Dist Claim
 
-The TES repository keeps exactly one `docs/dist/<version>/` directory at
-any time. `scripts/tes_bundle.py::publish_public_bundle` runs
-`prune_historical_dist` after each publish to enforce the policy.
-Historical bundles remain reachable via Git tags
-(`git checkout v<X> -- docs/dist/<X>`) and via previously published
-GitHub Pages release URLs.
+The TES repository keeps exactly one `docs/dist/<version>/` directory at any time. `scripts/tes_bundle.py::publish_public_bundle` runs `prune_historical_dist` after each publish to enforce the policy. Historical bundles remain reachable via Git tags (`git checkout v<X> -- docs/dist/<X>`) and via previously published GitHub Pages release URLs.
 
-Proof: `scripts/tes_bundle.py` (`prune_historical_dist` plus self-test
-fixture), `docs/governance/SYNC-AUDIT-CHECKLIST.md` retention step and
-matching lock, and the external-review follow-up packet.
+Proof: `scripts/tes_bundle.py` (`prune_historical_dist` plus self-test fixture), `docs/governance/SYNC-AUDIT-CHECKLIST.md` retention step and matching lock, and the external-review follow-up packet.
 
-Boundary: the policy is enforced on publish. Hand-created
-`docs/dist/<other>/` outside the publish flow is pruned on the next
-publish; the checklist lock blocks the inverse path.
+Boundary: the policy is enforced on publish. Hand-created `docs/dist/<other>/` outside the publish flow is pruned on the next publish; the checklist lock blocks the inverse path.
 
 Retention status: `current`.
 
 ## TES Memory Lifecycle ADR Claim
 
-ADR 0001 is implemented at the local package-source contract level through
-Wave 7. The implemented lifecycle preserves Markdown as durable truth, events
-as evidence, checkpoints as TTL resumability, Field Reports as transport, and
-subagents as parent-return evidence only. ADR 0002 separately governs the MCP
-remember write lane.
+ADR 0001 is implemented at the local package-source contract level through Wave 7. The implemented lifecycle preserves Markdown as durable truth, events as evidence, checkpoints as TTL resumability, Field Reports as transport, and subagents as parent-return evidence only. ADR 0002 separately governs the MCP remember write lane.
 
-Proof: `docs/adr/0001-tes-memory-lifecycle.md`,
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-memory-lifecycle.md`,
-`docs/evidence/reports/2026/05/26/memory-lifecycle/wave7-release-canary/REPORT.md`,
-and the Wave 1-6 commits named in that report.
+Proof: `docs/adr/0001-tes-memory-lifecycle.md`, `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-memory-lifecycle.md`, `docs/evidence/reports/2026/05/26/memory-lifecycle/wave7-release-canary/REPORT.md`, and the Wave 1-6 commits named in that report.
 
-Boundary: this is local package-source closure for version `0.3.133`. Remote
-release certification, package publish, marketplace action, and commercial-use
-certification remain outside the claim; MCP writes are governed by ADR 0002.
+Boundary: this is local package-source closure for version `0.3.133`. Remote release certification, package publish, marketplace action, and commercial-use certification remain outside the claim; MCP writes are governed by ADR 0002.
 
 Retention status: `current`.
 
 ## Cortex Memory Benchmark Harness Claim
 
-The Cortex Memory Benchmark Harness is implemented at the local package-source
-level. It preserves Cortex Markdown as durable memory truth and treats recall
-artifacts, scores, checkpoints, comparisons, and reports as evidence only.
+The Cortex Memory Benchmark Harness is implemented at the local package-source level. It preserves Cortex Markdown as durable memory truth and treats recall artifacts, scores, checkpoints, comparisons, and reports as evidence only.
 
-Proof: `docs/evals/CORTEX-MEMORY-BENCHMARKS.md`,
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md`,
-`docs/roadmap/cortex-memory-benchmark-harness/EXECUTION-UNITS.md`,
-`scripts/cortex_memory_benchmark.py`, `scripts/cortex_memory_oracle.py`,
-`scripts/cortex_memory_compare.py`, and
-`docs/evidence/reports/2026/05/26/cortex-memory-benchmark-harness/REPORT.md`.
+Proof: `docs/evals/CORTEX-MEMORY-BENCHMARKS.md`, `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-memory-benchmark-harness.md`, `docs/roadmap/cortex-memory-benchmark-harness/EXECUTION-UNITS.md`, `scripts/cortex_memory_benchmark.py`, `scripts/cortex_memory_oracle.py`, `scripts/cortex_memory_compare.py`, and `docs/evidence/reports/2026/05/26/cortex-memory-benchmark-harness/REPORT.md`.
 
-Boundary: this is local package-source implementation for version `0.3.135`.
-Remote release certification, package publish, marketplace action, external
-dataset adoption, UI/dashboard behavior, and commercial-use certification
-remain outside the claim; MCP writes are governed by ADR 0002.
+Boundary: this is local package-source implementation for version `0.3.135`. Remote release certification, package publish, marketplace action, external dataset adoption, UI/dashboard behavior, and commercial-use certification remain outside the claim; MCP writes are governed by ADR 0002.
 
 Retention status: `current`.
 
 ## TES Postinstall And Cortex Curation Hardening Claim
 
-TES `0.3.137` adds explicit first-session `needs_review` recovery and narrows
-Cortex split detection so evidence-dense cells are not blocked solely by one
-extra evidence bullet.
+TES `0.3.137` adds explicit first-session `needs_review` recovery and narrows Cortex split detection so evidence-dense cells are not blocked solely by one extra evidence bullet.
 
-Proof: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md`,
-`scripts/tes_install.py`, `scripts/cortex.py`,
-`scripts/command_trigger_oracle.py`, and
-`docs/evidence/reports/2026/05/27/tes-postinstall-cortex-hardening/REPORT.md`.
+Proof: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-postinstall-cortex-hardening.md`, `scripts/tes_install.py`, `scripts/cortex.py`, `scripts/command_trigger_oracle.py`, and `docs/evidence/reports/2026/05/27/tes-postinstall-cortex-hardening/REPORT.md`.
 
-Boundary: this is local package-source and local bundle implementation.
-Remote tag/ref certification, package publishing, marketplace action,
-automatic Cortex writes, and commercial-use certification remain outside the
-claim; MCP writes are governed by ADR 0002.
+Boundary: this is local package-source and local bundle implementation. Remote tag/ref certification, package publishing, marketplace action, automatic Cortex writes, and commercial-use certification remain outside the claim; MCP writes are governed by ADR 0002.
 
 Retention status: `current`.
 
 ## Cortex Reflection Slug Hygiene Claim
 
-TES `0.3.138` caps long `reflect` proposal cell slugs and adds a
-`cell_name_reason` field so operators can replace generated suggestions with
-short claim-specific cell names before authorized promotion.
+TES `0.3.138` caps long `reflect` proposal cell slugs and adds a `cell_name_reason` field so operators can replace generated suggestions with short claim-specific cell names before authorized promotion.
 
-Proof: `scripts/cortex.py`, `docs/mesh/CORTEX.md`, and
-`docs/evidence/reports/2026/05/27/cortex-reflect-slug-hygiene/REPORT.md`.
+Proof: `scripts/cortex.py`, `docs/mesh/CORTEX.md`, and `docs/evidence/reports/2026/05/27/cortex-reflect-slug-hygiene/REPORT.md`.
 
-Boundary: this changes proposal naming only. `reflect` remains no-write,
-`apply --yes` remains the authorized promotion path, and remote tag/ref
-certification, package publishing, marketplace action, automatic Cortex writes,
-and commercial-use certification remain outside the claim; MCP writes are
-governed by ADR 0002.
+Boundary: this changes proposal naming only. `reflect` remains no-write, `apply --yes` remains the authorized promotion path, and remote tag/ref certification, package publishing, marketplace action, automatic Cortex writes, and commercial-use certification remain outside the claim; MCP writes are governed by ADR 0002.
 
 Retention status: `current`.
 
 ## Claude CLI Disciplined-Behavior Lift Claim
 
-The public landing page states "up to 6x baseline disciplined behavior in
-scoped Claude CLI evals". That number is the ratio of trigger pass rates between
-the full-context condition and the no-context (`none`) ablation in one retained
-v1-rc run: `trigger_pass_rate_full = 0.8571` (6 of 7) divided by
-`trigger_pass_rate_none = 0.1429` (1 of 7) equals `5.998`, which rounds to `6x`.
-It is a same-dataset ablation ratio, not an absolute accuracy figure (run pass
-rate was `0.5682`) and not a universal model-quality measurement.
+The public landing page states "up to 6x baseline disciplined behavior in scoped Claude CLI evals". That number is the ratio of trigger pass rates between the full-context condition and the no-context (`none`) ablation in one retained v1-rc run: `trigger_pass_rate_full = 0.8571` (6 of 7) divided by `trigger_pass_rate_none = 0.1429` (1 of 7) equals `5.998`, which rounds to `6x`. It is a same-dataset ablation ratio, not an absolute accuracy figure (run pass rate was `0.5682`) and not a universal model-quality measurement.
 
-Proof:
-`docs/evidence/reports/context-mesh/behavior-v1-rc-claude-2026-05-05-convergence-08/REPORT.md`
-(`trigger_pass_rate_full=0.8571`, `trigger_pass_rate_none=0.1429`,
-`behavioral_lift=0.7142`, certification status `GO`), and the closure record at
-`docs/evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md`.
+Proof: `docs/evidence/reports/context-mesh/behavior-v1-rc-claude-2026-05-05-convergence-08/REPORT.md` (`trigger_pass_rate_full=0.8571`, `trigger_pass_rate_none=0.1429`, `behavioral_lift=0.7142`, certification status `GO`), and the closure record at `docs/evidence/reports/context-mesh/context-mesh-v1-final-certification-2026-05-05/REPORT.md`.
 
-Boundary: scoped to one retained Claude CLI run. Backend `claude-cli` (Claude
-Code without `--bare`, so default Claude Code context may influence outputs);
-model `sonnet` (not claimed for Opus, Haiku, the bare API, or other models or
-backends); dataset SHA
-`c47a7b4be0604350c688f48d8088e944dc4b929804f2d6fe094626f5c902e5c6`; grader
-`deterministic-substring@0.1.6`, intentionally strict and wording-sensitive.
-Fixture and echo backends prove pipeline behavior, not live model quality. Two
-gates (Simplicity First, Goal-Driven Execution) show `loss=1` and remain open to
-adversarial follow-up. The figure is evidence-scoped, not universal; the public
-text must not exceed this scope.
+Boundary: scoped to one retained Claude CLI run. Backend `claude-cli` (Claude Code without `--bare`, so default Claude Code context may influence outputs); model `sonnet` (not claimed for Opus, Haiku, the bare API, or other models or backends); dataset SHA `c47a7b4be0604350c688f48d8088e944dc4b929804f2d6fe094626f5c902e5c6`; grader `deterministic-substring@0.1.6`, intentionally strict and wording-sensitive. Fixture and echo backends prove pipeline behavior, not live model quality. Two gates (Simplicity First, Goal-Driven Execution) show `loss=1` and remain open to adversarial follow-up. The figure is evidence-scoped, not universal; the public text must not exceed this scope.
 
 Retention status: `current`.

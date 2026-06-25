@@ -9,13 +9,9 @@ evidence_level: L2
 
 # V1 Convergence Loop
 
-This document defines the large convergence loop from the current certified
-readiness state to a final v1 GO/NO-GO decision.
+This document defines the large convergence loop from the current certified readiness state to a final v1 GO/NO-GO decision.
 
-Status note, 2026-05-06: this loop is retained as planning lineage. The final
-v1 GO report now exists, and v1.1 closure artifacts cover retention metadata,
-installer smoke, Claude plugin oracle, reference graph validation, and Cursor
-behavior readiness.
+Status note, 2026-05-06: this loop is retained as planning lineage. The final v1 GO report now exists, and v1.1 closure artifacts cover retention metadata, installer smoke, Claude plugin oracle, reference graph validation, and Cursor behavior readiness.
 
 It is a loop, not a wish list:
 
@@ -56,9 +52,7 @@ These invariants hold until failure evidence forces a change:
 | Matrix labels | Never exposed to backend prompts |
 | Claims | Behavior claim requires behavior evidence |
 
-Changing the shared contract, dataset, or grader is allowed only after a
-retained failure explains why the existing surface cannot answer the current
-question.
+Changing the shared contract, dataset, or grader is allowed only after a retained failure explains why the existing surface cannot answer the current question.
 
 ## Stage 1: Codex Backend Implementation
 
@@ -89,8 +83,7 @@ Implementation checklist:
 - [ ] Capture stderr.
 - [ ] Capture final output file.
 - [ ] Hash prompt, final output, stdout JSONL, stderr, and adapter workspace.
-- [ ] Normalize CLI missing, auth failure, timeout, non-zero exit, missing
-      output, and refusal.
+- [ ] Normalize CLI missing, auth failure, timeout, non-zero exit, missing output, and refusal.
 - [ ] Enforce subprocess timeout.
 - [ ] Enforce model allowlist and sample cap.
 - [ ] Avoid changing contract, dataset, grader, Claude evidence, or UI.
@@ -98,8 +91,7 @@ Implementation checklist:
 Stage 1 GO:
 
 - [ ] `npm run commit:check` passes.
-- [ ] Backend dry run or fixture path proves the new backend wiring can produce
-      report-shaped output without a paid/full behavior matrix.
+- [ ] Backend dry run or fixture path proves the new backend wiring can produce report-shaped output without a paid/full behavior matrix.
 - [ ] No Codex behavior certification is claimed.
 
 Stage 1 NO-GO:
@@ -107,8 +99,7 @@ Stage 1 NO-GO:
 - [ ] Backend cannot isolate prompt/workspace context.
 - [ ] Backend cannot retain raw output.
 - [ ] Backend cannot enforce timeout.
-- [ ] Backend measures generic model output without materialized Codex adapter
-      context.
+- [ ] Backend measures generic model output without materialized Codex adapter context.
 
 ## Stage 2: Codex Smoke Evidence
 
@@ -171,8 +162,7 @@ Stage 3 interpretation:
 | Codex NO-GO from prompt weakness | Retain failure, then decide whether dataset or contract change is justified |
 | Codex NO-GO from generic adapter mismatch | Revisit materialized workspace route |
 
-Do not patch the dataset or grader inside the same stage that discovers a
-behavior failure. First retain the failure and classify it.
+Do not patch the dataset or grader inside the same stage that discovers a behavior failure. First retain the failure and classify it.
 
 ## Stage 4: Cursor Decision
 
@@ -234,8 +224,7 @@ Stop the loop only for material blockers:
 - [ ] Worktree or retained evidence cannot be reconciled.
 - [ ] Raw evidence cannot be captured.
 - [ ] Adapter context cannot be isolated.
-- [ ] Shared contract/dataset/grader must change, but no retained failure
-      justifies the change.
+- [ ] Shared contract/dataset/grader must change, but no retained failure justifies the change.
 - [ ] A report would need to claim behavior from structure.
 - [ ] Cost/auth risk is not bounded.
 
@@ -250,5 +239,4 @@ Frame -> Build smallest increment -> Run smallest oracle -> Retain failure or
 success -> Fix only the proven cause -> Rerun -> Commit -> Reassess claim
 ```
 
-No stage should end with "probably works." It ends with retained evidence,
-named NO-GO, or a deliberately scoped next loop.
+No stage should end with "probably works." It ends with retained evidence, named NO-GO, or a deliberately scoped next loop.

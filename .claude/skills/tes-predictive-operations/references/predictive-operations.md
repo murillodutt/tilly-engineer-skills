@@ -23,11 +23,9 @@ Use `alternate` when the work needs both:
 1. `tes-prospect` exposes the next failure risk.
 2. `tes-mine` checks code, language, and durable context.
 3. `tes-prospect` returns with a sharper next decision.
-4. Durable context is written only after a term, relationship, contradiction,
-   or decision resolves.
+4. Durable context is written only after a term, relationship, contradiction, or decision resolves.
 
-Use `package` only when the behavior is clear and the local skill surface needs
-tightening.
+Use `package` only when the behavior is clear and the local skill surface needs tightening.
 
 ## Brake Snapshot
 
@@ -43,6 +41,4 @@ Then wait for explicit resume.
 
 ## Write Policy
 
-`tes-prospect` is read-only. `tes-mine` may write durable knowledge only after
-resolution and only within its active contract. Packaging work changes local
-skill files only when explicitly requested by the maintainer.
+`tes-prospect` is read-only. `tes-mine` may write durable knowledge only after resolution and only within its active contract. Packaging work changes local skill files only when explicitly requested by the maintainer.

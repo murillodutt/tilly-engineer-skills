@@ -10,13 +10,11 @@ tver: 0.1.0
 
 # Cortex Memory Benchmark Harness Report
 
-This report records the local package-source implementation of the Cortex
-Memory Benchmark Harness on 2026-05-26.
+This report records the local package-source implementation of the Cortex Memory Benchmark Harness on 2026-05-26.
 
 ## Claim
 
-The Cortex Memory Benchmark Harness is implemented at the local package-source
-level:
+The Cortex Memory Benchmark Harness is implemented at the local package-source level:
 
 - native result schema is present;
 - neutral fixtures cover recall capabilities;
@@ -46,11 +44,9 @@ Package version: `0.3.135`.
 
 Bundle: `docs/dist/0.3.135/tilly-engineer-skills-0.3.135.zip`.
 
-Bundle SHA-256:
-`4358d39fd6c5afdf9e92413f0d6f42359e88b0bca5ae14ac48d407136eaadad2`.
+Bundle SHA-256: `4358d39fd6c5afdf9e92413f0d6f42359e88b0bca5ae14ac48d407136eaadad2`.
 
-Remote release, tag, push, marketplace, and package publishing remain outside
-this run.
+Remote release, tag, push, marketplace, and package publishing remain outside this run.
 
 ## Closure Oracles
 
@@ -81,9 +77,7 @@ git diff --check
 
 Observed status: all listed commands passed during this run.
 
-`npm run commit:check` is the required sealed-package gate before a commit or
-sealed package claim. This report does not claim a remote release or pushed
-fixed ref.
+`npm run commit:check` is the required sealed-package gate before a commit or sealed package claim. This report does not claim a remote release or pushed fixed ref.
 
 ## Boundary
 
@@ -108,5 +102,4 @@ The harness is a benchmark and evidence layer. It does not:
 
 Status: `GO` for local Cortex Memory Benchmark Harness implementation.
 
-Status: `DEFERRED` for remote release certification, commercial-use claim,
-write-capable MCP, external datasets, and UI.
+Status: `DEFERRED` for remote release certification, commercial-use claim, write-capable MCP, external datasets, and UI.

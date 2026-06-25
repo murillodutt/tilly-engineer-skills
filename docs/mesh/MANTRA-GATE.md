@@ -10,11 +10,9 @@ tver: 0.1.0
 
 # TES Mantra Gate
 
-Mantra Gate is a micro-gate that turns intention into auditable action:
-evidence, scope, path, record, oracle, and stop rule.
+Mantra Gate is a micro-gate that turns intention into auditable action: evidence, scope, path, record, oracle, and stop rule.
 
-It is not a second planning framework. It is the compact pre-action checkpoint
-for state-changing work.
+It is not a second planning framework. It is the compact pre-action checkpoint for state-changing work.
 
 ## User-Facing Marker
 
@@ -24,12 +22,9 @@ The default visible marker is:
 [🍳 Flash-Fry]
 ```
 
-Agents should show only this marker when the gate permits proceeding. Compact
-display is UX compression, not evidence deletion.
+Agents should show only this marker when the gate permits proceeding. Compact display is UX compression, not evidence deletion.
 
-The compact marker must not hide blockers, failures, unresolved decisions, or
-user approval needs. In those cases, report the gate detail with `BLOCKED` /
-`NEEDS_REVIEW`, or provide audit detail when the user explicitly asks for it.
+The compact marker must not hide blockers, failures, unresolved decisions, or user approval needs. In those cases, report the gate detail with `BLOCKED` /`NEEDS_REVIEW`, or provide audit detail when the user explicitly asks for it.
 
 ## Full Internal Schema
 
@@ -56,8 +51,7 @@ Mantra Gate classifies action risk deterministically:
 | `high-risk` | Remotes/push, secrets/env, DB/schema, auth/RBAC, real customer data, production, compliance/legal, public API/surface, destructive Git, or generated runtime packaging |
 | `forbidden` | Destructive Git, secret disclosure, or production action without an explicit contract |
 
-`high-risk` work requires a complete internal record and oracle. `forbidden`
-work blocks.
+`high-risk` work requires a complete internal record and oracle. `forbidden` work blocks.
 
 ## Activation
 
@@ -75,14 +69,11 @@ Required before:
 
 Optional or implicit for pure read-only exploration.
 
-Escalate from compact marker to gate detail when ambiguity exists, user approval
-is required, the gate returns `BLOCKED` / `NEEDS_REVIEW`, or the user explicitly
-asks for audit detail.
+Escalate from compact marker to gate detail when ambiguity exists, user approval is required, the gate returns `BLOCKED` / `NEEDS_REVIEW`, or the user explicitly asks for audit detail.
 
 ## Storage
 
-Do not spam user chat with the full gate by default. Preserve the full gate
-internally when a state-changing action occurs.
+Do not spam user chat with the full gate by default. Preserve the full gate internally when a state-changing action occurs.
 
 Preferred storage order:
 
@@ -90,9 +81,7 @@ Preferred storage order:
 2. The current cycle's local evidence, spec, report, or certification file.
 3. `.tes/mantra-gates/records.jsonl` as a local fallback.
 
-Stored gate records must be sanitized. Never store secrets, credentials,
-personal data, raw private URLs, raw prompts, raw stack traces, or sensitive raw
-file contents.
+Stored gate records must be sanitized. Never store secrets, credentials, personal data, raw private URLs, raw prompts, raw stack traces, or sensitive raw file contents.
 
 ## Failure Behavior
 
@@ -107,15 +96,9 @@ Never allow `PROCEED` by prose alone when a concrete oracle exists.
 
 ## Adoption Oracle
 
-The adoption oracle is read-only. By default, it runs in `health` mode for
-doctor-style checks: dirty files, staged files, recent commits, and historical
-records are reported as context and metrics, not treated as the current action.
+The adoption oracle is read-only. By default, it runs in `health` mode for doctor-style checks: dirty files, staged files, recent commits, and historical records are reported as context and metrics, not treated as the current action.
 
-When invoked with `--state-changing`, `--commit-push`, `--closure-claim`, or
-`--audit-history`, it checks whether Mantra Gate is actually being used for that
-current action or explicit history audit. It correlates Git diff, staged files,
-the recent commit, Field Reports, local gate JSONL records, action intent, risk
-class, and closure claims.
+When invoked with `--state-changing`, `--commit-push`, `--closure-claim`, or `--audit-history`, it checks whether Mantra Gate is actually being used for that current action or explicit history audit. It correlates Git diff, staged files, the recent commit, Field Reports, local gate JSONL records, action intent, risk class, and closure claims.
 
 Statuses:
 
@@ -127,18 +110,9 @@ Statuses:
 | `NEEDS_REVIEW` | Resolve ambiguity, request approval, or report audit detail |
 | `BLOCKED` | Resolve the blocker before acting |
 
-The oracle also emits local sanitized metrics: compact/full counts, status
-counts, missing fields, bypass suspicion, and actions without a closure oracle.
-Compact display is normal when the full internal gate is complete and the gate
-returns `PROCEED`. The oracle does not collect secrets, raw prompts, private
-content, or remote telemetry.
+The oracle also emits local sanitized metrics: compact/full counts, status counts, missing fields, bypass suspicion, and actions without a closure oracle. Compact display is normal when the full internal gate is complete and the gate returns `PROCEED`. The oracle does not collect secrets, raw prompts, private content, or remote telemetry.
 
-The oracle also reports adapter surface health. It distinguishes whether the
-skill-owned behavior is present, whether bootloaders route to that behavior
-instead of duplicating it, whether local hook config is present or not applied,
-and whether retired project-local gate markers appear in active runtime
-surfaces. Historical docs and evidence may preserve retired text; active
-bootloaders and rules may not.
+The oracle also reports adapter surface health. It distinguishes whether the skill-owned behavior is present, whether bootloaders route to that behavior instead of duplicating it, whether local hook config is present or not applied, and whether retired project-local gate markers appear in active runtime surfaces. Historical docs and evidence may preserve retired text; active bootloaders and rules may not.
 
 ## Helpers
 
@@ -155,5 +129,4 @@ python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --commit-push
 python3 .tes/bin/mantra_gate_adoption_oracle.py --target . --audit-history
 ```
 
-From the source package, use `scripts/mantra_gate.py` and
-`scripts/mantra_gate_adoption_oracle.py`.
+From the source package, use `scripts/mantra_gate.py` and `scripts/mantra_gate_adoption_oracle.py`.

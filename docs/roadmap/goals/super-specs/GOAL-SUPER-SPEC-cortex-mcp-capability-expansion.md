@@ -10,21 +10,15 @@ tver: 0.2.0
 
 # GOAL Super SPEC: Cortex MCP Capability Expansion
 
-Status: active execution artifact. `SPEC-000` through `SPEC-007` are locally
-committed; `SPEC-008` is in documentation and release-identity closeout.
+Status: active execution artifact. `SPEC-000` through `SPEC-007` are locally committed; `SPEC-008` is in documentation and release-identity closeout.
 
-Capability: materialize ADR 0003 as an incremental Cortex MCP expansion that
-improves host integration, schema authoring, hot-path efficiency, progress
-visibility, cell history, and optional local HTTP access without changing the
-Cortex source of truth, governed write lane, or zero-dependency posture.
+Capability: materialize ADR 0003 as an incremental Cortex MCP expansion that improves host integration, schema authoring, hot-path efficiency, progress visibility, cell history, and optional local HTTP access without changing the Cortex source of truth, governed write lane, or zero-dependency posture.
 
 ## Canonical Artifact
 
-Canonical Super SPEC:
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md`
+Canonical Super SPEC: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md`
 
-Primary decision source:
-`docs/adr/0003-cortex-mcp-capability-expansion.md`
+Primary decision source: `docs/adr/0003-cortex-mcp-capability-expansion.md`
 
 Archived context records:
 
@@ -48,17 +42,12 @@ Current baseline from ADR 0003:
 
 - `scripts/cortex_mcp.py` is a zero-dependency JSON-RPC 2.0 stdio server.
 - The current MCP surface exposes 14 tools, with 12 visible in read-only mode.
-- Existing governed write behavior is already certified by current MCP,
-  operator, Cortex, event-ledger, installer, TDS, reference-graph, private
-  vocabulary, and whitespace oracles.
-- ADR 0001 and ADR 0002 are archived bootstrapping records; ADR 0003 owns the
-  active Cortex MCP evolution contract.
+- Existing governed write behavior is already certified by current MCP, operator, Cortex, event-ledger, installer, TDS, reference-graph, private vocabulary, and whitespace oracles.
+- ADR 0001 and ADR 0002 are archived bootstrapping records; ADR 0003 owns the active Cortex MCP evolution contract.
 - Markdown under `docs/agents/cortex/**` remains durable memory truth.
-- Runtime indexes, events, checkpoints, resources, prompts, transports, and
-  notifications are access, evidence, acceleration, or operator surfaces.
+- Runtime indexes, events, checkpoints, resources, prompts, transports, and notifications are access, evidence, acceleration, or operator surfaces.
 
-The execution agent must re-run baseline oracles before editing because the
-worktree may contain unrelated pending changes.
+The execution agent must re-run baseline oracles before editing because the worktree may contain unrelated pending changes.
 
 ## Phase Boundary
 
@@ -75,14 +64,10 @@ This phase must not:
 
 - Change Cortex Markdown as source of truth.
 - Add destructive MCP surfaces.
-- Add automatic capture, update, delete, forget, checkpoint write, direct
-  apply, multi-target, or multi-tenant MCP behavior.
-- Add Pydantic, FastMCP, Smithery, anyio, aiohttp, starlette, fastapi, or a
-  third-party HTTP framework.
-- Require installer changes for resources, prompts, progress, HTTP, or
-  history.
-- Push, publish, tag, bundle, or perform remote sync without explicit owner
-  authorization.
+- Add automatic capture, update, delete, forget, checkpoint write, direct apply, multi-target, or multi-tenant MCP behavior.
+- Add Pydantic, FastMCP, Smithery, anyio, aiohttp, starlette, fastapi, or a third-party HTTP framework.
+- Require installer changes for resources, prompts, progress, HTTP, or history.
+- Push, publish, tag, bundle, or perform remote sync without explicit owner authorization.
 
 ## Non-Objectives
 
@@ -112,56 +97,42 @@ Everything new is inert, read-only, advisory, cached, or opt-in transport.
 - Do not expose a caller-provided `target` argument.
 - Do not write `sources/**` through MCP.
 - Do not overwrite existing cells.
-- Do not expose delete, update, forget, checkpoint write, direct apply, bulk
-  delete, or entity delete.
-- Do not add automatic capture from reflection, hooks, resources, prompts, or
-  progress.
-- Do not add multi-tenant scope arguments such as `user_id`, `agent_id`,
-  `app_id`, or `run_id`.
+- Do not expose delete, update, forget, checkpoint write, direct apply, bulk delete, or entity delete.
+- Do not add automatic capture from reflection, hooks, resources, prompts, or progress.
+- Do not add multi-tenant scope arguments such as `user_id`, `agent_id`, `app_id`, or `run_id`.
 - Do not add a multi-target single process.
 - Do not expose `resources/subscribe` or writable resources.
 - Do not make prompts call tools.
 - Do not introduce third-party dependencies.
-- Do not make HTTP default, sessionful, non-localhost by default, or installer
-  required.
+- Do not make HTTP default, sessionful, non-localhost by default, or installer required.
 - Do not mask verify failures through caching.
-- Do not treat prior commits as execution credit for this run unless the owner
-  explicitly says so.
+- Do not treat prior commits as execution credit for this run unless the owner explicitly says so.
 
 ## Materialization Tree
 
 ### 1. Canonical Artifact
 
-Use this file and ADR 0003 as the canonical execution sources. Preserve the
-execution units below exactly unless the owner changes the contract.
+Use this file and ADR 0003 as the canonical execution sources. Preserve the execution units below exactly unless the owner changes the contract.
 
 ### 2. Certified Context
 
-Use the current MCP baseline as certified context only. New execution must
-create an additive material trail with non-empty commits per material unit.
+Use the current MCP baseline as certified context only. New execution must create an additive material trail with non-empty commits per material unit.
 
 ### 3. Phase Boundary
 
-Runtime MCP capability expansion, focused tests, and correlated documentation
-are in scope. Release, remote sync, package publishing, installer behavior
-changes, and target-project mirror edits are out of scope unless explicitly
-authorized.
+Runtime MCP capability expansion, focused tests, and correlated documentation are in scope. Release, remote sync, package publishing, installer behavior changes, and target-project mirror edits are out of scope unless explicitly authorized.
 
 ### 4. Non-Objectives
 
-The run is not a memory rewrite, not a dependency migration, not a web-service
-platform conversion, and not a release.
+The run is not a memory rewrite, not a dependency migration, not a web-service platform conversion, and not a release.
 
 ### 5. Central Rule
 
-Every capability must preserve Cortex source-of-truth and governed-write
-invariants while earning certification inside `cortex_mcp.py --self-test`.
+Every capability must preserve Cortex source-of-truth and governed-write invariants while earning certification inside `cortex_mcp.py --self-test`.
 
 ### 6. Forbidden Moves
 
-The executor must enforce the forbidden moves listed in this Super SPEC and
-ADR 0003. Newly discovered forbidden moves must be reported rather than worked
-around silently.
+The executor must enforce the forbidden moves listed in this Super SPEC and ADR 0003. Newly discovered forbidden moves must be reported rather than worked around silently.
 
 ### 7. Execution Units
 
@@ -183,33 +154,23 @@ around silently.
 - Contracts Senior owns schema helper, prompt registry, and history structure.
 - Runtime Senior owns HTTP, resources, cache, progress, and handler routing.
 - Tests Senior owns focused adversarial fixtures and self-test extensions.
-- Security/Boundary Senior reviews authorization, target, prompt, HTTP, and
-  dependency boundaries.
-- Reviewer Senior is read-only and checks scope, forbidden moves, diff
-  ownership, and false closure.
+- Security/Boundary Senior reviews authorization, target, prompt, HTTP, and dependency boundaries.
+- Reviewer Senior is read-only and checks scope, forbidden moves, diff ownership, and false closure.
 - Evidence/Oracle Senior tracks per-unit evidence and final closeout.
 
-Parallel research or read-only review is allowed. Material writes must be
-serialized by SPEC unit, with one certified commit per material unit.
+Parallel research or read-only review is allowed. Material writes must be serialized by SPEC unit, with one certified commit per material unit.
 
 ### 9. Per-SPEC Oracles
 
-Focused oracles are listed per unit. The final gate is `npm run commit:check`
-only after focused MCP, installer, TDS, reference-graph, doc-size, private
-vocabulary, and whitespace gates are green or honestly classified.
+Focused oracles are listed per unit. The final gate is `npm run commit:check` only after focused MCP, installer, TDS, reference-graph, doc-size, private vocabulary, and whitespace gates are green or honestly classified.
 
 ### 10. Negative Grep
 
-Negative grep must distinguish rejected-alternative vocabulary from executable
-adoption. ADR 0003 may name forbidden patterns as policy. Runtime and docs must
-not implement them.
+Negative grep must distinguish rejected-alternative vocabulary from executable adoption. ADR 0003 may name forbidden patterns as policy. Runtime and docs must not implement them.
 
 ### 11. Commit Strategy
 
-Use one non-empty semantic commit per material SPEC after `SPEC-000`.
-Stage only the current SPEC's files. Do not rewrite, squash, rebase, delete
-history, or create empty commits to simulate execution. Default sync is local
-commit certification; remote sync requires explicit owner authorization.
+Use one non-empty semantic commit per material SPEC after `SPEC-000`. Stage only the current SPEC's files. Do not rewrite, squash, rebase, delete history, or create empty commits to simulate execution. Default sync is local commit certification; remote sync requires explicit owner authorization.
 
 ### 12. Review Loop
 
@@ -227,18 +188,13 @@ For every SPEC:
 
 ### 13. Stop States
 
-Use `GO` only when all declared material units are committed, focused oracles
-and final gate pass, no forbidden move is present, and sync status is recorded.
+Use `GO` only when all declared material units are committed, focused oracles and final gate pass, no forbidden move is present, and sync status is recorded.
 
-Use `NEEDS_OWNER_DECISION` when release identity, non-localhost HTTP policy,
-installer behavior, public docs, package version, or remote sync needs owner
-authorization.
+Use `NEEDS_OWNER_DECISION` when release identity, non-localhost HTTP policy, installer behavior, public docs, package version, or remote sync needs owner authorization.
 
 Use `BLOCKED` when a required oracle fails outside the current unit's control.
 
-Use `SAFETY_BLOCKED` when implementation would require secrets, private data,
-destructive git, hidden external access, unauthorized remote action, broad
-write authority, or dependency adoption forbidden by ADR 0003.
+Use `SAFETY_BLOCKED` when implementation would require secrets, private data, destructive git, hidden external access, unauthorized remote action, broad write authority, or dependency adoption forbidden by ADR 0003.
 
 ### 14. Final Delivery Contract
 
@@ -258,17 +214,11 @@ Final closeout must report:
 
 This Super SPEC alone does not require a package version bump.
 
-Any delivered behavior change to `scripts/cortex_mcp.py`, package commands,
-installer-observed behavior, adapter materialization, public docs, generated
-bundle content, or adopter-visible runtime behavior requires release identity
-review before closure. Default policy is patch bump for delivered behavior
-unless the owner explicitly defers it and closeout records the deferral.
+Any delivered behavior change to `scripts/cortex_mcp.py`, package commands, installer-observed behavior, adapter materialization, public docs, generated bundle content, or adopter-visible runtime behavior requires release identity review before closure. Default policy is patch bump for delivered behavior unless the owner explicitly defers it and closeout records the deferral.
 
 ## Local Execution Record
 
-The following local commits materialize the ADR 0003 capability units. They are
-package-source evidence only until release identity and any remote sync are
-authorized separately.
+The following local commits materialize the ADR 0003 capability units. They are package-source evidence only until release identity and any remote sync are authorized separately.
 
 | Unit | Local commit | Sync status |
 |------|--------------|-------------|
@@ -280,11 +230,8 @@ authorized separately.
 | `SPEC-006` Progress Notifications | `ee58fa67` | `REMOTE_SYNC_NOT_REQUESTED` |
 | `SPEC-007` Cell History Tool | `13063264` | `REMOTE_SYNC_NOT_REQUESTED` |
 
-Release identity decision for package version, public bundle, tag, publish, and
-remote sync remains owner-gated. No version, bundle, tag, publish, push, or
-remote action is authorized by this execution record alone.
+Release identity decision for package version, public bundle, tag, publish, and remote sync remains owner-gated. No version, bundle, tag, publish, push, or remote action is authorized by this execution record alone.
 
 ## Ready Goal Prompt Source
 
-The maestral `/goal` prompt for this Super SPEC should reference this file
-instead of pasting the full contract into the execution context.
+The maestral `/goal` prompt for this Super SPEC should reference this file instead of pasting the full contract into the execution context.

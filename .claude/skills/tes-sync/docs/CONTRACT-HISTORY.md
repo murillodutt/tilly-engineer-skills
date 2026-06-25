@@ -2,31 +2,18 @@
 
 ## Purpose
 
-Capture the bump + commit + push + tag + release certification routine as
-local development guidance so future sessions do not re-derive it from
-scratch.
+Capture the bump + commit + push + tag + release certification routine as local development guidance so future sessions do not re-derive it from scratch.
 
 ## Why This Skill Exists
 
-Two release cycles in a row (0.3.124 and 0.3.125) surfaced the same
-class of pain: the sync routine has many synchronized surfaces, and
-forgetting one creates a downstream gate failure or a misleading
-public artifact. Each cycle re-discovered:
+Two release cycles in a row (0.3.124 and 0.3.125) surfaced the same class of pain: the sync routine has many synchronized surfaces, and forgetting one creates a downstream gate failure or a misleading public artifact. Each cycle re-discovered:
 
-- `bundle_sha256` in `docs/i18n/tes-public.structure.yml` is
-  hand-maintained, and the publish phase prints a new sha that must be
-  copied over before HTML regeneration.
-- `validate_reference_package.py` has zip filenames that embed the
-  version, so a global sed against `0.3.X` mutilates filenames inside
-  the new dist directory.
-- Stale public tags from abandoned bumps point to orphan commits and
-  must be moved with explicit user authorization, never silently.
-- The 33-gate `npm run commit:check` suite is the only reliable
-  detector of sync drift.
+- `bundle_sha256` in `docs/i18n/tes-public.structure.yml` is hand-maintained, and the publish phase prints a new sha that must be copied over before HTML regeneration.
+- `validate_reference_package.py` has zip filenames that embed the version, so a global sed against `0.3.X` mutilates filenames inside the new dist directory.
+- Stale public tags from abandoned bumps point to orphan commits and must be moved with explicit user authorization, never silently.
+- The 33-gate `npm run commit:check` suite is the only reliable detector of sync drift.
 
-`docs/governance/SYNC-AUDIT-CHECKLIST.md` captures the same routine for
-human review. This skill is its agent-facing condensation, organized
-for fast retrieval during active sync work.
+`docs/governance/SYNC-AUDIT-CHECKLIST.md` captures the same routine for human review. This skill is its agent-facing condensation, organized for fast retrieval during active sync work.
 
 ## Origin Signals
 
@@ -46,36 +33,25 @@ for fast retrieval during active sync work.
 
 ## Contracts Preserved
 
-- Skill is local development surface only. Not packaged, not
-  materialized to targets, not exposed as a public `/tes-*` product
-  command.
-- `npm run commit:check` is the authoritative gate. The skill cannot
-  skip it.
+- Skill is local development surface only. Not packaged, not materialized to targets, not exposed as a public `/tes-*` product command.
+- `npm run commit:check` is the authoritative gate. The skill cannot skip it.
 - Public tags are not moved without explicit user authorization.
 - `docs/dist/` keeps exactly one version directory.
 - Mechanism in TES, vocabulary in target.
-- `/tes-sync` always applies a version bump; the scope decision only chooses
-  source-only versus bundle/public refs.
+- `/tes-sync` always applies a version bump; the scope decision only chooses source-only versus bundle/public refs.
 
 ## Known Failure Modes Prevented
 
 - Forgetting `bundle_sha256` update → `[tds-surface] BLOCKER`.
 - Global sed on `validate_reference_package.py` → zip filename drift.
-- Silent tag force-move → public release identity rewrite without audit
-  trail.
+- Silent tag force-move → public release identity rewrite without audit trail.
 - Skipping `commit:check` → silent gate drift surfacing in next cycle.
-- Hand-editing `docs/index.html` or `docs/install/USER-MANUAL.html` →
-  regenerated on next build, lost.
-- Re-adding historical `docs/dist/<old>/` to `main` → violates
-  single-current-dist policy.
+- Hand-editing `docs/index.html` or `docs/install/USER-MANUAL.html` → regenerated on next build, lost.
+- Re-adding historical `docs/dist/<old>/` to `main` → violates single-current-dist policy.
 
 ## Relationship To Other Local Skills
 
-`tes-predictive-operations` decides which reasoning mode to use.
-`tes-high-agency-pattern` designs the operating pattern of a single
-local skill. `tes-sync` is execution-time guidance for one specific
-routine — the complete sync — and pairs with the human checklist at
-`docs/governance/SYNC-AUDIT-CHECKLIST.md`.
+`tes-predictive-operations` decides which reasoning mode to use. `tes-high-agency-pattern` designs the operating pattern of a single local skill. `tes-sync` is execution-time guidance for one specific routine — the complete sync — and pairs with the human checklist at `docs/governance/SYNC-AUDIT-CHECKLIST.md`.
 
 ## Changelog
 
@@ -89,8 +65,4 @@ routine — the complete sync — and pairs with the human checklist at
 
 ## Do Not Lose
 
-The skill exists because every release cycle costs time when the agent
-re-derives the sync routine. The 12 phases, the bumped scope choices, and
-the trap catalog are the durable knowledge. The version numbers cited
-in examples will age, but the structure must not. A skill that exists on disk
-but fails Codex frontmatter parsing is operationally absent.
+The skill exists because every release cycle costs time when the agent re-derives the sync routine. The 12 phases, the bumped scope choices, and the trap catalog are the durable knowledge. The version numbers cited in examples will age, but the structure must not. A skill that exists on disk but fails Codex frontmatter parsing is operationally absent.

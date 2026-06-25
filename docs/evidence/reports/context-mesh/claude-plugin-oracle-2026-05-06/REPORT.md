@@ -11,8 +11,7 @@ evidence_level: L3
 
 ## Decision
 
-The Claude adapter has a local target-install oracle for the plugin package
-shape.
+The Claude adapter has a local target-install oracle for the plugin package shape.
 
 ## Oracle
 
@@ -31,5 +30,4 @@ The oracle installs the Claude adapter into a temporary project and verifies:
 
 ## No-Claim
 
-This closes local packaging/install shape. It does not claim Claude marketplace
-publication, global desktop registration, or live Claude UI behavior.
+This closes local packaging/install shape. It does not claim Claude marketplace publication, global desktop registration, or live Claude UI behavior.

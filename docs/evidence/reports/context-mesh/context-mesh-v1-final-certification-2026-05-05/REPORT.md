@@ -9,13 +9,9 @@ evidence_level: L4
 
 # Context Mesh V1 Final Certification Report
 
-This report closes Context Mesh v1 on May 5, 2026. It consolidates retained
-pipeline evidence, Claude behavior evidence, Codex behavior evidence, and the
-Cursor scope decision.
+This report closes Context Mesh v1 on May 5, 2026. It consolidates retained pipeline evidence, Claude behavior evidence, Codex behavior evidence, and the Cursor scope decision.
 
-It does not add a backend, rerun behavior, change the shared contract, change
-the dataset, change the grader, change adapter sources, or claim cross-adapter
-behavior parity.
+It does not add a backend, rerun behavior, change the shared contract, change the dataset, change the grader, change adapter sources, or claim cross-adapter behavior parity.
 
 ## Final Decision
 
@@ -85,8 +81,7 @@ cross-adapter behavior parity: not claimed
 
 ## Claude Behavior Evidence
 
-Source:
-`docs/evidence/reports/context-mesh/behavior-v1-rc-claude-2026-05-05-convergence-08/`
+Source: `docs/evidence/reports/context-mesh/behavior-v1-rc-claude-2026-05-05-convergence-08/`
 
 | Metric | Value |
 |--------|-------|
@@ -114,8 +109,7 @@ Claude ablation losses:
 
 ## Codex Behavior Evidence
 
-Source:
-`docs/evidence/reports/context-mesh/codex-behavior-v1-rc-prompt-011-2026-05-05/`
+Source: `docs/evidence/reports/context-mesh/codex-behavior-v1-rc-prompt-011-2026-05-05/`
 
 | Metric | Value |
 |--------|-------|
@@ -143,35 +137,22 @@ Codex ablation losses:
 | Surgical Changes | `1` | Minimum floor; adversarial follow-up required |
 | Goal-Driven Execution | `0` | Not strong enough for isolated rent claim |
 
-The Codex pass rate is low in absolute terms, but the v1 threshold does not
-claim high absolute accuracy. It certifies full-vs-none lift, intact raw
-evidence, zero backend errors, and zero confirmed distractor leak for the
-retained scope.
+The Codex pass rate is low in absolute terms, but the v1 threshold does not claim high absolute accuracy. It certifies full-vs-none lift, intact raw evidence, zero backend errors, and zero confirmed distractor leak for the retained scope.
 
 ## Cursor Scope
 
-Source:
-`docs/evidence/reports/context-mesh/cursor-behavior-scope-decision-2026-05-05/REPORT.md`
+Source: `docs/evidence/reports/context-mesh/cursor-behavior-scope-decision-2026-05-05/REPORT.md`
 
-Cursor is included in v1 only as structural/contract parity. Behavior
-certification is deferred because no clean non-interactive route has been
-certified for prompt isolation, raw output capture, timeout, auth/cost limits,
-and editor/session-state separation.
+Cursor is included in v1 only as structural/contract parity. Behavior certification is deferred because no clean non-interactive route has been certified for prompt isolation, raw output capture, timeout, auth/cost limits, and editor/session-state separation.
 
 ## Evidence Limits
 
-- Claude behavior is scoped to one retained Claude CLI run and is not a bare API
-  measurement.
-- Codex behavior is scoped to one retained Codex CLI run and prompt contract
-  `codex-adapter-prompt@0.1.1`.
+- Claude behavior is scoped to one retained Claude CLI run and is not a bare API measurement.
+- Codex behavior is scoped to one retained Codex CLI run and prompt contract `codex-adapter-prompt@0.1.1`.
 - Cursor behavior is not certified.
 - Deterministic substring grading remains wording-sensitive.
-- `retention_head=pending` appears in some generated manifests because the
-  runner writes reports before the Git commit that retains them. The retaining
-  commits are recorded in this final report and Git history.
-- `gate_head`, `run_head`, and `retention_head` are intentionally separate
-  evidence concepts; older reports do not always encode the final retaining
-  commit directly in generated manifests.
+- `retention_head=pending` appears in some generated manifests because the runner writes reports before the Git commit that retains them. The retaining commits are recorded in this final report and Git history.
+- `gate_head`, `run_head`, and `retention_head` are intentionally separate evidence concepts; older reports do not always encode the final retaining commit directly in generated manifests.
 - The final v1 claim is evidence-scoped, not universal.
 
 ## Residual Debts
@@ -207,24 +188,17 @@ structural/contract parity only.
 
 Recommended v1.1 work:
 
-1. Add a retention metadata strategy that resolves `retention_head` after
-   commit.
+1. Add a retention metadata strategy that resolves `retention_head` after commit.
 2. Add Cursor Behavior Backend Readiness only if a clean execution route exists.
 3. Add adversarial per-gate follow-ups for weak Codex ablation signals.
-4. Design cross-adapter behavior parity only after adapter-specific behavior
-   evidence matures.
+4. Design cross-adapter behavior parity only after adapter-specific behavior evidence matures.
 
 ## Post-Retention Update - 2026-05-06
 
 The first three v1.1 follow-ups now have governed closure artifacts:
 
-- Retention metadata strategy:
-  `docs/evidence/reports/context-mesh/retention-metadata-strategy-2026-05-06/REPORT.md`
-  and `python3 scripts/retention_metadata.py --check`.
-- Cursor behavior readiness:
-  `docs/evidence/reports/context-mesh/cursor-behavior-readiness-2026-05-06/REPORT.md`.
-- Adversarial per-gate follow-up: dataset `0.1.10` adds
-  `E8-goal-driven-no-test-pressure`.
+- Retention metadata strategy: `docs/evidence/reports/context-mesh/retention-metadata-strategy-2026-05-06/REPORT.md` and `python3 scripts/retention_metadata.py --check`.
+- Cursor behavior readiness: `docs/evidence/reports/context-mesh/cursor-behavior-readiness-2026-05-06/REPORT.md`.
+- Adversarial per-gate follow-up: dataset `0.1.10` adds `E8-goal-driven-no-test-pressure`.
 
-Historical run conclusions above remain scoped to their original dataset SHA
-and report date.
+Historical run conclusions above remain scoped to their original dataset SHA and report date.

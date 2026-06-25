@@ -10,8 +10,7 @@ tver: 0.1.0
 
 # Evidence Archive
 
-The archive is for cold proof that still has audit value but should not govern
-current agent behavior.
+The archive is for cold proof that still has audit value but should not govern current agent behavior.
 
 Monthly indexes should use:
 
@@ -20,8 +19,7 @@ docs/evidence/archive/YYYY-MM.index.json
 docs/evidence/archive/YYYY-MM.sha256
 ```
 
-Each `YYYY-MM.index.json` should use schema
-`tes-evidence-archive-index@1` and include entries with:
+Each `YYYY-MM.index.json` should use schema `tes-evidence-archive-index@1` and include entries with:
 
 - path
 - domain
@@ -32,5 +30,4 @@ Each `YYYY-MM.index.json` should use schema
 - version or Git head
 - hash
 
-The `.sha256` sidecar hashes the monthly JSON index. It does not replace hashes
-inside individual manifests, raw traces, reports, or bundle artifacts.
+The `.sha256` sidecar hashes the monthly JSON index. It does not replace hashes inside individual manifests, raw traces, reports, or bundle artifacts.

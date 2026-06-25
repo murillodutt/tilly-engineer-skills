@@ -10,15 +10,13 @@ tver: 0.1.0
 
 # Context Mesh Convergence
 
-Context mesh convergence is the package method for turning agent context into a
-contract. The rule is simple:
+Context mesh convergence is the package method for turning agent context into a contract. The rule is simple:
 
 ```text
 Context becomes contract only after evidence convergence.
 ```
 
-This document records the loop that emerged from retained context-mesh runs. It
-does not add a backend, grader, judge, or dataset surface.
+This document records the loop that emerged from retained context-mesh runs. It does not add a backend, grader, judge, or dataset surface.
 
 ## Loop
 
@@ -64,12 +62,9 @@ Classify failures before changing source context:
 
 ## Governance
 
-Convergence is not a claim about all tools or all future prompts. It is scoped
-to the retained dataset hash, backend, model, grader version, Git HEAD, and run
-id. Cross-adapter parity requires separate evidence per adapter capability.
+Convergence is not a claim about all tools or all future prompts. It is scoped to the retained dataset hash, backend, model, grader version, Git HEAD, and run id. Cross-adapter parity requires separate evidence per adapter capability.
 
-Do not use prose quality as a substitute for convergence. A rule that reads
-well but has no measured lift is still a hypothesis.
+Do not use prose quality as a substitute for convergence. A rule that reads well but has no measured lift is still a hypothesis.
 
 ## Boundaries
 
@@ -77,7 +72,6 @@ Do not expand the system while running a convergence loop:
 
 - Do not add a backend just to improve a failed rule.
 - Do not add an LLM judge before deterministic evidence is exhausted.
-- Do not grow the dataset broadly when one adversarial eval can isolate the
-  failure.
+- Do not grow the dataset broadly when one adversarial eval can isolate the failure.
 - Do not declare adapter parity from matching text.
 - Do not call fixture evidence live-model behavior.

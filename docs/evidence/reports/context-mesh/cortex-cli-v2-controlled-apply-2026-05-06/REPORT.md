@@ -31,8 +31,7 @@ source writes: none
 - No MCP write tools.
 - No write access to `sources/**`.
 - No Obsidian configuration writes.
-- No semantic guarantee that a reviewer-approved claim is true beyond the explicit
-  evidence provided to the cell.
+- No semantic guarantee that a reviewer-approved claim is true beyond the explicit evidence provided to the cell.
 
 ## Evidence Anchors
 
@@ -69,9 +68,7 @@ The Cortex self-test now verifies:
 
 - `learn` returns a proposal with `writes: []`.
 - `apply` without `--yes` returns `NEEDS_AUTH` and `writes: []`.
-- authorized `apply` writes a grounded cell plus `MAP.md`, `LINKS.md`, and
-  `TRAIL.md`.
+- authorized `apply` writes a grounded cell plus `MAP.md`, `LINKS.md`, and `TRAIL.md`.
 - authorized `apply` runs `audit` and `rebuild` before returning `PASS`.
 - `read-cell` reads the applied cell directly from `cells/**`.
-- existing v1 gates remain active: recursive cell audit, broken wikilink
-  failure, loose cell failure, SQLite rebuild, and `rg` fallback.
+- existing v1 gates remain active: recursive cell audit, broken wikilink failure, loose cell failure, SQLite rebuild, and `rg` fallback.

@@ -9,9 +9,7 @@ evidence_level: L3
 
 # Adapter Behavior Readiness Report
 
-This report designs how to measure behavior per adapter without contaminating
-the shared context mesh. It does not change the contract, dataset, grader,
-runner, UI, or behavior claims for Codex and Cursor.
+This report designs how to measure behavior per adapter without contaminating the shared context mesh. It does not change the contract, dataset, grader, runner, UI, or behavior claims for Codex and Cursor.
 
 ## Decision
 
@@ -27,8 +25,7 @@ Shared mesh: frozen
 Dataset/grader: frozen unless failure evidence demands change
 ```
 
-This is not a behavior parity report. It is a readiness map for future behavior
-runs.
+This is not a behavior parity report. It is a readiness map for future behavior runs.
 
 ## Head Fields
 
@@ -40,8 +37,7 @@ Future behavior reports must separate these heads:
 | `run_head` | Git commit checked out when behavior execution was run | `N/A` for this design-only report |
 | `retention_head` | Git commit retaining the final evidence package | This report's retaining commit |
 
-Do not collapse these fields. A behavior run can be executed at one Git HEAD,
-validated by a gate introduced at another HEAD, and retained by a later commit.
+Do not collapse these fields. A behavior run can be executed at one Git HEAD, validated by a gate introduced at another HEAD, and retained by a later commit.
 
 ## Frozen Shared Mesh
 
@@ -64,8 +60,7 @@ validated by a gate introduced at another HEAD, and retained by a later commit.
 
 ## Backend Readiness Criteria
 
-Before an adapter can run behavior certification, its backend design must
-declare:
+Before an adapter can run behavior certification, its backend design must declare:
 
 | Criterion | Required declaration |
 |-----------|----------------------|
@@ -103,10 +98,8 @@ This readiness loop is `GO` when:
 
 ## NO-GO Conditions
 
-- A report declares Codex or Cursor behavior certification from structural
-  readiness.
-- A report changes shared contract, dataset, grader, or runner without failure
-  evidence.
+- A report declares Codex or Cursor behavior certification from structural readiness.
+- A report changes shared contract, dataset, grader, or runner without failure evidence.
 - A backend design cannot capture raw output and hashes.
 - A backend design cannot state prompt isolation limits.
 - A behavior report omits `gate_head`, `run_head`, or `retention_head`.
@@ -118,9 +111,7 @@ Next loop: adapter-specific backend design.
 
 Order:
 
-1. Choose whether Codex behavior will be measured through a local CLI, app
-   connector, or explicit API path.
+1. Choose whether Codex behavior will be measured through a local CLI, app connector, or explicit API path.
 2. Choose whether Cursor behavior will be measured or deferred.
 3. Add backend design docs before adding backend code.
-4. Only after design `GO`, implement one backend at a time with retained
-   fixture or dry-run evidence first.
+4. Only after design `GO`, implement one backend at a time with retained fixture or dry-run evidence first.

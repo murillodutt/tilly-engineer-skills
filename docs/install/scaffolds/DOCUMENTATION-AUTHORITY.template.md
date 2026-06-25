@@ -10,8 +10,7 @@ tver: 0.1.0
 
 # Documentation Authority Scaffold
 
-Neutral install scaffold copied to `docs/agents/DOCUMENTATION-AUTHORITY.md`
-when missing during `/tes-init` or `/tes-align`.
+Neutral install scaffold copied to `docs/agents/DOCUMENTATION-AUTHORITY.md` when missing during `/tes-init` or `/tes-align`.
 
 Copy source: `docs/install/scaffolds/DOCUMENTATION-AUTHORITY.target`
 

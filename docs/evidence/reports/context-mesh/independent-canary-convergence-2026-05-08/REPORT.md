@@ -37,22 +37,13 @@ evidence_level: L3
 
 No TES source bug was found in this independent run.
 
-One operational gap was intentionally exercised: helpers-only install leaves
-adapter triggers unapplied. `tes_update.py plan` reported
-`runtime_trigger_status=DRIFT` and `recommended_update_scope=adapter-config`
-for the owned-governance canary. Running the shipped adapter installer repaired
-the target without overwriting project-owned `AGENTS.md` or `CLAUDE.md`; the
-post-adapter planner returned `runtime_trigger_status=PASS`,
-`update_status=CURRENT`, and `recommended_update_scope=none`.
+One operational gap was intentionally exercised: helpers-only install leaves adapter triggers unapplied. `tes_update.py plan` reported `runtime_trigger_status=DRIFT` and `recommended_update_scope=adapter-config` for the owned-governance canary. Running the shipped adapter installer repaired the target without overwriting project-owned `AGENTS.md` or `CLAUDE.md`; the post-adapter planner returned `runtime_trigger_status=PASS`, `update_status=CURRENT`, and `recommended_update_scope=none`.
 
-An initial focused TDS/reference gate failed because the new journal was not
-yet registered in `docs/tds/DOCS-INDEX.yml`. The evidence package adds TDS
-index entries for both this report and the journal before final closure.
+An initial focused TDS/reference gate failed because the new journal was not yet registered in `docs/tds/DOCS-INDEX.yml`. The evidence package adds TDS index entries for both this report and the journal before final closure.
 
 ## Fixes Applied
 
-No product code changed. The TES repository changes from this run are durable
-evidence and TDS governance only:
+No product code changed. The TES repository changes from this run are durable evidence and TDS governance only:
 
 - `docs/evidence/reports/context-mesh/independent-canary-convergence-2026-05-08/JOURNAL.md`
 - `docs/evidence/reports/context-mesh/independent-canary-convergence-2026-05-08/REPORT.md`
@@ -114,19 +105,10 @@ npm run commit:check
 
 GO.
 
-All required gates passed, the real canaries passed, the durable journal exists,
-and the only material drift found in the owned-governance canary converged
-through the shipped adapter route without a TES source patch.
+All required gates passed, the real canaries passed, the durable journal exists, and the only material drift found in the owned-governance canary converged through the shipped adapter route without a TES source patch.
 
 ## Residual Risks
 
-- Local TES HEAD is ahead of `origin/main`; canary update-planner freshness
-  compared helper files against remote commit
-  `c7147c47038c66e30d214af2bb8f779f40fc8afb`, while this run records local
-  HEAD `2026990417787f85960ff70dc06852c98863b0a4`.
-- Project-owned root bootloaders are preserved, not automatically merged.
-  Real installs still need reviewer review when local governance should absorb TES
-  root trigger prose.
-- The generated `PROJECT-CONTEXT.md` certification table necessarily records
-  installed `.tes/bin/**` gate commands; the reviewer check found no `.tes/bin/**`
-  pollution in Source Anchors or Recommended Deep Reads.
+- Local TES HEAD is ahead of `origin/main`; canary update-planner freshness compared helper files against remote commit `c7147c47038c66e30d214af2bb8f779f40fc8afb`, while this run records local HEAD `2026990417787f85960ff70dc06852c98863b0a4`.
+- Project-owned root bootloaders are preserved, not automatically merged. Real installs still need reviewer review when local governance should absorb TES root trigger prose.
+- The generated `PROJECT-CONTEXT.md` certification table necessarily records installed `.tes/bin/**` gate commands; the reviewer check found no `.tes/bin/**` pollution in Source Anchors or Recommended Deep Reads.

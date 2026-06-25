@@ -41,11 +41,7 @@ sources:
 
 # Adapter Capability Matrix
 
-Adapters are aligned by behavioral contract and evidence, not by identical
-text. Different tool capabilities are expected. Drift exists when equivalent
-contract gates produce divergent decisions, or when an adapter claims a
-capability without evidence. For the native packaging differences behind this
-matrix, see `docs/adapters/PLATFORM-DIFFERENCES.md`.
+Adapters are aligned by behavioral contract and evidence, not by identical text. Different tool capabilities are expected. Drift exists when equivalent contract gates produce divergent decisions, or when an adapter claims a capability without evidence. For the native packaging differences behind this matrix, see `docs/adapters/PLATFORM-DIFFERENCES.md`.
 
 ## Core Rule
 
@@ -61,10 +57,7 @@ Core Contract
 
 The neutral contract is `docs/mesh/CONTRACT-MANIFEST.yml`.
 
-For project semantic alignment, adapter behavior must also remain compatible
-with `docs/mesh/TES-ALIGN-SKILL-SOURCE-OF-TRUTH.md`. That document defines how
-`/tes-align` turns a target project into an Obsidian-compatible operating mesh
-without making any single runtime adapter the design center.
+For project semantic alignment, adapter behavior must also remain compatible with `docs/mesh/TES-ALIGN-SKILL-SOURCE-OF-TRUTH.md`. That document defines how `/tes-align` turns a target project into an Obsidian-compatible operating mesh without making any single runtime adapter the design center.
 
 ## Platform Surface Matrix
 
@@ -79,17 +72,13 @@ without making any single runtime adapter the design center.
 | MCP | project `.codex/config.toml` | project `.mcp.json` | project `.cursor/mcp.json` |
 | Behavior backend | `codex-cli` retained v1 scope | `claude-cli` retained v1 scope | deferred; no clean non-interactive route certified |
 
-VS Code is tracked as an MCP consumer, not as a fourth adapter. TES may write
-`.vscode/mcp.json` for `servers.tes-cortex`, but it does not claim VS Code
-skills, rules, hooks, bootloaders, or behavior-backend certification.
+VS Code is tracked as an MCP consumer, not as a fourth adapter. TES may write `.vscode/mcp.json` for `servers.tes-cortex`, but it does not claim VS Code skills, rules, hooks, bootloaders, or behavior-backend certification.
 
-Capability difference is not drift. Decision divergence under the same
-behavioral gate is drift.
+Capability difference is not drift. Decision divergence under the same behavioral gate is drift.
 
 ## Documentation Baseline
 
-The platform-surface oracle tracks official documentation URLs as evidence
-inputs:
+The platform-surface oracle tracks official documentation URLs as evidence inputs:
 
 | Platform | Relevant docs |
 |----------|---------------|
@@ -101,11 +90,9 @@ inputs:
 
 ## Memory Lifecycle Matrix
 
-These statuses certify the TES package contract and materialized adapter text,
-not live host UI behavior or marketplace publication.
+These statuses certify the TES package contract and materialized adapter text, not live host UI behavior or marketplace publication.
 
-Allowed lifecycle statuses are `certified`, `blocked`, `deferred`,
-`not available`, and `git-governed`.
+Allowed lifecycle statuses are `certified`, `blocked`, `deferred`, `not available`, and `git-governed`.
 
 | Lifecycle moment | Codex | Claude | Cursor |
 |------------------|-------|--------|--------|
@@ -116,10 +103,7 @@ Allowed lifecycle statuses are `certified`, `blocked`, `deferred`,
 | closeout | git-governed | git-governed | git-governed |
 | subagent return | certified | certified | certified |
 
-`subagent return` means parent-owned memory only: a specialist may return
-findings, patches, or evidence, but must not write durable Cortex memory
-directly. `write gate` remains blocked until a later wave adds an authorized
-durable-memory write path and oracle.
+`subagent return` means parent-owned memory only: a specialist may return findings, patches, or evidence, but must not write durable Cortex memory directly. `write gate` remains blocked until a later wave adds an authorized durable-memory write path and oracle.
 
 ## Surface Oracle
 
@@ -131,17 +115,12 @@ npm run platform:surface:check
 
 This certifies local package shape against the platform-surface contract:
 
-- Codex agent, skill, source-only plugin metadata, MCP install config, and
-  Git-governed hook surface.
-- Claude bootloader, skill, source-only plugin manifests, MCP install config, and plugin
-  non-claims.
-- Cursor bootloader, `.cursor/rules/*.mdc`, MCP install config, and legacy
-  `.cursorrules` exclusion through materialization. Cursor plugin skills are a
-  known native surface, but not a TES v1 packaging claim.
+- Codex agent, skill, source-only plugin metadata, MCP install config, and Git-governed hook surface.
+- Claude bootloader, skill, source-only plugin manifests, MCP install config, and plugin non-claims.
+- Cursor bootloader, `.cursor/rules/*.mdc`, MCP install config, and legacy `.cursorrules` exclusion through materialization. Cursor plugin skills are a known native surface, but not a TES v1 packaging claim.
 - Shared pre-commit hook for document size and Cortex reflection.
 
-The oracle does not claim live marketplace publication, live IDE UI behavior,
-or platform hooks that are intentionally not packaged.
+The oracle does not claim live marketplace publication, live IDE UI behavior, or platform hooks that are intentionally not packaged.
 
 ## Certification Implication
 
@@ -156,14 +135,8 @@ or platform hooks that are intentionally not packaged.
 - Do not create separate contracts per adapter.
 - Do not copy text between adapters to manufacture parity.
 - Do not declare Cursor behavioral parity without an executor.
-- Do not declare Codex or Claude universal behavior from one retained backend
-  run; evidence is scoped to the retained run/hash/backend/model or prompt
-  contract.
-- Do not block Claude behavior certification waiting for symmetric adapter
-  capability.
-- Do not claim Codex marketplace publication or live UI activation from the
-  local `.codex-plugin/plugin.json` package oracle.
-- Do not claim Cursor plugin skills until a `.cursor-plugin/plugin.json`
-  package exists and has its own oracle.
-- Do not claim platform lifecycle hooks just because the repository Git hook is
-  active.
+- Do not declare Codex or Claude universal behavior from one retained backend run; evidence is scoped to the retained run/hash/backend/model or prompt contract.
+- Do not block Claude behavior certification waiting for symmetric adapter capability.
+- Do not claim Codex marketplace publication or live UI activation from the local `.codex-plugin/plugin.json` package oracle.
+- Do not claim Cursor plugin skills until a `.cursor-plugin/plugin.json` package exists and has its own oracle.
+- Do not claim platform lifecycle hooks just because the repository Git hook is active.

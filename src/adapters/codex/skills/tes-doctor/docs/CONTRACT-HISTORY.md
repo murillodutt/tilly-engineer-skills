@@ -2,18 +2,15 @@
 
 ## Purpose
 
-`/tes-doctor` health-checks installed targets and the TES source package with the
-smallest oracle that proves the claim.
+`/tes-doctor` health-checks installed targets and the TES source package with the smallest oracle that proves the claim.
 
 ## Why This Skill Exists
 
-Agents conflate contexts (installed target vs package source) and invent gates.
-Doctor classifies workspace first, then selects oracles.
+Agents conflate contexts (installed target vs package source) and invent gates. Doctor classifies workspace first, then selects oracles.
 
 ## Contracts Preserved
 
-- Installed target: `.tes/bin/**` oracles, project context/alignment, mantra
-  adoption, optional project `gate:*` scripts.
+- Installed target: `.tes/bin/**` oracles, project context/alignment, mantra adoption, optional project `gate:*` scripts.
 - Package source: `npm run validate`, docs size, TDS, cortex/MCP self-tests.
 - Smallest gate that proves the claim.
 - Report `NOT_AVAILABLE` instead of inventing project gates.
@@ -26,8 +23,7 @@ Doctor classifies workspace first, then selects oracles.
 
 ## Relationship To Other Skills
 
-`tes-init` installs. `tes-doctor` certifies. `tes-mcp` repairs MCP drift.
-`tes-align` oracle is separate from doctor but may be invoked by doctor table.
+`tes-init` installs. `tes-doctor` certifies. `tes-mcp` repairs MCP drift. `tes-align` oracle is separate from doctor but may be invoked by doctor table.
 
 ## Changelog
 

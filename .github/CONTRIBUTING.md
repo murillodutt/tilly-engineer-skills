@@ -2,9 +2,7 @@
 
 Thank you for helping improve Tilly Engineer Skills.
 
-TES is a reference package for assisted context meshes, adapter surfaces,
-project-scoped helper runtimes, Cortex, MCP, and Field Reports. Contributions
-should keep the package portable, local-first, and auditable.
+TES is a reference package for assisted context meshes, adapter surfaces, project-scoped helper runtimes, Cortex, MCP, and Field Reports. Contributions should keep the package portable, local-first, and auditable.
 
 ## Before You Change Code
 
@@ -14,15 +12,12 @@ should keep the package portable, local-first, and auditable.
    - delivered installer/helper behavior;
    - adapter source under `src/**`;
    - governed docs under `docs/**`.
-3. Keep the repository root thin. Do not add installable source copies to root
-   hidden folders such as `.agents`, `.claude-plugin`, `.cursor`, or `skills`.
-4. Do not add tag, release, publish, marketplace, live GitHub issue, global
-   install, or global config behavior without explicit maintainer approval.
+3. Keep the repository root thin. Do not add installable source copies to root hidden folders such as `.agents`, `.claude-plugin`, `.cursor`, or `skills`.
+4. Do not add tag, release, publish, marketplace, live GitHub issue, global install, or global config behavior without explicit maintainer approval.
 
 ## Local Verification
 
-Run the smallest focused gate first. Before proposing a material package
-change, run:
+Run the smallest focused gate first. Before proposing a material package change, run:
 
 ```bash
 npm run commit:check
@@ -43,11 +38,7 @@ python3 scripts/public_bundle_oracle.py
 python3 scripts/materialize_adapter.py all --check
 ```
 
-When a change alters delivered installer, helper, runtime capability, or public
-adoption behavior, advance the public bundle before closure: create the new
-`docs/dist/<version>/` ZIP, `.sha256`, and `index.json`, keep the setup
-installer scripts inside the ZIP, then record the bundle oracle evidence. This
-is not a tag, release, package publish, or marketplace submission.
+When a change alters delivered installer, helper, runtime capability, or public adoption behavior, advance the public bundle before closure: create the new `docs/dist/<version>/` ZIP, `.sha256`, and `index.json`, keep the setup installer scripts inside the ZIP, then record the bundle oracle evidence. This is not a tag, release, package publish, or marketplace submission.
 
 ## Pull Requests
 
@@ -56,10 +47,7 @@ Pull requests should include:
 - what changed;
 - which consumer is affected;
 - which oracle or evidence proves it;
-- whether any release, publishing, marketplace, or live transport behavior is
-  intentionally deferred.
-- when delivered behavior changes, the public bundle path, SHA-256, index path,
-  setup-script presence, and bundle oracle result.
+- whether any release, publishing, marketplace, or live transport behavior is intentionally deferred.
+- when delivered behavior changes, the public bundle path, SHA-256, index path, setup-script presence, and bundle oracle result.
 
-Do not include secrets, private project code, local Field Reports payloads,
-or raw canary worktrees in a pull request.
+Do not include secrets, private project code, local Field Reports payloads, or raw canary worktrees in a pull request.

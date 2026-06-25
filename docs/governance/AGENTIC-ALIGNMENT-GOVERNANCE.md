@@ -10,16 +10,11 @@ tver: 0.5.0
 
 # Agentic Alignment Governance
 
-This document governs how the Tilly Engineer Skills package stays aligned
-across Codex, Claude Code, and Cursor without pretending the tools share the
-same native contract.
+This document governs how the Tilly Engineer Skills package stays aligned across Codex, Claude Code, and Cursor without pretending the tools share the same native contract.
 
 The common truth is behavioral. The package format is adapter-specific.
 
-Adapter alignment requires converged behavior, not matching prose. Codex,
-Claude Code, and Cursor may materialize different files and affordances; they
-are aligned only when retained evidence shows equivalent decisions under the
-shared contract.
+Adapter alignment requires converged behavior, not matching prose. Codex, Claude Code, and Cursor may materialize different files and affordances; they are aligned only when retained evidence shows equivalent decisions under the shared contract.
 
 ## Official Source Map
 
@@ -32,8 +27,7 @@ shared contract.
 | MCP | [MCP](https://developers.openai.com/codex/mcp) | [MCP](https://code.claude.com/docs/en/mcp) | [MCP](https://cursor.com/docs/mcp) |
 | Agents | [Subagents](https://developers.openai.com/codex/concepts/subagents) | [Subagents](https://code.claude.com/docs/en/sub-agents) | Agent, CLI, and background agents |
 
-If any official source changes the packaging model, update this document, the
-affected adapter guide, the materializer, and the TDS index in the same patch.
+If any official source changes the packaging model, update this document, the affected adapter guide, the materializer, and the TDS index in the same patch.
 
 ## Governance Layers
 
@@ -63,18 +57,11 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 ## Authority Rules
 
 1. `docs/mesh/PRINCIPLES.md` is the tool-neutral behavioral source of truth.
-2. Context becomes project truth only through retained convergence evidence,
-   not by matching wording across adapters.
+2. Context becomes project truth only through retained convergence evidence, not by matching wording across adapters.
 3. `src/adapters/**` is the only local canonical adapter source tree.
-4. Tool-specific files in `dist/adapters/**`, target repos, or user caches are
-   temporary materialized outputs, not package sources. Local validation fails
-   when `dist/adapters/**` remains after inspection.
-5. `AGENTS.md`, `CLAUDE.md`, and Cursor rules are guidance layers. Enforcement
-   belongs to deterministic validators, repository hooks, settings, or
-   tool-native hook systems when explicitly adopted.
-6. Do not create false symmetry. If a tool does not have Codex-style skills,
-   Claude-style plugins, or Cursor-style rules, do not invent those names for
-   the package.
+4. Tool-specific files in `dist/adapters/**`, target repos, or user caches are temporary materialized outputs, not package sources. Local validation fails when `dist/adapters/**` remains after inspection.
+5. `AGENTS.md`, `CLAUDE.md`, and Cursor rules are guidance layers. Enforcement belongs to deterministic validators, repository hooks, settings, or tool-native hook systems when explicitly adopted.
+6. Do not create false symmetry. If a tool does not have Codex-style skills, Claude-style plugins, or Cursor-style rules, do not invent those names for the package.
 
 ## Decision Gates
 
@@ -117,15 +104,8 @@ affected adapter guide, the materializer, and the TDS index in the same patch.
 
 - Do not add `.cursorrules`; it is a legacy Cursor surface.
 - Do not add `CHANGELOG.md`; Git history is the changelog.
-- Do not publish or install plugins from this package without an explicit
-  private decision.
-- Do not add target-project hooks, ungoverned write-capable MCP, or agents to
-  the default installer package because they are operational surfaces, not
-  passive documentation.
-- Do not use commit-time reflection or curation to write or delete Cortex
-  content automatically.
-- Cortex MCP is allowed only as project-scoped installer activation with
-  lifecycle tests and no global config mutation. Governed remember is the
-  default ADR 0002 lane; `--read-only` is the explicit inspection-only opt-out.
-- Do not duplicate the same behavioral prose in every layer. Keep the common
-  contract small and route detail to the proper adapter.
+- Do not publish or install plugins from this package without an explicit private decision.
+- Do not add target-project hooks, ungoverned write-capable MCP, or agents to the default installer package because they are operational surfaces, not passive documentation.
+- Do not use commit-time reflection or curation to write or delete Cortex content automatically.
+- Cortex MCP is allowed only as project-scoped installer activation with lifecycle tests and no global config mutation. Governed remember is the default ADR 0002 lane; `--read-only` is the explicit inspection-only opt-out.
+- Do not duplicate the same behavioral prose in every layer. Keep the common contract small and route detail to the proper adapter.

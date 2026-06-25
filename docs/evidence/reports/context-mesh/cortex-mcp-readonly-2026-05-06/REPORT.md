@@ -61,8 +61,7 @@ python3 scripts/materialize_adapter.py all --check
 
 ## Smoke Shape
 
-The MCP self-test creates a temporary Cortex fixture, rebuilds recall, and
-invokes:
+The MCP self-test creates a temporary Cortex fixture, rebuilds recall, and invokes:
 
 - `initialize`
 - `tools/list`
@@ -71,5 +70,4 @@ invokes:
 - `tools/call` for `cortex_read_cell`
 - `tools/call` for `cortex_absorb_plan`
 
-The test fails if the tool list diverges, if any read-only call returns an MCP
-tool error, or if `cortex_read_cell` does not return the fixture cell text.
+The test fails if the tool list diverges, if any read-only call returns an MCP tool error, or if `cortex_read_cell` does not return the fixture cell text.

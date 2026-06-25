@@ -10,8 +10,7 @@ tver: 0.5.4
 
 # Tilly Context Installer Mini Prompt
 
-Copy this into Codex, Claude Code, or Cursor while opened at the target project
-root:
+Copy this into Codex, Claude Code, or Cursor while opened at the target project root:
 
 ```text
 Install Tilly Engineer Skills as an assisted context mesh, not as blind file copying.

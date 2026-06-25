@@ -10,50 +10,23 @@ tver: 0.2.0
 
 # GOAL Super SPEC: TES Inherited Context Canonical Source
 
-Status: active execution contract, partially delivered. Derived line, dependent
-on the active `GOAL-SUPER-SPEC-tes-root-context-composition.md`. This Super SPEC
-assumes the core+overlay composition contract as given and delivers only the
-missing layer above it: a single canonical overlay source, two asymmetric root
-renderings, and a non-lossy distillation of pre-existing human context into that
-source.
+Status: active execution contract, partially delivered. Derived line, dependent on the active `GOAL-SUPER-SPEC-tes-root-context-composition.md`. This Super SPEC assumes the core+overlay composition contract as given and delivers only the missing layer above it: a single canonical overlay source, two asymmetric root renderings, and a non-lossy distillation of pre-existing human context into that source.
 
-Execution status: all SPECs delivered and on the production install path. P0
-(SPEC-000/001/002), P1 (SPEC-004/005/006), P2 SPEC-007 (installer routing),
-SPEC-008 (uninstall restore), SPEC-003 (`tes-context-distill` skill), SPEC-009
-(`/tes-doctor` recovery), and SPEC-010 (canary replay) are covered by self-test
-fixtures plus a synthetic production-path canary (build→stage→apply: INHERITED,
-uninstall byte-faithful, idempotent re-render).
+Execution status: all SPECs delivered and on the production install path. P0 (SPEC-000/001/002), P1 (SPEC-004/005/006), P2 SPEC-007 (installer routing), SPEC-008 (uninstall restore), SPEC-003 (`tes-context-distill` skill), SPEC-009 (`/tes-doctor` recovery), and SPEC-010 (canary replay) are covered by self-test fixtures plus a synthetic production-path canary (build→stage→apply: INHERITED, uninstall byte-faithful, idempotent re-render).
 
-Correction (post-0.3.173): SPEC-007 was initially wired in `install_adapter.py`
-— a branch the production install does not traverse — so inheritance never ran
-on real installs (exposed by a real-project canary). Routing moved into
-`tes_bundle.compose_context_from_staged`, the function `tes_install` →
-`apply_staged_bundle` actually calls.
+Correction (post-0.3.173): SPEC-007 was initially wired in `install_adapter.py` — a branch the production install does not traverse — so inheritance never ran on real installs (exposed by a real-project canary). Routing moved into `tes_bundle.compose_context_from_staged`, the function `tes_install` → `apply_staged_bundle` actually calls.
 
-Owner architectural decision (recorded): inheritance SUPERSEDES the parent
-root-context-composition inline compose for Claude/Codex roots that carry
-substantive human context (detectable context units). Roots without such content
-keep the parent inline compose, so the parent contract stays valid for the
-prose-only case. This is a narrow conditional supersession authorized by the
-owner, not a blanket parent rewrite. The delivered installer behavior carries a
-patch bump at the line-closing sync.
+Owner architectural decision (recorded): inheritance SUPERSEDES the parent root-context-composition inline compose for Claude/Codex roots that carry substantive human context (detectable context units). Roots without such content keep the parent inline compose, so the parent contract stays valid for the prose-only case. This is a narrow conditional supersession authorized by the owner, not a blanket parent rewrite. The delivered installer behavior carries a patch bump at the line-closing sync.
 
-Capability: when a project already owns rich `CLAUDE.md` / `AGENTS.md` context,
-install distills that context into the existing canonical overlay
-(`docs/agents/PROJECT-CONTEXT.md`), then writes thin root files that inherit it —
-`CLAUDE.md` via an eager `@` import, `AGENTS.md` via an idempotent materialized
-managed block — with the original archived as the non-loss oracle.
+Capability: when a project already owns rich `CLAUDE.md` / `AGENTS.md` context, install distills that context into the existing canonical overlay (`docs/agents/PROJECT-CONTEXT.md`), then writes thin root files that inherit it — `CLAUDE.md` via an eager `@` import, `AGENTS.md` via an idempotent materialized managed block — with the original archived as the non-loss oracle.
 
 ## Canonical Artifact
 
-Canonical Super SPEC:
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-inherited-context-canonical-source.md`
+Canonical Super SPEC: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-inherited-context-canonical-source.md`
 
-Parent contract (assumed, not redefined):
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md`
+Parent contract (assumed, not redefined): `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-root-context-composition.md`
 
-Method authority:
-`docs/mesh/RULES-FILE-ENGINEERING.md`
+Method authority: `docs/mesh/RULES-FILE-ENGINEERING.md`
 
 Related implementation surfaces:
 
@@ -80,8 +53,7 @@ Related implementation surfaces:
 
 ## Relationship To Parent Contract
 
-The parent (`root-context-composition`) is assumed and reused without
-redefinition. This line consumes its primitives:
+The parent (`root-context-composition`) is assumed and reused without redefinition. This line consumes its primitives:
 
 | Parent primitive (reused) | This line's extension |
 |---------------------------|------------------------|
@@ -90,10 +62,7 @@ redefinition. This line consumes its primitives:
 | SPEC-007 Legacy Migration ("split unmarked root into core/overlay by fixture heuristics") | Upgraded from deterministic split to an agent distillation with an adversarial coverage oracle, because "optimize/organize/sanitize" requires judgment the heuristic cannot give. The heuristic split remains the deterministic floor; distillation is the opt-in second phase. |
 | `OVERLAY_PRESERVED` status | Strengthened to `OVERLAY_COVERED`: every non-trivial claim in the archived original is traceable in the canonical source or explicitly marked discarded-with-reason. |
 
-Non-redefinition lock: this Super SPEC does not change the parent's status
-vocabulary, marker shape, no-whole-file-overwrite rule, or composer ownership. If
-a parent invariant would have to change, that is a parent-contract amendment, not
-this line.
+Non-redefinition lock: this Super SPEC does not change the parent's status vocabulary, marker shape, no-whole-file-overwrite rule, or composer ownership. If a parent invariant would have to change, that is a parent-contract amendment, not this line.
 
 ## Product Contract
 
@@ -108,24 +77,15 @@ One canonical source, two renderings. Permanent, not transitional.
 
 The asymmetry is a permanent design fact, justified by `RULES-FILE-ENGINEERING.md`:
 
-> Codex has no `@import`, include, or link directive. Writing `@docs/foo.md` in
-> `AGENTS.md` puts the literal string in context, not the file.
+> Codex has no `@import`, include, or link directive. Writing `@docs/foo.md` in `AGENTS.md` puts the literal string in context, not the file.
 
-Therefore Claude points and Codex materializes. There is no "until Codex
-supports `@`" path; this is the end state. Authoring this as transitional is
-explicitly prohibited (see Required Negative Checks).
+Therefore Claude points and Codex materializes. There is no "until Codex supports `@`" path; this is the end state. Authoring this as transitional is explicitly prohibited (see Required Negative Checks).
 
 ## Canonical Source Contract
 
-The canonical source is `docs/agents/PROJECT-CONTEXT.md`. This line does not
-invent a schema — it adopts the 17 sections already required by
-`project_context_oracle.py` (`# Tilly Project Context`, `## Identity`,
-`## Initial Semantic Signals`, … `## Maintenance Rule`). Inherited human context
-is distilled into those sections, not into a parallel file.
+The canonical source is `docs/agents/PROJECT-CONTEXT.md`. This line does not invent a schema — it adopts the 17 sections already required by `project_context_oracle.py` (`# Tilly Project Context`, `## Identity`, `## Initial Semantic Signals`, … `## Maintenance Rule`). Inherited human context is distilled into those sections, not into a parallel file.
 
-A **context unit** is the atomic, traceable claim used by the coverage oracle. A
-unit is any non-trivial assertion in a root rules file that changes agent
-behavior or records a durable project fact:
+A **context unit** is the atomic, traceable claim used by the coverage oracle. A unit is any non-trivial assertion in a root rules file that changes agent behavior or records a durable project fact:
 
 | Unit kind | Examples | Trivial (not a unit) |
 |-----------|----------|-----------------------|
@@ -138,42 +98,27 @@ behavior or records a durable project fact:
 
 Each unit, after distillation, must be in one of exactly two states:
 
-- **Covered** — traceable to a section of the canonical source (the oracle maps
-  unit → section anchor).
-- **Discarded-with-reason** — explicitly recorded as dropped, with a reason from
-  a closed set: `redundant-with-tes-core`, `obsolete`, `duplicate`,
-  `superseded-by-<unit>`. No silent drop is permitted.
+- **Covered** — traceable to a section of the canonical source (the oracle maps unit → section anchor).
+- **Discarded-with-reason** — explicitly recorded as dropped, with a reason from a closed set: `redundant-with-tes-core`, `obsolete`, `duplicate`, `superseded-by-<unit>`. No silent drop is permitted.
 
 A unit that is neither covered nor discarded-with-reason is a coverage failure.
 
 ## Distillation Contract (Agent + Adversarial Gate)
 
-Distillation is the heavy, judgment-bearing capability and is isolated in its own
-skill (`tes-context-distill`), invoked by `tes-init`/`tes-setup`; it is never
-inlined into the thin setup alias.
+Distillation is the heavy, judgment-bearing capability and is isolated in its own skill (`tes-context-distill`), invoked by `tes-init`/`tes-setup`; it is never inlined into the thin setup alias.
 
 Two phases, separating the irreversible from the optional:
 
-1. **Phase 1 — deterministic extract + archive (always).** Parse the pre-existing
-   root, archive it intact as `<root>.bak-<stamp>`, and extract context units
-   verbatim into the canonical source. No rewriting of meaning. This phase is the
-   deterministic floor inherited from parent SPEC-007.
-2. **Phase 2 — agent condense/optimize (opt-in, confirmed).** The agent
-   sanitizes, organizes, and condenses the extracted units into clean canonical
-   sections. This phase runs only under user confirmation and is the only phase
-   permitted to reword.
+1. **Phase 1 — deterministic extract + archive (always).** Parse the pre-existing root, archive it intact as `<root>.bak-<stamp>`, and extract context units verbatim into the canonical source. No rewriting of meaning. This phase is the deterministic floor inherited from parent SPEC-007.
+2. **Phase 2 — agent condense/optimize (opt-in, confirmed).** The agent sanitizes, organizes, and condenses the extracted units into clean canonical sections. This phase runs only under user confirmation and is the only phase permitted to reword.
 
-The adversarial gate (`context_distill_coverage_oracle.py`) is not "the agent
-thinks it looks good". It is a coverage diff against the archived `.bak`:
+The adversarial gate (`context_distill_coverage_oracle.py`) is not "the agent thinks it looks good". It is a coverage diff against the archived `.bak`:
 
-- Every context unit detected in `.bak` is either Covered or
-  Discarded-with-reason in the canonical source.
-- A lost directive, command, convention, or architecture decision with no
-  recorded reason fails the gate.
+- Every context unit detected in `.bak` is either Covered or Discarded-with-reason in the canonical source.
+- A lost directive, command, convention, or architecture decision with no recorded reason fails the gate.
 - The gate emits the coverage map (unit → state → anchor/reason) as evidence.
 
-This is the `<diamond_build_test_fail_fix>` shape for context: archived original
-as adversarial fixture, observed loss as failure, recorded coverage as repair.
+This is the `<diamond_build_test_fail_fix>` shape for context: archived original as adversarial fixture, observed loss as failure, recorded coverage as repair.
 
 ## Rendering Contract
 
@@ -203,46 +148,30 @@ Codex (`AGENTS.md`):
 
 Rendering rules:
 
-- The Codex overlay block is generated from the canonical source on every
-  install/update; its `sha256=<src-sha>` records the source state it was rendered
-  from. Source-vs-block SHA mismatch is a re-render signal, not a conflict.
-- Hand edits inside the Codex overlay block are not the source of truth; the gate
-  warns and the next render overwrites the block (only the block, never the file).
-- The Codex materialization is "lean and objective": it is not the full canonical
-  source verbatim, but a structured condensation sized well below the 32 KiB
-  chain cap (`RULES-FILE-ENGINEERING.md` Codex byte model).
-- The Claude `@` import is eager and loads in full; the thin core stays well under
-  the ~200-line adherence target.
+- The Codex overlay block is generated from the canonical source on every install/update; its `sha256=<src-sha>` records the source state it was rendered from. Source-vs-block SHA mismatch is a re-render signal, not a conflict.
+- Hand edits inside the Codex overlay block are not the source of truth; the gate warns and the next render overwrites the block (only the block, never the file).
+- The Codex materialization is "lean and objective": it is not the full canonical source verbatim, but a structured condensation sized well below the 32 KiB chain cap (`RULES-FILE-ENGINEERING.md` Codex byte model).
+- The Claude `@` import is eager and loads in full; the thin core stays well under the ~200-line adherence target.
 
 ## Idempotency Contract
 
 Re-running install/update must converge, never cannibalize:
 
-- If a root is already a TES-rendered thin root (core block + `@` pointer for
-  Claude, or core block + overlay managed block for Codex), distillation is
-  **skipped** — the canonical source is already the truth. Re-distilling a
-  pointer would extract emptiness or recurse.
-- Detection: a root whose only non-core content is the `@` pointer (Claude) or
-  the `TES:PROJECT-OVERLAY` managed block (Codex) is "already inherited".
-- Re-render updates the core block and (Codex) the overlay block from the current
-  canonical source; it does not re-run Phase 1/2 distillation.
+- If a root is already a TES-rendered thin root (core block + `@` pointer for Claude, or core block + overlay managed block for Codex), distillation is **skipped** — the canonical source is already the truth. Re-distilling a pointer would extract emptiness or recurse.
+- Detection: a root whose only non-core content is the `@` pointer (Claude) or the `TES:PROJECT-OVERLAY` managed block (Codex) is "already inherited".
+- Re-render updates the core block and (Codex) the overlay block from the current canonical source; it does not re-run Phase 1/2 distillation.
 
 ## Reversibility Contract
 
-Because install now overwrites the human root with a thin one, TES owns the
-obligation to give it back:
+Because install now overwrites the human root with a thin one, TES owns the obligation to give it back:
 
-- `<root>.bak-<stamp>` is mandatory and is referenced by the uninstall route
-  (aligns with ADR 0004 reversible installation).
-- Uninstall restores the archived original root; it does not leave the thin root
-  or a half-distilled canonical source as the only artifact.
-- The coverage map produced at distillation time is retained as the evidence that
-  the canonical source faithfully carries the archived content.
+- `<root>.bak-<stamp>` is mandatory and is referenced by the uninstall route (aligns with ADR 0004 reversible installation).
+- Uninstall restores the archived original root; it does not leave the thin root or a half-distilled canonical source as the only artifact.
+- The coverage map produced at distillation time is retained as the evidence that the canonical source faithfully carries the archived content.
 
 ## Required Status Semantics
 
-Reuses the parent vocabulary; adds the coverage and rendering states this line
-introduces.
+Reuses the parent vocabulary; adds the coverage and rendering states this line introduces.
 
 | Status | Required Meaning |
 |--------|------------------|
@@ -254,9 +183,7 @@ introduces.
 | `NEEDS_REVIEW_COVERAGE` | One or more units are neither Covered nor Discarded-with-reason; no overwrite finalized. |
 | `BLOCKED_ARCHIVE_MISSING` | The pre-existing root could not be archived; distillation refused (no destructive write without the `.bak` oracle). |
 
-Parent statuses (`PASS`, `COMPOSED`, `CORE_STALE`, `OVERLAY_PRESENT`,
-`NEEDS_REVIEW_CONFLICT`, `BLOCKED_OVERLAY_UNRECOVERABLE`) remain valid and
-unchanged.
+Parent statuses (`PASS`, `COMPOSED`, `CORE_STALE`, `OVERLAY_PRESENT`, `NEEDS_REVIEW_CONFLICT`, `BLOCKED_OVERLAY_UNRECOVERABLE`) remain valid and unchanged.
 
 ## Implementation Units
 
@@ -280,14 +207,11 @@ unchanged.
 The first wave proves the non-loss contract before any rendering:
 
 1. Add the SPEC-000 neutral rich-root fixtures.
-2. Implement the context-unit model and `context_distill_coverage_oracle.py`
-   (SPEC-001).
+2. Implement the context-unit model and `context_distill_coverage_oracle.py` (SPEC-001).
 3. Map units onto the existing `PROJECT-CONTEXT.md` sections (SPEC-002).
-4. Implement Phase 1 distillation (deterministic extract + archive) and prove a
-   rich root distills to `OVERLAY_COVERED` with zero unexplained loss.
+4. Implement Phase 1 distillation (deterministic extract + archive) and prove a rich root distills to `OVERLAY_COVERED` with zero unexplained loss.
 
-P0 is complete only when a deliberately dropped directive fails the coverage
-oracle and a faithful distillation passes it.
+P0 is complete only when a deliberately dropped directive fails the coverage oracle and a faithful distillation passes it.
 
 ## P1 Cut: Two Renderings + Idempotency
 
@@ -297,8 +221,7 @@ After P0:
 2. Codex materialized managed-block renderer (SPEC-005).
 3. Idempotent re-render and already-inherited skip (SPEC-006).
 
-P1 is complete only when both roots render from the one canonical source and a
-second install run reports `ALREADY_INHERITED` with stable output.
+P1 is complete only when both roots render from the one canonical source and a second install run reports `ALREADY_INHERITED` with stable output.
 
 ## P2 Cut: Installer Integration + Reversibility + UX
 
@@ -309,26 +232,21 @@ After P1:
 3. Distillation skill UX and `/tes-doctor` recovery (SPEC-003, SPEC-009).
 4. Canary replay (SPEC-010).
 
-P2 is complete only when a preexisting rich-root target installs to `INHERITED`,
-uninstalls back to the archived original, and the canary replays the class.
+P2 is complete only when a preexisting rich-root target installs to `INHERITED`, uninstalls back to the archived original, and the canary replays the class.
 
 ## Required Negative Checks
 
-- No "until Codex supports `@`" framing anywhere: the Claude-points /
-  Codex-materializes asymmetry is the permanent end state.
-- No new canonical-source file: the source is `docs/agents/PROJECT-CONTEXT.md`,
-  reusing `project_context_oracle.py`. No parallel `project_rules.md`.
+- No "until Codex supports `@`" framing anywhere: the Claude-points /Codex-materializes asymmetry is the permanent end state.
+- No new canonical-source file: the source is `docs/agents/PROJECT-CONTEXT.md`, reusing `project_context_oracle.py`. No parallel `project_rules.md`.
 - No destructive root write without an existing `<root>.bak-<stamp>` archive.
-- No `INHERITED` or `PASS` when any `.bak` unit is neither Covered nor
-  Discarded-with-reason.
+- No `INHERITED` or `PASS` when any `.bak` unit is neither Covered nor Discarded-with-reason.
 - No silent unit drop: every discard carries a reason from the closed set.
 - No re-distillation of an already-inherited root (idempotency).
 - No hand-edited Codex overlay block treated as source of truth.
 - No `@` directive written into `AGENTS.md` as if Codex resolved it.
 - No reopening or redefinition of the parent `root-context-composition` contract.
 - No distillation capability inlined into the thin `tes-setup` alias.
-- No target-project vocabulary, private path, private product name, internal
-  service name, branch name, remote, commit, or raw target log in TES source.
+- No target-project vocabulary, private path, private product name, internal service name, branch name, remote, commit, or raw target log in TES source.
 - No release claim without patch-version and bundle decision.
 
 ## Required Oracles Before Implementation Closeout
@@ -353,16 +271,14 @@ git diff --check
 npm run commit:check
 ```
 
-If implementation lands in waves, each closeout must name the narrower oracle
-packet that passed and the remaining units still open.
+If implementation lands in waves, each closeout must name the narrower oracle packet that passed and the remaining units still open.
 
 ## Post-Correction Analysis
 
 Every implementation closeout must include:
 
 - baseline behavior before correction (today: `.bak` + whole-file overwrite);
-- exact old failure reproduced by fixture (human context archived out of active
-  context, not inherited);
+- exact old failure reproduced by fixture (human context archived out of active context, not inherited);
 - exact fixed route (distill → canonical source → two renderings);
 - root files touched and how they were rendered (Claude `@`, Codex block);
 - coverage map: units detected, Covered, Discarded-with-reason;
@@ -377,10 +293,8 @@ Every implementation closeout must include:
 The final claim may be `PASS` only when all are true:
 
 - a preexisting rich-root target installs to `INHERITED` with `OVERLAY_COVERED`;
-- both roots render from the one canonical source (`RENDER_CLAUDE_OK`,
-  `RENDER_CODEX_OK`);
-- a deliberately dropped unit fails the coverage oracle before repair and is
-  covered after;
+- both roots render from the one canonical source (`RENDER_CLAUDE_OK`, `RENDER_CODEX_OK`);
+- a deliberately dropped unit fails the coverage oracle before repair and is covered after;
 - a second install run reports `ALREADY_INHERITED` with stable output;
 - uninstall restores the archived original root byte-faithful;
 - the parent `root-context-composition` contract is untouched and still passes;

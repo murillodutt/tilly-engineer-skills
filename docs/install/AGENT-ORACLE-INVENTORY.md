@@ -10,8 +10,7 @@ tver: 0.1.2
 
 # TES Agent Oracle Inventory
 
-Agent-callable oracles. Use the TES package root for package checks, or
-`--target` when operating on another project or vault.
+Agent-callable oracles. Use the TES package root for package checks, or `--target` when operating on another project or vault.
 
 ## Init / Update / Context
 
@@ -38,14 +37,7 @@ python3 scripts/tes_bundle.py recover-plan --target /path/to/project --backup-id
 python3 scripts/tes_bundle.py restore --target /path/to/project --backup-id <backup-id> --yes
 ```
 
-`tes_init.py` recertifies package health, scans the target project,
-writes `docs/agents/PROJECT-REGISTER.md`, writes
-`docs/agents/PROJECT-CONTEXT.md` as Tier 3 init inventory, copies
-`DOCUMENTATION-AUTHORITY.md` and `INVENTORY-HYGIENE.yml` scaffolds when
-missing, creates the first-pass Obsidian-compatible operating mesh when
-missing, and stores a full manifest under `docs/agents/evidence/**`. If a later oracle is
-blocked, the run closes as `NEEDS_REVIEW` with evidence instead of
-leaving the project uninitialized.
+`tes_init.py` recertifies package health, scans the target project, writes `docs/agents/PROJECT-REGISTER.md`, writes `docs/agents/PROJECT-CONTEXT.md` as Tier 3 init inventory, copies `DOCUMENTATION-AUTHORITY.md` and `INVENTORY-HYGIENE.yml` scaffolds when missing, creates the first-pass Obsidian-compatible operating mesh when missing, and stores a full manifest under `docs/agents/evidence/**`. If a later oracle is blocked, the run closes as `NEEDS_REVIEW` with evidence instead of leaving the project uninitialized.
 
 ## Field Reports
 
@@ -179,11 +171,7 @@ python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_
 
 ## npm Wrappers
 
-These wrappers are package-source conveniences for the
-`tilly-engineer-skills` repository. They are not target-project guarantees. In
-an installed target, first use the installed helpers under `.tes/bin/**` and
-the target's own discovered `package.json` scripts. Do not certify an
-`npm run ...` command unless that command exists in the current workspace.
+These wrappers are package-source conveniences for the `tilly-engineer-skills` repository. They are not target-project guarantees. In an installed target, first use the installed helpers under `.tes/bin/**` and the target's own discovered `package.json` scripts. Do not certify an `npm run ...` command unless that command exists in the current workspace.
 
 ```bash
 npm run validate

@@ -10,17 +10,9 @@ tver: 0.1.0
 
 # Bootloader Concept Inventory — Migration Contract (SPEC-000)
 
-Persistent, machine-readable inventory of every concept currently carried by the
-three adapter bootloaders, with its disposition for the bootloader-to-skill
-migration. This document is the contract for SPEC-002..004 (what each anchor may
-keep, move, or delete) and the source-of-truth the SPEC-005 parity oracle reads
-to verify that no certified knowledge was lost.
+Persistent, machine-readable inventory of every concept currently carried by the three adapter bootloaders, with its disposition for the bootloader-to-skill migration. This document is the contract for SPEC-002..004 (what each anchor may keep, move, or delete) and the source-of-truth the SPEC-005 parity oracle reads to verify that no certified knowledge was lost.
 
-Baseline (last-known-good, recorded at SPEC-000): TES `0.3.164`; bootloaders and
-skills as committed at `1e3e639`; `root_context.py --self-test` PASS;
-`validate_tds` PASS (153 docs); `private_vocabulary_oracle` PASS. The migration
-must preserve `root_context.py` composition (`TES:CORE` / `TES:PROJECT-OVERLAY`)
-and the capsule install/uninstall/attach/detach contract from ADR 0004.
+Baseline (last-known-good, recorded at SPEC-000): TES `0.3.164`; bootloaders and skills as committed at `1e3e639`; `root_context.py --self-test` PASS; `validate_tds` PASS (153 docs); `private_vocabulary_oracle` PASS. The migration must preserve `root_context.py` composition (`TES:CORE` / `TES:PROJECT-OVERLAY`) and the capsule install/uninstall/attach/detach contract from ADR 0004.
 
 Baseline line counts (source bootloaders and lazy targets):
 
@@ -35,38 +27,21 @@ Baseline line counts (source bootloaders and lazy targets):
 | `src/adapters/claude/skills/tes-init/SKILL.md` | 124 | Claude init skill (expansion home) |
 | `src/adapters/codex/skills/tes-engineering-discipline/SKILL.md` | 183 | Codex lazy skill (expansion home) |
 
-`root_context.py` `ROOT_FILES` treats `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, and
-`.cursor/rules/tes-engineering-discipline.mdc` as composed bootloaders (TES:CORE + overlay).
-`.cursor/rules/tes-runtime-capabilities.mdc` is NOT a ROOT_FILE, so it is the
-free lazy surface that may receive migrated Cursor capability detail.
+`root_context.py` `ROOT_FILES` treats `AGENTS.md`, `CLAUDE.md`, `CURSOR.md`, and `.cursor/rules/tes-engineering-discipline.mdc` as composed bootloaders (TES:CORE + overlay). `.cursor/rules/tes-runtime-capabilities.mdc` is NOT a ROOT_FILE, so it is the free lazy surface that may receive migrated Cursor capability detail.
 
 ## Disposition Vocabulary
 
-- `keep-as-anchor`: stays in the bootloader as a one-line falsifiable anchor.
-  Its expansion (where one exists) also lives once in the skill; the anchor must
-  not be the same paragraph as the expansion (anchor-not-copy).
-- `already-in-skill`: full detail already exists, complete and current, in the
-  host's lazy skill/rule. The bootloader copy is duplicated and must be deleted
-  in SPEC-002..004; the anchor keeps at most a one-line pointer.
-- `move-to-skill`: full detail exists ONLY in the bootloader today; SPEC-001
-  must move it into the host's lazy skill/rule before SPEC-002..004 deletes it
-  from the bootloader. Deleting before moving would lose certified knowledge.
+- `keep-as-anchor`: stays in the bootloader as a one-line falsifiable anchor. Its expansion (where one exists) also lives once in the skill; the anchor must not be the same paragraph as the expansion (anchor-not-copy).
+- `already-in-skill`: full detail already exists, complete and current, in the host's lazy skill/rule. The bootloader copy is duplicated and must be deleted in SPEC-002..004; the anchor keeps at most a one-line pointer.
+- `move-to-skill`: full detail exists ONLY in the bootloader today; SPEC-001 must move it into the host's lazy skill/rule before SPEC-002..004 deletes it from the bootloader. Deleting before moving would lose certified knowledge.
 
 ## Anchor-Not-Copy Invariant
 
-A `keep-as-anchor` concept appears once as a short anchor in the bootloader and
-once as expansion in the skill. The SPEC-005 oracle asserts both the byte-level
-rule (no identical paragraph in both places) and the semantic rule (per concept:
-a short anchor present in the bootloader AND a single expansion present in the
-skill/rule).
+A `keep-as-anchor` concept appears once as a short anchor in the bootloader and once as expansion in the skill. The SPEC-005 oracle asserts both the byte-level rule (no identical paragraph in both places) and the semantic rule (per concept: a short anchor present in the bootloader AND a single expansion present in the skill/rule).
 
 ## Machine-Readable Inventory
 
-The block below is the parity-oracle contract. `host` is the bootloader the
-concept lives in today; `target_surface` is where its expansion must live after
-migration. `anchor` is the one-line anchor that stays in the bootloader for
-`keep-as-anchor` concepts (empty for pure `already-in-skill`/`move-to-skill`
-detail that needs no standing anchor beyond the routing map).
+The block below is the parity-oracle contract. `host` is the bootloader the concept lives in today; `target_surface` is where its expansion must live after migration. `anchor` is the one-line anchor that stays in the bootloader for `keep-as-anchor` concepts (empty for pure `already-in-skill`/`move-to-skill` detail that needs no standing anchor beyond the routing map).
 
 ```yaml
 inventory_version: 1
@@ -313,18 +288,10 @@ concepts:
 
 ## Stop-Condition Resolution (SPEC-000 gate)
 
-The SPEC-000 stop condition is: "if a concept has no clear skill home and is not
-anchor-worthy, stop and decide its home before thinning." Resolution:
+The SPEC-000 stop condition is: "if a concept has no clear skill home and is not anchor-worthy, stop and decide its home before thinning." Resolution:
 
 - Every concept above has a clear `target_surface`. No concept is orphaned.
-- The one concept that is NOT already present in its target skill is
-  `memory-lifecycle-boundary` for Claude and Codex (it currently lives only in
-  the bootloader). It has a clear home (`tes-engineering-discipline`)
-  and SPEC-001 is the unit that moves it. This is the single move-to-skill action
-  with real new content; everything else is delete-duplication or keep-anchor.
-- `confidentiality` exists as a full section only in `CLAUDE.md` today; SPEC-001
-  adds the one-line rule to the Codex and Cursor surfaces so the anchor exists
-  consistently (fixing the unevenness recorded in the 2026-06-04 review).
+- The one concept that is NOT already present in its target skill is `memory-lifecycle-boundary` for Claude and Codex (it currently lives only in the bootloader). It has a clear home (`tes-engineering-discipline`) and SPEC-001 is the unit that moves it. This is the single move-to-skill action with real new content; everything else is delete-duplication or keep-anchor.
+- `confidentiality` exists as a full section only in `CLAUDE.md` today; SPEC-001 adds the one-line rule to the Codex and Cursor surfaces so the anchor exists consistently (fixing the unevenness recorded in the 2026-06-04 review).
 
-No orphan concept remains. SPEC-000 passes; SPEC-001..004 may proceed against
-this contract.
+No orphan concept remains. SPEC-000 passes; SPEC-001..004 may proceed against this contract.

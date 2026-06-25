@@ -19,8 +19,7 @@ When opening an issue, include:
 - final certification status;
 - sanitized error output.
 
-Do not include secrets, private code, raw Field Reports payloads, or private
-repository paths.
+Do not include secrets, private code, raw Field Reports payloads, or private repository paths.
 
 ## Known Partial Surfaces
 
@@ -32,5 +31,4 @@ Some surfaces are intentionally not claimed as fully live production behavior:
 - optional vector/Xenova certification;
 - write-capable MCP behavior.
 
-Ask for support using the certified local/fake replay path unless a maintainer
-explicitly requests a live transport reproduction.
+Ask for support using the certified local/fake replay path unless a maintainer explicitly requests a live transport reproduction.

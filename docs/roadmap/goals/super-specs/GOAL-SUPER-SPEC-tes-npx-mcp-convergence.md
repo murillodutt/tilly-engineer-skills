@@ -10,13 +10,9 @@ tver: 0.1.0
 
 # GOAL Super SPEC: TES NPX MCP Convergence
 
-Status: implementation planning artifact for the next package-source cut after
-TES `0.3.144`.
+Status: implementation planning artifact for the next package-source cut after TES `0.3.144`.
 
-Capability: make the `npx`/`bunx` installer the primary local executor for
-project-scoped Cortex MCP installation, update, and repair across the TES
-runtime adapters while preserving `/tes-init` and `/tes-setup` as automatic
-post-install redundancy and `/tes-doctor` as the repair fallback.
+Capability: make the `npx`/`bunx` installer the primary local executor for project-scoped Cortex MCP installation, update, and repair across the TES runtime adapters while preserving `/tes-init` and `/tes-setup` as automatic post-install redundancy and `/tes-doctor` as the repair fallback.
 
 ## Mantra Gate Snapshot
 
@@ -42,38 +38,25 @@ post-install redundancy and `/tes-doctor` as the repair fallback.
 
 ## Problem
 
-The current installer flow is split in a way that makes first-time MCP
-activation depend on a later skill path:
+The current installer flow is split in a way that makes first-time MCP activation depend on a later skill path:
 
 - `bin/tes.js` delegates to `scripts/tes_install.py install`.
-- `scripts/tes_install.py install` stages and applies the bundle, installs
-  selected agent hooks, writes `.tes/postinstall.json`, and writes the install
-  lock.
-- The bundle delivers `.tes/bin/install_mcp.py` and `.tes/bin/cortex_mcp.py`,
-  but the installer does not register `tes-cortex` in project-scoped MCP
-  configs.
-- The first-session postinstall runs `tes_init.py`,
-  `project_context_oracle.py`, and `project_alignment_oracle.py`; it also does
-  not register or certify MCP.
-- `/tes-mcp` and `/tes-doctor` can install or repair MCP, but they are
-  downstream manual routes rather than the primary installation path.
+- `scripts/tes_install.py install` stages and applies the bundle, installs selected agent hooks, writes `.tes/postinstall.json`, and writes the install lock.
+- The bundle delivers `.tes/bin/install_mcp.py` and `.tes/bin/cortex_mcp.py`, but the installer does not register `tes-cortex` in project-scoped MCP configs.
+- The first-session postinstall runs `tes_init.py`, `project_context_oracle.py`, and `project_alignment_oracle.py`; it also does not register or certify MCP.
+- `/tes-mcp` and `/tes-doctor` can install or repair MCP, but they are downstream manual routes rather than the primary installation path.
 
-That split creates a false completion risk: a target can have TES helpers,
-hooks, skills, and `.codex/config.toml` while still lacking a registered
-`tes-cortex` MCP server.
+That split creates a false completion risk: a target can have TES helpers, hooks, skills, and `.codex/config.toml` while still lacking a registered `tes-cortex` MCP server.
 
 ## Goal
 
-After this goal is implemented, a normal local install or update must make
-Cortex MCP project-scoped config ready for the selected TES runtime adapters:
+After this goal is implemented, a normal local install or update must make Cortex MCP project-scoped config ready for the selected TES runtime adapters:
 
 ```text
 npx/bunx add -> bundle apply -> hooks -> MCP config -> postinstall sentinel -> lock
 ```
 
-`/tes-init` and `/tes-setup` must remain useful as automatic post-install
-redundancy and reporting. `/tes-doctor` must remain the fallback repair path
-for MCP drift, conflicts, or host recognition problems.
+`/tes-init` and `/tes-setup` must remain useful as automatic post-install redundancy and reporting. `/tes-doctor` must remain the fallback repair path for MCP drift, conflicts, or host recognition problems.
 
 ## Decisions
 
@@ -95,8 +78,7 @@ for MCP drift, conflicts, or host recognition problems.
 - Do not add new MCP tools or expand write authority.
 - Do not rename `tes-cortex`.
 - Do not claim host-connected status from config file presence.
-- Do not promote private canary project names, paths, commands, or vocabulary
-  into TES source, docs, fixtures, commits, evidence, or release notes.
+- Do not promote private canary project names, paths, commands, or vocabulary into TES source, docs, fixtures, commits, evidence, or release notes.
 
 ## Implementation Units
 
@@ -120,30 +102,21 @@ for MCP drift, conflicts, or host recognition problems.
 | `--agent cursor` | `.cursor/mcp.json` contains `mcpServers.tes-cortex`. |
 | `--agent all` | Codex, Claude Code, and Cursor MCP configs are present. |
 
-Fresh install must also copy MCP helpers under `.tes/bin/**`, preserve
-unrelated MCP servers, record field-report/git-exclude hygiene through the MCP
-installer, and leave postinstall ready to verify the same state.
+Fresh install must also copy MCP helpers under `.tes/bin/**`, preserve unrelated MCP servers, record field-report/git-exclude hygiene through the MCP installer, and leave postinstall ready to verify the same state.
 
 ### Update or repair
 
-When existing `tes-cortex` config differs from the packaged desired config, the
-installer may overwrite that TES-owned entry after user installer consent. It
-must not overwrite unrelated MCP server entries.
+When existing `tes-cortex` config differs from the packaged desired config, the installer may overwrite that TES-owned entry after user installer consent. It must not overwrite unrelated MCP server entries.
 
-If existing host config is invalid JSON/TOML, or if repair cannot be performed
-without risk, the installer must report `NEEDS_REVIEW` or `FAIL` with the
-specific config path and leave `/tes-doctor` as the explicit repair route.
+If existing host config is invalid JSON/TOML, or if repair cannot be performed without risk, the installer must report `NEEDS_REVIEW` or `FAIL` with the specific config path and leave `/tes-doctor` as the explicit repair route.
 
 ### Dry run
 
-`--dry-run` must include planned MCP helper/config actions in the installer
-summary without writing files.
+`--dry-run` must include planned MCP helper/config actions in the installer summary without writing files.
 
 ### No postinstall
 
-`--no-postinstall` disables the first-session semantic bootstrap only. It must
-not disable installer-time MCP config registration unless a future explicit
-`--no-mcp` flag is authorized.
+`--no-postinstall` disables the first-session semantic bootstrap only. It must not disable installer-time MCP config registration unless a future explicit `--no-mcp` flag is authorized.
 
 ## Result Shape
 
@@ -162,26 +135,18 @@ The installer JSON summary should expose MCP as a first-class section:
 }
 ```
 
-The summary must not claim `host_connected`. Runtime host recognition remains
-reported separately by `/tes-mcp` or `/tes-doctor`.
+The summary must not claim `host_connected`. Runtime host recognition remains reported separately by `/tes-mcp` or `/tes-doctor`.
 
 ## Acceptance Criteria
 
-- `npx`/`bunx` install with `--agent all --yes` registers `tes-cortex` for
-  Codex, Claude Code, and Cursor in project-scoped config.
+- `npx`/`bunx` install with `--agent all --yes` registers `tes-cortex` for Codex, Claude Code, and Cursor in project-scoped config.
 - `--agent all` does not create `.vscode/mcp.json`.
 - Existing unrelated MCP servers survive installer updates.
-- Stale TES-owned `tes-cortex` entries are repaired or reported with an
-  actionable `NEEDS_REVIEW`/`FAIL`.
-- `/tes-init` and `/tes-setup` can report or recover postinstall MCP state
-  without becoming the primary MCP installer.
-- `/tes-doctor` remains the explicit fallback for MCP repair and host
-  recognition checks.
-- Tests distinguish `config_present`, `server_self_test_pass`,
-  `protocol_handshake_pass`, `host_listed`, `host_connected`, and
-  `session_restart_required`.
-- Correlated docs, adapter instructions, public docs, package metadata, bundle
-  surfaces, and release identity are resolved before closure.
+- Stale TES-owned `tes-cortex` entries are repaired or reported with an actionable `NEEDS_REVIEW`/`FAIL`.
+- `/tes-init` and `/tes-setup` can report or recover postinstall MCP state without becoming the primary MCP installer.
+- `/tes-doctor` remains the explicit fallback for MCP repair and host recognition checks.
+- Tests distinguish `config_present`, `server_self_test_pass`, `protocol_handshake_pass`, `host_listed`, `host_connected`, and `session_restart_required`.
+- Correlated docs, adapter instructions, public docs, package metadata, bundle surfaces, and release identity are resolved before closure.
 - Private vocabulary oracle passes.
 
 ## Required Oracles Before Implementation Closure
@@ -198,9 +163,7 @@ python3 scripts/validate_tds.py
 npm run commit:check
 ```
 
-If delivered behavior is implemented and authorized for release identity,
-prepare the versioned public bundle and run the release checklist before
-claiming any fixed GitHub `npx` ref is certified.
+If delivered behavior is implemented and authorized for release identity, prepare the versioned public bundle and run the release checklist before claiming any fixed GitHub `npx` ref is certified.
 
 ## Open Questions
 

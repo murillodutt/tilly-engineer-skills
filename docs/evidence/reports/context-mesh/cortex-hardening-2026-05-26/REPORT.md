@@ -10,8 +10,7 @@ tver: 0.1.0
 
 # Cortex Hardening Report
 
-This report closes the Cortex hardening sequence from
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-hardening.md`.
+This report closes the Cortex hardening sequence from `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-hardening.md`.
 
 ## Claim
 
@@ -21,9 +20,7 @@ The three accepted Cortex findings were resolved in sequence:
 2. MCP helper documentation now matches the installer helper inventory.
 3. `reflect` now counts durable untracked text line volume toward curation.
 
-No release, publish, marketplace, or target-project mirror action was
-performed. Remote sync to `origin/main` was performed only after the local
-package gate passed and the Mantra Gate adoption oracle accepted the push.
+No release, publish, marketplace, or target-project mirror action was performed. Remote sync to `origin/main` was performed only after the local package gate passed and the Mantra Gate adoption oracle accepted the push.
 
 ## Material Trail
 
@@ -51,12 +48,7 @@ Documentation and package evidence gates passed:
 - `python3 scripts/validate_doc_size.py`
 - `git diff --check`
 
-`npm run commit:check` initially reached the private vocabulary stage and then
-failed because `scripts/private_vocabulary_oracle.py` scanned ignored local
-scratch under `tmp/**`. That contradicted its tracked-content contract, so the
-closeout repaired the oracle to scan `git ls-files` when a Git worktree is
-available and added regression coverage for ignored scratch versus tracked
-source leakage.
+`npm run commit:check` initially reached the private vocabulary stage and then failed because `scripts/private_vocabulary_oracle.py` scanned ignored local scratch under `tmp/**`. That contradicted its tracked-content contract, so the closeout repaired the oracle to scan `git ls-files` when a Git worktree is available and added regression coverage for ignored scratch versus tracked source leakage.
 
 ## Negative Checks
 
@@ -65,22 +57,15 @@ The project-scope MCP fix added two guards:
 - tool schemas must not expose a `target` property;
 - each read-only Cortex MCP tool rejects a second project's `target` override.
 
-The helper inventory was checked by comparing `SERVER_FILES` in
-`scripts/install_mcp.py` with the `.tes/bin/**` list in
-`docs/mesh/CORTEX-MCP.md`; parity was true.
+The helper inventory was checked by comparing `SERVER_FILES` in `scripts/install_mcp.py` with the `.tes/bin/**` list in `docs/mesh/CORTEX-MCP.md`; parity was true.
 
 The `reflect` fixture now proves:
 
 - a durable untracked text file under `docs/**` triggers `curation_due`;
 - ignored local scratch does not contribute to changed-line count.
 
-Negative grep results containing placeholder terms, legacy `.tilly/bin`
-vocabulary, `push`, `publish`, `marketplace`, or `write-capable` were reviewed
-as policy, migration, test, or forbidden-action text. No new forbidden runtime
-behavior was introduced by this sequence.
+Negative grep results containing placeholder terms, legacy `.tilly/bin` vocabulary, `push`, `publish`, `marketplace`, or `write-capable` were reviewed as policy, migration, test, or forbidden-action text. No new forbidden runtime behavior was introduced by this sequence.
 
 ## Closeout Status
 
-Status: `GO`. The closeout commits record this report, the private-vocabulary
-gate repair, and the post-commit certification replay. Remote sync is limited
-to non-force `git push origin HEAD:main` after `npm run commit:check` passes.
+Status: `GO`. The closeout commits record this report, the private-vocabulary gate repair, and the post-commit certification replay. Remote sync is limited to non-force `git push origin HEAD:main` after `npm run commit:check` passes.

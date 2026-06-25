@@ -12,17 +12,13 @@ tver: 0.1.0
 
 Status: active planning artifact; no delivered behavior yet.
 
-Capability: harden TES against private-context contamination, noisy target
-canary feedback, and language-sensitive false positives discovered after a
-private target canary absorbed TES `0.3.135`.
+Capability: harden TES against private-context contamination, noisy target canary feedback, and language-sensitive false positives discovered after a private target canary absorbed TES `0.3.135`.
 
 ## Canonical Artifact
 
-Canonical Super SPEC:
-`docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md`
+Canonical Super SPEC: `docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-tes-anti-contamination-hardening.md`
 
-Primary decision source:
-`docs/adr/0001-tes-memory-lifecycle.md`
+Primary decision source: `docs/adr/0001-tes-memory-lifecycle.md`
 
 Related implementation surfaces:
 
@@ -50,22 +46,13 @@ Related implementation surfaces:
 
 ## Current Meaning
 
-The `0.3.135` package-source implementation passed local closure, but a
-private target canary dossier exposed hardening opportunities that are
-portable to TES. The dossier itself is private project evidence and must not be
-promoted into TES source. The portable learning is limited to generic failure
-modes:
+The `0.3.135` package-source implementation passed local closure, but a private target canary dossier exposed hardening opportunities that are portable to TES. The dossier itself is private project evidence and must not be promoted into TES source. The portable learning is limited to generic failure modes:
 
-- Cortex evidence blocks can hide an absolute path beside a valid relative
-  evidence ref.
-- The alignment oracle can treat normal Portuguese prose as placeholder
-  language.
-- Cortex reflect can treat installed TES helper churn as durable project
-  memory pressure.
-- Semantic Residue authoring can overmatch live vocabulary or historiography
-  when entries are too broad.
-- Public bundles may include synthetic sanitizer fixtures that look like real
-  secrets to generic scanners.
+- Cortex evidence blocks can hide an absolute path beside a valid relative evidence ref.
+- The alignment oracle can treat normal Portuguese prose as placeholder language.
+- Cortex reflect can treat installed TES helper churn as durable project memory pressure.
+- Semantic Residue authoring can overmatch live vocabulary or historiography when entries are too broad.
+- Public bundles may include synthetic sanitizer fixtures that look like real secrets to generic scanners.
 
 ## Creation Gate Record
 
@@ -81,26 +68,20 @@ modes:
 
 ## Assumptions
 
-- The private target canary is evidence of TES behavior, not TES source
-  material.
-- Project-specific vocabulary, commit SHAs, remote names, paths, and domain
-  decisions stay out of TES tracked content.
-- The next implementation should be a small patch release if runtime or
-  adopter-visible behavior changes.
+- The private target canary is evidence of TES behavior, not TES source material.
+- Project-specific vocabulary, commit SHAs, remote names, paths, and domain decisions stay out of TES tracked content.
+- The next implementation should be a small patch release if runtime or adopter-visible behavior changes.
 - Deterministic fixtures are preferred over broad prose rules.
 - Documentation must teach the boundary only where it reduces repeated failure.
 
 ## Non-Objectives
 
-- Port private project terms, paths, commits, remotes, product names, domain
-  architecture, or owner decisions into TES.
+- Port private project terms, paths, commits, remotes, product names, domain architecture, or owner decisions into TES.
 - Treat private canary evidence as a public benchmark dataset.
 - Add a new memory backend or write-capable MCP.
 - Add automatic Cortex writes.
-- Add external datasets, external services, paid/API judging, UI, or cloud
-  behavior.
-- Claim commercial readiness, remote release readiness, or published fixed-ref
-  certification.
+- Add external datasets, external services, paid/API judging, UI, or cloud behavior.
+- Claim commercial readiness, remote release readiness, or published fixed-ref certification.
 
 ## Required Fix Matrix
 
@@ -116,8 +97,7 @@ modes:
 
 ## Execution Discipline
 
-Run units sequentially. Do not bulk-implement later units before the current
-unit has focused oracle, release identity classification, and closure note.
+Run units sequentially. Do not bulk-implement later units before the current unit has focused oracle, release identity classification, and closure note.
 
 Before each unit, state:
 
@@ -132,8 +112,7 @@ After each unit:
 - run the focused oracle;
 - fix and rerun on failure;
 - update only correlated docs or indexes;
-- run the private vocabulary oracle when fixtures, docs, reports, or public
-  surfaces are touched.
+- run the private vocabulary oracle when fixtures, docs, reports, or public surfaces are touched.
 
 ## SPEC-000: Reentry And Contamination Boundary
 
@@ -174,15 +153,13 @@ Owned files:
 Implementation:
 
 1. Add a scanner for absolute path-like evidence lines inside `## Evidence`.
-2. Fail audit when the evidence section includes any absolute local path,
-   including POSIX, macOS, Windows, temp, home, or repository-root-like paths.
+2. Fail audit when the evidence section includes any absolute local path, including POSIX, macOS, Windows, temp, home, or repository-root-like paths.
 3. Ensure valid relative evidence still passes:
    - `sources/<file>`;
    - `docs/agents/cortex/sources/<file>`;
    - `docs/agents/evidence/<file>`;
    - `Assumption:`.
-4. Ensure invalid absolute refs fail even when a valid relative ref is also
-   present.
+4. Ensure invalid absolute refs fail even when a valid relative ref is also present.
 5. Ensure `apply` remains fail-closed before writing.
 
 Regression fixtures:
@@ -200,8 +177,7 @@ python3 scripts/cortex.py --self-test
 
 Stop condition:
 
-- If existing Cortex semantics intentionally allow absolute refs, stop with
-  `NEEDS_REVIEW`; otherwise this is a safety bug.
+- If existing Cortex semantics intentionally allow absolute refs, stop with `NEEDS_REVIEW`; otherwise this is a safety bug.
 
 ## SPEC-002: PT-BR Placeholder False Positive
 
@@ -219,10 +195,8 @@ Implementation:
    - `- TODO`;
    - `TODO` as a standalone placeholder line;
    - prose such as `TODO fill this in` when clearly placeholder-shaped.
-3. Allow normal Portuguese prose such as `cada`, and allow lowercase `todo`
-   when embedded in grammatical prose without placeholder markers.
-4. Preserve existing literal-path exceptions such as filenames containing
-   `TODO`.
+3. Allow normal Portuguese prose such as `cada`, and allow lowercase `todo` when embedded in grammatical prose without placeholder markers.
+4. Preserve existing literal-path exceptions such as filenames containing `TODO`.
 
 Regression fixtures:
 
@@ -239,8 +213,7 @@ python3 scripts/project_alignment_oracle.py --self-test
 
 Stop condition:
 
-- If narrowing the detector permits obvious placeholder drift, stop with
-  `NEEDS_REVIEW` and add a stricter marker grammar.
+- If narrowing the detector permits obvious placeholder drift, stop with `NEEDS_REVIEW` and add a stricter marker grammar.
 
 ## SPEC-003: Installed Runtime Churn Noise
 
@@ -252,8 +225,7 @@ Owned files:
 Implementation:
 
 1. Review `reflect` changed-file selection.
-2. Classify installed TES runtime helper churn under `.tes/bin/**` as update
-   noise when it is the only durable-looking change.
+2. Classify installed TES runtime helper churn under `.tes/bin/**` as update noise when it is the only durable-looking change.
 3. Preserve capture when:
    - a closure note is supplied;
    - docs under `docs/**` changed materially;
@@ -277,9 +249,7 @@ python3 scripts/cortex.py --self-test
 
 Stop condition:
 
-- If installed runtime helper churn is needed as durable memory evidence for
-  another TES contract, stop and split the behavior into a separate ADR or
-  explicit lifecycle decision.
+- If installed runtime helper churn is needed as durable memory evidence for another TES contract, stop and split the behavior into a separate ADR or explicit lifecycle decision.
 
 ## SPEC-004: Semantic Residue Authoring Guardrails
 
@@ -314,8 +284,7 @@ python3 scripts/private_vocabulary_oracle.py
 
 Stop condition:
 
-- If the doc would duplicate an existing source of truth, update that source
-  instead of creating parallel guidance.
+- If the doc would duplicate an existing source of truth, update that source instead of creating parallel guidance.
 
 ## SPEC-005: Cortex Evidence Guidance
 
@@ -328,14 +297,12 @@ Owned files:
 Implementation:
 
 1. Add a short evidence boundary:
-   - allowed refs: `sources/**`, `docs/agents/cortex/sources/**`,
-     `docs/agents/evidence/**`, or `Assumption:`;
+   - allowed refs: `sources/**`, `docs/agents/cortex/sources/**`, `docs/agents/evidence/**`, or `Assumption:`;
    - absolute paths fail;
    - derived caches are not durable evidence;
    - benchmark artifacts do not write Cortex memory.
 2. Ensure docs do not imply that absolute local paths can satisfy audit.
-3. Keep MCP language read-only unless an existing authorized write command is
-   already documented elsewhere.
+3. Keep MCP language read-only unless an existing authorized write command is already documented elsewhere.
 
 Focused oracle:
 
@@ -353,25 +320,20 @@ Stop condition:
 
 Owned files:
 
-- sanitizer self-test scripts only when scanner-shaped examples can be replaced
-  without reducing coverage;
+- sanitizer self-test scripts only when scanner-shaped examples can be replaced without reducing coverage;
 - docs only if retained explanation is needed.
 
 Implementation:
 
-1. Inventory synthetic path, email, token, and secret fixtures shipped in the
-   public bundle.
+1. Inventory synthetic path, email, token, and secret fixtures shipped in the public bundle.
 2. Replace scanner-shaped examples with neutral placeholders where possible:
    - `<absolute-path>`;
    - `<email-address>`;
    - `<redacted-token>`;
    - `<private-url>`;
    - `<stack-trace>`.
-3. Preserve sanitizer coverage by asserting placeholders are sanitized or by
-   using generated strings assembled at runtime in tests when static scanning
-   would be noisy.
-4. If a literal fixture must remain, document why in the script comment and
-   ensure no real-looking project name appears.
+3. Preserve sanitizer coverage by asserting placeholders are sanitized or by using generated strings assembled at runtime in tests when static scanning would be noisy.
+4. If a literal fixture must remain, document why in the script comment and ensure no real-looking project name appears.
 
 Focused oracle:
 
@@ -386,8 +348,7 @@ python3 scripts/private_vocabulary_oracle.py
 
 Stop condition:
 
-- If replacement weakens sanitizer proof, defer cleanup and keep the fixture
-  with explicit synthetic labeling.
+- If replacement weakens sanitizer proof, defer cleanup and keep the fixture with explicit synthetic labeling.
 
 ## SPEC-007: Release Identity And Package Closure
 
@@ -400,8 +361,7 @@ Tasks:
 
 1. Classify release identity after runtime changes:
    - planning-only docs: no bump;
-   - script/oracle/command/adopter-visible docs: patch bump required by the
-     maintainer release identity rule unless explicitly deferred by owner.
+   - script/oracle/command/adopter-visible docs: patch bump required by the maintainer release identity rule unless explicitly deferred by owner.
 2. Run focused oracles from each implemented unit.
 3. Run baseline gates:
 
@@ -429,17 +389,11 @@ python3 scripts/public_bundle_oracle.py
 
 Stop condition:
 
-- If release identity requires a bump and owner authorization is unclear, stop
-  with `NEEDS_REVIEW`.
+- If release identity requires a bump and owner authorization is unclear, stop with `NEEDS_REVIEW`.
 
 ## Private Vocabulary Guard
 
-The implementation must not add private project names, repository paths,
-remotes, commit narratives, target product vocabulary, target domain decisions,
-canary identifiers, or target-specific storage/archive names. Use generic forms
-only: `private target canary`, `target project`, `private source-of-record kept
-outside TES`, `<project-A>`, `<retired-term>`, `<successor-term>`,
-`<absolute-path>`, and `<redacted-token>`.
+The implementation must not add private project names, repository paths, remotes, commit narratives, target product vocabulary, target domain decisions, canary identifiers, or target-specific storage/archive names. Use generic forms only: `private target canary`, `target project`, `private source-of-record kept outside TES`, `<project-A>`, `<retired-term>`, `<successor-term>`, `<absolute-path>`, and `<redacted-token>`.
 
 ## Evidence Plan
 

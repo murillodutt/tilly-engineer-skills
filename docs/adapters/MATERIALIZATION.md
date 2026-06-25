@@ -10,9 +10,7 @@ tver: 0.2.0
 
 # Adapter Materialization
 
-`src/adapters/**` is the only local canonical adapter source. Generated install
-trees are materialized from that source, are not edited by hand, and are purged
-after inspection.
+`src/adapters/**` is the only local canonical adapter source. Generated install trees are materialized from that source, are not edited by hand, and are purged after inspection.
 
 ## Commands
 
@@ -24,9 +22,7 @@ after inspection.
 | `npm run materialize:all` | Temporary inspection output for all adapters; purge after use |
 | `npm run materialize:check` | Temporary materialization with validation |
 
-`dist/**` is ignored because it is generated. The committed source remains in
-`src/adapters/**`. Local package validation fails if `dist/adapters/**` remains
-after an inspection run.
+`dist/**` is ignored because it is generated. The committed source remains in `src/adapters/**`. Local package validation fails if `dist/adapters/**` remains after an inspection run.
 
 ## Output Contracts
 
@@ -38,32 +34,20 @@ after an inspection run.
 
 ## Gate
 
-`npm run commit:check` runs `scripts/materialize_adapter.py all --check`. That
-check builds all adapters in a temporary directory and verifies:
+`npm run commit:check` runs `scripts/materialize_adapter.py all --check`. That check builds all adapters in a temporary directory and verifies:
 
 - each expected target path exists;
 - Codex skill self-test passes after materialization;
-- Cursor keeps `.mdc` frontmatter with a `description` on both rules, the
-  always-on discipline anchor `tes-engineering-discipline.mdc` at `alwaysApply: true`, and
-  the lazy capability rule `tes-runtime-capabilities.mdc` at `alwaysApply: false`
-  (Apply Intelligently), so capability detail loads only when relevant;
-- Cursor separates the always-on governance anchor (`tes-engineering-discipline.mdc`) from
-  the lazy TES-owned command/capability layer (`tes-runtime-capabilities.mdc`);
+- Cursor keeps `.mdc` frontmatter with a `description` on both rules, the always-on discipline anchor `tes-engineering-discipline.mdc` at `alwaysApply: true`, and the lazy capability rule `tes-runtime-capabilities.mdc` at `alwaysApply: false` (Apply Intelligently), so capability detail loads only when relevant;
+- Cursor separates the always-on governance anchor (`tes-engineering-discipline.mdc`) from the lazy TES-owned command/capability layer (`tes-runtime-capabilities.mdc`);
 - Claude project skills materialize under `.claude/skills/**`;
-- plugin metadata under `src/adapters/**/plugin/**` remains source-only and is
-  not materialized into target projects;
-- installs and updates remove obsolete plugin/root-skill runtime paths only when
-  they are TES-owned/generated or empty, while ambiguous paths are backed up and
-  reported as `NEEDS_REVIEW`;
-- existing project-owned bootloaders are backed up centrally, replaced by clean
-  runtime bootloaders, and recovered semantically while adapter assets install;
+- plugin metadata under `src/adapters/**/plugin/**` remains source-only and is not materialized into target projects;
+- installs and updates remove obsolete plugin/root-skill runtime paths only when they are TES-owned/generated or empty, while ambiguous paths are backed up and reported as `NEEDS_REVIEW`;
+- existing project-owned bootloaders are backed up centrally, replaced by clean runtime bootloaders, and recovered semantically while adapter assets install;
 - no `src/**` source tree leaks into an install output.
-- no generated `dist/adapters/**` inspection output remains in the local source
-  package after tests or inspection.
+- no generated `dist/adapters/**` inspection output remains in the local source package after tests or inspection.
 
-`commit:check` also requires required package files to be staged or already
-tracked, so the pre-commit hook cannot pass by reading untracked files that
-would be absent from the commit.
+`commit:check` also requires required package files to be staged or already tracked, so the pre-commit hook cannot pass by reading untracked files that would be absent from the commit.
 
 ## Mantra Gate Ownership
 
@@ -73,13 +57,9 @@ Mantra Gate behavior is skill-owned, not bootloader-owned:
 - Claude `CLAUDE.md` routes to `.claude/skills/tes-engineering-discipline/SKILL.md`.
 - Cursor `.cursor/rules/tes-engineering-discipline.mdc` carries the active rule directly.
 
-Materialization checks reject active bootloaders or rules that reintroduce
-retired project-local gate markers or duplicate the gate protocol in the
-bootloader. Historical evidence may preserve retired text; active runtime
-surfaces may not.
+Materialization checks reject active bootloaders or rules that reintroduce retired project-local gate markers or duplicate the gate protocol in the bootloader. Historical evidence may preserve retired text; active runtime surfaces may not.
 
-If a target tool changes packaging rules, update `src/adapters/<tool>/**`,
-`scripts/materialize_adapter.py`, and this document in the same patch.
+If a target tool changes packaging rules, update `src/adapters/<tool>/**`, `scripts/materialize_adapter.py`, and this document in the same patch.
 
 ## Packaging Risk Register
 
@@ -90,8 +70,4 @@ If a target tool changes packaging rules, update `src/adapters/<tool>/**`,
 | Cursor | Legacy `.cursorrules` leaks back into the package or project-owned rules block TES commands | Validator blocks `.cursorrules`; runtime capabilities materialize as a separate TES-owned rule |
 | All | Generated output becomes perceived source | `dist/adapters/**` is temporary inspection output and validation requires purging it after use |
 
-Hooks, ungoverned write-capable MCP servers, agent definitions,
-cloud/background execution, and marketplace publishing are excluded from the
-default materialized output. Cortex MCP is activated by `scripts/install_mcp.py`
-as a project-scoped installer layer, not by adapter materialization; governed
-remember requires ADR 0002 exact approval.
+Hooks, ungoverned write-capable MCP servers, agent definitions, cloud/background execution, and marketplace publishing are excluded from the default materialized output. Cortex MCP is activated by `scripts/install_mcp.py` as a project-scoped installer layer, not by adapter materialization; governed remember requires ADR 0002 exact approval.

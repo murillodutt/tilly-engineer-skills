@@ -1,7 +1,6 @@
 # Failure Patterns
 
-Load this reference when a task shows ambiguity, overengineering, broad diffs,
-or weak closure.
+Load this reference when a task shows ambiguity, overengineering, broad diffs, or weak closure.
 
 ## Silent Wrong Interpretation
 
@@ -50,8 +49,7 @@ Repair:
 
 Signal:
 
-- The answer says "done" without a test, lint, typecheck, build, or domain
-  oracle.
+- The answer says "done" without a test, lint, typecheck, build, or domain oracle.
 - The agent relies on prose confidence.
 - A benchmark or fixture exists but was not run.
 

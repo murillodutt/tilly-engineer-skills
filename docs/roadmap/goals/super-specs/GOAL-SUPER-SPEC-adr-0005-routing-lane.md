@@ -9,11 +9,9 @@ evidence_level: L1
 
 # GOAL Super SPEC: ADR 0005 Routing Lane
 
-Status: active lane SPEC derived from
-`docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
+Status: active lane SPEC derived from `docs/adr/0005-asset-transfer-to-existing-surfaces.md`.
 
-Purpose: make TES routing lighter and clearer through existing command trigger,
-doctor, map, installer, and adapter surfaces without adding a router skill.
+Purpose: make TES routing lighter and clearer through existing command trigger, doctor, map, installer, and adapter surfaces without adding a router skill.
 
 ## Asset-Transfer Packet
 
@@ -33,12 +31,9 @@ doctor, map, installer, and adapter surfaces without adding a router skill.
 Tasks:
 
 1. Capture `git status --short --branch --untracked-files=all`.
-2. Read ADR 0005, command triggers, relevant adapter route source, and platform
-   surface rules.
-3. Classify the failure as over-routing, under-routing, explicit-invocation
-   breach, platform mismatch, or stale trigger copy.
-4. Name correlated install, adapter, generated, and public surfaces before
-   editing.
+2. Read ADR 0005, command triggers, relevant adapter route source, and platform surface rules.
+3. Classify the failure as over-routing, under-routing, explicit-invocation breach, platform mismatch, or stale trigger copy.
+4. Name correlated install, adapter, generated, and public surfaces before editing.
 
 Focused oracles:
 
@@ -53,8 +48,7 @@ git diff --check
 
 Tasks:
 
-1. Add or identify a route case where the correct answer is one next flow, not
-   a command inventory.
+1. Add or identify a route case where the correct answer is one next flow, not a command inventory.
 2. Include an explicit-invocation trap when relevant.
 3. Require the expected result to preserve platform boundaries.
 
@@ -62,11 +56,9 @@ Tasks:
 
 Tasks:
 
-1. Patch the smallest trigger row, oracle assertion, adapter route, or platform
-   check needed to make the route behavior correct.
+1. Patch the smallest trigger row, oracle assertion, adapter route, or platform check needed to make the route behavior correct.
 2. Do not add a router skill, command alias, or setup workflow.
-3. Preserve explicit-invocation contracts unless the owner accepts a contract
-   change.
+3. Preserve explicit-invocation contracts unless the owner accepts a contract change.
 
 ## SPEC-003: Regression And Release
 
@@ -74,8 +66,6 @@ Tasks:
 
 1. Run route and platform focused oracles.
 2. Run package validation.
-3. If installed adapter or trigger behavior changed, stop for release identity
-   decision.
+3. If installed adapter or trigger behavior changed, stop for release identity decision.
 
-Valid statuses: `ASSET_TRANSFERRED`, `ASSET_ALREADY_ADEQUATE`,
-`NEEDS_OWNER_DECISION`, `NEEDS_ASSET_PACKET`, `BLOCKED`.
+Valid statuses: `ASSET_TRANSFERRED`, `ASSET_ALREADY_ADEQUATE`, `NEEDS_OWNER_DECISION`, `NEEDS_ASSET_PACKET`, `BLOCKED`.

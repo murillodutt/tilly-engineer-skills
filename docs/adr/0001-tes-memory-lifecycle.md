@@ -10,15 +10,11 @@ tver: 0.1.0
 
 # ADR 0001: TES Memory Lifecycle And Cortex Operational Maturity
 
-Archived on 2026-05-27. This ADR is retained as the Cortex bootstrapping
-record. Active Cortex MCP evolution and the living invariants that still apply
-are now governed by ADR 0003.
+Archived on 2026-05-27. This ADR is retained as the Cortex bootstrapping record. Active Cortex MCP evolution and the living invariants that still apply are now governed by ADR 0003.
 
 Accepted on 2026-05-26.
 
-TES will treat Cortex memory as an operational lifecycle, not only as durable
-Markdown recall. Markdown remains the source of truth; hooks, MCP, SQLite,
-events, checkpoints, and reviewers are governed access and evidence surfaces.
+TES will treat Cortex memory as an operational lifecycle, not only as durable Markdown recall. Markdown remains the source of truth; hooks, MCP, SQLite, events, checkpoints, and reviewers are governed access and evidence surfaces.
 
 ## Context
 
@@ -26,20 +22,12 @@ Cortex already has a strong truth boundary:
 
 - durable memory lives in versioned Markdown under `docs/agents/cortex/**`;
 - `.tes/cortex/recall.sqlite` and `.tes/cortex/semantic.sqlite` are derived;
-- MCP begins read-only in v1, with governed write capability deferred to a
-  later ADR;
-- `learn` and `reflect` propose; only `apply --yes` writes with evidence and
-  authorization.
+- MCP begins read-only in v1, with governed write capability deferred to a later ADR;
+- `learn` and `reflect` propose; only `apply --yes` writes with evidence and authorization.
 
-The missing maturity layer is not another storage backend. The missing layer is
-an explicit memory lifecycle: when memory is recalled, when scope is injected,
-when writes are blocked, when checkpoints are created, when closeout asks for
-learning, when subagents may report evidence, and when curation or consolidation
-is due.
+The missing maturity layer is not another storage backend. The missing layer is an explicit memory lifecycle: when memory is recalled, when scope is injected, when writes are blocked, when checkpoints are created, when closeout asks for learning, when subagents may report evidence, and when curation or consolidation is due.
 
-This decision follows a local source inspection of current TES Cortex and MCP
-contracts plus an external memory-system study. The transferable pattern is
-recorded here without making the external project part of TES source material.
+This decision follows a local source inspection of current TES Cortex and MCP contracts plus an external memory-system study. The transferable pattern is recorded here without making the external project part of TES source material.
 
 ## Decision
 
@@ -48,15 +36,11 @@ TES adopts a Memory Lifecycle architecture for Cortex evolution.
 The architecture has six rules:
 
 1. Cortex Markdown remains authoritative memory.
-2. Runtime indexes, event logs, hook outputs, and checkpoints are evidence or
-   acceleration surfaces, not memory truth.
-3. Memory writes require explicit authorization, evidence, and a Cortex write
-   path such as `apply --yes` or a future approved equivalent.
-4. Subagents do not write durable memory directly. They return findings to the
-   parent agent, which may propose or apply memory through the authorized path.
+2. Runtime indexes, event logs, hook outputs, and checkpoints are evidence or acceleration surfaces, not memory truth.
+3. Memory writes require explicit authorization, evidence, and a Cortex write path such as `apply --yes` or a future approved equivalent.
+4. Subagents do not write durable memory directly. They return findings to the parent agent, which may propose or apply memory through the authorized path.
 5. Adapter hooks are modeled as lifecycle contracts, not ad hoc scripts.
-6. Every new memory automation needs an oracle proving it cannot silently create
-   ungrounded, duplicate, stale, or cross-scope memory.
+6. Every new memory automation needs an oracle proving it cannot silently create ungrounded, duplicate, stale, or cross-scope memory.
 
 ## Adopted Components
 
@@ -88,8 +72,7 @@ The architecture has six rules:
 
 ## Event Ledger
 
-TES will add a structured event ledger only as an operational evidence surface.
-It must not replace `TRAIL.md`, Cortex cells, or Field Reports.
+TES will add a structured event ledger only as an operational evidence surface. It must not replace `TRAIL.md`, Cortex cells, or Field Reports.
 
 Required event fields for future implementation:
 
@@ -104,18 +87,13 @@ Required event fields for future implementation:
 | `oracle` | Command or tool result that proves the event |
 | `created_at` | UTC timestamp |
 
-The ledger is inspectable by agents through future `event list` and
-`event status` style commands. Human-facing summaries may remain in `TRAIL.md`
-or retained evidence reports.
+The ledger is inspectable by agents through future `event list` and `event status` style commands. Human-facing summaries may remain in `TRAIL.md` or retained evidence reports.
 
 ## Durable Memory Versus Checkpoint State
 
 Durable Cortex cells require claim, evidence, links, and authorization.
 
-Checkpoint state is different. It may preserve compact summaries, session
-reentry hints, current run position, failed command context, or pending
-handoffs. Checkpoints must have TTL or explicit cleanup semantics and must not
-be promoted into Cortex cells without the normal evidence path.
+Checkpoint state is different. It may preserve compact summaries, session reentry hints, current run position, failed command context, or pending handoffs. Checkpoints must have TTL or explicit cleanup semantics and must not be promoted into Cortex cells without the normal evidence path.
 
 This distinction prevents transient session state from becoming doctrine.
 
@@ -137,8 +115,7 @@ Subagents must not:
 
 ## MCP Boundary
 
-This ADR keeps the original v1 Cortex MCP read-only until a later decision
-proves:
+This ADR keeps the original v1 Cortex MCP read-only until a later decision proves:
 
 1. explicit user authorization is preserved;
 2. evidence grounding is mechanically enforced;
@@ -146,9 +123,7 @@ proves:
 4. destructive or broad writes are blocked;
 5. the write path is covered by contract, oracle, and rollback evidence.
 
-ADR 0002 is that later decision. It adds a narrow governed MCP remember lane
-without changing this ADR's source-of-truth rule: Markdown remains durable
-memory truth, and automatic memory capture remains forbidden.
+ADR 0002 is that later decision. It adds a narrow governed MCP remember lane without changing this ADR's source-of-truth rule: Markdown remains durable memory truth, and automatic memory capture remains forbidden.
 
 ## Rejected Alternatives
 
@@ -172,26 +147,17 @@ memory truth, and automatic memory capture remains forbidden.
 | 5 | Cortex operator layer: health, peek, review, checkpoint, remember, forget. | Mutability oracle proves read-only commands cannot write and mutating commands require approval. |
 | 6 | Consolidation gate with lock and observed-write certification. | Gate oracle proves no completion claim without observed authorized write behavior. |
 
-Each wave is independently releasable only after its correlated docs, adapters,
-skills, scripts, and package surfaces are classified through the maintainer
-correlation rule.
+Each wave is independently releasable only after its correlated docs, adapters, skills, scripts, and package surfaces are classified through the maintainer correlation rule.
 
 ## Release Identity
 
-This ADR is a documentation and architecture decision. It does not by itself
-deliver new adopter-visible behavior.
+This ADR is a documentation and architecture decision. It does not by itself deliver new adopter-visible behavior.
 
-Any later change that adds or changes hooks, skills, installer behavior, helper
-scripts, MCP tools, public docs, adapter materialization, or runtime behavior is
-delivered behavior and requires a release identity decision under the repository
-release rules.
+Any later change that adds or changes hooks, skills, installer behavior, helper scripts, MCP tools, public docs, adapter materialization, or runtime behavior is delivered behavior and requires a release identity decision under the repository release rules.
 
 ## Consequences
 
-TES gains a clearer path from memory as files to memory as an auditable
-operating system. The cost is stricter governance: every automation must declare
-scope, authority, evidence, status, and oracle before it can touch durable
-memory.
+TES gains a clearer path from memory as files to memory as an auditable operating system. The cost is stricter governance: every automation must declare scope, authority, evidence, status, and oracle before it can touch durable memory.
 
 Future implementation must keep the system boring at the boundary:
 

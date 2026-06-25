@@ -10,8 +10,7 @@ tver: 0.4.17
 
 # Tilly Engineer Skills Docs
 
-This documentation layer explains the method behind the source package without
-turning the repository root into an inventory.
+This documentation layer explains the method behind the source package without turning the repository root into an inventory.
 
 ## Map
 
@@ -103,18 +102,9 @@ turning the repository root into an inventory.
 
 `docs/**` explains and audits behavior. It is not the installable source.
 
-`docs/tds/DOCS-INDEX.yml` governs Markdown files under `docs/**`. Rendered
-HTML and text surfaces such as `docs/index.html`,
-`docs/install/USER-MANUAL.html`, and `docs/llms.txt` remain public
-documentation entrypoints referenced here and in `README.md`, but they are not
-listed as TDS documents because they do not carry Markdown frontmatter.
+`docs/tds/DOCS-INDEX.yml` governs Markdown files under `docs/**`. Rendered HTML and text surfaces such as `docs/index.html`, `docs/install/USER-MANUAL.html`, and `docs/llms.txt` remain public documentation entrypoints referenced here and in `README.md`, but they are not listed as TDS documents because they do not carry Markdown frontmatter.
 
-`docs/index.html` and `docs/install/USER-MANUAL.html` are rendered public
-surfaces. Their commercial, documentation, and user-facing text is sourced from
-`docs/i18n/tes-public.content.json` and structured by
-`docs/i18n/tes-public.structure.yml`. Use
-`python3 scripts/build_public_docs.py` to regenerate them and
-`python3 scripts/build_public_docs.py --check` before closure.
+`docs/index.html` and `docs/install/USER-MANUAL.html` are rendered public surfaces. Their commercial, documentation, and user-facing text is sourced from `docs/i18n/tes-public.content.json` and structured by `docs/i18n/tes-public.structure.yml`. Use `python3 scripts/build_public_docs.py` to regenerate them and `python3 scripts/build_public_docs.py --check` before closure.
 
 Public surface review follows a source/render/output contract:
 
@@ -125,11 +115,7 @@ The module graph is the memory.
 The generated surface must never become the hidden source.
 ```
 
-Use `python3 scripts/tds_surface_oracle.py` to check rendered public docs
-against their structured sources, copy-ready payloads, generated markers, TDS
-labels, and public source map. Use `python3 scripts/tds_runtime_server.py` for
-a local GitHub Pages-like runtime with `/_tds/health`, `/_tds/manifest`, and
-`/_tds/check` endpoints.
+Use `python3 scripts/tds_surface_oracle.py` to check rendered public docs against their structured sources, copy-ready payloads, generated markers, TDS labels, and public source map. Use `python3 scripts/tds_runtime_server.py` for a local GitHub Pages-like runtime with `/_tds/health`, `/_tds/manifest`, and `/_tds/check` endpoints.
 
 Copyable adapter material lives in `src/adapters/**`:
 

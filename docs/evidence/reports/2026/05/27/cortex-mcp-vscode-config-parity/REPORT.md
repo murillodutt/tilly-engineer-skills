@@ -12,11 +12,7 @@ tver: 0.1.0
 
 ## Summary
 
-A private canary project exposed a TES installer false green: MCP activation
-could pass while a project-scoped VS Code MCP file remained unregistered for
-`tes-cortex`. The portable finding is not project-specific. It is an installer
-contract gap: activation must validate the final MCP registration surface, not
-only helper presence or adapter route completion.
+A private canary project exposed a TES installer false green: MCP activation could pass while a project-scoped VS Code MCP file remained unregistered for `tes-cortex`. The portable finding is not project-specific. It is an installer contract gap: activation must validate the final MCP registration surface, not only helper presence or adapter route completion.
 
 ## Mantra Gate
 
@@ -32,12 +28,9 @@ only helper presence or adapter route completion.
 
 ## Evidence
 
-Before the fix, a neutral fixture with `.vscode/mcp.json` containing an
-unrelated HTTP MCP server returned install success but left only the existing
-server in `servers`.
+Before the fix, a neutral fixture with `.vscode/mcp.json` containing an unrelated HTTP MCP server returned install success but left only the existing server in `servers`.
 
-After the fix, the same fixture returns install success and the file contains
-both the existing server and `tes-cortex`.
+After the fix, the same fixture returns install success and the file contains both the existing server and `tes-cortex`.
 
 The installer now validates registered config after write:
 
@@ -48,15 +41,11 @@ The installer now validates registered config after write:
 
 ## Boundary
 
-VS Code support is MCP-consumer support only. It does not add a fourth TES
-adapter, VS Code skills, VS Code hooks, VS Code bootloaders, marketplace
-publishing, remote action, cloud action, global MCP mutation, or any write lane
-beyond ADR 0002 governed remember.
+VS Code support is MCP-consumer support only. It does not add a fourth TES adapter, VS Code skills, VS Code hooks, VS Code bootloaders, marketplace publishing, remote action, cloud action, global MCP mutation, or any write lane beyond ADR 0002 governed remember.
 
 ## Closure
 
-Release identity: patch bump required because adopter-visible MCP installer
-behavior changed.
+Release identity: patch bump required because adopter-visible MCP installer behavior changed.
 
 Focused oracles:
 

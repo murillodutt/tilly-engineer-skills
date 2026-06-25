@@ -9,8 +9,7 @@ evidence_level: L3
 
 # Adapter Parity Readiness Report
 
-This report certifies structural and contract parity readiness for the current
-adapter set. It does not certify behavior parity.
+This report certifies structural and contract parity readiness for the current adapter set. It does not certify behavior parity.
 
 ## Decision
 
@@ -22,9 +21,7 @@ Claim:
 structural/contract parity readiness only; no behavior parity claim
 ```
 
-The next risk after Context Mesh v1-rc is adapter drift, not model behavior.
-This loop checks that Codex, Claude, and Cursor receive the same neutral
-behavioral contract before any new behavior backend work.
+The next risk after Context Mesh v1-rc is adapter drift, not model behavior. This loop checks that Codex, Claude, and Cursor receive the same neutral behavioral contract before any new behavior backend work.
 
 ## Gate
 
@@ -107,11 +104,8 @@ Gates:
 - Do not declare Cursor behavior certification.
 - Do not treat different adapter capabilities as drift.
 - Do not compare adapter prose by literal text equality.
-- Do not start behavior backend work until structural/contract readiness stays
-  green after future adapter changes.
+- Do not start behavior backend work until structural/contract readiness stays green after future adapter changes.
 
 ## Next Step
 
-The next permitted loop is a behavior-readiness design pass per adapter. It
-should start by defining execution backends and evidence limits, not by changing
-the shared contract.
+The next permitted loop is a behavior-readiness design pass per adapter. It should start by defining execution backends and evidence limits, not by changing the shared contract.

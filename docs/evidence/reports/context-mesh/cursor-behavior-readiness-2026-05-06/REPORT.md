@@ -11,15 +11,11 @@ evidence_level: L3
 
 ## Decision
 
-Cursor remains structurally certified and behavior-deferred. This is an
-explicit non-claim, not an accidental gap.
+Cursor remains structurally certified and behavior-deferred. This is an explicit non-claim, not an accidental gap.
 
 ## Reason
 
-The repository has deterministic materialization and installer smoke checks for
-Cursor files and project-scoped MCP config. It does not yet have a clean,
-repeatable, non-interactive Cursor execution backend equivalent to
-`claude-cli` or `codex-cli`.
+The repository has deterministic materialization and installer smoke checks for Cursor files and project-scoped MCP config. It does not yet have a clean, repeatable, non-interactive Cursor execution backend equivalent to `claude-cli` or `codex-cli`.
 
 ## Current Gates
 
@@ -43,5 +39,4 @@ Cursor can move from structural to behavioral only after a retained run records:
 
 ## No-Go
 
-Do not declare Cursor behavioral parity from materialized files, MCP config, or
-manual UI observation alone.
+Do not declare Cursor behavioral parity from materialized files, MCP config, or manual UI observation alone.
