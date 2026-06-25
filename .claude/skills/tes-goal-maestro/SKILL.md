@@ -119,6 +119,7 @@ Use `references/quality-gates.md` for full status definitions. Root-level status
 - `NEEDS_OWNER_DECISION`
 - `SAFETY_BLOCKED`
 - `NEEDS_INDEPENDENT_AUDIT`
+- `NEEDS_QUORUM_AUDIT`
 - `EXECUTION_LOOP_COMPLETE`
 - `EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS`
 

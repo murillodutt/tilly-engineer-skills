@@ -98,6 +98,10 @@ Use when a runtime-wiring, game-loop, adapter-wiring or integration unit has onl
 
 Use when an anchor-declared or tree-required quality/runtime axis lacks PASS evidence at closeout. `DEGRADED` is honest evidence, but it does not satisfy a required axis.
 
+### NEEDS_QUORUM_AUDIT
+
+Use in panel-mode Executive Stop Audit (an oracle with `refuters[]`, see `references/execution-loop-runner.md` § Quorum Audit) when fewer than `R` distinct refuters could be instantiated for a required-axis oracle, or when `scripts/panel-diversity.mjs` flags the refuters as clones (different lens labels, identical `{mutate,revert,decoy_mutate}` bodies — vacuous diversity, rejected by body). It is the panel-mode parallel of `NEEDS_INDEPENDENT_AUDIT`: the harness proved "a second mind exists" but not "R diverse lenses could not topple this credit." A single refuter that leaves the oracle PASS under its own mutation vetoes the credit regardless of count.
+
 ### VISUAL_CERT_BLOCKED
 
 Use when browser or visual proof is required and no real browser/render attempt was made, or the attempt failed for a captured environment reason. A blocked environment must include command output in the ledger.

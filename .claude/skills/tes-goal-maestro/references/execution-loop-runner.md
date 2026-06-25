@@ -38,6 +38,7 @@ Stop or branch with:
 - `SPEC_CONTRACT_UNSTABLE`
 - `NEEDS_STRUCTURAL_METHOD`
 - `NEEDS_MORE_LOOPS`
+- `NEEDS_QUORUM_AUDIT`
 - `NEEDS_OWNER_DECISION`
 - `SAFETY_BLOCKED`
 - `EXECUTION_LOOP_COMPLETE`
@@ -313,6 +314,7 @@ api_lint_status:
 auditor_distinct_from_operator:
 auditor_rewrote_no_oracle:
 audit_remutation:
+distinct_refuters:
 stop_state:
 next_allowed_action:
 ```
@@ -337,6 +339,16 @@ The reviewer does not stop at inspection. For every required-axis oracle, the re
 
 Any field missing, `no`, or `skipped`, or any oracle staying PASS under re-mutation → stop with `NEEDS_INDEPENDENT_AUDIT`. Drive the re-execution and re-mutation with `scripts/audit-remutation.mjs`. The reviewer also runs `scripts/ledger-no-placeholder.mjs` over the ledger and SCORECARD; any placeholder `commit:` (`<...>`, empty, `TODO`, `TBD`, `<hash>`) → `NEEDS_EXECUTION_UNIT_FIDELITY`.
 
+### Quorum Audit (panel mode)
+
+The three binary fields prove that AT LEAST ONE mind distinct from the operator audited the oracle. When the audit runs `scripts/audit-remutation.mjs` in panel mode (an oracle with `refuters[]`, see SPEC-004), distinction becomes cardinal, not binary:
+
+```text
+DISTINCT_REFUTERS=<integer count of refuters with distinct {mutate,revert,decoy_mutate} bodies>
+```
+
+A required-axis oracle audited by panel earns credit only when `DISTINCT_REFUTERS >= R` for the contract's chosen `R` (default `R=2`), every refuter kept the oracle clean-PASS and FAIL-under-its-own-mutation, and `scripts/panel-diversity.mjs` confirms the refuter bodies are not clones (different lens labels with identical bodies are vacuous diversity, rejected by body). If fewer than `R` distinct refuters could be instantiated, or `panel-diversity.mjs` flags clones, stop with `NEEDS_QUORUM_AUDIT` — the exact panel-mode parallel of `NEEDS_INDEPENDENT_AUDIT`. A single refuter that leaves the oracle PASS under its own mutation vetoes the credit (`harness.mjs` FAIL-domination), regardless of how many others passed.
+
 The reviewer does not receive the full original prompt unless the parent decides that a prompt contract dispute is the audit subject.
 
 The reviewer recommends one of:
@@ -349,6 +361,7 @@ The reviewer recommends one of:
 - `AXIS_UNPROVEN`
 - `VISUAL_CERT_BLOCKED`
 - `NEEDS_TREE_ADVERSARY`
+- `NEEDS_QUORUM_AUDIT`
 - `SPEC_BLOCKED`
 - `SPEC_CONTRACT_UNSTABLE`
 - `NEEDS_OWNER_DECISION`
