@@ -206,3 +206,116 @@ audit_remutation: not_applicable
 distinct_refuters: not_applicable
 stop_state: active_spec_committed
 next_allowed_action: worker_attempt (SPEC-006)
+
+spec_id: SPEC-006
+spec_version: anchor-58a53a48 (SPEC_REPAIR_BY_LLM r1: removed false exit-code-facade prereq, commit 9acd4cb5)
+attempt: 1
+repair_count: 1
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-007
+failed_attempt_recovery_decision: spec_repair (false prereq) + commit_valid_material (gates wired)
+commit: bbdd51d7
+oracle_status: PASS (gate routing ledger->RUN/absent->SKIP; re-mutation placeholder/wrong-hash exit1, no-anchor exit2 BLOCKED; both gates green on own ledger)
+structural_method_id: py-router-gate-add + node-pure-mjs-wrapper
+topology_decision: 2 Gates added to staged_commit_gate.py; new anchor-rehash-staged.mjs wrapper (4 surfaces) discovers anchor from ledger Anchor: line
+topology_decision_artifact: git show --stat bbdd51d7
+structural_debt: none
+next_structural_constraint: ledger Anchor: line is the declared pointer (zero new channel); commit: must be sha or no-commit
+topology_probe_result: not_applicable
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: not_applicable
+runtime_smoke_oracle: pass (gate routing proven RUN/SKIP both directions on the real router)
+adversary_objection: repaired (OBJ-1 follow-up was a false alarm; gate already honest, regression-guarded)
+shared_contract_extended: no
+extension_point_proven: not_applicable
+contract_handoff_artifact: anchor-rehash-staged.mjs (reuses anchor-rehash logic + ledger Anchor: pointer)
+api_lint_status: not_applicable
+auditor_distinct_from_operator: not_applicable
+auditor_rewrote_no_oracle: not_applicable
+audit_remutation: not_applicable
+distinct_refuters: not_applicable
+stop_state: active_spec_committed
+next_allowed_action: worker_attempt (SPEC-007)
+
+spec_id: SPEC-007
+spec_version: anchor-58a53a48
+attempt: 1
+repair_count: 0
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-008
+failed_attempt_recovery_decision: not_applicable
+commit: 2f9f50a9
+oracle_status: PASS (4 lens rules x4; LENS_THEATER x3; NEEDS_DISCOVERABILITY x3; validate-walls 28/28; 4-surface identical)
+structural_method_id: doc-surface-edit
+topology_decision: not_applicable
+topology_decision_artifact: not_applicable
+structural_debt: none
+next_structural_constraint: the lens panel itself is held to affirmation-is-never-credit
+topology_probe_result: not_applicable
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: not_applicable
+runtime_smoke_oracle: not_applicable
+adversary_objection: none
+shared_contract_extended: no
+extension_point_proven: not_applicable
+contract_handoff_artifact: tree-adversary.md § Decision Lens Contract
+api_lint_status: not_applicable
+auditor_distinct_from_operator: not_applicable
+auditor_rewrote_no_oracle: not_applicable
+audit_remutation: not_applicable
+distinct_refuters: not_applicable
+stop_state: active_spec_committed
+next_allowed_action: worker_attempt (SPEC-008)
+
+spec_id: SPEC-008
+spec_version: anchor-58a53a48
+attempt: 1
+repair_count: 0
+audit_repair_cycle: 0
+first_unexecuted_unit: none (all declared units executed)
+failed_attempt_recovery_decision: not_applicable
+commit: no-commit (certification + audit unit; no material edit beyond ledger close)
+oracle_status: PASS (validate-walls 28/28; tds PASS 187 docs; synth-selftest exit 0; reference-package fails ONLY on owner-deferred dist/0.3.195 bundle; 4-surface identical x10 files)
+structural_method_id: not_applicable
+topology_decision: not_applicable
+topology_decision_artifact: not_applicable
+structural_debt: none
+next_structural_constraint: bundle dist/0.3.195 built only at the release ceiling (owner-deferred, ADR 0006)
+topology_probe_result: not_applicable
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: not_applicable
+runtime_smoke_oracle: not_applicable
+adversary_objection: none
+shared_contract_extended: no
+extension_point_proven: not_applicable
+contract_handoff_artifact: not_applicable
+api_lint_status: not_applicable
+auditor_distinct_from_operator: yes
+auditor_rewrote_no_oracle: yes
+audit_remutation: ran
+distinct_refuters: 2 (panel veto re-mutated by independent auditor)
+stop_state: EXECUTION_LOOP_COMPLETE
+next_allowed_action: stop
+
+## FINAL STATUS — EXECUTION_LOOP_COMPLETE
+
+All declared units SPEC-000..SPEC-008 executed; one SPEC_REPAIR_BY_LLM (SPEC-006, commit 9acd4cb5).
+Executive Stop Audit by a distinct auditor re-executed AND re-mutated every required-axis
+oracle: each fails under mutation of its own named property; no facade survived.
+
+Ceiling reached (ADR 0006): the harness now GENERATES its own falsifiable proof —
+- Oracle Synthesis (SPEC-001): synthMeasure/synthMutation/synthFixture, self-falsified at birth.
+- Self-Construction (SPEC-003): derive-anchor-from-defect two-session bridge.
+- Adversary Panel (SPEC-004/005): refuters[] + quorum-with-veto + DISTINCT_REFUTERS + NEEDS_QUORUM_AUDIT.
+- Part A residual (SPEC-006): anchor-rehash + ledger-no-placeholder wired to commit-time.
+- Part C (SPEC-007): decision-lens contract (break-mandate, discoverability-first, risk-gating, audit-over-predict).
+Axes 4-5 (cross-domain wall-compiler, context-economy) declared owner-deferred.
+Release bundle dist/0.3.195 deferred until the release ceiling. No push.
+
+Commits: 804dd6bb, 440d3737, 14efde8c, 2d3dceaa, 15930983, 2e63abc5, 9acd4cb5, bbdd51d7, 2f9f50a9.
