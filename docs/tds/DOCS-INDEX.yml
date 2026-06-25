@@ -71,6 +71,13 @@ documents:
     consumer: maintainers, skill authors, oracle authors, benchmark authors, Goal Maestro authors, Prospect/Mine authors, and release operators
     source_of_truth: true
     evidence_level: L1
+  - path: docs/adr/0006-decision-lens-evolution-and-routable-gate-closure.md
+    id: architecture.adr_0006_decision_lens_evolution_and_routable_gate_closure
+    class: architecture
+    status: active
+    consumer: maintainers, Goal Maestro authors, oracle authors, installer authors, lens/stress authors, and release operators
+    source_of_truth: true
+    evidence_level: L1
   - path: docs/install/INSTALL.md
     id: install.adapter_installer
     class: adapter
