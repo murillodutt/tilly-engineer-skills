@@ -239,12 +239,12 @@ def _write_contract(target: Path, fields: tuple[str, ...] = EXPECTED_FIELDS) -> 
     )
 
 def self_test() -> dict[str, Any]:
-    """Six fixtures falsify the detector: it must fire on absent/incomplete
+    """Eight fixtures falsify the detector: it must fire on absent/incomplete
     packets, clear on a complete one, stay silent off-scope, degrade honestly
-    when the contract is missing, and — the acceptance test the auditor used —
-    flip its verdict when the contract's required-fields cardinality changes
-    while the packet stays the same. Each runs in its own tmpdir; none touches
-    the real contract."""
+    when the contract is missing or unparseable, and — the acceptance test the
+    auditor used (cases 6a/6b) — flip its verdict when the contract's
+    required-fields cardinality changes while the packet stays the same. Each
+    runs in its own tmpdir; none touches the real contract."""
     skill = "my-new-skill"
     staged = [f".claude/skills/{skill}/SKILL.md"]
     failures: list[str] = []

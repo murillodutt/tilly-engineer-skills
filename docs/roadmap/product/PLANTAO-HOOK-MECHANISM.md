@@ -96,6 +96,20 @@ ADR 0005 invariante 1 (linha 94): *"No new skill by default."* O detector senior
 | `release_identity` | **Delivered** — muda comportamento do instalador e dos scripts de hook que o adopter recebe. Bump de patch + superfícies correlatas (`<release_identity>`); decisão do owner antes do fechamento. |
 | `no_new_skill_evidence` | O detector já existe; o asset que carrega o novo timing é o instalador/materializador existente. Skill nova só se invocação autônoma não puder ser carregada por essas superfícies — não é o caso. |
 
+## 4.1 Paridade multi-host (obrigatória) — os pilares hooks/agents NÃO são uniformes
+
+Os hooks **não têm a mesma forma** entre Claude Code, Codex e Cursor — divergem em **nome** e **camada** do gancho, e — o ponto que a certificação obriga a não colapsar — no **contrato de saída**. Tratar "hooks" como camada única é facade de portabilidade: materializar só o evento Claude deixaria o pilar morto em dois dos três hosts. Matriz por host (forma, não conteúdo do projeto-referência):
+
+| Dimensão | Claude Code | Codex | Cursor |
+|----------|-------------|-------|--------|
+| **(a) Pré-ação** | `PreToolUse` (PascalCase) | `PreToolUse` | `preToolUse` (camelCase) |
+| **(b) Intenção** | `UserPromptSubmit` | `UserPromptSubmit` | `beforeSubmitPrompt` (nome E camada divergentes) |
+| **(c) Exclusivos** | — | `statusMessage` por evento; `PreCompact` | `preCompact` |
+| **(d) Ponto de instalação** | `.claude/settings.json` | `.codex/config.toml` (array-of-tables) + feature-flag `codex_hooks=true` + guarda Windows `.sh` | `.cursor/hooks.json` (`version:1`) |
+| **(e) Contrato de saída** | `exit 2` bloqueia + stderr→agente; `hookSpecificOutput.updatedInput` reescreve; `additionalContext` injeta | **idêntico a Claude** (`exit 2` + `updatedInput`) | **NÃO usa `exit 2`** — bloqueio é JSON-permission (`{"permission":"deny","agent_message":"…"}`); a intenção emite `{"continue":true,"user_message":"…"}` |
+
+**Três divergências não-colapsáveis:** (1) o nome do evento de intenção (`UserPromptSubmit` vs `beforeSubmitPrompt`); (2) `statusMessage` é só-Codex; (3) **o contrato de saída do Cursor é JSON-permission, não exit-code** — um materializador que assume `exit 2` em todo host quebra silenciosamente no Cursor. A fatia de hooks (§7 Slices 3-5) só é certificável-coerente quando esta matriz de cinco dimensões estiver honrada por host — não como "hooks" genérico.
+
 ## 5. Como cada hook se auto-falsifica (ADR 0006)
 
 ADR 0006 linha 27: *"A generated oracle/fixture/anchor that does not fire under mutation of its own named property is a facade — even if the harness wrote it. Affirmation is never credit, not even self-affirmation."* Aplicado a hooks de plantão:
