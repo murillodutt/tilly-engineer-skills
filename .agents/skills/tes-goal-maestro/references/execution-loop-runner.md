@@ -51,6 +51,25 @@ They never satisfy `--execute-loop` execution credit. The parent must run a stri
 
 If the target already contains a complete reference implementation, classify it in the baseline before the first worker. Continue only when the loop can still produce additive, non-empty per-SPEC evidence after loop start. If the existing implementation makes fresh per-SPEC evidence impossible without rewriting history or pretending old commits are new execution, stop with `NEEDS_OWNER_DECISION`.
 
+## Self-Construction: Derive Anchor From Defect
+
+The Anchor Artifact Gate forbids a Super SPEC generated in the SAME run from authorizing itself (`ambition-and-anchor.md:17`). It does NOT forbid the harness from MATERIALIZING an anchor in one session that a LATER session cites — the `anchor_origin` enum explicitly includes `previous-session` (`ambition-and-anchor.md:13`). This is the legitimate two-session bridge the harness uses to originate its own next execution from an observed defect.
+
+When a canary, field report, or audit re-mutation exposes a defect of class (a facade that survived, a missing oracle, a drift), the harness may run a `derive-anchor-from-defect` SPEC whose ONLY material product is a committed `GOAL-SUPER-SPEC-<defect>.md`. That artifact:
+
+1. names the observed defect, the oracle that SHOULD have caught it, and the named property that was violated;
+2. carries a synthesized `remutation-plan.json` for the repair (produced by `scripts/lib/synth.mjs` per `tree-adversary.md` § Oracle Synthesis On Repair), so the repair is born with a falsifiable oracle BEFORE its code exists;
+3. is committed with a recomputable provenance hash.
+
+A subsequent `--execute-loop` invocation cites that artifact as `anchor_origin=previous-session`. At the Pre-Edit Gate, `scripts/anchor-rehash.mjs` proves byte-identity (recomputed `git hash-object` matches the declared hash) and benchmark isolation (the path is not a foreign `benchmark-*/`). That is the full executable guarantee `anchor-rehash.mjs` provides — it does NOT read `anchor_origin`, so it cannot, on its own, reject a same-session self-citation.
+
+The same-session firewall is therefore enforced two ways, not by `anchor-rehash.mjs` alone:
+
+- a doc-coherence check that `ambition-and-anchor.md:17` still forbids same-session self-authorization (the rule must remain present and uninverted);
+- routing any anchor whose `anchor_origin` would be same-session to `NEEDS_OWNER_DECISION`: the human decides IF the derived repair should exist. The human leaves the floor (materializing SPECs) and stays only at this ceiling gate.
+
+Do not claim `anchor-rehash.mjs` executably rejects a same-session citation; it proves provenance and isolation only.
+
 ## Pre-Edit Gate
 
 Before any worker spawn, parent fallback edit, material implementation edit, or execution-unit commit, the parent must emit a Pre-Edit Gate from material sources. This gate is the mechanical permission to edit.
