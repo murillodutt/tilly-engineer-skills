@@ -125,6 +125,21 @@ const WALLS = [
     violate: () => [join(here, 'validate-walls.mjs'), 'deadbeefdeadbeef'],
     revert: () => [join(here, 'validate-walls.mjs'), gitHash(join(here, 'validate-walls.mjs'))],
   },
+  // META-PANEL — SPEC-004: o painel REJEITA diversidade vacuosa (refutadores-clone).
+  // violate: refutadores com lens diferentes mas CORPOS idênticos → panel-diversity DEVE falhar (exit 1).
+  // revert: refutadores com corpos distintos → exit 0.
+  {
+    id: 'META panel-diversity',
+    harness: 'panel-diversity.mjs',
+    violate: () => [fixture('mp-clones.json', JSON.stringify({ oracles: [{ axis: 'p', command: 'true', refuters: [
+      { lens: 'a', mutate: 'X', revert: 'Y', decoy_mutate: 'Z' },
+      { lens: 'b', mutate: 'X', revert: 'Y', decoy_mutate: 'Z' },
+    ] }] }))],
+    revert: () => [fixture('mp-distinct.json', JSON.stringify({ oracles: [{ axis: 'p', command: 'true', refuters: [
+      { lens: 'a', mutate: 'X1', revert: 'Y1', decoy_mutate: 'Z1' },
+      { lens: 'b', mutate: 'X2', revert: 'Y2', decoy_mutate: 'Z2' },
+    ] }] }))],
+  },
   // B2 — api lint evidence (textual: provado por grep no skill, não harness; verificado no closeout)
 
   // ─── DOMAIN WALLS (SPEC-003..018) — node-puro {violate,revert}; dep-pesada/não-det +blocked (exit 2) ───
