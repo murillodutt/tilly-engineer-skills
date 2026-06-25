@@ -98,6 +98,7 @@ Use `references/quality-gates.md` for full status definitions. Root-level status
 - `NEEDS_EXECUTION_UNIT_FIDELITY`
 - `NEEDS_SLICE_FIDELITY`
 - `NEEDS_TREE_REPAIR`
+- `NEEDS_HUMAN_ORACLE`
 - `NEEDS_TREE_ADVERSARY`
 - `DRAFT_MATERIALIZATION_TREE`
 - `NEEDS_TREE_ACCEPTANCE`

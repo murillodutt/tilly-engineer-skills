@@ -56,6 +56,18 @@ MEASURED_QUANTITY=<the quantity the body actually computes>
 
 If `MEASURED_QUANTITY` is a structural proxy that can stay constant while `PROVEN_PROPERTY` is violated, set `oracle_strength=facade` and route to `NEEDS_TREE_REPAIR`. The decisive test is post-execution and belongs to the independent auditor: mutate only the named property (make the frame black, freeze the camera, zero the FPS) and the oracle MUST turn exit≠0. An oracle that stays PASS under the mutation of its own named property is a facade by construction.
 
+## Oracle Synthesis On Repair
+
+When the adversary routes a unit to `NEEDS_TREE_REPAIR` because an oracle is missing or `oracle_strength=facade`, it does not stop at "human, write the oracle." For a named property in a known family, the adversary may EMIT a candidate oracle plus its inversion proof, using `scripts/lib/synth.mjs`:
+
+1. `synthMeasure(PROVEN_PROPERTY)` proposes the honest `MEASURED_QUANTITY` (a decode/count/compute quantity, never a structural proxy) and self-validates it through the independent `scripts/oracle-name-measure.mjs` judge; if the judge rejects it, `honest=false`.
+2. `synthMutation(family)` + `synthFixture(family, dir)` produce the `{mutate, revert, decoy_mutate}` plan and the `{violate, revert}` fixtures.
+3. The synthesized trio is run through `scripts/audit-remutation.mjs` + `scripts/oracle-wiring-check.mjs` in the same pass. The candidate is admitted only if it fires under mutation of its own named property and ignores the decoy — auto-falsification at birth. The proof is the inversion run, not the author's claim.
+
+The repaired unit then carries `oracle_strength=sufficient` with the synthesized oracle and its re-mutation evidence, exactly as a hand-written oracle would.
+
+A property that is NOT in a known family and is NOT explicitly structural returns `honest=false` from `synthMeasure`. The adversary then routes to `NEEDS_HUMAN_ORACLE` — it must NOT invent a structural proxy to fill the gap. `NEEDS_HUMAN_ORACLE` is an honest degrade: the harness can synthesize falsifiable oracles only for the families whose canonical mutation it knows; outside them, a human (or a later synthesis extension) must supply the oracle. Synthesis never replaces a valid in-family oracle a unit already declares.
+
 ## Done
 
 The adversary pass is done when it has either cleared the tree, forced bounded tree repair before prompt emission, or stopped with a precise status that the owner can resolve before execution cost is spent.

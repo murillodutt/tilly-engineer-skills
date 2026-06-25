@@ -66,6 +66,10 @@ Use when the generated tree fails fixed schema, ownership, oracle, execution-uni
 
 Also use it when the tree lacks source-derived worker handoff for a loop that will reuse prior APIs, carries unvalidated API facts in the worker envelope, or uses a parent-memory summary where repository symbols are available.
 
+### NEEDS_HUMAN_ORACLE
+
+Use when the adversary tried to synthesize an oracle for a `NEEDS_TREE_REPAIR` unit (via `scripts/lib/synth.mjs`, see `references/tree-adversary.md` § Oracle Synthesis On Repair) but the named property is outside the known families and is not explicitly structural, so `synthMeasure` returned `honest=false`. This is an honest degrade: the harness must NOT invent a structural proxy to fill the gap. A human (or a later synthesis-family extension) must supply the falsifiable oracle before the unit can carry `oracle_strength=sufficient`. Do not use `NEEDS_HUMAN_ORACLE` when an in-family synthesis succeeded or when the unit already declares a valid oracle.
+
 ### NEEDS_STRUCTURAL_METHOD
 
 Use when code, UI, generated app artifacts or runtime scripts are in scope and the tree or prompt lacks a safe Engineering Method Profile.
