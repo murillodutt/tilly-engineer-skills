@@ -157,4 +157,15 @@ contract_handoff_artifact: ledger-section + QUALITY-GATES mesh row | api_lint_st
 audit_* fields: not_applicable
 stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-010)
 
+### SPEC-010 (closeout + bump 0.3.194→0.3.195)
+spec_id: SPEC-010 | spec_version: 1 | attempt: 1 | repair_count: 0 | audit_repair_cycle: 0
+first_unexecuted_unit: none (all units executed) | failed_attempt_recovery_decision: not_applicable
+commit: <pending>
+oracle_status: PASS (tes_bump.py patch --yes: 67 targets in sync; staged_commit_gate.py added to bump.json; package-lock.json synced; validate-walls 27/27; tes_init self-test PASS). docs/dist/0.3.195 bundle is sync/release scope (not this loop, no push).
+structural_method_id: version-bump | topology_decision: not_applicable | structural_debt: none
+next_structural_constraint: none
+runtime/visual/browser fields: not_applicable | adversary_objection: not_applicable
+audit_* fields: not_applicable (written by Executive Stop Audit reviewer next)
+stop_state: active_spec_committed → ready for Executive Stop Audit | next_allowed_action: audit
+
 (one entry per SPEC, appended as the loop advances)

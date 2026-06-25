@@ -19,6 +19,11 @@
       "pattern": "VERSION = \"{{VERSION}}\""
     },
     {
+      "path": "scripts/staged_commit_gate.py",
+      "type": "regex",
+      "pattern": "VERSION = \"{{VERSION}}\""
+    },
+    {
       "path": "scripts/claude_plugin_oracle.py",
       "type": "regex",
       "pattern": "VERSION = \"{{VERSION}}\""

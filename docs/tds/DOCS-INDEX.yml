@@ -1,4 +1,4 @@
-version: 0.3.194
+version: 0.3.195
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -476,6 +476,13 @@ documents:
     status: active
     consumer: maintainers, MCP reviewers, Cortex maintainers, and execution agents
     source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-routable-oracle-gate.md
+    id: roadmap.goal_super_spec.goal_maestro_routable_oracle_gate
+    class: roadmap
+    status: active
+    consumer: maintainers, Goal Maestro authors, installer authors, oracle authors, release reviewers, and execution agents
+    source_of_truth: true
     evidence_level: L2
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-mcp-capability-expansion.md
     id: roadmap.goal_super_spec_cortex_mcp_capability_expansion
