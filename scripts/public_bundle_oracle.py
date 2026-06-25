@@ -89,6 +89,36 @@ def certify_public_bundle() -> dict[str, object]:
             ):
                 if relpath not in names:
                     failures.append(f"public bundle missing self-apply member: {relpath}")
+
+            # Source<->bundle drift guard (ADR 0005 invariant 7 / certification C8).
+            # The published bundle is an internal-consistency artifact; nothing above
+            # compares its delivered helper sources against the working tree. So a
+            # HELPER_FILE could change in source while the bundle (and its VERSION)
+            # stays frozen, and an adopter would receive, under the same version
+            # number, an artifact that no longer matches the source. This guard makes
+            # that drift falsifiable: any delivered helper whose bundled bytes differ
+            # from the working tree fails the oracle UNLESS the source VERSION has
+            # advanced beyond the published bundle (i.e. a release bump is in flight,
+            # which is the owner-gated reconciliation that legitimately supersedes the
+            # frozen bundle). Mutating a HELPER_FILE source now turns this RED;
+            # advancing VERSION + regenerating the bundle is the exact closure path.
+            published_version = str(index.get("version") or "")
+            bump_in_flight = bool(published_version) and VERSION != published_version
+            if not bump_in_flight:
+                for helper in tes_bundle.HELPER_FILES:
+                    member = f"scripts/{helper}"
+                    source_path = ROOT / "scripts" / helper
+                    if member not in names or not source_path.exists():
+                        continue
+                    bundled_bytes = archive.read(member)
+                    source_bytes = source_path.read_bytes()
+                    if bundled_bytes != source_bytes:
+                        failures.append(
+                            f"delivered helper source drifted from published bundle "
+                            f"({member}): working tree differs from {VERSION} bundle "
+                            f"and VERSION has not advanced — bump VERSION + regenerate "
+                            f"the bundle to reconcile"
+                        )
             archive.extractall(extracted)
 
         if not failures:
