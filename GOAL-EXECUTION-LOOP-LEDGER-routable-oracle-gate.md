@@ -178,3 +178,15 @@ auditor_distinct_from_operator: yes
 auditor_rewrote_no_oracle: yes
 audit_remutation: ran (items 2,3,4,5 — no facades found; oracles sound)
 stop_state: EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS (pending this repair commit)
+
+## FINAL STATUS — EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS
+
+Re-audit (independent, clean checkout of HEAD 49bcc56c) confirmed:
+- Finding 1 (anchor hash stale) CLOSED: ledger declares b70acfa7 == git hash-object; anchor-rehash exit 0 (wrong hash exit 1).
+- Finding 2 (ledger placeholders) CLOSED: ledger-no-placeholder exit 0; 8 real resolvable SHAs.
+- Invariant: validate-walls 27/27 exit 0.
+- Oracles sound (no facades): oracle-wiring facade→exit1, parity drift caught/clean.
+- AUDITOR_DISTINCT_FROM_OPERATOR=yes | AUDITOR_REWROTE_NO_ORACLE=yes | audit_remutation=ran (1st pass items 2,3,4,5).
+
+Release/sync handoff (NOT a loop blocker): docs/dist/0.3.195 bundle unbuilt; build+commit before any sync/release.
+Canary handoff (SPEC-009 AXIS_UNPROVEN): prove a subsequent goal-maestro derives regression_target from the QUALITY-GATES mesh declaration on an installed target.
