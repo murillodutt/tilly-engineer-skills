@@ -779,6 +779,70 @@ def stack_signals(target: Path) -> list[str]:
     return sorted(dict.fromkeys(signals))
 
 
+def detect_persistent_gates(target: Path) -> dict[str, Any]:
+    """Detect the project's persistent pre-commit gate for the routable-oracle contract.
+
+    Existence is an AGNOSTIC CLOSED signal: an executable, non-sample pre-commit hook
+    (honoring core.hooksPath). Every real persistent gate — husky, Lefthook, the
+    pre-commit framework, a manual hook — materializes a pre-commit the git client runs,
+    so the harness never needs to enumerate tools to decide existence. The tool list below
+    is only a LABEL for the proposal message, never the existence decision (this kills the
+    "list that never closes" anti-pattern). The harness reads the declared gate via the
+    QUALITY-GATES mesh; it never names the tool itself.
+    """
+    # Resolve hooks dir (core.hooksPath aware), default .git/hooks.
+    hooks_dir = target / ".git" / "hooks"
+    config = target / ".git" / "config"
+    if config.is_file():
+        try:
+            for line in config.read_text(encoding="utf-8").splitlines():
+                stripped = line.strip()
+                if stripped.lower().startswith("hookspath"):
+                    _, _, value = stripped.partition("=")
+                    custom = value.strip()
+                    if custom:
+                        hooks_dir = (target / custom) if not Path(custom).is_absolute() else Path(custom)
+        except OSError:
+            pass
+
+    pre_commit = hooks_dir / "pre-commit"
+    active = False
+    if pre_commit.is_file():
+        try:
+            body = pre_commit.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            body = ""
+        is_sample = pre_commit.name.endswith(".sample") or "This is a sample hook" in body or "# Sample" in body
+        # Executable bit OR a shebang body counts as an active hook on platforms without x-bit.
+        import os as _os
+        executable = bool(_os.access(pre_commit, _os.X_OK)) or body.startswith("#!")
+        active = executable and not is_sample
+
+    # LABEL only (open list, never the existence decision).
+    deps = dependency_names(target)
+    label = "unknown/custom"
+    proof_path = (pre_commit.relative_to(target).as_posix() if pre_commit.is_file() and pre_commit.is_relative_to(target) else str(pre_commit))
+    if (target / ".husky").is_dir() or "husky" in deps:
+        label = "husky"
+    elif (target / "lefthook.yml").is_file() or (target / ".lefthook.yml").is_file():
+        label = "lefthook"
+        proof_path = "lefthook.yml" if (target / "lefthook.yml").is_file() else ".lefthook.yml"
+    elif (target / ".pre-commit-config.yaml").is_file():
+        label = "pre-commit"
+        proof_path = ".pre-commit-config.yaml"
+
+    # Recommended model when ABSENT: Lefthook default; husky if the target is husky-centric.
+    husky_centric = (target / ".husky").is_dir() or "husky" in deps
+    recommended = "husky" if husky_centric else "lefthook"
+
+    return {
+        "active": active,
+        "tool_label": label if active else None,
+        "regression_target": proof_path if active else None,
+        "recommended_model": None if active else recommended,
+    }
+
+
 def semantic_signals(target: Path) -> list[dict[str, str]]:
     signals: list[dict[str, str]] = []
     readme = readme_signal(target)
@@ -1495,6 +1559,19 @@ def initial_alignment_texts(
     oracle_status: str,
 ) -> dict[Path, str]:
     context = project_context(scan, target, manifest_rel)
+    gate_scan = detect_persistent_gates(target)
+    if gate_scan["active"]:
+        persistent_gate_row = (
+            f"| Persistent gate | required | Detected `{gate_scan['regression_target']}` "
+            f"(tool: {gate_scan['tool_label']}); TES extends it. The routable-oracle "
+            f"contract derives `regression_target` from this. |"
+        )
+    else:
+        persistent_gate_row = (
+            f"| Persistent gate | needs_review | ABSENT — necessary for quality; its absence "
+            f"compromises the code. Proposed model: `{gate_scan['recommended_model']}` + hooks per "
+            f"file type. Run `/tes-setup --install-gate` to install (proposes, never auto-installs). |"
+        )
     anchors = alignment_anchor_paths(scan, target, manifest_rel)
     primary = first_anchor(anchors)
     secondary = anchors[1] if len(anchors) > 1 else PROJECT_CONTEXT.as_posix()
@@ -1680,6 +1757,7 @@ artifacts.
 | Project context oracle | required | `{required_gate}` |
 | Project alignment oracle | focused | `{focused_gate}` |
 | Project quality gates | {project_quality_class} | `{project_quality_gate}` |
+{persistent_gate_row}
 | Unclassified quality gate | needs_review | Record the missing, unsafe, or ambiguous proof before claiming GO. |
 | Missing local toolchain | unavailable | Record the blocker before claiming coverage. |
 | Production or secret-backed action | unsafe | Requires explicit user approval. |

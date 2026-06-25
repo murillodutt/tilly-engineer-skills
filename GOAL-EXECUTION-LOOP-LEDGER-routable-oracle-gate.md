@@ -144,4 +144,17 @@ shared_contract_extended: no | contract_handoff_artifact: not_applicable | api_l
 audit_* fields: not_applicable
 stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-008)
 
+### SPEC-008+009 (B1/B2 detect+propose; B3 declare-in-mesh) — post SPEC_REPAIR_BY_LLM
+spec_id: SPEC-008+009 | spec_version: 2 (post B-reframe repair) | attempt: 1 | repair_count: 1 | audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-010 | failed_attempt_recovery_decision: not_applicable
+commit: <pending>
+oracle_status: PASS-with-AXIS_UNPROVEN-handoff. detect_persistent_gates() agnostic closed signal (executable non-sample pre-commit, core.hooksPath-aware) — DOGFOODING caught a real false-negative: this repo uses core.hooksPath=.githooks; fixed case-insensitive hookspath parse; now detects active=lefthook. Proposal always written to QUALITY-GATES mesh (declare-in-mesh = honest install-time seam). self-test PASS. Install verb (--install-gate) deferred as handoff (highest-risk, deserves own canary). regression_target end-to-end derivation by a subsequent goal-maestro: AXIS_UNPROVEN (node-pure cannot prove; canary handoff).
+structural_method_id: py-installer-detect | topology_decision: new fn detect_persistent_gates near stack_signals + 1 row in QUALITY-GATES writer | structural_debt: install verb + regression_target-read canary deferred (declared, not masked)
+next_structural_constraint: SPEC-010 bump; canary must prove goal-maestro reads the declared gate
+runtime_smoke_oracle: pass (detect_persistent_gates exercised on synthetic fixtures + this real repo) | adversary_objection: repaired (3-lens: closed signal kills tool-list; two verbs un-fused; registro reframed to mesh-declare)
+shared_contract_extended: yes (QUALITY-GATES mesh now carries Persistent gate row) | extension_point_proven: yes (writer extended, self-test green)
+contract_handoff_artifact: ledger-section + QUALITY-GATES mesh row | api_lint_status: not_applicable
+audit_* fields: not_applicable
+stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-010)
+
 (one entry per SPEC, appended as the loop advances)
