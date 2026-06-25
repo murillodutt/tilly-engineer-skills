@@ -203,12 +203,13 @@ SPEC-005  Panel stop-state + distinction counter (NEEDS_QUORUM_AUDIT, DISTINCT_R
   SKILL + quality-gates; the ledger schema carries the counter. validate-walls 28/28.
 
 SPEC-006  Part A residual: wire anchor-rehash + ledger-no-placeholder into the router
-  PREREQUISITE DEFECT (found by Tree Adversary OBJ-1 follow-up, this Fase 0):
-  anchor-rehash.mjs prints [FAIL] on a wrong hash but EXITS 0 — the exit-code does not
-  propagate the FAIL, so the gate would pass a stale-hash anchor. This is an exit-code
-  facade in the very gate this SPEC wires. Fix anchor-rehash.mjs (4 surfaces) so a
-  recomputed-hash mismatch exits != 0, BEFORE wiring it; otherwise the wired gate is
-  decorative. Re-mutation: node anchor-rehash.mjs <adr> <wrong-hash> MUST exit != 0.
+  SPEC_REPAIR_BY_LLM (this loop, SPEC-006 attempt 1): the earlier "exit-code facade"
+  prerequisite was a FALSE premise of mine. Re-execution with the exit code captured in
+  ISOLATION (not through a `| tail` pipe, which returns tail's exit, not node's) proves
+  anchor-rehash.mjs is already honest: wrong hash -> exit 1, right hash -> exit 0. No
+  fix is needed; the gate is wired as-is. Repair recorded by the LLM, not a human.
+  Pre-wire REGRESSION GUARD (not a fix): prove the gate is honest before wiring it —
+  node anchor-rehash.mjs <adr> <wrong-hash> exits != 0 (isolated), <right-hash> exits 0.
   scripts/staged_commit_gate.py (maintainer): add 2 Gates — anchor-rehash.mjs fires
   when an anchor file or a ledger declaring an anchor hash is staged;
   ledger-no-placeholder.mjs fires when a ledger is staged. Moves the 2 audit-leaked
