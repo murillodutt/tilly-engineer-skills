@@ -12,11 +12,14 @@ tver: 0.1.0
 
 Anchor for `tes-goal-maestro --execute-loop`. Derived from and authorized by
 `docs/adr/0006-decision-lens-evolution-and-routable-gate-closure.md`
-(anchor_class=ADR, hash `78863257…`, accepted 2026-06-25).
+(anchor_class=ADR, `git hash-object` = `58a53a48323213922b0e0ccd459d60c5fdcfce8d`,
+accepted 2026-06-25). The hash is the recomputed blob hash of the anchor file,
+not the commit sha — re-derived at the Pre-Edit Gate per execution-loop-runner.md:79.
 
 ```text
 anchor_class=ADR
 anchor_path=docs/adr/0006-decision-lens-evolution-and-routable-gate-closure.md
+anchor_hash=58a53a48323213922b0e0ccd459d60c5fdcfce8d
 anchor_origin=materialized-from-anchor
 anchor_source=docs/adr/0006-decision-lens-evolution-and-routable-gate-closure.md
 ambition_directive="nosso alvo não é atender o piso, é furar o teto"
@@ -172,9 +175,14 @@ SPEC-003  Self-Construction: derive-anchor-from-defect path
   carrying the synthesized remutation-plan.json, consumable next session as
   anchor_origin=previous-session (cite ambition-and-anchor.md:13). The human gate
   collapses to NEEDS_OWNER_DECISION (decide IF the repair exists).
-  Oracle: anchor-rehash.mjs proves a fixture GOAL-SUPER-SPEC-<defect>.md written this
-  SPEC is citeable as previous-session byte-for-byte; the firewall (same-session
-  self-authorization) still rejects. validate-walls 27/27 invariant.
+  Oracle (scoped to what the script actually proves — Tree Adversary OBJ-2):
+  anchor-rehash.mjs proves byte-identity + benchmark isolation of a fixture
+  GOAL-SUPER-SPEC-<defect>.md written this SPEC. The same-session self-authorization
+  FIREWALL is NOT executable today (anchor-rehash.mjs does not read anchor_origin), so
+  this SPEC proves it via (a) a doc-coherence grep that ambition-and-anchor.md:17 still
+  forbids same-session self-authorization, and (b) routing a same-session citation to
+  NEEDS_OWNER_DECISION. Do NOT claim anchor-rehash.mjs executably rejects same-session.
+  validate-walls 27/27 invariant.
 
 SPEC-004  Adversary Panel: refuters[] + quorum-with-veto in audit-remutation
   scripts/audit-remutation.mjs (4 surfaces): add panel mode — plan.oracles[].refuters[]
@@ -195,13 +203,20 @@ SPEC-005  Panel stop-state + distinction counter (NEEDS_QUORUM_AUDIT, DISTINCT_R
   SKILL + quality-gates; the ledger schema carries the counter. validate-walls 28/28.
 
 SPEC-006  Part A residual: wire anchor-rehash + ledger-no-placeholder into the router
+  PREREQUISITE DEFECT (found by Tree Adversary OBJ-1 follow-up, this Fase 0):
+  anchor-rehash.mjs prints [FAIL] on a wrong hash but EXITS 0 — the exit-code does not
+  propagate the FAIL, so the gate would pass a stale-hash anchor. This is an exit-code
+  facade in the very gate this SPEC wires. Fix anchor-rehash.mjs (4 surfaces) so a
+  recomputed-hash mismatch exits != 0, BEFORE wiring it; otherwise the wired gate is
+  decorative. Re-mutation: node anchor-rehash.mjs <adr> <wrong-hash> MUST exit != 0.
   scripts/staged_commit_gate.py (maintainer): add 2 Gates — anchor-rehash.mjs fires
   when an anchor file or a ledger declaring an anchor hash is staged;
   ledger-no-placeholder.mjs fires when a ledger is staged. Moves the 2 audit-leaked
   defect classes to commit-time.
-  Oracle: commit:check:plan shows both gates RUN when an anchor/ledger is staged, SKIP
+  Oracle: anchor-rehash exit-code re-mutation (above) exits != 0 on wrong hash;
+  commit:check:plan shows both gates RUN when an anchor/ledger is staged, SKIP
   otherwise; gate re-mutation — stage a ledger with a placeholder commit -> the gate
-  exits != 0 (ledger-no-placeholder fires); revert -> exit 0.
+  exits != 0 (ledger-no-placeholder fires); revert -> exit 0. validate-walls invariant.
 
 SPEC-007  Part C: lens contract in the references (break-mandate, discoverability-first,
             risk-gating, audit-over-predict)
