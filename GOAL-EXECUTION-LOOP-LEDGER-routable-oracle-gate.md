@@ -120,4 +120,16 @@ shared_contract_extended: no | contract_handoff_artifact: not_applicable | api_l
 audit_* fields: not_applicable
 stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-006)
 
+### SPEC-006 (I2: validate-walls in commit:closure)
+spec_id: SPEC-006 | spec_version: 1 | attempt: 1 | repair_count: 0 | audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-007 | failed_attempt_recovery_decision: not_applicable
+commit: <pending>
+oracle_status: PASS (package.json JSON valid; validate-walls.mjs in commit:closure chain; closure-wired confirmed by running ref-pkg + walls elos). check 23 now true in BOTH layers (staged SPEC-005 + closure SPEC-006).
+structural_method_id: package-json-chain-edit | topology_decision: not_applicable | structural_debt: none
+next_structural_constraint: SPEC-010 bump must update VERSION here too
+runtime/visual/browser fields: not_applicable | adversary_objection: not_applicable
+shared_contract_extended: no | contract_handoff_artifact: not_applicable | api_lint_status: not_applicable
+audit_* fields: not_applicable
+stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-007)
+
 (one entry per SPEC, appended as the loop advances)
