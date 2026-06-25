@@ -295,6 +295,13 @@ documents:
     consumer: maintainers running a delivered-behavior change with bump + commit + push
     source_of_truth: true
     evidence_level: L2
+  - path: docs/governance/asset-transfer-packet.md
+    id: governance.asset_transfer_packet
+    class: governance
+    status: active
+    consumer: maintainers, repository agents, and the Mantra Gate senior-manager detector
+    source_of_truth: true
+    evidence_level: L2
   - path: docs/evals/EVALS.md
     id: evals.design
     class: eval
@@ -475,6 +482,13 @@ documents:
     class: roadmap
     status: proposed
     consumer: maintainers, adapter authors, and runtime installer reviewers
+    source_of_truth: false
+    evidence_level: L2
+  - path: docs/roadmap/product/PLANTAO-HOOK-MECHANISM.md
+    id: roadmap.plantao_hook_mechanism
+    class: roadmap
+    status: proposed
+    consumer: maintainers, installer authors, and adapter-materialization reviewers
     source_of_truth: false
     evidence_level: L2
   - path: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-cortex-hardening.md
