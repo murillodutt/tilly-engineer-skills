@@ -270,7 +270,7 @@ def analyze() -> dict[str, Any]:
         "source-only" if codex_plugin_result["status"] == "PASS" else "fail",
         "src/adapters/codex/plugin/plugin.json is retained in Git but omitted from target installs",
     )
-    surface("codex", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
+    surface("codex", "hook", "git-governed", "lefthook.yml; .githooks/pre-commit; .githooks/pre-push")
     surface("codex", "memory-lifecycle", "certified", codex_agent)
     surface("codex", "rules", "not-packaged", "No sandbox escalation rule is required for this reference package.")
     surface("codex", "mcp", "certified", "scripts/install_mcp.py writes .codex/config.toml")
@@ -332,27 +332,33 @@ def analyze() -> dict[str, Any]:
     surface("cursor", "agent", "certified", "src/adapters/cursor/CURSOR.md")
     surface("cursor", "skill", "certified", "src/adapters/cursor/rules/tes-runtime-capabilities.mdc provides command capability routing after clean runtime install and semantic recovery.")
     surface("cursor", "plugin", "deferred", "Cursor plugins are native, but no TES .cursor-plugin package is claimed.")
-    surface("cursor", "hook", "git-governed", ".githooks/pre-commit; .githooks/pre-push")
+    surface("cursor", "hook", "git-governed", "lefthook.yml; .githooks/pre-commit; .githooks/pre-push")
     surface("cursor", "memory-lifecycle", "certified", cursor_rule)
     surface("cursor", "rules", "certified", cursor_rule)
     surface("cursor", "mcp", "certified", "scripts/install_mcp.py writes .cursor/mcp.json")
     surface("vscode", "mcp", "certified", "scripts/install_mcp.py writes .vscode/mcp.json servers.tes-cortex")
 
+    lefthook = "lefthook.yml"
+    if not exists(lefthook):
+        failures.append("missing lefthook configuration")
+    else:
+        text = read(lefthook)
+        for term in ("validate_doc_size.py", "pre_commit_cortex.py", "staged_surface_check.py"):
+            if term not in text:
+                failures.append(f"{lefthook} missing {term}")
+
     hook = ".githooks/pre-commit"
     if not exists(hook):
         failures.append("missing repository pre-commit hook")
-    else:
-        text = read(hook)
-        for term in ("validate_doc_size.py", "cortex.py reflect", "cortex.py curate-plan"):
-            if term not in text:
-                failures.append(f"{hook} missing {term}")
+    elif "lefthook run pre-commit" not in read(hook):
+        failures.append(f"{hook} must delegate to lefthook run pre-commit")
 
     pre_push = ".githooks/pre-push"
     if not exists(pre_push):
         failures.append("missing repository pre-push hook")
     else:
         text = read(pre_push)
-        for term in ("field_reports.py drain", "TES_FIELD_REPORTS_PRE_PUSH"):
+        for term in ("TES_FIELD_REPORTS_PRE_PUSH", "pre_push_field_reports.py"):
             if term not in text:
                 failures.append(f"{pre_push} missing {term}")
 

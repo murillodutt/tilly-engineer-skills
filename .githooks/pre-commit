@@ -8,58 +8,16 @@ unset GIT_OBJECT_DIRECTORY
 unset GIT_PREFIX
 unset GIT_WORK_TREE
 
-staged_files="$(git diff --cached --name-only --diff-filter=ACMR)"
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
 
-has_staged() {
-  printf '%s\n' "$staged_files" | grep -Eq "$1"
-}
-
-run() {
-  echo "[pre-commit] $*"
-  "$@"
-}
-
-run python3 scripts/validate_reference_package.py --staged-only
-
-if has_staged '^(docs/i18n/|docs/index\.html$|docs/install/USER-MANUAL\.html$|scripts/build_public_docs\.py$|package\.json$|docs/dist/)'; then
-  run python3 scripts/build_public_docs.py --check
+if [ -x "./node_modules/.bin/lefthook" ]; then
+  exec ./node_modules/.bin/lefthook run pre-commit "$@"
 fi
 
-if has_staged '^(docs/tds/|docs/INDEX\.md$|scripts/validate_tds\.py$)'; then
-  run python3 scripts/validate_tds.py
+if command -v lefthook >/dev/null 2>&1; then
+  exec lefthook run pre-commit "$@"
 fi
 
-if has_staged '^(docs/|scripts/validate_doc_size\.py$)'; then
-  run python3 scripts/validate_doc_size.py
-fi
-
-if has_staged '^(benchmarks/context-mesh/|docs/mesh/|scripts/context_mesh_)'; then
-  run python3 scripts/context_mesh_plan.py
-fi
-
-if has_staged '^(\.github/ISSUE_TEMPLATE/tes-field-report\.yml|\.github/workflows/field-report-governance\.yml|scripts/field_reports)'; then
-  run python3 scripts/field_reports.py --self-test
-  run python3 scripts/field_reports_github_oracle.py --self-test
-fi
-
-if has_staged '^(src/adapters/|scripts/materialize_adapter\.py$)'; then
-  run python3 scripts/materialize_adapter.py all --check
-fi
-
-if has_staged '^(AGENTS\.md|src/adapters/(codex|claude|cursor)/|docs/governance/)'; then
-  run python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test
-fi
-
-if has_staged '^(docs/agents/cortex/|scripts/cortex\.py|scripts/cortex_)'; then
-  if [ -f docs/agents/cortex/CONTRACT.md ]; then
-    if [ -f .tes/bin/cortex.py ]; then
-      run python3 .tes/bin/cortex.py reflect --target . "pre-commit Cortex reflection"
-      run python3 .tes/bin/cortex.py curate-plan --target . --backend lexical
-    elif [ -f scripts/cortex.py ]; then
-      run python3 scripts/cortex.py reflect --target . "pre-commit Cortex reflection"
-      run python3 scripts/cortex.py curate-plan --target . --backend lexical
-    fi
-  fi
-fi
-git diff --check
-git diff --cached --check
+echo "[pre-commit] lefthook not found; run: npm install" >&2
+exit 1

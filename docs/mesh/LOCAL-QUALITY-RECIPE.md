@@ -32,9 +32,10 @@ Copy this shape into each target project:
 
 | Path | Role |
 |------|------|
-| `.githooks/pre-commit` | Fast staged-file gate |
+| `lefthook.yml` | Hook command router with staged-file globs |
+| `.githooks/pre-commit` | Git entrypoint delegating to Lefthook |
 | `.githooks/pre-push` | Optional non-blocking local drain or smoke |
-| `scripts/quality_router.py` | Auto-adaptive staged-file router |
+| `scripts/staged_surface_check.py` | JSON, YAML, and JavaScript syntax gate |
 | `package.json` or project task file | User commands and full closure |
 | `.git/info/exclude` | Local caches, bytecode, rollback files |
 
@@ -54,9 +55,7 @@ The pre-commit hook should stay small:
 #!/bin/sh
 set -eu
 
-python3 scripts/quality_router.py --staged
-git diff --check
-git diff --cached --check
+exec lefthook run pre-commit
 ```
 
 It should not push, publish, install cloud services, rewrite history, or require network access.
@@ -127,11 +126,11 @@ Do not use `--no-verify` unless the user explicitly authorizes it and the risk i
 
 ## Replication Steps
 
+1. Install `lefthook` and add `lefthook.yml`.
 1. Install `.githooks/pre-commit` and optional `.githooks/pre-push`.
-1. Add `scripts/quality_router.py`.
 1. Add stable quality commands to the project task runner.
 1. Add local cache and rollback patterns to `.git/info/exclude`.
-1. Run `git config core.hooksPath .githooks`.
+1. Run `npm run hooks:install` (sets `core.hooksPath .githooks`).
 1. Run `quality:staged` with representative staged fixtures.
 1. Run `commit:check`.
 1. Record which surfaces are `PASS`, `SKIP`, or `BLOCKED`.

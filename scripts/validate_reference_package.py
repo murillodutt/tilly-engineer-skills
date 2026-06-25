@@ -254,6 +254,7 @@ REQUIRED_PATHS = (
     "scripts/validate_tds.py",
     ".githooks/pre-commit",
     ".githooks/pre-push",
+    "lefthook.yml",
 )
 
 REQUIRED_TERMS = (

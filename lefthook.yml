@@ -1,0 +1,79 @@
+glob_matcher: doublestar
+
+pre-commit:
+  piped: true
+  commands:
+    reference-package:
+      run: python3 scripts/validate_reference_package.py --staged-only
+
+    staged-surfaces:
+      glob:
+        - "**/*.json"
+        - "**/*.yml"
+        - "**/*.yaml"
+        - "**/*.js"
+        - "**/*.mjs"
+        - "**/*.cjs"
+      run: python3 scripts/staged_surface_check.py {staged_files}
+
+    public-docs:
+      glob:
+        - "docs/i18n/**"
+        - "docs/index.html"
+        - "scripts/build_public_docs.py"
+        - "package.json"
+        - "docs/dist/**"
+      run: python3 scripts/build_public_docs.py --check
+
+    tds:
+      glob:
+        - "docs/tds/**"
+        - "docs/INDEX.md"
+        - "scripts/validate_tds.py"
+      run: python3 scripts/validate_tds.py
+
+    doc-size:
+      glob:
+        - "docs/**"
+        - "scripts/validate_doc_size.py"
+      run: python3 scripts/validate_doc_size.py
+
+    context-mesh:
+      glob:
+        - "benchmarks/context-mesh/**"
+        - "docs/mesh/**"
+        - "scripts/context_mesh_*.py"
+      run: python3 scripts/context_mesh_plan.py
+
+    field-reports:
+      glob:
+        - ".github/ISSUE_TEMPLATE/tes-field-report.yml"
+        - ".github/workflows/field-report-governance.yml"
+        - "scripts/field_reports.py"
+        - "scripts/field_reports_*.py"
+      run: python3 scripts/field_reports.py --self-test && python3 scripts/field_reports_github_oracle.py --self-test
+
+    materialize:
+      glob:
+        - "src/adapters/**"
+        - "scripts/materialize_adapter.py"
+      run: python3 scripts/materialize_adapter.py all --check
+
+    discipline-oracle:
+      glob:
+        - "AGENTS.md"
+        - "src/adapters/codex/**"
+        - "src/adapters/claude/**"
+        - "src/adapters/cursor/**"
+        - "docs/governance/**"
+      run: python3 src/adapters/codex/skills/tes-engineering-discipline/scripts/discipline_oracle.py --self-test
+
+    cortex-reflect:
+      glob:
+        - "docs/agents/cortex/**"
+        - "scripts/cortex.py"
+        - "scripts/cortex_*.py"
+      run: python3 scripts/pre_commit_cortex.py
+
+    git-whitespace:
+      run: git diff --check && git diff --cached --check
