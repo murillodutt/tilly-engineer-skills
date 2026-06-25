@@ -1,7 +1,7 @@
 # GOAL-EXECUTION-LOOP-LEDGER — routable-oracle-gate
 
 Anchor: docs/roadmap/goals/super-specs/GOAL-SUPER-SPEC-goal-maestro-routable-oracle-gate.md
-Anchor hash: 69245eb4d4a0cb50cab3a070999e6228302e4dc8
+Anchor hash: b70acfa7ea95a74f54a14e19bfac54b945efed99
 
 ## Execution Cost Draft (from material sources)
 
@@ -39,7 +39,7 @@ repair_count: 1
 audit_repair_cycle: 0
 first_unexecuted_unit: SPEC-003
 failed_attempt_recovery_decision: not_applicable
-commit: <pending impl commit>
+commit: 012d9588
 oracle_status: PASS (4-surface parity OK; validate-walls 27/27; doc-size PASS; hardcode GitHub removed)
 structural_method_id: doc-surface-edit
 topology_decision: not_applicable
@@ -71,7 +71,7 @@ repair_count: 0
 audit_repair_cycle: 0
 first_unexecuted_unit: SPEC-005
 failed_attempt_recovery_decision: not_applicable
-commit: <pending impl commit>
+commit: b8a0ab04
 oracle_status: PASS (suite 27/27 in all 4 surfaces; D3 facade→exit1, wired→exit0, oracle-as-gate barred; 3-lens design stress: residual trust-boundary documented in-code)
 structural_method_id: mjs-harness-edit
 topology_decision: single-file harness rewrite (oracle-wiring-check.mjs), mirrors audit-remutation.mjs structure
@@ -98,7 +98,7 @@ next_allowed_action: worker_attempt (SPEC-005)
 ### SPEC-004 (A3: SKILL.md:67 agnostic claim)
 spec_id: SPEC-004 | spec_version: 1 | attempt: 1 | repair_count: 0 | audit_repair_cycle: 0
 first_unexecuted_unit: SPEC-005 | failed_attempt_recovery_decision: not_applicable
-commit: <pending>
+commit: fa100f4f
 oracle_status: PASS ((also wired in CI) removed from 4 surfaces; validate-walls 27/27; doc-size PASS)
 structural_method_id: doc-surface-edit | topology_*: not_applicable | structural_debt: none
 next_structural_constraint: none
@@ -111,7 +111,7 @@ stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-00
 ### SPEC-005 (I1: validate-walls as declarative Gate in staged router)
 spec_id: SPEC-005 | spec_version: 1 | attempt: 1 | repair_count: 0 | audit_repair_cycle: 0
 first_unexecuted_unit: SPEC-006 | failed_attempt_recovery_decision: not_applicable
-commit: <pending>
+commit: 17919070
 oracle_status: PASS (--plan: walls gate SKIP when no .mjs staged, RUN when a .mjs is staged; END-TO-END: broken wall staged → gate FAIL [commit-gate]; restored → 27/27. THIS is staged-wired proof per check 23.)
 structural_method_id: py-router-gate-add | topology_decision: declarative Gate in gate_plan() (mirrors existing Gate entries) | structural_debt: none
 next_structural_constraint: SPEC-006 adds same wall to closure (closure-wired layer)
@@ -123,7 +123,7 @@ stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-00
 ### SPEC-006 (I2: validate-walls in commit:closure)
 spec_id: SPEC-006 | spec_version: 1 | attempt: 1 | repair_count: 0 | audit_repair_cycle: 0
 first_unexecuted_unit: SPEC-007 | failed_attempt_recovery_decision: not_applicable
-commit: <pending>
+commit: d23a3ac0
 oracle_status: PASS (package.json JSON valid; validate-walls.mjs in commit:closure chain; closure-wired confirmed by running ref-pkg + walls elos). check 23 now true in BOTH layers (staged SPEC-005 + closure SPEC-006).
 structural_method_id: package-json-chain-edit | topology_decision: not_applicable | structural_debt: none
 next_structural_constraint: SPEC-010 bump must update VERSION here too
@@ -135,7 +135,7 @@ stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-00
 ### SPEC-007 (A4: src↔src wall parity in closure)
 spec_id: SPEC-007 | spec_version: 1 | attempt: 1 | repair_count: 0 | audit_repair_cycle: 0
 first_unexecuted_unit: SPEC-008 | failed_attempt_recovery_decision: not_applicable
-commit: <pending>
+commit: f09d0b7a
 oracle_status: PASS (goal_maestro_scripts_parity_failures added, reusing local_development_skill_parity_failures molde rglob+read_bytes; plugged in main() after line 1138. EMPIRICAL: baseline PASS; divergence in claude token-budget.mjs → FAIL 'claude/codex source drift'; reverted → PASS. The silent-divergence hole is now closed.)
 structural_method_id: py-parity-fn-add | topology_decision: glob/walk fn (not REQUIRED_PATHS literal list) | structural_debt: none
 next_structural_constraint: none
@@ -147,7 +147,7 @@ stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-00
 ### SPEC-008+009 (B1/B2 detect+propose; B3 declare-in-mesh) — post SPEC_REPAIR_BY_LLM
 spec_id: SPEC-008+009 | spec_version: 2 (post B-reframe repair) | attempt: 1 | repair_count: 1 | audit_repair_cycle: 0
 first_unexecuted_unit: SPEC-010 | failed_attempt_recovery_decision: not_applicable
-commit: <pending>
+commit: f75204b1
 oracle_status: PASS-with-AXIS_UNPROVEN-handoff. detect_persistent_gates() agnostic closed signal (executable non-sample pre-commit, core.hooksPath-aware) — DOGFOODING caught a real false-negative: this repo uses core.hooksPath=.githooks; fixed case-insensitive hookspath parse; now detects active=lefthook. Proposal always written to QUALITY-GATES mesh (declare-in-mesh = honest install-time seam). self-test PASS. Install verb (--install-gate) deferred as handoff (highest-risk, deserves own canary). regression_target end-to-end derivation by a subsequent goal-maestro: AXIS_UNPROVEN (node-pure cannot prove; canary handoff).
 structural_method_id: py-installer-detect | topology_decision: new fn detect_persistent_gates near stack_signals + 1 row in QUALITY-GATES writer | structural_debt: install verb + regression_target-read canary deferred (declared, not masked)
 next_structural_constraint: SPEC-010 bump; canary must prove goal-maestro reads the declared gate
@@ -160,7 +160,7 @@ stop_state: active_spec_committed | next_allowed_action: worker_attempt (SPEC-01
 ### SPEC-010 (closeout + bump 0.3.194→0.3.195)
 spec_id: SPEC-010 | spec_version: 1 | attempt: 1 | repair_count: 0 | audit_repair_cycle: 0
 first_unexecuted_unit: none (all units executed) | failed_attempt_recovery_decision: not_applicable
-commit: <pending>
+commit: 9baa3acf
 oracle_status: PASS (tes_bump.py patch --yes: 67 targets in sync; staged_commit_gate.py added to bump.json; package-lock.json synced; validate-walls 27/27; tes_init self-test PASS). docs/dist/0.3.195 bundle is sync/release scope (not this loop, no push).
 structural_method_id: version-bump | topology_decision: not_applicable | structural_debt: none
 next_structural_constraint: none
@@ -169,3 +169,12 @@ audit_* fields: not_applicable (written by Executive Stop Audit reviewer next)
 stop_state: active_spec_committed → ready for Executive Stop Audit | next_allowed_action: audit
 
 (one entry per SPEC, appended as the loop advances)
+
+## SPEC-AUDIT-001 (Executive Stop Audit repair)
+audit_repair_cycle: 1
+finding_1: anchor hash in ledger was stale (declared 69245eb4 ≠ real). Anchor was edited mid-loop by two SPEC_REPAIR_BY_LLM (69245eb4→1004fb2c→b70acfa7). Repaired: ledger now declares the real, now-final anchor hash; anchor is immutable from here.
+finding_2: ledger placeholders (<pending>) were committed at loop HEAD 9baa3acf; SHA backfill was uncommitted. Repaired: real SHAs committed in this audit-repair commit.
+auditor_distinct_from_operator: yes
+auditor_rewrote_no_oracle: yes
+audit_remutation: ran (items 2,3,4,5 — no facades found; oracles sound)
+stop_state: EXECUTION_LOOP_COMPLETE_WITH_AUDIT_REPAIRS (pending this repair commit)
