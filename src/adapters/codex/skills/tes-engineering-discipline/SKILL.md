@@ -110,7 +110,7 @@ engineering_discipline:
   stop_if:
 ```
 
-`oracle` may name the focused proof directly. If it names a broad closure gate such as `commit:check`, package validation, TDS validation, or a diff check, also name `focused_proof`: the red-capable fixture, reproducer, assertion, boundary case, or public/declared-interface regression check that could fail for the behavior changed.
+`oracle` may name the focused proof directly. If it names a broad closure gate such as `commit:closure`, package validation, TDS validation, or a diff check, also name `focused_proof`: the red-capable fixture, reproducer, assertion, boundary case, or public/declared-interface regression check that could fail for the behavior changed.
 
 Keep it in conversation or working notes unless the target project requires a retained artifact.
 

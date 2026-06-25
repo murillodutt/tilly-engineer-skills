@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 import sys
@@ -62,11 +63,39 @@ def warn_ratio_for(path: Path) -> float:
     return WARN_RATIOS.get(relpath, WARN_RATIO)
 
 
+def path_in_scope(path: Path) -> bool:
+    try:
+        relpath = path.relative_to(ROOT).as_posix()
+    except ValueError:
+        return False
+    if relpath in {"README.md", "AGENTS.md"}:
+        return True
+    if relpath.startswith("docs/") and path.suffix.lower() in {".md", ".html", ".mdc"}:
+        return True
+    if relpath.startswith("src/") and path.suffix.lower() in {".md", ".mdc"}:
+        return True
+    return False
+
+
+def resolve_paths(raw_paths: list[str]) -> list[Path]:
+    selected: list[Path] = []
+    for raw in raw_paths:
+        path = Path(raw).resolve()
+        if path.is_file() and path_in_scope(path):
+            selected.append(path)
+    return sorted(set(selected))
+
+
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--paths", nargs="+", help="validate only these staged doc paths")
+    args = parser.parse_args()
+
     failures: list[str] = []
     warnings: list[str] = []
     checked = 0
-    for path in iter_docs():
+    targets = resolve_paths(args.paths) if args.paths else iter_docs()
+    for path in targets:
         checked += 1
         relpath = path.relative_to(ROOT).as_posix()
         count = line_count(path)

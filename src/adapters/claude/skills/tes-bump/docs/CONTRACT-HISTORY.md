@@ -51,7 +51,7 @@ Version bumps are small but fragile: agents can skip the source of truth, forget
 
 ## Relationship To Other Skills
 
-`tes-bump` is narrower than `tes-update` and `tes-doctor`: it changes version surfaces only. `tes-doctor` owns health and commit readiness. TES package release closure remains governed by maintainer correlation, public bundle oracles, and `npm run commit:check`.
+`tes-bump` is narrower than `tes-update` and `tes-doctor`: it changes version surfaces only. `tes-doctor` owns health and commit readiness. TES package release closure remains governed by maintainer correlation, public bundle oracles, and `npm run commit:closure`.
 
 ## Changelog
 

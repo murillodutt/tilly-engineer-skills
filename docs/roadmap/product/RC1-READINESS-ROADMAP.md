@@ -78,7 +78,7 @@ Acceptance:
 - `python3 scripts/github_readiness_oracle.py --self-test`
 - bootstrap install entrypoints still resolve;
 - `git diff --check`;
-- `npm run commit:check` before any RC1 claim.
+- `npm run commit:closure` before any RC1 seal claim; `npm run commit:check` before every commit.
 
 ## Open Before RC1
 

@@ -45,7 +45,7 @@ Portable learning belongs in the product/source layer first when it changes deli
 
 <learning_and_boundaries> Real project executions are learning loops: after each TES update cycle, use at least one canary to expose drift, false greens, stale helpers, and adapter gaps. When a canary reports `NEEDS_REVIEW`/`DEGRADED`/`BLOCKED` or meaningful drift, treat it as TES product evidence, classify it, patch TES source/oracle/docs, and certify in the `~/Dev/tes-canaries` workspace before re-running the original canary. Repeat on two more real projects before any commercial-use claim. Installed targets and canary clones are evidence targets, not the source of truth. Portable findings get patched in the package source here (`src/**`, `scripts/**`, `docs/**`) — not only in installed mirrors (`.agents/skills/**`, `.claude/skills/**`, `plugins/tilly-engineer-skills/**`). Do not promote a project-specific workaround; only portable learning that survives canary replay and maintainer gates. </learning_and_boundaries>
 
-<confidentiality> Use neutral placeholder vocabulary only (`target-project`, `canary-project`, `<project-A>`, `<storage-backend>`, …); no real project, product, internal-service names, storage backends, archive formats, or `~/Dev/<name>` paths in tracked content. The project's own infrastructure names (e.g. `~/Dev/tes-canaries`) are allowed. `scripts/private_vocabulary_oracle.py` runs on every `npm run commit:check` against `.tes/private-vocabulary.txt` (gitignored) and fails the gate if any listed name appears in tracked content. When in doubt, prefer the placeholder. </confidentiality>
+<confidentiality> Use neutral placeholder vocabulary only (`target-project`, `canary-project`, `<project-A>`, `<storage-backend>`, …); no real project, product, internal-service names, storage backends, archive formats, or `~/Dev/<name>` paths in tracked content. The project's own infrastructure names (e.g. `~/Dev/tes-canaries`) are allowed. `scripts/private_vocabulary_oracle.py` scans staged text surfaces on the default `npm run commit:check` gate and the full tracked tree on explicit `npm run commit:closure` against `.tes/private-vocabulary.txt` (gitignored). When in doubt, prefer the placeholder. </confidentiality>
 
 <maintainer_boundary> This file governs agents working on the Tilly Engineer Skills package itself; it is not an installed target-project rule. Before closing a material package change, use `docs/governance/MAINTAINER-CORRELATION-RULE.md` to check correlated files, and classify `scripts/**` by consumer before deciding which surfaces move. Keep maintainer-only rules here or in `docs/governance/**`; do not copy them into `src/adapters/**`, target bootloaders, user manuals, or `docs/agents/**` unless the delivered Tilly behavior intentionally changed. </maintainer_boundary>
 
@@ -53,7 +53,7 @@ Portable learning belongs in the product/source layer first when it changes deli
 
 <operating_discipline> Operating calibration (maintainer/dev memory only; never Cortex, never `src/**`, never delivered):
 - Commit locally by default; stop there until the owner explicitly asks to sync/push. "push it" is not a standing grant — each push needs its own request.
-- Smart pre-commit, scoped to what changed: run only the focused oracles relevant to the modified files; reserve the full `commit:check` suite for release/sync.
+- Smart pre-commit, scoped to what changed: run only the focused oracles relevant to the modified files; reserve `npm run commit:closure` for release/sync or explicit seal claims.
 - The `/goal` Stop hook is a guardrail, not a throttle: alignment pressure, not deadline pressure. For large-surface changes, close each increment green before advancing.
 - User instructions can narrow local development aids: if the owner says no skills or no governance expansion, keep execution bootloader-first unless destructive, remote, secret, release, or safety risk requires escalation. </operating_discipline>
 
@@ -77,11 +77,12 @@ Portable learning belongs in the product/source layer first when it changes deli
 | Cursor rule source | `src/adapters/cursor/rules/tes-engineering-discipline.mdc` |
 | Package validation | `python3 scripts/validate_reference_package.py` |
 | TDS validation | `python3 scripts/validate_tds.py` |
-| Closure gate | `npm run commit:check` |
+| Default commit gate | `npm run commit:check` |
+| Full closure gate | `npm run commit:closure` |
 </routing>
 
 <locks>
 - Do not put full source packages back in the repository root, or duplicate adapter source between `src/**` and hidden root tool folders.
-- Do not claim the package is sealed without `npm run commit:check`.
+- Do not claim the package is sealed without `npm run commit:closure`.
 - No remote, push, publish, cloud, or marketplace actions without an explicit per-request private decision.
 - Keep TES generic: private project/product/internal-service names, storage backends, archive formats, and filesystem paths stay out of tracked content (see `<confidentiality>`). </locks>

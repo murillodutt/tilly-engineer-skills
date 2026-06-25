@@ -164,4 +164,4 @@ npm run tds:validate
 npm run docs:size
 ```
 
-`npm run commit:check` also runs the TDS validator and document-size gate. A documentation change is not ready if a document is missing frontmatter, missing from the index, indexed twice, has a mismatched class/status/source-of-truth flag, or exceeds its size budget without modularization.
+`npm run commit:check` is the default staged gate; it routes doc-size and TDS checks only when staged paths require them. Run `npm run commit:closure` explicitly when a documentation change must prove full-repo TDS alignment, index parity, and size budgets before release or seal claims.

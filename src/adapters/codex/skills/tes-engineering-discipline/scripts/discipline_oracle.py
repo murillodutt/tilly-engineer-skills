@@ -114,7 +114,7 @@ ORACLE_SIGNALS = (
 )
 
 BROAD_CLOSURE_ORACLE_SIGNALS = (
-    "commit:check",
+    "commit:closure",
     "validate_reference_package.py",
     "validate_tds.py",
     "git diff --check",
@@ -662,7 +662,7 @@ engineering_discipline:
   allowed_complexity: one branch edit
   forbidden_complexity: a validation framework
   deleted_scope: a broad quality pass
-  oracle: npm run commit:check
+  oracle: npm run commit:closure
   effort_tier: Standard
   declared_contract: none
   named_consequence_surface: none

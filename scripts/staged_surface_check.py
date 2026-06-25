@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import py_compile
 import subprocess
 import sys
 from pathlib import Path
@@ -43,6 +44,14 @@ def check_javascript(path: Path) -> str | None:
     return None
 
 
+def check_python(path: Path) -> str | None:
+    try:
+        py_compile.compile(str(path), doraise=True)
+    except py_compile.PyCompileError as exc:
+        return f"invalid Python {path}: {exc.msg}"
+    return None
+
+
 def validate_path(path: Path) -> str | None:
     suffix = path.suffix.lower()
     if suffix == ".json":
@@ -51,6 +60,8 @@ def validate_path(path: Path) -> str | None:
         return check_yaml(path)
     if suffix in {".js", ".mjs", ".cjs"}:
         return check_javascript(path)
+    if suffix == ".py":
+        return check_python(path)
     return None
 
 

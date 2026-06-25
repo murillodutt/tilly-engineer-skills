@@ -293,6 +293,9 @@ npm run reference:graph
 npm run docs:size
 npm run materialize:check
 npm run commit:check
+npm run commit:closure
 ```
+
+`commit:check` is the default staged gate. Run `commit:closure` only when explicitly certifying the full package.
 
 In a target project, run the target project's own smallest relevant oracle after installing or merging.

@@ -43,6 +43,6 @@ install -> hook -> /tes-setup -> /tes-align -> /tes-map
 
 > [!TIP] Only after `/tes-setup` reports complete, run `/tes-align` before project work. Use `/tes-map` when you need the current GPS view. `/tes-update` is a direct visible update skill for already installed meshes, and `/tes-doctor` is for repair.
 
-Source maintainers verify this package with `npm run commit:check`.
+Source maintainers run `npm run commit:check` before every commit; run `npm run commit:closure` only for release, sync, or explicit seal claims.
 
 MIT. See [LICENSE](LICENSE).

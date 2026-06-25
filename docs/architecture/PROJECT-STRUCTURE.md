@@ -22,7 +22,8 @@ Root files are only entrypoints and local project controls:
 | `llms.txt` | Optional machine-readable map to canonical public docs |
 | `AGENTS.md` | Thin repository bootloader for agents working here |
 | `package.json` | Local validation commands |
-| `lefthook.yml` | Git hook command router |
+| `lefthook.yml` | Git hook entrypoint for the staged commit gate |
+| `scripts/staged_commit_gate.py` | Intelligent staged-file commit router |
 | `.githooks/**` | Git hook entrypoints (delegate to Lefthook) |
 | `scripts/**` | Deterministic oracles and package helpers |
 | `benchmarks/**` | Portable eval data |

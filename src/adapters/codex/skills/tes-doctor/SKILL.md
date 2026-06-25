@@ -47,7 +47,8 @@ Run the smallest gate that proves the claim:
 | package-source | Mantra Gate adoption works | `npm run mantra-gate:adoption:self-test` |
 | package-source | adapters materialize | `npm run materialize:check` |
 | package-source | platform surfaces align | `npm run platform:surface:check` |
-| package-source | final local closure | `npm run commit:check` |
+| package-source | staged changes are commit-ready | `npm run commit:check` |
+| package-source | full local closure (explicit) | `npm run commit:closure` |
 
 ## MCP Fallback
 
@@ -110,8 +111,8 @@ Routes:
 - Do not certify skipped commands as passing.
 - Do not certify unavailable commands. Report `NOT_AVAILABLE`, `BLOCKED`, or `NEEDS_REVIEW` with the missing script/helper named.
 - In an installed target, prefer project-owned gates discovered from `package.json` before generic package-source commands.
-- Before commit in an installed target, prefer discovered `gate:staged`; in the TES package source, prefer `npm run commit:check`.
+- Before commit in an installed target, prefer discovered `gate:staged`; in the TES package source, prefer `npm run commit:check`. Use `npm run commit:closure` only when the user explicitly requests full closure, release certification, or a seal claim.
 - For closure, commit, or push claims, treat Mantra Gate adoption statuses `BYPASS_SUSPECTED`, `NEEDS_REVIEW`, and `BLOCKED` as stop conditions.
 - For read-only `/tes-doctor`, do not promote historical gate records to a current blocker; use `--audit-history` only when the user asks for explicit history audit.
 - Do not edit global MCP config. The fallback may touch only `.tes/bin/**` and project-scoped MCP config after write authorization.
-- After commit, rerun the principal gate when the user asks for sealed closure.
+- After commit, rerun `commit:closure` when the user asks for sealed closure.

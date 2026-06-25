@@ -343,9 +343,17 @@ def analyze() -> dict[str, Any]:
         failures.append("missing lefthook configuration")
     else:
         text = read(lefthook)
-        for term in ("validate_doc_size.py", "pre_commit_cortex.py", "staged_surface_check.py"):
+        for term in ("staged_commit_gate.py",):
             if term not in text:
                 failures.append(f"{lefthook} missing {term}")
+        gate = "scripts/staged_commit_gate.py"
+        if not exists(gate):
+            failures.append(f"missing staged commit gate: {gate}")
+        else:
+            gate_text = read(gate)
+            for term in ("pre_commit_cortex.py", "staged_surface_check.py", "validate_doc_size.py"):
+                if term not in gate_text:
+                    failures.append(f"{gate} missing routed gate {term}")
 
     hook = ".githooks/pre-commit"
     if not exists(hook):

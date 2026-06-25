@@ -169,12 +169,16 @@ def scan_paths(root: Path) -> list[Path]:
 def scan(
     root: Path,
     allowlist: list[tuple[str, re.Pattern[str]]],
+    paths: list[Path] | None = None,
 ) -> list[dict[str, Any]]:
     """Walk the tree and report any match against the allowlist patterns."""
     findings: list[dict[str, Any]] = []
     if not allowlist:
         return findings
-    for path in sorted(scan_paths(root)):
+    candidates = paths if paths is not None else scan_paths(root)
+    for path in sorted(candidates):
+        if not _should_scan(path, root):
+            continue
         try:
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
@@ -194,7 +198,11 @@ def scan(
     return findings
 
 
-def analyze(root: Path, allowlist_path: Path) -> dict[str, Any]:
+def analyze(
+    root: Path,
+    allowlist_path: Path,
+    paths: list[Path] | None = None,
+) -> dict[str, Any]:
     try:
         allowlist = load_allowlist(allowlist_path)
     except ValueError as exc:
@@ -218,13 +226,14 @@ def analyze(root: Path, allowlist_path: Path) -> dict[str, Any]:
             ),
             "findings": [],
         }
-    findings = scan(root, allowlist)
+    findings = scan(root, allowlist, paths=paths)
     return {
         "version": VERSION,
         "status": "FAIL" if findings else "PASS",
         "allowlist_path": allowlist_path.as_posix(),
         "allowlist_loaded": True,
         "entries": len(allowlist),
+        "scoped_paths": len(paths) if paths is not None else None,
         "findings": findings,
     }
 
@@ -409,12 +418,19 @@ def main() -> int:
     )
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--paths",
+        nargs="+",
+        type=Path,
+        help="scan only these staged paths instead of all tracked source",
+    )
     args = parser.parse_args()
 
     if args.self_test:
         result = self_test()
     else:
-        result = analyze(args.target.resolve(), args.allowlist.resolve())
+        scoped = [path.resolve() for path in args.paths] if args.paths else None
+        result = analyze(args.target.resolve(), args.allowlist.resolve(), paths=scoped)
 
     print(json.dumps(result, indent=2, sort_keys=True))
     if not args.json:
