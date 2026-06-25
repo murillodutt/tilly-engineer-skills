@@ -31,4 +31,36 @@ adversary_repair_evidence=B3 reformed to declared-pointer (regression_target, ex
 
 ## Ledger Entries
 
+### SPEC-001 (fused A1+A2b)
+spec_id: SPEC-001
+spec_version: 2 (post SPEC_REPAIR_BY_LLM fuse)
+attempt: 1
+repair_count: 1
+audit_repair_cycle: 0
+first_unexecuted_unit: SPEC-003
+failed_attempt_recovery_decision: not_applicable
+commit: <pending impl commit>
+oracle_status: PASS (4-surface parity OK; validate-walls 27/27; doc-size PASS; hardcode GitHub removed)
+structural_method_id: doc-surface-edit
+topology_decision: not_applicable
+topology_decision_artifact: not_applicable
+structural_debt: none
+next_structural_constraint: check 23 now references regression_target; SPEC-003 oracle-wiring-check.mjs must read that pointer
+topology_probe_result: not_applicable
+browser_metrics_contract: not_applicable
+visual_spatial_oracle: not_applicable
+browser_attempt: not_applicable
+visual_evidence: not_applicable
+runtime_smoke_oracle: not_applicable
+adversary_objection: repaired
+shared_contract_extended: yes (regression_target named as gate pointer)
+extension_point_proven: yes (field pre-exists in context-completeness.mjs:13)
+contract_handoff_artifact: ledger-section
+api_lint_status: not_applicable
+auditor_distinct_from_operator: not_applicable
+auditor_rewrote_no_oracle: not_applicable
+audit_remutation: not_applicable
+stop_state: active_spec_committed
+next_allowed_action: worker_attempt (SPEC-003)
+
 (one entry per SPEC, appended as the loop advances)
