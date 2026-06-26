@@ -34,3 +34,18 @@ oracle_status: PASS — band-oracle discrimina (risco→hard-gate high-risk/forb
 zero_regression: 5 substrings-piso byte-intactas; 2 espelhos byte-idênticos preservados; mantra_gate.py runtime untouched
 release_identity: NENHUM bump — maintainer governance body (band-oracle não é HELPER_FILE; bootloaders raiz não em HELPER_FILES). Confirmado PLANTAO:146 Slice 1 "sem bump".
 sync: LOCAL_COMMITTED (remote não autorizado)
+
+---
+
+spec_id: SPEC-P-002
+spec_version: 1
+attempt: 1
+pillar: 1 SKILL (camada produto/source DELIVERED + camada desenvolvimento/dev-mirror)
+commit: no-commit (sha no corpo do commit que inclui este ledger)
+files: src/adapters/{claude,codex}/skills/tes-engineering-discipline/SKILL.md (SOURCE delivered), .claude/ + .agents/skills/tes-engineering-discipline/SKILL.md (DEV mirror, byte-idênticos entre si)
+layer_separation: editei o SOURCE delivered (adopter recebe via materialização) E o DEV mirror (camada desenvolvimento, governa este agente) — NÃO confundi com a camada maintainer do Pilar 0 (bootloaders raiz). Cada camada tocada na sua superfície correta.
+oracle_status: PASS — gerente sênior projetado nas 4 superfícies; substrings-piso byte-intactas; materialize --check/adoption(R4)/band-oracle/validate_reference_package exit 0; local-skill-parity preservada (.claude ≡ .agents)
+flash_fry_decision: NÃO criado /flash-fry invocável (AUTO-ATIVO-only, gap declarado, ADR 0005) — decisão do owner
+zero_regression: 5 substrings-piso intactas em todas as 4 superfícies; 2 dev mirrors byte-idênticos preservados
+release_identity: DISPARA (SKILL.md é delivered — está no bundle 0.3.195 publicado). Drift delivered source↔bundle igual ao C8. Por decisão do owner: PARO antes do bump; red-esperado honesto; release = autorização posterior.
+sync: LOCAL_COMMITTED (remote não autorizado)

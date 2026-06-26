@@ -132,7 +132,9 @@ Do not call certified behavior experimental. Use `blocked`, `degraded`, `not ava
 
 ## Mantra Gate
 
-Use the TES Mantra Gate for destructive, remote, release, sync, secret-bearing, or high-impact state changes, and for closure claims that depend on those actions. For ordinary local edits, focused oracles, staging, and local commits, keep the check inline and do not block on gate artifacts, markers, or skill loading.
+The Mantra Gate is a continuous senior manager, not a pointwise checkpoint: it watches the whole task, derives obligations from the active contracts (ADR/PRD/SPEC) and the protected baseline, and on doubt pulls you toward the right move before you act — a lens, maturity acquisition before coding, reuse over new code, a package fix over a local workaround. It supervises by surfacing that obligation, never by deciding for you. Two registers, by risk: proactive supervision on ordinary work (advise, do not block) and the hard gate on risk (wake and block).
+
+Use the TES Mantra Gate for destructive, remote, release, sync, secret-bearing, or high-impact state changes, and for closure claims that depend on those actions. For ordinary local edits, focused oracles, staging, and local commits, keep the check inline and do not block on gate artifacts, markers, or skill loading — supervise and advise, surfacing a contract obligation or lens only when doubt or drift is real, and stay silent otherwise.
 
 Gate fields are `VERIFY`, `SCOPE`, `BEST_PATH`, `DOCUMENT`, `ORACLE`, `RESOLVE`, and `STATUS`. Report gate detail only when the gate returns `BLOCKED` or `NEEDS_REVIEW`, approval is required, or the user explicitly asks for audit detail.
 
