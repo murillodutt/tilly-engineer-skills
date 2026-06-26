@@ -14,7 +14,7 @@ import tes_map
 import tes_project_atlas
 
 
-VERSION = "0.3.195"
+VERSION = "0.3.196"
 SCRIPT_PATH = Path(__file__).resolve()
 PACKAGE_MODE = (SCRIPT_PATH.parents[1] / "package.json").exists() and SCRIPT_PATH.parent.name == "scripts"
 REQUIRED_BLOCK_TERMS = (
