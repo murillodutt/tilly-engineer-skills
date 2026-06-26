@@ -39,6 +39,8 @@ import mantra_gate  # noqa: E402
 
 EXPECTED_MARKER = mantra_gate.MARKER
 OLD_BRACKET_MARKER = "[" + EXPECTED_MARKER.strip("`") + "]"
+HOOK_SENTINEL_PATH = Path(".tes/runtime/hooks/executed.jsonl")
+LEGACY_HOOK_SENTINEL_PATH = Path(".tes/hooks/executed.jsonl")
 
 
 def _assert_marker(label: str, text: str, failures: list[str]) -> None:
@@ -83,7 +85,7 @@ def _pre_camel(event_tool: str, session: str, **tool_input) -> dict:
 
 
 def _read_sentinel(target: Path) -> list[dict]:
-    sentinel = target / ".tes/hooks/executed.jsonl"
+    sentinel = target / HOOK_SENTINEL_PATH
     if not sentinel.is_file():
         return []
     records: list[dict] = []
@@ -93,6 +95,7 @@ def _read_sentinel(target: Path) -> list[dict]:
         except json.JSONDecodeError:
             continue
         if isinstance(payload, dict):
+            payload.setdefault("sentinel_path", str(HOOK_SENTINEL_PATH))
             records.append(payload)
     return records
 
@@ -212,9 +215,27 @@ def evaluate() -> dict[str, object]:
             _assert_no_visible_marker(f"{agent}: ordinary code edit", out + err, failures)
 
         sentinel_records = _read_sentinel(target)
+        codex_multiedit = next(
+            (
+                rec
+                for rec in sentinel_records
+                if rec.get("agent") == "codex"
+                and rec.get("event") == "PreToolUse"
+                and rec.get("event_canonical") == "PreToolUse"
+                and rec.get("mode") == "pretooluse"
+                and rec.get("session") == "oracle-multiedit-camel"
+                and rec.get("tool") == "MultiEdit"
+                and rec.get("path") == "docs/adr/0005-decision.md"
+            ),
+            None,
+        )
+        if codex_multiedit is None:
+            failures.append("PreToolUse sentinel must record canonical Codex MultiEdit execution with tool/path details")
+        if (target / LEGACY_HOOK_SENTINEL_PATH).exists():
+            failures.append("PreToolUse hook must not write the legacy tracked hook sentinel")
         if not any(
             rec.get("agent") == "codex"
-            and rec.get("event") == "PreToolUse"
+            and rec.get("event_canonical") == "PreToolUse"
             and rec.get("session") == "oracle-multiedit-camel"
             for rec in sentinel_records
         ):
