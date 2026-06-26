@@ -24,9 +24,14 @@ try:
 except Exception:  # pragma: no cover - installed helper may be inspected alone.
     tes_project_atlas = None  # type: ignore[assignment]
 
+try:
+    import field_reports as field_reports_helper
+except Exception:  # pragma: no cover - installed helper may be inspected alone.
+    field_reports_helper = None  # type: ignore[assignment]
+
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.200"
+VERSION = "0.3.201"
 REPO_URL = "https://github.com/murillodutt/tilly-engineer-skills"
 REMOTE_PACKAGE_JSON = (
     "https://raw.githubusercontent.com/murillodutt/tilly-engineer-skills/main/package.json"
@@ -300,6 +305,17 @@ def installed_version(records: list[dict[str, str]]) -> str | None:
     return versions[-1] if versions else None
 
 
+def field_reports_pre_push_hook_exists(target: Path) -> bool:
+    git_dir = target / ".git"
+    if git_dir.exists() and git_dir.is_dir() and field_reports_helper is not None:
+        hook_info = field_reports_helper.resolve_pre_push_hook(target, git_dir)
+        hook = hook_info.get("hook")
+        if hook_info.get("status") == "PASS" and isinstance(hook, Path):
+            return hook.exists()
+        return False
+    return (target / ".git/hooks/pre-push").exists()
+
+
 def surfaces(target: Path) -> dict[str, bool]:
     return {
         "docs_agents": (target / "docs/agents").exists(),
@@ -317,7 +333,7 @@ def surfaces(target: Path) -> dict[str, bool]:
         or (target / ".tilly/bin/cortex_mcp.py").exists(),
         "field_reports": (target / ".tes/bin/field_reports.py").exists()
         or (target / ".tilly/bin/field_reports.py").exists()
-        or (target / ".git/hooks/pre-push").exists(),
+        or field_reports_pre_push_hook_exists(target),
     }
 
 
@@ -1815,6 +1831,20 @@ def self_test() -> dict[str, Any]:
         if result["legacy_retirement_required"] is not True:
             failures.append("legacy runtime fixture must require legacy retirement")
         assert_project_start_gate(result, failures, "multi-runtime fixture")
+
+    with tempfile.TemporaryDirectory(prefix="tes-update-core-hookspath-") as tempdir:
+        target = Path(tempdir)
+        subprocess.run(["git", "init"], cwd=target, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "config", "core.hooksPath", ".githooks"], cwd=target, text=True, capture_output=True, check=False)
+        write(
+            target / ".githooks/pre-push",
+            "#!/bin/sh\n# TES_FIELD_REPORTS_PRE_PUSH\nexit 0\n",
+        )
+        surface_map = surfaces(target)
+        if surface_map.get("field_reports") is not True:
+            failures.append("core.hooksPath pre-push must count as an installed Field Reports surface")
+        if (target / ".git/hooks/pre-push").exists():
+            failures.append("core.hooksPath surface fixture must not require an orphan .git/hooks/pre-push")
 
     with tempfile.TemporaryDirectory(prefix="tes-update-single-") as tempdir:
         target = Path(tempdir)

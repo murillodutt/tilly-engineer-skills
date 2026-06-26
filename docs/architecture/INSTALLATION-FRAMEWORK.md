@@ -78,7 +78,7 @@ Each host gets a SessionStart-style hook whose command references the engine ent
 | Claude Code | `.claude/settings.json` | `${CLAUDE_PROJECT_DIR}/.tes/bin/tes_install.py` |
 | Codex | `.codex/config.toml` | `$(git rev-parse --show-toplevel)/.tes/bin/tes_install.py` |
 | Cursor | `.cursor/hooks.json` | `.tes/bin/tes_install.py` (relative) |
-| git | `.git/hooks/pre-push` | field-reports pre-push gate |
+| git | active `pre-push` hook (`core.hooksPath` aware) | field-reports pre-push gate |
 
 The hook writers are `install_codex_hook` / the Claude entry builders (`claude_notice_hook_entry`, `claude_setup_hook_entry`) / `install_cursor_hook` in `tes_install.py`. The two-phase contract is fixed (do not alter it):
 

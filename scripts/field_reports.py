@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import platform
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -21,7 +22,7 @@ from typing import Any
 import scope_contract
 
 
-VERSION = "0.3.200"
+VERSION = "0.3.201"
 DESTINATION_REPO = "murillodutt/tilly-engineer-skills"
 DEFAULT_OUTBOX_PENDING_THRESHOLD = 30
 SCHEMA = "tes-field-report@2"
@@ -35,7 +36,7 @@ LEGACY_FIELD_ROOT = Path(".tilly/field-reports")
 BIN_HELPER = Path(".tes/bin/field_reports.py")
 SCOPE_HELPER = Path(".tes/bin/scope_contract.py")
 HOOK_MARKER = "TES_FIELD_REPORTS_PRE_PUSH"
-BACKUP_HOOK_RE = re.compile(r'BACKUP_HOOK="(?P<path>\.git/hooks/pre-push\.before-tes-[^"]+)"')
+BACKUP_HOOK_RE = re.compile(r"^BACKUP_HOOK=(?P<value>.+)$", re.MULTILINE)
 MAX_ISSUE_BODY_CHARS = 48000
 SIGNAL_STATUSES = {"FAIL", "BLOCKED", "DEGRADED", "NEEDS_REVIEW", "STALE_SOURCE"}
 SUCCESS_INSTALL_EVENTS = {
@@ -1040,9 +1041,42 @@ def copy_scope_helper(target: Path) -> str | None:
     return rel(destination, target)
 
 
-def backup_hook_shell(backup_name: str) -> str:
+def git_config_get(target: Path, key: str) -> str | None:
+    result = subprocess.run(
+        ["git", "config", "--path", "--get", key],
+        cwd=target,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    values = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    return values[-1] if values else None
+
+
+def resolve_pre_push_hook(target: Path, git_dir: Path) -> dict[str, Any]:
+    configured = git_config_get(target, "core.hooksPath")
+    if configured == "/dev/null":
+        return {"status": "BLOCKED", "reason": "Git hooks are disabled by core.hooksPath=/dev/null"}
+
+    hooks_dir = git_dir / "hooks"
+    mode = "git-default"
+    if configured:
+        configured_path = Path(configured).expanduser()
+        hooks_dir = configured_path if configured_path.is_absolute() else target / configured_path
+        mode = "core.hooksPath"
+
+    # Husky sets core.hooksPath to .husky/_; that is an internal wrapper dir.
+    # The user-composable hook file is the sibling .husky/pre-push.
+    if hooks_dir.name == "_" and hooks_dir.parent.name == ".husky":
+        return {"status": "PASS", "hook": hooks_dir.parent / "pre-push", "mode": "husky", "hooksPath": configured}
+    return {"status": "PASS", "hook": hooks_dir / "pre-push", "mode": mode, "hooksPath": configured}
+
+
+def backup_hook_shell(backup_rel: str) -> str:
     return f"""
-BACKUP_HOOK=".git/hooks/{backup_name}"
+BACKUP_HOOK={shlex.quote(backup_rel)}
 if [ -f "$BACKUP_HOOK" ]; then
   if [ -x "$BACKUP_HOOK" ]; then
     "$BACKUP_HOOK" "$@"
@@ -1061,10 +1095,13 @@ def has_gate_pre_git_push(text: str) -> bool:
     return "gate-pre-git" in text and re.search(r"(^|[^A-Za-z0-9_-])push([^A-Za-z0-9_-]|$)", text) is not None
 
 
-def gate_pre_git_push_shell(backup_name: str | None = None) -> str:
+def gate_pre_git_push_shell(backup_rel: str | None = None) -> str:
     backup_note = ""
-    if backup_name:
-        backup_note = f'# BACKUP_HOOK=".git/hooks/{backup_name}" preserved for audit; gate-pre-git is composed explicitly.\n'
+    if backup_rel:
+        backup_note = (
+            f"BACKUP_HOOK={shlex.quote(backup_rel)}\n"
+            "# BACKUP_HOOK preserved for audit; gate-pre-git is composed explicitly.\n"
+        )
     return f"""
 {backup_note}repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 push_base="$(git rev-parse --abbrev-ref --symbolic-full-name @{{u}} 2>/dev/null || printf '%s' origin/main)"
@@ -1072,11 +1109,17 @@ push_base="$(git rev-parse --abbrev-ref --symbolic-full-name @{{u}} 2>/dev/null 
 """
 
 
-def existing_backup_name(current_hook: str) -> str | None:
+def existing_backup_path(current_hook: str, target: Path) -> Path | None:
     match = BACKUP_HOOK_RE.search(current_hook)
     if not match:
         return None
-    return Path(match.group("path")).name
+    raw = match.group("value").strip()
+    try:
+        value = shlex.split(raw)[0]
+    except (IndexError, ValueError):
+        value = raw.strip("\"'")
+    path = Path(value)
+    return path if path.is_absolute() else target / path
 
 
 def install_hook(target: Path) -> dict[str, object]:
@@ -1085,37 +1128,41 @@ def install_hook(target: Path) -> dict[str, object]:
     if not git_dir.exists() or not git_dir.is_dir():
         return {"version": VERSION, "status": "BLOCKED", "reason": "target is not a Git repository", "writes": []}
 
+    hook_info = resolve_pre_push_hook(target, git_dir)
+    if hook_info["status"] != "PASS":
+        return {"version": VERSION, "status": "BLOCKED", "reason": hook_info["reason"], "writes": []}
+
     ensure_layout(target)
     install_id = ensure_install_id(target)
     helper = copy_helper(target)
     scope_helper = copy_scope_helper(target)
     exclude = ensure_git_exclude(target)
-    hooks = git_dir / "hooks"
+    hook = hook_info["hook"]
+    hooks = hook.parent
     hooks.mkdir(parents=True, exist_ok=True)
-    hook = hooks / "pre-push"
     backup_rel: str | None = None
     backup_shell = ""
     gate_pre_git_shell = ""
     if hook.exists():
         current = hook.read_text(encoding="utf-8", errors="replace")
         if HOOK_MARKER in current:
-            backup_name = existing_backup_name(current)
-            if backup_name and (hooks / backup_name).exists():
-                backup_rel = rel(hooks / backup_name, target)
-                backup_text = (hooks / backup_name).read_text(encoding="utf-8", errors="replace")
+            backup_path = existing_backup_path(current, target)
+            if backup_path and backup_path.exists():
+                backup_rel = rel(backup_path, target)
+                backup_text = backup_path.read_text(encoding="utf-8", errors="replace")
                 if has_gate_pre_git_push(current) or has_gate_pre_git_push(backup_text):
-                    gate_pre_git_shell = gate_pre_git_push_shell(backup_name)
+                    gate_pre_git_shell = gate_pre_git_push_shell(backup_rel)
                 else:
-                    backup_shell = backup_hook_shell(backup_name)
+                    backup_shell = backup_hook_shell(backup_rel)
         else:
             backup = hook.with_name(f"pre-push.before-tes-{file_stamp()}")
             shutil.copy2(hook, backup)
             backup.chmod(0o755)
             backup_rel = rel(backup, target)
             if has_gate_pre_git_push(current):
-                gate_pre_git_shell = gate_pre_git_push_shell(backup.name)
+                gate_pre_git_shell = gate_pre_git_push_shell(backup_rel)
             else:
-                backup_shell = backup_hook_shell(backup.name)
+                backup_shell = backup_hook_shell(backup_rel)
 
     hook_text = f"""#!/bin/sh
 # {HOOK_MARKER}
@@ -1144,6 +1191,8 @@ exit 0
         "status": "PASS",
         "install_id": install_id,
         "hook": rel(hook, target),
+        "hook_mode": hook_info["mode"],
+        "hooksPath": hook_info.get("hooksPath"),
         "backup": backup_rel,
         "writes": writes,
     }
@@ -1352,6 +1401,60 @@ def self_test() -> dict[str, object]:
             failures.append("installed field_reports helper install-hook must be idempotent")
             failures.extend(installed_result.stdout.splitlines())
             failures.extend(installed_result.stderr.splitlines())
+
+        githooks_target = target / "core-hooks-path-githooks"
+        githooks_target.mkdir()
+        subprocess.run(["git", "init"], cwd=githooks_target, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "config", "core.hooksPath", ".githooks"], cwd=githooks_target, text=True, capture_output=True, check=False)
+        githooks_result = install_hook(githooks_target)
+        githooks_hook = githooks_target / ".githooks/pre-push"
+        dormant_githook = githooks_target / ".git/hooks/pre-push"
+        if githooks_result.get("status") != "PASS" or githooks_result.get("hook") != ".githooks/pre-push":
+            failures.append("core.hooksPath=.githooks install must target the active pre-push hook")
+        if not githooks_hook.exists() or HOOK_MARKER not in githooks_hook.read_text(encoding="utf-8", errors="replace"):
+            failures.append("core.hooksPath=.githooks active hook must contain Field Reports drain")
+        if dormant_githook.exists() and HOOK_MARKER in dormant_githook.read_text(encoding="utf-8", errors="replace"):
+            failures.append("core.hooksPath=.githooks install must not write an orphan .git/hooks/pre-push")
+        githooks_run = subprocess.run([str(githooks_hook)], cwd=githooks_target, text=True, capture_output=True, check=False)
+        if githooks_run.returncode != 0:
+            failures.append("core.hooksPath=.githooks pre-push hook must execute without blocking")
+
+        husky_target = target / "core-hooks-path-husky"
+        husky_target.mkdir()
+        subprocess.run(["git", "init"], cwd=husky_target, text=True, capture_output=True, check=False)
+        (husky_target / ".husky/_").mkdir(parents=True)
+        husky_wrapper = husky_target / ".husky/_/pre-push"
+        husky_wrapper.write_text(
+            """#!/usr/bin/env sh
+hook_dir="$(dirname "$0")"
+if [ -f "$hook_dir/../pre-push" ]; then
+  sh "$hook_dir/../pre-push" "$@"
+fi
+exit 0
+""",
+            encoding="utf-8",
+        )
+        husky_wrapper.chmod(0o755)
+        subprocess.run(["git", "config", "core.hooksPath", ".husky/_"], cwd=husky_target, text=True, capture_output=True, check=False)
+        husky_result = install_hook(husky_target)
+        husky_hook = husky_target / ".husky/pre-push"
+        if husky_result.get("status") != "PASS" or husky_result.get("hook") != ".husky/pre-push":
+            failures.append("core.hooksPath=.husky/_ install must target the Husky user hook")
+        if not husky_hook.exists() or HOOK_MARKER not in husky_hook.read_text(encoding="utf-8", errors="replace"):
+            failures.append("Husky user pre-push hook must contain Field Reports drain")
+        if HOOK_MARKER in husky_wrapper.read_text(encoding="utf-8", errors="replace"):
+            failures.append("install-hook must not overwrite Husky internal wrapper")
+        husky_run = subprocess.run([str(husky_wrapper)], cwd=husky_target, text=True, capture_output=True, check=False)
+        if husky_run.returncode != 0:
+            failures.append("Husky wrapper must execute the Field Reports user hook without blocking")
+
+        disabled_hooks_target = target / "core-hooks-path-disabled"
+        disabled_hooks_target.mkdir()
+        subprocess.run(["git", "init"], cwd=disabled_hooks_target, text=True, capture_output=True, check=False)
+        subprocess.run(["git", "config", "core.hooksPath", "/dev/null"], cwd=disabled_hooks_target, text=True, capture_output=True, check=False)
+        disabled_hooks_result = install_hook(disabled_hooks_target)
+        if disabled_hooks_result.get("status") != "BLOCKED":
+            failures.append("core.hooksPath=/dev/null must block Field Reports hook installation")
 
         chained_target = target / "pre-existing-pre-push"
         chained_target.mkdir()

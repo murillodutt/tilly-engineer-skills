@@ -37,7 +37,7 @@ SOURCE_PACKAGE_MODE = (
 )
 BUNDLE_MODE = SOURCE_ROOT.name == "scripts" and not SOURCE_PACKAGE_MODE
 PACKAGE_MODE = SOURCE_PACKAGE_MODE
-VERSION = "0.3.200"
+VERSION = "0.3.201"
 REGISTER = Path("docs/agents/PROJECT-REGISTER.md")
 PROJECT_CONTEXT = Path("docs/agents/PROJECT-CONTEXT.md")
 DOCUMENTATION_AUTHORITY = Path("docs/agents/DOCUMENTATION-AUTHORITY.md")
@@ -265,6 +265,16 @@ def rel(path: Path, target: Path) -> str:
         return path.relative_to(target).as_posix()
     except ValueError:
         return str(path)
+
+
+def field_reports_pre_push_hook_path(target: Path) -> Path:
+    git_dir = target / ".git"
+    if git_dir.exists() and git_dir.is_dir():
+        hook_info = field_reports.resolve_pre_push_hook(target, git_dir)
+        hook = hook_info.get("hook")
+        if hook_info.get("status") == "PASS" and isinstance(hook, Path):
+            return hook
+    return target / ".git/hooks/pre-push"
 
 
 def run(command: list[str], cwd: Path) -> dict[str, Any]:
@@ -506,9 +516,10 @@ def surface_inventory(target: Path) -> dict[str, Any]:
         "tes_map_helper": ".tes/bin/tes_map.py",
         "tes_field_reports_outbox": ".tes/field-reports/outbox.jsonl",
         "tes_field_reports_disabled": ".tes/field-reports/DISABLED",
-        "tes_field_reports_pre_push": ".git/hooks/pre-push",
     }
-    return {name: (target / relpath).exists() for name, relpath in paths.items()}
+    surfaces = {name: (target / relpath).exists() for name, relpath in paths.items()}
+    surfaces["tes_field_reports_pre_push"] = field_reports_pre_push_hook_path(target).exists()
+    return surfaces
 
 
 def safe_read_json(path: Path) -> dict[str, Any] | None:
@@ -2379,7 +2390,7 @@ def initialize(target: Path, *, yes: bool, ensure_cortex: bool) -> dict[str, Any
         f"{EVIDENCE_DIR.as_posix()}/{stamp}-tes-project-manifest.json",
         ".tes/bin/field_reports.py",
         ".tes/field-reports/outbox.jsonl",
-        ".git/hooks/pre-push",
+        rel(field_reports_pre_push_hook_path(target), target),
         ".git/info/exclude",
     ]
     if not yes:

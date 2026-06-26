@@ -50,13 +50,13 @@ The deterministic CLI is `scripts/field_reports.py`.
 
 Supported internal operations are `capture`, `drain`, `status`, `disable`, `enable`, `install-hook`, and `--self-test`.
 
-`install-hook` installs a local `pre-push` wrapper that calls:
+`install-hook` installs a local `pre-push` wrapper at the active Git hook path. It honors `core.hooksPath`; for Husky's `.husky/_` wrapper directory it writes the user-composable `.husky/pre-push` hook instead of overwriting Husky internals. The wrapper calls:
 
 ```text
 python3 .tes/bin/field_reports.py drain --target . --trigger pre-push
 ```
 
-If an existing `pre-push` hook exists, it is backed up and chained before the Field Reports drain. Low-signal heartbeat drains, such as a successful update check with no version drift and no operational change, are suppressed locally with a receipt instead of opening a GitHub issue. If Git, `gh`, network, or authentication is unavailable, Field Reports records `BLOCKED` where possible, keeps the outbox pending, and must not block the push. Drain results distinguish `disabled`, `empty`, `suppressed`, `blocked`, `invalid`, and `sent` transport states. Blocked and invalid drains write receipts without payload bodies and do not clear pending events.
+If an existing active `pre-push` hook exists, it is backed up and chained before the Field Reports drain. Low-signal heartbeat drains, such as a successful update check with no version drift and no operational change, are suppressed locally with a receipt instead of opening a GitHub issue. If Git, `gh`, network, or authentication is unavailable, Field Reports records `BLOCKED` where possible, keeps the outbox pending, and must not block the push. Drain results distinguish `disabled`, `empty`, `suppressed`, `blocked`, `invalid`, and `sent` transport states. Blocked and invalid drains write receipts without payload bodies and do not clear pending events.
 
 ## Opt-Out
 

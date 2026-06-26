@@ -23,10 +23,11 @@ import sys
 import tempfile
 from typing import Any
 
+import field_reports
 import root_context
 
 
-VERSION = "0.3.200"
+VERSION = "0.3.201"
 
 # Governed surface markers (kept in sync with the installer writers).
 MCP_SERVER_NAME = "tes-cortex"
@@ -128,14 +129,18 @@ def detect_mcp(target: Path) -> list[str]:
 
 def detect_hooks(target: Path) -> list[str]:
     found: list[str] = []
-    for rel in HOOK_CONFIG_PATHS:
-        text = read_text(target / rel)
+    for relpath in HOOK_CONFIG_PATHS:
+        text = read_text(target / relpath)
         if text and any(token in text for token in HOOK_COMMAND_TOKENS) and " hook" in text:
-            found.append(f"{rel} (TES hook entry)")
-    git_pre_push = target / ".git/hooks/pre-push"
-    text = read_text(git_pre_push)
-    if text and "TES_FIELD_REPORTS_PRE_PUSH" in text:
-        found.append(".git/hooks/pre-push (TES field reports hook)")
+            found.append(f"{relpath} (TES hook entry)")
+    git_dir = target / ".git"
+    if git_dir.exists() and git_dir.is_dir():
+        hook_info = field_reports.resolve_pre_push_hook(target, git_dir)
+        hook = hook_info.get("hook")
+        if hook_info.get("status") == "PASS" and isinstance(hook, Path):
+            text = read_text(hook)
+            if text and "TES_FIELD_REPORTS_PRE_PUSH" in text:
+                found.append(f"{rel(hook, target)} (TES field reports hook)")
     return found
 
 

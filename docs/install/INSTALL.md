@@ -15,18 +15,18 @@ This Markdown file is the technical installer contract for agents and release op
 - Web: https://murillodutt.github.io/tilly-engineer-skills/install/USER-MANUAL.html
 - Local package path: `docs/install/USER-MANUAL.html`
 
-The public installer path is the GitHub package-spec command through npx or Bun after a fixed ref is authorized and release-certified. Version `0.3.200` is the fixed release identity for this install surface; treat the remote ref as certified only after the tag is published and `npm run release:check` passes.
+The public installer path is the GitHub package-spec command through npx or Bun after a fixed ref is authorized and release-certified. Version `0.3.201` is the fixed release identity for this install surface; treat the remote ref as certified only after the tag is published and `npm run release:check` passes.
 
 For the agent-side contract behind runtime commands, gates, schemas, and closure vocabulary after installation, open `docs/install/AGENT-MANUAL.md`.
 
 ## GitHub Package-Spec Form
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.200 tilly-engineer-skills add
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.201 tilly-engineer-skills add
 ```
 
 ```bash
-bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.200 tilly-engineer-skills add
+bunx --silent --bun --package github:murillodutt/tilly-engineer-skills#v0.3.201 tilly-engineer-skills add
 ```
 
 The interactive installer asks for the target project, agent hooks, install mode, and final confirmation before writing files. `--loglevel=error` keeps package-runner warnings out of the first-run screen while preserving real command failures. `--silent` does the same for Bun's package runner while keeping TES output visible.
@@ -34,10 +34,10 @@ The interactive installer asks for the target project, agent hooks, install mode
 For non-interactive installs:
 
 ```bash
-npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.200 tilly-engineer-skills add --agent all --yes
+npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.201 tilly-engineer-skills add --agent all --yes
 ```
 
-`#v0.3.200` is the intended fixed-ref form for a release-certified install channel. Do not call that remote ref certified until `npm run release:check` passes after the tag or fixed ref is authorized and available.
+`#v0.3.201` is the intended fixed-ref form for a release-certified install channel. Do not call that remote ref certified until `npm run release:check` passes after the tag or fixed ref is authorized and available.
 
 During install, update, and clean-runtime refresh, obsolete plugin/root-skill surfaces are removed only when TES-owned/generated/empty; ambiguous content is preserved, backed up under `.tes/bk/**`, and reported as `NEEDS_REVIEW`.
 
@@ -89,7 +89,7 @@ Cortex is Obsidian-compatible plain Markdown. The installer does not create `.ob
 
 Cortex MCP is activated by default for selected runtime routes. It is project-scoped and exposes only the governed `cortex_remember_plan` /`cortex_remember` write lane (`--read-only` for inspection-only). MCP activation writes the `.tes/bin/**` helpers plus per-host config (`.mcp.json`, `.codex/config.toml`, `.cursor/mcp.json`, `.vscode/mcp.json`) with absolute paths, and must not touch global MCP config, secrets, hooks, or ungoverned write-capable tools. Read-only Cortex tools never create the derived semantic index or write memory. The MCP self-test and the exact helper/config inventory live in `docs/architecture/INSTALLATION-FRAMEWORK.md` and `docs/mesh/CORTEX.md`; activation reports distinguish `config_present`, `host_connected`, and `session_restart_required`.
 
-TES Field Reports is active by default: a local `pre-push` drain for sanitized operational facts under `.tes/field-reports/**`, never sending project code or private paths, with opt-out/reactivation in the user manual. Real GitHub publication depends on local `gh`, auth, and network and stays a partial surface until authorized and replayed. Drains report explicit transport states (suppressed, blocked, invalid, sent, disabled, empty); blocked/invalid drains keep pending events and write payload-free receipts. On a Git repository, Tilly maintains artifact hygiene in `.git/info/exclude` (rollback backups, bytecode, Field Reports state, Cortex caches excluded; `.tes/bin/*.py` helpers are not, since they are the installed runtime).
+TES Field Reports is active by default: a local `pre-push` drain for sanitized operational facts under `.tes/field-reports/**`, installed at the active Git hook path, never sending project code or private paths, with opt-out/reactivation in the user manual. Real GitHub publication depends on local `gh`, auth, and network and stays a partial surface until authorized and replayed. Drains report explicit transport states (suppressed, blocked, invalid, sent, disabled, empty); blocked/invalid drains keep pending events and write payload-free receipts. On a Git repository, Tilly maintains artifact hygiene in `.git/info/exclude` (rollback backups, bytecode, Field Reports state, Cortex caches excluded; `.tes/bin/*.py` helpers are not, since they are the installed runtime).
 
 When this package is available locally, `tes_init.py` is the project initialization and recertification command. It verifies package health, scans the target project, writes `docs/agents/PROJECT-REGISTER.md`, writes `docs/agents/PROJECT-CONTEXT.md` as the initial project map for future agents, creates the first-pass Obsidian-compatible operating mesh when missing, stores a full manifest under `docs/agents/evidence/**`, and can be certified with `project_context_oracle.py` plus `project_alignment_oracle.py`. Cortex can be initialized directly. The user-facing `/tes-init` intent is a router, and `/tes-setup` is a direct setup alias for the same route. It first runs an Install/Update Gate and a Project Context Gate. Installer or update writes still require Step Zero protection. If TES is already installed/current and only the project context is missing or weak, Step Zero protects installer/update writes but must not block project-context initialization; the agent reports the dirty tree, avoids helper/adapter/MCP changes, runs `tes_init.py`, and certifies both `PROJECT-CONTEXT.md` and the first-pass operating mesh. For `/tes-init`, the Project-Start Gate always runs before final reporting: a preflight context PASS does not replace project-start execution. After helper-only or adapter repairs, run `tes_init.py --target <target> --yes` and both project oracles again. For `needs_review`, use `tes_install.py postinstall --recover-needs-review` so the retained run record and sentinel move together. For old meshed projects with stale helpers, trigger drift, or incomplete alignment, report the planner `continuation_plan` instead of a bare `NEEDS_REVIEW`; include phases, approvals, write surfaces, commands, and the final recorded probe that must return helper/runtime/context/alignment PASS.
 

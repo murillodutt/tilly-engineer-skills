@@ -86,7 +86,7 @@ Use `npm run materialize:check` to verify this without writing to `dist/**`. `sr
 
 `scripts/root_context.py` scans root runtime files such as `AGENTS.md`, `CLAUDE.md`, and Cursor rules before or from central backup evidence. Project-owned instructions must be backed up before overwrite and recovered into `docs/agents/**` or marked `NEEDS_REVIEW`.
 
-`scripts/field_reports.py` installs the local Field Reports `pre-push` drain and records sanitized operational facts under `.tes/field-reports/**`. That directory is local transport state, not repository truth.
+`scripts/field_reports.py` installs the local Field Reports `pre-push` drain at the active Git hook path (`core.hooksPath` aware) and records sanitized operational facts under `.tes/field-reports/**`. That directory is local transport state, not repository truth.
 
 `.github/ISSUE_TEMPLATE/tes-field-report.yml` and `.github/workflows/field-report-governance.yml` govern the central GitHub receiver for those reports. The local oracle is `scripts/field_reports_github_oracle.py`. GitHub automation readiness, including Dependabot ecosystem and directory sanity when `.github/dependabot.yml` exists, is checked by `scripts/github_readiness_oracle.py`.
 
