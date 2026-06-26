@@ -5,20 +5,21 @@ status: active
 consumer: maintainers, Cortex authors, TES Align authors, host integration authors, and release operators
 source_of_truth: true
 evidence_level: L1
-tver: 0.1.0
+tver: 0.2.0
 ---
 
-# ADR 0007: Cortex Proactive Memory And Mesh Drift
+# ADR 0007: Cortex Runtime-First Memory And Mesh Drift
 
-Accepted on 2026-06-26. This ADR records architecture only. It does not deliver hooks, scripts, MCP behavior, installer changes, skill changes, release identity, or public bundle changes.
+Accepted on 2026-06-26. This ADR corrects the initial ADR 0007 framing: Cortex runtime-first behavior is the accepted TES target architecture, not an optional aspiration. This ADR records architecture only. It does not deliver hooks, scripts, MCP behavior, installer changes, skill changes, release identity, or public bundle changes.
 
 ## Core Rule
 
-Cortex may evolve into a proactive memory and sensing layer, but it must not become the operational mesh writer. `/tes-align` remains the canonical reconciler for `docs/agents/**`.
+Cortex SHALL target a proactive, host-aware, runtime-first memory and sensing layer, but it must not become the operational mesh writer. `/tes-align` remains the canonical reconciler for `docs/agents/**`.
 
 ```text
-Future Cortex observes, captures, recalls, and signals drift.
+Cortex runtime-first target: observe, capture, recall, inject, and signal drift.
 Align reconciles, writes, and certifies the operating mesh.
+Future implementation must prove host-specific behavior before delivery.
 ```
 
 ## Context
@@ -27,27 +28,31 @@ The current Cortex contract makes filesystem Markdown the durable memory source 
 
 The current `/tes-align` contract owns semantic project alignment. It turns initial context into an evidenced operating mesh with project state, roadmap, execution line, quality gates, boundaries, glossary, decisions, and retained alignment evidence. It must discover before writing and must not invent architecture.
 
-The current gap is continuity between those surfaces. Cortex can know or propose durable lessons, while the mesh can still lag behind until `/tes-align` runs. That lag is not a reason to let Cortex edit the mesh; it is a reason to make drift observable and route it to the correct reconciler.
+The current gap is continuity between those surfaces. Cortex can know or propose durable lessons, while the mesh can still lag behind until `/tes-align` runs. That lag is not a reason to let Cortex edit the mesh; it is a reason to make drift observable at runtime and route it to the correct reconciler.
 
-A read-only mem0-plugin reference review shows a mature multi-host memory pattern: host-specific lifecycle hooks, startup context loading, prompt-time context/rubric injection, stop/pre-compact capture, tolerant hot paths, and idempotent Codex hook installation. This is architectural reference only; TES must not copy its implementation, identifiers, branding, API assumptions, or storage model.
+A read-only mem0-plugin reference review shows a mature multi-host memory pattern: host-specific lifecycle hooks, startup context loading, prompt-time context/rubric injection, file/tool context injection, stop/pre-compact capture, tolerant hot paths, host wrappers, idempotent install/update behavior, and regression tests derived from production failures. This is architectural reference only; TES must not copy its implementation, identifiers, branding, API assumptions, or storage model.
+
+TES can exceed the reference model by combining runtime memory with local Markdown truth, governed Cortex writes, explicit mesh-drift signaling, `/tes-align` reconciliation, project-scoped evidence, and deterministic oracles. The goal is not cloud memory alone; the goal is a local, auditable, agent-usable operating memory that can sense when the operational mesh is stale without silently rewriting it.
 
 ## Decision
 
-1. **Cortex proactive extension.** A future Cortex layer may observe host lifecycle events, capture candidate session memory, inject relevant recall context, and summarize recent memory evidence before the agent acts.
-2. **No automatic mesh writes.** Cortex may emit a `NEEDS_ALIGN` signal with evidence, impacted mesh surfaces, confidence, and suggested next action, but it must not write `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `DECISIONS/**`, or any other operational mesh file.
-3. **Align remains the reconciler.** `/tes-align` consumes project anchors, decisions, evidence packets, and future Cortex drift evidence, then updates and certifies the operating mesh through `project_alignment_oracle.py`.
-4. **Host-aware hooks.** Future proactive Cortex behavior must be modeled as a host matrix. Claude Code, Codex, and Cursor may share semantic intent, but their hook names, lifecycle layers, install paths, output contracts, feature flags, and trust/reload behavior must be verified per host before implementation.
-5. **Tolerant hot path.** Proactive memory hooks must be advisory by default. They may inject context or report drift, but they must fail open for ordinary work unless a separate governed write, destructive action, secret, release, remote action, or owner-approved hard gate is involved.
-6. **Evidence before capture.** Automatic or semi-automatic capture must preserve the existing Cortex write gate: no durable memory from loose chat, no derived cache as truth, no secrets, and no write without evidence and authorization.
-7. **Implementation deferred.** Runtime work requires a later PRD/SPEC with host-contract fixtures, false-positive checks, idempotent installer tests, no-copy verification against the reference, and focused oracles for `NEEDS_ALIGN`.
+1. **Runtime-first target architecture.** Cortex SHALL target proactive host-aware runtime behavior that can observe lifecycle context, capture candidate evidence, inject relevant recall context, summarize recent memory evidence, and signal drift before the agent loses the project lane.
+2. **Reference-proven, TES-native translation.** The mem0-plugin reference validates the pattern of per-host lifecycle contracts, prompt-time injection, file/tool context, stop/pre-compact capture, tolerant hot paths, host wrappers, idempotent installers, and regression tests from real failures. TES adopts those principles only through TES-native implementation.
+3. **TES ceiling beyond mem0-plugin.** TES pairs runtime memory with local Markdown truth, governed memory writes, explicit `NEEDS_ALIGN`, `/tes-align` reconciliation, retained evidence, source/package oracles, and Git-visible project history. That makes Cortex an operating-memory layer, not just a remote memory recall layer.
+4. **No automatic mesh writes.** Cortex may emit a `NEEDS_ALIGN` signal with evidence, impacted mesh surfaces, confidence, and suggested next action, but it must not write `PROJECT-STATE.md`, `PROJECT-ROADMAP.md`, `EXECUTION-LINE.md`, `QUALITY-GATES.md`, `DECISIONS/**`, or any other operational mesh file.
+5. **Align remains the reconciler.** `/tes-align` consumes project anchors, decisions, evidence packets, and future Cortex drift evidence, then updates and certifies the operating mesh through `project_alignment_oracle.py`.
+6. **Host-aware hooks.** Future runtime Cortex behavior must be modeled as a host matrix. Claude Code, Codex, and Cursor may share semantic intent, but their hook names, lifecycle layers, install paths, output contracts, feature flags, platform assumptions, and trust/reload behavior must be verified per host before implementation.
+7. **Tolerant hot path.** Runtime memory hooks must be advisory by default. They may inject context or report drift, but they must fail open for ordinary work unless a separate governed write, destructive action, secret, release, remote action, or owner-approved hard gate is involved.
+8. **Evidence before capture.** Automatic or semi-automatic capture must preserve the existing Cortex write gate: no durable memory from loose chat, no derived cache as truth, no secrets, and no write without evidence and authorization.
+9. **Implementation deferred.** Runtime work requires a later PRD/SPEC with host-contract fixtures, false-positive checks, idempotent installer tests, no-copy verification against the reference, and focused oracles for `NEEDS_ALIGN`.
 
 ## Boundary Matrix
 
-| Surface | May Do | Must Not Do |
+| Surface | Target Capability | Must Not Do |
 |---------|--------|-------------|
-| `tes-cortex` | Recall, inspect, curate, reflect, propose capture, propose durable memory, signal drift | Rewrite the operating mesh or certify project alignment |
+| `tes-cortex` | Recall, inspect, curate, reflect, propose capture, propose durable memory, inject relevant recall context, signal drift | Rewrite the operating mesh or certify project alignment |
 | `/tes-align` | Reconcile evidence into `docs/agents/**`, update mesh state, certify alignment | Become a background daemon or session-end auto-run |
-| Host hooks | Observe lifecycle events and inject advisory context | Pretend Claude Code, Codex, and Cursor share one universal contract |
+| Host hooks | Observe lifecycle events and inject advisory context when future runtime implementation is authorized | Pretend Claude Code, Codex, and Cursor share one universal contract |
 | MCP/CLI | Provide governed read and write lanes | Bypass the Cortex approval/evidence gate |
 
 ## `NEEDS_ALIGN` Contract
@@ -71,7 +76,7 @@ The signal must be specific enough for `/tes-align` to act, but it must not cont
 - TES gains a clean path toward proactive memory without confusing memory capture with operational position.
 - The same project can be worked through Claude Code, Codex, and Cursor without relying on one host's hook semantics as the universal model.
 - Forgetting to run `/tes-align` remains visible as drift instead of silently turning Cortex into a mesh writer.
-- Future implementation must spend proof on hook contracts and false positives, not on broad governance prose.
+- Future implementation must spend proof on host contracts, hot-path tolerance, false positives, no-copy boundaries, and idempotent installation, not on broad governance prose.
 
 ## Non-Goals
 
