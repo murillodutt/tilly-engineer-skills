@@ -99,11 +99,29 @@ def _evaluate_codex() -> list[str]:
         t = Path(tmp)
         (t / ".codex").mkdir(parents=True)
         (t / ".codex/config.toml").write_text('[mcp_servers.other]\ncommand = "keep"\n')
+        (t / ".codex/hooks.json").write_text(
+            json.dumps({
+                "hooks": {
+                    "PreToolUse": [
+                        {
+                            "matcher": "Write|Edit|MultiEdit",
+                            "hooks": [
+                                {"type": "command", "command": "python3 .tes/bin/tes_install.py hook --agent codex"},
+                                {"type": "command", "command": "echo foreign-codex-json"},
+                            ],
+                        }
+                    ]
+                }
+            }),
+            encoding="utf-8",
+        )
         tes_install.install_hooks(t, ["codex"], dry_run=False)
         tes_install.install_hooks(t, ["codex"], dry_run=False)
         toml = (t / ".codex/config.toml").read_text()
-        if toml.count("codex_hooks = true") != 1:
-            failures.append(f"codex: codex_hooks feature flag count = {toml.count('codex_hooks = true')} (want 1)")
+        if toml.count("hooks = true") != 1:
+            failures.append(f"codex: hooks feature flag count = {toml.count('hooks = true')} (want 1)")
+        if "codex_hooks = true" in toml:
+            failures.append("codex: install must not emit deprecated codex_hooks feature flag")
         if toml.count("[[hooks.SessionStart]]") != 1:
             failures.append(f"codex: SessionStart blocks after double install = {toml.count('[[hooks.SessionStart]]')} (want 1)")
         if toml.count("[[hooks.PreToolUse]]") != 1:
@@ -116,12 +134,17 @@ def _evaluate_codex() -> list[str]:
         after = (t / ".codex/config.toml").read_text() if (t / ".codex/config.toml").exists() else ""
         if "hook --agent" in after:
             failures.append("codex: TES hook orphaned after uninstall")
-        if "codex_hooks = true" in after:
-            failures.append("codex: uninstall must remove TES codex_hooks feature flag")
+        if "hooks = true" in after or "codex_hooks = true" in after:
+            failures.append("codex: uninstall must remove TES hook feature flags")
         if "[[hooks.SessionStart]]" in after or "[[hooks.PreToolUse]]" in after:
             failures.append("codex: uninstall must remove TES hook tables")
         if "mcp_servers.other" not in after:
             failures.append("codex: foreign config not preserved across uninstall")
+        hooks_after = (t / ".codex/hooks.json").read_text() if (t / ".codex/hooks.json").exists() else ""
+        if "hook --agent" in hooks_after:
+            failures.append("codex: TES handlers orphaned in .codex/hooks.json after uninstall")
+        if "echo foreign-codex-json" not in hooks_after:
+            failures.append("codex: foreign .codex/hooks.json hook not preserved across uninstall")
     return failures
 
 

@@ -34,7 +34,7 @@ MCP_SERVER_NAME = "tes-cortex"
 HOOK_COMMAND_TOKENS = ("tes_install.py hook", ".tes/bin/tes_install.py")
 ROOT_BOOTLOADERS = ("AGENTS.md", "CLAUDE.md", "CURSOR.md")
 MCP_CONFIG_PATHS = (".mcp.json", ".cursor/mcp.json", ".vscode/mcp.json", ".codex/config.toml")
-HOOK_CONFIG_PATHS = (".codex/config.toml", ".claude/settings.json", ".cursor/hooks.json")
+HOOK_CONFIG_PATHS = (".codex/config.toml", ".codex/hooks.json", ".claude/settings.json", ".cursor/hooks.json")
 PROJECT_VISIBLE_RUNTIME_ROOTS = (
     ".agents/skills",
     ".claude/skills",
@@ -196,14 +196,14 @@ def detect_hygiene_residue(target: Path) -> list[str]:
             found.extend(f"{rel(path, target)} (TES backup residue)" for path in backup_files)
         if root.is_dir() and not any(path.is_file() for path in root.rglob("*")):
             found.append(f"{root_rel}/ (empty TES shell directory)")
-    for relpath in (".codex/config.toml", ".claude/settings.json", ".cursor/hooks.json"):
+    for relpath in (".codex/config.toml", ".codex/hooks.json", ".claude/settings.json", ".cursor/hooks.json"):
         path = target / relpath
         if not path.is_file():
             continue
         text = read_text(path)
         if relpath == ".codex/config.toml" and text.strip() in {"", "[features]"}:
             found.append(f"{relpath} (empty TES shell config)")
-        if relpath in {".claude/settings.json", ".cursor/hooks.json"} and _json_is_empty_hooks(text):
+        if relpath in {".codex/hooks.json", ".claude/settings.json", ".cursor/hooks.json"} and _json_is_empty_hooks(text):
             found.append(f"{relpath} (empty TES shell config)")
     return found
 
@@ -357,6 +357,31 @@ def self_test() -> int:
         r9 = evaluate(codex_hook)
         if r9["status"] != "FAIL" or not any(".codex/config.toml" in item for item in r9["active_residue"]):
             failures.append(f"unmarked Codex TES hook must FAIL: {r9['status']} {r9['active_residue']}")
+
+        # Fixture 10: a legacy Codex hooks.json TES command is active residue.
+        codex_hooks_json = root / "codex-hooks-json"
+        (codex_hooks_json / ".codex").mkdir(parents=True)
+        (codex_hooks_json / ".codex/hooks.json").write_text(
+            json.dumps({
+                "hooks": {
+                    "PreToolUse": [
+                        {
+                            "matcher": "Write|Edit|MultiEdit",
+                            "hooks": [
+                                {
+                                    "type": "command",
+                                    "command": "python3 .tes/bin/tes_install.py hook --agent claude",
+                                }
+                            ],
+                        }
+                    ]
+                }
+            }),
+            encoding="utf-8",
+        )
+        r10 = evaluate(codex_hooks_json)
+        if r10["status"] != "FAIL" or not any(".codex/hooks.json" in item for item in r10["active_residue"]):
+            failures.append(f"legacy Codex hooks.json TES hook must FAIL: {r10['status']} {r10['active_residue']}")
 
     result = {"version": VERSION, "status": "FAIL" if failures else "PASS", "failures": failures}
     print(json.dumps(result, indent=2, sort_keys=True))

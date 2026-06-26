@@ -36,6 +36,13 @@ DEFAULT_POSTINSTALL_COMMANDS = (
     ("project_alignment_oracle.py", ("--target", "{target}")),
 )
 HOOK_RUNTIME_HELPERS = ("cortex_runtime.py",)
+OPERATING_MESH_PRETOOLUSE_HINTS = (
+    "docs/agents/PROJECT-STATE.md",
+    "docs/agents/PROJECT-ROADMAP.md",
+    "docs/agents/EXECUTION-LINE.md",
+    "docs/agents/QUALITY-GATES.md",
+    "docs/agents/DECISIONS/",
+)
 
 
 def python_executable() -> str:
@@ -180,6 +187,14 @@ def replace_or_insert_toml_feature(text: str, key: str, value: str) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+def remove_toml_feature_line(text: str, key: str) -> str:
+    lines = [
+        line for line in text.splitlines()
+        if not line.strip().startswith(f"{key} ")
+    ]
+    return "\n".join(lines).rstrip() + ("\n" if lines else "")
+
+
 def write_text_if_changed(path: Path, text: str, target: Path, dry_run: bool, backup: bool = True) -> dict[str, str]:
     encoded = text.encode("utf-8")
     if path.exists() and path.read_bytes() == encoded:
@@ -235,7 +250,8 @@ timeout = 10
 def install_codex_hook(target: Path, dry_run: bool) -> dict[str, str]:
     path = target / ".codex/config.toml"
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    updated = replace_or_insert_toml_feature(existing, "codex_hooks", "true")
+    updated = replace_or_insert_toml_feature(existing, "hooks", "true")
+    updated = remove_toml_feature_line(updated, "codex_hooks")
     snippet = codex_hook_snippet().strip()
     if "TES first-session post-install hook" not in updated:
         updated = updated.rstrip() + "\n\n" + snippet + "\n"
@@ -410,6 +426,38 @@ def remove_tes_cursor_hooks(data: dict[str, Any]) -> None:
         ]
 
 
+def remove_tes_codex_json_hooks(data: dict[str, Any]) -> None:
+    """Remove TES command handlers from Codex hooks.json, preserving foreign hooks."""
+    hooks = data.get("hooks")
+    if not isinstance(hooks, dict):
+        return
+    for event, groups in list(hooks.items()):
+        if not isinstance(groups, list):
+            continue
+        retained_groups: list[Any] = []
+        for group in groups:
+            if not isinstance(group, dict):
+                retained_groups.append(group)
+                continue
+            if is_tes_hook_command(group.get("command")):
+                continue
+            handlers = group.get("hooks")
+            if not isinstance(handlers, list):
+                retained_groups.append(group)
+                continue
+            retained_handlers = [
+                handler for handler in handlers
+                if not (isinstance(handler, dict) and is_tes_hook_command(handler.get("command")))
+            ]
+            if retained_handlers:
+                updated_group = dict(group)
+                updated_group["hooks"] = retained_handlers
+                retained_groups.append(updated_group)
+            elif len(retained_handlers) == len(handlers):
+                retained_groups.append(group)
+        hooks[event] = retained_groups
+
+
 def _remove_codex_marked_block(lines: list[str], marker: str, section_prefix: str) -> list[str]:
     """Remove one marked TES TOML block (marker comment -> next block boundary).
 
@@ -437,7 +485,7 @@ def _remove_codex_marked_block(lines: list[str], marker: str, section_prefix: st
 
 def remove_tes_codex_hook_text(text: str) -> str:
     """Inverse of install_codex_hook: drop the TES SessionStart AND PreToolUse hook
-    blocks and the codex_hooks feature flag, preserving any other Codex config.
+    blocks and the TES-managed hooks feature flag, preserving any other Codex config.
     """
     lines = text.splitlines()
     lines = _remove_codex_marked_block(
@@ -465,8 +513,12 @@ def remove_tes_codex_hook_text(text: str) -> str:
         if ".tes/bin/tes_install.py" in block and " hook" in block:
             lines = [*lines[:index], *lines[end:]]
             break
-    # Remove the codex_hooks feature flag line.
-    lines = [line for line in lines if line.strip() != "codex_hooks = true"]
+    # Remove TES-managed feature flag lines. `hooks` is the canonical Codex key;
+    # `codex_hooks` is kept here only as legacy cleanup for older TES installs.
+    lines = [
+        line for line in lines
+        if line.strip() not in {"hooks = true", "codex_hooks = true"}
+    ]
     body = "\n".join(lines).strip()
     return (body + "\n") if body else ""
 
@@ -500,15 +552,39 @@ def remove_tes_hooks(target: Path, agent: str, dry_run: bool = False, backup: bo
         text = json.dumps(data, indent=2, sort_keys=True) + "\n"
         return {**write_text_if_changed(path, text, target, dry_run, backup=backup), "agent": agent}
     if agent == "codex":
+        actions: list[str] = []
+        touched: list[str] = []
         path = target / ".codex/config.toml"
-        if not path.exists():
-            return {"agent": agent, "action": "already-absent"}
-        stripped = remove_tes_codex_hook_text(path.read_text(encoding="utf-8"))
-        if not stripped.strip():
-            if not dry_run:
-                path.unlink()
-            return {"agent": agent, "path": rel(path, target), "action": "would-remove-file" if dry_run else "remove-file"}
-        return {**write_text_if_changed(path, stripped, target, dry_run, backup=backup), "agent": agent}
+        if path.exists():
+            stripped = remove_tes_codex_hook_text(path.read_text(encoding="utf-8"))
+            touched.append(rel(path, target))
+            if not stripped.strip():
+                if not dry_run:
+                    path.unlink()
+                actions.append("would-remove-config" if dry_run else "remove-config")
+            else:
+                result = write_text_if_changed(path, stripped, target, dry_run, backup=backup)
+                actions.append(result.get("action", "update-config"))
+        hooks_path = target / ".codex/hooks.json"
+        if hooks_path.exists():
+            data = read_json(hooks_path)
+            remove_tes_codex_json_hooks(data)
+            hooks = data.get("hooks")
+            only_empty = isinstance(hooks, dict) and all(not v for v in hooks.values())
+            touched.append(rel(hooks_path, target))
+            if only_empty and set(data.keys()) <= {"version", "hooks"}:
+                if not dry_run:
+                    hooks_path.unlink()
+                actions.append("would-remove-hooks-json" if dry_run else "remove-hooks-json")
+            else:
+                text = json.dumps(data, indent=2, sort_keys=True) + "\n"
+                result = write_text_if_changed(hooks_path, text, target, dry_run, backup=backup)
+                actions.append(result.get("action", "update-hooks-json"))
+        return {
+            "agent": agent,
+            "path": ",".join(touched) if touched else ".codex/config.toml,.codex/hooks.json",
+            "action": "+".join(actions) if actions else "already-absent",
+        }
     return {"agent": agent, "action": "unsupported"}
 
 
@@ -2151,6 +2227,17 @@ def _pretooluse_seen_this_session(target: Path, hook_input: dict[str, Any], key:
     return False
 
 
+def _pretooluse_may_touch_operating_mesh(hook_input: dict[str, Any]) -> bool:
+    tool_input = hook_tool_input(hook_input)
+    values = [
+        hook_tool_path(hook_input, tool_input),
+        hook_tool_command(hook_input, tool_input),
+        json.dumps(tool_input, sort_keys=True),
+    ]
+    text = "\n".join(value for value in values if value).replace("\\", "/")
+    return any(hint in text for hint in OPERATING_MESH_PRETOOLUSE_HINTS)
+
+
 def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int:
     """PreToolUse handler — the per-host pre-action projection of the senior manager.
 
@@ -2176,10 +2263,12 @@ def hook_pretooluse(args: argparse.Namespace, hook_input: dict[str, Any]) -> int
     context = decision.get("context") or ""
     if context and _pretooluse_seen_this_session(target, hook_input, context):
         context = ""
-    cortex_context = _cortex_runtime_context(
-        _evaluate_cortex_runtime(target, args.agent, hook_input),
-        include_capture=False,
-    )
+    cortex_context = ""
+    if _pretooluse_may_touch_operating_mesh(hook_input):
+        cortex_context = _cortex_runtime_context(
+            _evaluate_cortex_runtime(target, args.agent, hook_input),
+            include_capture=False,
+        )
     combined_context = _join_context(context, cortex_context)
     if combined_context:
         if args.agent == "cursor":
@@ -2480,6 +2569,10 @@ def self_test() -> int:
         codex_config = (target / ".codex/config.toml").read_text(encoding="utf-8") if (target / ".codex/config.toml").exists() else ""
         if "[mcp_servers.tes-cortex]" not in codex_config:
             failures.append("thin install must register Codex tes-cortex MCP server")
+        if "hooks = true" not in codex_config:
+            failures.append("thin install must enable Codex hooks with canonical features.hooks")
+        if "codex_hooks = true" in codex_config:
+            failures.append("thin install must not emit deprecated codex_hooks feature flag")
         for relpath, server_key in ((".mcp.json", "mcpServers"), (".cursor/mcp.json", "mcpServers")):
             data = read_json(target / relpath)
             servers = data.get(server_key) if isinstance(data.get(server_key), dict) else {}
@@ -3003,6 +3096,7 @@ def self_test() -> int:
                 failures.append("Claude partial fixture install failed")
                 failures.extend(claude_partial_install.stdout.splitlines())
                 failures.extend(claude_partial_install.stderr.splitlines())
+            (claude_partial_target / ".tes/bin").mkdir(parents=True, exist_ok=True)
             (claude_partial_target / ".tes/bin/.DS_Store").write_text("neutral residue\n", encoding="utf-8")
             claude_partial_hook = run(
                 [
