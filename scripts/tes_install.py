@@ -28,6 +28,8 @@ POSTINSTALL_SENTINEL_RUN_LIMIT = 20
 AGENTS = ("codex", "claude", "cursor")
 POSTINSTALL_STATES = {"pending", "running", "complete", "needs_review"}
 CLAUDE_SESSIONSTART_MATCHER = "startup|resume|clear|compact"
+# PreToolUse (senior-manager pre-action) matcher: the mutating tools the gate supervises.
+CLAUDE_PRETOOLUSE_MATCHER = "Write|Edit|MultiEdit"
 DEFAULT_POSTINSTALL_COMMANDS = (
     ("tes_init.py", ("--target", "{target}", "--yes")),
     ("project_context_oracle.py", ("--target", "{target}")),
@@ -213,6 +215,22 @@ statusMessage = "Checking TES post-install"
 """
 
 
+def codex_pretooluse_snippet() -> str:
+    command = (
+        f'{python_command_token()} "$(git rev-parse --show-toplevel)/.tes/bin/tes_install.py" '
+        'hook --agent codex --target "$(git rev-parse --show-toplevel)"'
+    )
+    return f"""# TES PreToolUse senior-manager gate.
+[[hooks.PreToolUse]]
+matcher = "{CLAUDE_PRETOOLUSE_MATCHER}"
+
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = {command_literal(command)}
+timeout = 10
+"""
+
+
 def install_codex_hook(target: Path, dry_run: bool) -> dict[str, str]:
     path = target / ".codex/config.toml"
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
@@ -220,6 +238,9 @@ def install_codex_hook(target: Path, dry_run: bool) -> dict[str, str]:
     snippet = codex_hook_snippet().strip()
     if "TES first-session post-install hook" not in updated:
         updated = updated.rstrip() + "\n\n" + snippet + "\n"
+    pretooluse = codex_pretooluse_snippet().strip()
+    if "TES PreToolUse senior-manager gate" not in updated:
+        updated = updated.rstrip() + "\n\n" + pretooluse + "\n"
     backup = not is_codex_tes_only_mcp_config(existing)
     return write_text_if_changed(path, updated, target, dry_run, backup=backup)
 
@@ -277,6 +298,27 @@ def hook_entries(agent: str) -> list[dict[str, Any]]:
     if agent == "claude":
         return [claude_notice_hook_entry(), claude_setup_hook_entry()]
     return [hook_entry(agent)]
+
+
+def pretooluse_hook_entry(agent: str) -> dict[str, Any]:
+    """A PreToolUse entry — runs the same hook command; the host injects the
+    PreToolUse event on stdin, so no --rewake-on-complete (that is SessionStart-only).
+    Synchronous so the gate decision lands before the tool call proceeds."""
+    if agent == "claude":
+        return {
+            "type": "command",
+            "command": (
+                f'{python_command_token()} "${{CLAUDE_PROJECT_DIR}}/.tes/bin/tes_install.py" '
+                'hook --agent claude --target "${CLAUDE_PROJECT_DIR}"'
+            ),
+            "timeout": 10,
+        }
+    if agent == "cursor":
+        return {
+            "command": f"{python_command_token()} .tes/bin/tes_install.py hook --agent cursor --target .",
+            "timeout": 10,
+        }
+    raise ValueError(f"unsupported pretooluse entry agent: {agent}")
 
 
 def ensure_hook_group(data: dict[str, Any], event: str, matcher: str, entry: dict[str, Any]) -> None:
@@ -490,6 +532,69 @@ def install_cursor_hook(target: Path, dry_run: bool) -> dict[str, str]:
     return write_text_if_changed(path, text, target, dry_run)
 
 
+def remove_tes_claude_event_hooks(data: dict[str, Any], event: str) -> None:
+    """Strip TES-owned handlers from any Claude hook event (ownership-marker based).
+
+    Mirrors remove_tes_claude_sessionstart_hooks but parameterized by event, so the
+    PreToolUse install is idempotent and uninstall removes only TES entries while
+    preserving foreign hooks under the same event.
+    """
+    hooks = data.get("hooks")
+    if not isinstance(hooks, dict):
+        return
+    groups = hooks.get(event)
+    if not isinstance(groups, list):
+        return
+    retained_groups: list[Any] = []
+    for group in groups:
+        if not isinstance(group, dict):
+            retained_groups.append(group)
+            continue
+        handlers = group.get("hooks")
+        if not isinstance(handlers, list):
+            retained_groups.append(group)
+            continue
+        retained_handlers = [handler for handler in handlers if not is_tes_claude_hook_entry(handler)]
+        if retained_handlers:
+            group["hooks"] = retained_handlers
+            retained_groups.append(group)
+        elif not handlers:
+            retained_groups.append(group)
+    if retained_groups:
+        hooks[event] = retained_groups
+    else:
+        hooks.pop(event, None)
+
+
+def install_claude_pretooluse_hook(target: Path, dry_run: bool) -> dict[str, str]:
+    path = target / ".claude/settings.json"
+    data = read_json(path)
+    remove_tes_claude_event_hooks(data, "PreToolUse")
+    ensure_hook_group(data, "PreToolUse", CLAUDE_PRETOOLUSE_MATCHER, pretooluse_hook_entry("claude"))
+    text = json.dumps(data, indent=2, sort_keys=True) + "\n"
+    return write_text_if_changed(path, text, target, dry_run)
+
+
+def install_cursor_pretooluse_hook(target: Path, dry_run: bool) -> dict[str, str]:
+    path = target / ".cursor/hooks.json"
+    data = read_json(path)
+    data.setdefault("version", 1)
+    hooks = data.setdefault("hooks", {})
+    if not isinstance(hooks, dict):
+        data["hooks"] = {}
+        hooks = data["hooks"]
+    entry = pretooluse_hook_entry("cursor")
+    items = hooks.setdefault("preToolUse", [])
+    if not isinstance(items, list):
+        hooks["preToolUse"] = []
+        items = hooks["preToolUse"]
+    marker = json.dumps(entry, sort_keys=True)
+    if not any(json.dumps(item, sort_keys=True) == marker for item in items if isinstance(item, dict)):
+        items.append(entry)
+    text = json.dumps(data, indent=2, sort_keys=True) + "\n"
+    return write_text_if_changed(path, text, target, dry_run)
+
+
 def install_hooks(target: Path, agents: list[str], dry_run: bool) -> list[dict[str, str]]:
     actions: list[dict[str, str]] = []
     for agent in agents:
@@ -497,8 +602,10 @@ def install_hooks(target: Path, agents: list[str], dry_run: bool) -> list[dict[s
             actions.append({**install_codex_hook(target, dry_run), "agent": agent})
         elif agent == "claude":
             actions.append({**install_claude_hook(target, dry_run), "agent": agent})
+            actions.append({**install_claude_pretooluse_hook(target, dry_run), "agent": agent, "event": "PreToolUse"})
         elif agent == "cursor":
             actions.append({**install_cursor_hook(target, dry_run), "agent": agent})
+            actions.append({**install_cursor_pretooluse_hook(target, dry_run), "agent": agent, "event": "preToolUse"})
     return actions
 
 
@@ -2264,6 +2371,23 @@ def self_test() -> int:
             for handler in (group.get("hooks") if isinstance(group.get("hooks"), list) else [])
         ):
             failures.append("Claude hook migration must preserve unrelated SessionStart hooks")
+        # PreToolUse senior-manager gate (Pillar 2): installed, idempotent, correct matcher.
+        pretooluse_groups = claude_settings.get("hooks", {}).get("PreToolUse", [])
+        if not isinstance(pretooluse_groups, list):
+            failures.append("Claude PreToolUse hooks must be a list")
+            pretooluse_groups = []
+        pretooluse_tes = [
+            handler
+            for group in pretooluse_groups
+            if isinstance(group, dict) and group.get("matcher") == CLAUDE_PRETOOLUSE_MATCHER
+            for handler in (group.get("hooks") if isinstance(group.get("hooks"), list) else [])
+            if is_tes_claude_hook_entry(handler)
+        ]
+        if len(pretooluse_tes) != 1:
+            failures.append(
+                f"Claude PreToolUse gate must install exactly one TES handler, got {len(pretooluse_tes)} "
+                "(idempotency: reinstall must not duplicate)"
+            )
         start_notice = run(
             [
                 sys.executable,

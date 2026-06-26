@@ -80,3 +80,18 @@ zero_regression: tes_install --self-test exit 0 (SessionStart intacto); dispatch
 remaining_in_pillar: wiring de instalação (install_*_pretooluse + remove_* ownership-strip + --self-test idempotência) — próximo passo separado (decisão do owner: commitar lógica primeiro, menor blast radius)
 release_identity: DISPARA (tes_install.py é HELPER_FILE delivered). Drift delivered. PARO antes do bump (decisão do owner).
 sync: LOCAL_COMMITTED (remote não autorizado)
+
+---
+
+spec_id: SPEC-P-003b (Pilar Hook — WIRING de instalação, completa o pilar)
+spec_version: 1
+attempt: 1
+pillar: 2 HOOK (camada produto/source DELIVERED — tes_install.py HELPER_FILE)
+commit: no-commit (sha no corpo do commit que inclui este ledger)
+files: scripts/tes_install.py (CLAUDE_PRETOOLUSE_MATCHER, pretooluse_hook_entry, remove_tes_claude_event_hooks genérico, install_claude/cursor_pretooluse_hook, codex_pretooluse_snippet + install_codex_hook estendido, install_hooks orquestra, --self-test asserção PreToolUse)
+oracle_status: PASS — install provado por execução nos 3 hosts: Claude grupo PreToolUse matcher Write|Edit|MultiEdit idempotente; Cursor preToolUse camelCase preserva foreign idempotente; Codex TOML [[hooks.PreToolUse]] idempotente SessionStart intacto. --self-test estende asserção PreToolUse e é FALSIFICÁVEL (desabilitar install → self-test RED exit 1; restore → verde).
+contract_divergence: HONRADA — Claude PreToolUse / Cursor preToolUse (camelCase) / Codex TOML. Cada host seu evento e formato.
+zero_regression: tes_install --self-test exit 0 (SessionStart intacto); foreign hooks preservados nos 3 hosts (echo keep/echo foreign); remove genérico só remove TES por ownership-marker
+pillar_2_complete: lógica (c31fddac) + wiring (este) + 2 oráculos falsificáveis (handler + install)
+release_identity: DISPARA (tes_install.py HELPER_FILE delivered). Drift delivered. PARO antes do bump (decisão do owner).
+sync: LOCAL_COMMITTED (remote não autorizado)
