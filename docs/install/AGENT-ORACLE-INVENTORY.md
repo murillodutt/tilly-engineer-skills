@@ -35,6 +35,7 @@ python3 scripts/tes_bundle.py backup --target /path/to/project --adapter all --y
 python3 scripts/tes_bundle.py apply --target /path/to/project --mode clean-runtime --backup-id <backup-id> --yes
 python3 scripts/tes_bundle.py recover-plan --target /path/to/project --backup-id <backup-id> --apply-safe --yes
 python3 scripts/tes_bundle.py restore --target /path/to/project --backup-id <backup-id> --yes
+python3 scripts/tes_install.py hook-health --target /path/to/project --json-only
 ```
 
 `tes_init.py` recertifies package health, scans the target project, writes `docs/agents/PROJECT-REGISTER.md`, writes `docs/agents/PROJECT-CONTEXT.md` as Tier 3 init inventory, copies `DOCUMENTATION-AUTHORITY.md` and `INVENTORY-HYGIENE.yml` scaffolds when missing, creates the first-pass Obsidian-compatible operating mesh when missing, and stores a full manifest under `docs/agents/evidence/**`. If a later oracle is blocked, the run closes as `NEEDS_REVIEW` with evidence instead of leaving the project uninitialized.

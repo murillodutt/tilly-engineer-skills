@@ -56,7 +56,7 @@ Some triggers are primary visible skills. Some are supported command intents rou
 | `/tes-curate` or `/tes:curate` | classify Cortex memory quality risks without writing memory | `cortex.py curate-plan`, read-only `cortex_curate_plan` | no memory writes; CLI may refresh `.tes/cortex/semantic.sqlite` |
 | `/tes-mcp` or `/tes:mcp` | explicitly activate, repair, or verify Cortex MCP after install, including VS Code MCP | `install_mcp.py`, `cortex_mcp.py`, MCP smoke, host listing when observable | `.tes/bin/**` and project-scoped MCP config, including `.vscode/mcp.json`; governed remember is default; use `--read-only` for inspection-only activation |
 | `/tes-field-reports` or `/tes:field-reports` | inspect, drain, disable, or re-enable sanitized operational reports | `field_reports.py`, local `pre-push` hook | `.tes/field-reports/**`, `.git/info/exclude`, active Git `pre-push` hook (`core.hooksPath` aware) |
-| `/tes-doctor` or `/tes:doctor` | health-check, certify, prepare a commit, or fallback-test/repair/install MCP when MCP health is the failure | installed certification, validation, TDS, doc-size, platform, materialization, MCP self-test, MCP install registration, MCP host recognition, commit gates | read-only by default; MCP fallback may write `.tes/bin/**` and project-scoped MCP config only after repair/install authorization; evidence only when requested |
+| `/tes-doctor` or `/tes:doctor` | health-check, certify, prepare a commit, or fallback-test/repair/install MCP when MCP health is the failure | installed certification, `tes_install.py hook-health`, validation, TDS, doc-size, platform, materialization, MCP self-test, MCP install registration, MCP host recognition, commit gates | read-only by default; MCP fallback may write `.tes/bin/**` and project-scoped MCP config only after repair/install authorization; evidence only when requested |
 | `/tes-adapter` or `/tes:adapter` | materialize, dry-run, retrofit, or install adapter surfaces | `materialize_adapter.py`, `install_adapter.py`, adapter oracles | adapter files only after review or approval |
 | `/tes-bench` or `/tes:bench` | plan, run, or converge context-mesh benchmarks | benchmark plan/run/converge scripts | temporal benchmark evidence artifacts under `docs/evidence/reports/YYYY/MM/DD/**` |
 | `/tes-bump` or `/tes:bump` | govern, plan, and apply bounded project version bumps | `tes_bump.py --governance-check`; `tes_bump.py --dry-run`, then `tes_bump.py --yes` after write authorization | governance check is read-only; writes only discovered version targets; no commits, tags, pushes, remotes, package locks, or publishing |
@@ -92,11 +92,12 @@ tes bump     -> /tes-bump
 |----------------|--------------|
 | `python3 scripts/*.py ...` | portable oracle called by the active agent |
 | `npm run ...` | package-source alias for the same oracles; not a target-project guarantee |
-| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.205 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
+| `npx --loglevel=error -y --package github:murillodutt/tilly-engineer-skills#v0.3.206 tilly-engineer-skills add` | fixed GitHub npx installer entrypoint |
 | installer | package delivery, lock/sentinel creation, and first-session post-install hook setup |
 | MCP tools | project-scoped Cortex surface, preferred for recall/read/curation/reflection and governed remember |
 | MCP host recognition | separate state after file registration: `config_present`, `server_self_test_pass`, `protocol_handshake_pass`, `host_listed`, `host_connected`, or `session_restart_required` |
 | Installed certification | aggregate installed state: core runtime, MCP registration, Mantra Gate adoption, command trigger parity, quality-gate path, artifact hygiene, and provenance; report `PARTIAL` when MCP passes but any non-MCP component fails |
+| Hook health | installed-target hook evidence: `tes_install.py hook-health --target . --json-only` reports each Claude Code, Codex, and Cursor lifecycle event as `OBSERVED`, `CONFIGURED`, `STALE/UNEXPECTED`, or `NOT_CONFIGURED` from current runtime ledgers and host config |
 | skills | user-intent routers in runtimes that support skills |
 | goal materialization skill | explicit mature-artifact-to-`/goal` prompt materialization with artifact maturity, execution-unit fidelity, internal tree, material-diff, material-continuation, semantic negative-grep, sequential ownership, and sync-status gates |
 | predictive skills | explicit-invocation project-stress and mining skills with cognitive brake |

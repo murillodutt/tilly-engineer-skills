@@ -14,7 +14,7 @@ import tempfile
 from typing import Any
 
 
-VERSION = "0.3.205"
+VERSION = "0.3.206"
 SCHEMA = "tes-mantra-gate@1"
 MARKER = "`🍳 Flash-Fry`"
 STATUSES = ("PROCEED", "BLOCKED", "NEEDS_REVIEW", "DRIFT_FROM_CONTRACT")
@@ -49,6 +49,9 @@ HIGH_RISK_PATTERNS: tuple[tuple[str, str], ...] = (
 
 FORBIDDEN_PATTERNS: tuple[tuple[str, str], ...] = (
     ("destructive git without explicit contract", r"\b(reset --hard|git clean -fd|git clean -xdf|push --force|--force-with-lease)\b"),
+    ("destructive filesystem root wipe", r"\brm\s+-[A-Za-z]*(rf|fr|r[A-Za-z]*f|f[A-Za-z]*r)[A-Za-z]*\s+(--no-preserve-root\s+)?(/|/\*|~|~/\*|\$HOME|\"\$HOME\"|'\$HOME')(\s|$)"),
+    ("destructive disk formatting", r"\b(mkfs(\.[A-Za-z0-9_-]+)?|diskutil\s+erase(Disk|Volume))\b"),
+    ("destructive raw disk write", r"\bdd\b.*\bof=/dev/(disk|rdisk|sd|nvme)"),
     ("secret disclosure", r"\b(print|echo|log|paste|expose|leak)\b.*\b(secret|token|password|api[_-]?key|authorization|bearer)\b"),
     ("production without contract", r"\b(production|prod)\b.*\b(without contract|without approval|no approval|skip approval)\b"),
 )
@@ -380,6 +383,15 @@ def self_test() -> dict[str, Any]:
     forbidden = classify_risk("git reset --hard and echo " + synthetic_secret)
     if forbidden["risk"] != "forbidden":
         failures.append("destructive git or secret disclosure must classify as forbidden")
+    root_wipe = classify_risk("sudo rm -rf / --no-preserve-root")
+    if root_wipe["risk"] != "forbidden":
+        failures.append("destructive filesystem root wipe must classify as forbidden")
+    disk_format = classify_risk("diskutil eraseDisk APFS Untitled /dev/disk2")
+    if disk_format["risk"] != "forbidden":
+        failures.append("destructive disk formatting must classify as forbidden")
+    local_cleanup = classify_risk("rm -rf node_modules")
+    if local_cleanup["risk"] == "forbidden":
+        failures.append("ordinary local cleanup must not classify as forbidden")
 
     forbidden_gate = validate_gate(sample_gate(RISK="forbidden", VISIBLE="full"), state_changing=True)
     if forbidden_gate["status"] != "BLOCKED":

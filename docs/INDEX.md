@@ -34,10 +34,11 @@ This documentation layer explains the method behind the source package without t
 | Public page i18n source | `i18n/tes-public.content.json` and `i18n/tes-public.structure.yml` |
 | Live GitHub Pages landing | `https://murillodutt.github.io/tilly-engineer-skills/` |
 | Optional public LLM navigation map | `../llms.txt` and `llms.txt` |
-| Public installer bundle | `dist/0.3.205/tilly-engineer-skills-0.3.205.zip` |
+| Public installer bundle | `dist/0.3.206/tilly-engineer-skills-0.3.206.zip` |
 | GitHub package-spec installation | `install/INSTALL.md` |
 | Install reversibility (detach/uninstall/attach-health) | `install/REVERSIBILITY.md` |
 | Command trigger matrix | `install/COMMAND-TRIGGERS.md` |
+| Installed hook audit prompt | `install/HOOK-AUDIT-PROMPT.md` |
 | Runtime navigation library | `install/navigation/NAVIGATION-LIBRARY.md` |
 | Tool-neutral engineering principles | `mesh/PRINCIPLES.md` |
 | Maturity Layer Gate evidence | `mesh/MATURITY-LAYER-GATE-EVIDENCE.md` |

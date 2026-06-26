@@ -89,7 +89,7 @@ The sentinel `.tes/postinstall.json` is what the hook reads. It is gated on the 
 
 ## MCP registration
 
-`install_mcp.py` plus `install_mcp_hosts/{codex,claude,cursor,vscode}.py` write the `tes-cortex` server registration into each host's config format. The server entrypoint path is resolved by `target_script` and the server arg is `<entrypoint> --target <repo>`. Config presence is not host connection: the attach-health contract (`attach_health_oracle.py`) drives a real stdio handshake (`initialize` → `tools/list`) to distinguish `PASS` from `PENDING_*` /`HOST_UNOBSERVABLE`. Cortex storage is per-target (`.tes/cortex/recall.sqlite`) and the MCP server refuses a runtime `target` argument — the ADR 0004 inbound isolation invariant.
+`install_mcp.py` plus `install_mcp_hosts/{codex,claude,cursor,vscode}.py` write the `tes-cortex` server registration into each host's config format. The server entrypoint path is resolved by `target_script` and the server arg is `<entrypoint> --target <repo>`. Config presence is not host connection: the source-package attach-health contract (`attach_health_oracle.py`) drives a real stdio handshake (`initialize` → `tools/list`) to distinguish `PASS` from `PENDING_*` /`HOST_UNOBSERVABLE`. Installed targets use `tes_install.py hook-health` for agent hook firing evidence. Cortex storage is per-target (`.tes/cortex/recall.sqlite`) and the MCP server refuses a runtime `target` argument — the ADR 0004 inbound isolation invariant.
 
 ## Reversibility machine
 
@@ -106,7 +106,8 @@ The install surface is protected by a layered oracle set; see `docs/install/AGEN
 - `tes_install.py --self-test` — thin install, hooks, MCP mapping, sentinel.
 - `install_mcp.py --self-test` — helper install + real MCP handshake.
 - `install_smoke.py --self-test` — capsule install, reversibility, attach/detach, skills surface, GPS capsule mode probes.
-- `attach_health_oracle.py` / `capsule_residue_oracle.py` — per-surface health and zero-residue proof.
+- `attach_health_oracle.py` / `capsule_residue_oracle.py` — source-package per-surface health and zero-residue proof.
+- `tes_install.py hook-health --target . --json-only` — installed-target hook config versus runtime ledger proof.
 - `tes_npx_oracle.py --self-test` / `--release-check` — the bin contract and the published GitHub ref certification.
 - `public_pages_oracle.py` — GitHub Pages live serving.
 

@@ -1,4 +1,4 @@
-version: 0.3.205
+version: 0.3.206
 generated: false
 documents:
   - path: docs/INDEX.md
@@ -143,6 +143,13 @@ documents:
     evidence_level: L2
   - path: docs/install/COMMAND-TRIGGERS.md
     id: install.command_triggers
+    class: adapter
+    status: active
+    consumer: adopters, installing agents, and package maintainers
+    source_of_truth: true
+    evidence_level: L2
+  - path: docs/install/HOOK-AUDIT-PROMPT.md
+    id: install.hook_audit_prompt
     class: adapter
     status: active
     consumer: adopters, installing agents, and package maintainers

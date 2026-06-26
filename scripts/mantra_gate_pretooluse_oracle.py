@@ -113,6 +113,7 @@ def evaluate() -> dict[str, object]:
         benign_read = _pre("Read", file_path="scripts/foo.py")
         benign_code = _pre("Edit", file_path="scripts/foo.py")
         forbidden_camel = _pre_camel("Bash", "oracle-forbidden-camel", command="git push --force origin main")
+        destructive_filesystem = _pre("Bash", command="sudo rm -rf / --no-preserve-root")
         benign_camel = _pre_camel("Edit", "oracle-benign-camel", path="scripts/foo.py")
 
         # --- Claude/Codex: forbidden -> exit 2 + stderr ---
@@ -124,6 +125,14 @@ def evaluate() -> dict[str, object]:
             if "Mantra Gate" not in err:
                 failures.append(f"{agent}: forbidden block must write a readable reason to stderr")
             _assert_marker(f"{agent}: forbidden stderr", err, failures)
+
+        # --- Destructive filesystem actions are forbidden even outside governed docs. ---
+        for agent in ("claude", "codex"):
+            code, _out, err = _run(agent, destructive_filesystem, target)
+            if code != 2:
+                failures.append(f"{agent}: destructive filesystem action must BLOCK with exit 2, got {code}")
+            if "forbidden-class action" not in err:
+                failures.append(f"{agent}: destructive filesystem block must explain forbidden class")
 
         # --- Cursor: forbidden -> JSON permission:deny, NOT exit 2 (contract divergence) ---
         code, out, _err = _run("cursor", forbidden, target)
@@ -138,6 +147,16 @@ def evaluate() -> dict[str, object]:
             failures.append('cursor: forbidden must emit {"permission":"deny"}')
         _assert_marker("cursor: forbidden agent_message", str(payload.get("agent_message") or ""), failures)
         _assert_marker("cursor: forbidden raw stdout", out, failures)
+        code, out, _err = _run("cursor", destructive_filesystem, target)
+        if code != 0:
+            failures.append("cursor: destructive filesystem action must use JSON-permission, not nonzero exit")
+        try:
+            payload = json.loads(out)
+        except json.JSONDecodeError:
+            payload = {}
+            failures.append("cursor: destructive filesystem output must be valid JSON-permission")
+        if payload.get("permission") != "deny":
+            failures.append('cursor: destructive filesystem action must emit {"permission":"deny"}')
 
         # --- governed + mutating -> supervise (allow + host-shaped context), not block ---
         matrix = {

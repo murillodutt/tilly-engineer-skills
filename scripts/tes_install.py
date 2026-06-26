@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-VERSION = "0.3.205"
+VERSION = "0.3.206"
 SELF_TEST_SUBPROCESS_TIMEOUT = 180.0
 MIN_PYTHON = (3, 11)
 LOCK_PATH = Path(".tes/tes-install-lock.json")
@@ -111,6 +111,15 @@ def read_json(path: Path) -> dict[str, Any]:
     except (OSError, json.JSONDecodeError):
         return {}
     return data if isinstance(data, dict) else {}
+
+
+def read_text(path: Path) -> str:
+    if not path.exists():
+        return ""
+    try:
+        return path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return ""
 
 
 def write_json(path: Path, data: dict[str, Any], dry_run: bool = False) -> dict[str, str]:
@@ -2028,6 +2037,21 @@ HOOK_SENTINEL_PATH = Path(".tes/runtime/hooks/executed.jsonl")
 LEGACY_HOOK_SENTINEL_PATH = Path(".tes/hooks/executed.jsonl")
 HOOK_RUNTIME_EXCLUDE_COMMENT = "# TES runtime hook ledgers"
 HOOK_RUNTIME_EXCLUDE_PATTERNS = (".tes/runtime/", ".tes/hooks/executed.jsonl")
+HOOK_HEALTH_CONTRACTS: dict[str, tuple[dict[str, str], ...]] = {
+    "codex": (
+        {"event": "SessionStart", "event_canonical": "SessionStart", "config": ".codex/config.toml"},
+        {"event": "PreToolUse", "event_canonical": "PreToolUse", "config": ".codex/config.toml"},
+    ),
+    "claude": (
+        {"event": "SessionStart", "event_canonical": "SessionStart", "config": ".claude/settings.json"},
+        {"event": "PreToolUse", "event_canonical": "PreToolUse", "config": ".claude/settings.json"},
+    ),
+    "cursor": (
+        {"event": "sessionStart", "event_canonical": "sessionStart", "config": ".cursor/hooks.json"},
+        {"event": "beforeSubmitPrompt", "event_canonical": "beforeSubmitPrompt", "config": ".cursor/hooks.json"},
+        {"event": "preToolUse", "event_canonical": "PreToolUse", "config": ".cursor/hooks.json"},
+    ),
+}
 
 
 def canonical_hook_event(event: str) -> str:
@@ -2113,6 +2137,240 @@ def record_hook_execution(target: Path, agent: str, hook_input: dict[str, Any], 
             handle.write(json.dumps(record, sort_keys=True) + "\n")
     except OSError:
         pass
+
+
+def _command_mentions_tes_hook(command: Any, agent: str) -> bool:
+    if isinstance(command, dict):
+        text = json.dumps(command, sort_keys=True)
+    else:
+        text = str(command or "")
+    return (
+        "tes_install.py" in text
+        and " hook" in text
+        and (f"--agent {agent}" in text or f'"--agent", "{agent}"' in text)
+    )
+
+
+def _claude_event_configured(data: dict[str, Any], event: str) -> bool:
+    hooks = data.get("hooks")
+    if not isinstance(hooks, dict):
+        return False
+    groups = hooks.get(event)
+    if not isinstance(groups, list):
+        return False
+    for group in groups:
+        if not isinstance(group, dict):
+            continue
+        handlers = group.get("hooks")
+        if not isinstance(handlers, list):
+            continue
+        if any(_command_mentions_tes_hook(handler, "claude") for handler in handlers):
+            return True
+    return False
+
+
+def _cursor_event_configured(data: dict[str, Any], event: str) -> bool:
+    hooks = data.get("hooks")
+    if not isinstance(hooks, dict):
+        return False
+    handlers = hooks.get(event)
+    if not isinstance(handlers, list):
+        return False
+    return any(_command_mentions_tes_hook(handler, "cursor") for handler in handlers)
+
+
+def configured_hook_events(target: Path) -> dict[str, set[str]]:
+    configured: dict[str, set[str]] = {agent: set() for agent in AGENTS}
+    codex_config = read_text(target / ".codex/config.toml")
+    if "tes_install.py" in codex_config and " hook" in codex_config and "--agent codex" in codex_config:
+        if "hooks.SessionStart" in codex_config:
+            configured["codex"].add("SessionStart")
+        if "hooks.PreToolUse" in codex_config:
+            configured["codex"].add("PreToolUse")
+
+    claude_settings = read_json(target / ".claude/settings.json")
+    for event in ("SessionStart", "PreToolUse"):
+        if _claude_event_configured(claude_settings, event):
+            configured["claude"].add(event)
+
+    cursor_hooks = read_json(target / ".cursor/hooks.json")
+    for event in ("sessionStart", "beforeSubmitPrompt", "preToolUse"):
+        if _cursor_event_configured(cursor_hooks, event):
+            configured["cursor"].add(event)
+    return configured
+
+
+def read_hook_execution_records(target: Path, relpath: Path) -> list[dict[str, Any]]:
+    path = target / relpath
+    if not path.is_file():
+        return []
+    records: list[dict[str, Any]] = []
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    for line in lines:
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            payload.setdefault("sentinel_path", relpath.as_posix())
+            records.append(payload)
+    return records
+
+
+def hook_record_matches(record: dict[str, Any], agent: str, event: str, event_canonical: str) -> bool:
+    if record.get("agent") != agent:
+        return False
+    record_event = str(record.get("event") or "")
+    record_canonical = str(record.get("event_canonical") or canonical_hook_event(record_event))
+    return record_event == event or record_canonical == event_canonical
+
+
+def duplicate_hook_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    seen: dict[tuple[str, str, str, str], dict[str, Any]] = {}
+    duplicates: list[dict[str, Any]] = []
+    for record in records:
+        event = str(record.get("event_canonical") or canonical_hook_event(str(record.get("event") or "")))
+        if event == "PreToolUse" and not record.get("invocation"):
+            continue
+        session = str(record.get("invocation") or record.get("session") or "")
+        key = (
+            str(record.get("agent") or ""),
+            event,
+            str(record.get("mode") or ""),
+            session,
+        )
+        if key in seen:
+            duplicates.append(
+                {
+                    "agent": key[0],
+                    "event_canonical": key[1],
+                    "mode": key[2],
+                    "session_or_invocation": key[3],
+                    "count": 2,
+                }
+            )
+        else:
+            seen[key] = record
+    return duplicates
+
+
+def hook_health_payload(target: Path) -> dict[str, Any]:
+    target = target_root(target)
+    configured = configured_hook_events(target)
+    current_records = read_hook_execution_records(target, HOOK_SENTINEL_PATH)
+    legacy_records = read_hook_execution_records(target, LEGACY_HOOK_SENTINEL_PATH)
+    duplicate_records = duplicate_hook_records(current_records)
+    findings: list[dict[str, Any]] = []
+    agents: dict[str, Any] = {}
+
+    for agent, contracts in HOOK_HEALTH_CONTRACTS.items():
+        event_results: list[dict[str, Any]] = []
+        for contract in contracts:
+            event = contract["event"]
+            event_canonical = contract["event_canonical"]
+            is_configured = event in configured.get(agent, set())
+            observed_records = [
+                record
+                for record in current_records
+                if hook_record_matches(record, agent, event, event_canonical)
+            ]
+            legacy_observed = any(
+                hook_record_matches(record, agent, event, event_canonical)
+                for record in legacy_records
+            )
+            if is_configured and observed_records:
+                state = "OBSERVED"
+            elif is_configured:
+                state = "CONFIGURED"
+                findings.append(
+                    {
+                        "severity": "info",
+                        "type": "configured_without_runtime_observation",
+                        "agent": agent,
+                        "event": event,
+                    }
+                )
+            elif observed_records:
+                state = "STALE/UNEXPECTED"
+                findings.append(
+                    {
+                        "severity": "warning",
+                        "type": "runtime_observed_without_config",
+                        "agent": agent,
+                        "event": event,
+                    }
+                )
+            else:
+                state = "NOT_CONFIGURED"
+            event_results.append(
+                {
+                    "event": event,
+                    "event_canonical": event_canonical,
+                    "config": contract["config"],
+                    "state": state,
+                    "runtime_records": len(observed_records),
+                    "legacy_observed": legacy_observed,
+                }
+            )
+        agents[agent] = {"events": event_results}
+
+    if legacy_records:
+        findings.append(
+            {
+                "severity": "info",
+                "type": "legacy_hook_ledger_present",
+                "path": LEGACY_HOOK_SENTINEL_PATH.as_posix(),
+                "records": len(legacy_records),
+                "status": "STALE/RESIDUE",
+            }
+        )
+    if duplicate_records:
+        findings.append(
+            {
+                "severity": "warning",
+                "type": "duplicate_runtime_hook_records",
+                "records": duplicate_records,
+            }
+        )
+    unexpected = any(
+        event["state"] == "STALE/UNEXPECTED"
+        for agent in agents.values()
+        for event in agent["events"]
+    )
+    configured_only = any(
+        event["state"] == "CONFIGURED"
+        for agent in agents.values()
+        for event in agent["events"]
+    )
+    status_value = "PASS"
+    if unexpected or duplicate_records:
+        status_value = "DEGRADED"
+    elif configured_only:
+        status_value = "NEEDS_EVIDENCE"
+
+    return {
+        "schema": "tes-hook-health@1",
+        "version": VERSION,
+        "status": status_value,
+        "target": str(target),
+        "sentinels": {
+            "current": {
+                "path": HOOK_SENTINEL_PATH.as_posix(),
+                "records": len(current_records),
+                "status": "OBSERVED" if current_records else "MISSING",
+            },
+            "legacy": {
+                "path": LEGACY_HOOK_SENTINEL_PATH.as_posix(),
+                "records": len(legacy_records),
+                "status": "STALE/RESIDUE" if legacy_records else "ABSENT",
+            },
+        },
+        "agents": agents,
+        "findings": findings,
+    }
 
 
 GOVERNED_ARTIFACT_HINTS = (
@@ -2425,6 +2683,12 @@ def status(args: argparse.Namespace) -> int:
     }
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
+
+
+def hook_health(args: argparse.Namespace) -> int:
+    result = hook_health_payload(args.target)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result["status"] in {"PASS", "NEEDS_EVIDENCE"} else 1
 
 
 def self_test() -> int:
@@ -2938,6 +3202,64 @@ def self_test() -> int:
         ignore_probe = run(["git", "check-ignore", HOOK_SENTINEL_PATH.as_posix()], cwd=target)
         if ignore_probe.returncode != 0:
             failures.append("hook runtime sentinel must be excluded from target git status")
+        for cursor_event in ("sessionStart", "beforeSubmitPrompt"):
+            cursor_lifecycle = run(
+                [
+                    sys.executable,
+                    str(target / ".tes/bin/tes_install.py"),
+                    "hook",
+                    "--agent",
+                    "cursor",
+                    "--target",
+                    str(target),
+                ],
+                cwd=target,
+                input=json.dumps(
+                    {
+                        "hook_event_name": cursor_event,
+                        "session_id": f"health-{cursor_event}",
+                        "cwd": str(target),
+                    }
+                ),
+            )
+            if cursor_lifecycle.returncode != 0:
+                failures.append(f"Cursor {cursor_event} hook-health fixture must allow")
+                failures.extend(cursor_lifecycle.stdout.splitlines())
+                failures.extend(cursor_lifecycle.stderr.splitlines())
+        hook_health_result = run(
+            [
+                sys.executable,
+                str(target / ".tes/bin/tes_install.py"),
+                "hook-health",
+                "--target",
+                str(target),
+                "--json-only",
+            ],
+            cwd=target,
+        )
+        if hook_health_result.returncode != 0:
+            failures.append("hook-health must pass when configured host events have runtime evidence")
+            failures.extend(hook_health_result.stdout.splitlines())
+            failures.extend(hook_health_result.stderr.splitlines())
+        hook_health_payload_result = parse_json_output(hook_health_result.stdout)
+        if hook_health_payload_result.get("status") != "PASS":
+            failures.append(f"hook-health complete fixture must report PASS, got {hook_health_payload_result.get('status')}")
+        health_agents = hook_health_payload_result.get("agents") if isinstance(hook_health_payload_result.get("agents"), dict) else {}
+        for agent, expected_events in {
+            "codex": ("SessionStart", "PreToolUse"),
+            "claude": ("SessionStart", "PreToolUse"),
+            "cursor": ("sessionStart", "beforeSubmitPrompt", "preToolUse"),
+        }.items():
+            agent_payload = health_agents.get(agent) if isinstance(health_agents.get(agent), dict) else {}
+            events = agent_payload.get("events") if isinstance(agent_payload.get("events"), list) else []
+            states = {
+                str(item.get("event")): str(item.get("state"))
+                for item in events
+                if isinstance(item, dict)
+            }
+            for event in expected_events:
+                if states.get(event) != "OBSERVED":
+                    failures.append(f"hook-health must report {agent} {event} OBSERVED, got {states.get(event)}")
 
         benign_mesh = run(
             [
@@ -2967,6 +3289,42 @@ def self_test() -> int:
         }
         if mesh_after != mesh_before:
             failures.append("Cortex PreToolUse advisory must not write operating mesh files")
+        duplicate_health_target = target / "duplicate-health"
+        duplicate_health_target.mkdir()
+        run(["git", "init"], cwd=duplicate_health_target)
+        (duplicate_health_target / ".codex").mkdir()
+        (duplicate_health_target / ".codex/config.toml").write_text(
+            '[features]\nhooks = true\n\n[[hooks.SessionStart]]\ncommand = "python3 .tes/bin/tes_install.py hook --agent codex --target ."\n',
+            encoding="utf-8",
+        )
+        duplicate_sentinel = duplicate_health_target / HOOK_SENTINEL_PATH
+        duplicate_sentinel.parent.mkdir(parents=True)
+        duplicate_record = {
+            "agent": "codex",
+            "event": "SessionStart",
+            "event_canonical": "SessionStart",
+            "mode": "session_start",
+            "session": "dup",
+            "ts": utc_stamp(),
+        }
+        duplicate_sentinel.write_text(
+            json.dumps(duplicate_record, sort_keys=True) + "\n" + json.dumps(duplicate_record, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        duplicate_health = run(
+            [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "hook-health",
+                "--target",
+                str(duplicate_health_target),
+                "--json-only",
+            ],
+            cwd=source_root(),
+        )
+        duplicate_payload = parse_json_output(duplicate_health.stdout)
+        if duplicate_health.returncode == 0 or duplicate_payload.get("status") != "DEGRADED":
+            failures.append("hook-health must degrade duplicate runtime hook records")
         second_hook = run(
             [
                 sys.executable,
@@ -3473,6 +3831,10 @@ def main() -> int:
     status_parser = subparsers.add_parser("status")
     status_parser.add_argument("--target", type=Path, default=Path.cwd())
 
+    hook_health_parser = subparsers.add_parser("hook-health")
+    hook_health_parser.add_argument("--target", type=Path, default=Path.cwd())
+    hook_health_parser.add_argument("--json-only", action="store_true")
+
     # ADR 0004 SPEC-003: reverse a TES installation and prove zero active residue.
     uninstall_parser = subparsers.add_parser("uninstall")
     uninstall_parser.add_argument("--target", type=Path, default=Path.cwd())
@@ -3522,6 +3884,8 @@ def main() -> int:
         return hook(args)
     if args.command == "status":
         return status(args)
+    if args.command == "hook-health":
+        return hook_health(args)
     parser.print_help()
     return 1
 
